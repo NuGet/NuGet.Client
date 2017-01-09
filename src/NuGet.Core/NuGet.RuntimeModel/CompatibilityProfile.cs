@@ -28,7 +28,12 @@ namespace NuGet.RuntimeModel
 
         public override int GetHashCode()
         {
-            return HashCodeCombiner.GetHashCode(Name, RestoreContexts);
+            var hashCode = new HashCodeCombiner();
+
+            hashCode.AddObject(Name);
+            hashCode.AddSequence(RestoreContexts);
+
+            return hashCode.CombinedHash;
         }
 
         public override bool Equals(object obj)
@@ -40,7 +45,7 @@ namespace NuGet.RuntimeModel
         {
             return other != null &&
                 string.Equals(Name, other.Name, StringComparison.Ordinal) &&
-                RestoreContexts.OrderBy(r => r).SequenceEqual(other.RestoreContexts.OrderBy(r => r));
+                RestoreContexts.OrderedEquals(other.RestoreContexts, r => r);
         }
     }
 }

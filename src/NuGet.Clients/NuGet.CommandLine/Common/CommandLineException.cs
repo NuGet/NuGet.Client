@@ -2,7 +2,7 @@ using System;
 using System.Globalization;
 using System.Runtime.Serialization;
 
-namespace NuGet
+namespace NuGet.CommandLine
 {
     [Serializable]
     public class CommandLineException : Exception

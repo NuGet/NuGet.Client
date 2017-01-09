@@ -1,5 +1,123 @@
 # Verify Xunit 2.1.0 can be installed into a net45 project.
 # https://github.com/NuGet/Home/issues/1711
+
+function Test-InstallPackageWithInvalidAbsoluteLocalSource {
+    # Arrange
+    $package = "Rules"
+    $project = New-ConsoleApplication
+    $source = "c:\temp\data"
+    $message = "Unable to find package '$package' at source '$source'. Source not found."
+
+    # Act & Assert
+    Assert-Throws { Install-Package $package -ProjectName $project.Name -source $source } $message
+}
+
+function Test-InstallPackageWithValidAbsoluteLocalSource {
+    # Arrange
+    $package = "Rules"
+    $project = New-ConsoleApplication
+    $source = pwd
+    $message = "Unable to find package '$package'"
+
+    # Act & Assert
+    Assert-Throws { Install-Package $package -ProjectName $project.Name -source $source } $message
+}
+
+function Test-InstallPackageWithInvalidRelativeLocalSource {
+    # Arrange
+    $package = "Rules"
+    $project = New-ConsoleApplication
+    $source = "..\invalid_folder"
+    $message = "Unable to find package '$package' at source '$source'. Source not found."
+
+    # Act & Assert
+    Assert-Throws { Install-Package $package -ProjectName $project.Name -source $source } $message
+}
+
+function Test-InstallPackageWithValidRelativeLocalSource {
+    # Arrange
+    $package = "Rules"
+    $project = New-ConsoleApplication
+    $source = "..\"
+    $message = "Unable to find package '$package'"
+
+    # Act & Assert
+    Assert-Throws { Install-Package $package -ProjectName $project.Name -source $source } $message
+}
+
+function Test-InstallPackageWithInvalidHttpSource {
+    # Arrange
+    $package = "Rules"
+    $project = New-ConsoleApplication
+    $source = "http://example.com"
+    $message = "Unable to find package '$package' at source '$source'."
+
+    # Act & Assert
+    Assert-Throws { Install-Package $package -ProjectName $project.Name -source $source } $message
+}
+
+function Test-InstallPackageWithInvalidHttpSourceVerbose {
+    # Arrange
+    $package = "Rules"
+    $project = New-ConsoleApplication
+    $source = "http://example.com"
+    $escapedSource = [regex]::Escape($source)
+    $escapedUrl = [regex]::Escape($source+"/FindPackagesById()?id='$package'")
+    $message = "\ \ GET\ $escapedUrl\ \ \ NotFound\ $escapedUrl\ [\w]+\ An\ error\ occurred\ while\ retrieving\ package\ metadata\ for\ '$package'\ from\ source\ '$escapedSource'\.\r\n\ \ The\ V2\ feed\ at\ '$escapedUrl'\ returned\ an\ unexpected\ status\ code\ '404\ Not\ Found'\.\ Unable\ to\ find\ package\ '$package'\ at\ source\ '$escapedSource'\."
+
+    # Act
+    $result = Install-Package $package -ProjectName $project.Name -source $source -Verbose *>&1
+    $resultString = [string]::Join(" ", $result)
+    $compare = $resultString -Match $message
+
+    # Assert
+    Assert-True $compare
+}
+
+function Test-InstallPackageWithIncompleteHttpSource {
+    # Arrange
+    $package = "Rules"
+    $project = New-ConsoleApplication
+    $source = "http://"
+    $message = "Unable to find package 'Rules' at source '$source'. Source not found."
+
+    # Act & Assert
+    Assert-Throws { Install-Package $package -ProjectName $project.Name -source $source } $message
+}
+
+function Test-InstallPackageWithInvalidKnownSource {
+    # Arrange
+    $package = "Rules"
+    $project = New-ConsoleApplication
+    $source = "nuget.random"
+    $message = "Unable to find package 'Rules' at source '$source'. Source not found."
+
+    # Act & Assert
+    Assert-Throws { Install-Package $package -ProjectName $project.Name -source $source } $message
+}
+
+function Test-InstallPackageWithValidKnownSource {
+    # Arrange
+    $package = "Rules"
+    $project = New-ConsoleApplication
+    $source = "nuget.org"
+    $message = "Unable to find package '$package'"
+
+    # Act & Assert
+    Assert-Throws { Install-Package $package -ProjectName $project.Name -source $source } $message
+}
+
+function Test-InstallPackageWithFtpProtocolSource {
+    # Arrange
+    $package = "Rules"
+    $project = New-ConsoleApplication
+    $source = "ftp://Rules"
+    $message = "Unsupported type of source '$source'. Please provide an http or local source."
+
+    # Act & Assert
+    Assert-Throws { Install-Package $package -ProjectName $project.Name -source $source } $message
+}
+
 function Test-InstallXunit210WithEmptyBuildFolderSucceeds
 {
     param($context)
@@ -35,6 +153,23 @@ function Test-SinglePackageInstallIntoSingleProject {
     Assert-SolutionPackage Castle.Core
 }
 
+# Test install-package -WhatIf to downgrade an installed package.       
+function Test-PackageInstallWithFileUri {      
+    # Arrange      
+    $project = New-ConsoleApplication 
+ 
+    $uri = $context.RepositoryRoot  
+    $uri = $uri.replace("\", "/")     
+    $uri = "file:///" + $uri  
+
+    # Act
+    Install-Package TestUpdatePackage -Version 2.0.0.0 -Source $uri
+
+    # Assert
+    # that the installed package is not touched.
+    Assert-Package $project TestUpdatePackage '2.0.0.0'
+}
+
 function Test-PackageInstallWhatIf {
     # Arrange
     $project = New-ConsoleApplication
@@ -43,7 +178,7 @@ function Test-PackageInstallWhatIf {
     Install-Package FakeItEasy -Project $project.Name -version 1.8.0 -WhatIf
     
     # Assert: no packages are installed
-	Assert-Null (Get-ProjectPackage $project FakeItEasy)
+    Assert-Null (Get-ProjectPackage $project FakeItEasy)
 }
 
 # Test install-package -WhatIf to downgrade an installed package.
@@ -52,14 +187,14 @@ function Test-PackageInstallDowngradeWhatIf {
     $project = New-ConsoleApplication    
     
     Install-Package TestUpdatePackage -Version 2.0.0.0 -Source $context.RepositoryRoot    
-	Assert-Package $project TestUpdatePackage '2.0.0.0'
+    Assert-Package $project TestUpdatePackage '2.0.0.0'
 
-	# Act
-	Install-Package TestUpdatePackage -Version 1.0.0.0 -Source $context.RepositoryRoot -WhatIf
+    # Act
+    Install-Package TestUpdatePackage -Version 1.0.0.0 -Source $context.RepositoryRoot -WhatIf
 
-	# Assert
-	# that the installed package is not touched.
-	Assert-Package $project TestUpdatePackage '2.0.0.0'
+    # Assert
+    # that the installed package is not touched.
+    Assert-Package $project TestUpdatePackage '2.0.0.0'
 }
 
 function Test-WebsiteSimpleInstall {
@@ -209,7 +344,7 @@ function Test-InstallPackageInvokeInstallScriptAndInitScript {
 #    Install-Package PackageWithScripts -Source $context.RepositoryRoot
 #
 #    # Now close the solution and reopen it
-#    $solutionDir = $dte.Solution.FullName
+#    $solutionDir = Get-SolutionFullName
 #    Close-Solution
 #    Remove-Item function:\Get-World
 #    Assert-False (Test-Path function:\Get-World)
@@ -492,16 +627,16 @@ function Test-InstallPackageWithGacReferencesIntoMultipleProjectTypes {
     )
 
     # Arrange
-	$a = New-ClassLibrary
-	$b = New-WebSite
-	$c = New-FSharpLibrary
-	$projects = @($a, $b, $c)
+    $a = New-ClassLibrary
+    $b = New-WebSite
+    $c = New-FSharpLibrary
+    $projects = @($a, $b, $c)
     
-	# Act
+    # Act
     $a | Install-Package PackageWithGacReferences -Source $context.RepositoryRoot
-	$b | Install-Package PackageWithGacReferences -Source $context.RepositoryRoot
-	$c | Install-Package PackageWithGacReferences -Source $context.RepositoryRoot
-	
+    $b | Install-Package PackageWithGacReferences -Source $context.RepositoryRoot
+    $c | Install-Package PackageWithGacReferences -Source $context.RepositoryRoot
+    
     # Assert
     $projects | %{ Assert-Reference $_ System.Web }
 }
@@ -510,6 +645,12 @@ function Test-InstallPackageWithGacReferenceIntoWindowsPhoneProject {
     param(
         $context
     )
+
+    # Windows 8.x/Phone tests irrelevant post-VS14
+    if ((Get-VSVersion) -ge "15.0") {
+        Write-Host "Skipping InstallPackageWithGacReferenceIntoWindowsPhoneProject"
+        return
+    }
 
     # Arrange
     $p = New-WindowsPhoneClassLibrary
@@ -546,6 +687,12 @@ function Test-InstallPackageThatTargetsWindowsPhone {
         $context
     )
 
+    # Windows 8.x/Phone tests irrelevant post-VS14
+    if ((Get-VSVersion) -ge "15.0") {
+        Write-Host "Skipping InstallPackageThatTargetsWindowsPhone"
+        return
+    }
+
     # Arrange
     $p = New-WindowsPhoneClassLibrary
 
@@ -568,7 +715,23 @@ function Test-InstallPackageWithNonExistentFrameworkReferences {
     $p = New-ClassLibrary
 
     # Arrange
-    Assert-Throws { $p | Install-Package PackageWithNonExistentGacReferences -Source $context.RepositoryRoot } "Failed to add reference to 'System.Awesome'. Please make sure that it is in the Global Assembly Cache."
+    Assert-Throws { $p | Install-Package PackageWithNonExistentGacReferences -Source $context.RepositoryRoot } "Failed to add reference. The package 'PackageWithNonExistentGacReferences' tried to add a framework reference to 'System.Awesome' which was not found in the GAC. This is possibly a bug in the package. Please contact the package owners for assistance.`r`n  Reference unavailable."
+}
+
+function Test-InstallPackageWithFrameworkFacadeReference {
+    param(
+        $context
+    )
+
+    # Arrange
+    $p = New-ClassLibrary
+
+    # Change it to v4.5.1
+    $p.Properties.Item("TargetFrameworkMoniker").Value = ".NETFramework,Version=v4.5.1"
+
+    Install-Package PackageWithFrameworkFacadeReference -Source $context.RepositoryRoot
+
+    Assert-Null (Get-AssemblyReference $p 'System.Runtime')
 }
 
 function Test-InstallPackageWorksWithProjectsHavingSameNames {
@@ -584,14 +747,13 @@ function Test-InstallPackageWorksWithProjectsHavingSameNames {
     #
 
     # Arrange
-    Write-Host -ForegroundColor Red 'This test will fail, blocked by support for piping multiple projects to Install-Package'
-    $f = New-SolutionFolder 'Folder1'
-    $p1 = $f | New-ClassLibrary 'ProjectA'
-    $p2 = $f | New-ClassLibrary 'ProjectB'
+    New-SolutionFolder 'Folder1'
+    $p1 = New-ClassLibrary 'ProjectA' 'Folder1'
+    $p2 = New-ClassLibrary 'ProjectB'  'Folder1'
 
-    $g = New-SolutionFolder 'Folder2'
-    $p3 = $g | New-ClassLibrary 'ProjectA'
-    $p4 = $g | New-ConsoleApplication 'ProjectC'
+    New-SolutionFolder 'Folder2'
+    $p3 = New-ClassLibrary 'ProjectA' 'Folder2'
+    $p4 = New-ConsoleApplication 'ProjectC' 'Folder2'
 
     $p5 = New-ConsoleApplication 'ProjectA'
 
@@ -600,6 +762,7 @@ function Test-InstallPackageWorksWithProjectsHavingSameNames {
 
     # Assert
     $all = @( $p1, $p2, $p3, $p4, $p5 )
+
     $all | % { Assert-Package $_ elmah }
 }
 
@@ -638,7 +801,7 @@ function Test-SimpleBindingRedirectsMultipleConfigs {
 
     # Add a another web.config under directory test
     $testDirectory = Join-Path (Get-ProjectDir $a) "test"
-    $file = Join-Path $testDirectory "web.config"	
+    $file = Join-Path $testDirectory "web.config"    
     New-Item $testDirectory -ItemType Directory
     "<configuration></configuration>" > $file
     $a.ProjectItems.AddFromFile($file)
@@ -651,24 +814,6 @@ function Test-SimpleBindingRedirectsMultipleConfigs {
     # the binding redirect should be added to web.config directly under the project directory,
     # not to file test\web.config.
     Assert-BindingRedirect $a web.config B '0.0.0.0-2.0.0.0' '2.0.0.0'
-}
-
-
-function Test-BindingRedirectDoesNotAddToSilverlightProject {
-    param(
-        $context
-    )
-    # Arrange
-    $c = New-SilverlightApplication
-
-    # Act
-    $c | Install-Package TestSL -Version 1.0 -Source $context.RepositoryPath
-
-    # Assert
-    $c | %{ Assert-Reference $_ TestSL 1.0.0.0; 
-            Assert-Reference $_ HostSL 1.0.1.0; }
-
-    Assert-NoBindingRedirect $c app.config HostSL '0.0.0.0-1.0.1.0' '1.0.1.0'
 }
 
 function Test-SimpleBindingRedirectsClassLibraryUpdatePackage {
@@ -961,108 +1106,108 @@ function Test-BindingRedirectProjectsThatReferenceDifferentVersionsOfSameAssembl
 # Tests the case when Skip is specified in nuget.config under bindingRedirects section
 function Test-InstallPackageSkipsBindingRedirectWhenSetOnConfig
 {
-	param(
+    param(
         $context
     )
 
     # Arrange
-	Check-NuGetConfig
+    Check-NuGetConfig
 
-	$componentModel = Get-VSComponentModel
-	$setting = $componentModel.GetService([NuGet.Configuration.ISettings])
+    $componentModel = Get-VSComponentModel
+    $setting = $componentModel.GetService([NuGet.Configuration.ISettings])
 
-	$a = New-WebSite
+    $a = New-WebSite
 
-	try
-	{
-		# Act
-		$setting.SetValue('bindingRedirects', 'skip', 'true')
+    try
+    {
+        # Act
+        $setting.SetValue('bindingRedirects', 'skip', 'true')
 
-		$a | Install-Package E -Source $context.RepositoryPath
-		$a | Update-Package F -Safe -Source $context.RepositoryPath
+        $a | Install-Package E -Source $context.RepositoryPath
+        $a | Update-Package F -Safe -Source $context.RepositoryPath
 
-		# Assert
-		Assert-Package $a E; 
-		Assert-NoBindingRedirect $a web.config F '0.0.0.0-1.0.5.0' '1.0.5.0'
+        # Assert
+        Assert-Package $a E; 
+        Assert-NoBindingRedirect $a web.config F '0.0.0.0-1.0.5.0' '1.0.5.0'
     }
     finally {
-	    $setting.DeleteSection('bindingRedirects')
+        $setting.DeleteSection('bindingRedirects')
     }    
 }
 
 # Tests the case when Skip is specified in nuget.config under bindingRedirects section
 function InstallPackageThrowWithLockedConfigFileIfSuccessRequired
 {
-	param(
+    param(
         $context
     )
 
     # Arrange
-	Check-NuGetConfig
+    Check-NuGetConfig
 
-	$componentModel = Get-VSComponentModel
-	$setting = $componentModel.GetService([NuGet.Configuration.ISettings])
+    $componentModel = Get-VSComponentModel
+    $setting = $componentModel.GetService([NuGet.Configuration.ISettings])
 
-	$a = New-WebSite
-	$webConfigPath = (Get-ProjectItemPath $a web.config)
+    $a = New-WebSite
+    $webConfigPath = (Get-ProjectItemPath $a web.config)
     $projectDir = split-path $webConfigPath
 
-	try
-	{
-		# Act
-		$setting.SetValue('bindingRedirects', 'successRequired', 'true')
+    try
+    {
+        # Act
+        $setting.SetValue('bindingRedirects', 'successRequired', 'true')
 
-		$a | Install-Package E -Source $context.RepositoryPath
-		$stream = [System.IO.File]::Open($webconfigPath, [System.IO.FileMode]::Open, [System.IO.FileAccess]::Read, [System.IO.FileShare]::None)
-		$stream.Lock(0, 10)
+        $a | Install-Package E -Source $context.RepositoryPath
+        $stream = [System.IO.File]::Open($webconfigPath, [System.IO.FileMode]::Open, [System.IO.FileAccess]::Read, [System.IO.FileShare]::None)
+        $stream.Lock(0, 10)
 
-		# Assert
+        # Assert
         $expectedErrorMessage = "Failed to update binding redirects for $projectDir : Failed to load '$webConfigPath', while updating binding redirects. The process cannot access the file '$webConfigPath' because it is being used by another process."
-		Assert-Throws { $a | Update-Package F -Safe -Source $context.RepositoryPath } $expectedErrorMessage
-	}
-	finally
-	{
-	    $setting.DeleteSection('bindingRedirects')
+        Assert-Throws { $a | Update-Package F -Safe -Source $context.RepositoryPath } $expectedErrorMessage
+    }
+    finally
+    {
+        $setting.DeleteSection('bindingRedirects')
     } 
 }
 
 # Tests the case when Skip is specified in nuget.config under bindingRedirects section
 function Test-InstallPackageSucceedsWithLockedFileAndSkipsBindingRedirectSet
 {
-	param(
+    param(
         $context
     )
 
     # Arrange
-	Check-NuGetConfig
+    Check-NuGetConfig
 
-	$componentModel = Get-VSComponentModel
-	$setting = $componentModel.GetService([NuGet.Configuration.ISettings])
+    $componentModel = Get-VSComponentModel
+    $setting = $componentModel.GetService([NuGet.Configuration.ISettings])
 
-	$a = New-WebSite
-	$webConfigPath = (Get-ProjectItemPath $a web.config)
+    $a = New-WebSite
+    $webConfigPath = (Get-ProjectItemPath $a web.config)
 
-	try
-	{
-		# Act
-		$setting.SetValue('bindingRedirects', 'skip', 'True')
-		$setting.SetValue('bindingRedirects', 'successRequired', 'False')
+    try
+    {
+        # Act
+        $setting.SetValue('bindingRedirects', 'skip', 'True')
+        $setting.SetValue('bindingRedirects', 'successRequired', 'False')
 
-		$a | Install-Package E -Source $context.RepositoryPath
-		$stream = [System.IO.File]::Open($webconfigPath, [System.IO.FileMode]::Open, [System.IO.FileAccess]::Read, [System.IO.FileShare]::None)
-		$stream.Lock(0, 10)
+        $a | Install-Package E -Source $context.RepositoryPath
+        $stream = [System.IO.File]::Open($webconfigPath, [System.IO.FileMode]::Open, [System.IO.FileAccess]::Read, [System.IO.FileShare]::None)
+        $stream.Lock(0, 10)
 
-		$a | Update-Package F -Safe -Source $context.RepositoryPath
+        $a | Update-Package F -Safe -Source $context.RepositoryPath
 
-		# Assert
-		Assert-Package $a E; 
-		# Unlock and close the stream of Web.Config so that it can be examined.
-		$stream.Unlock(0, 10)
-		$stream.Close()
-		Assert-NoBindingRedirect $a web.config F '0.0.0.0-1.0.5.0' '1.0.5.0'
+        # Assert
+        Assert-Package $a E; 
+        # Unlock and close the stream of Web.Config so that it can be examined.
+        $stream.Unlock(0, 10)
+        $stream.Close()
+        Assert-NoBindingRedirect $a web.config F '0.0.0.0-1.0.5.0' '1.0.5.0'
     }
     finally {
-	    $setting.DeleteSection('bindingRedirects')
+        $setting.DeleteSection('bindingRedirects')
     }    
 }
 
@@ -1109,24 +1254,30 @@ function Test-InstallPackageAfterRenaming {
         $context
     )
     # Arrange
-    $f = New-SolutionFolder 'Folder1' | New-SolutionFolder 'Folder2'
-    $p0 = New-ClassLibrary 'ProjectX'
-    $p1 = $f | New-ClassLibrary 'ProjectA'
-    $p2 = $f | New-ClassLibrary 'ProjectB'
+    New-SolutionFolder 'Folder1'
+    New-SolutionFolder 'Folder1\Folder2'
+    $p1 = New-ClassLibrary 'ProjectA' 'Folder1\Folder2'
+    $p2 = New-ClassLibrary 'ProjectB' 'Folder1\Folder2'
 
     # Act
     $p1.Name = "ProjectX"
     Install-Package jquery -Version 1.5 -Source $context.RepositoryPath -project "Folder1\Folder2\ProjectX"
 
-    $f.Name = "Folder3"
+    Rename-SolutionFolder "Folder1\Folder2" "Folder3"
     Install-Package jquery -Version 1.5 -Source $context.RepositoryPath -project "Folder1\Folder3\ProjectB"
 
     # Assert
     Assert-NotNull (Get-ProjectItem $p1 scripts\jquery-1.5.js)
-    Assert-NotNull (Get-ProjectItem $p2 scripts\jquery-1.5.js) 
+    Assert-NotNull (Get-ProjectItem $p2 scripts\jquery-1.5.js)
 }
 
 function Test-InstallPackageIntoSecondProjectWithIncompatibleAssembliesDoesNotRollbackIfInUse {
+    # Windows 8.x/Phone tests irrelevant post-VS14
+    if ((Get-VSVersion) -ge "15.0") {
+        Write-Host "Skipping InstallPackageIntoSecondProjectWithIncompatibleAssembliesDoesNotRollbackIfInUse"
+        return
+    }    
+
     # Arrange
     $p1 = New-WebApplication
     $p2 = New-WindowsPhoneClassLibrary
@@ -1134,20 +1285,20 @@ function Test-InstallPackageIntoSecondProjectWithIncompatibleAssembliesDoesNotRo
     # Act
     $p1 | Install-Package NuGet.Core
 
-    if ($dte.Version -eq "10.0")
+    if ((Get-VSVersion) -eq "10.0")
     {
         $profile = "Silverlight,Version=v4.0,Profile=WindowsPhone"
     }
-    elseif ($dte.Version -eq "11.0")
+    elseif ((Get-VSVersion) -eq "11.0")
     {
         $profile = "Silverlight,Version=v4.0,Profile=WindowsPhone71"
     }
-    elseif ($dte.Version -eq "12.0")
+    elseif ((Get-VSVersion) -eq "12.0")
     {
         $profile = "WindowsPhone,Version=v8.0"
     }
-	elseif ($dte.Version -eq "14.0")
-	{
+    elseif ((Get-VSVersion) -eq "14.0")
+    {
         $profile = "WindowsPhoneApp,Version=v8.1"
     }
 
@@ -1445,7 +1596,7 @@ function Test-InstallPackageThrowsWhenSourceIsInvalid {
     $p = New-WebApplication 
 
     # Act & Assert
-    Assert-Throws { Install-Package jQuery -source "d:package" } "Invalid URI: A Dos path must be rooted, for example, 'c:\'."
+    Assert-Throws { Install-Package jQuery -source "d:package" } "Unsupported type of source 'd:package'. Please provide an HTTP or local source."
 }
 
 function Test-InstallPackageInvokeInstallScriptWhenProjectNameHasApostrophe {
@@ -1746,7 +1897,7 @@ function Test-InstallingPackageaAfterNuGetDirectoryIsRenamedContinuesUsingDirect
     $a | Install-Package SolutionLevelPkg -version 1.0.0 -source $context.RepositoryRoot
 
     # Assert
-    $solutionFile = Get-SolutionPath
+    $solutionFile = Get-SolutionFullName
     $solutionDir = Split-Path $solutionFile -Parent
 
     $configFile = "$solutionDir\.nuget\packages.config"
@@ -1904,12 +2055,18 @@ function Test-InstallPackageThrowsIfThereIsNoCompatibleContentFiles
 {
     param($context)
 
+    # Windows 8.x/Phone tests irrelevant post-VS14
+    if ((Get-VSVersion) -ge "15.0") {
+        Write-Host "Skipping InstallPackageThrowsIfThereIsNoCompatibleContentFiles"
+        return
+    }    
+
     # Arrange
-    $project = New-PortableLibrary
+    $project = New-JavaScriptApplication
     
     # Act & Assert
 
-    Assert-Throws { Install-Package TestTargetFxContentFiles -Project $project.Name -Source $context.RepositoryPath } "Could not install package 'TestTargetFxContentFiles 1.0.0'. You are trying to install this package into a project that targets '.NETPortable,Version=v4.5,Profile=`$targetframeworkprofile`$', but the package does not contain any assembly references or content files that are compatible with that framework. For more information, contact the package author."
+    Assert-Throws { Install-Package TestTargetFxContentFiles -Project $project.Name -Source $context.RepositoryPath } "Could not install package 'TestTargetFxContentFiles 1.0.0'. You are trying to install this package into a project that targets 'Windows,Version=v8.1', but the package does not contain any assembly references or content files that are compatible with that framework. For more information, contact the package author."
     Assert-NoPackage $project TestTargetFxContentFiles
 }
 
@@ -2068,7 +2225,7 @@ function Test-InstallingSatellitePackageToWebsiteCopiesResourcesToBin
 
     # Act
     $p | Install-Package Test.fr-FR -Source $context.RepositoryPath
-	Build-Solution
+    Build-Solution
 
     # Assert
     Assert-Package $p Test.fr-FR
@@ -2115,6 +2272,38 @@ function Test-ToolsPathForInitAndInstallScriptPointToToolsFolder
 
     # Assert
     Assert-Package $p 'packageA'
+}
+
+function Test-InstallPackageWithNestedPS1InsideTools
+{
+    param($context)
+
+    # Arrange
+    $p = New-ClassLibrary
+    $solutionDir = Get-SolutionDir
+
+    # Act
+    $p | Install-Package TestPackage.SupportingMultipleFrameworksNestedPS1 -Version 1.2.0 -Source $context.RepositoryRoot
+
+    # Assert
+    Assert-Package $p 'TestPackage.SupportingMultipleFrameworksNestedPS1'
+    Assert-PathExists (Join-Path $solutionDir packages\TestPackage.SupportingMultipleFrameworksNestedPS1.1.2.0\version.txt)
+}
+
+function Test-InstallPackageWithNonNestedPS1InsideTools
+{
+    param($context)
+
+    # Arrange
+    $p = New-ClassLibrary
+    $solutionDir = Get-SolutionDir
+
+    # Act
+    $p | Install-Package TestPackage.SupportingMultipleFrameworksNonNestedPS1 -Version 1.2.0 -Source $context.RepositoryRoot
+
+    # Assert
+    Assert-Package $p 'TestPackage.SupportingMultipleFrameworksNonNestedPS1'
+    Assert-PathExists (Join-Path $solutionDir packages\TestPackage.SupportingMultipleFrameworksNonNestedPS1.1.2.0\version.txt)
 }
 
 function Test-InstallFailCleansUpSatellitePackageFiles 
@@ -2253,28 +2442,6 @@ function Test-InstallPackageRespectAssemblyReferenceFilterOnSecondProject
     Assert-Null (Get-AssemblyReference $q 'Ookii.Dialogs.Wpf')
 }
 
-function Test-InstallPackageRespectReferencesAccordingToDifferentFrameworks
-{
-    param ($context)
-
-    # Arrange
-    $p1 = New-SilverlightClassLibrary
-    $p2 = New-ConsoleApplication
-
-    # Act
-    ($p1, $p2) | Install-Package RefPackage -Source $context.RepositoryPath
-
-    # Assert
-    Assert-Package $p1 'RefPackage'
-    Assert-Reference $p1 'fear'
-    Assert-Null (Get-AssemblyReference $p1 'mafia')
-
-    Assert-Package $p2 'RefPackage'
-    Assert-Reference $p2 'one'
-    Assert-Reference $p2 'three'
-    Assert-Null (Get-AssemblyReference $p2 'two')
-}
-
 function Test-InstallPackageThrowsIfMinClientVersionIsNotSatisfied
 {
     param ($context)
@@ -2372,7 +2539,7 @@ function Test-InstallMetadataPackageAddPackageToProject
 function Test-FrameworkAssemblyReferenceShouldNotHaveBindingRedirect
 {
     # This test uses a particular profile which is available only in VS 2012.
-    if ($dte.Version -ne "11.0")
+    if ((Get-VSVersion) -ne "11.0")
     {
         return
     }
@@ -2407,7 +2574,7 @@ function Test-FrameworkAssemblyReferenceShouldNotHaveBindingRedirect
 function Test-NonFrameworkAssemblyReferenceShouldHaveABindingRedirect
 {
     # This test uses a particular profile which is available only in VS 2012.
-    if ($dte.Version -eq "10.0" -or $dte.Version -eq "12.0")
+    if ((Get-VSVersion) -eq "10.0" -or (Get-VSVersion) -eq "12.0")
     {
         return
     }
@@ -2436,8 +2603,9 @@ function Test-NonFrameworkAssemblyReferenceShouldHaveABindingRedirect
 # NuGet is not involved in that step. We may need to update the template.
 function InstallPackageIntoJavaScriptApplication
 {
-    if ($dte.Version -eq "10.0")
-    {
+    # Windows 8.x/Phone tests irrelevant post-VS14
+    if ((Get-VSVersion) -ge "15.0") {
+        Write-Host "Skipping InstallPackageIntoJavaScriptApplication"
         return
     }
 
@@ -2453,10 +2621,10 @@ function InstallPackageIntoJavaScriptApplication
 
 function Test-InstallPackageIntoJavaScriptWindowsPhoneApp
 {
-    # this test is only applicable to VS 2013 on Windows 8.1
-    if ($dte.Version -eq "10.0" -or $dte.Version -eq "11.0" -or [System.Environment]::OSVersion.Version -lt 6.3)
-    {
-        return;
+    # Windows 8.x/Phone tests irrelevant post-VS14
+    if ((Get-VSVersion) -ge "15.0") {
+        Write-Host "Skipping InstallPackageIntoJavaScriptWindowsPhoneApp"
+        return
     }
 
     # Arrange
@@ -2471,7 +2639,7 @@ function Test-InstallPackageIntoJavaScriptWindowsPhoneApp
 
 function Test-InstallPackageIntoNativeWinStoreApplication
 {
-    if ($dte.Version -eq "10.0")
+    if ((Get-VSVersion) -eq "10.0")
     {
         return
     }
@@ -2490,9 +2658,9 @@ function Test-InstallPackageIntoJSAppOnWin81UseTheCorrectFxFolder
 {
     param($context)
 
-    # this test is only applicable to VS 2013 on Windows 8.1
-    if ($dte.Version -eq "10.0" -or $dte.Version -eq "11.0" -or [System.Environment]::OSVersion.Version -lt 6.3)
-    {
+    # Windows 8.x/Phone tests irrelevant post-VS14
+    if ((Get-VSVersion) -ge "15.0") {
+        Write-Host "Skipping InstallPackageIntoJSAppOnWin81UseTheCorrectFxFolder"
         return
     }
 
@@ -2513,9 +2681,9 @@ function Test-InstallPackageIntoJSWindowsPhoneAppOnWin81UseTheCorrectFxFolder
 {
     param($context)
 
-    # this test is only applicable to VS 2013 on Windows 8.1
-    if ($dte.Version -eq "10.0" -or $dte.Version -eq "11.0" -or [System.Environment]::OSVersion.Version -lt 6.3)
-    {
+    # Windows 8.x/Phone tests irrelevant post-VS14
+    if ((Get-VSVersion) -ge "15.0") {
+        Write-Host "Skipping InstallPackageIntoJSWindowsPhoneAppOnWin81UseTheCorrectFxFolder"
         return
     }
 
@@ -2578,9 +2746,9 @@ function Test-InstallPackageIntoJSAppOnWin81AcceptWinmdFile
 {
     param($context)
 
-    # this test is only applicable to VS 2013 on Windows 8.1
-    if ($dte.Version -eq "10.0" -or $dte.Version -eq "11.0" -or [System.Environment]::OSVersion.Version -lt 6.3)
-    {
+    # Windows 8.x/Phone tests irrelevant post-VS14
+    if ((Get-VSVersion) -ge "15.0") {
+        Write-Host "Skipping InstallPackageIntoJSAppOnWin81AcceptWinmdFile"
         return
     }
 
@@ -2598,10 +2766,11 @@ function Test-PackageWithConfigTransformInstallToWinJsProject
 {
     param($context)
 
-    if ($dte.Version -eq "10.0")
-    {
+    # Windows 8.x/Phone tests irrelevant post-VS14
+    if ((Get-VSVersion) -ge "15.0") {
+        Write-Host "Skipping PackageWithConfigTransformInstallToWinJsProject"
         return
-    }
+    }    
 
     # Arrange
     $p = New-JavaScriptApplication
@@ -2620,7 +2789,7 @@ function Test-InstallPackageIntoLightSwitchApplication
     param($context)
 
     # this test is only applicable to VS 2013 because it has the latest LightSwitch template
-    if ($dte.Version -ne "12.0")
+    if ((Get-VSVersion) -ne "12.0")
     {
         return
     }
@@ -2719,7 +2888,7 @@ function Test-InstallPackageToWebsitePreservesProjectConfigFile
     # Arrange
     $p = New-Website "CoolProject"
     $packagesConfigFileName = "packages.CoolProject.config"
-    if ($dte.Version -gt '10.0')
+    if ((Get-VSVersion) -gt '10.0')
     {
         # on dev 11.0 etc, the project name could be something lkie
         # "CoolProject(12)". So we need to get the project name
@@ -2855,11 +3024,11 @@ function Test-InstallPackageWithDependencyVersionHighestInNuGetConfig
 {
     param($context)
 
-	# Arrange
-	Check-NuGetConfig
+    # Arrange
+    Check-NuGetConfig
 
-	$componentModel = Get-VSComponentModel
-	$setting = $componentModel.GetService([NuGet.Configuration.ISettings])
+    $componentModel = Get-VSComponentModel
+    $setting = $componentModel.GetService([NuGet.Configuration.ISettings])
 
     try {
         $setting.SetValue('config', 'dependencyversion', 'HighestPatch')
@@ -2875,7 +3044,7 @@ function Test-InstallPackageWithDependencyVersionHighestInNuGetConfig
         Assert-Package $p jquery 1.4.4
     }
     finally {
-	    $setting.SetValue('config', 'dependencyversion', $null)
+        $setting.SetValue('config', 'dependencyversion', $null)
     }    
 }
 
@@ -2909,8 +3078,8 @@ function Test-InstallPackagesConfigOnline
     $p = New-ClassLibrary
 
     # Act
-	$p | Install-Package Newtonsoft.Json
-    $p | Install-Package https://raw.githubusercontent.com/NuGet/json-ld.net/master/src/JsonLD/packages.config
+    $p | Install-Package Newtonsoft.Json
+    $p | Install-Package https://raw.githubusercontent.com/NuGet/json-ld.net/7dc9becb263a7210ebcd2f571c2a7a07409c240a/src/JsonLD/packages.config
 
     # Assert
     Assert-Package $p Newtonsoft.Json 4.0.1
@@ -2931,8 +3100,8 @@ function Test-InstallPackagesConfigLocal
 
     # Assert
     Assert-Package $p jQuery.validation 1.13.1
-	Assert-Package $p jQuery 2.1.3
-	Assert-Package $p EntityFramework 6.1.3-beta1
+    Assert-Package $p jQuery 2.1.3
+    Assert-Package $p EntityFramework 6.1.3-beta1
 }
 
 # Tests that passing in online path to a .nupkg file to 
@@ -2949,9 +3118,9 @@ function Test-InstallPackagesNupkgOnline
 
     # Assert
     Assert-Package $p microsoft.aspnet.mvc 4.0.20505.0
-	Assert-Package $p microsoft.aspnet.webpages 2.0.20505
-	Assert-Package $p microsoft.aspnet.razor 2.0.20505
-	Assert-Package $p microsoft.web.infrastructure 1.0.0
+    Assert-Package $p microsoft.aspnet.webpages 2.0.20505
+    Assert-Package $p microsoft.aspnet.razor 2.0.20505
+    Assert-Package $p microsoft.web.infrastructure 1.0.0
 }
 
 # Tests that passing in local path to a .nupkg file to 
@@ -2984,10 +3153,10 @@ function Test-InstallPackageMissingPackage {
     Assert-False (Test-Path $packagesDir)
 
     # Act
-	Install-Package Castle.Core -Version 2.5.1
+    Install-Package Castle.Core -Version 2.5.1
 
     # Assert
-	Assert-Package $proj Castle.Core 2.5.1
+    Assert-Package $proj Castle.Core 2.5.1
 }
 
 function Test-InstallPackageMissingPackageNoConsent {
@@ -2995,21 +3164,21 @@ function Test-InstallPackageMissingPackageNoConsent {
         [NuGet.PackageManagement.VisualStudio.SettingsHelper]::Set('PackageRestoreConsentGranted', 'false')
         [NuGet.PackageManagement.VisualStudio.SettingsHelper]::Set('PackageRestoreIsAutomatic', 'false')
 
-		# Arrange
-		# create project and install package
-		$proj = New-ClassLibrary
-		$proj | Install-Package PackageWithContentFile -Source $context.RepositoryRoot -Version 1.0.0.0
-		Assert-Package $proj PackageWithContentFile 1.0
+        # Arrange
+        # create project and install package
+        $proj = New-ClassLibrary
+        $proj | Install-Package PackageWithContentFile -Source $context.RepositoryRoot -Version 1.0.0.0
+        Assert-Package $proj PackageWithContentFile 1.0
 
-		# delete the packages folder
-		$packagesDir = Get-PackagesDir
-		RemoveDirectory $packagesDir
-		Assert-False (Test-Path $packagesDir)
+        # delete the packages folder
+        $packagesDir = Get-PackagesDir
+        RemoveDirectory $packagesDir
+        Assert-False (Test-Path $packagesDir)
 
-		# Act
-		# Assert
-		Assert-Throws { Install-Package PackageWithContentFile } "Some NuGet packages are missing from the solution. The packages need to be restored in order to build the dependency graph. Restore the packages before performing any operations."
-	}
+        # Act
+        # Assert
+        Assert-Throws { Install-Package PackageWithContentFile } "Some NuGet packages are missing from the solution. The packages need to be restored in order to build the dependency graph. Restore the packages before performing any operations."
+    }
     finally {
         [NuGet.PackageManagement.VisualStudio.SettingsHelper]::Set('PackageRestoreConsentGranted', 'true')
         [NuGet.PackageManagement.VisualStudio.SettingsHelper]::Set('PackageRestoreIsAutomatic', 'true')
@@ -3018,14 +3187,14 @@ function Test-InstallPackageMissingPackageNoConsent {
 
 function Test-InstallPackageWithScriptAddImportFile
 {
-	param($context)
+    param($context)
 
     # Arrange
     $p = New-ClassLibrary
 
-	#Act
-	$p | Install-Package Microsoft.Bcl.build -version 1.0.14
-	Build-Solution
+    #Act
+    $p | Install-Package Microsoft.Bcl.build -version 1.0.14
+    Build-Solution
 
     # Assert
     $errorlist = Get-Errors
@@ -3050,7 +3219,7 @@ function Disable-Test-InstallPackageInCpsApp
 
 function Test-InstallPackageWithEscapedSymbolInPath()
 {
-	param($context)
+    param($context)
 
     # Arrange
     $p = New-ClassLibrary 
@@ -3059,5 +3228,5 @@ function Test-InstallPackageWithEscapedSymbolInPath()
     $p | Install-Package Xam.Plugin.Connectivity -version 1.0.2
 
     # Assert
-	Assert-Package $p Xam.Plugin.Connectivity
+    Assert-Package $p Xam.Plugin.Connectivity
 }

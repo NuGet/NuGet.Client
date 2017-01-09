@@ -117,9 +117,6 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="Debug_AddReference" xml:space="preserve">
-    <value>Added reference '{0}' to project '{1}'.</value>
-  </data>
   <data name="DTE_ProjectUnsupported" xml:space="preserve">
     <value>The project '{0}' is unsupported</value>
   </data>
@@ -127,7 +124,7 @@
     <value>Failed to add reference to '{0}'.</value>
   </data>
   <data name="FailedToAddGacReference" xml:space="preserve">
-    <value>Failed to add reference to '{0}'. Please make sure that it is in the Global Assembly Cache.</value>
+    <value>Failed to add reference. The package '{0}' tried to add a framework reference to '{1}' which was not found in the GAC. This is possibly a bug in the package. Please contact the package owners for assistance.</value>
   </data>
   <data name="Debug_AddGacReference" xml:space="preserve">
     <value>Added reference '{0}' in the Global Assembly Cache to project '{1}'</value>
@@ -180,11 +177,8 @@
   <data name="Warning_FailedToMarkPackageDirectoryForDeletion" xml:space="preserve">
     <value>Failed to mark package directory '{0}' for deletion on Visual Studio restart: {1}</value>
   </data>
-  <data name="Warning_ErrorDuringProjectClosureWalk" xml:space="preserve">
-    <value>Failed to resolve all project references for '{0}'. The package restore result for '{1}' may be incomplete.</value>
-  </data>
-  <data name="RelativeGlobalPackagesFolder" xml:space="preserve">
-    <value>'globalPackagesFolder' from nuget.config file or the environment variable is '{0}', a relative path and the solution is not saved. Please save your solution or configure a 'globalPackagesFolder' which is a full path.</value>
+  <data name="UnresolvedItemDuringProjectClosureWalk" xml:space="preserve">
+    <value>Failed to resolve all items referenced by '{0}'. This message can typically be ignored. The issue may be resolved by fully restoring and building the solution. If the unresolved item is a project reference this can lead to an incomplete NuGet restore result and missing package references. To ensure that restore is able to find all projects verify that all projects are referenced correctly and exist on disk.</value>
   </data>
   <data name="SolutionIsNotSaved" xml:space="preserve">
     <value>Solution is not saved. Please save your solution before managing NuGet packages.</value>
@@ -194,5 +188,28 @@
   </data>
   <data name="FailedToUpdateBindingRedirects" xml:space="preserve">
     <value>Failed to update binding redirects for {0} : {1}</value>
+  </data>
+  <data name="ConfigErrorDialogBoxTitle" xml:space="preserve">
+    <value>NuGet operation failed</value>
+  </data>
+  <data name="FailedToAddFacadeReference" xml:space="preserve">
+    <value>Failed to add reference to '{0}'. The package '{1}' tried to add a framework reference to '{0}'. This reference is not required to be explicitly added by a package.</value>
+    <comment>{0} is the framework facade reference name
+{1} is the package name</comment>
+  </data>
+  <data name="ProjectNotLoaded_RestoreFailed" xml:space="preserve">
+    <value>The operation failed as details for project {0} could not be loaded.</value>
+  </data>
+  <data name="BaseIntermediateOutputPathNotFound" xml:space="preserve">
+    <value>The BaseIntermediateOutputPath MSBuild property could not be found for project '{0}'.</value>
+    <comment>{0} is the full path to the project.</comment>
+  </data>
+  <data name="ProjectCouldNotBeCastedToBuildPropertyStorage" xml:space="preserve">
+    <value>The project '{0}' could not be casted to a build property storage interace, which is required to get MSBuild properties inside Visual Studio.</value>
+    <comment>{0} is the full path to the project.</comment>
+  </data>
+  <data name="UnableToGetCPSPackageInstallationService" xml:space="preserve">
+    <value>Unable to get the project's package installation service for project '{0}'.</value>
+    <comment>{0} is the full path to the project.</comment>
   </data>
 </root>

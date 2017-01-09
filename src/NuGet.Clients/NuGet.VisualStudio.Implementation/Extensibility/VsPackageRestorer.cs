@@ -30,7 +30,7 @@ namespace NuGet.VisualStudio
 
         public bool IsUserConsentGranted()
         {
-            var packageRestoreConsent = new PackageManagement.VisualStudio.PackageRestoreConsent(_settings);
+            var packageRestoreConsent = new PackageManagement.PackageRestoreConsent(_settings);
             return packageRestoreConsent.IsGranted;
         }
 

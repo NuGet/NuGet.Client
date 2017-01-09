@@ -24,20 +24,7 @@ namespace NuGet.PackageManagement.UI
 
         IEnumerable<NuGetProject> Projects { get; set; }
 
-        void AddSettings(string key, UserSettings settings);
-
-        UserSettings GetSettings(string key);
-
-        // Persist settings
-        void PersistSettings();
-
-        /// <summary>
-        /// Apply the setting of wether to show preview window to all existing
-        /// package manager windows after user changes it by checking/unchecking the
-        /// checkbox on the preview window.
-        /// </summary>
-        /// <param name="show">The value of the setting.</param>
-        void ApplyShowPreviewSetting(bool show);
+        IUserSettingsManager UserSettingsManager { get; }
 
         IEnumerable<IVsPackageManagerProvider> PackageManagerProviders { get; }
     }

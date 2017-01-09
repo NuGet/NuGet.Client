@@ -1,4 +1,7 @@
-﻿using System.Collections.Generic;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Text;
@@ -9,6 +12,7 @@ using NuGet.ProjectModel;
 using NuGet.Test.Utility;
 using Xunit;
 using System.Linq;
+using System.Threading;
 
 namespace NuGet.Commands.Test
 {
@@ -133,14 +137,14 @@ namespace NuGet.Commands.Test
                 var specPath = Path.Combine(projectDir, "TestProject", "project.json");
                 var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
 
-                var request = new RestoreRequest(spec, sources, packagesDir);
+                var request = new TestRestoreRequest(spec, sources, packagesDir, logger);
                 request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
 
-                var command = new RestoreCommand(logger, request);
+                var command = new RestoreCommand(request);
 
                 // Act
                 var result = await command.ExecuteAsync();
-                result.Commit(logger);
+                await result.CommitAsync(logger, CancellationToken.None);
 
                 var runtimeGraph = result.RestoreGraphs.Single(graph => graph.RuntimeIdentifier == "unix").RuntimeGraph;
 
@@ -168,7 +172,7 @@ namespace NuGet.Commands.Test
         {
             // Arrange
             var logger = new TestLogger();
-            var framework = "net46";
+            var framework = "dotnet";
 
             using (var workingDir = CreateTestFolders())
             {
@@ -200,23 +204,23 @@ namespace NuGet.Commands.Test
                 var specPath = Path.Combine(projectDir, "TestProject", "project.json");
                 var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
 
-                var request = new RestoreRequest(spec, sources, packagesDir);
+                var request = new TestRestoreRequest(spec, sources, packagesDir, logger);
                 request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
 
-                var command = new RestoreCommand(logger, request);
+                var command = new RestoreCommand(request);
 
                 // Act
                 var result = await command.ExecuteAsync();
-                result.Commit(logger);
+                await result.CommitAsync(logger, CancellationToken.None);
 
                 // Assert
-                Assert.True(result.Success);
+                Assert.True(result.Success, logger.ShowMessages());
             }
         }
 
         private TestDirectory CreateTestFolders()
         {
-            var workingDir = TestFileSystemUtility.CreateRandomTestFolder();
+            var workingDir = TestDirectory.Create();
 
             var repository = Path.Combine(workingDir, "repository");
             Directory.CreateDirectory(repository);

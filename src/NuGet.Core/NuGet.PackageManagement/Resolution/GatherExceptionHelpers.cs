@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using NuGet.Common;
 using NuGet.Packaging.Core;
 
 namespace NuGet.PackageManagement
@@ -20,9 +21,10 @@ namespace NuGet.PackageManagement
         /// <param name="availablePackages">gathered packages</param>
         public static void ThrowIfVersionIsDisallowedByPackagesConfig(string target,
             IEnumerable<Packaging.PackageReference> packagesConfig,
-            IEnumerable<PackageDependencyInfo> availablePackages)
+            IEnumerable<PackageDependencyInfo> availablePackages,
+            ILogger logger)
         {
-            ThrowIfVersionIsDisallowedByPackagesConfig(new string[] { target }, packagesConfig, availablePackages);
+            ThrowIfVersionIsDisallowedByPackagesConfig(new string[] { target }, packagesConfig, availablePackages, logger);
         }
 
         /// <summary>
@@ -34,7 +36,8 @@ namespace NuGet.PackageManagement
         /// <param name="availablePackages">gathered packages</param>
         public static void ThrowIfVersionIsDisallowedByPackagesConfig(IEnumerable<string> targets,
             IEnumerable<Packaging.PackageReference> packagesConfig,
-            IEnumerable<PackageDependencyInfo> availablePackages)
+            IEnumerable<PackageDependencyInfo> availablePackages,
+            ILogger logger)
         {
             foreach (var target in targets)
             {
@@ -43,6 +46,12 @@ namespace NuGet.PackageManagement
 
                 if (configEntry != null)
                 {
+                    logger.LogMinimal(string.Format(
+                        CultureInfo.CurrentCulture,
+                        Strings.PackagesConfigAllowedVersions,
+                        configEntry.AllowedVersions.PrettyPrint(),
+                        "packages.config"));
+
                     var packagesForId = availablePackages.Where(package => StringComparer.OrdinalIgnoreCase.Equals(target, package.Id));
 
                     // check if package versions exist, but none satisfy the allowed range

@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.IO;
@@ -12,18 +15,17 @@ namespace NuGet.CommandLine.Test
     public class RestoreRetryTests
     {
         // Restore a packages.config file from a failing v2 http source.
-        [Fact(Skip = "https://github.com/NuGet/Home/issues/1217")]
+        [Fact]
         public void RestoreRetry_PackagesConfigRetryOnFailingV2Source()
         {
             // Arrange
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var workingDirectory = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var packageDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDirectory = TestDirectory.Create())
+            using (var packageDirectory = TestDirectory.Create())
             {
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
                 var package = new ZipPackage(packageFileName);
-                MachineCache.Default.RemovePackage(package);
 
                 Util.CreateFile(
                     workingDirectory,
@@ -39,10 +41,10 @@ namespace NuGet.CommandLine.Test
 
                     server.Get.Add("/", r =>
                     {
-                        var path = r.Url.PathAndQuery;
+                        var path = server.GetRequestUrlPathAndQuery(r);
 
-                    // track hits on the url
-                    var urlHits = hitsByUrl.AddOrUpdate(path, 1, (s, i) => i + 1);
+                        // track hits on the url
+                        var urlHits = hitsByUrl.AddOrUpdate(path, 1, (s, i) => i + 1);
 
                         if (path == "/nuget/$metadata")
                         {
@@ -53,8 +55,8 @@ namespace NuGet.CommandLine.Test
                         }
                         else if (path == "/package/testPackage1/1.1.0")
                         {
-                        // Fail on the first two requests for this download
-                        if (urlHits < 3)
+                            // Fail on the first two requests for this download
+                            if (urlHits < 3)
                             {
                                 return new Action<HttpListenerResponse>(response =>
                                 {
@@ -129,33 +131,29 @@ namespace NuGet.CommandLine.Test
             // Arrange
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var workingDirectory = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var packageDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDirectory = TestDirectory.Create())
+            using (var packageDirectory = TestDirectory.Create())
             {
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
                 var package = new ZipPackage(packageFileName);
 
-                Util.CreateFile(
-                    workingDirectory,
-                    "project.json",
-                    @"{
+                var projectJson = @"{
                     ""dependencies"": {
                         ""testPackage1"": ""1.1.0""
                     },
                     ""frameworks"": {
                                 ""net45"": { }
                                 }
-                  }");
+                  }";
 
-                Util.CreateFile(
-                    workingDirectory,
-                    "nuget.config",
-                        @"<?xml version=""1.0"" encoding=""utf-8""?>
+                var config = @"<?xml version=""1.0"" encoding=""utf-8""?>
                         <configuration>
                           <config>
                             <add key=""globalPackagesFolder"" value=""globalPackages"" />
                           </config>
-                        </configuration>");
+                        </configuration>";
+
+                var projectFile = Util.CreateUAPProject(workingDirectory, projectJson, "a", config);
 
                 // Server setup
                 using (var server = new MockServer())
@@ -164,13 +162,13 @@ namespace NuGet.CommandLine.Test
 
                     server.Get.Add("/", r =>
                     {
-                        var path = r.Url.PathAndQuery;
+                        var path = server.GetRequestUrlPathAndQuery(r);
 
-                    // track hits on the url
-                    var urlHits = hitsByUrl.AddOrUpdate(path, 1, (s, i) => i + 1);
+                        // track hits on the url
+                        var urlHits = hitsByUrl.AddOrUpdate(path, 1, (s, i) => i + 1);
 
-                    // Fail on the first 3 requests for every url
-                    if (urlHits < 4)
+                        // Fail on the first 2 requests for every url
+                        if (urlHits < 3)
                         {
                             return new Action<HttpListenerResponse>(response =>
                             {
@@ -221,7 +219,8 @@ namespace NuGet.CommandLine.Test
 
                     // Act
                     var args = string.Format(
-                        "restore project.json -SolutionDirectory . -Source {0}nuget -NoCache",
+                        "restore {0} -SolutionDirectory . -Source {1}nuget -NoCache",
+                            projectFile,
                             server.Uri);
 
                     var timer = new Stopwatch();
@@ -252,10 +251,10 @@ namespace NuGet.CommandLine.Test
 
                     Assert.True(File.Exists(Path.Combine(workingDirectory, "project.lock.json")));
 
-                    // Everything should be hit 4 times
+                    // Everything should be hit 3 times
                     foreach (var url in hitsByUrl.Keys)
                     {
-                        Assert.True(hitsByUrl[url] == 4, url);
+                        Assert.True(hitsByUrl[url] == 3, url);
                     }
                 }
             }
@@ -268,34 +267,29 @@ namespace NuGet.CommandLine.Test
             // Arrange
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var workingDirectory = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var packageDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDirectory = TestDirectory.Create())
+            using (var packageDirectory = TestDirectory.Create())
             {
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
                 var package = new ZipPackage(packageFileName);
-                MachineCache.Default.RemovePackage(package);
 
-                Util.CreateFile(
-                    workingDirectory,
-                    "project.json",
-                    @"{
+                var projectJsonContent = @"{
                     ""dependencies"": {
                         ""testPackage1"": ""1.1.0""
                     },
                     ""frameworks"": {
                                 ""net45"": { }
                                 }
-                  }");
+                  }";
 
-                Util.CreateFile(
-                    workingDirectory,
-                    "nuget.config",
-                        @"<?xml version=""1.0"" encoding=""utf-8""?>
+                var nugetConfigContent = @"<?xml version=""1.0"" encoding=""utf-8""?>
                         <configuration>
                           <config>
                             <add key=""globalPackagesFolder"" value=""globalPackages"" />
                           </config>
-                        </configuration>");
+                        </configuration>";
+
+                var projectFile = Util.CreateUAPProject(workingDirectory, projectJsonContent, "a", nugetConfigContent);
 
                 // Server setup
                 var indexJson = Util.CreateIndexJson();
@@ -308,13 +302,13 @@ namespace NuGet.CommandLine.Test
 
                     server.Get.Add("/", r =>
                     {
-                        var path = r.Url.AbsolutePath;
+                        var path = server.GetRequestUrlAbsolutePath(r);
 
-                    // track hits on the url
-                    var urlHits = hitsByUrl.AddOrUpdate(path, 1, (s, i) => i + 1);
+                        // track hits on the url
+                        var urlHits = hitsByUrl.AddOrUpdate(path, 1, (s, i) => i + 1);
 
-                    // Fail on the first 3 requests for every url
-                    if (urlHits < 4)
+                        // Fail on the first 2 requests for every url
+                        if (urlHits < 3)
                         {
                             return new Action<HttpListenerResponse>(response =>
                             {
@@ -373,7 +367,8 @@ namespace NuGet.CommandLine.Test
 
                     // Act
                     var args = string.Format(
-                        "restore project.json -SolutionDirectory . -Source {0}index.json -NoCache",
+                        "restore {0} -SolutionDirectory . -Source {1}index.json -NoCache",
+                            projectFile,
                             server.Uri);
 
                     var timer = new Stopwatch();
@@ -404,10 +399,10 @@ namespace NuGet.CommandLine.Test
 
                     Assert.True(File.Exists(Path.Combine(workingDirectory, "project.lock.json")));
 
-                    // Everything should be hit 4 times
+                    // Everything should be hit 3 times
                     foreach (var url in hitsByUrl.Keys)
                     {
-                        Assert.True(hitsByUrl[url] == 4, url);
+                        Assert.True(hitsByUrl[url] == 3, url);
                     }
 
                     Assert.True(timer.Elapsed > minTime);
@@ -422,12 +417,11 @@ namespace NuGet.CommandLine.Test
             // Arrange
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var workingDirectory = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var packageDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDirectory = TestDirectory.Create())
+            using (var packageDirectory = TestDirectory.Create())
             {
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
                 var package = new ZipPackage(packageFileName);
-                MachineCache.Default.RemovePackage(package);
 
                 Util.CreateFile(
                     workingDirectory,
@@ -457,13 +451,13 @@ namespace NuGet.CommandLine.Test
 
                     server.Get.Add("/", r =>
                     {
-                        var path = r.Url.AbsolutePath;
+                        var path = server.GetRequestUrlAbsolutePath(r);
 
-                    // track hits on the url
-                    var urlHits = hitsByUrl.AddOrUpdate(path, 1, (s, i) => i + 1);
+                        // track hits on the url
+                        var urlHits = hitsByUrl.AddOrUpdate(path, 1, (s, i) => i + 1);
 
-                    // Fail on the first 3 requests for every url
-                    if (urlHits < 4)
+                        // Fail on the first 2 requests for every url
+                        if (urlHits < 3)
                         {
                             return new Action<HttpListenerResponse>(response =>
                             {
@@ -593,10 +587,10 @@ namespace NuGet.CommandLine.Test
                             Path.Combine(workingDirectory,
                                 "packages/testpackage1.1.1.0/testpackage1.1.1.0.nupkg")));
 
-                    // Everything should be hit 4 times
+                    // Everything should be hit 3 times
                     foreach (var url in hitsByUrl.Keys)
                     {
-                        Assert.True(hitsByUrl[url] == 4, url);
+                        Assert.True(hitsByUrl[url] == 3, url);
                     }
 
                     Assert.True(timer.Elapsed > minTime);

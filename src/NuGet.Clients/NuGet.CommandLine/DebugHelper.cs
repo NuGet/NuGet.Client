@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace NuGet
+namespace NuGet.CommandLine
 {
     internal static class DebugHelper
     {

@@ -1,4 +1,10 @@
-﻿using NuGet.PackageManagement.VisualStudio;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
+using System.Collections.Generic;
+using System.Threading;
+using NuGet.PackageManagement.VisualStudio;
 using NuGet.VisualStudio;
 using Task = System.Threading.Tasks.Task;
 
@@ -6,6 +12,18 @@ namespace API.Test
 {
     public static class InternalAPITestHook
     {
+        public static void InstallLatestPackageApi(string id, bool prerelease)
+        {
+            var dte = ServiceLocator.GetInstance<EnvDTE.DTE>();
+            var services = ServiceLocator.GetInstance<IVsPackageInstaller2>();
+
+            foreach (EnvDTE.Project project in dte.Solution.Projects)
+            {
+                services.InstallLatestPackage(null, project, id, prerelease, false);
+                return;
+            }
+        }
+
         public static void InstallPackageApi(string id, string version)
         {
             InstallPackageApi(null, id, version, false);
@@ -59,6 +77,22 @@ namespace API.Test
             }
         }
 
+        public static IVsPathContext GetVsPathContext(string projectUniqueName)
+        {
+            var dte = ServiceLocator.GetInstance<EnvDTE.DTE>();
+            var factory = ServiceLocator.GetInstance<IVsPathContextProvider>();
+
+            foreach (EnvDTE.Project project in dte.Solution.Projects)
+            {
+                if (project.UniqueName == projectUniqueName)
+                {
+                    return factory.CreateAsync(project, CancellationToken.None).Result;
+                }
+            }
+
+            return null;
+        }
+
         public static bool ExecuteInitScript(string id, string version)
         {
             var scriptExecutor = ServiceLocator.GetInstance<IVsGlobalPackagesInitScriptExecutor>();
@@ -73,6 +107,34 @@ namespace API.Test
             }
 
             return false;
+        }
+
+        public static bool BatchEventsApi(string id, string version)
+        {
+            var dte = ServiceLocator.GetInstance<EnvDTE.DTE>();
+            var packageProjectEventService = ServiceLocator.GetInstance<IVsPackageInstallerProjectEvents>();
+            var installerServices = ServiceLocator.GetInstance<IVsPackageInstaller>();
+            var batchStartIds = new List<string>();
+            var batchEndIds = new List<string>();
+
+            packageProjectEventService.BatchStart += (args) =>
+            {
+                batchStartIds.Add(args.BatchId);
+            };
+
+            packageProjectEventService.BatchEnd += (args) =>
+            {
+                batchEndIds.Add(args.BatchId);
+            };
+
+            foreach (EnvDTE.Project project in dte.Solution.Projects)
+            {
+                installerServices.InstallPackage(null, project, id, version, false);
+            }
+
+            return batchStartIds.Count == 1 &&
+                   batchEndIds.Count == 1 &&
+                   batchStartIds[0].Equals(batchEndIds[0], StringComparison.Ordinal);
         }
     }
 }

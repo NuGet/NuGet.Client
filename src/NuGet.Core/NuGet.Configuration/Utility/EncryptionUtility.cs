@@ -4,6 +4,7 @@
 using System;
 using System.Security.Cryptography;
 using System.Text;
+using NuGet.Common;
 
 namespace NuGet.Configuration
 {
@@ -13,25 +14,27 @@ namespace NuGet.Configuration
 
         public static string EncryptString(string value)
         {
-#if DNXCORE50
-            throw new NotSupportedException();
-#else
+            if (!RuntimeEnvironmentHelper.IsWindows && !RuntimeEnvironmentHelper.IsMono)
+            {
+                throw new NotSupportedException(Resources.Error_EncryptionUnsupported);
+            }
+
             var decryptedByteArray = Encoding.UTF8.GetBytes(value);
             var encryptedByteArray = ProtectedData.Protect(decryptedByteArray, _entropyBytes, DataProtectionScope.CurrentUser);
             var encryptedString = Convert.ToBase64String(encryptedByteArray);
             return encryptedString;
-#endif
         }
 
         public static string DecryptString(string encryptedString)
         {
-#if DNXCORE50
-            throw new NotSupportedException();
-#else
+            if (!RuntimeEnvironmentHelper.IsWindows && !RuntimeEnvironmentHelper.IsMono)
+            {
+                throw new NotSupportedException(Resources.Error_EncryptionUnsupported);
+            }
+
             var encryptedByteArray = Convert.FromBase64String(encryptedString);
             var decryptedByteArray = ProtectedData.Unprotect(encryptedByteArray, _entropyBytes, DataProtectionScope.CurrentUser);
             return Encoding.UTF8.GetString(decryptedByteArray);
-#endif
         }
 
         public static string GenerateUniqueToken(string caseInsensitiveKey)

@@ -6,7 +6,7 @@ function Test-GetRepositoryPathFromVsSettings {
 	# Arrange
 	$p1 = New-ClassLibrary
 
-	$solutionFile = $dte.Solution.FullName
+	$solutionFile = Get-SolutionFullName
 	$solutionDir = Split-Path $solutionFile -Parent
 	$nugetDir = Join-Path $solutionDir ".nuget"
 	$repoPath = Join-Path $solutionDir "my_repo"
@@ -26,7 +26,7 @@ function Test-GetRepositoryPathFromVsSettings {
 
 	# Act
 	# close & open the solution so that the settings are reloaded.
-	$dte.Solution.SaveAs($solutionFile)
+	SaveAs-Solution($solutionFile)
 	Close-Solution
 	Write-Host 'Closed solution'
 	Open-Solution $solutionFile
@@ -44,4 +44,25 @@ function Test-GetRepositoryPathFromVsSettings {
         Write-Host 'Testing if $repoPath exists'
 	Assert-True (Test-Path $repoPath)
 	Assert-True (Test-Path (Join-Path $repoPath "elmah.1.2.2"))
+}
+
+function Test-GetMachineWideSettingBaseDirectoryInVSIX {
+    param($context)
+
+	# Arrange
+	[string]$vsVersionString = Get-VSVersion
+	[string]$machineWideSettingsBaseDirExpected
+
+	if($vsVersionString -ge "15.0") {
+		$machineWideSettingsBaseDirExpected = Join-Path (Get-ChildItem Env:PROGRAMFILES).Value "\NuGet"
+	}
+	else {
+		$machineWideSettingsBaseDirExpected = Join-Path (Get-ChildItem Env:PROGRAMDATA).Value "\NuGet"
+	}
+
+	# Act
+	$machineWideSettingsBaseDirActual = [NuGet.Common.NuGetEnvironment]::GetFolderPath([NuGet.Common.NuGetFolderPath]::MachineWideSettingsBaseDirectory)
+
+	# Assert
+	Assert-StringEqual $machineWideSettingsBaseDirActual  $machineWideSettingsBaseDirExpected -CaseSensitive $True
 }

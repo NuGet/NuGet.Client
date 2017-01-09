@@ -7,6 +7,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Threading;
+using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.Packaging.Core;
 
@@ -120,11 +121,6 @@ namespace NuGet.Packaging
             return stream;
         }
 
-        public override Stream GetNuspec()
-        {
-            return GetStream(this.GetNuspecFile());
-        }
-
         protected override void Dispose(bool disposing)
         {
             if (disposing)
@@ -137,6 +133,7 @@ namespace NuGet.Packaging
             string destination,
             IEnumerable<string> packageFiles,
             ExtractPackageFileDelegate extractFile,
+            ILogger logger,
             CancellationToken token)
         {
             var filesCopied = new List<string>();
@@ -170,11 +167,7 @@ namespace NuGet.Packaging
                     var copiedFile = extractFile(packageFileName, targetFilePath, stream);
                     if (copiedFile != null)
                     {
-                        var attr = File.GetAttributes(copiedFile);
-                        if (!attr.HasFlag(FileAttributes.Directory))
-                        {
-                            File.SetLastWriteTimeUtc(copiedFile, entry.LastWriteTime.UtcDateTime);
-                        }
+                        entry.UpdateFileTimeFromEntry(copiedFile, logger);
 
                         filesCopied.Add(copiedFile);
                     }
@@ -184,10 +177,10 @@ namespace NuGet.Packaging
             return filesCopied;
         }
 
-        public string ExtractFile(string packageFile, string targetFilePath)
+        public string ExtractFile(string packageFile, string targetFilePath, ILogger logger)
         {
             var entry = GetEntry(packageFile);
-            var copiedFile = entry.SaveAsFile(targetFilePath);
+            var copiedFile = entry.SaveAsFile(targetFilePath, logger);
             return copiedFile;
         }
 

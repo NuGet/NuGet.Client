@@ -1,27 +1,35 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Security.Principal;
 using System.Text;
+using NuGet.Configuration;
 using NuGet.Test.Utility;
 using Xunit;
+using NuGet.Common;
 
 namespace NuGet.CommandLine.Test
 {
     public class NuGetPushCommandTest
     {
+        private const string ApiKeyHeader = "X-NuGet-ApiKey";
+        private static readonly string NuGetExePath = Util.GetNuGetExePath();
+
         private readonly string _originalCredentialProvidersEnvar =
             Environment.GetEnvironmentVariable(ExtensionLocator.CredentialProvidersEnvar);
 
-        // Tests pushing to a source that is a file system directory.
+        // Tests pushing to a source that is a v2 file system directory.
         [Fact]
-        public void PushCommand_PushToFileSystemSource()
+        public void PushCommand_PushToV2FileSystemSource()
         {
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var packageDirectory = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var source = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packageDirectory = TestDirectory.Create())
+            using (var source = TestDirectory.Create())
             {
                 // Arrange
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
@@ -42,6 +50,150 @@ namespace NuGet.CommandLine.Test
             }
         }
 
+        [Fact]
+        public void PushCommand_PushToV3FileSystemSource()
+        {
+            var nugetexe = Util.GetNuGetExePath();
+
+            using (var packageDirectory = TestDirectory.Create())
+            using (var source = TestDirectory.Create())
+            {
+                //drop dummy artifacts to make it a V3
+                var dummyPackageName = "foo";
+                Directory.CreateDirectory(Path.Combine(source.Path, dummyPackageName));
+                var f = Directory.CreateDirectory(Path.Combine(source.Path, dummyPackageName, "1.0.0"));
+                File.WriteAllText(Path.Combine(f.FullName, dummyPackageName + ".nuspec"), "some text");
+
+                // Arrange
+                var version = "1.1.0";
+                var packageId = "testPackage1";
+                var packageFileName = Util.CreateTestPackage(packageId, version, packageDirectory);
+
+                // Act
+                string[] args = new string[] { "push", packageFileName, "-Source", source };
+                var result = CommandRunner.Run(
+                    nugetexe,
+                    Directory.GetCurrentDirectory(),
+                    string.Join(" ", args),
+                    true);
+
+                // Assert
+                Assert.Equal(0, result.Item1);
+                var basename = string.Format("{0}.{1}.", packageId, version);
+                var baseFolder = Path.Combine(packageId, version) + Path.DirectorySeparatorChar;
+                Assert.True(File.Exists(Path.Combine(source, baseFolder + packageId + ".nuspec")));
+                Assert.True(File.Exists(Path.Combine(source, baseFolder + basename + "nupkg")));
+                Assert.True(File.Exists(Path.Combine(source, baseFolder + basename + "nupkg.sha512")));
+            }
+        }
+
+        [Fact]
+        public void PushCommand_PushToV2AbsoluteFileSystemDefaultPushSource()
+        {
+            string nugetexe = Util.GetNuGetExePath();
+
+            using (TestDirectory packageDirectory = TestDirectory.Create())
+            using (TestDirectory source = TestDirectory.Create())
+            {
+                // Arrange
+                string packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
+                string config = $@"<?xml version='1.0' encoding='utf-8'?>
+<configuration>
+  <config>
+    <add key='DefaultPushSource' value='{source}' />
+  </config>
+</configuration>";
+
+                string configFileName = Path.Combine(packageDirectory, "nuget.config");
+                File.WriteAllText(configFileName, config);
+
+                // Act
+                string[] args = new string[] { "push", packageFileName };
+                var result = CommandRunner.Run(
+                    nugetexe,
+                    packageDirectory,
+                    string.Join(" ", args),
+                    true);
+
+                // Assert
+                Assert.Equal(0, result.Item1);
+                Assert.True(File.Exists(Path.Combine(source, "testPackage1.1.1.0.nupkg")));
+                var output = result.Item2;
+                Assert.DoesNotContain("WARNING: No API Key was provided", output);
+            }
+        }
+
+        [Fact]
+        public void PushCommand_PushToV2RelativeFileSystemDefaultPushSource()
+        {
+            string nugetexe = Util.GetNuGetExePath();
+
+            using (TestDirectory packageDirectory = TestDirectory.Create())
+            using (TestDirectory source = TestDirectory.Create())
+            {
+                // Arrange
+                string packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
+                string config = $@"<?xml version='1.0' encoding='utf-8'?>
+<configuration>
+  <config>
+    <add key='DefaultPushSource' value='..\{Path.GetFileName(source)}' />
+  </config>
+</configuration>";
+
+                string configFileName = Path.Combine(packageDirectory, "nuget.config");
+                File.WriteAllText(configFileName, config);
+
+                // Act
+                string[] args = new string[] { "push", packageFileName };
+                var result = CommandRunner.Run(
+                    nugetexe,
+                    packageDirectory,
+                    string.Join(" ", args),
+                    true);
+
+                // Assert
+                Assert.Equal(0, result.Item1);
+                Assert.True(File.Exists(Path.Combine(source, "testPackage1.1.1.0.nupkg")));
+            }
+        }
+
+        [Fact]
+        public void PushCommand_PushToV2NamedDefaultPushSource()
+        {
+            string nugetexe = Util.GetNuGetExePath();
+
+            using (TestDirectory packageDirectory = TestDirectory.Create())
+            using (TestDirectory source = TestDirectory.Create())
+            {
+                // Arrange
+                string packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
+                string config = $@"<?xml version='1.0' encoding='utf-8'?>
+<configuration>
+  <config>
+    <add key='DefaultPushSource' value='name' />
+  </config>
+  <packageSources>
+    <add key='name' value='{source}' />
+  </packageSources>
+</configuration>";
+
+                string configFileName = Path.Combine(packageDirectory, "nuget.config");
+                File.WriteAllText(configFileName, config);
+
+                // Act
+                string[] args = new string[] { "push", packageFileName };
+                var result = CommandRunner.Run(
+                    nugetexe,
+                    packageDirectory,
+                    string.Join(" ", args),
+                    true);
+
+                // Assert
+                Assert.Equal(0, result.Item1);
+                Assert.True(File.Exists(Path.Combine(source, "testPackage1.1.1.0.nupkg")));
+            }
+        }
+
         // Same as PushCommand_PushToFileSystemSource, except that the directory is specified
         // in unix style.
         [Fact]
@@ -49,8 +201,8 @@ namespace NuGet.CommandLine.Test
         {
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var packageDirectory = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var windowsSource = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packageDirectory = TestDirectory.Create())
+            using (var windowsSource = TestDirectory.Create())
             {
                 // Arrange
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
@@ -73,19 +225,13 @@ namespace NuGet.CommandLine.Test
 
         // Same as PushCommand_PushToFileSystemSource, except that the directory is specified
         // in UNC format.
-        [Fact]
+        [WindowsNTFact]
         public void PushCommand_PushToFileSystemSourceUncStyle()
         {
-            // UNC only works in Windows. So skip this test if we're running on Unix,
-            if (Path.DirectorySeparatorChar == '/')
-            {
-                return;
-            }
-
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var packageDirectory = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var source = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packageDirectory = TestDirectory.Create())
+            using (var source = TestDirectory.Create())
             {
                 // Arrange
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
@@ -111,7 +257,7 @@ namespace NuGet.CommandLine.Test
         {
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var packageDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packageDirectory = TestDirectory.Create())
             {
                 // Arrange
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
@@ -133,16 +279,15 @@ namespace NuGet.CommandLine.Test
                     server.Start();
 
                     // Act
-                    string[] args = new string[] { "push", packageFileName, "-Source", server.Uri + "push" };
                     var result = CommandRunner.Run(
                                     nugetexe,
                                     Directory.GetCurrentDirectory(),
-                                    string.Join(" ", args),
+                                    $"push {packageFileName} -Source {server.Uri}push",
                                     true);
                     server.Stop();
 
                     // Assert
-                    Assert.Equal(0, result.Item1);
+                    Assert.True(0 == result.Item1, $"{result.Item2} {result.Item3}");
                     var output = result.Item2;
                     Assert.Contains("Your package was pushed.", output);
                     AssertFileEqual(packageFileName, outputFileName);
@@ -150,13 +295,196 @@ namespace NuGet.CommandLine.Test
             }
         }
 
-        // Tests that push command can follow redirection correctly.
         [Fact]
+        public void PushCommand_PushToServerNoSymbols()
+        {
+            // Test pushing to an http source, but leaving out the symbols package (-NoSymbols).
+            // The symbols package would try to get pushed to a public symbols server if
+            // the -NoSymbols switch wasn't set.
+
+            using (TestDirectory packageDirectory = TestDirectory.Create())
+            using (MockServer server = new MockServer())
+            {
+                // Arrange
+                string packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
+                string symbolFileName = packageFileName.Replace(".nupkg", ".symbols.nupkg");
+                File.WriteAllText(symbolFileName, "This must be invalid so symbols would fail if they were actually pushed");
+
+                server.Get.Add("/push", r => "OK");
+                server.Put.Add("/push", r => HttpStatusCode.Created);
+                server.Start();
+
+                // Act
+                CommandRunnerResult result = CommandRunner.Run(
+                    Util.GetNuGetExePath(),
+                    Directory.GetCurrentDirectory(),
+                    $"push {packageFileName} -Source {server.Uri}push -NoSymbols",
+                    waitForExit: true);
+
+                // Assert
+                Assert.Equal(0, result.Item1);
+                Assert.Contains("Your package was pushed.", result.Item2);
+                Assert.DoesNotContain("symbol", result.Item2);
+                Assert.DoesNotContain(NuGetConstants.DefaultSymbolServerUrl, result.Item2);
+            }
+        }
+
+        [Fact]
+        public void PushCommand_PushToServerWithSymbols()
+        {
+            using (var packageDirectory = TestDirectory.Create())
+            using (var server = new MockServer())
+            {
+                // Arrange
+                var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
+                var symbolFileName = packageFileName.Replace(".nupkg", ".symbols.nupkg");
+                File.Copy(packageFileName, symbolFileName);
+
+                server.Get.Add("/push", r => "OK");
+                server.Put.Add("/push", r =>
+                {
+                    return r.Headers["X-NuGet-ApiKey"] == "PushKey"
+                        ? HttpStatusCode.Created
+                        : HttpStatusCode.Unauthorized;
+                });
+
+                server.Get.Add("/symbols", r => "OK");
+                server.Put.Add("/symbols", r =>
+                {
+                    return r.Headers["X-NuGet-ApiKey"] == "PushSymbolsKey"
+                        ? HttpStatusCode.Created
+                        : HttpStatusCode.Unauthorized;
+                });
+
+                server.Start();
+
+                var pushUri = $"{server.Uri}push";
+                var pushSymbolsUri = $"{server.Uri}symbols";
+
+                // Act
+                CommandRunnerResult result = CommandRunner.Run(
+                    Util.GetNuGetExePath(),
+                    Directory.GetCurrentDirectory(),
+                    $"push {packageFileName} -Source {pushUri} -SymbolSource {pushSymbolsUri} -ApiKey PushKey -SymbolApiKey PushSymbolsKey",
+                    waitForExit: true);
+
+                // Assert
+                Assert.Equal(0, result.Item1);
+                Assert.Contains($"Pushing testPackage1.1.1.0.nupkg to '{pushUri}'", result.Item2);
+                Assert.Contains($"Created {pushUri}", result.Item2);
+                Assert.Contains($"Pushing testPackage1.1.1.0.symbols.nupkg to '{pushSymbolsUri}'", result.Item2);
+                Assert.Contains($"Created {pushSymbolsUri}", result.Item2);
+                Assert.Contains("Your package was pushed.", result.Item2);
+            }
+        }
+
+        [Fact]
+        public void PushCommand_PushToDirectoryWithSymbols()
+        {
+            using (var packageDirectory = TestDirectory.Create())
+            {
+                // Arrange
+                var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
+                var symbolFileName = packageFileName.Replace(".nupkg", ".symbols.nupkg");
+                File.Copy(packageFileName, symbolFileName);
+
+                var pushSource = Path.Combine(packageDirectory, "source");
+                var pushSymbolsSource = Path.Combine(packageDirectory, "symbols");
+                Directory.CreateDirectory(pushSource);
+                Directory.CreateDirectory(pushSymbolsSource);
+
+                // Act
+                CommandRunnerResult result = CommandRunner.Run(
+                    Util.GetNuGetExePath(),
+                    Directory.GetCurrentDirectory(),
+                    $"push {packageFileName} -Source {pushSource} -SymbolSource {pushSymbolsSource}",
+                    waitForExit: true);
+
+                // Assert
+                Assert.Equal(0, result.Item1);
+                Assert.Contains($"Pushing testPackage1.1.1.0.nupkg to '{pushSource}'", result.Item2);
+                Assert.Contains($"Pushing testPackage1.1.1.0.symbols.nupkg to '{pushSymbolsSource}'", result.Item2);
+                Assert.Contains("Your package was pushed.", result.Item2);
+            }
+        }
+
+        [Fact]
+        public void PushCommand_PushToDirectoryInConfigWithSymbols()
+        {
+            using (var packageDirectory = TestDirectory.Create())
+            {
+                // Arrange
+                var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
+                var symbolFileName = packageFileName.Replace(".nupkg", ".symbols.nupkg");
+                var configFileName = Path.Combine(packageDirectory, "nuget.config");
+                File.Copy(packageFileName, symbolFileName);
+
+                var pushSource = Path.Combine(packageDirectory, "source");
+                var pushSymbolsSource = Path.Combine(packageDirectory, "symbols");
+                Directory.CreateDirectory(pushSource);
+                Directory.CreateDirectory(pushSymbolsSource);
+
+                var config = $@"<?xml version='1.0' encoding='utf-8'?>
+<configuration>
+    <packageSources>
+        <clear />
+        <add key='pushSource' value='{pushSource}' />
+        <add key='pushSymbolsSource' value='{pushSymbolsSource}' />
+    </packageSources>
+</configuration>";
+                File.WriteAllText(configFileName, config);
+
+                // Act
+                CommandRunnerResult result = CommandRunner.Run(
+                    Util.GetNuGetExePath(),
+                    packageDirectory,
+                    $"push {packageFileName} -Source pushSource -SymbolSource pushSymbolsSource",
+                    waitForExit: true);
+
+                // Assert
+                Assert.Equal(0, result.Item1);
+                Assert.Contains($"Pushing testPackage1.1.1.0.nupkg to '{pushSource}'", result.Item2);
+                Assert.Contains($"Pushing testPackage1.1.1.0.symbols.nupkg to '{pushSymbolsSource}'", result.Item2);
+                Assert.Contains("Your package was pushed.", result.Item2);
+            }
+        }
+
+        [Fact]
+        public void PushCommand_PushTimeoutErrorMessage()
+        {
+            using (TestDirectory packageDirectory = TestDirectory.Create())
+            using (MockServer server = new MockServer())
+            {
+                // Arrange
+                string packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
+                server.Get.Add("/push", r => "OK");
+                server.Put.Add("/push", r =>
+                {
+                    System.Threading.Thread.Sleep(2000);
+                    return HttpStatusCode.Created;
+                });
+                server.Start();
+
+                // Act
+                CommandRunnerResult result = CommandRunner.Run(
+                    Util.GetNuGetExePath(),
+                    Directory.GetCurrentDirectory(),
+                    $"push {packageFileName} -Source {server.Uri}push -Timeout 1",
+                    waitForExit: true);
+
+                // Assert
+                Assert.Equal(1, result.Item1);
+                Assert.Contains("took too long", result.Item3);
+            }
+        }
+
+        // Tests that push command can follow redirection correctly.
+        [SkipMono]
         public void PushCommand_PushToServerFollowRedirection()
         {
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var packageDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packageDirectory = TestDirectory.Create())
             {
                 // Arrange
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
@@ -194,7 +522,7 @@ namespace NuGet.CommandLine.Test
 
                     // Assert
                     var output = result.Item2;
-                    Assert.Equal(0, result.Item1);
+                    Assert.True(0 == result.Item1, result.Item2 + " " + result.Item3);
                     Assert.Contains("Your package was pushed.", output);
                     AssertFileEqual(packageFileName, outputFileName);
                 }
@@ -203,12 +531,12 @@ namespace NuGet.CommandLine.Test
 
         // Tests that push command will terminate even when there is an infinite
         // redirection loop.
-        [Fact]
+        [Fact(Skip = "On-hold, nuget.org has removed the redirect long ago")]
         public void PushCommand_PushToServerWithInfiniteRedirectionLoop()
         {
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var packageDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packageDirectory = TestDirectory.Create())
             {
                 // Arrange
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
@@ -241,12 +569,12 @@ namespace NuGet.CommandLine.Test
         }
 
         // Tests that push command generates error when it detects invalid redirection location.
-        [Fact]
+        [Fact(Skip = "On-hold, nuget.org has removed the redirect long ago")]
         public void PushCommand_PushToServerWithInvalidRedirectionLocation()
         {
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var packageDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packageDirectory = TestDirectory.Create())
             {
                 // Arrange
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
@@ -275,12 +603,13 @@ namespace NuGet.CommandLine.Test
 
         // Regression test for the bug that "nuget.exe push" will retry forever instead of asking for
         // user's password when NuGet.Server uses Windows Authentication.
-        [Fact]
+        [Fact(Skip = "TODO: reconstruct faked response headers which won't crash HttpClient. " +
+            "Using real server, same scenario works fine")]
         public void PushCommand_PushToServerWontRetryForever()
         {
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var packageDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packageDirectory = TestDirectory.Create())
             {
                 // Arrange
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
@@ -317,7 +646,7 @@ namespace NuGet.CommandLine.Test
         }
 
         // Test push command to a server using basic authentication.
-        [Fact]
+        [SkipMono]
         public void PushCommand_PushToServerBasicAuth()
         {
             var nugetexe = Util.GetNuGetExePath();
@@ -325,95 +654,79 @@ namespace NuGet.CommandLine.Test
             List<string> credentialForGetRequest = new List<string>();
             List<string> credentialForPutRequest = new List<string>();
 
-            using (var packageDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packageDirectory = TestDirectory.Create())
             {
                 // Arrange
-                try
-                {
-                    var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
-                    string outputFileName = Path.Combine(packageDirectory, "t1.nupkg");
+                var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
+                string outputFileName = Path.Combine(packageDirectory, "t1.nupkg");
 
-                    using (var server = new MockServer())
+                using (var server = new MockServer())
+                {
+                    server.Listener.AuthenticationSchemes = AuthenticationSchemes.Basic;
+                    server.Put.Add("/nuget", r => new Action<HttpListenerResponse>(res =>
                     {
-                        server.Listener.AuthenticationSchemes = AuthenticationSchemes.Basic;
-                        server.Get.Add("/nuget", r =>
+                        var h = r.Headers["Authorization"];
+                        var credential = Encoding.Default.GetString(Convert.FromBase64String(h.Substring(6)));
+                        credentialForPutRequest.Add(credential);
+
+                        if (credential.Equals("testuser:testpassword", StringComparison.OrdinalIgnoreCase))
                         {
-                            var h = r.Headers["Authorization"];
-                            var credential = Encoding.Default.GetString(Convert.FromBase64String(h.Substring(6)));
-                            credentialForGetRequest.Add(credential);
-                            return HttpStatusCode.OK;
+                            res.StatusCode = (int)HttpStatusCode.OK;
+                        }
+                        else
+                        {
+                            res.AddHeader("WWW-Authenticate", "Basic ");
+                            res.StatusCode = (int)HttpStatusCode.Unauthorized;
+                        }
+                    }));
+                    server.Start();
+
+                    // Act
+                    var args = "push " + packageFileName +
+                        " -Source " + server.Uri + "nuget";
+                    var r1 = CommandRunner.Run(
+                        nugetexe,
+                        packageDirectory,
+                        args,
+                        waitForExit: true,
+                        timeOutInMilliseconds: 10000,
+                        inputAction: (w) =>
+                        {
+                            // This user/password pair is first sent to
+                            // GET /nuget, then PUT /nuget
+                            w.WriteLine("a");
+                            w.WriteLine("b");
+
+                            // Send another user/password pair to PUT
+                            w.WriteLine("c");
+                            w.WriteLine("d");
+
+                            // Now send the right user/password to PUT
+                            w.WriteLine("testuser");
+                            w.WriteLine("testpassword");
+                        },
+                        environmentVariables: new Dictionary<string, string>
+                        {
+                            { "FORCE_NUGET_EXE_INTERACTIVE", "true" }
                         });
-                        server.Put.Add("/nuget", r => new Action<HttpListenerResponse>(res =>
-                        {
-                            var h = r.Headers["Authorization"];
-                            var credential = Encoding.Default.GetString(Convert.FromBase64String(h.Substring(6)));
-                            credentialForPutRequest.Add(credential);
+                    server.Stop();
 
-                            if (credential.Equals("testuser:testpassword", StringComparison.OrdinalIgnoreCase))
-                            {
-                                res.StatusCode = (int)HttpStatusCode.OK;
-                            }
-                            else
-                            {
-                                res.AddHeader("WWW-Authenticate", "Basic ");
-                                res.StatusCode = (int)HttpStatusCode.Unauthorized;
-                            }
-                        }));
-                        server.Start();
+                    // Assert
+                    Assert.True(0 == r1.Item1, r1.Item2 + " " + r1.Item3);
 
-                        // Act
-                        Environment.SetEnvironmentVariable("FORCE_NUGET_EXE_INTERACTIVE", "true");
-                        var args = "push " + packageFileName +
-                            " -Source " + server.Uri + "nuget";
-                        var r1 = CommandRunner.Run(
-                            nugetexe,
-                            packageDirectory,
-                            args,
-                            waitForExit: true,
-                            timeOutInMilliseconds: 10000,
-                            inputAction: (w) =>
-                            {
-                                // This user/password pair is first sent to
-                                // GET /nuget, then PUT /nuget
-                                w.WriteLine("a");
-                                w.WriteLine("b");
-
-                                // Send another user/password pair to PUT
-                                w.WriteLine("c");
-                                w.WriteLine("d");
-
-                                // Now send the right user/password to PUT
-                                w.WriteLine("testuser");
-                                w.WriteLine("testpassword");
-                            });
-                        server.Stop();
-
-                        // Assert
-                        Assert.Equal(0, r1.Item1);
-
-                        Assert.Equal(1, credentialForGetRequest.Count);
-                        Assert.Equal("a:b", credentialForGetRequest[0]);
-
-                        // Because the credential service caches the answer and attempts
-                        // to use it for token refresh the first request happens twice
-                        // from a server prespective.
-                        Assert.Equal(4, credentialForPutRequest.Count);
-                        Assert.Equal("a:b", credentialForPutRequest[0]);
-                        Assert.Equal("a:b", credentialForPutRequest[1]);
-                        Assert.Equal("c:d", credentialForPutRequest[2]);
-                        Assert.Equal("testuser:testpassword", credentialForPutRequest[3]);
-                    }
-                }
-                finally
-                {
-                    // Cleanup
-                    Environment.SetEnvironmentVariable("FORCE_NUGET_EXE_INTERACTIVE", String.Empty);
+                    // Because the credential service caches the answer and attempts
+                    // to use it for token refresh the first request happens twice
+                    // from a server prespective.
+                    Assert.Equal(3, credentialForPutRequest.Count);
+                    Assert.Equal("a:b", credentialForPutRequest[0]);
+                    Assert.Equal("c:d", credentialForPutRequest[1]);
+                    Assert.Equal("testuser:testpassword", credentialForPutRequest[2]);
                 }
             }
         }
 
         // Test push command to a server using basic authentication, with -DisableBuffering option
-        [Fact]
+        [SkipMono]
         public void PushCommand_PushToServerBasicAuthDisableBuffering()
         {
             var nugetexe = Util.GetNuGetExePath();
@@ -421,103 +734,86 @@ namespace NuGet.CommandLine.Test
             List<string> credentialForGetRequest = new List<string>();
             List<string> credentialForPutRequest = new List<string>();
 
-            using (var packageDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packageDirectory = TestDirectory.Create())
             {
-                try
-                {
-                    // Arrange
-                    var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
-                    string outputFileName = Path.Combine(packageDirectory, "t1.nupkg");
+                // Arrange
+                var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
+                string outputFileName = Path.Combine(packageDirectory, "t1.nupkg");
 
-                    using (var server = new MockServer())
+                using (var server = new MockServer())
+                {
+                    server.Listener.AuthenticationSchemes = AuthenticationSchemes.Basic;
+                    server.Put.Add("/nuget", r => new Action<HttpListenerResponse>(res =>
                     {
-                        server.Listener.AuthenticationSchemes = AuthenticationSchemes.Basic;
-                        server.Get.Add("/nuget", r =>
+                        var h = r.Headers["Authorization"];
+                        var credential = System.Text.Encoding.Default.GetString(Convert.FromBase64String(h.Substring(6)));
+                        credentialForPutRequest.Add(credential);
+
+                        if (credential.Equals("testuser:testpassword", StringComparison.OrdinalIgnoreCase))
                         {
-                            var h = r.Headers["Authorization"];
-                            var credential = System.Text.Encoding.Default.GetString(Convert.FromBase64String(h.Substring(6)));
-                            credentialForGetRequest.Add(credential);
-                            return HttpStatusCode.OK;
+                            res.StatusCode = (int)HttpStatusCode.OK;
+                        }
+                        else
+                        {
+                            res.AddHeader("WWW-Authenticate", "Basic ");
+                            res.StatusCode = (int)HttpStatusCode.Unauthorized;
+                        }
+                    }));
+                    server.Start();
+
+                    // Act
+                    var args = "push " + packageFileName +
+                        " -Source " + server.Uri + "nuget -DisableBuffering";
+                    var r1 = CommandRunner.Run(
+                        nugetexe,
+                        packageDirectory,
+                        args,
+                        waitForExit: true,
+                        timeOutInMilliseconds: 10000,
+                        inputAction: (w) =>
+                        {
+                            // This user/password pair is first sent to
+                            // GET /nuget, then PUT /nuget
+                            w.WriteLine("a");
+                            w.WriteLine("b");
+
+                            // Send another user/password pair to PUT
+                            w.WriteLine("c");
+                            w.WriteLine("d");
+
+                            // Now send the right user/password to PUT
+                            w.WriteLine("testuser");
+                            w.WriteLine("testpassword");
+                        },
+                        environmentVariables: new Dictionary<string, string>
+                        {
+                            { "FORCE_NUGET_EXE_INTERACTIVE", "true" }
                         });
-                        server.Put.Add("/nuget", r => new Action<HttpListenerResponse>(res =>
-                        {
-                            var h = r.Headers["Authorization"];
-                            var credential = System.Text.Encoding.Default.GetString(Convert.FromBase64String(h.Substring(6)));
-                            credentialForPutRequest.Add(credential);
+                    server.Stop();
 
-                            if (credential.Equals("testuser:testpassword", StringComparison.OrdinalIgnoreCase))
-                            {
-                                res.StatusCode = (int)HttpStatusCode.OK;
-                            }
-                            else
-                            {
-                                res.AddHeader("WWW-Authenticate", "Basic ");
-                                res.StatusCode = (int)HttpStatusCode.Unauthorized;
-                            }
-                        }));
-                        server.Start();
+                    // Assert
+                    Assert.Equal(0, r1.Item1);
 
-                        // Act
-                        Environment.SetEnvironmentVariable("FORCE_NUGET_EXE_INTERACTIVE", "true");
-                        var args = "push " + packageFileName +
-                            " -Source " + server.Uri + "nuget -DisableBuffering";
-                        var r1 = CommandRunner.Run(
-                            nugetexe,
-                            packageDirectory,
-                            args,
-                            waitForExit: true,
-                            timeOutInMilliseconds: 10000,
-                            inputAction: (w) =>
-                            {
-                                // This user/password pair is first sent to
-                                // GET /nuget, then PUT /nuget
-                                w.WriteLine("a");
-                                w.WriteLine("b");
-
-                                // Send another user/password pair to PUT
-                                w.WriteLine("c");
-                                w.WriteLine("d");
-
-                                // Now send the right user/password to PUT
-                                w.WriteLine("testuser");
-                                w.WriteLine("testpassword");
-                            });
-                        server.Stop();
-
-                        // Assert
-                        Assert.Equal(0, r1.Item1);
-
-                        Assert.Equal(1, credentialForGetRequest.Count);
-                        Assert.Equal("a:b", credentialForGetRequest[0]);
-
-                        // Because the credential service caches the answer and attempts
-                        // to use it for token refresh the first request happens twice
-                        // from a server prespective.
-                        Assert.Equal(4, credentialForPutRequest.Count);
-                        Assert.Equal("a:b", credentialForPutRequest[0]);
-                        Assert.Equal("a:b", credentialForPutRequest[1]);
-                        Assert.Equal("c:d", credentialForPutRequest[2]);
-                        Assert.Equal("testuser:testpassword", credentialForPutRequest[3]);
-                    }
-                }
-                finally
-                {
-                    // Cleanup
-                    Environment.SetEnvironmentVariable("FORCE_NUGET_EXE_INTERACTIVE", String.Empty);
+                    // Because the credential service caches the answer and attempts
+                    // to use it for token refresh the first request happens twice
+                    // from a server prespective.
+                    Assert.Equal(3, credentialForPutRequest.Count);
+                    Assert.Equal("a:b", credentialForPutRequest[0]);
+                    Assert.Equal("c:d", credentialForPutRequest[1]);
+                    Assert.Equal("testuser:testpassword", credentialForPutRequest[2]);
                 }
             }
         }
 
         // Test push command to a server using IntegratedWindowsAuthentication.
-        [Fact]
+        [WindowsNTFact]
         public void PushCommand_PushToServerIntegratedWindowsAuthentication()
         {
             var nugetexe = Util.GetNuGetExePath();
 
-            IPrincipal getUser = null;
             IPrincipal putUser = null;
 
-            using (var packageDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packageDirectory = TestDirectory.Create())
             {
                 // Arrange
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
@@ -526,11 +822,6 @@ namespace NuGet.CommandLine.Test
                 using (var server = new MockServer())
                 {
                     server.Listener.AuthenticationSchemes = AuthenticationSchemes.IntegratedWindowsAuthentication;
-                    server.Get.Add("/nuget", r => new Action<HttpListenerResponse, IPrincipal>((res, user) =>
-                    {
-                        getUser = user;
-                        res.StatusCode = (int)HttpStatusCode.OK;
-                    }));
                     server.Put.Add("/nuget", r => new Action<HttpListenerResponse, IPrincipal>((res, user) =>
                     {
                         putUser = user;
@@ -553,9 +844,6 @@ namespace NuGet.CommandLine.Test
                     Assert.Equal(0, r1.Item1);
 
                     var currentUser = WindowsIdentity.GetCurrent();
-                    Assert.Equal("NTLM", getUser.Identity.AuthenticationType);
-                    Assert.Equal(currentUser.Name, getUser.Identity.Name);
-
                     Assert.Equal("NTLM", putUser.Identity.AuthenticationType);
                     Assert.Equal(currentUser.Name, putUser.Identity.Name);
                 }
@@ -563,15 +851,14 @@ namespace NuGet.CommandLine.Test
         }
 
         // Test push command to a server using IntegratedWindowsAuthentication with -DisableBuffering option
-        [Fact]
+        [WindowsNTFact]
         public void PushCommand_PushToServerIntegratedWindowsAuthenticationDisableBuffering()
         {
             var nugetexe = Util.GetNuGetExePath();
 
-            IPrincipal getUser = null;
             IPrincipal putUser = null;
 
-            using (var packageDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packageDirectory = TestDirectory.Create())
             {
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
                 string outputFileName = Path.Combine(packageDirectory, "t1.nupkg");
@@ -579,11 +866,6 @@ namespace NuGet.CommandLine.Test
                 using (var server = new MockServer())
                 {
                     server.Listener.AuthenticationSchemes = AuthenticationSchemes.IntegratedWindowsAuthentication;
-                    server.Get.Add("/nuget", r => new Action<HttpListenerResponse, IPrincipal>((res, user) =>
-                    {
-                        getUser = user;
-                        res.StatusCode = (int)HttpStatusCode.OK;
-                    }));
                     server.Put.Add("/nuget", r => new Action<HttpListenerResponse, IPrincipal>((res, user) =>
                     {
                         putUser = user;
@@ -608,9 +890,6 @@ namespace NuGet.CommandLine.Test
                         Assert.Equal(0, r1.Item1);
 
                         var currentUser = WindowsIdentity.GetCurrent();
-                        Assert.Equal("NTLM", getUser.Identity.AuthenticationType);
-                        Assert.Equal(currentUser.Name, getUser.Identity.Name);
-
                         Assert.Equal("NTLM", putUser.Identity.AuthenticationType);
                         Assert.Equal(currentUser.Name, putUser.Identity.Name);
                     }
@@ -637,80 +916,59 @@ namespace NuGet.CommandLine.Test
             List<string> credentialForGetRequest = new List<string>();
             List<string> credentialForPutRequest = new List<string>();
 
-            using (var packageDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packageDirectory = TestDirectory.Create())
             {
-                try
-                {
-                    // Arrange
-                    var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
-                    string outputFileName = Path.Combine(packageDirectory, "t1.nupkg");
+                // Arrange
+                var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
+                string outputFileName = Path.Combine(packageDirectory, "t1.nupkg");
 
-                    using (var server = new MockServer())
+                using (var server = new MockServer())
+                {
+                    server.Listener.AuthenticationSchemes = AuthenticationSchemes.Basic;
+                    server.Put.Add("/nuget", r => new Action<HttpListenerResponse>(res =>
                     {
-                        server.Listener.AuthenticationSchemes = AuthenticationSchemes.Basic;
-                        server.Get.Add("/nuget", r =>
+                        var h = r.Headers["Authorization"];
+                        var credential = Encoding.Default.GetString(Convert.FromBase64String(h.Substring(6)));
+                        credentialForPutRequest.Add(credential);
+
+                        if (credential.Equals("testuser:testpassword", StringComparison.OrdinalIgnoreCase))
                         {
-                            var h = r.Headers["Authorization"];
-                            var credential = Encoding.Default.GetString(Convert.FromBase64String(h.Substring(6)));
-                            credentialForGetRequest.Add(credential);
-                            return HttpStatusCode.OK;
+                            res.StatusCode = (int)HttpStatusCode.OK;
+                        }
+                        else
+                        {
+                            res.AddHeader("WWW-Authenticate", "Basic ");
+                            res.StatusCode = (int)HttpStatusCode.Unauthorized;
+                        }
+                    }));
+                    server.Start();
+
+                    // Act
+                    var args = $"push {packageFileName} -Source {server.Uri}nuget";
+                    var r1 = CommandRunner.Run(
+                        nugetexe,
+                        packageDirectory,
+                        args,
+                        waitForExit: true,
+                        timeOutInMilliseconds: 10000,
+                        inputAction: (w) =>
+                        {
+                        },
+                        environmentVariables: new Dictionary<string, string>
+                        {
+                            { "FORCE_NUGET_EXE_INTERACTIVE", "true" },
+                            { ExtensionLocator.CredentialProvidersEnvar, pluginDirectory },
+                            { TestCredentialProvider.ResponseUserName, "testuser" },
+                            { TestCredentialProvider.ResponsePassword, "testpassword" },
+                            { TestCredentialProvider.ResponseExitCode, TestCredentialProvider.SuccessCode }
                         });
-                        server.Put.Add("/nuget", r => new Action<HttpListenerResponse>(res =>
-                        {
-                            var h = r.Headers["Authorization"];
-                            var credential = Encoding.Default.GetString(Convert.FromBase64String(h.Substring(6)));
-                            credentialForPutRequest.Add(credential);
+                    server.Stop();
 
-                            if (credential.Equals("testuser:testpassword", StringComparison.OrdinalIgnoreCase))
-                            {
-                                res.StatusCode = (int)HttpStatusCode.OK;
-                            }
-                            else
-                            {
-                                res.AddHeader("WWW-Authenticate", "Basic ");
-                                res.StatusCode = (int)HttpStatusCode.Unauthorized;
-                            }
-                        }));
-                        server.Start();
+                    // Assert
+                    Assert.True(0 == r1.Item1, r1.Item2 + " " + r1.Item3);
 
-                        // Act
-                        Environment.SetEnvironmentVariable("FORCE_NUGET_EXE_INTERACTIVE", "true");
-                        Environment.SetEnvironmentVariable(ExtensionLocator.CredentialProvidersEnvar, pluginDirectory);
-                        Environment.SetEnvironmentVariable(TestCredentialProvider.ResponseUserName, "testuser");
-                        Environment.SetEnvironmentVariable(TestCredentialProvider.ResponsePassword, "testpassword");
-                        Environment.SetEnvironmentVariable(TestCredentialProvider.ResponseExitCode, TestCredentialProvider.SuccessCode);
-
-                        var args = $"push {packageFileName} -Source {server.Uri}nuget";
-                        var r1 = CommandRunner.Run(
-                            nugetexe,
-                            packageDirectory,
-                            args,
-                            waitForExit: true,
-                            timeOutInMilliseconds: 10000,
-                            inputAction: (w) =>
-                            {
-
-                            });
-                        server.Stop();
-
-                        // Assert
-                        Assert.Equal(0, r1.Item1);
-
-                        Assert.Equal(1, credentialForGetRequest.Count);
-                        Assert.Equal("testuser:testpassword", credentialForGetRequest[0]);
-
-                        Assert.Equal(1, credentialForPutRequest.Count);
-                        Assert.Equal("testuser:testpassword", credentialForPutRequest[0]);
-                    }
-                }
-                finally
-                {
-                    // Cleanup
-                    Environment.SetEnvironmentVariable("FORCE_NUGET_EXE_INTERACTIVE", string.Empty);
-                    Environment.SetEnvironmentVariable(ExtensionLocator.CredentialProvidersEnvar, _originalCredentialProvidersEnvar);
-                    Environment.SetEnvironmentVariable(TestCredentialProvider.ResponseUserName, string.Empty);
-                    Environment.SetEnvironmentVariable(TestCredentialProvider.ResponsePassword, string.Empty);
-                    Environment.SetEnvironmentVariable(TestCredentialProvider.ResponseExitCode, string.Empty);
+                    Assert.Equal(1, credentialForPutRequest.Count);
+                    Assert.Equal("testuser:testpassword", credentialForPutRequest[0]);
                 }
             }
         }
@@ -726,85 +984,65 @@ namespace NuGet.CommandLine.Test
             List<string> credentialForGetRequest = new List<string>();
             List<string> credentialForPutRequest = new List<string>();
 
-            using (var packageDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packageDirectory = TestDirectory.Create())
             {
-                try
-                {
-                    // Arrange
-                    var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
-                    string outputFileName = Path.Combine(packageDirectory, "t1.nupkg");
+                // Arrange
+                var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
+                string outputFileName = Path.Combine(packageDirectory, "t1.nupkg");
 
-                    using (var server = new MockServer())
+                using (var server = new MockServer())
+                {
+                    server.Listener.AuthenticationSchemes = AuthenticationSchemes.Basic;
+                    server.Put.Add("/nuget", r => new Action<HttpListenerResponse>(res =>
                     {
-                        server.Listener.AuthenticationSchemes = AuthenticationSchemes.Basic;
-                        server.Get.Add("/nuget", r =>
+                        var h = r.Headers["Authorization"];
+                        var credential = Encoding.Default.GetString(Convert.FromBase64String(h.Substring(6)));
+                        credentialForPutRequest.Add(credential);
+                        if (credential.Equals("testuser:testpassword", StringComparison.OrdinalIgnoreCase))
                         {
-                            var h = r.Headers["Authorization"];
-                            var credential = Encoding.Default.GetString(Convert.FromBase64String(h.Substring(6)));
-                            credentialForGetRequest.Add(credential);
-                            return HttpStatusCode.OK;
+                            res.StatusCode = (int)HttpStatusCode.OK;
+                        }
+                        else
+                        {
+                            res.AddHeader("WWW-Authenticate", "Basic ");
+                            res.StatusCode = (int)HttpStatusCode.Unauthorized;
+                        }
+                    }));
+                    server.Start();
+
+                    // Act
+                    var args = $"push {packageFileName} -Source {server.Uri}nuget";
+                    var r1 = CommandRunner.Run(
+                        nugetexe,
+                        packageDirectory,
+                        args,
+                        waitForExit: true,
+                        timeOutInMilliseconds: 10000,
+                        inputAction: (w) =>
+                        {
+                            w.WriteLine("testuser");
+                            w.WriteLine("testpassword");
+                        },
+                        environmentVariables: new Dictionary<string, string>
+                        {
+                            { "FORCE_NUGET_EXE_INTERACTIVE", "true" },
+                            { ExtensionLocator.CredentialProvidersEnvar, pluginDirectory },
+                            { TestCredentialProvider.ResponseUserName, string.Empty },
+                            { TestCredentialProvider.ResponsePassword, string.Empty },
+                            { TestCredentialProvider.ResponseExitCode, TestCredentialProvider.ProviderNotApplicableCode }
                         });
-                        server.Put.Add("/nuget", r => new Action<HttpListenerResponse>(res =>
-                        {
-                            var h = r.Headers["Authorization"];
-                            var credential = Encoding.Default.GetString(Convert.FromBase64String(h.Substring(6)));
-                            credentialForPutRequest.Add(credential);
+                    server.Stop();
 
-                            if (credential.Equals("testuser:testpassword", StringComparison.OrdinalIgnoreCase))
-                            {
-                                res.StatusCode = (int)HttpStatusCode.OK;
-                            }
-                            else
-                            {
-                                res.AddHeader("WWW-Authenticate", "Basic ");
-                                res.StatusCode = (int)HttpStatusCode.Unauthorized;
-                            }
-                        }));
-                        server.Start();
-
-                        // Act
-                        Environment.SetEnvironmentVariable("FORCE_NUGET_EXE_INTERACTIVE", "true");
-                        Environment.SetEnvironmentVariable(ExtensionLocator.CredentialProvidersEnvar, pluginDirectory);
-                        Environment.SetEnvironmentVariable(TestCredentialProvider.ResponseUserName, string.Empty);
-                        Environment.SetEnvironmentVariable(TestCredentialProvider.ResponsePassword, string.Empty);
-                        Environment.SetEnvironmentVariable(TestCredentialProvider.ResponseExitCode, TestCredentialProvider.ProviderNotApplicableCode);
-
-                        var args = $"push {packageFileName} -Source {server.Uri}nuget";
-                        var r1 = CommandRunner.Run(
-                            nugetexe,
-                            packageDirectory,
-                            args,
-                            waitForExit: true,
-                            timeOutInMilliseconds: 10000,
-                            inputAction: (w) =>
-                            {
-                                w.WriteLine("testuser");
-                                w.WriteLine("testpassword");
-                            });
-                        server.Stop();
-
-                        // Assert
-                        Assert.Equal(0, r1.Item1);
-
-                        Assert.Equal(1, credentialForGetRequest.Count);
-                        Assert.Equal("testuser:testpassword", credentialForGetRequest[0]);
-
-                        Assert.Equal(1, credentialForPutRequest.Count);
-                        Assert.Equal("testuser:testpassword", credentialForPutRequest[0]);
-                    }
-                }
-                finally
-                {
-                    // Cleanup
-                    Environment.SetEnvironmentVariable("FORCE_NUGET_EXE_INTERACTIVE", string.Empty);
-                    Environment.SetEnvironmentVariable(ExtensionLocator.CredentialProvidersEnvar, _originalCredentialProvidersEnvar);
-                    Environment.SetEnvironmentVariable(TestCredentialProvider.ResponseExitCode, string.Empty);
+                    // Assert
+                    Assert.True(0 == r1.Item1, r1.Item2 + " " + r1.Item3);
+                    Assert.Equal(1, credentialForPutRequest.Count);
+                    Assert.Equal("testuser:testpassword", credentialForPutRequest[0]);
                 }
             }
         }
 
         // Test Plugin credential provider can have large std output without hanging.
-        [Fact]
+        [SkipMono]
         public void PushCommand_PushToServer_DoesNotDeadLockWhenSTDOutLarge()
         {
             var nugetexe = Util.GetNuGetExePath();
@@ -813,76 +1051,58 @@ namespace NuGet.CommandLine.Test
             List<string> credentialForGetRequest = new List<string>();
             List<string> credentialForPutRequest = new List<string>();
 
-            using (var packageDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packageDirectory = TestDirectory.Create())
             {
+                // Arrange
+                var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
+                string outputFileName = Path.Combine(packageDirectory, "t1.nupkg");
 
-                try
+                using (var server = new MockServer())
                 {
-                    // Arrange
-                    var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
-                    string outputFileName = Path.Combine(packageDirectory, "t1.nupkg");
-
-                    using (var server = new MockServer())
+                    server.Listener.AuthenticationSchemes = AuthenticationSchemes.Basic;
+                    server.Put.Add("/nuget", r => new Action<HttpListenerResponse>(res =>
                     {
-                        server.Listener.AuthenticationSchemes = AuthenticationSchemes.Basic;
-                        server.Get.Add("/nuget", r =>
+                        var h = r.Headers["Authorization"];
+                        var credential = Encoding.Default.GetString(Convert.FromBase64String(h.Substring(6)));
+                        credentialForPutRequest.Add(credential);
+
+                        if (credential.StartsWith("testuser:", StringComparison.OrdinalIgnoreCase))
                         {
-                            var h = r.Headers["Authorization"];
-                            var credential = Encoding.Default.GetString(Convert.FromBase64String(h.Substring(6)));
-                            credentialForGetRequest.Add(credential);
-                            return HttpStatusCode.OK;
+                            res.StatusCode = (int)HttpStatusCode.OK;
+                        }
+                        else
+                        {
+                            res.AddHeader("WWW-Authenticate", "Basic ");
+                            res.StatusCode = (int)HttpStatusCode.Unauthorized;
+                        }
+                    }));
+                    server.Start();
+                    var longPassword = new string('a', 10000);
+
+                    // Act
+                    var args = $"push {packageFileName} -Source {server.Uri}nuget";
+                    var r1 = CommandRunner.Run(
+                        nugetexe,
+                        packageDirectory,
+                        args,
+                        waitForExit: true,
+                        timeOutInMilliseconds: 10000,
+                        inputAction: (w) =>
+                        {
+                        },
+                        environmentVariables: new Dictionary<string, string>
+                        {
+                            { "FORCE_NUGET_EXE_INTERACTIVE", "true" },
+                            { ExtensionLocator.CredentialProvidersEnvar, pluginDirectory },
+                            { TestCredentialProvider.ResponseUserName, "testuser" },
+                            { TestCredentialProvider.ResponsePassword, longPassword }
                         });
-                        server.Put.Add("/nuget", r => new Action<HttpListenerResponse>(res =>
-                        {
-                            var h = r.Headers["Authorization"];
-                            var credential = Encoding.Default.GetString(Convert.FromBase64String(h.Substring(6)));
-                            credentialForPutRequest.Add(credential);
+                    server.Stop();
 
-                            if (credential.StartsWith("testuser:", StringComparison.OrdinalIgnoreCase))
-                            {
-                                res.StatusCode = (int)HttpStatusCode.OK;
-                            }
-                            else
-                            {
-                                res.AddHeader("WWW-Authenticate", "Basic ");
-                                res.StatusCode = (int)HttpStatusCode.Unauthorized;
-                            }
-                        }));
-                        server.Start();
+                    // Assert
+                    Assert.Equal(0, r1.Item1);
 
-                        Environment.SetEnvironmentVariable("FORCE_NUGET_EXE_INTERACTIVE", "true");
-                        Environment.SetEnvironmentVariable(ExtensionLocator.CredentialProvidersEnvar, pluginDirectory);
-                        Environment.SetEnvironmentVariable(TestCredentialProvider.ResponseUserName, "testuser");
-
-                        var longPassword = new string('a', 10000);
-                        Environment.SetEnvironmentVariable(TestCredentialProvider.ResponsePassword, longPassword);
-
-                        // Act
-                        var args = $"push {packageFileName} -Source {server.Uri}nuget";
-                        var r1 = CommandRunner.Run(
-                            nugetexe,
-                            packageDirectory,
-                            args,
-                            waitForExit: true,
-                            timeOutInMilliseconds: 10000,
-                            inputAction: (w) =>
-                            {
-                            });
-                        server.Stop();
-
-                        // Assert
-                        Assert.Equal(0, r1.Item1);
-
-                        Assert.Equal(1, credentialForGetRequest.Count);
-                        Assert.Equal(1, credentialForPutRequest.Count);
-                    }
-                }
-                finally
-                {
-                    // Cleanup
-                    Environment.SetEnvironmentVariable("FORCE_NUGET_EXE_INTERACTIVE", string.Empty);
-                    Environment.SetEnvironmentVariable(ExtensionLocator.CredentialProvidersEnvar, _originalCredentialProvidersEnvar);
-                    Environment.SetEnvironmentVariable(TestCredentialProvider.ResponseUserName, string.Empty);
+                    Assert.Equal(1, credentialForPutRequest.Count);
                 }
             }
         }
@@ -898,71 +1118,62 @@ namespace NuGet.CommandLine.Test
             List<string> credentialForGetRequest = new List<string>();
             List<string> credentialForPutRequest = new List<string>();
 
-            using (var packageDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packageDirectory = TestDirectory.Create())
             {
-                try
-                {
-                    // Arrange
-                    var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
-                    string outputFileName = Path.Combine(packageDirectory, "t1.nupkg");
+                // Arrange
+                var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
+                string outputFileName = Path.Combine(packageDirectory, "t1.nupkg");
 
-                    using (var server = new MockServer())
+                using (var server = new MockServer())
+                {
+                    server.Listener.AuthenticationSchemes = AuthenticationSchemes.Basic;
+                    server.Get.Add("/nuget", r =>
                     {
-                        server.Listener.AuthenticationSchemes = AuthenticationSchemes.Basic;
-                        server.Get.Add("/nuget", r =>
+                        var h = r.Headers["Authorization"];
+                        var credential = Encoding.Default.GetString(Convert.FromBase64String(h.Substring(6)));
+                        credentialForGetRequest.Add(credential);
+                        return HttpStatusCode.OK;
+                    });
+                    server.Put.Add("/nuget", r =>
+                    {
+                        var h = r.Headers["Authorization"];
+                        var credential = Encoding.Default.GetString(Convert.FromBase64String(h.Substring(6)));
+                        credentialForPutRequest.Add(credential);
+                        return HttpStatusCode.OK;
+                    });
+                    server.Start();
+
+                    // Act
+                    var args = $"push {packageFileName} -Source {server.Uri}nuget";
+                    var r1 = CommandRunner.Run(
+                        nugetexe,
+                        packageDirectory,
+                        args,
+                        waitForExit: true,
+                        timeOutInMilliseconds: 10000,
+                        inputAction: (w) =>
                         {
-                            var h = r.Headers["Authorization"];
-                            var credential = Encoding.Default.GetString(Convert.FromBase64String(h.Substring(6)));
-                            credentialForGetRequest.Add(credential);
-                            return HttpStatusCode.OK;
-                        });
-                        server.Put.Add("/nuget", r =>
+                            w.WriteLine("testuser");
+                            w.WriteLine("testpassword");
+                        },
+                        environmentVariables: new Dictionary<string, string>
                         {
-                            var h = r.Headers["Authorization"];
-                            var credential = Encoding.Default.GetString(Convert.FromBase64String(h.Substring(6)));
-                            credentialForPutRequest.Add(credential);
-                            return HttpStatusCode.OK;
+                            { "FORCE_NUGET_EXE_INTERACTIVE", "true" },
+                            { ExtensionLocator.CredentialProvidersEnvar, pluginDirectory },
+                            { TestCredentialProvider.ResponseMessage, "Testing abort." },
+                            { TestCredentialProvider.ResponseExitCode, TestCredentialProvider.FailCode }
                         });
-                        server.Start();
+                    server.Stop();
 
-                        // Act
-                        Environment.SetEnvironmentVariable("FORCE_NUGET_EXE_INTERACTIVE", "true");
-                        Environment.SetEnvironmentVariable(ExtensionLocator.CredentialProvidersEnvar, pluginDirectory);
-                        Environment.SetEnvironmentVariable(TestCredentialProvider.ResponseMessage, "Testing abort.");
-                        Environment.SetEnvironmentVariable(TestCredentialProvider.ResponseExitCode, TestCredentialProvider.FailCode);
+                    // Assert
+                    Assert.Equal(1, r1.Item1);
+                    Assert.Contains("401 (Unauthorized)", r1.Item3);
+                    Assert.Contains($"Credential plugin {pluginPath} handles this request, but is unable to provide credentials. Testing abort.", r1.Item2);
 
-                        var args = $"push {packageFileName} -Source {server.Uri}nuget";
-                        var r1 = CommandRunner.Run(
-                            nugetexe,
-                            packageDirectory,
-                            args,
-                            waitForExit: true,
-                            timeOutInMilliseconds: 10000,
-                            inputAction: (w) =>
-                            {
-                                w.WriteLine("testuser");
-                                w.WriteLine("testpassword");
-                            });
-                        server.Stop();
-
-                        // Assert
-                        Assert.Equal(1, r1.Item1);
-
-                        Assert.Contains($"Credential plugin {pluginPath} handles this request, but is unable to provide credentials. Testing abort.", r1.Item3);
-
-                        // No requests hit server, since abort during credential acquisition
-                        // and no fallback to console provider
-                        Assert.Equal(0, credentialForGetRequest.Count);
-                        Assert.Equal(0, credentialForPutRequest.Count);
-                    }
-                }
-                finally
-                {
-                    // Cleanup
-                    Environment.SetEnvironmentVariable("FORCE_NUGET_EXE_INTERACTIVE", string.Empty);
-                    Environment.SetEnvironmentVariable(ExtensionLocator.CredentialProvidersEnvar, _originalCredentialProvidersEnvar);
-                    Environment.SetEnvironmentVariable(TestCredentialProvider.ResponseMessage, string.Empty);
-                    Environment.SetEnvironmentVariable(TestCredentialProvider.ResponseExitCode, string.Empty);
+                    // No requests hit server, since abort during credential acquisition
+                    // and no fallback to console provider
+                    Assert.Equal(0, credentialForGetRequest.Count);
+                    Assert.Equal(0, credentialForPutRequest.Count);
                 }
             }
         }
@@ -979,71 +1190,63 @@ namespace NuGet.CommandLine.Test
             List<string> credentialForGetRequest = new List<string>();
             List<string> credentialForPutRequest = new List<string>();
 
-            using (var packageDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packageDirectory = TestDirectory.Create())
             {
-                try
-                {
-                    // Arrange
-                    var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
-                    string outputFileName = Path.Combine(packageDirectory, "t1.nupkg");
+                // Arrange
+                var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
+                string outputFileName = Path.Combine(packageDirectory, "t1.nupkg");
 
-                    using (var server = new MockServer())
+                using (var server = new MockServer())
+                {
+                    server.Listener.AuthenticationSchemes = AuthenticationSchemes.Basic;
+                    server.Get.Add("/nuget", r =>
                     {
-                        server.Listener.AuthenticationSchemes = AuthenticationSchemes.Basic;
-                        server.Get.Add("/nuget", r =>
+                        var h = r.Headers["Authorization"];
+                        var credential = Encoding.Default.GetString(Convert.FromBase64String(h.Substring(6)));
+                        credentialForGetRequest.Add(credential);
+                        return HttpStatusCode.OK;
+                    });
+                    server.Put.Add("/nuget", r =>
+                    {
+                        var h = r.Headers["Authorization"];
+                        var credential = Encoding.Default.GetString(Convert.FromBase64String(h.Substring(6)));
+                        credentialForPutRequest.Add(credential);
+                        return HttpStatusCode.OK;
+                    });
+                    server.Start();
+
+                    // Act
+                    var args = $"push {packageFileName} -Source {server.Uri}nuget";
+                    var r1 = CommandRunner.Run(
+                        nugetexe,
+                        packageDirectory,
+                        args,
+                        waitForExit: true,
+                        timeOutInMilliseconds: 10000,
+                        inputAction: (w) =>
                         {
-                            var h = r.Headers["Authorization"];
-                            var credential = Encoding.Default.GetString(Convert.FromBase64String(h.Substring(6)));
-                            credentialForGetRequest.Add(credential);
-                            return HttpStatusCode.OK;
-                        });
-                        server.Put.Add("/nuget", r =>
+                            w.WriteLine("testuser");
+                            w.WriteLine("testpassword");
+                        },
+                        environmentVariables: new Dictionary<string, string>
                         {
-                            var h = r.Headers["Authorization"];
-                            var credential = Encoding.Default.GetString(Convert.FromBase64String(h.Substring(6)));
-                            credentialForPutRequest.Add(credential);
-                            return HttpStatusCode.OK;
+                            { "FORCE_NUGET_EXE_INTERACTIVE", "true" },
+                            { ExtensionLocator.CredentialProvidersEnvar, pluginDirectory },
+                            { TestCredentialProvider.ResponseDelaySeconds, "10" },
+                            { "NUGET_CREDENTIAL_PROVIDER_TIMEOUT_SECONDS", "5" }
                         });
-                        server.Start();
+                    server.Stop();
 
-                        // Act
-                        Environment.SetEnvironmentVariable("FORCE_NUGET_EXE_INTERACTIVE", "true");
-                        Environment.SetEnvironmentVariable(ExtensionLocator.CredentialProvidersEnvar, pluginDirectory);
-                        Environment.SetEnvironmentVariable(TestCredentialProvider.ResponseDelaySeconds, "10");
-                        Environment.SetEnvironmentVariable("NUGET_CREDENTIAL_PROVIDER_TIMEOUT_SECONDS", "5");
-
-                        var args = $"push {packageFileName} -Source {server.Uri}nuget";
-                        var r1 = CommandRunner.Run(
-                            nugetexe,
-                            packageDirectory,
-                            args,
-                            waitForExit: true,
-                            timeOutInMilliseconds: 10000,
-                            inputAction: (w) =>
-                            {
-                                w.WriteLine("testuser");
-                                w.WriteLine("testpassword");
-                            });
-                        server.Stop();
-
-                        // Assert
-                        Assert.Equal(1, r1.Item1);
-                        Assert.Contains($"Credential plugin {pluginPath} timed out", r1.Item3);
-                        // ensure the process was killed
-                        Assert.Equal(0, System.Diagnostics.Process.GetProcessesByName(Path.GetFileNameWithoutExtension(pluginPath)).Length);
-                        // No requests hit server, since abort during credential acquisition
-                        // and no fallback to console provider
-                        Assert.Equal(0, credentialForGetRequest.Count);
-                        Assert.Equal(0, credentialForPutRequest.Count);
-                    }
-                }
-                finally
-                {
-                    // Cleanup
-                    Environment.SetEnvironmentVariable("FORCE_NUGET_EXE_INTERACTIVE", string.Empty);
-                    Environment.SetEnvironmentVariable(ExtensionLocator.CredentialProvidersEnvar, _originalCredentialProvidersEnvar);
-                    Environment.SetEnvironmentVariable(TestCredentialProvider.ResponseDelaySeconds, string.Empty);
-                    Environment.SetEnvironmentVariable("NUGET_CREDENTIAL_PROVIDER_TIMEOUT_SECONDS", string.Empty);
+                    // Assert
+                    Assert.Equal(1, r1.Item1);
+                    Assert.Contains("401 (Unauthorized)", r1.Item3);
+                    Assert.Contains($"Credential plugin {pluginPath} timed out", r1.Item2);
+                    // ensure the process was killed
+                    Assert.Equal(0, System.Diagnostics.Process.GetProcessesByName(Path.GetFileNameWithoutExtension(pluginPath)).Length);
+                    // No requests hit server, since abort during credential acquisition
+                    // and no fallback to console provider
+                    Assert.Equal(0, credentialForGetRequest.Count);
+                    Assert.Equal(0, credentialForPutRequest.Count);
                 }
             }
         }
@@ -1051,9 +1254,10 @@ namespace NuGet.CommandLine.Test
         [Fact]
         public void PushCommand_PushToServerV3()
         {
+            Util.ClearWebCache();
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var packagesDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packagesDirectory = TestDirectory.Create())
             {
                 // Arrange
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packagesDirectory);
@@ -1066,7 +1270,7 @@ namespace NuGet.CommandLine.Test
                 {
                     serverV3.Get.Add("/", r =>
                     {
-                        var path = r.Url.AbsolutePath;
+                        var path = serverV3.GetRequestUrlAbsolutePath(r);
 
                         if (path == "/index.json")
                         {
@@ -1131,8 +1335,9 @@ namespace NuGet.CommandLine.Test
         [Fact]
         public void PushCommand_PushToServerV3_NoPushEndpoint()
         {
+            Util.ClearWebCache();
             var nugetexe = Util.GetNuGetExePath();
-            using (var packagesDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packagesDirectory = TestDirectory.Create())
 
             {
                 // Arrange
@@ -1146,7 +1351,7 @@ namespace NuGet.CommandLine.Test
                 {
                     serverV3.Get.Add("/", r =>
                     {
-                        var path = r.Url.AbsolutePath;
+                        var path = serverV3.GetRequestUrlAbsolutePath(r);
 
                         if (path == "/index.json")
                         {
@@ -1164,32 +1369,24 @@ namespace NuGet.CommandLine.Test
                     serverV3.Start();
 
                     // Act
-                    string[] args = new string[]
-                    {
-                            "push",
-                            packageFileName,
-                            "-Source",
-                            serverV3.Uri + "index.json"
-                    };
-
                     var result = CommandRunner.Run(
                                     nugetexe,
                                     Directory.GetCurrentDirectory(),
-                                    string.Join(" ", args),
+                                    $"push {packageFileName} -Source {serverV3.Uri}index.json",
                                     true);
 
                     serverV3.Stop();
 
                     // Assert
-                    Assert.True(result.Item1 == 0, result.Item2 + " " + result.Item3);
+                    Assert.True(1 == result.Item1, $"{result.Item2} {result.Item3}");
 
                     var expectedOutput =
                         string.Format(
-                      "WARNING: This version of nuget.exe does not support pushing packages to package source '{0}'.",
+                      "ERROR: This version of nuget.exe does not support updating packages to package source '{0}'.",
                       serverV3.Uri + "index.json");
 
                     // Verify that the output contains the expected output
-                    Assert.True(result.Item2.Contains(expectedOutput));
+                    Assert.True(result.Item3.Contains(expectedOutput));
                 }
             }
         }
@@ -1197,9 +1394,10 @@ namespace NuGet.CommandLine.Test
         [Fact]
         public void PushCommand_PushToServerV3_Unavailable()
         {
+            Util.ClearWebCache();
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var packagesDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packagesDirectory = TestDirectory.Create())
             {
                 // Arrange
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packagesDirectory);
@@ -1212,7 +1410,7 @@ namespace NuGet.CommandLine.Test
                 {
                     serverV3.Get.Add("/", r =>
                     {
-                        var path = r.Url.AbsolutePath;
+                        var path = serverV3.GetRequestUrlAbsolutePath(r);
 
                         if (path == "/index.json")
                         {
@@ -1250,7 +1448,7 @@ namespace NuGet.CommandLine.Test
                     Assert.True(result.Item1 != 0, result.Item2 + " " + result.Item3);
 
                     Assert.True(
-                        result.Item3.Contains("Response status code does not indicate success: 404 (Not Found)."),
+                        result.Item3.Contains("404 (Not Found)"),
                         "Expected error message not found in " + result.Item3
                         );
                 }
@@ -1258,275 +1456,247 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public void PushCommand_PushToServerV3_ApiKey()
+        public void PushCommand_PushToServer_ApiKeyAsThirdArgument()
         {
-            var nugetexe = Util.GetNuGetExePath();
-            using (var packagesDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            // Arrange
+            var testApiKey = Guid.NewGuid().ToString();
+            Util.ClearWebCache();
 
+            using (var packageDirectory = TestDirectory.Create())
             {
-                // Arrange
-                var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packagesDirectory);
-                string outputFileName = Path.Combine(packagesDirectory, "t1.nupkg");
+                var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
+                string outputFileName = Path.Combine(packageDirectory, "t1.nupkg");
 
-                // Server setup
-                var indexJson = Util.CreateIndexJson();
-
-                using (var serverV3 = new MockServer())
+                using (var server = new MockServer())
                 {
-                    serverV3.Get.Add("/", r =>
+                    server.Put.Add("/nuget", r =>
                     {
-                        var path = r.Url.AbsolutePath;
-
-                        if (path == "/index.json")
+                        var h = r.Headers[ApiKeyHeader];
+                        if (!string.Equals(h, testApiKey, StringComparison.OrdinalIgnoreCase))
                         {
-                            return new Action<HttpListenerResponse>(response =>
-                            {
-                                response.StatusCode = 200;
-                                response.ContentType = "text/javascript";
-                                MockServer.SetResponseContent(response, indexJson.ToString());
-                            });
+                            return HttpStatusCode.Unauthorized;
                         }
 
-                        throw new Exception("This test needs to be updated to support: " + path);
+                        MockServer.SavePushedPackage(r, outputFileName);
+
+                        return HttpStatusCode.Created;
                     });
 
-                    using (var serverV2 = new MockServer())
-                    {
-                        Util.AddFlatContainerResource(indexJson, serverV3);
-                        Util.AddPublishResource(indexJson, serverV2);
+                    server.Start();
 
-                        serverV2.Get.Add("/push", r => "OK");
-                        serverV2.Put.Add("/push", r =>
-                        {
-                            var h = r.Headers["X-NuGet-ApiKey"];
-                            if (!h.Equals("blah-blah", StringComparison.OrdinalIgnoreCase))
-                            {
-                                return HttpStatusCode.Unauthorized;
-                            }
+                    // Act
+                    var result = CommandRunner.Run(
+                        NuGetExePath,
+                        Directory.GetCurrentDirectory(),
+                        $"push {packageFileName} {testApiKey} -Source {server.Uri}nuget -NonInteractive",
+                        waitForExit: true);
 
-                            byte[] buffer = MockServer.GetPushedPackage(r);
-                            using (var of = new FileStream(outputFileName, FileMode.Create))
-                            {
-                                of.Write(buffer, 0, buffer.Length);
-                            }
+                    server.Stop();
 
-                            return HttpStatusCode.Created;
-                        });
-
-                        serverV3.Start();
-                        serverV2.Start();
-
-                        // Act
-                        string[] args = new string[]
-                        {
-                            "push",
-                            packageFileName,
-                            "-Source",
-                            serverV3.Uri + "index.json",
-                            "-ApiKey",
-                            "blah-blah"
-                        };
-
-                        var result = CommandRunner.Run(
-                                        nugetexe,
-                                        Directory.GetCurrentDirectory(),
-                                        string.Join(" ", args),
-                                        true);
-                        serverV2.Stop();
-                        serverV3.Stop();
-
-                        // Assert
-                        Assert.True(0 == result.Item1, result.Item2 + " " + result.Item3);
-                        var output = result.Item2;
-                        Assert.Contains("Your package was pushed.", output);
-                        AssertFileEqual(packageFileName, outputFileName);
-                    }
+                    // Assert
+                    Assert.True(0 == result.Item1, $"{result.Item2} {result.Item3}");
+                    Assert.Contains("Your package was pushed.", result.Item2);
+                    AssertFileEqual(packageFileName, outputFileName);
                 }
             }
         }
 
         [Fact]
-        public void PushCommand_PushToServerV3_ApiKeyFromConfig()
+        public void PushCommand_PushToServer_ApiKeyAsNamedArgument()
         {
-            var nugetexe = Util.GetNuGetExePath();
-            using (var randomTestFolder = TestFileSystemUtility.CreateRandomTestFolder())
+            // Arrange
+            var testApiKey = Guid.NewGuid().ToString();
+            Util.ClearWebCache();
+
+            using (var packagesDirectory = TestDirectory.Create())
+            {
+                var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packagesDirectory);
+                var outputFileName = Path.Combine(packagesDirectory, "t1.nupkg");
+
+                using (var serverV3 = new MockServer())
+                {
+                    // Server setup
+                    var indexJson = Util.CreateIndexJson();
+
+                    Util.AddFlatContainerResource(indexJson, serverV3);
+                    Util.AddPublishResource(indexJson, serverV3);
+
+                    serverV3.Get.Add("/index.json", r =>
+                    {
+                        return new Action<HttpListenerResponse>(response =>
+                        {
+                            response.StatusCode = 200;
+                            response.ContentType = "text/javascript";
+                            MockServer.SetResponseContent(response, indexJson.ToString());
+                        });
+                    });
+
+                    serverV3.Get.Add("/push", r => "OK");
+                    serverV3.Put.Add("/push", r =>
+                    {
+                        var h = r.Headers[ApiKeyHeader];
+                        if (!string.Equals(h, testApiKey, StringComparison.OrdinalIgnoreCase))
+                        {
+                            return HttpStatusCode.Unauthorized;
+                        }
+
+                        MockServer.SavePushedPackage(r, outputFileName);
+
+                        return HttpStatusCode.Created;
+                    });
+
+                    serverV3.Start();
+
+                    // Act
+                    var args = new[]
+                    {
+                        "push",
+                        packageFileName,
+                        "should-be-ignored", // The named argument is preferred over the positional argument.
+                        "-Source",
+                        serverV3.Uri + "index.json",
+                        "-ApiKey",
+                        testApiKey,
+                        "-NonInteractive"
+                    };
+
+                    var result = CommandRunner.Run(
+                        NuGetExePath,
+                        Directory.GetCurrentDirectory(),
+                        string.Join(" ", args),
+                        waitForExit: true);
+
+                    serverV3.Stop();
+
+                    // Assert
+                    Assert.True(0 == result.Item1, $"{result.Item2} {result.Item3}");
+                    Assert.Contains("Your package was pushed.", result.Item2);
+                    AssertFileEqual(packageFileName, outputFileName);
+                }
+            }
+        }
+
+        [Theory]
+        [InlineData("{0}index.json")] // package source url
+        [InlineData("{0}push")] // push package endpoint
+        public void PushCommand_PushToServerV3_ApiKeyFromConfig(string configKeyFormatString)
+        {
+            var testApiKey = Guid.NewGuid().ToString();
+            Util.ClearWebCache();
+
+            using (var randomTestFolder = TestDirectory.Create())
             {
                 // Arrange
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", randomTestFolder);
                 string outputFileName = Path.Combine(randomTestFolder, "t1.nupkg");
 
-                // Server setup
-                var indexJson = Util.CreateIndexJson();
-
                 using (var serverV3 = new MockServer())
                 {
-                    serverV3.Get.Add("/", r =>
+                    // Server setup
+                    var indexJson = Util.CreateIndexJson();
+
+                    Util.AddFlatContainerResource(indexJson, serverV3);
+                    Util.AddPublishResource(indexJson, serverV3);
+
+                    serverV3.Get.Add("/index.json", r =>
                     {
-                        var path = r.Url.AbsolutePath;
-
-                        if (path == "/index.json")
+                        return new Action<HttpListenerResponse>(response =>
                         {
-                            return new Action<HttpListenerResponse>(response =>
-                            {
-                                response.StatusCode = 200;
-                                response.ContentType = "text/javascript";
-                                MockServer.SetResponseContent(response, indexJson.ToString());
-                            });
-                        }
-
-                        throw new Exception("This test needs to be updated to support: " + path);
+                            response.StatusCode = 200;
+                            response.ContentType = "text/javascript";
+                            MockServer.SetResponseContent(response, indexJson.ToString());
+                        });
                     });
 
-                    using (var serverV2 = new MockServer())
+                    serverV3.Get.Add("/push", r => "OK");
+                    serverV3.Put.Add("/push", r =>
                     {
-                        Util.AddFlatContainerResource(indexJson, serverV3);
-                        Util.AddPublishResource(indexJson, serverV2);
-
-                        serverV2.Get.Add("/push", r => "OK");
-                        serverV2.Put.Add("/push", r =>
+                        var h = r.Headers[ApiKeyHeader];
+                        if (!string.Equals(h, testApiKey, StringComparison.OrdinalIgnoreCase))
                         {
-                            var h = r.Headers["X-NuGet-ApiKey"];
-                            if (string.IsNullOrEmpty(h)
-                            || !h.Equals("blah-blah", StringComparison.OrdinalIgnoreCase))
-                            {
-                                return HttpStatusCode.Unauthorized;
-                            }
+                            return HttpStatusCode.Unauthorized;
+                        }
 
-                            byte[] buffer = MockServer.GetPushedPackage(r);
-                            using (var of = new FileStream(outputFileName, FileMode.Create))
-                            {
-                                of.Write(buffer, 0, buffer.Length);
-                            }
+                        MockServer.SavePushedPackage(r, outputFileName);
 
-                            return HttpStatusCode.Created;
-                        });
+                        return HttpStatusCode.Created;
+                    });
 
-                        serverV3.Start();
-                        serverV2.Start();
+                    serverV3.Start();
 
-                        var config = string.Format(@"<?xml version='1.0' encoding='utf-8'?>
-                                                    <configuration>
-                                                      <packageSources>
-                                                        <add key='nuget.org' value='{0}' protocolVersion='3' />
-                                                        <add key='nuget.org' value='{1}' />
-                                                      </packageSources>
-                                                      <packageRestore>
-                                                        <add key='enabled' value='True' />
-                                                        <add key='automatic' value='True' />
-                                                      </packageRestore>
-                                                      <disabledPackageSources />
-                                                      <apikeys>
-                                                        <add key='{2}' value='{3}' />
-                                                      </apikeys>
-                                                    </configuration>",
-                                                    serverV3.Uri + "index.json",
-                                                    serverV2.Uri + "push",
-                                                    serverV2.Uri + "push",
-                                                    Configuration.EncryptionUtility.EncryptString("blah-blah"));
+                    var configKey = string.Format(configKeyFormatString, serverV3.Uri);
 
-                        var configFileName = Path.Combine(randomTestFolder, "nuget.config");
-                        File.WriteAllText(configFileName, config);
+                    var config = $@"<?xml version='1.0' encoding='utf-8'?>
+<configuration>
+    <packageSources>
+        <add key='nuget.org' value='{serverV3.Uri}index.json' protocolVersion='3' />
+    </packageSources>
+    <apikeys>
+        <add key='{configKey}' value='{Configuration.EncryptionUtility.EncryptString(testApiKey)}' />
+    </apikeys>
+</configuration>";
 
-                        // Act
-                        string[] args = new string[]
-                        {
-                            "push",
-                            packageFileName,
-                            "-Source",
-                            serverV3.Uri + "index.json",
-                            "-ConfigFile",
-                            configFileName
-                        };
+                    var configFileName = Path.Combine(randomTestFolder, "nuget.config");
+                    File.WriteAllText(configFileName, config);
 
-                        var result = CommandRunner.Run(
-                                        nugetexe,
-                                        Directory.GetCurrentDirectory(),
-                                        string.Join(" ", args),
-                                        true);
-                        serverV2.Stop();
-                        serverV3.Stop();
+                    // Act
+                    var args = new[]
+                    {
+                        "push",
+                        packageFileName,
+                        "-Source",
+                        "nuget.org",
+                        "-ConfigFile",
+                        configFileName,
+                        "-NonInteractive"
+                    };
 
-                        // Assert
-                        Assert.True(0 == result.Item1, result.Item2 + " " + result.Item3);
-                        var output = result.Item2;
-                        Assert.Contains("Your package was pushed.", output);
-                        AssertFileEqual(packageFileName, outputFileName);
-                    }
+                    var result = CommandRunner.Run(
+                        NuGetExePath,
+                        Directory.GetCurrentDirectory(),
+                        string.Join(" ", args),
+                        waitForExit: true);
+
+                    serverV3.Stop();
+
+                    // Assert
+                    Assert.True(0 == result.Item1, $"{result.Item2} {result.Item3}");
+                    Assert.Contains("Your package was pushed.", result.Item2);
+                    AssertFileEqual(packageFileName, outputFileName);
                 }
             }
         }
 
         [Fact]
-        public void PushCommand_DefaultPushSource()
+        public void PushCommand_FailWhenNoSourceSpecified()
         {
+            Util.ClearWebCache();
             var nugetexe = Util.GetNuGetExePath();
-            using (var randomDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomDirectory = TestDirectory.Create())
 
             {
                 // Arrange
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", randomDirectory);
                 string outputFileName = Path.Combine(randomDirectory, "t1.nupkg");
 
-                // Server setup
-                using (var serverV2 = new MockServer())
+                // Act
+                string[] args = new string[]
                 {
-                    serverV2.Get.Add("/push", r => "OK");
-                    serverV2.Put.Add("/push", r =>
-                    {
-                        byte[] buffer = MockServer.GetPushedPackage(r);
-                        using (var of = new FileStream(outputFileName, FileMode.Create))
-                        {
-                            of.Write(buffer, 0, buffer.Length);
-                        }
+                        "push",
+                        packageFileName,
+                        "-ApiKey",
+                        "blah-blah"
+                };
 
-                        return HttpStatusCode.Created;
-                    });
+                var result = CommandRunner.Run(
+                                nugetexe,
+                                Directory.GetCurrentDirectory(),
+                                string.Join(" ", args),
+                                true);
 
-                    serverV2.Start();
-
-                    var config = string.Format(@"<?xml version='1.0' encoding='utf-8'?>
-                                                    <configuration>
-                                                      <packageSources>
-                                                        <add key='nuget.org' value='{0}' />
-                                                      </packageSources>
-                                                      <packageRestore>
-                                                        <add key='enabled' value='True' />
-                                                        <add key='automatic' value='True' />
-                                                      </packageRestore>
-                                                      <config>
-                                                        <add key='DefaultPushSource' value='{1}' />
-                                                      </config>
-                                                    </configuration>",
-                                                serverV2.Uri + "push",
-                                                serverV2.Uri + "push");
-
-                    string configFileName = Path.Combine(randomDirectory, "nuget.config");
-                    File.WriteAllText(configFileName, config);
-
-                    // Act
-                    string[] args = new string[]
-                    {
-                            "push",
-                            packageFileName,
-                            "-ConfigFile",
-                            configFileName,
-                            "-ApiKey",
-                            "blah-blah"
-                    };
-
-                    var result = CommandRunner.Run(
-                                    nugetexe,
-                                    Directory.GetCurrentDirectory(),
-                                    string.Join(" ", args),
-                                    true);
-                    serverV2.Stop();
-
-                    // Assert
-                    Assert.True(0 == result.Item1, result.Item2 + " " + result.Item3);
-                    var output = result.Item2;
-                    Assert.Contains("Your package was pushed.", output);
-                    AssertFileEqual(packageFileName, outputFileName);
-                }
+                // Assert
+                Assert.True(1 == result.Item1, result.Item2 + " " + result.Item3);
+                Assert.Contains("Source parameter was not specified", result.Item3);
             }
         }
 
@@ -1535,7 +1705,7 @@ namespace NuGet.CommandLine.Test
         {
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var packageDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packageDirectory = TestDirectory.Create())
             {
                 // Arrange
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
@@ -1545,7 +1715,7 @@ namespace NuGet.CommandLine.Test
                 {
                     server.Get.Add("/", r =>
                     {
-                        var path = r.Url.AbsolutePath;
+                        var path = server.GetRequestUrlAbsolutePath(r);
 
                         if (path.Equals("/", StringComparison.OrdinalIgnoreCase))
                         {
@@ -1569,7 +1739,7 @@ namespace NuGet.CommandLine.Test
 
                     server.Put.Add("/", r =>
                     {
-                        var path = r.Url.AbsolutePath;
+                        var path = server.GetRequestUrlAbsolutePath(r);
 
                         if (path.Equals("/api/v2/Package", StringComparison.OrdinalIgnoreCase)
                         || path.Equals("/api/v2/Package/", StringComparison.OrdinalIgnoreCase))
@@ -1593,7 +1763,7 @@ namespace NuGet.CommandLine.Test
                         "push",
                         packageFileName,
                         "-Source",
-                        server.Uri + "/api/v2/Package"
+                        server.Uri + "api/v2/Package"
                     };
 
                     var result = CommandRunner.Run(
@@ -1618,7 +1788,7 @@ namespace NuGet.CommandLine.Test
         {
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var packagesDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packagesDirectory = TestDirectory.Create())
             {
                 // Arrange
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packagesDirectory);
@@ -1661,7 +1831,7 @@ namespace NuGet.CommandLine.Test
         {
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var packagesDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packagesDirectory = TestDirectory.Create())
 
             {
                 // Arrange
@@ -1687,20 +1857,31 @@ namespace NuGet.CommandLine.Test
                     result.Item1 != 0,
                     "The run did not fail as desired. Simply got this output:" + result.Item2);
 
-                Assert.True(
-                    result.Item3.Contains(
-                        "The remote name could not be resolved: 'invalid-2a0358f1-88f2-48c0-b68a-bb150cac00bd.org'"),
-                    "Expected error message not found in " + result.Item3
-                    );
+                if (RuntimeEnvironmentHelper.IsMono)
+                {
+                    Assert.True(
+                   result.Item3.Contains(
+                       "NameResolutionFailure"),
+                   "Expected error message not found in " + result.Item3
+                   );
+                }
+                else
+                {
+                    Assert.True(
+                        result.Item3.Contains(
+                            "The remote name could not be resolved: 'invalid-2a0358f1-88f2-48c0-b68a-bb150cac00bd.org'"),
+                        "Expected error message not found in " + result.Item3
+                        );
+                }
             }
         }
 
-        [Theory]
+        [SkipMonoTheory]
         [InlineData("https://nuget.org/api/blah")]
         public void PushCommand_InvalidInput_V2_NonExistent(string invalidInput)
         {
             var nugetexe = Util.GetNuGetExePath();
-            using (var packagesDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packagesDirectory = TestDirectory.Create())
             {
                 // Arrange
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packagesDirectory);
@@ -1725,9 +1906,10 @@ namespace NuGet.CommandLine.Test
                     result.Item1 != 0,
                     "The run did not fail as desired. Simply got this output:" + result.Item2);
 
+                //TODO: review with nuget team, that this new error is good
                 Assert.True(
                     result.Item3.Contains(
-                        "The remote server returned an error: (404) Not Found."),
+                        "Response status code does not indicate success: 404 (Not Found)"),
                     "Expected error message not found in " + result.Item3
                     );
             }
@@ -1737,8 +1919,9 @@ namespace NuGet.CommandLine.Test
         [InlineData("https://invalid-2a0358f1-88f2-48c0-b68a-bb150cac00bd.org/v3/index.json")]
         public void PushCommand_InvalidInput_V3_NonExistent(string invalidInput)
         {
+            Util.ClearWebCache();
             var nugetexe = Util.GetNuGetExePath();
-            using (var packagesDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packagesDirectory = TestDirectory.Create())
 
             {
                 // Arrange
@@ -1764,10 +1947,21 @@ namespace NuGet.CommandLine.Test
                     result.Item1 != 0,
                     "The run did not fail as desired. Simply got this output:" + result.Item2);
 
-                Assert.True(
-                    result.Item3.Contains("An error occurred while sending the request."),
-                    "Expected error message not found in " + result.Item3
-                    );
+                if (RuntimeEnvironmentHelper.IsMono)
+                {
+                    Assert.True(
+                   result.Item3.Contains(
+                       "NameResolutionFailure"),
+                   "Expected error message not found in " + result.Item3
+                   );
+                }
+                else
+                {
+                    Assert.True(
+                        result.Item3.Contains("An error occurred while sending the request."),
+                        "Expected error message not found in " + result.Item3
+                        );
+                }
             }
         }
 
@@ -1775,8 +1969,9 @@ namespace NuGet.CommandLine.Test
         [InlineData("https://api.nuget.org/v4/index.json")]
         public void PushCommand_InvalidInput_V3_NotFound(string invalidInput)
         {
+            Util.ClearWebCache();
             var nugetexe = Util.GetNuGetExePath();
-            using (var packagesDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packagesDirectory = TestDirectory.Create())
 
             {
                 // Arrange
@@ -1803,7 +1998,7 @@ namespace NuGet.CommandLine.Test
                     "The run did not fail as desired. Simply got this output:" + result.Item2);
 
                 Assert.True(
-                    result.Item3.Contains("Response status code does not indicate success: 400 (Bad Request)."),
+                    result.Item3.Contains("400 (Bad Request)"),
                     "Expected error message not found in " + result.Item3
                     );
             }

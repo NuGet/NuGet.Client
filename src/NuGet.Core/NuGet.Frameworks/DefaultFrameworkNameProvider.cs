@@ -3,7 +3,12 @@
 
 namespace NuGet.Frameworks
 {
-    public sealed class DefaultFrameworkNameProvider : FrameworkNameProvider
+#if NUGET_FRAMEWORKS_INTERNAL
+    internal
+#else
+    public
+#endif
+    sealed class DefaultFrameworkNameProvider : FrameworkNameProvider
     {
         public DefaultFrameworkNameProvider()
             : base(new IFrameworkMappings[] { DefaultFrameworkMappings.Instance },

@@ -40,18 +40,16 @@ namespace NuGet.RuntimeModel
 
         public static void WriteRuntimeGraph(string filePath, RuntimeGraph runtimeGraph)
         {
+            var writer = new JsonObjectWriter();
+
+            WriteRuntimeGraph(writer, runtimeGraph);
+
             using (var fileStream = new FileStream(filePath, FileMode.Create))
+            using (var textWriter = new StreamWriter(fileStream))
+            using (var jsonWriter = new JsonTextWriter(textWriter))
             {
-                using (var textWriter = new StreamWriter(fileStream))
-                {
-                    using (var jsonWriter = new JsonTextWriter(textWriter))
-                    {
-                        jsonWriter.Formatting = Formatting.Indented;
-                        var json = new JObject();
-                        WriteRuntimeGraph(json, runtimeGraph);
-                        json.WriteTo(jsonWriter);
-                    }
-                }
+                jsonWriter.Formatting = Formatting.Indented;
+                writer.WriteTo(jsonWriter);
             }
         }
 
@@ -62,78 +60,103 @@ namespace NuGet.RuntimeModel
                 EachProperty(json["supports"]).Select(ReadCompatibilityProfile));
         }
 
-        private static void WriteRuntimeGraph(JObject jObject, RuntimeGraph runtimeGraph)
+        public static void WriteRuntimeGraph(IObjectWriter writer, RuntimeGraph runtimeGraph)
         {
-            if (runtimeGraph.Runtimes.Any())
+            if (runtimeGraph != null)
             {
-                var runtimes = new JObject();
-                jObject["runtimes"] = runtimes;
-                foreach (var x in runtimeGraph.Runtimes.Values)
+                if (runtimeGraph.Runtimes.Any() == true)
                 {
-                    WriteRuntimeDescription(runtimes, x);
+                    writer.WriteObjectStart("runtimes");
+
+                    var sortedRuntimes = runtimeGraph.Runtimes.Values
+                                                     .OrderBy(runtime => runtime.RuntimeIdentifier, StringComparer.Ordinal);
+
+                    foreach (var runtime in sortedRuntimes)
+                    {
+                        WriteRuntimeDescription(writer, runtime);
+                    }
+
+                    writer.WriteObjectEnd();
+                }
+
+                if (runtimeGraph.Supports.Any() == true)
+                {
+                    writer.WriteObjectStart("supports");
+
+                    var sortedSupports = runtimeGraph.Supports.Values
+                                                     .OrderBy(runtime => runtime.Name, StringComparer.Ordinal);
+
+                    foreach (var support in sortedSupports)
+                    {
+                        WriteCompatibilityProfile(writer, support);
+                    }
+
+                    writer.WriteObjectEnd();
                 }
             }
+        }
 
-            if (runtimeGraph.Supports.Any())
+        private static void WriteRuntimeDescription(IObjectWriter writer, RuntimeDescription data)
+        {
+            writer.WriteObjectStart(data.RuntimeIdentifier);
+
+            writer.WriteNameArray("#import", data.InheritedRuntimes);
+
+            var sortedDependencySets = data.RuntimeDependencySets
+                                           .OrderBy(pair => pair.Key, StringComparer.Ordinal)
+                                           .Select(pair => pair.Value);
+
+            foreach (var set in sortedDependencySets)
             {
-                var supports = new JObject();
-                jObject["supports"] = supports;
-                foreach(var x in runtimeGraph.Supports.Values)
-                {
-                    WriteCompatibilityProfile(supports, x);
-                }
+                WriteRuntimeDependencySet(writer, set);
             }
+
+            writer.WriteObjectEnd();
         }
 
-        private static void WriteRuntimeDescription(JObject jObject, RuntimeDescription data)
+        private static void WriteRuntimeDependencySet(IObjectWriter writer, RuntimeDependencySet data)
         {
-            var value = new JObject();
-            jObject[data.RuntimeIdentifier] = value;
-            value["#import"] = new JArray(data.InheritedRuntimes.Select(x => new JValue(x)));
-            foreach (var x in data.RuntimeDependencySets.Values)
+            writer.WriteObjectStart(data.Id);
+
+            var sortedDependencies = data.Dependencies
+                                         .OrderBy(pair => pair.Key, StringComparer.Ordinal)
+                                         .Select(pair => pair.Value);
+
+            foreach (var dependency in sortedDependencies)
             {
-                WriteRuntimeDependencySet(value, x);
+                WritePackageDependency(writer, dependency);
             }
+
+            writer.WriteObjectEnd();
         }
 
-        private static void WriteRuntimeDependencySet(JObject jObject, RuntimeDependencySet data)
+        private static void WritePackageDependency(IObjectWriter writer, RuntimePackageDependency data)
         {
-            var value = new JObject();
-            jObject[data.Id] = value;
-            foreach (var x in data.Dependencies.Values)
-            {
-                WritePackageDependency(value, x);
-            }
+            writer.WriteNameValue(data.Id, data.VersionRange.ToNormalizedString());
         }
 
-        private static void WritePackageDependency(JObject jObject, RuntimePackageDependency data)
+        private static void WriteCompatibilityProfile(IObjectWriter writer, CompatibilityProfile data)
         {
-            jObject[data.Id] = new JValue(data.VersionRange.ToNormalizedString());
-        }
+            writer.WriteObjectStart(data.Name);
 
-        private static void WriteCompatibilityProfile(JObject jObject, CompatibilityProfile data)
-        {
-            var value = new JObject();
-            jObject[data.Name] = value;
-            foreach(var frameworkGroup in data.RestoreContexts.GroupBy(f => f.Framework))
+            var frameworkGroups = data.RestoreContexts.GroupBy(context => context.Framework);
+
+            foreach (var frameworkGroup in frameworkGroups)
             {
                 var name = frameworkGroup.Key.GetShortFolderName();
                 var runtimes = frameworkGroup.ToList();
-                if(runtimes.Count == 1)
+                if (runtimes.Count == 1)
                 {
                     // Write a string
-                    value[name] = runtimes[0].RuntimeIdentifier;
+                    writer.WriteNameValue(name, runtimes[0].RuntimeIdentifier);
                 }
                 else if (runtimes.Count > 0)
                 {
-                    var array = new JArray();
-                    value[name] = array;
-                    foreach(var runtime in runtimes)
-                    {
-                        array.Add(runtime.RuntimeIdentifier);
-                    }
+                    writer.WriteNameArray(name, runtimes.Select(rt => rt.RuntimeIdentifier));
                 }
             }
+
+            writer.WriteObjectEnd();
         }
 
         private static CompatibilityProfile ReadCompatibilityProfile(KeyValuePair<string, JToken> json)
@@ -206,18 +229,6 @@ namespace NuGet.RuntimeModel
         {
             return (json as IEnumerable<KeyValuePair<string, JToken>>)
                    ?? Enumerable.Empty<KeyValuePair<string, JToken>>();
-        }
-
-        private static IEnumerable<KeyValuePair<string, JToken>> EachProperty(JToken json, string defaultPropertyName)
-        {
-            return (json as IEnumerable<KeyValuePair<string, JToken>>)
-                   ?? new[] { new KeyValuePair<string, JToken>(defaultPropertyName, json) };
-        }
-
-        private static IEnumerable<JToken> EachArray(JToken json)
-        {
-            return (IEnumerable<JToken>)(json as JArray)
-                   ?? new[] { json };
         }
     }
 }

@@ -1,4 +1,6 @@
-﻿using System;
+﻿extern alias CoreV2;
+
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
@@ -11,6 +13,8 @@ using NuGet.Configuration;
 using NuGet.PackageManagement;
 using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
+using NuGet.Packaging.Core;
+using NuGet.Versioning;
 
 namespace NuGet.CommandLine
 {
@@ -23,6 +27,9 @@ namespace NuGet.CommandLine
 
         [Option(typeof(NuGetCommand), "UpdateCommandIdDescription")]
         public ICollection<string> Id { get; } = new List<string>();
+
+        [Option(typeof(NuGetCommand), "UpdateCommandVersionDescription")]
+        public string Version { get; set; }
 
         [Option(typeof(NuGetCommand), "UpdateCommandRepositoryPathDescription")]
         public string RepositoryPath { get; set; }
@@ -45,16 +52,19 @@ namespace NuGet.CommandLine
         [Option(typeof(NuGetCommand), "CommandMSBuildVersion")]
         public string MSBuildVersion { get; set; }
 
+        [Option(typeof(NuGetCommand), "CommandMSBuildPath")]
+        public string MSBuildPath { get; set; }
+
         // The directory that contains msbuild
-        private string _msbuildDirectory;
+        private Lazy<string> _msbuildDirectory;
 
         public override async Task ExecuteCommandAsync()
         {
             // update with self as parameter
             if (Self)
             {
-                var selfUpdater = new SelfUpdater(RepositoryFactory) { Console = Console };
-                selfUpdater.UpdateSelf();
+                var selfUpdater = new SelfUpdater(repositoryFactory: RepositoryFactory) { Console = Console };
+                selfUpdater.UpdateSelf(Prerelease);
                 return;
             }
 
@@ -65,12 +75,12 @@ namespace NuGet.CommandLine
                 throw new CommandLineException(NuGetResources.InvalidFile);
             }
 
-            _msbuildDirectory = MsBuildUtility.GetMsbuildDirectory(MSBuildVersion, Console);
+            _msbuildDirectory = MsBuildUtility.GetMsBuildDirectoryFromMsBuildPath(MSBuildPath, MSBuildVersion, Console);
             var context = new UpdateConsoleProjectContext(Console, FileConflictAction);
 
             string inputFileName = Path.GetFileName(inputFile);
             // update with packages.config as parameter
-            if (PackageReferenceFile.IsValidConfigFileName(inputFileName))
+            if (CommandLineUtility.IsValidConfigFileName(inputFileName))
             {
                 await UpdatePackagesAsync(inputFile, context);
                 return;
@@ -85,7 +95,7 @@ namespace NuGet.CommandLine
                 }
 
                 var projectSystem = new MSBuildProjectSystem(
-                    _msbuildDirectory,
+                    _msbuildDirectory.Value,
                     inputFile,
                     context);
                 await UpdatePackagesAsync(projectSystem, GetRepositoryPath(projectSystem.ProjectFullPath));
@@ -146,13 +156,13 @@ namespace NuGet.CommandLine
                 }
                 catch (Exception e)
                 {
-                    if (Console.Verbosity == NuGet.Verbosity.Detailed)
+                    if (Console.Verbosity == Verbosity.Detailed || ExceptionLogger.Instance.ShowStack)
                     {
                         Console.WriteWarning(e.ToString());
                     }
                     else
                     {
-                        Console.WriteWarning(e.Message);
+                        Console.WriteWarning(ExceptionUtilities.DisplayMessage(e));
                     }
                 }
             }
@@ -164,9 +174,16 @@ namespace NuGet.CommandLine
             {
                 return GetMSBuildProject(path, projectContext);
             }
-            catch (CommandLineException)
+            catch (CommandLineException e)
             {
-
+                if (Console.Verbosity == Verbosity.Detailed || ExceptionLogger.Instance.ShowStack)
+                {
+                    Console.WriteWarning(e.ToString());
+                }
+                else
+                {
+                    Console.WriteWarning(ExceptionUtilities.DisplayMessage(e));
+                }
             }
 
             return null;
@@ -237,6 +254,11 @@ namespace NuGet.CommandLine
             var sourceRepositoryProvider = GetSourceRepositoryProvider();
             var packageManager = new NuGetPackageManager(sourceRepositoryProvider, Settings, packagesDirectory);
             var nugetProject = new MSBuildNuGetProject(project, packagesDirectory, project.ProjectFullPath);
+            if (!nugetProject.PackagesConfigNuGetProject.PackagesConfigExists())
+            {
+                throw new CommandLineException(LocalizedResourceManager.GetString("NoPackagesConfig"));
+            }
+
             var versionConstraints = Safe ?
                 VersionConstraints.ExactMajor | VersionConstraints.ExactMinor :
                 VersionConstraints.None;
@@ -255,29 +277,37 @@ namespace NuGet.CommandLine
             var sourceRepositories = packageSources.Select(sourceRepositoryProvider.CreateRepository);
             if (Id.Count > 0)
             {
-                foreach (var packageId in Id)
+                var targetIds = new HashSet<string>(Id, StringComparer.OrdinalIgnoreCase);
+
+                var installed = await nugetProject.GetInstalledPackagesAsync(CancellationToken.None);
+
+                // If -Id has been specified and has exactly one package, use the explicit version requested
+                var targetVersion = Version != null && Id != null && Id.Count == 1 ? new NuGetVersion(Version) : null;
+
+                var targetIdentities = installed
+                    .Select(pr => pr.PackageIdentity.Id)
+                    .Where(id => targetIds.Contains(id))
+                    .Select(id => new PackageIdentity(id, targetVersion))
+                    .ToList();
+
+                if (targetIdentities.Any())
                 {
-                    var installed = await nugetProject.GetInstalledPackagesAsync(CancellationToken.None);
+                    var actions = await packageManager.PreviewUpdatePackagesAsync(
+                        targetIdentities,
+                        new[] { nugetProject },
+                        resolutionContext,
+                        project.NuGetProjectContext,
+                        sourceRepositories,
+                        Enumerable.Empty<SourceRepository>(),
+                        CancellationToken.None);
 
-                    if (installed.Where(pr => pr.PackageIdentity.Id.Equals(packageId, StringComparison.OrdinalIgnoreCase)).Any())
-                    {
-                        var actions = await packageManager.PreviewUpdatePackagesAsync(
-                           packageId,
-                           nugetProject,
-                           resolutionContext,
-                           project.NuGetProjectContext,
-                           sourceRepositories,
-                           Enumerable.Empty<SourceRepository>(),
-                           CancellationToken.None);
-
-                        projectActions.AddRange(actions);
-                    }
+                    projectActions.AddRange(actions);
                 }
             }
             else
             {
                 var actions = await packageManager.PreviewUpdatePackagesAsync(
-                        nugetProject,
+                        new[] { nugetProject },
                         resolutionContext,
                         project.NuGetProjectContext,
                         sourceRepositories,
@@ -349,7 +379,9 @@ namespace NuGet.CommandLine
                 // REVIEW: Do we need to check for existence?
                 if (Directory.Exists(packagesDir))
                 {
-                    string relativePath = PathUtility.GetRelativePath(PathUtility.EnsureTrailingSlash(CurrentDirectory), packagesDir);
+                    string relativePath =
+                        NuGet.Commands.PathUtility.GetRelativePath(
+                            NuGet.Commands.PathUtility.EnsureTrailingSlash(CurrentDirectory), packagesDir);
                     Console.LogVerbose(
                         string.Format(
                             CultureInfo.CurrentCulture,
@@ -378,7 +410,7 @@ namespace NuGet.CommandLine
                 throw new CommandLineException(LocalizedResourceManager.GetString("MultipleProjectFilesFound"), packageReferenceFilePath);
             }
 
-            return new MSBuildProjectSystem(_msbuildDirectory, projectFiles[0], projectContext);
+            return new MSBuildProjectSystem(_msbuildDirectory.Value, projectFiles[0], projectContext);
         }
 
 

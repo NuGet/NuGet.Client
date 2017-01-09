@@ -1,8 +1,12 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
-using Newtonsoft.Json.Linq;
 using NuGet.Commands;
+using NuGet.Frameworks;
 using NuGet.Packaging.Core;
+using NuGet.ProjectManagement;
 using NuGet.ProjectModel;
 using NuGet.Protocol.Core.Types;
 
@@ -21,22 +25,34 @@ namespace NuGet.PackageManagement
         public RestoreResult RestoreResult { get; }
 
         /// <summary>
-        /// project.json after applying the changes
+        /// After applying the changes
         /// </summary>
-        public JObject UpdatedProjectJson { get; }
+        public RestoreResultPair RestoreResultPair { get; }
 
         /// <summary>
         /// Sources used for package restore.
         /// </summary>
         public IReadOnlyList<SourceRepository> Sources { get; }
 
-        public BuildIntegratedProjectAction(PackageIdentity packageIdentity,
+        /// <summary>
+        /// Original user actions.
+        /// </summary>
+        public IReadOnlyList<NuGetProjectAction> OriginalActions { get; }
+
+        /// <summary>
+        /// The context necessary for installing a package.
+        /// </summary>
+        public BuildIntegratedInstallationContext InstallationContext { get; }
+
+        public BuildIntegratedProjectAction(NuGetProject project,
+            PackageIdentity packageIdentity,
             NuGetProjectActionType nuGetProjectActionType,
             LockFile originalLockFile,
-            JObject updatedProjectJson,
-            RestoreResult restoreResult,
-            IReadOnlyList<SourceRepository> sources)
-            : base(packageIdentity, nuGetProjectActionType)
+            RestoreResultPair restoreResultPair,
+            IReadOnlyList<SourceRepository> sources,
+            IReadOnlyList<NuGetProjectAction> originalActions,
+            BuildIntegratedInstallationContext installationContext)
+            : base(packageIdentity, nuGetProjectActionType, project)
         {
             if (packageIdentity == null)
             {
@@ -48,14 +64,9 @@ namespace NuGet.PackageManagement
                 throw new ArgumentNullException(nameof(originalLockFile));
             }
 
-            if (updatedProjectJson == null)
+            if (restoreResultPair == null)
             {
-                throw new ArgumentNullException(nameof(updatedProjectJson));
-            }
-
-            if (restoreResult == null)
-            {
-                throw new ArgumentNullException(nameof(restoreResult));
+                throw new ArgumentNullException(nameof(restoreResultPair));
             }
 
             if (sources == null)
@@ -63,10 +74,22 @@ namespace NuGet.PackageManagement
                 throw new ArgumentNullException(nameof(sources));
             }
 
+            if (originalActions == null)
+            {
+                throw new ArgumentNullException(nameof(sources));
+            }
+
+            if (installationContext == null)
+            {
+                throw new ArgumentNullException(nameof(sources));
+            }
+
             OriginalLockFile = originalLockFile;
-            RestoreResult = restoreResult;
-            UpdatedProjectJson = updatedProjectJson;
+            RestoreResult = restoreResultPair.Result;
+            RestoreResultPair = restoreResultPair;
             Sources = sources;
+            OriginalActions = originalActions;
+            InstallationContext = installationContext;
         }
 
         public IReadOnlyList<NuGetProjectAction> GetProjectActions()
@@ -78,14 +101,14 @@ namespace NuGet.PackageManagement
                 var added = BuildIntegratedRestoreUtility.GetAddedPackages(OriginalLockFile, RestoreResult.LockFile);
                 var removed = BuildIntegratedRestoreUtility.GetAddedPackages(RestoreResult.LockFile, OriginalLockFile);
 
-                foreach (var package in added)
-                {
-                    actions.Add(NuGetProjectAction.CreateInstallProjectAction(package, sourceRepository: null));
-                }
-
                 foreach (var package in removed)
                 {
-                    actions.Add(NuGetProjectAction.CreateUninstallProjectAction(package));
+                    actions.Add(NuGetProjectAction.CreateUninstallProjectAction(package, Project));
+                }
+
+                foreach (var package in added)
+                {
+                    actions.Add(NuGetProjectAction.CreateInstallProjectAction(package, sourceRepository: null, project: Project));
                 }
             }
 

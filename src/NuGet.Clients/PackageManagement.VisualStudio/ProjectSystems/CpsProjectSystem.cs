@@ -7,12 +7,7 @@ using System.Threading.Tasks;
 using NuGet.ProjectManagement;
 using EnvDTEProject = EnvDTE.Project;
 using ThreadHelper = Microsoft.VisualStudio.Shell.ThreadHelper;
-#if VS14
-using NuGetVS = NuGet.VisualStudio14;
-
-#else
-using NuGetVS = NuGet.VisualStudio12;
-#endif
+using ProjectSystem = NuGet.VisualStudio.Facade.ProjectSystem;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
@@ -42,16 +37,16 @@ namespace NuGet.PackageManagement.VisualStudio
 
                     var root = EnvDTEProjectUtility.GetFullPath(EnvDTEProject);
                     string relativeTargetPath = PathUtility.GetRelativePath(PathUtility.EnsureTrailingSlash(root), targetFullPath);
-                    await AddImportStatementForVS2013Async(location, relativeTargetPath);
+                    await AddImportStatementAsync(location, relativeTargetPath);
                 });
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private async Task AddImportStatementForVS2013Async(ImportLocation location, string relativeTargetPath)
+        private async Task AddImportStatementAsync(ImportLocation location, string relativeTargetPath)
         {
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            await NuGetVS.ProjectHelper.DoWorkInWriterLockAsync(
+            await ProjectSystem.ProjectHelper.DoWorkInWriterLockAsync(
                 EnvDTEProject,
                 VsHierarchyUtility.ToVsHierarchy(EnvDTEProject),
                 buildProject => MicrosoftBuildEvaluationProjectUtility.AddImportStatement(buildProject, relativeTargetPath, location));
@@ -74,18 +69,18 @@ namespace NuGet.PackageManagement.VisualStudio
                     var root = EnvDTEProjectUtility.GetFullPath(EnvDTEProject);
                     // For VS 2012 or above, the operation has to be done inside the Writer lock
                     string relativeTargetPath = PathUtility.GetRelativePath(PathUtility.EnsureTrailingSlash(root), targetFullPath);
-                    await RemoveImportStatementForVS2013Async(relativeTargetPath);
+                    await RemoveImportStatementAsync(relativeTargetPath);
                 });
         }
 
         // IMPORTANT: The NoInlining is required to prevent CLR from loading VisualStudio12.dll assembly while running 
         // in VS2010 and VS2012
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private async Task RemoveImportStatementForVS2013Async(string relativeTargetPath)
+        private async Task RemoveImportStatementAsync(string relativeTargetPath)
         {
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            await NuGetVS.ProjectHelper.DoWorkInWriterLockAsync(
+            await ProjectSystem.ProjectHelper.DoWorkInWriterLockAsync(
                 EnvDTEProject,
                 VsHierarchyUtility.ToVsHierarchy(EnvDTEProject),
                 buildProject => MicrosoftBuildEvaluationProjectUtility.RemoveImportStatement(buildProject, relativeTargetPath));

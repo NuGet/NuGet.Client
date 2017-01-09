@@ -12,6 +12,62 @@ namespace NuGet.Client.Test
     public class ContentModelBuildTests
     {
         [Fact]
+        public void ContentModel_BuildMultiTargetingRootFolder()
+        {
+            // Arrange
+            var conventions = new ManagedCodeConventions(
+                new RuntimeGraph(
+                    new List<CompatibilityProfile>() { new CompatibilityProfile("net46.app") }));
+
+            var criteria = conventions.Criteria.ForFramework(NuGetFramework.AnyFramework);
+
+            var collection = new ContentItemCollection();
+            collection.Load(new string[]
+            {
+                "buildMultiTargeting/packageA.targets",
+                "buildMultiTargeting/packageA.props",
+                "buildMultiTargeting/config.xml"
+            });
+
+            // Act
+            var group = collection.FindBestItemGroup(criteria, conventions.Patterns.MSBuildMultiTargetingFiles);
+            var items = group.Items.OrderBy(item => item.Path, StringComparer.Ordinal).ToList();
+
+            // Assert
+            Assert.Equal(2, items.Count);
+            Assert.Equal("buildMultiTargeting/packageA.props", items[0].Path);
+            Assert.Equal("buildMultiTargeting/packageA.targets", items[1].Path);
+        }
+
+        [Fact]
+        public void ContentModel_BuildCrossTargetingRootFolder()
+        {
+            // Arrange
+            var conventions = new ManagedCodeConventions(
+                new RuntimeGraph(
+                    new List<CompatibilityProfile>() { new CompatibilityProfile("net46.app") }));
+
+            var criteria = conventions.Criteria.ForFramework(NuGetFramework.AnyFramework);
+
+            var collection = new ContentItemCollection();
+            collection.Load(new string[]
+            {
+                "buildCrossTargeting/packageA.targets",
+                "buildCrossTargeting/packageA.props",
+                "buildCrossTargeting/config.xml"
+            });
+
+            // Act
+            var group = collection.FindBestItemGroup(criteria, conventions.Patterns.MSBuildMultiTargetingFiles);
+            var items = group.Items.OrderBy(item => item.Path, StringComparer.Ordinal).ToList();
+
+            // Assert
+            Assert.Equal(2, items.Count);
+            Assert.Equal("buildCrossTargeting/packageA.props", items[0].Path);
+            Assert.Equal("buildCrossTargeting/packageA.targets", items[1].Path);
+        }
+
+        [Fact]
         public void ContentModel_BuildRootFolderAndTFM()
         {
             // Arrange

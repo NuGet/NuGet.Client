@@ -5,8 +5,9 @@ using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.Credentials;
 using System.Threading;
+using NuGet.Configuration;
 
-namespace NuGet
+namespace NuGet.CommandLine
 {
     public class ConsoleCredentialProvider : Credentials.ICredentialProvider
     {
@@ -23,10 +24,11 @@ namespace NuGet
 
         private IConsole Console { get; set; }
 
-        public Task<CredentialResponse> Get(
+        public Task<CredentialResponse> GetAsync(
             Uri uri,
             IWebProxy proxy,
-            bool isProxy,
+            CredentialRequestType type,
+            string message,
             bool isRetry,
             bool nonInteractive,
             CancellationToken cancellationToken)
@@ -36,10 +38,29 @@ namespace NuGet
                 throw new ArgumentNullException(nameof(uri));
             }
 
-            string message = isProxy ?
-                    LocalizedResourceManager.GetString("Credentials_ProxyCredentials") :
-                    LocalizedResourceManager.GetString("Credentials_RequestCredentials");
+            if (nonInteractive)
+            {
+                return Task.FromResult(
+                    new CredentialResponse(CredentialStatus.ProviderNotApplicable));
+            }
+            
+            switch (type)
+            {
+                case CredentialRequestType.Proxy:
+                    message = LocalizedResourceManager.GetString("Credentials_ProxyCredentials");
+                    break;
+
+                case CredentialRequestType.Forbidden:
+                    message = LocalizedResourceManager.GetString("Credentials_ForbiddenCredentials");
+                    break;
+
+                default:
+                    message = LocalizedResourceManager.GetString("Credentials_RequestCredentials");
+                    break;
+            }
+
             Console.WriteLine(message, uri.OriginalString);
+
             Console.Write(LocalizedResourceManager.GetString("Credentials_UserName"));
             cancellationToken.ThrowIfCancellationRequested();
             string username = Console.ReadLine();
@@ -55,7 +76,7 @@ namespace NuGet
                     SecurePassword = password
                 };
 
-                var cred = new CredentialResponse(credentials, CredentialStatus.Success);
+                var cred = new CredentialResponse(credentials);
 
                 var task = Task.FromResult(cred);
 

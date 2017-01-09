@@ -17,7 +17,6 @@ namespace NuGet.PackageManagement.VisualStudio
             string packageInstallPath,
             string scriptRelativePath,
             EnvDTEProject envDTEProject,
-            NuGetProject nuGetProject,
             INuGetProjectContext nuGetProjectContext,
             bool throwOnFailure);
 

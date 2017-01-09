@@ -9,13 +9,13 @@ namespace NuGet.DependencyResolver
 {
     public class Tracker<TItem>
     {
-        private readonly Dictionary<string, Entry> _entries 
+        private readonly Dictionary<string, Entry> _entries
             = new Dictionary<string, Entry>(StringComparer.OrdinalIgnoreCase);
 
         public void Track(GraphItem<TItem> item)
         {
             var entry = GetEntry(item);
-            if (!entry.List.Contains(item) && !entry.Locked)
+            if (!entry.List.Contains(item))
             {
                 entry.List.Add(item);
             }
@@ -39,6 +39,7 @@ namespace NuGet.DependencyResolver
         public bool IsBestVersion(GraphItem<TItem> item)
         {
             var entry = GetEntry(item);
+
             return entry.List.All(known => item.Key.Version >= known.Key.Version);
         }
 
@@ -55,14 +56,6 @@ namespace NuGet.DependencyResolver
             return itemList;
         }
 
-        internal void Lock(GraphItem<TItem> item)
-        {
-            var entry = GetEntry(item);
-            entry.List.Clear();
-            entry.List.Add(item);
-            entry.Locked = true;
-        }
-
         private class Entry
         {
             public Entry()
@@ -73,7 +66,6 @@ namespace NuGet.DependencyResolver
             public HashSet<GraphItem<TItem>> List { get; set; }
 
             public bool Ambiguous { get; set; }
-            public bool Locked { get; set; }
         }
     }
 }

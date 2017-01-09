@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
@@ -14,6 +14,9 @@ namespace NuGet.Common
 {
     public static class ConcurrencyUtilities
     {
+        private const int NumberOfRetries = 3000;
+        private static readonly TimeSpan SleepDuration = TimeSpan.FromMilliseconds(10);
+
         public async static Task<T> ExecuteWithFileLockedAsync<T>(string filePath,
             Func<CancellationToken, Task<T>> action,
             CancellationToken token)
@@ -23,41 +26,155 @@ namespace NuGet.Common
                 throw new ArgumentNullException(nameof(filePath));
             }
 
+            // limit the number of unauthorized, this should be around 30 seconds.
+            var unauthorizedAttemptsLeft = NumberOfRetries;
+
             var lockPath = FileLockPath(filePath);
-            var bytes = Encoding.UTF8.GetBytes($"{ProcessId}{Environment.NewLine}{filePath}{Environment.NewLine}");
+
+            while (true)
+            {
+                FileStream fs = null;
+
+                try
+                {
+                    try
+                    {
+                        fs = AcquireFileStream(lockPath);
+                    }
+                    catch (DirectoryNotFoundException)
+                    {
+                        throw;
+                    }
+                    catch (UnauthorizedAccessException)
+                    {
+                        token.ThrowIfCancellationRequested();
+
+                        if (unauthorizedAttemptsLeft < 1)
+                        {
+                            var message = string.Format(
+                                CultureInfo.CurrentCulture,
+                                Strings.UnauthorizedLockFail,
+                                lockPath,
+                                filePath);
+
+                            throw new InvalidOperationException(message);
+                        }
+
+                        unauthorizedAttemptsLeft--;
+
+                        // This can occur when the file is being deleted
+                        // Or when an admin user has locked the file
+                        await Task.Delay(SleepDuration);
+                        continue;
+                    }
+                    catch (IOException)
+                    {
+                        token.ThrowIfCancellationRequested();
+
+                        await Task.Delay(SleepDuration);
+                        continue;
+                    }
+
+                    // Run the action within the lock
+                    return await action(token);
+                }
+                finally
+                {
+                    if (fs != null)
+                    {
+                        // Dispose of the stream, this will cause a delete
+                        fs.Dispose();
+                    }
+                }
+            }
+        }
+
+        public static void ExecuteWithFileLocked(string filePath,
+            Action action)
+        {
+            if (string.IsNullOrEmpty(filePath))
+            {
+                throw new ArgumentNullException(nameof(filePath));
+            }
+
+            // limit the number of unauthorized, this should be around 30 seconds.
+            var unauthorizedAttemptsLeft = NumberOfRetries;
+
+            var lockPath = FileLockPath(filePath);
 
             while (true)
             {
                 FileStream fs = null;
                 try
                 {
-                    fs = new FileStream(lockPath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
-                }
-                catch (DirectoryNotFoundException)
-                {
-                    throw;
-                }
-                catch (IOException)
-                {
-                    token.ThrowIfCancellationRequested();
+                    try
+                    {
+                        fs = AcquireFileStream(lockPath);
+                    }
+                    catch (DirectoryNotFoundException)
+                    {
+                        throw;
+                    }
+                    catch (UnauthorizedAccessException)
+                    {
+                        if (unauthorizedAttemptsLeft < 1)
+                        {
+                            var message = string.Format(
+                                CultureInfo.CurrentCulture,
+                                Strings.UnauthorizedLockFail,
+                                lockPath,
+                                filePath);
 
-                    await Task.Delay(10);
-                    continue;
-                }
+                            throw new InvalidOperationException(message);
+                        }
 
-                try
-                {
-                    fs.Write(bytes, 0, bytes.Length);
-                }
-                catch
-                {
-                }
+                        unauthorizedAttemptsLeft--;
 
-                using (fs)
+                        // This can occur when the file is being deleted
+                        // Or when an admin user has locked the file
+                        Thread.Sleep(SleepDuration);
+                        continue;
+                    }
+                    catch (IOException)
+                    {
+                        Thread.Sleep(SleepDuration);
+                        continue;
+                    }
+
+                    // Run the action within the lock
+                    action();
+                    return;
+                }
+                finally
                 {
-                    return await action(token);
+                    // Dispose of the stream, this will cause a delete
+                    fs?.Dispose();
                 }
             }
+        }
+
+        private static FileStream AcquireFileStream(string lockPath)
+        {
+            FileOptions options;
+            if (RuntimeEnvironmentHelper.IsWindows)
+            {
+                // This file is deleted when the stream is closed.
+                options = FileOptions.DeleteOnClose;
+            }
+            else
+            {
+                // FileOptions.DeleteOnClose causes concurrency issues on Mac OS X and Linux.
+                options = FileOptions.None;
+            }
+
+            // Sync operations have shown much better performance than FileOptions.Asynchronous
+            return new FileStream(
+                lockPath,
+                FileMode.OpenOrCreate,
+                FileAccess.ReadWrite,
+                FileShare.None,
+                bufferSize: 32,
+                options: options);
         }
 
         private static string _basePath;
@@ -72,7 +189,7 @@ namespace NuGet.Common
 
                 _basePath = Path.Combine(NuGetEnvironment.GetFolderPath(NuGetFolderPath.Temp), "lock");
 
-                Directory.CreateDirectory(_basePath);
+                DirectoryUtility.CreateSharedDirectory(_basePath);
 
                 return _basePath;
             }
@@ -82,7 +199,7 @@ namespace NuGet.Common
         {
             // In case the directory was cleaned up, we can choose to fix it (at a cost of another roundtrip to disk
             // or fail, starting with the more expensive path, and we might have to get rid of it if it becomes too hot.
-            Directory.CreateDirectory(BasePath);
+            DirectoryUtility.CreateSharedDirectory(BasePath);
 
             return Path.Combine(BasePath, FilePathToLockName(filePath));
         }
@@ -95,7 +212,11 @@ namespace NuGet.Common
             // to a unique lock name.
             using (var sha = SHA1.Create())
             {
-                var hash = sha.ComputeHash(Encoding.UTF32.GetBytes(filePath));
+                // To avoid conflicts on package id casing a case-insensitive lock is used.
+                var fullPath = Path.IsPathRooted(filePath) ? Path.GetFullPath(filePath) : filePath;
+                var normalizedPath = fullPath.ToUpperInvariant();
+
+                var hash = sha.ComputeHash(Encoding.UTF32.GetBytes(normalizedPath));
 
                 return ToHex(hash);
             }
@@ -124,20 +245,6 @@ namespace NuGet.Common
             else
             {
                 return (char)(input + 0x30);
-            }
-        }
-
-        private static int _processId = -1;
-        private static int ProcessId
-        {
-            get
-            {
-                if (_processId < 0)
-                {
-                    _processId = Process.GetCurrentProcess().Id;
-                }
-
-                return _processId;
             }
         }
     }

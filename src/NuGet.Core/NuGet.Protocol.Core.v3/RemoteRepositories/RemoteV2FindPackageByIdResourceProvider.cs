@@ -5,9 +5,8 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Protocol.Core.Types;
-using NuGet.Protocol.Core.v3.LocalRepositories;
 
-namespace NuGet.Protocol.Core.v3.RemoteRepositories
+namespace NuGet.Protocol
 {
     /// <summary>
     /// A <see cref="ResourceProvider" /> for <see cref="FindPackageByIdResource" /> over v2 NuGet feeds.
@@ -19,7 +18,7 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
         {
         }
 
-        public override Task<Tuple<bool, INuGetResource>> TryCreate(SourceRepository sourceRepository, CancellationToken token)
+        public override async Task<Tuple<bool, INuGetResource>> TryCreate(SourceRepository sourceRepository, CancellationToken token)
         {
             INuGetResource resource = null;
 
@@ -27,12 +26,14 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
                 &&
                 !sourceRepository.PackageSource.Source.EndsWith("json", StringComparison.OrdinalIgnoreCase))
             {
+                var httpSourceResource = await sourceRepository.GetResourceAsync<HttpSourceResource>(token);
+
                 resource = new RemoteV2FindPackageByIdResource(
-                    sourceRepository.PackageSource, 
-                    async () => (await sourceRepository.GetResourceAsync<HttpHandlerResource>(token)));
+                    sourceRepository.PackageSource,
+                    httpSourceResource.HttpSource);
             }
 
-            return Task.FromResult(Tuple.Create(resource != null, resource));
+            return Tuple.Create(resource != null, resource);
         }
     }
 }

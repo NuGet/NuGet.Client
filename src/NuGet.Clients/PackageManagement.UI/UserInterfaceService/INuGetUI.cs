@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using System.Windows;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
@@ -17,6 +18,12 @@ namespace NuGet.PackageManagement.UI
     /// <remarks>This is not expected to be thread safe.</remarks>
     public interface INuGetUI
     {
+        bool PromptForPackageManagementFormat(PackageManagementFormat selectedFormat);
+
+        Task UpdateNuGetProjectToPackageRef(IEnumerable<NuGetProject> msBuildProjects);
+
+        bool WarnAboutDotnetDeprecation(IEnumerable<NuGetProject> projects);
+
         bool PromptForLicenseAcceptance(IEnumerable<PackageLicenseInfo> packages);
 
         void LaunchExternalLink(Uri url);
@@ -29,19 +36,29 @@ namespace NuGet.PackageManagement.UI
         bool PromptForPreviewAcceptance(IEnumerable<PreviewResult> actions);
 
         /// <summary>
-        /// Opens the progress window
+        /// Marks the beginning of NuGet operation
         /// </summary>
-        void ShowProgressDialog(DependencyObject ownerWindow);
+        void BeginOperation();
 
         /// <summary>
-        /// Closes the progress window
+        /// Marks the ending of NuGet operation
         /// </summary>
-        void CloseProgressDialog();
+        void EndOperation();
 
         /// <summary>
-        /// Returns the logging context of the ProgressWindow
+        /// Common operations
         /// </summary>
-        NuGetUIProjectContext ProgressWindow { get; }
+        ICommonOperations CommonOperations { get; }
+
+        /// <summary>
+        /// Shared UI context
+        /// </summary>
+        INuGetUIContext UIContext { get; }
+
+        /// <summary>
+        /// A project context used for NuGet operations
+        /// </summary>
+        INuGetProjectContext ProjectContext { get; }
 
         /// <summary>
         /// Target projects
@@ -52,6 +69,11 @@ namespace NuGet.PackageManagement.UI
         /// True if the option to preview actions first is checked
         /// </summary>
         bool DisplayPreviewWindow { get; }
+
+        /// <summary>
+        /// True if the option to ignore the deprecated framework window is unchecked
+        /// </summary>
+        bool DisplayDeprecatedFrameworkWindow { get; }
 
         /// <summary>
         /// Package currently selected in the UI
@@ -74,12 +96,14 @@ namespace NuGet.PackageManagement.UI
         /// </summary>
         void OnActionsExecuted(IEnumerable<ResolvedAction> actions);
 
-        SourceRepository ActiveSource { get; }
+        IEnumerable<SourceRepository> ActiveSources { get; }
 
         bool RemoveDependencies { get; }
 
         bool ForceRemove { get; }
 
         DependencyBehavior DependencyBehavior { get; }
+
+        Configuration.ISettings Settings { get; }
     }
 }

@@ -333,7 +333,7 @@ function Test-SubTreeUpdateWithConflict {
     Assert-Package $p D 1.0
     Assert-Package $p H 1.0
 
-    Assert-Throws { $p | Update-Package C -Source $context.RepositoryPath } "Unable to resolve dependencies. 'C 2.0.0' is not compatible with 'A 1.0.0 constraint: C (>= 1.0.0)', 'H 1.0.0 constraint: C (= 1.0.0)'."
+    Assert-Throws { $p | Update-Package C -Source $context.RepositoryPath } "Unable to resolve dependencies. 'C 2.0.0' is not compatible with 'H 1.0.0 constraint: C (= 1.0.0)'."
     Assert-Null (Get-ProjectPackage $p C 2.0)
     Assert-Null (Get-SolutionPackage C 2.0)
     Assert-Package $p A 1.0
@@ -360,7 +360,7 @@ function Test-AddingBindingRedirectAfterUpdate {
     Assert-Package $p B 2.0
     Assert-Null (Get-SolutionPackage B 1.0)
 
-    Build-Project $p
+    Build-Solution
 
     Add-BindingRedirect
 
@@ -666,7 +666,7 @@ function Test-UpdateScenariosWithConstraints {
     Add-PackageConstraint $p3 E "[1.0]"
      
     # Act
-    Assert-Throws { Update-Package A -Source $context.RepositoryPath } "Unable to resolve 'A'. An additional constraint '(>= 1.0.0 && < 2.0.0)' defined in packages.config prevents this operation."
+    Assert-Throws { Update-Package -Version 2.0 A -Source $context.RepositoryPath } "Unable to resolve 'A'. An additional constraint '(>= 1.0.0 && < 2.0.0)' defined in packages.config prevents this operation."
     Assert-Throws { Update-Package C -Source $context.RepositoryPath } "Unable to find a version of 'D' that is compatible with 'C 2.0.0 constraint: D (>= 2.0.0)'. 'D' has an additional constraint (= 1.0.0) defined in packages.config."
     Assert-Throws { Update-Package F -Source $context.RepositoryPath } "Unable to resolve dependencies. 'F 2.0.0' is not compatible with 'E 1.0.0 constraint: F (= 1.0.0)'."
 
@@ -846,9 +846,10 @@ function Test-UpdatePackageWithDependentsThatHaveNoAvailableUpdatesThrows {
 function Test-UpdatePackageThrowsWhenSourceIsInvalid {
     # Arrange
     $p = New-WebApplication 
+    $p | Install-Package jQuery -Version 1.5.1 -Source $context.RepositoryPath
 
     # Act & Assert
-    Assert-Throws { Update-Package jQuery -source "d:package" } "Invalid URI: A Dos path must be rooted, for example, 'c:\'."
+    Assert-Throws { Update-Package jQuery -source "d:package" } "Unsupported type of source 'd:package'. Please provide an HTTP or local source."
 }
 
 function Test-UpdatePackageInOneProjectDoesNotCheckAllPackagesInSolution {
@@ -1473,7 +1474,7 @@ function Test-FinishFailedUpdateOnSolutionOpen
 
     # Act
     # After closing the file handle, we close the solution and reopen it
-    $solutionDir = $dte.Solution.FullName
+    $solutionDir = Get-SolutionFullName
     Close-Solution
     Open-Solution $solutionDir
 
@@ -1488,7 +1489,7 @@ function Test-UpdatePackageThrowsIfMinClientVersionIsNotSatisfied
     param ($context)
 
     # Arrange
-    $p = New-SilverlightClassLibrary
+    $p = New-ClassLibrary
 
     $p | Install-Package kitty -version 1.0.0 -Source $context.RepositoryPath
 
@@ -1736,4 +1737,27 @@ function Test-UpdatePackageWithToHighestMinorFlag {
     Assert-Null (Get-ProjectPackage $p A 1.0.0)
     Assert-Null (Get-ProjectPackage $p B 1.0.0)
     Assert-Null (Get-ProjectPackage $p C 1.0.0)
+}
+
+function Test-UpdatingBindingRedirectAfterUpdate {
+    param(
+        $context
+    )
+
+    # Arrange
+    $p = New-WebApplication
+
+    # Act
+    $p | Install-Package B -Version 2.0 -Source $context.RepositoryPath
+    $p | Install-Package A -Version 1.0 -Source $context.RepositoryPath
+
+    # Assert
+    Assert-BindingRedirect $p web.config B '0.0.0.0-2.0.0.0' '2.0.0.0'
+
+    # ACT
+    $p | Update-Package B -Version 3.0 -Source $context.RepositoryPath
+
+    # Assert
+    Assert-Package $p B 3.0
+    Assert-BindingRedirect $p web.config B '0.0.0.0-3.0.0.0' '3.0.0.0'
 }

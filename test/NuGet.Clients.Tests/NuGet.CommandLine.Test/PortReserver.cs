@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
 
+using NuGet.Common;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -22,20 +23,29 @@ namespace NuGet.CommandLine.Test
     public class PortReserver : IDisposable
     {
         private Mutex _portMutex;
+        private const int _waitTime = 2 * 60 * 1000; // 2 minutes in milliseconds
 
         // We use this list to hold on to all the ports used because the Mutex will be blown through on the same thread.
         // Theoretically we can do a thread local hashset, but that makes dispose thread dependant, or requires more complicated concurrency checks.
         // Since practically there is no perf issue or concern here, this keeps the code the simplest possible.
         private static HashSet<int> _appDomainOwnedPorts = new HashSet<int>();
 
-        public int PortNumber
-        {
-            get;
-            private set;
-        }
+        public int PortNumber { get; private set; }
+        public string BaseUri { get; }
 
-        public PortReserver(int basePort = 50231)
+        /// <summary>
+        /// Initializes an instance of PortReserver.
+        /// </summary>
+        /// <param name="basePath">The base path for all request URL's.
+        /// Can be either null (default) for "/" or any "/"-prefixed string (e.g.:  /{GUID}).</param>
+        /// <param name="basePort">The base port for all request URL's.</param>
+        public PortReserver(string basePath = null, int basePort = 50231)
         {
+            if (!string.IsNullOrEmpty(basePath) && (!basePath.StartsWith("/") || basePath.EndsWith("/")))
+            {
+                throw new ArgumentException($"If provided, argument \"{nameof(basePath)}\" must start with and must not end with a slash (/)");
+            }
+
             if (basePort <= 0)
             {
                 throw new InvalidOperationException();
@@ -60,7 +70,7 @@ namespace NuGet.CommandLine.Test
                         // AppDomainOwnedPorts check enables reserving two ports from the same thread in sequence.
                         // ListUsedTCPPort prevents port contention with other apps.
                         if (_appDomainOwnedPorts.Contains(port) ||
-                            ListUsedTCPPort().Any(endPoint => endPoint.Port == port))
+                            ListUsedTCPPort().Any(p => p == port))
                         {
                             continue;
                         }
@@ -87,14 +97,8 @@ namespace NuGet.CommandLine.Test
                     mutex.ReleaseMutex();
                 }
             }
-        }
 
-        public string BaseUri
-        {
-            get
-            {
-                return String.Format(CultureInfo.InvariantCulture, "http://localhost:{0}/", PortNumber);
-            }
+            BaseUri = string.Format(CultureInfo.InvariantCulture, "http://localhost:{0}{1}/", PortNumber, basePath ?? string.Empty);
         }
 
         public void Dispose()
@@ -110,6 +114,7 @@ namespace NuGet.CommandLine.Test
                 _portMutex.Dispose();
                 _appDomainOwnedPorts.Remove(PortNumber);
                 PortNumber = -1;
+                mutex.ReleaseMutex();
             }
         }
 
@@ -124,12 +129,77 @@ namespace NuGet.CommandLine.Test
             return mutex;
         }
 
-        private static IPEndPoint[] ListUsedTCPPort()
+        private static List<int> ListUsedTCPPort()
         {
             var usedPort = new HashSet<int>();
             IPGlobalProperties ipGlobalProperties = IPGlobalProperties.GetIPGlobalProperties();
 
-            return ipGlobalProperties.GetActiveTcpListeners();
+            if (RuntimeEnvironmentHelper.IsMono && !RuntimeEnvironmentHelper.IsWindows)
+            {
+                return ListUsedLocalhostTCPPortOnMono();
+            }
+            else
+            {
+                return ipGlobalProperties.GetActiveTcpListeners().Select(p => p.Port).ToList();
+            }
+        }
+
+        private static List<int> ListUsedLocalhostTCPPortOnMono()
+        {
+            var usedPort = new HashSet<int>();
+
+            var processStartInfo = new ProcessStartInfo
+            {
+                UseShellExecute = false,
+                FileName = "lsof",
+                Arguments = "-i TCP",
+                RedirectStandardOutput = true
+            };
+
+            try
+            {
+                using (var process = Process.Start(processStartInfo))
+                {
+                    process.WaitForExit(_waitTime);
+
+                    if (process.ExitCode == 0)
+                    {
+                        var output = process.StandardOutput.ReadToEnd();
+
+                        if (output != "")
+                        {
+                            for (int i = 0; i < output.Length; i++)
+                            {
+
+                                var found = output.IndexOf("localhost", i);
+
+                                if (found >= 0)
+                                {
+                                    var text = output.Substring(found + "localhost:".Length, 5);
+
+                                    int port;
+                                    bool result = int.TryParse(text, out port);
+
+                                    if (result)
+                                    {
+                                        usedPort.Add(port);
+                                    }
+                                    i = found;
+                                }
+                                else
+                                    break;
+                            }
+
+                        }
+                    }
+                }
+            }
+            catch
+            {
+                // ignore errors
+            }
+
+            return usedPort.ToList();
         }
     }
 }

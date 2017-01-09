@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using NuGet.Resolver;
 
 namespace NuGet.PackageManagement
@@ -14,12 +15,12 @@ namespace NuGet.PackageManagement
         /// Public constructor to create the resolution context
         /// </summary>
         public ResolutionContext()
+            : this(DependencyBehavior.Lowest,
+                  includePrelease: false,
+                  includeUnlisted: true,
+                  versionConstraints: VersionConstraints.None,
+                  gatherCache: new GatherCache())
         {
-            DependencyBehavior = DependencyBehavior.Lowest;
-            IncludePrerelease = false;
-            IncludeUnlisted = true;
-            VersionConstraints = VersionConstraints.None;
-            GatherCache = new GatherCache();
         }
 
         /// <summary>
@@ -30,12 +31,34 @@ namespace NuGet.PackageManagement
             bool includePrelease,
             bool includeUnlisted,
             VersionConstraints versionConstraints)
+            : this(dependencyBehavior,
+                  includePrelease,
+                  includeUnlisted,
+                  versionConstraints,
+                  new GatherCache())
         {
+        }
+
+        /// <summary>
+        /// Public constructor to create the resolution context
+        /// </summary>
+        public ResolutionContext(
+            DependencyBehavior dependencyBehavior,
+            bool includePrelease,
+            bool includeUnlisted,
+            VersionConstraints versionConstraints,
+            GatherCache gatherCache)
+        {
+            if (gatherCache == null)
+            {
+                throw new ArgumentNullException(nameof(gatherCache));
+            }
+
             DependencyBehavior = dependencyBehavior;
             IncludePrerelease = includePrelease;
             IncludeUnlisted = includeUnlisted;
             VersionConstraints = versionConstraints;
-            GatherCache = new GatherCache();
+            GatherCache = gatherCache;
         }
 
         /// <summary>
@@ -62,7 +85,6 @@ namespace NuGet.PackageManagement
         /// Gathe cache containing cached packages that can be used across operations.
         /// Ex: Update-Package updates all packages across all projects, GatherCache stores
         /// the gathered packages and re-uses them across all sub operations.
-        /// This property is for internal use or testing only.
         /// </summary>
         public GatherCache GatherCache { get; }
     }

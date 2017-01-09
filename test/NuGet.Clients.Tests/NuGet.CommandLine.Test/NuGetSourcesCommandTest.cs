@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -8,6 +11,7 @@ using NuGet.Test.Utility;
 using Test.Utility;
 using Xunit;
 using Xunit.Extensions;
+using NuGet.Common;
 
 namespace NuGet.CommandLine.Test
 {
@@ -28,12 +32,13 @@ namespace NuGet.CommandLine.Test
                     "-Source",
                     "http://test_source"
                 };
+                string root = Directory.GetDirectoryRoot(Directory.GetCurrentDirectory());
 
                 // Act
                 // Set the working directory to C:\, otherwise,
                 // the test will change the nuget.config at the code repo's root directory
                 // And, will fail since global nuget.config is updated
-                var result = CommandRunner.Run(nugetexe, @"c:\", string.Join(" ", args), true);
+                var result = CommandRunner.Run(nugetexe, root, string.Join(" ", args), true);
 
                 // Assert
                 Assert.Equal(0, result.Item1);
@@ -62,15 +67,16 @@ namespace NuGet.CommandLine.Test
                     "-Password",
                     "test_password"
                 };
+                string root = Directory.GetDirectoryRoot(Directory.GetCurrentDirectory());
 
                 // Act
                 // Set the working directory to C:\, otherwise,
                 // the test will change the nuget.config at the code repo's root directory
                 // And, will fail since global nuget.config is updated
-                var result = CommandRunner.Run(nugetexe, @"c:\", string.Join(" ", args), true);
+                var result = CommandRunner.Run(nugetexe, root, string.Join(" ", args), true);
 
                 // Assert
-                Assert.Equal(0, result.Item1);
+                Assert.True(0 == result.Item1, result.Item2 + " " + result.Item3);
 
                 var settings = Configuration.Settings.LoadDefaultSettings(null, null, null);
                 var source = settings.GetValue("packageSources", "test_source");
@@ -109,15 +115,16 @@ namespace NuGet.CommandLine.Test
                     "test_password",
                     "-StorePasswordInClearText"
                 };
+                string root = Directory.GetDirectoryRoot(Directory.GetCurrentDirectory());
 
                 // Act
                 // Set the working directory to C:\, otherwise,
                 // the test will change the nuget.config at the code repo's root directory
                 // And, will fail since global nuget.config is updated
-                var result = CommandRunner.Run(nugetexe, @"c:\", string.Join(" ", args), true);
+                var result = CommandRunner.Run(nugetexe, root, string.Join(" ", args), true);
 
                 // Assert
-                Assert.Equal(0, result.Item1);
+                Assert.True(0 == result.Item1, result.Item2 + " " + result.Item3);
 
                 var settings = Configuration.Settings.LoadDefaultSettings(null, null, null);
                 var source = settings.GetValue("packageSources", "test_source");
@@ -139,7 +146,7 @@ namespace NuGet.CommandLine.Test
         public void SourcesCommandTest_AddWithUserNamePassword_UserDefinedConfigFile()
         {
             // Arrange
-            using (var configFileDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var configFileDirectory = TestDirectory.Create())
             {
                 var nugetexe = Util.GetNuGetExePath();
                 var configFileName = "nuget.config";
@@ -202,7 +209,7 @@ namespace NuGet.CommandLine.Test
             // Arrange
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var configFileDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var configFileDirectory = TestDirectory.Create())
             {
                 var configFileName = "nuget.config";
                 var configFilePath = Path.Combine(configFileDirectory, configFileName);
@@ -281,7 +288,7 @@ namespace NuGet.CommandLine.Test
             // Arrange
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var configFileDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var configFileDirectory = TestDirectory.Create())
             {
                 var configFileName = "nuget.config";
                 var configFilePath = Path.Combine(configFileDirectory, configFileName);
@@ -363,12 +370,13 @@ namespace NuGet.CommandLine.Test
                     "-Verbosity",
                     "Quiet"
                 };
+                string root = Directory.GetDirectoryRoot(Directory.GetCurrentDirectory());
 
                 // Act
                 // Set the working directory to C:\, otherwise,
                 // the test will change the nuget.config at the code repo's root directory
                 // And, will fail since global nuget.config is updated
-                var result = CommandRunner.Run(nugetexe, @"c:\", string.Join(" ", args), true);
+                var result = CommandRunner.Run(nugetexe, root, string.Join(" ", args), true);
 
                 // Assert
                 Util.VerifyResultSuccess(result);

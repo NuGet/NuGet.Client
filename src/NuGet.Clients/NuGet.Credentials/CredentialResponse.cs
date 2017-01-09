@@ -1,34 +1,35 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Net;
 
 namespace NuGet.Credentials
 {
     public class CredentialResponse
     {
-        private CredentialResponse()
-        {
-        }
-
         /// <summary>
-        /// Creates a Credential response object without giving credentials.
-        /// Note should only be done if the status is ProviderNotApplicable.
+        /// Creates a credential response object without giving credentials. This constructor is used only if the
+        /// credential provider was not able to get credentials. The <paramref name="status"/> indicates why the
+        /// provider was not able to get credentials.
         /// </summary>
-        /// <param name="status"></param>
+        /// <param name="status">The status of why the credential provider was not able to get credentials.</param>
         public CredentialResponse(CredentialStatus status) : this(null, status)
         {
         }
 
         /// <summary>
-        /// Crates a credential response object
+        /// Creates a credential response object with a given set of credentials. This constuctor is used only if the
+        /// credential provider was able to get credentials.
         /// </summary>
-        /// <param name="credentials"></param>
-        /// <param name="status"></param>
-        public CredentialResponse(ICredentials credentials, CredentialStatus status)
+        /// <param name="credentials">The credentials fetched by the credential provider.</param>
+
+        public CredentialResponse(ICredentials credentials) : this(credentials, CredentialStatus.Success)
         {
-            if ((credentials != null && status == CredentialStatus.ProviderNotApplicable) ||
+        }
+
+        private CredentialResponse(ICredentials credentials, CredentialStatus status)
+        {
+            if ((credentials != null && status != CredentialStatus.Success) ||
                 (credentials == null && status == CredentialStatus.Success))
             {
                 throw new ProviderException(Resources.ProviderException_InvalidCredentialResponse);
@@ -40,11 +41,5 @@ namespace NuGet.Credentials
 
         public ICredentials Credentials { get; }
         public CredentialStatus Status { get; }
-    }
-
-    public enum CredentialStatus
-    {
-        Success,
-        ProviderNotApplicable
     }
 }

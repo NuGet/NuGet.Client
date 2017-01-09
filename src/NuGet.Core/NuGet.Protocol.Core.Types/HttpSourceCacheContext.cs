@@ -2,54 +2,63 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.IO;
+using System.Diagnostics;
 
 namespace NuGet.Protocol.Core.Types
 {
     public class HttpSourceCacheContext
     {
-        private readonly string _rootTempFolder;
-        private bool tempFolderCreated;
-
-        public HttpSourceCacheContext(SourceCacheContext context)
+        private HttpSourceCacheContext(string rootTempFolder, TimeSpan maxAge, bool directDownload)
         {
-            if (context == null)
+            if (maxAge <= TimeSpan.Zero)
             {
-                throw new ArgumentNullException(nameof(context));
+                if (rootTempFolder == null)
+                {
+                    throw new ArgumentNullException(nameof(rootTempFolder));
+                }
+            }
+            else
+            {
+                Debug.Assert(
+                    rootTempFolder == null,
+                    $"{nameof(rootTempFolder)} should be null when {nameof(maxAge)} is not zero.");
             }
 
-            MaxAge = context.ListMaxAgeTimeSpan;
-            _rootTempFolder = context.GeneratedTempFolder;
-        }
-
-        public HttpSourceCacheContext(SourceCacheContext context, TimeSpan overrideMaxAge)
-        {
-            if (context == null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            MaxAge = overrideMaxAge;
-            _rootTempFolder = context.GeneratedTempFolder;
+            RootTempFolder = rootTempFolder;
+            MaxAge = maxAge;
+            DirectDownload = directDownload;
         }
 
         public TimeSpan MaxAge { get; }
 
+        public bool DirectDownload { get; }
+
         /// <summary>
         /// A suggested root folder to drop temporary files under, it will get cleared by the
-        /// code that constructs a RestoreRequest.
+        /// disposal of the <see cref="SourceCacheContext"/> that was used to create this instance.
         /// </summary>
-        public string RootTempFolder
-        {
-            get
-            {
-                if (!tempFolderCreated)
-                {
-                    Directory.CreateDirectory(_rootTempFolder);
-                    tempFolderCreated = true;
-                }
+        public string RootTempFolder { get; }
 
-                return _rootTempFolder;
+        public static HttpSourceCacheContext Create(SourceCacheContext cacheContext, int retryCount)
+        {
+            if (cacheContext == null)
+            {
+                throw new ArgumentNullException(nameof(cacheContext));
+            }
+
+            if (retryCount == 0 && cacheContext.MaxAgeTimeSpan > TimeSpan.Zero)
+            {
+                return new HttpSourceCacheContext(
+                    rootTempFolder: null,
+                    maxAge: cacheContext.MaxAgeTimeSpan,
+                    directDownload: cacheContext.DirectDownload);
+            }
+            else
+            {
+                return new HttpSourceCacheContext(
+                    cacheContext.GeneratedTempFolder,
+                    TimeSpan.Zero,
+                    cacheContext.DirectDownload);
             }
         }
     }

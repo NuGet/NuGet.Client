@@ -12,12 +12,18 @@ namespace NuGet.Frameworks
     /// <summary>
     /// A portable implementation of the .NET FrameworkName type with added support for NuGet folder names.
     /// </summary>
-    public partial class NuGetFramework : IEquatable<NuGetFramework>
+#if NUGET_FRAMEWORKS_INTERNAL
+    internal
+#else
+    public
+#endif
+    partial class NuGetFramework : IEquatable<NuGetFramework>
     {
         private readonly string _frameworkIdentifier;
         private readonly Version _frameworkVersion;
         private readonly string _frameworkProfile;
         private const string _portable = "portable";
+        private int? _hashCode;
 
         public NuGetFramework(NuGetFramework framework)
             : this(framework.Framework, framework.Version, framework.Profile)
@@ -38,12 +44,12 @@ namespace NuGet.Frameworks
         {
             if (frameworkIdentifier == null)
             {
-                throw new ArgumentNullException(nameof(frameworkIdentifier));
+                throw new ArgumentNullException("frameworkIdentifier");
             }
 
             if (frameworkVersion == null)
             {
-                throw new ArgumentNullException(nameof(frameworkVersion));
+                throw new ArgumentNullException("frameworkVersion");
             }
 
             _frameworkIdentifier = frameworkIdentifier;
@@ -156,7 +162,10 @@ namespace NuGet.Frameworks
 
                 if (String.IsNullOrEmpty(shortFramework))
                 {
-                    throw new FrameworkException(Strings.InvalidFrameworkIdentifier);
+                    throw new FrameworkException(string.Format(
+                        CultureInfo.CurrentCulture,
+                        Strings.InvalidFrameworkIdentifier,
+                        shortFramework));
                 }
 
                 // add framework
@@ -189,7 +198,10 @@ namespace NuGet.Frameworks
                     }
                     else
                     {
-                        throw new FrameworkException(Strings.InvalidPortableFrameworks);
+                        throw new FrameworkException(string.Format(
+                            CultureInfo.CurrentCulture,
+                            Strings.MissingPortableFrameworks,
+                            framework.DotNetFrameworkName));
                     }
                 }
                 else
@@ -261,37 +273,22 @@ namespace NuGet.Frameworks
         }
 
         /// <summary>
-        /// True if the framework is only used for compilation, not for execution.
-        /// Ex: dotnet, netstandard, portable-*
-        /// </summary>
-        public bool IsCompileOnly
-        {
-            get
-            {
-                return FrameworkConstants.FrameworkIdentifiers.NetPlatform
-                    .Equals(Framework, StringComparison.OrdinalIgnoreCase)
-                    || FrameworkConstants.FrameworkIdentifiers.NetStandard
-                    .Equals(Framework, StringComparison.OrdinalIgnoreCase)
-                    || IsPCL;
-            } 
-        }
-
-        /// <summary>
         /// True if the framework is packages based.
-        /// Ex: dotnet, dnxcore
+        /// Ex: dotnet, dnxcore, netcoreapp, netstandard, uap, netcore50
         /// </summary>
         public bool IsPackageBased
         {
             get
             {
-                return FrameworkConstants.FrameworkIdentifiers.DnxCore
-                    .Equals(Framework, StringComparison.OrdinalIgnoreCase)
-                    || FrameworkConstants.FrameworkIdentifiers.NetPlatform
-                    .Equals(Framework, StringComparison.OrdinalIgnoreCase)
-                    || FrameworkConstants.FrameworkIdentifiers.NetStandard
-                    .Equals(Framework, StringComparison.OrdinalIgnoreCase)
-                    || FrameworkConstants.FrameworkIdentifiers.NetStandardApp
-                    .Equals(Framework, StringComparison.OrdinalIgnoreCase);
+                // For these frameworks all versions are packages based.
+                if (_packagesBased.Contains(Framework))
+                {
+                    return true;
+                }
+
+                // NetCore 5.0 and up are packages based.
+                // Everything else is not packages based.
+                return NuGetFrameworkUtility.IsNetCore50AndUp(this);
             }
         }
 
@@ -356,9 +353,24 @@ namespace NuGet.Frameworks
             return Comparer.Equals(this, other);
         }
 
+        public static bool operator ==(NuGetFramework left, NuGetFramework right)
+        {
+            return Comparer.Equals(left, right);
+        }
+
+        public static bool operator !=(NuGetFramework left, NuGetFramework right)
+        {
+            return !(left == right);
+        }
+
         public override int GetHashCode()
         {
-            return Comparer.GetHashCode(this);
+            if (_hashCode == null)
+            {
+                _hashCode = Comparer.GetHashCode(this);
+            }
+
+            return _hashCode.Value;
         }
 
         public override bool Equals(object obj)
@@ -391,5 +403,20 @@ namespace NuGet.Frameworks
 
             return normalized;
         }
+
+        /// <summary>
+        /// Frameworks that are packages based across all versions.
+        /// </summary>
+        private static readonly SortedSet<string> _packagesBased = new SortedSet<string>(
+            new[]
+            {
+                        FrameworkConstants.FrameworkIdentifiers.DnxCore,
+                        FrameworkConstants.FrameworkIdentifiers.NetPlatform,
+                        FrameworkConstants.FrameworkIdentifiers.NetStandard,
+                        FrameworkConstants.FrameworkIdentifiers.NetStandardApp,
+                        FrameworkConstants.FrameworkIdentifiers.NetCoreApp,
+                        FrameworkConstants.FrameworkIdentifiers.UAP,
+            },
+            StringComparer.OrdinalIgnoreCase);
     }
 }

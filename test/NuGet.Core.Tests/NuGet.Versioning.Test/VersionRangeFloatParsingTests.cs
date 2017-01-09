@@ -13,7 +13,6 @@ namespace NuGet.Versioning.Test
         {
             var range = VersionRange.Parse("1.0.0-*");
 
-            Assert.True(range.IncludePrerelease);
             Assert.True(range.MinVersion.IsPrerelease);
         }
 

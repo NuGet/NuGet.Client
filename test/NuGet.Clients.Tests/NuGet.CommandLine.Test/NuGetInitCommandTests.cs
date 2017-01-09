@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -6,6 +9,7 @@ using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Versioning;
 using NuGet.Test.Utility;
+using NuGet.Common;
 using Test.Utility;
 using Xunit;
 
@@ -50,11 +54,11 @@ namespace NuGet.CommandLine.Test
             public TestInfo(string sourceFeed = null, string destinationFeed = null)
             {
                 NuGetExePath = Util.GetNuGetExePath();
-                WorkingPath = TestFileSystemUtility.CreateRandomTestFolder();
+                WorkingPath = TestDirectory.Create();
 
                 if (sourceFeed == null)
                 {
-                    SourceFeed = TestFileSystemUtility.CreateRandomTestFolder();
+                    SourceFeed = TestDirectory.Create();
                 }
                 else
                 {
@@ -63,7 +67,7 @@ namespace NuGet.CommandLine.Test
 
                 if (destinationFeed == null)
                 {
-                    DestinationFeed = TestFileSystemUtility.CreateRandomTestFolder();
+                    DestinationFeed = TestDirectory.Create();
                 }
                 else
                 {
@@ -217,8 +221,8 @@ namespace NuGet.CommandLine.Test
         public void InitCommand_Success_DestinationDoesNotExist()
         {
             // Arrange
-            using (var testFolder = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var destinationFolder = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var testFolder = TestDirectory.Create())
+            using (var destinationFolder = TestDirectory.Create())
             using (var testInfo = new TestInfo(testFolder,
                                                Path.Combine(destinationFolder, "DoesNotExistSubFolder")))
             {
@@ -460,7 +464,7 @@ namespace NuGet.CommandLine.Test
         public void InitCommand_Fail_SourceDoesNotExist()
         {
             // Arrange
-            using (var testFolder = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var testFolder = TestDirectory.Create())
             using (var testInfo = new TestInfo(Path.Combine(testFolder, "DoesNotExist")))
             {
                 var args = new string[]
@@ -489,7 +493,7 @@ namespace NuGet.CommandLine.Test
         {
             // Arrange
             var httpUrl = "https://api.nuget.org/v3/index.json";
-            using (var testInfo = new TestInfo(httpUrl, TestFileSystemUtility.CreateRandomTestFolder()))
+            using (var testInfo = new TestInfo(httpUrl, TestDirectory.Create()))
             {
                 var args = new string[]
                 {
@@ -517,7 +521,7 @@ namespace NuGet.CommandLine.Test
         {
             // Arrange
             var httpUrl = "https://api.nuget.org/v3/index.json";
-            using (var testInfo = new TestInfo(TestFileSystemUtility.CreateRandomTestFolder(), httpUrl))
+            using (var testInfo = new TestInfo(TestDirectory.Create(), httpUrl))
             {
                 var args = new string[]
                 {
@@ -545,20 +549,39 @@ namespace NuGet.CommandLine.Test
         {
             // Arrange
             var invalidPath = "foo|<>|bar";
-            using (var testInfo = new TestInfo(invalidPath, TestFileSystemUtility.CreateRandomTestFolder()))
+            using (var testInfo = new TestInfo(invalidPath, TestDirectory.Create()))
             {
-                var args = new string[]
-                {
-                    "init",
-                    testInfo.SourceFeed,
-                    testInfo.DestinationFeed,
-                };
-
                 // Act
                 var result = CommandRunner.Run(
                     testInfo.NuGetExePath,
                     testInfo.WorkingPath,
-                    string.Join(" ", args),
+                    $"init \"{testInfo.SourceFeed}\" \"{testInfo.DestinationFeed}\"",
+                    waitForExit: true);
+
+                // Assert
+                var expectedMessage = string.Format(NuGetResources.Path_Invalid, invalidPath);
+
+                if (RuntimeEnvironmentHelper.IsMono && !RuntimeEnvironmentHelper.IsWindows)
+                {
+                    // "foo|<>|bar" is a valid directory name in Unix
+                    expectedMessage = string.Format(NuGetResources.InitCommand_FeedIsNotFound, invalidPath);
+                }
+                Util.VerifyResultFailure(result, expectedMessage);
+            }
+        }
+
+        [WindowsNTFact]
+        public void InitCommand_Fail_DestinationIsInvalid()
+        {
+            // Arrange
+            var invalidPath = "foo|<>|bar";
+            using (var testInfo = new TestInfo(TestDirectory.Create(), invalidPath))
+            {
+                // Act
+                var result = CommandRunner.Run(
+                    testInfo.NuGetExePath,
+                    testInfo.WorkingPath,
+                    $"init \"{testInfo.SourceFeed}\" \"{testInfo.DestinationFeed}\"",
                     waitForExit: true);
 
                 // Assert
@@ -567,13 +590,17 @@ namespace NuGet.CommandLine.Test
             }
         }
 
-        [Fact]
-        public void InitCommand_Fail_DestinationIsInvalid()
+        [UnixMonoFact]
+        public void InitCommand_Success_DestinationInvalidOnWindows()
         {
             // Arrange
-            var invalidPath = "foo|<>|bar";
-            using (var testInfo = new TestInfo(TestFileSystemUtility.CreateRandomTestFolder(), invalidPath))
+            using (var testFolder = TestDirectory.Create())
+            using (var destinationFolder = TestDirectory.Create())
+            using (var testInfo = new TestInfo(testFolder,
+                                               Path.Combine(destinationFolder, "foo|<>|bar")))
             {
+                var packages = testInfo.AddPackagesToSource();
+
                 var args = new string[]
                 {
                     "init",
@@ -589,8 +616,8 @@ namespace NuGet.CommandLine.Test
                     waitForExit: true);
 
                 // Assert
-                var expectedMessage = string.Format(NuGetResources.Path_Invalid, invalidPath);
-                Util.VerifyResultFailure(result, expectedMessage);
+                Util.VerifyResultSuccess(result);
+                Util.VerifyPackagesExist(packages, testInfo.DestinationFeed);
             }
         }
 

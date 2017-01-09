@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using NuGet.Common;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
@@ -17,7 +18,8 @@ namespace Test.Utility
 
         public void Log(MessageLevel level, string message, params object[] args)
         {
-            Console.WriteLine(message, args);
+            // Uncomment when you want to debug tests.
+            // Console.WriteLine(message, args);
         }
 
         public FileConflictAction ResolveFileConflict(string message)
@@ -25,7 +27,7 @@ namespace Test.Utility
             return FileConflictAction.IgnoreAll;
         }
 
-        public PackageExtractionContext PackageExtractionContext { get; set; } = new PackageExtractionContext();
+        public PackageExtractionContext PackageExtractionContext { get; set; } = new PackageExtractionContext(NullLogger.Instance);
 
         public ISourceControlManagerProvider SourceControlManagerProvider { get; set; }
 
@@ -45,6 +47,8 @@ namespace Test.Utility
         }
 
         public NuGetActionType ActionType { get; set; }
+
+        public TelemetryServiceHelper TelemetryService { get; set; }
     }
 
     public class TestExecutionContext : ExecutionContext

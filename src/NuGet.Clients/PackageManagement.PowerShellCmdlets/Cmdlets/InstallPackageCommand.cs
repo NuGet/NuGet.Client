@@ -10,12 +10,13 @@ using System.Linq;
 using System.Management.Automation;
 using System.Net;
 using System.Text;
-using Microsoft.VisualStudio.Shell;
-using NuGet.PackageManagement.VisualStudio;
+using NuGet.Common;
+using NuGet.Configuration;
+using NuGet.PackageManagement.UI;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
-using NuGet.Resolver;
 using NuGet.ProjectManagement;
+using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 using Task = System.Threading.Tasks.Task;
 
@@ -48,29 +49,54 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
         protected override void ProcessRecordCore()
         {
-            Preprocess();
+            var startTime = DateTimeOffset.Now;
 
-            SubscribeToProgressEvents();
-            if (!_readFromPackagesConfig
-                && !_readFromDirectPackagePath
-                && _nugetVersion == null)
+            // Set to log telemetry granular events for this install operation 
+            TelemetryService = new TelemetryServiceHelper();
+
+            // start timer for telemetry event
+            TelemetryUtility.StartorResumeTimer();
+
+            using (var lck = _lockService.AcquireLock())
             {
-                Task.Run(() => InstallPackageById());
+                Preprocess();
+
+                SubscribeToProgressEvents();
+                if (!_readFromPackagesConfig
+                    && !_readFromDirectPackagePath
+                    && _nugetVersion == null)
+                {
+                    Task.Run(InstallPackageByIdAsync);
+                }
+                else
+                {
+                    var identities = GetPackageIdentities();
+                    Task.Run(() => InstallPackagesAsync(identities));
+                }
+                WaitAndLogPackageActions();
+                UnsubscribeFromProgressEvents();
             }
-            else
-            {
-                IEnumerable<PackageIdentity> identities = GetPackageIdentities();
-                Task.Run(() => InstallPackages(identities));
-            }
-            WaitAndLogPackageActions();
-            UnsubscribeFromProgressEvents();
+
+            // stop timer for telemetry event and create action telemetry event instance
+            TelemetryUtility.StopTimer();
+            var actionTelemetryEvent = TelemetryUtility.GetActionTelemetryEvent(
+                new[] { Project },
+                NuGetOperationType.Install,
+                OperationSource.PMC,
+                startTime,
+                _status,
+                _packageCount,
+                TelemetryUtility.GetTimerElapsedTimeInSeconds());
+
+            // emit telemetry event along with granular level events
+            ActionsTelemetryService.Instance.EmitActionEvent(actionTelemetryEvent, TelemetryService.TelemetryEvents);
         }
 
         /// <summary>
         /// Async call for install packages from the list of identities.
         /// </summary>
         /// <param name="identities"></param>
-        private async Task InstallPackages(IEnumerable<PackageIdentity> identities)
+        private async Task InstallPackagesAsync(IEnumerable<PackageIdentity> identities)
         {
             try
             {
@@ -81,7 +107,9 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
             catch (Exception ex)
             {
-                Log(ProjectManagement.MessageLevel.Error, ex.Message);
+                // set nuget operation status to failed when an exception is thrown
+                _status = NuGetOperationStatus.Failed;
+                Log(MessageLevel.Error, ExceptionUtilities.DisplayMessage(ex));
             }
             finally
             {
@@ -93,15 +121,27 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// Async call for install a package by Id.
         /// </summary>
         /// <param name="identities"></param>
-        private async Task InstallPackageById()
+        private async Task InstallPackageByIdAsync()
         {
             try
             {
                 await InstallPackageByIdAsync(Project, Id, ResolutionContext, this, WhatIf.IsPresent);
             }
+            catch (FatalProtocolException ex)
+            {
+                _status = NuGetOperationStatus.Failed;
+
+                // Additional information about the exception can be observed by using the -verbose switch with the install-package command
+                Log(MessageLevel.Debug, ExceptionUtilities.DisplayMessage(ex));
+
+                // Wrap FatalProtocolException coming from the server with a user friendly message
+                var error = String.Format(CultureInfo.CurrentUICulture, Strings.Exception_PackageNotFound, Id, Source);
+                Log(MessageLevel.Error, error);
+            }
             catch (Exception ex)
             {
-                Log(ProjectManagement.MessageLevel.Error, ex.Message);
+                _status = NuGetOperationStatus.Failed;
+                Log(MessageLevel.Error, ExceptionUtilities.DisplayMessage(ex));
             }
             finally
             {
@@ -117,11 +157,11 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         {
             if (!string.IsNullOrEmpty(Id))
             {
-                if (Id.EndsWith(Constants.PackageReferenceFile, StringComparison.OrdinalIgnoreCase))
+                if (Id.EndsWith(NuGetConstants.PackageReferenceFile, StringComparison.OrdinalIgnoreCase))
                 {
                     _readFromPackagesConfig = true;
                 }
-                else if (Id.EndsWith(Constants.PackageExtension, StringComparison.OrdinalIgnoreCase))
+                else if (Id.EndsWith(PackagingCoreConstants.NupkgExtension, StringComparison.OrdinalIgnoreCase))
                 {
                     _readFromDirectPackagePath = true;
                     if (UriHelper.IsHttpSource(Id))
@@ -230,7 +270,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
             catch (Exception ex)
             {
-                LogCore(ProjectManagement.MessageLevel.Error, string.Format(CultureInfo.CurrentCulture, Resources.Cmdlet_FailToParsePackages, Id, ex.Message));
+                LogCore(MessageLevel.Error, string.Format(CultureInfo.CurrentCulture, Resources.Cmdlet_FailToParsePackages, Id, ex.Message));
             }
 
             return identities;
@@ -254,11 +294,11 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                     if (identity != null)
                     {
                         Directory.CreateDirectory(Source);
-                        string downloadPath = Path.Combine(Source, identity + Constants.PackageExtension);
+                        string downloadPath = Path.Combine(Source, identity + PackagingCoreConstants.NupkgExtension);
 
                         using (var client = new System.Net.Http.HttpClient())
                         {
-                            ThreadHelper.JoinableTaskFactory.Run(async delegate
+                            NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
                             {
                                 using (Stream downloadStream = await client.GetStreamAsync(Id))
                                 {
@@ -287,7 +327,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
             catch (Exception ex)
             {
-                Log(ProjectManagement.MessageLevel.Error, Resources.Cmdlet_FailToParsePackages, Id, ex.Message);
+                Log(MessageLevel.Error, Resources.Cmdlet_FailToParsePackages, Id, ex.Message);
             }
 
             return new List<PackageIdentity> { identity };
@@ -304,7 +344,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             if (!string.IsNullOrEmpty(path))
             {
                 string lastPart = path.Split(new[] { divider }, StringSplitOptions.RemoveEmptyEntries).LastOrDefault();
-                lastPart = lastPart.Replace(Constants.PackageExtension, "");
+                lastPart = lastPart.Replace(PackagingCoreConstants.NupkgExtension, "");
                 string[] parts = lastPart.Split(new[] { "." }, StringSplitOptions.RemoveEmptyEntries);
                 StringBuilder builderForId = new StringBuilder();
                 StringBuilder builderForVersion = new StringBuilder();
@@ -361,7 +401,12 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         {
             get
             {
-                _context = new ResolutionContext(GetDependencyBehavior(), _allowPrerelease, false, VersionConstraints.None);
+                // ResolutionContext contains a cache, this should only be created once per command
+                if (_context == null)
+                {
+                    _context = new ResolutionContext(GetDependencyBehavior(), _allowPrerelease, false, VersionConstraints.None);
+                }
+
                 return _context;
             }
         }

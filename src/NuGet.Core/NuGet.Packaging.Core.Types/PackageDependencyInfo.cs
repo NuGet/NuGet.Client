@@ -50,17 +50,6 @@ namespace NuGet.Packaging.Core
             get { return _dependencies; }
         }
 
-        /// <summary>
-        /// sets every dependency to include the prerelease versions in its range
-        /// </summary>
-        public void SetIncludePrereleaseForDependencies()
-        {
-            foreach (var dependency in _dependencies)
-            {
-                dependency.SetIncludePrerelease();
-            }
-        }
-
         public bool Equals(PackageDependencyInfo other)
         {
             return PackageDependencyInfoComparer.Default.Equals(this, other);
@@ -93,7 +82,14 @@ namespace NuGet.Packaging.Core
         /// <returns></returns>
         public override string ToString()
         {
-            return String.Format(CultureInfo.InvariantCulture, "{0} : {1}", base.ToString(), String.Join(", ", Dependencies.Select(e => e.ToString()).OrderBy(e => e, StringComparer.OrdinalIgnoreCase)));
+            if (Dependencies.Any())
+            {
+                return String.Format(CultureInfo.InvariantCulture, "{0} : {1}", base.ToString(), String.Join(", ", Dependencies.Select(e => e.ToString()).OrderBy(e => e, StringComparer.OrdinalIgnoreCase)));
+            }
+            else
+            {
+                return base.ToString();
+            }
         }
     }
 }

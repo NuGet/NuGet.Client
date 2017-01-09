@@ -12,17 +12,34 @@ namespace NuGet.Versioning
     {
         /// <summary>
         /// Gives a normalized representation of the version.
+        /// This string is unique to the identity of the version and does not contain metadata.
         /// </summary>
         public virtual string ToNormalizedString()
         {
-            return ToString("N", new VersionFormatter());
+            return ToString("N", VersionFormatter.Instance);
         }
 
+        /// <summary>
+        /// Gives a full representation of the version include metadata.
+        /// This string is not unique to the identity of the version. Other versions 
+        /// that differ on metadata will have a different full string representation.
+        /// </summary>
+        public virtual string ToFullString()
+        {
+            return ToString("F", VersionFormatter.Instance);
+        }
+
+        /// <summary>
+        /// Get the normalized string.
+        /// </summary>
         public override string ToString()
         {
             return ToNormalizedString();
         }
 
+        /// <summary>
+        /// Custom string format.
+        /// </summary>
         public virtual string ToString(string format, IFormatProvider formatProvider)
         {
             string formattedString = null;
@@ -36,6 +53,9 @@ namespace NuGet.Versioning
             return formattedString;
         }
 
+        /// <summary>
+        /// Internal string formatter.
+        /// </summary>
         protected bool TryFormatter(string format, IFormatProvider formatProvider, out string formattedString)
         {
             var formatted = false;
@@ -54,26 +74,41 @@ namespace NuGet.Versioning
             return formatted;
         }
 
+        /// <summary>
+        /// Hash code
+        /// </summary>
         public override int GetHashCode()
         {
             return VersionComparer.Default.GetHashCode(this);
         }
 
+        /// <summary>
+        /// Object compare.
+        /// </summary>
         public virtual int CompareTo(object obj)
         {
             return CompareTo(obj as SemanticVersion);
         }
 
+        /// <summary>
+        /// Compare to another SemanticVersion.
+        /// </summary>
         public virtual int CompareTo(SemanticVersion other)
         {
             return CompareTo(other, VersionComparison.Default);
         }
 
+        /// <summary>
+        /// Equals
+        /// </summary>
         public override bool Equals(object obj)
         {
             return Equals(obj as SemanticVersion);
         }
 
+        /// <summary>
+        /// Equals
+        /// </summary>
         public virtual bool Equals(SemanticVersion other)
         {
             return Equals(other, VersionComparison.Default);
@@ -97,7 +132,7 @@ namespace NuGet.Versioning
         }
 
         /// <summary>
-        /// ==
+        /// Equals
         /// </summary>
         public static bool operator ==(SemanticVersion version1, SemanticVersion version2)
         {
@@ -105,7 +140,7 @@ namespace NuGet.Versioning
         }
 
         /// <summary>
-        /// !=
+        /// Not equal
         /// </summary>
         public static bool operator !=(SemanticVersion version1, SemanticVersion version2)
         {
@@ -113,7 +148,7 @@ namespace NuGet.Versioning
         }
 
         /// <summary>
-        ///     <
+        /// Less than
         /// </summary>
         public static bool operator <(SemanticVersion version1, SemanticVersion version2)
         {
@@ -121,7 +156,7 @@ namespace NuGet.Versioning
         }
 
         /// <summary>
-        ///     <=
+        /// Less than or equal
         /// </summary>
         public static bool operator <=(SemanticVersion version1, SemanticVersion version2)
         {
@@ -129,7 +164,7 @@ namespace NuGet.Versioning
         }
 
         /// <summary>
-        /// >
+        /// Greater than
         /// </summary>
         public static bool operator >(SemanticVersion version1, SemanticVersion version2)
         {
@@ -137,7 +172,7 @@ namespace NuGet.Versioning
         }
 
         /// <summary>
-        /// >=
+        /// Greater than or equal
         /// </summary>
         public static bool operator >=(SemanticVersion version1, SemanticVersion version2)
         {
@@ -146,8 +181,7 @@ namespace NuGet.Versioning
 
         private static int Compare(SemanticVersion version1, SemanticVersion version2)
         {
-            IVersionComparer comparer = new VersionComparer();
-            return comparer.Compare(version1, version2);
+            return VersionComparer.Default.Compare(version1, version2);
         }
     }
 }

@@ -68,5 +68,21 @@ namespace NuGet.PackageManagement
         /// Project context for logging
         /// </summary>
         public INuGetProjectContext ProjectContext { get; set; }
+
+        /// <summary>
+        /// If true, missing primary targets will be ignored.
+        /// </summary>
+        public bool IsUpdateAll { get; set; }
+
+        /// <summary>
+        /// Logging adapter
+        /// </summary>
+        public Common.ILogger Log
+        {
+            get
+            {
+                return ProjectContext == null ? Common.NullLogger.Instance : new LoggerAdapter(ProjectContext);
+            }
+        }
     }
 }

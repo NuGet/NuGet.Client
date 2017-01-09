@@ -6,11 +6,13 @@ namespace NuGet.Common
     {
         private static Lazy<bool> _isMono = new Lazy<bool>(() => Type.GetType("Mono.Runtime") != null);
 
+        public static bool IsDev14 { get; set; }
+
         public static bool IsWindows
         {
             get
             {
-#if DNXCORE50
+#if IS_CORECLR
                 // This API does work on full framework but it requires a newer nuget client (RID aware)
                 if (System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Windows))
                 {
@@ -34,7 +36,7 @@ namespace NuGet.Common
         {
             get
             {
-#if DNXCORE50
+#if IS_CORECLR
                 // This API does work on full framework but it requires a newer nuget client (RID aware)
                 if (System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.OSX))
                 {
@@ -53,7 +55,7 @@ namespace NuGet.Common
         {
             get
             {
-#if DNXCORE50
+#if IS_CORECLR
                 // This API does work on full framework but it requires a newer nuget client (RID aware)
                 if (System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Linux))
                 {

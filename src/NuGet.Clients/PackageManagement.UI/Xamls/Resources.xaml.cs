@@ -1,16 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
-using Microsoft.VisualStudio.Shell;
 
 namespace NuGet.PackageManagement.UI
 {
-    public partial class NuGetResourceDictionary : ResourceDictionary
+    internal partial class NuGetResourceDictionary : ResourceDictionary
     {
         public NuGetResourceDictionary()
         {
@@ -35,6 +29,12 @@ namespace NuGet.PackageManagement.UI
             // style for scroll viewer
             style = new Style(typeof(ScrollViewer), Styles.ScrollViewerStyle);
             this.Add(typeof(ScrollViewer), style);
+        }
+
+        private void PackageIconImage_ImageFailed(object sender, ExceptionRoutedEventArgs e)
+        {
+            var image = sender as Image;
+            image.Source = Images.DefaultPackageIcon;
         }
     }
 }

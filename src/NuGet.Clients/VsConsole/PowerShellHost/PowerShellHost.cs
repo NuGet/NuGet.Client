@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -11,12 +11,15 @@ using System.IO;
 using System.Linq;
 using System.Management.Automation;
 using System.Management.Automation.Runspaces;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Media;
 using EnvDTE;
 using Microsoft.VisualStudio.Threading;
+using NuGet.Common;
 using NuGet.Configuration;
+using NuGet.Frameworks;
 using NuGet.PackageManagement;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging;
@@ -24,12 +27,17 @@ using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
 using NuGet.Protocol.Core.Types;
+using NuGet.Resolver;
+using NuGetUIThreadHelper = NuGet.PackageManagement.UI.NuGetUIThreadHelper;
+using PathUtility = NuGet.ProjectManagement.PathUtility;
 using ThreadHelper = Microsoft.VisualStudio.Shell.ThreadHelper;
 
 namespace NuGetConsole.Host.PowerShell.Implementation
 {
     internal abstract class PowerShellHost : IHost, IPathExpansion, IDisposable
     {
+        private static readonly string AggregateSourceName = NuGet.PackageManagement.UI.Resources.AggregateSourceName;
+
         private readonly AsyncSemaphore _initScriptsLock = new AsyncSemaphore(1);
         private readonly string _name;
         private readonly IRunspaceManager _runspaceManager;
@@ -46,6 +54,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         private const string DTEKey = "DTE";
         private const string CancellationTokenKey = "CancellationTokenKey";
         private string _activePackageSource;
+        private string[] _packageSources;
         private readonly DTE _dte;
 
         private IConsole _activeConsole;
@@ -59,10 +68,12 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         // store the current command typed so far
         private ComplexCommand _complexCommand;
 
+        // store the current CancellationTokenSource which will be used to cancel the operation
+        // in case of abort
+        private CancellationTokenSource _tokenSource;
+
         // store the current CancellationToken. This will be set on the private data
         private CancellationToken _token;
-
-        private List<SourceRepository> _sourceRepositories;
 
         protected PowerShellHost(string name, IRunspaceManager runspaceManager)
         {
@@ -91,19 +102,27 @@ namespace NuGetConsole.Host.PowerShell.Implementation
 
         private void InitializeSources()
         {
-            _sourceRepositories = _sourceRepositoryProvider
-                .GetRepositories()
-                .Where(repo => repo.PackageSource.IsEnabled)
-                .ToList();
+            _packageSources = GetEnabledPackageSources(_sourceRepositoryProvider);
+            UpdateActiveSource(_sourceRepositoryProvider.PackageSourceProvider.ActivePackageSourceName);
+        }
 
-            _activePackageSource = _sourceRepositoryProvider.PackageSourceProvider.ActivePackageSourceName;
+        private static string[] GetEnabledPackageSources(ISourceRepositoryProvider sourceRepositoryProvider)
+        {
+            var enabledSources = sourceRepositoryProvider
+                           .GetRepositories()
+                           .Where(r => r.PackageSource.IsEnabled)
+                           .ToArray();
 
-            // check if active package source name is valid
-            var activeSource = _sourceRepositories.FirstOrDefault(
-                repo => StringComparer.CurrentCultureIgnoreCase.Equals(repo.PackageSource.Name, _activePackageSource))
-                               ?? _sourceRepositories.FirstOrDefault();
+            var packageSources = new List<string>();
 
-            _activePackageSource = activeSource?.PackageSource.Name;
+            if (enabledSources.Length > 1)
+            {
+                packageSources.Add(AggregateSourceName);
+            }
+
+            packageSources.AddRange(
+                enabledSources.Select(r => r.PackageSource.Name));
+            return packageSources.ToArray();
         }
 
         #region Properties
@@ -166,6 +185,26 @@ namespace NuGetConsole.Host.PowerShell.Implementation
 
         public PackageManagementContext PackageManagementContext { get; set; }
 
+        public string ActivePackageSource
+        {
+            get { return _activePackageSource; }
+            set { UpdateActiveSource(value); }
+        }
+
+        public string DefaultProject
+        {
+            get
+            {
+                Debug.Assert(_solutionManager != null);
+                if (_solutionManager.DefaultNuGetProject == null)
+                {
+                    return null;
+                }
+
+                return GetDisplayName(_solutionManager.DefaultNuGetProject);
+            }
+        }
+
         #endregion
 
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes")]
@@ -173,7 +212,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         {
             var prompt = "PM>";
 
-            return ThreadHelper.JoinableTaskFactory.Run(async delegate
+            return NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
             {
                 try
                 {
@@ -207,7 +246,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes")]
         public void Initialize(IConsole console)
         {
-            ThreadHelper.JoinableTaskFactory.Run(async delegate
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
                 {
                     ActiveConsole = console;
                     if (_initialized.HasValue)
@@ -222,7 +261,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                     {
                         try
                         {
-                            Tuple<RunspaceDispatcher, NuGetPSHost> result = _runspaceManager.GetRunspace(console, _name);
+                            var result = _runspaceManager.GetRunspace(console, _name);
                             Runspace = result.Item1;
                             _nugetHost = result.Item2;
 
@@ -253,6 +292,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                             _solutionManager.SolutionClosed += (o, e) => UpdateWorkingDirectory();
                             _solutionManager.NuGetProjectAdded += (o, e) => UpdateWorkingDirectoryAndAvailableProjects();
                             _solutionManager.NuGetProjectRenamed += (o, e) => UpdateWorkingDirectoryAndAvailableProjects();
+                            _solutionManager.NuGetProjectUpdated += (o, e) => UpdateWorkingDirectoryAndAvailableProjects();
                             _solutionManager.NuGetProjectRemoved += (o, e) =>
                                 {
                                     UpdateWorkingDirectoryAndAvailableProjects();
@@ -315,12 +355,12 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                     return;
                 }
 
+                // make sure all projects are loaded before start to execute init scripts. Since
+                // projects might not be loaded when DPL is enabled.
+                _solutionManager.EnsureSolutionIsLoaded();
+
                 // invoke init.ps1 files in the order of package dependency.
                 // if A -> B, we invoke B's init.ps1 before A's.
-                var sortedPackages = new List<PackageIdentity>();
-
-                var packagesFolderPackages = new HashSet<PackageIdentity>(PackageIdentity.Comparer);
-                var globalPackages = new HashSet<PackageIdentity>(PackageIdentity.Comparer);
 
                 var projects = _solutionManager.GetNuGetProjects().ToList();
                 var packageManager = new NuGetPackageManager(
@@ -329,6 +369,10 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                     _solutionManager,
                     _deleteOnRestartManager);
 
+                var packagesByFramework = new Dictionary<NuGetFramework, HashSet<PackageIdentity>>();
+                var sortedGlobalPackages = new List<PackageIdentity>();
+
+                // Sort projects by type
                 foreach (var project in projects)
                 {
                     // Skip project K projects.
@@ -341,105 +385,189 @@ namespace NuGetConsole.Host.PowerShell.Implementation
 
                     if (buildIntegratedProject != null)
                     {
-                        var packages = BuildIntegratedProjectUtility.GetOrderedProjectDependencies(buildIntegratedProject);
-                        sortedPackages.AddRange(packages);
-                        globalPackages.UnionWith(packages);
+                        var packages = await BuildIntegratedProjectUtility
+                            .GetOrderedProjectPackageDependencies(buildIntegratedProject);
+
+                        sortedGlobalPackages.AddRange(packages);
                     }
                     else
                     {
+                        // Read packages.config
                         var installedRefs = await project.GetInstalledPackagesAsync(CancellationToken.None);
 
-                        if (installedRefs != null
-                            && installedRefs.Any())
+                        if (installedRefs?.Any() == true)
                         {
-                            // This will be an empty list if packages have not been restored
-                            var installedPackages = await packageManager.GetInstalledPackagesInDependencyOrder(project, CancellationToken.None);
-                            sortedPackages.AddRange(installedPackages);
-                            packagesFolderPackages.UnionWith(installedPackages);
+                            // Index packages.config references by target framework since this affects dependencies
+                            NuGetFramework targetFramework;
+                            if (!project.TryGetMetadata(NuGetProjectMetadataKeys.TargetFramework, out targetFramework))
+                            {
+                                targetFramework = NuGetFramework.AnyFramework;
+                            }
+
+                            HashSet<PackageIdentity> fwPackages;
+                            if (!packagesByFramework.TryGetValue(targetFramework, out fwPackages))
+                            {
+                                fwPackages = new HashSet<PackageIdentity>();
+                                packagesByFramework.Add(targetFramework, fwPackages);
+                            }
+
+                            fwPackages.UnionWith(installedRefs.Select(reference => reference.PackageIdentity));
                         }
                     }
                 }
 
-                // Get the path to the Packages folder.
-                var packagesFolderPath = packageManager.PackagesFolderSourceRepository.PackageSource.Source;
-                var packagePathResolver = new PackagePathResolver(packagesFolderPath);
+                // Each id/version should only be executed once
+                var finishedPackages = new HashSet<PackageIdentity>();
 
-                var globalFolderPath = SettingsUtility.GetGlobalPackagesFolder(_settings);
-                var globalPathResolver = new VersionFolderPathResolver(globalFolderPath);
-
-                var finishedPackages = new HashSet<PackageIdentity>(PackageIdentity.Comparer);
-
-                foreach (var package in sortedPackages)
+                // Packages.config projects
+                if (packagesByFramework.Count > 0)
                 {
-                    // Packages may occur under multiple projects, but we only need to run it once.
-                    if (!finishedPackages.Contains(package))
+                    await ExecuteInitPs1ForPackagesConfig(
+                        packageManager,
+                        packagesByFramework,
+                        finishedPackages);
+                }
+
+                // build integrated projects
+                if (sortedGlobalPackages.Count > 0)
+                {
+                    ExecuteInitPs1ForBuildIntegrated(
+                        sortedGlobalPackages,
+                        finishedPackages);
+                }
+            }
+        }
+
+        private async Task ExecuteInitPs1ForPackagesConfig(
+            NuGetPackageManager packageManager,
+            Dictionary<NuGetFramework, HashSet<PackageIdentity>> packagesConfigInstalled,
+            HashSet<PackageIdentity> finishedPackages)
+        {
+            // Get the path to the Packages folder.
+            var packagesFolderPath = packageManager.PackagesFolderSourceRepository.PackageSource.Source;
+            var packagePathResolver = new PackagePathResolver(packagesFolderPath);
+
+            var packagesToSort = new HashSet<ResolverPackage>();
+            var resolvedPackages = new HashSet<PackageIdentity>();
+
+            var dependencyInfoResource = await packageManager
+                .PackagesFolderSourceRepository
+                .GetResourceAsync<DependencyInfoResource>();
+
+            // Order by the highest framework first to make this deterministic
+            // Process each framework/id/version once to avoid duplicate work
+            // Packages may have different dependendcy orders depending on the framework, but there is 
+            // no way to fully solve this across an entire solution so we make a best effort here.
+            foreach (var framework in packagesConfigInstalled.Keys.OrderByDescending(fw => fw, new NuGetFrameworkSorter()))
+            {
+                foreach (var package in packagesConfigInstalled[framework])
+                {
+                    if (resolvedPackages.Add(package))
                     {
-                        finishedPackages.Add(package);
+                        var dependencyInfo = await dependencyInfoResource.ResolvePackage(
+                            package,
+                            framework,
+                            NullLogger.Instance,
+                            CancellationToken.None);
 
-                        try
+                        // This will be null for unrestored packages
+                        if (dependencyInfo != null)
                         {
-                            string pathToPackage = null;
-
-                            // If the package exists in both the global and packages folder, use the packages folder copy.
-                            if (packagesFolderPackages.Contains(package))
-                            {
-                                // Local package in the packages folder
-                                pathToPackage = packagePathResolver.GetInstalledPath(package);
-                            }
-                            else
-                            {
-                                // Global package
-                                pathToPackage = globalPathResolver.GetInstallPath(package.Id, package.Version);
-                            }
-
-                            if (!string.IsNullOrEmpty(pathToPackage))
-                            {
-                                var toolsPath = Path.Combine(pathToPackage, "tools");
-                                var scriptPath = Path.Combine(toolsPath, PowerShellScripts.Init);
-
-                                if (Directory.Exists(toolsPath))
-                                {
-                                    AddPathToEnvironment(toolsPath);
-                                    if (File.Exists(scriptPath))
-                                    {
-                                        if (_scriptExecutor.TryMarkVisited(
-                                            package,
-                                            PackageInitPS1State.FoundAndExecuted))
-                                        {
-                                            var scriptPackage = new ScriptPackage(
-                                                package.Id,
-                                                package.Version.ToString(),
-                                                pathToPackage);
-
-                                            Runspace.ExecuteScript(pathToPackage, scriptPath, scriptPackage);
-                                        }
-                                    }
-                                    else
-                                    {
-                                        _scriptExecutor.TryMarkVisited(package, PackageInitPS1State.NotFound);
-                                    }
-                                }
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            // if execution of Init scripts fails, do not let it crash our console
-                            ReportError(ex);
-
-                            ExceptionHelper.WriteToActivityLog(ex);
+                            packagesToSort.Add(new ResolverPackage(dependencyInfo, listed: true, absent: false));
                         }
                     }
                 }
+            }
+            
+            // Order packages by dependency order
+            var sortedPackages = ResolverUtility.TopologicalSort(packagesToSort);
+            foreach (var package in sortedPackages)
+            {
+                if (finishedPackages.Add(package))
+                {
+                    // Find the package path in the packages folder.
+                    var installPath = packagePathResolver.GetInstalledPath(package);
+
+                    if (string.IsNullOrEmpty(installPath))
+                    {
+                        continue;  
+                    }
+
+                    ExecuteInitPs1(installPath, package);
+                }
+            }
+        }
+
+        private void ExecuteInitPs1ForBuildIntegrated(
+            List<PackageIdentity> sortedGlobalPackages,
+            HashSet<PackageIdentity> finishedPackages)
+        {
+            var nugetPaths = NuGetPathContext.Create(_settings);
+            var fallbackResolver = new FallbackPackagePathResolver(nugetPaths);
+
+            foreach (var package in sortedGlobalPackages)
+            {
+                if (finishedPackages.Add(package))
+                {
+                    // Find the package in the global packages folder or any of the fallback folders.
+                    var installPath = fallbackResolver.GetPackageDirectory(package.Id, package.Version);
+                    if (installPath == null)
+                    {
+                        continue;
+                    }
+
+                    ExecuteInitPs1(installPath, package);
+                }
+            }
+        }
+
+        private void ExecuteInitPs1(string installPath, PackageIdentity identity)
+        {
+            try
+            {
+                var toolsPath = Path.Combine(installPath, "tools");
+                if (Directory.Exists(toolsPath))
+                {
+                    AddPathToEnvironment(toolsPath);
+
+                    var scriptPath = Path.Combine(toolsPath, PowerShellScripts.Init);
+                    if (File.Exists(scriptPath) &&
+                        _scriptExecutor.TryMarkVisited(identity, PackageInitPS1State.FoundAndExecuted))
+                    {
+                        var request = new ScriptExecutionRequest(scriptPath, installPath, identity, project: null);
+
+                        Runspace.Invoke(
+                            request.BuildCommand(),
+                            request.BuildInput(),
+                            outputResults: true);
+
+                        return;
+                    }
+                }
+
+                _scriptExecutor.TryMarkVisited(identity, PackageInitPS1State.NotFound);
+            }
+            catch (Exception ex)
+            {
+                // If execution of an init.ps1 scripts fails, do not let it crash our console.
+                ReportError(ex);
+
+                ExceptionHelper.WriteToActivityLog(ex);
             }
         }
 
         private static void AddPathToEnvironment(string path)
         {
-            if (Directory.Exists(path))
+            var currentPath = Environment.GetEnvironmentVariable("path", EnvironmentVariableTarget.Process);
+
+            var currentPaths = new HashSet<string>(
+                currentPath.Split(Path.PathSeparator).Select(p => p.Trim()),
+                StringComparer.OrdinalIgnoreCase);
+
+            if (currentPaths.Add(path))
             {
-                string environmentPath = Environment.GetEnvironmentVariable("path", EnvironmentVariableTarget.Process);
-                environmentPath = environmentPath + ";" + path;
-                Environment.SetEnvironmentVariable("path", environmentPath, EnvironmentVariableTarget.Process);
+                var newPath = currentPath + Path.PathSeparator + path;
+                Environment.SetEnvironmentVariable("path", newPath, EnvironmentVariableTarget.Process);
             }
         }
 
@@ -464,28 +592,46 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             if (ComplexCommand.AddLine(command, out fullCommand)
                 && !string.IsNullOrEmpty(fullCommand))
             {
+                // create a new token source with each command since CTS aren't usable once cancelled.
+                _tokenSource = new CancellationTokenSource();
+                _token = _tokenSource.Token;
                 return ExecuteHost(fullCommand, command, inputs);
             }
 
             return false; // constructing multi-line command
         }
 
-        protected static void OnExecuteCommandEnd()
+        protected void OnExecuteCommandEnd()
         {
             NuGetEventTrigger.Instance.TriggerEvent(NuGetEvent.PackageManagerConsoleCommandExecutionEnd);
+
+            // dispose token source related to this current command
+            _tokenSource?.Dispose();
+            _token = CancellationToken.None;
         }
 
         public void Abort()
         {
             ExecutingPipeline?.StopAsync();
             ComplexCommand.Clear();
+            try
+            {
+                _tokenSource?.Cancel();
+            }
+            catch (ObjectDisposedException)
+            {
+                // ObjectDisposedException is expected here, since at clear console command, tokenSource
+                // would have already been disposed.
+            }
         }
 
         protected void SetPrivateDataOnHost(bool isSync)
         {
             SetPropertyValueOnHost(SyncModeKey, isSync);
             SetPropertyValueOnHost(PackageManagementContextKey, PackageManagementContext);
-            SetPropertyValueOnHost(ActivePackageSourceKey, ActivePackageSource);
+            // "All" aggregate source in a context of PS command means no particular source is preferred,
+            // in that case all enabled sources will be picked for a command execution.
+            SetPropertyValueOnHost(ActivePackageSourceKey, ActivePackageSource != AggregateSourceName ? ActivePackageSource : string.Empty);
             SetPropertyValueOnHost(DTEKey, _dte);
             SetPropertyValueOnHost(CancellationTokenKey, _token);
         }
@@ -531,7 +677,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
 
         protected void ReportError(Exception exception)
         {
-            exception = ExceptionHelper.Unwrap(exception);
+            exception = ExceptionUtilities.Unwrap(exception);
             WriteErrorLine(exception.Message);
         }
 
@@ -545,81 +691,34 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             ActiveConsole?.WriteLine(message);
         }
 
-        public string ActivePackageSource
-        {
-            get { return _activePackageSource; }
-            set
-            {
-                _activePackageSource = value;
-                var source = _sourceRepositories
-                    .FirstOrDefault(s =>
-                        StringComparer.CurrentCultureIgnoreCase.Equals(_activePackageSource, s.PackageSource.Name));
-                if (source != null)
-                {
-                    _sourceRepositoryProvider.PackageSourceProvider.SaveActivePackageSource(source.PackageSource);
-                }
-            }
-        }
-
-        public string[] GetPackageSources()
-        {
-            return _sourceRepositories.Select(repo => repo.PackageSource.Name).ToArray();
-        }
+        public string[] GetPackageSources() => _packageSources;
 
         private void PackageSourceProvider_PackageSourcesChanged(object sender, EventArgs e)
         {
-            _sourceRepositories = _sourceRepositoryProvider
-                .GetRepositories()
-                .Where(repo => repo.PackageSource.IsEnabled)
-                .ToList();
-
-            string oldActiveSource = ActivePackageSource;
-            SetNewActiveSource(oldActiveSource);
+            _packageSources = GetEnabledPackageSources(_sourceRepositoryProvider);
+            UpdateActiveSource(ActivePackageSource);
         }
 
-        private void SetNewActiveSource(string oldActiveSource)
+        private void UpdateActiveSource(string activePackageSource)
         {
-            if (!_sourceRepositories.Any())
+            if (_packageSources.Length == 0)
             {
-                ActivePackageSource = string.Empty;
+                _activePackageSource = string.Empty;
+            }
+            else if (activePackageSource == null)
+            {
+                // use the first enabled source as the active source
+                _activePackageSource = _packageSources.First();
             }
             else
             {
-                if (oldActiveSource == null)
-                {
-                    // use the first enabled source as the active source
-                    ActivePackageSource = _sourceRepositories.First().PackageSource.Name;
-                }
-                else
-                {
-                    var s = _sourceRepositories.FirstOrDefault(
-                        p => StringComparer.CurrentCultureIgnoreCase.Equals(p.PackageSource.Name, oldActiveSource));
-                    if (s == null)
-                    {
-                        // the old active source does not exist any more. In this case,
-                        // use the first eneabled source as the active source.
-                        ActivePackageSource = _sourceRepositories.First().PackageSource.Name;
-                    }
-                    else
-                    {
-                        // the old active source still exists. Keep it as the active source.
-                        ActivePackageSource = s.PackageSource.Name;
-                    }
-                }
-            }
-        }
+                var s = _packageSources.FirstOrDefault(
+                    p => StringComparer.CurrentCultureIgnoreCase.Equals(p, activePackageSource));
 
-        public string DefaultProject
-        {
-            get
-            {
-                Debug.Assert(_solutionManager != null);
-                if (_solutionManager.DefaultNuGetProject == null)
-                {
-                    return null;
-                }
-
-                return GetDisplayName(_solutionManager.DefaultNuGetProject);
+                // if the old active source still exists. Keep it as the active source.
+                // if the old active source does not exist any more. In this case,
+                // use the first eneabled source as the active source.
+                _activePackageSource = s ?? _packageSources.First();
             }
         }
 
@@ -643,9 +742,9 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         {
             Debug.Assert(_solutionManager != null);
 
-            return ThreadHelper.JoinableTaskFactory.Run(async delegate
+            return NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
                 {
-                    await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                     var allProjects = _solutionManager.GetNuGetProjects();
                     _projectSafeNames = allProjects.Select(_solutionManager.GetNuGetProjectSafeName).ToArray();
@@ -710,7 +809,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                             @"$__pc_args=@();$input|%{$__pc_args+=$_};if(Test-Path Function:\TabExpansion2){(TabExpansion2 $__pc_args[0] $__pc_args[0].length).CompletionMatches|%{$_.CompletionText}}else{TabExpansion $__pc_args[0] $__pc_args[1]};Remove-Variable __pc_args -Scope 0;",
                             new[] { line, lastWord },
                             outputResults: false)
-                            select (s == null ? null : s.ToString());
+                                    select (s == null ? null : s.ToString());
                         return query.ToArray();
                     }, _token);
             }

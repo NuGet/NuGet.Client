@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using NuGet.ProjectManagement;
@@ -13,6 +14,7 @@ namespace NuGet.PackageManagement.UI
         public Options()
         {
             ShowPreviewWindow = true;
+            ShowDeprecatedFrameworkWindow = true;
             CreateFileConflictActions();
             CreateDependencyBehaviors();
             ShowClassicOptions = true;
@@ -75,6 +77,8 @@ namespace NuGet.PackageManagement.UI
             get { return _dependencyBehaviors; }
         }
 
+        public event EventHandler SelectedChanged;
+
         private DependencyBehaviorItem _selectedDependencyBehavior;
 
         public DependencyBehaviorItem SelectedDependencyBehavior
@@ -88,6 +92,10 @@ namespace NuGet.PackageManagement.UI
                 if (_selectedDependencyBehavior != value)
                 {
                     _selectedDependencyBehavior = value;
+                    if (SelectedChanged != null)
+                    {
+                        SelectedChanged(this, EventArgs.Empty);
+                    }
                     OnPropertyChanged(nameof(SelectedDependencyBehavior));
                 }
             }
@@ -107,6 +115,24 @@ namespace NuGet.PackageManagement.UI
                 {
                     _showPreviewWindow = value;
                     OnPropertyChanged(nameof(ShowPreviewWindow));
+                }
+            }
+        }
+
+        private bool _showDeprecatedFrameworkWindow;
+
+        public bool ShowDeprecatedFrameworkWindow
+        {
+            get
+            {
+                return _showDeprecatedFrameworkWindow;
+            }
+            set
+            {
+                if (_showDeprecatedFrameworkWindow != value)
+                {
+                    _showDeprecatedFrameworkWindow = value;
+                    OnPropertyChanged(nameof(ShowDeprecatedFrameworkWindow));
                 }
             }
         }

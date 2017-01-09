@@ -1,27 +1,15 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.IO;
 
 namespace NuGet.Test.Utility
 {
-    public class TestFileSystemUtility
+    public static class TestFileSystemUtility
     {
         public static readonly string NuGetTestFolder =
             Path.Combine(Path.GetTempPath(), "NuGetTestFolder");
-
-        public static TestDirectory CreateRandomTestFolder()
-        {
-            var randomFolderName = Guid.NewGuid().ToString();
-            var path = Path.Combine(NuGetTestFolder, randomFolderName);
-
-            if (Directory.Exists(path))
-            {
-                throw new InvalidOperationException("Guid colission");
-            }
-
-            Directory.CreateDirectory(path);
-
-            return new TestDirectory(path);
-        }
 
         public static void DeleteRandomTestFolder(string randomTestPath)
         {
@@ -36,7 +24,6 @@ namespace NuGet.Test.Utility
                 catch
                 {
                 }
-
             }
         }
 
@@ -54,6 +41,27 @@ namespace NuGet.Test.Utility
             {
                 throw new InvalidOperationException("Trying to delete the root test folder in a test");
             }
+        }
+
+        private class ResetDirectory : IDisposable
+        {
+            public string OldPath { get; set; }
+
+            void IDisposable.Dispose()
+            {
+                Directory.SetCurrentDirectory(OldPath);
+            }
+        }
+
+        public static IDisposable SetCurrentDirectory(string path)
+        {
+            string oldPath = Directory.GetCurrentDirectory();
+            Directory.SetCurrentDirectory(path);
+
+            return new ResetDirectory()
+            {
+                OldPath = oldPath
+            };
         }
     }
 }

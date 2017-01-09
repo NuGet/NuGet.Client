@@ -25,8 +25,8 @@ namespace NuGet.Versioning.Test
             SemanticVersion.TryParse(versionString, out semVer);
 
             // Assert
-            Assert.Equal<string>(versionString, semVer.ToNormalizedString());
-            Assert.Equal<string>(versionString, semVer.ToString());
+            Assert.Equal<string>(versionString, semVer.ToFullString());
+            Assert.Equal<string>(semVer.ToNormalizedString(), semVer.ToString());
         }
 
         [Theory]

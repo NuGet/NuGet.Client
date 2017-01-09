@@ -169,6 +169,33 @@ namespace NuGet.Test
         }
 
         [Theory]
+        [InlineData("portable-net45+netcore45", "netcoreapp1.0")]           // Profile7
+        [InlineData("portable-netcore451+wp81", "netcoreapp1.0")]           // Profile31
+        [InlineData("portable-netcore451+wpa81", "netcoreapp1.0")]          // Profile32
+        [InlineData("portable-net451+netcore451", "netcoreapp1.0")]         // Profile44
+        [InlineData("portable-net45+wp8", "netcoreapp1.0")]                 // Profile49
+        [InlineData("portable-net45+netcore45+wp8", "netcoreapp1.0")]       // Profile78
+        [InlineData("portable-wpa81+wp81", "netcoreapp1.0")]                // Profile84
+        [InlineData("portable-net45+netcore45+wpa81", "netcoreapp1.0")]     // Profile111
+        [InlineData("portable-net451+netcore451+wpa81", "netcoreapp1.0")]   // Profile151
+        [InlineData("portable-netcore451+wpa81+wp81", "netcoreapp1.0")]     // Profile157
+        [InlineData("portable-net45+netcore45+wpa81+wp8", "netcoreapp1.0")] // Profile259
+        [InlineData("portable-net4+sl40+bad", "netcoreapp1.0")]             // Invalid
+        public void CompatibilityPCL_PclDoesNotSupportNetCoreApp(string portable, string netStandardApp)
+        {
+            var portableFramework = NuGetFramework.Parse(portable);
+            var netStandardAppFramework = NuGetFramework.Parse(netStandardApp);
+
+            var compat = DefaultCompatibilityProvider.Instance;
+
+            // PCL does not support NetStandardApp
+            Assert.False(compat.IsCompatible(portableFramework, netStandardAppFramework));
+
+            // NetStandardApp does not support PCL
+            Assert.False(compat.IsCompatible(netStandardAppFramework, portableFramework));
+        }
+
+        [Theory]
         [InlineData("portable-net45+win8+monoandroid", "portable-net45+win8+unk8+monoandroid")]
         [InlineData("portable-net45+win8", "portable-net45+win8+unk8+monoandroid+monotouch")]
         [InlineData("portable-net45+win8", "portable-net45+win8+unk8+monoandroid1+monotouch1")]

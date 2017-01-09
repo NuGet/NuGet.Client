@@ -14,16 +14,19 @@ using System.Management.Automation.Host;
 using System.Management.Automation.Runspaces;
 using System.Threading;
 using System.Threading.Tasks;
-using ExecutionContext = NuGet.ProjectManagement.ExecutionContext;
+using System.Xml.Linq;
 using EnvDTE;
 using Microsoft.VisualStudio.Threading;
+using NuGet.Common;
 using NuGet.Configuration;
+using NuGet.PackageManagement.UI;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging;
+using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
-using NuGet.Protocol.VisualStudio;
-using System.Xml.Linq;
+using NuGet.Versioning;
+using ExecutionContext = NuGet.ProjectManagement.ExecutionContext;
 
 namespace NuGet.PackageManagement.PowerShellCmdlets
 {
@@ -38,12 +41,13 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
         private readonly BlockingCollection<Message> _blockingCollection = new BlockingCollection<Message>();
         private readonly Semaphore _scriptEndSemaphore = new Semaphore(0, Int32.MaxValue);
-        private readonly ISourceRepositoryProvider _resourceRepositoryProvider;
+        private readonly Semaphore _flushSemaphore = new Semaphore(0, Int32.MaxValue);
+        private readonly ISourceRepositoryProvider _sourceRepositoryProvider;
         private readonly ICommonOperations _commonOperations;
         private readonly IDeleteOnRestartManager _deleteOnRestartManager;
 
-        // TODO: Hook up DownloadResource.Progress event
-        private readonly IHttpClientEvents _httpClientEvents;
+        protected int _packageCount;
+        protected NuGetOperationStatus _status = NuGetOperationStatus.Succeeded;
 
         private ProgressRecordCollection _progressRecordCache;
         private Exception _scriptException;
@@ -54,11 +58,13 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         internal const string SyncModeKey = "IsSyncMode";
         private const string CancellationTokenKey = "CancellationTokenKey";
 
+        private SourceRepository _activeSourceRepository;
+
         #endregion Members
 
         protected NuGetPowerShellBaseCommand()
         {
-            _resourceRepositoryProvider = ServiceLocator.GetInstance<ISourceRepositoryProvider>();
+            _sourceRepositoryProvider = ServiceLocator.GetInstance<ISourceRepositoryProvider>();
             ConfigSettings = ServiceLocator.GetInstance<Configuration.ISettings>();
             VsSolutionManager = ServiceLocator.GetInstance<ISolutionManager>();
             DTE = ServiceLocator.GetInstance<DTE>();
@@ -71,6 +77,8 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             {
                 ExecutionContext = new IDEExecutionContext(_commonOperations);
             }
+
+            ActivityCorrelationId.StartNew();
         }
 
         #region Properties
@@ -82,11 +90,14 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// </summary>
         protected NuGetPackageManager PackageManager
         {
-            get { return new NuGetPackageManager(
-                _resourceRepositoryProvider,
-                ConfigSettings,
-                VsSolutionManager,
-                _deleteOnRestartManager); }
+            get
+            {
+                return new NuGetPackageManager(
+                    _sourceRepositoryProvider,
+                    ConfigSettings,
+                    VsSolutionManager,
+                    _deleteOnRestartManager);
+            }
         }
 
         /// <summary>
@@ -105,14 +116,21 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         }
 
         /// <summary>
-        /// Active Source Repository for PowerShell Cmdlets
+        /// List of primary source repositories used for search operations
         /// </summary>
-        protected SourceRepository ActiveSourceRepository { get; set; }
+        protected IEnumerable<SourceRepository> PrimarySourceRepositories
+        {
+            get
+            {
+                return _activeSourceRepository != null
+                    ? new[] { _activeSourceRepository } : EnabledSourceRepositories;
+            }
+        }
 
         /// <summary>
         /// List of all the enabled source repositories
         /// </summary>
-        protected List<SourceRepository> EnabledSourceRepositories { get; private set; }
+        protected IEnumerable<SourceRepository> EnabledSourceRepositories { get; private set; }
 
         /// <summary>
         /// Settings read from the config files
@@ -180,11 +198,18 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             get { return this; }
         }
 
+        /// <summary>
+        /// Determine if needs to log total time elapsed or not
+        /// </summary>
+        protected virtual bool IsLoggingTimeDisabled { get; }
+
         #endregion Properties
 
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We want to display friendly message to the console.")]
         protected override sealed void ProcessRecord()
         {
+            var stopWatch = new Stopwatch();
+            stopWatch.Start();
             try
             {
                 ProcessRecordCore();
@@ -199,6 +224,14 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             finally
             {
                 UnsubscribeEvents();
+            }
+
+            stopWatch.Stop();
+
+            // Log total time elapsed except for Tab command
+            if (!IsLoggingTimeDisabled)
+            {
+                LogCore(MessageLevel.Info, string.Format(CultureInfo.CurrentCulture, Resources.Cmdlet_TotalTime, stopWatch.Elapsed));
             }
         }
 
@@ -215,20 +248,26 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             var packages = await PackageRestoreManager.GetPackagesInSolutionAsync(solutionDirectory, CancellationToken.None);
             if (packages.Any(p => p.IsMissing))
             {
-                var packageRestoreConsent = new VisualStudio.PackageRestoreConsent(ConfigSettings);
+                var packageRestoreConsent = new PackageRestoreConsent(ConfigSettings);
                 if (packageRestoreConsent.IsGranted)
                 {
                     await TaskScheduler.Default;
 
-                    var result = await PackageRestoreManager.RestoreMissingPackagesAsync(solutionDirectory,
-                        packages,
-                        this,
-                        Token);
-
-                    if (result.Restored)
+                    using (var cacheContext = new SourceCacheContext())
                     {
-                        await PackageRestoreManager.RaisePackagesMissingEventForSolutionAsync(solutionDirectory, CancellationToken.None);
-                        return;
+                        var downloadContext = new PackageDownloadContext(cacheContext);
+
+                        var result = await PackageRestoreManager.RestoreMissingPackagesAsync(
+                            solutionDirectory,
+                            packages,
+                            this,
+                            downloadContext,
+                            Token);
+                        if (result.Restored)
+                        {
+                            await PackageRestoreManager.RaisePackagesMissingEventForSolutionAsync(solutionDirectory, CancellationToken.None);
+                            return;
+                        }
                     }
                 }
 
@@ -242,104 +281,147 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
         #region Cmdlets base APIs
 
-        /// <summary>
-        /// Get the active source repository for PowerShell cmdlets, based on the source string.
-        /// </summary>
-        /// <param name="source">The source string specified by -Source switch.</param>
+        protected SourceValidationResult ValidateSource(string source)
+        {
+            // If source string is not specified, get the current active package source from the host.
+            if (string.IsNullOrEmpty(source))
+            {
+                source = (string)GetPropertyValueFromHost(ActivePackageSourceKey);
+            }
+            
+            // Look through all available sources (including those disabled) by matching source name and URL (or path).
+            var matchingSource = GetMatchingSource(source);
+            if (matchingSource != null)
+            {
+                return SourceValidationResult.Valid(
+                    source,
+                    _sourceRepositoryProvider?.CreateRepository(matchingSource));
+            }
+
+            // If we really can't find a source string, return an empty validation result.
+            if (string.IsNullOrEmpty(source))
+            {
+                return SourceValidationResult.None;
+            }
+
+            return CheckSourceValidity(source);
+        }
+
         protected void UpdateActiveSourceRepository(string source)
         {
-            // If source string is not specified, get the current active package source from the host
-            source = string.IsNullOrEmpty(source) ? (string)GetPropertyValueFromHost(ActivePackageSourceKey) : source;
+            var result = ValidateSource(source);
+            EnsureValidSource(result);
+            UpdateActiveSourceRepository(result.SourceRepository);
+        }
 
-            if (!string.IsNullOrEmpty(source))
+        protected void EnsureValidSource(SourceValidationResult result)
+        {
+            if (result.Validity == SourceValidity.UnknownSource)
             {
-                var packageSources = _resourceRepositoryProvider?.PackageSourceProvider?.LoadPackageSources();
-
-                // Look through all available sources (including those disabled) by matching source name and url
-                var matchingSource = packageSources
-                    ?.Where(p => StringComparer.OrdinalIgnoreCase.Equals(p.Name, source) ||
-                                 StringComparer.OrdinalIgnoreCase.Equals(p.Source, source))
-                    .FirstOrDefault();
-
-                if (matchingSource != null)
-                {
-                    ActiveSourceRepository = _resourceRepositoryProvider?.CreateRepository(matchingSource);
-                }
-                else
-                {
-                    // source should be the format of url here; otherwise it cannot resolve from name anyways.
-                    ActiveSourceRepository = CreateRepositoryFromSource(source);
-                }
-
-                EnabledSourceRepositories = _resourceRepositoryProvider?.GetRepositories()
-                    .Where(r => r.PackageSource.IsEnabled)
-                    .ToList();
+                throw new PackageSourceException(string.Format(
+                    CultureInfo.CurrentCulture,
+                    Strings.UnknownSource,
+                    result.Source));
             }
+            else if (result.Validity == SourceValidity.UnknownSourceType)
+            {
+                throw new PackageSourceException(string.Format(
+                    CultureInfo.CurrentCulture,
+                    Strings.UnknownSourceType,
+                    result.Source));
+            }
+        }
+
+        /// <summary>
+        /// Initializes source repositories for PowerShell cmdlets, based on config, source string, and/or host active source property value.
+        /// </summary>
+        /// <param name="source">The source string specified by -Source switch.</param>
+        protected void UpdateActiveSourceRepository(SourceRepository sourceRepository)
+        {
+            if (sourceRepository != null)
+            {
+                _activeSourceRepository = sourceRepository;
+            }
+
+            EnabledSourceRepositories = _sourceRepositoryProvider?.GetRepositories()
+                .Where(r => r.PackageSource.IsEnabled)
+                .ToList();
         }
 
         /// <summary>
         /// Create a package repository from the source by trying to resolve relative paths.
         /// </summary>
-        protected SourceRepository CreateRepositoryFromSource(string source)
+        private SourceRepository CreateRepositoryFromSource(string source)
         {
-            if (source == null)
-            {
-                throw new ArgumentNullException("source");
-            }
+            var packageSource = new PackageSource(source);
+            var repository = _sourceRepositoryProvider.CreateRepository(packageSource);
+            var resource = repository.GetResource<PackageSearchResource>();
 
-            var packageSource = new Configuration.PackageSource(source);
-            SourceRepository repository = _resourceRepositoryProvider.CreateRepository(packageSource);
-            PSSearchResource resource = repository.GetResource<PSSearchResource>();
-
-            // resource can be null here for relative path package source.
-            if (resource == null)
-            {
-                Uri uri;
-                // if it's not an absolute path, treat it as relative path
-                if (Uri.TryCreate(source, UriKind.Relative, out uri))
-                {
-                    string outputPath;
-                    bool? exists;
-                    string errorMessage;
-                    // translate relative path to absolute path
-                    if (TryTranslatePSPath(source, out outputPath, out exists, out errorMessage)
-                        && exists == true)
-                    {
-                        source = outputPath;
-                        packageSource = new Configuration.PackageSource(outputPath);
-                    }
-                }
-            }
-
-            var sourceRepo = _resourceRepositoryProvider.CreateRepository(packageSource);
-            // Right now if packageSource is invalid, CreateRepository will not throw. Instead, resource returned is null.
-            PSSearchResource newResource = repository.GetResource<PSSearchResource>();
-            if (newResource == null)
-            {
-                // Try to create Uri again to throw UriFormat exception for invalid source input.
-                new Uri(source);
-            }
-            return sourceRepo;
+            return repository;
         }
 
         /// <summary>
-        /// Translate a PSPath into a System.IO.* friendly Win32 path.
-        /// Does not resolve/glob wildcards.
+        /// Looks through all available sources (including those disabled) by matching source name and url to get matching sources.
         /// </summary>
-        /// <param name="psPath">
-        /// The PowerShell PSPath to translate which may reference PSDrives or have
-        /// provider-qualified paths which are syntactically invalid for .NET APIs.
-        /// </param>
-        /// <param name="path">The translated PSPath in a format understandable to .NET APIs.</param>
-        /// <param name="exists">Returns null if not tested, or a bool representing path existence.</param>
-        /// <param name="errorMessage">If translation failed, contains the reason.</param>
-        /// <returns>True if successfully translated, false if not.</returns>
-        [SuppressMessage("Microsoft.Design", "CA1021:AvoidOutParameters", MessageId = "1#", Justification = "Following TryParse pattern in BCL", Target = "path")]
-        [SuppressMessage("Microsoft.Design", "CA1021:AvoidOutParameters", MessageId = "2#", Justification = "Following TryParse pattern in BCL", Target = "exists")]
-        [SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "ps", Justification = "ps is a common powershell prefix")]
-        protected bool TryTranslatePSPath(string psPath, out string path, out bool? exists, out string errorMessage)
+        /// <param name="source">The source string specified by -Source switch.</param>
+        /// <returns>Returns an object of PackageSource if the specified source string is a known source. Else returns a null.</returns>
+        private PackageSource GetMatchingSource(string source)
         {
-            return PSPathUtility.TryTranslatePSPath(SessionState, psPath, out path, out exists, out errorMessage);
+            var packageSources = _sourceRepositoryProvider.PackageSourceProvider?.LoadPackageSources();
+
+            var matchingSource = packageSources?.FirstOrDefault(
+                p => StringComparer.OrdinalIgnoreCase.Equals(p.Name, source) ||
+                     StringComparer.OrdinalIgnoreCase.Equals(p.Source, source));
+
+            return matchingSource;
+        }
+
+        /// <summary>
+        /// If a relative local URI is passed, it converts it into an absolute URI.
+        /// If the local URI does not exist or it is neither http nor local type, then the source is rejected.
+        /// If the URI is not relative then no action is taken.
+        /// </summary>
+        /// <param name="source">The source string specified by -Source switch.</param>
+        /// <returns>The source validation result.</returns>
+        private SourceValidationResult CheckSourceValidity(string inputSource)
+        {
+            // Convert file:// to a local path if needed, this noops for other types
+            var source = UriUtility.GetLocalPath(inputSource);
+
+            // Convert a relative local URI into an absolute URI
+            var packageSource = new PackageSource(source);
+            Uri sourceUri;
+            if (Uri.TryCreate(source, UriKind.Relative, out sourceUri))
+            {
+                string outputPath;
+                bool? exists;
+                string errorMessage;
+                if (PSPathUtility.TryTranslatePSPath(SessionState, source, out outputPath, out exists, out errorMessage) &&
+                    exists == true)
+                {
+                    source = outputPath;
+                    packageSource = new PackageSource(source);
+                }
+                else if (exists == false)
+                {
+                    return SourceValidationResult.UnknownSource(source);
+                }
+            }
+            else if (!packageSource.IsHttp)
+            {
+                // Throw and unknown source type error if the specified source is neither local nor http
+                return SourceValidationResult.UnknownSourceType(source);
+            }
+            
+            // Check if the source is a valid HTTP URI.
+            if (packageSource.IsHttp && packageSource.TrySourceAsUri == null)
+            {
+                return SourceValidationResult.UnknownSource(source);
+            }
+
+            var sourceRepository = CreateRepositoryFromSource(source);
+
+            return SourceValidationResult.Valid(source, sourceRepository);
         }
 
         /// <summary>
@@ -386,20 +468,6 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                     ErrorHandler.WriteProjectNotFoundError(projectName, terminating: true);
                 }
             }
-        }
-
-        protected IEnumerable<NuGetProject> GetNuGetProjectsByName(string[] projectNames)
-        {
-            List<NuGetProject> nuGetProjects = new List<NuGetProject>();
-            foreach (Project project in GetProjectsByName(projectNames))
-            {
-                NuGetProject nuGetProject = VsSolutionManager.GetNuGetProject(project.Name);
-                if (nuGetProject != null)
-                {
-                    nuGetProjects.Add(nuGetProject);
-                }
-            }
-            return nuGetProjects;
         }
 
         /// <summary>
@@ -485,7 +553,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// unique names and safe names.
         /// </summary>
         /// <returns></returns>
-        protected IEnumerable<string> GetAllValidProjectNames()
+        private IEnumerable<string> GetAllValidProjectNames()
         {
             var nugetProjects = VsSolutionManager.GetNuGetProjects();
             var safeNames = nugetProjects?.Select(p => VsSolutionManager.GetNuGetProjectSafeName(p));
@@ -497,13 +565,13 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// Get the list of installed packages based on Filter, Skip and First parameters. Used for Get-Package.
         /// </summary>
         /// <returns></returns>
-        protected static async Task<Dictionary<NuGetProject, IEnumerable<Packaging.PackageReference>>> GetInstalledPackages(IEnumerable<NuGetProject> projects,
+        protected static async Task<Dictionary<NuGetProject, IEnumerable<PackageReference>>> GetInstalledPackagesAsync(IEnumerable<NuGetProject> projects,
             string filter,
             int skip,
             int take,
             CancellationToken token)
         {
-            var installedPackages = new Dictionary<NuGetProject, IEnumerable<Packaging.PackageReference>>();
+            var installedPackages = new Dictionary<NuGetProject, IEnumerable<PackageReference>>();
 
             foreach (var project in projects)
             {
@@ -533,27 +601,77 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// <summary>
         /// Get list of packages from the remote package source. Used for Get-Package -ListAvailable.
         /// </summary>
-        protected async Task<IEnumerable<PSSearchMetadata>> GetPackagesFromRemoteSourceAsync(string packageId,
-            IEnumerable<string> targetFrameworks,
+        /// <param name="searchString">The search string to use for filtering.</param>
+        /// <param name="includePrerelease">Whether or not to include prerelease packages in the results.</param>
+        /// <param name="handleError">
+        /// An action for handling errors during the enumeration of the returned results. The
+        /// parameter is the error message. This action is never called by multiple threads at once.
+        /// </param>
+        /// <returns>The lazy sequence of package search metadata.</returns>
+        protected IEnumerable<IPackageSearchMetadata> GetPackagesFromRemoteSource(
+            string searchString,
             bool includePrerelease,
-            int skip,
-            int take)
+            Action<string> handleError)
         {
-            var searchfilter = new SearchFilter();
-            searchfilter.IncludePrerelease = includePrerelease;
-            searchfilter.SupportedFrameworks = targetFrameworks;
-            searchfilter.IncludeDelisted = false;
+            var searchFilter = new SearchFilter(includePrerelease: includePrerelease);
+            searchFilter.IncludeDelisted = false;
+            var packageFeed = new MultiSourcePackageFeed(PrimarySourceRepositories, logger: null); 
+            var searchTask = packageFeed.SearchAsync(searchString, searchFilter, Token);
 
-            var packages = Enumerable.Empty<PSSearchMetadata>();
+            return PackageFeedEnumerator.Enumerate(
+                packageFeed,
+                searchTask,
+                (source, exception) =>
+                {
+                    var message = string.Format(
+                          CultureInfo.CurrentCulture,
+                          Resources.Cmdlet_FailedToSearchSource,
+                          source,
+                          Environment.NewLine,
+                          ExceptionUtilities.DisplayMessage(exception));
 
-            var resource = await ActiveSourceRepository.GetResourceAsync<PSSearchResource>();
+                    handleError(message);
+                },
+                Token);
+        }
 
-            if (resource != null)
-            {
-                packages = await resource.Search(packageId, searchfilter, skip, take, Token);
-            }
+        protected async Task<IEnumerable<IPackageSearchMetadata>> GetPackagesFromRemoteSourceAsync(string packageId, bool includePrerelease)
+        {
+            var metadataProvider = new MultiSourcePackageMetadataProvider(
+                PrimarySourceRepositories,
+                optionalLocalRepository: null,
+                optionalGlobalLocalRepositories: null,
+                logger: Common.NullLogger.Instance);
 
-            return packages;
+            return await metadataProvider.GetPackageMetadataListAsync(
+                packageId,
+                includePrerelease,
+                includeUnlisted: false,
+                cancellationToken: Token);
+        }
+
+        protected async Task<IPackageSearchMetadata> GetLatestPackageFromRemoteSourceAsync(PackageIdentity identity, bool includePrerelease)
+        {
+            var metadataProvider = new MultiSourcePackageMetadataProvider(
+                PrimarySourceRepositories,
+                optionalLocalRepository: null,
+                optionalGlobalLocalRepositories: null,
+                logger: Common.NullLogger.Instance);
+
+            return await metadataProvider.GetLatestPackageMetadataAsync(identity, Project, includePrerelease, Token);
+        }
+
+        protected async Task<IEnumerable<string>> GetPackageIdsFromRemoteSourceAsync(string idPrefix, bool includePrerelease)
+        {
+            var autoCompleteProvider = new MultiSourceAutoCompleteProvider(PrimarySourceRepositories, logger: Common.NullLogger.Instance);
+            return await autoCompleteProvider.IdStartsWithAsync(idPrefix, includePrerelease, Token);
+        }
+
+        protected async Task<IEnumerable<NuGetVersion>> GetPackageVersionsFromRemoteSourceAsync(string id, string versionPrefix, bool includePrerelease)
+        {
+            var autoCompleteProvider = new MultiSourceAutoCompleteProvider(PrimarySourceRepositories, logger: Common.NullLogger.Instance);
+            var results = await autoCompleteProvider.VersionStartsWithAsync(id, versionPrefix, includePrerelease, Token);
+            return results?.OrderByDescending(v => v).ToArray();
         }
 
         /// <summary>
@@ -566,13 +684,13 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             if (actions == null
                 || !actions.Any())
             {
-                Log(ProjectManagement.MessageLevel.Info, Resources.Cmdlet_NoPackageActions);
+                Log(MessageLevel.Info, Resources.Cmdlet_NoPackageActions);
             }
             else
             {
                 foreach (NuGetProjectAction action in actions)
                 {
-                    Log(ProjectManagement.MessageLevel.Info, action.NuGetProjectActionType + " " + action.PackageIdentity);
+                    Log(MessageLevel.Info, action.NuGetProjectActionType + " " + action.PackageIdentity);
                 }
             }
         }
@@ -584,10 +702,6 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         protected override void BeginProcessing()
         {
             IsExecuting = true;
-            if (_httpClientEvents != null)
-            {
-                _httpClientEvents.SendingRequest += OnSendingRequest;
-            }
         }
 
         protected override void EndProcessing()
@@ -599,37 +713,18 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
         protected void UnsubscribeEvents()
         {
-            if (_httpClientEvents != null)
-            {
-                _httpClientEvents.SendingRequest -= OnSendingRequest;
-            }
         }
 
         protected virtual void OnSendingRequest(object sender, WebRequestEventArgs e)
         {
-            //HttpUtility.SetUserAgent(e.Request, _psCommandsUserAgent.Value);
-        }
-
-        private void OnProgressAvailable(object sender, ProgressEventArgs e)
-        {
-            WriteProgress(ProgressActivityIds.DownloadPackageId, e.Operation, e.PercentComplete);
         }
 
         protected void SubscribeToProgressEvents()
         {
-            if (!IsSyncMode
-                && _httpClientEvents != null)
-            {
-                _httpClientEvents.ProgressAvailable += OnProgressAvailable;
-            }
         }
 
         protected void UnsubscribeFromProgressEvents()
         {
-            if (_httpClientEvents != null)
-            {
-                _httpClientEvents.ProgressAvailable -= OnProgressAvailable;
-            }
         }
 
         private ProgressRecordCollection ProgressRecordCache
@@ -840,10 +935,14 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// <param name="level"></param>
         /// <param name="message"></param>
         /// <param name="args"></param>
-        public void Log(ProjectManagement.MessageLevel level, string message, params object[] args)
+        public void Log(MessageLevel level, string message, params object[] args)
         {
-            string formattedMessage = String.Format(CultureInfo.CurrentCulture, message, args);
-            BlockingCollection.Add(new LogMessage(level, formattedMessage));
+            if (args.Length > 0)
+            {
+                message = string.Format(CultureInfo.CurrentCulture, message, args);
+            }
+
+            BlockingCollection.Add(new LogMessage(level, message));
         }
 
         /// <summary>
@@ -851,23 +950,23 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// </summary>
         /// <param name="level"></param>
         /// <param name="formattedMessage"></param>
-        protected virtual void LogCore(ProjectManagement.MessageLevel level, string formattedMessage)
+        protected virtual void LogCore(MessageLevel level, string formattedMessage)
         {
             switch (level)
             {
-                case ProjectManagement.MessageLevel.Debug:
+                case MessageLevel.Debug:
                     WriteVerbose(formattedMessage);
                     break;
 
-                case ProjectManagement.MessageLevel.Warning:
+                case MessageLevel.Warning:
                     WriteWarning(formattedMessage);
                     break;
 
-                case ProjectManagement.MessageLevel.Info:
+                case MessageLevel.Info:
                     WriteLine(formattedMessage);
                     break;
 
-                case ProjectManagement.MessageLevel.Error:
+                case MessageLevel.Error:
                     WriteError(formattedMessage);
                     break;
             }
@@ -901,11 +1000,17 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                         LogCore(logMessage.Level, logMessage.Content);
                         continue;
                     }
+
+                    var flushMessage = message as FlushMessage;
+                    if (flushMessage != null)
+                    {
+                        _flushSemaphore.Release();
+                    }
                 }
             }
             catch (InvalidOperationException ex)
             {
-                LogCore(ProjectManagement.MessageLevel.Error, ex.Message);
+                LogCore(MessageLevel.Error, ExceptionUtilities.DisplayMessage(ex));
             }
         }
 
@@ -921,7 +1026,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 if (path != null)
                 {
                     string command = "& " + ProjectManagement.PathUtility.EscapePSPath(path) + " $__rootPath $__toolsPath $__package $__project";
-                    LogCore(ProjectManagement.MessageLevel.Info, String.Format(CultureInfo.CurrentCulture, Resources.Cmdlet_ExecutingScript, path));
+                    LogCore(MessageLevel.Info, String.Format(CultureInfo.CurrentCulture, Resources.Cmdlet_ExecutingScript, path));
 
                     InvokeCommand.InvokeScript(command, false, PipelineResultTypes.Error, null, null);
                 }
@@ -957,11 +1062,24 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
         public PackageExtractionContext PackageExtractionContext { get; set; }
 
+        /// <summary>
+        /// Flushes all existing messages in the <see cref="BlockingCollection"/> before
+        /// continuing. This is useful before prompting for user input so that log messages are
+        /// written out before the user prompt text.
+        /// </summary>
+        protected void FlushBlockingCollection()
+        {
+            BlockingCollection.Add(new FlushMessage());
+
+            WaitHandle.WaitAny(new WaitHandle[] { _flushSemaphore, Token.WaitHandle });
+        }
+
         public void ExecutePSScript(string scriptPath, bool throwOnFailure)
         {
             BlockingCollection.Add(new ScriptMessage(scriptPath));
 
-            WaitHandle.WaitAny(new WaitHandle[] { ScriptEndSemaphore });
+            // added Token waitHandler as well in case token is being cancelled.
+            WaitHandle.WaitAny(new WaitHandle[] { ScriptEndSemaphore, Token.WaitHandle });
 
             if (_scriptException != null)
             {
@@ -970,7 +1088,8 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 {
                     throw _scriptException;
                 }
-                Log(ProjectManagement.MessageLevel.Warning, _scriptException.Message);
+
+                Log(MessageLevel.Warning, _scriptException.Message);
             }
         }
 
@@ -984,6 +1103,8 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         }
 
         public NuGetActionType ActionType { get; set; }
+
+        public TelemetryServiceHelper TelemetryService { get; set; }
     }
 
     public class ProgressRecordCollection : KeyedCollection<int, ProgressRecord>

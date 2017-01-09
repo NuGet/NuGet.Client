@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -455,7 +456,6 @@ namespace NuGet.Packaging.Test
         public void PackageReader_SupportedFrameworks()
         {
             using (var packageFile = TestPackages.GetLegacyTestPackage())
-
             {
                 var zip = TestPackages.GetZip(packageFile);
 
@@ -467,6 +467,75 @@ namespace NuGet.Packaging.Test
                     Assert.Equal(".NETFramework,Version=v4.0", frameworks[1]);
                     Assert.Equal(".NETFramework,Version=v4.5", frameworks[2]);
                     Assert.Equal(3, frameworks.Length);
+                }
+            }
+        }
+
+        [Fact]
+        public void PackageReader_Serviceable()
+        {
+            // Arrange
+            using (var packageFile = TestPackages.GetServiceablePackage())
+            {
+                var zip = TestPackages.GetZip(packageFile);
+
+                using (PackageArchiveReader reader = new PackageArchiveReader(zip))
+                {
+                    // Act
+                    var actual = reader.IsServiceable();
+
+                    // Assert
+                    Assert.True(actual);
+                }
+            }
+        }
+
+        [Fact]
+        public void PackageReader_PackageTypes()
+        {
+            // Arrange
+            using (var packageFile = TestPackages.GetPackageWithPackageTypes())
+            {
+                var zip = TestPackages.GetZip(packageFile);
+
+                using (PackageArchiveReader reader = new PackageArchiveReader(zip))
+                {
+                    // Act
+                    var actual = reader.GetPackageTypes();
+
+                    // Assert
+                    Assert.Equal(2, actual.Count);
+                    Assert.Equal("foo", actual[0].Name);
+                    Assert.Equal(new Version(0, 0), actual[0].Version);
+                    Assert.Equal("bar", actual[1].Name);
+                    Assert.Equal(new Version(2, 0, 0), actual[1].Version);
+                }
+            }
+        }
+
+        [Fact]
+        public void PackageReader_SupportedFrameworksForInvalidPortableFrameworkThrows()
+        {
+            using (var packageFile = TestPackages.GetLegacyTestPackageWithInvalidPortableFrameworkFolderName())
+            {
+                var zip = TestPackages.GetZip(packageFile);
+
+                using (PackageArchiveReader reader = new PackageArchiveReader(zip))
+                {
+                    var ex = Assert.Throws<PackagingException>(
+                        () => reader.GetSupportedFrameworks());
+                    Assert.Equal(
+                        "The framework in the folder name of '" +
+                        "lib/portable-net+win+wpa+wp+sl+net-cf+netmf+MonoAndroid+MonoTouch+Xamarin.iOS/test.dll" +
+                        "' in package 'packageA.2.0.3' could not be parsed.",
+                        ex.Message);
+                    Assert.NotNull(ex.InnerException);
+                    Assert.IsType<ArgumentException>(ex.InnerException);
+                    Assert.Equal(
+                        "Invalid portable frameworks '" +
+                        "net+win+wpa+wp+sl+net-cf+netmf+MonoAndroid+MonoTouch+Xamarin.iOS" +
+                        "'. A hyphen may not be in any of the portable framework names.",
+                        ex.InnerException.Message);
                 }
             }
         }

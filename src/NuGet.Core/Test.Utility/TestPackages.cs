@@ -49,6 +49,18 @@ namespace Test.Utility
                 });
         }
 
+        public static FileInfo GetLegacyTestPackageWithMultipleReferences(string path,
+            string packageId = "packageA",
+            string packageVersion = "2.0.3")
+        {
+            return GeneratePackage(path, packageId, packageVersion,
+                new[]
+                {
+                    "lib/net45/a.dll",
+                    "lib/net45/b.dll"
+                });
+        }
+
         public static FileInfo GetNet45TestPackage(string path,
             string packageId = "packageA",
             string packageVersion = "2.0.3")

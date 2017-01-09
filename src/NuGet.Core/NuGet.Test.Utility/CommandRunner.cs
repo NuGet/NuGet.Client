@@ -1,6 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace NuGet.Test.Utility
 {
@@ -15,7 +18,8 @@ namespace NuGet.Test.Utility
             bool waitForExit,
             int timeOutInMilliseconds = 60000,
             Action<StreamWriter> inputAction = null,
-            bool shareProcessObject = false)
+            bool shareProcessObject = false,
+            IDictionary<string, string> environmentVariables = null)
         {
             var psi = new ProcessStartInfo(Path.GetFullPath(process), arguments)
             {
@@ -27,16 +31,28 @@ namespace NuGet.Test.Utility
                 RedirectStandardInput = inputAction != null
             };
 
-#if !DNXCORE50
+#if !IS_CORECLR
             psi.EnvironmentVariables["NuGetTestModeEnabled"] = "True";
 #else
             psi.Environment["NuGetTestModeEnabled"] = "True";
 #endif
 
+            if (environmentVariables != null)
+            {
+                foreach (var pair in environmentVariables)
+                {
+#if !IS_CORECLR
+                    psi.EnvironmentVariables[pair.Key] = pair.Value;
+#else
+                    psi.Environment[pair.Key] = pair.Value;
+#endif
+                }
+            }
+
             int exitCode = 1;
 
-            var output = new LockedStringBuilder();
-            var errors = new LockedStringBuilder();
+            var output = new StringBuilder();
+            var errors = new StringBuilder();
 
             Process p = null;
 
@@ -44,36 +60,22 @@ namespace NuGet.Test.Utility
             {
                 p = new Process();
 
-                p.OutputDataReceived += (o, e) =>
-                {
-                    if (e.Data != null)
-                    {
-                        output.AppendLine(e.Data);
-                    }
-                };
-
-                p.ErrorDataReceived += (o, e) =>
-                {
-                    if (e.Data != null)
-                    {
-                        errors.AppendLine(e.Data);
-                    }
-                };
-
                 p.StartInfo = psi;
                 p.Start();
 
-                p.BeginErrorReadLine();
-                p.BeginOutputReadLine();
+                var outputTask = ConsumeStreamReaderAsync(p.StandardOutput, output);
+                var errorTask = ConsumeStreamReaderAsync(p.StandardError, errors);
 
-                if (inputAction != null)
-                {
-                    inputAction(p.StandardInput);
-                }
+                inputAction?.Invoke(p.StandardInput);
 
                 if (waitForExit)
                 {
-                    bool processExited = p.WaitForExit(timeOutInMilliseconds);
+#if DEBUG
+                    var processExited = true;
+                    p.WaitForExit();
+#else
+                    var processExited = p.WaitForExit(timeOutInMilliseconds);
+#endif
                     if (!processExited)
                     {
                         p.Kill();
@@ -85,6 +87,7 @@ namespace NuGet.Test.Utility
 
                     if (processExited)
                     {
+                        Task.WaitAll(outputTask, errorTask);
                         exitCode = p.ExitCode;
                     }
                 }
@@ -97,7 +100,18 @@ namespace NuGet.Test.Utility
                 }
             }
 
-            return new CommandRunnerResult(p, exitCode, output, errors);
+            return new CommandRunnerResult(p, exitCode, output.ToString(), errors.ToString());
+        }
+
+        private static async Task ConsumeStreamReaderAsync(StreamReader reader, StringBuilder lines)
+        {
+            await Task.Yield();
+
+            string line;
+            while ((line = await reader.ReadLineAsync()) != null)
+            {
+                lines.AppendLine(line);
+            }
         }
     }
 }

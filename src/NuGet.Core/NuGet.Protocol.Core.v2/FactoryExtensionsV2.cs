@@ -21,14 +21,8 @@ namespace NuGet.Protocol.Core.v2
 
         public static IEnumerable<Lazy<INuGetResourceProvider>> GetCoreV2(this Repository.ProviderFactory factory)
         {
-            yield return new Lazy<INuGetResourceProvider>(() => new DependencyInfoResourceV2Provider());
-            yield return new Lazy<INuGetResourceProvider>(() => new DownloadResourceV2Provider());
-            yield return new Lazy<INuGetResourceProvider>(() => new MetadataResourceV2Provider());
             yield return new Lazy<INuGetResourceProvider>(() => new PackageRepositoryResourceV2Provider());
-            yield return new Lazy<INuGetResourceProvider>(() => new SearchLatestResourceV2Provider());
-            yield return new Lazy<INuGetResourceProvider>(() => new SimpleSearchResourceV2Provider());
             yield return new Lazy<INuGetResourceProvider>(() => new ListCommandResourceV2Provider());
-            yield return new Lazy<INuGetResourceProvider>(() => new PushCommandResourceV2Provider());
             yield break;
         }
     }

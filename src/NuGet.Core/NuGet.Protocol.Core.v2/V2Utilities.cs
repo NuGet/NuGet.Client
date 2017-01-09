@@ -1,7 +1,6 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.IO;
 using System.Net;
 using NuGet.Protocol.Core.Types;
@@ -13,7 +12,7 @@ namespace NuGet.Protocol.Core.v2
     {
         public static bool IsV2(Configuration.PackageSource source)
         {
-            var url = new Uri(source.Source);
+            var url = source.SourceUri;
 
             // If the url is a directory, then it's a V2 source
             if (url.IsFile

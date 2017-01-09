@@ -4,7 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using NuGet.LibraryModel;
+using NuGet.Shared;
 
 namespace NuGet.ProjectModel
 {
@@ -39,10 +39,7 @@ namespace NuGet.ProjectModel
                     return Dependencies == other.Dependencies;
                 }
 
-                return Dependencies.OrderBy(s => s, StringComparer.OrdinalIgnoreCase)
-                    .SequenceEqual(
-                        other.Dependencies.OrderBy(s => s, StringComparer.OrdinalIgnoreCase),
-                        StringComparer.OrdinalIgnoreCase);
+                return Dependencies.OrderedEquals(other.Dependencies, s => s, StringComparer.OrdinalIgnoreCase, StringComparer.OrdinalIgnoreCase);
             }
 
             return false;

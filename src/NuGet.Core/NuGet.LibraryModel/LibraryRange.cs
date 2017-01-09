@@ -9,8 +9,24 @@ namespace NuGet.LibraryModel
 {
     public class LibraryRange : IEquatable<LibraryRange>
     {
+        public LibraryRange()
+        {
+        }
+
+        public LibraryRange(string name, LibraryDependencyTarget typeConstraint): this(name, null, typeConstraint)
+        {
+        }
+
+        public LibraryRange(string name, VersionRange versionRange, LibraryDependencyTarget typeConstraint)
+        {
+            Name = name;
+            VersionRange = versionRange;
+            TypeConstraint = typeConstraint;
+        }
+
         public string Name { get; set; }
 
+        // Null is used for all, CLI still has code expecting this
         public VersionRange VersionRange { get; set; }
 
         public LibraryDependencyTarget TypeConstraint { get; set; } = LibraryDependencyTarget.All;
@@ -29,14 +45,14 @@ namespace NuGet.LibraryModel
             switch (TypeConstraint)
             {
                 case LibraryDependencyTarget.Reference:
-                    contraintString = LibraryTypes.Reference;
+                    contraintString = LibraryType.Reference;
                     break;
                 case LibraryDependencyTarget.ExternalProject:
-                    contraintString = LibraryTypes.ExternalProject;
+                    contraintString = LibraryType.ExternalProject;
                     break;
                 case LibraryDependencyTarget.Project:
                 case LibraryDependencyTarget.Project | LibraryDependencyTarget.ExternalProject:
-                    contraintString = LibraryTypes.Project;
+                    contraintString = LibraryType.Project;
                     break;
             }
 
@@ -52,31 +68,39 @@ namespace NuGet.LibraryModel
         {
             var sb = new StringBuilder();
             sb.Append(Name);
-            sb.Append(" ");
 
-            if (VersionRange == null)
+            if (VersionRange != null)
             {
-                return sb.ToString();
-            }
+                if (VersionRange.HasLowerBound)
+                {
+                    sb.Append(" ");
 
-            var minVersion = VersionRange.MinVersion;
-            var maxVersion = VersionRange.MaxVersion;
+                    if (VersionRange.IsMinInclusive)
+                    {
+                        sb.Append(">= ");
+                    }
+                    else
+                    {
+                        sb.Append("> ");
+                    }
 
-            sb.Append(">= ");
+                    if (VersionRange.IsFloating)
+                    {
+                        sb.Append(VersionRange.Float.ToString());
+                    }
+                    else
+                    {
+                        sb.Append(VersionRange.MinVersion.ToNormalizedString());
+                    }
+                }
 
-            if (VersionRange.IsFloating)
-            {
-                sb.Append(VersionRange.Float.ToString());
-            }
-            else
-            {
-                sb.Append(minVersion.ToString());
-            }
+                if (VersionRange.HasUpperBound)
+                {
+                    sb.Append(" ");
 
-            if (maxVersion != null)
-            {
-                sb.Append(VersionRange.IsMaxInclusive ? "<= " : "< ");
-                sb.Append(maxVersion.Version.ToString());
+                    sb.Append(VersionRange.IsMaxInclusive ? "<= " : "< ");
+                    sb.Append(VersionRange.MaxVersion.ToNormalizedString());
+                }
             }
 
             return sb.ToString();
@@ -111,7 +135,7 @@ namespace NuGet.LibraryModel
             }
 
             return TypeConstraint == other.TypeConstraint
-                && string.Equals(Name, other.Name)
+                && string.Equals(Name, other.Name, StringComparison.OrdinalIgnoreCase)
                 && Equals(VersionRange, other.VersionRange);
         }
 
@@ -124,7 +148,7 @@ namespace NuGet.LibraryModel
         {
             unchecked
             {
-                return ((Name != null ? Name.GetHashCode() : 0) * 397) ^
+                return ((Name != null ? StringComparer.OrdinalIgnoreCase.GetHashCode(Name) : 0) * 397) ^
                        (VersionRange != null ? VersionRange.GetHashCode() : 0) ^
                        TypeConstraint.GetHashCode();
             }

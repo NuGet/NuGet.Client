@@ -2,14 +2,15 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
 
 namespace NuGet.Versioning
 {
     public partial class SemanticVersion
     {
+        // Reusable set of empty release labels
+        internal static readonly string[] EmptyReleaseLabels = new string[0];
+
         /// <summary>
         /// Parses a SemVer string using strict SemVer rules.
         /// </summary>
@@ -18,7 +19,7 @@ namespace NuGet.Versioning
             SemanticVersion ver = null;
             if (!TryParse(value, out ver))
             {
-                throw new ArgumentException(String.Format(CultureInfo.CurrentCulture, Resources.Invalidvalue, value), "value");
+                throw new ArgumentException(String.Format(CultureInfo.CurrentCulture, Resources.Invalidvalue, value), nameof(value));
             }
 
             return ver;
@@ -61,10 +62,15 @@ namespace NuGet.Versioning
                     }
 
                     // labels
-                    if (sections.Item2 != null
-                        && !sections.Item2.All(s => IsValidPart(s, false)))
+                    if (sections.Item2 != null)
                     {
-                        return false;
+                        for (int i = 0; i < sections.Item2.Length; i++)
+                        {
+                            if (!IsValidPart(sections.Item2[i], allowLeadingZeros: false))
+                            {
+                                return false;
+                            }
+                        }
                     }
 
                     // build metadata
@@ -95,42 +101,74 @@ namespace NuGet.Versioning
             return (x >= 48 && x <= 57) || (x >= 65 && x <= 90) || (x >= 97 && x <= 122) || x == 45;
         }
 
+        internal static bool IsDigit(char c)
+        {
+            var x = (int)c;
+
+            // "0123456789"
+            return (x >= 48 && x <= 57);
+        }
+
         internal static bool IsValid(string s, bool allowLeadingZeros)
         {
-            return s.Split('.').All(p => IsValidPart(p, allowLeadingZeros));
+            var parts = s.Split('.');
+
+            // Check each part individually
+            for (int i = 0; i < parts.Length; i++)
+            {
+                if (!IsValidPart(parts[i], allowLeadingZeros))
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         internal static bool IsValidPart(string s, bool allowLeadingZeros)
         {
-            return IsValidPart(s.ToCharArray(), allowLeadingZeros);
-        }
-
-        internal static bool IsValidPart(char[] chars, bool allowLeadingZeros)
-        {
-            var result = true;
-
-            if (chars.Length == 0)
+            if (s.Length == 0)
             {
                 // empty labels are not allowed
-                result = false;
+                return false;
             }
 
             // 0 is fine, but 00 is not. 
             // 0A counts as an alpha numeric string where zeros are not counted
             if (!allowLeadingZeros
-                && chars.Length > 1
-                && chars[0] == '0'
-                && chars.All(c => Char.IsDigit(c)))
+                && s.Length > 1
+                && s[0] == '0')
             {
-                // no leading zeros in labels allowed
-                result = false;
-            }
-            else
-            {
-                result &= chars.All(c => IsLetterOrDigitOrDash(c));
+                var allDigits = true;
+
+                // Check if all characters are digits.
+                // The first is already checked above
+                for (int i = 1; i < s.Length; i++)
+                {
+                    if (!IsDigit(s[i]))
+                    {
+                        allDigits = false;
+                        break;
+                    }
+                }
+
+                if (allDigits)
+                {
+                    // leading zeros are not allowed in numeric labels
+                    return false;
+                }
             }
 
-            return result;
+            for (int i = 0; i < s.Length; i++)
+            {
+                // Verify that the part contains only allowed characters
+                if (!IsLetterOrDigitOrDash(s[i]))
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         /// <summary>
@@ -148,25 +186,23 @@ namespace NuGet.Versioning
             var dashPos = -1;
             var plusPos = -1;
 
-            var chars = value.ToCharArray();
-
             var end = false;
-            for (var i = 0; i < chars.Length; i++)
+            for (var i = 0; i < value.Length; i++)
             {
-                end = (i == chars.Length - 1);
+                end = (i == value.Length - 1);
 
                 if (dashPos < 0)
                 {
                     if (end
-                        || chars[i] == '-'
-                        || chars[i] == '+')
+                        || value[i] == '-'
+                        || value[i] == '+')
                     {
                         var endPos = i + (end ? 1 : 0);
                         versionString = value.Substring(0, endPos);
 
                         dashPos = i;
 
-                        if (chars[i] == '+')
+                        if (value[i] == '+')
                         {
                             plusPos = i;
                         }
@@ -174,7 +210,7 @@ namespace NuGet.Versioning
                 }
                 else if (plusPos < 0)
                 {
-                    if (end || chars[i] == '+')
+                    if (end || value[i] == '+')
                     {
                         var start = dashPos + 1;
                         var endPos = i + (end ? 1 : 0);
@@ -213,9 +249,9 @@ namespace NuGet.Versioning
             return normalized;
         }
 
-        private static IEnumerable<string> ParseReleaseLabels(string releaseLabels)
+        private static string[] ParseReleaseLabels(string releaseLabels)
         {
-            if (!String.IsNullOrEmpty(releaseLabels))
+            if (!string.IsNullOrEmpty(releaseLabels))
             {
                 return releaseLabels.Split('.');
             }

@@ -6,11 +6,9 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Management.Automation;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.VisualStudio.Shell;
+using NuGet.PackageManagement.UI;
 using NuGet.ProjectManagement;
-using NuGet.Protocol.VisualStudio;
+using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 
 namespace NuGet.PackageManagement.PowerShellCmdlets
@@ -44,7 +42,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         private void Preprocess()
         {
             UpdateActiveSourceRepository(Source);
-            LogCore(ProjectManagement.MessageLevel.Warning, string.Format(CultureInfo.CurrentCulture, Resources.Cmdlet_CommandRemoved, "Open-PackagePage"));
+            LogCore(MessageLevel.Warning, string.Format(CultureInfo.CurrentCulture, Resources.Cmdlet_CommandRemoved, "Open-PackagePage"));
         }
 
         [SuppressMessage("Microsoft.Design", "CA1031")]
@@ -52,22 +50,17 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         {
             Preprocess();
 
-            UIPackageMetadata package = null;
+            IPackageSearchMetadata package = null;
             try
             {
-                UIMetadataResource resource = ActiveSourceRepository.GetResource<UIMetadataResource>();
-                var metadata = ThreadHelper.JoinableTaskFactory.Run(async delegate
-                {
-                    var result = await resource.GetMetadata(Id, IncludePrerelease.IsPresent, false, CancellationToken.None);
-                    return result;
-                });
+                var metadata = NuGetUIThreadHelper.JoinableTaskFactory.Run(() => GetPackagesFromRemoteSourceAsync(Id, IncludePrerelease.IsPresent));
 
                 if (!string.IsNullOrEmpty(Version))
                 {
                     NuGetVersion nVersion = PowerShellCmdletsUtility.GetNuGetVersionFromString(Version);
                     metadata = metadata.Where(p => p.Identity.Version == nVersion);
                 }
-                package = metadata.Where(p => string.Equals(p.Identity.Id, Id, StringComparison.OrdinalIgnoreCase))
+                package = metadata
                     .OrderByDescending(v => v.Identity.Version)
                     .FirstOrDefault();
             }

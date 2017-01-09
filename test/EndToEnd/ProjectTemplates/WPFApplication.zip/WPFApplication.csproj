@@ -11,7 +11,7 @@
     <RootNamespace>$safeprojectname$</RootNamespace>
     <AssemblyName>$safeprojectname$</AssemblyName>
     <TargetFrameworkVersion>v$targetframeworkversion$</TargetFrameworkVersion>
-    $if$ ($targetframeworkversion$ >= 4.0)
+    $if$ ($targetframeworkversion$ == 4.0)
       <TargetFrameworkProfile>Client</TargetFrameworkProfile>
     $endif$
     <FileAlignment>512</FileAlignment>

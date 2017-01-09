@@ -1,29 +1,53 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using NuGet.Shared;
+
+#if IS_NET40_CLIENT
+using FallbackList = System.Collections.Generic.IList<NuGet.Frameworks.NuGetFramework>;
+#else
+using FallbackList = System.Collections.Generic.IReadOnlyList<NuGet.Frameworks.NuGetFramework>;
+#endif
 
 namespace NuGet.Frameworks
 {
-    public class FallbackFramework : NuGetFramework, IEquatable<FallbackFramework>
+#if NUGET_FRAMEWORKS_INTERNAL
+    internal
+#else
+    public
+#endif
+    class FallbackFramework : NuGetFramework, IEquatable<FallbackFramework>
     {
         /// <summary>
-        /// Secondary framework to fall back to.
+        /// List framework to fall back to.
         /// </summary>
-        public NuGetFramework Fallback { get; }
+        public FallbackList Fallback
+        {
+            get { return _fallback; }
+        }
 
-        public FallbackFramework(NuGetFramework framework, NuGetFramework fallbackFramework)
+        private readonly FallbackList _fallback;
+        private int? _hashCode;
+
+        public FallbackFramework(NuGetFramework framework, FallbackList fallbackFrameworks)
             : base(framework)
         {
             if (framework == null)
             {
-                throw new ArgumentNullException(nameof(framework));
+                throw new ArgumentNullException("framework");
             }
 
-            if (fallbackFramework == null)
+            if (fallbackFrameworks == null)
             {
-                throw new ArgumentNullException(nameof(fallbackFramework));
+                throw new ArgumentNullException("fallbackFrameworks");
             }
 
-            Fallback = fallbackFramework;
+            if (fallbackFrameworks.Count == 0)
+            {
+                throw new ArgumentException("Empty fallbackFrameworks is invalid", "fallbackFrameworks");
+            }
+
+            _fallback = fallbackFrameworks;
         }
 
         public override bool Equals(object obj)
@@ -33,12 +57,21 @@ namespace NuGet.Frameworks
 
         public override int GetHashCode()
         {
-            var combiner = new HashCodeCombiner();
+            if (_hashCode == null)
+            {
+                var combiner = new HashCodeCombiner();
 
-            combiner.AddInt32(NuGetFramework.Comparer.GetHashCode(this));
-            combiner.AddInt32(NuGetFramework.Comparer.GetHashCode(Fallback));
+                combiner.AddInt32(NuGetFramework.Comparer.GetHashCode(this));
 
-            return combiner.CombinedHash;
+                foreach (var each in Fallback)
+                {
+                    combiner.AddInt32(NuGetFramework.Comparer.GetHashCode(each));
+                }
+
+                _hashCode = combiner.CombinedHash;
+            }
+
+            return _hashCode.Value;
         }
 
         public bool Equals(FallbackFramework other)
@@ -54,7 +87,7 @@ namespace NuGet.Frameworks
             }
 
             return NuGetFramework.Comparer.Equals(this, other)
-                && NuGetFramework.Comparer.Equals(Fallback, other.Fallback);
+                && Fallback.SequenceEqual(other.Fallback);
         }
     }
 }

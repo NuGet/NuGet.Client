@@ -5,7 +5,12 @@ using System;
 
 namespace NuGet.Frameworks
 {
-    public class FrameworkException : Exception
+#if NUGET_FRAMEWORKS_INTERNAL
+    internal
+#else
+    public
+#endif
+    class FrameworkException : Exception
     {
         public FrameworkException(string message)
             : base(message)

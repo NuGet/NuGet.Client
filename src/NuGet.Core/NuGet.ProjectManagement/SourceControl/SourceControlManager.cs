@@ -45,8 +45,6 @@ namespace NuGet.ProjectManagement
         /// Marks the files for deletion
         /// It will perform necessary operations such as undoing pending changes and so on as appropriate
         /// </summary>
-        /// <param name="packageFiles"></param>
-        /// <param name="nuGetProjectContext"></param>
         public abstract void PendDeleteFiles(IEnumerable<string> fullPaths, string root, INuGetProjectContext nuGetProjectContext);
 
         /// <summary>

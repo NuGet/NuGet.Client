@@ -17,32 +17,44 @@ namespace NuGet.Client
     /// </summary>
     public class ManagedCodeConventions
     {
-        private static readonly ContentPropertyDefinition TfmProperty = new ContentPropertyDefinition(PropertyNames.TargetFrameworkMoniker,
-            table: new Dictionary<string, object>()
-                {
-                    { "any", FrameworkConstants.CommonFrameworks.DotNet }
-                },
-            parser: TargetFrameworkName_Parser,
-            compatibilityTest: TargetFrameworkName_CompatibilityTest,
-            compareTest: TargetFrameworkName_NearestCompareTest);
-
         private static readonly ContentPropertyDefinition LocaleProperty = new ContentPropertyDefinition(PropertyNames.Locale,
             parser: Locale_Parser);
 
         private static readonly ContentPropertyDefinition AnyProperty = new ContentPropertyDefinition(
             PropertyNames.AnyValue,
-            parser: o => o); // Identity parser, all strings are valid for any
+            parser: (o, t) => o); // Identity parser, all strings are valid for any
         private static readonly ContentPropertyDefinition AssemblyProperty = new ContentPropertyDefinition(PropertyNames.ManagedAssembly,
-            parser: o => o.Equals(PackagingCoreConstants.EmptyFolder, StringComparison.Ordinal) ? o : null, // Accept "_._" as a pseudo-assembly
+            parser: AllowEmptyFolderParser,
             fileExtensions: new[] { ".dll", ".winmd", ".exe" });
-        private static readonly ContentPropertyDefinition MSBuildProperty = new ContentPropertyDefinition(PropertyNames.MSBuild, fileExtensions: new[] { ".targets", ".props" });
-        private static readonly ContentPropertyDefinition SatelliteAssemblyProperty = new ContentPropertyDefinition(PropertyNames.SatelliteAssembly, fileExtensions: new[] { ".resources.dll" });
+        private static readonly ContentPropertyDefinition MSBuildProperty = new ContentPropertyDefinition(PropertyNames.MSBuild,
+            parser: AllowEmptyFolderParser,
+            fileExtensions: new[] { ".targets", ".props" });
+        private static readonly ContentPropertyDefinition SatelliteAssemblyProperty = new ContentPropertyDefinition(PropertyNames.SatelliteAssembly,
+            parser: AllowEmptyFolderParser,
+            fileExtensions: new[] { ".resources.dll" });
 
         private static readonly ContentPropertyDefinition CodeLanguageProperty = new ContentPropertyDefinition(
             PropertyNames.CodeLanguage,
             parser: CodeLanguage_Parser);
 
+
+        private static readonly Dictionary<string, object> DefaultTfmAny = new Dictionary<string, object>
+        {
+            { PropertyNames.TargetFrameworkMoniker, AnyFramework.Instance }
+        };
+
+        private static readonly PatternTable DotnetAnyTable = new PatternTable(new[]
+        {
+            new PatternTableEntry(
+                PropertyNames.TargetFrameworkMoniker,
+                "any",
+                FrameworkConstants.CommonFrameworks.DotNet)
+        });
+
         private RuntimeGraph _runtimeGraph;
+
+        private Dictionary<string, NuGetFramework> _frameworkCache
+            = new Dictionary<string, NuGetFramework>(StringComparer.Ordinal);
 
         public ManagedCodeCriteria Criteria { get; }
         public IReadOnlyDictionary<string, ContentPropertyDefinition> Properties { get; }
@@ -53,7 +65,6 @@ namespace NuGet.Client
             _runtimeGraph = runtimeGraph;
 
             var props = new Dictionary<string, ContentPropertyDefinition>();
-            props[TfmProperty.Name] = TfmProperty;
             props[AnyProperty.Name] = AnyProperty;
             props[AssemblyProperty.Name] = AssemblyProperty;
             props[LocaleProperty.Name] = LocaleProperty;
@@ -63,8 +74,14 @@ namespace NuGet.Client
 
             props[PropertyNames.RuntimeIdentifier] = new ContentPropertyDefinition(
                 PropertyNames.RuntimeIdentifier,
-                parser: o => o, // Identity parser, all strings are valid runtime ids :)
+                parser: (o, t) => o, // Identity parser, all strings are valid runtime ids :)
                 compatibilityTest: RuntimeIdentifier_CompatibilityTest);
+
+            props[PropertyNames.TargetFrameworkMoniker] = new ContentPropertyDefinition(
+                PropertyNames.TargetFrameworkMoniker,
+                parser: TargetFrameworkName_Parser,
+                compatibilityTest: TargetFrameworkName_CompatibilityTest,
+                compareTest: TargetFrameworkName_NearestCompareTest);
 
             Properties = new ReadOnlyDictionary<string, ContentPropertyDefinition>(props);
 
@@ -92,14 +109,32 @@ namespace NuGet.Client
             }
         }
 
-        private static object CodeLanguage_Parser(string name)
+        private static object CodeLanguage_Parser(string name, PatternTable table)
         {
+            if (table != null)
+            {
+                object val;
+                if (table.TryLookup(PropertyNames.CodeLanguage, name, out val))
+                {
+                    return val;
+                }
+            }
+
             // Code language values must be alpha numeric.
             return name.All(c => char.IsLetterOrDigit(c)) ? name : null;
         }
 
-        private static object Locale_Parser(string name)
+        private static object Locale_Parser(string name, PatternTable table)
         {
+            if (table != null)
+            {
+                object val;
+                if (table.TryLookup(PropertyNames.Locale, name, out val))
+                {
+                    return val;
+                }
+            }
+
             if (name.Length == 2)
             {
                 return name;
@@ -112,16 +147,65 @@ namespace NuGet.Client
             return null;
         }
 
-        private static object TargetFrameworkName_Parser(string name)
+        private object TargetFrameworkName_Parser(
+            string name,
+            PatternTable table)
         {
-            var result = NuGetFramework.Parse(name);
+            object obj = null;
+
+            // Check for replacements
+            if (table != null)
+            {
+                if (table.TryLookup(PropertyNames.TargetFrameworkMoniker, name, out obj))
+                {
+                    return obj;
+                }
+            }
+
+            // Check the cache for an exact match
+            if (!string.IsNullOrEmpty(name))
+            {
+                NuGetFramework cachedResult;
+                if (!_frameworkCache.TryGetValue(name, out cachedResult))
+                {
+                    // Parse and add the framework to the cache
+                    cachedResult = TargetFrameworkName_ParserCore(name);
+                    _frameworkCache.Add(name, cachedResult);
+                }
+
+                return cachedResult;
+            }
+
+            // Let the framework parser handle null/empty and create the error message.
+            return TargetFrameworkName_ParserCore(name);
+        }
+
+        private static NuGetFramework TargetFrameworkName_ParserCore(string name)
+        {
+            var result = NuGetFramework.ParseFolder(name);
 
             if (!result.IsUnsupported)
             {
                 return result;
             }
 
-            return new NuGetFramework(name, new Version(0, 0));
+            // Everything should be in the folder format, but fallback to 
+            // full parsing for legacy support.
+            result = NuGetFramework.ParseFrameworkName(name, DefaultFrameworkNameProvider.Instance);
+
+            if (!result.IsUnsupported)
+            {
+                return result;
+            }
+
+            // For unknown frameworks return the name as is.
+            return new NuGetFramework(name, FrameworkConstants.EmptyVersion);
+        }
+
+        private static object AllowEmptyFolderParser(string s, PatternTable table)
+        {
+            // Accept "_._" as a pseudo-assembly
+            return PackagingCoreConstants.EmptyFolder.Equals(s, StringComparison.Ordinal) ? s : null;
         }
 
         private static bool TargetFrameworkName_CompatibilityTest(object criteria, object available)
@@ -136,6 +220,12 @@ namespace NuGet.Client
                 if (criteriaFrameworkName.IsAny
                     && availableFrameworkName.IsAny)
                 {
+                    return true;
+                }
+                else if (Object.Equals(AnyFramework.AnyFramework, availableFrameworkName))
+                {
+                    // If the convention does not contain a TxM it will use AnyFramework, this is
+                    // always compatible with other frameworks.
                     return true;
                 }
                 else if (criteriaFrameworkName.IsAny
@@ -204,6 +294,12 @@ namespace NuGet.Client
 
             public SelectionCriteria ForFrameworkAndRuntime(NuGetFramework framework, string runtimeIdentifier)
             {
+                if (framework is FallbackFramework)
+                {
+                    // Fallback frameworks are not handled by content model
+                    throw new NotSupportedException("FallbackFramework is not supported.");
+                }
+
                 // Both criteria must specify a RID
 
                 var builder = new SelectionCriteriaBuilder(_conventions.Properties);
@@ -268,6 +364,11 @@ namespace NuGet.Client
             public PatternSet MSBuildFiles { get; }
 
             /// <summary>
+            /// Pattern used to identify MSBuild global targets and props files
+            /// </summary>
+            public PatternSet MSBuildMultiTargetingFiles { get; }
+
+            /// <summary>
             /// Pattern used to identify content files
             /// </summary>
             public PatternSet ContentFiles { get; }
@@ -278,101 +379,113 @@ namespace NuGet.Client
                     conventions.Properties,
                     groupPatterns: new PatternDefinition[]
                     {
-                        "{any}/{tfm}/{any?}",
-                        "runtimes/{rid}/{any}/{tfm}/{any?}",
+                        new PatternDefinition("{any}/{tfm}/{any?}", table: DotnetAnyTable),
+                        new PatternDefinition("runtimes/{rid}/{any}/{tfm}/{any?}", table: DotnetAnyTable),
                     },
                     pathPatterns: new PatternDefinition[]
                     {
-                        "{any}/{tfm}/{any?}",
-                        "runtimes/{rid}/{any}/{tfm}/{any?}",
+                        new PatternDefinition("{any}/{tfm}/{any?}", table: DotnetAnyTable),
+                        new PatternDefinition("runtimes/{rid}/{any}/{tfm}/{any?}", table: DotnetAnyTable),
                     });
 
                 RuntimeAssemblies = new PatternSet(
                     conventions.Properties,
                     groupPatterns: new PatternDefinition[]
                     {
-                            "runtimes/{rid}/lib/{tfm}/{any?}",
-                            "lib/{tfm}/{any?}",
-                            new PatternDefinition("lib/{assembly?}", defaults: new Dictionary<string, object>
-                                {
-                                    { "tfm", new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Net, FrameworkConstants.EmptyVersion) }
-                                })
-                        },
+                        new PatternDefinition("runtimes/{rid}/lib/{tfm}/{any?}", table: DotnetAnyTable),
+                        new PatternDefinition("lib/{tfm}/{any?}", table: DotnetAnyTable),
+                        new PatternDefinition("lib/{assembly?}", table: DotnetAnyTable,
+                            defaults: new Dictionary<string, object>
+                            {
+                                { "tfm", new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Net, FrameworkConstants.EmptyVersion) }
+                            })
+                    },
                     pathPatterns: new PatternDefinition[]
                     {
-                            "runtimes/{rid}/lib/{tfm}/{assembly}",
-                            "lib/{tfm}/{assembly}",
-                            new PatternDefinition("lib/{assembly}", defaults: new Dictionary<string, object>
-                                {
-                                    { "tfm", new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Net, FrameworkConstants.EmptyVersion) }
-                                })
-                        });
+                        new PatternDefinition("runtimes/{rid}/lib/{tfm}/{assembly}", table: DotnetAnyTable),
+                        new PatternDefinition("lib/{tfm}/{assembly}", table: DotnetAnyTable),
+                        new PatternDefinition("lib/{assembly}", table: DotnetAnyTable, defaults: new Dictionary<string, object>
+                            {
+                                { "tfm", new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Net, FrameworkConstants.EmptyVersion) }
+                            })
+                    });
 
                 CompileAssemblies = new PatternSet(
                     conventions.Properties,
                     groupPatterns: new PatternDefinition[]
                         {
-                            "ref/{tfm}/{any?}",
+                            new PatternDefinition("ref/{tfm}/{any?}", table: DotnetAnyTable),
                         },
                     pathPatterns: new PatternDefinition[]
                         {
-                            "ref/{tfm}/{assembly}",
+                            new PatternDefinition("ref/{tfm}/{assembly}", table: DotnetAnyTable),
                         });
 
                 NativeLibraries = new PatternSet(
                     conventions.Properties,
                     groupPatterns: new PatternDefinition[]
                         {
-                            "runtimes/{rid}/native/{any?}",
-                            "native/{any?}",
+                            new PatternDefinition("runtimes/{rid}/nativeassets/{tfm}/{any?}", table: DotnetAnyTable),
+                            new PatternDefinition("runtimes/{rid}/native/{any?}", table: null, defaults: DefaultTfmAny)
                         },
                     pathPatterns: new PatternDefinition[]
                     {
-                        "runtimes/{rid}/native/{any}",
-                        "native/{any}",
+                        new PatternDefinition("runtimes/{rid}/nativeassets/{tfm}/{any}", table: DotnetAnyTable),
+                        new PatternDefinition("runtimes/{rid}/native/{any}", table: null, defaults: DefaultTfmAny)
                     });
 
                 ResourceAssemblies = new PatternSet(
                     conventions.Properties,
                     groupPatterns: new PatternDefinition[]
                     {
-                        "runtimes/{rid}/lib/{tfm}/{locale?}/{any?}",
-                        "lib/{tfm}/{locale?}/{any?}"
+                        new PatternDefinition("runtimes/{rid}/lib/{tfm}/{locale?}/{any?}", table: DotnetAnyTable),
+                        new PatternDefinition("lib/{tfm}/{locale?}/{any?}", table: DotnetAnyTable),
                     },
                     pathPatterns: new PatternDefinition[]
                     {
-                        "runtimes/{rid}/lib/{tfm}/{locale}/{satelliteAssembly}",
-                        "lib/{tfm}/{locale}/{satelliteAssembly}"
+                        new PatternDefinition("runtimes/{rid}/lib/{tfm}/{locale}/{satelliteAssembly}", table: DotnetAnyTable),
+                        new PatternDefinition("lib/{tfm}/{locale}/{satelliteAssembly}", table: DotnetAnyTable),
                     });
 
                 MSBuildFiles = new PatternSet(
                     conventions.Properties,
                     groupPatterns: new PatternDefinition[]
                     {
-                        "build/{tfm}/{msbuild?}",
-                        new PatternDefinition("build/{msbuild?}", defaults: new Dictionary<string, object>
-                        {
-                            { "tfm", NuGetFramework.AnyFramework }
-                        })
+                        new PatternDefinition("build/{tfm}/{msbuild?}", table: DotnetAnyTable),
+                        new PatternDefinition("build/{msbuild?}", table: null, defaults: DefaultTfmAny)
                     },
                     pathPatterns: new PatternDefinition[]
                     {
-                        "build/{tfm}/{msbuild}",
-                        new PatternDefinition("build/{msbuild}", defaults: new Dictionary<string, object>
-                        {
-                            { "tfm", NuGetFramework.AnyFramework }
-                        })
+                        new PatternDefinition("build/{tfm}/{msbuild}", table: DotnetAnyTable),
+                        new PatternDefinition("build/{msbuild}", table: null, defaults: DefaultTfmAny)
+                    });
+
+                MSBuildMultiTargetingFiles = new PatternSet(
+                    conventions.Properties,
+                    groupPatterns: new PatternDefinition[]
+                    {
+                        new PatternDefinition("buildMultiTargeting/{msbuild?}", table: null, defaults: DefaultTfmAny),
+
+                        // deprecated
+                        new PatternDefinition("buildCrossTargeting/{msbuild?}", table: null, defaults: DefaultTfmAny)
+                    },
+                    pathPatterns: new PatternDefinition[]
+                    {
+                        new PatternDefinition("buildMultiTargeting/{msbuild}", table: null, defaults: DefaultTfmAny),
+
+                        // deprecated
+                        new PatternDefinition("buildCrossTargeting/{msbuild}", table: null, defaults: DefaultTfmAny)
                     });
 
                 ContentFiles = new PatternSet(
                     conventions.Properties,
                     groupPatterns: new PatternDefinition[]
                     {
-                        "contentFiles/{codeLanguage}/{tfm}/{any?}"
+                        new PatternDefinition("contentFiles/{codeLanguage}/{tfm}/{any?}"),
                     },
                     pathPatterns: new PatternDefinition[]
                     {
-                        "contentFiles/{codeLanguage}/{tfm}/{any?}"
+                        new PatternDefinition("contentFiles/{codeLanguage}/{tfm}/{any?}"),
                     });
             }
         }

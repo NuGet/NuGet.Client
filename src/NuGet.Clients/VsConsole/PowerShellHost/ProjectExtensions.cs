@@ -7,6 +7,7 @@ using System.Management.Automation;
 using EnvDTE;
 using Microsoft.VisualStudio.Shell;
 using NuGet.PackageManagement;
+using NuGet.PackageManagement.UI;
 using NuGet.PackageManagement.VisualStudio;
 
 namespace NuGetConsole.Host.PowerShell.Implementation
@@ -19,9 +20,9 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         [SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "ps")]
         public static string GetCustomUniqueName(PSObject psObject)
         {
-            return ThreadHelper.JoinableTaskFactory.Run(async delegate
+            return NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
                 {
-                    await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                     return EnvDTEProjectUtility.GetCustomUniqueName((Project)psObject.BaseObject);
                 });

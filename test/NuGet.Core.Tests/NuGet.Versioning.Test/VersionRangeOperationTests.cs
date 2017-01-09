@@ -95,7 +95,6 @@ namespace NuGet.Versioning.Test
 
             // Assert
             Assert.Equal(a.ToNormalizedString(), combined.ToNormalizedString());
-            Assert.False(combined.IncludePrerelease);
         }
 
         [Fact]
@@ -109,7 +108,6 @@ namespace NuGet.Versioning.Test
 
             // Assert
             Assert.Equal(VersionRange.None.ToNormalizedString(), combined.ToNormalizedString());
-            Assert.False(combined.IncludePrerelease);
         }
 
         [Fact]
@@ -123,7 +121,6 @@ namespace NuGet.Versioning.Test
 
             // Assert
             Assert.Equal(VersionRange.None.ToNormalizedString(), combined.ToNormalizedString());
-            Assert.False(combined.IncludePrerelease);
         }
 
         [Fact]
@@ -137,7 +134,6 @@ namespace NuGet.Versioning.Test
 
             // Assert
             Assert.Equal(VersionRange.All.ToNormalizedString(), combined.ToNormalizedString());
-            Assert.True(combined.IncludePrerelease);
         }
 
         [Fact]
@@ -170,7 +166,6 @@ namespace NuGet.Versioning.Test
 
             // Assert
             Assert.Equal("[1.0.0, 2.0.0]", combined.ToNormalizedString());
-            Assert.False(combined.IncludePrerelease);
         }
 
         [Fact]
@@ -188,14 +183,13 @@ namespace NuGet.Versioning.Test
 
             // Assert
             Assert.Equal(VersionRange.All.ToNormalizedString(), combined.ToNormalizedString());
-            Assert.True(combined.IncludePrerelease);
         }
 
         [Fact]
         public void VersionRangeSet_SpecialCaseRangeCombine_AllStablePlusPre()
         {
             // Arrange
-            var pre = new VersionRange(new NuGetVersion("1.0.0"), true, new NuGetVersion("2.0.0"), true, includePrerelease: true);
+            var pre = new VersionRange(new NuGetVersion("1.0.0"), true, new NuGetVersion("2.0.0"), true);
             var ranges = new List<VersionRange>() { VersionRange.AllStable, pre };
 
             // Act
@@ -203,7 +197,6 @@ namespace NuGet.Versioning.Test
 
             // Assert
             Assert.Equal(VersionRange.All.ToNormalizedString(), combined.ToNormalizedString());
-            Assert.True(combined.IncludePrerelease);
         }
 
         [Fact]
@@ -218,7 +211,6 @@ namespace NuGet.Versioning.Test
 
             // Assert
             Assert.Equal(VersionRange.AllStable.ToNormalizedString(), combined.ToNormalizedString());
-            Assert.False(combined.IncludePrerelease);
         }
 
         [Fact]
@@ -242,7 +234,83 @@ namespace NuGet.Versioning.Test
 
             // Assert
             Assert.Equal("[1.0.0, 5.0.1-rc4]", combined.ToNormalizedString());
-            Assert.True(combined.IncludePrerelease);
+        }
+
+        [Fact]
+        public void VersionRangeSet_CommonSubSet_SingleRangeList()
+        {
+            // Arrange
+            var a = VersionRange.Parse("[1.0.0, )");
+            var ranges = new List<VersionRange>() { a };
+
+            // Act
+            var combined = VersionRange.CommonSubSet(ranges);
+
+            // Assert
+            Assert.Equal(a.ToNormalizedString(), combined.ToNormalizedString());
+        }
+
+        [Fact]
+        public void VersionRangeSet_CommonSubSet_EmptyRangeList()
+        {
+            // Arrange
+            var ranges = new List<VersionRange>() { };
+
+            // Act
+            var combined = VersionRange.CommonSubSet(ranges);
+
+            // Assert
+            Assert.Equal(VersionRange.None.ToNormalizedString(), combined.ToNormalizedString());
+        }
+
+        [Theory]
+        [InlineData("[2.0.0, )", "[1.0.0, )", "[2.0.0, )")]
+        [InlineData("[0.0.0, 1.0.0)", "[0.0.0, 2.0.0)", "(, 1.0.0)")]
+        [InlineData("[2.0.0, 3.0.0]", "(1.0.0, 3.0.0]", "[2.0.0, 4.0.0)")]
+        [InlineData("(0.0.0, 0.0.0)", "[1.0.0, 3.0.0]", "[4.0.0, 5.0.0)")]
+        [InlineData("(2.0.0, 3.0.0]", "(2.0.0, 3.0.0]", "[2.0.0, 4.0.0)")]
+        [InlineData("(0.0.0, 0.0.0)", "[1.0.0, 3.0.0)", "[3.0.0, 5.0.0)")]
+        [InlineData("(0.0.0, 0.0.0)", "[1.0.0, 3.0.0)", "[4.0.0, 5.0.0)")]
+        [InlineData("(1.5.0, 2.0.0]", "[1.0.0, 2.0.0]", "(1.5.0, 3.0.0]")]
+        [InlineData("[1.0.0, 1.5.0)", "[1.0.0, 1.5.0)", "[, ]")]
+        [InlineData("(0.0.0, 0.0.0)", "[1.0.0]", "(1.0.0)")]
+        [InlineData("(0.0.0, 0.0.0)", "[1.0.0]", "[2.0.0]")]
+        public void VersionRangeSet_CommonSubSet(string expected, string rangeA, string rangeB)
+        {
+            // Arrange
+            var a = VersionRange.Parse(rangeA);
+            var b = VersionRange.Parse(rangeB);
+
+            // Act
+            var ranges = new List<VersionRange>() { a, b };
+            var combined = VersionRange.CommonSubSet(ranges);
+
+            var rangesRev = new List<VersionRange>() { b, a };
+            var combinedRev = VersionRange.CommonSubSet(rangesRev);
+
+            // Assert
+            Assert.Equal(expected, combined.ToNormalizedString());
+
+            // Verify the order has no effect
+            Assert.Equal(expected, combinedRev.ToNormalizedString());
+        }
+
+        [Fact]
+        public void VersionRangeSet_CommonSubSetInMultipleRanges()
+        {
+            // Arrange 
+            var ranges = new List<VersionRange>()
+                {
+                    VersionRange.Parse("[1.0.0, 5.0.0)"),
+                    VersionRange.Parse("[2.0.0, 6.0.0]"),
+                    VersionRange.Parse("[4.0.0, 5.0.0]"),
+                };
+
+            // Act
+            var combined = VersionRange.CommonSubSet(ranges);
+
+            // Assert
+            Assert.Equal("[4.0.0, 5.0.0)", combined.ToNormalizedString());
         }
     }
 }

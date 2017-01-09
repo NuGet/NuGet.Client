@@ -1,3 +1,5 @@
+extern alias CoreV2;
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
@@ -9,12 +11,16 @@ using System.Net;
 using System.Reflection;
 using System.Text;
 using NuGet.Common;
-using NuGet.Logging;
+using NuGet.PackageManagement;
 
 namespace NuGet.CommandLine
 {
     public class Program
     {
+        private const string Utf8Option = "-utf8";
+        private const string ForceEnglishOutputOption = "-forceEnglishOutput";
+        private const string DebugOption = "--debug";
+
         private static readonly string ThisExecutableName = typeof(Program).Assembly.GetName().Name;
 
         [Import]
@@ -34,31 +40,34 @@ namespace NuGet.CommandLine
         public static int Main(string[] args)
         {
 #if DEBUG
-            if (args.Contains("--debug", StringComparer.OrdinalIgnoreCase))
+            if (args.Contains(DebugOption, StringComparer.OrdinalIgnoreCase))
             {
-                args = args.Where(arg => !string.Equals(arg, "--debug", StringComparison.OrdinalIgnoreCase)).ToArray();
+                args = args.Where(arg => !string.Equals(arg, DebugOption, StringComparison.OrdinalIgnoreCase)).ToArray();
                 System.Diagnostics.Debugger.Launch();
             }
 #endif
-
+           
             return MainCore(Directory.GetCurrentDirectory(), args);
         }
 
         public static int MainCore(string workingDirectory, string[] args)
         {
-            // This is to avoid applying weak event pattern usage, which breaks under Mono or restricted environments, e.g. Windows Azure Web Sites.
-            EnvironmentUtility.SetRunningFromCommandLine();
+            // First, optionally disable localization in resources.
+            if (args.Any(arg => string.Equals(arg, ForceEnglishOutputOption, StringComparison.OrdinalIgnoreCase)))
+            {
+                CultureUtility.DisableLocalization();
+            }
 
             // set output encoding to UTF8 if -utf8 is specified
             var oldOutputEncoding = System.Console.OutputEncoding;
-            if (args.Any(arg => String.Equals(arg, "-utf8", StringComparison.OrdinalIgnoreCase)))
+            if (args.Any(arg => string.Equals(arg, Utf8Option, StringComparison.OrdinalIgnoreCase)))
             {
-                args = args.Where(arg => !String.Equals(arg, "-utf8", StringComparison.OrdinalIgnoreCase)).ToArray();
-                SetConsoleOutputEncoding(System.Text.Encoding.UTF8);
+                args = args.Where(arg => !string.Equals(arg, Utf8Option, StringComparison.OrdinalIgnoreCase)).ToArray();
+                SetConsoleOutputEncoding(Encoding.UTF8);
             }
 
             // Increase the maximum number of connections per server.
-            if (!EnvironmentUtility.IsMonoRuntime)
+            if (!RuntimeEnvironmentHelper.IsMono)
             {
                 ServicePointManager.DefaultConnectionLimit = 64;
             }
@@ -68,15 +77,12 @@ namespace NuGet.CommandLine
                 ServicePointManager.DefaultConnectionLimit = 1;
             }
 
-            var console = new Common.Console();
+            NetworkProtocolUtility.ConfigureSupportedSslProtocols();
 
-            // todo: As some tests are potentially running Program.Main in parallel,
-            // we should consider leveraging thread local store.
-            Logger.Instance = console;
+            var console = new Console();
+            var fileSystem = new CoreV2.NuGet.PhysicalFileSystem(workingDirectory);
 
-            var fileSystem = new PhysicalFileSystem(workingDirectory);
-
-            Func<Exception, string> getErrorMessage = e => e.Message;
+            Func<Exception, string> getErrorMessage = ExceptionUtilities.DisplayMessage;
 
             try
             {
@@ -98,7 +104,7 @@ namespace NuGet.CommandLine
                 // Parse the command
                 ICommand command = parser.ParseCommandLine(args) ?? p.HelpCommand;
                 command.CurrentDirectory = workingDirectory;
-
+                
                 // Fallback on the help command if we failed to parse a valid command
                 if (!ArgumentCountValid(command))
                 {
@@ -116,7 +122,7 @@ namespace NuGet.CommandLine
 
                     // When we're detailed, get the whole exception including the stack
                     // This is useful for debugging errors.
-                    if (console.Verbosity == Verbosity.Detailed)
+                    if (console.Verbosity == Verbosity.Detailed || ExceptionLogger.Instance.ShowStack)
                     {
                         getErrorMessage = e => e.ToString();
                     }
@@ -126,39 +132,25 @@ namespace NuGet.CommandLine
             }
             catch (AggregateException exception)
             {
-                string message;
                 Exception unwrappedEx = ExceptionUtility.Unwrap(exception);
-                if (unwrappedEx == exception)
-                {
-                    // If the AggregateException contains more than one InnerException, it cannot be unwrapped. In which case, simply print out individual error messages
-                    message = String.Join(Environment.NewLine, exception.InnerExceptions.Select(getErrorMessage)
-                                                                        .Distinct(StringComparer.CurrentCulture));
-                }
-                else if (unwrappedEx is TargetInvocationException)
-                {
-                    message = getErrorMessage(unwrappedEx.InnerException);
-                }
-                else if (unwrappedEx is ExitCodeException)
+                if (unwrappedEx is ExitCodeException)
                 {
                     // Return the exit code without writing out the exception type
                     var exitCodeEx = unwrappedEx as ExitCodeException;
                     return exitCodeEx.ExitCode;
                 }
-                else
-                {
-                    message = getErrorMessage(unwrappedEx);
-                }
-                console.WriteError(message);
+                
+                console.WriteError(getErrorMessage(exception));
                 return 1;
             }
-            catch (Exception e)
+            catch (Exception exception)
             {
-                console.WriteError(getErrorMessage(ExceptionUtility.Unwrap(e)));
+                console.WriteError(getErrorMessage(exception));
                 return 1;
             }
             finally
             {
-                OptimizedZipPackage.PurgeCache();
+                CoreV2.NuGet.OptimizedZipPackage.PurgeCache();
                 SetConsoleOutputEncoding(oldOutputEncoding);
             }
 
@@ -176,7 +168,7 @@ namespace NuGet.CommandLine
             }
         }
 
-        private void Initialize(IFileSystem fileSystem, IConsole console)
+        private void Initialize(CoreV2.NuGet.IFileSystem fileSystem, IConsole console)
         {
             AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
 
@@ -192,7 +184,7 @@ namespace NuGet.CommandLine
                     using (var container = new CompositionContainer(catalog))
                     {
                         container.ComposeExportedValue(console);
-                        container.ComposeExportedValue<IPackageRepositoryFactory>(new CommandLineRepositoryFactory(console));
+                        container.ComposeExportedValue<CoreV2.NuGet.IPackageRepositoryFactory>(new CommandLineRepositoryFactory(console));
                         container.ComposeExportedValue(fileSystem);
                         container.ComposeParts(this);
                     }
@@ -218,7 +210,7 @@ namespace NuGet.CommandLine
         }
 
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We don't want to block the exe from usage if anything failed")]
-        internal static void RemoveOldFile(IFileSystem fileSystem)
+        internal static void RemoveOldFile(CoreV2.NuGet.IFileSystem fileSystem)
         {
             string oldFile = typeof(Program).Assembly.Location + ".old";
             try

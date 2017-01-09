@@ -6,7 +6,12 @@ namespace NuGet.Frameworks
     /// <summary>
     /// A group or object that is specific to a single target framework
     /// </summary>
-    public interface IFrameworkSpecific
+#if NUGET_FRAMEWORKS_INTERNAL
+    internal
+#else
+    public
+#endif
+    interface IFrameworkSpecific
     {
         /// <summary>
         /// Target framework

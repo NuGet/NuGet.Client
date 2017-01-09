@@ -117,7 +117,7 @@ namespace NuGet.Packaging.Core
         }
 
         /// <summary>
-        /// PackageIdentity.ToString returns "<packageId>.<packageVersion>"
+        /// PackageIdentity.ToString returns packageId.packageVersion"
         /// </summary>
         public override string ToString()
         {

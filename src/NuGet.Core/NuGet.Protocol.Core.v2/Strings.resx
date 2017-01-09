@@ -132,6 +132,9 @@
   <data name="DownloadActionHandler_NoDownloadUrl" xml:space="preserve">
     <value>No download URL could be found for {0}.</value>
   </data>
+  <data name="Log_ErrorDownloading" xml:space="preserve">
+    <value>Error downloading '{0}' from '{1}'.</value>
+  </data>
   <data name="NuGetRepository_CannotCreateAggregateRepo" xml:space="preserve">
     <value>Cannot create a NuGet Repository from the Aggregate Source</value>
   </data>
@@ -164,8 +167,5 @@
   </data>
   <data name="RequiredFeatureUnsupportedException_DefaultMessageWithoutFeature" xml:space="preserve">
     <value>The installation host does not support a feature required by this package.</value>
-  </data>
-  <data name="Warning_ErrorDownloading" xml:space="preserve">
-    <value>Error downloading '{0}' from '{1}' : {2}</value>
   </data>
 </root>

@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.Packaging.Core;
 
@@ -59,12 +60,10 @@ namespace NuGet.Packaging
             _root = folder;
         }
 
-        /// <summary>
-        /// Opens the nuspec file in read only mode.
-        /// </summary>
-        public override Stream GetNuspec()
+        public override string GetNuspecFile()
         {
-            var nuspecFiles = _root.GetFiles("*.nuspec", SearchOption.TopDirectoryOnly);
+            // This needs to be explicitly case insensitive in order to work on XPlat, since GetFiles is normally case sensitive on non-Windows
+            var nuspecFiles = _root.GetFiles("*.*", SearchOption.TopDirectoryOnly).Where(f => f.Name.EndsWith(".nuspec", StringComparison.OrdinalIgnoreCase)).ToArray();
 
             if (nuspecFiles.Length == 0)
             {
@@ -75,7 +74,7 @@ namespace NuGet.Packaging
                 throw new PackagingException(Strings.MultipleNuspecFiles);
             }
 
-            return nuspecFiles[0].OpenRead();
+            return nuspecFiles[0].FullName;
         }
 
         /// <summary>
@@ -103,10 +102,20 @@ namespace NuGet.Packaging
         {
             var searchFolder = new DirectoryInfo(_root.FullName);
 
-            foreach (var file in searchFolder.GetFiles("*", SearchOption.AllDirectories).
+            // Enumerate root folder filtering out nupkg files
+            foreach (var file in searchFolder.GetFiles("*", SearchOption.TopDirectoryOnly).
                 Where(p => !p.FullName.EndsWith(PackagingCoreConstants.NupkgExtension, StringComparison.OrdinalIgnoreCase)))
             {
                 yield return GetRelativePath(_root, file);
+            }
+
+            // Enumerate all sub folders without filtering
+            foreach (var directory in searchFolder.GetDirectories("*", SearchOption.TopDirectoryOnly))
+            {
+                foreach (var file in directory.GetFiles("*", SearchOption.AllDirectories))
+                {
+                    yield return GetRelativePath(_root, file);
+                }
             }
 
             yield break;
@@ -159,6 +168,7 @@ namespace NuGet.Packaging
             string destination,
             IEnumerable<string> packageFiles,
             ExtractPackageFileDelegate extractFile,
+            ILogger logger,
             CancellationToken token)
         {
             var filesCopied = new List<string>();

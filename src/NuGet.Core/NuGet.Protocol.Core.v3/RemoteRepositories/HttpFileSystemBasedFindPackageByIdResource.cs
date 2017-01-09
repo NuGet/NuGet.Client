@@ -2,7 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -10,11 +12,11 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NuGet.Common;
-using NuGet.Logging;
+using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 
-namespace NuGet.Protocol.Core.v3.RemoteRepositories
+namespace NuGet.Protocol
 {
     /// <summary>
     /// A <see cref="FindPackageByIdResource" /> for a Http-based file system where files are laid out in the
@@ -30,15 +32,16 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
     {
         private const int MaxRetries = 3;
         private readonly HttpSource _httpSource;
-        private readonly Dictionary<string, Task<IEnumerable<PackageInfo>>> _packageInfoCache =
-            new Dictionary<string, Task<IEnumerable<PackageInfo>>>();
-        private readonly Dictionary<string, Task<NupkgEntry>> _nupkgCache = new Dictionary<string, Task<NupkgEntry>>();
+        private readonly ConcurrentDictionary<string, Task<SortedDictionary<NuGetVersion, PackageInfo>>> _packageInfoCache =
+            new ConcurrentDictionary<string, Task<SortedDictionary<NuGetVersion, PackageInfo>>>(StringComparer.OrdinalIgnoreCase);
+        private readonly ConcurrentDictionary<PackageIdentity, Task<PackageIdentity>> _packageIdentityCache
+            = new ConcurrentDictionary<PackageIdentity, Task<PackageIdentity>>();
         private readonly IReadOnlyList<Uri> _baseUris;
-        private bool _ignored;
+        private readonly FindPackagesByIdNupkgDownloader _nupkgDownloader;
 
         public HttpFileSystemBasedFindPackageByIdResource(
             IReadOnlyList<Uri> baseUris,
-            Func<Task<HttpHandlerResource>> handlerFactory)
+            HttpSource httpSource)
         {
             if (baseUris == null)
             {
@@ -54,139 +57,186 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
                 .Take(MaxRetries)
                 .Select(uri => uri.OriginalString.EndsWith("/", StringComparison.Ordinal) ? uri : new Uri(uri.OriginalString + "/"))
                 .ToList();
-            _httpSource = new HttpSource(_baseUris[0].OriginalString, handlerFactory);
+
+            _httpSource = httpSource;
+            _nupkgDownloader = new FindPackagesByIdNupkgDownloader(httpSource);
         }
 
-        public override ILogger Logger
+        public override async Task<IEnumerable<NuGetVersion>> GetAllVersionsAsync(
+            string id,
+            SourceCacheContext cacheContext,
+            ILogger logger,
+            CancellationToken cancellationToken)
         {
-            get { return base.Logger; }
-            set
-            {
-                base.Logger = value;
-                _httpSource.Logger = value;
-            }
+            var packageInfos = await EnsurePackagesAsync(id, cacheContext, logger, cancellationToken);
+            return packageInfos.Keys;
         }
 
-        public bool IgnoreFailure { get; set; }
-
-        public override async Task<IEnumerable<NuGetVersion>> GetAllVersionsAsync(string id, CancellationToken cancellationToken)
+        public override async Task<PackageIdentity> GetOriginalIdentityAsync(
+            string id,
+            NuGetVersion version,
+            SourceCacheContext cacheContext,
+            ILogger logger,
+            CancellationToken cancellationToken)
         {
-            var packageInfos = await EnsurePackagesAsync(id, cancellationToken);
-            return packageInfos.Select(p => p.Version);
-        }
+            var packageInfos = await EnsurePackagesAsync(id, cacheContext, logger, cancellationToken);
 
-        public override async Task<FindPackageByIdDependencyInfo> GetDependencyInfoAsync(string id, NuGetVersion version, CancellationToken cancellationToken)
-        {
-            var packageInfos = await EnsurePackagesAsync(id, cancellationToken);
-            var packageInfo = packageInfos.FirstOrDefault(p => p.Version == version);
-            if (packageInfo == null)
-            {
-                return null;
-            }
-
-            var reader = await PackageUtilities.OpenNuspecFromNupkgAsync(
-                packageInfo.Id,
-                OpenNupkgStreamAsync(packageInfo, cancellationToken),
-                Logger);
-
-            return GetDependencyInfo(reader);
-        }
-
-        public override async Task<Stream> GetNupkgStreamAsync(string id, NuGetVersion version, CancellationToken cancellationToken)
-        {
-            var packageInfos = await EnsurePackagesAsync(id, cancellationToken);
-            var packageInfo = packageInfos.FirstOrDefault(p => p.Version == version);
-            if (packageInfo == null)
+            PackageInfo packageInfo;
+            if (!packageInfos.TryGetValue(version, out packageInfo))
             {
                 return null;
             }
 
-            return await OpenNupkgStreamAsync(packageInfo, cancellationToken);
+            return await _packageIdentityCache.GetOrAdd(
+                packageInfo.Identity,
+                async identity =>
+                {
+                    var reader = await _nupkgDownloader.GetNuspecReaderFromNupkgAsync(
+                        packageInfo.Identity,
+                        packageInfo.ContentUri,
+                        cacheContext,
+                        logger,
+                        cancellationToken);
+                    
+                    return reader.GetIdentity();
+                });
         }
 
-        private Task<IEnumerable<PackageInfo>> EnsurePackagesAsync(string id, CancellationToken cancellationToken)
+        public override async Task<FindPackageByIdDependencyInfo> GetDependencyInfoAsync(
+            string id,
+            NuGetVersion version,
+            SourceCacheContext cacheContext,
+            ILogger logger,
+            CancellationToken cancellationToken)
         {
-            Task<IEnumerable<PackageInfo>> task;
+            var packageInfos = await EnsurePackagesAsync(id, cacheContext, logger, cancellationToken);
 
-            lock (_packageInfoCache)
+            PackageInfo packageInfo;
+            if (packageInfos.TryGetValue(version, out packageInfo))
             {
-                if (!_packageInfoCache.TryGetValue(id, out task))
-                {
-                    task = FindPackagesByIdAsync(id, cancellationToken);
-                    _packageInfoCache[id] = task;
-                }
+                var reader = await _nupkgDownloader.GetNuspecReaderFromNupkgAsync(
+                    packageInfo.Identity,
+                    packageInfo.ContentUri,
+                    cacheContext,
+                    logger,
+                    cancellationToken);
+
+                // Populate the package identity cache while we have the .nuspec open.
+                var identity = reader.GetIdentity();
+                _packageIdentityCache.TryAdd(identity, Task.FromResult(identity));
+                
+                return GetDependencyInfo(reader);
             }
 
-            return task;
+            return null;
         }
 
-        private async Task<IEnumerable<PackageInfo>> FindPackagesByIdAsync(string id, CancellationToken cancellationToken)
+        public override async Task<bool> CopyNupkgToStreamAsync(
+            string id,
+            NuGetVersion version,
+            Stream destination,
+            SourceCacheContext cacheContext,
+            ILogger logger,
+            CancellationToken cancellationToken)
         {
-            for (var retry = 0; retry != 3; ++retry)
-            {
-                if (_ignored)
-                {
-                    return Enumerable.Empty<PackageInfo>();
-                }
+            var packageInfos = await EnsurePackagesAsync(id, cacheContext, logger, cancellationToken);
 
+            PackageInfo packageInfo;
+            if (packageInfos.TryGetValue(version, out packageInfo))
+            {
+                return await _nupkgDownloader.CopyNupkgToStreamAsync(
+                    packageInfo.Identity,
+                    packageInfo.ContentUri,
+                    destination,
+                    cacheContext,
+                    logger,
+                    cancellationToken);
+            }
+
+            return false;
+        }
+
+        private Task<SortedDictionary<NuGetVersion, PackageInfo>> EnsurePackagesAsync(
+            string id,
+            SourceCacheContext cacheContext,
+            ILogger logger,
+            CancellationToken cancellationToken)
+        {
+            return _packageInfoCache.GetOrAdd(id, (keyId) => FindPackagesByIdAsync(
+                keyId,
+                cacheContext,
+                logger,
+                cancellationToken));
+        }
+
+        private async Task<SortedDictionary<NuGetVersion, PackageInfo>> FindPackagesByIdAsync(
+            string id,
+            SourceCacheContext cacheContext,
+            ILogger logger,
+            CancellationToken cancellationToken)
+        {
+            // Try each base URI 3 times.
+            var maxTries = 3 * _baseUris.Count;
+
+            for (var retry = 0; retry < maxTries; ++retry)
+            {
                 var baseUri = _baseUris[retry % _baseUris.Count].OriginalString;
+                var uri = baseUri + id.ToLowerInvariant() + "/index.json";
+                var httpSourceCacheContext = HttpSourceCacheContext.Create(cacheContext, retry);
 
                 try
                 {
-                    var uri = baseUri + id.ToLowerInvariant() + "/index.json";
-                    var results = new List<PackageInfo>();
-
-                    using (var data = await _httpSource.GetAsync(uri,
-                        $"list_{id}",
-                        CreateCacheContext(retry),
-                        ignoreNotFounds: true,
-                        cancellationToken: cancellationToken))
-                    {
-                        if (data.Stream == null)
+                    return await _httpSource.GetAsync(
+                        new HttpSourceCachedRequest(
+                            uri,
+                            $"list_{id}",
+                            httpSourceCacheContext)
                         {
-                            return Enumerable.Empty<PackageInfo>();
-                        }
-
-                        try
+                            IgnoreNotFounds = true,
+                            EnsureValidContents = stream => HttpStreamValidation.ValidateJObject(uri, stream),
+                            MaxTries = 1
+                        },
+                        httpSourceResult =>
                         {
-                            JObject doc;
-                            using (var reader = new StreamReader(data.Stream))
+                            var result = new SortedDictionary<NuGetVersion, PackageInfo>();
+                            
+                            if (httpSourceResult.Status == HttpSourceResultStatus.OpenedFromDisk)
                             {
-                                doc = JObject.Load(new JsonTextReader(reader));
+                                try
+                                {
+                                    result = ConsumeFlatContainerIndex(httpSourceResult.Stream, id, baseUri);
+                                }
+                                catch
+                                {
+                                    logger.LogWarning(string.Format(CultureInfo.CurrentCulture, Strings.Log_FileIsCorrupt, httpSourceResult.CacheFile));
+
+                                    throw;
+                                }
+                            }
+                            else if (httpSourceResult.Status == HttpSourceResultStatus.OpenedFromNetwork)
+                            {
+                                result = ConsumeFlatContainerIndex(httpSourceResult.Stream, id, baseUri);
                             }
 
-                            var result = doc["versions"]
-                                .Select(x => BuildModel(baseUri, id, x.ToString()))
-                                .Where(x => x != null);
-
-                            results.AddRange(result);
-                        }
-                        catch
-                        {
-                            Logger.LogMinimal(Strings.FormatLog_FileIsCorrupt(data.CacheFileName));
-                            throw;
-                        }
-                    }
-
-                    return results;
+                            return Task.FromResult(result);
+                        },
+                        logger,
+                        cancellationToken);
                 }
                 catch (Exception ex) when (retry < 2)
                 {
-                    var message = Strings.FormatLog_RetryingFindPackagesById(nameof(FindPackagesByIdAsync), baseUri) + Environment.NewLine + ex.Message;
-                    Logger.LogMinimal(message);
+                    var message = string.Format(CultureInfo.CurrentCulture, Strings.Log_RetryingFindPackagesById, nameof(FindPackagesByIdAsync), uri)
+                        + Environment.NewLine
+                        + ExceptionUtilities.DisplayMessage(ex);
+                    logger.LogMinimal(message);
                 }
                 catch (Exception ex) when (retry == 2)
                 {
-                    // Fail silently by returning empty result list
-                    var message = Strings.FormatLog_FailedToRetrievePackage(baseUri);
-                    if (IgnoreFailure)
-                    {
-                        _ignored = true;
-                        Logger.LogWarning(message);
-                        return Enumerable.Empty<PackageInfo>();
-                    }
-
-                    Logger.LogError(message + Environment.NewLine + ex.Message);
+                    var message = string.Format(
+                        CultureInfo.CurrentCulture,
+                        Strings.Log_FailedToRetrievePackage,
+                        id,
+                        uri);
 
                     throw new FatalProtocolException(message, ex);
                 }
@@ -195,99 +245,53 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
             return null;
         }
 
+        private SortedDictionary<NuGetVersion, PackageInfo> ConsumeFlatContainerIndex(Stream stream, string id, string baseUri)
+        {
+            JObject doc;
+            using (var reader = new StreamReader(stream))
+            {
+                doc = JObject.Load(new JsonTextReader(reader));
+            }
+
+            var streamResults = new SortedDictionary<NuGetVersion, PackageInfo>();
+
+            var versions = doc["versions"];
+            if (versions == null)
+            {
+                return streamResults;
+            }
+
+            foreach (var packageInfo in versions
+                .Select(x => BuildModel(baseUri, id, x.ToString()))
+                .Where(x => x != null))
+            {
+                if (!streamResults.ContainsKey(packageInfo.Identity.Version))
+                {
+                    streamResults.Add(packageInfo.Identity.Version, packageInfo);
+                }
+            }
+
+            return streamResults;
+        }
+
         private PackageInfo BuildModel(string baseUri, string id, string version)
         {
             var parsedVersion = NuGetVersion.Parse(version);
             var normalizedVersionString = parsedVersion.ToNormalizedString();
             return new PackageInfo
             {
-                // If 'Id' element exist, use its value as accurate package Id
-                // Otherwise, use the value of 'title' if it exist
-                // Use the given Id as final fallback if all elements above don't exist
-                Id = id,
-                Version = parsedVersion,
+                Identity = new PackageIdentity(id, parsedVersion),
                 ContentUri = baseUri + id.ToLowerInvariant() + "/" + normalizedVersionString + "/" + id.ToLowerInvariant() + "." + normalizedVersionString + ".nupkg",
             };
         }
 
-        private async Task<Stream> OpenNupkgStreamAsync(PackageInfo package, CancellationToken cancellationToken)
-        {
-            Task<NupkgEntry> task;
-            lock (_nupkgCache)
-            {
-                if (!_nupkgCache.TryGetValue(package.ContentUri, out task))
-                {
-                    task = _nupkgCache[package.ContentUri] = OpenNupkgStreamAsyncCore(package, cancellationToken);
-                }
-            }
-
-            var result = await task;
-            if (result == null)
-            {
-                return null;
-            }
-
-            // Acquire the lock on a file before we open it to prevent this process
-            // from opening a file deleted by the logic in HttpSource.GetAsync() in another process
-            return await ConcurrencyUtilities.ExecuteWithFileLockedAsync(result.TempFileName,
-                action: token =>
-                {
-                    return Task.FromResult(
-                        new FileStream(result.TempFileName,
-                                       FileMode.Open,
-                                       FileAccess.Read,
-                                       FileShare.ReadWrite | FileShare.Delete));
-                },
-                token: cancellationToken);
-        }
-
-        private async Task<NupkgEntry> OpenNupkgStreamAsyncCore(PackageInfo package, CancellationToken cancellationToken)
-        {
-            for (var retry = 0; retry != 3; ++retry)
-            {
-                try
-                {
-                    using (var data = await _httpSource.GetAsync(
-                        package.ContentUri,
-                        "nupkg_" + package.Id + "." + package.Version.ToNormalizedString(),
-                        CreateCacheContext(retry),
-                        cancellationToken))
-                    {
-                        return new NupkgEntry
-                        {
-                            TempFileName = data.CacheFileName
-                        };
-                    }
-                }
-                catch (Exception ex) when (retry < 2)
-                {
-                    var message = Strings.FormatLog_FailedToDownloadPackage(package.ContentUri) + Environment.NewLine + ex.Message;
-                    Logger.LogMinimal(message);
-                }
-                catch (Exception ex) when (retry == 2)
-                {
-                    var message = Strings.FormatLog_FailedToDownloadPackage(package.ContentUri) + Environment.NewLine + ex.Message;
-                    Logger.LogError(message);
-                }
-            }
-
-            return null;
-        }
-
-        private class NupkgEntry
-        {
-            public string TempFileName { get; set; }
-        }
-
         private class PackageInfo
         {
-            public string Id { get; set; }
+            public PackageIdentity Identity { get; set; }
 
             public string Path { get; set; }
 
             public string ContentUri { get; set; }
-
-            public NuGetVersion Version { get; set; }
         }
     }
 }

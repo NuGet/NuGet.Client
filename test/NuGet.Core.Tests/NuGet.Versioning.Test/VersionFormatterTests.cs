@@ -14,6 +14,27 @@ namespace NuGet.Versioning.Test
         [InlineData("1.2.3-Pre.2", "1.2.3-Pre.2")]
         [InlineData("1.2.3+99", "1.2.3+99")]
         [InlineData("1.2-Pre", "1.2.0-Pre")]
+        public void FullStringFormatTest(string versionString, string expected)
+        {
+            // arrange
+            var formatter = new VersionFormatter();
+            var version = NuGetVersion.Parse(versionString);
+
+            // act
+            var s = String.Format(formatter, "{0:F}", version);
+            var s2 = version.ToString("F", formatter);
+
+            // assert
+            Assert.Equal(expected, s);
+            Assert.Equal(expected, s2);
+        }
+
+        [Theory]
+        [InlineData("1.2.3.4-RC+99", "1.2.3.4-RC")]
+        [InlineData("1.2.3", "1.2.3")]
+        [InlineData("1.2.3-Pre.2", "1.2.3-Pre.2")]
+        [InlineData("1.2.3+99", "1.2.3")]
+        [InlineData("1.2-Pre", "1.2.0-Pre")]
         public void NormalizedFormatTest(string versionString, string expected)
         {
             // arrange

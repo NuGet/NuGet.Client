@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Security;
 
-namespace NuGet.Common
+namespace NuGet.CommandLine
 {
-    public interface IConsole : Logging.ILogger
+    public interface IConsole : Common.ILogger
     {
         int CursorLeft { get; set; }
         int WindowWidth { get; set; }

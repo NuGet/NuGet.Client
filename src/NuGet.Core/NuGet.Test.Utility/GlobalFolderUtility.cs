@@ -28,10 +28,8 @@ namespace NuGet.Test.Utility
                 var pathContext = new VersionFolderPathContext(
                     package: reader.GetIdentity(),
                     packagesDirectory: globalFolder,
-                    logger: Logging.NullLogger.Instance,
-                    fixNuspecIdCasing: true,
+                    logger: Common.NullLogger.Instance,
                     packageSaveMode: PackageSaveMode.Defaultv3,
-                    normalizeFileNames: true,
                     xmlDocFileSaveMode: XmlDocFileSaveMode.None);
 
                 using (var stream = File.OpenRead(packagePath))

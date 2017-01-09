@@ -16,8 +16,6 @@ namespace NuGet.CommandLine
     {
         private readonly string _commandExe;
         private readonly ICommandManager _commandManager;
-        private readonly string _helpUrl;
-        private readonly string _productName;
 
         private string CommandName
         {
@@ -39,18 +37,9 @@ namespace NuGet.CommandLine
 
         [ImportingConstructor]
         public HelpCommand(ICommandManager commandManager)
-            : this(commandManager, Assembly.GetExecutingAssembly().GetName().Name, Assembly.GetExecutingAssembly().GetName().Name, CommandLineConstants.NuGetDocsCommandLineReference)
-        {
-        }
-
-        [SuppressMessage("Microsoft.Design", "CA1054:UriParametersShouldNotBeStrings", MessageId = "3#",
-            Justification = "We don't use the Url for anything besides printing, so it's ok to represent it as a string.")]
-        public HelpCommand(ICommandManager commandManager, string commandExe, string productName, string helpUrl)
         {
             _commandManager = commandManager;
-            _commandExe = commandExe;
-            _productName = productName;
-            _helpUrl = helpUrl;
+            _commandExe = Assembly.GetExecutingAssembly().GetName().Name;
         }
 
         public override void ExecuteCommand()
@@ -75,7 +64,6 @@ namespace NuGet.CommandLine
 
         public void ViewHelp()
         {
-            Console.WriteLine("{0} Version: {1}", _productName, this.GetType().Assembly.GetName().Version);
             Console.WriteLine("usage: {0} <command> [args] [options] ", _commandExe);
             Console.WriteLine("Type '{0} help <command>' for help on a specific command.", _commandExe);
             Console.WriteLine();
@@ -95,13 +83,13 @@ namespace NuGet.CommandLine
                 Console.WriteLine();
             }
 
-            if (_helpUrl != null)
-            {
-                Console.WriteLine(string.Format(CultureInfo.InvariantCulture,
-                    LocalizedResourceManager.GetString("HelpCommandForMoreInfo"),
-                    _helpUrl));
-            }
+            Console.WriteLine(string.Format(CultureInfo.InvariantCulture,
+                LocalizedResourceManager.GetString("HelpCommandForMoreInfo"),
+                CommandLineConstants.NuGetDocsCommandLineReference));
         }
+
+        // Help command always outputs NuGet version
+        protected override bool ShouldOutputNuGetVersion { get { return true; } }
 
         private void PrintCommand(int maxWidth, CommandAttribute commandAttribute)
         {
@@ -160,19 +148,24 @@ namespace NuGet.CommandLine
                     Console.Write(" {0, -" + (maxAltOptionWidth + 4) + "}", GetAltText(o.Key.AltName));
 
                     Console.PrintJustified((10 + maxAltOptionWidth + maxOptionWidth), o.Key.Description);
-
-                }
-
-                if (_helpUrl != null)
-                {
-                    Console.WriteLine();
-                    Console.WriteLine(string.Format(CultureInfo.InvariantCulture,
-                        LocalizedResourceManager.GetString("HelpCommandForMoreInfo"),
-                        _helpUrl));
                 }
 
                 Console.WriteLine();
             }
+
+            if (!string.IsNullOrEmpty(attribute.UsageExample))
+            {
+                Console.WriteLine("examples:");
+                Console.WriteLine();
+                Console.WriteLine(attribute.UsageExample);
+                Console.WriteLine();
+            }
+            
+            Console.WriteLine(string.Format(CultureInfo.InvariantCulture,
+                LocalizedResourceManager.GetString("HelpCommandForMoreInfo"),
+                CommandLineConstants.NuGetDocsCommandLineReference));
+
+            Console.WriteLine();
         }
 
         private void ViewHelpForAllCommands()

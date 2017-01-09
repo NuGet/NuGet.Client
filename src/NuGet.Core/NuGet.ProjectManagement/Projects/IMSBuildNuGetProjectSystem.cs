@@ -15,6 +15,7 @@ namespace NuGet.ProjectManagement
         string ProjectName { get; }
         string ProjectUniqueName { get; }
         string ProjectFullPath { get; }
+        string ProjectFileFullPath { get; }
         INuGetProjectContext NuGetProjectContext { get; }
         void SetNuGetProjectContext(INuGetProjectContext nuGetProjectContext);
         void AddFile(string path, Stream stream);
@@ -35,7 +36,7 @@ namespace NuGet.ProjectManagement
         /// Adds an assembly reference to a framework assembly (one in the GAC).
         /// </summary>
         /// <param name="name">name of the assembly</param>
-        void AddFrameworkReference(string name);
+        void AddFrameworkReference(string name, string packageId);
 
         void AddImport(string targetFullPath, ImportLocation location);
         void RemoveImport(string targetFullPath);
@@ -43,7 +44,7 @@ namespace NuGet.ProjectManagement
         string ResolvePath(string path);
         bool IsSupportedFile(string path);
         void AddBindingRedirects();
-        Task ExecuteScriptAsync(PackageIdentity identity, string packageInstallPath, string scriptRelativePath, NuGetProject nuGetProject, bool throwOnFailure);
+        Task ExecuteScriptAsync(PackageIdentity identity, string packageInstallPath, string scriptRelativePath, bool throwOnFailure);
         void BeginProcessing();
         /// <summary>
         /// This method can be called multiple times during a batch operation in between a single BeginProcessing/EndProcessing calls.
@@ -62,7 +63,7 @@ namespace NuGet.ProjectManagement
         /// </summary>
         /// <param name="fileName">the file name</param>
         /// <returns>The list of full paths.</returns>
-        /// <remarks>We should combine GetFiles & GetFullPaths into one method.</remarks>
+        /// <remarks>We should combine GetFiles &amp; GetFullPaths into one method.</remarks>
         IEnumerable<string> GetFullPaths(string fileName);
 
         /// <summary>

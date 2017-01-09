@@ -328,13 +328,17 @@ namespace NuGet.Versioning.Test
             Assert.Equal("[1.*, )", range.ToNormalizedString());
         }
 
-        // TODO: fix this one the proper syntax is determined
-        //[Fact]
-        //public void FloatingRange_ToStringMajor()
-        //{
-        //    VersionRange range = VersionRange.Parse("*");
+        [Fact]
+        public void FloatingRange_FloatMetadata_Invalid()
+        {
+            // Arrange
+            FloatRange range;
 
-        //    Assert.Equal("[*, )", range.ToNormalizedString());
-        //}
+            // Act
+            var valid = FloatRange.TryParse("1.0.0+*", out range);
+
+            // Assert
+            Assert.False(valid);
+        }
     }
 }

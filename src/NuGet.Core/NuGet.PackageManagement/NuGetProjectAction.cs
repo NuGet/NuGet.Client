@@ -2,7 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using NuGet.Packaging.Core;
+using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
 
 namespace NuGet.PackageManagement
@@ -26,6 +28,7 @@ namespace NuGet.PackageManagement
     /// <summary>
     /// NuGetProjectAction
     /// </summary>
+    [DebuggerDisplay("{NuGetProjectActionType} {PackageIdentity}")]
     public class NuGetProjectAction
     {
         /// <summary>
@@ -44,7 +47,12 @@ namespace NuGet.PackageManagement
         /// </summary>
         public SourceRepository SourceRepository { get; private set; }
 
-        protected NuGetProjectAction(PackageIdentity packageIdentity, NuGetProjectActionType nuGetProjectActionType, SourceRepository sourceRepository = null)
+        /// <summary>
+        /// NugetProject for which the action is created
+        /// </summary>
+        public NuGetProject Project { get; private set; }
+
+        protected NuGetProjectAction(PackageIdentity packageIdentity, NuGetProjectActionType nuGetProjectActionType, NuGetProject project, SourceRepository sourceRepository = null)
         {
             if (packageIdentity == null)
             {
@@ -54,16 +62,17 @@ namespace NuGet.PackageManagement
             PackageIdentity = packageIdentity;
             NuGetProjectActionType = nuGetProjectActionType;
             SourceRepository = sourceRepository;
+            Project = project;
         }
 
-        public static NuGetProjectAction CreateInstallProjectAction(PackageIdentity packageIdentity, SourceRepository sourceRepository)
+        public static NuGetProjectAction CreateInstallProjectAction(PackageIdentity packageIdentity, SourceRepository sourceRepository, NuGetProject project)
         {
-            return new NuGetProjectAction(packageIdentity, NuGetProjectActionType.Install, sourceRepository);
+            return new NuGetProjectAction(packageIdentity, NuGetProjectActionType.Install, project, sourceRepository);
         }
 
-        internal static NuGetProjectAction CreateUninstallProjectAction(PackageIdentity packageIdentity)
+        public static NuGetProjectAction CreateUninstallProjectAction(PackageIdentity packageIdentity, NuGetProject project)
         {
-            return new NuGetProjectAction(packageIdentity, NuGetProjectActionType.Uninstall);
+            return new NuGetProjectAction(packageIdentity, NuGetProjectActionType.Uninstall, project, null);
         }
     }
 }

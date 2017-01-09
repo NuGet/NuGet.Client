@@ -5,6 +5,7 @@ using System;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Configuration;
 
 namespace NuGet.Credentials
 {
@@ -12,11 +13,13 @@ namespace NuGet.Credentials
     {
         string Id { get; }
 
-        Task<CredentialResponse> Get(Uri uri, 
-                               IWebProxy proxy, 
-                               bool isProxyRequest, 
-                               bool isRetry,
-                               bool nonInteractive, 
-                               CancellationToken cancellationToken);
+        Task<CredentialResponse> GetAsync(
+            Uri uri, 
+            IWebProxy proxy, 
+            CredentialRequestType type,
+            string message,
+            bool isRetry,
+            bool nonInteractive, 
+            CancellationToken cancellationToken);
     }
 }

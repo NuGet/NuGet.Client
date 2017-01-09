@@ -16,11 +16,20 @@ namespace NuGet.Versioning
         private readonly NuGetVersionFloatBehavior _floatBehavior;
         private readonly string _releasePrefix;
 
+        /// <summary>
+        /// Create a floating range.
+        /// </summary>
+        /// <param name="floatBehavior">Section to float.</param>
         public FloatRange(NuGetVersionFloatBehavior floatBehavior)
             : this(floatBehavior, null, null)
         {
         }
 
+        /// <summary>
+        /// Create a floating range.
+        /// </summary>
+        /// <param name="floatBehavior">Section to float.</param>
+        /// <param name="minVersion">Min version of the range.</param>
         public FloatRange(NuGetVersionFloatBehavior floatBehavior, NuGetVersion minVersion)
             : this(floatBehavior, minVersion, null)
         {
@@ -29,9 +38,9 @@ namespace NuGet.Versioning
         /// <summary>
         /// FloatRange
         /// </summary>
-        /// <param name="floatBehavior">Section to float</param>
-        /// <param name="minVersion">Min version of the range</param>
-        /// <param name="originalReleasePrefix">The original release label. Invalid labels are allowed here.</param>
+        /// <param name="floatBehavior">Section to float.</param>
+        /// <param name="minVersion">Min version of the range.</param>
+        /// <param name="releasePrefix">The original release label. Invalid labels are allowed here.</param>
         public FloatRange(NuGetVersionFloatBehavior floatBehavior, NuGetVersion minVersion, string releasePrefix)
         {
             _floatBehavior = floatBehavior;
@@ -78,7 +87,7 @@ namespace NuGet.Versioning
         {
             if (version == null)
             {
-                throw new ArgumentNullException("version");
+                throw new ArgumentNullException(nameof(version));
             }
 
             if (_floatBehavior == NuGetVersionFloatBehavior.AbsoluteLatest)
@@ -156,7 +165,9 @@ namespace NuGet.Versioning
                 {
                     range = new FloatRange(NuGetVersionFloatBehavior.Major, new NuGetVersion(new Version(0, 0)));
                 }
-                else if (starPos == versionString.Length - 1)
+                // * must appear as the last char in the string. 
+                // * cannot appear in the metadata section after the +
+                else if (starPos == versionString.Length - 1 && versionString.IndexOf('+') == -1)
                 {
                     var behavior = NuGetVersionFloatBehavior.None;
 
@@ -240,7 +251,7 @@ namespace NuGet.Versioning
                     result = MinVersion.ToNormalizedString();
                     break;
                 case NuGetVersionFloatBehavior.Prerelease:
-                    result = String.Format(new VersionFormatter(), "{0:V}-{1}*", MinVersion, _releasePrefix);
+                    result = String.Format(VersionFormatter.Instance, "{0:V}-{1}*", MinVersion, _releasePrefix);
                     break;
                 case NuGetVersionFloatBehavior.Revision:
                     result = String.Format(CultureInfo.InvariantCulture, "{0}.{1}.{2}.*", MinVersion.Major, MinVersion.Minor, MinVersion.Patch);
@@ -265,12 +276,18 @@ namespace NuGet.Versioning
             return result;
         }
 
+        /// <summary>
+        /// Equals
+        /// </summary>
         public bool Equals(FloatRange other)
         {
             return FloatBehavior == other.FloatBehavior
                    && VersionComparer.Default.Equals(MinVersion, other.MinVersion);
         }
 
+        /// <summary>
+        /// Hash code
+        /// </summary>
         public override int GetHashCode()
         {
             var combiner = new HashCodeCombiner();

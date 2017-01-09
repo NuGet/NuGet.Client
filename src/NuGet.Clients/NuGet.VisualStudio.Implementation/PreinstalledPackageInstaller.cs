@@ -12,13 +12,14 @@ using System.Threading;
 using EnvDTE;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.Win32;
-using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.PackageManagement;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
+using NuGet.ProjectManagement.Projects;
+using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using NuGet.VisualStudio.Implementation.Resources;
 using Task = System.Threading.Tasks.Task;
@@ -34,7 +35,7 @@ namespace NuGet.VisualStudio
         //private readonly IVsWebsiteHandler _websiteHandler;
         private readonly IVsPackageInstallerServices _packageServices;
         //private readonly IVsCommonOperations _vsCommonOperations;
-        private readonly ISolutionManager _solutionManager;
+        private readonly IVsSolutionManager _solutionManager;
         private readonly ISourceRepositoryProvider _sourceProvider;
         private readonly VsPackageInstaller _installer;
 
@@ -42,7 +43,7 @@ namespace NuGet.VisualStudio
 
         public PreinstalledPackageInstaller(
             IVsPackageInstallerServices packageServices,
-            ISolutionManager solutionManager,
+            IVsSolutionManager solutionManager,
             Configuration.ISettings settings,
             ISourceRepositoryProvider sourceProvider,
             VsPackageInstaller installer)
@@ -167,97 +168,123 @@ namespace NuGet.VisualStudio
             ThreadHelper.ThrowIfNotOnUIThread();
 
             string repositoryPath = configuration.RepositoryPath;
+            var repositorySource = new Configuration.PackageSource(repositoryPath);
             var failedPackageErrors = new List<string>();
 
-            IPackageRepository repository = configuration.IsPreunzipped
-                ? new UnzippedPackageRepository(repositoryPath)
-                : (IPackageRepository)new LazyLocalPackageRepository(repositoryPath);
+            // find the project
+            var defaultProjectContext = new VSAPIProjectContext();
+            var nuGetProject = await _solutionManager.GetOrCreateProjectAsync(project, defaultProjectContext);
 
-            PreinstalledRepositoryProvider repos = new PreinstalledRepositoryProvider(errorHandler, _sourceProvider);
-            repos.AddFromRepository(repository);
+            // For BuildIntegratedNuGetProject, nuget will ignore preunzipped configuration.
+            var buildIntegratedProject = nuGetProject as BuildIntegratedNuGetProject;
+
+            var repository = (buildIntegratedProject == null && configuration.IsPreunzipped) ?
+                _sourceProvider.CreateRepository(repositorySource, FeedType.FileSystemUnzipped) :
+                _sourceProvider.CreateRepository(repositorySource);
+
+            var repoProvider = new PreinstalledRepositoryProvider(errorHandler, _sourceProvider);
+            repoProvider.AddFromSource(repository);
+
+            var packageManager = _installer.CreatePackageManager(repoProvider);
+            var gatherCache = new GatherCache();
+
+            var sources = repoProvider.GetRepositories().ToList();
 
             // store expanded node state
-            IDictionary<string, ISet<VsHierarchyItem>> expandedNodes = await VsHierarchyUtility.GetAllExpandedNodesAsync(_solutionManager);
+            var expandedNodes = await VsHierarchyUtility.GetAllExpandedNodesAsync(_solutionManager);
 
-            foreach (var package in configuration.Packages)
+            try
             {
-                // Does the project already have this package installed?
-                if (_packageServices.IsPackageInstalled(project, package.Id))
+                foreach (var package in configuration.Packages)
                 {
-                    // If so, is it the right version?
-                    if (!_packageServices.IsPackageInstalledEx(project, package.Id, package.Version.ToNormalizedString()))
+                    var packageIdentity = new PackageIdentity(package.Id, package.Version);
+
+                    // Does the project already have this package installed?
+                    if (_packageServices.IsPackageInstalled(project, package.Id))
                     {
-                        // No? Raise a warning (likely written to the Output window) and ignore this package.
-                        warningHandler(String.Format(VsResources.PreinstalledPackages_VersionConflict, package.Id, package.Version));
+                        // If so, is it the right version?
+                        if (!_packageServices.IsPackageInstalledEx(project, package.Id, package.Version.ToNormalizedString()))
+                        {
+                            // No? Raise a warning (likely written to the Output window) and ignore this package.
+                            warningHandler(String.Format(VsResources.PreinstalledPackages_VersionConflict, package.Id, package.Version));
+                        }
+                        // Yes? Just silently ignore this package!
                     }
-                    // Yes? Just silently ignore this package!
+                    else
+                    {
+                        try
+                        {
+                            if (InfoHandler != null)
+                            {
+                                InfoHandler(String.Format(CultureInfo.CurrentCulture, VsResources.PreinstalledPackages_PackageInstallStatus, package.Id, package.Version));
+                            }
+
+                            // Skip assembly references and disable binding redirections should be done together
+                            bool disableBindingRedirects = package.SkipAssemblyReferences;
+
+                            var projectContext = new VSAPIProjectContext(package.SkipAssemblyReferences, disableBindingRedirects);
+
+                            // Old templates have hardcoded non-normalized paths
+                            projectContext.PackageExtractionContext.UseLegacyPackageInstallPath = true;
+
+                            // This runs from the UI thread
+                            await _installer.InstallInternalCoreAsync(
+                                packageManager,
+                                gatherCache,
+                                nuGetProject,
+                                packageIdentity,
+                                sources,
+                                projectContext,
+                                includePrerelease: false,
+                                ignoreDependencies: package.IgnoreDependencies,
+                                token: CancellationToken.None);
+                        }
+                        catch (InvalidOperationException exception)
+                        {
+                            failedPackageErrors.Add(package.Id + "." + package.Version + " : " + exception.Message);
+                        }
+                        catch (AggregateException aggregateEx)
+                        {
+                            var ex = aggregateEx.Flatten().InnerExceptions.FirstOrDefault();
+                            if (ex is InvalidOperationException)
+                            {
+                                failedPackageErrors.Add(package.Id + "." + package.Version + " : " + ex.Message);
+                            }
+                            else
+                            {
+                                throw;
+                            }
+                        }
+                    }
                 }
-                else
+
+                if (failedPackageErrors.Any())
                 {
-                    try
-                    {
-                        if (InfoHandler != null)
-                        {
-                            InfoHandler(String.Format(CultureInfo.CurrentCulture, VsResources.PreinstalledPackages_PackageInstallStatus, package.Id, package.Version));
-                        }
+                    var errorString = new StringBuilder();
+                    errorString.AppendFormat(VsResources.PreinstalledPackages_FailedToInstallPackage, repositoryPath);
+                    errorString.AppendLine();
+                    errorString.AppendLine();
+                    errorString.Append(String.Join(Environment.NewLine, failedPackageErrors));
 
-                        List<PackageIdentity> toInstall = new List<PackageIdentity>();
-                        toInstall.Add(new PackageIdentity(package.Id, package.Version));
+                    errorHandler(errorString.ToString());
+                }
 
-                        // Skip assembly references and disable binding redirections should be done together
-                        bool disableBindingRedirects = package.SkipAssemblyReferences;
+                // RepositorySettings = null in unit tests
+                if (EnvDTEProjectUtility.IsWebSite(project))
+                {
+                    CreateRefreshFilesInBin(
+                        project,
+                        repositoryPath,
+                        configuration.Packages.Where(p => p.SkipAssemblyReferences));
 
-                        VSAPIProjectContext projectContext = new VSAPIProjectContext(package.SkipAssemblyReferences, disableBindingRedirects);
-
-                        // Old templates have hardcoded non-normalized paths
-                        projectContext.PackageExtractionContext.UseLegacyPackageInstallPath = true;
-
-                        // This runs from the UI thread
-                        await _installer.InstallInternalAsync(project, toInstall, repos, projectContext, package.IgnoreDependencies, CancellationToken.None);
-                    }
-                    catch (InvalidOperationException exception)
-                    {
-                        failedPackageErrors.Add(package.Id + "." + package.Version + " : " + exception.Message);
-                    }
-                    catch (AggregateException aggregateEx)
-                    {
-                        var ex = aggregateEx.Flatten().InnerExceptions.FirstOrDefault();
-                        if (ex is InvalidOperationException)
-                        {
-                            failedPackageErrors.Add(package.Id + "." + package.Version + " : " + ex.Message);
-                        }
-                        else
-                        {
-                            throw;
-                        }
-                    }
+                    CopyNativeBinariesToBin(project, repositoryPath, configuration.Packages);
                 }
             }
-
-            if (failedPackageErrors.Any())
+            finally
             {
-                var errorString = new StringBuilder();
-                errorString.AppendFormat(VsResources.PreinstalledPackages_FailedToInstallPackage, repositoryPath);
-                errorString.AppendLine();
-                errorString.AppendLine();
-                errorString.Append(String.Join(Environment.NewLine, failedPackageErrors));
-
-                errorHandler(errorString.ToString());
+                // collapse nodes
+                await VsHierarchyUtility.CollapseAllNodesAsync(_solutionManager, expandedNodes);
             }
-
-            // RepositorySettings = null in unit tests
-            if (EnvDTEProjectUtility.IsWebSite(project))
-            {
-                CreateRefreshFilesInBin(
-                    project,
-                    repositoryPath,
-                    configuration.Packages.Where(p => p.SkipAssemblyReferences));
-
-                CopyNativeBinariesToBin(project, repositoryPath, configuration.Packages);
-            }
-
-            // collapse nodes
-            await VsHierarchyUtility.CollapseAllNodesAsync(_solutionManager, expandedNodes);
         }
 
         /// <summary>

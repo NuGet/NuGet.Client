@@ -4,7 +4,9 @@
 using System;
 using System.Globalization;
 using System.Windows;
+using System.Windows.Automation.Peers;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 
 namespace NuGet.PackageManagement.UI
@@ -21,7 +23,7 @@ namespace NuGet.PackageManagement.UI
 
         public event EventHandler<EventArgs> ControlSelected;
 
-        public Filter Filter
+        public ItemFilter Filter
         {
             get;
             set;

@@ -7,7 +7,12 @@ using System.Linq;
 
 namespace NuGet.Frameworks
 {
-    public static class NuGetFrameworkUtility
+#if NUGET_FRAMEWORKS_INTERNAL
+    internal
+#else
+    public
+#endif
+    static class NuGetFrameworkUtility
     {
         /// <summary>
         /// Find the most compatible group based on target framework
@@ -35,17 +40,17 @@ namespace NuGet.Frameworks
         {
             if (framework == null)
             {
-                throw new ArgumentNullException(nameof(framework));
+                throw new ArgumentNullException("framework");
             }
 
             if (frameworkMappings == null)
             {
-                throw new ArgumentNullException(nameof(frameworkMappings));
+                throw new ArgumentNullException("frameworkMappings");
             }
 
             if (compatibilityProvider == null)
             {
-                throw new ArgumentNullException(nameof(compatibilityProvider));
+                throw new ArgumentNullException("compatibilityProvider");
             }
 
             if (items != null)
@@ -84,17 +89,17 @@ namespace NuGet.Frameworks
         {
             if (framework == null)
             {
-                throw new ArgumentNullException(nameof(framework));
+                throw new ArgumentNullException("framework");
             }
 
             if (frameworkMappings == null)
             {
-                throw new ArgumentNullException(nameof(frameworkMappings));
+                throw new ArgumentNullException("frameworkMappings");
             }
 
             if (compatibilityProvider == null)
             {
-                throw new ArgumentNullException(nameof(compatibilityProvider));
+                throw new ArgumentNullException("compatibilityProvider");
             }
 
             if (items != null)
@@ -124,11 +129,30 @@ namespace NuGet.Frameworks
 
                 if (fallbackFramework != null && fallbackFramework.Fallback != null)
                 {
-                    compatible = DefaultCompatibilityProvider.Instance.IsCompatible(fallbackFramework.Fallback, candidate);
+                    foreach (var supportFramework in fallbackFramework.Fallback)
+                    {
+                        compatible = DefaultCompatibilityProvider.Instance.IsCompatible(supportFramework, candidate);
+                        if (compatible)
+                        {
+                            break;
+                        }
+                    }
                 }
             }
 
             return compatible;
+        }
+
+        /// <summary>
+        /// True if the framework is netcore50 or higher. This is where the framework
+        /// becomes packages based.
+        /// </summary>
+        public static bool IsNetCore50AndUp(NuGetFramework framework)
+        {
+            return (framework.Version.Major >= 5
+                    && StringComparer.OrdinalIgnoreCase.Equals(
+                        framework.Framework,
+                        FrameworkConstants.FrameworkIdentifiers.NetCore));
         }
     }
 }

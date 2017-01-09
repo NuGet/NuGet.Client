@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
 using System.Text;
 
 namespace NuGet.Versioning
@@ -60,15 +59,20 @@ namespace NuGet.Versioning
                     if (Version.TryParse(versionPart, out systemVersion))
                     {
                         // labels
-                        if (sections.Item2 != null
-                            && !sections.Item2.All(s => IsValidPart(s, false)))
+                        if (sections.Item2 != null)
                         {
-                            return false;
+                            for (int i = 0; i < sections.Item2.Length; i++)
+                            {
+                                if (!IsValidPart(sections.Item2[i], allowLeadingZeros: false))
+                                {
+                                    return false;
+                                }
+                            }
                         }
 
                         // build metadata
                         if (sections.Item3 != null
-                            && !IsValid(sections.Item3, true))
+                            && !IsValid(sections.Item3, allowLeadingZeros: true))
                         {
                             return false;
                         }
@@ -79,7 +83,7 @@ namespace NuGet.Versioning
 
                         if (originalVersion.IndexOf(' ') > -1)
                         {
-                            originalVersion = value.Replace(" ", "");
+                            originalVersion = value.Replace(" ", string.Empty);
                         }
 
                         version = new NuGetVersion(version: ver,

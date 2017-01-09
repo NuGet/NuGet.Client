@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -84,7 +84,7 @@ namespace NuGet.PackageManagement.UI
         private void ProjectUninstallButtonClicked(object sender, EventArgs e)
         {
             var model = (PackageDetailControlModel)DataContext;
-            var userAction = UserAction.CreateUnInstallAction(model.Id);            
+            var userAction = UserAction.CreateUnInstallAction(model.Id);
             ExecuteUserAction(userAction, NuGetActionType.Uninstall);
         }
 
@@ -92,6 +92,12 @@ namespace NuGet.PackageManagement.UI
         private void SolutionInstallButtonClicked(object sender, EventArgs e)
         {
             var model = (PackageSolutionDetailControlModel)DataContext;
+
+            if (model.SelectedVersion == null)
+            {
+                return;
+            }
+
             var userAction = UserAction.CreateInstallAction(
                 model.Id,
                 model.SelectedVersion.Version);
@@ -116,7 +122,6 @@ namespace NuGet.PackageManagement.UI
                     return Control.Model.Context.UIActionEngine.PerformActionAsync(
                         Control.Model.UIController,
                         action,
-                        this,
                         CancellationToken.None);
                 },
                 nugetUi =>
@@ -130,7 +135,8 @@ namespace NuGet.PackageManagement.UI
                     nugetUi.ForceRemove = model.Options.ForceRemove;
                     nugetUi.Projects = model.GetSelectedProjects(action);
                     nugetUi.DisplayPreviewWindow = model.Options.ShowPreviewWindow;
-                    nugetUi.ProgressWindow.ActionType = actionType;
+                    nugetUi.DisplayDeprecatedFrameworkWindow = model.Options.ShowDeprecatedFrameworkWindow;
+                    nugetUi.ProjectContext.ActionType = actionType;
                 });
         }
 

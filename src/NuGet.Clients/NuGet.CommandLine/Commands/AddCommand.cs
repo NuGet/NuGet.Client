@@ -1,5 +1,6 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Protocol.Core.Types;
 
 namespace NuGet.CommandLine
 {
@@ -29,7 +30,7 @@ namespace NuGet.CommandLine
             OfflineFeedUtility.ThrowIfInvalidOrNotFound(
                 packagePath,
                 isDirectory: false,
-                nameOfNotFoundErrorResource: nameof(NuGetResources.NupkgPath_NotFound));
+                resourceString: LocalizedResourceManager.GetString(nameof(NuGetResources.NupkgPath_NotFound)));
 
             // If the Source Feed Folder does not exist, it will be created.
             OfflineFeedUtility.ThrowIfInvalid(Source);

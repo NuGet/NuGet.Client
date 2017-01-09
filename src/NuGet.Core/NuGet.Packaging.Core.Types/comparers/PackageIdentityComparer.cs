@@ -83,7 +83,7 @@ namespace NuGet.Packaging.Core
 
             var combiner = new HashCodeCombiner();
 
-            combiner.AddObject(obj.Id.ToUpperInvariant());
+            combiner.AddObject(obj.Id, StringComparer.OrdinalIgnoreCase);
             combiner.AddObject(_versionComparer.GetHashCode(obj.Version));
 
             return combiner.CombinedHash;
@@ -111,7 +111,7 @@ namespace NuGet.Packaging.Core
 
             var result = StringComparer.OrdinalIgnoreCase.Compare(x.Id, y.Id);
 
-            if (result != 0)
+            if (result == 0)
             {
                 result = _versionComparer.Compare(x.Version, y.Version);
             }

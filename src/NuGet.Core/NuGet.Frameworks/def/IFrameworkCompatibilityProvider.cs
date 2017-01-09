@@ -3,7 +3,12 @@
 
 namespace NuGet.Frameworks
 {
-    public interface IFrameworkCompatibilityProvider
+#if NUGET_FRAMEWORKS_INTERNAL
+    internal
+#else
+    public
+#endif
+    interface IFrameworkCompatibilityProvider
     {
         /// <summary>
         /// Ex: IsCompatible(net45, net40) -> true

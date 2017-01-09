@@ -1,35 +1,36 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using NuGet.Configuration;
-using NuGet.Logging;
+using NuGet.Common;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Packaging.PackageExtraction;
 using NuGet.Protocol.Core.Types;
 
-namespace NuGet.Protocol.Core.v3
+namespace NuGet.Protocol
 {
     public static class GlobalPackagesFolderUtility
     {
-        public static DownloadResourceResult GetPackage(PackageIdentity packageIdentity, ISettings settings)
+        private const int BufferSize = 8192;
+
+        public static DownloadResourceResult GetPackage(PackageIdentity packageIdentity, string globalPackagesFolder)
         {
             if (packageIdentity == null)
             {
                 throw new ArgumentNullException(nameof(packageIdentity));
             }
 
-            if (settings == null)
+            if (globalPackagesFolder == null)
             {
-                throw new ArgumentNullException(nameof(settings));
+                throw new ArgumentNullException(nameof(globalPackagesFolder));
             }
-
-            var globalPackagesFolder = SettingsUtility.GetGlobalPackagesFolder(settings);
-            var defaultPackagePathResolver = new VersionFolderPathResolver(
-                globalPackagesFolder,
-                normalizePackageId: false);
+            
+            var defaultPackagePathResolver = new VersionFolderPathResolver(globalPackagesFolder);
 
             var hashPath = defaultPackagePathResolver.GetHashPath(packageIdentity.Id, packageIdentity.Version);
 
@@ -70,9 +71,10 @@ namespace NuGet.Protocol.Core.v3
             return null;
         }
 
-        public static async Task<DownloadResourceResult> AddPackageAsync(PackageIdentity packageIdentity,
+        public static async Task<DownloadResourceResult> AddPackageAsync(
+            PackageIdentity packageIdentity,
             Stream packageStream,
-            ISettings settings,
+            string globalPackagesFolder,
             ILogger logger,
             CancellationToken token)
         {
@@ -86,12 +88,10 @@ namespace NuGet.Protocol.Core.v3
                 throw new ArgumentNullException(nameof(packageStream));
             }
 
-            if (settings == null)
+            if (globalPackagesFolder == null)
             {
-                throw new ArgumentNullException(nameof(settings));
+                throw new ArgumentNullException(nameof(globalPackagesFolder));
             }
-
-            var globalPackagesFolder = SettingsUtility.GetGlobalPackagesFolder(settings);
 
             // The following call adds it to the global packages folder.
             // Addition is performed using ConcurrentUtils, such that,
@@ -101,17 +101,15 @@ namespace NuGet.Protocol.Core.v3
                 packageIdentity,
                 globalPackagesFolder,
                 logger,
-                fixNuspecIdCasing: false,
-                packageSaveMode: PackageSaveMode.Defaultv3,
-                normalizeFileNames: false,
-                xmlDocFileSaveMode: PackageExtractionBehavior.XmlDocFileSaveMode);
+                PackageSaveMode.Defaultv3,
+                PackageExtractionBehavior.XmlDocFileSaveMode);
 
             await PackageExtractor.InstallFromSourceAsync(
-                stream => packageStream.CopyToAsync(stream),
+                stream => packageStream.CopyToAsync(stream, BufferSize, token),
                 versionFolderPathContext,
-                token: token);
+                token);
 
-            var package = GetPackage(packageIdentity, settings);
+            var package = GetPackage(packageIdentity, globalPackagesFolder);
             Debug.Assert(package.PackageStream.CanSeek);
             Debug.Assert(package.PackageReader != null);
 

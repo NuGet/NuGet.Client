@@ -46,50 +46,39 @@ namespace NuGet.ProjectManagement
 
         internal void NotifyInstalling(PackageEventArgs e)
         {
-            if (PackageInstalling != null)
-            {
-                PackageInstalling(this, e);
-            }
+            var handler = PackageInstalling;
+            handler?.Invoke(this, e);
         }
 
         internal void NotifyInstalled(PackageEventArgs e)
         {
-            if (PackageInstalled != null)
-            {
-                PackageInstalled(this, e);
-            }
+            var handler = PackageInstalled;
+            handler?.Invoke(this, e);
         }
 
         internal void NotifyUninstalling(PackageEventArgs e)
         {
-            if (PackageUninstalling != null)
-            {
-                PackageUninstalling(this, e);
-            }
+            var handler = PackageUninstalling;
+            handler?.Invoke(this, e);
         }
 
         internal void NotifyUninstalled(PackageEventArgs e)
         {
-            if (PackageUninstalled != null)
-            {
-                PackageUninstalled(this, e);
-            }
+            var handler = PackageUninstalled;
+            handler?.Invoke(this, e);
         }
 
         internal void NotifyReferenceAdded(PackageEventArgs e)
         {
-            if (PackageReferenceAdded != null)
-            {
-                PackageReferenceAdded(this, e);
-            }
+            var handler = PackageInstalled;
+            handler?.Invoke(this, e);
+            PackageReferenceAdded?.Invoke(this, e);
         }
 
         internal void NotifyReferenceRemoved(PackageEventArgs e)
         {
-            if (PackageReferenceRemoved != null)
-            {
-                PackageReferenceRemoved(this, e);
-            }
+            var handler = PackageReferenceRemoved;
+            handler?.Invoke(this, e);
         }
     }
 }

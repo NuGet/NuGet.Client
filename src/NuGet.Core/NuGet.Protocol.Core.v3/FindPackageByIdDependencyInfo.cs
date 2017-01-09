@@ -13,7 +13,6 @@ namespace NuGet.Protocol.Core.Types
         /// <summary>
         /// DependencyInfo
         /// </summary>
-        /// <param name="identity">package identity</param>
         /// <param name="dependencyGroups">package dependency groups</param>
         /// <param name="frameworkReferenceGroups">Sequence of <see cref="FrameworkSpecificGroup" />s.</param>
         public FindPackageByIdDependencyInfo(

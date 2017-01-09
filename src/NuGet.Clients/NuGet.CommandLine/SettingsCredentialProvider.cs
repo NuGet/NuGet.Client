@@ -1,21 +1,23 @@
-﻿using System;
+﻿extern alias CoreV2;
+
+using System;
 using System.Globalization;
 using System.Linq;
 using System.Net;
 
 namespace NuGet.CommandLine
 {
-    public class SettingsCredentialProvider : ICredentialProvider
+    public class SettingsCredentialProvider : CoreV2.NuGet.ICredentialProvider
     {
         private readonly Configuration.IPackageSourceProvider _packageSourceProvider;
-        private readonly Logging.ILogger _logger;
+        private readonly Common.ILogger _logger;
 
         public SettingsCredentialProvider(Configuration.IPackageSourceProvider packageSourceProvider)
-            : this(packageSourceProvider, Logging.NullLogger.Instance)
+            : this(packageSourceProvider, Common.NullLogger.Instance)
         {
         }
 
-        public SettingsCredentialProvider(Configuration.IPackageSourceProvider packageSourceProvider, Logging.ILogger logger)
+        public SettingsCredentialProvider(Configuration.IPackageSourceProvider packageSourceProvider, Common.ILogger logger)
         {
             if (packageSourceProvider == null)
             {
@@ -26,11 +28,11 @@ namespace NuGet.CommandLine
             _logger = logger;
         }
 
-        public ICredentials GetCredentials(Uri uri, IWebProxy proxy, CredentialType credentialType, bool retrying)
+        public ICredentials GetCredentials(Uri uri, IWebProxy proxy, CoreV2.NuGet.CredentialType credentialType, bool retrying)
         {
             NetworkCredential credentials;
             // If we are retrying, the stored credentials must be invalid.
-            if (!retrying && (credentialType == CredentialType.RequestCredentials) && TryGetCredentials(uri, out credentials))
+            if (!retrying && (credentialType == CoreV2.NuGet.CredentialType.RequestCredentials) && TryGetCredentials(uri, out credentials))
             {
                 _logger.LogMinimal(
                     string.Format(
@@ -47,8 +49,8 @@ namespace NuGet.CommandLine
             var source = _packageSourceProvider.LoadPackageSources().FirstOrDefault(p =>
             {
                 Uri sourceUri;
-                return !String.IsNullOrEmpty(p.UserName)
-                    && !String.IsNullOrEmpty(p.Password)
+                return p.Credentials != null
+                    && p.Credentials.IsValid()
                     && Uri.TryCreate(p.Source, UriKind.Absolute, out sourceUri)
                     && UriEquals(sourceUri, uri);
             });
@@ -58,7 +60,7 @@ namespace NuGet.CommandLine
                 configurationCredentials = null;
                 return false;
             }
-            configurationCredentials = new NetworkCredential(source.UserName, source.Password);
+            configurationCredentials = new NetworkCredential(source.Credentials.Username, source.Credentials.Password);
             return true;
         }
 

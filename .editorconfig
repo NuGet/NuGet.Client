@@ -1,0 +1,27 @@
+; EditorConfig to support per-solution formatting.
+; Use the EditorConfig VS add-in to make this work.
+; http://editorconfig.org/
+
+; This is the default for the codeline.
+root = true
+
+[*]
+indent_style = space
+charset = utf-8
+trim_trailing_whitespace = true
+
+[*.{cs}]
+indent_size = 4
+
+; All XML-based file formats
+[*.{config,csproj,nuspec,props,resx,targets,xaml,xml}]
+indent_size = 2
+
+[*.{json}]
+indent_size = 2
+
+[*.{ps1}]
+indent_size = 4
+
+[*.{sh}]
+indent_size = 4

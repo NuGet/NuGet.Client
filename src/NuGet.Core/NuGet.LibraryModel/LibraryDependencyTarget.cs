@@ -17,7 +17,7 @@ namespace NuGet.LibraryModel
         Assembly = 1 << 3,
         Reference = 1 << 4,
         WinMD = 1 << 5,
-        All = 0xFFFF,
+        All = Package | Project | ExternalProject | Assembly | Reference | WinMD,
 
         /// <summary>
         /// A package, project, or external project

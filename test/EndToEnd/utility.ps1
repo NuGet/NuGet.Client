@@ -3,10 +3,7 @@ function New-Guid {
 }
 
 function Get-HostSemanticVersion {
-    $currentHostSystemVersion = $host.Version
-    $currentHostSemanticVersion = New-Object NuGet.Versioning.SemanticVersion($currentHostSystemVersion.Major, $currentHostSystemVersion.Minor, $currentHostSystemVersion.Build)
-
-    return $currentHostSemanticVersion.ToNormalizedString()  
+    return [NuGet.Common.ClientVersionUtility]::GetNuGetAssemblyVersion()
 }
 
 function Verify-BuildIntegratedMsBuildTask {

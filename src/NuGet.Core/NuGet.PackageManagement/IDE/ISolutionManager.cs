@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using NuGet.ProjectManagement;
 
 namespace NuGet.PackageManagement
@@ -22,6 +23,10 @@ namespace NuGet.PackageManagement
         event EventHandler<NuGetProjectEventArgs> NuGetProjectRemoved;
 
         event EventHandler<NuGetProjectEventArgs> NuGetProjectRenamed;
+
+        event EventHandler<NuGetProjectEventArgs> NuGetProjectUpdated;
+
+        event EventHandler<NuGetProjectEventArgs> AfterNuGetProjectRenamed;
 
         /// <summary>
         /// Event raised after user actions are executed.
@@ -57,6 +62,14 @@ namespace NuGet.PackageManagement
         /// </summary>
         bool IsSolutionAvailable { get; }
 
+        /// <summary>
+        /// Returns true if the solution is loaded with DPL enabled.
+        /// That is, when no project is loaded by default.
+        /// This is only applicable for VS15, for VS14 it will always return false.
+        /// </summary>
+        bool IsSolutionDPLEnabled { get; }
+
+
         INuGetProjectContext NuGetProjectContext { get; set; }
 
         IEnumerable<NuGetProject> GetNuGetProjects();
@@ -88,6 +101,21 @@ namespace NuGet.PackageManagement
         /// </summary>
         /// <param name="actions"></param>
         void OnActionsExecuted(IEnumerable<ResolvedAction> actions);
+
+        /// <summary>
+        /// Saves the specified project
+        /// </summary>
+        /// <param name="nuGetProject"></param>
+        void SaveProject(NuGetProject nuGetProject);
+		
+        /// <summary>
+        /// It ensure to completely load the solution before continue if it was loaded with DPL.
+        /// That is, not all the projects were loaded when solution was open.
+        /// This will only be applicable for VS15 and will do nothing for VS14.
+        /// </summary>
+        void EnsureSolutionIsLoaded();
+
+        Task<NuGetProject> UpdateNuGetProjectToPackageRef(NuGetProject oldProject);
     }
 
     public class NuGetProjectEventArgs : EventArgs

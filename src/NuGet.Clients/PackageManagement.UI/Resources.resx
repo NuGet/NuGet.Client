@@ -177,6 +177,9 @@
   <data name="Label_Options" xml:space="preserve">
     <value>Options</value>
   </data>
+  <data name="Label_Owners" xml:space="preserve">
+    <value>Owner(s):</value>
+  </data>
   <data name="Label_LegalDisclaimer" xml:space="preserve">
     <value>Legal Disclaimer</value>
   </data>
@@ -231,11 +234,11 @@
   <data name="Text_LicenseText" xml:space="preserve">
     <value>By clicking "I Accept," you agree to the license terms for the package(s) listed above. If you do not agree to the license terms, click "I Decline."</value>
   </data>
-  <data name="Button_Retry" xml:space="preserve">
-    <value>Error occurred. Retry</value>
+  <data name="Button_RestartSearch" xml:space="preserve">
+    <value>Restart search</value>
   </data>
   <data name="Text_ErrorOccurred" xml:space="preserve">
-    <value>Error occured:\n{0}</value>
+    <value>Error occurred</value>
   </data>
   <data name="Label_Solution" xml:space="preserve">
     <value>Solution '{0}'</value>
@@ -279,8 +282,8 @@
   <data name="Text_Loading" xml:space="preserve">
     <value>Loading...</value>
   </data>
-  <data name="Text_NoItemsFound" xml:space="preserve">
-    <value>No items found</value>
+  <data name="Text_NoPackagesFound" xml:space="preserve">
+    <value>No packages found</value>
   </data>
   <data name="Text_Ready" xml:space="preserve">
     <value>Ready</value>
@@ -510,5 +513,111 @@ Packages installed into Website projects will not be restored during build. Cons
   <data name="Text_NotInstalled" xml:space="preserve">
     <value>not installed</value>
     <comment>In the solution package manager, if the select package is not installed, then this message is shown.</comment>
+  </data>
+  <data name="Text_UserCanceled" xml:space="preserve">
+    <value>Operation canceled by user</value>
+  </data>
+  <data name="AggregateSourceName" xml:space="preserve">
+    <value>All</value>
+  </data>
+  <data name="Button_ShowErrors" xml:space="preserve">
+    <value>Show errors in output</value>
+  </data>
+  <data name="Button_ShowMoreResults" xml:space="preserve">
+    <value>Show {0} more results</value>
+    <comment>The string format has a single parameter "{0}", which is an integer number of how many more results will be displayed to the user when they click a button.</comment>
+  </data>
+  <data name="Text_SearchCompleted" xml:space="preserve">
+    <value>Search completed</value>
+  </data>
+  <data name="Text_SearchIncomplete" xml:space="preserve">
+    <value>Retrieving results from one or more sources</value>
+  </data>
+  <data name="Text_SearchStopped" xml:space="preserve">
+    <value>Unable to retrieve results from one or more sources</value>
+  </data>
+  <data name="Text_NoMorePackages" xml:space="preserve">
+    <value>No more packages</value>
+  </data>
+  <data name="Text_PackageSources" xml:space="preserve">
+    <value>Package sources:</value>
+  </data>
+  <data name="Button_Dismiss" xml:space="preserve">
+    <value>Dismiss</value>
+  </data>
+  <data name="Text_PackagesFound" xml:space="preserve">
+    <value>Packages found</value>
+  </data>
+  <data name="Operation_TotalTime" xml:space="preserve">
+    <value>Time Elapsed: {0}</value>
+  </data>
+  <data name="ToolTip_Refresh" xml:space="preserve">
+    <value>Refresh</value>
+  </data>
+  <data name="ToolTip_Settings" xml:space="preserve">
+    <value>Settings</value>
+  </data>
+  <data name="Version_Blocked" xml:space="preserve">
+    <value>Blocked by package.config</value>
+  </data>
+  <data name="ToolTip_BlockedVersion" xml:space="preserve">
+    <value>Following versions are unavailable due to allowedVersions constraint in package.config</value>
+  </data>
+  <data name="Warning_ProjectJson" xml:space="preserve">
+    <value>These options are not applicable to projects managing their dependencies through project.json.</value>
+    <comment>To be displayed for the VS UI opened through a solution. bug #2665</comment>
+  </data>
+  <data name="Text_DeprecatedFramework_DocumentLink_Before" xml:space="preserve">
+    <value>The NuGet operation failed due to one or more packages being incompatible with your project. The '{0}' ('{1}') project framework is deprecated. For more information about how to migrate your projects to a supported framework, please refer to the </value>
+    <comment>This text goes immediately before the document link.
+{0} is the full name of the deprecated framework (e.g. ".NETFramework,Version=v4.5").
+{1} is the short folder representation of the framework (e.g. "net45").</comment>
+  </data>
+  <data name="WindowTitle_DeprecatedFramework" xml:space="preserve">
+    <value>Deprecated Framework</value>
+  </data>
+  <data name="Text_DeprecatedFramework_ProjectList" xml:space="preserve">
+    <value>The following project(s) target the deprecated framework:</value>
+  </data>
+  <data name="Text_DeprecatedFramework_DocumentLink" xml:space="preserve">
+    <value>migration document</value>
+    <comment>The text has the document hyperlink applied to it.</comment>
+  </data>
+  <data name="Text_DeprecatedFramework_DocumentLink_After" xml:space="preserve">
+    <value>.</value>
+    <comment>This test goes immediately after the document link.</comment>
+  </data>
+  <data name="CheckBox_DefaultPackageFormat" xml:space="preserve">
+    <value>Make this package manager format the default and do not show this dialog again.</value>
+  </data>
+  <data name="RadioBtn_PackageRef" xml:space="preserve">
+    <value>PackageReference in project file</value>
+  </data>
+  <data name="RadioBtn_PackagesConfig" xml:space="preserve">
+    <value>Packages.config</value>
+  </data>
+  <data name="Text_ManageSettings" xml:space="preserve">
+    <value>You can manage these settings in </value>
+  </data>
+  <data name="Text_NuGetSettings" xml:space="preserve">
+    <value>NuGet Settings</value>
+  </data>
+  <data name="Text_PackageFormatSelection" xml:space="preserve">
+    <value>Select the NuGet package manager format for {0}</value>
+  </data>
+  <data name="Text_PackageFormatSelection_Solution" xml:space="preserve">
+    <value>Select the NuGet package manager format for this Solution</value>
+  </data>
+  <data name="Text_PackageRefSupport" xml:space="preserve">
+    <value>Projects with PackageReference are not supported in Visual Studio 2015 and earlier.</value>
+  </data>
+  <data name="Text_PackageRefSupport_DocumentLink" xml:space="preserve">
+    <value>Learn more about package reference</value>
+  </data>
+  <data name="WindowTitle_PackageFormatSelector" xml:space="preserve">
+    <value>Choose NuGet Package Manager Format</value>
+  </data>
+  <data name="Text_PackageFormatApply" xml:space="preserve">
+    <value>The package manager format will apply to the following projects in this Solution</value>
   </data>
 </root>

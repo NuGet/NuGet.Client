@@ -117,8 +117,15 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="ArgumentNullOrEmpty" xml:space="preserve">
+    <value>Argument cannot be null or empty.</value>
+  </data>
   <data name="InvalidDependencyTarget" xml:space="preserve">
     <value>Invalid dependency target value '{0}'.</value>
+  </data>
+  <data name="InvalidPackageType" xml:space="preserve">
+    <value>The pack options package type must be a string or array of strings in '{0}'.</value>
+    <comment>{0} is the project.json file name.</comment>
   </data>
   <data name="Log_ErrorReadingLockFile" xml:space="preserve">
     <value>Error loading lock file '{0}' : {1}</value>
@@ -128,5 +135,17 @@
   </data>
   <data name="Log_ErrorReadingProjectJsonWithLocation" xml:space="preserve">
     <value>Error reading '{0}' at line {1} column {2} : {3}</value>
+  </data>
+  <data name="Log_InvalidImportFramework" xml:space="preserve">
+    <value>Imports contains an invalid framework: '{0}' in '{1}'.</value>
+  </data>
+  <data name="MissingToolName" xml:space="preserve">
+    <value>Unable to resolve tool ''.</value>
+  </data>
+  <data name="MissingVersionOnDependency" xml:space="preserve">
+    <value>Package dependencies must specify a version range.</value>
+  </data>
+  <data name="MissingVersionOnTool" xml:space="preserve">
+    <value>Tools must specify a version range.</value>
   </data>
 </root>

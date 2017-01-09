@@ -234,6 +234,15 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Download directly without populating any caches with metadata or binaries..
+        /// </summary>
+        internal static string CommandDirectDownload {
+            get {
+                return ResourceManager.GetString("CommandDirectDownload", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Disable parallel processing of packages for this command..
         /// </summary>
         internal static string CommandDisableParallelProcessing {
@@ -360,11 +369,20 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to A list of packages sources to use as fallbacks for this command..
+        ///   Looks up a localized string similar to A list of package sources to use as fallbacks for this command..
         /// </summary>
         internal static string CommandFallbackSourceDescription {
             get {
                 return ResourceManager.GetString("CommandFallbackSourceDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Specifies the path of MSBuild to be used with this command. This command will takes precedence over MSbuildVersion, nuget will always pick MSbuild from this specified path..
+        /// </summary>
+        internal static string CommandMSBuildPath {
+            get {
+                return ResourceManager.GetString("CommandMSBuildPath", resourceCulture);
             }
         }
         
@@ -5918,7 +5936,7 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Clears or lists local NuGet resources such as http requests cache, packages cache or machine-wide global packages folder..
+        ///   Looks up a localized string similar to Clears or lists local NuGet resources such as http requests cache, temp cache or machine-wide global packages folder..
         /// </summary>
         internal static string LocalsCommandDescription {
             get {
@@ -5931,7 +5949,7 @@ namespace NuGet.CommandLine {
         ///
         ///nuget locals http-cache -clear
         ///
-        ///nuget locals packages-cache -list
+        ///nuget locals temp -list
         ///
         ///nuget locals global-packages -list.
         /// </summary>
@@ -5951,7 +5969,7 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to &lt;all | http-cache | packages-cache | global-packages | temp&gt; [-clear | -list].
+        ///   Looks up a localized string similar to &lt;all | http-cache | global-packages | temp&gt; [-clear | -list].
         /// </summary>
         internal static string LocalsCommandSummary {
             get {
@@ -6082,6 +6100,15 @@ namespace NuGet.CommandLine {
         internal static string Option_ConfigFile_trk {
             get {
                 return ResourceManager.GetString("Option_ConfigFile_trk", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Forces the application to run using an invariant, English-based culture..
+        /// </summary>
+        internal static string Option_ForceEnglishOutput {
+            get {
+                return ResourceManager.GetString("Option_ForceEnglishOutput", resourceCulture);
             }
         }
         
@@ -8862,6 +8889,15 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to If a symbols package exists, it will not be pushed to a symbol server..
+        /// </summary>
+        internal static string PushCommandNoSymbolsDescription {
+            get {
+                return ResourceManager.GetString("PushCommandNoSymbolsDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Specifies the server URL. If not specified, nuget.org is used unless DefaultPushSource config value is set in the NuGet config file..
         /// </summary>
         internal static string PushCommandSourceDescription {
@@ -8984,6 +9020,15 @@ namespace NuGet.CommandLine {
         internal static string PushCommandSourceDescription_trk {
             get {
                 return ResourceManager.GetString("PushCommandSourceDescription_trk", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Specifies the symbol server URL. If not specified, nuget.smbsrc.net is used when pushing to nuget.org..
+        /// </summary>
+        internal static string PushCommandSymbolSourceDescription {
+            get {
+                return ResourceManager.GetString("PushCommandSymbolSourceDescription", resourceCulture);
             }
         }
         
@@ -10099,6 +10144,15 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Restore all referenced projects for UWP and NETCore projects. This does not include packages.config projects..
+        /// </summary>
+        internal static string RestoreCommandRecursive {
+            get {
+                return ResourceManager.GetString("RestoreCommandRecursive", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Checks if package restore consent is granted before installing a package..
         /// </summary>
         internal static string RestoreCommandRequireConsent {
@@ -10590,6 +10644,15 @@ namespace NuGet.CommandLine {
         internal static string RestoreCommandUsageDescription_trk {
             get {
                 return ResourceManager.GetString("RestoreCommandUsageDescription_trk", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to nuget restore MySoluion.sln.
+        /// </summary>
+        internal static string RestoreCommandUsageExamples {
+            get {
+                return ResourceManager.GetString("RestoreCommandUsageExamples", resourceCulture);
             }
         }
         
@@ -13072,6 +13135,15 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The API key for the symbol server..
+        /// </summary>
+        internal static string SymbolApiKey {
+            get {
+                return ResourceManager.GetString("SymbolApiKey", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Update packages to latest available versions. This command also updates NuGet.exe itself..
         /// </summary>
         internal static string UpdateCommandDescription {
@@ -14384,6 +14456,15 @@ namespace NuGet.CommandLine {
         internal static string UpdateCommandVerboseDescription_trk {
             get {
                 return ResourceManager.GetString("UpdateCommandVerboseDescription_trk", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Updates the package in -Id to the version indicated.  Requires -Id to contain exactly one package id..
+        /// </summary>
+        internal static string UpdateCommandVersionDescription {
+            get {
+                return ResourceManager.GetString("UpdateCommandVersionDescription", resourceCulture);
             }
         }
     }

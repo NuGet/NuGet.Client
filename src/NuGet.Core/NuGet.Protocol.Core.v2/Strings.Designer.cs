@@ -105,6 +105,15 @@ namespace NuGet.Protocol.Core.v2 {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to Error downloading &apos;{0}&apos; from &apos;{1}&apos;..
+        /// </summary>
+        internal static string Log_ErrorDownloading {
+            get {
+                return ResourceManager.GetString("Log_ErrorDownloading", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to Cannot create a NuGet Repository from the Aggregate Source.
         /// </summary>
         internal static string NuGetRepository_CannotCreateAggregateRepo {
@@ -200,15 +209,6 @@ namespace NuGet.Protocol.Core.v2 {
         internal static string RequiredFeatureUnsupportedException_DefaultMessageWithoutFeature {
             get {
                 return ResourceManager.GetString("RequiredFeatureUnsupportedException_DefaultMessageWithoutFeature", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///    Looks up a localized string similar to Error downloading &apos;{0}&apos; from &apos;{1}&apos; : {2}.
-        /// </summary>
-        internal static string Warning_ErrorDownloading {
-            get {
-                return ResourceManager.GetString("Warning_ErrorDownloading", resourceCulture);
             }
         }
     }

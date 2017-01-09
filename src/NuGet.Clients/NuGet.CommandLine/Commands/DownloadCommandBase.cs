@@ -10,20 +10,18 @@ using System.Xml;
 using System.Xml.Linq;
 using NuGet.Configuration;
 using NuGet.Packaging;
-using NuGet.Protocol.Core.v2;
+using NuGet.Protocol;
 
 namespace NuGet.CommandLine
 {
     public abstract class DownloadCommandBase : Command
     {
-        private readonly IPackageRepository _cacheRepository;
         private readonly List<string> _sources = new List<string>();
 
         protected PackageSaveMode EffectivePackageSaveMode { get; set; }
 
-        protected DownloadCommandBase(IPackageRepository cacheRepository)
+        protected DownloadCommandBase()
         {
-            _cacheRepository = cacheRepository;
         }
 
         [Option(typeof(NuGetCommand), "CommandSourceDescription")]
@@ -37,6 +35,9 @@ namespace NuGet.CommandLine
 
         [Option(typeof(NuGetCommand), "CommandNoCache")]
         public bool NoCache { get; set; }
+
+        [Option(typeof(NuGetCommand), "CommandDirectDownload")]
+        public bool DirectDownload { get; set; }
 
         [Option(typeof(NuGetCommand), "CommandDisableParallelProcessing")]
         public bool DisableParallelProcessing { get; set; }
@@ -93,7 +94,7 @@ namespace NuGet.CommandLine
                 try
                 {
                     var xDocument = XDocument.Load(projectConfigFilePath);
-                    var reader = new PackagesConfigReader(XDocument.Load(projectConfigFilePath));
+                    var reader = new PackagesConfigReader(xDocument);
                     return reader.GetPackages(allowDuplicatePackageIds);
                 }
                 catch (XmlException ex)
@@ -118,19 +119,12 @@ namespace NuGet.CommandLine
 
             if (!NoCache)
             {
-                // Add the v2 machine cache
-                if (!string.IsNullOrEmpty(MachineCache.Default?.Source))
-                {
-                    packageSources.Add(new V2PackageSource(MachineCache.Default.Source, () => MachineCache.Default));
-                }
-
                 // Add the v3 global packages folder
                 var globalPackageFolder = SettingsUtility.GetGlobalPackagesFolder(settings);
 
                 if (!string.IsNullOrEmpty(globalPackageFolder) && Directory.Exists(globalPackageFolder))
                 {
-                    packageSources.Add(new V2PackageSource(globalPackageFolder,
-                        () => new LocalPackageRepository(globalPackageFolder)));
+                    packageSources.Add(new FeedTypePackageSource(globalPackageFolder, FeedType.FileSystemV3));
                 }
             }
 

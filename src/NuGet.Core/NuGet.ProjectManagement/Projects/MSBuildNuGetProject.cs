@@ -10,9 +10,12 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using NuGet.Commands;
 using NuGet.Frameworks;
+using NuGet.LibraryModel;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
+using NuGet.ProjectModel;
 using NuGet.Protocol.Core.Types;
 
 namespace NuGet.ProjectManagement
@@ -21,7 +24,7 @@ namespace NuGet.ProjectManagement
     /// This class represents a NuGetProject based on a .NET project. This also contains an instance of a
     /// FolderNuGetProject
     /// </summary>
-    public class MSBuildNuGetProject : NuGetProject
+    public class MSBuildNuGetProject : NuGetProject, IDependencyGraphProject
     {
         /// <summary>
         /// Event to be raised while installing a package
@@ -56,6 +59,8 @@ namespace NuGet.ProjectManagement
         public IMSBuildNuGetProjectSystem MSBuildNuGetProjectSystem { get; }
         public FolderNuGetProject FolderNuGetProject { get; }
         public PackagesConfigNuGetProject PackagesConfigNuGetProject { get; }
+
+        public string MSBuildProjectPath => MSBuildNuGetProjectSystem.ProjectFileFullPath;
 
         private readonly IDictionary<FileTransformExtensions, IPackageFileTransformer> FileTransformers =
             new Dictionary<FileTransformExtensions, IPackageFileTransformer>
@@ -275,64 +280,73 @@ namespace NuGet.ProjectManagement
             }
             PackageEventsProvider.Instance.NotifyInstalled(packageEventArgs);
 
-            // Step-8: MSBuildNuGetProjectSystem operations
-            // Step-8.1: Add references to project
-            if (!IsSkipAssemblyReferences(nuGetProjectContext) &&
-                MSBuildNuGetProjectSystemUtility.IsValid(compatibleReferenceItemsGroup))
+            try
             {
-                foreach (var referenceItem in compatibleReferenceItemsGroup.Items)
-                {
-                    if (IsAssemblyReference(referenceItem))
-                    {
-                        var referenceItemFullPath = Path.Combine(packageInstallPath, referenceItem);
-                        var referenceName = Path.GetFileName(referenceItem);
+                MSBuildNuGetProjectSystem.BeginProcessing();
 
-                        if (MSBuildNuGetProjectSystem.ReferenceExists(referenceName))
+                // Step-8: MSBuildNuGetProjectSystem operations
+                // Step-8.1: Add references to project
+                if (!IsSkipAssemblyReferences(nuGetProjectContext) &&
+                    MSBuildNuGetProjectSystemUtility.IsValid(compatibleReferenceItemsGroup))
+                {
+                    foreach (var referenceItem in compatibleReferenceItemsGroup.Items)
+                    {
+                        if (IsAssemblyReference(referenceItem))
                         {
-                            MSBuildNuGetProjectSystem.RemoveReference(referenceName);
+                            var referenceItemFullPath = Path.Combine(packageInstallPath, referenceItem);
+                            var referenceName = Path.GetFileName(referenceItem);
+
+                            if (MSBuildNuGetProjectSystem.ReferenceExists(referenceName))
+                            {
+                                MSBuildNuGetProjectSystem.RemoveReference(referenceName);
+                            }
+
+                            MSBuildNuGetProjectSystem.AddReference(referenceItemFullPath);
                         }
-
-                        MSBuildNuGetProjectSystem.AddReference(referenceItemFullPath);
                     }
                 }
-            }
 
-            // Step-8.2: Add Frameworkreferences to project
-            if (!IsSkipAssemblyReferences(nuGetProjectContext) &&
-                MSBuildNuGetProjectSystemUtility.IsValid(compatibleFrameworkReferencesGroup))
-            {
-                foreach (var frameworkReference in compatibleFrameworkReferencesGroup.Items)
+                // Step-8.2: Add Frameworkreferences to project
+                if (!IsSkipAssemblyReferences(nuGetProjectContext) &&
+                    MSBuildNuGetProjectSystemUtility.IsValid(compatibleFrameworkReferencesGroup))
                 {
-                    if (!MSBuildNuGetProjectSystem.ReferenceExists(frameworkReference))
+                    foreach (var frameworkReference in compatibleFrameworkReferencesGroup.Items)
                     {
-                        MSBuildNuGetProjectSystem.AddFrameworkReference(frameworkReference);
+                        if (!MSBuildNuGetProjectSystem.ReferenceExists(frameworkReference))
+                        {
+                            MSBuildNuGetProjectSystem.AddFrameworkReference(frameworkReference, packageIdentity.Id);
+                        }
                     }
                 }
-            }
 
-            // Step-8.3: Add Content Files
-            if (MSBuildNuGetProjectSystemUtility.IsValid(compatibleContentFilesGroup))
-            {
-                MSBuildNuGetProjectSystemUtility.AddFiles(MSBuildNuGetProjectSystem,
-                    packageReader, compatibleContentFilesGroup, FileTransformers);
-            }
-
-            // Step-8.4: Add Build imports
-            if (MSBuildNuGetProjectSystemUtility.IsValid(compatibleBuildFilesGroup))
-            {
-                foreach (var buildImportFile in compatibleBuildFilesGroup.Items)
+                // Step-8.3: Add Content Files
+                if (MSBuildNuGetProjectSystemUtility.IsValid(compatibleContentFilesGroup))
                 {
-                    var fullImportFilePath = Path.Combine(packageInstallPath, buildImportFile);
-                    MSBuildNuGetProjectSystem.AddImport(fullImportFilePath,
-                        fullImportFilePath.EndsWith(".props", StringComparison.OrdinalIgnoreCase) ? ImportLocation.Top : ImportLocation.Bottom);
+                    MSBuildNuGetProjectSystemUtility.AddFiles(MSBuildNuGetProjectSystem,
+                        packageReader, compatibleContentFilesGroup, FileTransformers);
                 }
+
+                // Step-8.4: Add Build imports
+                if (MSBuildNuGetProjectSystemUtility.IsValid(compatibleBuildFilesGroup))
+                {
+                    foreach (var buildImportFile in compatibleBuildFilesGroup.Items)
+                    {
+                        var fullImportFilePath = Path.Combine(packageInstallPath, buildImportFile);
+                        MSBuildNuGetProjectSystem.AddImport(fullImportFilePath,
+                            fullImportFilePath.EndsWith(".props", StringComparison.OrdinalIgnoreCase) ? ImportLocation.Top : ImportLocation.Bottom);
+                    }
+                }
+
+                // Step-9: Install package to PackagesConfigNuGetProject
+                await PackagesConfigNuGetProject.InstallPackageAsync(packageIdentity, downloadResourceResult, nuGetProjectContext, token);
+
+                // Step-10: Add packages.config to MSBuildNuGetProject
+                MSBuildNuGetProjectSystem.AddExistingFile(Path.GetFileName(PackagesConfigNuGetProject.FullPath));
             }
-
-            // Step-9: Install package to PackagesConfigNuGetProject
-            await PackagesConfigNuGetProject.InstallPackageAsync(packageIdentity, downloadResourceResult, nuGetProjectContext, token);
-
-            // Step-10: Add packages.config to MSBuildNuGetProject
-            MSBuildNuGetProjectSystem.AddExistingFile(Path.GetFileName(PackagesConfigNuGetProject.FullPath));
+            finally
+            {
+                MSBuildNuGetProjectSystem.EndProcessing();
+            }
 
             // Step 11: Raise PackageReferenceAdded event
             PackageReferenceAdded?.Invoke(this, packageEventArgs);
@@ -347,7 +361,7 @@ namespace NuGet.ProjectManagement
                 if (!string.IsNullOrEmpty(initPS1RelativePath))
                 {
                     initPS1RelativePath = PathUtility.ReplaceAltDirSeparatorWithDirSeparator(initPS1RelativePath);
-                    await MSBuildNuGetProjectSystem.ExecuteScriptAsync(packageIdentity, packageInstallPath, initPS1RelativePath, this, throwOnFailure: true);
+                    await MSBuildNuGetProjectSystem.ExecuteScriptAsync(packageIdentity, packageInstallPath, initPS1RelativePath, throwOnFailure: true);
                 }
             }
 
@@ -357,7 +371,7 @@ namespace NuGet.ProjectManagement
                     p => p.EndsWith(Path.DirectorySeparatorChar + PowerShellScripts.Install, StringComparison.OrdinalIgnoreCase));
                 if (!string.IsNullOrEmpty(installPS1RelativePath))
                 {
-                    await MSBuildNuGetProjectSystem.ExecuteScriptAsync(packageIdentity, packageInstallPath, installPS1RelativePath, this, throwOnFailure: true);
+                    await MSBuildNuGetProjectSystem.ExecuteScriptAsync(packageIdentity, packageInstallPath, installPS1RelativePath, throwOnFailure: true);
                 }
             }
             return true;
@@ -419,7 +433,7 @@ namespace NuGet.ProjectManagement
                     if (!string.IsNullOrEmpty(uninstallPS1RelativePath))
                     {
                         var packageInstallPath = FolderNuGetProject.GetInstalledPath(packageIdentity);
-                        await MSBuildNuGetProjectSystem.ExecuteScriptAsync(packageIdentity, packageInstallPath, uninstallPS1RelativePath, this, throwOnFailure: false);
+                        await MSBuildNuGetProjectSystem.ExecuteScriptAsync(packageIdentity, packageInstallPath, uninstallPS1RelativePath, throwOnFailure: false);
                     }
                 }
 
@@ -446,61 +460,70 @@ namespace NuGet.ProjectManagement
                 compatibleBuildFilesGroup
                     = MSBuildNuGetProjectSystemUtility.Normalize(compatibleBuildFilesGroup);
 
-                // Step-5: Remove package reference from packages.config
-                await PackagesConfigNuGetProject.UninstallPackageAsync(packageIdentity, nuGetProjectContext, token);
+                try
+                {
+                    MSBuildNuGetProjectSystem.BeginProcessing();
 
-                // Step-6: Remove packages.config from MSBuildNuGetProject if there are no packages
-                //         OR Add it again (to ensure that Source Control works), when there are some packages
-                if (!(await PackagesConfigNuGetProject.GetInstalledPackagesAsync(token)).Any())
-                {
-                    MSBuildNuGetProjectSystem.RemoveFile(Path.GetFileName(PackagesConfigNuGetProject.FullPath));
-                }
-                else
-                {
-                    MSBuildNuGetProjectSystem.AddExistingFile(Path.GetFileName(PackagesConfigNuGetProject.FullPath));
-                }
+                    // Step-5: Remove package reference from packages.config
+                    await PackagesConfigNuGetProject.UninstallPackageAsync(packageIdentity, nuGetProjectContext, token);
 
-                // Step-7: Uninstall package from the msbuild project
-                // Step-7.1: Remove references
-                if (MSBuildNuGetProjectSystemUtility.IsValid(compatibleReferenceItemsGroup))
-                {
-                    foreach (var item in compatibleReferenceItemsGroup.Items)
+                    // Step-6: Remove packages.config from MSBuildNuGetProject if there are no packages
+                    //         OR Add it again (to ensure that Source Control works), when there are some packages
+                    if (!(await PackagesConfigNuGetProject.GetInstalledPackagesAsync(token)).Any())
                     {
-                        if (IsAssemblyReference(item))
+                        MSBuildNuGetProjectSystem.RemoveFile(Path.GetFileName(PackagesConfigNuGetProject.FullPath));
+                    }
+                    else
+                    {
+                        MSBuildNuGetProjectSystem.AddExistingFile(Path.GetFileName(PackagesConfigNuGetProject.FullPath));
+                    }
+
+                    // Step-7: Uninstall package from the msbuild project
+                    // Step-7.1: Remove references
+                    if (MSBuildNuGetProjectSystemUtility.IsValid(compatibleReferenceItemsGroup))
+                    {
+                        foreach (var item in compatibleReferenceItemsGroup.Items)
                         {
-                            MSBuildNuGetProjectSystem.RemoveReference(Path.GetFileName(item));
+                            if (IsAssemblyReference(item))
+                            {
+                                MSBuildNuGetProjectSystem.RemoveReference(Path.GetFileName(item));
+                            }
                         }
                     }
-                }
 
-                // Step-7.2: Framework references are never removed. This is a no-op
+                    // Step-7.2: Framework references are never removed. This is a no-op
 
-                // Step-7.3: Remove content files
-                if (MSBuildNuGetProjectSystemUtility.IsValid(compatibleContentFilesGroup))
-                {
-                    var packagesPaths = (await GetInstalledPackagesAsync(token))
-                        .Select(pr => FolderNuGetProject.GetInstalledPackageFilePath(pr.PackageIdentity));
-
-                    MSBuildNuGetProjectSystemUtility.DeleteFiles(MSBuildNuGetProjectSystem,
-                        zipArchive,
-                        packagesPaths,
-                        compatibleContentFilesGroup,
-                        FileTransformers);
-                }
-
-                // Step-7.4: Remove build imports
-                if (MSBuildNuGetProjectSystemUtility.IsValid(compatibleBuildFilesGroup))
-                {
-                    foreach (var buildImportFile in compatibleBuildFilesGroup.Items)
+                    // Step-7.3: Remove content files
+                    if (MSBuildNuGetProjectSystemUtility.IsValid(compatibleContentFilesGroup))
                     {
-                        var fullImportFilePath = Path.Combine(FolderNuGetProject.GetInstalledPath(packageIdentity), buildImportFile);
-                        MSBuildNuGetProjectSystem.RemoveImport(fullImportFilePath);
-                    }
-                }
+                        var packagesPaths = (await GetInstalledPackagesAsync(token))
+                            .Select(pr => FolderNuGetProject.GetInstalledPackageFilePath(pr.PackageIdentity));
 
-                // Step-7.5: Remove binding redirects. This is a no-op
-                // Binding redirects will be removed when all packages have finished
-                // uninstalling for performance reasons
+                        MSBuildNuGetProjectSystemUtility.DeleteFiles(MSBuildNuGetProjectSystem,
+                            zipArchive,
+                            packagesPaths,
+                            compatibleContentFilesGroup,
+                            FileTransformers);
+                    }
+
+                    // Step-7.4: Remove build imports
+                    if (MSBuildNuGetProjectSystemUtility.IsValid(compatibleBuildFilesGroup))
+                    {
+                        foreach (var buildImportFile in compatibleBuildFilesGroup.Items)
+                        {
+                            var fullImportFilePath = Path.Combine(FolderNuGetProject.GetInstalledPath(packageIdentity), buildImportFile);
+                            MSBuildNuGetProjectSystem.RemoveImport(fullImportFilePath);
+                        }
+                    }
+
+                    // Step-7.5: Remove binding redirects. This is a no-op
+                    // Binding redirects will be removed when all packages have finished
+                    // uninstalling for performance reasons
+                }
+                finally
+                {
+                    MSBuildNuGetProjectSystem.EndProcessing();
+                }
 
                 // Step-8: Raise PackageReferenceRemoved event
                 if (PackageReferenceRemoved != null)
@@ -565,6 +588,79 @@ namespace NuGet.ProjectManagement
                 {
                     { "configSections", (parent, element) => parent.AddFirst(element) }
                 };
+        }
+
+        public Task<bool> IsRestoreRequired(
+            IEnumerable<VersionFolderPathResolver> pathResolvers,
+            ISet<PackageIdentity> packagesChecked,
+            DependencyGraphCacheContext context)
+        {
+            return Task.FromResult<bool>(false);
+        }
+
+        public async Task<IReadOnlyList<PackageSpec>> GetPackageSpecsAsync(DependencyGraphCacheContext context)
+        {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            // Some projects like website project don't have project file.
+            // Return empty list for this case.
+            if (String.IsNullOrEmpty(MSBuildNuGetProjectSystem.ProjectFileFullPath))
+            {
+                return new List<PackageSpec>();
+            }
+
+            PackageSpec packageSpec = null;
+            if (!context.PackageSpecCache.TryGetValue(MSBuildNuGetProjectSystem.ProjectFileFullPath, out packageSpec))
+            {
+                packageSpec = new PackageSpec(new List<TargetFrameworkInformation>
+                {
+                    new TargetFrameworkInformation
+                    {
+                        FrameworkName = MSBuildNuGetProjectSystem.TargetFramework
+                    }
+                });
+                packageSpec.Name = MSBuildNuGetProjectSystem.ProjectName;
+                packageSpec.FilePath = MSBuildNuGetProjectSystem.ProjectFileFullPath;
+
+                // A packages.config project does not follow the typical restore flow so there is no need to add package
+                // dependencides to the package spec. Packages.config package restoration is done elsewhere.
+
+                var metadata = new ProjectRestoreMetadata();
+                packageSpec.RestoreMetadata = metadata;
+
+                metadata.ProjectStyle = ProjectStyle.Unknown;
+                metadata.ProjectPath = MSBuildNuGetProjectSystem.ProjectFileFullPath;
+                metadata.ProjectName = MSBuildNuGetProjectSystem.ProjectName;
+                metadata.ProjectUniqueName = MSBuildNuGetProjectSystem.ProjectFileFullPath;
+
+                var references = await GetDirectProjectReferencesAsync(context);
+                if (references != null && references.Count > 0)
+                {
+                    // Add framework group
+                    var frameworkGroup = new ProjectRestoreMetadataFrameworkInfo(MSBuildNuGetProjectSystem.TargetFramework);
+                    metadata.TargetFrameworks.Add(frameworkGroup);
+
+                    foreach (var reference in references)
+                    {
+                        // This reference applies to all frameworks
+                        // Include/exclude flags are not possible for this project type
+                        frameworkGroup.ProjectReferences.Add(reference);
+                    }
+                }
+
+                context.PackageSpecCache.Add(MSBuildProjectPath, packageSpec);
+            }
+
+            return new[] { packageSpec };
+        }
+
+        public virtual Task<IReadOnlyList<ProjectRestoreReference>> GetDirectProjectReferencesAsync(DependencyGraphCacheContext context)
+        {
+            return Task.FromResult<IReadOnlyList<ProjectRestoreReference>>(
+                Enumerable.Empty<ProjectRestoreReference>().ToList());
         }
     }
 

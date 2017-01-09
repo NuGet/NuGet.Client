@@ -11,6 +11,17 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
     [Cmdlet("TabExpansion", "Package")]
     public class TabExpansionCommand : FindPackageCommand
     {
+        /// <summary>
+        /// logging time disabled for tab command
+        /// </summary>
+        protected override bool IsLoggingTimeDisabled
+        {
+            get
+            {
+                return true;
+            }
+        }
+
         [Parameter]
         public SwitchParameter ExcludeVersionInfo { get; set; }
 

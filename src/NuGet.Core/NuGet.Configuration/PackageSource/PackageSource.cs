@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
+using NuGet.Common;
 
 namespace NuGet.Configuration
 {
@@ -21,6 +23,22 @@ namespace NuGet.Configuration
         public string Source { get; set; }
 
         /// <summary>
+        /// Returns null if Source is an invalid URI
+        /// </summary>
+        public Uri TrySourceAsUri
+        {
+            get { return UriUtility.TryCreateSourceUri(Source, UriKind.Absolute); }
+        }
+
+        /// <summary>
+        /// Throws if Source is an invalid URI
+        /// </summary>
+        public Uri SourceUri
+        {
+            get { return UriUtility.CreateSourceUri(Source, UriKind.Absolute); }
+        }
+
+        /// <summary>
         /// This does not represent just the NuGet Official Feed alone
         /// It may also represent a Default Package Source set by Configuration Defaults
         /// </summary>
@@ -30,11 +48,7 @@ namespace NuGet.Configuration
 
         public bool IsEnabled { get; set; }
 
-        public string UserName { get; set; }
-
-        public string Password { get; set; }
-
-        public bool IsPasswordClearText { get; set; }
+        public PackageSourceCredential Credentials { get; set; }
 
         public string Description { get; set; }
 
@@ -68,8 +82,8 @@ namespace NuGet.Configuration
             {
                 if (!_isLocal.HasValue)
                 {
-                    Uri uri;
-                    if (Uri.TryCreate(Source, UriKind.Absolute, out uri))
+                    Uri uri = TrySourceAsUri;
+                    if (uri != null)
                     {
                         _isLocal = uri.IsFile;
                     }
@@ -164,14 +178,12 @@ namespace NuGet.Configuration
         public PackageSource Clone()
         {
             return new PackageSource(Source, Name, IsEnabled, IsOfficial, IsPersistable)
-                {
-                    Description = Description,
-                    UserName = UserName,
-                    Password = Password,
-                    IsPasswordClearText = IsPasswordClearText,
-                    IsMachineWide = IsMachineWide,
-                    ProtocolVersion = ProtocolVersion
-                };
+            {
+                Description = Description,
+                Credentials = Credentials,
+                IsMachineWide = IsMachineWide,
+                ProtocolVersion = ProtocolVersion
+            };
         }
     }
 }

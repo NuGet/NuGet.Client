@@ -117,17 +117,17 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="Error_Argument_May_Not_Be_Null_Or_Empty" xml:space="preserve">
+    <value>Argument must not be null or empty.</value>
+  </data>
   <data name="PluginException_Abort_Format" xml:space="preserve">
     <value>Credential plugin {0} handles this request, but is unable to provide credentials. {1}</value>
-  </data>
-  <data name="PluginException_Error_Format" xml:space="preserve">
-    <value>Credential plugin {0} exited with error {1}.</value>
   </data>
   <data name="PluginException_Exception_Format" xml:space="preserve">
     <value>Credential plugin {0} encountered exception {1}.</value>
   </data>
-  <data name="PluginException_IncorrectPayload_Format" xml:space="preserve">
-    <value>Credential plugin {0} returned {1} with an incorrect payload {2}.</value>
+  <data name="PluginException_InvalidResponse_Format" xml:space="preserve">
+    <value>Credential plugin {0} returned {1}, but the payload was not valid (username = {2}, password = {3}, authTypes = {4}, message = {5}).</value>
   </data>
   <data name="PluginException_NotStarted_Format" xml:space="preserve">
     <value>Credential plugin {0} failed to start.</value>
@@ -137,6 +137,12 @@
   </data>
   <data name="PluginException_Timeout_Format" xml:space="preserve">
     <value>Credential plugin {0} timed out after {1} seconds.</value>
+  </data>
+  <data name="PluginException_UnexpectedStatus_Format" xml:space="preserve">
+    <value>Credential plugin {0} exited with unexpected error {1}.</value>
+  </data>
+  <data name="PluginException_UnreadableResponse_Format" xml:space="preserve">
+    <value>Credential plugin {0} returned {1} with an unreadable payload.</value>
   </data>
   <data name="ProviderException_InvalidCredentialResponse" xml:space="preserve">
     <value>Could not create credential response object because the response was invalid.</value>

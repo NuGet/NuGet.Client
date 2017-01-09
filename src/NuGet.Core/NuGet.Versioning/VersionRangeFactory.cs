@@ -16,27 +16,27 @@ namespace NuGet.Versioning
         /// <summary>
         /// A range that accepts all versions, prerelease and stable.
         /// </summary>
-        public static readonly VersionRange All = new VersionRange(null, true, null, true, true);
+        public static readonly VersionRange All = new VersionRange(null, true, null, true);
 
         /// <summary>
         /// A range that accepts all versions, prerelease and stable, and floats to the highest.
         /// </summary>
-        public static readonly VersionRange AllFloating = new VersionRange(null, true, null, true, true, new FloatRange(NuGetVersionFloatBehavior.AbsoluteLatest));
+        public static readonly VersionRange AllFloating = new VersionRange(null, true, null, true, new FloatRange(NuGetVersionFloatBehavior.AbsoluteLatest));
 
         /// <summary>
         /// A range that accepts all stable versions
         /// </summary>
-        public static readonly VersionRange AllStable = new VersionRange(null, true, null, true, false);
+        public static readonly VersionRange AllStable = new VersionRange(null, true, null, true);
 
         /// <summary>
         /// A range that accepts all versions, prerelease and stable, and floats to the highest.
         /// </summary>
-        public static readonly VersionRange AllStableFloating = new VersionRange(null, true, null, true, false, new FloatRange(NuGetVersionFloatBehavior.Major));
+        public static readonly VersionRange AllStableFloating = new VersionRange(null, true, null, true, new FloatRange(NuGetVersionFloatBehavior.Major));
 
         /// <summary>
         /// A range that rejects all versions
         /// </summary>
-        public static readonly VersionRange None = new VersionRange(new NuGetVersion(0, 0, 0), false, new NuGetVersion(0, 0, 0), false, false);
+        public static readonly VersionRange None = new VersionRange(new NuGetVersion(0, 0, 0), false, new NuGetVersion(0, 0, 0), false);
 
         /// <summary>
         /// The version string is either a simple version or an arithmetic range
@@ -85,7 +85,7 @@ namespace NuGet.Versioning
         {
             if (value == null)
             {
-                throw new ArgumentNullException("value");
+                throw new ArgumentNullException(nameof(value));
             }
 
             versionRange = null;
@@ -99,7 +99,7 @@ namespace NuGet.Versioning
                 && charArray.Length == 1
                 && charArray[0] == '*')
             {
-                versionRange = new VersionRange(null, true, null, true, false, new FloatRange(NuGetVersionFloatBehavior.Major), originalString: value);
+                versionRange = new VersionRange(null, true, null, true, new FloatRange(NuGetVersionFloatBehavior.Major), originalString: value);
                 return true;
             }
 
@@ -155,10 +155,24 @@ namespace NuGet.Versioning
                 {
                     return false;
                 }
-                else if (parts.All(String.IsNullOrEmpty))
+                else
                 {
+                    var allEmpty = true;
+
+                    for (int i = 0; i < parts.Length; i++)
+                    {
+                        if (!string.IsNullOrEmpty(parts[i]))
+                        {
+                            allEmpty = false;
+                            break;
+                        }
+                    }
+
                     // If all parts are empty, then neither of upper or lower bounds were specified. Version spec is of the format (,]
-                    return false;
+                    if (allEmpty)
+                    {
+                        return false;
+                    }
                 }
 
                 // If there is only one piece, we use it for both min and max
@@ -218,38 +232,10 @@ namespace NuGet.Versioning
                 includeMinVersion: isMinInclusive,
                 maxVersion: maxVersion,
                 includeMaxVersion: isMaxInclusive,
-                includePrerelease: null,
                 floatRange: floatRange,
                 originalString: value);
 
             return true;
-        }
-
-        /// <summary>
-        /// Modify an existing range to allow or disallow prerelease versions.
-        /// </summary>
-        /// <param name="range">Existing version range to modify.</param>
-        /// <param name="includePrerelease">True if Satisfies() should allow prerelease versions.</param>
-        /// <returns>A modified version range.</returns>
-        public static VersionRange SetIncludePrerelease(VersionRange range, bool includePrerelease)
-        {
-            if (range.IncludePrerelease == includePrerelease)
-            {
-                // The range is already has this prerelease setting.
-                return range;
-            }
-            else
-            {
-                // Copy the range and apply the new include prerelease setting.
-                return new VersionRange(
-                    range.MinVersion,
-                    range.IsMinInclusive,
-                    range.MaxVersion,
-                    range.IsMaxInclusive,
-                    includePrerelease,
-                    floatRange: range.Float,
-                    originalString: range.OriginalString);
-            }
         }
 
         /// <summary>
@@ -316,7 +302,6 @@ namespace NuGet.Versioning
 
                 var lowest = first.MinVersion;
                 var highest = first.MaxVersion;
-                var includePre = first.IncludePrerelease;
 
                 // To keep things consistent set min/max inclusive to false when there is no boundary
                 // It is possible to denote an inclusive range with no bounds, but it has no useful meaning for combine
@@ -326,9 +311,6 @@ namespace NuGet.Versioning
                 // expand the range to inclue all other ranges
                 foreach (var range in ranges.Skip(1))
                 {
-                    // allow prerelease versions in the range if any range allows them
-                    includePre |= range.IncludePrerelease;
-
                     // once we have an unbounded lower we can stop checking
                     if (lowest != null)
                     {
@@ -387,10 +369,76 @@ namespace NuGet.Versioning
                 }
 
                 // Create the new range using the maximums found
-                result = new VersionRange(lowest, includeLowest, highest, includeHighest, includePre);
+                result = new VersionRange(lowest, includeLowest, highest, includeHighest);
             }
 
             return result;
+        }
+
+        /// <summary>
+        /// Returns the greatest common range that satisfies all given ranges.
+        /// </summary>
+        public static VersionRange CommonSubSet(IEnumerable<VersionRange> ranges)
+        {
+            return CommonSubSet(ranges, VersionComparer.Default);
+        }
+
+        /// <summary>
+        /// Returns the greatest common range that satisfies all given ranges.
+        /// </summary>
+        public static VersionRange CommonSubSet(IEnumerable<VersionRange> ranges, IVersionComparer comparer)
+        {
+            if (ranges == null)
+            {
+                throw new ArgumentNullException(nameof(ranges));
+            }
+
+            if (comparer == null)
+            {
+                throw new ArgumentNullException(nameof(comparer));
+            }
+
+            // return None in case of any invalid range like (1.0.0, 1.0.0)
+            // This also includes VersionRange.None and any other ranges that satisfy zero versions
+            var versionRanges = ranges as VersionRange[] ?? ranges.ToArray();
+            if (!versionRanges.Any() || versionRanges.Any(range => !HasValidRange(range)))
+            {
+                return None;
+            }
+
+            // find out maximum lowest bound and minimum highest bound to form common subset
+            var lowest = versionRanges.Where(range => range.HasLowerBound).Max(range => range.MinVersion);
+            var highest = versionRanges.Where(range => range.HasUpperBound).Min((range => range.MaxVersion));
+
+            // exclude this lowest if any range has this lowest as excluded, else include
+            var excludeLowest = versionRanges.Any(range => range.HasLowerBound &&
+                                                    comparer.Compare(range.MinVersion, lowest) == 0 &&
+                                                    !range.IsMinInclusive);
+
+            // exclude this highest if any range has this highest excluded, else include
+            var excludeHighest = versionRanges.Any(range => range.HasUpperBound &&
+                                                    comparer.Compare(range.MaxVersion, highest) == 0 &&
+                                                    !range.IsMaxInclusive);
+
+            // finally check the final lowest n highest versions
+            if (lowest != null && highest != null)
+            {
+                var compare = comparer.Compare(lowest, highest);
+                if (compare > 0)
+                {
+                    return None;
+                }
+
+                if (compare == 0)
+                {
+                    excludeHighest = excludeLowest |= excludeHighest;
+                }
+            }
+
+            // Create the new range using the minimums found
+            var result = new VersionRange(lowest, !excludeLowest, highest, !excludeHighest);
+
+            return HasValidRange(result) ? result : None;
         }
 
         /// <summary>

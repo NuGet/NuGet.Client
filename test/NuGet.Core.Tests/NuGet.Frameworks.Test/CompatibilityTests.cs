@@ -1,7 +1,6 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using NuGet.Frameworks;
 using Xunit;
 
@@ -15,12 +14,14 @@ namespace NuGet.Test
         [InlineData("dotnet5.1", "dotnet", true)]
 
         // dnxcore50 -> dotnet, netstandard
+        [InlineData("dnxcore50", "netstandard1.6", false)]
         [InlineData("dnxcore50", "netstandard1.5", true)]
         [InlineData("dnxcore50", "netstandard1.4", true)]
         [InlineData("dnxcore50", "netstandard1.3", true)]
         [InlineData("dnxcore50", "netstandard1.2", true)]
         [InlineData("dnxcore50", "netstandard1.1", true)]
         [InlineData("dnxcore50", "netstandard1.0", true)]
+        [InlineData("dnxcore50", "dotnet5.7", false)]
         [InlineData("dnxcore50", "dotnet5.6", true)]
         [InlineData("dnxcore50", "dotnet5.5", true)]
         [InlineData("dnxcore50", "dotnet5.4", true)]
@@ -28,19 +29,53 @@ namespace NuGet.Test
         [InlineData("dnxcore50", "dotnet5.2", true)]
         [InlineData("dnxcore50", "dotnet5.1", true)]
 
-        // net -> dotnet, netstandard (but not netstandardapp)
+        // net -> dotnet, netstandard (but not netstandardapp or netcoreapp)
+        [InlineData("net463", "netstandardapp1.6", false)]
+        [InlineData("net463", "netstandardapp1.5", false)]
+        [InlineData("net463", "netstandardapp1.4", false)]
+        [InlineData("net463", "netstandardapp1.3", false)]
+        [InlineData("net463", "netstandardapp1.2", false)]
+        [InlineData("net463", "netstandardapp1.1", false)]
+        [InlineData("net463", "netstandardapp1.0", false)]
+        [InlineData("net463", "netcoreapp9.0", false)]
+        [InlineData("net463", "netcoreapp1.0", false)]
+        [InlineData("net463", "netcoreapp0.1", false)]
+        [InlineData("net463", "netstandard1.8", false)]
+        [InlineData("net463", "netstandard1.7", true)]
+        [InlineData("net463", "netstandard1.6", true)]
+        [InlineData("net463", "netstandard1.5", true)]
+        [InlineData("net463", "netstandard1.4", true)]
+        [InlineData("net463", "netstandard1.3", true)]
+        [InlineData("net463", "netstandard1.2", true)]
+        [InlineData("net463", "netstandard1.1", true)]
+        [InlineData("net463", "netstandard1.0", true)]
+        [InlineData("net463", "dotnet5.7", false)]
+        [InlineData("net463", "dotnet5.6", true)]
+        [InlineData("net463", "dotnet5.5", true)]
+        [InlineData("net463", "dotnet5.4", true)]
+        [InlineData("net463", "dotnet5.3", true)]
+        [InlineData("net463", "dotnet5.2", true)]
+        [InlineData("net463", "dotnet5.1", true)]
+        [InlineData("net463", "dotnet", true)]
+
+        [InlineData("net462", "netstandardapp1.6", false)]
         [InlineData("net462", "netstandardapp1.5", false)]
         [InlineData("net462", "netstandardapp1.4", false)]
         [InlineData("net462", "netstandardapp1.3", false)]
         [InlineData("net462", "netstandardapp1.2", false)]
         [InlineData("net462", "netstandardapp1.1", false)]
         [InlineData("net462", "netstandardapp1.0", false)]
+        [InlineData("net462", "netcoreapp9.0", false)]
+        [InlineData("net462", "netcoreapp1.0", false)]
+        [InlineData("net462", "netcoreapp0.1", false)]
+        [InlineData("net462", "netstandard1.6", false)]
         [InlineData("net462", "netstandard1.5", true)]
         [InlineData("net462", "netstandard1.4", true)]
         [InlineData("net462", "netstandard1.3", true)]
         [InlineData("net462", "netstandard1.2", true)]
         [InlineData("net462", "netstandard1.1", true)]
         [InlineData("net462", "netstandard1.0", true)]
+        [InlineData("net462", "dotnet5.7", false)]
         [InlineData("net462", "dotnet5.6", true)]
         [InlineData("net462", "dotnet5.5", true)]
         [InlineData("net462", "dotnet5.4", true)]
@@ -48,7 +83,8 @@ namespace NuGet.Test
         [InlineData("net462", "dotnet5.2", true)]
         [InlineData("net462", "dotnet5.1", true)]
         [InlineData("net462", "dotnet", true)]
-        
+
+        [InlineData("net461", "netstandard1.6", false)]
         [InlineData("net461", "netstandard1.5", false)]
         [InlineData("net461", "netstandard1.4", true)]
         [InlineData("net461", "netstandard1.3", true)]
@@ -63,6 +99,7 @@ namespace NuGet.Test
         [InlineData("net461", "dotnet5.1", true)]
         [InlineData("net461", "dotnet", true)]
 
+        [InlineData("net46", "netstandard1.6", false)]
         [InlineData("net46", "netstandard1.5", false)]
         [InlineData("net46", "netstandard1.4", false)]
         [InlineData("net46", "netstandard1.3", true)]
@@ -77,6 +114,7 @@ namespace NuGet.Test
         [InlineData("net46", "dotnet5.1", true)]
         [InlineData("net46", "dotnet", true)]
 
+        [InlineData("net452", "netstandard1.6", false)]
         [InlineData("net452", "netstandard1.5", false)]
         [InlineData("net452", "netstandard1.4", false)]
         [InlineData("net452", "netstandard1.3", false)]
@@ -91,6 +129,7 @@ namespace NuGet.Test
         [InlineData("net452", "dotnet5.1", true)]
         [InlineData("net452", "dotnet", true)]
 
+        [InlineData("net451", "netstandard1.6", false)]
         [InlineData("net451", "netstandard1.5", false)]
         [InlineData("net451", "netstandard1.4", false)]
         [InlineData("net451", "netstandard1.3", false)]
@@ -105,6 +144,7 @@ namespace NuGet.Test
         [InlineData("net451", "dotnet5.1", true)]
         [InlineData("net451", "dotnet", true)]
 
+        [InlineData("net45", "netstandard1.6", false)]
         [InlineData("net45", "netstandard1.5", false)]
         [InlineData("net45", "netstandard1.4", false)]
         [InlineData("net45", "netstandard1.3", false)]
@@ -126,12 +166,14 @@ namespace NuGet.Test
         [InlineData("net45", "dotnet", true)]
 
         // dnx -> dotnet, netstandard
+        [InlineData("dnx462", "netstandard1.6", false)]
         [InlineData("dnx462", "netstandard1.5", true)]
         [InlineData("dnx462", "netstandard1.4", true)]
         [InlineData("dnx462", "netstandard1.3", true)]
         [InlineData("dnx462", "netstandard1.2", true)]
         [InlineData("dnx462", "netstandard1.1", true)]
         [InlineData("dnx462", "netstandard1.0", true)]
+        [InlineData("dnx462", "dotnet5.7", false)]
         [InlineData("dnx462", "dotnet5.6", true)]
         [InlineData("dnx462", "dotnet5.5", true)]
         [InlineData("dnx462", "dotnet5.4", true)]
@@ -139,13 +181,15 @@ namespace NuGet.Test
         [InlineData("dnx462", "dotnet5.2", true)]
         [InlineData("dnx462", "dotnet5.1", true)]
         [InlineData("dnx462", "dotnet", true)]
-        
+
+        [InlineData("dnx461", "netstandard1.6", false)]
         [InlineData("dnx461", "netstandard1.5", false)]
         [InlineData("dnx461", "netstandard1.4", true)]
         [InlineData("dnx461", "netstandard1.3", true)]
         [InlineData("dnx461", "netstandard1.2", true)]
         [InlineData("dnx461", "netstandard1.1", true)]
         [InlineData("dnx461", "netstandard1.0", true)]
+        [InlineData("dnx461", "dotnet5.7", false)]
         [InlineData("dnx461", "dotnet5.6", false)]
         [InlineData("dnx461", "dotnet5.5", true)]
         [InlineData("dnx461", "dotnet5.4", true)]
@@ -154,12 +198,14 @@ namespace NuGet.Test
         [InlineData("dnx461", "dotnet5.1", true)]
         [InlineData("dnx461", "dotnet", true)]
 
+        [InlineData("dnx46", "netstandard1.6", false)]
         [InlineData("dnx46", "netstandard1.5", false)]
         [InlineData("dnx46", "netstandard1.4", false)]
         [InlineData("dnx46", "netstandard1.3", true)]
         [InlineData("dnx46", "netstandard1.2", true)]
         [InlineData("dnx46", "netstandard1.1", true)]
         [InlineData("dnx46", "netstandard1.0", true)]
+        [InlineData("dnx46", "dotnet5.7", false)]
         [InlineData("dnx46", "dotnet5.6", false)]
         [InlineData("dnx46", "dotnet5.5", false)]
         [InlineData("dnx46", "dotnet5.4", true)]
@@ -215,13 +261,14 @@ namespace NuGet.Test
         [InlineData("uap10.0", "netcore50", true)]
         [InlineData("uap10.0", "win81", true)]
         [InlineData("uap10.0", "wpa81", true)]
-        [InlineData("uap10.0", "netstandard1.5", true)]
+        [InlineData("uap10.0", "netstandard1.6", false)]
+        [InlineData("uap10.0", "netstandard1.5", false)]
         [InlineData("uap10.0", "netstandard1.4", true)]
         [InlineData("uap10.0", "netstandard1.3", true)]
         [InlineData("uap10.0", "netstandard1.2", true)]
         [InlineData("uap10.0", "netstandard1.1", true)]
         [InlineData("uap10.0", "netstandard1.0", true)]
-        [InlineData("uap10.0", "dotnet5.6", true)]
+        [InlineData("uap10.0", "dotnet5.6", false)]
         [InlineData("uap10.0", "dotnet5.5", true)]
         [InlineData("uap10.0", "dotnet5.4", true)]
         [InlineData("uap10.0", "dotnet5.3", true)]
@@ -229,13 +276,14 @@ namespace NuGet.Test
         [InlineData("uap10.0", "dotnet5.1", true)]
         [InlineData("netcore50", "win81", true)]
         [InlineData("netcore50", "wpa81", false)]
-        [InlineData("netcore50", "netstandard1.5", true)]
+        [InlineData("netcore50", "netstandard1.6", false)]
+        [InlineData("netcore50", "netstandard1.5", false)]
         [InlineData("netcore50", "netstandard1.4", true)]
         [InlineData("netcore50", "netstandard1.3", true)]
         [InlineData("netcore50", "netstandard1.2", true)]
         [InlineData("netcore50", "netstandard1.1", true)]
         [InlineData("netcore50", "netstandard1.0", true)]
-        [InlineData("netcore50", "dotnet5.6", true)]
+        [InlineData("netcore50", "dotnet5.6", false)]
         [InlineData("netcore50", "dotnet5.5", true)]
         [InlineData("netcore50", "dotnet5.4", true)]
         [InlineData("netcore50", "dotnet5.3", true)]
@@ -243,6 +291,7 @@ namespace NuGet.Test
         [InlineData("netcore50", "dotnet5.1", true)]
 
         // wpa81/win81 -> dotnet, netstandard
+        [InlineData("wpa81", "netstandard1.6", false)]
         [InlineData("wpa81", "netstandard1.5", false)]
         [InlineData("wpa81", "netstandard1.4", false)]
         [InlineData("wpa81", "netstandard1.3", false)]
@@ -267,6 +316,7 @@ namespace NuGet.Test
         [InlineData("win81", "dotnet5.1", true)]
 
         // wp8/wp81 -> dotnet, netstandard
+        [InlineData("wp81", "netstandard1.6", false)]
         [InlineData("wp81", "netstandard1.5", false)]
         [InlineData("wp81", "netstandard1.4", false)]
         [InlineData("wp81", "netstandard1.3", false)]
@@ -279,6 +329,7 @@ namespace NuGet.Test
         [InlineData("wp8", "netstandard1.2", false)]
         [InlineData("wp8", "netstandard1.1", false)]
         [InlineData("wp8", "netstandard1.0", true)]
+        [InlineData("sl8-windowsphone", "netstandard1.6", false)]
         [InlineData("sl8-windowsphone", "netstandard1.5", false)]
         [InlineData("sl8-windowsphone", "netstandard1.4", false)]
         [InlineData("sl8-windowsphone", "netstandard1.3", false)]
@@ -317,6 +368,7 @@ namespace NuGet.Test
         [InlineData("sl7-windowsphone", "dotnet5.1", false)]
 
         // win8 -> netstandard
+        [InlineData("win8", "netstandard1.6", false)]
         [InlineData("win8", "netstandard1.5", false)]
         [InlineData("win8", "netstandard1.4", false)]
         [InlineData("win8", "netstandard1.3", false)]
@@ -330,7 +382,9 @@ namespace NuGet.Test
         [InlineData("win8", "dotnet5.2", true)]
         [InlineData("win8", "dotnet5.1", true)]
 
-        // Older things don't support dotnet, netstandard, or netstandard app at all
+        // Older things don't support dotnet, netstandard, netstandardapp, or netcoreapp at all
+        [InlineData("sl4", "netcoreapp1.0", false)]
+        [InlineData("net40", "netcoreapp1.0", false)]
         [InlineData("sl4", "netstandardapp", false)]
         [InlineData("net40", "netstandardapp", false)]
         [InlineData("sl4", "netstandard", false)]
@@ -419,6 +473,9 @@ namespace NuGet.Test
         [InlineData("netstandardapp", "netstandardapp", true)]
 
         // netstandardapp supports netstandard
+        [InlineData("netstandardapp1.6", "netstandard1.7", false)]
+        [InlineData("netstandardapp1.6", "netstandard1.6", true)]
+        [InlineData("netstandardapp1.6", "netstandard1.5", true)]
         [InlineData("netstandardapp1.5", "netstandard1.6", false)]
         [InlineData("netstandardapp1.5", "netstandard1.5", true)]
         [InlineData("netstandardapp1.5", "netstandard1.4", true)]
@@ -448,9 +505,49 @@ namespace NuGet.Test
         [InlineData("netstandardapp1.0", "dotnet5.1", false)]
 
         // netstandardapp doesn't support anything else
+        [InlineData("netstandardapp1.5", "netcoreapp1.0", false)]
         [InlineData("netstandardapp1.5", "net451", false)]
         [InlineData("netstandardapp1.5", "net4", false)]
         [InlineData("netstandardapp1.5", "win8", false)]
+
+        // netcoreapp only supports netstandard
+        [InlineData("netcoreapp9.0", "netstandard1.8", false)]
+        [InlineData("netcoreapp9.0", "netstandard1.7", true)]
+        [InlineData("netcoreapp9.0", "netstandard1.6", true)]
+        [InlineData("netcoreapp9.0", "netstandard1.5", true)]
+        [InlineData("netcoreapp9.0", "netstandard1.5", true)]
+        [InlineData("netcoreapp1.2", "netstandard1.8", false)]
+        [InlineData("netcoreapp1.2", "netstandard1.7", true)]
+        [InlineData("netcoreapp1.1", "netstandard1.8", false)]
+        [InlineData("netcoreapp1.1", "netstandard1.7", true)]
+        [InlineData("netcoreapp1.1", "netstandard1.6", true)]
+        [InlineData("netcoreapp1.1", "netstandard1.5", true)]
+        [InlineData("netcoreapp1.1", "netstandard1.5", true)]
+        [InlineData("netcoreapp1.0", "netstandard1.7", false)]
+        [InlineData("netcoreapp1.0", "netstandard1.6", true)]
+        [InlineData("netcoreapp1.0", "netstandard1.5", true)]
+        [InlineData("netcoreapp1.0", "netstandard1.4", true)]
+        [InlineData("netcoreapp1.0", "netstandard1.3", true)]
+        [InlineData("netcoreapp1.0", "netstandard1.2", true)]
+        [InlineData("netcoreapp1.0", "netstandard1.1", true)]
+        [InlineData("netcoreapp1.0", "netstandard1.0", true)]
+        [InlineData("netcoreapp1.0", "netstandard0.9", true)]
+        [InlineData("netcoreapp1.0", "netstandard", true)]
+        [InlineData("netcoreapp1.0", "netstandardapp1.6", false)]
+        [InlineData("netcoreapp1.0", "netstandardapp1.0", false)]
+        [InlineData("netcoreapp1.0", "netstandardapp0.9", false)]
+        [InlineData("netcoreapp1.0", "dotnet6.0", false)]
+        [InlineData("netcoreapp1.0", "dotnet5.7", false)]
+        [InlineData("netcoreapp1.0", "dotnet5.6", false)]
+        [InlineData("netcoreapp1.0", "dotnet5.5", false)]
+        [InlineData("netcoreapp1.0", "dotnet1.0", false)]
+        [InlineData("netcoreapp1.0", "dotnet0.0", false)]
+        [InlineData("netcoreapp1.0", "dotnet", false)]
+        [InlineData("netcoreapp1.2", "dotnet5.3", false)]
+        [InlineData("netcoreapp1.1", "dotnet5.2", false)]
+        [InlineData("netcoreapp1.0", "net451", false)]
+        [InlineData("netcoreapp1.0", "net4", false)]
+        [InlineData("netcoreapp1.0", "win8", false)]
         public void Compatibility_FrameworksAreCompatible(string project, string package, bool compatible)
         {
             // Arrange
@@ -476,6 +573,7 @@ namespace NuGet.Test
         [InlineData("netstandard1.5", "dotnet5.2")]
         [InlineData("netstandard1.5", "dotnet5.1")]
         [InlineData("netstandard1.5", "dotnet5.0")]
+        [InlineData("netstandard1.6", "dotnet5.0")]
         [InlineData("netstandard1.5", "dotnet")]
         public void Compatibility_NetStandardDoesNotSupportNetPlatform(string netStandard, string netPlatform)
         {

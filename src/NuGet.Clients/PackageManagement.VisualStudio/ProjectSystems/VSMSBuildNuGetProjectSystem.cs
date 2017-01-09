@@ -15,12 +15,10 @@ using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.Frameworks;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
+using Constants = NuGet.ProjectManagement.Constants;
 using EnvDTEProject = EnvDTE.Project;
 using EnvDTEProjectItems = EnvDTE.ProjectItems;
 using EnvDTEProperty = EnvDTE.Property;
-using Constants = NuGet.ProjectManagement.Constants;
-using MicrosoftBuildEvaluationProject = Microsoft.Build.Evaluation.Project;
-using MicrosoftBuildEvaluationProjectItem = Microsoft.Build.Evaluation.ProjectItem;
 using ThreadHelper = Microsoft.VisualStudio.Shell.ThreadHelper;
 
 namespace NuGet.PackageManagement.VisualStudio
@@ -30,7 +28,6 @@ namespace NuGet.PackageManagement.VisualStudio
         private const string BinDir = "bin";
         private const string NuGetImportStamp = "NuGetPackageImportStamp";
         private IVsProjectBuildSystem _buildSystem;
-        private bool _buildSystemFetched;
 
         public VSMSBuildNuGetProjectSystem(EnvDTEProject envDTEProject, INuGetProjectContext nuGetProjectContext)
         {
@@ -71,10 +68,9 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             get
             {
-                if (!_buildSystemFetched)
+                if (_buildSystem == null)
                 {
                     _buildSystem = EnvDTEProjectUtility.GetVsProjectBuildSystem(EnvDTEProject);
-                    _buildSystemFetched = true;
                 }
 
                 return _buildSystem;
@@ -90,7 +86,7 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             get
             {
-                if (String.IsNullOrEmpty(_projectFullPath))
+                if (string.IsNullOrEmpty(_projectFullPath))
                 {
                     ThreadHelper.JoinableTaskFactory.Run(async delegate
                     {
@@ -100,6 +96,29 @@ namespace NuGet.PackageManagement.VisualStudio
                 }
 
                 return _projectFullPath;
+            }
+        }
+
+        private string _projectFileFullPath;
+
+        /// <summary>
+        /// This contains the directory and the file name of the project file.
+        /// </summary>
+        public string ProjectFileFullPath
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(_projectFileFullPath))
+                {
+                    ThreadHelper.JoinableTaskFactory.Run(async delegate
+                    {
+                        await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                        _projectFileFullPath = EnvDTEProjectUtility.GetFullProjectPath(EnvDTEProject);
+                    });
+                }
+
+                return _projectFileFullPath;
             }
         }
 
@@ -151,7 +170,7 @@ namespace NuGet.PackageManagement.VisualStudio
                     ThreadHelper.JoinableTaskFactory.Run(async delegate
                         {
                             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                            _targetFramework = EnvDTEProjectUtility.GetTargetNuGetFramework(EnvDTEProject) ?? NuGetFramework.UnsupportedFramework;
+                            _targetFramework = EnvDTEProjectUtility.GetTargetNuGetFramework(EnvDTEProject);
                         });
                 }
 
@@ -285,7 +304,7 @@ namespace NuGet.PackageManagement.VisualStudio
             container.AddFromFileCopy(fullPath);
         }
 
-        public void AddFrameworkReference(string name)
+        public void AddFrameworkReference(string name, string packageId)
         {
             ThreadHelper.JoinableTaskFactory.Run(async delegate
             {
@@ -293,14 +312,24 @@ namespace NuGet.PackageManagement.VisualStudio
 
                 try
                 {
-                    // Add a reference to the project
                     AddGacReference(name);
 
                     NuGetProjectContext.Log(ProjectManagement.MessageLevel.Debug, Strings.Debug_AddGacReference, name, ProjectName);
                 }
                 catch (Exception e)
                 {
-                    throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Strings.FailedToAddGacReference, name), e);
+                    if (IsReferenceUnavailableException(e))
+                    {
+                        var frameworkName = EnvDTEProjectUtility.GetDotNetFrameworkName(EnvDTEProject);
+
+                        if (FrameworkAssemblyResolver.IsFrameworkFacade(name, frameworkName))
+                        {
+                            NuGetProjectContext.Log(ProjectManagement.MessageLevel.Info, Strings.FailedToAddFacadeReference, name, packageId);
+                            return;
+                        }
+                    }
+
+                    throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Strings.FailedToAddGacReference, packageId, name), e);
                 }
             });
         }
@@ -339,81 +368,130 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             if (referencePath == null)
             {
-                throw new ArgumentNullException("referencePath");
+                throw new ArgumentNullException(nameof(referencePath));
             }
 
-            string name = Path.GetFileNameWithoutExtension(referencePath);
+            var name = Path.GetFileNameWithoutExtension(referencePath);
+            var projectName = string.Empty;
+            var projectFullPath = string.Empty;
+            var assemblyFullPath = string.Empty;
+            var dteProjectFullName = string.Empty;
+            var dteOriginalPath = string.Empty;
 
-            ThreadHelper.JoinableTaskFactory.Run(async delegate
+            var resolvedToPackage = false;
+
+            try
             {
-                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-                try
+                // Perform all DTE operations on the UI thread
+                ThreadHelper.JoinableTaskFactory.Run(async delegate
                 {
+                    await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                    // Read DTE properties from the UI thread
+                    projectFullPath = ProjectFullPath;
+                    projectName = ProjectName;
+                    dteProjectFullName = EnvDTEProject.FullName;
+
                     // Get the full path to the reference
-                    string fullPath = Path.Combine(ProjectFullPath, referencePath);
+                    assemblyFullPath = Path.Combine(projectFullPath, referencePath);
 
                     // Add a reference to the project
                     var references = EnvDTEProjectUtility.GetReferences(EnvDTEProject);
 
-                    dynamic reference = references.Add(fullPath);
+                    dynamic reference = references.Add(assemblyFullPath);
 
                     if (reference != null)
                     {
-                        var path = GetReferencePath(reference);
+                        dteOriginalPath = GetReferencePath(reference);
 
                         // If path != fullPath, we need to set CopyLocal thru msbuild by setting Private
                         // to true.
                         // This happens if the assembly appears in any of the search paths that VS uses to
                         // locate assembly references.
                         // Most commonly, it happens if this assembly is in the GAC or in the output path.
-                        if (path != null
-                            && !path.Equals(fullPath, StringComparison.OrdinalIgnoreCase))
+                        // The path may be null or for some project system it can be "".
+                        resolvedToPackage = !string.IsNullOrWhiteSpace(dteOriginalPath) && IsSamePath(dteOriginalPath, assemblyFullPath);
+
+                        if (resolvedToPackage)
                         {
-                            // Get the msbuild project for this project
-                            MicrosoftBuildEvaluationProject buildProject = EnvDTEProjectUtility.AsMicrosoftBuildEvaluationProject(EnvDTEProject);
-
-                            if (buildProject != null)
-                            {
-                                // Get the assembly name of the reference we are trying to add
-                                AssemblyName assemblyName = AssemblyName.GetAssemblyName(fullPath);
-
-                                // Try to find the item for the assembly name
-                                MicrosoftBuildEvaluationProjectItem item = (from assemblyReferenceNode in buildProject.GetAssemblyReferences()
-                                    where AssemblyNamesMatch(assemblyName, assemblyReferenceNode.Item2)
-                                    select assemblyReferenceNode.Item1).FirstOrDefault();
-
-                                if (item != null)
-                                {
-                                    // Add the <HintPath> metadata item as a relative path
-                                    string projectPath = PathUtility.EnsureTrailingSlash(ProjectFullPath);
-                                    string relativePath = PathUtility.GetRelativePath(projectPath, referencePath);
-
-                                    item.SetMetadataValue("HintPath", relativePath);
-
-                                    // Set <Private> to true
-                                    item.SetMetadataValue("Private", "True");
-
-                                    // Save the project after we've modified it.
-                                    FileSystemUtility.MakeWritable(EnvDTEProject.FullName);
-                                    EnvDTEProject.Save();
-                                }
-                            }
-                        }
-                        else
-                        {
+                            // Set reference properties (if needed)
                             TrySetCopyLocal(reference);
                             TrySetSpecificVersion(reference);
                         }
                     }
+                });
 
-                    NuGetProjectContext.Log(ProjectManagement.MessageLevel.Debug, Strings.Debug_AddReference, name, ProjectName);
-                }
-                catch (Exception e)
+                if (!resolvedToPackage)
                 {
-                    throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Strings.FailedToAddReference, name), e);
+                    // This should be done off the UI thread
+
+                    // Get the msbuild project for this project
+                    var buildProject = EnvDTEProjectUtility.AsMicrosoftBuildEvaluationProject(dteProjectFullName);
+
+                    if (buildProject != null)
+                    {
+                        // Get the assembly name of the reference we are trying to add
+                        var assemblyName = AssemblyName.GetAssemblyName(assemblyFullPath);
+
+                        // Try to find the item for the assembly name
+                        var item = (from assemblyReferenceNode in buildProject.GetAssemblyReferences()
+                                    where AssemblyNamesMatch(assemblyName, assemblyReferenceNode.Item2)
+                                    select assemblyReferenceNode.Item1).FirstOrDefault();
+
+                        if (item != null)
+                        {
+                            // Add the <HintPath> metadata item as a relative path
+                            var projectPath = PathUtility.EnsureTrailingSlash(projectFullPath);
+                            var relativePath = PathUtility.GetRelativePath(projectPath, referencePath);
+
+                            item.SetMetadataValue("HintPath", relativePath);
+
+                            // Set <Private> to true
+                            item.SetMetadataValue("Private", "True");
+
+                            FileSystemUtility.MakeWritable(dteProjectFullName);
+
+                            // Change to the UI thread to save
+                            ThreadHelper.JoinableTaskFactory.Run(async delegate
+                            {
+                                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                                // Save the project after we've modified it.
+                                EnvDTEProject.Save();
+                            });
+                        }
+                    }
+                    else
+                    {
+                        // The reference cannot be changed by modifying the project file.
+                        // This could be a failure, however that could be a breaking
+                        // change if there is a non-msbuild project system relying on this
+                        // to skip references.
+                        // Log a warning to let the user know that their reference may have failed.
+                        NuGetProjectContext.Log(
+                            ProjectManagement.MessageLevel.Warning,
+                            Strings.FailedToAddReference,
+                            name);
+                    }
                 }
-            });
+            }
+            catch (Exception e)
+            {
+                throw new InvalidOperationException(
+                    string.Format(CultureInfo.CurrentCulture, Strings.FailedToAddReference, name), e);
+            }
+
+            NuGetProjectContext.Log(
+                ProjectManagement.MessageLevel.Debug,
+                $"Added reference '{name}' to project:'{projectName}'. Was the Reference Resolved To Package (resolvedToPackage):'{resolvedToPackage}', "+
+                "where Reference Path from DTE(dteOriginalPath):'{dteOriginalPath}' and Reference Path from package reference(assemblyFullPath):'{assemblyFullPath}'.");
+        }
+
+        private static bool IsSamePath(string path1, string path2)
+        {
+            // Exact match or match after normalizing both paths
+            return StringComparer.OrdinalIgnoreCase.Equals(path1, path2)
+                || StringComparer.OrdinalIgnoreCase.Equals(Path.GetFullPath(path1), Path.GetFullPath(path2));
         }
 
         private static bool AssemblyNamesMatch(AssemblyName name1, AssemblyName name2)
@@ -546,11 +624,12 @@ namespace NuGet.PackageManagement.VisualStudio
             // Always set copy local to true for references that we add
             try
             {
-                // In order to properly write this to MSBuild in ALL cases, we have to trigger the Property Change
-                // notification with a new value of "true". However, "true" is the default value, so in order to
-                // cause a notification to fire, we have to set it to false and then back to true
-                reference.CopyLocal = false;
-                reference.CopyLocal = true;
+                // Setting copyLocal to "true" only if it is "false".
+                // This should trigger an event which will result in successful writing to msbuild.
+                if (!reference.CopyLocal)
+                {
+                    reference.CopyLocal = true;
+                }
             }
             catch (NotSupportedException)
             {
@@ -594,8 +673,12 @@ namespace NuGet.PackageManagement.VisualStudio
             // Always set SpecificVersion to true for references that we add
             try
             {
-                reference.SpecificVersion = false;
-                reference.SpecificVersion = true;
+                // Setting SpecificVersion to "true" only if it is "false".
+                // This should trigger an event which will result in successful writing to msbuild.
+                if (!reference.SpecificVersion)
+                {
+                    reference.SpecificVersion = true;
+                }
             }
             catch (NotSupportedException)
             {
@@ -708,7 +791,7 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 // Silverlight projects and Windows Phone projects do not support binding redirect.
                 // They both share the same identifier as "Silverlight"
-                return !SilverlightTargetFrameworkIdentifier.Equals(TargetFramework.DotNetFrameworkName, StringComparison.OrdinalIgnoreCase);
+                return !SilverlightTargetFrameworkIdentifier.Equals(TargetFramework.Framework, StringComparison.OrdinalIgnoreCase);
             }
         }
 
@@ -771,14 +854,15 @@ namespace NuGet.PackageManagement.VisualStudio
             }
         }
 
-        #endregion
+        #endregion Binding Redirects Stuff
 
-        public Task ExecuteScriptAsync(PackageIdentity identity, string packageInstallPath, string scriptRelativePath, NuGetProject nuGetProject, bool throwOnFailure)
+        public Task ExecuteScriptAsync(PackageIdentity identity, string packageInstallPath, string scriptRelativePath, bool throwOnFailure)
         {
             if (ScriptExecutor != null)
             {
-                return ScriptExecutor.ExecuteAsync(identity, packageInstallPath, scriptRelativePath, EnvDTEProject, nuGetProject, NuGetProjectContext, throwOnFailure);
+                return ScriptExecutor.ExecuteAsync(identity, packageInstallPath, scriptRelativePath, EnvDTEProject, NuGetProjectContext, throwOnFailure);
             }
+
             return Task.FromResult(false);
         }
 
@@ -837,7 +921,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 var childItems = await EnvDTEProjectUtility.GetChildItems(EnvDTEProject, path, filter, NuGetVSConstants.VsProjectItemKindPhysicalFile);
                 // Get all physical files
                 return from p in childItems
-                    select p.Name;
+                       select p.Name;
             });
         }
 
@@ -889,8 +973,22 @@ namespace NuGet.PackageManagement.VisualStudio
                 var childItems = await EnvDTEProjectUtility.GetChildItems(EnvDTEProject, path, "*.*", NuGetVSConstants.VsProjectItemKindPhysicalFolder);
                 // Get all physical folders
                 return from p in childItems
-                    select p.Name;
+                       select p.Name;
             });
+        }
+
+        private static bool IsReferenceUnavailableException(Exception e)
+        {
+            var comException = e as COMException;
+
+            if (comException == null)
+            {
+                return false;
+            }
+
+            // If VSLangProj.References.Add(...) fails because it could not find the assembly,
+            // the HRESULT will be E_FAIL (0x80004005) and the message will be "Reference unavailable."
+            return comException.HResult == unchecked((int)0x80004005);
         }
     }
 }

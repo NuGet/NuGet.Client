@@ -1,7 +1,11 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using NuGet.Test.Utility;
+using NuGet.Common;
 using Xunit;
 
 namespace NuGet.CommandLine.Test
@@ -23,17 +27,18 @@ namespace NuGet.CommandLine.Test
                     "-Set",
                     @"HTTP_PROXY.USER=domain\user"
                 };
+                string root = RuntimeEnvironmentHelper.IsMono && !RuntimeEnvironmentHelper.IsWindows ? Environment.GetEnvironmentVariable("HOME") : @"c:\";
 
                 // Act
                 // Set the working directory to C:\, otherwise,
                 // the test will change the nuget.config at the code repo's root directory
-                int result = Program.MainCore(@"c:\", args);
+                int result = Program.MainCore(root, args);
 
                 // Assert
                 Assert.Equal(0, result);
 
                 var settings = Configuration.Settings.LoadDefaultSettings(
-                    @"c:\", null, null);
+                    root, null, null);
                 var values = settings.GetSettingValues("config", isPath: false);
                 AssertEqualCollections(values, new[]
                     {
@@ -50,7 +55,7 @@ namespace NuGet.CommandLine.Test
         [Fact]
         public void ConfigCommand_ChangeUserDefinedConfigFile()
         {
-            using (var testFolder = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var testFolder = TestDirectory.Create())
             {
                 // Arrange
                 var configFile = Path.Combine(testFolder, "file.tmp");
@@ -97,7 +102,7 @@ namespace NuGet.CommandLine.Test
         [Fact(Skip="Expected to fail until plugins loaded as extensions fix is in")]
         public void ConfigCommand_MisconfiguredPluginCredentialProviderDoesNotBlockConfigCommand()
         {
-            using (var testFolder = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var testFolder = TestDirectory.Create())
             {
                 var configFile = Path.Combine(testFolder, "file.tmp");
                 var missingPluginProvider = Path.Combine(Path.GetTempPath(), "PluginDoesNotExist.exe");
@@ -127,7 +132,7 @@ namespace NuGet.CommandLine.Test
         [Fact]
         public void ConfigCommand_GetValueWithAsPathOption()
         {
-            using (var testFolder = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var testFolder = TestDirectory.Create())
             {
                 // Arrange
                 var nugetexe = Util.GetNuGetExePath();
@@ -199,6 +204,50 @@ namespace NuGet.CommandLine.Test
 
             // Assert
             Assert.True(result.Item3.Contains("Key 'nonExistentKey' not found."));
+        }
+
+        [Fact]
+        public void ConfigCommand_EvaluatesEnvironmentalVariables()
+        {
+            using (var testFolder = TestDirectory.Create())
+            {
+                // Arrange
+                var nugetexe = Util.GetNuGetExePath();
+                var configFile = Path.Combine(testFolder, "NuGet.config");
+                var envValue = Guid.NewGuid().ToString();
+                var expectedValue = envValue + @"\two" + Environment.NewLine;
+
+                Util.CreateFile(Path.GetDirectoryName(configFile),
+                                Path.GetFileName(configFile),
+                                @"
+<configuration>
+    <config>
+        <add key='repositoryPath' value='%RP_ENV_VAR%\two' />
+    </config>
+</configuration>
+");
+
+                string[] args = new string[] {
+                    "config",
+                    "repositoryPath"
+                };
+
+                // Act
+                Environment.SetEnvironmentVariable("RP_ENV_VAR", envValue);
+                var result = CommandRunner.Run(
+                    nugetexe,
+                    testFolder,
+                    string.Join(" ", args),
+                    waitForExit: true);
+
+                var output = result.Item2;
+                Environment.SetEnvironmentVariable("RP_ENV_VAR", string.Empty);
+
+
+                // Assert
+                Assert.Equal(0, result.Item1);
+                Assert.Equal(expectedValue, output);
+            }
         }
 
         private void AssertEqualCollections(IList<Configuration.SettingValue> actual, string[] expected)

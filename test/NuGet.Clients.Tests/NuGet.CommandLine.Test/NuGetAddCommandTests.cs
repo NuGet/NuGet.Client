@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using NuGet.Packaging;
@@ -201,9 +204,7 @@ namespace NuGet.CommandLine.Test
                 Util.VerifyResultSuccess(result);
                 Util.VerifyPackageExists(testInfo.Package, testInfo.SourceParamFolder);
 
-                var versionFolderPathResolver = new VersionFolderPathResolver(
-                    testInfo.SourceParamFolder,
-                    normalizePackageId: true);
+                var versionFolderPathResolver = new VersionFolderPathResolver(testInfo.SourceParamFolder);
 
                 File.Delete(
                     versionFolderPathResolver.GetManifestFilePath(testInfo.Package.Id, testInfo.Package.Version));
@@ -330,7 +331,7 @@ namespace NuGet.CommandLine.Test
         public void AddCommand_Fail_NupkgPathIsNotANupkg()
         {
             // Arrange
-            using (var tempDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var tempDirectory = TestDirectory.Create())
             using (var testInfo = new TestInfo())
             {
                 var testPackage = new FileInfo(Path.Combine(tempDirectory, "invalidFile.tmp"));
@@ -372,7 +373,7 @@ namespace NuGet.CommandLine.Test
         {
             // Arrange
             using (var testInfo = new TestInfo())
-            using (var testFolder = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var testFolder = TestDirectory.Create())
             {
                 var testPackage = new FileInfo(Path.Combine(testFolder, "bad.nupkg"));
 
@@ -471,19 +472,19 @@ namespace NuGet.CommandLine.Test
             {
                 NuGetExePath = Util.GetNuGetExePath();
 
-                WorkingPath = TestFileSystemUtility.CreateRandomTestFolder();
+                WorkingPath = TestDirectory.Create();
 
                 Package = new PackageIdentity("AbCd", new NuGetVersion("1.0.0.0"));
             }
 
             public void Init()
             {
-                Init(TestFileSystemUtility.CreateRandomTestFolder());
+                Init(TestDirectory.Create());
             }
 
             public void Init(string sourceParamFolder)
             {
-                var randomNupkgFolder = TestFileSystemUtility.CreateRandomTestFolder();
+                var randomNupkgFolder = TestDirectory.Create();
                 var testPackage = TestPackagesGroupedByFolder.GetLegacyTestPackage(
                     randomNupkgFolder,
                     Package.Id,
@@ -494,7 +495,7 @@ namespace NuGet.CommandLine.Test
 
             public void Init(FileInfo testPackage)
             {
-                Init(TestFileSystemUtility.CreateRandomTestFolder(), testPackage);
+                Init(TestDirectory.Create(), testPackage);
             }
 
             public void Init(string sourceParamFolder, FileInfo testPackage)

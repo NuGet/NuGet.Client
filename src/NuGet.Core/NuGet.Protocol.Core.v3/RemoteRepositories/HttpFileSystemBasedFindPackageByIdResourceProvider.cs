@@ -6,16 +6,14 @@ using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Protocol.Core.Types;
 
-namespace NuGet.Protocol.Core.v3.RemoteRepositories
+namespace NuGet.Protocol
 {
     public class HttpFileSystemBasedFindPackageByIdResourceProvider : ResourceProvider
     {
-        private const string HttpFileSystemIndexType = "PackageBaseAddress/3.0.0";
-
         public HttpFileSystemBasedFindPackageByIdResourceProvider()
             : base(typeof(FindPackageByIdResource),
                 nameof(HttpFileSystemBasedFindPackageByIdResourceProvider),
-                before: nameof(RemoteV3FindPackagePackageByIdResourceProvider))
+                before: nameof(RemoteV3FindPackageByIdResourceProvider))
         {
         }
 
@@ -23,14 +21,16 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
         {
             INuGetResource resource = null;
             var serviceIndexResource = await sourceRepository.GetResourceAsync<ServiceIndexResourceV3>();
-            var packageBaseAddress = serviceIndexResource?[HttpFileSystemIndexType];
+            var packageBaseAddress = serviceIndexResource?.GetServiceEntryUris(ServiceTypes.PackageBaseAddress);
 
             if (packageBaseAddress != null
                 && packageBaseAddress.Count > 0)
             {
+                var httpSourceResource = await sourceRepository.GetResourceAsync<HttpSourceResource>(token);
+
                 resource = new HttpFileSystemBasedFindPackageByIdResource(
                     packageBaseAddress,
-                    async () => (await sourceRepository.GetResourceAsync<HttpHandlerResource>(token)));
+                    httpSourceResource.HttpSource);
             }
 
             return Tuple.Create(resource != null, resource);

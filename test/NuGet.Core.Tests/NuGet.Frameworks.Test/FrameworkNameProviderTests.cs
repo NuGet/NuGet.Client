@@ -14,6 +14,46 @@ namespace NuGet.Test
     public class FrameworkNameProviderTests
     {
         [Fact]
+        public void FrameworkNameProvider_NetStandardVersions()
+        {
+            // Arrange
+            var provider = DefaultFrameworkNameProvider.Instance;
+
+            // Act
+            var versions = provider
+                .GetNetStandardVersions()
+                .ToArray();
+
+            // Assert
+            Assert.Equal(FrameworkConstants.CommonFrameworks.NetStandard10, versions[0]);
+            Assert.Equal(FrameworkConstants.CommonFrameworks.NetStandard11, versions[1]);
+            Assert.Equal(FrameworkConstants.CommonFrameworks.NetStandard12, versions[2]);
+            Assert.Equal(FrameworkConstants.CommonFrameworks.NetStandard13, versions[3]);
+            Assert.Equal(FrameworkConstants.CommonFrameworks.NetStandard14, versions[4]);
+            Assert.Equal(FrameworkConstants.CommonFrameworks.NetStandard15, versions[5]);
+            Assert.Equal(FrameworkConstants.CommonFrameworks.NetStandard16, versions[6]);
+            Assert.Equal(FrameworkConstants.CommonFrameworks.NetStandard17, versions[7]);
+            Assert.Equal(8, versions.Length);
+        }
+
+        [Fact]
+        public void FrameworkNameProvider_OrderNetCore50BeforePackagesBasedFrameworks()
+        {
+            // Arrange
+            var provider = DefaultFrameworkNameProvider.Instance;
+
+            // Act
+            var a = provider.CompareFrameworks(FrameworkConstants.CommonFrameworks.NetCore50, FrameworkConstants.CommonFrameworks.WPA81);
+            var b = provider.CompareFrameworks(FrameworkConstants.CommonFrameworks.NetCore50, FrameworkConstants.CommonFrameworks.NetStandard12);
+            var c = provider.CompareFrameworks(FrameworkConstants.CommonFrameworks.NetCore50, FrameworkConstants.CommonFrameworks.Win81);
+
+            // Assert
+            Assert.True(a < 0);
+            Assert.True(b < 0);
+            Assert.True(c < 0);
+        }
+
+        [Fact]
         public void FrameworkNameProvider_DuplicateFrameworksInPrecedence()
         {
             // Arrange
@@ -74,6 +114,31 @@ namespace NuGet.Test
         }
 
         [Fact]
+        public void FrameworkNameProvider_EquivalentFrameworkPrecedence()
+        {
+            // Arrange
+            var mappingsA = new Mock<IFrameworkMappings>();
+            var mappingsB = new Mock<IFrameworkMappings>();
+            mappingsA.Setup(x => x.EquivalentFrameworkPrecedence).Returns(new[] { Windows });
+            mappingsB.Setup(x => x.EquivalentFrameworkPrecedence).Returns(new[] { NetCore });
+
+            var provider = new FrameworkNameProvider(new[] { mappingsA.Object, mappingsB.Object }, null);
+
+            // Act
+            var lt = provider.CompareEquivalentFrameworks(
+                FrameworkConstants.CommonFrameworks.Win8,
+                FrameworkConstants.CommonFrameworks.NetCore45);
+
+            var gt = provider.CompareEquivalentFrameworks(
+                FrameworkConstants.CommonFrameworks.NetCore45,
+                FrameworkConstants.CommonFrameworks.Win8);
+
+            // Assert
+            Assert.True(lt < 0, "Win should come before NetCore");
+            Assert.True(gt > 0, "NetCore should come after Win");
+        }
+
+        [Fact]
         public void FrameworkNameProvider_EqualFrameworksWithoutCurrent()
         {
             var provider = DefaultFrameworkNameProvider.Instance;
@@ -96,9 +161,17 @@ namespace NuGet.Test
             IEnumerable<NuGetFramework> frameworks = null;
             provider.TryGetEquivalentFrameworks(input, out frameworks);
 
-            var results = frameworks.ToArray();
+            var results = frameworks
+                .OrderBy(f => f, new NuGetFrameworkSorter())
+                .Select(f => f.GetShortFolderName())
+                .ToArray();
 
-            Assert.Equal(2, results.Length);
+            Assert.Equal(5, results.Length);
+            Assert.Equal("netcore", results[0]);
+            Assert.Equal("netcore45", results[1]);
+            Assert.Equal("win", results[2]);
+            Assert.Equal("winrt", results[3]);
+            Assert.Equal("winrt45", results[4]);
         }
 
         [Fact]
@@ -138,6 +211,20 @@ namespace NuGet.Test
             provider.TryGetIdentifier(input, out identifier);
 
             Assert.Equal(expected, identifier);
+        }
+
+        [Fact]
+        public void FrameworkNameProvider_TryGetPortableFrameworks_RejectsInvalidPortableFrameworks()
+        {
+            // Arrange
+            var target = DefaultFrameworkNameProvider.Instance;
+            var input = "net45+win8+net-cf+net46";
+            IEnumerable<NuGetFramework> frameworks;
+
+            // Act & Assert
+            var actual = Assert.Throws<ArgumentException>(
+                () => target.TryGetPortableFrameworks(input, out frameworks));
+            Assert.Equal($"Invalid portable frameworks '{input}'. A hyphen may not be in any of the portable framework names.", actual.Message);
         }
 
         [Theory]

@@ -4,32 +4,52 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows;
+using NuGet.Common;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
-using NuGet.Protocol.VisualStudio;
 
 namespace NuGet.PackageManagement.UI
 {
     /// <summary>
     /// Performs package manager actions and controls the UI to display output while the actions are taking place.
     /// </summary>
-    public class UIActionEngine
+    public sealed class UIActionEngine
     {
         private readonly ISourceRepositoryProvider _sourceProvider;
         private readonly NuGetPackageManager _packageManager;
+        private readonly INuGetLockService _lockService;
 
         /// <summary>
         /// Create a UIActionEngine to perform installs/uninstalls
         /// </summary>
-        public UIActionEngine(ISourceRepositoryProvider sourceProvider, NuGetPackageManager packageManager)
+        public UIActionEngine(
+            ISourceRepositoryProvider sourceProvider, 
+            NuGetPackageManager packageManager,
+            INuGetLockService lockService)
         {
+            if (sourceProvider == null)
+            {
+                throw new ArgumentNullException(nameof(sourceProvider));
+            }
+
+            if (packageManager == null)
+            {
+                throw new ArgumentNullException(nameof(packageManager));
+            }
+
+            if (lockService == null)
+            {
+                throw new ArgumentNullException(nameof(lockService));
+            }
+
             _sourceProvider = sourceProvider;
             _packageManager = packageManager;
+            _lockService = lockService;
         }
 
         /// <summary>
@@ -39,9 +59,14 @@ namespace NuGet.PackageManagement.UI
         public async Task PerformActionAsync(
             INuGetUI uiService,
             UserAction userAction,
-            DependencyObject windowOwner,
             CancellationToken token)
         {
+            var operationType = NuGetOperationType.Install;
+            if (userAction.Action == NuGetProjectActionType.Uninstall)
+            {
+                operationType = NuGetOperationType.Uninstall;
+            }
+
             await PerformActionImplAsync(
                 uiService,
                 () =>
@@ -68,14 +93,14 @@ namespace NuGet.PackageManagement.UI
                         uiService.RemoveDependencies,
                         uiService.ForceRemove,
                         resolutionContext,
-                        projectContext: uiService.ProgressWindow,
+                        projectContext: uiService.ProjectContext,
                         token: token);
                 },
                 (actions) =>
                 {
-                    return ExecuteActionsAsync(actions, uiService.ProgressWindow, userAction, token);
+                    return ExecuteActionsAsync(actions, uiService.ProjectContext, uiService.CommonOperations, userAction, token);
                 },
-                windowOwner,
+                operationType,
                 token);
         }
 
@@ -86,30 +111,29 @@ namespace NuGet.PackageManagement.UI
         public async Task PerformUpdateAsync(
             INuGetUI uiService,
             List<PackageIdentity> packagesToUpdate,
-            DependencyObject windowOwner,
             CancellationToken token)
         {
             await PerformActionImplAsync(
                 uiService,
                 () =>
                 {
-                    return ResolveActionsForUpdate(
+                    return ResolveActionsForUpdateAsync(
                         uiService,
                         packagesToUpdate,
                         token);
                 },
                 async (actions) =>
                 {
-                    foreach (var projectActions in actions.GroupBy(action => action.Project))
-                    {
-                        await _packageManager.ExecuteNuGetProjectActionsAsync(
-                           projectActions.Key,
-                           projectActions.Select(action => action.Action),
-                           uiService.ProgressWindow,
-                           token);
-                    }
+                    // Get all Nuget projects and actions and call ExecuteNugetProjectActions once for all the projects.
+                    var nugetProjects = actions.Select(action => action.Project);
+                    var nugetActions = actions.Select(action => action.Action);
+                    await _packageManager.ExecuteNuGetProjectActionsAsync(
+                        nugetProjects,
+                        nugetActions,
+                        uiService.ProjectContext,
+                        token);
                 },
-                windowOwner,
+                NuGetOperationType.Update,
                 token);
         }
 
@@ -120,51 +144,39 @@ namespace NuGet.PackageManagement.UI
         /// <param name="packagesToUpdate">The list of packages to update.</param>
         /// <param name="token">Cancellation token.</param>
         /// <returns>The list of actions.</returns>
-        private async Task<IReadOnlyList<ResolvedAction>> ResolveActionsForUpdate(
+        private async Task<IReadOnlyList<ResolvedAction>> ResolveActionsForUpdateAsync(
             INuGetUI uiService,
             List<PackageIdentity> packagesToUpdate,
             CancellationToken token)
         {
             var resolvedActions = new List<ResolvedAction>();
 
-            foreach (var project in uiService.Projects)
-            {
-                var installedPackages = await project.GetInstalledPackagesAsync(token);
-                HashSet<string> packageIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-                foreach (var p in installedPackages)
-                {
-                    packageIds.Add(p.PackageIdentity.Id);
-                }
+            // Keep a single gather cache across projects
+            var gatherCache = new GatherCache();
 
-                // We need to filter out packages from packagesToUpdate that are not installed
-                // in the current project. Otherwise, we'll incorrectly install a
-                // package that is not installed before.
-                var packagesToUpdateInProject = packagesToUpdate.Where(
-                    package => packageIds.Contains(package.Id)).ToList();
+            var includePrerelease = packagesToUpdate.Where(
+                package => package.Version.IsPrerelease).Any();
 
-                if (packagesToUpdateInProject.Any())
-                {
-                    var includePrerelease = packagesToUpdateInProject.Where(
-                        package => package.Version.IsPrerelease).Any();
+            var resolutionContext = new ResolutionContext(
+                uiService.DependencyBehavior,
+                includePrelease: includePrerelease,
+                includeUnlisted: true,
+                versionConstraints: VersionConstraints.None,
+                gatherCache: gatherCache);
 
-                    var resolutionContext = new ResolutionContext(
-                        uiService.DependencyBehavior,
-                        includePrelease: includePrerelease,
-                        includeUnlisted: true,
-                        versionConstraints: VersionConstraints.None);
-                    var sources = new SourceRepository[] { uiService.ActiveSource };
-                    var actions = await _packageManager.PreviewUpdatePackagesAsync(
-                        packagesToUpdateInProject,
-                        project,
-                        resolutionContext,
-                        uiService.ProgressWindow,
-                        sources,
-                        sources,
-                        token);
-                    resolvedActions.AddRange(actions.Select(action => new ResolvedAction(project, action))
-                        .ToList());
-                }
-            }
+            var secondarySources = _sourceProvider.GetRepositories().Where(e => e.PackageSource.IsEnabled);
+
+            var actions = await _packageManager.PreviewUpdatePackagesAsync(
+                packagesToUpdate,
+                uiService.Projects,
+                resolutionContext,
+                uiService.ProjectContext,
+                uiService.ActiveSources,
+                secondarySources,
+                token);
+
+            resolvedActions.AddRange(actions.Select(action => new ResolvedAction(action.Project, action))
+                .ToList());
 
             return resolvedActions;
         }
@@ -180,17 +192,61 @@ namespace NuGet.PackageManagement.UI
             INuGetUI uiService,
             Func<Task<IReadOnlyList<ResolvedAction>>> resolveActionsAsync,
             Func<IReadOnlyList<ResolvedAction>, Task> executeActionsAsync,
-            DependencyObject windowOwner,
+            NuGetOperationType operationType,
             CancellationToken token)
         {
+            var status = NuGetOperationStatus.Succeeded;
+            var startTime = DateTimeOffset.Now;
+            var packageCount = 0;
+            var operationId = Guid.NewGuid().ToString();
+
+            // Enable granular level telemetry events for nuget ui operation
+            var telemetryService = new TelemetryServiceHelper();
+            uiService.ProjectContext.TelemetryService = telemetryService;
+
+            var lck = await _lockService.AcquireLockAsync(token);
+
             try
             {
-                uiService.ShowProgressDialog(windowOwner);
+                uiService.BeginOperation();
+
+                var acceptedFormat = await CheckPackageManagementFormat(uiService, token);
+                if (!acceptedFormat)
+                {
+                    return;
+                }
+
+                TelemetryUtility.StartorResumeTimer();
 
                 var actions = await resolveActionsAsync();
                 var results = GetPreviewResults(actions);
 
-                // preview window
+                if (operationType == NuGetOperationType.Uninstall)
+                {
+                    packageCount = results.SelectMany(result => result.Deleted).
+                        Select(package => package.Id).Distinct().Count();
+                }
+                else
+                {
+                    var addCount = results.SelectMany(result => result.Added).
+                        Select(package => package.Id).Distinct().Count();
+
+                    var updateCount = results.SelectMany(result => result.Updated).
+                        Select(result => result.New.Id).Distinct().Count();
+
+                    // update packages count
+                    packageCount = addCount + updateCount;
+
+                    if (updateCount > 0)
+                    {
+                        // set operation type to update when there are packages being updated
+                        operationType = NuGetOperationType.Update;
+                    }
+                }
+
+                TelemetryUtility.StopTimer();
+
+                // Show the preview window.
                 if (uiService.DisplayPreviewWindow)
                 {
                     var shouldContinue = uiService.PromptForPreviewAcceptance(results);
@@ -200,10 +256,29 @@ namespace NuGet.PackageManagement.UI
                     }
                 }
 
+                TelemetryUtility.StartorResumeTimer();
+
+                // Show the license acceptance window.
                 var accepted = await CheckLicenseAcceptanceAsync(uiService, results, token);
+
+                TelemetryUtility.StartorResumeTimer();
+
                 if (!accepted)
                 {
                     return;
+                }
+
+                // Warn about the fact that the "dotnet" TFM is deprecated.
+                if (uiService.DisplayDeprecatedFrameworkWindow)
+                {
+                    var shouldContinue = ShouldContinueDueToDotnetDeprecation(uiService, actions, token);
+
+                    TelemetryUtility.StartorResumeTimer();
+
+                    if (!shouldContinue)
+                    {
+                        return;
+                    }
                 }
 
                 if (!token.IsCancellationRequested)
@@ -217,6 +292,7 @@ namespace NuGet.PackageManagement.UI
             }
             catch (System.Net.Http.HttpRequestException ex)
             {
+                status = NuGetOperationStatus.Failed;
                 if (ex.InnerException != null)
                 {
                     uiService.ShowError(ex.InnerException);
@@ -228,12 +304,84 @@ namespace NuGet.PackageManagement.UI
             }
             catch (Exception ex)
             {
+                status = NuGetOperationStatus.Failed;
                 uiService.ShowError(ex);
             }
             finally
             {
-                uiService.CloseProgressDialog();
+                lck.Dispose();
+
+                TelemetryUtility.StopTimer();
+
+                var duration = TelemetryUtility.GetTimerElapsedTime();
+
+                uiService.ProjectContext.Log(MessageLevel.Info,
+                    string.Format(CultureInfo.CurrentCulture, Resources.Operation_TotalTime, duration));
+
+                uiService.EndOperation();
+
+                var actionTelemetryEvent = TelemetryUtility.GetActionTelemetryEvent(
+                    uiService.Projects,
+                    operationType,
+                    OperationSource.UI,
+                    startTime,
+                    status,
+                    packageCount,
+                    duration.TotalSeconds);
+
+                ActionsTelemetryService.Instance.EmitActionEvent(actionTelemetryEvent, telemetryService.TelemetryEvents);
             }
+        }
+
+        private async Task<bool> CheckPackageManagementFormat(INuGetUI uiService, CancellationToken token)
+        {
+#if VS14
+            // don't show this dialog for VS 2015
+            return await Task.FromResult(true);
+#else
+            var newProjectNames = new List<string>();
+            var msBuildProjects = uiService.Projects.Where(project => project is MSBuildNuGetProject);
+
+            // get all packages.config based projects with no installed packages
+            foreach (var project in msBuildProjects)
+            {
+                if (!(await project.GetInstalledPackagesAsync(token)).Any())
+                {
+                    newProjectNames.Add(project.GetMetadata<string>(NuGetProjectMetadataKeys.Name));
+                }
+            }
+
+            // only show this dialog if there are any new project(s) with no installed packages.
+            if (newProjectNames.Count > 0)
+            {
+                var packageManagementFormat = new PackageManagementFormat(uiService.Settings);
+                if (packageManagementFormat.IsDisabled)
+                {
+                    // user disabled this prompt either through Tools->options or previous interaction of this dialog.
+                    // now check for default package format, if its set to PackageReference then update the project.
+                    if (packageManagementFormat.SelectedPackageManagementFormat == 1)
+                    {
+                        await uiService.UpdateNuGetProjectToPackageRef(msBuildProjects);
+                    }
+
+                    return true;
+                }
+
+                packageManagementFormat.ProjectNames = newProjectNames.OrderBy(name => name, StringComparer.OrdinalIgnoreCase).ToList();
+
+                // show dialog for package format selector
+                var result = uiService.PromptForPackageManagementFormat(packageManagementFormat);
+
+                // update nuget projects if user selected PackageReference option
+                if (result && packageManagementFormat.SelectedPackageManagementFormat == 1)
+                {
+                    await uiService.UpdateNuGetProjectToPackageRef(msBuildProjects);
+                }
+                return result;
+            }
+
+            return true;
+#endif
         }
 
         // Returns false if user doesn't accept license agreements.
@@ -256,7 +404,10 @@ namespace NuGet.PackageManagement.UI
                     licenseCheck.Add(pkg.New);
                 }
             }
-            var licenseMetadata = await GetPackageMetadataAsync(licenseCheck, token);
+
+            var licenseMetadata = await GetPackageMetadataAsync(uiService, licenseCheck, token);
+
+            TelemetryUtility.StopTimer();
 
             // show license agreement
             if (licenseMetadata.Any(e => e.RequireLicenseAcceptance))
@@ -271,16 +422,41 @@ namespace NuGet.PackageManagement.UI
         }
 
         /// <summary>
+        /// Warns the user about the fact that the dotnet TFM is deprecated.
+        /// </summary>
+        /// <returns>Returns true if the user wants to ignore the warning or if the warning does not apply.</returns>
+        private bool ShouldContinueDueToDotnetDeprecation(
+            INuGetUI uiService,
+            IEnumerable<ResolvedAction> actions,
+            CancellationToken token)
+        {
+            var projects = DotnetDeprecatedPrompt.GetAffectedProjects(actions);
+
+            TelemetryUtility.StopTimer();
+
+            if (projects.Any())
+            {
+                return uiService.WarnAboutDotnetDeprecation(projects);
+            }
+
+            return true;
+        }
+
+        /// <summary>
         /// Execute the installs/uninstalls
         /// </summary>
-        protected async Task ExecuteActionsAsync(IEnumerable<ResolvedAction> actions,
-            NuGetUIProjectContext projectContext, UserAction userAction, CancellationToken token)
+        private async Task ExecuteActionsAsync(
+            IEnumerable<ResolvedAction> actions,
+            INuGetProjectContext projectContext, 
+            ICommonOperations commonOperations,
+            UserAction userAction, 
+            CancellationToken token)
         {
             var processedDirectInstalls = new HashSet<PackageIdentity>(PackageIdentity.Comparer);
             foreach (var projectActions in actions.GroupBy(e => e.Project))
             {
                 var nuGetProjectActions = projectActions.Select(e => e.Action);
-                var directInstall = GetDirectInstall(nuGetProjectActions, userAction, projectContext.CommonOperations);
+                var directInstall = GetDirectInstall(nuGetProjectActions, userAction, commonOperations);
                 if (directInstall != null
                     && !processedDirectInstalls.Contains(directInstall))
                 {
@@ -310,7 +486,7 @@ namespace NuGet.PackageManagement.UI
         /// <summary>
         /// Return the resolve package actions
         /// </summary>
-        protected async Task<IReadOnlyList<ResolvedAction>> GetActionsAsync(
+        private async Task<IReadOnlyList<ResolvedAction>> GetActionsAsync(
             INuGetUI uiService,
             IEnumerable<NuGetProject> targets,
             UserAction userAction,
@@ -332,7 +508,7 @@ namespace NuGet.PackageManagement.UI
                         new PackageIdentity(userAction.PackageId, userAction.Version),
                         resolutionContext,
                         projectContext,
-                        uiService.ActiveSource,
+                        uiService.ActiveSources,
                         null,
                         token);
                     results.AddRange(actions.Select(a => new ResolvedAction(target, a)));
@@ -361,7 +537,7 @@ namespace NuGet.PackageManagement.UI
         /// <summary>
         /// Convert NuGetProjectActions into PreviewResult types
         /// </summary>
-        protected static IReadOnlyList<PreviewResult> GetPreviewResults(IEnumerable<ResolvedAction> projectActions)
+        private static IReadOnlyList<PreviewResult> GetPreviewResults(IEnumerable<ResolvedAction> projectActions)
         {
             var results = new List<PreviewResult>();
 
@@ -449,27 +625,60 @@ namespace NuGet.PackageManagement.UI
         /// <summary>
         /// Get the package metadata to see if RequireLicenseAcceptance is true
         /// </summary>
-        private async Task<List<UIPackageMetadata>> GetPackageMetadataAsync(IEnumerable<PackageIdentity> packages, CancellationToken token)
+        private async Task<List<IPackageSearchMetadata>> GetPackageMetadataAsync(
+            INuGetUI uiService,
+            IEnumerable<PackageIdentity> packages,
+            CancellationToken token)
         {
-            var sources = _sourceProvider.GetRepositories().Where(e => e.PackageSource.IsEnabled);
+            var results = new List<IPackageSearchMetadata>();
 
-            var results = new List<UIPackageMetadata>();
-            foreach (var package in packages)
+            // local sources
+            var sources = new List<SourceRepository>();
+            sources.Add(_packageManager.PackagesFolderSourceRepository);
+            sources.AddRange(_packageManager.GlobalPackageFolderRepositories);
+
+            var allPackages = packages.ToArray();
+
+            // first check all the packages with local sources.
+            var completed = (await TaskCombinators.ThrottledAsync(
+                allPackages,
+                (p, t) => GetPackageMetadataAsync(sources, p, t),
+                token)).Where(metadata => metadata != null).ToArray();
+
+            results.AddRange(completed);
+
+            if (completed.Length != allPackages.Length)
             {
-                var metadata = await GetPackageMetadataAsync(sources, package, token);
-                if (metadata == null)
-                {
-                    throw new InvalidOperationException(
-                        string.Format("Unable to find metadata of {0}", package));
-                }
+                // get remaining package's metadata from remote repositories
+                var remainingPackages = allPackages.Where(package => !completed.Any(pack => pack.Identity.Equals(package)));
 
-                results.Add(metadata);
+                var remoteResults = (await TaskCombinators.ThrottledAsync(
+                    remainingPackages,
+                    (p, t) => GetPackageMetadataAsync(uiService.ActiveSources, p, t),
+                    token)).Where(metadata => metadata != null).ToArray();
+
+                results.AddRange(remoteResults);
+            }
+
+            // check if missing metadata for any package
+            if (allPackages.Length != results.Count)
+            {
+                var package = allPackages.First(pkg => !results.Any(result => result.Identity.Equals(pkg)));
+
+                throw new InvalidOperationException(
+                        string.Format("Unable to find metadata of {0}", package));
             }
 
             return results;
         }
 
-        private static async Task<UIPackageMetadata> GetPackageMetadataAsync(
+        private void LogError(Task task, INuGetUI uiService)
+        {
+            var exception = ExceptionUtilities.Unwrap(task.Exception);
+            uiService.ProjectContext.Log(MessageLevel.Error, exception.Message);
+        }
+
+        private static async Task<IPackageSearchMetadata> GetPackageMetadataAsync(
             IEnumerable<SourceRepository> sources,
             PackageIdentity package,
             CancellationToken token)
@@ -478,7 +687,7 @@ namespace NuGet.PackageManagement.UI
 
             foreach (var source in sources)
             {
-                var metadataResource = source.GetResource<UIMetadataResource>();
+                var metadataResource = source.GetResource<PackageMetadataResource>();
                 if (metadataResource == null)
                 {
                     continue;
@@ -486,12 +695,10 @@ namespace NuGet.PackageManagement.UI
 
                 try
                 {
-                    var r = await metadataResource.GetMetadata(
-                        package.Id,
-                        includePrerelease: true,
-                        includeUnlisted: true,
+                    var packageMetadata = await metadataResource.GetMetadataAsync(
+                        package,
+                        log: Common.NullLogger.Instance,
                         token: token);
-                    var packageMetadata = r.FirstOrDefault(p => p.Identity.Version == package.Version);
                     if (packageMetadata != null)
                     {
                         return packageMetadata;

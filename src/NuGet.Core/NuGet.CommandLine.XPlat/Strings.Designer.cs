@@ -22,7 +22,7 @@ namespace NuGet.CommandLine.XPlat {
     // with the /str option, or rebuild your VS project.
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    internal class Strings {
+    public class Strings {
         
         private static global::System.Resources.ResourceManager resourceMan;
         
@@ -35,7 +35,7 @@ namespace NuGet.CommandLine.XPlat {
         ///    Returns the cached ResourceManager instance used by this class.
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
-        internal static global::System.Resources.ResourceManager ResourceManager {
+        public static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
                     global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("NuGet.CommandLine.XPlat.Strings", typeof(Strings).GetTypeInfo().Assembly);
@@ -50,7 +50,7 @@ namespace NuGet.CommandLine.XPlat {
         ///    resource lookups using this strongly typed resource class.
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
-        internal static global::System.Globalization.CultureInfo Culture {
+        public static global::System.Globalization.CultureInfo Culture {
             get {
                 return resourceCulture;
             }
@@ -60,36 +60,476 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to all.
+        /// </summary>
+        public static string AddPkg_All {
+            get {
+                return ResourceManager.GetString("AddPkg_All", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Adds a package reference to a project..
+        /// </summary>
+        public static string AddPkg_Description {
+            get {
+                return ResourceManager.GetString("AddPkg_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Path to the dependency graph file to be used to restore preview and compatibility check..
+        /// </summary>
+        public static string AddPkg_DgFileDescription {
+            get {
+                return ResourceManager.GetString("AddPkg_DgFileDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Frameworks for which the package reference should be added..
+        /// </summary>
+        public static string AddPkg_FrameworksDescription {
+            get {
+                return ResourceManager.GetString("AddPkg_FrameworksDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Do not perform restore preview and compatibility check. The added package reference will be unconditional..
+        /// </summary>
+        public static string AddPkg_NoRestoreDescription {
+            get {
+                return ResourceManager.GetString("AddPkg_NoRestoreDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Directory to restore packages in..
+        /// </summary>
+        public static string AddPkg_PackageDirectoryDescription {
+            get {
+                return ResourceManager.GetString("AddPkg_PackageDirectoryDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Id of the package to be added..
+        /// </summary>
+        public static string AddPkg_PackageIdDescription {
+            get {
+                return ResourceManager.GetString("AddPkg_PackageIdDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Version of the package to be added..
+        /// </summary>
+        public static string AddPkg_PackageVersionDescription {
+            get {
+                return ResourceManager.GetString("AddPkg_PackageVersionDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Path to the project file..
+        /// </summary>
+        public static string AddPkg_ProjectPathDescription {
+            get {
+                return ResourceManager.GetString("AddPkg_ProjectPathDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Specifies NuGet package sources to use during the restore..
+        /// </summary>
+        public static string AddPkg_SourcesDescription {
+            get {
+                return ResourceManager.GetString("AddPkg_SourcesDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to user specified.
+        /// </summary>
+        public static string AddPkg_UserSpecified {
+            get {
+                return ResourceManager.GetString("AddPkg_UserSpecified", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to The API key for the server..
+        /// </summary>
+        public static string ApiKey_Description {
+            get {
+                return ResourceManager.GetString("ApiKey_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to NuGet Command Line.
         /// </summary>
-        internal static string App_FullName {
+        public static string App_FullName {
             get {
                 return ResourceManager.GetString("App_FullName", resourceCulture);
             }
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to The base path of the files defined in the nuspec file..
+        /// </summary>
+        public static string BasePath_Description {
+            get {
+                return ResourceManager.GetString("BasePath_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Determines if the project should be built before building the package..
+        /// </summary>
+        public static string Build_Description {
+            get {
+                return ResourceManager.GetString("Build_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to WARNING: {0}.
+        /// </summary>
+        public static string CommandLine_Warning {
+            get {
+                return ResourceManager.GetString("CommandLine_Warning", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to {0} (y/N) .
+        /// </summary>
+        public static string ConsoleConfirmMessage {
+            get {
+                return ResourceManager.GetString("ConsoleConfirmMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to y.
+        /// </summary>
+        public static string ConsoleConfirmMessageAccept {
+            get {
+                return ResourceManager.GetString("ConsoleConfirmMessageAccept", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Deletes a package from the server..
+        /// </summary>
+        public static string Delete_Description {
+            get {
+                return ResourceManager.GetString("Delete_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Please provide arguments for package id and package version..
+        /// </summary>
+        public static string Delete_MissingArguments {
+            get {
+                return ResourceManager.GetString("Delete_MissingArguments", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to The Package Id and version..
+        /// </summary>
+        public static string Delete_PackageIdAndVersion_Description {
+            get {
+                return ResourceManager.GetString("Delete_PackageIdAndVersion_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Disable buffering when pushing to an HTTP(S) server to decrease memory usage..
+        /// </summary>
+        public static string DisableBuffering_Description {
+            get {
+                return ResourceManager.GetString("DisableBuffering_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Item &apos;{0}&apos; for &apos;{1}&apos; in Imported file &apos;{2}&apos;..
+        /// </summary>
+        public static string Error_AddPkgErrorStringForImportedEdit {
+            get {
+                return ResourceManager.GetString("Error_AddPkgErrorStringForImportedEdit", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Error while performing {0} for package &apos;{1}&apos;. Cannot edit items in imported files - {2}{3}.
+        /// </summary>
+        public static string Error_AddPkgFailOnImportEdit {
+            get {
+                return ResourceManager.GetString("Error_AddPkgFailOnImportEdit", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Package &apos;{0}&apos; is incompatible with &apos;{1}&apos; frameworks in project &apos;{2}&apos;..
+        /// </summary>
+        public static string Error_AddPkgIncompatibleWithAllFrameworks {
+            get {
+                return ResourceManager.GetString("Error_AddPkgIncompatibleWithAllFrameworks", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Source parameter was not specified..
+        /// </summary>
+        public static string Error_MissingSourceParameter {
+            get {
+                return ResourceManager.GetString("Error_MissingSourceParameter", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to MsBuild was unable to open Project &apos;{0}&apos;..
+        /// </summary>
+        public static string Error_MsBuildUnableToOpenProject {
+            get {
+                return ResourceManager.GetString("Error_MsBuildUnableToOpenProject", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to None or invalid DgSpec was passed to NuGet add package command..
+        /// </summary>
+        public static string Error_NoDgSpec {
+            get {
+                return ResourceManager.GetString("Error_NoDgSpec", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Unable to {0} package. Argument &apos;{1}&apos; not provided..
+        /// </summary>
+        public static string Error_PkgMissingArgument {
+            get {
+                return ResourceManager.GetString("Error_PkgMissingArgument", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Unable to {0} package. Missing or Invalid project file &apos;{1}&apos;..
+        /// </summary>
+        public static string Error_PkgMissingOrInvalidProjectFile {
+            get {
+                return ResourceManager.GetString("Error_PkgMissingOrInvalidProjectFile", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Project &apos;{0}&apos; does not contain any PackageReference &apos;{1}&apos; to {2}..
+        /// </summary>
+        public static string Error_UpdatePkgNoSuchPackage {
+            get {
+                return ResourceManager.GetString("Error_UpdatePkgNoSuchPackage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Specifies one or more wildcard patterns to exclude when creating a package..
+        /// </summary>
+        public static string Exclude_Description {
+            get {
+                return ResourceManager.GetString("Exclude_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Prevent inclusion of empty directories when building the package..
+        /// </summary>
+        public static string ExcludeEmptyDirectories_Description {
+            get {
+                return ResourceManager.GetString("ExcludeEmptyDirectories_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Forces the application to run using an invariant, English-based culture..
+        /// </summary>
+        public static string ForceEnglishOutput_Description {
+            get {
+                return ResourceManager.GetString("ForceEnglishOutput_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Include referenced projects either as dependencies or as part of the package..
+        /// </summary>
+        public static string IncludeReferencedProjects_Description {
+            get {
+                return ResourceManager.GetString("IncludeReferencedProjects_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to PackageReference for package &apos;{0}&apos; version &apos;{1}&apos; added to file &apos;{2}&apos;..
+        /// </summary>
+        public static string Info_AddPkgAdded {
+            get {
+                return ResourceManager.GetString("Info_AddPkgAdded", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Adding PackageReference for package &apos;{0}&apos; into project &apos;{1}&apos;..
+        /// </summary>
+        public static string Info_AddPkgAddingReference {
+            get {
+                return ResourceManager.GetString("Info_AddPkgAddingReference", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Package &apos;{0}&apos; is compatible with all the specified frameworks in project &apos;{1}&apos;..
+        /// </summary>
+        public static string Info_AddPkgCompatibleWithAllFrameworks {
+            get {
+                return ResourceManager.GetString("Info_AddPkgCompatibleWithAllFrameworks", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Package &apos;{0}&apos; is compatible with a subset of the specified frameworks in project &apos;{1}&apos;..
+        /// </summary>
+        public static string Info_AddPkgCompatibleWithSubsetFrameworks {
+            get {
+                return ResourceManager.GetString("Info_AddPkgCompatibleWithSubsetFrameworks", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to PackageReference for package &apos;{0}&apos; version &apos;{1}&apos; updated in file &apos;{2}&apos;..
+        /// </summary>
+        public static string Info_AddPkgUpdated {
+            get {
+                return ResourceManager.GetString("Info_AddPkgUpdated", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Removing PackageReference for package &apos;{0}&apos; from project &apos;{1}&apos;..
+        /// </summary>
+        public static string Info_RemovePkgRemovingReference {
+            get {
+                return ResourceManager.GetString("Info_RemovePkgRemovingReference", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Specify the location of the nuspec or project file to create a package..
+        /// </summary>
+        public static string InputFile_Description {
+            get {
+                return ResourceManager.GetString("InputFile_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Specifies the cache location(s) to list or clear.
+        ///&lt;all | http-cache | global-packages | temp&gt;.
+        /// </summary>
+        public static string LocalsCommand_ArgumentDescription {
+            get {
+                return ResourceManager.GetString("LocalsCommand_ArgumentDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Clear the selected local resources or cache location(s)..
+        /// </summary>
+        public static string LocalsCommand_ClearDescription {
+            get {
+                return ResourceManager.GetString("LocalsCommand_ClearDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Clears or lists local NuGet resources such as http requests cache, packages cache or machine-wide global packages folder..
+        /// </summary>
+        public static string LocalsCommand_Description {
+            get {
+                return ResourceManager.GetString("LocalsCommand_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to usage: NuGet locals &lt;all | http-cache | global-packages | temp&gt; [--clear | -c | --list | -l]
+        ///For more information, visit http://docs.nuget.org/docs/reference/command-line-reference.
+        /// </summary>
+        public static string LocalsCommand_Help {
+            get {
+                return ResourceManager.GetString("LocalsCommand_Help", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to List the selected local resources or cache location(s)..
+        /// </summary>
+        public static string LocalsCommand_ListDescription {
+            get {
+                return ResourceManager.GetString("LocalsCommand_ListDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Both operations, --list and --clear, are not supported in the same command. Please specify only one operation.
+        ///usage: NuGet locals &lt;all | http-cache | global-packages | temp&gt; [--clear | -c | --list | -l]
+        ///For more information, visit http://docs.nuget.org/docs/reference/command-line-reference.
+        /// </summary>
+        public static string LocalsCommand_MultipleOperations {
+            get {
+                return ResourceManager.GetString("LocalsCommand_MultipleOperations", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to No Cache Type was specified.
+        ///usage: NuGet locals &lt;all | http-cache | global-packages | temp&gt; [--clear | -c | --list | -l]
+        ///For more information, visit http://docs.nuget.org/docs/reference/command-line-reference.
+        /// </summary>
+        public static string LocalsCommand_NoArguments {
+            get {
+                return ResourceManager.GetString("LocalsCommand_NoArguments", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Please specify an operation i.e. --list or --clear.
+        ///usage: NuGet locals &lt;all | http-cache | global-packages | temp&gt; [--clear | -c | --list | -l]
+        ///For more information, visit http://docs.nuget.org/docs/reference/command-line-reference.
+        /// </summary>
+        public static string LocalsCommand_NoOperation {
+            get {
+                return ResourceManager.GetString("LocalsCommand_NoOperation", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to Committing restore....
         /// </summary>
-        internal static string Log_Committing {
+        public static string Log_Committing {
             get {
                 return ResourceManager.GetString("Log_Committing", resourceCulture);
             }
         }
         
         /// <summary>
-        ///    Looks up a localized string similar to Errors in {0}.
-        /// </summary>
-        internal static string Log_ErrorSummary {
-            get {
-                return ResourceManager.GetString("Log_ErrorSummary", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///    Looks up a localized string similar to Found project root directory: {0}..
         /// </summary>
-        internal static string Log_FoundProjectRoot {
+        public static string Log_FoundProjectRoot {
             get {
                 return ResourceManager.GetString("Log_FoundProjectRoot", resourceCulture);
             }
@@ -98,43 +538,16 @@ namespace NuGet.CommandLine.XPlat {
         /// <summary>
         ///    Looks up a localized string similar to Loaded project {0} from {1}..
         /// </summary>
-        internal static string Log_LoadedProject {
+        public static string Log_LoadedProject {
             get {
                 return ResourceManager.GetString("Log_LoadedProject", resourceCulture);
             }
         }
         
         /// <summary>
-        ///    Looks up a localized string similar to Reading project file {0}..
-        /// </summary>
-        internal static string Log_ReadingProject {
-            get {
-                return ResourceManager.GetString("Log_ReadingProject", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///    Looks up a localized string similar to Restore completed in {0}ms..
-        /// </summary>
-        internal static string Log_RestoreComplete {
-            get {
-                return ResourceManager.GetString("Log_RestoreComplete", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///    Looks up a localized string similar to Restore failed in {0}ms..
-        /// </summary>
-        internal static string Log_RestoreFailed {
-            get {
-                return ResourceManager.GetString("Log_RestoreFailed", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///    Looks up a localized string similar to Running non-parallel restore..
         /// </summary>
-        internal static string Log_RunningNonParallelRestore {
+        public static string Log_RunningNonParallelRestore {
             get {
                 return ResourceManager.GetString("Log_RunningNonParallelRestore", resourceCulture);
             }
@@ -143,7 +556,7 @@ namespace NuGet.CommandLine.XPlat {
         /// <summary>
         ///    Looks up a localized string similar to Running restore with {0} concurrent jobs..
         /// </summary>
-        internal static string Log_RunningParallelRestore {
+        public static string Log_RunningParallelRestore {
             get {
                 return ResourceManager.GetString("Log_RunningParallelRestore", resourceCulture);
             }
@@ -152,16 +565,223 @@ namespace NuGet.CommandLine.XPlat {
         /// <summary>
         ///    Looks up a localized string similar to Using packages directory: {0}..
         /// </summary>
-        internal static string Log_UsingPackagesDirectory {
+        public static string Log_UsingPackagesDirectory {
             get {
                 return ResourceManager.GetString("Log_UsingPackagesDirectory", resourceCulture);
             }
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to Set the minClientVersion attribute for the created package..
+        /// </summary>
+        public static string MinClientVersion_Description {
+            get {
+                return ResourceManager.GetString("MinClientVersion_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Specifies the version of MSBuild to be used with this command. Supported values are 4, 12, 14. By default the MSBuild in your path is picked, otherwise it defaults to the highest installed version of MSBuild..
+        /// </summary>
+        public static string MsBuildVersion_Description {
+            get {
+                return ResourceManager.GetString("MsBuildVersion_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to No API Key was provided and no API Key could be found for {0}. To save an API Key for a source use the &apos;setApiKey&apos; command..
+        /// </summary>
+        public static string NoApiKeyFound {
+            get {
+                return ResourceManager.GetString("NoApiKeyFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Prevent default exclusion of NuGet package files and files and folders starting with a dot e.g. .svn..
+        /// </summary>
+        public static string NoDefaultExcludes_Description {
+            get {
+                return ResourceManager.GetString("NoDefaultExcludes_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Do not prompt for user input or confirmations..
+        /// </summary>
+        public static string NonInteractive_Description {
+            get {
+                return ResourceManager.GetString("NonInteractive_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Specify if the command should not run package analysis after building the package..
+        /// </summary>
+        public static string NoPackageAnalysis_Description {
+            get {
+                return ResourceManager.GetString("NoPackageAnalysis_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to If a symbols package exists, it will not be pushed to a symbols server..
+        /// </summary>
+        public static string NoSymbols_Description {
+            get {
+                return ResourceManager.GetString("NoSymbols_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to http://docs.nuget.org/.
+        /// </summary>
+        public static string NuGetDocs {
+            get {
+                return ResourceManager.GetString("NuGetDocs", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Specifies the directory for the created NuGet package file. If not specified, uses the current directory.
+        /// </summary>
+        public static string OutputDirectory_Description {
+            get {
+                return ResourceManager.GetString("OutputDirectory_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to {0} Version: {1}.
+        /// </summary>
+        public static string OutputNuGetVersion {
+            get {
+                return ResourceManager.GetString("OutputNuGetVersion", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Attempting to build package from &apos;{0}&apos;..
+        /// </summary>
+        public static string PackageCommandAttemptingToBuildPackage {
+            get {
+                return ResourceManager.GetString("PackageCommandAttemptingToBuildPackage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to The value of MinClientVersion argument is not a valid version..
+        /// </summary>
+        public static string PackageCommandInvalidMinClientVersion {
+            get {
+                return ResourceManager.GetString("PackageCommandInvalidMinClientVersion", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Version string specified &apos;{0}&apos; is invalid..
+        /// </summary>
+        public static string PackageVersionInvalid {
+            get {
+                return ResourceManager.GetString("PackageVersionInvalid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Creates a NuGet package based on the specified nuspec or project file.
+        /// </summary>
+        public static string PackCommand_Description {
+            get {
+                return ResourceManager.GetString("PackCommand_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Pushes a package to the server and publishes it..
+        /// </summary>
+        public static string Push_Description {
+            get {
+                return ResourceManager.GetString("Push_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Invalid timeout parameter value..
+        /// </summary>
+        public static string Push_InvalidTimeout {
+            get {
+                return ResourceManager.GetString("Push_InvalidTimeout", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Please specify the path to the package..
+        /// </summary>
+        public static string Push_MissingArguments {
+            get {
+                return ResourceManager.GetString("Push_MissingArguments", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Specify the path to the package and your API key to push the package to the server..
+        /// </summary>
+        public static string Push_Package_ApiKey_Description {
+            get {
+                return ResourceManager.GetString("Push_Package_ApiKey_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Specifies the timeout for pushing to a server in seconds. Defaults to 300 seconds (5 minutes)..
+        /// </summary>
+        public static string Push_Timeout_Description {
+            get {
+                return ResourceManager.GetString("Push_Timeout_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Pushing took too long. You can change the default timeout of 300 seconds by using the --timeout &lt;seconds&gt; option with the push command..
+        /// </summary>
+        public static string Push_Timeout_Error {
+            get {
+                return ResourceManager.GetString("Push_Timeout_Error", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Removes a package reference from a project..
+        /// </summary>
+        public static string RemovePkg_Description {
+            get {
+                return ResourceManager.GetString("RemovePkg_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Id of the package to be removed..
+        /// </summary>
+        public static string RemovePkg_PackageIdDescription {
+            get {
+                return ResourceManager.GetString("RemovePkg_PackageIdDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Path to the project file..
+        /// </summary>
+        public static string RemovePkg_ProjectPathDescription {
+            get {
+                return ResourceManager.GetString("RemovePkg_ProjectPathDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to List of projects and project folders to restore. Each value can be: a path to a project.json or global.json file, or a folder to recursively search for project.json files..
         /// </summary>
-        internal static string Restore_Arg_ProjectName_Description {
+        public static string Restore_Arg_ProjectName_Description {
             get {
                 return ResourceManager.GetString("Restore_Arg_ProjectName_Description", resourceCulture);
             }
@@ -170,16 +790,25 @@ namespace NuGet.CommandLine.XPlat {
         /// <summary>
         ///    Looks up a localized string similar to Restores packages for a project and writes a lock file..
         /// </summary>
-        internal static string Restore_Description {
+        public static string Restore_Description {
             get {
                 return ResourceManager.GetString("Restore_Description", resourceCulture);
             }
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to The NuGet configuration file to use..
+        /// </summary>
+        public static string Restore_Switch_ConfigFile_Description {
+            get {
+                return ResourceManager.GetString("Restore_Switch_ConfigFile_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to Disables restoring multiple projects in parallel..
         /// </summary>
-        internal static string Restore_Switch_DisableParallel_Description {
+        public static string Restore_Switch_DisableParallel_Description {
             get {
                 return ResourceManager.GetString("Restore_Switch_DisableParallel_Description", resourceCulture);
             }
@@ -188,45 +817,144 @@ namespace NuGet.CommandLine.XPlat {
         /// <summary>
         ///    Looks up a localized string similar to A list of packages sources to use as a fallback..
         /// </summary>
-        internal static string Restore_Switch_Fallback_Description {
+        public static string Restore_Switch_Fallback_Description {
             get {
                 return ResourceManager.GetString("Restore_Switch_Fallback_Description", resourceCulture);
             }
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to Only warning failed sources if there are packages meeting version requirement.
+        /// </summary>
+        public static string Restore_Switch_IgnoreFailedSource_Description {
+            get {
+                return ResourceManager.GetString("Restore_Switch_IgnoreFailedSource_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Use legacy behavior when the restore operation is interacting with the global packages directory. This means the ID and version folder names are written with the original package case rather than being normalized to lowercase..
+        /// </summary>
+        public static string Restore_Switch_LegacyPackagesDirectory_Description {
+            get {
+                return ResourceManager.GetString("Restore_Switch_LegacyPackagesDirectory_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Do not cache packages and http requests..
+        /// </summary>
+        public static string Restore_Switch_NoCache_Description {
+            get {
+                return ResourceManager.GetString("Restore_Switch_NoCache_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to Directory to install packages in..
         /// </summary>
-        internal static string Restore_Switch_Packages_Description {
+        public static string Restore_Switch_Packages_Description {
             get {
                 return ResourceManager.GetString("Restore_Switch_Packages_Description", resourceCulture);
             }
         }
         
         /// <summary>
-        ///    Looks up a localized string similar to List of runtime identifiers to restore for..
-        /// </summary>
-        internal static string Restore_Switch_Runtime_Description {
-            get {
-                return ResourceManager.GetString("Restore_Switch_Runtime_Description", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///    Looks up a localized string similar to Specifies a NuGet package source to use during the restore..
         /// </summary>
-        internal static string Restore_Switch_Source_Description {
+        public static string Restore_Switch_Source_Description {
             get {
                 return ResourceManager.GetString("Restore_Switch_Source_Description", resourceCulture);
             }
         }
         
         /// <summary>
-        ///    Looks up a localized string similar to The verbosity of logging to use. Allowed values: Debug, Verbose, Information, Warning, Error..
+        ///    Looks up a localized string similar to Sets the nuspec serviceable element to true..
         /// </summary>
-        internal static string Switch_Verbosity {
+        public static string Serviceable_Description {
+            get {
+                return ResourceManager.GetString("Serviceable_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Specifies the server URL.
+        /// </summary>
+        public static string Source_Description {
+            get {
+                return ResourceManager.GetString("Source_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Appends a pre-release suffix to the internally generated version number..
+        /// </summary>
+        public static string Suffix_Description {
+            get {
+                return ResourceManager.GetString("Suffix_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to The verbosity of logging to use. Allowed values: Debug, Verbose, Information, Minimal, Warning, Error..
+        /// </summary>
+        public static string Switch_Verbosity {
             get {
                 return ResourceManager.GetString("Switch_Verbosity", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to The API key for the symbol server..
+        /// </summary>
+        public static string SymbolApiKey_Description {
+            get {
+                return ResourceManager.GetString("SymbolApiKey_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Determines if a package containing sources and symbols should be created. When specified with a nuspec, creates a regular NuGet package file and the corresponding symbols package..
+        /// </summary>
+        public static string Symbols_Description {
+            get {
+                return ResourceManager.GetString("Symbols_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Specifies the symbol server URL. If not specified, nuget.smbsrc.net is used when pushing to nuget.org..
+        /// </summary>
+        public static string SymbolSource_Description {
+            get {
+                return ResourceManager.GetString("SymbolSource_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Determines if the output files of the project should be in the tool folder..
+        /// </summary>
+        public static string Tool_Description {
+            get {
+                return ResourceManager.GetString("Tool_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Overrides the version number from the nuspec file..
+        /// </summary>
+        public static string Version_Description {
+            get {
+                return ResourceManager.GetString("Version_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to --no-restore|-n flag was used. No compatibility check will be done and the added package reference will be unconditional..
+        /// </summary>
+        public static string Warn_AddPkgWithoutRestore {
+            get {
+                return ResourceManager.GetString("Warn_AddPkgWithoutRestore", resourceCulture);
             }
         }
     }

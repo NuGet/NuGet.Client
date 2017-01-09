@@ -1,6 +1,5 @@
 ﻿{
-  "dependencies": {
-  },
+  "dependencies": {},
   "frameworks": {
     "uap10.0.10069.0": {}
   },

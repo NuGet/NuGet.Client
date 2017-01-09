@@ -5,7 +5,7 @@ using System.Reflection;
 using System.Resources;
 using System.Text;
 
-namespace NuGet
+namespace NuGet.CommandLine
 {
     public static class ResourceHelper
     {

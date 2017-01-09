@@ -48,34 +48,6 @@ namespace NuGet.Protocol.Core.Types
         }
 
         /// <summary>
-        /// Create a source provider for the given sources
-        /// </summary>
-        public static ISourceRepositoryProvider CreateProvider(IEnumerable<INuGetResourceProvider> resourceProviders, IEnumerable<string> sources)
-        {
-            return CreateProvider(resourceProviders, sources.Select(s => new PackageSource(s)));
-        }
-
-        /// <summary>
-        /// Create a source provider for the given sources and with the extra providers.
-        /// </summary>
-        public static ISourceRepositoryProvider CreateProvider(IEnumerable<INuGetResourceProvider> resourceProviders, IEnumerable<PackageSource> sources)
-        {
-            if (sources == null)
-            {
-                throw new ArgumentNullException("sources");
-            }
-
-            if (resourceProviders == null)
-            {
-                throw new ArgumentNullException("resourceProviders");
-            }
-
-            var sourceProvider = new PackageSourceProvider(NullSettings.Instance, sources, Enumerable.Empty<PackageSource>());
-
-            return new SourceRepositoryProvider(sourceProvider, CreateLazy(resourceProviders));
-        }
-
-        /// <summary>
         /// Create a SourceRepository
         /// </summary>
         public static SourceRepository CreateSource(IEnumerable<Lazy<INuGetResourceProvider>> resourceProviders, string sourceUrl)
@@ -83,22 +55,39 @@ namespace NuGet.Protocol.Core.Types
             return CreateSource(resourceProviders, new PackageSource(sourceUrl));
         }
 
+
+        /// <summary>
+        /// Create a SourceRepository
+        /// </summary>
+        public static SourceRepository CreateSource(IEnumerable<Lazy<INuGetResourceProvider>> resourceProviders, string sourceUrl, FeedType type)
+        {
+            return CreateSource(resourceProviders, new PackageSource(sourceUrl), type);
+        }
+
         /// <summary>
         /// Create a SourceRepository
         /// </summary>
         public static SourceRepository CreateSource(IEnumerable<Lazy<INuGetResourceProvider>> resourceProviders, PackageSource source)
         {
+            return CreateSource(resourceProviders, source, FeedType.Undefined);
+        }
+
+        /// <summary>
+        /// Create a SourceRepository
+        /// </summary>
+        public static SourceRepository CreateSource(IEnumerable<Lazy<INuGetResourceProvider>> resourceProviders, PackageSource source, FeedType type)
+        {
             if (source == null)
             {
-                throw new ArgumentNullException("source");
+                throw new ArgumentNullException(nameof(source));
             }
 
             if (resourceProviders == null)
             {
-                throw new ArgumentNullException("resourceProviders");
+                throw new ArgumentNullException(nameof(resourceProviders));
             }
 
-            return new SourceRepository(source, resourceProviders);
+            return new SourceRepository(source, resourceProviders, type);
         }
 
         private static IEnumerable<Lazy<INuGetResourceProvider>> CreateLazy(IEnumerable<INuGetResourceProvider> providers)

@@ -2,20 +2,22 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Xml;
 using System.Xml.Linq;
 using NuGet.Common;
 using NuGet.Configuration;
-using NuGet.Logging;
+using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 
-namespace NuGet.Protocol.Core.v3.RemoteRepositories
+namespace NuGet.Protocol
 {
     public class RemoteV2FindPackageByIdResource : FindPackageByIdResource
     {
@@ -33,68 +35,133 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
         private readonly string _baseUri;
         private readonly HttpSource _httpSource;
         private readonly Dictionary<string, Task<IEnumerable<PackageInfo>>> _packageVersionsCache = new Dictionary<string, Task<IEnumerable<PackageInfo>>>(StringComparer.OrdinalIgnoreCase);
-        private readonly Dictionary<string, Task<NupkgEntry>> _nupkgCache = new Dictionary<string, Task<NupkgEntry>>(StringComparer.OrdinalIgnoreCase);
-        private bool _ignored;
+        private readonly ConcurrentDictionary<PackageIdentity, Task<PackageIdentity>> _packageIdentityCache
+            = new ConcurrentDictionary<PackageIdentity, Task<PackageIdentity>>();
+        private readonly FindPackagesByIdNupkgDownloader _nupkgDownloader;
 
-        public RemoteV2FindPackageByIdResource(PackageSource packageSource, Func<Task<HttpHandlerResource>> handlerFactory)
+        public RemoteV2FindPackageByIdResource(PackageSource packageSource, HttpSource httpSource)
         {
             _baseUri = packageSource.Source.EndsWith("/") ? packageSource.Source : (packageSource.Source + "/");
-            _httpSource = new HttpSource(_baseUri, handlerFactory);
+            _httpSource = httpSource;
+            _nupkgDownloader = new FindPackagesByIdNupkgDownloader(_httpSource);
 
             PackageSource = packageSource;
         }
 
         public PackageSource PackageSource { get; }
 
-        public override ILogger Logger
+        public override async Task<IEnumerable<NuGetVersion>> GetAllVersionsAsync(
+            string id,
+            SourceCacheContext cacheContext,
+            ILogger logger,
+            CancellationToken cancellationToken)
         {
-            get { return base.Logger; }
-            set
-            {
-                base.Logger = value;
-                _httpSource.Logger = value;
-            }
+            var result = await EnsurePackagesAsync(id, cacheContext, logger, cancellationToken);
+            return result.Select(item => item.Identity.Version);
         }
 
-        public bool IgnoreFailure { get; set; }
-
-        public override async Task<IEnumerable<NuGetVersion>> GetAllVersionsAsync(string id, CancellationToken cancellationToken)
+        public override async Task<PackageIdentity> GetOriginalIdentityAsync(
+            string id,
+            NuGetVersion version,
+            SourceCacheContext cacheContext,
+            ILogger logger,
+            CancellationToken cancellationToken)
         {
-            var result = await EnsurePackagesAsync(id, cancellationToken);
-            return result.Select(item => item.Version);
+            return await _packageIdentityCache.GetOrAdd(
+                new PackageIdentity(id, version),
+                async original =>
+                {
+                    var packageInfo = await GetPackageInfoAsync(
+                        original.Id,
+                        original.Version,
+                        cacheContext,
+                        logger,
+                        cancellationToken);
+
+                    if (packageInfo == null)
+                    {
+                        return null;
+                    }
+
+                    var reader = await _nupkgDownloader.GetNuspecReaderFromNupkgAsync(
+                        packageInfo.Identity,
+                        packageInfo.ContentUri,
+                        cacheContext,
+                        logger,
+                        cancellationToken);
+
+                    return reader.GetIdentity();
+                });
         }
 
-        public override async Task<FindPackageByIdDependencyInfo> GetDependencyInfoAsync(string id, NuGetVersion version, CancellationToken cancellationToken)
+        public override async Task<FindPackageByIdDependencyInfo> GetDependencyInfoAsync(
+            string id,
+            NuGetVersion version,
+            SourceCacheContext cacheContext,
+            ILogger logger,
+            CancellationToken cancellationToken)
         {
-            var packageInfos = await EnsurePackagesAsync(id, cancellationToken);
-            var packageInfo = packageInfos.FirstOrDefault(p => p.Version == version);
+            var packageInfo = await GetPackageInfoAsync(id, version, cacheContext, logger, cancellationToken);
             if (packageInfo == null)
             {
-                Logger.LogWarning($"Unable to find package {id}{version}");
+                logger.LogWarning($"Unable to find package {id}{version}");
                 return null;
             }
 
-            var reader = await PackageUtilities.OpenNuspecFromNupkgAsync(
-                packageInfo.Id,
-                OpenNupkgStreamAsync(packageInfo, cancellationToken),
-                Logger);
+            var reader = await _nupkgDownloader.GetNuspecReaderFromNupkgAsync(
+                packageInfo.Identity,
+                packageInfo.ContentUri,
+                cacheContext,
+                logger,
+                cancellationToken);
+
+            // Populate the package identity cache while we have the .nuspec open.
+            _packageIdentityCache.TryAdd(
+                new PackageIdentity(id, version),
+                Task.FromResult(reader.GetIdentity()));
 
             return GetDependencyInfo(reader);
         }
 
-        public override async Task<Stream> GetNupkgStreamAsync(string id, NuGetVersion version, CancellationToken cancellationToken)
+        public override async Task<bool> CopyNupkgToStreamAsync(
+            string id,
+            NuGetVersion version,
+            Stream destination,
+            SourceCacheContext cacheContext,
+            ILogger logger,
+            CancellationToken token)
         {
-            var packageInfos = await EnsurePackagesAsync(id, cancellationToken);
-            var packageInfo = packageInfos.FirstOrDefault(p => p.Version == version);
+            var packageInfo = await GetPackageInfoAsync(id, version, cacheContext, logger, token);
             if (packageInfo == null)
             {
-                return null;
+                return false;
             }
 
-            return await OpenNupkgStreamAsync(packageInfo, cancellationToken);
+            return await _nupkgDownloader.CopyNupkgToStreamAsync(
+                packageInfo.Identity,
+                packageInfo.ContentUri,
+                destination,
+                cacheContext,
+                logger,
+                token);
         }
 
-        private Task<IEnumerable<PackageInfo>> EnsurePackagesAsync(string id, CancellationToken cancellationToken)
+        private async Task<PackageInfo> GetPackageInfoAsync(
+            string id,
+            NuGetVersion version,
+            SourceCacheContext cacheContext,
+            ILogger logger,
+            CancellationToken cancellationToken)
+        {
+            var packageInfos = await EnsurePackagesAsync(id, cacheContext, logger, cancellationToken);
+            return packageInfos.FirstOrDefault(p => p.Identity.Version == version);
+        }
+
+        private Task<IEnumerable<PackageInfo>> EnsurePackagesAsync(
+            string id,
+            SourceCacheContext cacheContext,
+            ILogger logger,
+            CancellationToken cancellationToken)
         {
             Task<IEnumerable<PackageInfo>> task;
 
@@ -102,7 +169,7 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
             {
                 if (!_packageVersionsCache.TryGetValue(id, out task))
                 {
-                    task = FindPackagesByIdAsyncCore(id, cancellationToken);
+                    task = FindPackagesByIdAsyncCore(id, cacheContext, logger, cancellationToken);
                     _packageVersionsCache[id] = task;
                 }
             }
@@ -110,36 +177,57 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
             return task;
         }
 
-        private async Task<IEnumerable<PackageInfo>> FindPackagesByIdAsyncCore(string id, CancellationToken cancellationToken)
+        private async Task<IEnumerable<PackageInfo>> FindPackagesByIdAsyncCore(
+            string id,
+            SourceCacheContext cacheContext,
+            ILogger logger,
+            CancellationToken cancellationToken)
         {
-            for (var retry = 0; retry != 3; ++retry)
+            for (var retry = 0; retry < 3; ++retry)
             {
-                if (_ignored)
-                {
-                    return new List<PackageInfo>();
-                }
+                var uri = _baseUri + "FindPackagesById()?id='" + id + "'";
+                var httpSourceCacheContext = HttpSourceCacheContext.Create(cacheContext, retry);
 
                 try
                 {
-                    var uri = _baseUri + "FindPackagesById()?id='" + id + "'";
                     var results = new List<PackageInfo>();
+                    var uris = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+                    uris.Add(uri);
                     var page = 1;
-                    while (true)
+                    var paging = true;
+                    while (paging)
                     {
-                        // TODO: Pages for a package Id are cached separately.
+                        // TODO: Pages for a package ID are cached separately.
                         // So we will get inaccurate data when a page shrinks.
                         // However, (1) In most cases the pages grow rather than shrink;
                         // (2) cache for pages is valid for only 30 min.
                         // So we decide to leave current logic and observe.
-                        using (var data = await _httpSource.GetAsync(
-                            uri,
-                            $"list_{id}_page{page}",
-                            CreateCacheContext(retry),
-                            cancellationToken))
-                        {
-                            try
+                        paging = await _httpSource.GetAsync(
+                            new HttpSourceCachedRequest(
+                                uri,
+                                $"list_{id}_page{page}",
+                                httpSourceCacheContext)
                             {
-                                var doc = XDocument.Load(data.Stream);
+                                AcceptHeaderValues =
+                                {
+                                    new MediaTypeWithQualityHeaderValue("application/atom+xml"),
+                                    new MediaTypeWithQualityHeaderValue("application/xml")
+                                },
+                                EnsureValidContents = stream => HttpStreamValidation.ValidateXml(uri, stream),
+                                MaxTries = 1
+                            },
+                            httpSourceResult =>
+                            {
+                                if (httpSourceResult.Status == HttpSourceResultStatus.NoContent)
+                                {
+                                    // Team city returns 204 when no versions of the package exist
+                                    // This should result in an empty list and we should not try to
+                                    // read the stream as xml.
+                                    return Task.FromResult(false);
+                                }
+
+                                var doc = V2FeedParser.LoadXml(httpSourceResult.Stream);
 
                                 var result = doc.Root
                                     .Elements(_xnameEntry)
@@ -148,56 +236,54 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
 
                                 results.AddRange(result);
 
-                                // Example of what this looks like in the odata feed:
-                                // <link rel="next" href="{nextLink}" />
-                                var nextUri = (from e in doc.Root.Elements(_xnameLink)
-                                               let attr = e.Attribute("rel")
-                                               where attr != null && string.Equals(attr.Value, "next", StringComparison.OrdinalIgnoreCase)
-                                               select e.Attribute("href")
-                                    into nextLink
-                                               where nextLink != null
-                                               select nextLink.Value).FirstOrDefault();
+                                // Find the next url for continuation
+                                var nextUri = V2FeedParser.GetNextUrl(doc);
 
                                 // Stop if there's nothing else to GET
                                 if (string.IsNullOrEmpty(nextUri))
                                 {
-                                    break;
+                                    return Task.FromResult(false);
+                                }
+
+                                // check for any duplicate url and error out
+                                if (!uris.Add(nextUri))
+                                {
+                                    throw new FatalProtocolException(string.Format(
+                                        CultureInfo.CurrentCulture,
+                                        Strings.Protocol_duplicateUri,
+                                        nextUri));
                                 }
 
                                 uri = nextUri;
                                 page++;
-                            }
-                            catch (XmlException)
-                            {
-                                Logger.LogMinimal($"The XML file {data.CacheFileName} is corrupt.");
-                                throw;
-                            }
-                        }
+
+                                return Task.FromResult(true);
+                            },
+                            logger,
+                            cancellationToken);
                     }
 
                     return results;
                 }
                 catch (Exception ex) when (retry < 2)
                 {
-                    Logger.LogMinimal(string.Format("Warning: FindPackagesById: {1}\r\n  {0}", ex.Message, id));
+                    string message = string.Format(CultureInfo.CurrentCulture, Strings.Log_RetryingFindPackagesById, nameof(FindPackagesByIdAsyncCore), uri)
+                        + Environment.NewLine
+                        + ExceptionUtilities.DisplayMessage(ex);
+                    logger.LogMinimal(message);
                 }
                 catch (Exception ex) when (retry == 2)
                 {
-                    // Fail silently by returning empty result list
-                    var message = Strings.FormatLog_FailedToRetrievePackage(_baseUri);
-
-                    if (IgnoreFailure)
-                    {
-                        _ignored = true;
-                        Logger.LogWarning(message);
-                        return Enumerable.Empty<PackageInfo>();
-                    }
-
-                    Logger.LogError(message + Environment.NewLine + ex.Message);
+                    var message = string.Format(
+                        CultureInfo.CurrentCulture,
+                        Strings.Log_FailedToRetrievePackage,
+                        id,
+                        uri);
 
                     throw new FatalProtocolException(message, ex);
                 }
             }
+
             return null;
         }
 
@@ -208,94 +294,20 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
 
             return new PackageInfo
             {
-                // Use the given Id as final fallback if all elements above don't exist
-                Id = idElement?.Value ?? id,
-                Version = NuGetVersion.Parse(properties.Element(_xnameVersion).Value),
+                Identity = new PackageIdentity(
+                     idElement?.Value ?? id, // Use the given Id as final fallback if all elements above don't exist
+                     NuGetVersion.Parse(properties.Element(_xnameVersion).Value)),
                 ContentUri = element.Element(_xnameContent).Attribute("src").Value,
             };
         }
 
-        private async Task<Stream> OpenNupkgStreamAsync(PackageInfo package, CancellationToken cancellationToken)
-        {
-            Task<NupkgEntry> task;
-            lock (_nupkgCache)
-            {
-                if (!_nupkgCache.TryGetValue(package.ContentUri, out task))
-                {
-                    task = _nupkgCache[package.ContentUri] = OpenNupkgStreamAsyncCore(package, cancellationToken);
-                }
-            }
-
-            var result = await task;
-            if (result == null)
-            {
-                return null;
-            }
-
-            // Acquire the lock on a file before we open it to prevent this process
-            // from opening a file deleted by the logic in HttpSource.GetAsync() in another process
-            return await ConcurrencyUtilities.ExecuteWithFileLockedAsync(result.TempFileName,
-                action: token =>
-                {
-                    return Task.FromResult(
-                        new FileStream(result.TempFileName, FileMode.Open, FileAccess.Read,
-                            FileShare.ReadWrite | FileShare.Delete));
-                },
-                token: cancellationToken);
-        }
-
-        private async Task<NupkgEntry> OpenNupkgStreamAsyncCore(PackageInfo package, CancellationToken cancellationToken)
-        {
-            for (var retry = 0; retry != 3; ++retry)
-            {
-                try
-                {
-                    using (var data = await _httpSource.GetAsync(
-                        package.ContentUri,
-                        "nupkg_" + package.Id + "." + package.Version,
-                        CreateCacheContext(retry),
-                        cancellationToken))
-                    {
-                        return new NupkgEntry
-                        {
-                            TempFileName = data.CacheFileName
-                        };
-                    }
-                }
-                catch (TaskCanceledException ex) when (retry < 2)
-                {
-                    // Requests can get cancelled if we got the data from elsewhere, no reason to warn.
-                    Logger.LogMinimal(string.Format("Warning: DownloadPackageAsync: {1}\r\n  {0}", ex.Message, package.ContentUri));
-                }
-                catch (Exception ex)
-                {
-                    if (retry == 2)
-                    {
-                        Logger.LogError(string.Format("Error: DownloadPackageAsync: {1}\r\n  {0}", ex.Message, package.ContentUri));
-                    }
-                    else
-                    {
-                        Logger.LogMinimal(string.Format("Warning: DownloadPackageAsync: {1}\r\n  {0}", ex.Message, package.ContentUri));
-                    }
-                }
-            }
-            return null;
-        }
-
-        private class NupkgEntry
-        {
-            public string TempFileName { get; set; }
-        }
-
         private class PackageInfo
         {
-            public string Id { get; set; }
+            public PackageIdentity Identity { get; set; }
 
             public string Path { get; set; }
 
             public string ContentUri { get; set; }
-
-            public NuGetVersion Version { get; set; }
         }
     }
 }

@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
@@ -21,11 +24,12 @@ namespace NuGet.CommandLine.Test
         public void NetworkCallCount_RestoreLargePackagesConfigWithMultipleSourcesWithAllMissingPackages()
         {
             // Arrange
+            Util.ClearWebCache();
             var testCount = 100;
 
             using (var server2 = new MockServer())
             using (var server1 = new MockServer())
-            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingPath = TestDirectory.Create())
             {
                 var repositoryPath1 = Path.Combine(workingPath, "repo");
                 var repositoryPath2 = Path.Combine(workingPath, "repo2");
@@ -114,17 +118,12 @@ namespace NuGet.CommandLine.Test
                 Assert.True(0 != r.Item1, r.Item2 + " " + r.Item3);
 
                 Assert.Equal(1, hitsByUrl["/index.json"]);
-                Assert.Equal(1, hitsByUrl2["/nuget"]);
+                Assert.Equal(100, hitsByUrl2.Keys.Count(s => s.StartsWith("/nuget/Packages")));
+
+                // The "/Packages" endpoint falls back to "/FindPackagesById" if no package is found.
+                Assert.Equal(100, hitsByUrl2.Keys.Count(s => s.StartsWith("/nuget/FindPackagesById")));
 
                 Assert.Equal(0, allPackages.Count());
-
-                // both v2 and v3 have the packages, it's possible that v2 may never be used if v3 always wins
-                // if v2 is never used there will not be a machine cache folder, which is okay. If it does exist
-                // make sure that there are no tmp files left behind.
-                Assert.Equal(0,
-                    Directory.Exists(MachineCache.Default.Source) ?
-                    Directory.GetFiles(MachineCache.Default.Source, "*.tmp").Count()
-                    : 0);
             }
         }
 
@@ -132,11 +131,12 @@ namespace NuGet.CommandLine.Test
         public void NetworkCallCount_RestoreLargePackagesConfigWithMultipleSourcesWithPartialMissingPackages()
         {
             // Arrange
+            Util.ClearWebCache();
             var testCount = 100;
 
             using (var server2 = new MockServer())
             using (var server = new MockServer())
-            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingPath = TestDirectory.Create())
             {
                 var repositoryPath = Path.Combine(workingPath, "repo");
                 var repositoryPath2 = Path.Combine(workingPath, "repo2");
@@ -251,7 +251,6 @@ namespace NuGet.CommandLine.Test
                 Assert.True(0 != r.Item1, r.Item2 + " " + r.Item3);
 
                 Assert.Equal(1, hitsByUrl["/index.json"]);
-                Assert.Equal(1, hitsByUrl2["/nuget"]);
 
                 Assert.Equal(expectedPackages.Count, allPackages.Count());
 
@@ -260,8 +259,6 @@ namespace NuGet.CommandLine.Test
                     Assert.True(allPackages.Any(p => p.Id == package.Id
                         && p.Version.ToNormalizedString() == package.Version.ToNormalizedString()));
                 }
-
-                Assert.Equal(0, Directory.GetFiles(MachineCache.Default.Source, "*.tmp").Count());
             }
         }
 
@@ -269,11 +266,12 @@ namespace NuGet.CommandLine.Test
         public void NetworkCallCount_RestoreLargePackagesConfigWithMultipleSourcesMainlyV3()
         {
             // Arrange
+            Util.ClearWebCache();
             var testCount = 100;
 
             using (var server2 = new MockServer())
             using (var server = new MockServer())
-            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingPath = TestDirectory.Create())
             {
                 var repositoryPath = Path.Combine(workingPath, "repo");
                 var repositoryPath2 = Path.Combine(workingPath, "repo2");
@@ -387,8 +385,6 @@ namespace NuGet.CommandLine.Test
                     Assert.True(allPackages.Any(p => p.Id == package.Id
                         && p.Version.ToNormalizedString() == package.Version.ToNormalizedString()));
                 }
-
-                Assert.Equal(0, Directory.GetFiles(MachineCache.Default.Source, "*.tmp").Count());
             }
         }
 
@@ -396,11 +392,12 @@ namespace NuGet.CommandLine.Test
         public void NetworkCallCount_RestoreLargePackagesConfigWithMultipleSourcesMainlyV2()
         {
             // Arrange
+            Util.ClearWebCache();
             var testCount = 100;
 
             using (var server2 = new MockServer())
             using (var server = new MockServer())
-            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingPath = TestDirectory.Create())
             {
                 var repositoryPath = Path.Combine(workingPath, "repo");
                 var repositoryPath2 = Path.Combine(workingPath, "repo2");
@@ -513,8 +510,6 @@ namespace NuGet.CommandLine.Test
                     Assert.True(allPackages.Any(p => p.Id == package.Id
                         && p.Version.ToNormalizedString() == package.Version.ToNormalizedString()));
                 }
-
-                Assert.Equal(0, Directory.GetFiles(MachineCache.Default.Source, "*.tmp").Count());
             }
         }
 
@@ -522,6 +517,7 @@ namespace NuGet.CommandLine.Test
         public void NetworkCallCount_CancelPackageDownloadForV3()
         {
             // Arrange
+            Util.ClearWebCache();
             using (var server2 = new MockServer())
             using (var server = new MockServer())
             using (var workingPath = CreateMixedConfigAndJson())
@@ -575,8 +571,7 @@ namespace NuGet.CommandLine.Test
                     "restore",
                     slnPath,
                     "-Verbosity",
-                    "detailed",
-                    "-DisableParallelProcessing"
+                    "detailed"
                 };
 
                 var task = Task.Run(() =>
@@ -602,7 +597,7 @@ namespace NuGet.CommandLine.Test
                 var globalFolderCount = Directory.GetDirectories(
                     globalFolder.FullName, "*", SearchOption.TopDirectoryOnly)
                     .Count();
-                var machineCacheCount = Directory.GetFiles(MachineCache.Default.Source).Count();
+
                 var packagesFolderCount = Directory.GetDirectories(
                     packagesFolder.FullName, "*", SearchOption.TopDirectoryOnly)
                     .Count();
@@ -610,10 +605,8 @@ namespace NuGet.CommandLine.Test
                 // Assert
                 Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
 
-                // The machine cache should be used for everything.
-                Assert.Equal(3, machineCacheCount);
                 Assert.Equal(3, packagesFolderCount);   // project.json packages still go here
-                Assert.Equal(3, globalFolderCount);     // packages.config packages should have gone in v2
+                Assert.Equal(6, globalFolderCount);
             }
         }
 
@@ -621,6 +614,7 @@ namespace NuGet.CommandLine.Test
         public void NetworkCallCount_CancelPackageDownloadForV2()
         {
             // Arrange
+            Util.ClearWebCache();
             using (var server2 = new MockServer())
             using (var server = new MockServer())
             using (var workingPath = CreateMixedConfigAndJson())
@@ -668,8 +662,7 @@ namespace NuGet.CommandLine.Test
                     "restore",
                     slnPath,
                     "-Verbosity",
-                    "detailed",
-                    "-DisableParallelProcessing"
+                    "detailed"
                 };
 
                 var task = Task.Run(() =>
@@ -696,7 +689,7 @@ namespace NuGet.CommandLine.Test
                 var globalFolderCount = Directory.GetDirectories(
                     globalFolder.FullName, "*", SearchOption.TopDirectoryOnly)
                     .Count();
-                var machineCacheCount = GetMachineCacheCount();
+
                 var packagesFolderCount = Directory.GetDirectories(
                     packagesFolder.FullName, "*", SearchOption.TopDirectoryOnly)
                     .Count();
@@ -704,8 +697,6 @@ namespace NuGet.CommandLine.Test
                 // Assert
                 Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
 
-                // The machine cache should not have been used since v3 was first.
-                Assert.Equal(0, machineCacheCount);
                 Assert.Equal(3, packagesFolderCount);
                 Assert.Equal(6, globalFolderCount);
             }
@@ -715,6 +706,7 @@ namespace NuGet.CommandLine.Test
         public void NetworkCallCount_RestoreSolutionMultipleSourcesV2V3AndLocal()
         {
             // Arrange
+            Util.ClearWebCache();
             using (var server2 = new MockServer())
             using (var server = new MockServer())
             using (var workingPath = CreateMixedConfigAndJson())
@@ -850,6 +842,7 @@ namespace NuGet.CommandLine.Test
         public void NetworkCallCount_InstallVersionFromV3()
         {
             // Arrange
+            Util.ClearWebCache();
             using (var server = new MockServer())
             using (var workingPath = CreateMixedConfigAndJson())
             {
@@ -974,6 +967,7 @@ namespace NuGet.CommandLine.Test
         public void NetworkCallCount_InstallLatestFromV3()
         {
             // Arrange
+            Util.ClearWebCache();
             using (var server = new MockServer())
             using (var workingPath = CreateMixedConfigAndJson())
             {
@@ -1035,6 +1029,7 @@ namespace NuGet.CommandLine.Test
         public void NetworkCallCount_RestoreSolutionMultipleSourcesV2V3()
         {
             // Arrange
+            Util.ClearWebCache();
             using (var server2 = new MockServer())
             using (var server = new MockServer())
             using (var workingPath = CreateMixedConfigAndJson())
@@ -1086,7 +1081,6 @@ namespace NuGet.CommandLine.Test
                 Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
 
                 Assert.Equal(1, hitsByUrl["/index.json"]);
-                Assert.Equal(1, hitsByUrl2["/nuget"]);
             }
         }
 
@@ -1160,6 +1154,7 @@ namespace NuGet.CommandLine.Test
         public void NetworkCallCount_RestoreSolutionMultipleSourcesTwoV3()
         {
             // Arrange
+            Util.ClearWebCache();
             using (var server2 = new MockServer())
             using (var server = new MockServer())
             using (var workingPath = CreateMixedConfigAndJson())
@@ -1203,7 +1198,9 @@ namespace NuGet.CommandLine.Test
                     slnPath,
                     "-Verbosity",
                     "detailed",
-                    "-DisableParallelProcessing"
+                    "-DisableParallelProcessing",
+                    "MSBuildVersion",
+                    "14"
                 };
 
                 // Act
@@ -1232,6 +1229,7 @@ namespace NuGet.CommandLine.Test
         public void NetworkCallCount_RestoreSolutionV3WithoutFlatContainer()
         {
             // Arrange
+            Util.ClearWebCache();
             using (var server = new MockServer())
             using (var workingPath = CreateMixedConfigAndJson())
             {
@@ -1288,6 +1286,7 @@ namespace NuGet.CommandLine.Test
         public void NetworkCallCount_RestoreSolutionWithPackagesConfigAndProjectJsonV3()
         {
             // Arrange
+            Util.ClearWebCache();
             using (var server = new MockServer())
             using (var workingPath = CreateMixedConfigAndJson())
             {
@@ -1384,7 +1383,6 @@ namespace NuGet.CommandLine.Test
 
                 // Assert
                 Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
-                Assert.Equal(1, hitsByUrl["/nuget"]);
 
                 foreach (var url in hitsByUrl.Keys)
                 {
@@ -1395,7 +1393,7 @@ namespace NuGet.CommandLine.Test
 
         private TestDirectory CreateMixedConfigAndJson()
         {
-            var workingPath = TestFileSystemUtility.CreateRandomTestFolder();
+            var workingPath = TestDirectory.Create();
 
             try
             {
@@ -1455,16 +1453,10 @@ namespace NuGet.CommandLine.Test
                                                     }
                                             }");
 
-                var projectContent = @"<?xml version=""1.0"" encoding=""utf-8""?>
-                                <Project ToolsVersion=""14.0"" DefaultTargets=""Build""
-                                xmlns=""http://schemas.microsoft.com/developer/msbuild/2003"">
-                <Target Name=""_NuGet_GetProjectsReferencingProjectJsonInternal""></Target>
-                </Project>";
-
-                Util.CreateFile(proj1Dir, "proj1.csproj", projectContent);
-                Util.CreateFile(proj2Dir, "proj2.csproj", projectContent);
-                Util.CreateFile(proj3Dir, "proj3.csproj", projectContent);
-                Util.CreateFile(proj4Dir, "proj4.csproj", projectContent);
+                Util.CreateFile(proj1Dir, "proj1.csproj", Util.GetCSProjXML("proj1"));
+                Util.CreateFile(proj2Dir, "proj2.csproj", Util.GetCSProjXML("proj2"));
+                Util.CreateFile(proj3Dir, "proj3.csproj", Util.GetCSProjXML("proj3"));
+                Util.CreateFile(proj4Dir, "proj4.csproj", Util.GetCSProjXML("proj4"));
 
                 var slnPath = Path.Combine(workingPath, "test.sln");
 
@@ -1539,12 +1531,12 @@ namespace NuGet.CommandLine.Test
         {
             try
             {
-                var path = request.Url.AbsolutePath;
+                var path = server.GetRequestUrlAbsolutePath(request);
                 var parts = request.Url.AbsolutePath.Split('/');
                 var repositoryPath = localRepo.Source;
 
                 // track hits on the url
-                var urlHits = hitsByUrl.AddOrUpdate(request.RawUrl, 1, (s, i) => i + 1);
+                var urlHits = hitsByUrl.AddOrUpdate(server.GetRequestRawUrl(request), 1, (s, i) => i + 1);
 
                 if (path == "/index.json")
                 {
@@ -1694,12 +1686,12 @@ namespace NuGet.CommandLine.Test
                 else if (path.StartsWith("/nuget/FindPackagesById()"))
                 {
                     var id = request.QueryString.Get("id").Trim('\'');
-                    var package = localRepo.FindPackagesById(id).Single();
+                    var packages = localRepo.FindPackagesById(id);
 
                     return new Action<HttpListenerResponse>(response =>
                     {
                         response.ContentType = "application/atom+xml;type=feed;charset=utf-8";
-                        var feed = server.ToODataFeed(new[] { package }, "FindPackagesById");
+                        var feed = server.ToODataFeed(packages, "FindPackagesById");
                         MockServer.SetResponseContent(response, feed);
                     });
                 }
@@ -1725,37 +1717,6 @@ namespace NuGet.CommandLine.Test
                 // Debug here
                 throw;
             }
-        }
-
-        private static int GetMachineCacheCount()
-        {
-            if (Directory.Exists(MachineCache.Default.Source))
-            {
-                return Directory.GetFiles(MachineCache.Default.Source).Count();
-            }
-
-            return 0;
-        }
-
-        /// <summary>
-        /// Fully delete the machine cache including temp files
-        /// </summary>
-        private static void ClearMachineCache()
-        {
-            var dir = MachineCache.Default.Source;
-
-            if (Directory.Exists(dir))
-            {
-                foreach (var file in Directory.GetFiles(MachineCache.Default.Source))
-                {
-                    File.Delete(file);
-                }
-            }
-        }
-
-        public NetworkCallCountTest()
-        {
-            ClearMachineCache();
         }
     }
 }

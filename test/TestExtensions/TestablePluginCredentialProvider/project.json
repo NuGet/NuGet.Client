@@ -3,7 +3,7 @@
     "Newtonsoft.Json": "6.0.4"
   },
   "frameworks": {
-    "net45": {}
+    "net46": {}
   },
   "runtimes": {
     "win-anycpu": {},

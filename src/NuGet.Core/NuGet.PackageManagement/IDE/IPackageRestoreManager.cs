@@ -5,8 +5,10 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
+using NuGet.Protocol.Core.Types;
 
 namespace NuGet.PackageManagement
 {
@@ -53,6 +55,15 @@ namespace NuGet.PackageManagement
         Task<IEnumerable<PackageRestoreData>> GetPackagesInSolutionAsync(string solutionDirectory, CancellationToken token);
 
         /// <summary>
+        /// Get packages restore data for given package references.
+        /// </summary>
+        /// <param name="solutionDirectory">Current solution directory</param>
+        /// <param name="packageReferencesDict">Dictionary of package reference with project names</param>
+        /// <returns>List of packages restore data with missing package details.</returns>
+	    IEnumerable<PackageRestoreData> GetPackagesRestoreData(string solutionDirectory,
+            Dictionary<PackageReference, List<string>> packageReferencesDict);
+
+        /// <summary>
         /// Checks the current solution if there is any package missing.
         /// </summary>
         Task RaisePackagesMissingEventForSolutionAsync(string solutionDirectory, CancellationToken token);
@@ -66,15 +77,6 @@ namespace NuGet.PackageManagement
         /// </remarks>
         /// <returns>Returns true if atleast one package was restored.</returns>
         Task<PackageRestoreResult> RestoreMissingPackagesInSolutionAsync(string solutionDirectory,
-            INuGetProjectContext nuGetProjectContext,
-            CancellationToken token);
-
-        /// <summary>
-        /// Restores the missing packages for a project. Returns true if atleast one package was restored.
-        /// </summary>
-        /// <remarks>Best use case is 'nuget.exe restore packages.config'</remarks>
-        Task<PackageRestoreResult> RestoreMissingPackagesAsync(string solutionDirectory,
-            NuGetProject nuGetProject,
             INuGetProjectContext nuGetProjectContext,
             CancellationToken token);
 
@@ -97,6 +99,7 @@ namespace NuGet.PackageManagement
         Task<PackageRestoreResult> RestoreMissingPackagesAsync(string solutionDirectory,
             IEnumerable<PackageRestoreData> packages,
             INuGetProjectContext nuGetProjectContext,
+            PackageDownloadContext downloadContext,
             CancellationToken token);
     }
 

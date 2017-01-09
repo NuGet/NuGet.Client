@@ -1,4 +1,5 @@
 using System;
+using NuGet.CommandLine;
 
 namespace NuGet
 {

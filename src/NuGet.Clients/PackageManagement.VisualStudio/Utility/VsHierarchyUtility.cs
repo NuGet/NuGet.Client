@@ -37,6 +37,52 @@ namespace NuGet.PackageManagement.VisualStudio
             return hierarchy;
         }
 
+        public static string GetMSBuildProperty(IVsHierarchy pHierarchy, string name)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            var buildPropertyStorage = pHierarchy as IVsBuildPropertyStorage;
+            string output = null;
+
+            if (buildPropertyStorage != null)
+            {
+                var result = buildPropertyStorage.GetPropertyValue(
+                    name,
+                    string.Empty,
+                    (uint)_PersistStorageType.PST_PROJECT_FILE,
+                    out output);
+
+                if (result != NuGetVSConstants.S_OK || string.IsNullOrWhiteSpace(output))
+                {
+                    return null;
+                }
+            }
+
+            return output;
+        }
+
+public static VsHierarchyItem GetHierarchyItemForProject(Project project)
+        {
+            Debug.Assert(ThreadHelper.CheckAccess());
+
+            return new VsHierarchyItem(ToVsHierarchy(project));
+        }
+
+        public static string GetProjectId(Project project)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            var hierarchyItem = GetHierarchyItemForProject(project);
+
+            Guid id;
+            if (!hierarchyItem.TryGetProjectId(out id))
+            {
+                id = Guid.Empty;
+            }
+
+            return id.ToString();
+        }
+
         public static string[] GetProjectTypeGuids(Project project)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
@@ -191,23 +237,6 @@ namespace NuGet.PackageManagement.VisualStudio
                         return 0;
                     },
                 callerObject: null);
-        }
-
-        private static VsHierarchyItem GetHierarchyItemForProject(Project project)
-        {
-            Debug.Assert(ThreadHelper.CheckAccess());
-
-            IVsHierarchy hierarchy;
-
-            // Get the solution
-            IVsSolution solution = ServiceLocator.GetGlobalService<SVsSolution, IVsSolution>();
-            int hr = solution.GetProjectOfUniqueName(EnvDTEProjectUtility.GetUniqueName(project), out hierarchy);
-
-            if (hr != VSConstants.S_OK)
-            {
-                Marshal.ThrowExceptionForHR(hr);
-            }
-            return new VsHierarchyItem(hierarchy);
         }
 
         private static void CollapseVsHierarchyItem(VsHierarchyItem vsHierarchyItem, IVsUIHierarchyWindow vsHierarchyWindow)

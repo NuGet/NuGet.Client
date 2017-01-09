@@ -1,11 +1,16 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using NuGet.Commands;
 using NuGet.Frameworks;
+using NuGet.PackageManagement;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 
@@ -14,8 +19,7 @@ namespace NuGet.Common
     public class MSBuildProjectSystem : MSBuildUser, IMSBuildNuGetProjectSystem
     {
         private const string TargetName = "EnsureNuGetPackageBuildImports";
-        private readonly string _projectDirectory;
-
+        
         public MSBuildProjectSystem(
             string msbuildDirectory,
             string projectFullPath,
@@ -23,8 +27,8 @@ namespace NuGet.Common
         {
             LoadAssemblies(msbuildDirectory);
 
-            _projectDirectory = Path.GetDirectoryName(projectFullPath);
-            ProjectFullPath = _projectDirectory;
+            ProjectFileFullPath = projectFullPath;
+            ProjectFullPath = Path.GetDirectoryName(projectFullPath);
             Project = GetProject(projectFullPath);
             ProjectName = Path.GetFileName(projectFullPath);
             ProjectUniqueName = projectFullPath;
@@ -42,16 +46,38 @@ namespace NuGet.Common
 
         public string ProjectUniqueName { get; }
 
+        public string ProjectFileFullPath { get; }
+
+        private NuGetFramework _targetFramework;
+
         public NuGetFramework TargetFramework
         {
             get
             {
-                string moniker = GetPropertyValue("TargetFrameworkMoniker");
-                if (String.IsNullOrEmpty(moniker))
+                if (_targetFramework == null)
                 {
-                    return null;
+                    var frameworkStrings = MSBuildProjectFrameworkUtility.GetProjectFrameworkStrings(
+                        projectFilePath: ProjectFileFullPath,
+                        targetFrameworks: GetPropertyValue("TargetFrameworks"),
+                        targetFramework: GetPropertyValue("TargetFramework"),
+                        targetFrameworkMoniker: GetPropertyValue("TargetFrameworkMoniker"),
+                        targetPlatformIdentifier: GetPropertyValue("TargetPlatformIdentifier"),
+                        targetPlatformVersion: GetPropertyValue("TargetPlatformVersion"));
+
+                    // Parse the framework of the project or return unsupported.
+                    var frameworks = MSBuildProjectFrameworkUtility.GetProjectFrameworks(frameworkStrings).ToArray();
+
+                    if (frameworks.Length > 0)
+                    {
+                        _targetFramework = frameworks[0];
+                    }
+                    else
+                    {
+                        _targetFramework = NuGetFramework.UnsupportedFramework;
+                    }
                 }
-                return NuGetFramework.Parse(moniker);
+
+                return _targetFramework;
             }
         }
 
@@ -72,7 +98,7 @@ namespace NuGet.Common
             FileSystemUtility.AddFile(ProjectFullPath, path, stream, NuGetProjectContext);
         }
 
-        public void AddFrameworkReference(string name)
+        public void AddFrameworkReference(string name, string packageId)
         {
             // No-op
         }
@@ -84,7 +110,7 @@ namespace NuGet.Common
                 throw new ArgumentNullException(nameof(targetFullPath));
             }
 
-            var targetRelativePath = PathUtility.GetRelativePath(PathUtility.EnsureTrailingSlash(_projectDirectory), targetFullPath);
+            var targetRelativePath = NuGet.Commands.PathUtility.GetRelativePath(PathUtility.EnsureTrailingSlash(ProjectFullPath), targetFullPath);
             var imports = Project.Xml.Imports;
             bool notImported = true;
             if (imports != null)
@@ -124,15 +150,26 @@ namespace NuGet.Common
 
         public void AddReference(string referencePath)
         {
-            string fullPath = PathUtility.GetAbsolutePath(_projectDirectory, referencePath);
-            string relativePath = PathUtility.GetRelativePath(Project.FullPath, fullPath);
-            // REVIEW: Do we need to use the fully qualified the assembly name for strong named assemblies?
-            string include = Path.GetFileNameWithoutExtension(fullPath);
+            string fullPath = NuGet.Commands.PathUtility.GetAbsolutePath(ProjectFullPath, referencePath);
+            string relativePath = NuGet.Commands.PathUtility.GetRelativePath(Project.FullPath, fullPath);
+            string assemblyFileName = Path.GetFileNameWithoutExtension(fullPath);
+
+            try
+            {
+                // using full qualified assembly name for strong named assemblies
+                var assemblyName = AssemblyName.GetAssemblyName(fullPath);
+                assemblyFileName = assemblyName.FullName;
+            }
+            catch (Exception)
+            {
+                //ignore exception if we weren't able to get assembly strong name, we'll still use assembly file name to add reference
+            }
 
             Project.AddItem(
                 "Reference",
-                include,
-                new[] { new KeyValuePair<string, string>("HintPath", relativePath) });
+                assemblyFileName,
+                new[] { new KeyValuePair<string, string>("HintPath", relativePath),
+                        new KeyValuePair<string, string>("Private", "True")});
         }
 
         public void BeginProcessing()
@@ -155,7 +192,7 @@ namespace NuGet.Common
             FileSystemUtility.DeleteDirectory(path, recursive, NuGetProjectContext);
         }
 
-        public Task ExecuteScriptAsync(PackageIdentity identity, string packageInstallPath, string scriptRelativePath, NuGetProject nuGetProject, bool throwOnFailure)
+        public Task ExecuteScriptAsync(PackageIdentity identity, string packageInstallPath, string scriptRelativePath, bool throwOnFailure)
         {
             // No-op
             return Task.FromResult(0);
@@ -185,13 +222,13 @@ namespace NuGet.Common
 
         public IEnumerable<string> GetDirectories(string path)
         {
-            path = Path.Combine(_projectDirectory, path);
+            path = Path.Combine(ProjectFullPath, path);
             return Directory.EnumerateDirectories(path);
         }
 
         public IEnumerable<string> GetFiles(string path, string filter, bool recursive)
         {
-            path = Path.Combine(_projectDirectory, path);
+            path = Path.Combine(ProjectFullPath, path);
             return Directory.EnumerateFiles(path, filter, recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly);
         }
 
@@ -202,7 +239,7 @@ namespace NuGet.Common
                 var itemFileName = Path.GetFileName(projectItem.EvaluatedInclude);
                 if (string.Equals(fileName, itemFileName, StringComparison.OrdinalIgnoreCase))
                 {
-                    yield return Path.Combine(_projectDirectory, projectItem.EvaluatedInclude);
+                    yield return Path.Combine(ProjectFullPath, projectItem.EvaluatedInclude);
                 }
             }
         }
@@ -235,7 +272,7 @@ namespace NuGet.Common
                 throw new ArgumentNullException(nameof(targetFullPath));
             }
 
-            var targetRelativePath = PathUtility.GetRelativePath(PathUtility.EnsureTrailingSlash(_projectDirectory), targetFullPath);
+            var targetRelativePath = NuGet.Commands.PathUtility.GetRelativePath(PathUtility.EnsureTrailingSlash(ProjectFullPath), targetFullPath);
             if (Project.Xml.Imports != null)
             {
                 // search for this import statement and remove it
@@ -381,6 +418,7 @@ namespace NuGet.Common
 
         private dynamic GetProject(string projectFile)
         {
+            AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(AssemblyResolve);
             dynamic globalProjectCollection = _projectCollectionType
                 .GetProperty("GlobalProjectCollection")
                 .GetMethod

@@ -124,6 +124,12 @@ function Test-BuildIntegratedLockFileIsCreatedOnBuild {
 }
 
 function Test-BuildIntegratedInstallPackagePrefersWindowsOverWindowsPhoneApp {
+    # Windows 8.x/Phone tests irrelevant post-VS14
+    if ((Get-VSVersion) -ge "15.0") {
+        Write-Host "Skipping BuildIntegratedInstallPackagePrefersWindowsOverWindowsPhoneApp"
+        return
+    }
+
     # Arrange
     $project = New-BuildIntegratedProj UAPApp
 
@@ -135,6 +141,12 @@ function Test-BuildIntegratedInstallPackagePrefersWindowsOverWindowsPhoneApp {
 }
 
 function Test-BuildIntegratedInstallPackageWithWPA81 {
+    # Windows 8.x/Phone tests irrelevant post-VS14
+    if ((Get-VSVersion) -ge "15.0") {
+        Write-Host "Skipping BuildIntegratedInstallPackageWithWPA81"
+        return
+    }
+	
     # Arrange
     $project = New-BuildIntegratedProj UAPApp
 
@@ -464,62 +476,4 @@ function Test-BuildIntegratedParentProjectIsRestoredAfterInstallWithClassLibInTr
 
     # Assert
     Assert-ProjectJsonLockFilePackage $project1 NuGet.Versioning 1.0.7
-}
-
-function Test-BuildIntegratedParentProjectsStayLockedOnUninstall {
-    if (!(Verify-BuildIntegratedMsBuildTask)) {
-        Write-Host "Skipping BuildIntegratedMixedLegacyProjects"
-    }
-
-    # Arrange
-    $project1 = New-Project BuildIntegratedClassLibrary
-    $project2 = New-Project BuildIntegratedClassLibrary
-    $project3 = New-ClassLibrary ClassLib2
-
-    Add-ProjectReference $project1 $project2
-    Add-ProjectReference $project2 $project3
-
-    $project2 | Install-Package NuGet.Versioning -Version 1.0.7
-
-    Set-LockFileLocked $project1 $True
-    Set-LockFileLocked $project2 $True
-
-    # Act
-    Uninstall-Package NuGet.Versioning -ProjectName $project2.Name
-
-    $project1Locked = Get-LockFileLocked $project1
-    $project2Locked = Get-LockFileLocked $project2
-
-    # Assert
-    Assert-True $project1 $project1Locked
-    Assert-True $project2 $project2Locked
-}
-
-function Test-BuildIntegratedParentProjectsStayLockedOnBuild {
-    if (!(Verify-BuildIntegratedMsBuildTask)) {
-        Write-Host "Skipping BuildIntegratedMixedLegacyProjects"
-    }
-
-    # Arrange
-    $project1 = New-Project BuildIntegratedClassLibrary
-    $project2 = New-Project BuildIntegratedClassLibrary
-    $project3 = New-ClassLibrary ClassLib2
-
-    Add-ProjectReference $project1 $project2
-    Add-ProjectReference $project2 $project3
-
-    $project2 | Install-Package NuGet.Versioning -Version 1.0.7
-
-    Set-LockFileLocked $project1 $True
-    Set-LockFileLocked $project2 $True
-
-    # Act
-    Build-Solution
-
-    $project1Locked = Get-LockFileLocked $project1
-    $project2Locked = Get-LockFileLocked $project2
-
-    # Assert
-    Assert-True $project1 $project1Locked
-    Assert-True $project2 $project2Locked
 }

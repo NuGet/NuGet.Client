@@ -6,7 +6,12 @@ using System.Globalization;
 
 namespace NuGet.Frameworks
 {
-    public class OneWayCompatibilityMappingEntry : IEquatable<OneWayCompatibilityMappingEntry>
+#if NUGET_FRAMEWORKS_INTERNAL
+    internal
+#else
+    public
+#endif
+    class OneWayCompatibilityMappingEntry : IEquatable<OneWayCompatibilityMappingEntry>
     {
         private readonly FrameworkRange _targetFramework;
         private readonly FrameworkRange _supportedFramework;
@@ -15,7 +20,7 @@ namespace NuGet.Frameworks
         /// Creates a one way compatibility mapping.
         /// Ex: net -supports-> native
         /// </summary>
-        /// <param name="framework">Project framework</param>
+        /// <param name="targetFramework">Project framework</param>
         /// <param name="supportedFramework">Framework that is supported by the project framework</param>
         public OneWayCompatibilityMappingEntry(FrameworkRange targetFramework, FrameworkRange supportedFramework)
         {

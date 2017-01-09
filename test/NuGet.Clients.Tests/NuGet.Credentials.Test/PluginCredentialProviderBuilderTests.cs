@@ -1,11 +1,8 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System.Collections.Generic;
-using System.Configuration;
-using System.IO;
 using System.Linq;
-using System.Net.Sockets;
-using System.Text;
-using System.Threading.Tasks;
 using Moq;
 using Xunit;
 
@@ -13,24 +10,30 @@ namespace NuGet.Credentials.Test
 {
     public class PluginCredentialProviderBuilderTests
     {
+        private const string NormalVerbosity = "Normal";
+
         private class TestablePluginCredentialProviderBuilder : PluginCredentialProviderBuilder
         {
             public readonly Mock<Configuration.IExtensionLocator> _mockExtensionLocator;
             public readonly Mock<Configuration.ISettings> _mockSettings;
-            public readonly Mock<Configuration.IEnvironmentVariableReader> _mockEnvarReader;
+            public readonly Mock<Common.IEnvironmentVariableReader> _mockEnvarReader;
 
             public TestablePluginCredentialProviderBuilder() : this(
                 new Mock<Configuration.IExtensionLocator>(),
                 new Mock<Configuration.ISettings>(),
-                new Mock<Configuration.IEnvironmentVariableReader>())
+                new Mock<Common.ILogger>(),
+                new Mock<Common.IEnvironmentVariableReader>()
+                )
             {
             }
 
             public TestablePluginCredentialProviderBuilder(
                 Mock<Configuration.IExtensionLocator> mockExtensionLocator,
                 Mock<Configuration.ISettings> mockSettings,
-                Mock<Configuration.IEnvironmentVariableReader> mockEnvarReader)
-                : base(mockExtensionLocator.Object, mockSettings.Object, mockEnvarReader.Object)
+                Mock<Common.ILogger> mockLogger,
+                Mock<Common.IEnvironmentVariableReader> mockEnvarReader
+                )
+                : base(mockExtensionLocator.Object, mockSettings.Object, mockLogger.Object, mockEnvarReader.Object)
             {
                 _mockExtensionLocator = mockExtensionLocator;
                 _mockSettings = mockSettings;
@@ -46,18 +49,15 @@ namespace NuGet.Credentials.Test
 
         public PluginCredentialProviderBuilderTests()
         {
-//            TestFilesBase = TestFileSystemUtility.CreateRandomTestFolder();
-//            File.CreateText(Path.Combine(TestFilesBase, "FakePlugin.exe"));
         }
 
-//        public string TestFilesBase { get; set; }
 
         [Fact]
         public void WhenNoPlugins_ThenEmptyList()
         {
             var builder = new TestablePluginCredentialProviderBuilder();
 
-            var result = builder.BuildAll();
+            var result = builder.BuildAll(NormalVerbosity);
 
             Assert.Equal(0, result.Count());
         }
@@ -77,7 +77,7 @@ namespace NuGet.Credentials.Test
                     @"c:\dir2\CredentialProvider.c.exe",
                 });
 
-            var result = builder.BuildAll().ToList();
+            var result = builder.BuildAll(NormalVerbosity).ToList();
 
             Assert.Equal(6, result.Count());
             var actual = result.Select(x => (PluginCredentialProvider) x).Select(x => x.Path);
@@ -106,7 +106,7 @@ namespace NuGet.Credentials.Test
                     @"c:\dir1\CredentialProvider.Ab.exe",
                 });
 
-            var result = builder.BuildAll().ToList();
+            var result = builder.BuildAll(NormalVerbosity).ToList();
 
             Assert.Equal(4, result.Count());
             var actual = result.Select(x => (PluginCredentialProvider)x).Select(x => x.Path);
@@ -127,7 +127,7 @@ namespace NuGet.Credentials.Test
             builder._mockExtensionLocator.Setup(x => x.FindCredentialProviders())
                 .Returns(new[] {@"c:\CredentialProvider.Mine.exe"});
 
-            var result = builder.BuildAll().ToList();
+            var result = builder.BuildAll(NormalVerbosity).ToList();
 
             Assert.Equal(1, result.Count());
             var pluginProvider = result[0] as PluginCredentialProvider;
@@ -144,7 +144,7 @@ namespace NuGet.Credentials.Test
                 .Setup(x => x.GetEnvironmentVariable("NUGET_CREDENTIAL_PROVIDER_TIMEOUT_SECONDS"))
                 .Returns("10");
 
-            var result = builder.BuildAll().ToList();
+            var result = builder.BuildAll(NormalVerbosity).ToList();
 
             Assert.Equal(1, result.Count());
             var pluginProvider = result[0] as PluginCredentialProvider;
@@ -163,7 +163,7 @@ namespace NuGet.Credentials.Test
             builder._mockSettings.Setup(x => x.GetValue("config", "CredentialProvider.Timeout", false))
                 .Returns("20");
 
-            var result = builder.BuildAll().ToList();
+            var result = builder.BuildAll(NormalVerbosity).ToList();
 
             Assert.Equal(1, result.Count());
             var pluginProvider = result[0] as PluginCredentialProvider;

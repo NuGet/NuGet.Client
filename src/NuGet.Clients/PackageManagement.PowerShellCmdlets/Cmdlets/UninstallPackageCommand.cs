@@ -3,10 +3,10 @@
 
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.Composition;
 using System.Management.Automation;
 using System.Threading;
-using Microsoft.VisualStudio.Shell;
+using NuGet.Common;
+using NuGet.PackageManagement.UI;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.ProjectManagement;
 using Task = System.Threading.Tasks.Task;
@@ -16,12 +16,15 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
     [Cmdlet(VerbsLifecycle.Uninstall, "Package")]
     public class UninstallPackageCommand : NuGetPowerShellBaseCommand
     {
+        private readonly IDeleteOnRestartManager _deleteOnRestartManager;
+        private readonly INuGetLockService _lockService;
+
         private UninstallationContext _context;
-        private IDeleteOnRestartManager _deleteOnRestartManager;
 
         public UninstallPackageCommand()
         {
             _deleteOnRestartManager = ServiceLocator.GetInstance<IDeleteOnRestartManager>();
+            _lockService = ServiceLocator.GetInstance<INuGetLockService>();
         }
 
         [Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true, Position = 0)]
@@ -48,18 +51,41 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         {
             CheckSolutionState();
             GetNuGetProject(ProjectName);
-            ThreadHelper.JoinableTaskFactory.Run(CheckMissingPackagesAsync);
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(CheckMissingPackagesAsync);
             ActionType = NuGetActionType.Uninstall;
         }
 
         protected override void ProcessRecordCore()
         {
-            Preprocess();
+            var startTime = DateTimeOffset.Now;
+            _packageCount = 1;
 
-            SubscribeToProgressEvents();
-            Task.Run(() => UnInstallPackage());
-            WaitAndLogPackageActions();
-            UnsubscribeFromProgressEvents();
+            // Enable granular level events for this uninstall operation
+            TelemetryService = new TelemetryServiceHelper();
+            TelemetryUtility.StartorResumeTimer();
+
+            using (var lck = _lockService.AcquireLock())
+            {
+                Preprocess();
+
+                SubscribeToProgressEvents();
+                Task.Run(UninstallPackageAsync);
+                WaitAndLogPackageActions();
+                UnsubscribeFromProgressEvents();
+            }
+
+            TelemetryUtility.StopTimer();
+            var actionTelemetryEvent = TelemetryUtility.GetActionTelemetryEvent(
+                new[] { Project },
+                NuGetOperationType.Uninstall,
+                OperationSource.PMC,
+                startTime,
+                _status,
+                _packageCount,
+                TelemetryUtility.GetTimerElapsedTimeInSeconds());
+
+            // emit telemetry event with granular level events
+            ActionsTelemetryService.Instance.EmitActionEvent(actionTelemetryEvent, TelemetryService.TelemetryEvents);
         }
 
         protected override void EndProcessing()
@@ -80,7 +106,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// <summary>
         /// Async call for uninstall a package from the current project
         /// </summary>
-        private async Task UnInstallPackage()
+        private async Task UninstallPackageAsync()
         {
             try
             {
@@ -88,7 +114,8 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
             catch (Exception ex)
             {
-                Log(ProjectManagement.MessageLevel.Error, ex.Message);
+                _status = NuGetOperationStatus.Failed;
+                Log(MessageLevel.Error, ExceptionUtilities.DisplayMessage(ex));
             }
             finally
             {

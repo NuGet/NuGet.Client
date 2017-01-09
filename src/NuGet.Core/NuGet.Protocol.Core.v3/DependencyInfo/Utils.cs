@@ -3,75 +3,46 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
-using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using NuGet.Common;
 using NuGet.Versioning;
 
-namespace NuGet.Protocol.Core.v3.DependencyInfo
+namespace NuGet.Protocol
 {
     internal static class Utils
     {
-        public static VersionRange CreateVersionRange(string stringToParse, bool includePrerelease)
+        public static VersionRange CreateVersionRange(string stringToParse)
         {
             var range = VersionRange.Parse(string.IsNullOrEmpty(stringToParse) ? "[0.0.0-alpha,)" : stringToParse);
-            return new VersionRange(range.MinVersion, range.IsMinInclusive, range.MaxVersion, range.IsMaxInclusive, includePrerelease);
-        }
-
-        public static async Task<JObject> GetJObjectAsync(HttpClient httpClient, Uri registrationUri)
-        {
-            var json = await httpClient.GetStringAsync(registrationUri);
-            return JObject.Parse(json);
-        }
-
-        public static string Indent(int depth)
-        {
-            return new string(Enumerable.Repeat(' ', depth).ToArray());
-        }
-
-        public static async Task<JObject> LoadResource(HttpClient httpClient, Uri uri, CancellationToken token)
-        {
-            var response = await httpClient.GetAsync(uri, token);
-
-            if (response.StatusCode == HttpStatusCode.NotFound)
-            {
-                return null;
-            }
-
-            response.EnsureSuccessStatusCode();
-
-            var json = await response.Content.ReadAsStringAsync();
-            var obj = JObject.Parse(json);
-
-            return obj;
-        }
-
-        public static async Task<bool> ResourceExists(HttpClient httpClient, Uri uri, CancellationToken token)
-        {
-            using (var response = await httpClient.GetAsync(uri, token))
-            {
-                return response.IsSuccessStatusCode;
-            }
+            return new VersionRange(range.MinVersion, range.IsMinInclusive, range.MaxVersion, range.IsMaxInclusive);
         }
 
         public async static Task<IEnumerable<JObject>> LoadRanges(
-            HttpClient httpClient,
+            HttpSource httpSource,
             Uri registrationUri,
             VersionRange range,
+            ILogger log,
             CancellationToken token)
         {
-            var index = await LoadResource(httpClient, registrationUri, token);
+            var index = await httpSource.GetJObjectAsync(
+                new HttpSourceRequest(registrationUri, log)
+                {
+                    IgnoreNotFounds = true
+                },
+                log,
+                token);
 
             if (index == null)
             {
                 // The server returned a 404, the package does not exist
                 return Enumerable.Empty<JObject>();
             }
-
-            var preFilterRange = VersionRange.SetIncludePrerelease(range, includePrerelease: true);
 
             IList<Task<JObject>> rangeTasks = new List<Task<JObject>>();
 
@@ -80,14 +51,20 @@ namespace NuGet.Protocol.Core.v3.DependencyInfo
                 var lower = NuGetVersion.Parse(item["lower"].ToString());
                 var upper = NuGetVersion.Parse(item["upper"].ToString());
 
-                if (IsItemRangeRequired(preFilterRange, lower, upper))
+                if (IsItemRangeRequired(range, lower, upper))
                 {
                     JToken items;
                     if (!item.TryGetValue("items", out items))
                     {
                         var rangeUri = item["@id"].ToObject<Uri>();
 
-                        rangeTasks.Add(LoadResource(httpClient, rangeUri, token));
+                        rangeTasks.Add(httpSource.GetJObjectAsync(
+                            new HttpSourceRequest(rangeUri, log)
+                            {
+                                IgnoreNotFounds = true
+                            },
+                            log,
+                            token));
                     }
                     else
                     {
@@ -104,7 +81,7 @@ namespace NuGet.Protocol.Core.v3.DependencyInfo
         private static bool IsItemRangeRequired(VersionRange dependencyRange, NuGetVersion catalogItemLower, NuGetVersion catalogItemUpper)
         {
             var catalogItemVersionRange = new VersionRange(minVersion: catalogItemLower, includeMinVersion: true,
-                maxVersion: catalogItemUpper, includeMaxVersion: true, includePrerelease: true);
+                maxVersion: catalogItemUpper, includeMaxVersion: true);
 
             if (dependencyRange.HasLowerAndUpperBounds) // Mainly to cover the '!dependencyRange.IsMaxInclusive && !dependencyRange.IsMinInclusive' case
             {

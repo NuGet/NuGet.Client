@@ -2,15 +2,18 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using NuGet.Configuration;
+using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
+using System.Globalization;
 
 namespace NuGet.PackageManagement
 {
@@ -27,6 +30,7 @@ namespace NuGet.PackageManagement
         private readonly List<GatherResult> _results = new List<GatherResult>();
         private readonly HashSet<string> _idsSearched = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         private int _maxDegreeOfParallelism;
+        private readonly ConcurrentDictionary<string, TimeSpan> _timeTaken = new ConcurrentDictionary<string, TimeSpan>(StringComparer.OrdinalIgnoreCase);
 
         private ResolverGather(GatherContext context)
         {
@@ -75,6 +79,9 @@ namespace NuGet.PackageManagement
 
         private async Task<HashSet<SourcePackageDependencyInfo>> GatherAsync(CancellationToken token)
         {
+            // preserve start time of gather api
+            var stopWatch = new Stopwatch();
+            stopWatch.Start();
             token.ThrowIfCancellationRequested();
 
             // get a distinct set of packages from all repos
@@ -172,6 +179,7 @@ namespace NuGet.PackageManagement
                 // We are done when the queue is empty, and the number of finished requests matches the total request count
                 if (_gatherRequests.Count < 1 && _workerTasks.Count < 1)
                 {
+                    _context.Log.LogDebug(string.Format("Total number of results gathered : {0}", _results.Count));
                     break;
                 }
             }
@@ -193,28 +201,41 @@ namespace NuGet.PackageManagement
 
             var allPrimarySources = String.Join(",", allPrimarySourcesList);
 
-            // Throw if a primary target was not found
-            // The primary package may be missing if there are network issues and the sources were unreachable
-            foreach (var targetId in allPrimaryTargets)
+            // When it's update all packages scenario, then ignore throwing error for missing primary targets in specified sources.
+            if (!_context.IsUpdateAll)
             {
-                if (!combinedResults.Any(package => string.Equals(package.Id, targetId, StringComparison.OrdinalIgnoreCase)))
+                // Throw if a primary target was not found
+                // The primary package may be missing if there are network issues and the sources were unreachable
+                foreach (var targetId in allPrimaryTargets)
                 {
-                    string packageIdentity = targetId;
-
-                    foreach (var pid in _context.PrimaryTargets)
+                    if (!combinedResults.Any(package => string.Equals(package.Id, targetId, StringComparison.OrdinalIgnoreCase)))
                     {
-                        if (string.Equals(targetId, pid.Id, StringComparison.OrdinalIgnoreCase))
-                        {
-                            packageIdentity = String.Concat(targetId, ",", pid.Version);
-                            break;
-                        }
-                    }
+                        string packageIdentity = targetId;
 
-                    string message = String.Format(Strings.PackageNotFoundInPrimarySources, packageIdentity, allPrimarySources);
-                    throw new InvalidOperationException(message);
+                        foreach (var pid in _context.PrimaryTargets)
+                        {
+                            if (string.Equals(targetId, pid.Id, StringComparison.OrdinalIgnoreCase))
+                            {
+                                packageIdentity = string.Format(CultureInfo.CurrentCulture, "{0} {1}", targetId, pid.Version);
+                                break;
+                            }
+                        }
+
+                        string message = String.Format(Strings.PackageNotFoundInPrimarySources, packageIdentity, allPrimarySources);
+                        throw new InvalidOperationException(message);
+                    }
                 }
             }
-
+            // calculate total time taken to gather all packages as well as with each source
+            stopWatch.Stop();
+            _context.Log.LogMinimal(
+                string.Format(Strings.GatherTotalTime, DatetimeUtility.ToReadableTimeFormat(stopWatch.Elapsed)));
+            _context.Log.LogDebug("Summary of time taken to gather dependencies per source :");
+            foreach (var key in _timeTaken.Keys)
+            {
+                _context.Log.LogDebug(
+                    string.Format("{0}\t-\t{1}", key, DatetimeUtility.ToReadableTimeFormat(_timeTaken[key])));
+            }
             return combinedResults;
         }
 
@@ -261,13 +282,11 @@ namespace NuGet.PackageManagement
                 // Skip installed packages which are targets, this is important for upgrade and reinstall
                 if (!allPrimaryTargets.Contains(installedPackage.Id))
                 {
-                    var packageInfo = await _packagesFolderResource.ResolvePackage(installedPackage, _context.TargetFramework, token);
+                    var packageInfo = await _packagesFolderResource.ResolvePackage(installedPackage, _context.TargetFramework, _context.Log, token);
 
                     // Installed packages should exist, but if they do not an attempt will be made to find them in the sources.
                     if (packageInfo != null)
                     {
-                        packageInfo.SetIncludePrereleaseForDependencies();
-
                         // Create a request and result to match the other packages
                         var request = new GatherRequest(
                             source: null,
@@ -364,6 +383,8 @@ namespace NuGet.PackageManagement
         /// </summary>
         private async Task<GatherResult> GatherPackageAsync(GatherRequest request, CancellationToken token)
         {
+            Stopwatch stopWatch = new Stopwatch();
+            stopWatch.Start();
             token.ThrowIfCancellationRequested();
 
             var packages = new List<SourcePackageDependencyInfo>();
@@ -386,6 +407,7 @@ namespace NuGet.PackageManagement
             if (_cache != null && cacheResult.HasEntry)
             {
                 // Use cached packages
+                _context.Log.LogDebug(string.Format("Package {0} from source {1} gathered from cache.", request.Package.Id, request.Source.Source.PackageSource.Name));
                 packages.AddRange(cacheResult.Packages);
             }
             else
@@ -414,7 +436,7 @@ namespace NuGet.PackageManagement
                             if (request.Package.HasVersion)
                             {
                                 _cache.AddPackageFromSingleVersionLookup(
-                                    packageSource, 
+                                    packageSource,
                                     request.Package,
                                     _context.TargetFramework,
                                     packages.FirstOrDefault());
@@ -445,6 +467,9 @@ namespace NuGet.PackageManagement
                     throw new InvalidOperationException(message, ex);
                 }
 
+                // it maintain each source total time taken so far
+                stopWatch.Stop();
+                _timeTaken.AddOrUpdate(request.Source.Source.PackageSource.Source, stopWatch.Elapsed, (k,v) => stopWatch.Elapsed + v);
             }
 
             return new GatherResult(request, packages);
@@ -453,7 +478,7 @@ namespace NuGet.PackageManagement
         /// <summary>
         /// Call the DependencyInfoResource safely
         /// </summary>
-        private static async Task<List<SourcePackageDependencyInfo>> GatherPackageFromSourceAsync(
+        private async Task<List<SourcePackageDependencyInfo>> GatherPackageFromSourceAsync(
             string packageId,
             NuGetVersion version,
             DependencyInfoResource resource,
@@ -471,12 +496,7 @@ namespace NuGet.PackageManagement
                 if (version == null)
                 {
                     // find all versions of a package
-                    var packages = await resource.ResolvePackages(packageId, targetFramework, token);
-                    packages = packages.Select(package =>
-                    {
-                        package.SetIncludePrereleaseForDependencies();
-                        return package;
-                    });
+                    var packages = await resource.ResolvePackages(packageId, targetFramework, _context.Log, token);
 
                     results.AddRange(packages);
                 }
@@ -484,11 +504,10 @@ namespace NuGet.PackageManagement
                 {
                     // find a single package id and version
                     var identity = new PackageIdentity(packageId, version);
-                    var package = await resource.ResolvePackage(identity, targetFramework, token);
+                    var package = await resource.ResolvePackage(identity, targetFramework, _context.Log, token);
 
                     if (package != null)
                     {
-                        package.SetIncludePrereleaseForDependencies();
                         results.Add(package);
                     }
                 }

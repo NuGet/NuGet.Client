@@ -2,16 +2,19 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
 using System.Management.Automation;
+using System.Management.Automation.Host;
+using System.Text;
 using System.Threading;
-using Microsoft.VisualStudio.Shell;
+using NuGet.PackageManagement.UI;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
-using NuGet.Protocol.VisualStudio;
 using NuGet.Resolver;
 using Task = System.Threading.Tasks.Task;
 
@@ -19,11 +22,13 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 {
     public class PackageActionBaseCommand : NuGetPowerShellBaseCommand
     {
-        private IDeleteOnRestartManager _deleteOnRestartManager;
+        private readonly IDeleteOnRestartManager _deleteOnRestartManager;
+        protected readonly INuGetLockService _lockService;
 
         public PackageActionBaseCommand()
         {
             _deleteOnRestartManager = ServiceLocator.GetInstance<IDeleteOnRestartManager>();
+            _lockService = ServiceLocator.GetInstance<INuGetLockService>();
         }
 
         [Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true, Position = 0)]
@@ -60,10 +65,33 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         protected virtual void Preprocess()
         {
             CheckSolutionState();
-            UpdateActiveSourceRepository(Source);
+
+            var result = ValidateSource(Source);
+            if (result.Validity == SourceValidity.UnknownSource)
+            {
+                throw new PackageSourceException(string.Format(
+                    CultureInfo.CurrentCulture,
+                    Strings.UnknownSourceWithId,
+                    Id,
+                    result.Source));
+            }
+            else if (result.Validity == SourceValidity.UnknownSourceType)
+            {
+                throw new PackageSourceException(string.Format(
+                    CultureInfo.CurrentCulture,
+                    Strings.UnknownSourceType,
+                    result.Source));
+            }
+
+            UpdateActiveSourceRepository(result.SourceRepository);
             GetNuGetProject(ProjectName);
             DetermineFileConflictAction();
-            ThreadHelper.JoinableTaskFactory.Run(CheckMissingPackagesAsync);
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
+            {
+                await CheckMissingPackagesAsync();
+                await CheckPackageManagementFormat();
+            });
+
         }
 
         protected override void ProcessRecordCore()
@@ -85,7 +113,31 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         {
             try
             {
-                var actions = await PackageManager.PreviewInstallPackageAsync(project, identity, resolutionContext, projectContext, ActiveSourceRepository, null, CancellationToken.None);
+                var actions = await PackageManager.PreviewInstallPackageAsync(project, identity, resolutionContext, projectContext, PrimarySourceRepositories, null, CancellationToken.None);
+
+                if (!actions.Any())
+                {
+                    // nuget operation status is set to NoOp to log under telemetry event
+                    _status = NuGetOperationStatus.NoOp;
+                }
+                else
+                {
+                    // update packages count to be logged under telemetry event
+                    _packageCount = actions.Select(action => action.PackageIdentity.Id).Distinct(StringComparer.OrdinalIgnoreCase).Count();
+                }
+
+                // stop telemetry event timer to avoid UI interaction
+                TelemetryUtility.StopTimer();
+
+                if (!ShouldContinueDueToDotnetDeprecation(actions, isPreview))
+                {
+                    // resume telemetry event timer after ui confirmation
+                    TelemetryUtility.StartorResumeTimer();
+                    return;
+                }
+
+                // resume telemetry event timer after ui confirmation
+                TelemetryUtility.StartorResumeTimer();
 
                 if (isPreview)
                 {
@@ -102,7 +154,10 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             {
                 if (ex.InnerException is PackageAlreadyInstalledException)
                 {
-                    Log(ProjectManagement.MessageLevel.Info, ex.Message);
+                    // Set nuget operation status to NoOp for telemetry event when package
+                    // is already installed.
+                    _status = NuGetOperationStatus.NoOp;
+                    Log(MessageLevel.Info, ex.Message);
                 }
                 else
                 {
@@ -126,7 +181,33 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         {
             try
             {
-                var actions = await PackageManager.PreviewInstallPackageAsync(project, packageId, resolutionContext, projectContext, ActiveSourceRepository, null, CancellationToken.None);
+                var actions = await PackageManager.PreviewInstallPackageAsync(project, packageId, resolutionContext, projectContext, PrimarySourceRepositories, null, CancellationToken.None);
+
+                if (!actions.Any())
+                {
+                    // nuget operation status is set to NoOp to log under telemetry event when
+                    // there is no preview action.
+                    _status = NuGetOperationStatus.NoOp;
+                }
+                else
+                {
+                    // update packages count to be logged under telemetry event
+                    _packageCount = actions.Select(
+                        action => action.PackageIdentity.Id).Distinct().Count();
+                }
+
+                // stop telemetry event timer to avoid UI interaction
+                TelemetryUtility.StopTimer();
+
+                if (!ShouldContinueDueToDotnetDeprecation(actions, isPreview))
+                {
+                    // resume telemetry event timer after ui confirmation
+                    TelemetryUtility.StartorResumeTimer();
+                    return;
+                }
+
+                // resume telemetry event timer after ui confirmation
+                TelemetryUtility.StartorResumeTimer();
 
                 if (isPreview)
                 {
@@ -144,7 +225,10 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             {
                 if (ex.InnerException is PackageAlreadyInstalledException)
                 {
-                    Log(ProjectManagement.MessageLevel.Info, ex.Message);
+                    // Set nuget operation status to NoOp for telemetry event when package
+                    // is already installed.
+                    _status = NuGetOperationStatus.NoOp;
+                    Log(MessageLevel.Info, ex.Message);
                 }
                 else
                 {
@@ -164,22 +248,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 return;
             }
 
-            var resource = ActiveSourceRepository.GetResource<UIMetadataResource>();
-            if (resource == null)
-            {
-                return;
-            }
-
-            var metadata = ThreadHelper.JoinableTaskFactory.Run(async delegate
-            {
-                var result = await resource.GetMetadata(
-                    Id,
-                    includePrerelease: true,
-                    includeUnlisted: false,
-                    token: Token);
-                return result;
-            });
-
+            var metadata = NuGetUIThreadHelper.JoinableTaskFactory.Run(() => GetPackagesFromRemoteSourceAsync(Id, includePrerelease: true));
             if (!metadata.Any())
             {
                 return;
@@ -203,6 +272,90 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                     string.Join(", ", packageDirectoriesMarkedForDeletion));
                 WriteWarning(message);
             }
+        }
+
+        protected async Task CheckPackageManagementFormat()
+        {
+            // check if Project has any packages installed
+            if (!(await Project.GetInstalledPackagesAsync(Token)).Any())
+            {
+                var packageManagementFormat = new PackageManagementFormat(ConfigSettings);
+
+                // if default format is PackageReference then update NuGet Project
+                if (packageManagementFormat.SelectedPackageManagementFormat == 1)
+                {
+                    var newProject = await VsSolutionManager.UpdateNuGetProjectToPackageRef(Project);
+
+                    if (newProject != null)
+                    {
+                        Project = newProject;
+                    }
+                }
+            }
+        }
+
+        protected bool ShouldContinueDueToDotnetDeprecation(IEnumerable<NuGetProjectAction> actions, bool whatIf)
+        {
+            // Don't prompt if the user has chosen to ignore this warning.
+            // Also, -WhatIf should not prompt the user since there is not action performed anyway.
+            if (DotnetDeprecatedPrompt.GetDoNotShowPromptState() || whatIf)
+            {
+                return true;
+            }
+
+            // Determine if any of the project actions are affected by the deprecated framework.
+            var resolvedActions = actions.Select(action => new ResolvedAction(action.Project, action));
+
+            var projects = DotnetDeprecatedPrompt.GetAffectedProjects(resolvedActions);
+            if (!projects.Any())
+            {
+                return true;
+            }
+
+            var model = DotnetDeprecatedPrompt.GetDeprecatedFrameworkModel(projects);
+
+            // Flush the existing messages (e.g. logging from the action preview).
+            FlushBlockingCollection();
+
+            // Prompt the user to determine if the project actions should be executed.
+            var choices = new Collection<ChoiceDescription>
+            {
+                new ChoiceDescription(Resources.Cmdlet_No, Resources.Cmdlet_DeprecatedFrameworkNoHelp),
+                new ChoiceDescription(Resources.Cmdlet_Yes, Resources.Cmdlet_DeprecatedFrameworkYesHelp),
+                new ChoiceDescription(Resources.Cmdlet_YesDoNotPromptAgain, Resources.Cmdlet_DeprecatedFrameworkYesDoNotPromptAgainHelp)
+            };
+
+            var messageBuilder = new StringBuilder();
+            messageBuilder.Append(model.TextBeforeLink);
+            messageBuilder.Append(model.LinkText);
+            messageBuilder.Append(" (");
+            messageBuilder.Append(model.MigrationUrl);
+            messageBuilder.Append(")");
+            messageBuilder.Append(model.TextAfterLink);
+            messageBuilder.Append(" ");
+            messageBuilder.Append(Resources.Cmdlet_DeprecatedFrameworkContinue);
+
+            WriteLine();
+            var choice = Host.UI.PromptForChoice(
+                string.Empty,
+                messageBuilder.ToString(),
+                choices,
+                defaultChoice: 0);
+            WriteLine();
+
+            // Handle the response from the user.
+            if (choice == 2)
+            {
+                // Yes and do not prompt again.
+                DotnetDeprecatedPrompt.SaveDoNotShowPromptState(true);
+                return true;
+            }
+            else if (choice == 1) // Yes
+            {
+                return true;
+            }
+
+            return false; // No
         }
 
         /// <summary>

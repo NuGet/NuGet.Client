@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 
-namespace NuGet
+namespace NuGet.CommandLine
 {
     public interface ICommandManager
     {

@@ -11,13 +11,14 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
+using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 
-namespace NuGet.Protocol.Core.v3.DependencyInfo
+namespace NuGet.Protocol
 {
     internal static class ResolverMetadataClient
     {
@@ -26,12 +27,13 @@ namespace NuGet.Protocol.Core.v3.DependencyInfo
         /// </summary>
         /// <returns>Returns an empty sequence if the package does not exist.</returns>
         public static async Task<IEnumerable<RemoteSourceDependencyInfo>> GetDependencies(
-            HttpClient httpClient,
+            HttpSource httpClient,
             Uri registrationUri,
             VersionRange range,
+            ILogger log,
             CancellationToken token)
         {
-            var ranges = await Utils.LoadRanges(httpClient, registrationUri, range, token);
+            var ranges = await Utils.LoadRanges(httpClient, registrationUri, range, log, token);
 
             var results = new HashSet<RemoteSourceDependencyInfo>();
             foreach (var rangeObj in ranges)
@@ -48,7 +50,7 @@ namespace NuGet.Protocol.Core.v3.DependencyInfo
 
                     if (range.Satisfies(version))
                     {
-                        results.Add(ProcessPackageVersion(packageObj, version, range.IncludePrerelease));
+                        results.Add(ProcessPackageVersion(packageObj, version));
                     }
                 }
             }
@@ -61,9 +63,8 @@ namespace NuGet.Protocol.Core.v3.DependencyInfo
         /// </summary>
         /// <param name="packageObj"></param>
         /// <param name="version"></param>
-        /// <param name="includePrerelease"></param>
         /// <returns>Returns the RemoteSourceDependencyInfo object corresponding to this package version</returns>
-        private static RemoteSourceDependencyInfo ProcessPackageVersion(JObject packageObj, NuGetVersion version, bool includePrerelease)
+        private static RemoteSourceDependencyInfo ProcessPackageVersion(JObject packageObj, NuGetVersion version)
         {
             var catalogEntry = (JObject)packageObj["catalogEntry"];
 
@@ -92,7 +93,7 @@ namespace NuGet.Protocol.Core.v3.DependencyInfo
                         foreach (JObject dependencyObj in dependenciesObj)
                         {
                             var dependencyId = dependencyObj.Value<string>("id");
-                            var dependencyRange = Utils.CreateVersionRange(dependencyObj.Value<string>("range"), includePrerelease);
+                            var dependencyRange = Utils.CreateVersionRange(dependencyObj.Value<string>("range"));
 
                             groupDependencies.Add(new PackageDependency(dependencyId, dependencyRange));
                         }
@@ -112,20 +113,21 @@ namespace NuGet.Protocol.Core.v3.DependencyInfo
         /// </summary>
         /// <returns>Returns Null if the package does not exist</returns>
         public static async Task<RegistrationInfo> GetRegistrationInfo(
-            HttpClient httpClient,
+            HttpSource httpClient,
             Uri registrationUri,
             VersionRange range,
             NuGetFramework projectTargetFramework,
+            ILogger log,
             CancellationToken token)
         {
             var frameworkComparer = new NuGetFrameworkFullComparer();
             var frameworkReducer = new FrameworkReducer();
-            var dependencies = await GetDependencies(httpClient, registrationUri, range, token);
+            var dependencies = await GetDependencies(httpClient, registrationUri, range, log, token);
 
             var result = new HashSet<RegistrationInfo>();
             var registrationInfo = new RegistrationInfo();
 
-            registrationInfo.IncludePrerelease = range.IncludePrerelease;
+            registrationInfo.IncludePrerelease = true;
             foreach (var item in dependencies)
             {
                 var packageInfo = new PackageInfo

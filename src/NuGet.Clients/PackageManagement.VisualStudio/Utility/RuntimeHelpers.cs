@@ -45,7 +45,7 @@ namespace NuGet.PackageManagement.VisualStudio
             }
             finally
             {
-                AppDomain.Unload(domain);
+                QueueUnloadAndForget(domain);
             }
         }
 
@@ -200,6 +200,20 @@ namespace NuGet.PackageManagement.VisualStudio
         private static string ConvertToHexString(byte[] data)
         {
             return new SoapHexBinary(data).ToString();
+        }
+
+        private static void QueueUnloadAndForget(AppDomain domain)
+        {
+            Task.Run(() =>
+            {
+                try
+                {
+                    AppDomain.Unload(domain);
+                }
+                catch (Exception)
+                {
+                }
+            });
         }
     }
 }

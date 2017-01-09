@@ -16,6 +16,29 @@ namespace NuGet.Packaging.Core
         private VersionRange _versionRange;
         private static readonly List<string> EmptyList = new List<string>();
 
+        /// <summary>
+        /// Dependency package Id
+        /// </summary>
+        public string Id { get; }
+
+        /// <summary>
+        /// Types to include from the dependency package.
+        /// </summary>
+        public IReadOnlyList<string> Include { get; }
+
+        /// <summary>
+        /// Types to exclude from the dependency package.
+        /// </summary>
+        public IReadOnlyList<string> Exclude { get; }
+
+        /// <summary>
+        /// Range of versions allowed for the depenency
+        /// </summary>
+        public VersionRange VersionRange
+        {
+            get { return _versionRange; }
+        }
+
         public PackageDependency(string id)
             : this(id, VersionRange.All)
         {
@@ -32,7 +55,7 @@ namespace NuGet.Packaging.Core
             IReadOnlyList<string> include,
             IReadOnlyList<string> exclude)
         {
-            if (String.IsNullOrEmpty(id))
+            if (string.IsNullOrEmpty(id))
             {
                 throw new ArgumentException(nameof(id));
             }
@@ -41,37 +64,6 @@ namespace NuGet.Packaging.Core
             _versionRange = versionRange ?? VersionRange.All;
             Include = include ?? EmptyList;
             Exclude = exclude ?? EmptyList;
-        }
-
-        /// <summary>
-        /// Dependency package Id
-        /// </summary>
-        public string Id { get; }
-
-        /// <summary>
-        /// Range of versions allowed for the depenency
-        /// </summary>
-        public VersionRange VersionRange
-        {
-            get { return _versionRange; }
-        }
-
-        /// <summary>
-        /// Types to include from the dependency package.
-        /// </summary>
-        public IReadOnlyList<string> Include { get; }
-
-        /// <summary>
-        /// Types to exclude from the dependency package.
-        /// </summary>
-        public IReadOnlyList<string> Exclude { get; }
-
-        /// <summary>
-        /// Sets the version range to also include prerelease versions
-        /// </summary>
-        public void SetIncludePrerelease()
-        {
-            _versionRange = VersionRange.SetIncludePrerelease(_versionRange, includePrerelease: true);
         }
 
         public bool Equals(PackageDependency other)
@@ -104,7 +96,7 @@ namespace NuGet.Packaging.Core
         /// </summary>
         public override string ToString()
         {
-            return String.Format(CultureInfo.InvariantCulture, "{0} {1}", Id, VersionRange.ToNormalizedString());
+            return string.Format(CultureInfo.InvariantCulture, "{0} {1}", Id, VersionRange.ToNormalizedString());
         }
     }
 }

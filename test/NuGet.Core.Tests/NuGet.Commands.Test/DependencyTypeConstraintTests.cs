@@ -1,11 +1,16 @@
-﻿using System.Collections.Generic;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.ProjectModel;
+using NuGet.Protocol.Core.Types;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
 using Xunit;
@@ -35,7 +40,7 @@ namespace NuGet.Commands.Test
               }
             }";
 
-            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDir = TestDirectory.Create())
             {
                 var packagesDir = new DirectoryInfo(Path.Combine(workingDir, "globalPackages"));
                 var packageSource = new DirectoryInfo(Path.Combine(workingDir, "packageSource"));
@@ -57,16 +62,16 @@ namespace NuGet.Commands.Test
 
                 await GlobalFolderUtility.AddPackageToGlobalFolderAsync(project1PackagePath, packagesDir);
 
-                var request = new RestoreRequest(spec1, sources, packagesDir.FullName);
+                var logger = new TestLogger();
+                var request = new TestRestoreRequest(spec1, sources, packagesDir.FullName, logger);
 
                 request.LockFilePath = Path.Combine(project1.FullName, "project.lock.json");
 
                 // Act
-                var logger = new TestLogger();
-                var command = new RestoreCommand(logger, request);
+                var command = new RestoreCommand(request);
                 var result = await command.ExecuteAsync();
                 var lockFile = result.LockFile;
-                result.Commit(logger);
+                await result.CommitAsync(logger, CancellationToken.None);
 
                 // Assert
                 Assert.True(result.Success);
@@ -74,10 +79,8 @@ namespace NuGet.Commands.Test
             }
         }
 
-        // Project -> PackageA -> PackageB 
-        // PackageB must be a package, Project not allowed
         [Fact]
-        public async Task DependencyTypeConstraint_PackagesDependOnOtherPackages()
+        public async Task DependencyTypeConstraint_PackagesDependOnProject()
         {
             // Arrange
             var sources = new List<PackageSource>();
@@ -113,14 +116,7 @@ namespace NuGet.Commands.Test
               }
             }";
 
-            var globalJson = @"
-            {
-                ""projects"": [
-                    ""projects""
-                ]
-            }";
-
-            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDir = TestDirectory.Create())
             {
                 var packagesDir = new DirectoryInfo(Path.Combine(workingDir, "globalPackages"));
                 var packageSource = new DirectoryInfo(Path.Combine(workingDir, "packageSource"));
@@ -134,7 +130,6 @@ namespace NuGet.Commands.Test
 
                 File.WriteAllText(Path.Combine(project1.FullName, "project.json"), project1Json);
                 File.WriteAllText(Path.Combine(packageBProject.FullName, "project.json"), packageBProjectJson);
-                File.WriteAllText(Path.Combine(workingDir, "global.json"), globalJson);
 
                 var specPath1 = Path.Combine(project1.FullName, "project.json");
                 var specPath2 = Path.Combine(packageBProject.FullName, "project.json");
@@ -152,21 +147,35 @@ namespace NuGet.Commands.Test
 
                 await GlobalFolderUtility.AddPackageToGlobalFolderAsync(packageAPath, packagesDir);
 
-                var request = new RestoreRequest(spec1, sources, packagesDir.FullName);
+                var logger = new TestLogger();
+
+                var restoreContext = new RestoreArgs()
+                {
+                    Sources = new List<string>() { packageSource.FullName },
+                    GlobalPackagesFolder = packagesDir.FullName,
+                    Log = logger,
+                    CacheContext = new SourceCacheContext()
+                };
+
+                // Modify specs for netcore
+                spec2 = spec2.WithTestRestoreMetadata();
+                spec1 = spec1.WithTestRestoreMetadata().WithTestProjectReference(spec2);
+
+                var request = await ProjectJsonTestHelpers.GetRequestAsync(restoreContext, spec1, spec2);
 
                 request.LockFilePath = Path.Combine(project1.FullName, "project.lock.json");
 
                 // Act
-                var logger = new TestLogger();
-                var command = new RestoreCommand(logger, request);
+                var command = new RestoreCommand(request);
                 var result = await command.ExecuteAsync();
                 var lockFile = result.LockFile;
-                result.Commit(logger);
+                await result.CommitAsync(logger, CancellationToken.None);
 
                 // Assert
-                Assert.False(result.Success);
-                Assert.Equal("packageB", result.GetAllUnresolved().Single().Name);
-                Assert.Equal(LibraryDependencyTarget.Package, result.GetAllUnresolved().Single().TypeConstraint);
+                Assert.True(result.Success);
+                var packageBLib = lockFile.GetLibrary("packageB", NuGetVersion.Parse("1.0.0"));
+                Assert.NotNull(packageBLib);
+                Assert.Equal(LibraryType.Project, packageBLib.Type);
             }
         }
 
@@ -210,14 +219,7 @@ namespace NuGet.Commands.Test
               }
             }";
 
-            var globalJson = @"
-            {
-                ""projects"": [
-                    ""projects""
-                ]
-            }";
-
-            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDir = TestDirectory.Create())
             {
                 var packagesDir = new DirectoryInfo(Path.Combine(workingDir, "globalPackages"));
                 var packageSource = new DirectoryInfo(Path.Combine(workingDir, "packageSource"));
@@ -235,7 +237,6 @@ namespace NuGet.Commands.Test
                 File.WriteAllText(Path.Combine(packageAProject.FullName, "project.json"), packageAProjectJson);
                 File.WriteAllText(Path.Combine(packageAExternalProject.FullName, "project.json"),
                     packageAExternalProjectJson);
-                File.WriteAllText(Path.Combine(workingDir, "global.json"), globalJson);
 
                 var project1CSProjPath = Path.Combine(project1.FullName, "project1.csproj");
                 File.WriteAllText(project1CSProjPath, string.Empty);
@@ -257,7 +258,8 @@ namespace NuGet.Commands.Test
 
                 await GlobalFolderUtility.AddPackageToGlobalFolderAsync(packageAPath, packagesDir);
 
-                var request = new RestoreRequest(spec1, sources, packagesDir.FullName);
+                var logger = new TestLogger();
+                var request = new TestRestoreRequest(spec1, sources, packagesDir.FullName, logger);
 
                 request.ExternalProjects.Add(
                     new ExternalProjectReference("project1", spec1, project1CSProjPath, new string[] { "packageA" }));
@@ -267,11 +269,10 @@ namespace NuGet.Commands.Test
                 request.LockFilePath = Path.Combine(project1.FullName, "project.lock.json");
 
                 // Act
-                var logger = new TestLogger();
-                var command = new RestoreCommand(logger, request);
+                var command = new RestoreCommand(request);
                 var result = await command.ExecuteAsync();
                 var lockFile = result.LockFile;
-                result.Commit(logger);
+                await result.CommitAsync(logger, CancellationToken.None);
 
                 var packageALib = lockFile.GetLibrary("packageA", NuGetVersion.Parse("1.0.0"));
 
@@ -284,8 +285,8 @@ namespace NuGet.Commands.Test
                 // Assert
                 Assert.True(result.Success);
 
-                Assert.Equal(LibraryTypes.Project, packageALib.Type);
-                Assert.Equal(LibraryTypes.Project, packageATarget.Type);
+                Assert.Equal(LibraryType.Project, packageALib.Type);
+                Assert.Equal(LibraryType.Project, packageATarget.Type);
             }
         }
 
@@ -330,14 +331,7 @@ namespace NuGet.Commands.Test
               }
             }";
 
-            var globalJson = @"
-            {
-                ""projects"": [
-                    ""projects""
-                ]
-            }";
-
-            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDir = TestDirectory.Create())
             {
                 var packagesDir = new DirectoryInfo(Path.Combine(workingDir, "globalPackages"));
                 var packageSource = new DirectoryInfo(Path.Combine(workingDir, "packageSource"));
@@ -353,7 +347,6 @@ namespace NuGet.Commands.Test
 
                 File.WriteAllText(Path.Combine(project1.FullName, "project.json"), project1Json);
                 File.WriteAllText(Path.Combine(packageAProject.FullName, "project.json"), packageAProjectJson);
-                File.WriteAllText(Path.Combine(workingDir, "global.json"), globalJson);
 
                 var project1ProjPath = Path.Combine(project1.FullName, "project1.xproj");
                 File.WriteAllText(project1ProjPath, string.Empty);
@@ -371,16 +364,16 @@ namespace NuGet.Commands.Test
 
                 await GlobalFolderUtility.AddPackageToGlobalFolderAsync(packageAPath, packagesDir);
 
-                var request = new RestoreRequest(spec1, sources, packagesDir.FullName);
+                var logger = new TestLogger();
+                var request = new TestRestoreRequest(spec1, sources, packagesDir.FullName, logger);
 
                 request.LockFilePath = Path.Combine(project1.FullName, "project.lock.json");
 
                 // Act
-                var logger = new TestLogger();
-                var command = new RestoreCommand(logger, request);
+                var command = new RestoreCommand(request);
                 var result = await command.ExecuteAsync();
                 var lockFile = result.LockFile;
-                result.Commit(logger);
+                await result.CommitAsync(logger, CancellationToken.None);
 
                 var packageALib = lockFile.GetLibrary("packageA", NuGetVersion.Parse("1.0.0"));
 
@@ -393,8 +386,8 @@ namespace NuGet.Commands.Test
                 // Assert
                 Assert.True(result.Success);
 
-                Assert.Equal(LibraryTypes.Package, packageALib.Type);
-                Assert.Equal(LibraryTypes.Package, packageATarget.Type);
+                Assert.Equal(LibraryType.Package, packageALib.Type);
+                Assert.Equal(LibraryType.Package, packageATarget.Type);
             }
         }
 
@@ -439,14 +432,7 @@ namespace NuGet.Commands.Test
               }
             }";
 
-            var globalJson = @"
-            {
-                ""projects"": [
-                    ""projects""
-                ]
-            }";
-
-            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDir = TestDirectory.Create())
             {
                 var packagesDir = new DirectoryInfo(Path.Combine(workingDir, "globalPackages"));
                 var packageSource = new DirectoryInfo(Path.Combine(workingDir, "packageSource"));
@@ -460,7 +446,6 @@ namespace NuGet.Commands.Test
 
                 File.WriteAllText(Path.Combine(project1.FullName, "project.json"), project1Json);
                 File.WriteAllText(Path.Combine(packageAProject.FullName, "project.json"), packageAProjectJson);
-                File.WriteAllText(Path.Combine(workingDir, "global.json"), globalJson);
 
                 var specPath1 = Path.Combine(project1.FullName, "project.json");
                 var specPath2 = Path.Combine(packageAProject.FullName, "project.json");
@@ -474,16 +459,29 @@ namespace NuGet.Commands.Test
 
                 await GlobalFolderUtility.AddPackageToGlobalFolderAsync(packageAPath, packagesDir);
 
-                var request = new RestoreRequest(spec1, sources, packagesDir.FullName);
+                var logger = new TestLogger();
+
+                var restoreContext = new RestoreArgs()
+                {
+                    Sources = new List<string>() { packageSource.FullName },
+                    GlobalPackagesFolder = packagesDir.FullName,
+                    Log = logger,
+                    CacheContext = new SourceCacheContext()
+                };
+
+                // Modify specs for netcore
+                spec2 = spec2.WithTestRestoreMetadata();
+                spec1 = spec1.WithTestRestoreMetadata().WithTestProjectReference(spec2);
+
+                var request = await ProjectJsonTestHelpers.GetRequestAsync(restoreContext, spec1, spec2);
 
                 request.LockFilePath = Path.Combine(project1.FullName, "project.lock.json");
 
                 // Act
-                var logger = new TestLogger();
-                var command = new RestoreCommand(logger, request);
+                var command = new RestoreCommand(request);
                 var result = await command.ExecuteAsync();
                 var lockFile = result.LockFile;
-                result.Commit(logger);
+                await result.CommitAsync(logger, CancellationToken.None);
 
                 var packageALib = lockFile.GetLibrary("packageA", NuGetVersion.Parse("1.0.0"));
 
@@ -496,8 +494,8 @@ namespace NuGet.Commands.Test
                 // Assert
                 Assert.True(result.Success);
 
-                Assert.Equal(LibraryTypes.Project, packageALib.Type);
-                Assert.Equal(LibraryTypes.Project, packageATarget.Type);
+                Assert.Equal(LibraryType.Project, packageALib.Type);
+                Assert.Equal(LibraryType.Project, packageATarget.Type);
             }
         }
     }

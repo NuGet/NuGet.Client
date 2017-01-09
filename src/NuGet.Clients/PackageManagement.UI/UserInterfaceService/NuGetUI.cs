@@ -5,10 +5,13 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Threading;
 using Microsoft.VisualStudio.Shell;
+using NuGet.Common;
 using NuGet.Frameworks;
+using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
@@ -16,17 +19,22 @@ using NuGet.Resolver;
 
 namespace NuGet.PackageManagement.UI
 {
-    public class NuGetUI : INuGetUI
+    public sealed class NuGetUI : INuGetUI
     {
-        private readonly INuGetUIContext _context;
         public const string LogEntrySource = "NuGet Package Manager";
 
+        private readonly NuGetUIProjectContext _projectContext;
+
         public NuGetUI(
+            ICommonOperations commonOperations,
+            NuGetUIProjectContext projectContext,
             INuGetUIContext context,
-            NuGetUIProjectContext projectContext)
+            INuGetUILogger logger)
         {
-            _context = context;
-            ProgressWindow = projectContext;
+            CommonOperations = commonOperations;
+            _projectContext = projectContext;
+            UIContext = context;
+            UILogger = logger;
 
             // set default values of properties
             FileConflictAction = FileConflictAction.PromptUser;
@@ -35,6 +43,27 @@ namespace NuGet.PackageManagement.UI
             ForceRemove = false;
             Projects = Enumerable.Empty<NuGetProject>();
             DisplayPreviewWindow = true;
+            DisplayDeprecatedFrameworkWindow = true;
+        }
+
+        public bool WarnAboutDotnetDeprecation(IEnumerable<NuGetProject> projects)
+        {
+            var result = false;
+
+            UIDispatcher.Invoke(() => { result = WarnAboutDotnetDeprecationImpl(projects); });
+
+            return result;
+        }
+
+        private bool WarnAboutDotnetDeprecationImpl(IEnumerable<NuGetProject> projects)
+        {
+            var window = new DeprecatedFrameworkWindow(UIContext)
+            {
+                DataContext = DotnetDeprecatedPrompt.GetDeprecatedFrameworkModel(projects)
+            };
+
+            var dialogResult = window.ShowModal();
+            return dialogResult ?? false;
         }
 
         public bool PromptForLicenseAcceptance(IEnumerable<PackageLicenseInfo> packages)
@@ -63,6 +92,41 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
+        public bool PromptForPackageManagementFormat(PackageManagementFormat selectedFormat)
+        {
+            var result = false;
+
+            UIDispatcher.Invoke(() => { result = PromptForPackageManagementFormatImpl(selectedFormat); });
+
+            return result;
+        }
+
+        private bool PromptForPackageManagementFormatImpl(PackageManagementFormat selectedFormat)
+        {
+            var packageFormatWindow = new PackageManagementFormatWindow(UIContext);
+            packageFormatWindow.DataContext = selectedFormat;
+            var dialogResult = packageFormatWindow.ShowModal();
+            return dialogResult ?? false;
+        }
+
+        public async System.Threading.Tasks.Task UpdateNuGetProjectToPackageRef(IEnumerable<NuGetProject> msBuildProjects)
+        {
+            var projects = Projects.ToList();
+
+            foreach (var project in msBuildProjects)
+            {
+                var newProject = await UIContext.SolutionManager.UpdateNuGetProjectToPackageRef(project);
+
+                if (newProject != null)
+                {
+                    projects.Remove(project);
+                    projects.Add(newProject);
+                }
+            }
+
+            Projects = projects;
+        }
+
         public void LaunchExternalLink(Uri url)
         {
             UIUtility.LaunchExternalLink(url);
@@ -70,9 +134,9 @@ namespace NuGet.PackageManagement.UI
 
         public void LaunchNuGetOptionsDialog(OptionsPage optionsPageToOpen)
         {
-            if (_context?.OptionsPageActivator != null)
+            if (UIContext?.OptionsPageActivator != null)
             {
-                UIDispatcher.Invoke(() => { _context.OptionsPageActivator.ActivatePage(optionsPageToOpen, null); });
+                UIDispatcher.Invoke(() => { UIContext.OptionsPageActivator.ActivatePage(optionsPageToOpen, null); });
             }
             else
             {
@@ -88,15 +152,8 @@ namespace NuGet.PackageManagement.UI
             {
                 UIDispatcher.Invoke(() =>
                 {
-                    var w = new PreviewWindow(_context);
+                    var w = new PreviewWindow(UIContext);
                     w.DataContext = new PreviewWindowModel(actions);
-
-                    if (StandaloneSwitch.IsRunningStandalone
-                        && _detailControl != null)
-                    {
-                        var win = Window.GetWindow(_detailControl);
-                        w.Owner = win;
-                    }
 
                     result = w.ShowModal() == true;
                 });
@@ -109,21 +166,24 @@ namespace NuGet.PackageManagement.UI
             return result;
         }
 
-        // TODO: rename it to something like Start
-        public void ShowProgressDialog(DependencyObject ownerWindow)
+        public void BeginOperation()
         {
-            ProgressWindow.Start();
-            ProgressWindow.FileConflictAction = FileConflictAction;
+            _projectContext.FileConflictAction = FileConflictAction;
+            UILogger.Start();
         }
 
-        // TODO: rename it to something like End
-        public void CloseProgressDialog()
+        public void EndOperation()
         {
-            ProgressWindow.End();
+            UILogger.End();
         }
 
-        // TODO: rename it
-        public NuGetUIProjectContext ProgressWindow { get; }
+        public ICommonOperations CommonOperations { get; }
+
+        public INuGetUIContext UIContext { get; }
+
+        public INuGetUILogger UILogger { get; }
+
+        public INuGetProjectContext ProjectContext => _projectContext;
 
         public IEnumerable<NuGetProject> Projects
         {
@@ -132,6 +192,12 @@ namespace NuGet.PackageManagement.UI
         }
 
         public bool DisplayPreviewWindow
+        {
+            set;
+            get;
+        }
+
+        public bool DisplayDeprecatedFrameworkWindow
         {
             set;
             get;
@@ -165,21 +231,36 @@ namespace NuGet.PackageManagement.UI
 
         public void OnActionsExecuted(IEnumerable<ResolvedAction> actions)
         {
-            this._context.SolutionManager.OnActionsExecuted(actions);
+            this.UIContext.SolutionManager.OnActionsExecuted(actions);
         }
 
-        public SourceRepository ActiveSource
+        public IEnumerable<SourceRepository> ActiveSources
         {
             get
             {
-                SourceRepository source = null;
+                IEnumerable<SourceRepository> sources = null;
 
                 if (PackageManagerControl != null)
                 {
-                    UIDispatcher.Invoke(() => { source = PackageManagerControl.ActiveSource; });
+                    UIDispatcher.Invoke(() => { sources = PackageManagerControl.ActiveSources; });
                 }
 
-                return source;
+                return sources;
+            }
+        }
+
+        public Configuration.ISettings Settings
+        {
+            get
+            {
+                Configuration.ISettings settings = null;
+
+                if (PackageManagerControl != null)
+                {
+                    UIDispatcher.Invoke(() => { settings = PackageManagerControl.Settings; });
+                }
+
+                return settings;
             }
         }
 
@@ -218,25 +299,26 @@ namespace NuGet.PackageManagement.UI
         {
             if (ex is NuGetResolverConstraintException ||
                 ex is PackageAlreadyInstalledException ||
-                ex is NuGetVersionNotSatisfiedException ||
+                ex is MinClientVersionException ||
                 ex is FrameworkException ||
+                ex is NuGetProtocolException ||
                 ex is PackagingException ||
                 ex is InvalidOperationException)
             {
                 // for exceptions that are known to be normal error cases, just
                 // display the message.
-                ProgressWindow.Log(ProjectManagement.MessageLevel.Info, ex.Message);
+                ProjectContext.Log(MessageLevel.Info, ExceptionUtilities.DisplayMessage(ex, indent: true));
 
                 // write to activity log
-                var message = string.Format(CultureInfo.CurrentCulture, ex.ToString());
-                ActivityLog.LogError(LogEntrySource, message);
+                var activityLogMessage = string.Format(CultureInfo.CurrentCulture, ex.ToString());
+                ActivityLog.LogError(LogEntrySource, activityLogMessage);
             }
             else
             {
-                ProgressWindow.Log(ProjectManagement.MessageLevel.Error, ex.ToString());
+                ProjectContext.Log(MessageLevel.Error, ex.ToString());
             }
 
-            ProgressWindow.ReportError(ex.Message);
+            UILogger.ReportError(ExceptionUtilities.DisplayMessage(ex, indent: false));
         }
     }
 }

@@ -9,18 +9,23 @@ using HashCombiner = NuGet.Frameworks.HashCodeCombiner;
 
 namespace NuGet.Frameworks
 {
-    public class CompatibilityProvider : IFrameworkCompatibilityProvider
+#if NUGET_FRAMEWORKS_INTERNAL
+    internal
+#else
+    public
+#endif
+    class CompatibilityProvider : IFrameworkCompatibilityProvider
     {
         private readonly IFrameworkNameProvider _mappings;
         private readonly FrameworkExpander _expander;
         private static readonly NuGetFrameworkFullComparer _fullComparer = new NuGetFrameworkFullComparer();
-        private readonly ConcurrentDictionary<int, bool> _cache;
+        private readonly ConcurrentDictionary<CompatibilityCacheKey, bool> _cache;
 
         public CompatibilityProvider(IFrameworkNameProvider mappings)
         {
             _mappings = mappings;
             _expander = new FrameworkExpander(mappings);
-            _cache = new ConcurrentDictionary<int, bool>();
+            _cache = new ConcurrentDictionary<CompatibilityCacheKey, bool>();
         }
 
         /// <summary>
@@ -33,18 +38,19 @@ namespace NuGet.Frameworks
         {
             if (target == null)
             {
-                throw new ArgumentNullException(nameof(target));
+                throw new ArgumentNullException("target");
             }
 
             if (candidate == null)
             {
-                throw new ArgumentNullException(nameof(candidate));
+                throw new ArgumentNullException("candidate");
             }
 
             // check the cache for a solution
-            var cacheKey = GetCacheKey(target, candidate);
+            var cacheKey = new CompatibilityCacheKey(target, candidate);
 
-            bool? result = _cache.GetOrAdd(cacheKey, (Func<int, bool>)((key) => { return IsCompatibleCore(target, candidate) == true; }));
+            bool? result = _cache.GetOrAdd(cacheKey, (Func<CompatibilityCacheKey, bool>)((key) 
+                => { return IsCompatibleCore(target, candidate) == true; }));
 
             return result == true;
         }
@@ -187,25 +193,13 @@ namespace NuGet.Frameworks
             return candidate == FrameworkConstants.EmptyVersion || candidate <= target;
         }
 
-        private static int GetCacheKey(NuGetFramework target, NuGetFramework candidate)
-        {
-            var combiner = new HashCombiner();
-
-            // create the cache key from the hash codes of both frameworks
-            // the order is important here since compatibility is usually one way
-            combiner.AddObject(target);
-            combiner.AddObject(candidate);
-
-            return combiner.CombinedHash;
-        }
-
         /// <summary>
         /// Find all equivalent frameworks, and their equivalent frameworks.
         /// Example:
         /// Mappings:
-        /// A <-> B
-        /// B <-> C
-        /// C <-> D
+        /// A &lt;&#8210;&gt; B
+        /// B &lt;&#8210;&gt; C
+        /// C &lt;&#8210;&gt; D
         /// For A we need to find B, C, and D so we must retrieve equivalent frameworks for A, B, and C
         /// also as we discover them.
         /// </summary>

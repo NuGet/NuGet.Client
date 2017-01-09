@@ -25,10 +25,12 @@ namespace NuGet.PackageManagement
         /// Returns the <see cref="DownloadResourceResult"/> for a given <paramref name="packageIdentity" />
         /// from the given <paramref name="sources" />.
         /// </summary>
-        public static async Task<DownloadResourceResult> GetDownloadResourceResultAsync(IEnumerable<SourceRepository> sources,
+        public static async Task<DownloadResourceResult> GetDownloadResourceResultAsync(
+            IEnumerable<SourceRepository> sources,
             PackageIdentity packageIdentity,
-            Configuration.ISettings settings,
-            Logging.ILogger logger,
+            PackageDownloadContext downloadContext,
+            string globalPackagesFolder,
+            ILogger logger,
             CancellationToken token)
         {
             if (sources == null)
@@ -41,15 +43,21 @@ namespace NuGet.PackageManagement
                 throw new ArgumentNullException(nameof(packageIdentity));
             }
 
-            if (settings == null)
+            if (downloadContext == null)
             {
-                throw new ArgumentNullException(nameof(settings));
+                throw new ArgumentNullException(nameof(downloadContext));
+            }
+
+            if (logger == null)
+            {
+                throw new ArgumentNullException(nameof(logger));
             }
 
             var failedTasks = new List<Task<DownloadResourceResult>>();
             var tasksLookup = new Dictionary<Task<DownloadResourceResult>, SourceRepository>();
 
-            using (var linkedTokenSource = CancellationTokenSource.CreateLinkedTokenSource(token))
+            var linkedTokenSource = CancellationTokenSource.CreateLinkedTokenSource(token);
+            try
             {
                 // Create a group of local sources that will go first, then everything else.
                 var groups = new Queue<List<SourceRepository>>();
@@ -80,7 +88,14 @@ namespace NuGet.PackageManagement
 
                     foreach (var source in sourceGroup)
                     {
-                        var task = GetDownloadResourceResultAsync(source, packageIdentity, settings, logger, linkedTokenSource.Token);
+                        var task = GetDownloadResourceResultAsync(
+                            source,
+                            packageIdentity,
+                            downloadContext,
+                            globalPackagesFolder,
+                            logger,
+                            linkedTokenSource.Token);
+
                         tasksLookup.Add(task, source);
                         tasks.Add(task);
                     }
@@ -91,8 +106,37 @@ namespace NuGet.PackageManagement
 
                         if (completedTask.Status == TaskStatus.RanToCompletion)
                         {
+                            tasks.Remove(completedTask);
+
                             // Cancel the other tasks, since, they may still be running
                             linkedTokenSource.Cancel();
+
+                            if (tasks.Any())
+                            {
+                                // NOTE: Create a Task out of remainingTasks which waits for all the tasks to complete
+                                // and disposes the linked token source safely. One of the tasks could try to access
+                                // its incoming CancellationToken to register a callback. If the linkedTokenSource was
+                                // disposed before being accessed, it will throw an ObjectDisposedException.
+                                // At the same time, we do not want to wait for all the tasks to complete before
+                                // before this method returns with a DownloadResourceResult.
+                                var remainingTasks = Task.Run(async () =>
+                                {
+                                    try
+                                    {
+                                        await Task.WhenAll(tasks);
+                                    }
+                                    catch
+                                    {
+                                        // Any exception from one of the remaining tasks is not actionable.
+                                        // And, this code is running on the threadpool and the task is not awaited on.
+                                        // Catch all and do nothing.
+                                    }
+                                    finally
+                                    {
+                                        linkedTokenSource.Dispose();
+                                    }
+                                });
+                            }
 
                             return completedTask.Result;
                         }
@@ -107,33 +151,40 @@ namespace NuGet.PackageManagement
                         }
                     }
                 }
+
+                // no matches were found
+                var errors = new StringBuilder();
+
+                errors.AppendLine(string.Format(CultureInfo.CurrentCulture,
+                    Strings.UnknownPackageSpecificVersion, packageIdentity.Id,
+                    packageIdentity.Version.ToNormalizedString()));
+
+                foreach (var task in failedTasks)
+                {
+                    var message = ExceptionUtilities.DisplayMessage(task.Exception);
+
+                    errors.AppendLine($"  {tasksLookup[task].PackageSource.Source}: {message}");
+                }
+
+                throw new FatalProtocolException(errors.ToString());
             }
-
-            // no matches were found
-            var errors = new StringBuilder();
-
-            errors.AppendLine(string.Format(CultureInfo.CurrentCulture,
-                Strings.UnknownPackageSpecificVersion, packageIdentity.Id,
-                packageIdentity.Version.ToNormalizedString()));
-
-            foreach (var task in failedTasks)
+            catch
             {
-                var message = ExceptionUtilities.DisplayMessage(task.Exception);
-
-                errors.AppendLine($"{tasksLookup[task].PackageSource.Source}: {message}");
+                linkedTokenSource.Dispose();
+                throw;
             }
-
-            throw new FatalProtocolException(errors.ToString());
         }
 
         /// <summary>
         /// Returns the <see cref="DownloadResourceResult"/> for a given <paramref name="packageIdentity" /> from the given
         /// <paramref name="sourceRepository" />.
         /// </summary>
-        public static async Task<DownloadResourceResult> GetDownloadResourceResultAsync(SourceRepository sourceRepository,
+        public static async Task<DownloadResourceResult> GetDownloadResourceResultAsync(
+            SourceRepository sourceRepository,
             PackageIdentity packageIdentity,
-            Configuration.ISettings settings,
-            Logging.ILogger logger,
+            PackageDownloadContext downloadContext,
+            string globalPackagesFolder,
+            ILogger logger,
             CancellationToken token)
         {
             if (sourceRepository == null)
@@ -146,9 +197,14 @@ namespace NuGet.PackageManagement
                 throw new ArgumentNullException(nameof(packageIdentity));
             }
 
-            if (settings == null)
+            if (downloadContext == null)
             {
-                throw new ArgumentNullException(nameof(settings));
+                throw new ArgumentNullException(nameof(downloadContext));
+            }
+
+            if (logger == null)
+            {
+                throw new ArgumentNullException(nameof(logger));
             }
 
             var downloadResource = await sourceRepository.GetResourceAsync<DownloadResource>(token);
@@ -158,12 +214,22 @@ namespace NuGet.PackageManagement
                 throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Strings.DownloadResourceNotFound, sourceRepository.PackageSource.Source));
             }
 
-            DownloadResourceResult result = null;
-
             token.ThrowIfCancellationRequested();
 
-            result
-                = await downloadResource.GetDownloadResourceResultAsync(packageIdentity, settings, token);
+            DownloadResourceResult result;
+            try
+            {
+                result = await downloadResource.GetDownloadResourceResultAsync(
+                   packageIdentity,
+                   downloadContext,
+                   globalPackagesFolder,
+                   logger,
+                   token);
+            }
+            catch (OperationCanceledException)
+            {
+                result = new DownloadResourceResult(DownloadResourceResultStatus.Cancelled);
+            }
 
             if (result == null)
             {
@@ -174,12 +240,35 @@ namespace NuGet.PackageManagement
                     sourceRepository.PackageSource.Source));
             }
 
+            if (result.Status == DownloadResourceResultStatus.Cancelled)
+            {
+                throw new RetriableProtocolException(string.Format(
+                    CultureInfo.CurrentCulture,
+                    Strings.PackageCancelledFromSource,
+                    packageIdentity,
+                    sourceRepository.PackageSource.Source));
+            }
+
+            if (result.Status == DownloadResourceResultStatus.NotFound)
+            {
+                throw new FatalProtocolException(string.Format(
+                    CultureInfo.CurrentCulture,
+                    Strings.PackageNotFoundOnSource,
+                    packageIdentity,
+                    sourceRepository.PackageSource.Source));
+            }
+
             if (result.PackageReader == null)
             {
                 result.PackageStream.Seek(0, SeekOrigin.Begin);
                 var packageReader = new PackageArchiveReader(result.PackageStream);
                 result.PackageStream.Seek(0, SeekOrigin.Begin);
-                result = new DownloadResourceResult(result.PackageStream, packageReader);
+                result = new DownloadResourceResult(result.PackageStream, packageReader, sourceRepository.PackageSource.Source);
+            }
+            else
+            {
+                // bind the source
+                result = new DownloadResourceResult(result.PackageStream, result.PackageReader, sourceRepository.PackageSource.Source);
             }
 
             return result;

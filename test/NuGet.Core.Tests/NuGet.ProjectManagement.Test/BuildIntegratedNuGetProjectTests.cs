@@ -1,15 +1,19 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 using NuGet.Frameworks;
+using NuGet.LibraryModel;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
+using NuGet.ProjectModel;
 using NuGet.Protocol.Core.Types;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
@@ -21,234 +25,208 @@ namespace ProjectManagement.Test
     public class BuildIntegratedNuGetProjectTests
     {
         [Fact]
-        public void BuildIntegratedNuGetProject_GetLockFilePathWithProjectNameOnly()
+        public async Task BuildIntegratedNuGetProject_GetPackageSpecForRestore_NoReferences()
         {
             // Arrange
-            using (var randomProjectFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomProjectFolderPath = TestDirectory.Create())
             {
-                var projNameFile = Path.Combine(randomProjectFolderPath, "abc.project.json");
-                CreateFile(projNameFile);
+                var projectJsonPath = Path.Combine(randomProjectFolderPath, "project.json");
+                CreateConfigJson(projectJsonPath);
+
+                var projectTargetFramework = NuGetFramework.Parse("netcore50");
+                var testNuGetProjectContext = new TestNuGetProjectContext();
+                var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, testNuGetProjectContext, randomProjectFolderPath);
+                var projectFilePath = Path.Combine(randomProjectFolderPath, $"{msBuildNuGetProjectSystem.ProjectName}.csproj");
+                var buildIntegratedProject = new ProjectJsonBuildIntegratedNuGetProject(projectJsonPath, projectFilePath, msBuildNuGetProjectSystem);
+
+                var referenceContext = new DependencyGraphCacheContext(new TestLogger());
 
                 // Act
-                var path = BuildIntegratedProjectUtility.GetProjectConfigPath(randomProjectFolderPath, "abc");
-                var fileName = Path.GetFileName(path);
+                var actual = (await buildIntegratedProject.GetPackageSpecsAsync(referenceContext)).SingleOrDefault();
 
                 // Assert
-                Assert.Equal(fileName, "abc.project.json");
+                Assert.NotNull(actual);
+                Assert.Equal(msBuildNuGetProjectSystem.ProjectName, actual.Name);
+                Assert.Equal(projectJsonPath, actual.FilePath);
+                Assert.NotNull(actual.RestoreMetadata);
+                Assert.Equal(ProjectStyle.ProjectJson, actual.RestoreMetadata.ProjectStyle);
+                Assert.Equal(projectFilePath, actual.RestoreMetadata.ProjectPath);
+                Assert.Equal(msBuildNuGetProjectSystem.ProjectName, actual.RestoreMetadata.ProjectName);
+                Assert.Equal(projectFilePath, actual.RestoreMetadata.ProjectUniqueName);
+                Assert.Equal(1, actual.TargetFrameworks.Count);
+                Assert.Equal(projectTargetFramework, actual.TargetFrameworks[0].FrameworkName);
+                Assert.Empty(actual.TargetFrameworks[0].Imports);
+
+                Assert.Empty(actual.Dependencies);
+                Assert.Empty(actual.TargetFrameworks[0].Dependencies);
+                Assert.Empty(actual.RestoreMetadata.TargetFrameworks.SelectMany(e => e.ProjectReferences));
             }
         }
 
         [Fact]
-        public void BuildIntegratedNuGetProject_GetLockFilePathWithBothProjectJsonFiles()
+        public void BuildIntegratedNuGetProject_SortDependenciesWithProjects()
         {
             // Arrange
-            using (var randomProjectFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
-            {
-                var projNameFile = Path.Combine(randomProjectFolderPath, "abc.project.json");
-                var projJsonFile = Path.Combine(randomProjectFolderPath, "project.json");
-                CreateFile(projNameFile);
-                CreateFile(projJsonFile);
+            var lockFile = new LockFile();
+            var target = new LockFileTarget();
+            lockFile.Targets.Add(target);
 
-                // Act
-                var path = BuildIntegratedProjectUtility.GetProjectConfigPath(randomProjectFolderPath, "abc");
-                var fileName = Path.GetFileName(path);
+            var targetA = new LockFileTargetLibrary()
+            {
+                Name = "a",
+                Version = NuGetVersion.Parse("1.0.0"),
+                Type = "package"
+            };
+            targetA.Dependencies.Add(new PackageDependency("b"));
+
+            var targetB = new LockFileTargetLibrary()
+            {
+                Name = "b",
+                Version = NuGetVersion.Parse("1.0.0"),
+                Type = "project"
+            };
+            targetA.Dependencies.Add(new PackageDependency("c"));
+
+            var targetC = new LockFileTargetLibrary()
+            {
+                Name = "c",
+                Version = NuGetVersion.Parse("1.0.0"),
+                Type = "package"
+            };
+
+            target.Libraries.Add(targetA);
+            target.Libraries.Add(targetC);
+            target.Libraries.Add(targetB);
+
+            // Act
+            var ordered = BuildIntegratedProjectUtility.GetOrderedLockFileDependencies(lockFile)
+                .OrderBy(lib => lib.Name, StringComparer.Ordinal)
+                .ToList();
+
+            // Assert
+            Assert.Equal(3, ordered.Count);
+            Assert.Equal("a", ordered[0].Name);
+            Assert.Equal("b", ordered[1].Name);
+            Assert.Equal("c", ordered[2].Name);
+        }
+
+        [Fact]
+        public void BuildIntegratedNuGetProject_SortDependenciesWithProjects_GetPackagesOnly()
+        {
+            // Arrange
+            var lockFile = new LockFile();
+            var target = new LockFileTarget();
+            lockFile.Targets.Add(target);
+
+            var targetA = new LockFileTargetLibrary()
+            {
+                Name = "a",
+                Version = NuGetVersion.Parse("1.0.0"),
+                Type = "package"
+            };
+            targetA.Dependencies.Add(new PackageDependency("b"));
+
+            var targetB = new LockFileTargetLibrary()
+            {
+                Name = "b",
+                Version = NuGetVersion.Parse("1.0.0"),
+                Type = "project"
+            };
+            targetA.Dependencies.Add(new PackageDependency("c"));
+
+            var targetC = new LockFileTargetLibrary()
+            {
+                Name = "c",
+                Version = NuGetVersion.Parse("1.0.0"),
+                Type = "package"
+            };
+
+            target.Libraries.Add(targetA);
+            target.Libraries.Add(targetC);
+            target.Libraries.Add(targetB);
+
+            // Act
+            var ordered = BuildIntegratedProjectUtility.GetOrderedLockFilePackageDependencies(lockFile)
+                .OrderBy(lib => lib.Id, StringComparer.Ordinal)
+                .ToList();
+
+            // Assert
+            Assert.Equal(2, ordered.Count);
+            Assert.Equal("a", ordered[0].Id);
+            // skip b
+            Assert.Equal("c", ordered[1].Id);
+        }
+
+        [Fact]
+        public async Task TestBuildIntegratedNuGetPackageSpecNameMatchesFilePath_ProjectNameJson()
+        {
+            // Arrange
+            var packageIdentity = new PackageIdentity("packageA", new NuGetVersion("1.0.0"));
+            using (var randomTestPackageSourcePath = TestDirectory.Create())
+            using (var randomPackagesFolderPath = TestDirectory.Create())
+            using (var randomProjectFolderPath = TestDirectory.Create())
+            {
+                var randomConfig = Path.Combine(randomProjectFolderPath, "fileName.project.json");
+                var token = CancellationToken.None;
+
+                CreateConfigJson(randomConfig);
+
+                var projectTargetFramework = NuGetFramework.Parse("netcore50");
+                var testNuGetProjectContext = new TestNuGetProjectContext();
+
+                var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(
+                    projectTargetFramework,
+                    testNuGetProjectContext,
+                    randomProjectFolderPath,
+                    "msbuildName");
+
+                var projectFilePath = Path.Combine(randomProjectFolderPath, "fileName.csproj");
+
+                var buildIntegratedProject = new ProjectJsonBuildIntegratedNuGetProject(randomConfig, projectFilePath, msBuildNuGetProjectSystem);
+
+                var spec = await buildIntegratedProject.GetPackageSpecsAsync(new DependencyGraphCacheContext());
 
                 // Assert
-                Assert.Equal(fileName, "abc.project.json");
+                Assert.Equal(projectFilePath, buildIntegratedProject.MSBuildProjectPath);
+                Assert.Equal("fileName", buildIntegratedProject.ProjectName);
+                Assert.Equal("fileName", spec.Single().Name);
             }
         }
 
         [Fact]
-        public void BuildIntegratedNuGetProject_GetLockFilePathWithProjectJsonFromAnotherProject()
+        public async Task TestBuildIntegratedNuGetPackageSpecNameMatchesFilePath()
         {
             // Arrange
-            using (var randomProjectFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
+            var packageIdentity = new PackageIdentity("packageA", new NuGetVersion("1.0.0"));
+            using (var randomTestPackageSourcePath = TestDirectory.Create())
+            using (var randomPackagesFolderPath = TestDirectory.Create())
+            using (var randomProjectFolderPath = TestDirectory.Create())
             {
-                var projNameFile = Path.Combine(randomProjectFolderPath, "xyz.project.json");
-                var projJsonFile = Path.Combine(randomProjectFolderPath, "project.json");
-                CreateFile(projNameFile);
-                CreateFile(projJsonFile);
+                var randomConfig = Path.Combine(randomProjectFolderPath, "project.json");
+                var token = CancellationToken.None;
 
-                // Act
-                var path = BuildIntegratedProjectUtility.GetProjectConfigPath(randomProjectFolderPath, "abc");
-                var fileName = Path.GetFileName(path);
+                CreateConfigJson(randomConfig);
+
+                var projectTargetFramework = NuGetFramework.Parse("netcore50");
+                var testNuGetProjectContext = new TestNuGetProjectContext();
+
+                var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(
+                    projectTargetFramework,
+                    testNuGetProjectContext,
+                    randomProjectFolderPath,
+                    "msbuildName");
+
+                var projectFilePath = Path.Combine(randomProjectFolderPath, "fileName.csproj");
+
+                var buildIntegratedProject = new ProjectJsonBuildIntegratedNuGetProject(randomConfig, projectFilePath, msBuildNuGetProjectSystem);
+
+                var spec = await buildIntegratedProject.GetPackageSpecsAsync(new DependencyGraphCacheContext());
 
                 // Assert
-                Assert.Equal(fileName, "project.json");
-
-                // Clean-up
+                Assert.Equal(projectFilePath, buildIntegratedProject.MSBuildProjectPath);
+                Assert.Equal("fileName", buildIntegratedProject.ProjectName);
+                Assert.Equal("fileName", spec.Single().Name);
             }
-        }
-
-        [Fact]
-        public void BuildIntegratedNuGetProject_GetLockFilePathWithProjectNameJsonAndAnotherProject()
-        {
-            // Arrange
-            using (var randomProjectFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
-            {
-                var otherFile = Path.Combine(randomProjectFolderPath, "xyz.project.json");
-                var projJsonFile = Path.Combine(randomProjectFolderPath, "abc.project.json");
-                CreateFile(otherFile);
-                CreateFile(projJsonFile);
-
-                // Act
-                var path = BuildIntegratedProjectUtility.GetProjectConfigPath(randomProjectFolderPath, "abc");
-                var fileName = Path.GetFileName(path);
-
-                // Assert
-                Assert.Equal(fileName, "abc.project.json");
-
-                // Clean-up
-            }
-        }
-
-        [Fact]
-        public void BuildIntegratedNuGetProject_GetLockFilePathWithNoFiles()
-        {
-            // Arrange
-            using (var randomProjectFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
-            {
-                var expected = Path.Combine(randomProjectFolderPath, "project.json");
-
-                // Act
-                var path = BuildIntegratedProjectUtility.GetProjectConfigPath(randomProjectFolderPath, "abc");
-
-                // Assert
-                Assert.Equal(expected, path);
-
-                // Clean-up
-            }
-        }
-
-        [Fact]
-        public void BuildIntegratedNuGetProject_GetLockFilePathWithProjectJsonOnly()
-        {
-            // Arrange
-            using (var randomProjectFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
-            {
-                var projJsonFile = Path.Combine(randomProjectFolderPath, "project.json");
-                CreateFile(projJsonFile);
-
-                // Act
-                var path = BuildIntegratedProjectUtility.GetProjectConfigPath(randomProjectFolderPath, "abc");
-                var fileName = Path.GetFileName(path);
-
-                // Assert
-                Assert.Equal(fileName, "project.json");
-
-                // Clean-up
-            }
-        }
-
-        [Theory]
-        [InlineData("abc", "abc.project.json")]
-        [InlineData("ABC", "ABC.project.json")]
-        [InlineData("A B C", "A B C.project.json")]
-        [InlineData("a.b.c", "a.b.c.project.json")]
-        [InlineData(" ", " .project.json")]
-        public void BuildIntegratedNuGetProject_GetProjectConfigWithProjectName(string projectName, string fileName)
-        {
-            // Arrange & Act
-            var generatedName = BuildIntegratedProjectUtility.GetProjectConfigWithProjectName(projectName);
-
-            // Assert
-            Assert.Equal(fileName, generatedName);
-        }
-
-        [Theory]
-        [InlineData("abc", "abc.project.lock.json")]
-        [InlineData("ABC", "ABC.project.lock.json")]
-        [InlineData("A B C", "A B C.project.lock.json")]
-        [InlineData("a.b.c", "a.b.c.project.lock.json")]
-        [InlineData(" ", " .project.lock.json")]
-        public void BuildIntegratedNuGetProject_GetProjectLockFileNameWithProjectName(
-            string projectName,
-            string fileName)
-        {
-            // Arrange & Act
-            var generatedName = BuildIntegratedProjectUtility.GetProjectLockFileNameWithProjectName(projectName);
-
-            // Assert
-            Assert.Equal(fileName, generatedName);
-        }
-
-        [Theory]
-        [InlineData("abc", "abc.project.json")]
-        [InlineData("ABC", "ABC.project.json")]
-        [InlineData("A B C", "A B C.project.json")]
-        [InlineData("a.b.c", "a.b.c.project.json")]
-        [InlineData(" ", " .project.json")]
-        [InlineData("", ".project.json")]
-        public void BuildIntegratedNuGetProject_GetProjectNameFromConfigFileName(
-            string projectName,
-            string fileName)
-        {
-            // Arrange & Act
-            var result = BuildIntegratedProjectUtility.GetProjectNameFromConfigFileName(fileName);
-
-            // Assert
-            Assert.Equal(projectName, result);
-        }
-
-        [Theory]
-        [InlineData("abc.project.json")]
-        [InlineData("a b c.project.json")]
-        [InlineData("MY LONG PROJECT NAME 234234432.project.json")]
-        [InlineData("packages.config.project.json")]
-        [InlineData("111.project.json")]
-        [InlineData("project.json")]
-        [InlineData("prOject.JSon")]
-        [InlineData("xyz.prOject.JSon")]
-        [InlineData("c:\\users\\project.json")]
-        [InlineData("dir\\project.json")]
-        [InlineData("c:\\users\\abc.project.json")]
-        [InlineData("dir\\abc.project.json")]
-        [InlineData(".\\abc.project.json")]
-        public void BuildIntegratedNuGetProject_IsProjectConfig_True(string path)
-        {
-            // Arrange & Act
-            var result = BuildIntegratedProjectUtility.IsProjectConfig(path);
-
-            // Assert
-            Assert.True(result);
-        }
-
-        [Theory]
-        [InlineData("abcproject.json")]
-        [InlineData("a b c.project.jso")]
-        [InlineData("abc.project..json")]
-        [InlineData("packages.config")]
-        [InlineData("project.json ")]
-        [InlineData("c:\\users\\packages.config")]
-        [InlineData("c:\\users\\abc.project..json")]
-        [InlineData("c:\\users\\")]
-        [InlineData("<Shared>")]
-        [InlineData("<Shared>.Project.json")]
-        [InlineData("\t")]
-        [InlineData("")]
-        public void BuildIntegratedNuGetProject_IsProjectConfig_False(string path)
-        {
-            // Arrange & Act
-            var result = BuildIntegratedProjectUtility.IsProjectConfig(path);
-
-            // Assert
-            Assert.False(result);
-        }
-
-        [Theory]
-        [InlineData("project.json", "project.lock.json")]
-        [InlineData("dir/project.json", "dir\\project.lock.json")]
-        [InlineData("c:\\users\\project.json", "c:\\users\\project.lock.json")]
-        [InlineData("abc.project.json", "abc.project.lock.json")]
-        [InlineData("dir/abc.project.json", "dir\\abc.project.lock.json")]
-        [InlineData("c:\\users\\abc.project.json", "c:\\users\\abc.project.lock.json")]
-        public void BuildIntegratedNuGetProject_GetLockFilePath(string configPath, string lockFilePath)
-        {
-            // Arrange & Act
-            var result = BuildIntegratedProjectUtility.GetLockFilePath(configPath);
-
-            // Assert
-            Assert.Equal(lockFilePath, result);
         }
 
         [Fact]
@@ -256,9 +234,9 @@ namespace ProjectManagement.Test
         {
             // Arrange
             var packageIdentity = new PackageIdentity("packageA", new NuGetVersion("1.0.0"));
-            using (var randomTestPackageSourcePath = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var randomPackagesFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var randomProjectFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomTestPackageSourcePath = TestDirectory.Create())
+            using (var randomPackagesFolderPath = TestDirectory.Create())
+            using (var randomProjectFolderPath = TestDirectory.Create())
             {
                 var randomConfig = Path.Combine(randomProjectFolderPath, "project.json");
                 var token = CancellationToken.None;
@@ -268,14 +246,20 @@ namespace ProjectManagement.Test
                 var projectTargetFramework = NuGetFramework.Parse("netcore50");
                 var testNuGetProjectContext = new TestNuGetProjectContext();
                 var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, testNuGetProjectContext, randomProjectFolderPath);
-                var buildIntegratedProject = new BuildIntegratedNuGetProject(randomConfig, msBuildNuGetProjectSystem);
+                var projectFilePath = Path.Combine(randomProjectFolderPath, $"{msBuildNuGetProjectSystem.ProjectName}.csproj");
+                var buildIntegratedProject = new ProjectJsonBuildIntegratedNuGetProject(randomConfig, projectFilePath, msBuildNuGetProjectSystem);
 
                 var packageFileInfo = TestPackagesGroupedByFolder.GetLegacyContentPackage(randomTestPackageSourcePath,
                     packageIdentity.Id, packageIdentity.Version.ToNormalizedString());
                 using (var packageStream = GetDownloadResourceResult(packageFileInfo))
                 {
                     // Act
-                    await buildIntegratedProject.InstallPackageAsync(packageIdentity, packageStream, testNuGetProjectContext, token);
+                    await buildIntegratedProject.InstallPackageAsync(
+                        packageIdentity.Id,
+                        new VersionRange(packageIdentity.Version),
+                        testNuGetProjectContext,
+                        installationContext: null,
+                        token: token);
                 }
 
                 // Assert
@@ -294,9 +278,9 @@ namespace ProjectManagement.Test
             // Arrange
             var packageIdentity = new PackageIdentity("packageA", new NuGetVersion("1.0.0"));
             var packageIdentity2 = new PackageIdentity("packageB", new NuGetVersion("1.0.0"));
-            using (var randomTestPackageSourcePath = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var randomPackagesFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var randomProjectFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomTestPackageSourcePath = TestDirectory.Create())
+            using (var randomPackagesFolderPath = TestDirectory.Create())
+            using (var randomProjectFolderPath = TestDirectory.Create())
             {
                 var randomConfig = Path.Combine(randomProjectFolderPath, "project.json");
                 var token = CancellationToken.None;
@@ -306,7 +290,8 @@ namespace ProjectManagement.Test
                 var projectTargetFramework = NuGetFramework.Parse("netcore50");
                 var testNuGetProjectContext = new TestNuGetProjectContext();
                 var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, testNuGetProjectContext, randomProjectFolderPath);
-                var buildIntegratedProject = new BuildIntegratedNuGetProject(randomConfig, msBuildNuGetProjectSystem);
+                var projectFilePath = Path.Combine(randomProjectFolderPath, $"{msBuildNuGetProjectSystem.ProjectName}.csproj");
+                var buildIntegratedProject = new ProjectJsonBuildIntegratedNuGetProject(randomConfig, projectFilePath, msBuildNuGetProjectSystem);
 
                 var packageFileInfo = TestPackagesGroupedByFolder.GetLegacyContentPackage(randomTestPackageSourcePath,
                     packageIdentity.Id, packageIdentity.Version.ToNormalizedString());
@@ -314,8 +299,18 @@ namespace ProjectManagement.Test
                     packageIdentity.Id, packageIdentity.Version.ToNormalizedString());
                 using (var packageStream = GetDownloadResourceResult(packageFileInfo))
                 {
-                    await buildIntegratedProject.InstallPackageAsync(packageIdentity, packageStream, testNuGetProjectContext, token);
-                    await buildIntegratedProject.InstallPackageAsync(packageIdentity2, packageStream, testNuGetProjectContext, token);
+                    await buildIntegratedProject.InstallPackageAsync(
+                        packageIdentity.Id,
+                        new VersionRange(packageIdentity.Version),
+                        testNuGetProjectContext,
+                        installationContext: null,
+                        token: token);
+                    await buildIntegratedProject.InstallPackageAsync(
+                        packageIdentity2.Id,
+                        new VersionRange(packageIdentity2.Version),
+                        testNuGetProjectContext,
+                        installationContext: null,
+                        token: token);
 
                     // Act
                     await buildIntegratedProject.UninstallPackageAsync(packageIdentity2, new TestNuGetProjectContext(), CancellationToken.None);
@@ -337,9 +332,9 @@ namespace ProjectManagement.Test
             // Arrange
             var packageIdentity = new PackageIdentity("packageA", new NuGetVersion("1.0.0"));
             var packageIdentity2 = new PackageIdentity("packageB", new NuGetVersion("1.0.0"));
-            using (var randomTestPackageSourcePath = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var randomPackagesFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var randomProjectFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomTestPackageSourcePath = TestDirectory.Create())
+            using (var randomPackagesFolderPath = TestDirectory.Create())
+            using (var randomProjectFolderPath = TestDirectory.Create())
             {
                 var randomConfig = Path.Combine(randomProjectFolderPath, "project.json");
                 var token = CancellationToken.None;
@@ -349,7 +344,8 @@ namespace ProjectManagement.Test
                 var projectTargetFramework = NuGetFramework.Parse("netcore50");
                 var testNuGetProjectContext = new TestNuGetProjectContext();
                 var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, testNuGetProjectContext, randomProjectFolderPath);
-                var buildIntegratedProject = new BuildIntegratedNuGetProject(randomConfig, msBuildNuGetProjectSystem);
+                var projectFilePath = Path.Combine(randomProjectFolderPath, $"{msBuildNuGetProjectSystem.ProjectName}.csproj");
+                var buildIntegratedProject = new ProjectJsonBuildIntegratedNuGetProject(randomConfig, projectFilePath, msBuildNuGetProjectSystem);
 
                 var packageFileInfo = TestPackagesGroupedByFolder.GetLegacyContentPackage(randomTestPackageSourcePath,
                     packageIdentity.Id, packageIdentity.Version.ToNormalizedString());
@@ -357,8 +353,18 @@ namespace ProjectManagement.Test
                     packageIdentity.Id, packageIdentity.Version.ToNormalizedString());
                 using (var packageStream = GetDownloadResourceResult(packageFileInfo))
                 {
-                    await buildIntegratedProject.InstallPackageAsync(packageIdentity, packageStream, testNuGetProjectContext, token);
-                    await buildIntegratedProject.InstallPackageAsync(packageIdentity2, packageStream, testNuGetProjectContext, token);
+                    await buildIntegratedProject.InstallPackageAsync(
+                        packageIdentity.Id,
+                        new VersionRange(packageIdentity.Version),
+                        testNuGetProjectContext,
+                        installationContext: null,
+                        token: token);
+                    await buildIntegratedProject.InstallPackageAsync(
+                        packageIdentity2.Id,
+                        new VersionRange(packageIdentity2.Version),
+                        testNuGetProjectContext,
+                        installationContext: null,
+                        token: token);
 
                     // Act
                     await buildIntegratedProject.UninstallPackageAsync(packageIdentity2, new TestNuGetProjectContext(), CancellationToken.None);

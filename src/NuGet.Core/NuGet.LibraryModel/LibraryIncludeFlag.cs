@@ -13,6 +13,6 @@ namespace NuGet.LibraryModel
         Native = 1 << 3,
         ContentFiles = 1 << 4,
         Analyzers = 1 << 5,
-        All = 0xFFFF
+        All = Analyzers | Build | Compile | ContentFiles | Native | Runtime
     }
 }

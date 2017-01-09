@@ -104,6 +104,11 @@ namespace Test.Utility
         {
             get { throw new NotImplementedException(); }
         }
+        
+        public string DefaultPushSource
+        {
+            get { throw new NotImplementedException(); }
+        }
 
         public void SaveActivePackageSource(PackageSource source)
         {
@@ -123,7 +128,7 @@ namespace Test.Utility
 
         public static TestDirectory CreateAndGetSettingFilePath()
         {
-            var tempFolder = TestFileSystemUtility.CreateRandomTestFolder();
+            var tempFolder = TestDirectory.Create();
             var fileName = "nuget.config";
 
             File.WriteAllText(Path.Combine(tempFolder, fileName), TempPackageSourceContents);

@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using NuGet.Shared;
 
 namespace NuGet.Configuration
 {
@@ -108,9 +109,7 @@ namespace NuGet.Configuration
                 &&
                 rhs.AdditionalData.Count == AdditionalData.Count)
             {
-                return Enumerable.SequenceEqual(
-                    AdditionalData.OrderBy(data => data.Key, StringComparer.OrdinalIgnoreCase),
-                    rhs.AdditionalData.OrderBy(data => data.Key, StringComparer.OrdinalIgnoreCase));
+                return AdditionalData.OrderedEquals(rhs.AdditionalData, data => data.Key, StringComparer.OrdinalIgnoreCase);
             }
 
             return false;

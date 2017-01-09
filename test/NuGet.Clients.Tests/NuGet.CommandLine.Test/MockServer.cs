@@ -1,5 +1,9 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -8,6 +12,7 @@ using System.Security.Principal;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using NuGet.Common;
 
 namespace NuGet.CommandLine.Test
 {
@@ -17,30 +22,38 @@ namespace NuGet.CommandLine.Test
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1001:TypesThatOwnDisposableFieldsShouldBeDisposable")]
     public class MockServer : IDisposable
     {
-        public HttpListener Listener { get; }
-        private PortReserver PortReserver { get; }
-
         private Task _listenerTask;
         private bool _disposed = false;
+
+        public string BasePath { get; }
+        public HttpListener Listener { get; }
+        private PortReserver PortReserver { get; }
+        public RouteTable Get { get; }
+        public RouteTable Put { get; }
+        public RouteTable Delete { get; }
+        public string Uri { get { return PortReserver.BaseUri; } }
 
         /// <summary>
         /// Initializes an instance of MockServer.
         /// </summary>
         public MockServer()
         {
-            PortReserver = new PortReserver();
+            BasePath = $"/{Guid.NewGuid().ToString("D")}";
 
-            Listener = new HttpListener();
+            PortReserver = new PortReserver(BasePath);
+
+            // tests that cancel downloads and exit will cause the mock server to throw, this should be ignored.
+            Listener = new HttpListener()
+            {
+                IgnoreWriteExceptions = true
+            };
+
             Listener.Prefixes.Add(PortReserver.BaseUri);
+
+            Get = new RouteTable(BasePath);
+            Put = new RouteTable(BasePath);
+            Delete = new RouteTable(BasePath);
         }
-
-        public RouteTable Get { get; } = new RouteTable();
-
-        public RouteTable Put { get; } = new RouteTable();
-
-        public RouteTable Delete { get; } = new RouteTable();
-
-        public string Uri { get { return PortReserver.BaseUri; } }
 
         /// <summary>
         /// Starts the mock server.
@@ -56,15 +69,55 @@ namespace NuGet.CommandLine.Test
         /// </summary>
         public void Stop()
         {
-            Listener.Abort();
-
-            var task = _listenerTask;
-            _listenerTask = null;
-
-            if (task != null)
+            try
             {
-                task.Wait();
+                Listener.Abort();
+
+                var task = _listenerTask;
+                _listenerTask = null;
+
+                if (task != null)
+                {
+                    task.Wait();
+                }
             }
+            catch (Exception ex)
+            {
+                Debug.Fail(ex.ToString());
+            }
+        }
+
+        /// <summary>
+        /// Gets the absolute path of a URL minus the random base path.
+        /// This enables tests to get the stable part of a request URL.
+        /// </summary>
+        /// <param name="request">An <see cref="HttpListenerRequest"/> instance.</param>
+        /// <returns>The stable part of a request URL's absolute path.</returns>
+        public string GetRequestUrlAbsolutePath(HttpListenerRequest request)
+        {
+            return request.Url.AbsolutePath.Substring(BasePath.Length);
+        }
+
+        /// <summary>
+        /// Gets the path and query parts of a URL minus the random base path.
+        /// This enables tests to get the stable part of a request URL.
+        /// </summary>
+        /// <param name="request">An <see cref="HttpListenerRequest"/> instance.</param>
+        /// <returns>The stable part of a request URL's path and query.</returns>
+        public string GetRequestUrlPathAndQuery(HttpListenerRequest request)
+        {
+            return request.Url.PathAndQuery.Substring(BasePath.Length);
+        }
+
+        /// <summary>
+        /// Gets the raw URL minus the random base path.
+        /// This enables tests to get the stable part of a request URL.
+        /// </summary>
+        /// <param name="request">An <see cref="HttpListenerRequest"/> instance.</param>
+        /// <returns>The stable part of a request URL's raw URL.</returns>
+        public string GetRequestRawUrl(HttpListenerRequest request)
+        {
+            return request.RawUrl.Substring(BasePath.Length);
         }
 
         /// <summary>
@@ -102,11 +155,28 @@ namespace NuGet.CommandLine.Test
             int bodyEndIndex = Find(buffer, 0, delimiter);
             if (bodyEndIndex == -1)
             {
-                return result;
+                //Patch, to deal with new binary format coming with the HttpClient
+                //from dnxcore50. The right way should use existing libraries with
+                //multi-part parsers
+                byte[] delimiter2 = Encoding.UTF8.GetBytes("\r\n--");
+                bodyEndIndex = Find(buffer, 0, delimiter2);
+                if (bodyEndIndex == -1)
+                {
+                    return result;
+                }
             }
 
             result = buffer.Skip(bodyStartIndex).Take(bodyEndIndex - bodyStartIndex).ToArray();
             return result;
+        }
+
+        public static void SavePushedPackage(HttpListenerRequest r, string outputFileName)
+        {
+            var buffer = GetPushedPackage(r);
+            using (var of = new FileStream(outputFileName, FileMode.Create))
+            {
+                of.Write(buffer, 0, buffer.Length);
+            }
         }
 
         /// <summary>
@@ -163,7 +233,15 @@ namespace NuGet.CommandLine.Test
             response.AddHeader("Cache-Control", "no-cache, no-store");
 
             response.ContentLength64 = content.Length;
-            response.OutputStream.Write(content, 0, content.Length);
+
+            try
+            {
+                response.OutputStream.Write(content, 0, content.Length);
+            }
+            catch (HttpListenerException)
+            {
+                // Listener exceptions may occur if the client drops the connection
+            }
         }
 
         public static void SetResponseContent(HttpListenerResponse response, string text)
@@ -171,13 +249,13 @@ namespace NuGet.CommandLine.Test
             SetResponseContent(response, System.Text.Encoding.UTF8.GetBytes(text));
         }
 
-        void SetResponseNotFound(HttpListenerResponse response)
+        private void SetResponseNotFound(HttpListenerResponse response)
         {
             response.StatusCode = (int)HttpStatusCode.NotFound;
             SetResponseContent(response, "404 not found");
         }
 
-        void GenerateResponse(HttpListenerContext context)
+        private void GenerateResponse(HttpListenerContext context)
         {
             var request = context.Request;
             HttpListenerResponse response = context.Response;
@@ -238,11 +316,12 @@ namespace NuGet.CommandLine.Test
             }
         }
 
-        void HandleRequest()
+        private void HandleRequest()
         {
             const int ERROR_OPERATION_ABORTED = 995;
             const int ERROR_INVALID_HANDLE = 6;
             const int ERROR_INVALID_FUNCTION = 1;
+            const int ERROR_OPERATION_ABORTED_MONO = 500;
 
             while (true)
             {
@@ -259,13 +338,14 @@ namespace NuGet.CommandLine.Test
                 {
                     if (ex.ErrorCode == ERROR_OPERATION_ABORTED ||
                         ex.ErrorCode == ERROR_INVALID_HANDLE ||
-                        ex.ErrorCode == ERROR_INVALID_FUNCTION)
+                        ex.ErrorCode == ERROR_INVALID_FUNCTION ||
+                        RuntimeEnvironmentHelper.IsMono && ex.ErrorCode == ERROR_OPERATION_ABORTED_MONO)
                     {
                         return;
                     }
                     else
                     {
-                        Console.WriteLine("Unexpected error code: {0}. Ex: {1}", ex.ErrorCode, ex);
+                        System.Console.WriteLine("Unexpected error code: {0}. Ex: {1}", ex.ErrorCode, ex);
                         throw;
                     }
                 }
@@ -326,7 +406,8 @@ namespace NuGet.CommandLine.Test
                     new XElement(nsDataService + "PackageHash", package.GetHash("SHA512")),
                     new XElement(nsDataService + "PackageHashAlgorithm", "SHA512"),
                     new XElement(nsDataService + "Description", package.Description),
-                    new XElement(nsDataService + "Listed", package.Listed)));
+                    new XElement(nsDataService + "Listed", package.Listed),
+                    new XElement(nsDataService + "Published",package.Published)));
             return entry;
         }
 
@@ -363,23 +444,25 @@ namespace NuGet.CommandLine.Test
     /// </remarks>
     public class RouteTable
     {
-        List<Tuple<string, Func<HttpListenerRequest, object>>> _mappings;
+        private readonly string _basePath;
+        private readonly List<Tuple<string, Func<HttpListenerRequest, object>>> _mappings;
 
-        public RouteTable()
+        public RouteTable(string basePath)
         {
+            _basePath = basePath ?? string.Empty;
             _mappings = new List<Tuple<string, Func<HttpListenerRequest, object>>>();
         }
 
         public void Add(string pattern, Func<HttpListenerRequest, object> f)
         {
-            _mappings.Add(new Tuple<string, Func<HttpListenerRequest, object>>(pattern, f));
+            _mappings.Add(new Tuple<string, Func<HttpListenerRequest, object>>($"{_basePath}{pattern}", f));
         }
 
         public Func<HttpListenerRequest, object> Match(HttpListenerRequest r)
         {
             foreach (var m in _mappings)
             {
-                if (r.Url.AbsolutePath.StartsWith(m.Item1, StringComparison.Ordinal))
+                if (r.Url.PathAndQuery.StartsWith(m.Item1, StringComparison.Ordinal))
                 {
                     return m.Item2;
                 }

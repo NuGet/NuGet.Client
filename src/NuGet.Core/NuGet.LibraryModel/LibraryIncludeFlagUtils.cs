@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace NuGet.LibraryModel
 {
@@ -14,7 +15,7 @@ namespace NuGet.LibraryModel
         public static readonly LibraryIncludeFlags DefaultSuppressParent =
             (LibraryIncludeFlags.Build | LibraryIncludeFlags.ContentFiles | LibraryIncludeFlags.Analyzers);
 
-        public static readonly LibraryIncludeFlags NoContent = ~LibraryIncludeFlags.ContentFiles;
+        public static readonly LibraryIncludeFlags NoContent = LibraryIncludeFlags.All & ~LibraryIncludeFlags.ContentFiles;
 
         /// <summary>
         /// Convert set of flag strings into a LibraryIncludeFlags.
@@ -87,6 +88,29 @@ namespace NuGet.LibraryModel
             }
 
             return string.Join(", ", flagStrings);
+        }
+
+        /// <summary>
+        /// Convert set of flag strings into a LibraryIncludeFlags.
+        /// </summary>
+        public static LibraryIncludeFlags GetFlags(string flags, LibraryIncludeFlags defaultFlags)
+        {
+            LibraryIncludeFlags result = defaultFlags;
+
+            if (!string.IsNullOrEmpty(flags))
+            {
+                var splitFlags = flags.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
+                    .Select(s => s.Trim())
+                    .Where(s => !string.IsNullOrEmpty(s))
+                    .ToArray();
+
+                if (splitFlags.Length > 0)
+                {
+                    result = GetFlags(splitFlags);
+                }
+            }
+
+            return result;
         }
     }
 }

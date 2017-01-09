@@ -14,6 +14,7 @@ using NuGet.PackageManagement;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
+using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using NuGet.Resolver;
 using NuGet.Versioning;
@@ -26,8 +27,6 @@ namespace NuGet.CommandLine
         UsageExampleResourceName = "InstallCommandUsageExamples")]
     public class InstallCommand : DownloadCommandBase
     {
-        private static readonly object _satelliteLock = new object();
-
         [Option(typeof(NuGetCommand), "InstallCommandOutputDirDescription")]
         public string OutputDirectory { get; set; }
 
@@ -46,27 +45,21 @@ namespace NuGet.CommandLine
         [Option(typeof(NuGetCommand), "InstallCommandSolutionDirectory")]
         public string SolutionDirectory { get; set; }
 
-        private bool AllowMultipleVersions
-        {
-            get { return !ExcludeVersion; }
-        }
-
         [ImportingConstructor]
-        public InstallCommand()
-            : this(MachineCache.Default)
-        {
-        }
-
-        protected internal InstallCommand(IPackageRepository cacheRepository) :
-            base(cacheRepository)
+        protected internal InstallCommand()
         {
             // On mono, parallel builds are broken for some reason. See https://gist.github.com/4201936 for the errors
             // That are thrown.
-            DisableParallelProcessing = EnvironmentUtility.IsMonoRuntime;
+            DisableParallelProcessing = RuntimeEnvironmentHelper.IsMono;
         }
 
         public override Task ExecuteCommandAsync()
         {
+            if (DisableParallelProcessing)
+            {
+                HttpSourceResourceProvider.Throttle = SemaphoreSlimThrottle.CreateBinarySemaphore();
+            }
+
             CalculateEffectivePackageSaveMode();
             CalculateEffectiveSettings();
             string installPath = ResolveInstallPath();
@@ -76,18 +69,18 @@ namespace NuGet.CommandLine
 
             // If the first argument is a packages.xxx.config file, install everything it lists
             // Otherwise, treat the first argument as a package Id
-            if (PackageReferenceFile.IsValidConfigFileName(configFileName))
+            if (CommandLineUtility.IsValidConfigFileName(configFileName))
             {
                 Prerelease = true;
 
                 // display opt-out message if needed
                 if (Console != null && RequireConsent &&
-                    new PackageRestoreConsent(new SettingsToLegacySettings(Settings)).IsGranted)
+                    new PackageRestoreConsent(Settings).IsGranted)
                 {
                     string message = String.Format(
                         CultureInfo.CurrentCulture,
                         LocalizedResourceManager.GetString("RestoreCommandPackageRestoreOptOutMessage"),
-                        NuGet.Resources.NuGetResources.PackageRestoreConsentCheckBoxText.Replace("&", ""));
+                        NuGetResources.PackageRestoreConsentCheckBoxText.Replace("&", ""));
                     Console.WriteLine(message);
                 }
 
@@ -146,7 +139,7 @@ namespace NuGet.CommandLine
             return CurrentDirectory;
         }
 
-        private Task PerformV2Restore(string packagesConfigFilePath, string installPath)
+        private async Task PerformV2Restore(string packagesConfigFilePath, string installPath)
         {
             var sourceRepositoryProvider = GetSourceRepositoryProvider();
             var nuGetPackageManager = new NuGetPackageManager(sourceRepositoryProvider, Settings, installPath, ExcludeVersion);
@@ -186,9 +179,23 @@ namespace NuGet.CommandLine
 
                 Console.LogMinimal(message);
             }
+            using (var cacheContext = new SourceCacheContext())
+            {
+                cacheContext.NoCache = NoCache;
+                cacheContext.DirectDownload = DirectDownload;
 
-            Task<PackageRestoreResult> packageRestoreTask = PackageRestoreManager.RestoreMissingPackagesAsync(packageRestoreContext, new ConsoleProjectContext(Console));
-            return packageRestoreTask;
+                var downloadContext = new PackageDownloadContext(cacheContext, installPath, DirectDownload);
+
+                await PackageRestoreManager.RestoreMissingPackagesAsync(
+                    packageRestoreContext,
+                    new ConsoleProjectContext(Console),
+                    downloadContext);
+
+                if (downloadContext.DirectDownload)
+                {
+                    GetDownloadResultUtility.CleanUpDirectDownloads(downloadContext);
+                }
+            }
         }
 
         private CommandLineSourceRepositoryProvider GetSourceRepositoryProvider()
@@ -219,23 +226,26 @@ namespace NuGet.CommandLine
 
             var primaryRepositories = packageSources.Select(sourceRepositoryProvider.CreateRepository);
 
+            var allowPrerelease = Prerelease || (version != null && version.IsPrerelease);
+
             var resolutionContext = new ResolutionContext(
                 DependencyBehavior.Lowest,
-                includePrelease: Prerelease,
+                includePrelease: allowPrerelease,
                 includeUnlisted: true,
                 versionConstraints: VersionConstraints.None);
 
             if (version == null)
             {
                 // Find the latest version using NuGetPackageManager
-                version = await NuGetPackageManager.GetLatestVersionAsync(
+                var resolvePackage = await NuGetPackageManager.GetLatestVersionAsync(
                     packageId,
                     folderProject,
                     resolutionContext,
                     primaryRepositories,
+                    Console,
                     CancellationToken.None);
 
-                if (version == null)
+                if (resolvePackage == null || resolvePackage.LatestVersion == null)
                 {
                     var message = string.Format(
                         CultureInfo.CurrentCulture,
@@ -244,6 +254,8 @@ namespace NuGet.CommandLine
 
                     throw new CommandLineException(message);
                 }
+
+                version = resolvePackage.LatestVersion;
             }
 
             var packageIdentity = new PackageIdentity(packageId, version);
@@ -261,7 +273,7 @@ namespace NuGet.CommandLine
             {
                 var projectContext = new ConsoleProjectContext(Console)
                 {
-                    PackageExtractionContext = new PackageExtractionContext()
+                    PackageExtractionContext = new PackageExtractionContext(Console)
                 };
 
                 if (EffectivePackageSaveMode != Packaging.PackageSaveMode.None)
@@ -269,14 +281,28 @@ namespace NuGet.CommandLine
                     projectContext.PackageExtractionContext.PackageSaveMode = EffectivePackageSaveMode;
                 }
 
-                await packageManager.InstallPackageAsync(
-                    folderProject,
-                    packageIdentity,
-                    resolutionContext,
-                    projectContext,
-                    primaryRepositories,
-                    Enumerable.Empty<SourceRepository>(),
-                    CancellationToken.None);
+                using(var cacheContext = new SourceCacheContext())
+                {
+                    cacheContext.NoCache = NoCache;
+                    cacheContext.DirectDownload = DirectDownload;
+
+                    var downloadContext = new PackageDownloadContext(cacheContext, installPath, DirectDownload);
+
+                    await packageManager.InstallPackageAsync(
+                        folderProject,
+                        packageIdentity,
+                        resolutionContext,
+                        projectContext,
+                        downloadContext,
+                        primaryRepositories,
+                        Enumerable.Empty<SourceRepository>(),
+                        CancellationToken.None);
+
+                    if (downloadContext.DirectDownload)
+                    {
+                        GetDownloadResultUtility.CleanUpDirectDownloads(downloadContext);
+                    }
+                }
             }
         }
     }

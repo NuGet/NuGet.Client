@@ -5,11 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using EnvDTE;
 using Microsoft.VisualStudio.Shell;
-using EnvDTEProject = EnvDTE.Project;
-using EnvDTEProjectItem = EnvDTE.ProjectItem;
-using EnvDTEProjectItems = EnvDTE.ProjectItems;
+using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
@@ -19,7 +16,7 @@ namespace NuGet.PackageManagement.VisualStudio
         /// Get the list of all supported projects in the current solution. This method
         /// recursively iterates through all projects.
         /// </summary>
-        public static IEnumerable<EnvDTEProject> GetAllEnvDTEProjects(DTE dte)
+        public static IEnumerable<EnvDTE.Project> GetAllEnvDTEProjects(EnvDTE.DTE dte)
         {
             return ThreadHelper.JoinableTaskFactory.Run(async delegate
                 {
@@ -28,7 +25,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 });
         }
 
-        public static async Task<IEnumerable<EnvDTEProject>> GetAllEnvDTEProjectsAsync(DTE dte)
+        public static async Task<IEnumerable<EnvDTE.Project>> GetAllEnvDTEProjectsAsync(EnvDTE.DTE dte)
         {
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
@@ -36,11 +33,11 @@ namespace NuGet.PackageManagement.VisualStudio
             if (envDTESolution == null
                 || !envDTESolution.IsOpen)
             {
-                return Enumerable.Empty<EnvDTEProject>();
+                return Enumerable.Empty<EnvDTE.Project>();
             }
 
-            var envDTEProjects = new Stack<EnvDTEProject>();
-            foreach (EnvDTEProject envDTEProject in envDTESolution.Projects)
+            var envDTEProjects = new Stack<EnvDTE.Project>();
+            foreach (EnvDTE.Project envDTEProject in envDTESolution.Projects)
             {
                 if (!EnvDTEProjectUtility.IsExplicitlyUnsupported(envDTEProject))
                 {
@@ -48,10 +45,10 @@ namespace NuGet.PackageManagement.VisualStudio
                 }
             }
 
-            var resultantEnvDTEProjects = new List<EnvDTEProject>();
+            var resultantEnvDTEProjects = new List<EnvDTE.Project>();
             while (envDTEProjects.Any())
             {
-                EnvDTEProject envDTEProject = envDTEProjects.Pop();
+                var envDTEProject = envDTEProjects.Pop();
 
                 if (EnvDTEProjectUtility.IsSupported(envDTEProject))
                 {
@@ -63,7 +60,7 @@ namespace NuGet.PackageManagement.VisualStudio
                     continue;
                 }
 
-                EnvDTEProjectItems envDTEProjectItems = null;
+                EnvDTE.ProjectItems envDTEProjectItems = null;
                 try
                 {
                     // bug 1138: Oracle Database Project doesn't implement the ProjectItems property
@@ -77,7 +74,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 // ProjectItems property can be null if the project is unloaded
                 if (envDTEProjectItems != null)
                 {
-                    foreach (EnvDTEProjectItem envDTEProjectItem in envDTEProjectItems)
+                    foreach (EnvDTE.ProjectItem envDTEProjectItem in envDTEProjectItems)
                     {
                         try
                         {
@@ -96,6 +93,26 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             return resultantEnvDTEProjects;
+        }
+
+        public static Task<Dictionary<string, EnvDTE.Project>> GetPathToDTEProjectLookupAsync(EnvDTE.DTE dte)
+        {
+            var pathToProject = new Dictionary<string, EnvDTE.Project>(StringComparer.OrdinalIgnoreCase);
+
+            var supportedProjects = dte.Solution.Projects.Cast<EnvDTE.Project>();
+
+            foreach (var solutionProject in supportedProjects)
+            {
+                var solutionProjectPath = EnvDTEProjectUtility.GetFullProjectPath(solutionProject);
+
+                if (!string.IsNullOrEmpty(solutionProjectPath) &&
+                    !pathToProject.ContainsKey(solutionProjectPath))
+                {
+                    pathToProject.Add(solutionProjectPath, solutionProject);
+                }
+            }
+
+            return Task.FromResult(pathToProject);
         }
     }
 }

@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.IO;
 using System.Text;
 using NuGet.Common;
@@ -19,8 +22,8 @@ namespace NuGet.CommandLine.Test
 
             public TestInfo(string projectFileContent, string projectName = "proj1")
             {
-                ProjectDirectory = TestFileSystemUtility.CreateRandomTestFolder();
-                MSBuildDirectory = MsBuildUtility.GetMsbuildDirectory("14.0", null);
+                ProjectDirectory = TestDirectory.Create();
+                MSBuildDirectory = MsBuildUtility.GetMsBuildDirectory(null, null);
                 NuGetProjectContext = new TestNuGetProjectContext();
 
                 var projectFilePath = Path.Combine(ProjectDirectory, projectName + ".csproj");

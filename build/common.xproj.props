@@ -26,21 +26,21 @@
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(BuildNumber)' == '' ">
-    <SemanticVersionDate>2015-11-30</SemanticVersionDate>
+    <SemanticVersionDate>2016-07-13</SemanticVersionDate>
     <Ticks1>$([System.DateTime]::Parse($(SemanticVersionDate)).Ticks)</Ticks1>
     <Ticks2>$([System.DateTime]::Now.Ticks)</Ticks2>
     <SpanTicks>$([MSBuild]::Subtract($(Ticks2), $(Ticks1)))</SpanTicks>
     <SpanMinutes>$([System.TimeSpan]::FromTicks($(SpanTicks)).TotalMinutes)</SpanMinutes>
-    <BuildNumber>$([System.String]::Format('{0:F0}', $([MSBuild]::Divide($(SpanMinutes), 5))))</BuildNumber>
+    <BuildNumber>$([System.String]::Format('{0:F0}', $([MSBuild]::Divide($([System.Convert]::ToDouble($(SpanMinutes))), 5))))</BuildNumber>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(ReleaseLabel)' == ''">
-    <ReleaseLabel>local</ReleaseLabel>
+    <ReleaseLabel>zlocal</ReleaseLabel>
   </PropertyGroup>
 
   <PropertyGroup>
     <SchemaVersion>2.0</SchemaVersion>
     <TypeScriptCompileBlocked>True</TypeScriptCompileBlocked>
-    <ProduceOutputsOnBuild>False</ProduceOutputsOnBuild>
+    <ProduceOutputsOnBuild>True</ProduceOutputsOnBuild>
   </PropertyGroup>
 </Project>

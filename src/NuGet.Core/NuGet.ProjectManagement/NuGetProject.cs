@@ -35,7 +35,6 @@ namespace NuGet.ProjectManagement
             get { return InternalMetadata; }
         }
 
-        // TODO: Consider adding CancellationToken here
         /// <summary>
         /// This installs a package into the NuGetProject using the <see cref="Stream"/> passed in
         /// <param name="downloadResourceResult"></param>
@@ -145,5 +144,7 @@ namespace NuGet.ProjectManagement
 
         // used by Project K projects
         public const string SupportedFrameworks = "SupportedFrameworks";
+
+        public const string ProjectId = "ProjectId";
     }
 }

@@ -10,9 +10,10 @@ namespace NuGet.LibraryModel
 {
     public class LibraryDependencyTypeKeyword
     {
-        private static ConcurrentDictionary<string, LibraryDependencyTypeKeyword> _keywords = new ConcurrentDictionary<string, LibraryDependencyTypeKeyword>();
+        private static ConcurrentDictionary<string, LibraryDependencyTypeKeyword> _keywords = new ConcurrentDictionary<string, LibraryDependencyTypeKeyword>(StringComparer.OrdinalIgnoreCase);
 
         public static readonly LibraryDependencyTypeKeyword Default;
+        public static readonly LibraryDependencyTypeKeyword Platform;
         public static readonly LibraryDependencyTypeKeyword Build;
         public static readonly LibraryDependencyTypeKeyword Preprocess;
         public static readonly LibraryDependencyTypeKeyword Private;
@@ -45,6 +46,19 @@ namespace NuGet.LibraryModel
                         LibraryDependencyTypeFlag.MainExport,
                         LibraryDependencyTypeFlag.RuntimeComponent,
                         LibraryDependencyTypeFlag.BecomesNupkgDependency,
+                    },
+                flagsToRemove: emptyFlags);
+
+            Platform = Declare(
+                "platform",
+                flagsToAdd: new[]
+                    {
+                        LibraryDependencyTypeFlag.MainReference,
+                        LibraryDependencyTypeFlag.MainSource,
+                        LibraryDependencyTypeFlag.MainExport,
+                        LibraryDependencyTypeFlag.RuntimeComponent,
+                        LibraryDependencyTypeFlag.BecomesNupkgDependency,
+                        LibraryDependencyTypeFlag.SharedFramework
                     },
                 flagsToRemove: emptyFlags);
 
@@ -95,6 +109,11 @@ namespace NuGet.LibraryModel
             DeclareOnOff("BecomesNupkgDependency", LibraryDependencyTypeFlag.BecomesNupkgDependency, emptyFlags);
         }
 
+        public LibraryDependencyType CreateType()
+        {
+            return LibraryDependencyType.Default.Combine(FlagsToAdd, FlagsToRemove);
+        }
+
         private static void DeclareOnOff(string name, LibraryDependencyTypeFlag flag, IEnumerable<LibraryDependencyTypeFlag> emptyFlags)
         {
             Declare(name,
@@ -128,11 +147,11 @@ namespace NuGet.LibraryModel
         internal static LibraryDependencyTypeKeyword Parse(string keyword)
         {
             LibraryDependencyTypeKeyword value;
-            if (_keywords.TryGetValue(keyword, out value))
+            if (_keywords.TryGetValue(keyword?.Trim(), out value))
             {
                 return value;
             }
-            throw new Exception(string.Format("TODO: unknown keyword {0}", keyword));
+            throw new Exception(string.Format("Unsupported type: {0}", keyword));
         }
     }
 }

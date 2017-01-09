@@ -1,9 +1,9 @@
 ﻿{
   "dependencies": {
-    "NuGet.Core": "2.8.5"
+    "NuGet.Core": "2.14.0-rtm-832"
   },
   "frameworks": {
-    "net451": {}
+    "net46": {}
   },
   "runtimes": {
     "win-anycpu": {},

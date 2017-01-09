@@ -61,20 +61,20 @@ namespace NuGet.Credentials {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Argument must not be null or empty..
+        /// </summary>
+        internal static string Error_Argument_May_Not_Be_Null_Or_Empty {
+            get {
+                return ResourceManager.GetString("Error_Argument_May_Not_Be_Null_Or_Empty", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Credential plugin {0} handles this request, but is unable to provide credentials. {1}.
         /// </summary>
         internal static string PluginException_Abort_Format {
             get {
                 return ResourceManager.GetString("PluginException_Abort_Format", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Credential plugin {0} exited with error {1}..
-        /// </summary>
-        internal static string PluginException_Error_Format {
-            get {
-                return ResourceManager.GetString("PluginException_Error_Format", resourceCulture);
             }
         }
         
@@ -88,11 +88,11 @@ namespace NuGet.Credentials {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Credential plugin {0} returned {1} with an incorrect payload {2}..
+        ///   Looks up a localized string similar to Credential plugin {0} returned {1}, but the payload was not valid (username = {2}, password = {3}, authTypes = {4}, message = {5})..
         /// </summary>
-        internal static string PluginException_IncorrectPayload_Format {
+        internal static string PluginException_InvalidResponse_Format {
             get {
-                return ResourceManager.GetString("PluginException_IncorrectPayload_Format", resourceCulture);
+                return ResourceManager.GetString("PluginException_InvalidResponse_Format", resourceCulture);
             }
         }
         
@@ -115,11 +115,29 @@ namespace NuGet.Credentials {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Credential plugin {0} timed out after {1} milliseconds..
+        ///   Looks up a localized string similar to Credential plugin {0} timed out after {1} seconds..
         /// </summary>
         internal static string PluginException_Timeout_Format {
             get {
                 return ResourceManager.GetString("PluginException_Timeout_Format", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Credential plugin {0} exited with unexpected error {1}..
+        /// </summary>
+        internal static string PluginException_UnexpectedStatus_Format {
+            get {
+                return ResourceManager.GetString("PluginException_UnexpectedStatus_Format", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Credential plugin {0} returned {1} with an unreadable payload..
+        /// </summary>
+        internal static string PluginException_UnreadableResponse_Format {
+            get {
+                return ResourceManager.GetString("PluginException_UnreadableResponse_Format", resourceCulture);
             }
         }
         
@@ -133,7 +151,7 @@ namespace NuGet.Credentials {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to One of the credential providers gave an invalid response.
+        ///   Looks up a localized string similar to Credential provider gave an invalid response..
         /// </summary>
         internal static string ProviderException_MalformedResponse {
             get {

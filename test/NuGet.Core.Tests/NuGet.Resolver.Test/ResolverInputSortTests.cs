@@ -34,7 +34,8 @@ namespace NuGet.Resolver.Test
                 installed,
                 Enumerable.Empty<PackageIdentity>(),
                 packages,
-                Enumerable.Empty<PackageSource>());
+                Enumerable.Empty<PackageSource>(),
+                Common.NullLogger.Instance);
 
             var grouped = GroupPackages(packages);
 
@@ -69,7 +70,8 @@ namespace NuGet.Resolver.Test
                 installed,
                 Enumerable.Empty<PackageIdentity>(),
                 packages,
-                Enumerable.Empty<PackageSource>());
+                Enumerable.Empty<PackageSource>(),
+                Common.NullLogger.Instance);
 
             var grouped = GroupPackages(packages);
 
@@ -106,7 +108,8 @@ namespace NuGet.Resolver.Test
                 installed,
                 Enumerable.Empty<PackageIdentity>(),
                 packages,
-                Enumerable.Empty<PackageSource>());
+                Enumerable.Empty<PackageSource>(),
+                Common.NullLogger.Instance);
 
             var grouped = GroupPackages(packages);
 
@@ -142,7 +145,8 @@ namespace NuGet.Resolver.Test
                 installed,
                 Enumerable.Empty<PackageIdentity>(),
                 packages,
-                Enumerable.Empty<PackageSource>());
+                Enumerable.Empty<PackageSource>(),
+                Common.NullLogger.Instance);
 
             var grouped = GroupPackages(packages);
 
@@ -177,7 +181,8 @@ namespace NuGet.Resolver.Test
                 installed,
                 Enumerable.Empty<PackageIdentity>(),
                 packages,
-                Enumerable.Empty<PackageSource>());
+                Enumerable.Empty<PackageSource>(),
+                Common.NullLogger.Instance);
 
             var grouped = GroupPackages(packages);
 
@@ -214,7 +219,8 @@ namespace NuGet.Resolver.Test
                 installed,
                 Enumerable.Empty<PackageIdentity>(),
                 packages,
-                Enumerable.Empty<PackageSource>());
+                Enumerable.Empty<PackageSource>(),
+                Common.NullLogger.Instance);
 
             var grouped = GroupPackages(packages);
 

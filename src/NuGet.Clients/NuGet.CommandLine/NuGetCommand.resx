@@ -321,6 +321,9 @@ nuget pack foo.nuspec -Version 2.1.0</value>
     <value>Specifies the server URL. If not specified, nuget.org is used unless DefaultPushSource config value is set in the NuGet config file.</value>
     <comment>Please don't localize "DefaultPushSource"</comment>
   </data>
+  <data name="PushCommandSymbolSourceDescription" xml:space="preserve">
+    <value>Specifies the symbol server URL. If not specified, nuget.smbsrc.net is used when pushing to nuget.org.</value>
+  </data>
   <data name="PushCommandTimeoutDescription" xml:space="preserve">
     <value>Specifies the timeout for pushing to a server in seconds. Defaults to 300 seconds (5 minutes).</value>
   </data>
@@ -424,6 +427,9 @@ nuget spec -a MyAssembly.dll</value>
   <data name="UpdateCommandSourceDescription" xml:space="preserve">
     <value>A list of package sources to search for updates.</value>
   </data>
+  <data name="UpdateCommandVersionDescription" xml:space="preserve">
+    <value>Updates the package in -Id to the version indicated.  Requires -Id to contain exactly one package id.</value>
+  </data>
   <data name="UpdateCommandUsageExamples" xml:space="preserve">
     <value>nuget update
     
@@ -437,6 +443,9 @@ nuget update -Self</value>
   </data>
   <data name="CommandApiKey" xml:space="preserve">
     <value>The API key for the server.</value>
+  </data>
+  <data name="SymbolApiKey" xml:space="preserve">
+    <value>The API key for the symbol server.</value>
   </data>
   <data name="DefaultConfigDescription" xml:space="preserve">
     <value>NuGet's default configuration is obtained by loading %AppData%\NuGet\NuGet.config, then loading any nuget.config or .nuget\nuget.config starting from root of drive and ending in current directory.</value>
@@ -5239,8 +5248,11 @@ nuget update -Self</value>
   <data name="PushCommandDisableBufferingDescription" xml:space="preserve">
     <value>Disable buffering when pushing to an HTTP(S) server to decrease memory usage. Note that when this option is enabled, integrated windows authentication might not work.</value>
   </data>
+  <data name="PushCommandNoSymbolsDescription" xml:space="preserve">
+    <value>If a symbols package exists, it will not be pushed to a symbol server.</value>
+  </data>
   <data name="CommandFallbackSourceDescription" xml:space="preserve">
-    <value>A list of packages sources to use as fallbacks for this command.</value>
+    <value>A list of package sources to use as fallbacks for this command.</value>
   </data>
   <data name="CommandMSBuildVersion" xml:space="preserve">
     <value>Specifies the version of MSBuild to be used with this command. Supported values are 4, 12, 14. By default the MSBuild in your path is picked, otherwise it defaults to the highest installed version of MSBuild.</value>
@@ -5280,20 +5292,20 @@ nuget init \\foo\packages \\bar\packages</value>
     <value>If provided, a package added to offline feed is also expanded.</value>
   </data>
   <data name="LocalsCommandDescription" xml:space="preserve">
-    <value>Clears or lists local NuGet resources such as http requests cache, packages cache or machine-wide global packages folder.</value>
+    <value>Clears or lists local NuGet resources such as http requests cache, temp cache or machine-wide global packages folder.</value>
   </data>
   <data name="LocalsCommandExamples" xml:space="preserve">
     <value>nuget locals all -clear
 
 nuget locals http-cache -clear
 
-nuget locals packages-cache -list
+nuget locals temp -list
 
 nuget locals global-packages -list</value>
     <comment>Please don't localize this string</comment>
   </data>
   <data name="LocalsCommandSummary" xml:space="preserve">
-    <value>&lt;all | http-cache | packages-cache | global-packages | temp&gt; [-clear | -list]</value>
+    <value>&lt;all | http-cache | global-packages | temp&gt; [-clear | -list]</value>
     <comment>Please don't localize this string</comment>
   </data>
   <data name="LocalsCommandClearDescription" xml:space="preserve">
@@ -5307,5 +5319,21 @@ nuget locals global-packages -list</value>
   </data>
   <data name="PackageCommandSuffixDescription" xml:space="preserve">
     <value>Appends a pre-release suffix to the internally generated version number.</value>
+  </data>
+  <data name="Option_ForceEnglishOutput" xml:space="preserve">
+    <value>Forces the application to run using an invariant, English-based culture.</value>
+  </data>
+  <data name="RestoreCommandUsageExamples" xml:space="preserve">
+    <value>nuget restore MySoluion.sln</value>
+    <comment>command line example, do not localize</comment>
+  </data>
+  <data name="CommandDirectDownload" xml:space="preserve">
+    <value>Download directly without populating any caches with metadata or binaries.</value>
+  </data>
+  <data name="CommandMSBuildPath" xml:space="preserve">
+    <value>Specifies the path of MSBuild to be used with this command. This command will takes precedence over MSbuildVersion, nuget will always pick MSbuild from this specified path.</value>
+  </data>
+  <data name="RestoreCommandRecursive" xml:space="preserve">
+    <value>Restore all referenced projects for UWP and NETCore projects. This does not include packages.config projects.</value>
   </data>
 </root>

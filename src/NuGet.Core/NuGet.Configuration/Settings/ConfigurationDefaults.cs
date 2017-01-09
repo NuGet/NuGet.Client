@@ -86,15 +86,16 @@ namespace NuGet.Configuration
                     && !_defaultPackageSourceInitialized)
                 {
                     _defaultPackageSourceInitialized = true;
-                    _defaultPushSource = _settingsManager.GetValue(ConfigurationConstants.Config, ConfigurationConstants.DefaultPushSource);
+                    _defaultPushSource = SettingsUtility.GetDefaultPushSource(_settingsManager);
                 }
+
                 return _defaultPushSource;
             }
         }
 
         public string DefaultPackageRestoreConsent
         {
-            get { return _settingsManager.GetValue(ConfigurationConstants.PackageRestore, ConfigurationConstants.enabled); }
+            get { return _settingsManager.GetValue(ConfigurationConstants.PackageRestore, ConfigurationConstants.Enabled); }
         }
     }
 }

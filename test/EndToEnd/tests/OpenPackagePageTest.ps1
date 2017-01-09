@@ -22,16 +22,13 @@ function Test-OpenPackagePageOpenLicenseUrlIfLicenseParameterIsSet {
     Assert-AreEqual 'http://bing.com' $p.OriginalString
 }
 
-# Work around server bug https://github.com/NuGet/NuGetGallery/issues/2476, where V2 report Abuse Url is not correct.
-# TODO: Remove the replace code when server bug is fixed.
 function Test-OpenPackagePageOpenReportAbuseUrlIfReportAbuseParameterIsSet {
     # Act
-    $p = Open-PackagePage elmah -Report -WhatIf -PassThru -Version 1.1
-	$reportAbuseUrl = $p.OriginalString.Replace('package/ReportAbuse/elmah/1.1.0', 'packages/elmah/1.1.0/ReportAbuse')
+    $p = Open-PackagePage elmah -Report -WhatIf -PassThru -Version 1.1.0 -Source $SourceNuGet
 	$expectedString = 'https://www.nuget.org/packages/elmah/1.1.0/ReportAbuse'
     
     # Assert
-    Assert-AreEqual $expectedString $reportAbuseUrl
+    Assert-AreEqual $expectedString $p.OriginalString
 }
 
 function Test-OpenPackagePageFailsIfIdIsSetToTheWrongValue {
@@ -95,42 +92,15 @@ function Test-OpenPackagePageFailsIfLicenseUrlIsNotAvailable {
 }
 
 function Test-OpenPackagePageAcceptSourceName {
-    # For nuget.org, there is a bug that the project Url was saved to Database with an extra / at the end.
-	# TODO: Remove the if else condition below when bug https://github.com/NuGet/NuGetGallery/issues/2409 is fixed.
-	if ($SourceNuGet -eq 'nuget.org')
-	{
-		$source = 'nUGet.OrG'  # keep the coverage that the source name is case insensitive
-		$expectedUrl = 'http://elmah.googlecode.com'
-	}
-	else 
-	{
-	    $source = $SourceNuGet
-	    $expectedUrl = 'http://elmah.googlecode.com'
-	}
-
     # Act
-    $p = Open-PackagePage 'elmah' -Source $source -WhatIf -PassThru
+    $p = Open-PackagePage 'owin' -Version 1.0.0 -Source $SourceNuGet -WhatIf -PassThru
 
     # Assert
-    Assert-AreEqual $expectedUrl $p.OriginalString
+    Assert-AreEqual 'https://github.com/owin-contrib/owin-hosting/' $p.OriginalString
 
     # Act
-    $p = Open-PackagePage 'elmah' -License -Source $source -WhatIf -PassThru
+    $p = Open-PackagePage 'owin' -Version 1.0.0 -License -Source $SourceNuGet -WhatIf -PassThru
 
     # Assert
-    Assert-AreEqual 'http://www.apache.org/licenses/LICENSE-2.0' $p.OriginalString
-}
-
-function OpenPackagePageAcceptAllAsSourceName {
-    # Act
-    $p = Open-PackagePage 'elmah' -version 1.1 -Source 'All' -WhatIf -PassThru
-
-    # Assert
-    Assert-AreEqual 'http://elmah.googlecode.com/' $p.OriginalString
-
-    # Act
-    $p = Open-PackagePage 'elmah' -Version 1.1 -License -Source 'All' -WhatIf -PassThru
-
-    # Assert
-    Assert-AreEqual 'http://www.apache.org/licenses/LICENSE-2.0' $p.OriginalString
+    Assert-AreEqual 'https://github.com/owin-contrib/owin-hosting/blob/master/LICENSE.txt' $p.OriginalString
 }

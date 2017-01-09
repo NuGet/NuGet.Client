@@ -29,12 +29,12 @@ namespace NuGet.Configuration
             return File.Exists(Path.Combine(root, file));
         }
 
-        internal static IEnumerable<string> GetFilesRelativeToRoot(string root, string path, string filter = null, SearchOption searchOption = SearchOption.TopDirectoryOnly)
+        internal static IEnumerable<string> GetFilesRelativeToRoot(string root, string path, string[] filters = null, SearchOption searchOption = SearchOption.TopDirectoryOnly)
         {
             path = EnsureTrailingSlash(Path.Combine(root, path));
-            if (String.IsNullOrEmpty(filter))
+            if (filters == null || !filters.Any())
             {
-                filter = "*.*";
+                filters = new[] { "*.*" };
             }
             try
             {
@@ -42,8 +42,14 @@ namespace NuGet.Configuration
                 {
                     return Enumerable.Empty<string>();
                 }
-                return Directory.EnumerateFiles(path, filter, searchOption)
-                    .Select(f => GetRelativePath(root, f));
+                var files = new HashSet<string>();
+
+                foreach (var filter in filters)
+                {
+                    var enumerateFiles = Directory.EnumerateFiles(path, filter, searchOption);
+                    files.UnionWith(enumerateFiles);
+                }
+                return files.Select(f => GetRelativePath(root, f));
             }
             catch (UnauthorizedAccessException)
             {

@@ -1,7 +1,9 @@
 {
-    "projects": [
-        "NuGet.Core",
-        "../../lib"
-    ],
-    "sdk": {"version": "1.0.0-rc1-update1" }
+  "projects": [
+    "NuGet.Core",
+    "../../lib"
+  ],
+  "sdk": {
+    "version": "1.0.0-preview2-003131"
+  }
 }

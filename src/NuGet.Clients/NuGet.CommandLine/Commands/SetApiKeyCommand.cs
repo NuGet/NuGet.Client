@@ -41,14 +41,14 @@ namespace NuGet.CommandLine
                 source = SourceProvider.ResolveAndValidateSource(Source);
             }
 
-            SettingsUtility.SetEncryptedValue(Settings, CommandLineUtility.ApiKeysSectionName, source, apiKey);
+            SettingsUtility.SetEncryptedValue(Settings, ConfigurationConstants.ApiKeys, source, apiKey);
 
             string sourceName = CommandLineUtility.GetSourceDisplayName(source);
 
             // Setup the symbol server key
             if (setSymbolServerKey)
             {
-                SettingsUtility.SetEncryptedValue(Settings, CommandLineUtility.ApiKeysSectionName, NuGetConstants.DefaultSymbolServerUrl, apiKey);
+                SettingsUtility.SetEncryptedValue(Settings, ConfigurationConstants.ApiKeys, NuGetConstants.DefaultSymbolServerUrl, apiKey);
                 Console.WriteLine(LocalizedResourceManager.GetString("SetApiKeyCommandDefaultApiKeysSaved"),
                                   apiKey,
                                   sourceName,
@@ -57,15 +57,6 @@ namespace NuGet.CommandLine
             else
             {
                 Console.WriteLine(LocalizedResourceManager.GetString("SetApiKeyCommandApiKeySaved"), apiKey, sourceName);
-            }
-        }
-
-        private void ValidateSource(string source)
-        {
-            Uri result;
-            if (!Uri.TryCreate(source, UriKind.Absolute, out result))
-            {
-                throw new CommandLineException(LocalizedResourceManager.GetString("InvalidSource"), source);
             }
         }
     }

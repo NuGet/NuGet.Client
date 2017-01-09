@@ -3,8 +3,9 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Security;
+using NuGet.Common;
 
-namespace NuGet.Common
+namespace NuGet.CommandLine
 {
     public class Console : IConsole
     {
@@ -13,6 +14,9 @@ namespace NuGet.Common
         /// avoid color mismatches during parallel operations.
         /// </summary>
         private readonly static object _writerLock = new object();
+
+        [System.Runtime.InteropServices.DllImport("libc", EntryPoint = "isatty")]
+        extern static int _isatty(int fd);
 
         public Console()
         {
@@ -53,7 +57,17 @@ namespace NuGet.Common
             {
                 try
                 {
-                    return System.Console.WindowWidth;
+                    var width = System.Console.WindowWidth;
+                    if (width > 0)
+                    {
+                        return width;
+                    }
+                    else
+                    {
+                        // This happens when redirecting output to a file, on
+                        // Linux and OS X (running with Mono).
+                        return 80;
+                    }
                 }
                 catch (IOException)
                 {
@@ -318,6 +332,12 @@ namespace NuGet.Common
 
         private static void ReadSecureStringFromConsole(SecureString secureString)
         {
+            // When you redirect nuget.exe input, either from the shell with "<" or
+            // from code with ProcessStartInfo, throw exception on mono.
+            if (!RuntimeEnvironmentHelper.IsWindows && RuntimeEnvironmentHelper.IsMono && _isatty(1) != 1)
+            {
+                throw new InvalidOperationException();
+            }
             ConsoleKeyInfo keyInfo;
             while ((keyInfo = System.Console.ReadKey(intercept: true)).Key != ConsoleKey.Enter)
             {
@@ -385,13 +405,17 @@ namespace NuGet.Common
 
         public void LogError(string data)
         {
-            WriteError(data);
+            WriteLine(ConsoleColor.Red, data);
         }
 
-        public void LogSummary(string data)
+        public void LogInformationSummary(string data)
         {
-            // Treat Summary as Debug
-            LogDebug(data);
+            LogInformation(data);
+        }
+
+        public void LogErrorSummary(string data)
+        {
+            WriteError(data);
         }
     }
 }

@@ -5,23 +5,27 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
+using System.Linq;
 using System.Threading.Tasks;
-using System.Windows;
-using NuGet.Protocol.VisualStudio;
+using System.Windows.Media.Imaging;
+using NuGet.Common;
+using NuGet.Packaging.Core;
+using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
-using NuGet.VisualStudio;
 
 namespace NuGet.PackageManagement.UI
 {
     // This is the model class behind the package items in the infinite scroll list.
     // Some of its properties, such as Latest Version, Status, are fetched on-demand in the background.
     public class PackageItemListViewModel : INotifyPropertyChanged
-    {        
+    {
         public event PropertyChangedEventHandler PropertyChanged;
 
         public string Id { get; set; }
 
         public NuGetVersion Version { get; set; }
+
+        public VersionRange AllowedVersions { get; set; }
 
         private string _author;
         public string Author
@@ -38,7 +42,7 @@ namespace NuGet.PackageManagement.UI
         }
 
         // The installed version of the package.
-        private NuGetVersion _installedVersion;        
+        private NuGetVersion _installedVersion;
         public NuGetVersion InstalledVersion
         {
             get
@@ -53,7 +57,7 @@ namespace NuGet.PackageManagement.UI
                     OnPropertyChanged(nameof(InstalledVersion));
                 }
             }
-        }        
+        }
 
         // The version that can be installed or updated to. It is null
         // if the installed version is already the latest.
@@ -150,30 +154,12 @@ namespace NuGet.PackageManagement.UI
 
         public string Summary { get; set; }
 
-        // Indicates whether the background loader has started.
-        private bool _backgroundLoaderRun;
-
-        private PackageStatus _status;
+        private PackageStatus _status = PackageStatus.NotInstalled;
         public PackageStatus Status
         {
             get
             {
-                if (!_backgroundLoaderRun)
-                {
-                    _backgroundLoaderRun = true;
-
-                    Task.Run(async () =>
-                    {
-                        var result = await BackgroundLoader.Value;
-
-                        await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-                        Status = result.Status;
-                        LatestVersion = result.LatestVersion;
-                        InstalledVersion = result.InstalledVersion;
-                    });
-                }
-
+                TriggerStatusLoader();
                 return _status;
             }
 
@@ -189,7 +175,6 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-
         private bool _providersLoaderStarted;
 
         private AlternativePackageManagerProviders _providers;
@@ -203,7 +188,7 @@ namespace NuGet.PackageManagement.UI
                     Task.Run(async () =>
                     {
                         var result = await ProvidersLoader.Value;
-                        
+
                         await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                         Providers = result;
@@ -241,31 +226,69 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private Lazy<Task<BackgroundLoaderResult>> _backgroundLoader;
-
-        internal Lazy<Task<BackgroundLoaderResult>> BackgroundLoader
-        {
-            get
-            {
-                return _backgroundLoader;
-            }
-
-            set
-            {
-                if (_backgroundLoader != value)
-                {
-                    _backgroundLoaderRun = false;
-                }
-
-                _backgroundLoader = value;
-
-                OnPropertyChanged(nameof(Status));
-            }
-        }
 
         public Uri IconUrl { get; set; }
 
-        public Lazy<Task<IEnumerable<VersionInfo>>> Versions { get; set; }
+        public Lazy<Task<IEnumerable<VersionInfo>>> Versions { private get; set; }
+
+        public Task<IEnumerable<VersionInfo>> GetVersionsAsync() => Versions.Value;
+
+        private Lazy<Task<NuGetVersion>> _backgroundLoader;
+
+        private void TriggerStatusLoader()
+        {
+            if (!_backgroundLoader.IsValueCreated)
+            {
+                Task.Run(async () =>
+                {
+                    var result = await _backgroundLoader.Value;
+
+                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                    LatestVersion = result;
+                    Status = GetPackageStatus(LatestVersion, InstalledVersion);
+                });
+            }
+        }
+
+        public void UpdatePackageStatus(IEnumerable<PackageIdentity> installedPackages)
+        {
+            // Get the minimum version installed in any target project/solution
+            InstalledVersion = installedPackages
+                .GetPackageVersions(Id)
+                .MinOrDefault();
+
+            _backgroundLoader = AsyncLazy.New(
+                async () =>
+                {
+                    var packageVersions = await GetVersionsAsync();
+
+                    // filter package versions based on allowed versions in pacakge.config
+                    packageVersions = packageVersions.Where(v => AllowedVersions.Satisfies(v.Version));
+                    var latestAvailableVersion = packageVersions
+                        .Select(p => p.Version)
+                        .MaxOrDefault();
+
+                    return latestAvailableVersion;
+                });
+
+            OnPropertyChanged(nameof(Status));
+        }
+
+        private static PackageStatus GetPackageStatus(NuGetVersion latestAvailableVersion, NuGetVersion installedVersion)
+        {
+            var status = PackageStatus.NotInstalled;
+            if (installedVersion != null)
+            {
+                status = PackageStatus.Installed;
+                if (VersionComparer.VersionRelease.Compare(installedVersion, latestAvailableVersion) < 0)
+                {
+                    status = PackageStatus.UpdateAvailable;
+                }
+            }
+
+            return status;
+        }
 
         protected void OnPropertyChanged(string propertyName)
         {

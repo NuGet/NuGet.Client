@@ -3,10 +3,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
-using Newtonsoft.Json.Linq;
 using NuGet.LibraryModel;
 using NuGet.RuntimeModel;
+using NuGet.Shared;
 using NuGet.Versioning;
 
 namespace NuGet.ProjectModel
@@ -14,15 +15,19 @@ namespace NuGet.ProjectModel
     /// <summary>
     /// Represents the specification of a package that can be built.
     /// </summary>
+    [DebuggerDisplay("{Name}")]
     public class PackageSpec
     {
         public static readonly string PackageSpecFileName = "project.json";
+        public static readonly NuGetVersion DefaultVersion = new NuGetVersion(1, 0, 0);
 
-        public PackageSpec(JObject rawProperties)
+        public PackageSpec(IList<TargetFrameworkInformation> frameworks)
         {
-            Scripts = new Dictionary<string, IEnumerable<string>>(StringComparer.OrdinalIgnoreCase);
-            TargetFrameworks = new List<TargetFrameworkInformation>();
-            Properties = rawProperties;
+            TargetFrameworks = frameworks;
+        }
+
+        public PackageSpec() : this(new List<TargetFrameworkInformation>())
+        {
         }
 
         public string FilePath { get; set; }
@@ -34,13 +39,34 @@ namespace NuGet.ProjectModel
 
         public string Name { get; set; }
 
-        public NuGetVersion Version { get; set; }
+        public string Title { get; set; }
+
+        private NuGetVersion _version = DefaultVersion;
+        public NuGetVersion Version
+        {
+            get
+            {
+                return _version;
+            }
+            set
+            {
+                _version = value;
+                this.IsDefaultVersion = false;
+            }
+        }
+        public bool IsDefaultVersion { get; set; } = true;
+
+        public bool HasVersionSnapshot { get; set; }
 
         public string Description { get; set; }
 
-        public string[] Authors { get; set; }
+        public string Summary { get; set; }
 
-        public string[] Owners { get; set; }
+        public string ReleaseNotes { get; set; }
+
+        public string[] Authors { get; set; } = new string[0];
+
+        public string[] Owners { get; set; } = new string[0];
 
         public string ProjectUrl { get; set; }
 
@@ -54,21 +80,123 @@ namespace NuGet.ProjectModel
 
         public string Language { get; set; }
 
-        public string[] Tags { get; set; }
+        public BuildOptions BuildOptions { get; set; }
 
-        public IList<LibraryDependency> Dependencies { get; set; }
+        public string[] Tags { get; set; } = new string[0];
 
-        public IDictionary<string, IEnumerable<string>> Scripts { get; private set; }
+        public IList<string> ContentFiles { get; set; } = new List<string>();
 
-        public IList<TargetFrameworkInformation> TargetFrameworks { get; private set; }
+        public IList<LibraryDependency> Dependencies { get; set; } = new List<LibraryDependency>();
 
-        public RuntimeGraph RuntimeGraph { get; set; }
+        public IDictionary<string, IEnumerable<string>> Scripts { get; private set; } = new Dictionary<string, IEnumerable<string>>(StringComparer.OrdinalIgnoreCase);
+
+        public IDictionary<string, string> PackInclude { get; private set; } = new Dictionary<string, string>();
+
+        public PackOptions PackOptions { get; set; } = new PackOptions();
+
+        public IList<TargetFrameworkInformation> TargetFrameworks { get; private set; } = new List<TargetFrameworkInformation>();
+
+        public RuntimeGraph RuntimeGraph { get; set; } = new RuntimeGraph();
 
         /// <summary>
-        /// Gets a list of all properties found in the package spec, including
-        /// those not recognized by the parser.
+        /// Additional MSBuild properties.
         /// </summary>
-        // TODO: Remove dependency on Newtonsoft.Json here.
-        public JObject Properties { get; }
+        /// <remarks>Optional. This is normally set for internal use only.</remarks>
+        public ProjectRestoreMetadata RestoreMetadata { get; set; }
+
+        public override int GetHashCode()
+        {
+            var hashCode = new HashCodeCombiner();
+            
+            hashCode.AddObject(Title);
+            hashCode.AddObject(Version);
+            hashCode.AddObject(IsDefaultVersion);
+            hashCode.AddObject(HasVersionSnapshot);
+            hashCode.AddObject(Description);
+            hashCode.AddObject(Summary);
+            hashCode.AddObject(ReleaseNotes);
+            hashCode.AddSequence(Authors);
+            hashCode.AddSequence(Owners);
+            hashCode.AddObject(ProjectUrl);
+            hashCode.AddObject(IconUrl);
+            hashCode.AddObject(LicenseUrl);
+            hashCode.AddObject(RequireLicenseAcceptance);
+            hashCode.AddObject(Copyright);
+            hashCode.AddObject(Language);
+            hashCode.AddObject(BuildOptions);
+            hashCode.AddSequence(Tags);
+            hashCode.AddSequence(ContentFiles);
+            hashCode.AddSequence(Dependencies);
+            hashCode.AddDictionary(Scripts);
+            hashCode.AddDictionary(PackInclude);
+            hashCode.AddObject(PackOptions);
+            hashCode.AddSequence(TargetFrameworks);
+            hashCode.AddObject(RuntimeGraph);
+            hashCode.AddObject(RestoreMetadata);
+
+            return hashCode.CombinedHash;
+        }
+
+        public override bool Equals(object obj)
+        {
+            return Equals(obj as PackageSpec);
+        }
+
+        public bool Equals(PackageSpec other)
+        {
+            if (other == null)
+            {
+                return false;
+            }
+
+            if (ReferenceEquals(this, other))
+            {
+                return true;
+            }
+
+            // Name and FilePath are not used for comparison since they are not serialized to JSON.
+
+            return Title == other.Title &&
+                   EqualityUtility.EqualsWithNullCheck(Version, other.Version) &&
+                   IsDefaultVersion == other.IsDefaultVersion &&
+                   HasVersionSnapshot == other.HasVersionSnapshot &&
+                   Description == other.Description &&
+                   Summary == other.Summary &&
+                   ReleaseNotes == other.ReleaseNotes &&
+                   EqualityUtility.SequenceEqualWithNullCheck(Authors, other.Authors) &&
+                   EqualityUtility.SequenceEqualWithNullCheck(Owners, other.Owners) &&
+                   ProjectUrl == other.ProjectUrl &&
+                   IconUrl == other.IconUrl &&
+                   LicenseUrl == other.LicenseUrl &&
+                   RequireLicenseAcceptance == other.RequireLicenseAcceptance &&
+                   Copyright == other.Copyright &&
+                   Language == other.Language &&
+                   EqualityUtility.EqualsWithNullCheck(BuildOptions, other.BuildOptions) &&
+                   EqualityUtility.SequenceEqualWithNullCheck(Tags, other.Tags) &&
+                   EqualityUtility.SequenceEqualWithNullCheck(ContentFiles, other.ContentFiles) &&
+                   EqualityUtility.SequenceEqualWithNullCheck(Dependencies, other.Dependencies) &&
+                   EqualityUtility.DictionaryOfSequenceEquals(Scripts, other.Scripts) &&
+                   EqualityUtility.DictionaryEquals(PackInclude, other.PackInclude, (s, o) => StringComparer.Ordinal.Equals(s, o)) &&
+                   EqualityUtility.EqualsWithNullCheck(PackOptions, other.PackOptions) &&
+                   EqualityUtility.SequenceEqualWithNullCheck(TargetFrameworks, other.TargetFrameworks) &&
+                   EqualityUtility.EqualsWithNullCheck(RuntimeGraph, other.RuntimeGraph) &&
+                   EqualityUtility.EqualsWithNullCheck(RestoreMetadata, other.RestoreMetadata);
+        }
+
+        /// <summary>
+        /// Clone a PackageSpec and underlying JObject.
+        /// </summary>
+        public PackageSpec Clone()
+        {
+            var writer = new JsonObjectWriter();
+            PackageSpecWriter.Write(this, writer);
+            var json = writer.GetJObject();
+
+            var spec = JsonPackageSpecReader.GetPackageSpec(json);
+            spec.Name = Name;
+            spec.FilePath = FilePath;
+
+            return spec;
+        }
     }
 }

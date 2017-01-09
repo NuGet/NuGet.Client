@@ -2,248 +2,89 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
-using System.IO;
 using System.Linq;
-using System.Net;
 using System.Reflection;
-using System.Threading.Tasks;
-using Microsoft.Dnx.Runtime.Common.CommandLine;
-using Microsoft.Extensions.PlatformAbstractions;
-using NuGet.Commands;
+using Microsoft.Extensions.CommandLineUtils;
 using NuGet.Common;
-using NuGet.Configuration;
-using NuGet.Logging;
-using NuGet.ProjectModel;
-using NuGet.Protocol.Core.Types;
-using NuGet.Protocol.Core.v3;
-using NuGet.Repositories;
 
 namespace NuGet.CommandLine.XPlat
 {
     public class Program
     {
-        private const string HelpOption = "-h|--help";
-        private const string VerbosityOption = "-v|--verbosity <verbosity>";
-        private static readonly int MaxDegreesOfConcurrency = Environment.ProcessorCount;
-
-        public static ILogger Log { get; set; }
+        private const string DebugOption = "--debug";
+        private const string DotnetNuGetAppName = "dotnet nuget";
+        private const string DotnetPackageAppName = "NuGet.CommandLine.XPlat.dll package";
 
         public static int Main(string[] args)
         {
+            // Start with a default logger, this will be updated according to the passed in verbosity
+            var log = new CommandOutputLogger(LogLevel.Information);
+
+            return MainInternal(args, log);
+        }
+
+        /// <summary>
+        /// Internal Main. This is used for testing.
+        /// </summary>
+        public static int MainInternal(string[] args, CommandOutputLogger log)
+        {
 #if DEBUG
-            if (args.Contains("--debug"))
+            if (args.Contains(DebugOption))
             {
-                args = args.Skip(1).ToArray();
+                args = args.Where(arg => !StringComparer.OrdinalIgnoreCase.Equals(arg, DebugOption)).ToArray();
+
+                Console.WriteLine("Waiting for debugger to attach.");
+                Console.WriteLine($"Process ID: {Process.GetCurrentProcess().Id}");
+
                 while (!Debugger.IsAttached)
                 {
-
+                    System.Threading.Thread.Sleep(100);
                 }
+
                 Debugger.Break();
             }
 #endif
 
-            var app = new CommandLineApplication();
-            app.Name = "nuget3";
-            app.FullName = Strings.App_FullName;
-            app.HelpOption(HelpOption);
-            app.VersionOption("--version", typeof(Program).GetTypeInfo().Assembly.GetName().Version.ToString());
-
-            var verbosity = app.Option(VerbosityOption, Strings.Switch_Verbosity, CommandOptionType.SingleValue);
-
-            SetConnectionLimit();
-
-            app.Command("restore", restore =>
+            // Optionally disable localization.
+            if (args.Any(arg => string.Equals(arg, CommandConstants.ForceEnglishOutputOption, StringComparison.OrdinalIgnoreCase)))
             {
-                restore.Description = Strings.Restore_Description;
-                restore.HelpOption(HelpOption);
+                CultureUtility.DisableLocalization();
+            }
 
-                var sources = restore.Option(
-                    "-s|--source <source>",
-                    Strings.Restore_Switch_Source_Description,
-                    CommandOptionType.MultipleValue);
+            var app = InitializeApp(args);
+            args = args
+                .Where(e => e != "package")
+                .ToArray();
 
-                var packagesDirectory = restore.Option(
-                    "--packages <packagesDirectory>",
-                    Strings.Restore_Switch_Packages_Description,
-                    CommandOptionType.SingleValue);
+            var verbosity = app.Option(XPlatUtility.VerbosityOption, Strings.Switch_Verbosity, CommandOptionType.SingleValue);
 
-                var disableParallel = restore.Option(
-                    "--disable-parallel",
-                    Strings.Restore_Switch_DisableParallel_Description,
-                    CommandOptionType.NoValue);
+            // Options aren't parsed until we call app.Execute(), so look directly for the verbosity option ourselves
+            LogLevel logLevel;
+            TryParseVerbosity(args, verbosity, out logLevel);
+            log.LogLevel = logLevel;
 
-                var fallBack = restore.Option(
-                    "-f|--fallbacksource <FEED>",
-                    Strings.Restore_Switch_Fallback_Description,
-                    CommandOptionType.MultipleValue);
+            NetworkProtocolUtility.SetConnectionLimit();
 
-                var runtime = restore.Option(
-                    "--runtime <RID>",
-                    Strings.Restore_Switch_Runtime_Description,
-                    CommandOptionType.MultipleValue);
+            XPlatUtility.SetUserAgent();
 
-                verbosity = restore.Option(VerbosityOption,
-                    Strings.Switch_Verbosity,
-                    CommandOptionType.SingleValue);
+            // This method has no effect on .NET Core.
+            NetworkProtocolUtility.ConfigureSupportedSslProtocols();
 
-                EnsureLog(verbosity);
-
-                var argRoot = restore.Argument(
-                    "[root]",
-                    Strings.Restore_Arg_ProjectName_Description,
-                    multipleValues: true);
-
-                restore.OnExecute(async () =>
-                {
-                    // Ignore casing on windows
-                    var comparer = RuntimeEnvironmentHelper.IsWindows ?
-                        StringComparer.OrdinalIgnoreCase
-                        : StringComparer.Ordinal;
-
-                    var inputValues = new HashSet<string>(comparer);
-
-                    if (argRoot.Values.Count < 1)
-                    {
-                        // Use the current directory if no path was given
-                        var workingDir = Path.GetFullPath(".");
-
-                        inputValues.UnionWith(GetProjectJsonFilesInDirectory(workingDir));
-                    }
-                    else
-                    {
-                        foreach (var inputPath in argRoot.Values)
-                        {
-                            var fullPath = Path.GetFullPath(inputPath);
-
-                            // For directories find all children
-                            if (Directory.Exists(inputPath))
-                            {
-                                inputValues.UnionWith(GetProjectJsonFilesInDirectory(fullPath));
-                            }
-                            else
-                            {
-                                // Add the input directly
-                                inputValues.Add(fullPath);
-                            }
-                        }
-                    }
-
-                    // Run restores
-                    var isParallel = !disableParallel.HasValue() && !RuntimeEnvironmentHelper.IsMono;
-                    var maxTasks = isParallel ? MaxDegreesOfConcurrency : 1;
-
-                    if (maxTasks < 1)
-                    {
-                        maxTasks = 1;
-                    }
-
-                    if (isParallel)
-                    {
-                        Log.LogVerbose(string.Format(
-                            CultureInfo.CurrentCulture,
-                            Strings.Log_RunningParallelRestore,
-                            maxTasks));
-                    }
-                    else
-                    {
-                        Log.LogVerbose(Strings.Log_RunningNonParallelRestore);
-                    }
-
-                    var localCaches = new Dictionary<string, NuGetv3LocalRepository>(StringComparer.Ordinal);
-
-                    var restoreSummaries = new List<RestoreSummary>();
-                    var restoreTasks = new List<Task<RestoreSummary>>(maxTasks);
-
-                    foreach (var inputPath in inputValues)
-                    {
-                        // Global folder
-                        // Load settings based on the current project path.
-                        var projectDir = Path.GetDirectoryName(inputPath);
-                        var settings = Settings.LoadDefaultSettings(projectDir,
-                            configFileName: null,
-                            machineWideSettings: null);
-
-                        var globalFolderPath = string.Empty;
-                        if (packagesDirectory.HasValue())
-                        {
-                            globalFolderPath = packagesDirectory.Value();
-                        }
-                        else
-                        {
-                            globalFolderPath = SettingsUtility.GetGlobalPackagesFolder(settings);
-                        }
-
-                        // Find the shared local cache for globalFolderPath
-                        // The global folder may differ between projects
-                        NuGetv3LocalRepository localCache;
-                        if (!localCaches.TryGetValue(globalFolderPath, out localCache))
-                        {
-                            localCache = new NuGetv3LocalRepository(globalFolderPath);
-                            localCaches.Add(globalFolderPath, localCache);
-                        }
-
-                        // Throttle and wait for a task to finish if we have hit the limit
-                        if (restoreTasks.Count == maxTasks)
-                        {
-                            var restoreSummary = await CompleteTaskAsync(restoreTasks);
-                            restoreSummaries.Add(restoreSummary);
-                        }
-
-                        // Start a new restore
-                        var task = Task.Run(async () => await ExecuteRestoreAsync(
-                            sources,
-                            packagesDirectory,
-                            fallBack,
-                            runtime,
-                            localCache,
-                            settings,
-                            isParallel,
-                            inputPath));
-
-                        restoreTasks.Add(task);
-                    }
-
-                    // Wait for all restores to finish
-                    while (restoreTasks.Count > 0)
-                    {
-                        var restoreSummary = await CompleteTaskAsync(restoreTasks);
-                        restoreSummaries.Add(restoreSummary);
-                    }
-
-                    // Display the errors in the same order that they were produced, but grouped by project
-                    if (restoreSummaries.Any())
-                    {
-                        foreach (var restoreSummary in restoreSummaries)
-                        {
-                            if (!restoreSummary.Errors.Any())
-                            {
-                                continue;
-                            }
-
-                            Log.LogSummary(string.Empty);
-                            Log.LogSummary(string.Format(Strings.Log_ErrorSummary, restoreSummary.InputPath));
-                            foreach (var error in restoreSummary.Errors)
-                            {
-                                Log.LogSummary($"    {error}");
-                            }
-                        }
-                    }
-
-                    // Return 0 if all restores were successful
-                    return restoreSummaries.All(x => x.Success) ? 0 : 1;
-                });
-            });
+            // Register commands
+            RegisterCommands(app, log);
 
             app.OnExecute(() =>
             {
                 app.ShowHelp();
+
                 return 0;
             });
 
-            var exitCode = 0;
+            log.LogVerbose(string.Format(CultureInfo.CurrentCulture, Strings.OutputNuGetVersion, app.FullName, app.LongVersionGetter()));
+
+            int exitCode = 0;
 
             try
             {
@@ -251,13 +92,18 @@ namespace NuGet.CommandLine.XPlat
             }
             catch (Exception e)
             {
-                EnsureLog(verbosity);
-
                 // Log the error
-                Log.LogError(ExceptionUtilities.DisplayMessage(e));
+                if (ExceptionLogger.Instance.ShowStack)
+                {
+                    log.LogError(e.ToString());
+                }
+                else
+                {
+                    log.LogError(ExceptionUtilities.DisplayMessage(e));
+                }
 
                 // Log the stack trace as verbose output.
-                Log.LogVerbose(e.ToString());
+                log.LogVerbose(e.ToString());
 
                 exitCode = 1;
             }
@@ -271,221 +117,94 @@ namespace NuGet.CommandLine.XPlat
             return exitCode;
         }
 
+        private static CommandLineApplication InitializeApp(string[] args)
+        {
+            var app = new CommandLineApplication();
+
+            if (args.Any() && args[0] == "package")
+            {
+                app.Name = DotnetPackageAppName;
+            }
+            else
+            {
+                app.Name = DotnetNuGetAppName;
+            }
+            app.FullName = Strings.App_FullName;
+            app.HelpOption(XPlatUtility.HelpOption);
+            app.VersionOption("--version", typeof(Program).GetTypeInfo().Assembly.GetName().Version.ToString());
+
+            return app;
+        }
+
+        private static void RegisterCommands(CommandLineApplication app, CommandOutputLogger log)
+        {
+            // Register commands
+            if (app.Name == DotnetPackageAppName)
+            {
+                AddPackageReferenceCommand.Register(app, () => log, () => new AddPackageReferenceCommandRunner());
+                RemovePackageReferenceCommand.Register(app, () => log, () => new RemovePackageReferenceCommandRunner());
+            }
+            else
+            {
+                DeleteCommand.Register(app, () => log);
+                PushCommand.Register(app, () => log);
+                LocalsCommand.Register(app, () => log);
+            }
+        }
+
         /// <summary>
-        /// Removes a task from the list and returns the restore summary.
+        /// Attempts to parse the desired log verbosity from the arguments. Returns true if the
+        /// arguments contains a valid verbosity option. If no valid verbosity option was
+        /// specified, the log level is set to a default log level and false is returned.
         /// </summary>
-        private static async Task<RestoreSummary> CompleteTaskAsync(List<Task<RestoreSummary>> restoreTasks)
+        private static bool TryParseVerbosity(string[] args, CommandOption verbosity, out LogLevel logLevel)
         {
-            var doneTask = await Task.WhenAny(restoreTasks);
-            restoreTasks.Remove(doneTask);
-            return await doneTask;
-        }
+            bool found = false;
 
-        private static void EnsureLog(CommandOption verbosity)
-        {
-            // Set up logging.
-            // For tests this will already be set.
-            if (Log == null)
+            for (var index = 0; index < args.Length; index++)
             {
-                Log = new CommandOutputLogger(verbosity);
-            }
-        }
-
-        private static void SetConnectionLimit()
-        {
-#if !DNXCORE50
-            // Increase the maximum number of connections per server.
-            if (!RuntimeEnvironmentHelper.IsMono)
-            {
-                ServicePointManager.DefaultConnectionLimit = 64;
-            }
-            else
-            {
-                // Keep mono limited to a single download to avoid issues.
-                ServicePointManager.DefaultConnectionLimit = 1;
-            }
-#endif
-        }
-
-        private static IEnumerable<string> GetProjectJsonFilesInDirectory(string path)
-        {
-            return Directory.GetFiles(path, "project.json", SearchOption.AllDirectories);
-        }
-
-        private static async Task<RestoreSummary> ExecuteRestoreAsync
-            (CommandOption sources,
-            CommandOption packagesDirectory,
-            CommandOption fallBack,
-            CommandOption runtime,
-            NuGetv3LocalRepository localCache,
-            ISettings settings,
-            bool isParallel,
-            string inputPath)
-        {
-            // Figure out the project directory
-            IEnumerable<string> externalProjects = null;
-
-            PackageSpec project;
-            var projectPath = Path.GetFullPath(inputPath);
-            if (string.Equals(PackageSpec.PackageSpecFileName, Path.GetFileName(projectPath), StringComparison.OrdinalIgnoreCase))
-            {
-                Log.LogVerbose(string.Format(
-                    CultureInfo.CurrentCulture,
-                    Strings.Log_ReadingProject,
-                    inputPath));
-
-                projectPath = Path.GetDirectoryName(projectPath);
-                project = JsonPackageSpecReader.GetPackageSpec(File.ReadAllText(inputPath), Path.GetFileName(projectPath), inputPath);
-            }
-            else if (MsBuildUtility.IsMsBuildBasedProject(projectPath))
-            {
-#if DNXCORE50
-                                throw new NotSupportedException();
-#else
-                // TODO: This only finds the top level dependencies, the rest are found through folders?
-                externalProjects = MsBuildUtility.GetProjectReferences(projectPath);
-
-                var projectDirectory = Path.GetDirectoryName(Path.GetFullPath(projectPath));
-                var packageSpecFile = Path.Combine(projectDirectory, PackageSpec.PackageSpecFileName);
-                project = JsonPackageSpecReader.GetPackageSpec(File.ReadAllText(packageSpecFile), projectPath, inputPath);
-                Log.LogVerbose(string.Format(
-                    CultureInfo.CurrentCulture,
-                    Strings.Log_ReadingProject, inputPath));
-#endif
-            }
-            else
-            {
-                var file = Path.Combine(projectPath, PackageSpec.PackageSpecFileName);
-
-                Log.LogVerbose(string.Format(
-                    CultureInfo.CurrentCulture,
-                    Strings.Log_ReadingProject,
-                    file));
-
-                project = JsonPackageSpecReader.GetPackageSpec(File.ReadAllText(file), Path.GetFileName(projectPath), file);
-            }
-            Log.LogVerbose(string.Format(
-                    CultureInfo.CurrentCulture,
-                    Strings.Log_LoadedProject,
-                    project.Name, project.FilePath));
-
-            // Resolve the root directory
-            var rootDirectory = PackageSpecResolver.ResolveRootDirectory(projectPath);
-            Log.LogVerbose(string.Format(
-                CultureInfo.CurrentCulture,
-                Strings.Log_FoundProjectRoot,
-                rootDirectory));
-
-            var packageSources = GetSources(sources, fallBack, settings);
-
-            using (var request = new RestoreRequest(
-                project,
-                packageSources,
-                localCache.RepositoryRoot))
-            {
-                // Resolve the packages directory
-                Log.LogVerbose(string.Format(
-                    CultureInfo.CurrentCulture,
-                    Strings.Log_UsingPackagesDirectory,
-                    request.PackagesDirectory));
-
-                if (externalProjects != null)
+                var arg = args[index];
+                string[] option;
+                if (arg.StartsWith("--"))
                 {
-                    foreach (var externalReference in externalProjects)
+                    option = arg.Substring(2).Split(new[] { ':', '=' }, 2);
+                    if (!string.Equals(option[0], verbosity.LongName, StringComparison.Ordinal))
                     {
-                        var dirName = Path.GetDirectoryName(externalReference);
-                        var specPath = Path.Combine(dirName, PackageSpec.PackageSpecFileName);
-
-                        request.ExternalProjects.Add(
-                            new ExternalProjectReference(
-                                externalReference,
-                                JsonPackageSpecReader.GetPackageSpec(externalReference, specPath),
-                                msbuildProjectPath: null,
-                                projectReferences: Enumerable.Empty<string>()));
+                        continue;
                     }
                 }
-
-                // Runtime ids
-                request.RequestedRuntimes.UnionWith(runtime.Values);
-
-                var runtimeEnvironment = PlatformServices.Default.Runtime;
-
-                var defaultRuntimes = RequestRuntimeUtility.GetDefaultRestoreRuntimes(
-                    runtimeEnvironment.OperatingSystem,
-                    runtimeEnvironment.GetRuntimeOsName());
-
-                request.FallbackRuntimes.UnionWith(defaultRuntimes);
-
-                request.MaxDegreeOfConcurrency = isParallel ? RestoreRequest.DefaultDegreeOfConcurrency : 1;
-
-                // Run the restore
-                var collectorLog = new CollectorLogger(Log);
-                var command = new RestoreCommand(collectorLog, request);
-                var sw = Stopwatch.StartNew();
-                var result = await command.ExecuteAsync();
-
-                // Commit the result
-                Log.LogMinimal(Strings.Log_Committing);
-                result.Commit(collectorLog);
-
-                sw.Stop();
-
-                if (result.Success)
+                else if (arg.StartsWith("-"))
                 {
-                    Log.LogMinimal(string.Format(
-                        CultureInfo.CurrentCulture,
-                        Strings.Log_RestoreComplete,
-                        sw.ElapsedMilliseconds));
+                    option = arg.Substring(1).Split(new[] { ':', '=' }, 2);
+                    if (!string.Equals(option[0], verbosity.ShortName, StringComparison.Ordinal))
+                    {
+                        continue;
+                    }
                 }
                 else
                 {
-                    Log.LogMinimal(string.Format(
-                        CultureInfo.CurrentCulture,
-                        Strings.Log_RestoreFailed,
-                        sw.ElapsedMilliseconds));
+                    continue;
                 }
 
-                return new RestoreSummary(
-                    inputPath,
-                    result.Success,
-                    collectorLog.Errors);
-            }
-        }
+                if (option.Length == 2)
+                {
+                    found = verbosity.TryParse(option[1]);
+                }
+                else if (index < args.Length - 1)
+                {
+                    found = verbosity.TryParse(args[index + 1]);
+                }
 
-        /// <summary>
-        /// Returns a unique list of sources. New sources will be cached
-        /// and shared between restores.
-        /// </summary>
-        private static List<SourceRepository> GetSources(
-            CommandOption sources,
-            CommandOption fallBack,
-            ISettings settings)
-        {
-
-            // CommandLineSourceRepositoryProvider caches repositories to avoid duplicates
-            var packageSourceProvider = new PackageSourceProvider(settings);
-
-            // Take the passed in sources
-            var packageSources = sources.Values.Select(s => new PackageSource(s));
-
-            // If no sources were passed in use the NuGet.Config sources
-            if (!packageSources.Any())
-            {
-                // Add enabled sources
-                packageSources = packageSourceProvider.LoadPackageSources().Where(source => source.IsEnabled);
+                break;
             }
 
-            packageSources = packageSources.Concat(
-                fallBack.Values.Select(s => new PackageSource(s)));
+            logLevel = XPlatUtility.GetLogLevel(verbosity);
 
-            return packageSources.Select(source => _sourceProvider.CreateRepository(source))
-                .Distinct()
-                .ToList();
+            // Reset the parsed value since the application execution expects the option to not be
+            // populated yet, as this is a single-valued option.
+            verbosity.Values.Clear();
+
+            return found;
         }
-
-        // Create a caching source provider with the default settings, the sources will be passed in
-        private static CachingSourceProvider _sourceProvider = new CachingSourceProvider(
-            new PackageSourceProvider(
-                Settings.LoadDefaultSettings(root: null, configFileName: null, machineWideSettings: null)));
     }
 }

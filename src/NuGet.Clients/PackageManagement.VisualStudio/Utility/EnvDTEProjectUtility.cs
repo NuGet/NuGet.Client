@@ -10,6 +10,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
+using System.Security;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.Build.Evaluation;
@@ -17,6 +18,8 @@ using Microsoft.CSharp.RuntimeBinder;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
+using NuGet.Commands;
+using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.ProjectManagement;
 using VSLangProj;
@@ -117,34 +120,34 @@ namespace NuGet.PackageManagement.VisualStudio
             Debug.Assert(envDTEProject != null);
             if (IsUnloaded(envDTEProject))
             {
-                // To get the directory of an unloaded project, we use the UniqueName property,
-                // which is the path of the project file relative to the solution directory.
+                // Find the project file path from the UniqueName which contains the file path 
+                // relative to the solution directory for unloaded projects.
                 var solutionDirectory = Path.GetDirectoryName(envDTEProject.DTE.Solution.FullName);
                 return Path.Combine(solutionDirectory, envDTEProject.UniqueName);
             }
 
             // FullPath
-            string fullPath = GetPropertyValue<string>(envDTEProject, "FullPath");
+            var fullPath = GetPotentialFullPathOrNull(GetPropertyValue<string>(envDTEProject, "FullPath"));
 
-            if (!String.IsNullOrEmpty(fullPath))
+            if (fullPath != null)
             {
-                // Some Project System implementations (JS metro app) return the project 
-                // file as FullPath. We only need the parent directory
-                if (File.Exists(fullPath))
-                {
-                    return fullPath;
-                }
+                return fullPath;
             }
 
             // FullName
-            if (!String.IsNullOrEmpty(envDTEProject.FullName))
+            var fullName = GetPotentialFullPathOrNull(envDTEProject.FullName);
+
+            if (fullName != null)
             {
-                return Path.GetFullPath(envDTEProject.FullName);
+                return fullName;
             }
 
-            Debug.Fail("Unable to find the project path");
-
             return null;
+        }
+
+        public static string GetProjectDirectory(EnvDTEProject envDTEProject)
+        {
+            return GetFullPath(envDTEProject);
         }
 
         /// <summary>
@@ -339,11 +342,13 @@ namespace NuGet.PackageManagement.VisualStudio
                 EnvDTEProperty property = envDTEProject.Properties.Item(propertyName);
                 if (property != null)
                 {
-                    // REVIEW: Should this cast or convert?
                     return (T)property.Value;
                 }
             }
             catch (ArgumentException)
+            {
+            }
+            catch (InvalidCastException)
             {
             }
             return default(T);
@@ -398,7 +403,7 @@ namespace NuGet.PackageManagement.VisualStudio
             return packagesConfigWithProjectNameFullPath;
         }
 
-        internal static string GetName(EnvDTEProject envDTEProject)
+        public static string GetName(EnvDTEProject envDTEProject)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
@@ -470,7 +475,7 @@ namespace NuGet.PackageManagement.VisualStudio
             return GetName(envDTEProject);
         }
 
-        internal static string GetUniqueName(EnvDTEProject envDTEProject)
+        public static string GetUniqueName(EnvDTEProject envDTEProject)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
@@ -585,40 +590,31 @@ namespace NuGet.PackageManagement.VisualStudio
             }
         }
 
-        internal static MicrosoftBuildEvaluationProject AsMicrosoftBuildEvaluationProject(EnvDTEProject envDTEproject)
+        internal static MicrosoftBuildEvaluationProject AsMicrosoftBuildEvaluationProject(string dteProjectFullName)
         {
             // Need NOT be on the UI thread
 
-            return ProjectCollection.GlobalProjectCollection.GetLoadedProjects(envDTEproject.FullName).FirstOrDefault() ??
-                   ProjectCollection.GlobalProjectCollection.LoadProject(envDTEproject.FullName);
+            return ProjectCollection.GlobalProjectCollection.GetLoadedProjects(dteProjectFullName).FirstOrDefault() ??
+                   ProjectCollection.GlobalProjectCollection.LoadProject(dteProjectFullName);
         }
 
         internal static NuGetFramework GetTargetNuGetFramework(EnvDTEProject envDTEProject)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            string targetFrameworkMoniker = GetTargetFrameworkString(envDTEProject);
-            if (!String.IsNullOrEmpty(targetFrameworkMoniker))
+            var targetFrameworkMoniker = GetTargetFrameworkString(envDTEProject);
+
+            if (!string.IsNullOrEmpty(targetFrameworkMoniker))
             {
-                var framework = NuGetFramework.Parse(targetFrameworkMoniker);
-                //if the framework is .net core 4.5.1 return windows 8.1
-                if (framework.Framework.Equals(FrameworkConstants.FrameworkIdentifiers.NetCore)
-                    && framework.Version.Equals(Version.Parse("4.5.1.0")))
-                {
-                    return new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Windows, Version.Parse("8.1"), framework.Profile);
-                }
-                //if the framework is .net core 4.5 return 8.0
-                if (framework.Framework.Equals(FrameworkConstants.FrameworkIdentifiers.NetCore)
-                    && framework.Version.Equals(Version.Parse("4.5.0.0")))
-                {
-                    return new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Windows, Version.Parse("8.0"), framework.Profile);
-                }
                 return NuGetFramework.Parse(targetFrameworkMoniker);
             }
 
             return NuGetFramework.UnsupportedFramework;
         }
 
+        /// <summary>
+        /// Determine the project framework string based on the project properties.
+        /// </summary>
         public static string GetTargetFrameworkString(EnvDTEProject envDTEProject)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
@@ -628,54 +624,26 @@ namespace NuGet.PackageManagement.VisualStudio
                 return null;
             }
 
-            if (IsJavaScriptProject(envDTEProject))
-            {
-                // JavaScript apps do not have a TargetFrameworkMoniker property set.
-                // We read the TargetPlatformIdentifier and TargetPlatformVersion instead
+            var projectPath = GetFullProjectPath(envDTEProject);
+            var platformIdentifier = GetPropertyValue<string>(envDTEProject, "TargetPlatformIdentifier");
+            var platformVersion = GetPropertyValue<string>(envDTEProject, "TargetPlatformVersion");
+            var targetFrameworkMoniker = GetPropertyValue<string>(envDTEProject, "TargetFrameworkMoniker");
+            var isManagementPackProject = IsManagementPackProject(envDTEProject);
+            var isXnaWindowsPhoneProject = IsXnaWindowsPhoneProject(envDTEProject);
 
-                string platformIdentifier = GetPropertyValue<string>(envDTEProject, "TargetPlatformIdentifier");
-                string platformVersion = GetPropertyValue<string>(envDTEProject, "TargetPlatformVersion");
+            // Projects supporting TargetFramework and TargetFrameworks are detected before
+            // this check. The values can be passed as null here.
+            var frameworkStrings = MSBuildProjectFrameworkUtility.GetProjectFrameworkStrings(
+                projectFilePath: projectPath,
+                targetFrameworks: null,
+                targetFramework: null,
+                targetFrameworkMoniker: targetFrameworkMoniker,
+                targetPlatformIdentifier: platformIdentifier,
+                targetPlatformVersion: platformVersion,
+                isManagementPackProject: isManagementPackProject,
+                isXnaWindowsPhoneProject: isXnaWindowsPhoneProject);
 
-                // use the default values for JS if they were not given
-                if (String.IsNullOrEmpty(platformVersion))
-                {
-                    platformVersion = "0.0";
-                }
-
-                if (String.IsNullOrEmpty(platformIdentifier))
-                {
-                    platformIdentifier = "Windows";
-                }
-
-                return String.Format(CultureInfo.InvariantCulture, "{0}, Version={1}", platformIdentifier, platformVersion);
-            }
-
-            if (IsManagementPackProject(envDTEProject))
-            {
-                // The MP project does not have a TargetFrameworkMoniker property set. 
-                // We hard-code the return value to SCMPInfra.
-                return "SCMPInfra, Version=0.0";
-            }
-
-            if (IsNativeProject(envDTEProject))
-            {
-                // The C++ project does not have a TargetFrameworkMoniker property set. 
-                // We hard-code the return value to Native.
-                return "Native, Version=0.0";
-            }
-
-            string targetFramework = GetPropertyValue<string>(envDTEProject, "TargetFrameworkMoniker");
-
-            // XNA project lies about its true identity, reporting itself as a normal .NET 4.0 project.
-            // We detect it and changes its target framework to Silverlight4-WindowsPhone71
-            if (".NETFramework,Version=v4.0".Equals(targetFramework, StringComparison.OrdinalIgnoreCase)
-                &&
-                IsXnaWindowsPhoneProject(envDTEProject))
-            {
-                return "Silverlight,Version=v4.0,Profile=WindowsPhone71";
-            }
-
-            return targetFramework;
+            return frameworkStrings.FirstOrDefault();
         }
 
         internal static async Task<bool> ContainsFile(EnvDTEProject envDTEProject, string path)
@@ -1015,7 +983,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             var localProjectAssemblies = GetLocalProjectAssemblies(envDTEProject);
             CollectionsUtility.AddRange(assemblies, localProjectAssemblies);
-            
+
             var referencedProjects = GetReferencedProjects(envDTEProject);
             foreach (var project in referencedProjects)
             {
@@ -1055,7 +1023,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
                     // Get the referenced project from the reference if any
                     // In C++ projects if reference3.Resolved is false reference3.SourceProject will throw.
-                    if (reference3 != null 
+                    if (reference3 != null
                         && reference3.Resolved
                         && reference.SourceProject == null
                         && reference.CopyLocal
@@ -1203,6 +1171,47 @@ namespace NuGet.PackageManagement.VisualStudio
             return token == "*" ? @"(.*)" : @"(" + token + ")";
         }
 
+        /// <summary>
+        /// A DTE specific helper method that validates a path to ensure that it 
+        /// could be for a file as opposed to a URL or other invalid path, and
+        /// not for a directory. This is used to help determine if a value returned
+        /// from DTE is a directory or file, since the file may still be in 
+        /// memory and not yet written to disk File.Exists will not work.
+        /// </summary>
+        private static string GetPotentialFullPathOrNull(string path)
+        {
+            string fullPath = null;
+
+            try
+            {
+                if (!string.IsNullOrEmpty(path))
+                {
+                    // Attempt to get the full path
+                    fullPath = Path.GetFullPath(path);
+
+                    // Some project systems may return a directory for the file path. 
+                    // Directories usually exist even when the in-memory files have not yet 
+                    // been written, so we can try to detect obvious non-files here.
+                    // WebSites and Win JS projects can return a directory instead of the project file path.
+                    if (Directory.Exists(fullPath))
+                    {
+                        // Ignore directories
+                        fullPath = null;
+                    }
+                }
+            }
+            catch (Exception ex) when (ex is ArgumentException
+                || ex is NotSupportedException
+                || ex is PathTooLongException
+                || ex is SecurityException)
+            {
+                // Ignore invalid paths
+                // This can occur if the path was a URL
+            }
+
+            return fullPath;
+        }
+
         #endregion // Get "Project" Information
 
         #region Check Project Types
@@ -1235,26 +1244,8 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             Debug.Assert(ThreadHelper.CheckAccess());
 
-            return envDTEProject != null && NuGetVSConstants.CppProjectTypeGuid.Equals(envDTEProject.Kind, StringComparison.OrdinalIgnoreCase) && !IsClr(envDTEProject);
-        }
-
-        /// <summary>
-        /// Checks if a native project type really is a managed project, by checking the CLRSupport item.
-        /// </summary>
-        internal static bool IsClr(EnvDTEProject envDTEProject)
-        {
-            ThreadHelper.ThrowIfNotOnUIThread();
-
-            bool isClr = false;
-
-            // always return false here until we fix clr support issue
-            // Null properties on the DTE project item are a common source of bugs, make sure everything is non-null before attempting this check.    
-            if (envDTEProject != null
-                && envDTEProject.FullName != null)
-            {
-                new VcxProject(envDTEProject.FullName);
-            }
-            return isClr;
+            return envDTEProject != null
+                && NuGetVSConstants.CppProjectTypeGuid.Equals(envDTEProject.Kind, StringComparison.OrdinalIgnoreCase);
         }
 
         private static bool IsWebProject(EnvDTEProject envDTEProject)
@@ -1291,15 +1282,15 @@ namespace NuGet.PackageManagement.VisualStudio
         /// <summary>
         /// Check if the project has an unsupported project capability, such as, "SharedAssetsProject"
         /// </summary>
-        private static bool HasUnsupportedProjectCapability(EnvDTEProject envDTEProject)
+        public static bool HasUnsupportedProjectCapability(EnvDTEProject envDTEProject)
         {
             Debug.Assert(ThreadHelper.CheckAccess());
 
             var hier = VsHierarchyUtility.ToVsHierarchy(envDTEProject);
 
-            foreach(var unsupportedProjectCapability in UnsupportedProjectCapabilities)
+            foreach (var unsupportedProjectCapability in UnsupportedProjectCapabilities)
             {
-                if(hier.IsCapabilityMatch(unsupportedProjectCapability))
+                if (hier.IsCapabilityMatch(unsupportedProjectCapability))
                 {
                     return true;
                 }
@@ -1317,7 +1308,7 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            var projectKProject = VSNuGetProjectFactory.GetProjectKProject(envDTEProject);
+            var projectKProject = ProjectKNuGetProjectProvider.GetProjectKProject(envDTEProject);
             return projectKProject != null;
         }
 
@@ -1326,13 +1317,13 @@ namespace NuGet.PackageManagement.VisualStudio
         /// </summary>
         public static async Task<bool> HasBuildIntegratedConfig(EnvDTEProject project)
         {
-            var projectNameConfig = BuildIntegratedProjectUtility.GetProjectConfigWithProjectName(project.Name);
+            var projectNameConfig = ProjectJsonPathUtilities.GetProjectConfigWithProjectName(project.Name);
 
             var containsProjectJson = await ContainsFile(project, projectNameConfig);
 
             var containsProjectNameJson = await ContainsFile(
                 project,
-                BuildIntegratedProjectUtility.ProjectConfigFileName);
+                ProjectJsonPathUtilities.ProjectConfigFileName);
 
             return containsProjectJson || containsProjectNameJson;
         }

@@ -5,6 +5,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Xml.Linq;
 using Moq;
@@ -21,6 +22,9 @@ namespace NuGet.CommandLine.Test
     public static class Util
     {
         private static readonly string NupkgFileFormat = "{0}.{1}.nupkg";
+
+        [DllImport("libc")]
+        static extern int uname(IntPtr buf);
 
         public static string CreateTestPackage(
             string packageId,
@@ -85,6 +89,53 @@ namespace NuGet.CommandLine.Test
             var packageFileName = string.Format("{0}.{1}.nupkg", packageId, version);
             var packageFileFullPath = Path.Combine(path, packageFileName);
 
+            Directory.CreateDirectory(path);
+            using (var fileStream = File.Create(packageFileFullPath))
+            {
+                packageBuilder.Save(fileStream);
+            }
+
+            return packageFileFullPath;
+        }
+
+        public static string CreateTestPackage(
+            string packageId,
+            string version,
+            string path,
+            List<NuGetFramework> frameworks,
+            params string[] contentFiles)
+        {
+            var packageBuilder = new PackageBuilder
+            {
+                Id = packageId,
+                Version = new SemanticVersion(version)
+            };
+            packageBuilder.Description = string.Format(
+                CultureInfo.InvariantCulture,
+                "desc of {0} {1}",
+                packageId, version);
+            foreach (var framework in frameworks)
+            {
+                var libPath = string.Format(
+                    CultureInfo.InvariantCulture,
+                    "lib/{0}/{1}.dll",
+                    framework.GetShortFolderName(),
+                    packageId);
+
+                packageBuilder.Files.Add(CreatePackageFile(libPath));
+            }
+
+            foreach (var contentFile in contentFiles)
+            {
+                var packageFilePath = Path.Combine("content", contentFile);
+                var packageFile = CreatePackageFile(packageFilePath);
+                packageBuilder.Files.Add(packageFile);
+            }
+
+            packageBuilder.Authors.Add("test author");
+
+            var packageFileName = string.Format("{0}.{1}.nupkg", packageId, version);
+            var packageFileFullPath = Path.Combine(path, packageFileName);
             using (var fileStream = File.Create(packageFileFullPath))
             {
                 packageBuilder.Save(fileStream);
@@ -124,7 +175,7 @@ namespace NuGet.CommandLine.Test
 
             if (contentFiles == null || contentFiles.Length == 0)
             {
-                packageBuilder.Files.Add(CreatePackageFile(@"content\test1.txt"));
+                packageBuilder.Files.Add(CreatePackageFile(Path.Combine("content","test1.txt")));
             }
             else
             {
@@ -140,6 +191,7 @@ namespace NuGet.CommandLine.Test
 
             var packageFileName = string.Format("{0}.{1}.nupkg", packageId, version);
             var packageFileFullPath = Path.Combine(path, packageFileName);
+            Directory.CreateDirectory(path);
             using (var fileStream = File.Create(packageFileFullPath))
             {
                 packageBuilder.Save(fileStream);
@@ -182,6 +234,47 @@ namespace NuGet.CommandLine.Test
         }
 
         /// <summary>
+        /// Create a project.json based project. Returns the path to the project file.
+        /// </summary>
+        public static string CreateUAPProject(string directory, string projectJsonContent)
+        {
+            return CreateUAPProject(directory, projectJsonContent, "a");
+        }
+
+        /// <summary>
+        /// Create a project.json based project. Returns the path to the project file.
+        /// </summary>
+        public static string CreateUAPProject(string directory, string projectJsonContent, string projectName)
+        {
+            return CreateUAPProject(directory, projectJsonContent, projectName, nugetConfigContent: null);
+        }
+
+        /// <summary>
+        /// Create a project.json based project. Returns the path to the project file.
+        /// </summary>
+        public static string CreateUAPProject(string directory, string projectJsonContent, string projectName, string nugetConfigContent)
+        {
+            Directory.CreateDirectory(directory);
+            var projectDir = directory;
+            var projectFile = Path.Combine(projectDir, projectName + ".csproj");
+            var projectJsonPath = Path.Combine(projectDir, "project.json");
+            var configPath = Path.Combine(projectDir, "NuGet.Config");
+
+            // Clean up and validate json
+            var json = JObject.Parse(projectJsonContent);
+
+            File.WriteAllText(projectJsonPath, json.ToString());
+            File.WriteAllText(projectFile, GetCSProjXML(projectName));
+
+            if (!string.IsNullOrEmpty(nugetConfigContent))
+            {
+                File.WriteAllText(configPath, nugetConfigContent);
+            }
+
+            return projectFile;
+        }
+
+        /// <summary>
         /// Creates a file with the specified content.
         /// </summary>
         /// <param name="directory">The directory of the created file.</param>
@@ -195,6 +288,11 @@ namespace NuGet.CommandLine.Test
             }
 
             var fileFullName = Path.Combine(directory, fileName);
+            CreateFile(fileFullName, fileContent);
+        }
+
+        public static void CreateFile(string fileFullName, string fileContent)
+        {
             using (var writer = new StreamWriter(fileFullName))
             {
                 writer.Write(fileContent);
@@ -279,20 +377,37 @@ namespace NuGet.CommandLine.Test
                     }));
             }
 
-            server.Get.Add("/nuget", r => "OK");
+            // fall through to "package not found"
+            server.Get.Add("/nuget/Packages(Id='", r =>
+                new Action<HttpListenerResponse>(response =>
+                {
+                    response.StatusCode = 404;
+                    MockServer.SetResponseContent(response, @"<?xml version=""1.0"" encoding=""utf-8""?>
+<m:error xmlns:m=""http://schemas.microsoft.com/ado/2007/08/dataservices/metadata"">
+  <m:code />
+  <m:message xml:lang=""en-US"">Resource not found for the segment 'Packages'.</m:message>
+</m:error>");
+                }));
+
+            server.Get.Add("/nuget", r =>
+                new Action<HttpListenerResponse>(response =>
+                {
+                    response.StatusCode = 404;
+                }));
+
             return server;
         }
 
         public static string GetNuGetExePath()
         {
-            var targetDir = ConfigurationManager.AppSettings["TargetDir"] ?? Directory.GetCurrentDirectory();
-            var nugetexe = Path.Combine(targetDir, "nuget.exe");
+            var targetDir = ConfigurationManager.AppSettings["TestTargetDir"] ?? Directory.GetCurrentDirectory();
+            var nugetexe = Path.Combine(targetDir, "NuGet.exe");
             return nugetexe;
         }
 
         public static string GetTestablePluginPath()
         {
-            var targetDir = ConfigurationManager.AppSettings["TargetDir"] ?? Directory.GetCurrentDirectory();
+            var targetDir = ConfigurationManager.AppSettings["TestTargetDir"] ?? Directory.GetCurrentDirectory();
             var plugin = Path.Combine(targetDir, "TestableCredentialProvider", "CredentialProvider.Testable.exe");
             return plugin;
         }
@@ -309,20 +424,24 @@ namespace NuGet.CommandLine.Test
 
         public static JObject CreateIndexJson()
         {
-            return JObject.Parse(@"{
-                  ""version"": ""3.2.0"",
-                  ""resources"": [],
-                ""@context"": {
-                ""@vocab"": ""http://schema.nuget.org/services#"",
-                ""comment"": ""http://www.w3.org/2000/01/rdf-schema#comment""
-                    }}");
+            return JObject.Parse(@"
+{
+    ""version"": ""3.2.0"",
+    ""resources"": [],
+    ""@context"": {
+        ""@vocab"": ""http://schema.nuget.org/services#"",
+        ""comment"": ""http://www.w3.org/2000/01/rdf-schema#comment""
+    }
+}");
         }
 
         public static void AddFlatContainerResource(JObject index, MockServer server)
         {
-            var resource = new JObject();
-            resource.Add("@id", string.Format("{0}flat", server.Uri));
-            resource.Add("@type", "PackageBaseAddress/3.0.0");
+            var resource = new JObject
+            {
+                { "@id", $"{server.Uri}flat" },
+                { "@type", "PackageBaseAddress/3.0.0" }
+            };
 
             var array = index["resources"] as JArray;
             array.Add(resource);
@@ -330,19 +449,29 @@ namespace NuGet.CommandLine.Test
 
         public static void AddRegistrationResource(JObject index, MockServer server)
         {
-            var resource = new JObject();
-            resource.Add("@id", string.Format("{0}reg", server.Uri));
-            resource.Add("@type", "RegistrationsBaseUrl/3.0.0-beta");
+            var resource = new JObject
+            {
+                { "@id", $"{server.Uri}reg" },
+                { "@type", "RegistrationsBaseUrl/3.0.0-beta" }
+            };
 
             var array = index["resources"] as JArray;
             array.Add(resource);
         }
 
-        public static void AddLegacyUrlResource(JObject index, MockServer serverV2)
+        public static void AddLegacyGalleryResource(JObject index, MockServer serverV2, string relativeUri = null)
         {
-            var resource = new JObject();
-            resource.Add("@id", string.Format("{0}", serverV2.Uri));
-            resource.Add("@type", "LegacyGallery/2.0.0");
+            var resourceUri = new Uri(serverV2.Uri);
+            if (relativeUri != null)
+            {
+                resourceUri = new Uri(resourceUri, relativeUri);
+            }
+
+            var resource = new JObject
+            {
+                { "@id", resourceUri },
+                { "@type", "LegacyGallery/2.0.0" }
+            };
 
             var array = index["resources"] as JArray;
             array.Add(resource);
@@ -350,9 +479,11 @@ namespace NuGet.CommandLine.Test
 
         public static void AddPublishResource(JObject index, MockServer publishServer)
         {
-            var resource = new JObject();
-            resource.Add("@id", string.Format("{0}push", publishServer.Uri));
-            resource.Add("@type", "PackagePublish/2.0.0");
+            var resource = new JObject
+            {
+                { "@id", $"{publishServer.Uri}push" },
+                { "@type", "PackagePublish/2.0.0" }
+            };
 
             var array = index["resources"] as JArray;
             array.Add(resource);
@@ -456,8 +587,6 @@ namespace NuGet.CommandLine.Test
             var path = Util.CreateTestPackage(package, repositoryPath);
 
             ZipPackage zipPackage = new ZipPackage(path);
-
-            MachineCache.Default.RemovePackage(zipPackage);
 
             return zipPackage;
         }
@@ -576,6 +705,9 @@ namespace NuGet.CommandLine.Test
                         contentFiles.Select(c => new XElement(msbuild + "Content", new XAttribute("Include", c)))));
             }
 
+            project.Add(new XElement(msbuild + "ItemGroup",
+                new XElement(msbuild + "Compile", new XAttribute("Include", "Source.cs"))));
+
             project.Add(new XElement(msbuild + "Import",
                 new XAttribute("Project", @"$(MSBuildToolsPath)\Microsoft.CSharp.targets")));
 
@@ -623,7 +755,7 @@ EndProject";
             string packagesDirectory)
         {
             string normalizedId = packageIdentity.Id.ToLowerInvariant();
-            string normalizedVersion = packageIdentity.Version.ToNormalizedString();
+            string normalizedVersion = packageIdentity.Version.ToNormalizedString().ToLowerInvariant();
 
             var packageIdDirectory = Path.Combine(packagesDirectory, normalizedId);
             Assert.True(Directory.Exists(packageIdDirectory));
@@ -656,7 +788,7 @@ EndProject";
             IList<PackageIdentity> packages,
             string packagesDirectory)
         {
-            foreach(var package in packages)
+            foreach (var package in packages)
             {
                 VerifyPackageExists(package, packagesDirectory);
             }
@@ -680,7 +812,7 @@ EndProject";
             string packagesDirectory)
         {
             var versionFolderPathResolver
-                = new VersionFolderPathResolver(packagesDirectory, normalizePackageId: true);
+                = new VersionFolderPathResolver(packagesDirectory);
 
             var packageFiles = new[]
             {
@@ -742,6 +874,25 @@ EndProject";
             NativeMethods.CreateReparsePoint(junctionPoint, targetDirectoryPath);
         }
 
+        public static string GetXProjXML()
+        {
+            return @"<?xml version=""1.0"" encoding=""utf-8""?>
+                <Project ToolsVersion=""14.0"" DefaultTargets=""Build"" xmlns=""http://schemas.microsoft.com/developer/msbuild/2003"">
+                  <PropertyGroup>
+                    <VisualStudioVersion Condition=""'$(VisualStudioVersion)' == ''"">14.0</VisualStudioVersion>
+                    <VSToolsPath Condition=""'$(VSToolsPath)' == ''"">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
+                  </PropertyGroup>
+                  <Import Project=""$(VSToolsPath)\DNX\Microsoft.DNX.Props"" Condition=""'$(VSToolsPath)' != ''"" />
+                  <PropertyGroup Label=""Globals"">
+                    <ProjectGuid>82ff10c5-8724-4187-953e-5096ad90184f</ProjectGuid>
+                  </PropertyGroup>
+                  <ItemGroup>
+                    <Service Include=""{82a7f48d-3b50-4b1e-b82e-3ada8210c358}"" />
+                  </ItemGroup>
+                  <Import Project=""$(VSToolsPath)\DNX\Microsoft.DNX.targets"" Condition=""'$(VSToolsPath)' != ''"" />
+                </Project>";
+        }
+
         /// <summary>
         /// Create a basic csproj file for net45.
         /// </summary>
@@ -780,6 +931,210 @@ EndProject";
                   </ItemGroup>
                   <Import Project=""$(MSBuildToolsPath)\Microsoft.CSharp.targets"" />
                  </Project>".Replace("$NAME$", projectName);
+        }
+
+        public static void ClearWebCache()
+        {
+            var nugetexe = Util.GetNuGetExePath();
+
+            var r = CommandRunner.Run(
+            nugetexe,
+            ".",
+            "locals http-cache -Clear",
+            waitForExit: true);
+
+            Assert.Equal(0, r.Item1);
+        }
+
+        public static string CreateBasicTwoProjectSolution(TestDirectory workingPath, string proj1ConfigFileName, string proj2ConfigFileName)
+        {
+            var repositoryPath = Path.Combine(workingPath, "Repository");
+            var proj1Directory = Path.Combine(workingPath, "proj1");
+            var proj2Directory = Path.Combine(workingPath, "proj2");
+
+            Directory.CreateDirectory(repositoryPath);
+            Directory.CreateDirectory(proj1Directory);
+            Directory.CreateDirectory(proj2Directory);
+
+            CreateTestPackage("packageA", "1.1.0", repositoryPath);
+            CreateTestPackage("packageB", "2.2.0", repositoryPath);
+
+            CreateFile(workingPath, "a.sln",
+                @"
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project(""{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}"") = ""proj1"", ""proj1\proj1.csproj"", ""{A04C59CC-7622-4223-B16B-CDF2ECAD438D}""
+EndProject
+Project(""{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}"") = ""proj2"", ""proj2\proj2.csproj"", ""{42641DAE-D6C4-49D4-92EA-749D2573554A}""
+EndProject");
+
+            var include1 = proj1ConfigFileName;
+
+            if (string.IsNullOrEmpty(include1))
+            {
+                include1 = Guid.NewGuid().ToString();
+            }
+
+            CreateFile(proj1Directory, "proj1.csproj",
+                $@"<Project ToolsVersion='4.0' DefaultTargets='Build'
+    xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <OutputPath>out</OutputPath>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Include='{include1}' />
+  </ItemGroup>
+  <Import Project=""$(MSBuildToolsPath)\Microsoft.CSharp.targets"" />
+</Project>");
+
+            if (!string.IsNullOrEmpty(proj1ConfigFileName))
+            {
+                CreateConfigFile(proj1Directory, proj1ConfigFileName, "net45", new List<PackageIdentity>
+                {
+                    new PackageIdentity("packageA", new NuGetVersion("1.1.0"))
+                });
+            }
+
+            var include2 = proj2ConfigFileName;
+
+            if (string.IsNullOrEmpty(include2))
+            {
+                include2 = Guid.NewGuid().ToString();
+            }
+
+            CreateFile(proj2Directory, "proj2.csproj",
+                $@"<Project ToolsVersion='4.0' DefaultTargets='Build'
+    xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <OutputPath>out</OutputPath>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Include='{include2}' />
+  </ItemGroup>
+  <Import Project=""$(MSBuildToolsPath)\Microsoft.CSharp.targets"" />
+</Project>");
+
+            if (!string.IsNullOrEmpty(proj2ConfigFileName))
+            {
+                CreateConfigFile(proj2Directory, proj2ConfigFileName, "net45", new List<PackageIdentity>
+                {
+                    new PackageIdentity("packageB", new NuGetVersion("2.2.0"))
+                });
+            }
+
+            // If either project uses project.json, then define "globalPackagesFolder" so the package doesn't get
+            // installed in the usual global packages folder.
+            if (IsProjectJson(proj1ConfigFileName) || IsProjectJson(proj2ConfigFileName))
+            {
+                CreateFile(workingPath, "nuget.config",
+@"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <config>
+    <add key=""globalPackagesFolder"" value=""GlobalPackages"" />
+  </config>
+</configuration>");
+            }
+
+            return repositoryPath;
+        }
+
+        public static void CreateConfigFile(string path, string configFileName, string targetFramework, IEnumerable<PackageIdentity> packages)
+        {
+            var fileContent = IsProjectJson(configFileName)
+                ? GetProjectJsonFileContents(targetFramework, packages)
+                : GetPackagesConfigFileContents(targetFramework, packages);
+
+            CreateFile(path, configFileName, fileContent);
+        }
+
+        public static string GetProjectJsonFileContents(string targetFramework, IEnumerable<PackageIdentity> packages)
+        {
+            var dependencies = string.Join(", ", packages.Select(package => $"'{package.Id}': '{package.Version}'"));
+            return $@"
+{{
+  'dependencies': {{
+    {dependencies}
+  }},
+  'frameworks': {{
+    '{targetFramework}': {{ }}
+  }}
+}}";
+        }
+
+        public static string GetPackagesConfigFileContents(string targetFramework, IEnumerable<PackageIdentity> packages)
+        {
+            var dependencies = string.Join("\n", packages.Select(package => $@"<package id=""{package.Id}"" version=""{package.Version}"" targetFramework=""{targetFramework}"" />"));
+            return $@"
+<packages>
+  {dependencies}
+</packages>";
+        }
+
+        public static string GetMsbuildPathOnWindows()
+        {
+            var msbuildPath = @"C:\Program Files (x86)\MSBuild\14.0\Bin";
+            if (!Directory.Exists(msbuildPath))
+            {
+                msbuildPath = @"C:\Program Files\MSBuild\14.0\Bin";
+            }
+
+            return msbuildPath;
+        }
+
+        public static string GetHintPath(string path)
+        {
+            return @"<HintPath>.." + Path.DirectorySeparatorChar + path + @"</HintPath>";
+        }
+
+        public static bool IsRunningOnMac()
+        {
+
+            IntPtr buf = IntPtr.Zero;
+
+            try
+            {
+
+                buf = Marshal.AllocHGlobal(8192);
+
+                // This is a hacktastic way of getting sysname from uname ()
+
+                if (uname(buf) == 0)
+                {
+
+                    string os = Marshal.PtrToStringAnsi(buf);
+
+                    if (os == "Darwin")
+
+                        return true;
+
+                }
+
+            }
+            catch
+            {
+
+            }
+            finally
+            {
+
+                if (buf != IntPtr.Zero)
+
+                    Marshal.FreeHGlobal(buf);
+
+            }
+
+            return false;
+
+        }
+
+        private static bool IsProjectJson(string configFileName)
+        {
+            // Simply test the extension as that is all we care about
+            return string.Equals(Path.GetExtension(configFileName), ".json", StringComparison.OrdinalIgnoreCase);
         }
     }
 }

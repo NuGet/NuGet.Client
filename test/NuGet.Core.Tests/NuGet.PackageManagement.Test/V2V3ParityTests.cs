@@ -33,7 +33,7 @@ namespace NuGet.Test
         {
             // Arrange
             using (var testSolutionManager = new TestSolutionManager(true))
-            using (var randomPackagesConfigFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomPackagesConfigFolderPath = TestDirectory.Create())
             {
                 var testSettings = new Configuration.NullSettings();
                 var token = CancellationToken.None;

@@ -6,9 +6,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Management.Automation;
 using System.Threading.Tasks;
-using NuGet.PackageManagement.VisualStudio;using NuGet.Packaging.Core;
+using NuGet.Common;
+using NuGet.PackageManagement.UI;
+using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
-using NuGet.Protocol.Core.Types;
 using NuGet.Resolver;
 using NuGet.Versioning;
 
@@ -25,7 +26,6 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         private bool _projectSpecified;
         private bool _versionSpecifiedPrerelease;
         private bool _allowPrerelease;
-        private bool _isPackageInstalled;
         private NuGetVersion _nugetVersion;
 
         [Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true, Position = 0, ParameterSetName = "Project")]
@@ -98,11 +98,36 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
         protected override void ProcessRecordCore()
         {
-            Preprocess();
+            var startTime = DateTimeOffset.Now;
 
-            SubscribeToProgressEvents();
-            PerformPackageUpdatesOrReinstalls();
-            UnsubscribeFromProgressEvents();
+            // Set to log telemetry granular events for this update operation 
+            TelemetryService = new TelemetryServiceHelper();
+
+            // start timer for telemetry event
+            TelemetryUtility.StartorResumeTimer();
+
+            using (var lck = _lockService.AcquireLock())
+            {
+                Preprocess();
+
+                SubscribeToProgressEvents();
+                PerformPackageUpdatesOrReinstalls();
+                UnsubscribeFromProgressEvents();
+            }
+
+            // stop timer for telemetry event and create action telemetry event instance
+            TelemetryUtility.StopTimer();
+            var actionTelemetryEvent = TelemetryUtility.GetActionTelemetryEvent(
+                new[] { Project },
+                NuGetOperationType.Update,
+                OperationSource.PMC,
+                startTime,
+                _status,
+                _packageCount,
+                TelemetryUtility.GetTimerElapsedTimeInSeconds());
+
+            // emit telemetry event along with granular level for update operation
+            ActionsTelemetryService.Instance.EmitActionEvent(actionTelemetryEvent, TelemetryService.TelemetryEvents);
         }
 
         /// <summary>
@@ -113,12 +138,12 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             // Update-Package without ID specified
             if (!_idSpecified)
             {
-                Task.Run(() => UpdateOrReinstallAllPackages());
+                Task.Run(UpdateOrReinstallAllPackagesAsync);
             }
             // Update-Package with Id specified
             else
             {
-                Task.Run(() => UpdateOrReinstallSinglePackage());
+                Task.Run(UpdateOrReinstallSinglePackageAsync);
             }
             WaitAndLogPackageActions();
         }
@@ -127,18 +152,34 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// Update or reinstall all packages installed to a solution. For Update-Package or Update-Package -Reinstall.
         /// </summary>
         /// <returns></returns>
-        private async Task UpdateOrReinstallAllPackages()
+        private async Task UpdateOrReinstallAllPackagesAsync()
         {
             try
             {
-                foreach (var project in Projects)
+                // if the source is explicitly specified we will use exclusively that source otherwise use ALL enabled sources
+                var actions = await PackageManager.PreviewUpdatePackagesAsync(
+                    Projects,
+                    ResolutionContext,
+                    this,
+                    PrimarySourceRepositories,
+                    PrimarySourceRepositories,
+                    Token);
+
+                if (!actions.Any())
                 {
-                    await PreviewAndExecuteUpdateActionsforAllPackages(project);
+                    _status = NuGetOperationStatus.NoOp;
                 }
+                else
+                {
+                    _packageCount = actions.Select(action => action.PackageIdentity.Id).Distinct().Count();
+                }
+
+                await ExecuteActions(actions);
             }
             catch (Exception ex)
             {
-                Log(ProjectManagement.MessageLevel.Error, ex.Message);
+                _status = NuGetOperationStatus.Failed;
+                Log(MessageLevel.Error, ExceptionUtilities.DisplayMessage(ex));
             }
             finally
             {
@@ -151,23 +192,27 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// -Reinstall.
         /// </summary>
         /// <returns></returns>
-        private async Task UpdateOrReinstallSinglePackage()
+        private async Task UpdateOrReinstallSinglePackageAsync()
         {
             try
             {
-                foreach (var project in Projects)
-                {
-                    await PreviewAndExecuteUpdateActionsforSinglePackage(project);
-                }
+                var isPackageInstalled = await IsPackageInstalledAsync(Id);
 
-                if (!_isPackageInstalled)
+                if (isPackageInstalled)
                 {
-                    Log(ProjectManagement.MessageLevel.Error, Resources.Cmdlet_PackageNotInstalledInAnyProject, Id);
+                    await PreviewAndExecuteUpdateActionsForSinglePackage();
+                }
+                else
+                {
+                    // set nuget operation status to NoOp when package is not even installed
+                    _status = NuGetOperationStatus.NoOp;
+                    Log(MessageLevel.Error, Resources.Cmdlet_PackageNotInstalledInAnyProject, Id);
                 }
             }
             catch (Exception ex)
             {
-                Log(ProjectManagement.MessageLevel.Error, ex.Message);
+                _status = NuGetOperationStatus.Failed;
+                Log(MessageLevel.Error, ExceptionUtilities.DisplayMessage(ex));
             }
             finally
             {
@@ -176,102 +221,99 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         }
 
         /// <summary>
-        /// Preview update actions for all packages
+        /// Preview update actions for single package
         /// </summary>
-        /// <param name="project"></param>
         /// <returns></returns>
-        private async Task PreviewAndExecuteUpdateActionsforAllPackages(NuGetProject project)
+        private async Task PreviewAndExecuteUpdateActionsForSinglePackage()
         {
-            // if the source is explicitly specified we will use exclusively that source otherwise use ALL enabled sources
-            var allSources = new List<SourceRepository>();
-            if (!string.IsNullOrEmpty(Source))
+            var actions = Enumerable.Empty<NuGetProjectAction>();
+
+            // If -Version switch is specified
+            if (!string.IsNullOrEmpty(Version))
             {
-                allSources.Add(ActiveSourceRepository);
+                actions = await PackageManager.PreviewUpdatePackagesAsync(
+                    new PackageIdentity(Id, PowerShellCmdletsUtility.GetNuGetVersionFromString(Version)),
+                    Projects,
+                    ResolutionContext,
+                    this,
+                    PrimarySourceRepositories,
+                    EnabledSourceRepositories,
+                    Token);
             }
             else
             {
-                allSources.AddRange(EnabledSourceRepositories);
+                actions = await PackageManager.PreviewUpdatePackagesAsync(
+                    Id,
+                    Projects,
+                    ResolutionContext,
+                    this,
+                    PrimarySourceRepositories,
+                    EnabledSourceRepositories,
+                    Token);
             }
 
-            var actions = await PackageManager.PreviewUpdatePackagesAsync(
-                project,
-                ResolutionContext,
-                this,
-                allSources,
-                allSources,
-                Token);
-
-            await ExecuteActions(project, actions);
-        }
-
-        /// <summary>
-        /// Preview update actions for single package
-        /// </summary>
-        /// <param name="project"></param>
-        /// <returns></returns>
-        private async Task PreviewAndExecuteUpdateActionsforSinglePackage(NuGetProject project)
-        {
-            var installedPackage = (await project.GetInstalledPackagesAsync(Token))
-                .FirstOrDefault(p => string.Equals(p.PackageIdentity.Id, Id, StringComparison.OrdinalIgnoreCase));
-
-            if (installedPackage != null)
+            if (!actions.Any())
             {
-                // set _installed to true, if package to update is installed.
-                _isPackageInstalled = true;
-
-                var actions = Enumerable.Empty<NuGetProjectAction>();
-
-                // If -Version switch is specified
-                if (!string.IsNullOrEmpty(Version))
-                {
-                    actions = await PackageManager.PreviewUpdatePackagesAsync(
-                        new PackageIdentity(installedPackage.PackageIdentity.Id, PowerShellCmdletsUtility.GetNuGetVersionFromString(Version)),
-                        project,
-                        ResolutionContext,
-                        this,
-                        new[] { ActiveSourceRepository },
-                        EnabledSourceRepositories,
-                        Token);
-                }
-                else
-                {
-                    actions = await PackageManager.PreviewUpdatePackagesAsync(
-                        installedPackage.PackageIdentity.Id,
-                        project,
-                        ResolutionContext,
-                        this,
-                        new[] { ActiveSourceRepository },
-                        EnabledSourceRepositories,
-                        Token);
-                }
-
-                await ExecuteActions(project, actions);
+                _status = NuGetOperationStatus.NoOp;
             }
+            else
+            {
+                _packageCount = actions.Select(
+                    action => action.PackageIdentity.Id).Distinct().Count();
+            }
+
+            await ExecuteActions(actions);
         }
 
         /// <summary>
-        /// Execute the project actions 
+        /// Method checks if the package to be updated is installed in any package or not.
+        /// </summary>
+        /// <param name="packageId">Id of the package to be updated/checked</param>
+        /// <returns><code>bool</code> indicating whether the package is already installed, on any project, or not</returns>
+        private async Task<bool> IsPackageInstalledAsync(string packageId)
+        {
+            foreach (var project in Projects)
+            {
+                var installedPackages = await project.GetInstalledPackagesAsync(Token);
+
+                if (installedPackages.Select(installedPackage => installedPackage.PackageIdentity.Id)
+                    .Any(installedPackageId => installedPackageId.Equals(packageId, StringComparison.OrdinalIgnoreCase)))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Execute the project actions
         /// </summary>
         /// <param name="actions"></param>
         /// <returns></returns>
-        private async Task ExecuteActions(NuGetProject project, IEnumerable<NuGetProjectAction> actions)
+        private async Task ExecuteActions(IEnumerable<NuGetProjectAction> actions)
         {
-            if (actions.Any())
+            // stop telemetry event timer to avoid ui interaction
+            TelemetryUtility.StopTimer();
+
+            if (!ShouldContinueDueToDotnetDeprecation(actions, WhatIf.IsPresent))
             {
-                if (WhatIf.IsPresent)
-                {
-                    // For -WhatIf, only preview the actions
-                    PreviewNuGetPackageActions(actions);
-                }
-                else
-                {
-                    // Execute project actions by Package Manager
-                    await PackageManager.ExecuteNuGetProjectActionsAsync(project, actions, this, Token);
-                }
+                // resume telemetry event timer after ui interaction
+                TelemetryUtility.StartorResumeTimer();
+                return;
+            }
+
+            // resume telemetry event timer after ui interaction
+            TelemetryUtility.StartorResumeTimer();
+
+            if (WhatIf.IsPresent)
+            {
+                // For -WhatIf, only preview the actions
+                PreviewNuGetPackageActions(actions);
             }
             else
             {
-                Log(NuGet.ProjectManagement.MessageLevel.Info, Resources.Cmdlet_NoPackageUpdates, project.GetMetadata<string>(NuGetProjectMetadataKeys.Name));
+                // Execute project actions by Package Manager
+                await PackageManager.ExecuteNuGetProjectActionsAsync(Projects, actions, this, Token);
             }
         }
 
@@ -299,7 +341,12 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         {
             get
             {
-                _context = new ResolutionContext(GetDependencyBehavior(), _allowPrerelease, false, DetermineVersionConstraints());
+                // ResolutionContext contains a cache, this should only be created once per command
+                if (_context == null)
+                {
+                    _context = new ResolutionContext(GetDependencyBehavior(), _allowPrerelease, false, DetermineVersionConstraints());
+                }
+
                 return _context;
             }
         }

@@ -14,7 +14,6 @@ namespace NuGet.Versioning
         private readonly bool _includeMaxVersion;
         private readonly NuGetVersion _minVersion;
         private readonly NuGetVersion _maxVersion;
-        private readonly bool _includePrerelease;
 
         /// <summary>
         /// Creates a VersionRange with the given min and max.
@@ -23,25 +22,16 @@ namespace NuGet.Versioning
         /// <param name="includeMinVersion">True if minVersion satisfies the condition.</param>
         /// <param name="maxVersion">Upper bound of the version range.</param>
         /// <param name="includeMaxVersion">True if maxVersion satisfies the condition.</param>
-        /// <param name="includePrerelease">True if prerelease versions should satisfy the condition.</param>
-        /// <param name="exclude">Subsets that are excluded from the range.</param>
-        public VersionRangeBase(NuGetVersion minVersion = null, bool includeMinVersion = true, NuGetVersion maxVersion = null,
-            bool includeMaxVersion = false, bool? includePrerelease = null)
+        public VersionRangeBase(
+            NuGetVersion minVersion = null,
+            bool includeMinVersion = true,
+            NuGetVersion maxVersion = null,
+            bool includeMaxVersion = false)
         {
             _minVersion = minVersion;
             _maxVersion = maxVersion;
             _includeMinVersion = includeMinVersion;
             _includeMaxVersion = includeMaxVersion;
-
-            if (includePrerelease == null)
-            {
-                _includePrerelease = (_maxVersion != null && IsPrerelease(_maxVersion) == true) ||
-                                     (_minVersion != null && IsPrerelease(_minVersion) == true);
-            }
-            else
-            {
-                _includePrerelease = includePrerelease == true;
-            }
         }
 
         /// <summary>
@@ -101,14 +91,6 @@ namespace NuGet.Versioning
         }
 
         /// <summary>
-        /// True if pre-release versions are included in this range.
-        /// </summary>
-        public bool IncludePrerelease
-        {
-            get { return _includePrerelease; }
-        }
-
-        /// <summary>
         /// Determines if an NuGetVersion meets the requirements.
         /// </summary>
         /// <param name="version">SemVer to compare</param>
@@ -140,7 +122,7 @@ namespace NuGet.Versioning
         {
             if (version == null)
             {
-                throw new ArgumentNullException("version");
+                throw new ArgumentNullException(nameof(version));
             }
 
             // Determine if version is in the given range using the comparer.
@@ -167,11 +149,6 @@ namespace NuGet.Versioning
                 {
                     condition &= comparer.Compare(MaxVersion, version) > 0;
                 }
-            }
-
-            if (!IncludePrerelease)
-            {
-                condition &= IsPrerelease(version) != true;
             }
 
             return condition;
@@ -215,7 +192,7 @@ namespace NuGet.Versioning
         {
             if (comparer == null)
             {
-                throw new ArgumentNullException("comparer");
+                throw new ArgumentNullException(nameof(comparer));
             }
 
             return comparer.Equals(this, other);
@@ -279,12 +256,6 @@ namespace NuGet.Versioning
 
             var result = true;
 
-            if (possibleSubSet.IncludePrerelease
-                && !target.IncludePrerelease)
-            {
-                result = false;
-            }
-
             if (possibleSubSet.HasLowerBound)
             {
                 // normal check
@@ -330,6 +301,19 @@ namespace NuGet.Versioning
             }
 
             return result;
+        }
+
+        /// <summary>
+        /// Infer if the range should allow prerelease versions based on if the lower or upper bounds 
+        /// contain prerelease labels.
+        /// </summary>
+        protected bool HasPrereleaseBounds
+        {
+            get
+            {
+                return IsPrerelease(_minVersion) == true
+                    || IsPrerelease(_maxVersion) == true;
+            }
         }
 
         private static bool? IsPrerelease(SemanticVersion version)

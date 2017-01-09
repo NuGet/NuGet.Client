@@ -6,9 +6,10 @@ using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
-using System.Threading;
+using NuGet.Configuration;
 
 namespace NuGet.Credentials
 {
@@ -17,23 +18,41 @@ namespace NuGet.Credentials
     /// </summary>
     public class PluginCredentialProvider : ICredentialProvider
     {
+        private readonly Common.ILogger _logger;
+        private readonly string _verbosity;
+        private const string NormalVerbosity = "normal";
+
         /// <summary>
         /// Constructor
         /// </summary>
+        /// <param name="logger">IConsole logger to use for debug logging. No secrets should ever be written to this log.</param>
         /// <param name="path">Fully qualified plugin application path.</param>
         /// <param name="timeoutSeconds">Max timeout to wait for the plugin application
         /// to return credentials.</param>
-        public PluginCredentialProvider(string path, int timeoutSeconds)
+        /// <param name="verbosity">Verbosity string to pass to the plugin.</param>
+        public PluginCredentialProvider(Common.ILogger logger, string path, int timeoutSeconds, string verbosity)
         {
+            if (logger == null)
+            {
+                throw new ArgumentNullException(nameof(logger));
+            }
+
             if (path == null)
             {
                 throw new ArgumentNullException(nameof(path));
             }
 
+            if (verbosity == null)
+            {
+                throw new ArgumentNullException(nameof(verbosity));
+            }
+
+            _logger = logger;
+            _verbosity = verbosity;
             Path = path;
             TimeoutSeconds = timeoutSeconds;
             var filename = System.IO.Path.GetFileName(path);
-            Id = $"{typeof (PluginCredentialProvider).Name}_{filename}_{Guid.NewGuid()}";
+            Id = $"{typeof(PluginCredentialProvider).Name}_{filename}_{Guid.NewGuid()}";
         }
 
         /// <summary>
@@ -52,18 +71,28 @@ namespace NuGet.Credentials
         /// </summary>
         /// <param name="uri">The uri of a web resource for which credentials are needed.</param>
         /// <param name="proxy">Ignored.  Proxy information will not be passed to plugins.</param>
-        /// <param name="isProxyRequest">If true, the client is requesting credentials for a proxy.
-        /// In this case, null will be returned, as plugins do not provide credentials for proxies.</param>
+        /// <param name="type">
+        /// The type of credential request that is being made. Note that this implementation of
+        /// <see cref="ICredentialProvider"/> does not support providing proxy credenitials and treats
+        /// all other types the same.
+        /// </param>
         /// <param name="isRetry">If true, credentials were previously supplied by this
         /// provider for the same uri.</param>
+        /// <param name="message">A message provided by NuGet to show to the user when prompting.</param>
         /// <param name="nonInteractive">If true, the plugin must not prompt for credentials.</param>
         /// <param name="cancellationToken">A cancellation token.</param>
         /// <returns>A credential object.  If </returns>
-        public Task<CredentialResponse> Get(Uri uri, IWebProxy proxy, bool isProxyRequest, bool isRetry,
-            bool nonInteractive, CancellationToken cancellationToken)
+        public Task<CredentialResponse> GetAsync(
+            Uri uri,
+            IWebProxy proxy,
+            CredentialRequestType type,
+            string message,
+            bool isRetry,
+            bool nonInteractive,
+            CancellationToken cancellationToken)
         {
             CredentialResponse taskResponse;
-            if (isProxyRequest)
+            if (type == CredentialRequestType.Proxy)
             {
                 taskResponse = new CredentialResponse(CredentialStatus.ProviderNotApplicable);
                 return Task.FromResult(taskResponse);
@@ -75,21 +104,42 @@ namespace NuGet.Credentials
                 {
                     Uri = uri.ToString(),
                     IsRetry = isRetry,
-                    NonInteractive = nonInteractive
+                    NonInteractive = nonInteractive,
+                    Verbosity = _verbosity
                 };
+                PluginCredentialResponse response;
 
-                var response = Execute(request, cancellationToken);
+                // TODO: Extend the plug protocol to pass in the credential request type.
+                try
+                {
+                    response = GetPluginResponse(request, cancellationToken);
+                }
+                catch (PluginUnexpectedStatusException) when (PassVerbosityFlag(request))
+                {
+                    // older providers may throw if the verbosity flag is sent,
+                    // so retry without it
+                    request.Verbosity = null;
+                    response = GetPluginResponse(request, cancellationToken);
+                }
 
                 if (response.IsValid)
                 {
-                    var result = new NetworkCredential(response.Username, response.Password);
+                    ICredentials result = new NetworkCredential(response.Username, response.Password);
+                    if (response.AuthTypes != null)
+                    {
+                        result = new AuthTypeFilteredCredentials(result, response.AuthTypes);
+                    }
 
-                    taskResponse = new CredentialResponse(result, CredentialStatus.Success);
+                    taskResponse = new CredentialResponse(result);
                 }
                 else
                 {
                     taskResponse = new CredentialResponse(CredentialStatus.ProviderNotApplicable);
                 }
+            }
+            catch (OperationCanceledException)
+            {
+                throw;
             }
             catch (PluginException)
             {
@@ -113,13 +163,20 @@ namespace NuGet.Credentials
         /// </summary>
         public int TimeoutSeconds { get; }
 
-        public virtual PluginCredentialResponse Execute(PluginCredentialRequest request,
+        private PluginCredentialResponse GetPluginResponse(PluginCredentialRequest request,
             CancellationToken cancellationToken)
         {
             var argumentString =
                 $"-uri {request.Uri}"
                 + (request.IsRetry ? " -isRetry" : string.Empty)
                 + (request.NonInteractive ? " -nonInteractive" : string.Empty);
+
+            // only apply -verbosity flag if set and != Normal
+            // since normal is default
+            if (PassVerbosityFlag(request))
+            {
+                argumentString += $" -verbosity {request.Verbosity.ToLower()}";
+            }
 
             var startInfo = new ProcessStartInfo
             {
@@ -134,75 +191,109 @@ namespace NuGet.Credentials
                 ErrorDialog = false
             };
 
+            string stdOut = null;
+            var exitCode = Execute(startInfo, cancellationToken, out stdOut);
+
+            PluginCredentialResponseExitCode status = (PluginCredentialResponseExitCode)exitCode;
+
+            PluginCredentialResponse credentialResponse;
+            try
+            {
+                // Mono will add utf-16 byte order mark to the start of stdOut, remove it here.
+                credentialResponse =
+                    JsonConvert.DeserializeObject<PluginCredentialResponse>(stdOut.Trim(new char[] { '\uFEFF' })) 
+                    ?? new PluginCredentialResponse();
+            }
+            catch (Exception)
+            {
+                // Do not expose stdout message, since it may contain credentials
+                throw PluginException.CreateUnreadableResponseExceptionMessage(Path, status);
+            }
+
+            switch (status)
+            {
+                case PluginCredentialResponseExitCode.Success:
+                    if (!credentialResponse.IsValid)
+                    {
+                        throw PluginException.CreateInvalidResponseExceptionMessage(
+                            Path,
+                            status,
+                            credentialResponse);
+                    }
+
+                    return credentialResponse;
+
+                case PluginCredentialResponseExitCode.ProviderNotApplicable:
+                    credentialResponse.Username = null;
+                    credentialResponse.Password = null;
+
+                    return credentialResponse;
+
+                case PluginCredentialResponseExitCode.Failure:
+                    throw PluginException.CreateAbortMessage(Path, credentialResponse.Message);
+
+                default:
+                    throw PluginUnexpectedStatusException.CreateUnexpectedStatusMessage(Path, status);
+            }
+        }
+
+        public virtual int Execute(ProcessStartInfo startInfo, CancellationToken cancellationToken, out string stdOut)
+        {
+            var outBuffer = new StringBuilder();
+
+            cancellationToken.ThrowIfCancellationRequested();
+
             var process = Process.Start(startInfo);
             if (process == null)
             {
                 throw PluginException.CreateNotStartedMessage(Path);
             }
 
-            // Clear out std out and std error since it might have been set from a previous run
-            _stdOut.Clear();
-            _stdError.Clear();
+            process.OutputDataReceived += (object o, DataReceivedEventArgs e) => { outBuffer.AppendLine(e.Data); };
 
-            process.OutputDataReceived += ReadStdOut;
-            process.ErrorDataReceived += ReadStdError;
+            // Trace and error information may be written to standard error by the provider.
+            // It should be logged at the Information level so it will appear if Verbosity >= Normal.
+            process.ErrorDataReceived += (object o, DataReceivedEventArgs e) =>
+            {
+                if (!string.IsNullOrWhiteSpace(e?.Data))
+                {
+                    // This is a workaround for mono issue: https://github.com/NuGet/Home/issues/4004
+                    if (!process.HasExited)
+                    {
+                        _logger.LogInformation($"{process.ProcessName}: {e.Data}");
+                    }
+                }
+            };
+
             process.BeginOutputReadLine();
             process.BeginErrorReadLine();
 
-            using (cancellationToken.Register(()=>Kill(process)))
+            using (cancellationToken.Register(() => Kill(process)))
             {
-                if (!process.WaitForExit(TimeoutSeconds*1000))
+                if (!process.WaitForExit(TimeoutSeconds * 1000))
                 {
                     Kill(process);
                     throw PluginException.CreateTimeoutMessage(Path, TimeoutSeconds);
                 }
+                // Give time for the Async event handlers to finish by calling WaitForExit again.
+                // if the first one succeeded
+                // Note: Read remarks from https://msdn.microsoft.com/en-us/library/ty0d8k56(v=vs.110).aspx
+                // for reason.
+                process.WaitForExit();
             }
 
             process.CancelErrorRead();
             process.CancelOutputRead();
+            cancellationToken.ThrowIfCancellationRequested();
 
-            var exitCode = process.ExitCode;
+            stdOut = outBuffer.ToString();
+            return process.ExitCode;
+        }
 
-            if (Enum.GetValues(typeof(PluginCredentialResponseExitCode)).Cast<int>().Contains(exitCode))
-            {
-                var status = (PluginCredentialResponseExitCode)exitCode;
-                var responseJson = _stdOut.ToString();
-
-                PluginCredentialResponse credentialResponse;
-
-                try
-                {
-                    credentialResponse = JsonConvert.DeserializeObject<PluginCredentialResponse>(responseJson);
-                }
-                catch (Exception)
-                {
-                    throw PluginException.CreatePayloadExceptionMessage(Path, status, responseJson);
-                }
-
-                switch (status)
-                {
-                    case PluginCredentialResponseExitCode.Success:
-                        if (!credentialResponse.IsValid)
-                        {
-                            throw PluginException.CreatePayloadExceptionMessage(Path, status, responseJson);
-                        }
-
-                        return credentialResponse;
-                    case PluginCredentialResponseExitCode.ProviderNotApplicable:
-                        credentialResponse.Username = null;
-                        credentialResponse.Password = null;
-
-                        return credentialResponse;
-                    case PluginCredentialResponseExitCode.Failure:
-                        throw PluginException.CreateAbortMessage(Path, credentialResponse.Message);
-                }
-            }
-
-            throw PluginException.CreateWrappedExceptionMessage(
-                Path,
-                exitCode,
-                _stdOut.ToString(),
-                _stdError.ToString());
+        private bool PassVerbosityFlag(PluginCredentialRequest request)
+        {
+            return request.Verbosity != null
+                && !string.Equals(request.Verbosity, NormalVerbosity, StringComparison.OrdinalIgnoreCase);
         }
 
         private static void Kill(Process p)
@@ -221,20 +312,6 @@ namespace NuGet.Credentials
                 // the process may have exited, 
                 // in this case ignore the exception
             }
-        }
-
-        //std out and std error for the process we will be running
-        private readonly StringBuilder _stdOut = new StringBuilder();
-        private readonly StringBuilder _stdError = new StringBuilder();
-
-        void ReadStdOut(object sender, DataReceivedEventArgs e)
-        {
-            _stdOut.AppendLine(e.Data);
-        }
-
-        void ReadStdError(object sender, DataReceivedEventArgs e)
-        {
-            _stdError.AppendLine(e.Data);
         }
     }
 }

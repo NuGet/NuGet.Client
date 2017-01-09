@@ -17,6 +17,19 @@ namespace NuGet.Configuration
         string Root { get; }
 
         /// <summary>
+        /// The file name of the config file. Joining <see cref="Root"/> and
+        /// <see cref="FileName"/> results in the full path to the config file.
+        /// </summary>
+        string FileName { get; }
+
+        /// <summary>
+        /// Enumerates the sequence of <see cref="ISettings"/> instances used to fetch settings
+        /// values (e.g. with <see cref="GetValue"/>). This enumeration includes this instance
+        /// itself.
+        /// </summary>
+        IEnumerable<ISettings> Priority { get; }
+
+        /// <summary>
         /// Gets a value for the given key from the given section
         /// If isPath is true, then the value represents a path. If the path value is already rooted, it is simply
         /// returned

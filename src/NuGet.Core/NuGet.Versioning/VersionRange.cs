@@ -28,8 +28,15 @@ namespace NuGet.Versioning
         /// Creates a range that is greater than or equal to the minVersion with the given float behavior.
         /// </summary>
         /// <param name="minVersion">Lower bound of the version range.</param>
+        /// <param name="floatRange">Floating behavior.</param>
         public VersionRange(NuGetVersion minVersion, FloatRange floatRange)
-            : this(minVersion, true, null, false, null, floatRange)
+            : this(
+                  minVersion: minVersion,
+                  includeMinVersion: true,
+                  maxVersion: null,
+                  includeMaxVersion: false,
+                  originalString: null,
+                  floatRange: floatRange)
         {
         }
 
@@ -37,7 +44,7 @@ namespace NuGet.Versioning
         /// Clones a version range and applies a new float range.
         /// </summary>
         public VersionRange(VersionRange range, FloatRange floatRange)
-            : this(range.MinVersion, range.IsMinInclusive, range.MaxVersion, range.IsMaxInclusive, range.IncludePrerelease, floatRange)
+            : this(range.MinVersion, range.IsMinInclusive, range.MaxVersion, range.IsMaxInclusive, floatRange)
         {
         }
 
@@ -48,12 +55,11 @@ namespace NuGet.Versioning
         /// <param name="includeMinVersion">True if minVersion satisfies the condition.</param>
         /// <param name="maxVersion">Upper bound of the version range.</param>
         /// <param name="includeMaxVersion">True if maxVersion satisfies the condition.</param>
-        /// <param name="includePrerelease">True if prerelease versions should satisfy the condition.</param>
         /// <param name="floatRange">The floating range subset used to find the best version match.</param>
         /// <param name="originalString">The original string being parsed to this object.</param>
         public VersionRange(NuGetVersion minVersion = null, bool includeMinVersion = true, NuGetVersion maxVersion = null,
-            bool includeMaxVersion = false, bool? includePrerelease = null, FloatRange floatRange = null, string originalString = null)
-            : base(minVersion, includeMinVersion, maxVersion, includeMaxVersion, includePrerelease)
+            bool includeMaxVersion = false, FloatRange floatRange = null, string originalString = null)
+            : base(minVersion, includeMinVersion, maxVersion, includeMaxVersion)
         {
             _floatRange = floatRange;
             _originalString = originalString;
@@ -198,6 +204,15 @@ namespace NuGet.Versioning
                 return false;
             }
 
+            // If the range contains only stable versions disallow prerelease versions
+            if (!HasPrereleaseBounds 
+                && considering.IsPrerelease 
+                && _floatRange?.FloatBehavior != NuGetVersionFloatBehavior.Prerelease
+                && _floatRange?.FloatBehavior != NuGetVersionFloatBehavior.AbsoluteLatest)
+            {
+                return false;
+            }
+
             if (!Satisfies(considering))
             {
                 // keep null over a value outside of the range
@@ -287,8 +302,7 @@ namespace NuGet.Versioning
                     minVersion,
                     IsMinInclusive,
                     MaxVersion,
-                    IsMaxInclusive,
-                    IncludePrerelease);
+                    IsMaxInclusive);
             }
 
             return result;

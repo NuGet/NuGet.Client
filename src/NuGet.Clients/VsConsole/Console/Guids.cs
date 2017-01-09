@@ -1,9 +1,9 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 
-namespace NuGetConsole.Implementation
+namespace NuGetConsole
 {
     public static class GuidList
     {
@@ -14,5 +14,11 @@ namespace NuGetConsole.Implementation
         // GUID for the Package Manager Console category in the Font and Colors options page
         public const string GuidPackageManagerConsoleFontAndColorCategoryString = "{F9D6BCE6-C669-41DB-8EE7-DD953828685B}";
         internal static readonly Guid guidPackageManagerConsoleFontAndColorCategory = new Guid(GuidPackageManagerConsoleFontAndColorCategoryString);
+
+        // NuGet Output window pane
+        public static Guid guidNuGetOutputWindowPaneGuid = Guid.Parse("CEC55EC8-CC51-40E7-9243-57B87A6F6BEB");
+
+        // Visual Studio output tool window (Copied from EnvDTE interop)
+        public static Guid guidVsWindowKindOutput = Guid.Parse("34E76E81-EE4A-11D0-AE2E-00A0C90FFFC3");
     }
 }

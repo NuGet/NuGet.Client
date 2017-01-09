@@ -70,6 +70,24 @@ namespace NuGet.PackageManagement.VisualStudio {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The BaseIntermediateOutputPath MSBuild property could not be found for project &apos;{0}&apos;..
+        /// </summary>
+        public static string BaseIntermediateOutputPathNotFound {
+            get {
+                return ResourceManager.GetString("BaseIntermediateOutputPathNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to NuGet operation failed.
+        /// </summary>
+        public static string ConfigErrorDialogBoxTitle {
+            get {
+                return ResourceManager.GetString("ConfigErrorDialogBoxTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Added file &apos;{0}&apos; to project &apos;{1}&apos;..
         /// </summary>
         public static string Debug_AddedFileToProject {
@@ -84,15 +102,6 @@ namespace NuGet.PackageManagement.VisualStudio {
         public static string Debug_AddGacReference {
             get {
                 return ResourceManager.GetString("Debug_AddGacReference", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Added reference &apos;{0}&apos; to project &apos;{1}&apos;..
-        /// </summary>
-        public static string Debug_AddReference {
-            get {
-                return ResourceManager.GetString("Debug_AddReference", resourceCulture);
             }
         }
         
@@ -151,7 +160,16 @@ namespace NuGet.PackageManagement.VisualStudio {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Failed to add reference to &apos;{0}&apos;. Please make sure that it is in the Global Assembly Cache..
+        ///   Looks up a localized string similar to Failed to add reference to &apos;{0}&apos;. The package &apos;{1}&apos; tried to add a framework reference to &apos;{0}&apos;. This reference is not required to be explicitly added by a package..
+        /// </summary>
+        public static string FailedToAddFacadeReference {
+            get {
+                return ResourceManager.GetString("FailedToAddFacadeReference", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Failed to add reference. The package &apos;{0}&apos; tried to add a framework reference to &apos;{1}&apos; which was not found in the GAC. This is possibly a bug in the package. Please contact the package owners for assistance..
         /// </summary>
         public static string FailedToAddGacReference {
             get {
@@ -205,11 +223,20 @@ namespace NuGet.PackageManagement.VisualStudio {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to &apos;globalPackagesFolder&apos; from nuget.config file or the environment variable is &apos;{0}&apos;, a relative path and the solution is not saved. Please save your solution or configure a &apos;globalPackagesFolder&apos; which is a full path..
+        ///   Looks up a localized string similar to The project &apos;{0}&apos; could not be casted to a build property storage interace, which is required to get MSBuild properties inside Visual Studio..
         /// </summary>
-        public static string RelativeGlobalPackagesFolder {
+        public static string ProjectCouldNotBeCastedToBuildPropertyStorage {
             get {
-                return ResourceManager.GetString("RelativeGlobalPackagesFolder", resourceCulture);
+                return ResourceManager.GetString("ProjectCouldNotBeCastedToBuildPropertyStorage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The operation failed as details for project {0} could not be loaded..
+        /// </summary>
+        public static string ProjectNotLoaded_RestoreFailed {
+            get {
+                return ResourceManager.GetString("ProjectNotLoaded_RestoreFailed", resourceCulture);
             }
         }
         
@@ -223,6 +250,15 @@ namespace NuGet.PackageManagement.VisualStudio {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Unable to get the project&apos;s package installation service for project &apos;{0}&apos;..
+        /// </summary>
+        public static string UnableToGetCPSPackageInstallationService {
+            get {
+                return ResourceManager.GetString("UnableToGetCPSPackageInstallationService", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Uninstalling NuGet package {0}..
         /// </summary>
         public static string UninstallingPackage {
@@ -232,11 +268,11 @@ namespace NuGet.PackageManagement.VisualStudio {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Failed to resolve all project references for &apos;{0}&apos;. The package restore result for &apos;{1}&apos; may be incomplete..
+        ///   Looks up a localized string similar to Failed to resolve all items referenced by &apos;{0}&apos;. This message can typically be ignored. The issue may be resolved by fully restoring and building the solution. If the unresolved item is a project reference this can lead to an incomplete NuGet restore result and missing package references. To ensure that restore is able to find all projects verify that all projects are referenced correctly and exist on disk..
         /// </summary>
-        public static string Warning_ErrorDuringProjectClosureWalk {
+        public static string UnresolvedItemDuringProjectClosureWalk {
             get {
-                return ResourceManager.GetString("Warning_ErrorDuringProjectClosureWalk", resourceCulture);
+                return ResourceManager.GetString("UnresolvedItemDuringProjectClosureWalk", resourceCulture);
             }
         }
         

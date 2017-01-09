@@ -7,10 +7,11 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
-using NuGet.Packaging.PackageExtraction;
+using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 
 namespace NuGet.ProjectManagement
@@ -22,7 +23,7 @@ namespace NuGet.ProjectManagement
     {
         public string Root { get; set; }
         private PackagePathResolver PackagePathResolver { get; }
-
+        
         public FolderNuGetProject(string root)
             : this(root, new PackagePathResolver(root))
         {
@@ -76,53 +77,77 @@ namespace NuGet.ProjectManagement
                 throw new ArgumentException(Strings.PackageStreamShouldBeSeekable);
             }
 
-            // 1. Check if the Package already exists at root, if so, return false
-            if (PackageExists(packageIdentity))
-            {
-                nuGetProjectContext.Log(MessageLevel.Info, Strings.PackageAlreadyExistsInFolder, packageIdentity, Root);
-                return Task.FromResult(false);
-            }
+            var packageDirectory = PackagePathResolver.GetInstallPath(packageIdentity);
 
-            nuGetProjectContext.Log(MessageLevel.Info, Strings.AddingPackageToFolder, packageIdentity, Path.GetFullPath(Root));
-            // 2. Call PackageExtractor to extract the package into the root directory of this FileSystemNuGetProject
-            downloadResourceResult.PackageStream.Seek(0, SeekOrigin.Begin);
-            var addedPackageFilesList = new List<string>();
-
-            if (downloadResourceResult.PackageReader != null)
-            {
-                addedPackageFilesList.AddRange(
-                    PackageExtractor.ExtractPackage(
-                        downloadResourceResult.PackageReader,
-                        downloadResourceResult.PackageStream,
-                        PackagePathResolver,
-                        nuGetProjectContext.PackageExtractionContext ?? new PackageExtractionContext(),
-                        token));
-            }
-            else
-            {
-                addedPackageFilesList.AddRange(
-                    PackageExtractor.ExtractPackage(
-                        downloadResourceResult.PackageStream,
-                        PackagePathResolver,
-                        nuGetProjectContext.PackageExtractionContext ?? new PackageExtractionContext(),
-                        token));
-            }
-
-            var packageSaveMode = GetPackageSaveMode(nuGetProjectContext);
-            if (packageSaveMode.HasFlag(PackageSaveMode.Nupkg))
-            {
-                var packageFilePath = GetInstalledPackageFilePath(packageIdentity);
-                if (File.Exists(packageFilePath))
+            return ConcurrencyUtilities.ExecuteWithFileLockedAsync(
+                packageDirectory,
+                action: cancellationToken =>
                 {
-                    addedPackageFilesList.Add(packageFilePath);
-                }
-            }
+                    // 1. Set a default package extraction context, if necessary.
+                    PackageExtractionContext packageExtractionContext = nuGetProjectContext.PackageExtractionContext;
+                    if (packageExtractionContext == null)
+                    {
+                        packageExtractionContext = new PackageExtractionContext(new LoggerAdapter(nuGetProjectContext));
+                    }
 
-            // Pend all the package files including the nupkg file
-            FileSystemUtility.PendAddFiles(addedPackageFilesList, Root, nuGetProjectContext);
+                    // 2. Check if the Package already exists at root, if so, return false
+                    if (PackageExists(packageIdentity, packageExtractionContext.PackageSaveMode))
+                    {
+                        nuGetProjectContext.Log(MessageLevel.Info, Strings.PackageAlreadyExistsInFolder, packageIdentity, Root);
+                        return Task.FromResult(false);
+                    }
 
-            nuGetProjectContext.Log(MessageLevel.Info, Strings.AddedPackageToFolder, packageIdentity, Path.GetFullPath(Root));
-            return Task.FromResult(true);
+                    nuGetProjectContext.Log(MessageLevel.Info, Strings.AddingPackageToFolder, packageIdentity, Path.GetFullPath(Root));
+
+                    // 3. Call PackageExtractor to extract the package into the root directory of this FileSystemNuGetProject
+                    downloadResourceResult.PackageStream.Seek(0, SeekOrigin.Begin);
+                    var addedPackageFilesList = new List<string>();
+                    
+                    if (downloadResourceResult.PackageReader != null)
+                    {
+                        addedPackageFilesList.AddRange(
+                            PackageExtractor.ExtractPackage(
+                                downloadResourceResult.PackageReader,
+                                downloadResourceResult.PackageStream,
+                                PackagePathResolver,
+                                packageExtractionContext,
+                                cancellationToken));
+                    }
+                    else
+                    {
+                        addedPackageFilesList.AddRange(
+                            PackageExtractor.ExtractPackage(
+                                downloadResourceResult.PackageStream,
+                                PackagePathResolver,
+                                packageExtractionContext,
+                                cancellationToken));
+                    }
+
+                    var packageSaveMode = GetPackageSaveMode(nuGetProjectContext);
+                    if (packageSaveMode.HasFlag(PackageSaveMode.Nupkg))
+                    {
+                        var packageFilePath = GetInstalledPackageFilePath(packageIdentity);
+                        if (File.Exists(packageFilePath))
+                        {
+                            addedPackageFilesList.Add(packageFilePath);
+                        }
+                    }
+
+                    // Pend all the package files including the nupkg file
+                    FileSystemUtility.PendAddFiles(addedPackageFilesList, Root, nuGetProjectContext);
+
+                    nuGetProjectContext.Log(MessageLevel.Info, Strings.AddedPackageToFolder, packageIdentity, Path.GetFullPath(Root));
+
+                    // Extra logging with source for verbosity detailed
+                    // Used by external tool CoreXT to track package provenance
+                    if (!string.IsNullOrEmpty(downloadResourceResult.PackageSource))
+                    {
+                        nuGetProjectContext.Log(MessageLevel.Debug, Strings.AddedPackageToFolderFromSource, packageIdentity, Path.GetFullPath(Root), downloadResourceResult.PackageSource);
+                    }
+
+                    return Task.FromResult(true);
+                },
+                token: token);
         }
 
         public override Task<bool> UninstallPackageAsync(PackageIdentity packageIdentity, INuGetProjectContext nuGetProjectContext, CancellationToken token)
@@ -132,25 +157,62 @@ namespace NuGet.ProjectManagement
         }
 
         /// <summary>
-        /// A package is considered to exist in FileSystemNuGetProject, if the 'nupkg' file is present where expected
+        /// A package is considered to exist in FileSystemNuGetProject, if the .nupkg file is present where expected
         /// </summary>
         public bool PackageExists(PackageIdentity packageIdentity)
         {
-            return !string.IsNullOrEmpty(GetInstalledPackageFilePath(packageIdentity));
+            return PackageExists(packageIdentity, PackageSaveMode.Nupkg);
+        }
+
+        public bool PackageExists(PackageIdentity packageIdentity, PackageSaveMode packageSaveMode)
+        {
+            var packageExists = !string.IsNullOrEmpty(GetInstalledPackageFilePath(packageIdentity));
+            var manifestExists = !string.IsNullOrEmpty(GetInstalledManifestFilePath(packageIdentity));
+
+            // A package must have either a nupkg or a nuspec to be valid
+            var result = packageExists || manifestExists;
+            
+            // Verify nupkg present if specified
+            if ((packageSaveMode & PackageSaveMode.Nupkg) == PackageSaveMode.Nupkg)
+            {
+                result &= packageExists;
+            }
+            
+            // Verify nuspec present if specified
+            if ((packageSaveMode & PackageSaveMode.Nuspec) == PackageSaveMode.Nuspec)
+            {
+                result &= manifestExists;
+            }
+
+            return result;
+        }
+
+        public bool ManifestExists(PackageIdentity packageIdentity)
+        {
+            return !string.IsNullOrEmpty(GetInstalledManifestFilePath(packageIdentity));
+        }
+
+        public bool PackageAndManifestExists(PackageIdentity packageIdentity)
+        {
+            return !string.IsNullOrEmpty(GetInstalledPackageFilePath(packageIdentity)) && !string.IsNullOrEmpty(GetInstalledManifestFilePath(packageIdentity));
         }
 
         public Task<bool> CopySatelliteFilesAsync(PackageIdentity packageIdentity,
             INuGetProjectContext nuGetProjectContext, CancellationToken token)
         {
             token.ThrowIfCancellationRequested();
-            var xmlDocFileSaveMode = nuGetProjectContext.PackageExtractionContext?.XmlDocFileSaveMode ??
-                PackageExtractionBehavior.XmlDocFileSaveMode;
+
+            PackageExtractionContext packageExtractionContext = nuGetProjectContext.PackageExtractionContext;
+            if (packageExtractionContext == null)
+            {
+                packageExtractionContext = new PackageExtractionContext(new LoggerAdapter(nuGetProjectContext));
+            }
 
             var copiedSatelliteFiles = PackageExtractor.CopySatelliteFiles(
                 packageIdentity,
                 PackagePathResolver,
                 GetPackageSaveMode(nuGetProjectContext),
-                xmlDocFileSaveMode,
+                packageExtractionContext,
                 token);
 
             FileSystemUtility.PendAddFiles(copiedSatelliteFiles, Root, nuGetProjectContext);
@@ -158,14 +220,87 @@ namespace NuGet.ProjectManagement
             return Task.FromResult(copiedSatelliteFiles.Any());
         }
 
+        /// <summary>
+        /// Get the path to the package nupkg.
+        /// </summary>
         public string GetInstalledPackageFilePath(PackageIdentity packageIdentity)
         {
-            return PackagePathResolver.GetInstalledPackageFilePath(packageIdentity) ?? string.Empty;
+            // Check the expected location before searching all directories
+            var packageDirectory = PackagePathResolver.GetInstallPath(packageIdentity);
+            var packageName = PackagePathResolver.GetPackageFileName(packageIdentity);
+
+            var installPath = Path.GetFullPath(Path.Combine(packageDirectory, packageName));
+
+            // Keep the previous optimization of just going by the existance of the file if we find it.
+            if (File.Exists(installPath))
+            {
+                return installPath;
+            }
+
+            // If the file was not found check for non-normalized paths and verify the id/version
+            LocalPackageInfo package = null;
+
+            if (PackagePathResolver.UseSideBySidePaths)
+            {
+                // Search for a folder with the id and version
+                package = LocalFolderUtility.GetPackagesConfigFolderPackage(
+                    Root,
+                    packageIdentity,
+                    NullLogger.Instance);
+            }
+            else
+            {
+                // Search for just the id
+                package = LocalFolderUtility.GetPackageV2(
+                    Root,
+                    packageIdentity,
+                    NullLogger.Instance);
+            }
+
+            if (package != null && packageIdentity.Equals(package.Identity))
+            {
+                return package.Path;
+            }
+
+            // Default to empty
+            return string.Empty;
         }
 
+        /// <summary>
+        /// Get the path to the package nuspec.
+        /// </summary>
+        public string GetInstalledManifestFilePath(PackageIdentity packageIdentity)
+        {
+            // Check the expected location before searching all directories
+            var packageDirectory = PackagePathResolver.GetInstallPath(packageIdentity);
+            var manifestName = PackagePathResolver.GetManifestFileName(packageIdentity);
+
+            var installPath = Path.GetFullPath(Path.Combine(packageDirectory, manifestName));
+
+            // Keep the previous optimization of just going by the existance of the file if we find it.
+            if (File.Exists(installPath))
+            {
+                return installPath;
+            }
+
+            // Don't look in non-normalized paths for nuspec
+            return string.Empty;
+        }
+
+        /// <summary>
+        /// Get the root directory of an installed package.
+        /// </summary>
         public string GetInstalledPath(PackageIdentity packageIdentity)
         {
-            return PackagePathResolver.GetInstalledPath(packageIdentity) ?? string.Empty;
+            var installFilePath = GetInstalledPackageFilePath(packageIdentity);
+
+            if (!string.IsNullOrEmpty(installFilePath))
+            {
+                return Path.GetDirectoryName(installFilePath);
+            }
+
+            // Default to empty
+            return string.Empty;
         }
 
         public Task<bool> DeletePackage(PackageIdentity packageIdentity,

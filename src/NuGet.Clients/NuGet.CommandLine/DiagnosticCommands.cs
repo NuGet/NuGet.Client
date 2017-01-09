@@ -12,7 +12,7 @@ namespace NuGet.CommandLine
 {
     public class DiagnosticCommands
     {
-        private readonly Logging.ILogger _log;
+        private readonly Common.ILogger _log;
 
         private const string Native = "\x1b[31mnative\x1b[39m";
         private const string Runtime = "\x1b[35mruntime\x1b[39m";
@@ -20,7 +20,7 @@ namespace NuGet.CommandLine
         private const string Framework = "\x1b[34mframework\x1b[39m";
         private const string Nothing = "\x1b[33mnothing\x1b[39m";
 
-        public DiagnosticCommands(Logging.ILogger log)
+        public DiagnosticCommands(Common.ILogger log)
         {
             _log = log;
         }
@@ -110,8 +110,6 @@ namespace NuGet.CommandLine
 
         private int SummarizeLockfile(PackageSpec project, LockFile lockfile, string targetName)
         {
-            _log.LogMinimal($"Locked: {lockfile.IsLocked}");
-
             if (project == null)
             {
                 _log.LogMinimal($"Up-to-date: Unknown");

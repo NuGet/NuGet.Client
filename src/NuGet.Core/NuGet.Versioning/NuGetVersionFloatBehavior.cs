@@ -3,6 +3,9 @@
 
 namespace NuGet.Versioning
 {
+    /// <summary>
+    /// Specifies the floating behavior type.
+    /// </summary>
     public enum NuGetVersionFloatBehavior
     {
         /// <summary>

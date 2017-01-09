@@ -1,17 +1,27 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-<UsingTask AssemblyFile="$(MsBuildThisFileDirectory)..\packages\xunit.runner.msbuild.2.1.0\build\portable-net45+win8+wp8+wpa81\xunit.runner.msbuild.dll" TaskName="Xunit.Runner.MSBuild.xunit" />
-<Target Name="RunTests" AfterTargets="Build" Condition=" '$(RunTests)' == 'true' " >
-	<ItemGroup>
-		<Line Include="&lt;configuration&gt;&lt;appSettings&gt;
-&lt;add key=&quot;TargetDir&quot; value=&quot;$(TargetDir)&quot;/&gt;
-&lt;/appSettings&gt;&lt;/configuration&gt;" />
-	</ItemGroup>
-	<WriteLinesToFile
-		File="$(TargetDir)$(AssemblyName).dll.config"
-		Lines="@(Line)"
-		Overwrite="true"
-		/>
-		<Message Text="Running tests for $(TargetDir)$(AssemblyName).dll" Importance="high" />
-		<xunit Assemblies="$(TargetDir)$(AssemblyName).dll" DiagnosticMessages="true" Reporter="verbose" />
-</Target>
+  <PropertyGroup>
+    <TestTargetDir Condition="'$(TestTargetDir)' == ''">$(TargetDir)</TestTargetDir>
+  </PropertyGroup>
+  
+  <UsingTask
+    AssemblyFile="$(MsBuildThisFileDirectory)..\packages\xunit.runner.msbuild.2.1.0\build\portable-net45+win8+wp8+wpa81\xunit.runner.msbuild.dll"
+    TaskName="Xunit.Runner.MSBuild.xunit" />
+
+  <Target Name="RunTests" DependsOnTargets="Build" Condition="'$(RunTests)' == 'true'">
+    <ItemGroup>
+      <Line Include="&lt;configuration&gt;
+  &lt;appSettings&gt;
+    &lt;add key=&quot;TestTargetDir&quot; value=&quot;$(TestTargetDir)&quot; /&gt;
+  &lt;/appSettings&gt;
+&lt;/configuration&gt;" />
+    </ItemGroup>
+    <WriteLinesToFile
+      File="$(TargetDir)$(AssemblyName).dll.config"
+      Lines="@(Line)"
+      Overwrite="true" />
+    <Message Text="Running tests for $(TargetDir)$(AssemblyName).dll" Importance="high" />
+    <Message Text="Configuration file written to $(TargetDir)$(AssemblyName).dll.config" Importance="high" />
+    <Message Text="@(Line)" Importance="normal" />
+    <xunit Assemblies="$(TargetDir)$(AssemblyName).dll" DiagnosticMessages="true" Reporter="verbose" />
+  </Target>
 </Project>

@@ -29,6 +29,11 @@ namespace NuGet.Packaging.Core
         NuGetVersion GetMinClientVersion();
 
         /// <summary>
+        /// Gets zero or more package types from the .nuspec.
+        /// </summary>
+        IReadOnlyList<PackageType> GetPackageTypes();
+
+        /// <summary>
         /// Id and Version of a package.
         /// </summary>
         PackageIdentity GetIdentity();

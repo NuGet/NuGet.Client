@@ -4,7 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using NuGet.Protocol.VisualStudio;
+using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 
 namespace NuGet.PackageManagement.UI
@@ -15,7 +15,7 @@ namespace NuGet.PackageManagement.UI
         {
         }
 
-        public DetailedPackageMetadata(UIPackageMetadata serverData, long? downloadCount)
+        public DetailedPackageMetadata(IPackageSearchMetadata serverData, long? downloadCount)
         {
             Version = serverData.Identity.Version;
             Summary = serverData.Summary;
@@ -29,7 +29,9 @@ namespace NuGet.PackageManagement.UI
             Tags = serverData.Tags;
             DownloadCount = downloadCount;
             Published = serverData.Published;
-            DependencySets = serverData.DependencySets.Select(e => new PackageDependencySetMetadata(e));
+            DependencySets = serverData.DependencySets?
+                .Select(e => new PackageDependencySetMetadata(e))
+                ?? new PackageDependencySetMetadata[] { };
             HasDependencies = DependencySets.Any(
                 dependencySet => dependencySet.Dependencies != null && dependencySet.Dependencies.Count > 0);
         }

@@ -6,7 +6,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Management.Automation;
 using Microsoft.PowerShell.Commands;
-using NuGet.ProjectManagement;
 
 namespace NuGet.PackageManagement.PowerShellCmdlets
 {
@@ -35,7 +34,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 throw new ArgumentException(
                     String.Format(
                         CultureInfo.CurrentCulture,
-                        Strings.Argument_Cannot_Be_Null_Or_Empty, "psPath"));
+                        ProjectManagement.Strings.Argument_Cannot_Be_Null_Or_Empty, "psPath"));
             }
 
             bool succeeded = false;

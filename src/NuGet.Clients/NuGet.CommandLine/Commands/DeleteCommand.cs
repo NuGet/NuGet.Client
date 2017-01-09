@@ -1,8 +1,5 @@
-﻿using System;
-using System.Globalization;
-using NuGet.Common;
-using NuGet.Configuration;
-using NuGet.Protocol.Core.Types;
+﻿using System.Threading.Tasks;
+using NuGet.Commands;
 
 namespace NuGet.CommandLine
 {
@@ -20,7 +17,7 @@ namespace NuGet.CommandLine
         [Option(typeof(NuGetCommand), "CommandApiKey")]
         public string ApiKey { get; set; }
 
-        public override void ExecuteCommand()
+        public override async Task ExecuteCommandAsync()
         {
             if (NoPrompt)
             {
@@ -28,65 +25,29 @@ namespace NuGet.CommandLine
                 NonInteractive = true;
             }
 
-            //First argument should be the package ID
             string packageId = Arguments[0];
-            //Second argument should be the package Version
             string packageVersion = Arguments[1];
+            string apiKeyValue = null;
 
-            //If the user passed a source use it for the gallery location
-            string source = SourceProvider.ResolveAndValidateSource(Source) ?? NuGetConstants.DefaultGalleryServerUrl;
-            var userAgent = UserAgent.CreateUserAgentString(CommandLineConstants.UserAgent);
-            var gallery = new PackageServer(source, userAgent);
-            gallery.SendingRequest += (sender, e) =>
+            if (!string.IsNullOrEmpty(ApiKey))
             {
-                if (Console.Verbosity == NuGet.Verbosity.Detailed)
-                {
-                    Console.WriteLine(ConsoleColor.Green, "{0} {1}", e.Request.Method, e.Request.RequestUri);
-                }
-            };
-
-            //If the user did not pass an API Key look in the config file
-            string apiKey = GetApiKey(source);
-            string sourceDisplayName = CommandLineUtility.GetSourceDisplayName(source);
-            if (String.IsNullOrEmpty(apiKey))
+                apiKeyValue = ApiKey;
+            }
+            else if (Arguments.Count > 2 && !string.IsNullOrEmpty(Arguments[2]))
             {
-                Console.WriteWarning(LocalizedResourceManager.GetString("NoApiKeyFound"), sourceDisplayName);
+                apiKeyValue = Arguments[2];
             }
 
-            if (NonInteractive || Console.Confirm(String.Format(CultureInfo.CurrentCulture, LocalizedResourceManager.GetString("DeleteCommandConfirm"), packageId, packageVersion, sourceDisplayName)))
-            {
-                Console.WriteLine(LocalizedResourceManager.GetString("DeleteCommandDeletingPackage"), packageId, packageVersion, sourceDisplayName);
-                gallery.DeletePackage(apiKey, packageId, packageVersion);
-                Console.WriteLine(LocalizedResourceManager.GetString("DeleteCommandDeletedPackage"), packageId, packageVersion);
-            }
-            else
-            {
-                Console.WriteLine(LocalizedResourceManager.GetString("DeleteCommandCanceled"));
-            }
-        }
-
-        internal string GetApiKey(string source)
-        {
-            string apiKey = null;
-
-            if (!String.IsNullOrEmpty(ApiKey))
-            {
-                return ApiKey;
-            }
-
-            // Second argument, if present, should be the API Key
-            if (Arguments.Count > 2)
-            {
-                apiKey = Arguments[2];
-            }
-
-            // If the user did not pass an API Key look in the config file
-            if (String.IsNullOrEmpty(apiKey))
-            {
-                apiKey = SettingsUtility.GetDecryptedValue(Settings, "apikeys", source);
-            }
-
-            return apiKey;
+            await DeleteRunner.Run(
+                Settings,
+                SourceProvider,
+                packageId,
+                packageVersion,
+                Source,
+                apiKeyValue,
+                NonInteractive,
+                Console.Confirm,
+                Console);
         }
     }
 }

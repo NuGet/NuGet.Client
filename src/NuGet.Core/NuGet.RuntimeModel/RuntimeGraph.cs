@@ -6,6 +6,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using NuGet.Shared;
 
 namespace NuGet.RuntimeModel
 {
@@ -21,7 +22,7 @@ namespace NuGet.RuntimeModel
         public IReadOnlyDictionary<string, RuntimeDescription> Runtimes { get; }
         public IReadOnlyDictionary<string, CompatibilityProfile> Supports { get; set; }
 
-        private RuntimeGraph()
+        public RuntimeGraph()
             : this(Enumerable.Empty<RuntimeDescription>(), Enumerable.Empty<CompatibilityProfile>())
         {
         }
@@ -167,13 +168,13 @@ namespace NuGet.RuntimeModel
                 return false;
             }
 
-            var runtimesEqual = Runtimes
-               .OrderBy(pair => pair.Key, StringComparer.Ordinal)
-               .SequenceEqual(other.Runtimes.OrderBy(pair => pair.Key, StringComparer.Ordinal));
-            var supportsEqual = Supports
-               .OrderBy(pair => pair.Key, StringComparer.Ordinal)
-               .SequenceEqual(other.Supports.OrderBy(pair => pair.Key, StringComparer.Ordinal));
-            return runtimesEqual && supportsEqual;
+            if (ReferenceEquals(this, other))
+            {
+                return true;
+            }
+
+            return Runtimes.OrderedEquals(other.Runtimes, pair => pair.Key, StringComparer.Ordinal)
+                && Supports.OrderedEquals(other.Supports, pair => pair.Key, StringComparer.Ordinal);
         }
 
         public override bool Equals(object obj)
@@ -183,7 +184,12 @@ namespace NuGet.RuntimeModel
 
         public override int GetHashCode()
         {
-            return Runtimes.GetHashCode();
+            var hashCode = new HashCodeCombiner();
+
+            hashCode.AddDictionary(Runtimes);
+            hashCode.AddDictionary(Supports);
+
+            return hashCode.CombinedHash;
         }
     }
 }

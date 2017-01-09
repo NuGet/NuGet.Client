@@ -124,13 +124,6 @@ namespace NuGet.ProjectManagement
                 throw new ArgumentException(Strings.Argument_Cannot_Be_Null_Or_Empty, nameof(fullPath));
             }
 
-            // MakeWriteable(fullPath); SourceControlManager will do that
-            var sourceControlManager = SourceControlUtility.GetSourceControlManager(nuGetProjectContext);
-            if (sourceControlManager != null)
-            {
-                return sourceControlManager.CreateFile(fullPath, nuGetProjectContext);
-            }
-
             return CreateFile(fullPath);
         }
 
@@ -217,7 +210,7 @@ namespace NuGet.ProjectManagement
             {
                 MakeWritable(fullPath);
                 var sourceControlManager = SourceControlUtility.GetSourceControlManager(nuGetProjectContext);
-                if (sourceControlManager != null)
+                if (sourceControlManager != null && sourceControlManager.IsPackagesFolderBoundToSourceControl())
                 {
                     sourceControlManager.PendDeleteFiles(new List<string> { fullPath }, string.Empty, nuGetProjectContext);
                 }
@@ -260,7 +253,7 @@ namespace NuGet.ProjectManagement
             }
 
             var sourceControlManager = SourceControlUtility.GetSourceControlManager(nuGetProjectContext);
-            if (sourceControlManager != null)
+            if (sourceControlManager != null && sourceControlManager.IsPackagesFolderBoundToSourceControl())
             {
                 sourceControlManager.PendDeleteFiles(filesToDelete, packagesDir, nuGetProjectContext);
                 foreach (var fileToDelete in filesToDelete)
