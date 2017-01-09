@@ -406,7 +406,8 @@ namespace NuGet.CommandLine.Test
                     new XElement(nsDataService + "PackageHash", package.GetHash("SHA512")),
                     new XElement(nsDataService + "PackageHashAlgorithm", "SHA512"),
                     new XElement(nsDataService + "Description", package.Description),
-                    new XElement(nsDataService + "Listed", package.Listed)));
+                    new XElement(nsDataService + "Listed", package.Listed),
+                    new XElement(nsDataService + "Published",package.Published)));
             return entry;
         }
 

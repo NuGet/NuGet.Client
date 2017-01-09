@@ -190,9 +190,8 @@ namespace NuGet.Protocol.Tests
             var httpSource = new TestHttpSource(new PackageSource(serviceAddress), responses);
 
             V2FeedParser parser = new V2FeedParser(httpSource, serviceAddress);
-            var searchFilter = new SearchFilter()
+            var searchFilter = new SearchFilter(includePrerelease: false)
             {
-                IncludePrerelease = false,
                 SupportedFrameworks = new string[] { "net40-Client" }
             };
 
@@ -223,6 +222,41 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
+        public async Task V2FeedParser_Search_OrderById()
+        {
+            // Arrange
+            var serviceAddress = TestUtility.CreateServiceAddress();
+
+            var responses = new Dictionary<string, string>();
+            responses.Add(serviceAddress + "Search()?$orderby=Id&searchTerm=''&targetFramework=''&includePrerelease=false&$skip=0&$top=5",
+                TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.SearchOrderById.xml", GetType()));
+            responses.Add(serviceAddress, string.Empty);
+
+            var httpSource = new TestHttpSource(new PackageSource(serviceAddress), responses);
+
+            V2FeedParser parser = new V2FeedParser(httpSource, serviceAddress);
+            var searchFilter = new SearchFilter(includePrerelease: false, filter: null)
+            {
+                OrderBy = SearchOrderBy.Id
+            };
+
+            // Act
+            var packages = await parser.Search(
+                searchTerm: "",
+                filters: searchFilter,
+                skip: 0,
+                take: 5,
+                log: NullLogger.Instance,
+                token: CancellationToken.None);
+
+            // Assert
+            var package = packages.FirstOrDefault();
+            Assert.NotNull(package);
+            Assert.Equal("NuGet.Client", package.Id);
+            Assert.Equal(5, packages.Count);
+        }
+
+        [Fact]
         public async Task V2FeedParser_SearchEncoding()
         {
             // Arrange
@@ -236,9 +270,8 @@ namespace NuGet.Protocol.Tests
             var httpSource = new TestHttpSource(new PackageSource(serviceAddress), responses);
 
             V2FeedParser parser = new V2FeedParser(httpSource, serviceAddress);
-            var searchFilter = new SearchFilter()
+            var searchFilter = new SearchFilter(includePrerelease: false)
             {
-                IncludePrerelease = false,
                 SupportedFrameworks = new string[] { "portable-net45+win8" }
             };
 
@@ -265,9 +298,8 @@ namespace NuGet.Protocol.Tests
 
             var httpSource = new TestHttpSource(new PackageSource(serviceAddress), responses);
             V2FeedParser parser = new V2FeedParser(httpSource, serviceAddress);
-            var searchFilter = new SearchFilter()
+            var searchFilter = new SearchFilter(includePrerelease: false)
             {
-                IncludePrerelease = false,
                 SupportedFrameworks = new string[] { "net40-Client" }
             };
 
@@ -292,9 +324,8 @@ namespace NuGet.Protocol.Tests
             var httpSource = new TestHttpSource(new PackageSource(serviceAddress), responses);
 
             V2FeedParser parser = new V2FeedParser(httpSource, serviceAddress);
-            var searchFilter = new SearchFilter()
+            var searchFilter = new SearchFilter(includePrerelease: false)
             {
-                IncludePrerelease = false,
                 SupportedFrameworks = new string[] { "net40-Client" }
             };
 
@@ -327,9 +358,8 @@ namespace NuGet.Protocol.Tests
             var httpSource = new TestHttpSource(new PackageSource(serviceAddress), responses);
 
             V2FeedParser parser = new V2FeedParser(httpSource, serviceAddress);
-            var searchFilter = new SearchFilter()
+            var searchFilter = new SearchFilter(includePrerelease: false)
             {
-                IncludePrerelease = false,
                 SupportedFrameworks = new string[] { "net40-Client" }
             };
 
@@ -650,9 +680,8 @@ namespace NuGet.Protocol.Tests
             var httpSource = new TestHttpSource(new PackageSource(serviceAddress), responses);
 
             V2FeedParser parser = new V2FeedParser(httpSource, serviceAddress);
-            var searchFilter = new SearchFilter()
+            var searchFilter = new SearchFilter(includePrerelease: false)
             {
-                IncludePrerelease = false,
                 SupportedFrameworks = new string[]
                 {
                     ".NetPortable,Version=v4.5,Profile=Profile111",
@@ -668,6 +697,73 @@ namespace NuGet.Protocol.Tests
             // Assert
             Assert.NotNull((package));
             Assert.Equal("WindowsAzure.Storage", package.Id);
+        }
+
+        [Fact]
+        public async Task V2FeedParser_GetSearchPage()
+        {
+            // Arrange
+            var serviceAddress = TestUtility.CreateServiceAddress();
+
+            var responses = new Dictionary<string, string>();
+            responses.Add(serviceAddress + "Search()?$filter=IsLatestVersion&searchTerm='WindowsAzure.Storage'&targetFramework=''&includePrerelease=false&$skip=0&$top=30",
+                TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.WindowsAzureStorageSearchPackage30Entries.xml", GetType()));
+            responses.Add(serviceAddress + "Search()?$filter=IsLatestVersion&searchTerm='WindowsAzure.Storage'&targetFramework=''&includePrerelease=false&$skip=30&$top=30",
+                TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.WindowsAzureStorageSearchPackage17Entries.xml", GetType()));
+            responses.Add(serviceAddress, string.Empty);
+
+            var httpSource = new TestHttpSource(new PackageSource(serviceAddress), responses);
+
+            V2FeedParser parser = new V2FeedParser(httpSource, serviceAddress);
+
+            SearchFilter filter = new SearchFilter(includePrerelease: false)
+            {
+
+            };
+            int skip = 0;
+            int take = 30;
+
+            var v2FeedPage = await parser.GetSearchPageAsync("WindowsAzure.Storage",filter, skip, take, NullLogger.Instance, CancellationToken.None);
+            Assert.Equal(take, v2FeedPage.Items.Count);
+            
+            var SecondV2FeedPage = await parser.GetSearchPageAsync("WindowsAzure.Storage", filter, skip+take, take, NullLogger.Instance, CancellationToken.None);
+            Assert.Equal(17, SecondV2FeedPage.Items.Count);
+        }
+
+        [Fact]
+        public async Task V2FeedParser_GetPackagesPage()
+        {
+            // Arrange
+            var serviceAddress = TestUtility.CreateServiceAddress();
+
+            var responses = new Dictionary<string, string>();
+            responses.Add(serviceAddress + "Packages()?$filter=((((Id%20ne%20null)%20and%20substringof('WindowsAzure.Storage',tolower(Id)))"+
+                "%20or%20((Description%20ne%20null)%20and%20substringof('WindowsAzure.Storage',tolower(Description))))%20or%20((Tags%20ne%20null)"+
+                "%20and%20substringof('%20WindowsAzure.Storage%20',tolower(Tags))))%20and%20IsLatestVersion&$skip=0&$top=30",
+                TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.WindowsAzureStorageSearchPackage30Entries.xml", GetType()));
+
+            responses.Add(serviceAddress +"Packages()?$filter=((((Id%20ne%20null)%20and%20substringof('WindowsAzure.Storage',tolower(Id)))" +
+                "%20or%20((Description%20ne%20null)%20and%20substringof('WindowsAzure.Storage',tolower(Description))))%20or%20((Tags%20ne%20null)" +
+                "%20and%20substringof('%20WindowsAzure.Storage%20',tolower(Tags))))%20and%20IsLatestVersion&$skip=30&$top=30",
+                TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.WindowsAzureStorageSearchPackage17Entries.xml", GetType()));
+            responses.Add(serviceAddress, string.Empty);
+
+            var httpSource = new TestHttpSource(new PackageSource(serviceAddress), responses);
+
+            V2FeedParser parser = new V2FeedParser(httpSource, serviceAddress);
+
+            SearchFilter filter = new SearchFilter(includePrerelease: false)
+            {
+
+            };
+            int skip = 0;
+            int take = 30;
+
+            var v2FeedPage = await parser.GetPackagesPageAsync("WindowsAzure.Storage", filter, skip, take, NullLogger.Instance, CancellationToken.None);
+            Assert.Equal(take, v2FeedPage.Items.Count);
+
+            var SecondV2FeedPage = await parser.GetPackagesPageAsync("WindowsAzure.Storage", filter, skip + take, take, NullLogger.Instance, CancellationToken.None);
+            Assert.Equal(17, SecondV2FeedPage.Items.Count);
         }
     }
 }

@@ -46,17 +46,11 @@ namespace NuGet.CommandLine
         public string SolutionDirectory { get; set; }
 
         [ImportingConstructor]
-        public InstallCommand()
-            : this(MachineCache.Default)
-        {
-        }
-
-        protected internal InstallCommand(IPackageRepository cacheRepository) :
-            base(cacheRepository)
+        protected internal InstallCommand()
         {
             // On mono, parallel builds are broken for some reason. See https://gist.github.com/4201936 for the errors
             // That are thrown.
-            DisableParallelProcessing = EnvironmentUtility.IsMonoRuntime;
+            DisableParallelProcessing = RuntimeEnvironmentHelper.IsMono;
         }
 
         public override Task ExecuteCommandAsync()
@@ -75,18 +69,18 @@ namespace NuGet.CommandLine
 
             // If the first argument is a packages.xxx.config file, install everything it lists
             // Otherwise, treat the first argument as a package Id
-            if (PackageReferenceFile.IsValidConfigFileName(configFileName))
+            if (CommandLineUtility.IsValidConfigFileName(configFileName))
             {
                 Prerelease = true;
 
                 // display opt-out message if needed
                 if (Console != null && RequireConsent &&
-                    new PackageRestoreConsent(new SettingsToLegacySettings(Settings)).IsGranted)
+                    new PackageRestoreConsent(Settings).IsGranted)
                 {
                     string message = String.Format(
                         CultureInfo.CurrentCulture,
                         LocalizedResourceManager.GetString("RestoreCommandPackageRestoreOptOutMessage"),
-                        NuGet.Resources.NuGetResources.PackageRestoreConsentCheckBoxText.Replace("&", ""));
+                        NuGetResources.PackageRestoreConsentCheckBoxText.Replace("&", ""));
                     Console.WriteLine(message);
                 }
 

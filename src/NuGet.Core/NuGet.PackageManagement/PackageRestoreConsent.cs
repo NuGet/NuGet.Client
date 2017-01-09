@@ -6,7 +6,7 @@ using System.Globalization;
 using NuGet.Common;
 using NuGet.Configuration;
 
-namespace NuGet.PackageManagement.VisualStudio
+namespace NuGet.PackageManagement
 {
     public class PackageRestoreConsent
     {

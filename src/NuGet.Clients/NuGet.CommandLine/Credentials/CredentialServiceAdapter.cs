@@ -1,5 +1,6 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+extern alias CoreV2;
 
 using System;
 using System.Net;
@@ -13,7 +14,7 @@ namespace NuGet.Credentials
     /// <summary>
     /// Wraps a CredentialService to match the older v2 NuGet.ICredentialProvider interface
     /// </summary>
-    public class CredentialServiceAdapter : NuGet.ICredentialProvider
+    public class CredentialServiceAdapter : CoreV2.NuGet.ICredentialProvider
     {
         private readonly ICredentialService _credentialService;
         private IDictionary<Uri, Uri> _endpoints;
@@ -41,7 +42,7 @@ namespace NuGet.Credentials
                     kv => kv.Key.SourceUri);
         }
 
-        public ICredentials GetCredentials(Uri uri, IWebProxy proxy, CredentialType credentialType, bool retrying)
+        public ICredentials GetCredentials(Uri uri, IWebProxy proxy, CoreV2.NuGet.CredentialType credentialType, bool retrying)
         {
             if (uri == null)
             {
@@ -56,7 +57,7 @@ namespace NuGet.Credentials
                 uri = _endpoints[uri];
             }
 
-            var type = credentialType == CredentialType.ProxyCredentials ?
+            var type = credentialType == CoreV2.NuGet.CredentialType.ProxyCredentials ?
                 CredentialRequestType.Proxy : CredentialRequestType.Unauthorized;
 
             var task = _credentialService.GetCredentialsAsync(

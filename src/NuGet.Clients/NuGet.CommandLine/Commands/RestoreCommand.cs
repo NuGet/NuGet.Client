@@ -13,6 +13,7 @@ using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.PackageManagement;
 using NuGet.Packaging;
+using NuGet.ProjectManagement;
 using NuGet.ProjectModel;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
@@ -48,7 +49,6 @@ namespace NuGet.CommandLine
 
         [ImportingConstructor]
         public RestoreCommand()
-            : base(MachineCache.Default)
         {
         }
 
@@ -380,14 +380,14 @@ namespace NuGet.CommandLine
         {
             if (RequireConsent)
             {
-                var packageRestoreConsent = new PackageRestoreConsent(new SettingsToLegacySettings(Settings));
+                var packageRestoreConsent = new PackageRestoreConsent(Settings);
 
                 if (packageRestoreConsent.IsGranted)
                 {
                     var message = string.Format(
                         CultureInfo.CurrentCulture,
                         LocalizedResourceManager.GetString("RestoreCommandPackageRestoreOptOutMessage"),
-                        NuGet.Resources.NuGetResources.PackageRestoreConsentCheckBoxText.Replace("&", ""));
+                        NuGetResources.PackageRestoreConsentCheckBoxText.Replace("&", ""));
 
                     Console.LogMinimal(message);
                 }
@@ -396,7 +396,7 @@ namespace NuGet.CommandLine
                     var message = string.Format(
                         CultureInfo.CurrentCulture,
                         LocalizedResourceManager.GetString("InstallCommandPackageRestoreConsentNotFound"),
-                        NuGet.Resources.NuGetResources.PackageRestoreConsentCheckBoxText.Replace("&", ""));
+                        NuGetResources.PackageRestoreConsentCheckBoxText.Replace("&", ""));
 
                     throw new CommandLineException(message);
                 }

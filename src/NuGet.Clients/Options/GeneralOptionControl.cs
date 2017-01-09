@@ -44,8 +44,7 @@ namespace NuGet.Options
             {
                 try
                 {
-                    // not using the nuget.core version of PackageRestoreConsent
-                    var packageRestoreConsent = new PackageManagement.VisualStudio.PackageRestoreConsent(_settings);
+                    var packageRestoreConsent = new PackageManagement.PackageRestoreConsent(_settings);
 
                     packageRestoreConsentCheckBox.Checked = packageRestoreConsent.IsGrantedInSettings;
                     packageRestoreAutomaticCheckBox.Checked = packageRestoreConsent.IsAutomatic;
@@ -63,7 +62,7 @@ namespace NuGet.Options
                 catch (InvalidOperationException)
                 {
                     MessageHelper.ShowErrorMessage(Resources.ShowError_ConfigInvalidOperation, Resources.ErrorDialogBoxTitle);
-                }
+               } 
                 catch (UnauthorizedAccessException)
                 {
                     MessageHelper.ShowErrorMessage(Resources.ShowError_ConfigUnauthorizedAccess, Resources.ErrorDialogBoxTitle);
@@ -77,7 +76,7 @@ namespace NuGet.Options
         {
             try
             {
-                var packageRestoreConsent = new PackageManagement.VisualStudio.PackageRestoreConsent(_settings);
+                var packageRestoreConsent = new PackageManagement.PackageRestoreConsent(_settings);
                 packageRestoreConsent.IsGrantedInSettings = packageRestoreConsentCheckBox.Checked;
                 packageRestoreConsent.IsAutomatic = packageRestoreAutomaticCheckBox.Checked;
 

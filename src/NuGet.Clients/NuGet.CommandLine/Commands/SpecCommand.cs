@@ -1,4 +1,6 @@
-﻿using System;
+﻿extern alias CoreV2;
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -17,7 +19,7 @@ namespace NuGet.CommandLine
         internal static readonly string SampleTags = "Tag1 Tag2";
         internal static readonly string SampleReleaseNotes = "Summary of changes made in this release of the package.";
         internal static readonly string SampleDescription = "Package description";
-        internal static readonly ManifestDependency SampleManifestDependency = new ManifestDependency { Id = "SampleDependency", Version = "1.0" };
+        internal static readonly CoreV2.NuGet.ManifestDependency SampleManifestDependency = new CoreV2.NuGet.ManifestDependency { Id = "SampleDependency", Version = "1.0" };
 
         [Option(typeof(NuGetCommand), "SpecCommandAssemblyPathDescription")]
         public string AssemblyPath
@@ -35,7 +37,7 @@ namespace NuGet.CommandLine
 
         public override void ExecuteCommand()
         {
-            var manifest = new Manifest();
+            var manifest = new CoreV2.NuGet.Manifest();
             string projectFile = null;
             string fileName = null;
 
@@ -78,10 +80,10 @@ namespace NuGet.CommandLine
                 {
                     manifest.Metadata.Authors = Environment.UserName;
                 }
-                manifest.Metadata.DependencySets = new List<ManifestDependencySet>();
-                manifest.Metadata.DependencySets.Add(new ManifestDependencySet
+                manifest.Metadata.DependencySets = new List<CoreV2.NuGet.ManifestDependencySet>();
+                manifest.Metadata.DependencySets.Add(new CoreV2.NuGet.ManifestDependencySet
                 {
-                    Dependencies = new List<ManifestDependency> { SampleManifestDependency }
+                    Dependencies = new List<CoreV2.NuGet.ManifestDependency> { SampleManifestDependency }
                 });
             }
 
@@ -91,7 +93,7 @@ namespace NuGet.CommandLine
             manifest.Metadata.Tags = SampleTags;
             manifest.Metadata.Copyright = "Copyright " + DateTime.Now.Year;
             manifest.Metadata.ReleaseNotes = SampleReleaseNotes;
-            string nuspecFile = fileName + Constants.ManifestExtension;
+            string nuspecFile = fileName + CoreV2.NuGet.Constants.ManifestExtension;
 
             // Skip the creation if the file exists and force wasn't specified
             if (File.Exists(nuspecFile) && !Force)

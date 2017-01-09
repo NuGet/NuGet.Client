@@ -110,7 +110,7 @@ namespace NuGet.Common
                 throw new ArgumentNullException(nameof(targetFullPath));
             }
 
-            var targetRelativePath = NuGet.PathUtility.GetRelativePath(PathUtility.EnsureTrailingSlash(ProjectFullPath), targetFullPath);
+            var targetRelativePath = NuGet.Commands.PathUtility.GetRelativePath(PathUtility.EnsureTrailingSlash(ProjectFullPath), targetFullPath);
             var imports = Project.Xml.Imports;
             bool notImported = true;
             if (imports != null)
@@ -150,8 +150,8 @@ namespace NuGet.Common
 
         public void AddReference(string referencePath)
         {
-            string fullPath = NuGet.PathUtility.GetAbsolutePath(ProjectFullPath, referencePath);
-            string relativePath = NuGet.PathUtility.GetRelativePath(Project.FullPath, fullPath);
+            string fullPath = NuGet.Commands.PathUtility.GetAbsolutePath(ProjectFullPath, referencePath);
+            string relativePath = NuGet.Commands.PathUtility.GetRelativePath(Project.FullPath, fullPath);
             string assemblyFileName = Path.GetFileNameWithoutExtension(fullPath);
 
             try
@@ -272,7 +272,7 @@ namespace NuGet.Common
                 throw new ArgumentNullException(nameof(targetFullPath));
             }
 
-            var targetRelativePath = NuGet.PathUtility.GetRelativePath(PathUtility.EnsureTrailingSlash(ProjectFullPath), targetFullPath);
+            var targetRelativePath = NuGet.Commands.PathUtility.GetRelativePath(PathUtility.EnsureTrailingSlash(ProjectFullPath), targetFullPath);
             if (Project.Xml.Imports != null)
             {
                 // search for this import statement and remove it

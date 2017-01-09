@@ -329,7 +329,7 @@ namespace NuGet.CommandLine
             string solutionFile,
             string msbuildPath)
         {
-            if (EnvironmentUtility.IsMonoRuntime && msbuildPath.Contains("xbuild"))
+            if (RuntimeEnvironmentHelper.IsMono && msbuildPath.Contains("xbuild"))
             {
                 return GetAllProjectFileNamesWithXBuild(solutionFile);
             }
