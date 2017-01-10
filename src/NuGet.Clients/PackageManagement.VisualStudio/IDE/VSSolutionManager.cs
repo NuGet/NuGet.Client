@@ -909,12 +909,25 @@ namespace NuGet.PackageManagement.VisualStudio
 
             // read MSBuild property RestoreProjectStyle which can be set to any NuGet project sytle
             // and pass it on to NugetFactory which can pass it to each NuGet project provider to consume.
-            var restoreProjectStyle = VsHierarchyUtility.GetMSBuildProperty(VsHierarchyUtility.ToVsHierarchy(envDTEProject), "RestoreProjectStyle");
+            var restoreProjectStyle = VsHierarchyUtility.GetMSBuildProperty(VsHierarchyUtility.ToVsHierarchy(envDTEProject), 
+                ProjectSystemProviderContext.RESTORE_PROJECT_STYLE);
+
+            var targetFramework = VsHierarchyUtility.GetMSBuildProperty(VsHierarchyUtility.ToVsHierarchy(envDTEProject), 
+                ProjectSystemProviderContext.TARGET_FRAMEWORK);
+
+            var targetFrameworks = VsHierarchyUtility.GetMSBuildProperty(VsHierarchyUtility.ToVsHierarchy(envDTEProject), 
+                ProjectSystemProviderContext.TARGET_FRAMEWORKS);
+
+            var msBuildProperties = new Dictionary<string, string> {
+                {ProjectSystemProviderContext.RESTORE_PROJECT_STYLE, restoreProjectStyle },
+                {ProjectSystemProviderContext.TARGET_FRAMEWORK, targetFramework},
+                {ProjectSystemProviderContext.TARGET_FRAMEWORKS, targetFrameworks }
+            };
 
             var context = new ProjectSystemProviderContext(
                 projectContext ?? EmptyNuGetProjectContext,
                 () => PackagesFolderPathUtility.GetPackagesFolderPath(this, settings),
-                restoreProjectStyle);
+                msBuildProperties);
 
             NuGetProject result;
             if (_projectSystemFactory.TryCreateNuGetProject(envDTEProject, context, out result))
