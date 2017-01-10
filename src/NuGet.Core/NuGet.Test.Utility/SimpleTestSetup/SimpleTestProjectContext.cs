@@ -309,6 +309,7 @@ namespace NuGet.Test.Utility
         {
             var context = new SimpleTestProjectContext(projectName, ProjectStyle.PackageReference, solutionRoot);
             context.Frameworks.AddRange(frameworks.Select(e => new SimpleTestProjectFrameworkContext(e)));
+            context.Properties.Add("RestoreProjectStyle", "PackageReference");
             return context;
         }
 

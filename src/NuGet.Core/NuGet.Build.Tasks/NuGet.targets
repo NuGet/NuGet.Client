@@ -308,8 +308,6 @@ Copyright (c) .NET Foundation. All rights reserved.
     Returns="$(RestoreProjectStyle)">
     <!-- This may be overridden by setting RestoreProjectStyle in the project. -->
     <PropertyGroup>
-      <!-- .NETCore cross platform projects contain the TargetFrameworks property and must be treated as PackageReference. -->
-      <RestoreProjectStyle Condition=" '$(RestoreProjectStyle)' == '' AND '$(TargetFrameworks)' != '' ">PackageReference</RestoreProjectStyle>
       <!-- If any PackageReferences exist treat it as PackageReference. This has priority over project.json. -->
       <RestoreProjectStyle Condition=" '$(RestoreProjectStyle)' == '' AND @(PackageReference) != '' ">PackageReference</RestoreProjectStyle>
       <!-- If this is not a PackageReference project check if project.json or projectName.project.json exists. -->
