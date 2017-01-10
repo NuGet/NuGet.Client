@@ -49,12 +49,18 @@ namespace NuGet.PackageManagement.VisualStudio
                     {
                         var reference3 = childReference as Reference3;
 
-                        // this will set a reference to be missing if
+                        // check if deferred projects resolved this reference, which means this is still not loaded so simply continue
+                        // We'll get this reference from deferred projects later
+                        if (reference3 != null && 
+                        resolvedProjects.Contains(reference3.Name, StringComparer.OrdinalIgnoreCase))
+                        {
+                            continue;
+                        }
+
+                        // Set missing reference if
                         // 1. reference is null OR
-                        // 2. reference is not resolved which means project is not loaded or assembly not found. OR
-                        // 3. in DPL case, even deferred projects doesn't have this referenced project.
-                        if (reference3 == null || !reference3.Resolved ||
-                            !resolvedProjects.Any(projectName => StringComparer.OrdinalIgnoreCase.Equals(projectName, reference3.Name)))
+                        // 2. reference is not resolved which means project is not loaded or assembly not found.
+                        else if (reference3 == null || !reference3.Resolved)
                         {
                             // Skip missing references and show a warning
                             hasMissingReferences = true;
