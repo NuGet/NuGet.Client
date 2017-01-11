@@ -68,12 +68,12 @@ namespace NuGet.PackageManagement.VisualStudio
             var hasTargetFramework = context
                 .MSBuildProperties
                 .TryGetValue(ProjectSystemProviderContext.TargetFramework, out targetFramework)
-                && !string.IsNullOrEmpty(restoreProjectStyle);
+                && !string.IsNullOrEmpty(targetFramework);
 
             var hasTargetFrameworks = context
                 .MSBuildProperties
                 .TryGetValue(ProjectSystemProviderContext.TargetFrameworks, out targetFrameworks)
-                && !string.IsNullOrEmpty(restoreProjectStyle);
+                && !string.IsNullOrEmpty(targetFrameworks);
 
             // check for RestoreProjectStyle property is set and if set to PackageReference then return false
             if (hasRestoreProjectStyle && !restoreProjectStyle.Equals(ProjectStyle.PackageReference.ToString(), StringComparison.OrdinalIgnoreCase))
