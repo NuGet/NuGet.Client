@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using NuGet.ProjectManagement;
 
 namespace NuGet.PackageManagement.VisualStudio
@@ -12,15 +13,20 @@ namespace NuGet.PackageManagement.VisualStudio
     /// </summary>
     public class ProjectSystemProviderContext
     {
+        public static readonly string RestoreProjectStyle = "RestoreProjectStyle";
+        public static readonly string TargetFramework = "TargetFramework";
+        public static readonly string TargetFrameworks = "TargetFrameworks";
+
         public INuGetProjectContext ProjectContext { get; }
+
         public Func<string> PackagesPathFactory { get; }
 
-        public string NuGetProjectStyle { get; }
+        public Dictionary<string, string> MSBuildProperties{ get; }
 
         public ProjectSystemProviderContext(
             INuGetProjectContext projectContext,
             Func<string> packagesPathFactory,
-            string nuGetProjectStyle)
+            Dictionary<string, string> msBuildProperties)
         {
             if (projectContext == null)
             {
@@ -34,7 +40,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             ProjectContext = projectContext;
             PackagesPathFactory = packagesPathFactory;
-            NuGetProjectStyle = nuGetProjectStyle;
+            MSBuildProperties = msBuildProperties;
         }
     }
 }

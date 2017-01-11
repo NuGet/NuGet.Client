@@ -19,6 +19,52 @@ namespace NuGet.CommandLine.Test
     public class RestoreNetCoreTest
     {
         [Fact]
+        public async Task RestoreNetCore_VerifyPackageReference_WithoutRestoreProjectStyle()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                    "a",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("net45"));
+
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+
+                projectA.AddPackageToAllFrameworks(packageX);
+                projectA.Properties.Clear();
+
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX);
+
+                // Act
+                var r = RestoreSolution(pathContext);
+
+                var dgPath = Path.Combine(pathContext.WorkingDirectory, "out.dg");
+                var dgSpec = DependencyGraphSpec.Load(dgPath);
+
+                var propsXML = XDocument.Load(projectA.PropsOutput);
+                var styleNode = propsXML.Root.Elements().First().Elements(XName.Get("NuGetProjectStyle", "http://schemas.microsoft.com/developer/msbuild/2003")).FirstOrDefault();
+
+                // Assert
+                Assert.Equal(ProjectStyle.PackageReference, dgSpec.Projects.Single().RestoreMetadata.ProjectStyle);
+                Assert.Equal("PackageReference", styleNode.Value);
+            }
+        }
+
+        [Fact]
         public async Task RestoreNetCore_SetProjectStyleWithProperty_PackageReference()
         {
             // Arrange
@@ -50,6 +96,7 @@ namespace NuGet.CommandLine.Test
                                                }");
 
                 projectA.AddPackageToAllFrameworks(packageX);
+                projectA.Properties.Clear();
                 projectA.Properties.Add("RestoreProjectStyle", "PackageReference");
 
                 solution.Projects.Add(projectA);
@@ -102,6 +149,7 @@ namespace NuGet.CommandLine.Test
                                                   }");
 
                 // Force this project to ProjectJson
+                projectA.Properties.Clear();
                 projectA.Properties.Add("RestoreProjectStyle", "ProjectJson");
 
                 solution.Projects.Add(projectA);
@@ -2189,7 +2237,7 @@ namespace NuGet.CommandLine.Test
                 projectD.Version = "1.4.9-child.project";
 
                 // Override with PackageVersion
-                projectC.Properties.Add("PackageVersion", "2.4.5-alpha.7+use.this");                
+                projectC.Properties.Add("PackageVersion", "2.4.5-alpha.7+use.this");
 
                 solution.Projects.Add(projectA);
                 solution.Projects.Add(projectB);
