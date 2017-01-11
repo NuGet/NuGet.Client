@@ -13,36 +13,15 @@ namespace NuGet.PackageManagement.VisualStudio
     /// </summary>
     public class ProjectSystemProviderContext
     {
-        public const string RESTORE_PROJECT_STYLE = "RestoreProjectStyle";
-        public const string TARGET_FRAMEWORK = "TargetFramework";
-        public const string TARGET_FRAMEWORKS = "TargetFrameworks";
+        public static readonly string RestoreProjectStyle = "RestoreProjectStyle";
+        public static readonly string TargetFramework = "TargetFramework";
+        public static readonly string TargetFrameworks = "TargetFrameworks";
 
         public INuGetProjectContext ProjectContext { get; }
 
         public Func<string> PackagesPathFactory { get; }
 
         public Dictionary<string, string> MSBuildProperties{ get; }
-
-        public ProjectSystemProviderContext(
-            INuGetProjectContext projectContext,
-            Func<string> packagesPathFactory,
-            string restoreProjectStyle)
-        {
-            if (projectContext == null)
-            {
-                throw new ArgumentNullException(nameof(projectContext));
-            }
-
-            if (packagesPathFactory == null)
-            {
-                throw new ArgumentNullException(nameof(packagesPathFactory));
-            }
-
-            ProjectContext = projectContext;
-            PackagesPathFactory = packagesPathFactory;
-            MSBuildProperties.Add(RESTORE_PROJECT_STYLE, restoreProjectStyle);
-        }
-
 
         public ProjectSystemProviderContext(
             INuGetProjectContext projectContext,

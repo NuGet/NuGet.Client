@@ -62,17 +62,17 @@ namespace NuGet.PackageManagement.VisualStudio
 
             var hasRestoreProjectStyle = context
                 .MSBuildProperties
-                .TryGetValue(ProjectSystemProviderContext.RESTORE_PROJECT_STYLE, out restoreProjectStyle) 
+                .TryGetValue(ProjectSystemProviderContext.RestoreProjectStyle, out restoreProjectStyle) 
                 && !string.IsNullOrEmpty(restoreProjectStyle);
 
             var hasTargetFramework = context
                 .MSBuildProperties
-                .TryGetValue(ProjectSystemProviderContext.TARGET_FRAMEWORK, out targetFramework)
+                .TryGetValue(ProjectSystemProviderContext.TargetFramework, out targetFramework)
                 && !string.IsNullOrEmpty(restoreProjectStyle);
 
             var hasTargetFrameworks = context
                 .MSBuildProperties
-                .TryGetValue(ProjectSystemProviderContext.TARGET_FRAMEWORKS, out targetFrameworks)
+                .TryGetValue(ProjectSystemProviderContext.TargetFrameworks, out targetFrameworks)
                 && !string.IsNullOrEmpty(restoreProjectStyle);
 
             // check for RestoreProjectStyle property is set and if set to PackageReference then return false
@@ -81,7 +81,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 return false;
             }
             // Check if the project is not CPS capable or if it is CPS capable then it does not have TargetFramework(s), if so then return false
-            else if (!hierarchy.IsCapabilityMatch("CPS") || !(hasTargetFramework || hasTargetFrameworks))
+            else if (!(hierarchy.IsCapabilityMatch("CPS") && (hasTargetFramework || hasTargetFrameworks)))
             {
                 return false;
             }

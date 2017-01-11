@@ -198,10 +198,14 @@ namespace NuGet.PackageManagement.VisualStudio
 
                 var settings = ServiceLocator.GetInstance<ISettings>();
 
+                var msBuildProperties = new Dictionary<string, string> {
+                    { ProjectSystemProviderContext.RestoreProjectStyle, ProjectStyle.PackageReference.ToString() }
+                };
+                   
                 var context = new ProjectSystemProviderContext(
                     EmptyNuGetProjectContext,
                     () => PackagesFolderPathUtility.GetPackagesFolderPath(this, settings),
-                    ProjectStyle.PackageReference.ToString());
+                    msBuildProperties);
 
                 return new LegacyCSProjPackageReferenceProject(
                     new EnvDTEProjectAdapter(dteProject, context),
@@ -906,22 +910,22 @@ namespace NuGet.PackageManagement.VisualStudio
         private NuGetProject CreateNuGetProject(Project envDTEProject, INuGetProjectContext projectContext = null)
         {
             var settings = ServiceLocator.GetInstance<ISettings>();
-
+            var vsHierarchy = VsHierarchyUtility.ToVsHierarchy(envDTEProject);
             // read MSBuild property RestoreProjectStyle which can be set to any NuGet project sytle
             // and pass it on to NugetFactory which can pass it to each NuGet project provider to consume.
-            var restoreProjectStyle = VsHierarchyUtility.GetMSBuildProperty(VsHierarchyUtility.ToVsHierarchy(envDTEProject), 
-                ProjectSystemProviderContext.RESTORE_PROJECT_STYLE);
+            var restoreProjectStyle = VsHierarchyUtility.GetMSBuildProperty(vsHierarchy, 
+                ProjectSystemProviderContext.RestoreProjectStyle);
 
-            var targetFramework = VsHierarchyUtility.GetMSBuildProperty(VsHierarchyUtility.ToVsHierarchy(envDTEProject), 
-                ProjectSystemProviderContext.TARGET_FRAMEWORK);
+            var targetFramework = VsHierarchyUtility.GetMSBuildProperty(vsHierarchy, 
+                ProjectSystemProviderContext.TargetFramework);
 
-            var targetFrameworks = VsHierarchyUtility.GetMSBuildProperty(VsHierarchyUtility.ToVsHierarchy(envDTEProject), 
-                ProjectSystemProviderContext.TARGET_FRAMEWORKS);
+            var targetFrameworks = VsHierarchyUtility.GetMSBuildProperty(vsHierarchy, 
+                ProjectSystemProviderContext.TargetFrameworks);
 
             var msBuildProperties = new Dictionary<string, string> {
-                {ProjectSystemProviderContext.RESTORE_PROJECT_STYLE, restoreProjectStyle },
-                {ProjectSystemProviderContext.TARGET_FRAMEWORK, targetFramework},
-                {ProjectSystemProviderContext.TARGET_FRAMEWORKS, targetFrameworks }
+                {ProjectSystemProviderContext.RestoreProjectStyle, restoreProjectStyle },
+                {ProjectSystemProviderContext.TargetFramework, targetFramework},
+                {ProjectSystemProviderContext.TargetFrameworks, targetFrameworks }
             };
 
             var context = new ProjectSystemProviderContext(
