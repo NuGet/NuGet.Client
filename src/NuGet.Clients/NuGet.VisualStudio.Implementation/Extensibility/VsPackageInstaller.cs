@@ -20,6 +20,7 @@ using NuGet.Resolver;
 using NuGet.Versioning;
 using NuGet.VisualStudio.Implementation.Resources;
 using Task = System.Threading.Tasks.Task;
+using NuGet.PackageManagement.UI;
 
 namespace NuGet.VisualStudio
 {
@@ -50,7 +51,7 @@ namespace NuGet.VisualStudio
             _projectContext = new VSAPIProjectContext();
             _packageServices = packageServices;
             _deleteOnRestartManager = deleteOnRestartManager;
-            PumpingJTF = new PumpingJTF(ThreadHelper.JoinableTaskContext);
+            PumpingJTF = new PumpingJTF(NuGetUIThreadHelper.JoinableTaskFactory.Context);
         }
 
         public void InstallLatestPackage(

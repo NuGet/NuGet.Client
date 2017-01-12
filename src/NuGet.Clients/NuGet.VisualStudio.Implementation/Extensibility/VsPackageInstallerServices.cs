@@ -18,6 +18,7 @@ using NuGet.ProjectManagement.Projects;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 using NuGet.VisualStudio.Implementation.Resources;
+using NuGet.PackageManagement.UI;
 
 namespace NuGet.VisualStudio
 {
@@ -48,7 +49,7 @@ namespace NuGet.VisualStudio
         {
             var packages = new HashSet<IVsPackageMetadata>(new VsPackageMetadataComparer());
 
-            return ThreadHelper.JoinableTaskFactory.Run(async delegate
+            return NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
                 {
                     // Calls may occur in the template wizard before the solution is actually created,
                     // in that case return no projects
@@ -134,7 +135,7 @@ namespace NuGet.VisualStudio
                 throw new ArgumentNullException("project");
             }
 
-            return ThreadHelper.JoinableTaskFactory.Run(async delegate
+            return NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
                 {
                     var packages = new List<IVsPackageMetadata>();
 
@@ -237,7 +238,7 @@ namespace NuGet.VisualStudio
             // as part of the operations performed below. Powershell scripts need to be executed on the
             // pipeline execution thread and they might try to access DTE. Doing that under
             // ThreadHelper.JoinableTaskFactory.Run will consistently result in a hang
-            return ThreadHelper.JoinableTaskFactory.Run(async delegate
+            return NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
                 {
                     var installedPackageReferences = await GetInstalledPackageReferencesAsync(project);
                     var packages = installedPackageReferences.Where(p =>

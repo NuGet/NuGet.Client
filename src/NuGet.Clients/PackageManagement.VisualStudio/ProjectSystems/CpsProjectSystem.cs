@@ -8,6 +8,7 @@ using NuGet.ProjectManagement;
 using EnvDTEProject = EnvDTE.Project;
 using ThreadHelper = Microsoft.VisualStudio.Shell.ThreadHelper;
 using ProjectSystem = NuGet.VisualStudio.Facade.ProjectSystem;
+using NuGet.PackageManagement.UI;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
@@ -31,7 +32,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 throw new ArgumentNullException(nameof(targetFullPath));
             }
 
-            ThreadHelper.JoinableTaskFactory.Run(async delegate
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
                 {
                     await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
@@ -44,7 +45,7 @@ namespace NuGet.PackageManagement.VisualStudio
         [MethodImpl(MethodImplOptions.NoInlining)]
         private async Task AddImportStatementAsync(ImportLocation location, string relativeTargetPath)
         {
-            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             await ProjectSystem.ProjectHelper.DoWorkInWriterLockAsync(
                 EnvDTEProject,
@@ -62,9 +63,9 @@ namespace NuGet.PackageManagement.VisualStudio
                 throw new ArgumentNullException(nameof(targetFullPath), CommonResources.Argument_Cannot_Be_Null_Or_Empty);
             }
 
-            ThreadHelper.JoinableTaskFactory.Run(async delegate
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
                 {
-                    await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                     var root = EnvDTEProjectUtility.GetFullPath(EnvDTEProject);
                     // For VS 2012 or above, the operation has to be done inside the Writer lock
@@ -78,7 +79,7 @@ namespace NuGet.PackageManagement.VisualStudio
         [MethodImpl(MethodImplOptions.NoInlining)]
         private async Task RemoveImportStatementAsync(string relativeTargetPath)
         {
-            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             await ProjectSystem.ProjectHelper.DoWorkInWriterLockAsync(
                 EnvDTEProject,

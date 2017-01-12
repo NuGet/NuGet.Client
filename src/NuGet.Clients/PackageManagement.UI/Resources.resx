@@ -426,9 +426,6 @@ Packages installed into Website projects will not be restored during build. Cons
   <data name="Version_LatestPrerelease" xml:space="preserve">
     <value>Latest prerelease</value>
   </data>
-  <data name="CustomJoinableTaskFactoryNotAllowed" xml:space="preserve">
-    <value>Custom JoinableTaskFactory is not allowed, since ThreadHelper.JoinableTaskFactory is available</value>
-  </data>
   <data name="Text_ViewLicense" xml:space="preserve">
     <value>View License</value>
   </data>

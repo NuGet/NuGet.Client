@@ -22,6 +22,7 @@ using NuGet.Versioning;
 using NuGet.VisualStudio.Implementation.Resources;
 using NuGetConsole;
 using Task = System.Threading.Tasks.Task;
+using NuGet.PackageManagement.UI;
 
 namespace NuGet.VisualStudio
 {
@@ -65,7 +66,7 @@ namespace NuGet.VisualStudio
 
             _preinstalledPackageInstaller = new PreinstalledPackageInstaller(_packageServices, _solutionManager, _settings, _sourceProvider, (VsPackageInstaller)_installer);
 
-            PumpingJTF = new PumpingJTF(ThreadHelper.JoinableTaskContext);
+            PumpingJTF = new PumpingJTF(NuGetUIThreadHelper.JoinableTaskFactory.Context);
         }
 
         private IEnumerable<PreinstalledPackageConfiguration> GetConfigurationsFromVsTemplateFile(string vsTemplatePath)
@@ -255,7 +256,7 @@ namespace NuGet.VisualStudio
 
         private async Task TemplateFinishedGeneratingAsync(Project project)
         {
-            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             var forceDesignTimeBuild = false;
             foreach (var configuration in _configurations)
@@ -413,7 +414,7 @@ namespace NuGet.VisualStudio
         {
             PumpingJTF.Run(async delegate
                 {
-                    await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                     await ProjectFinishedGeneratingAsync(project);
                 });
@@ -423,7 +424,7 @@ namespace NuGet.VisualStudio
         {
             PumpingJTF.Run(async delegate
                 {
-                    await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                     await ProjectItemFinishedGeneratingAsync(projectItem);
                 });
@@ -440,9 +441,9 @@ namespace NuGet.VisualStudio
             // as part of the operations performed below. Powershell scripts need to be executed on the
             // pipeline execution thread and they might try to access DTE. Doing that under
             // ThreadHelper.JoinableTaskFactory.Run will consistently result in a hang
-            ThreadHelper.JoinableTaskFactory.Run(async delegate
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
                 {
-                    await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                     // alternatively could get body of WizardData element from replacementsDictionary["$wizarddata$"] instead of parsing vstemplate file.
                     RunStarted(automationObject, replacementsDictionary, runKind, customParams);
