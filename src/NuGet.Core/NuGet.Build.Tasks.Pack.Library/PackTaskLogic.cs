@@ -29,6 +29,7 @@ namespace NuGet.Build.Tasks.Pack
                 Suffix = request.VersionSuffix,
                 Tool = request.IsTool,
                 Symbols = request.IncludeSymbols,
+                BasePath = request.NuspecBasePath,
                 NoPackageAnalysis = request.NoPackageAnalysis,
                 PackTargetArgs = new MSBuildPackTargetArgs
                 {
@@ -53,6 +54,15 @@ namespace NuGet.Build.Tasks.Pack
                 }
 
                 packArgs.MinClientVersion = version;
+            }
+
+            if (request.NuspecProperties != null && request.NuspecProperties.Any())
+            {
+                packArgs.Properties.AddRange(ParsePropertiesAsDictionary(request.NuspecProperties));
+                if (packArgs.Properties.ContainsKey("version"))
+                {
+                    packArgs.Version = packArgs.Properties["version"];
+                }
             }
 
             InitCurrentDirectoryAndFileName(request, packArgs);
@@ -574,6 +584,28 @@ namespace NuGet.Build.Tasks.Pack
                     PackCommandRunner.AddLibraryDependency(packageDependency, dependencies);
                 }
             }
+        }
+
+        private static IDictionary<string, string> ParsePropertiesAsDictionary(string[] properties)
+        {
+            var dictionary = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            foreach (var item in properties)
+            {
+                int index = item.IndexOf("=");
+                // Make sure '=' is not the first or the last character of the string
+                if (index > 0 && index < item.Length - 1)
+                {
+                    var key = item.Substring(0, index);
+                    var value = item.Substring(index + 1);
+                    dictionary[key] = value;
+                }
+                else
+                {
+                    throw new InvalidOperationException(Strings.InvalidNuspecProperties);
+                }
+            }
+
+            return dictionary;
         }
     }
 }

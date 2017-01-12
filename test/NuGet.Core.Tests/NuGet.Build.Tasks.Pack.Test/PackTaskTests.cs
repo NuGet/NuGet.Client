@@ -284,6 +284,7 @@ namespace NuGet.Build.Tasks.Pack.Test
                 MinClientVersion = "MinClientVersion",
                 NoPackageAnalysis = true,
                 NuspecOutputPath = "NuspecOutputPath",
+                NuspecProperties = new string[0],
                 PackItem = null, // This is asserted by other tests. It does not serialize well.
                 PackageFiles = new ITaskItem[0],
                 PackageFilesToExclude = new ITaskItem[0],
