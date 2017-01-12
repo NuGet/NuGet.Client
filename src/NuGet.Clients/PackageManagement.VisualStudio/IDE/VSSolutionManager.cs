@@ -1042,7 +1042,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public async Task<NuGetProject> GetOrCreateProjectAsync(EnvDTE.Project project, INuGetProjectContext projectContext)
         {
-            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             var projectSafeName = await EnvDTEProjectUtility.GetCustomUniqueNameAsync(project);
             var nuGetProject = GetNuGetProject(projectSafeName);

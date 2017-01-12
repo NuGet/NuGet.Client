@@ -23,6 +23,7 @@
     <Reference Include="System.ComponentModel.Composition" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="NuGetUIThreadHelper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ProjectSystem\ProjectHelper.cs" />
     <Compile Include="Telemetry\ITelemetrySession.cs" />
@@ -46,6 +47,7 @@
           <HintPath>$(MSBuildToolsPath)\Microsoft.Build.dll</HintPath>
           <Private>False</Private>
         </Reference>
+        <Reference Include="Microsoft.VisualStudio.ComponentModelHost, Version=14.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
       </ItemGroup>
     </When>
     <When Condition="'$(VisualStudioVersion)' == '15.0'">
@@ -61,6 +63,7 @@
           <HintPath>$(EnlistmentRoot)\packages\Microsoft.Build.15.1.262-preview5\lib\net46\Microsoft.Build.dll</HintPath>
           <Private>False</Private>
         </Reference>
+        <Reference Include="Microsoft.VisualStudio.ComponentModelHost, Version=15.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
       </ItemGroup>
     </When>
   </Choose>
