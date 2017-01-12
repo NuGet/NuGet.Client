@@ -12,7 +12,6 @@ $CLIRoot = Join-Path $NuGetClientRoot cli
 $CLIRootTest = Join-Path $NuGetClientRoot cli_test
 $Nupkgs = Join-Path $NuGetClientRoot nupkgs
 $Artifacts = Join-Path $NuGetClientRoot artifacts
-$NuGetExeFolder = Join-Path $NuGetClientRoot NuGetExe
 $ReleaseNupkgs = Join-Path $Artifacts ReleaseNupkgs
 $ConfigureJson = Join-Path $Artifacts configure.json
 $ILMergeOutputDir = Join-Path $Artifacts "VS14"
@@ -909,7 +908,7 @@ Function Publish-ClientsPackages {
     $exeProject = Join-Path $exeProjectDir "NuGet.CommandLine.csproj"
     $exeNuspec = Join-Path $exeProjectDir "NuGet.CommandLine.nuspec"
     $exeInputDir = [io.path]::combine($Artifacts, "NuGet.CommandLine", "${ToolsetVersion}.0", $Configuration)
-    $exeOutputDir = Join-Path $Artifacts $NuGetExeFolder
+    $exeOutputDir = Join-Path $Artifacts "VS${ToolsetVersion}"
 
     # Build and pack the NuGet.CommandLine project with the build number and release label.
     Build-ClientsProjectHelper `
