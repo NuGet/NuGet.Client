@@ -30,6 +30,23 @@ function New-BuildIntegratedProj
     }
 }
 
+function New-NetCoreConsoleApp
+{
+    param(
+        [string]$ProjectName,
+        [string]$SolutionFolder
+    )
+    
+    if ((Get-VSVersion) -ge '15.0')
+    {
+        New-Project NetCoreConsoleApp $ProjectName $SolutionFolder
+    }
+    else
+    {
+        throw "SKIP: $($_)"
+    }
+}
+
 function New-CpsApp 
 {
     param(
