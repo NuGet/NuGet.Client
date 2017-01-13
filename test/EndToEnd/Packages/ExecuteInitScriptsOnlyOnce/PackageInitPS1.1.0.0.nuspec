@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<package>
+  <metadata>
+    <version>1.0.0</version>
+    <authors>daravind</authors>
+    <owners />
+    <id>PackageInitPS1</id>
+    <title />
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>My package description.</description>
+  </metadata>
+  <files>
+    <file src="tools\init.ps1" target="tools\init.ps1" />
+  </files>
+</package>
