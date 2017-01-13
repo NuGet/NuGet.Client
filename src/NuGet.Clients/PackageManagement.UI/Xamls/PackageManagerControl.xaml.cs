@@ -669,7 +669,7 @@ namespace NuGet.PackageManagement.UI
                 _packageDetail.Visibility = Visibility.Visible;
                 _packageDetail.DataContext = _detailModel;
 
-                await _detailModel.SetCurrentPackage(selectedPackage, _topPanel.Filter);
+                await _detailModel.SetCurrentPackage(selectedPackage, _topPanel.Filter, ()=>_packageList.SelectedItem);
 
                 _packageDetail.ScrollToHome();
 
