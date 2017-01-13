@@ -75,6 +75,9 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         // store the current CancellationToken. This will be set on the private data
         private CancellationToken _token;
 
+        // store the current solution directory which will be to check the solution change while executing init scripts.
+        private string _currentSolutionDirectory;
+
         protected PowerShellHost(string name, IRunspaceManager runspaceManager)
         {
             _runspaceManager = runspaceManager;
@@ -275,21 +278,25 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                             UpdateWorkingDirectory();
                             await ExecuteInitScriptsAsync();
 
-                            // Hook up solution events
-                            _solutionManager.SolutionOpened += (o, e) =>
-                                {
-                                    _scriptExecutor.Reset();
+                            // check if PMC console is actually opened, then only hook to solution load/close events.
+                            if (console is IWpfConsole)
+                            {
+                                // Hook up solution events
+                                _solutionManager.SolutionOpened += (o, e) =>
+                                    {
+                                        _scriptExecutor.Reset();
 
                                     // Solution opened event is raised on the UI thread
                                     // Go off the UI thread before calling likely expensive call of ExecuteInitScriptsAsync
                                     // Also, it uses semaphores, do not call it from the UI thread
                                     Task.Run(delegate
-                                        {
-                                            UpdateWorkingDirectory();
-                                            return ExecuteInitScriptsAsync();
-                                        });
-                                };
-                            _solutionManager.SolutionClosed += (o, e) => UpdateWorkingDirectory();
+                                            {
+                                                UpdateWorkingDirectory();
+                                                return ExecuteInitScriptsAsync();
+                                            });
+                                    };
+                                _solutionManager.SolutionClosed += (o, e) => UpdateWorkingDirectory();
+                            }
                             _solutionManager.NuGetProjectAdded += (o, e) => UpdateWorkingDirectoryAndAvailableProjects();
                             _solutionManager.NuGetProjectRenamed += (o, e) => UpdateWorkingDirectoryAndAvailableProjects();
                             _solutionManager.NuGetProjectUpdated += (o, e) => UpdateWorkingDirectoryAndAvailableProjects();
@@ -353,6 +360,18 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                 if (_settings == null)
                 {
                     return;
+                }
+
+                // check if we have already run init scripts for this solution, then simply return without executing init scripts
+                if (!string.IsNullOrEmpty(_currentSolutionDirectory) &&
+                    _currentSolutionDirectory.Equals(_solutionManager.SolutionDirectory, StringComparison.OrdinalIgnoreCase))
+                {
+                    return;
+                }
+                else
+                {
+                    // save current solution directory so that we don't execute init scripts for the same solution again.
+                    _currentSolutionDirectory = _solutionManager.SolutionDirectory;
                 }
 
                 // make sure all projects are loaded before start to execute init scripts. Since
@@ -584,6 +603,13 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             {
                 throw new ArgumentNullException(nameof(command));
             }
+
+            // since install.ps1/uninstall.ps1 could depend on init scripts, so we need to make sure
+            // to run it once for each solution
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
+            {
+                await ExecuteInitScriptsAsync();
+            });
 
             NuGetEventTrigger.Instance.TriggerEvent(NuGetEvent.PackageManagerConsoleCommandExecutionBegin);
             ActiveConsole = console;
