@@ -67,16 +67,15 @@ namespace NuGet.PackageManagement.UI
         /// <param name="filter">The current filter. This will used to select the default action.</param>
         public async virtual Task SetCurrentPackage(
             PackageItemListViewModel searchResultPackage,
-            ItemFilter filter)
+            ItemFilter filter,
+            Func<PackageItemListViewModel> getPackageItemListViewModel)
         {
             _searchResultPackage = searchResultPackage;
             _filter = filter;
             OnPropertyChanged(nameof(Id));
             OnPropertyChanged(nameof(IconUrl));
 
-            var versions = await searchResultPackage.GetVersionsAsync();
-
-            _allPackageVersions = versions.Select(v => v.Version).ToList();
+            var getVersionsTask = searchResultPackage.GetVersionsAsync();
 
             _projectVersionRangeDict = new Dictionary<string, VersionRange>(StringComparer.OrdinalIgnoreCase);
 
@@ -91,6 +90,22 @@ namespace NuGet.PackageManagement.UI
 
                 _projectVersionRangeDict.Add(project.GetMetadata<string>(NuGetProjectMetadataKeys.Name), packageReference?.AllowedVersions);
             }
+
+            // Add Current package version to package versions list.
+            _allPackageVersions = new List<NuGetVersion>() { searchResultPackage.Version };
+            CreateVersions();
+            OnCurrentPackageChanged();
+
+            var versions = await getVersionsTask;
+
+            // GetVersionAsync can take long time to finish, user might changed selected package.
+            // Check selected package.
+            if (getPackageItemListViewModel() != searchResultPackage)
+            {
+                return;
+            }
+
+            _allPackageVersions = versions.Select(v => v.Version).ToList();
 
             // hook event handler for dependency behavior changed
             Options.SelectedChanged += DependencyBehavior_SelectedChanged;

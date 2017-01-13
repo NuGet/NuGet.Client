@@ -31,11 +31,20 @@ namespace NuGet.PackageManagement.UI
 
         public async override Task SetCurrentPackage(
             PackageItemListViewModel searchResultPackage,
-            ItemFilter filter)
+            ItemFilter filter,
+            Func<PackageItemListViewModel> getPackageItemListViewModel)
         {
+            // Set InstalledVersion before fetching versions list.
+            InstalledVersion = searchResultPackage.InstalledVersion;
 
-            await base.SetCurrentPackage(searchResultPackage, filter);
+            await base.SetCurrentPackage(searchResultPackage, filter, getPackageItemListViewModel);
 
+            // SetCurrentPackage can take long time to return, user might changed selected package.
+            // Check selected package.
+            if (getPackageItemListViewModel() != searchResultPackage)
+            {
+                return;
+            }
             InstalledVersion = searchResultPackage.InstalledVersion;
             SelectedVersion.IsCurrentInstalled = InstalledVersion == SelectedVersion.Version;
             OnPropertyChanged(nameof(SelectedVersion));
