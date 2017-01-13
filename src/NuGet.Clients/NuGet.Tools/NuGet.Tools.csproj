@@ -30,7 +30,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(VisualStudioVersion)' == '15.0'">
     <VsixOutputDirName>VS15</VsixOutputDirName>
-    <IsProductComponent>false</IsProductComponent>
+    <IsProductComponent>true</IsProductComponent>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' And '$(BuildingInsideVisualStudio)' == 'True'">
     <StartAction>Program</StartAction>
