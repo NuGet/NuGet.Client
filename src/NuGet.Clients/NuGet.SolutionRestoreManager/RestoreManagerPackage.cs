@@ -15,6 +15,7 @@ using NuGet.PackageManagement;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Protocol.Core.Types;
 using Task = System.Threading.Tasks.Task;
+using NuGet.PackageManagement.UI;
 
 namespace NuGet.SolutionRestoreManager
 {
@@ -63,6 +64,9 @@ namespace NuGet.SolutionRestoreManager
 
             _solutionManager = new Lazy<IVsSolutionManager>(
                 () => componentModel.GetService<IVsSolutionManager>());
+
+            // Lazy load the CPS enabled JoinableTaskFactory for the UI.
+            NuGetUIThreadHelper.SetJoinableTaskFactoryFromService(componentModel);
 
             await ThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {

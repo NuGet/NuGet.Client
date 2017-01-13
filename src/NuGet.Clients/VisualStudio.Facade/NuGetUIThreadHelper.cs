@@ -11,7 +11,7 @@ namespace NuGet.PackageManagement.UI
 {
     public static class NuGetUIThreadHelper
     {
-        private static JoinableTaskFactory _joinableTaskFactory;
+        private static Lazy<JoinableTaskFactory> _joinableTaskFactory;
 
         /// <summary>
         /// Returns the static instance of JoinableTaskFactory set by SetJoinableTaskFactoryFromService.
@@ -20,7 +20,7 @@ namespace NuGet.PackageManagement.UI
         {
             get
             {
-                return _joinableTaskFactory;
+                return _joinableTaskFactory?.Value;
             }
         }
 
@@ -28,21 +28,28 @@ namespace NuGet.PackageManagement.UI
         /// Retrieve the CPS enabled JoinableTaskFactory for the current version of Visual Studio.
         /// This overrides the default VsTaskLibraryHelper.ServiceInstance JTF.
         /// </summary>
-        public static void SetJoinableTaskFactoryFromService(IServiceProvider serviceProvider)
+        public static void SetJoinableTaskFactoryFromService(IComponentModel componentModel)
         {
-            var componentModel = serviceProvider.GetService(typeof(SComponentModel)) as IComponentModel;
-            var projectServiceAccessor = componentModel.GetService<IProjectServiceAccessor>();
+            if (componentModel == null)
+            {
+                throw new ArgumentNullException(nameof(componentModel));
+            }
+
+            _joinableTaskFactory = new Lazy<JoinableTaskFactory>(() =>
+            {
+                var projectServiceAccessor = componentModel.GetService<IProjectServiceAccessor>();
 
 #if VS14
-            // Use IThreadHandling.AsyncPump for Visual Studio 2015
-            ProjectService projectService = projectServiceAccessor.GetProjectService();
-            IThreadHandling threadHandling = projectService.Services.ThreadingPolicy;
-            _joinableTaskFactory = service.AsyncPump;
+                // Use IThreadHandling.AsyncPump for Visual Studio 2015
+                ProjectService projectService = projectServiceAccessor.GetProjectService();
+                IThreadHandling threadHandling = projectService.Services.ThreadingPolicy;
+                return threadHandling.AsyncPump;
 #else
-            // Use IProjectService for Visual Studio 2017
-            IProjectService projectService = projectServiceAccessor.GetProjectService();
-            _joinableTaskFactory = projectService.Services.ThreadingPolicy.JoinableTaskFactory;
+                // Use IProjectService for Visual Studio 2017
+                IProjectService projectService = projectServiceAccessor.GetProjectService();
+                return projectService.Services.ThreadingPolicy.JoinableTaskFactory;
 #endif
+            });
         }
 
         /// <summary>
@@ -64,8 +71,11 @@ namespace NuGet.PackageManagement.UI
             // This method is not thread-safe and does not have it to be
             // This is really just a test-hook to be used by test standalone UI and only 1 thread will call into this
             // And, note that this method throws, when running inside VS, and ThreadHelper.JoinableTaskContext is not null
-            var joinableTaskContext = new JoinableTaskContext(mainThread, synchronizationContext);
-            _joinableTaskFactory = joinableTaskContext.Factory;
+            _joinableTaskFactory = new Lazy<JoinableTaskFactory>(() =>
+            {
+                var joinableTaskContext = new JoinableTaskContext(mainThread, synchronizationContext);
+                return joinableTaskContext.Factory;
+            });
         }
     }
 }

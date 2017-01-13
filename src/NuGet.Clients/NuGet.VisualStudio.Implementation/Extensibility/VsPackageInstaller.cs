@@ -12,6 +12,7 @@ using EnvDTE;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Threading;
 using NuGet.PackageManagement;
+using NuGet.PackageManagement.UI;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
@@ -20,7 +21,6 @@ using NuGet.Resolver;
 using NuGet.Versioning;
 using NuGet.VisualStudio.Implementation.Resources;
 using Task = System.Threading.Tasks.Task;
-using NuGet.PackageManagement.UI;
 
 namespace NuGet.VisualStudio
 {
