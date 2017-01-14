@@ -61,10 +61,6 @@ try {
     Write-Verbose "Copying test extension from '$TestExtension' to '$WorkingDirectory'"
     Copy-Item $TestExtension $WorkingDirectory
 
-    $NuGetExe = Join-Path $NuGetRoot "artifacts\VS14\NuGet.exe" -Resolve
-    Write-Verbose "Copying nuget.exe from '$NuGetExe' to '$WorkingDirectory'"
-    Copy-Item $NuGetExe $WorkingDirectory
-
     $ScriptsDirectory = Join-Path $WorkingDirectory scripts
     New-Item -ItemType Directory -Force -Path $ScriptsDirectory | Out-Null
 
