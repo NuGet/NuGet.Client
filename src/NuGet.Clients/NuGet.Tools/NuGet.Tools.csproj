@@ -340,6 +340,10 @@
     <Message Text="Publishing VSIX package files..." Importance="high" />
     <Message Text="$(TargetVsixContainer) -&gt; $(PublishDestination)" Importance="high" />
     <Copy SourceFiles="$(TargetVsixContainer)" DestinationFolder="$(PublishDestination)" OverwriteReadOnlyFiles="true" />
+    <ItemGroup Condition="'$(VisualStudioVersion)' == '15.0'">
+      <Message Text="$(ArtifactRoot)\NuGet.Tools\15.0\Debug\Microsoft.VisualStudio.NuGet.Core.json -&gt; $(PublishDestination)" Importance="high" />
+      <Copy SourceFiles="$(ArtifactRoot)\NuGet.Tools\15.0\Debug\Microsoft.VisualStudio.NuGet.Core.json" DestinationFolder="$(PublishDestination)" OverwriteReadOnlyFiles="true" />
+    </ItemGroup>
     <ItemGroup>
       <NuGetSymbolFiles Include="$(OutputPath)NuGet*.pdb" />
     </ItemGroup>
