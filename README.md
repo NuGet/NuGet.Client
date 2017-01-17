@@ -75,3 +75,6 @@ This project has adopted the [Microsoft Open Source Code of Conduct](https://ope
 ### Build artifacts location
 - `$(NuGetClientRoot)\Artifacts` - this folder will contain the Package Manager extension (`NuGet.Tools.vsix`) and NuGet command-line client application (`nuget.exe`)
 - `$(NuGetClientRoot)\Nupkgs` - this folder will contain all our projects packages
+
+### Documentation
+Here's a link to an unofficial documentation: https://daveaglick.com/tags/nuget
