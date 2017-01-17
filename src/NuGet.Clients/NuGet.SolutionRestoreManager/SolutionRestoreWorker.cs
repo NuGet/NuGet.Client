@@ -47,7 +47,7 @@ namespace NuGet.SolutionRestoreManager
         private readonly JoinableTaskCollection _joinableCollection;
         private readonly JoinableTaskFactory _joinableFactory;
 
-        private ErrorListProvider ErrorListProvider => ThreadHelper.JoinableTaskFactory.Run(_errorListProvider.GetValueAsync);
+        private ErrorListProvider ErrorListProvider => NuGetUIThreadHelper.JoinableTaskFactory.Run(_errorListProvider.GetValueAsync);
 
         public Task<bool> CurrentRestoreOperation => _activeRestoreTask;
 
@@ -93,14 +93,14 @@ namespace NuGet.SolutionRestoreManager
 
             _errorListProvider = new AsyncLazy<ErrorListProvider>(async () =>
                 {
-                    await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
                     return new ErrorListProvider(serviceProvider);
                 },
                 _joinableFactory);
 
             _componentModel = new AsyncLazy<IComponentModel>(async () =>
                 {
-                    await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
                     return serviceProvider.GetService<SComponentModel, IComponentModel>();
                 },
                 _joinableFactory);
@@ -114,7 +114,7 @@ namespace NuGet.SolutionRestoreManager
             {
                 await _joinableFactory.RunAsync(async () =>
                 {
-                    await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                     var dte = _serviceProvider.GetDTE();
                     _solutionEvents = dte.Events.SolutionEvents;
@@ -134,7 +134,7 @@ namespace NuGet.SolutionRestoreManager
 
             _joinableFactory.Run(async () =>
             {
-                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                 _solutionEvents.AfterClosing -= SolutionEvents_AfterClosing;
 #if VS15

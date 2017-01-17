@@ -571,7 +571,7 @@ namespace NuGetVSExtension
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            ThreadHelper.JoinableTaskFactory.Run(async delegate
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
             {
                 string parameterString = null;
                 OleMenuCmdEventArgs args = e as OleMenuCmdEventArgs;
@@ -763,7 +763,7 @@ namespace NuGetVSExtension
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            ThreadHelper.JoinableTaskFactory.Run(async delegate
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
             {
                 var windowFrame = await FindExistingSolutionWindowFrameAsync();
                 if (windowFrame == null)
@@ -817,9 +817,9 @@ namespace NuGetVSExtension
 
         private void BeforeQueryStatusForAddPackageDialog(object sender, EventArgs args)
         {
-            ThreadHelper.JoinableTaskFactory.Run(async delegate
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
             {
-                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                 OleMenuCommand command = (OleMenuCommand)sender;
 
@@ -840,9 +840,9 @@ namespace NuGetVSExtension
 
         private void BeforeQueryStatusForAddPackageForSolutionDialog(object sender, EventArgs args)
         {
-            ThreadHelper.JoinableTaskFactory.Run(async delegate
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
             {
-                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                 OleMenuCommand command = (OleMenuCommand)sender;
 

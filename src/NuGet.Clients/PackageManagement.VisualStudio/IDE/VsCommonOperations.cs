@@ -7,6 +7,7 @@ using System.ComponentModel.Composition;
 using System.IO;
 using EnvDTE;
 using Microsoft.VisualStudio.Shell;
+using NuGet.PackageManagement.UI;
 using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.PackageManagement.VisualStudio
@@ -34,9 +35,9 @@ namespace NuGet.PackageManagement.VisualStudio
                 throw new ArgumentNullException(nameof(fullPath));
             }
 
-            return ThreadHelper.JoinableTaskFactory.Run(async delegate
+            return NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
                 {
-                    await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                     if (_dte.ItemOperations != null
                         && File.Exists(fullPath))
@@ -56,9 +57,9 @@ namespace NuGet.PackageManagement.VisualStudio
                 throw new ArgumentNullException(nameof(solutionManager));
             }
 
-            return ThreadHelper.JoinableTaskFactory.Run(async delegate
+            return NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
             {
-                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                 _expandedNodes = await VsHierarchyUtility.GetAllExpandedNodesAsync(solutionManager);
 
@@ -73,9 +74,9 @@ namespace NuGet.PackageManagement.VisualStudio
                 throw new ArgumentNullException(nameof(solutionManager));
             }
 
-            return ThreadHelper.JoinableTaskFactory.Run(async delegate
+            return NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
             {
-                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                 await VsHierarchyUtility.CollapseAllNodesAsync(solutionManager, _expandedNodes);
 

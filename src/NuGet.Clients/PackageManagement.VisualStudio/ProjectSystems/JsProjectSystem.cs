@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using Microsoft.VisualStudio.Shell;
+using NuGet.PackageManagement.UI;
 using NuGet.ProjectManagement;
 using EnvDTEProject = EnvDTE.Project;
 using EnvDTEProjectItems = EnvDTE.ProjectItems;
@@ -28,9 +29,9 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 if (String.IsNullOrEmpty(_projectName))
                 {
-                    ThreadHelper.JoinableTaskFactory.Run(async delegate
+                    NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
                         {
-                            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                             _projectName = EnvDTEProjectUtility.GetName(EnvDTEProject);
                         });
@@ -47,9 +48,9 @@ namespace NuGet.PackageManagement.VisualStudio
                 return;
             }
 
-            ThreadHelper.JoinableTaskFactory.Run(async delegate
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
                 {
-                    await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                     await EnvDTEProjectUtility.GetProjectItemsAsync(EnvDTEProject, Path.GetDirectoryName(path), createIfNotExists: true);
                     base.AddFile(path, stream);
@@ -64,9 +65,9 @@ namespace NuGet.PackageManagement.VisualStudio
                 return;
             }
 
-            ThreadHelper.JoinableTaskFactory.Run(async delegate
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
                 {
-                    await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                     await EnvDTEProjectUtility.GetProjectItemsAsync(EnvDTEProject, Path.GetDirectoryName(path), createIfNotExists: true);
                     base.AddFile(path, writeToStream);

@@ -12,6 +12,7 @@ using Microsoft.VisualStudio.Workspace;
 using Microsoft.VisualStudio.Workspace.Extensions.MSBuild;
 using Microsoft.VisualStudio.Workspace.Indexing;
 using Microsoft.VisualStudio.Workspace.VSIntegration;
+using NuGet.PackageManagement.UI;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
@@ -21,7 +22,7 @@ namespace NuGet.PackageManagement.VisualStudio
     {
         private readonly AsyncLazy<IVsSolutionWorkspaceService> _solutionWorkspaceService;
 
-        private IVsSolutionWorkspaceService SolutionWorkspaceService => ThreadHelper.JoinableTaskFactory.Run(_solutionWorkspaceService.GetValueAsync);
+        private IVsSolutionWorkspaceService SolutionWorkspaceService => NuGetUIThreadHelper.JoinableTaskFactory.Run(_solutionWorkspaceService.GetValueAsync);
 
         [ImportingConstructor]
         public DeferredProjectWorkspaceService(
@@ -35,7 +36,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             _solutionWorkspaceService = new AsyncLazy<IVsSolutionWorkspaceService>(async () =>
             {
-                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
                 return (IVsSolutionWorkspaceService)serviceProvider.GetService(typeof(SVsSolutionWorkspaceService));
             });
         }
@@ -58,9 +59,9 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public async Task<IMSBuildProjectDataService> GetMSBuildProjectDataService(string projectFilePath, string targetFramework = "")
         {
-            return await ThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+            return await NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {
-                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
                 var factory = SolutionWorkspaceService.GetService(typeof(IVsSolutionMSBuildProjectServiceFactory)) as IVsSolutionMSBuildProjectServiceFactory;
 
                 if (factory == null)

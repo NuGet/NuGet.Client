@@ -8,6 +8,7 @@ using System.Linq;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Threading;
+using NuGet.PackageManagement.UI;
 using NuGet.PackageManagement.VisualStudio;
 
 namespace NuGetConsole
@@ -20,9 +21,9 @@ namespace NuGetConsole
         private readonly AsyncLazy<IVsUIShell> _vsUIShell;
         private readonly Lazy<IConsole> _cachedOutputConsole;
 
-        private IVsOutputWindow VsOutputWindow => ThreadHelper.JoinableTaskFactory.Run(_vsOutputWindow.GetValueAsync);
+        private IVsOutputWindow VsOutputWindow => NuGetUIThreadHelper.JoinableTaskFactory.Run(_vsOutputWindow.GetValueAsync);
 
-        private IVsUIShell VsUIShell => ThreadHelper.JoinableTaskFactory.Run(_vsUIShell.GetValueAsync);
+        private IVsUIShell VsUIShell => NuGetUIThreadHelper.JoinableTaskFactory.Run(_vsUIShell.GetValueAsync);
 
         [ImportingConstructor]
         OutputConsoleProvider(
@@ -45,13 +46,13 @@ namespace NuGetConsole
 
             _vsOutputWindow = new AsyncLazy<IVsOutputWindow>(async () =>
                 {
-                    await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
                     return serviceProvider.GetService<SVsOutputWindow, IVsOutputWindow>();
                 });
 
             _vsUIShell = new AsyncLazy<IVsUIShell>(async () =>
                 {
-                    await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
                     return serviceProvider.GetService<SVsUIShell, IVsUIShell>();
                 });
 

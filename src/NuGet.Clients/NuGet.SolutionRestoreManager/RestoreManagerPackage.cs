@@ -68,9 +68,9 @@ namespace NuGet.SolutionRestoreManager
             // Lazy load the CPS enabled JoinableTaskFactory for the UI.
             NuGetUIThreadHelper.SetJoinableTaskFactoryFromService(componentModel);
 
-            await ThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+            await NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {
-                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
                 var dte = (EnvDTE.DTE)await GetServiceAsync(typeof(SDTE));
                 _buildEvents = dte.Events.BuildEvents;
                 _buildEvents.OnBuildBegin += BuildEvents_OnBuildBegin;

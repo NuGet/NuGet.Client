@@ -8,6 +8,7 @@ using EnvDTE;
 using EnvDTE80;
 using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.Shell;
+using NuGet.PackageManagement.UI;
 using NuGet.ProjectManagement;
 
 namespace NuGet.PackageManagement.VisualStudio
@@ -44,9 +45,9 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public SourceControlManager GetSourceControlManager()
         {
-            return ThreadHelper.JoinableTaskFactory.Run(async delegate
+            return NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
                 {
-                    await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                     if (_dte != null
                         && _dte.SourceControl != null)

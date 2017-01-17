@@ -9,6 +9,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using Microsoft.VisualStudio.Shell;
+using NuGet.PackageManagement.UI;
 using NuGet.ProjectManagement;
 using VsWebSite;
 using EnvDTEProject = EnvDTE.Project;
@@ -33,9 +34,9 @@ namespace NuGet.PackageManagement.VisualStudio
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We want to catch all exceptions")]
         public override void AddReference(string referencePath)
         {
-            ThreadHelper.JoinableTaskFactory.Run(async delegate
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
                 {
-                    await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                     string name = Path.GetFileNameWithoutExtension(referencePath);
                     try
@@ -64,9 +65,9 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public override void RemoveReference(string name)
         {
-            ThreadHelper.JoinableTaskFactory.Run(async delegate
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
                 {
-                    await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                     // Remove the reference via DTE.
                     RemoveDTEReference(name);

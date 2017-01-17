@@ -11,6 +11,7 @@ using Microsoft.VisualStudio.Shell;
 using NuGet.Commands;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
+using NuGet.PackageManagement.UI;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
@@ -142,9 +143,9 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             var success = false;
 
-            await ThreadHelper.JoinableTaskFactory.RunAsync(async delegate
+            await NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async delegate
             {
-                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                 // We don't adjust package reference metadata from UI
                 _project.AddOrUpdateLegacyCSProjPackage(
@@ -162,9 +163,9 @@ namespace NuGet.PackageManagement.VisualStudio
         public override async Task<Boolean> UninstallPackageAsync(PackageIdentity packageIdentity, INuGetProjectContext nuGetProjectContext, CancellationToken token)
         {
             var success = false;
-            await ThreadHelper.JoinableTaskFactory.RunAsync(async delegate
+            await NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async delegate
             {
-                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                 _project.RemoveLegacyCSProjPackage(packageIdentity.Id);
 
@@ -409,9 +410,9 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             T result = default(T);
-            await ThreadHelper.JoinableTaskFactory.RunAsync(async delegate
+            await NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async delegate
             {
-                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                 result = uiThreadFunction();
             });
