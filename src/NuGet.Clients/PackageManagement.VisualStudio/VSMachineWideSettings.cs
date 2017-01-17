@@ -7,6 +7,7 @@ using System.ComponentModel.Composition;
 using System.Linq;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Threading;
+using NuGet.PackageManagement.UI;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
@@ -27,7 +28,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             _settings = new AsyncLazy<Configuration.Settings[]>(async () =>
                 {
-                    await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                     var baseDirectory = Common.NuGetEnvironment.GetFolderPath(
                         Common.NuGetFolderPath.MachineWideConfigDirectory);
@@ -43,6 +44,6 @@ namespace NuGet.PackageManagement.VisualStudio
                 ThreadHelper.JoinableTaskFactory);
         }
 
-        public IEnumerable<Configuration.Settings> Settings => ThreadHelper.JoinableTaskFactory.Run(_settings.GetValueAsync);
+        public IEnumerable<Configuration.Settings> Settings => NuGetUIThreadHelper.JoinableTaskFactory.Run(_settings.GetValueAsync);
     }
 }

@@ -13,6 +13,7 @@ using Microsoft.VisualStudio.Services.Client.AccountManagement;
 using Microsoft.VisualStudio.Services.DelegatedAuthorization.Client;
 using Microsoft.VisualStudio.Services.WebApi;
 using Microsoft.VisualStudio.Shell;
+using NuGet.PackageManagement.UI;
 using NuGet.PackageManagement.VisualStudio;
 
 namespace NuGetVSExtension
@@ -48,9 +49,9 @@ namespace NuGetVSExtension
             }
             Account account = null;
 
-            ThreadHelper.JoinableTaskFactory.Run(async () =>
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
             {
-                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
                 var parent = IntPtr.Zero;
                 if (_dte != null)
                 {
@@ -88,9 +89,9 @@ namespace NuGetVSExtension
             // need to reverse the flag
             var shouldPrompt = !nonInteractive;
             AuthenticationResult result = null;
-            ThreadHelper.JoinableTaskFactory.Run(async () =>
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
             {
-                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                 var parent = IntPtr.Zero;
                 if (_dte != null)

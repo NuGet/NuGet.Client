@@ -117,9 +117,9 @@ namespace NuGet.SolutionRestoreManager
 
         private void BeforeQueryStatusForPackageRestore(object sender, EventArgs args)
         {
-            ThreadHelper.JoinableTaskFactory.Run((Func<Task>)async delegate
+            NuGetUIThreadHelper.JoinableTaskFactory.Run((Func<Task>)async delegate
             {
-                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                 OleMenuCommand command = (OleMenuCommand)sender;
 

@@ -4,11 +4,10 @@
 using System;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using NuGet.PackageManagement.UI;
 using NuGet.ProjectManagement;
 using EnvDTEProject = EnvDTE.Project;
-using ThreadHelper = Microsoft.VisualStudio.Shell.ThreadHelper;
 using ProjectSystem = NuGet.VisualStudio.Facade.ProjectSystem;
-using NuGet.PackageManagement.UI;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
@@ -34,7 +33,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
                 {
-                    await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                     var root = EnvDTEProjectUtility.GetFullPath(EnvDTEProject);
                     string relativeTargetPath = PathUtility.GetRelativePath(PathUtility.EnsureTrailingSlash(root), targetFullPath);
