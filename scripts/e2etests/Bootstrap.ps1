@@ -28,7 +28,7 @@ function ExtractEndToEndZip
 
     $endToEndZipSrc = Join-Path $NuGetDropPath 'EndToEnd.zip'
     $endToEndZip = Join-Path $FuncTestRoot 'EndToEnd.zip'
-    $artifactsNuGetExe = Join-Path $FuncTestRoot 'NuGet.exe'
+    $artifactsNuGetExe = Join-Path $NuGetDropPath 'NuGet.exe'
     $endToEndNuGetExe = Join-Path $NuGetTestPath 'NuGet.exe'
 
     Copy-Item $endToEndZipSrc $endToEndZip -Force
