@@ -157,6 +157,15 @@ Copyright (c) .NET Foundation. All rights reserved.
           TaskParameter="TargetOutputs"
           ItemName="_TargetPathsToAssemblies" />
     </MSBuild>
+    
+    <!--Projects with target framework like UWP, Win8, wpa81 produce a Pri file
+    in their bin dir. This Pri file is not included in the BuiltProjectGroupOutput, and
+    has to be added manually here.-->
+    <ItemGroup Condition="'$(IncludeProjectPriFile)' == 'true'">
+      <_TargetPathsToAssemblies Include="$(ProjectPriFullPath)">
+        <FinalOutputPath>$(ProjectPriFullPath)</FinalOutputPath>
+      </_TargetPathsToAssemblies>
+    </ItemGroup>
 
     <MSBuild
       Condition="'$(IncludeSymbols)' == 'true' OR '$(IncludeSource)' == 'true'"

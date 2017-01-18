@@ -31,7 +31,8 @@ namespace NuGet.Commands
             ".exe",
             ".xml",
             ".json",
-            ".winmd"
+            ".winmd",
+            ".pri"
         };
 
         // List of extensions to allow in the output path if IncludeSymbols is set
@@ -43,6 +44,7 @@ namespace NuGet.Commands
             ".xml",
             ".winmd",
             ".json",
+            ".pri",
             ".pdb",
             ".mdb"
         };
