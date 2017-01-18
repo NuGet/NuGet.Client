@@ -2,16 +2,14 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.IO.Compression;
 using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
 using NuGet.XPlat.FuncTest;
 using NuGet.Test.Utility;
 using NuGet.Packaging;
 using NuGet.Packaging.PackageExtraction;
 
-namespace NuGet.Commands.FuncTest
+namespace Dotnet.Integration.Test
 {
     public class MsbuilldIntegrationTestFixture : IDisposable
     {

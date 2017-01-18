@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -11,7 +12,7 @@ using NuGet.XPlat.FuncTest;
 using Xunit;
 
 
-namespace NuGet.Commands.FuncTest
+namespace Dotnet.Integration.Test
 {
     [Collection("Dotnet Integration Tests")]
     public class PackCommandTests
@@ -491,6 +492,142 @@ namespace NuGet.Commands.FuncTest
 
             }
         }
+
+        [Platform(Platform.Windows)]
+        [Theory]
+        [InlineData("abc.txt",                  null,                                       "content/abc.txt;contentFiles/any/netstandard1.4/abc.txt")]
+        [InlineData("folderA/abc.txt",          null,                                       "content/folderA/abc.txt;contentFiles/any/netstandard1.4/folderA/abc.txt")]
+        [InlineData("folderA/folderB/abc.txt",  null,                                       "content/folderA/folderB/abc.txt;contentFiles/any/netstandard1.4/folderA/folderB/abc.txt")]
+        [InlineData("../abc.txt",               null,                                       "content/abc.txt;contentFiles/any/netstandard1.4/abc.txt")]
+        [InlineData("C:/abc.txt",               null,                                       "content/abc.txt;contentFiles/any/netstandard1.4/abc.txt")]
+        [InlineData("abc.txt",                  "folderA/",                                 "folderA/abc.txt")]
+        [InlineData("abc.txt",                  "folderA/xyz.txt",                          "folderA/xyz.txt")]
+        [InlineData("abc.txt",                  "",                                         "abc.txt")]
+        [InlineData("abc.txt",                  "/",                                        "abc.txt")]
+        [InlineData("abc.txt",                  "folderA;folderB",                          "folderA/abc.txt;folderB/abc.txt")]
+        [InlineData("abc.txt",                  "folderA;contentFiles",                     "folderA/abc.txt;contentFiles/any/netstandard1.4/abc.txt")]
+        [InlineData("abc.txt",                  "folderA;contentFiles/",                    "folderA/abc.txt;contentFiles/any/netstandard1.4/abc.txt")]
+        [InlineData("abc.txt",                  "folderA;contentFiles\\",                   "folderA/abc.txt;contentFiles/any/netstandard1.4/abc.txt")]
+        [InlineData("abc.txt",                  "folderA;contentFiles/folderA",             "folderA/abc.txt;contentFiles/folderA/abc.txt")]
+        [InlineData("abc.txt",                  "folderA/xyz.txt",                          "folderA/xyz.txt")]
+        [InlineData("folderA/abc.txt",          "folderA/",                                 "folderA/abc.txt")]
+        [InlineData("folderA/abc.txt",          "",                                         "abc.txt")]
+        [InlineData("folderA/abc.txt",          "/",                                        "abc.txt")]
+        [InlineData("folderA/abc.txt",          "folderA;folderB",                          "folderA/abc.txt;folderB/abc.txt")]
+        [InlineData("folderA/abc.txt",          "folderA;contentFiles",                     "folderA/abc.txt;contentFiles/any/netstandard1.4/abc.txt")]
+        [InlineData("folderA/abc.txt",          "folderA;contentFiles\\",                     "folderA/abc.txt;contentFiles/any/netstandard1.4/abc.txt")]
+        [InlineData("folderA/abc.txt",          "folderA;contentFiles/",                     "folderA/abc.txt;contentFiles/any/netstandard1.4/abc.txt")]
+        [InlineData("folderA/abc.txt",          "folderA;contentFiles/folderA",             "folderA/abc.txt;contentFiles/folderA/abc.txt")]
+        [InlineData("folderA/abc.txt",          "folderA/xyz.txt",                          "folderA/xyz.txt")]
+        [InlineData("C:/abc.txt",               "folderA/",                                 "folderA/abc.txt")]
+        [InlineData("C:/abc.txt",               "folderA/xyz.txt",                          "folderA/xyz.txt")]
+        [InlineData("C:/abc.txt",               "",                                         "abc.txt")]
+        [InlineData("C:/abc.txt",               "/",                                        "abc.txt")]
+        [InlineData("C:/abc.txt",               "folderA;folderB",                          "folderA/abc.txt;folderB/abc.txt")]
+        [InlineData("C:/abc.txt",               "folderA;contentFiles",                     "folderA/abc.txt;contentFiles/any/netstandard1.4/abc.txt")]
+        [InlineData("C:/abc.txt",               "folderA;contentFiles\\",                     "folderA/abc.txt;contentFiles/any/netstandard1.4/abc.txt")]
+        [InlineData("C:/abc.txt",               "folderA;contentFiles/",                     "folderA/abc.txt;contentFiles/any/netstandard1.4/abc.txt")]
+        [InlineData("C:/abc.txt",               "folderA;contentFiles/folderA",             "folderA/abc.txt;contentFiles/folderA/abc.txt")]
+        [InlineData("../abc.txt",               "folderA/",                                 "folderA/abc.txt")]
+        [InlineData("../abc.txt",               "folderA/xyz.txt",                          "folderA/xyz.txt")]
+        [InlineData("../abc.txt",               "",                                         "abc.txt")]
+        [InlineData("../abc.txt",               "/",                                        "abc.txt")]
+        [InlineData("../abc.txt",               "folderA;folderB",                          "folderA/abc.txt;folderB/abc.txt")]
+        [InlineData("../abc.txt",               "folderA;contentFiles",                     "folderA/abc.txt;contentFiles/any/netstandard1.4/abc.txt")]
+        [InlineData("../abc.txt",               "folderA;contentFiles/",                    "folderA/abc.txt;contentFiles/any/netstandard1.4/abc.txt")]
+        [InlineData("../abc.txt",               "folderA;contentFiles\\",                   "folderA/abc.txt;contentFiles/any/netstandard1.4/abc.txt")]
+        [InlineData("../abc.txt",               "folderA;contentFiles/folderA",             "folderA/abc.txt;contentFiles/folderA/abc.txt")]
+        // ## is a special syntax specifically for this test which means that ## should be replaced by the absolute path to the project directory.
+        [InlineData("##/abc.txt",               null,                                       "content/abc.txt;contentFiles/any/netstandard1.4/abc.txt")]
+        [InlineData("##/folderA/abc.txt",       null,                                       "content/folderA/abc.txt;contentFiles/any/netstandard1.4/folderA/abc.txt")]
+        [InlineData("##/../abc.txt",            null,                                       "content/abc.txt")]
+        [InlineData("##/abc.txt",               "",                                         "abc.txt")]
+        [InlineData("##/abc.txt",               "folderX;folderY",                          "folderX/abc.txt;folderY/abc.txt")]
+        [InlineData("##/folderA/abc.txt",       "folderX;folderY",                          "folderX/abc.txt;folderY/abc.txt")]
+        [InlineData("##/../abc.txt",            "folderX;folderY",                          "folderX/abc.txt;folderY/abc.txt")]
+        
+        public void PackCommand_PackProject_PackagePathPacksContentCorrectly(string sourcePath, string packagePath, string expectedTargetPaths)
+        {
+            // Arrange
+            using (var testDirectory = TestDirectory.Create())
+            {
+
+                var projectName = "ClassLibrary1";
+                var workingDirectory = Path.Combine(testDirectory, projectName);
+
+                if (sourcePath.StartsWith("##"))
+                {
+                    sourcePath = sourcePath.Replace("##", workingDirectory);
+                }
+                var projectFileContents = packagePath != null ? 
+                                    $@"<Project Sdk=""Microsoft.NET.Sdk"" ToolsVersion=""15.0"">
+
+                  <PropertyGroup>
+                    <TargetFrameworks>netstandard1.4</TargetFrameworks>
+                  </PropertyGroup>
+                  <ItemGroup>
+                    <Compile Include=""**\*.cs"" />
+                    <EmbeddedResource Include=""**\*.resx"" />
+                    <Content Include=""{sourcePath}"">
+                      <PackagePath>{packagePath}</PackagePath>
+                    </Content>
+                  </ItemGroup>
+                  <ItemGroup>
+                    <PackageReference Include=""NETStandard.Library"" Version=""1.6"" />
+                  </ItemGroup>
+                </Project>" 
+
+                : $@"<Project Sdk=""Microsoft.NET.Sdk"" ToolsVersion=""15.0"">
+
+                  <PropertyGroup>
+                    <TargetFrameworks>netstandard1.4</TargetFrameworks>
+                  </PropertyGroup>
+                  <ItemGroup>
+                    <Compile Include=""**\*.cs"" />
+                    <EmbeddedResource Include=""**\*.resx"" />
+                    <Content Include=""{sourcePath}""/>
+                  </ItemGroup>
+                  <ItemGroup>
+                    <PackageReference Include=""NETStandard.Library"" Version=""1.6"" />
+                  </ItemGroup>
+                </Project>";
+
+                // Create the subdirectory structure for testing possible source paths for the content file
+                Directory.CreateDirectory(Path.Combine(workingDirectory, "folderA"));
+                Directory.CreateDirectory(Path.Combine(workingDirectory, "folderA", "folderB"));
+
+                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName);
+                File.WriteAllText(Path.Combine(workingDirectory, $"{projectName}.csproj"), projectFileContents);
+                var pathToContent = Path.Combine(workingDirectory, sourcePath);
+                if (Path.IsPathRooted(sourcePath))
+                {
+                    pathToContent = sourcePath;
+                }
+                File.WriteAllText(pathToContent, "this is sample text in the content file");
+
+                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
+
+                // Act
+                msbuildFixture.PackProject(workingDirectory, projectName, $"-o {workingDirectory}");
+
+                // Assert
+                var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
+                var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
+                Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the expected place");
+                Assert.True(File.Exists(nuspecPath), "The intermediate nuspec file is not in the expected place");
+
+                using (var nupkgReader = new PackageArchiveReader(nupkgPath))
+                {
+                    var items = new HashSet<string>(nupkgReader.GetFiles());
+                    var expectedPaths = expectedTargetPaths.Split(';');
+                    foreach (var path in expectedPaths)
+                    {
+                        Assert.Contains(path, items);
+                    }
+                }
+            }
+        }
+
     }
 }
 

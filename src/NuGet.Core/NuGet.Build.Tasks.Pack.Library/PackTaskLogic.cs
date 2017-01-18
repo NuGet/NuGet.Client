@@ -364,24 +364,6 @@ namespace NuGet.Build.Tasks.Pack
                     }
                     targetPaths = newTargetPaths;
                 }
-
-                // this else if condition means the file is within the project directory and the target path should preserve this relative directory structure.
-                else if (sourcePath.StartsWith(packArgs.CurrentDirectory, StringComparison.CurrentCultureIgnoreCase) &&
-                         !Path.GetFileName(sourcePath)
-                             .Equals(packageFile.GetProperty(IdentityProperty), StringComparison.CurrentCultureIgnoreCase))
-                {
-                    var newTargetPaths = new List<string>();
-                    var identity = packageFile.GetProperty(IdentityProperty);
-                    if (identity.EndsWith(Path.GetFileName(sourcePath), StringComparison.CurrentCultureIgnoreCase))
-                    {
-                        identity = Path.GetDirectoryName(identity);
-                    }
-                    foreach (var targetPath in targetPaths)
-                    {
-                        newTargetPaths.Add(Path.Combine(targetPath, identity) + Path.DirectorySeparatorChar);
-                    }
-                    targetPaths = newTargetPaths;
-                }
             }
 
             var buildAction = BuildAction.Parse(packageFile.GetProperty("BuildAction"));
@@ -389,8 +371,10 @@ namespace NuGet.Build.Tasks.Pack
             // TODO: Do the work to get the right language of the project, tracked via https://github.com/NuGet/Home/issues/4100
             var language = buildAction.Equals(BuildAction.Compile) ? "cs" : "any";
 
+
             var setOfTargetPaths = new HashSet<string>(targetPaths, StringComparer.Ordinal);
-            if (setOfTargetPaths.Remove("contentFiles" + Path.DirectorySeparatorChar) 
+            if (setOfTargetPaths.Remove("contentFiles" + Path.DirectorySeparatorChar)
+                || setOfTargetPaths.Remove("contentFiles" + Path.AltDirectorySeparatorChar)
                 || setOfTargetPaths.Remove("contentFiles"))
             {
                 foreach (var framework in packArgs.PackTargetArgs.TargetFrameworks)
@@ -400,6 +384,49 @@ namespace NuGet.Build.Tasks.Pack
                 }
             }
 
+            // this  if condition means there is no package path provided, file is within the project directory
+            // and the target path should preserve this relative directory structure.
+            // This case would be something like :
+            // <Content Include= "folderA\folderB\abc.txt">
+            // Since the package path wasn't specified, we will add this to the package paths obtained via ContentTargetFolders and preserve
+            // relative directory structure
+            if (!packageFile.Properties.Contains("PackagePath") && 
+                sourcePath.StartsWith(packArgs.CurrentDirectory, StringComparison.CurrentCultureIgnoreCase) &&
+                     !Path.GetFileName(sourcePath)
+                         .Equals(packageFile.GetProperty(IdentityProperty), StringComparison.CurrentCultureIgnoreCase))
+            {
+                var newTargetPaths = new List<string>();
+                var identity = packageFile.GetProperty(IdentityProperty);
+                
+                // Identity can be a rooted absolute path too, in which case find the path relative to the current directory
+                if (Path.IsPathRooted(identity))
+                {
+                    identity = PathUtility.GetRelativePath(packArgs.CurrentDirectory + Path.DirectorySeparatorChar, identity);
+                    identity = Path.GetDirectoryName(identity);
+                }
+
+                // If identity is not a rooted path, then it is a relative path to the project directory
+                else if (identity.EndsWith(Path.GetFileName(sourcePath), StringComparison.CurrentCultureIgnoreCase))
+                {
+                    identity = Path.GetDirectoryName(identity);
+                }
+
+                foreach (var targetPath in setOfTargetPaths)
+                {
+                    var newTargetPath = Path.Combine(targetPath, identity);
+                    // We need to do this because evaluated identity in the above line of code can be an empty string
+                    // in the case when the original identity string was the absolute path to a file in project directory, and is in
+                    // the same directory as the csproj file. 
+                    if (!newTargetPath.EndsWith(Path.DirectorySeparatorChar.ToString()))
+                    {
+                        newTargetPath = newTargetPath + Path.DirectorySeparatorChar;
+                    }
+                    newTargetPaths.Add(newTargetPath);
+                }
+                setOfTargetPaths = new HashSet<string>(newTargetPaths, StringComparer.Ordinal);
+            }
+
+            
             return setOfTargetPaths.Select(target => new ContentMetadata()
             {
                 BuildAction = buildAction.IsKnown ? buildAction.Value : null,

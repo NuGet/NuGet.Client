@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using NuGet.Commands.FuncTest;
-using Xunit;
+﻿using Xunit;
 
 namespace Dotnet.Integration.Test
 {
