@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
+using Microsoft.VisualStudio.Threading;
 using NuGet.Common;
 using NuGet.PackageManagement.UI;
 using NuGet.PackageManagement.VisualStudio;
@@ -28,6 +29,7 @@ namespace NuGet.SolutionRestoreManager
 
         private RestoreOperationSource _operationSource;
         private ErrorListProvider _errorListProvider;
+        private JoinableTaskFactory _taskFactory;
         private CancellationTokenSource _externalCts;
         private Func<CancellationToken, Task<RestoreOperationProgressUI>> _progressFactory;
         private IOutputConsole _outputConsole;
@@ -62,11 +64,17 @@ namespace NuGet.SolutionRestoreManager
         public async Task StartAsync(
             RestoreOperationSource operationSource,
             ErrorListProvider errorListProvider,
+            JoinableTaskFactory jtf,
             CancellationTokenSource cts)
         {
             if (errorListProvider == null)
             {
                 throw new ArgumentNullException(nameof(errorListProvider));
+            }
+
+            if (jtf == null)
+            {
+                throw new ArgumentNullException(nameof(jtf));
             }
 
             if (cts == null)
@@ -76,16 +84,17 @@ namespace NuGet.SolutionRestoreManager
 
             _operationSource = operationSource;
             _errorListProvider = errorListProvider;
+            _taskFactory = jtf;
             _externalCts = cts;
             _externalCts.Token.Register(() => _cancelled = true);
 
 #if VS14
-            _progressFactory = t => WaitDialogProgress.StartAsync(_serviceProvider, t);
+            _progressFactory = t => WaitDialogProgress.StartAsync(_serviceProvider, _taskFactory, t);
 #else
-            _progressFactory = t => StatusBarProgress.StartAsync(_serviceProvider, t);
+            _progressFactory = t => StatusBarProgress.StartAsync(_serviceProvider, _taskFactory, t);
 #endif
 
-            await NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+            await _taskFactory.RunAsync(async () =>
             {
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
@@ -351,7 +360,7 @@ namespace NuGet.SolutionRestoreManager
             // capture current progress from the current execution context
             var progress = RestoreOperationProgressUI.Current;
 
-            await NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+            await _taskFactory.RunAsync(async () =>
             {
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
                 action(this, progress);
@@ -367,7 +376,7 @@ namespace NuGet.SolutionRestoreManager
             // capture current progress from the current execution context
             var progress = RestoreOperationProgressUI.Current;
 
-            NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
+            _taskFactory.Run(async () =>
             {
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
                 action(this, progress);
@@ -422,16 +431,23 @@ namespace NuGet.SolutionRestoreManager
         private class WaitDialogProgress : RestoreOperationProgressUI
         {
             private readonly ThreadedWaitDialogHelper.Session _session;
+            private readonly JoinableTaskFactory _taskFactory;
 
-            private WaitDialogProgress(ThreadedWaitDialogHelper.Session session)
+            private WaitDialogProgress(
+                ThreadedWaitDialogHelper.Session session,
+                JoinableTaskFactory taskFactory)
             {
                 _session = session;
+                _taskFactory = taskFactory;
                 UserCancellationToken = _session.UserCancellationToken;
             }
 
-            public static async Task<RestoreOperationProgressUI> StartAsync(IServiceProvider serviceProvider, CancellationToken token)
+            public static async Task<RestoreOperationProgressUI> StartAsync(
+                IServiceProvider serviceProvider,
+                JoinableTaskFactory jtf,
+                CancellationToken token)
             {
-                return await NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+                return await jtf.RunAsync(async () =>
                 {
                     await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
@@ -448,13 +464,13 @@ namespace NuGet.SolutionRestoreManager
                             currentStep: 0,
                             totalSteps: 0));
 
-                    return new WaitDialogProgress(session);
+                    return new WaitDialogProgress(session, jtf);
                 });
             }
 
             public override void Dispose()
             {
-                NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
+                _taskFactory.Run(async () =>
                 {
                     await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
                     _session.Dispose();
@@ -484,19 +500,24 @@ namespace NuGet.SolutionRestoreManager
         private class StatusBarProgress : RestoreOperationProgressUI
         {
             private static object icon = (short)Constants.SBAI_General;
+            private readonly JoinableTaskFactory _taskFactory;
             private readonly IVsStatusbar StatusBar;
             private uint cookie = 0;
 
-            private StatusBarProgress(IVsStatusbar statusBar)
+            private StatusBarProgress(
+                IVsStatusbar statusBar,
+                JoinableTaskFactory taskFactory)
             {
                 StatusBar = statusBar;
+                _taskFactory = taskFactory;
             }
 
             public static async Task<RestoreOperationProgressUI> StartAsync(
                 IServiceProvider serviceProvider,
+                JoinableTaskFactory jtf,
                 CancellationToken token)
             {
-                return await NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+                return await jtf.RunAsync(async () =>
                 {
                     await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
@@ -513,7 +534,7 @@ namespace NuGet.SolutionRestoreManager
 
                     statusBar.Animation(1, ref icon);
 
-                    RestoreOperationProgressUI progress = new StatusBarProgress(statusBar);
+                    RestoreOperationProgressUI progress = new StatusBarProgress(statusBar, jtf);
                     progress.ReportProgress(Resources.RestoringPackages);
 
                     return progress;
@@ -522,7 +543,7 @@ namespace NuGet.SolutionRestoreManager
 
             public override void Dispose()
             {
-                NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
+                _taskFactory.Run(async () =>
                 {
                     await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
