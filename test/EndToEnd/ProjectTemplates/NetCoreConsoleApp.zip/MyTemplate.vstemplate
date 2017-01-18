@@ -14,7 +14,7 @@
     <Icon>__TemplateIcon.ico</Icon>
   </TemplateData>
   <TemplateContent>
-    <Project TargetFileName="ConsoleApp14.csproj" File="ConsoleApp14.csproj" ReplaceParameters="true">
+    <Project TargetFileName="ConsoleApp.csproj" File="ConsoleApp.csproj" ReplaceParameters="true">
       <ProjectItem ReplaceParameters="true" TargetFileName="Program.cs">Program.cs</ProjectItem>
     </Project>
   </TemplateContent>
