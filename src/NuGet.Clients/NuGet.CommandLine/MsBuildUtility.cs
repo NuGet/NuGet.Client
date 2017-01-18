@@ -191,7 +191,8 @@ namespace NuGet.CommandLine
                     UseShellExecute = false,
                     FileName = msbuildPath,
                     Arguments = argumentBuilder.ToString(),
-                    RedirectStandardError = true
+                    RedirectStandardError = true,
+                    RedirectStandardOutput = true
                 };
 
                 console.LogDebug($"{processStartInfo.FileName} {processStartInfo.Arguments}");
@@ -199,7 +200,10 @@ namespace NuGet.CommandLine
                 using (var process = Process.Start(processStartInfo))
                 {
                     var errors = new StringBuilder();
-                    var errorTask = ConsumeStreamReaderAsync(process.StandardError, errors);
+                    var output = new StringBuilder();
+                    var excluded = new string[] { "msb4011", entryPointTargetPath };
+                    var errorTask = ConsumeStreamReaderAsync(process.StandardError, errors, filter: null);
+                    var outputTask = ConsumeStreamReaderAsync(process.StandardOutput, output, filter: (line) => IsIgnoredOutput(line, excluded));
                     var finished = process.WaitForExit(timeOut);
                     if (!finished)
                     {
@@ -218,6 +222,8 @@ namespace NuGet.CommandLine
                         throw new CommandLineException(
                             LocalizedResourceManager.GetString(nameof(NuGetResources.Error_MsBuildTimedOut)));
                     }
+
+                    await outputTask;
 
                     if (process.ExitCode != 0)
                     {
@@ -242,14 +248,23 @@ namespace NuGet.CommandLine
             }
         }
 
-        private static async Task ConsumeStreamReaderAsync(StreamReader reader, StringBuilder lines)
+        private static bool IsIgnoredOutput(string line, string[] excluded)
+        {
+            return excluded.All(p => line.IndexOf(p, StringComparison.OrdinalIgnoreCase) >= 0);
+        }
+
+        private static async Task ConsumeStreamReaderAsync(StreamReader reader, StringBuilder lines, Func<string, bool> filter)
         {
             await Task.Yield();
 
             string line;
             while ((line = await reader.ReadLineAsync()) != null)
             {
-                lines.AppendLine(line);
+                if (filter == null || 
+                    !filter(line))
+                {
+                    lines.AppendLine(line);
+                }
             }
         }
 
