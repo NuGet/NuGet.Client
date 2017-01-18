@@ -219,15 +219,19 @@ namespace NuGet.SolutionRestoreManager
             return _joinableFactory.Run(
                 async () =>
                 {
-                    // Initialize if not already done.
-                    await InitializeAsync();
-                    using (var restoreOperation = new BackgroundRestoreOperation())
+                    using (_joinableCollection.Join())
                     {
-                        await PromoteTaskToActiveAsync(restoreOperation, _workerCts.Token);
+                        // Initialize if not already done.
+                        await InitializeAsync();
 
-                        var result = await ProcessRestoreRequestAsync(restoreOperation, request, _workerCts.Token);
+                        using (var restoreOperation = new BackgroundRestoreOperation())
+                        {
+                            await PromoteTaskToActiveAsync(restoreOperation, _workerCts.Token);
 
-                        return result;
+                            var result = await ProcessRestoreRequestAsync(restoreOperation, request, _workerCts.Token);
+
+                            return result;
+                        }
                     }
                 },
                 JoinableTaskCreationOptions.LongRunning);
@@ -364,6 +368,7 @@ namespace NuGet.SolutionRestoreManager
                 await logger.StartAsync(
                     request.RestoreSource,
                     ErrorListProvider,
+                    _joinableFactory,
                     jobCts);
 
                 var job = componentModel.GetService<ISolutionRestoreJob>();
