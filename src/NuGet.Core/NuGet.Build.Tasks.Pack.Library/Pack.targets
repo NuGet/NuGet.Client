@@ -123,7 +123,9 @@ Copyright (c) .NET Foundation. All rights reserved.
               BuildOutputFolder="$(BuildOutputTargetFolder)"
               ContentTargetFolders="$(ContentTargetFolders)"
               RestoreOutputPath="$(RestoreOutputAbsolutePath)"
-              NuspecFile="$(NuspecFileAbsolutePath)"/>
+              NuspecFile="$(NuspecFileAbsolutePath)"
+              NuspecBasePath="$(NuspecBasePath)"
+              NuspecProperties="$(NuspecProperties)"/>
   </Target>
   <!--
     ============================================================

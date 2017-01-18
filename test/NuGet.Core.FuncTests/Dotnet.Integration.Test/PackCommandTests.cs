@@ -385,6 +385,112 @@ namespace NuGet.Commands.FuncTest
 
             }
         }
+
+        [Platform(Platform.Windows)]
+        [Theory]
+        // Command line : /p:NuspecProperties=\"id=MyPackage;version=1.2.3;description="hello world"\"
+        [InlineData("/p:NuspecProperties=\\\"id=MyPackage;version=1.2.3;description=\"hello world\"\\\"", "MyPackage", "1.2.3", "hello world")]
+        // Command line : /p:NuspecProperties=\"id=MyPackage;version=1.2.3;description="hello = world"\"
+        [InlineData("/p:NuspecProperties=\\\"id=MyPackage;version=1.2.3;description=\"hello = world\"\\\"", "MyPackage", "1.2.3", "hello = world")]
+        // Command line : /p:NuspecProperties=\"id=MyPackage;version=1.2.3;description="hello = world with a %3B"\"
+        [InlineData("/p:NuspecProperties=\\\"id=MyPackage;version=1.2.3;description=\"hello = world with a %3B\"\\\"", "MyPackage", "1.2.3", "hello = world with a ;")]
+        public void PackCommand_PackProject_PacksFromNuspecWithTokenSubstitution(
+            string nuspecProperties,
+            string expectedId,
+            string expectedVersion,
+            string expectedDescription
+            )
+        {
+            var nuspecFileContent = @"<?xml version=""1.0""?>
+<package>
+  <metadata>
+    <id>$id$</id>
+    <version>$version$</version>
+    <authors>Microsoft</authors>
+    <owners>NuGet</owners>
+    <description>$description$</description>
+  </metadata>
+  <files>
+    <file src=""abc.txt"" target=""CoreCLR/"" />
+  </files>
+</package>";
+            using (var testDirectory = TestDirectory.Create())
+            {
+                var projectName = "ClassLibrary1";
+                var workingDirectory = Path.Combine(testDirectory, projectName);
+                // Act
+                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, "-t lib");
+                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
+                File.WriteAllText(Path.Combine(workingDirectory, "input.nuspec"), nuspecFileContent);
+                File.WriteAllText(Path.Combine(workingDirectory, "abc.txt"), "sample text");
+
+                msbuildFixture.PackProject(workingDirectory, projectName, $"-o {workingDirectory} /p:NuspecFile=input.nuspec " + nuspecProperties);
+
+                var nupkgPath = Path.Combine(workingDirectory, $"{expectedId}.{expectedVersion}.nupkg");
+                Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the expected place");
+
+                using (var nupkgReader = new PackageArchiveReader(nupkgPath))
+                {
+                    var nuspecReader = nupkgReader.NuspecReader;
+
+                    // Validate the .nuspec.
+                    Assert.Equal(expectedId, nuspecReader.GetId());
+                    Assert.Equal(expectedVersion, nuspecReader.GetVersion().ToFullString());
+                    Assert.Equal("Microsoft", nuspecReader.GetAuthors());
+                    Assert.Equal("NuGet", nuspecReader.GetOwners());
+                    Assert.Equal(expectedDescription, nuspecReader.GetDescription());
+                    Assert.False(nuspecReader.GetRequireLicenseAcceptance());
+
+                    // Validate the assets.
+                    var libItems = nupkgReader.GetFiles("CoreCLR").ToArray();
+                    Assert.Equal("CoreCLR/abc.txt", libItems[0]);
+                }
+
+            }
+        }
+
+        [Platform(Platform.Windows)]
+        [Fact]
+        public void PackCommand_PackProject_PacksFromNuspecWithBasePath()
+        {
+            var nuspecFileContent = @"<?xml version=""1.0""?>
+<package>
+  <metadata>
+    <id>PackedFromNuspec</id>
+    <version>1.2.1</version>
+    <authors>Microsoft</authors>
+    <owners>NuGet</owners>
+    <description>This was packed from nuspec</description>
+  </metadata>
+  <files>
+    <file src=""abc.txt"" target=""CoreCLR/"" />
+  </files>
+</package>";
+            using(var basePathDirectory = TestDirectory.Create())
+            using (var testDirectory = TestDirectory.Create())
+            {
+                var projectName = "ClassLibrary1";
+                var workingDirectory = Path.Combine(testDirectory, projectName);
+                // Act
+                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, "-t lib");
+                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
+                File.WriteAllText(Path.Combine(workingDirectory, "input.nuspec"), nuspecFileContent);
+                File.WriteAllText(Path.Combine(basePathDirectory, "abc.txt"), "sample text");
+
+                msbuildFixture.PackProject(workingDirectory, projectName, $"-o {workingDirectory} /p:NuspecFile=input.nuspec /p:NuspecBasePath={basePathDirectory.Path}");
+
+                var nupkgPath = Path.Combine(workingDirectory, $"PackedFromNuspec.1.2.1.nupkg");
+                Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the expected place");
+
+                using (var nupkgReader = new PackageArchiveReader(nupkgPath))
+                {
+                    // Validate the assets.
+                    var libItems = nupkgReader.GetFiles("CoreCLR").ToArray();
+                    Assert.Equal("CoreCLR/abc.txt", libItems[0]);
+                }
+
+            }
+        }
     }
 }
 

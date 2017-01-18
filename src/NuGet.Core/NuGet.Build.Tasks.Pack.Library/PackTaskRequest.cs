@@ -35,6 +35,8 @@ namespace NuGet.Build.Tasks.Pack
         public string PackageVersion { get; set; }
         public IMSBuildItem PackItem { get; set; }
         public string ProjectUrl { get; set; }
+        public string NuspecBasePath { get; set; }
+        public string[] NuspecProperties { get; set; }
         public string ReleaseNotes { get; set; }
         public string RepositoryType { get; set; }
         public string RepositoryUrl { get; set; }
