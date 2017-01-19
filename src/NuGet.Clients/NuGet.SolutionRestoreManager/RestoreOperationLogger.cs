@@ -276,7 +276,6 @@ namespace NuGet.SolutionRestoreManager
                     switch (_operationSource)
                     {
                         case RestoreOperationSource.Implicit:
-                            _outputConsole.Activate();
                             WriteLine(VerbosityLevel.Quiet, Resources.RestoringPackages);
                             break;
                         case RestoreOperationSource.OnBuild:
