@@ -217,17 +217,17 @@ namespace NuGet.Protocol
                                 EnsureValidContents = stream => HttpStreamValidation.ValidateXml(uri, stream),
                                 MaxTries = 1
                             },
-                            httpSourceResult =>
+                            async httpSourceResult =>
                             {
                                 if (httpSourceResult.Status == HttpSourceResultStatus.NoContent)
                                 {
                                     // Team city returns 204 when no versions of the package exist
                                     // This should result in an empty list and we should not try to
                                     // read the stream as xml.
-                                    return Task.FromResult(false);
+                                    return false;
                                 }
 
-                                var doc = V2FeedParser.LoadXml(httpSourceResult.Stream);
+                                var doc = await V2FeedParser.LoadXmlAsync(httpSourceResult.Stream);
 
                                 var result = doc.Root
                                     .Elements(_xnameEntry)
@@ -242,7 +242,7 @@ namespace NuGet.Protocol
                                 // Stop if there's nothing else to GET
                                 if (string.IsNullOrEmpty(nextUri))
                                 {
-                                    return Task.FromResult(false);
+                                    return false;
                                 }
 
                                 // check for any duplicate url and error out
@@ -257,7 +257,7 @@ namespace NuGet.Protocol
                                 uri = nextUri;
                                 page++;
 
-                                return Task.FromResult(true);
+                                return true;
                             },
                             logger,
                             cancellationToken);
