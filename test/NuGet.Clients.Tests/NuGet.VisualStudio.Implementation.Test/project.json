@@ -1,5 +1,6 @@
-{
+﻿{
   "dependencies": {
+    "Test.Utility": "4.3.0-*",
     "Moq": "4.2.1507.118",
     "xunit": "2.1.0",
     "xunit.runner.visualstudio": "2.1.0"

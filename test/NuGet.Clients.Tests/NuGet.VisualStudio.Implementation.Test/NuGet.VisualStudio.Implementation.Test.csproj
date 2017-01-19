@@ -49,6 +49,7 @@
     <Compile Include="Extensibility\VsGlobalPackagesInitScriptExecutorTests.cs" />
     <Compile Include="Extensibility\VsPathContextProviderTests.cs" />
     <Compile Include="Extensibility\VsSemanticVersionComparerTests.cs" />
+    <Compile Include="PreinstalledRepositoryProviderTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
