@@ -20,6 +20,97 @@ namespace NuGet.Protocol.Tests
 {
     public class V2FeedListResourceTests
     {
+
+        [Fact]
+        public async Task TestListDelistedNoPrereleaseNotAllVersionsDelistedOnlyResponse()
+        {
+            // Arrange
+            var serviceAddress = TestUtility.CreateServiceAddress() + "api/v2";
+
+            var responses = new Dictionary<string, string>();
+
+            responses.Add(serviceAddress + "/Search()?$filter=IsLatestVersion&$orderby=Id&searchTerm='newton'&targetFramework=''&includePrerelease=false&$skip=0&$top=30",
+               TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.6DelistedEntries.xml", GetType()));
+            responses.Add(serviceAddress, string.Empty);
+            responses.Add(serviceAddress + "/$metadata",
+                TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.MetadataTT.xml", GetType()));
+
+            var httpSource = new TestHttpSource(new PackageSource(serviceAddress), responses);
+
+            var parser = new V2FeedParser(httpSource, serviceAddress);
+            var legacyResource = new LegacyFeedCapabilityResourceV2Feed(parser, serviceAddress);
+            var resource = new V2FeedListResource(parser, legacyResource, serviceAddress);
+
+
+            var enumerable = await resource.ListAsync(searchTerm: "newton",
+                prerelease: false, allVersions: false, includeDelisted: true, logger: NullLogger.Instance, token: CancellationToken.None);
+
+            int ExpectedCount = 6;
+            int ActualCount = 0;
+            var enumerator = enumerable.GetEnumeratorAsync();
+
+
+            while (await enumerator.MoveNextAsync())
+            {
+                if (enumerator.Current != null)
+                {
+                    ActualCount++;
+                    Assert.True(ExpectedCount >= ActualCount, "Too many results");
+                }
+                else
+                {
+                    Assert.False(false, "Null Value, this shouldn't happen.");
+                }
+            }
+
+            Assert.True(ExpectedCount == ActualCount, "Expected was " + ExpectedCount + " but actual was " + ActualCount);
+        }
+
+        [Fact]
+        public async Task TestListNoDelistedNoPrereleaseNotAllVersionsDelistedOnlyResponse()
+        {
+            // Arrange
+            var serviceAddress = TestUtility.CreateServiceAddress() + "api/v2";
+
+            var responses = new Dictionary<string, string>();
+
+            responses.Add(serviceAddress + "/Search()?$filter=IsLatestVersion&$orderby=Id&searchTerm='newton'&targetFramework=''&includePrerelease=false&$skip=0&$top=30",
+               TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.6DelistedEntries.xml", GetType()));
+            responses.Add(serviceAddress, string.Empty);
+            responses.Add(serviceAddress + "/$metadata",
+                TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.MetadataTT.xml", GetType()));
+
+            var httpSource = new TestHttpSource(new PackageSource(serviceAddress), responses);
+
+            var parser = new V2FeedParser(httpSource, serviceAddress);
+            var legacyResource = new LegacyFeedCapabilityResourceV2Feed(parser, serviceAddress);
+            var resource = new V2FeedListResource(parser, legacyResource, serviceAddress);
+
+
+            var enumerable = await resource.ListAsync(searchTerm: "newton",
+                prerelease: false, allVersions: false, includeDelisted: false, logger: NullLogger.Instance, token: CancellationToken.None);
+
+            int ExpectedCount = 0;
+            int ActualCount = 0;
+            var enumerator = enumerable.GetEnumeratorAsync();
+
+
+            while (await enumerator.MoveNextAsync())
+            {
+                if (enumerator.Current != null)
+                {
+                    ActualCount++;
+                    Assert.True(ExpectedCount >= ActualCount, "Too many results");
+                }
+                else
+                {
+                    Assert.False(false, "Null Value, this shouldn't happen.");
+                }
+            }
+
+            Assert.True(ExpectedCount == ActualCount, "Expected was " + ExpectedCount + " but actual was " + ActualCount);
+        }
+
         [Fact]
         public async Task TestListNoDelistedNoPrereleaseNotAllVersions()
         {
