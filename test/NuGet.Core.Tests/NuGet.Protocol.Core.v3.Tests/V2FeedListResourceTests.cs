@@ -63,7 +63,7 @@ namespace NuGet.Protocol.Tests
                 }
             }
 
-            Assert.True(ExpectedCount == ActualCount, "Expected was " + ExpectedCount + " but actual was " + ActualCount);
+            Assert.Equal(ExpectedCount, ActualCount);
         }
 
         [Fact]
@@ -108,7 +108,7 @@ namespace NuGet.Protocol.Tests
                 }
             }
 
-            Assert.True(ExpectedCount == ActualCount, "Expected was " + ExpectedCount + " but actual was " + ActualCount);
+            Assert.Equal(ExpectedCount, ActualCount);
         }
 
         [Fact]
@@ -155,7 +155,7 @@ namespace NuGet.Protocol.Tests
                 }
             }
 
-            Assert.True(ExpectedCount == ActualCount, "Expect was " + ExpectedCount + " but actual was " + ActualCount);
+            Assert.Equal(ExpectedCount, ActualCount);
         }
 
         [Fact]
@@ -200,7 +200,7 @@ namespace NuGet.Protocol.Tests
                 }
             }
 
-            Assert.True(ExpectedCount == ActualCount, "Expect was " + ExpectedCount + " but actual was " + ActualCount);
+            Assert.Equal(ExpectedCount, ActualCount);
         }
 
         [Fact]
@@ -247,7 +247,7 @@ namespace NuGet.Protocol.Tests
                 }
             }
 
-            Assert.True(ExpectedCount == ActualCount, "Expect was " + ExpectedCount + " but actual was " + ActualCount);
+            Assert.Equal(ExpectedCount, ActualCount);
         }
 
 
@@ -293,7 +293,7 @@ namespace NuGet.Protocol.Tests
                 }
             }
 
-            Assert.True(ExpectedCount == ActualCount, "Expect was " + ExpectedCount + " but actual was " + ActualCount);
+            Assert.Equal(ExpectedCount, ActualCount);
         }
 
         [Fact]
@@ -341,7 +341,7 @@ namespace NuGet.Protocol.Tests
                 }
             }
 
-            Assert.True(ExpectedCount == ActualCount, "Expect was " + ExpectedCount + " but actual was " + ActualCount);
+            Assert.Equal(ExpectedCount, ActualCount);
         }
 
         [Fact]
@@ -388,7 +388,7 @@ namespace NuGet.Protocol.Tests
                 }
             }
 
-            Assert.True(ExpectedCount == ActualCount, "Expect was " + ExpectedCount + " but actual was " + ActualCount);
+            Assert.Equal(ExpectedCount, ActualCount);
         }
 
     }
