@@ -139,12 +139,12 @@ function UninstallVSIX
     {
         if($p.ExitCode -eq 1002)
         {
-            Write-Error "VSIX already uninstalled. Moving on to installing the VSIX! Exit code: " $p.ExitCode 
+            Write-Host "VSIX already uninstalled. Moving on to installing the VSIX! Exit code: $($p.ExitCode)" 
             return $true
         }
         else 
         {
-            Write-Error "Error uninstalling the VSIX! Exit code: " $p.ExitCode
+            Write-Error "Error uninstalling the VSIX! Exit code: $($p.ExitCode)"
             return $false
         }
 
