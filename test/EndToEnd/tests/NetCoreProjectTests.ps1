@@ -155,24 +155,6 @@ function Test-NetCoreProjectReference {
     Assert-NetCoreProjectReference $projectA $projectB
 }
 
-# # P.Json project reference test for .net core
-# function Test-NetCoreProjectJsonProjectReference {
-    
-#     # Arrange
-#     $projectA = New-NetCoreConsoleApp ConsoleAppA
-#     $projectB = New-BuildIntegratedProj UAPAppB
-
-#     Assert-NetCoreProjectCreation $projectA
-
-#     # Act 
-#     Add-ProjectReference $projectA $projectB
-
-#     $projectA.Save($projectA.FullName)
-
-#     # Assert
-#     Assert-NetCoreProjectReference $projectA $projectB
-# }
-
 # transitive package dependency test for .net core
 # A -> B
 # B -> C

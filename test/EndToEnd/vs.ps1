@@ -30,6 +30,16 @@ function New-BuildIntegratedProj
     }
 }
 
+function Wait-OnNetCoreRestoreCompletion{
+     param(
+        [parameter(Mandatory = $true)]
+        $Project
+    )
+    
+    $NetCoreLockFilePath = Get-NetCoreLockFilePath $project   
+    while (!(Test-Path $NetCoreLockFilePath)) { Start-Sleep -Seconds 1 }
+}
+
 function New-NetCoreConsoleApp
 {
     param(
@@ -39,7 +49,9 @@ function New-NetCoreConsoleApp
     
     if ((Get-VSVersion) -ge '15.0')
     {
-        New-Project NetCoreConsoleApp $ProjectName $SolutionFolder
+        $project = New-Project NetCoreConsoleApp $ProjectName $SolutionFolder
+        Wait-OnNetCoreRestoreCompletion $project
+        return $project
     }
     else
     {
