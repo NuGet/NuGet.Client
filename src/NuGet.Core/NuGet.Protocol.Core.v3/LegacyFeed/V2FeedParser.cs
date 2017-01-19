@@ -14,7 +14,6 @@ using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Linq;
 using NuGet.Common;
-using NuGet.Configuration;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
@@ -169,7 +168,7 @@ namespace NuGet.Protocol
             }
 
             var uri = _queryBuilder.BuildFindPackagesByIdUri(id);
-            
+
             // Set max count to -1, get all packages
             var packages = await QueryV2FeedAsync(
                 uri,
@@ -243,7 +242,7 @@ namespace NuGet.Protocol
 
             return page;
         }
-        
+
         public async Task<IReadOnlyList<V2FeedPackageInfo>> Search(
             string searchTerm,
             SearchFilter filters,
@@ -507,7 +506,7 @@ namespace NuGet.Protocol
                     if (response.StatusCode == HttpStatusCode.OK)
                     {
                         var networkStream = await response.Content.ReadAsStreamAsync();
-                        return LoadXml(networkStream);
+                        return await LoadXmlAsync(networkStream);
                     }
                     else if (ignoreNotFounds && response.StatusCode == HttpStatusCode.NotFound)
                     {
@@ -545,18 +544,21 @@ namespace NuGet.Protocol
                     select nextLink.Value).FirstOrDefault();
         }
 
-        internal static XDocument LoadXml(Stream stream)
+        internal static async Task<XDocument> LoadXmlAsync(Stream stream)
         {
-            var xmlReader = XmlReader.Create(stream, new XmlReaderSettings()
+            using (var memStream = await stream.AsSeekableStreamAsync())
             {
-                CloseInput = true,
-                IgnoreWhitespace = true,
-                IgnoreComments = true,
-                IgnoreProcessingInstructions = true,
-                DtdProcessing = DtdProcessing.Ignore, // for consistency with earlier behavior (v3.3 and before)
-            });
+                var xmlReader = XmlReader.Create(memStream, new XmlReaderSettings()
+                {
+                    CloseInput = true,
+                    IgnoreWhitespace = true,
+                    IgnoreComments = true,
+                    IgnoreProcessingInstructions = true,
+                    DtdProcessing = DtdProcessing.Ignore, // for consistency with earlier behavior (v3.3 and before)
+                });
 
-            return XDocument.Load(xmlReader, LoadOptions.None);
+                return XDocument.Load(xmlReader, LoadOptions.None);
+            }
         }
     }
 }

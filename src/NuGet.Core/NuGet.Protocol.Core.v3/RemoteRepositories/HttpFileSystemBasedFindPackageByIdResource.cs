@@ -9,7 +9,6 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NuGet.Common;
 using NuGet.Packaging.Core;
@@ -97,7 +96,7 @@ namespace NuGet.Protocol
                         cacheContext,
                         logger,
                         cancellationToken);
-                    
+
                     return reader.GetIdentity();
                 });
         }
@@ -124,7 +123,7 @@ namespace NuGet.Protocol
                 // Populate the package identity cache while we have the .nuspec open.
                 var identity = reader.GetIdentity();
                 _packageIdentityCache.TryAdd(identity, Task.FromResult(identity));
-                
+
                 return GetDependencyInfo(reader);
             }
 
@@ -196,15 +195,15 @@ namespace NuGet.Protocol
                             EnsureValidContents = stream => HttpStreamValidation.ValidateJObject(uri, stream),
                             MaxTries = 1
                         },
-                        httpSourceResult =>
+                        async httpSourceResult =>
                         {
                             var result = new SortedDictionary<NuGetVersion, PackageInfo>();
-                            
+
                             if (httpSourceResult.Status == HttpSourceResultStatus.OpenedFromDisk)
                             {
                                 try
                                 {
-                                    result = ConsumeFlatContainerIndex(httpSourceResult.Stream, id, baseUri);
+                                    result = await ConsumeFlatContainerIndexAsync(httpSourceResult.Stream, id, baseUri);
                                 }
                                 catch
                                 {
@@ -215,10 +214,10 @@ namespace NuGet.Protocol
                             }
                             else if (httpSourceResult.Status == HttpSourceResultStatus.OpenedFromNetwork)
                             {
-                                result = ConsumeFlatContainerIndex(httpSourceResult.Stream, id, baseUri);
+                                result = await ConsumeFlatContainerIndexAsync(httpSourceResult.Stream, id, baseUri);
                             }
 
-                            return Task.FromResult(result);
+                            return result;
                         },
                         logger,
                         cancellationToken);
@@ -245,13 +244,9 @@ namespace NuGet.Protocol
             return null;
         }
 
-        private SortedDictionary<NuGetVersion, PackageInfo> ConsumeFlatContainerIndex(Stream stream, string id, string baseUri)
+        private async Task<SortedDictionary<NuGetVersion, PackageInfo>> ConsumeFlatContainerIndexAsync(Stream stream, string id, string baseUri)
         {
-            JObject doc;
-            using (var reader = new StreamReader(stream))
-            {
-                doc = JObject.Load(new JsonTextReader(reader));
-            }
+            JObject doc = await stream.AsJObjectAsync();
 
             var streamResults = new SortedDictionary<NuGetVersion, PackageInfo>();
 

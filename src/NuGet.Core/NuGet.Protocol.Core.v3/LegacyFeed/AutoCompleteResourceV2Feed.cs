@@ -8,7 +8,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using NuGet.Common;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
@@ -78,14 +77,14 @@ namespace NuGet.Protocol
         {
             return await _httpSource.ProcessStreamAsync(
                    new HttpSourceRequest(apiEndpointUri, logger),
-                   stream =>
+                   async stream =>
                    {
-                       using (var reader = new StreamReader(stream))
+                       using (var reader = new StreamReader(await stream.AsSeekableStreamAsync()))
                        using (var jsonReader = new JsonTextReader(reader))
                        {
                            var serializer = JsonSerializer.Create();
                            var json = serializer.Deserialize<string[]>(jsonReader);
-                           return Task.FromResult(json);
+                           return json;
                        }
                    },
                    logger,
