@@ -36,8 +36,17 @@ function Wait-OnNetCoreRestoreCompletion{
         $Project
     )
     
-    $NetCoreLockFilePath = Get-NetCoreLockFilePath $project   
-    while (!(Test-Path $NetCoreLockFilePath)) { Start-Sleep -Seconds 1 }
+    $NetCoreLockFilePath = Get-NetCoreLockFilePath $Project
+    [int]$count = 0
+    while (!(Test-Path $NetCoreLockFilePath)) 
+    { 
+        $count++;
+        Start-Sleep -Seconds 1
+        if($count -ge 120) # Wait for 2 minutes at most
+        {
+            break
+        }
+    }
 }
 
 function New-NetCoreConsoleApp
