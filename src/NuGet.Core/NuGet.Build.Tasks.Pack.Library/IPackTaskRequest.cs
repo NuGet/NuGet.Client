@@ -55,6 +55,5 @@ namespace NuGet.Build.Tasks.Pack
         string[] TargetFrameworks { get; }
         string[] TargetPathsToAssemblies { get; }
         string[] TargetPathsToSymbols { get; }
-        string VersionSuffix { get; }
     }
 }

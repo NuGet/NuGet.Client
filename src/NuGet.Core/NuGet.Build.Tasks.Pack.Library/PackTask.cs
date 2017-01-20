@@ -43,7 +43,6 @@ namespace NuGet.Build.Tasks.Pack
         public string NuspecFile { get; set; }
         public string MinClientVersion { get; set; }
         public bool Serviceable { get; set; }
-        public string VersionSuffix { get; set; }
         public ITaskItem[] AssemblyReferences { get; set; }
         public bool ContinuePackingAfterGeneratingNuspec { get; set; }
         public string NuspecOutputPath { get; set; }
@@ -146,8 +145,7 @@ namespace NuGet.Build.Tasks.Pack
                 Tags = MSBuildStringUtility.TrimAndExcludeNullOrEmpty(Tags),
                 TargetFrameworks = MSBuildStringUtility.TrimAndExcludeNullOrEmpty(TargetFrameworks),
                 TargetPathsToAssemblies = MSBuildStringUtility.TrimAndExcludeNullOrEmpty(TargetPathsToAssemblies),
-                TargetPathsToSymbols = MSBuildStringUtility.TrimAndExcludeNullOrEmpty(TargetPathsToSymbols),
-                VersionSuffix = MSBuildStringUtility.TrimAndGetNullForEmpty(VersionSuffix)
+                TargetPathsToSymbols = MSBuildStringUtility.TrimAndExcludeNullOrEmpty(TargetPathsToSymbols)
             };
         }
     }
