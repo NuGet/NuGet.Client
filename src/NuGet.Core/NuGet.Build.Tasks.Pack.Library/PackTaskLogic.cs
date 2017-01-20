@@ -26,7 +26,6 @@ namespace NuGet.Build.Tasks.Pack
                 Logger = request.Logger,
                 OutputDirectory = request.PackageOutputPath,
                 Serviceable = request.Serviceable,
-                Suffix = request.VersionSuffix,
                 Tool = request.IsTool,
                 Symbols = request.IncludeSymbols,
                 BasePath = request.NuspecBasePath,

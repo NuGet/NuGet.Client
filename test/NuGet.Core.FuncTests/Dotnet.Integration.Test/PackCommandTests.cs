@@ -628,6 +628,66 @@ namespace Dotnet.Integration.Test
             }
         }
 
+        [Platform(Platform.Windows)]
+        [Theory]
+        [InlineData(null,           null,           null,           "1.0.0")]
+        [InlineData("1.2.3",        null,           null,           "1.2.3")]
+        [InlineData(null,           "rtm-1234",     null,           "1.0.0-rtm-1234")]
+        [InlineData("1.2.3",        "rtm-1234",     null,           "1.2.3-rtm-1234")]
+        [InlineData(null,           null,           "2.3.1",        "2.3.1")]
+        [InlineData("1.2.3",        null,           "2.3.1",        "2.3.1")]
+        [InlineData(null,           "rtm-1234",     "2.3.1",        "2.3.1")]
+        [InlineData("1.2.3",        "rtm-1234",     "2.3.1",        "2.3.1")]
+        public void PackCommand_PackProject_OutputsCorrectVersion(string versionPrefix, string versionSuffix, string packageVersion, string expectedVersion)
+        {
+            // Arrange
+            using (var testDirectory = TestDirectory.Create())
+            {
+                var projectFileContents =
+                    $@"<Project Sdk=""Microsoft.NET.Sdk"" ToolsVersion=""15.0"">
+
+  <PropertyGroup>
+    <TargetFrameworks>netstandard1.4</TargetFrameworks>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include=""**\*.cs"" />
+    <EmbeddedResource Include=""**\*.resx"" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include=""NETStandard.Library"" Version=""1.6"" />
+  </ItemGroup>
+
+</Project>";
+                var projectName = "ClassLibrary1";
+                var workingDirectory = Path.Combine(testDirectory, projectName);
+
+                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName);
+                File.WriteAllText(Path.Combine(workingDirectory, $"{projectName}.csproj"), projectFileContents);
+                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
+
+                var args = "" + 
+                    (versionPrefix  !=null  ? $" /p:VersionPrefix={versionPrefix} "   : string.Empty) +
+                    (versionSuffix  != null ? $" /p:VersionSuffix={versionSuffix} "   : string.Empty) + 
+                    (packageVersion != null ? $" /p:PackageVersion={packageVersion} " : string.Empty);
+                // Act
+                msbuildFixture.PackProject(workingDirectory, projectName, $"-o {workingDirectory} {args}");
+
+                var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.{expectedVersion}.nupkg");
+                var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.{expectedVersion}.nuspec");
+                Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the expected place");
+                Assert.True(File.Exists(nuspecPath), "The intermediate nuspec file is not in the expected place");
+
+                // Assert
+                using (var nupkgReader = new PackageArchiveReader(nupkgPath))
+                {
+                    var intermediateNuspec = new NuspecReader(nuspecPath);
+                    var nuspecReader = nupkgReader.NuspecReader;
+                    Assert.Equal(expectedVersion, nuspecReader.GetVersion().ToFullString());
+                    Assert.Equal(expectedVersion, intermediateNuspec.GetVersion().ToFullString());
+                }
+            }
+        }
+
     }
 }
 

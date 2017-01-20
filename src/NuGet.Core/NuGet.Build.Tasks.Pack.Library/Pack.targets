@@ -118,7 +118,6 @@ Copyright (c) .NET Foundation. All rights reserved.
               NoPackageAnalysis="$(NoPackageAnalysis)"
               MinClientVersion="$(MinClientVersion)"
               Serviceable="$(Serviceable)"
-              VersionSuffix= "$(VersionSuffix)"
               AssemblyReferences="@(_References)"
               ContinuePackingAfterGeneratingNuspec="$(ContinuePackingAfterGeneratingNuspec)"
               NuspecOutputPath="$(BaseIntermediateOutputPath)"
