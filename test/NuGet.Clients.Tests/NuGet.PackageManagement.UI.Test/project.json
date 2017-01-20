@@ -1,5 +1,6 @@
 ﻿{
   "dependencies": {
+    "Microsoft.VisualStudio.Shell.Immutable.14.0": "14.3.25407",
     "Moq": "4.2.1507.118",
     "Newtonsoft.Json": "6.0.4",
     "Test.Utility": "4.0.0-*",
