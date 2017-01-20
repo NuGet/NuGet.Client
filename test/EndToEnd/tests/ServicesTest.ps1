@@ -1,4 +1,4 @@
-﻿function Test-PackageManagerServicesAreAvailableThroughMEF {
+function Test-PackageManagerServicesAreAvailableThroughMEF {
     # Arrange
     $cm = Get-VsComponentModel
 
@@ -701,57 +701,6 @@ function Test-BatchEventsApi
 
     # Assert
     Assert-True $result
-}
-
-function Test-ExecuteInitScriptsPerSolution
-{
-    param($context)
-
-    # Arrange
-    $global:PackageInitPS1Var = 0
-    $p = New-ClassLibrary
-    
-    Install-Package PackageInitPS1 -Project $p.Name -Source $context.RepositoryPath
-    
-    Assert-True ($global:PackageInitPS1Var -eq 1)
-
-    $solutionFile1 = Get-SolutionFullName
-    SaveAs-Solution($solutionFile1)
-	Close-Solution
-
-    $p = New-ClassLibrary
-    $p | Install-Package jquery -Version 1.9
-
-    $solutionFile2 = Get-SolutionFullName
-    SaveAs-Solution($solutionFile2)
-	Close-Solution
-
-    # Act
-    Open-Solution $solutionFile1
-	$p = Get-Project
-    $p | Install-Package jquery -Version 1.9
-
-    # Assert
-    Assert-True ($global:PackageInitPS1Var -eq 1)
-}
-
-function Test-ExecuteInitScriptsOnlyOnce
-{
-    param($context)
-
-    # Arrange
-    $global:PackageInitPS1Var = 0
-    $p = New-ClassLibrary
-    
-    Install-Package PackageInitPS1 -Project $p.Name -Source $context.RepositoryPath
-    
-    Assert-True ($global:PackageInitPS1Var -eq 1)
-
-    # Act
-    $p | Install-Package jquery -Version 1.9
-
-    # Assert
-    Assert-True ($global:PackageInitPS1Var -eq 1)
 }
 
 function Test-CreateVsPathContextWithConfiguration {
