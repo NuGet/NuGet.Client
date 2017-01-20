@@ -533,6 +533,56 @@ namespace NuGet.Test.Utility
             return xml;
         }
 
+        private static void AddProperties(XDocument doc, Dictionary<string, string> properties)
+        {
+            var ns = doc.Root.GetDefaultNamespace();
+
+            var propertyGroup = new XElement(XName.Get("PropertyGroup", ns.NamespaceName));
+            foreach (var pair in properties)
+            {
+                var subItem = new XElement(XName.Get(pair.Key, ns.NamespaceName), pair.Value);
+                propertyGroup.Add(subItem);
+            }
+
+            var lastPropGroup = doc.Root.Elements().Where(e => e.Name.LocalName == "PropertyGroup").Last();
+            lastPropGroup.AddAfterSelf(propertyGroup);
+        }
+
+        private static void AddItem(XDocument doc,
+            string name,
+            string identity,
+            NuGetFramework framework,
+            Dictionary<string, string> properties)
+        {
+            var ns = doc.Root.GetDefaultNamespace();
+
+            var itemGroup = new XElement(XName.Get("ItemGroup", ns.NamespaceName));
+            var entry = new XElement(XName.Get(name, ns.NamespaceName));
+            entry.Add(new XAttribute(XName.Get("Include"), identity));
+            itemGroup.Add(entry);
+
+            if (framework?.IsSpecificFramework == true)
+            {
+                itemGroup.Add(new XAttribute(XName.Get("Condition"), $" '$(TargetFramework)' == '{framework.GetShortFolderName()}' "));
+            }
+
+            foreach (var pair in properties)
+            {
+                if (pair.Key.Equals("version", StringComparison.OrdinalIgnoreCase))
+                {
+                    entry.Add(new XAttribute(XName.Get("Version"), pair.Value));
+                }
+                else
+                {
+                    var subItem = new XElement(XName.Get(pair.Key, ns.NamespaceName), pair.Value);
+                    entry.Add(subItem);
+                }
+            }
+
+            var lastItemGroup = doc.Root.Elements().Where(e => e.Name.LocalName == "ItemGroup").Last();
+            lastItemGroup.AddAfterSelf(itemGroup);
+        }
+
         public override bool Equals(object obj)
         {
             return StringComparer.Ordinal.Equals(ProjectPath, (obj as SimpleTestProjectContext)?.ProjectPath);
