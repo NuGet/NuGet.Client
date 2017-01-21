@@ -29,6 +29,8 @@ namespace NuGet.SolutionRestoreManager
     [Export(typeof(IVsSolutionRestoreService))]
     public sealed class VsSolutionRestoreService : IVsSolutionRestoreService
     {
+        private const string PackageVersion = nameof(PackageVersion);
+        private const string Version = nameof(Version);
         private const string IncludeAssets = "IncludeAssets";
         private const string ExcludeAssets = "ExcludeAssets";
         private const string PrivateAssets = "PrivateAssets";
@@ -106,6 +108,12 @@ namespace NuGet.SolutionRestoreManager
                     token);
 
                 return restoreTask;
+            }
+            catch (Exception e)
+            when (e is InvalidOperationException || e is ArgumentException || e is FormatException)
+            {
+                _logger.LogError(e.ToString());
+                return Task.FromResult(false);
             }
             catch (Exception e)
             {
@@ -196,6 +204,7 @@ namespace NuGet.SolutionRestoreManager
             var packageSpec = new PackageSpec(tfis)
             {
                 Name = projectNames.ShortName,
+                Version = GetPackageVersion(projectRestoreInfo.TargetFrameworks),
                 FilePath = projectFullPath,
                 RestoreMetadata = new ProjectRestoreMetadata
                 {
@@ -218,6 +227,29 @@ namespace NuGet.SolutionRestoreManager
             };
 
             return packageSpec;
+        }
+
+        private static NuGetVersion GetPackageVersion(IVsTargetFrameworks tfms)
+        {
+            // $(PackageVersion) property if set overrides the $(Version)
+            var versionPropertyValue = 
+                GetNonEvaluatedPropertyOrNull(tfms, PackageVersion) 
+                ?? GetNonEvaluatedPropertyOrNull(tfms, Version);
+
+            return versionPropertyValue != null
+                ? NuGetVersion.Parse(versionPropertyValue)
+                : PackageSpec.DefaultVersion;
+        }
+
+        // Trying to fetch a property value from tfm property bags.
+        // If defined the property should have identical values in all of the occurances.
+        private static string GetNonEvaluatedPropertyOrNull(IVsTargetFrameworks tfms, string propertyName)
+        {
+            return tfms
+                .Cast<IVsTargetFrameworkInfo>()
+                .Select(tfm => GetPropertyValueOrNull(tfm.Properties, propertyName))
+                .Distinct()
+                .SingleOrDefault();
         }
 
         private static RuntimeGraph GetRuntimeGraph(IVsProjectRestoreInfo projectRestoreInfo)

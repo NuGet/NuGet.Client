@@ -12,7 +12,7 @@ namespace NuGet.SolutionRestoreManager.Test
     /// </summary>
     internal class VsProjectRestoreInfo : IVsProjectRestoreInfo
     {
-        public String BaseIntermediatePath { get; }
+        public string BaseIntermediatePath { get; }
 
         public string OriginalTargetFrameworks { get; set; }
 
