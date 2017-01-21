@@ -333,8 +333,9 @@ namespace NuGet.Build.Tasks.Pack
                 contentTargetFolders
                 .Where(f => f.EndsWith(Path.DirectorySeparatorChar.ToString())));
 
+            var isPackagePathSpecified = packageFile.Properties.Contains("PackagePath");
             // if user specified a PackagePath, then use that. Look for any ** which are indicated by the RecrusiveDir metadata in msbuild.
-            if (packageFile.Properties.Contains("PackagePath"))
+            if (isPackagePathSpecified)
             {
                 // The rule here is that if the PackagePath is an empty string, then we add the file to the root of the package.
                 // Instead if it is a ';' delimited string, then the user needs to specify a '\' to indicate that the file should go to the root of the package.
@@ -372,14 +373,20 @@ namespace NuGet.Build.Tasks.Pack
 
 
             var setOfTargetPaths = new HashSet<string>(targetPaths, StringComparer.Ordinal);
-            if (setOfTargetPaths.Remove("contentFiles" + Path.DirectorySeparatorChar)
+
+            // If package path wasn't specified, then we expand the "contentFiles" value we
+            // got from ContentTargetFolders and expand it to contentFiles/any/<TFM>/
+            if (!isPackagePathSpecified)
+            {
+                if (setOfTargetPaths.Remove("contentFiles" + Path.DirectorySeparatorChar)
                 || setOfTargetPaths.Remove("contentFiles" + Path.AltDirectorySeparatorChar)
                 || setOfTargetPaths.Remove("contentFiles"))
-            {
-                foreach (var framework in packArgs.PackTargetArgs.TargetFrameworks)
                 {
-                    setOfTargetPaths.Add(Path.Combine("contentFiles",
-                        Path.Combine(language, framework.GetShortFolderName())) + Path.DirectorySeparatorChar);
+                    foreach (var framework in packArgs.PackTargetArgs.TargetFrameworks)
+                    {
+                        setOfTargetPaths.Add(Path.Combine("contentFiles",
+                            Path.Combine(language, framework.GetShortFolderName())) + Path.DirectorySeparatorChar);
+                    }
                 }
             }
 
@@ -389,7 +396,7 @@ namespace NuGet.Build.Tasks.Pack
             // <Content Include= "folderA\folderB\abc.txt">
             // Since the package path wasn't specified, we will add this to the package paths obtained via ContentTargetFolders and preserve
             // relative directory structure
-            if (!packageFile.Properties.Contains("PackagePath") && 
+            if (!isPackagePathSpecified && 
                 sourcePath.StartsWith(packArgs.CurrentDirectory, StringComparison.CurrentCultureIgnoreCase) &&
                      !Path.GetFileName(sourcePath)
                          .Equals(packageFile.GetProperty(IdentityProperty), StringComparison.CurrentCultureIgnoreCase))
@@ -425,8 +432,23 @@ namespace NuGet.Build.Tasks.Pack
                 setOfTargetPaths = new HashSet<string>(newTargetPaths, StringComparer.Ordinal);
             }
 
+            // we take the final set of evaluated target paths and append the file name to it if not
+            // already done. we check whether the extension of the target path is the same as the extension
+            // of the source path and add the filename accordingly.
+            var totalSetOfTargetPaths = new HashSet<string>(StringComparer.Ordinal);
+            foreach (var targetPath in setOfTargetPaths)
+            {
+                var currentPath = targetPath;
+                var fileName = Path.GetFileName(sourcePath);
+                if (!Path.GetExtension(fileName)
+                    .Equals(Path.GetExtension(targetPath), StringComparison.OrdinalIgnoreCase))
+                {
+                    currentPath = Path.Combine(targetPath, fileName);
+                }
+                totalSetOfTargetPaths.Add(currentPath);
+            }
             
-            return setOfTargetPaths.Select(target => new ContentMetadata()
+            return totalSetOfTargetPaths.Select(target => new ContentMetadata()
             {
                 BuildAction = buildAction.IsKnown ? buildAction.Value : null,
                 Source = sourcePath,
