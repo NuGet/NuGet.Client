@@ -65,12 +65,10 @@ namespace NuGet.SolutionRestoreManager
             _solutionManager = new Lazy<IVsSolutionManager>(
                 () => componentModel.GetService<IVsSolutionManager>());
 
-            // Lazy load the CPS enabled JoinableTaskFactory for the UI.
-            NuGetUIThreadHelper.SetJoinableTaskFactoryFromService(componentModel);
-
-            await NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+            // Don't use CPS thread helper because of RPS perf regression
+            await ThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {
-                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
                 var dte = (EnvDTE.DTE)await GetServiceAsync(typeof(SDTE));
                 _buildEvents = dte.Events.BuildEvents;
                 _buildEvents.OnBuildBegin += BuildEvents_OnBuildBegin;
@@ -78,6 +76,9 @@ namespace NuGet.SolutionRestoreManager
                 UserAgent.SetUserAgentString(
                     new UserAgentStringBuilder().WithVisualStudioSKU(dte.GetFullVsVersionString()));
             });
+
+            // Lazy load the CPS enabled JoinableTaskFactory for the UI.
+            NuGetUIThreadHelper.SetJoinableTaskFactoryFromService(componentModel);
 
             await SolutionRestoreCommand.InitializeAsync(this);
 
