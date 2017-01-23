@@ -6239,6 +6239,15 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to One or more SHA1 thumbprints (fingerprints) of HTTPS certificates to trust, despite common name mismatch errors..
+        /// </summary>
+        internal static string Option_TrustedHttpsCertificates {
+            get {
+                return ResourceManager.GetString("Option_TrustedHttpsCertificates", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Display this amount of details in the output: normal, quiet, detailed..
         /// </summary>
         internal static string Option_Verbosity {

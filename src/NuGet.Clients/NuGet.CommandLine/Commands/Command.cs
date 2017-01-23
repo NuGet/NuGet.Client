@@ -9,7 +9,10 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Net;
+using System.Net.Security;
 using System.Reflection;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using NuGet.Credentials;
 using NuGet.Protocol;
@@ -56,6 +59,9 @@ namespace NuGet.CommandLine
 
         [Option(typeof(NuGetCommand), "Option_ForceEnglishOutput")]
         public bool ForceEnglishOutput { get; set; }
+
+        [Option(typeof(NuGetCommand), "Option_TrustedHttpsCertificates")]
+        public ICollection<string> TrustedHttpsCertificate { get; } = new List<string>();
 
         protected Configuration.ICredentialService CredentialService { get; private set; }
 
@@ -125,6 +131,33 @@ namespace NuGet.CommandLine
                 RepositoryFactory = new CommandLineRepositoryFactory(Console);
 
                 UserAgent.SetUserAgentString(new UserAgentStringBuilder(CommandLineConstants.UserAgent));
+
+                if (TrustedHttpsCertificate != null && TrustedHttpsCertificate.Any())
+                {
+                    ServicePointManager.ServerCertificateValidationCallback = (
+                        sender,
+                        certificate,
+                        chain,
+                        sslPolicyErrors) =>
+                    {
+                        if (sslPolicyErrors == SslPolicyErrors.None)
+                        {
+                            return true;
+                        }
+
+                        // If the only SSL error is name mismatch and the HTTPS certificate's thumbprint is in the
+                        // list of trusted certificates, allow the certificate validation to pass.
+                        var x509certificate2 = certificate as X509Certificate2;
+                        if (sslPolicyErrors == SslPolicyErrors.RemoteCertificateNameMismatch &&
+                            x509certificate2 != null &&
+                            TrustedHttpsCertificate.Contains(x509certificate2.Thumbprint, StringComparer.OrdinalIgnoreCase))
+                        {
+                            return true;
+                        }
+
+                        return false;
+                    };
+                }
 
                 OutputNuGetVersion();
                 ExecuteCommandAsync().Wait();

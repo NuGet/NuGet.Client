@@ -5336,4 +5336,7 @@ nuget locals global-packages -list</value>
   <data name="RestoreCommandRecursive" xml:space="preserve">
     <value>Restore all referenced projects for UWP and NETCore projects. This does not include packages.config projects.</value>
   </data>
+  <data name="Option_TrustedHttpsCertificates" xml:space="preserve">
+    <value>One or more SHA1 thumbprints (fingerprints) of HTTPS certificates to trust, despite common name mismatch errors.</value>
+  </data>
 </root>
