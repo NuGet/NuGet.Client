@@ -37,15 +37,13 @@ function Wait-OnNetCoreRestoreCompletion{
     )
     
     $NetCoreLockFilePath = Get-NetCoreLockFilePath $Project
-    [int]$count = 0
-    while (!(Test-Path $NetCoreLockFilePath)) 
-    { 
-        $count++;
-        Start-Sleep -Seconds 1
-        if($count -ge 120) # Wait for 2 minutes at most
-        {
-            break
+    $timeout = New-Timespan -Minutes 2
+    $sw = [Diagnostics.Stopwatch]::StartNew()
+    while (!(Test-Path $NetCoreLockFilePath)) {
+        if ($sw.elapsed -ge $timeout) {
+            throw "Time out while waiting for .Net Core project restore on create"
         }
+        Start-Sleep -Seconds 1
     }
 }
 
@@ -59,6 +57,25 @@ function New-NetCoreConsoleApp
     if ((Get-VSVersion) -ge '15.0')
     {
         $project = New-Project NetCoreConsoleApp $ProjectName $SolutionFolder
+        Wait-OnNetCoreRestoreCompletion $project
+        return $project
+    }
+    else
+    {
+        throw "SKIP: $($_)"
+    }
+}
+
+function New-NetCoreWebApp10
+{
+    param(
+        [string]$ProjectName,
+        [string]$SolutionFolder
+    )
+    
+    if ((Get-VSVersion) -ge '15.0')
+    {
+        $project = New-Project NetCoreWebApplication1.0 $ProjectName $SolutionFolder
         Wait-OnNetCoreRestoreCompletion $project
         return $project
     }
