@@ -61,10 +61,12 @@
       Grid.Row="2" Margin="12,12,12,0">
       <RadioButton
         IsChecked="{Binding Path=SelectedPackageManagementFormat, Converter={StaticResource RadioBoolToIntConverter}, ConverterParameter=0}"
+        Foreground="{DynamicResource {x:Static nuget:Brushes.UIText}}"
         Content="{x:Static nuget:Resources.RadioBtn_PackagesConfig}" />
       <RadioButton
         Margin="0,6"
         IsChecked="{Binding Path=SelectedPackageManagementFormat, Converter={StaticResource RadioBoolToIntConverter}, ConverterParameter=1}"
+        Foreground="{DynamicResource {x:Static nuget:Brushes.UIText}}"
         Content="{x:Static nuget:Resources.RadioBtn_PackageRef}"/>
     </StackPanel>
 
@@ -102,6 +104,7 @@
     <CheckBox
       Grid.Row="5"
       Margin="12,8,12,0"
+      Foreground="{DynamicResource {x:Static nuget:Brushes.UIText}}"
       Content="{x:Static nuget:Resources.CheckBox_DefaultPackageFormat}"
       IsChecked="{Binding Path=IsDisabled }" />
 
