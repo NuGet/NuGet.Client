@@ -56,6 +56,16 @@ Copyright (c) .NET Foundation. All rights reserved.
           DependsOnTargets="Pack">
   </Target>
 
+  <Target Name="_CleanPackageFiles"
+          AfterTargets="Clean"
+          Condition="'$(GeneratePackageOnBuild)' == 'true'">
+    <ItemGroup>
+      <_PackageFilesToDelete Include="$(PackageOutputPath)*.nupkg"/>
+      <_PackageFilesToDelete Include="$(BaseIntermediateOutputPath)*.nuspec"/>
+    </ItemGroup>
+    <Delete Files="@(_PackageFilesToDelete)"/>
+  </Target>
+
   <!--
     ============================================================
     Pack
