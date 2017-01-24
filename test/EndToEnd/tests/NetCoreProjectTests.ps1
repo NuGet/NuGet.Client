@@ -20,6 +20,7 @@ function Test-NetCoreConsoleAppInstallPackage {
     # Act 
     Install-Package $id -ProjectName $project.Name -version $version
     $project.Save($project.FullName)
+    Build-Solution
 
     # Assert
     Assert-NetCorePackageInstall $project $id $version
@@ -37,10 +38,12 @@ function Test-NetCoreConsoleAppUninstallPackage {
     # Act 
     Install-Package $id -ProjectName $project.Name -version $version
     $project.Save($project.FullName)
+    Build-Solution
     Assert-NetCorePackageInstall $project $id $version
 
     Uninstall-Package $id -ProjectName $project.Name
     $project.Save($project.FullName)
+    Build-Solution
 
     # Assert
     Assert-NetCorePackageUninstall $project $id
@@ -60,6 +63,7 @@ function Test-NetCoreConsoleAppInstallMultiplePackages {
     Install-Package $id1 -ProjectName $project.Name -version $version1
     Install-Package $id2 -ProjectName $project.Name -version $version2
     $project.Save($project.FullName)
+    Build-Solution
 
     # Assert
     Assert-NetCorePackageInstall $project $id1 $version1
@@ -80,11 +84,13 @@ function Test-NetCoreConsoleAppUninstallMultiplePackage {
     Install-Package $id1 -ProjectName $project.Name -version $version1
     Install-Package $id2 -ProjectName $project.Name -version $version2
     $project.Save($project.FullName)
+    Build-Solution
     Assert-NetCorePackageInstall $project $id1 $version1
     Assert-NetCorePackageInstall $project $id2 $version2
     Uninstall-Package $id1 -ProjectName $project.Name
     Uninstall-Package $id2 -ProjectName $project.Name
     $project.Save($project.FullName)
+    Build-Solution
 
     # Assert
     Assert-NetCorePackageUninstall $project $id1
@@ -104,10 +110,12 @@ function Test-NetCoreConsoleAppUpgradePackage {
     # Act 
     Install-Package $id -ProjectName $project.Name -version $oldVersion
     $project.Save($project.FullName)
+    Build-Solution
     Assert-NetCorePackageInstall $project $id $oldVersion
 
     Update-Package $id -ProjectName $project.Name -version $newVersion
     $project.Save($project.FullName)
+    Build-Solution
 
     # Assert
     Assert-NetCorePackageInstall $project $id $newVersion
@@ -126,10 +134,12 @@ function Test-NetCoreConsoleAppDowngradePackage {
     # Act 
     Install-Package $id -ProjectName $project.Name -version $oldVersion
     $project.Save($project.FullName)
+    Build-Solution
     Assert-NetCorePackageInstall $project $id $oldVersion
 
     Update-Package $id -ProjectName $project.Name -version $newVersion
     $project.Save($project.FullName)
+    Build-Solution
 
     # Assert
     Assert-NetCorePackageInstall $project $id $newVersion
@@ -150,6 +160,7 @@ function Test-NetCoreConsoleAppProjectReference {
 
     $projectA.Save($projectA.FullName)
     $projectB.Save($projectB.FullName)
+    Build-Solution
 
     # Assert
     Assert-NetCoreProjectReference $projectA $projectB
@@ -180,6 +191,7 @@ function Test-NetCoreConsoleAppTransitivePackage {
     $projectA.Save($projectA.FullName)
     $projectB.Save($projectB.FullName)
     $projectC.Save($projectC.FullName)
+    Build-Solution
 
     # Assert
     Assert-NetCorePackageInstall $projectC $id $version
@@ -216,6 +228,7 @@ function Test-NetCoreConsoleAppTransitivePackageLimit {
     $projectB.Save($projectB.FullName)
     $projectC.Save($projectC.FullName)
     $projectX.Save($projectX.FullName)
+    Build-Solution
 
     # Assert
     Assert-NetCorePackageInstall $projectC $id $version
@@ -248,6 +261,7 @@ function Test-NetCoreWebApp10AppInstallPackage {
     # Act 
     Install-Package $id -ProjectName $project.Name -version $version
     $project.Save($project.FullName)
+    Build-Solution
 
     # Assert
     Assert-NetCorePackageInstall $project $id $version
@@ -265,10 +279,12 @@ function Test-NetCoreWebApp10UninstallPackage {
     # Act 
     Install-Package $id -ProjectName $project.Name -version $version
     $project.Save($project.FullName)
+    Build-Solution
     Assert-NetCorePackageInstall $project $id $version
 
     Uninstall-Package $id -ProjectName $project.Name
     $project.Save($project.FullName)
+    Build-Solution
 
     # Assert
     Assert-NetCorePackageUninstall $project $id
@@ -288,6 +304,7 @@ function Test-NetCoreWebApp10InstallMultiplePackages {
     Install-Package $id1 -ProjectName $project.Name -version $version1
     Install-Package $id2 -ProjectName $project.Name -version $version2
     $project.Save($project.FullName)
+    Build-Solution
 
     # Assert
     Assert-NetCorePackageInstall $project $id1 $version1
@@ -308,11 +325,14 @@ function Test-NetCoreWebApp10UninstallMultiplePackage {
     Install-Package $id1 -ProjectName $project.Name -version $version1
     Install-Package $id2 -ProjectName $project.Name -version $version2
     $project.Save($project.FullName)
+    Build-Solution
+
     Assert-NetCorePackageInstall $project $id1 $version1
     Assert-NetCorePackageInstall $project $id2 $version2
     Uninstall-Package $id1 -ProjectName $project.Name
     Uninstall-Package $id2 -ProjectName $project.Name
     $project.Save($project.FullName)
+    Build-Solution
 
     # Assert
     Assert-NetCorePackageUninstall $project $id1
@@ -332,10 +352,12 @@ function Test-NetCoreWebApp10UpgradePackage {
     # Act 
     Install-Package $id -ProjectName $project.Name -version $oldVersion
     $project.Save($project.FullName)
+    Build-Solution
     Assert-NetCorePackageInstall $project $id $oldVersion
 
     Update-Package $id -ProjectName $project.Name -version $newVersion
     $project.Save($project.FullName)
+    Build-Solution
 
     # Assert
     Assert-NetCorePackageInstall $project $id $newVersion
@@ -354,10 +376,12 @@ function Test-NetCoreWebApp10DowngradePackage {
     # Act 
     Install-Package $id -ProjectName $project.Name -version $oldVersion
     $project.Save($project.FullName)
+    Build-Solution
     Assert-NetCorePackageInstall $project $id $oldVersion
 
     Update-Package $id -ProjectName $project.Name -version $newVersion
     $project.Save($project.FullName)
+    Build-Solution
 
     # Assert
     Assert-NetCorePackageInstall $project $id $newVersion
@@ -378,6 +402,7 @@ function Test-NetCoreWebApp10ProjectReference {
 
     $projectA.Save($projectA.FullName)
     $projectB.Save($projectB.FullName)
+    Build-Solution
 
     # Assert
     Assert-NetCoreProjectReference $projectA $projectB
@@ -408,6 +433,7 @@ function Test-NetCoreWebApp10TransitivePackage {
     $projectA.Save($projectA.FullName)
     $projectB.Save($projectB.FullName)
     $projectC.Save($projectC.FullName)
+    Build-Solution
 
     # Assert
     Assert-NetCorePackageInstall $projectC $id $version
@@ -444,6 +470,7 @@ function Test-NetCoreWebApp10TransitivePackageLimit {
     $projectB.Save($projectB.FullName)
     $projectC.Save($projectC.FullName)
     $projectX.Save($projectX.FullName)
+    Build-Solution
 
     # Assert
     Assert-NetCorePackageInstall $projectC $id $version
