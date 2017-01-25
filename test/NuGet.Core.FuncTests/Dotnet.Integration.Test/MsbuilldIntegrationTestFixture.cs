@@ -51,6 +51,14 @@ namespace Dotnet.Integration.Test
                 waitForExit: true);
         }
 
+        internal CommandRunnerResult BuildProject(string workingDirectory, string projectName, string args)
+        {
+            return CommandRunner.Run(TestDotnetCli,
+                workingDirectory,
+                $"msbuild {projectName}.csproj {args}",
+                waitForExit: true);
+        }
+
         private string CopyLatestCliForPack()
         {
             var cliDirectory = TestDirectory.Create();

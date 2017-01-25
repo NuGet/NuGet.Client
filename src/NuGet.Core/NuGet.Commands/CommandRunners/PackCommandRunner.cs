@@ -131,7 +131,6 @@ namespace NuGet.Commands
                 PrintVerbose(outputPath, builder);
             }
 
-            WriteLine(String.Format(CultureInfo.CurrentCulture, Strings.Log_PackageCommandSuccess, outputPath));
             _packArgs.Logger.LogMinimal(String.Format(CultureInfo.CurrentCulture, Strings.Log_PackageCommandSuccess, outputPath));
             return new PackageArchiveReader(outputPath);
         }

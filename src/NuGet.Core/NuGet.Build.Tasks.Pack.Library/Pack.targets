@@ -31,6 +31,8 @@ Copyright (c) .NET Foundation. All rights reserved.
     <BuildOutputTargetFolder Condition="'$(BuildOutputTargetFolder)' == ''">lib</BuildOutputTargetFolder>
     <ContentTargetFolders Condition="'$(ContentTargetFolders)' == ''">content;contentFiles</ContentTargetFolders>
     <PackDependsOn>GenerateNuspec; $(PackDependsOn)</PackDependsOn>
+    <IsInnerBuild Condition="'$(TargetFramework)' != '' AND '$(TargetFrameworks)' != ''">true</IsInnerBuild>
+    <NoBuild Condition="'$(GeneratePackageOnBuild)' == 'true'">true</NoBuild>
   </PropertyGroup>
   <PropertyGroup Condition="'$(NoBuild)' == 'true' ">
     <GenerateNuspecDependsOn>$(GenerateNuspecDependsOn)</GenerateNuspecDependsOn>
@@ -52,7 +54,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   -->
   <Target Name="_PackAsBuildAfterTarget"
           AfterTargets="Build" 
-          Condition="'$(GeneratePackageOnBuild)' == 'true'"
+          Condition="'$(GeneratePackageOnBuild)' == 'true' AND '$(IsInnerBuild)' != 'true'"
           DependsOnTargets="Pack">
   </Target>
 
