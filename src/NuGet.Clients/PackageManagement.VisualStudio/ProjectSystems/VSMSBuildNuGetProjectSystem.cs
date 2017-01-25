@@ -16,6 +16,7 @@ using NuGet.Frameworks;
 using NuGet.PackageManagement.UI;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
+using VSLangProj150;
 using Constants = NuGet.ProjectManagement.Constants;
 using EnvDTEProject = EnvDTE.Project;
 using EnvDTEProjectItems = EnvDTE.ProjectItems;
@@ -176,6 +177,18 @@ namespace NuGet.PackageManagement.VisualStudio
                 }
 
                 return _targetFramework;
+            }
+        }
+
+        public dynamic VSProject4
+        {
+            get
+            {
+                return NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
+                {
+                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                    return EnvDTEProject.Object as VSProject4;
+                });
             }
         }
 
