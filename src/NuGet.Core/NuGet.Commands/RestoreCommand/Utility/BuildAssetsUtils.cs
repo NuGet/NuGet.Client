@@ -415,6 +415,10 @@ namespace NuGet.Commands
             var props = new List<MSBuildRestoreItemGroup>();
             var targets = new List<MSBuildRestoreItemGroup>();
 
+            // MultiTargeting imports are shared between TFMs, to avoid
+            // duplicate import warnings only add each once.
+            var multiTargetingImportsAdded = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
             // Skip runtime graphs, msbuild targets may not come from RID specific packages.
             var ridlessTargets = assetsFile.Targets
                 .Where(e => string.IsNullOrEmpty(e.RuntimeIdentifier));
@@ -497,6 +501,7 @@ namespace NuGet.Commands
                         pkg.Key.BuildMultiTargeting.WithExtension(TargetsExtension)
                             .Where(e => pkg.Value.Exists())
                             .Select(e => pkg.Value.GetAbsolutePath(e)))
+                            .Where(path => multiTargetingImportsAdded.Add(path))
                             .Select(path => GetPathWithMacros(path, repositoryRoot))
                             .Select(GenerateImport));
 
@@ -511,15 +516,16 @@ namespace NuGet.Commands
                         pkg.Key.BuildMultiTargeting.WithExtension(PropsExtension)
                             .Where(e => pkg.Value.Exists())
                             .Select(e => pkg.Value.GetAbsolutePath(e)))
+                            .Where(path => multiTargetingImportsAdded.Add(path))
                             .Select(path => GetPathWithMacros(path, repositoryRoot))
                             .Select(GenerateImport));
 
                     props.AddRange(GenerateGroupsWithConditions(buildCrossPropsGroup, isMultiTargeting, CrossTargetingCondition));
                 }
 
-                // ContentFiles are read by the build task, not by NuGet
-                // for UAP with project.json.
-                if (request.ProjectStyle != ProjectStyle.ProjectJson)
+                // Write out contentFiles only for XPlat PackageReference projects.
+                if (request.ProjectStyle != ProjectStyle.ProjectJson
+                    && request.Project.RestoreMetadata?.SkipContentFileWrite != true)
                 {
                     // Create a group for every package, with the nearest from each of allLanguages
                     props.AddRange(sortedPackages.Select(pkg =>

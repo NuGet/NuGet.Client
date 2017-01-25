@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using NuGet.Common;
 
 namespace NuGet.CommandLine
 {

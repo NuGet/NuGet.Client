@@ -34,7 +34,7 @@ namespace NuGet.Protocol
             Common.ILogger log,
             CancellationToken token)
         {
-            var searchUrl = _serviceIndex[ServiceTypes.SearchAutocompleteService].FirstOrDefault();
+            var searchUrl = _serviceIndex.GetServiceEntryUri(ServiceTypes.SearchAutocompleteService);
 
             if (searchUrl == null)
             {

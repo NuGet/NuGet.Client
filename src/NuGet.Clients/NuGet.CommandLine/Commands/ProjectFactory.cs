@@ -1,4 +1,6 @@
-﻿using System;
+﻿extern alias CoreV2; 
+
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Diagnostics.CodeAnalysis;
@@ -16,15 +18,18 @@ using NuGet.Frameworks;
 using NuGet.PackageManagement;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
+using NuGet.ProjectManagement;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
+using PathUtility = NuGet.Commands.PathUtility;
+using XElementExtensions = NuGet.Packaging.XElementExtensions;
 
 namespace NuGet.CommandLine
 {
 
     [SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling")]
-    public class ProjectFactory : MSBuildUser, IProjectFactory, IPropertyProvider
+    public class ProjectFactory : MSBuildUser, IProjectFactory, CoreV2.NuGet.IPropertyProvider 
     {
         // Its type is Microsoft.Build.Evaluation.Project
         private dynamic _project;
@@ -374,7 +379,7 @@ namespace NuGet.CommandLine
             return value;
         }
 
-        dynamic IPropertyProvider.GetPropertyValue(string propertyName)
+        dynamic CoreV2.NuGet.IPropertyProvider.GetPropertyValue(string propertyName) // used in tests
         {
             return GetPropertyValue(propertyName);
         }
@@ -1322,7 +1327,7 @@ namespace NuGet.CommandLine
             using (var dependencyFileStream = File.OpenRead(targetFile))
             using (var fileContentStream = File.OpenRead(fullPath))
             {
-                isEqual = dependencyFileStream.ContentEquals(fileContentStream);
+                isEqual = StreamUtility.ContentEquals(dependencyFileStream, fileContentStream);
             }
             return isEqual;
         }
@@ -1361,7 +1366,7 @@ namespace NuGet.CommandLine
             {
                 Path = file.Path + ".transform";
                 _streamFactory = new Lazy<Func<Stream>>(() => ReverseTransform(file, transforms), isThreadSafe: false);
-                TargetFramework = VersionUtility.ParseFrameworkNameFromFilePath(Path, out _effectivePath);
+                TargetFramework = FrameworkNameUtility.ParseFrameworkNameFromFilePath(Path, out _effectivePath);
             }
 
             public string Path
@@ -1392,7 +1397,7 @@ namespace NuGet.CommandLine
                 // Remove all the transforms
                 foreach (var transformFile in transforms)
                 {
-                    element.Except(GetElement(transformFile));
+                    XElementExtensions.Except(element, GetElement(transformFile));
                 }
 
                 // Create the stream with the transformed content

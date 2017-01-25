@@ -35,7 +35,10 @@
   "frameworks": {
     "net45": {
       "frameworkAssemblies": {
-        "System.ComponentModel.Composition": ""
+        "System.ComponentModel.Composition": "",
+        "Microsoft.Build": {
+          "type": "build"
+        }
       },
       "buildOptions": {
         "define": [

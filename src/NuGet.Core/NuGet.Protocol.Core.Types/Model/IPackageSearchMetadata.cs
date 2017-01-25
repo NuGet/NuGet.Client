@@ -28,6 +28,8 @@ namespace NuGet.Protocol.Core.Types
         string Tags { get; }
         string Title { get; }
 
+        bool IsListed { get; }
+
         Task<IEnumerable<VersionInfo>> GetVersionsAsync();
     }
 }

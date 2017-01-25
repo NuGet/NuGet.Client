@@ -1,3 +1,6 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -31,31 +34,11 @@ namespace NuGet.CommandLine
             return "'" + source + "'";
         }
 
-        public static ICollection<PackageReference> GetPackageReferences(PackageReferenceFile configFile, bool requireVersion)
+        public static bool IsValidConfigFileName(string fileName)
         {
-            if (configFile == null)
-            {
-                throw new ArgumentNullException("configFile");
-            }
-
-            var packageReferences = configFile.GetPackageReferences(requireVersion).ToList();
-            foreach (var package in packageReferences)
-            {
-                // GetPackageReferences returns all records without validating values. We'll throw if we encounter packages
-                // with malformed ids / Versions.
-                if (String.IsNullOrEmpty(package.Id))
-                {
-                    throw new InvalidDataException(
-                        String.Format(CultureInfo.CurrentCulture, LocalizedResourceManager.GetString("InstallCommandInvalidPackageReference"), 
-                        configFile.FullPath));
-                }
-                if (requireVersion && (package.Version == null))
-                {
-                    throw new InvalidDataException(String.Format(CultureInfo.CurrentCulture, LocalizedResourceManager.GetString("InstallCommandPackageReferenceInvalidVersion"), package.Id));
-                }
-            }
-
-            return packageReferences;
+            return fileName != null &&
+                fileName.StartsWith("packages.", StringComparison.OrdinalIgnoreCase) &&
+                fileName.EndsWith(".config", StringComparison.OrdinalIgnoreCase);
         }
     }
 }

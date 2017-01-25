@@ -4,11 +4,18 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Xml;
 using System.Xml.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using NuGet.CommandLine.XPlat;
+using NuGet.Commands;
 using NuGet.Common;
+using NuGet.Packaging.Core;
+using NuGet.ProjectModel;
+using NuGet.Test.Utility;
+using NuGet.Versioning;
 
 namespace NuGet.XPlat.FuncTest
 {
@@ -119,6 +126,223 @@ namespace NuGet.XPlat.FuncTest
             };
 
             return safeSettings;
+        }
+
+        public static SimpleTestProjectContext CreateProject(string projectName,
+            SimpleTestPathContext pathContext,
+            SimpleTestPackageContext package,
+            string projectFrameworks,
+            string packageFramework = null)
+        {
+            var project = SimpleTestProjectContext.CreateNETCoreWithSDK(
+                    projectName: projectName,
+                    solutionRoot: pathContext.SolutionRoot,
+                    isToolingVersion15: true,
+                    frameworks: MSBuildStringUtility.Split(projectFrameworks));
+
+            if (packageFramework == null)
+            {
+                project.AddPackageToAllFrameworks(package);
+            }
+            else
+            {
+                project.AddPackageToFramework(packageFramework, package);
+            }
+            project.Save();
+            return project;
+        }
+
+        public static SimpleTestProjectContext CreateProject(string projectName,
+            SimpleTestPathContext pathContext,
+            string projectFrameworks)
+        {
+            var project = SimpleTestProjectContext.CreateNETCoreWithSDK(
+                    projectName: projectName,
+                    solutionRoot: pathContext.SolutionRoot,
+                    isToolingVersion15: true,
+                    frameworks: MSBuildStringUtility.Split(projectFrameworks));
+
+            project.Save();
+            return project;
+        }
+
+        public static SimpleTestPackageContext CreatePackage(string packageId = "packageX",
+            string packageVersion = "1.0.0",
+            string frameworkString = null)
+        {
+            var package = new SimpleTestPackageContext()
+            {
+                Id = packageId,
+                Version = packageVersion
+            };
+            var frameworks = MSBuildStringUtility.Split(frameworkString);
+
+            // Make the package Compatible with specific frameworks
+            frameworks?
+                .ToList()
+                .ForEach(f => package.AddFile($"lib/{f}/a.dll"));
+
+            // To ensure that the nuspec does not have System.Runtime.dll
+            package.Nuspec = GetNetCoreNuspec(packageId, packageVersion);
+
+            return package;
+        }
+
+        public static PackageReferenceArgs GetPackageReferenceArgs(string packageId, SimpleTestProjectContext project)
+        {
+            var logger = new TestCommandOutputLogger();
+            var packageDependency = new PackageDependency(packageId);
+            return new PackageReferenceArgs(project.ProjectPath, packageDependency, logger);
+        }
+
+        public static PackageReferenceArgs GetPackageReferenceArgs(string packageId, string packageVersion, SimpleTestProjectContext project,
+            string frameworks = "", string packageDirectory = "", string sources = "", bool noRestore = false, bool noVersion = false)
+        {
+            var logger = new TestCommandOutputLogger();
+            var packageDependency = new PackageDependency(packageId, VersionRange.Parse(packageVersion));
+            var dgFilePath = string.Empty;
+            if (!noRestore)
+            {
+                dgFilePath = CreateDGFileForProject(project);
+            }
+            return new PackageReferenceArgs(project.ProjectPath, packageDependency, logger)
+            {
+                Frameworks = MSBuildStringUtility.Split(frameworks),
+                Sources = MSBuildStringUtility.Split(sources),
+                PackageDirectory = packageDirectory,
+                NoRestore = noRestore,
+                NoVersion = noVersion,
+                DgFilePath = dgFilePath
+            };
+        }
+
+        public static XDocument GetNetCoreNuspec(string package, string packageVersion)
+        {
+            return XDocument.Parse($@"<?xml version=""1.0"" encoding=""utf-8""?>
+                        <package>
+                        <metadata>
+                            <id>{package}</id>
+                            <version>{packageVersion}</version>
+                            <title />
+                        </metadata>
+                        </package>");
+        }
+
+        // Assert Helper Methods
+
+        public static bool ValidateReference(XElement root, string packageId, string version)
+        {
+            var packageReferences = root
+                    .Descendants("PackageReference")
+                    .Where(d => d.FirstAttribute.Value.Equals(packageId, StringComparison.OrdinalIgnoreCase));
+
+            if (packageReferences.Count() != 1)
+            {
+                return false;
+            }
+
+            var versions = packageReferences
+                .First()
+                .Descendants("Version");
+
+            if (versions.Count() != 1 ||
+                !versions.First().Value.Equals(version, StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+            return true;
+        }
+
+        public static bool ValidateNoReference(XElement root, string packageId)
+        {
+            var packageReferences = root
+                    .Descendants("PackageReference")
+                    .Where(d => d.FirstAttribute.Value.Equals(packageId, StringComparison.OrdinalIgnoreCase));
+
+            return !(packageReferences.Count() > 0);
+        }
+
+        public static XElement GetItemGroupForFramework(XElement root, string framework)
+        {
+            var itemGroups = root.Descendants("ItemGroup");
+            return itemGroups
+                    .Where(i => i.Descendants("PackageReference").Any() &&
+                                i.FirstAttribute != null &&
+                                i.FirstAttribute.Name.LocalName.Equals("Condition", StringComparison.OrdinalIgnoreCase) &&
+                                i.FirstAttribute.Value.Trim().Equals(GetTargetFrameworkCondition(framework), StringComparison.OrdinalIgnoreCase))
+                     .First();
+        }
+
+        public static XElement GetItemGroupForAllFrameworks(XElement root)
+        {
+            var itemGroups = root.Descendants("ItemGroup");
+
+            return itemGroups
+                    .Where(i => i.Descendants("PackageReference").Count() > 0 &&
+                                i.FirstAttribute == null)
+                     .First();
+        }
+
+        public static bool ValidateTwoReferences(XElement root, SimpleTestPackageContext packageX, SimpleTestPackageContext packageY)
+        {
+            return ValidateReference(root, packageX.Id, packageX.Version) &&
+                ValidateReference(root, packageY.Id, packageY.Version);
+        }
+
+        public static bool ValidatePackageDownload(string packageDirectoryPath, SimpleTestPackageContext package)
+        {
+            return Directory.Exists(packageDirectoryPath) &&
+                Directory.Exists(Path.Combine(packageDirectoryPath, package.Id.ToLower())) &&
+                Directory.Exists(Path.Combine(packageDirectoryPath, package.Id.ToLower(), package.Version.ToLower())) &&
+                Directory.EnumerateFiles(Path.Combine(packageDirectoryPath, package.Id.ToLower(), package.Version.ToLower())).Count() > 0;
+        }
+
+        public static string CreateDGFileForProject(SimpleTestProjectContext project)
+        {
+            var dgSpec = new DependencyGraphSpec();
+            var dgFilePath = Path.Combine(Directory.GetParent(project.ProjectPath).FullName, "temp.dg");
+            dgSpec.AddRestore(project.ProjectName);
+            dgSpec.AddProject(project.PackageSpec);
+            dgSpec.Save(dgFilePath);
+            return dgFilePath;
+        }
+
+        public static string GetCommonFramework(string frameworkStringA, string frameworkStringB, string frameworkStringC)
+        {
+            var frameworksA = MSBuildStringUtility.Split(frameworkStringA);
+            var frameworksB = MSBuildStringUtility.Split(frameworkStringB);
+            var frameworksC = MSBuildStringUtility.Split(frameworkStringC);
+            return frameworksA.ToList()
+                .Intersect(frameworksB.ToList())
+                .Intersect(frameworksC.ToList())
+                .First();
+        }
+
+        public static string GetCommonFramework(string frameworkStringA, string frameworkStringB)
+        {
+            var frameworksA = MSBuildStringUtility.Split(frameworkStringA);
+            var frameworksB = MSBuildStringUtility.Split(frameworkStringB);
+            return frameworksA.ToList()
+                .Intersect(frameworksB.ToList())
+                .First();
+        }
+
+        public static XDocument LoadCSProj(string path)
+        {
+            return LoadSafe(path);
+        }
+
+        public static string GetTargetFrameworkCondition(string targetFramework)
+        {
+            return string.Format("'$(TargetFramework)' == '{0}'", targetFramework);
+        }
+
+        public static void DisposeTemporaryFile(string filePath)
+        {
+            if (File.Exists(filePath))
+            {
+                File.Delete(filePath);
+            }
         }
     }
 }

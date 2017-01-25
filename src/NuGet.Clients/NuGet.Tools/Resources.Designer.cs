@@ -178,6 +178,15 @@ namespace NuGetVSExtension {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to ========== Finished ==========.
+        /// </summary>
+        internal static string Finished {
+            get {
+                return ResourceManager.GetString("Finished", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Manage NuGet Packages for &amp;Solution....
         /// </summary>
         internal static string ManagePackageForSolutionLabel {

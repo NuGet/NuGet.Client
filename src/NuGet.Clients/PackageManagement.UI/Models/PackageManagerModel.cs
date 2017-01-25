@@ -2,11 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell.Interop;
-using NuGet.Protocol.Core.Types;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -22,22 +20,26 @@ namespace NuGet.PackageManagement.UI
     {
         private readonly Guid _editorFactoryGuid;
 
-        public PackageManagerModel(INuGetUI uiController, INuGetUIContext context, bool isSolution, Guid editorFactoryGuid)
+        public PackageManagerModel(INuGetUI uiController, bool isSolution, Guid editorFactoryGuid)
         {
-            Context = context;
+            if (uiController == null)
+            {
+                throw new ArgumentNullException(nameof(uiController));
+            }
+
             UIController = uiController;
             IsSolution = isSolution;
 
             _editorFactoryGuid = editorFactoryGuid;
         }
 
-        public INuGetUIContext Context { get; }
+        public INuGetUIContext Context => UIController.UIContext;
 
         // When the model is used for a solution, this property is not null nor empty.
         public string SolutionName { get; set; }
 
         // Indicates whether the model is used for a solution, or for a project.
-        public bool IsSolution { get; private set; }
+        public bool IsSolution { get; }
 
         public INuGetUI UIController { get; }
 

@@ -1,11 +1,13 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+extern alias CoreV2;
+
 using NuGet.Protocol.Core.Types;
 
 namespace NuGet.CommandLine
 {
-    public class CommandLineRepositoryFactory : PackageRepositoryFactory
+    public class CommandLineRepositoryFactory : CoreV2.NuGet.PackageRepositoryFactory
     {
         private readonly IConsole _console;
 
@@ -14,10 +16,10 @@ namespace NuGet.CommandLine
             _console = console;
         }
 
-        public override IPackageRepository CreateRepository(string packageSource)
+        public override CoreV2.NuGet.IPackageRepository CreateRepository(string packageSource)
         {
             var repository = base.CreateRepository(packageSource);
-            var httpClientEvents = repository as IHttpClientEvents;
+            var httpClientEvents = repository as CoreV2.NuGet.IHttpClientEvents;
             if (httpClientEvents != null)
             {
                 httpClientEvents.SendingRequest += (sender, args) =>
@@ -35,7 +37,7 @@ namespace NuGet.CommandLine
                     }
 
                     var userAgentString = new UserAgentStringBuilder(CommandLineConstants.UserAgent).Build();
-                    HttpUtility.SetUserAgent(args.Request, userAgentString);
+                    CoreV2.NuGet.HttpUtility.SetUserAgent(args.Request, userAgentString);
                 };
             }
 

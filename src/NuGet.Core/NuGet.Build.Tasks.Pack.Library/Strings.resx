@@ -129,6 +129,9 @@
     <value>MinClientVersion string specified '{0}' is invalid.</value>
     <comment>{0} is the version.</comment>
   </data>
+  <data name="InvalidNuspecProperties" xml:space="preserve">
+    <value>NuspecProperties should be in the form of "key1=value1;key2=value2".</value>
+  </data>
   <data name="InvalidPackageReferenceVersion" xml:space="preserve">
     <value>PackageReference {0} needs to have a valid version.</value>
     <comment>{0} is the ID of the PackageReference.</comment>

@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using NuGet.ProjectManagement;
 
 namespace NuGet.PackageManagement
@@ -22,6 +23,8 @@ namespace NuGet.PackageManagement
         event EventHandler<NuGetProjectEventArgs> NuGetProjectRemoved;
 
         event EventHandler<NuGetProjectEventArgs> NuGetProjectRenamed;
+
+        event EventHandler<NuGetProjectEventArgs> NuGetProjectUpdated;
 
         event EventHandler<NuGetProjectEventArgs> AfterNuGetProjectRenamed;
 
@@ -111,6 +114,8 @@ namespace NuGet.PackageManagement
         /// This will only be applicable for VS15 and will do nothing for VS14.
         /// </summary>
         void EnsureSolutionIsLoaded();
+
+        Task<NuGetProject> UpdateNuGetProjectToPackageRef(NuGetProject oldProject);
     }
 
     public class NuGetProjectEventArgs : EventArgs

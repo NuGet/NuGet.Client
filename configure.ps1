@@ -49,8 +49,8 @@ Invoke-BuildStep 'Installing .NET CLI' {
     Install-DotnetCLI -Force:$Force
 } -ev +BuildErrors
 
-Invoke-BuildStep 'Installing .NET CLI Test' {
-    Install-DotnetCLI-Test -Force:$Force
+Invoke-BuildStep 'Installing .NET CLI for tests' {
+    Install-DotnetCLI -Test -Force:$Force
 } -ev +BuildErrors
 
 # Restoring tools required for build

@@ -20,9 +20,10 @@ namespace NuGet.SolutionRestoreManager.Test
         /// </summary>
         /// <param name="packageSpec">Source project restore object</param>
         /// <returns>Desired project restore object</returns>
-        public static IVsProjectRestoreInfo Build(
+        public static VsProjectRestoreInfo Build(
             PackageSpec packageSpec,
             string baseIntermediatePath,
+            bool crossTargeting,
             IEnumerable<LibraryRange> tools)
         {
             if (packageSpec == null)
@@ -42,10 +43,19 @@ namespace NuGet.SolutionRestoreManager.Test
 
             var pri = new VsProjectRestoreInfo(
                 baseIntermediatePath,
-                targetFrameworks);
+                targetFrameworks)
+            {
+                ToolReferences = new VsReferenceItems(
+                    (tools ?? Enumerable.Empty<LibraryRange>()).Select(ToToolReference))
+            };
 
-            pri.ToolReferences = new VsReferenceItems(
-                (tools ?? Enumerable.Empty<LibraryRange>()).Select(ToToolReference));
+            if (crossTargeting)
+            {
+                pri.OriginalTargetFrameworks = string.Join(";",
+                    packageSpec
+                        .TargetFrameworks
+                        .Select(tfm => tfm.FrameworkName.GetShortFolderName()));
+            }
 
             return pri;
         }
@@ -62,10 +72,17 @@ namespace NuGet.SolutionRestoreManager.Test
                     .Where(d => d.LibraryRange.TypeConstraint == LibraryDependencyTarget.ExternalProject)
                     .Select(ToProjectReference));
 
+            var projectProperties = new VsProjectProperties(
+                new VsProjectProperty(
+                    "PackageTargetFallback",
+                    string.Join(";", tfm.Imports.Select(x => x.GetShortFolderName())))
+            );
+
             return new VsTargetFrameworkInfo(
                 tfm.FrameworkName.ToString(),
                 packageReferences,
-                projectReferences);
+                projectReferences,
+                projectProperties);
         }
 
         private static IVsReferenceItem ToPackageReference(LibraryDependency library)

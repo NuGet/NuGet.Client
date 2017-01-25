@@ -23,9 +23,8 @@ namespace NuGet.PackageManagement.UI
         private PackageCollection _installedPackages;
         private IEnumerable<Packaging.PackageReference> _packageReferences;
 
-        private SearchFilter SearchFilter => new SearchFilter
+        private SearchFilter SearchFilter => new SearchFilter(includePrerelease: _includePrerelease)
         {
-            IncludePrerelease = _includePrerelease,
             SupportedFrameworks = _context.GetSupportedFrameworks()
         };
 

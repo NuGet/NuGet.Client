@@ -343,8 +343,6 @@ namespace NuGet.CommandLine.Test
                 var packageFileB = Path.Combine(workingPath, @"packages", "packageB.2.2.0", "packageB.2.2.0.nupkg");
                 Assert.True(File.Exists(packageFileA));
                 Assert.True(File.Exists(packageFileB));
-
-                Assert.Contains("Error reading msbuild project information", r.Item2);
             }
         }
 

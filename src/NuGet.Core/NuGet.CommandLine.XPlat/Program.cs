@@ -142,6 +142,7 @@ namespace NuGet.CommandLine.XPlat
             if (app.Name == DotnetPackageAppName)
             {
                 AddPackageReferenceCommand.Register(app, () => log, () => new AddPackageReferenceCommandRunner());
+                RemovePackageReferenceCommand.Register(app, () => log, () => new RemovePackageReferenceCommandRunner());
             }
             else
             {

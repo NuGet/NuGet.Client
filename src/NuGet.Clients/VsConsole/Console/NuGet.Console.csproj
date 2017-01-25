@@ -52,6 +52,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ConsoleInitializer.cs" />
+    <Compile Include="OutputConsole\BuildOutputConsole.cs" />
+    <Compile Include="OutputConsole\OutputConsole.cs" />
+    <Compile Include="OutputConsole\OutputConsoleProvider.cs" />
+    <Compile Include="ScriptExecutor.cs" />
     <Compile Include="Xamls\ConsoleContainer.xaml.cs">
       <DependentUpon>ConsoleContainer.xaml</DependentUpon>
     </Compile>
@@ -60,10 +64,6 @@
     <Compile Include="IHostInitializer.cs" />
     <Compile Include="IPowerConsoleService.cs" />
     <Compile Include="NativeMethods.cs" />
-    <Compile Include="OutputConsole\BuildOutputConsole.cs" />
-    <Compile Include="OutputConsole\OutputConsole.cs" />
-    <Compile Include="OutputConsole\OutputConsoleLogger.cs" />
-    <Compile Include="OutputConsole\OutputConsoleProvider.cs" />
     <Compile Include="PkgCmdID.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -96,7 +96,6 @@
     </Compile>
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ScriptExecutor.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources.resx">
@@ -117,6 +116,10 @@
     <ProjectReference Include="..\..\PackageManagement.VisualStudio\NuGet.PackageManagement.VisualStudio.csproj">
       <Project>{306cddfa-ff0b-4299-930c-9ec6c9308160}</Project>
       <Name>NuGet.PackageManagement.VisualStudio</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\VisualStudio.Facade\NuGet.VisualStudio.Facade.csproj">
+      <Project>{eea49a74-6efc-410e-9745-bad367ac151d}</Project>
+      <Name>NuGet.VisualStudio.Facade</Name>
     </ProjectReference>
     <ProjectReference Include="..\Console.Types\NuGet.Console.Types.csproj">
       <Project>{6FD11460-39A3-4A10-BA63-7541B0A7D053}</Project>

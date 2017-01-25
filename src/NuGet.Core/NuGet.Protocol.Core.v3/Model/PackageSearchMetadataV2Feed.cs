@@ -28,6 +28,7 @@ namespace NuGet.Protocol
             Tags = package.Tags;
             Title = package.Title;
             Version = package.Version;
+            IsListed = package.IsListed;
 
             long count;
             if (long.TryParse(package.DownloadCount, out count))
@@ -91,5 +92,7 @@ namespace NuGet.Protocol
             Uri.TryCreate(url, UriKind.Absolute, out uri);
             return uri;
         }
+
+        public bool IsListed { get; }
     }
 }

@@ -36,10 +36,12 @@
             this.BindingRedirectsHeader = new System.Windows.Forms.Label();
             this.localsCommandButton = new System.Windows.Forms.Button();
             this.localsCommandStatusText = new System.Windows.Forms.RichTextBox();
+#if !VS14
             this.PackageManagementHeader = new System.Windows.Forms.Label();
             this.defaultPackageManagementFormatLabel = new System.Windows.Forms.Label();
             this.showPackageManagementChooser = new System.Windows.Forms.CheckBox();
             this.defaultPackageManagementFormatItems = new System.Windows.Forms.ComboBox();
+#endif
             this.SuspendLayout();
             // 
             // skipBindingRedirects
@@ -86,6 +88,12 @@
             this.localsCommandStatusText.ContentsResized += new System.Windows.Forms.ContentsResizedEventHandler(this.localsCommandStatusText_ContentChanged);
             this.localsCommandStatusText.LinkClicked += new System.Windows.Forms.LinkClickedEventHandler(this.localsCommandStatusText_LinkClicked);
             // 
+            // GeneralOptionControl
+            // 
+            resources.ApplyResources(this, "$this");
+            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+#if !VS14
+            // 
             // PackageManagementHeader
             // 
             resources.ApplyResources(this.PackageManagementHeader, "PackageManagementHeader");
@@ -111,15 +119,17 @@
             resources.GetString("defaultPackageManagementFormatItems.Items1")});
             resources.ApplyResources(this.defaultPackageManagementFormatItems, "defaultPackageManagementFormatItems");
             this.defaultPackageManagementFormatItems.Name = "defaultPackageManagementFormatItems";
-            // 
-            // GeneralOptionControl
-            // 
-            resources.ApplyResources(this, "$this");
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+
+            this.Size = new System.Drawing.Size(463, 365);
+            this.skipBindingRedirects.Location = new System.Drawing.Point(19, 118);
+            this.BindingRedirectsHeader.Location = new System.Drawing.Point(2, 92);
+            this.localsCommandButton.Location = new System.Drawing.Point(5, 247);
+            this.localsCommandStatusText.Location = new System.Drawing.Point(5, 276);
             this.Controls.Add(this.defaultPackageManagementFormatItems);
             this.Controls.Add(this.showPackageManagementChooser);
             this.Controls.Add(this.defaultPackageManagementFormatLabel);
             this.Controls.Add(this.PackageManagementHeader);
+#endif
             this.Controls.Add(this.BindingRedirectsHeader);
             this.Controls.Add(this.skipBindingRedirects);
             this.Controls.Add(this.PackageRestoreHeader);
@@ -142,9 +152,11 @@
         private System.Windows.Forms.Label BindingRedirectsHeader;
         private System.Windows.Forms.Button localsCommandButton;
         private System.Windows.Forms.RichTextBox localsCommandStatusText;
+#if !VS14
         private System.Windows.Forms.Label PackageManagementHeader;
         private System.Windows.Forms.Label defaultPackageManagementFormatLabel;
         private System.Windows.Forms.CheckBox showPackageManagementChooser;
         private System.Windows.Forms.ComboBox defaultPackageManagementFormatItems;
+#endif
     }
 }

@@ -25,9 +25,9 @@ namespace NuGet.Protocol
 
             if (serviceIndex != null)
             {
-                var endpoints = serviceIndex[ServiceTypes.SearchQueryService].ToArray();
+                var endpoints = serviceIndex.GetServiceEntryUris(ServiceTypes.SearchQueryService);
 
-                if (endpoints.Length > 0)
+                if (endpoints.Count > 0)
                 {
                     var httpSourceResource = await source.GetResourceAsync<HttpSourceResource>(token);
 

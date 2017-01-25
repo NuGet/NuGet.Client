@@ -191,57 +191,48 @@ Function Install-NuGet {
 Function Install-DotnetCLI {
     [CmdletBinding()]
     param(
+        [switch]$Test,
         [switch]$Force
     )
-    $env:DOTNET_HOME=$CLIRoot
-    $env:DOTNET_INSTALL_DIR=$NuGetClientRoot
 
-    if ($Force -or -not (Test-Path $DotNetExe)) {
-        Trace-Log 'Downloading .NET CLI'
-
-        New-Item -ItemType Directory -Force -Path $CLIRoot | Out-Null
-
-        $installDotnet = Join-Path $CLIRoot "dotnet-install.ps1"
-
-        wget 'https://raw.githubusercontent.com/dotnet/cli/rel/1.0.0-preview2/scripts/obtain/dotnet-install.ps1' -OutFile $installDotnet
-
-        & $installDotnet -Channel preview -i $CLIRoot -Version 1.0.0-preview2-003131
+    $cli = if (-not $Test) {
+        @{
+            Root = $CLIRoot
+            DotNetExe = Join-Path $CLIRoot 'dotnet.exe'
+            DotNetInstallUrl = 'https://raw.githubusercontent.com/dotnet/cli/rel/1.0.0-preview2/scripts/obtain/dotnet-install.ps1'
+            Version = '1.0.0-preview2-003131'
+        }
+    }
+    else {
+        @{
+            Root = $CLIRootTest
+            DotNetExe = Join-Path $CLIRootTest 'dotnet.exe'
+            DotNetInstallUrl = 'https://raw.githubusercontent.com/dotnet/cli/58b0566d9ac399f5fa973315c6827a040b7aae1f/scripts/obtain/dotnet-install.ps1'
+            Version = '1.0.0-preview5-004275'
+        }
     }
 
-    if (-not (Test-Path $DotNetExe)) {
+    $env:DOTNET_HOME=$cli.Root
+    $env:DOTNET_INSTALL_DIR=$NuGetClientRoot
+
+    if ($Force -or -not (Test-Path $cli.DotNetExe)) {
+        Trace-Log 'Downloading .NET CLI'
+
+        New-Item -ItemType Directory -Force -Path $cli.Root | Out-Null
+
+        $DotNetInstall = Join-Path $cli.Root 'dotnet-install.ps1'
+
+        Invoke-WebRequest $cli.DotNetInstallUrl -OutFile $DotNetInstall
+
+        & $DotNetInstall -Channel preview -i $cli.Root -Version $cli.Version
+    }
+
+    if (-not (Test-Path $cli.DotNetExe)) {
         Error-Log "Unable to find dotnet.exe. The CLI install may have failed." -Fatal
     }
 
     # Display build info
-    & $DotNetExe --info
-}
-
-Function Install-DotnetCLI-Test {
-    [CmdletBinding()]
-    param(
-        [switch]$Force
-    )
-    $env:DOTNET_HOME=$CLIRootTest
-    $env:DOTNET_INSTALL_DIR=$NuGetClientRoot
-
-    if ($Force -or -not (Test-Path $DotNetExeTest)) {
-        Trace-Log 'Downloading .NET CLI'
-
-        New-Item -ItemType Directory -Force -Path $CLIRootTest | Out-Null
-
-        $installDotnet = Join-Path $CLIRootTest "dotnet-install.ps1"
-
-        wget 'https://raw.githubusercontent.com/dotnet/cli/58b0566d9ac399f5fa973315c6827a040b7aae1f/scripts/obtain/dotnet-install.ps1' -OutFile $installDotnet
-
-        & $installDotnet -Channel preview -i $CLIRootTest -Version 1.0.0-preview5-004275
-    }
-
-    if (-not (Test-Path $DotNetExeTest)) {
-        Error-Log "Unable to find dotnet.exe. The CLI install may have failed." -Fatal
-    }
-
-    # Display build info
-    & $DotNetExeTest --info
+    & $cli.DotNetExe --info
 }
 
 Function Get-MSBuildRoot {

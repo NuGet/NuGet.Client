@@ -7,6 +7,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using Microsoft.VisualStudio.Shell;
+using NuGet.PackageManagement.UI;
 using NuGet.ProjectManagement;
 using VSLangProj;
 using EnvDTEProject = EnvDTE.Project;
@@ -50,9 +51,9 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public override bool FileExistsInProject(string path)
         {
-            return ThreadHelper.JoinableTaskFactory.Run(async delegate
+            return NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
                 {
-                    await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                     EnvDTEProjectItem projectItem = await EnvDTEProjectUtility.GetProjectItemAsync(EnvDTEProject, path);
                     return (projectItem != null);
@@ -68,9 +69,9 @@ namespace NuGet.PackageManagement.VisualStudio
         /// <param name="name"></param>
         public override void RemoveReference(string name)
         {
-            ThreadHelper.JoinableTaskFactory.Run(async delegate
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
                 {
-                    await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                     RemoveReferenceCore(name, EnvDTEProjectUtility.GetReferences(EnvDTEProject));
                 });

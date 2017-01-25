@@ -5,12 +5,12 @@ using System;
 using System.ComponentModel.Composition;
 using System.Globalization;
 using Microsoft.VisualStudio.Shell;
-using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.PackageManagement.UI;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.ProjectManagement;
+using NuGetConsole;
 
-namespace NuGetConsole
+namespace NuGetVSExtension
 {
     [Export(typeof(INuGetUILogger))]
     [PartCreationPolicy(CreationPolicy.Shared)]
@@ -51,9 +51,9 @@ namespace NuGetConsole
                 throw new ArgumentNullException(nameof(consoleProvider));
             }
 
-            ThreadHelper.JoinableTaskFactory.Run(async () =>
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
             {
-                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                 ErrorListProvider = new ErrorListProvider(serviceProvider);
 
@@ -71,9 +71,9 @@ namespace NuGetConsole
 
         public void Dispose()
         {
-            ThreadHelper.JoinableTaskFactory.Run(async () =>
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
             {
-                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                 ErrorListProvider.Dispose();
             });
@@ -81,11 +81,12 @@ namespace NuGetConsole
 
         public void End()
         {
-            ThreadHelper.JoinableTaskFactory.Run(async delegate
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
             {
-                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                 OutputConsole.WriteLine(Resources.Finished);
+                OutputConsole.WriteLine(string.Empty);
 
                 if (ErrorListProvider.Tasks.Count > 0)
                 {
@@ -111,17 +112,6 @@ namespace NuGetConsole
             }
         }
 
-        private void ActivateOutputWindow()
-        {
-            var uiShell = ServiceLocator.GetGlobalService<SVsUIShell, IVsUIShell>();
-            if (uiShell != null)
-            {
-                IVsWindowFrame toolWindow = null;
-                uiShell.FindToolWindow(0, ref GuidList.guidVsWindowKindOutput, out toolWindow);
-                toolWindow?.Show();
-            }
-        }
-
         private int GetMSBuildVerbosityLevel()
         {
             var properties = _dte.get_Properties(DTEEnvironmentCategory, DTEProjectPage);
@@ -136,13 +126,14 @@ namespace NuGetConsole
 
         public void Start()
         {
-            ThreadHelper.JoinableTaskFactory.Run(async delegate
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
             {
-                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                ActivateOutputWindow();
                 _verbosityLevel = GetMSBuildVerbosityLevel();
                 ErrorListProvider.Tasks.Clear();
+
+                OutputConsole.Activate();
                 OutputConsole.Clear();
             });
         }
@@ -172,9 +163,9 @@ namespace NuGetConsole
             else
             {
                 // Run in JTF
-                ThreadHelper.JoinableTaskFactory.Run(async delegate
+                NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
                 {
-                    await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                     action();
                 });

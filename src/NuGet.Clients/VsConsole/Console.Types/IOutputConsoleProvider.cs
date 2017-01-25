@@ -28,6 +28,7 @@ namespace NuGetConsole
         /// </summary>
         /// <param name="requirePowerShellHost">Creates a console with host attached if true.</param>
         /// <returns>Console instance.</returns>
+        [System.Obsolete("Method is deprecated")]
         IConsole CreateOutputConsole(bool requirePowerShellHost);
     }
 }

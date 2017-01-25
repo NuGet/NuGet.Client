@@ -1,5 +1,6 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+extern alias CoreV2;
 
 using System;
 using System.Net;
@@ -14,9 +15,9 @@ namespace NuGet.Credentials
     /// </summary>
     public class CredentialProviderAdapter : ICredentialProvider
     {
-        private readonly NuGet.ICredentialProvider _provider;
+        private readonly CoreV2.NuGet.ICredentialProvider _provider;
 
-        public CredentialProviderAdapter(NuGet.ICredentialProvider provider)
+        public CredentialProviderAdapter(CoreV2.NuGet.ICredentialProvider provider)
         {
             if (provider == null)
             {
@@ -24,7 +25,7 @@ namespace NuGet.Credentials
             }
 
             _provider = provider;
-            Id = $"{typeof (CredentialProviderAdapter).Name}_{provider.GetType().Name}_{Guid.NewGuid()}";
+            Id = $"{typeof(CredentialProviderAdapter).Name}_{provider.GetType().Name}_{Guid.NewGuid()}";
         }
 
         /// <summary>
@@ -51,7 +52,7 @@ namespace NuGet.Credentials
             var cred = _provider.GetCredentials(
                 uri,
                 proxy,
-                type == CredentialRequestType.Proxy ? CredentialType.ProxyCredentials : CredentialType.RequestCredentials,
+                type == CredentialRequestType.Proxy ? CoreV2.NuGet.CredentialType.ProxyCredentials : CoreV2.NuGet.CredentialType.RequestCredentials,
                 isRetry);
 
             var response = cred != null

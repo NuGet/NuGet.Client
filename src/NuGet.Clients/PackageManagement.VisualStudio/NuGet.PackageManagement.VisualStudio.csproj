@@ -124,6 +124,8 @@
   <ItemGroup>
     <Compile Include="BindingRedirectBehavior.cs" />
     <Compile Include="CommonResources.cs" />
+    <Compile Include="IDE\DeferredProjectWorkspaceService.cs" Condition="'$(VisualStudioVersion)' == '15.0'" />
+    <Compile Include="IDE\IDeferredProjectWorkspaceService.cs" />
     <Compile Include="IDE\IVsSolutionManager.cs" />
     <Compile Include="ProjectSystems\CpsPackageReferenceProject.cs" Condition="'$(VisualStudioVersion)' == '15.0'" />
     <Compile Include="ProjectSystems\IProjectSystemProvider.cs" />
@@ -136,6 +138,7 @@
     <Compile Include="ProjectSystems\CpsPackageReferenceProjectProvider.cs" Condition="'$(VisualStudioVersion)' == '15.0'" />
     <Compile Include="ProjectSystems\ProjectSystemProviderContext.cs" />
     <Compile Include="SolutionEventsListener.cs" />
+    <Compile Include="SolutionRestore\DeferredProjectRestoreData.cs" />
     <Compile Include="SolutionRestore\SolutionRestoreRequest.cs" />
     <Compile Include="ScriptExecutionRequest.cs" />
     <Compile Include="ProjectSystems\VSMSBuildNuGetProject.cs" />
@@ -158,7 +161,6 @@
     <Compile Include="SourceControl\TFSSourceControlManagerProviderPicker.cs" />
     <Compile Include="SourceControl\VSSourceControlManagerProvider.cs" />
     <Compile Include="OptionsPageActivator.cs" />
-    <Compile Include="PackageRestoreConsent.cs" />
     <Compile Include="ProjectSystems\CpsProjectSystem.cs" />
     <Compile Include="ProjectSystems\FSharpProjectSystem.cs" />
     <Compile Include="ProjectSystems\JsProjectSystem.cs" />
@@ -189,6 +191,7 @@
     <Compile Include="Telemetry\ProjectTelemetryEvent.cs" />
     <Compile Include="Telemetry\NuGetProjectTelemetryService.cs" />
     <Compile Include="Utility\EnvDTEExtensions.cs" />
+    <Compile Include="Utility\DeferredProjectRestoreUtility.cs" />
     <Compile Include="Utility\EnvDTESolutionUtility.cs" />
     <Compile Include="Utility\FrameworkAssembly.cs" />
     <Compile Include="Utility\FrameworkAssemblyResolver.cs" />
@@ -233,6 +236,7 @@
     <EmbeddedResource Include="Strings.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>Strings.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>

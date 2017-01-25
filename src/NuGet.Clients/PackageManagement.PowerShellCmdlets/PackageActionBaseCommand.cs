@@ -86,7 +86,12 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             UpdateActiveSourceRepository(result.SourceRepository);
             GetNuGetProject(ProjectName);
             DetermineFileConflictAction();
-            NuGetUIThreadHelper.JoinableTaskFactory.Run(CheckMissingPackagesAsync);
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
+            {
+                await CheckMissingPackagesAsync();
+                await CheckPackageManagementFormat();
+            });
+
         }
 
         protected override void ProcessRecordCore()
@@ -266,6 +271,26 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                     Resources.Cmdlet_RequestRestartToCompleteUninstall,
                     string.Join(", ", packageDirectoriesMarkedForDeletion));
                 WriteWarning(message);
+            }
+        }
+
+        protected async Task CheckPackageManagementFormat()
+        {
+            // check if Project has any packages installed
+            if (!(await Project.GetInstalledPackagesAsync(Token)).Any())
+            {
+                var packageManagementFormat = new PackageManagementFormat(ConfigSettings);
+
+                // if default format is PackageReference then update NuGet Project
+                if (packageManagementFormat.SelectedPackageManagementFormat == 1)
+                {
+                    var newProject = await VsSolutionManager.UpdateNuGetProjectToPackageRef(Project);
+
+                    if (newProject != null)
+                    {
+                        Project = newProject;
+                    }
+                }
             }
         }
 

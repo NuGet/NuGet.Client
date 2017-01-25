@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace NuGet.CommandLine.XPlat
 {
-    public interface IAddPackageReferenceCommandRunner
+    public interface IPackageReferenceCommandRunner
     {
         Task<int> ExecuteCommand(PackageReferenceArgs packageRefArgs, MSBuildAPIUtility msBuild);
     }

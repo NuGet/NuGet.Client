@@ -123,7 +123,7 @@
   </data>
   <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
   <data name="skipBindingRedirects.Location" type="System.Drawing.Point, System.Drawing">
-    <value>19, 118</value>
+    <value>19, 138</value>
   </data>
   <data name="skipBindingRedirects.Size" type="System.Drawing.Size, System.Drawing">
     <value>169, 17</value>
@@ -144,7 +144,7 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;skipBindingRedirects.ZOrder" xml:space="preserve">
-    <value>5</value>
+    <value>1</value>
   </data>
   <data name="PackageRestoreHeader.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -178,7 +178,7 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;PackageRestoreHeader.ZOrder" xml:space="preserve">
-    <value>6</value>
+    <value>2</value>
   </data>
   <data name="packageRestoreConsentCheckBox.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -208,7 +208,7 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;packageRestoreConsentCheckBox.ZOrder" xml:space="preserve">
-    <value>7</value>
+    <value>3</value>
   </data>
   <data name="packageRestoreAutomaticCheckBox.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
     <value>NoControl</value>
@@ -238,7 +238,7 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;packageRestoreAutomaticCheckBox.ZOrder" xml:space="preserve">
-    <value>8</value>
+    <value>4</value>
   </data>
   <data name="BindingRedirectsHeader.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -250,7 +250,7 @@
     <value>NoControl</value>
   </data>
   <data name="BindingRedirectsHeader.Location" type="System.Drawing.Point, System.Drawing">
-    <value>2, 92</value>
+    <value>2, 112</value>
   </data>
   <data name="BindingRedirectsHeader.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>2, 0, 2, 0</value>
@@ -274,13 +274,13 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;BindingRedirectsHeader.ZOrder" xml:space="preserve">
-    <value>4</value>
+    <value>0</value>
   </data>
   <data name="localsCommandButton.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
   <data name="localsCommandButton.Location" type="System.Drawing.Point, System.Drawing">
-    <value>5, 247</value>
+    <value>5, 194</value>
   </data>
   <data name="localsCommandButton.Size" type="System.Drawing.Size, System.Drawing">
     <value>134, 23</value>
@@ -307,10 +307,7 @@
     <value>True</value>
   </data>
   <data name="localsCommandStatusText.Location" type="System.Drawing.Point, System.Drawing">
-    <value>5, 276</value>
-  </data>
-  <data name="localsCommandStatusText.ScrollBars" type="System.Windows.Forms.RichTextBoxScrollBars, System.Windows.Forms">
-    <value>None</value>
+    <value>5, 220</value>
   </data>
   <data name="localsCommandStatusText.Size" type="System.Drawing.Size, System.Drawing">
     <value>432, 62</value>
@@ -322,9 +319,6 @@
     <value>http://example.com/help/locals</value>
   </data>
   <data name="localsCommandStatusText.Visible" type="System.Boolean, mscorlib">
-    <value>False</value>
-  </data>
-  <data name="localsCommandStatusText.WordWrap" type="System.Boolean, mscorlib">
     <value>False</value>
   </data>
   <data name="&gt;&gt;localsCommandStatusText.Name" xml:space="preserve">
@@ -373,7 +367,7 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;PackageManagementHeader.ZOrder" xml:space="preserve">
-    <value>3</value>
+    <value>5</value>
   </data>
   <data name="defaultPackageManagementFormatLabel.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -400,7 +394,7 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;defaultPackageManagementFormatLabel.ZOrder" xml:space="preserve">
-    <value>2</value>
+    <value>6</value>
   </data>
   <data name="showPackageManagementChooser.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -427,7 +421,7 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;showPackageManagementChooser.ZOrder" xml:space="preserve">
-    <value>1</value>
+    <value>7</value>
   </data>
   <metadata name="defaultPackageManagementFormatItems.Locked" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
     <value>True</value>
@@ -457,7 +451,7 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;defaultPackageManagementFormatItems.ZOrder" xml:space="preserve">
-    <value>0</value>
+    <value>8</value>
   </data>
   <metadata name="$this.Localizable" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
     <value>True</value>
@@ -469,7 +463,7 @@
     <value>2, 2, 2, 2</value>
   </data>
   <data name="$this.Size" type="System.Drawing.Size, System.Drawing">
-    <value>460, 365</value>
+    <value>463, 285</value>
   </data>
   <data name="&gt;&gt;$this.Name" xml:space="preserve">
     <value>GeneralOptionControl</value>

@@ -226,6 +226,14 @@ namespace NuGet.Test.Utility
             }
         }
 
+        public void AddPackageToFramework(string packageFramework, params SimpleTestPackageContext[] packages)
+        {
+            var framework = Frameworks
+                .Where(f => f.Framework == NuGetFramework.Parse(packageFramework))
+                .First();
+            framework.PackageReferences.AddRange(packages);
+        }
+
         public void AddProjectToAllFrameworks(params SimpleTestProjectContext[] projects)
         {
             foreach (var framework in Frameworks)
@@ -301,6 +309,7 @@ namespace NuGet.Test.Utility
         {
             var context = new SimpleTestProjectContext(projectName, ProjectStyle.PackageReference, solutionRoot);
             context.Frameworks.AddRange(frameworks.Select(e => new SimpleTestProjectFrameworkContext(e)));
+            context.Properties.Add("RestoreProjectStyle", "PackageReference");
             return context;
         }
 
@@ -550,7 +559,7 @@ namespace NuGet.Test.Utility
 
             if (framework?.IsSpecificFramework == true)
             {
-                entry.Add(new XAttribute(XName.Get("Condition"), $" '$(TargetFramework)' == '{framework.GetShortFolderName()}' "));
+                itemGroup.Add(new XAttribute(XName.Get("Condition"), $" '$(TargetFramework)' == '{framework.GetShortFolderName()}' "));
             }
 
             foreach (var pair in properties)

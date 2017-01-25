@@ -11,9 +11,11 @@ using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Threading;
 using NuGet.Configuration;
+using NuGet.PackageManagement;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Protocol.Core.Types;
 using Task = System.Threading.Tasks.Task;
+using NuGet.PackageManagement.UI;
 
 namespace NuGet.SolutionRestoreManager
 {
@@ -63,9 +65,12 @@ namespace NuGet.SolutionRestoreManager
             _solutionManager = new Lazy<IVsSolutionManager>(
                 () => componentModel.GetService<IVsSolutionManager>());
 
-            await ThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+            // Lazy load the CPS enabled JoinableTaskFactory for the UI.
+            NuGetUIThreadHelper.SetJoinableTaskFactoryFromService(componentModel);
+
+            await NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {
-                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
                 var dte = (EnvDTE.DTE)await GetServiceAsync(typeof(SDTE));
                 _buildEvents = dte.Events.BuildEvents;
                 _buildEvents.OnBuildBegin += BuildEvents_OnBuildBegin;
@@ -87,12 +92,6 @@ namespace NuGet.SolutionRestoreManager
                 // Clear the project.json restore cache on clean to ensure that the next build restores again
                 SolutionRestoreWorker.CleanCache();
 
-                return;
-            }
-
-            // Check if solution is DPL enabled, then don't restore
-            if (SolutionManager.IsSolutionDPLEnabled)
-            {
                 return;
             }
 

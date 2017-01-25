@@ -12,6 +12,7 @@ using EnvDTE;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Threading;
 using NuGet.PackageManagement;
+using NuGet.PackageManagement.UI;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
@@ -50,7 +51,7 @@ namespace NuGet.VisualStudio
             _projectContext = new VSAPIProjectContext();
             _packageServices = packageServices;
             _deleteOnRestartManager = deleteOnRestartManager;
-            PumpingJTF = new PumpingJTF(ThreadHelper.JoinableTaskContext);
+            PumpingJTF = new PumpingJTF(NuGetUIThreadHelper.JoinableTaskFactory.Context);
         }
 
         public void InstallLatestPackage(

@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -17,6 +17,7 @@ using Microsoft.VisualStudio.Language.Intellisense;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Editor;
 using Microsoft.Win32;
+using NuGet.PackageManagement.UI;
 using NuGet.PackageManagement.VisualStudio;
 using ActivityLog = Microsoft.VisualStudio.Shell.ActivityLog;
 using ThreadHelper = Microsoft.VisualStudio.Shell.ThreadHelper;
@@ -355,7 +356,7 @@ namespace NuGetConsole.Implementation.Console
                                 }
                                 else
                                 {
-                                    ThreadHelper.JoinableTaskFactory.RunAsync(async delegate { await TriggerCompletionAsync(); });
+                                    NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async delegate { await TriggerCompletionAsync(); });
                                 }
                             }
                             hr = VSConstants.S_OK;

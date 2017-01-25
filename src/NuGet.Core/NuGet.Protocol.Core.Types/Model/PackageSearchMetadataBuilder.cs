@@ -37,6 +37,8 @@ namespace NuGet.Protocol.Core.Types
             public AsyncLazy<IEnumerable<VersionInfo>> LazyVersionsFactory { get; set; }
 
             public async Task<IEnumerable<VersionInfo>> GetVersionsAsync() => await LazyVersionsFactory;
+
+            public bool IsListed { get; set; }
         }
 
         private PackageSearchMetadataBuilder(IPackageSearchMetadata metadata)
@@ -73,7 +75,8 @@ namespace NuGet.Protocol.Core.Types
                 Summary = _metadata.Summary,
                 Tags = _metadata.Tags,
                 Title = _metadata.Title,
-                LazyVersionsFactory = _lazyVersionsFactory
+                LazyVersionsFactory = _lazyVersionsFactory,
+                IsListed = _metadata.IsListed
             };
 
             return clonedMetadata;

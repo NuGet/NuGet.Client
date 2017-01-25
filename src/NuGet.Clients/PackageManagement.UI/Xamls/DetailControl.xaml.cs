@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -122,7 +122,6 @@ namespace NuGet.PackageManagement.UI
                     return Control.Model.Context.UIActionEngine.PerformActionAsync(
                         Control.Model.UIController,
                         action,
-                        this,
                         CancellationToken.None);
                 },
                 nugetUi =>
@@ -137,7 +136,7 @@ namespace NuGet.PackageManagement.UI
                     nugetUi.Projects = model.GetSelectedProjects(action);
                     nugetUi.DisplayPreviewWindow = model.Options.ShowPreviewWindow;
                     nugetUi.DisplayDeprecatedFrameworkWindow = model.Options.ShowDeprecatedFrameworkWindow;
-                    nugetUi.ProgressWindow.ActionType = actionType;
+                    nugetUi.ProjectContext.ActionType = actionType;
                 });
         }
 

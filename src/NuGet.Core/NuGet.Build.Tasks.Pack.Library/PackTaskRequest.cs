@@ -25,6 +25,7 @@ namespace NuGet.Build.Tasks.Pack
         public ILogger Logger { get; set; }
         public string MinClientVersion { get; set; }
         public bool NoPackageAnalysis { get; set; }
+        public string NuspecFile { get; set; }
         public string NuspecOutputPath { get; set; }
         public IMSBuildItem[] PackageFiles { get; set; }
         public IMSBuildItem[] PackageFilesToExclude { get; set; }
@@ -34,6 +35,8 @@ namespace NuGet.Build.Tasks.Pack
         public string PackageVersion { get; set; }
         public IMSBuildItem PackItem { get; set; }
         public string ProjectUrl { get; set; }
+        public string NuspecBasePath { get; set; }
+        public string[] NuspecProperties { get; set; }
         public string ReleaseNotes { get; set; }
         public string RepositoryType { get; set; }
         public string RepositoryUrl { get; set; }

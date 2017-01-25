@@ -5,7 +5,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json.Linq;
+using NuGet.Packaging;
 using NuGet.Protocol.Core.Types;
+using NuGet.Versioning;
 
 namespace NuGet.Protocol
 {
@@ -14,72 +16,16 @@ namespace NuGet.Protocol
     /// </summary>
     public class ServiceIndexResourceV3 : INuGetResource
     {
-        private readonly IDictionary<string, List<Uri>> _index;
+        private readonly IDictionary<string, List<ServiceIndexEntry>> _index;
         private readonly DateTime _requestTime;
-        private List<Uri> _empty;
+        private static readonly IReadOnlyList<ServiceIndexEntry> _emptyEntries = new List<ServiceIndexEntry>();
+        private static readonly IReadOnlyList<Uri> _emptyUris = new List<Uri>();
+        private static readonly SemanticVersion _defaultVersion = new SemanticVersion(0, 0, 0);
 
         public ServiceIndexResourceV3(JObject index, DateTime requestTime)
         {
             _index = MakeLookup(index);
             _requestTime = requestTime;
-        }
-
-        private static IDictionary<string, List<Uri>> MakeLookup(JObject index)
-        {
-            var result = new Dictionary<string, List<Uri>>();
-
-            JToken resources;
-            if (index.TryGetValue("resources", out resources))
-            {
-                foreach (var resource in resources)
-                {
-                    JToken type = resource["@type"];
-                    JToken id = resource["@id"];
-
-                    if (type == null || id == null)
-                    {
-                        continue;
-                    }
-
-                    if (type.Type == JTokenType.Array)
-                    {
-                        foreach (var nType in type)
-                        {
-                            AddEndpoint(result, nType, id);
-                        }
-                    }
-                    else
-                    {
-                        AddEndpoint(result, type, id);
-                    }
-                }
-            }
-
-            return result; 
-        }
-
-        private static void AddEndpoint(IDictionary<string, List<Uri>> result, JToken typeToken, JToken idToken)
-        {
-            string type = (string)typeToken;
-            string id = (string)idToken;
-
-            if (type == null || id == null)
-            {
-                return;
-            }
-
-            List<Uri> ids;
-            if (!result.TryGetValue(type, out ids))
-            {
-                ids = new List<Uri>();
-                result.Add(type, ids);
-            }
-
-            Uri uri;
-            if (Uri.TryCreate(id, UriKind.Absolute, out uri))
-            {
-                ids.Add(new Uri(id));
-            }
         }
 
         /// <summary>
@@ -91,52 +37,189 @@ namespace NuGet.Protocol
         }
 
         /// <summary>
-        /// Empty set of endpoints - needed to efficiently meet indexer contract
+        /// All service index entries.
         /// </summary>
-        private List<Uri> Empty
+        public virtual IReadOnlyList<ServiceIndexEntry> Entries
         {
             get
             {
-                if (_empty == null)
-                {
-                    _empty = new List<Uri>();
-                }
-                return _empty;
+                return _index.SelectMany(e => e.Value).ToList();
             }
         }
 
         /// <summary>
-        /// A list of endpoints for a service type
+        /// Get the list of service entries that best match the current clientVersion and type.
         /// </summary>
-        public virtual IReadOnlyList<Uri> this[string type]
+        public virtual IReadOnlyList<ServiceIndexEntry> GetServiceEntries(params string[] orderedTypes)
         {
-            get
-            {
-                List<Uri> endpoints;
-                if (_index.TryGetValue(type, out endpoints))
-                {
-                    return endpoints;
-                }
-                return Empty;
-            }
+            var clientVersion = MinClientVersionUtility.GetNuGetClientVersion();
+
+            return GetServiceEntries(clientVersion, orderedTypes);
         }
 
         /// <summary>
-        /// A list of endpoints for a service type - in priority order
+        /// Get the list of service entries that best match the clientVersion and type.
         /// </summary>
-        public virtual IReadOnlyList<Uri> this[string[] types]
+        public virtual IReadOnlyList<ServiceIndexEntry> GetServiceEntries(NuGetVersion clientVersion, params string[] orderedTypes)
         {
-            get
+            if (clientVersion == null)
             {
-                foreach (var type in types)
+                throw new ArgumentNullException(nameof(clientVersion));
+            }
+
+            foreach (var type in orderedTypes)
+            {
+                List<ServiceIndexEntry> entries;
+                if (_index.TryGetValue(type, out entries))
                 {
-                    var result = this[type];
-                    if (result.Count > 0)
+                    var compatible = GetBestVersionMatchForType(clientVersion, entries);
+
+                    if (compatible.Count > 0)
                     {
-                        return result;
+                        return compatible;
                     }
                 }
-                return Empty;
+            }
+
+            return _emptyEntries;
+        }
+
+        private IReadOnlyList<ServiceIndexEntry> GetBestVersionMatchForType(NuGetVersion clientVersion, List<ServiceIndexEntry> entries)
+        {
+            var bestMatch = entries.FirstOrDefault(e => e.ClientVersion <= clientVersion);
+
+            if (bestMatch == null)
+            {
+                // No compatible version
+                return _emptyEntries;
+            }
+            else
+            {
+                // Find all entries with the same version.
+                return entries.Where(e => e.ClientVersion == bestMatch.ClientVersion).ToList();
+            }
+        }
+
+        /// <summary>
+        /// Get the best match service URI.
+        /// </summary>
+        public virtual Uri GetServiceEntryUri(params string[] orderedTypes)
+        {
+            var clientVersion = MinClientVersionUtility.GetNuGetClientVersion();
+
+            return GetServiceEntryUris(clientVersion, orderedTypes).FirstOrDefault();
+        }
+
+        /// <summary>
+        /// Get the list of service URIs that best match the current clientVersion and type.
+        /// </summary>
+        public virtual IReadOnlyList<Uri> GetServiceEntryUris(params string[] orderedTypes)
+        {
+            var clientVersion = MinClientVersionUtility.GetNuGetClientVersion();
+
+            return GetServiceEntryUris(clientVersion, orderedTypes);
+        }
+
+        /// <summary>
+        /// Get the list of service URIs that best match the clientVersion and type.
+        /// </summary>
+        public virtual IReadOnlyList<Uri> GetServiceEntryUris(NuGetVersion clientVersion, params string[] orderedTypes)
+        {
+            if (clientVersion == null)
+            {
+                throw new ArgumentNullException(nameof(clientVersion));
+            }
+
+            return GetServiceEntries(clientVersion, orderedTypes).Select(e => e.Uri).ToList();
+        }
+
+        private static IDictionary<string, List<ServiceIndexEntry>> MakeLookup(JObject index)
+        {
+            var result = new Dictionary<string, List<ServiceIndexEntry>>(StringComparer.Ordinal);
+
+            JToken resources;
+            if (index.TryGetValue("resources", out resources))
+            {
+                foreach (var resource in resources)
+                {
+                    var id = GetValues(resource["@id"]).SingleOrDefault();
+
+                    Uri uri;
+                    if (string.IsNullOrEmpty(id) || !Uri.TryCreate(id, UriKind.Absolute, out uri))
+                    {
+                        // Skip invalid or missing @ids
+                        continue;
+                    }
+
+                    var types = GetValues(resource["@type"]).ToArray();
+                    var clientVersionToken = resource["clientVersion"];
+
+                    var clientVersions = new List<SemanticVersion>();
+
+                    if (clientVersionToken == null)
+                    {
+                        // For non-versioned services assume all clients are compatible
+                        clientVersions.Add(_defaultVersion);
+                    }
+                    else
+                    {
+                        // Parse supported versions
+                        foreach (var versionString in GetValues(clientVersionToken))
+                        {
+                            SemanticVersion version;
+                            if (SemanticVersion.TryParse(versionString, out version))
+                            {
+                                clientVersions.Add(version);
+                            }
+                        }
+                    }
+
+                    // Create service entries
+                    foreach (var type in types)
+                    {
+                        foreach (var version in clientVersions)
+                        {
+                            List<ServiceIndexEntry> entries;
+                            if (!result.TryGetValue(type, out entries))
+                            {
+                                entries = new List<ServiceIndexEntry>();
+                                result.Add(type, entries);
+                            }
+
+                            entries.Add(new ServiceIndexEntry(uri, type, version));
+                        }
+                    }
+                }
+            }
+
+            // Order versions desc for faster lookup later.
+            foreach (var type in result.Keys.ToArray())
+            {
+                result[type] = result[type].OrderByDescending(e => e.ClientVersion).ToList();
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Read string values from an array or string.
+        /// Returns an empty enumerable if the value is null.
+        /// </summary>
+        private static IEnumerable<string> GetValues(JToken token)
+        {
+            if (token?.Type == JTokenType.Array)
+            {
+                foreach (var entry in token)
+                {
+                    if (entry.Type == JTokenType.String)
+                    {
+                        yield return entry.ToObject<string>();
+                    }
+                }
+            }
+            else if (token?.Type == JTokenType.String)
+            {
+                yield return token.ToObject<string>();
             }
         }
     }

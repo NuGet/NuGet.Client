@@ -14,13 +14,15 @@ namespace NuGet.SolutionRestoreManager.Test
     {
         public String BaseIntermediatePath { get; }
 
-        public string OriginalTargetFrameworks { get; }
+        public string OriginalTargetFrameworks { get; set; }
 
         public IVsTargetFrameworks TargetFrameworks { get; }
 
         public IVsReferenceItems ToolReferences { get; set; }
 
-        public VsProjectRestoreInfo(string baseIntermediatePath, IVsTargetFrameworks targetFrameworks)
+        public VsProjectRestoreInfo(
+            string baseIntermediatePath,
+            IVsTargetFrameworks targetFrameworks)
         {
             if (string.IsNullOrEmpty(baseIntermediatePath))
             {

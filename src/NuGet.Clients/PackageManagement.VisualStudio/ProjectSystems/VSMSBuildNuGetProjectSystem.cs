@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using Microsoft.CSharp.RuntimeBinder;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.Frameworks;
+using NuGet.PackageManagement.UI;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using Constants = NuGet.ProjectManagement.Constants;
@@ -88,9 +89,9 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 if (string.IsNullOrEmpty(_projectFullPath))
                 {
-                    ThreadHelper.JoinableTaskFactory.Run(async delegate
+                    NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
                     {
-                        await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                        await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
                         _projectFullPath = EnvDTEProjectUtility.GetFullPath(EnvDTEProject);
                     });
                 }
@@ -110,9 +111,9 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 if (string.IsNullOrEmpty(_projectFileFullPath))
                 {
-                    ThreadHelper.JoinableTaskFactory.Run(async delegate
+                    NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
                     {
-                        await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                        await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                         _projectFileFullPath = EnvDTEProjectUtility.GetFullProjectPath(EnvDTEProject);
                     });
@@ -130,9 +131,9 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 if (String.IsNullOrEmpty(_projectName))
                 {
-                    ThreadHelper.JoinableTaskFactory.Run(async delegate
+                    NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
                     {
-                        await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                        await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
                         _projectName = EnvDTEProject.Name;
                     });
                 }
@@ -148,9 +149,9 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 if (String.IsNullOrEmpty(_projectCustomUniqueName))
                 {
-                    ThreadHelper.JoinableTaskFactory.Run(async delegate
+                    NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
                         {
-                            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
                             _projectCustomUniqueName = EnvDTEProjectUtility.GetCustomUniqueName(EnvDTEProject);
                         });
                 }
@@ -167,9 +168,9 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 if (_targetFramework == null)
                 {
-                    ThreadHelper.JoinableTaskFactory.Run(async delegate
+                    NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
                         {
-                            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
                             _targetFramework = EnvDTEProjectUtility.GetTargetNuGetFramework(EnvDTEProject);
                         });
                 }
@@ -185,9 +186,9 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public virtual void AddFile(string path, Stream stream)
         {
-            ThreadHelper.JoinableTaskFactory.Run(async delegate
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
             {
-                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                 await AddFileCoreAsync(path, () => FileSystemUtility.AddFile(ProjectFullPath, path, stream, NuGetProjectContext));
             });
@@ -195,9 +196,9 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public virtual void AddFile(string path, Action<Stream> writeToStream)
         {
-            ThreadHelper.JoinableTaskFactory.Run(async delegate
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
             {
-                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                 await AddFileCoreAsync(path, () => FileSystemUtility.AddFile(ProjectFullPath, path, writeToStream, NuGetProjectContext));
             });
@@ -251,9 +252,9 @@ namespace NuGet.PackageManagement.VisualStudio
                 throw new ArgumentNullException(String.Format(CultureInfo.CurrentCulture, Strings.PathToExistingFileNotPresent, fullPath, ProjectName));
             }
 
-            ThreadHelper.JoinableTaskFactory.Run(async delegate
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
             {
-                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                 await AddFileCoreAsync(path, () => { });
             });
@@ -306,9 +307,9 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public void AddFrameworkReference(string name, string packageId)
         {
-            ThreadHelper.JoinableTaskFactory.Run(async delegate
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
             {
-                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                 try
                 {
@@ -351,9 +352,9 @@ namespace NuGet.PackageManagement.VisualStudio
                 throw new ArgumentNullException(CommonResources.Argument_Cannot_Be_Null_Or_Empty, "targetPath");
             }
 
-            ThreadHelper.JoinableTaskFactory.Run(async delegate
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
             {
-                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                 string relativeTargetPath = PathUtility.GetRelativePath(PathUtility.EnsureTrailingSlash(ProjectFullPath), targetFullPath);
                 EnvDTEProjectUtility.AddImportStatement(EnvDTEProject, relativeTargetPath, location);
@@ -383,9 +384,9 @@ namespace NuGet.PackageManagement.VisualStudio
             try
             {
                 // Perform all DTE operations on the UI thread
-                ThreadHelper.JoinableTaskFactory.Run(async delegate
+                NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
                 {
-                    await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                     // Read DTE properties from the UI thread
                     projectFullPath = ProjectFullPath;
@@ -452,9 +453,9 @@ namespace NuGet.PackageManagement.VisualStudio
                             FileSystemUtility.MakeWritable(dteProjectFullName);
 
                             // Change to the UI thread to save
-                            ThreadHelper.JoinableTaskFactory.Run(async delegate
+                            NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
                             {
-                                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                                 // Save the project after we've modified it.
                                 EnvDTEProject.Save();
@@ -483,7 +484,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             NuGetProjectContext.Log(
                 ProjectManagement.MessageLevel.Debug,
-                $"Added reference '{name}' to project:'{projectName}'. Was the Reference Resolved To Package (resolvedToPackage):'{resolvedToPackage}', "+
+                $"Added reference '{name}' to project:'{projectName}'. Was the Reference Resolved To Package (resolvedToPackage):'{resolvedToPackage}', " +
                 "where Reference Path from DTE(dteOriginalPath):'{dteOriginalPath}' and Reference Path from package reference(assemblyFullPath):'{assemblyFullPath}'.");
         }
 
@@ -522,9 +523,9 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public virtual void RemoveFile(string path)
         {
-            ThreadHelper.JoinableTaskFactory.Run(async delegate
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
             {
-                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                 var deleteProjectItem = await EnvDTEProjectUtility.DeleteProjectItemAsync(EnvDTEProject, path);
                 if (deleteProjectItem)
@@ -544,9 +545,9 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public virtual bool ReferenceExists(string name)
         {
-            return ThreadHelper.JoinableTaskFactory.Run(async delegate
+            return NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
             {
-                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                 try
                 {
@@ -573,9 +574,9 @@ namespace NuGet.PackageManagement.VisualStudio
                 throw new ArgumentNullException(CommonResources.Argument_Cannot_Be_Null_Or_Empty, "targetPath");
             }
 
-            ThreadHelper.JoinableTaskFactory.Run(async delegate
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
             {
-                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                 string relativeTargetPath = PathUtility.GetRelativePath(PathUtility.EnsureTrailingSlash(ProjectFullPath), targetFullPath);
                 EnvDTEProjectUtility.RemoveImportStatement(EnvDTEProject, relativeTargetPath);
@@ -589,9 +590,9 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public virtual void RemoveReference(string name)
         {
-            ThreadHelper.JoinableTaskFactory.Run(async delegate
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
             {
-                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                 try
                 {
@@ -696,9 +697,9 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public virtual bool FileExistsInProject(string path)
         {
-            return ThreadHelper.JoinableTaskFactory.Run(async delegate
+            return NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
                 {
-                    await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                     var containsFile = await EnvDTEProjectUtility.ContainsFile(EnvDTEProject, path);
                     return containsFile;
@@ -707,9 +708,9 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public virtual dynamic GetPropertyValue(string propertyName)
         {
-            return ThreadHelper.JoinableTaskFactory.Run(async delegate
+            return NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
             {
-                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                 try
                 {
@@ -803,11 +804,11 @@ namespace NuGet.PackageManagement.VisualStudio
 
             if (!behavior.IsSkipped)
             {
-                ThreadHelper.JoinableTaskFactory.Run(async delegate
+                NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
                 {
                     try
                     {
-                        await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                        await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                         InitForBindingRedirects();
                         if (IsBindingRedirectSupported && VSSolutionManager != null)
@@ -891,9 +892,9 @@ namespace NuGet.PackageManagement.VisualStudio
                 return;
             }
 
-            ThreadHelper.JoinableTaskFactory.Run(async delegate
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
             {
-                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                 // Workaround for TFS update issue. If we're bound to TFS, do not try and delete directories.
                 if (SourceControlUtility.GetSourceControlManager(NuGetProjectContext) == null)
@@ -914,9 +915,9 @@ namespace NuGet.PackageManagement.VisualStudio
                 throw new NotSupportedException();
             }
 
-            return ThreadHelper.JoinableTaskFactory.Run(async delegate
+            return NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
             {
-                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                 var childItems = await EnvDTEProjectUtility.GetChildItems(EnvDTEProject, path, filter, NuGetVSConstants.VsProjectItemKindPhysicalFile);
                 // Get all physical files
@@ -934,9 +935,9 @@ namespace NuGet.PackageManagement.VisualStudio
         /// <returns>The list of full paths.</returns>
         public IEnumerable<string> GetFullPaths(string fileName)
         {
-            return ThreadHelper.JoinableTaskFactory.Run(async delegate
+            return NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
             {
-                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                 var paths = new List<string>();
                 var projectItemsQueue = new Queue<EnvDTEProjectItems>();
@@ -966,9 +967,9 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public virtual IEnumerable<string> GetDirectories(string path)
         {
-            return ThreadHelper.JoinableTaskFactory.Run(async delegate
+            return NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
             {
-                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                 var childItems = await EnvDTEProjectUtility.GetChildItems(EnvDTEProject, path, "*.*", NuGetVSConstants.VsProjectItemKindPhysicalFolder);
                 // Get all physical folders

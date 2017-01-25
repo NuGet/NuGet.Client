@@ -71,7 +71,7 @@ namespace NuGet.SolutionRestoreManager.Test
         }
 
         [Fact]
-        public async Task NominateProjectAsync_ConsoleAppTemplate_Succeeds()
+        public async Task NominateProjectAsync_ConsoleAppTemplate()
         {
             var consoleAppProjectJson = @"{
     ""frameworks"": {
@@ -91,41 +91,20 @@ namespace NuGet.SolutionRestoreManager.Test
 }";
             var projectName = "ConsoleApp1";
             var cps = NewCpsProject(projectName, consoleAppProjectJson);
+            var pri = cps.Item3;
             var projectFullPath = cps.Item1;
 
-            var cache = Mock.Of<IProjectSystemCache>();
-
-            DependencyGraphSpec actualRestoreSpec = null;
-
-            Mock.Get(cache)
-                .Setup(x => x.AddProjectRestoreInfo(
-                    It.IsAny<ProjectNames>(),
-                    It.IsAny<DependencyGraphSpec>()))
-                .Callback<ProjectNames, DependencyGraphSpec>(
-                    (_, dg) => { actualRestoreSpec = dg; })
-                .Returns(true);
-
-            var restoreWorker = Mock.Of<ISolutionRestoreWorker>();
-            Mock.Get(restoreWorker)
-                .Setup(x => x.ScheduleRestoreAsync(
-                    It.IsAny<SolutionRestoreRequest>(),
-                    CancellationToken.None))
-                .ReturnsAsync(true);
-
-            var service = new VsSolutionRestoreService(
-                cache, restoreWorker, NuGet.Common.NullLogger.Instance);
-
             // Act
-            var result = await service.NominateProjectAsync(projectFullPath, cps.Item3, CancellationToken.None);
+            var actualRestoreSpec = await CaptureNominateResultAsync(projectFullPath, pri);
 
-            Assert.True(result, "Project restore nomination should succeed.");
-            Assert.NotNull(actualRestoreSpec);
+            // Assert
             SpecValidationUtility.ValidateDependencySpec(actualRestoreSpec);
 
-            Assert.NotNull(actualRestoreSpec.GetProjectSpec(projectFullPath));
             var actualProjectSpec = actualRestoreSpec.GetProjectSpec(projectFullPath);
+            Assert.NotNull(actualProjectSpec);
 
             var actualMetadata = actualProjectSpec.RestoreMetadata;
+            Assert.NotNull(actualMetadata);
             Assert.Equal(projectFullPath, actualMetadata.ProjectPath);
             Assert.Equal(projectName, actualMetadata.ProjectName);
             Assert.Equal(ProjectStyle.PackageReference, actualMetadata.ProjectStyle);
@@ -143,7 +122,7 @@ namespace NuGet.SolutionRestoreManager.Test
         }
 
         [Fact]
-        public async Task NominateProjectAsync_WithTools_Succeeds()
+        public async Task NominateProjectAsync_ProjectWithTools()
         {
             const string toolProjectJson = @"{
     ""frameworks"": {
@@ -159,18 +138,127 @@ namespace NuGet.SolutionRestoreManager.Test
                         VersionRange.Parse("2.0.0"),
                         LibraryDependencyTarget.Package)
                 });
+            var pri = cps.Item3;
             var projectFullPath = cps.Item1;
 
+            // Act
+            var actualRestoreSpec = await CaptureNominateResultAsync(projectFullPath, pri);
+
+            // Assert
+            SpecValidationUtility.ValidateDependencySpec(actualRestoreSpec);
+
+            var actualProjectSpec = actualRestoreSpec.GetProjectSpec(projectFullPath);
+            Assert.NotNull(actualProjectSpec);
+
+            var actualToolSpec = actualRestoreSpec
+                .Projects
+                .Where(p => !object.ReferenceEquals(p, actualProjectSpec))
+                .Single();
+            var actualMetadata = actualToolSpec.RestoreMetadata;
+            Assert.NotNull(actualMetadata);
+            Assert.Equal(projectFullPath, actualMetadata.ProjectPath);
+            Assert.Equal(ProjectStyle.DotnetCliTool, actualMetadata.ProjectStyle);
+            Assert.Null(actualMetadata.OutputPath);
+            var actualToolLibrary = actualToolSpec
+                .TargetFrameworks
+                .Single()
+                .Dependencies
+                .Single();
+            Assert.Equal("Foo.Test.Tools", actualToolLibrary.Name);
+            Assert.Equal("2.0.0", actualToolLibrary.LibraryRange.VersionRange.OriginalString);
+        }
+
+        [Theory]
+        [InlineData(
+@"{
+    ""frameworks"": {
+        ""netstandard1.4"": { }
+    }
+}", "netstandard1.4", "netstandard1.4")]
+        [InlineData(
+@"{
+    ""frameworks"": {
+        ""netstandard1.4"": { },
+        ""net46"": { }
+    }
+}", "netstandard1.4;net46", "netstandard1.4;net46")]
+        [InlineData(
+@"{
+    ""frameworks"": {
+        ""netstandard1.4"": { },
+        ""net46"": { }
+    }
+}", "\r\n    netstandard1.4;\r\n    net46\r\n    ", "netstandard1.4;net46")]
+        public async Task NominateProjectAsync_CrossTargeting(
+            string projectJson, string rawOriginalTargetFrameworks, string expectedOriginalTargetFrameworks)
+        {
+            var cps = NewCpsProject(
+                projectJson: projectJson,
+                crossTargeting: true);
+            var pri = cps.Item3;
+            var projectFullPath = cps.Item1;
+            pri.OriginalTargetFrameworks = rawOriginalTargetFrameworks;
+
+            // Act
+            var actualRestoreSpec = await CaptureNominateResultAsync(projectFullPath, pri);
+
+            // Assert
+            SpecValidationUtility.ValidateDependencySpec(actualRestoreSpec);
+
+            var actualProjectSpec = actualRestoreSpec.GetProjectSpec(projectFullPath);
+            Assert.NotNull(actualProjectSpec);
+
+            var actualMetadata = actualProjectSpec.RestoreMetadata;
+            Assert.NotNull(actualMetadata);
+            Assert.True(actualMetadata.CrossTargeting);
+
+            var actualOriginalTargetFrameworks = string.Join(";", actualMetadata.OriginalTargetFrameworks);
+            Assert.Equal(
+                expectedOriginalTargetFrameworks,
+                actualOriginalTargetFrameworks);
+        }
+
+        [Fact]
+        public async Task NominateProjectAsync_Imports()
+        {
+            const string projectJson = @"{
+    ""frameworks"": {
+        ""netstandard1.4"": {
+            ""imports"": [""dotnet5.3"",""portable-net452+win81""]
+        }
+    }
+}";
+            var cps = NewCpsProject(
+                projectJson: projectJson);
+            var pri = cps.Item3;
+            var projectFullPath = cps.Item1;
+
+            // Act
+            var actualRestoreSpec = await CaptureNominateResultAsync(projectFullPath, pri);
+
+            // Assert
+            SpecValidationUtility.ValidateDependencySpec(actualRestoreSpec);
+
+            var actualProjectSpec = actualRestoreSpec.GetProjectSpec(projectFullPath);
+            Assert.NotNull(actualProjectSpec);
+
+            var actualTfi = actualProjectSpec.TargetFrameworks.Single();
+            var actualImports = string.Join(";", actualTfi.Imports.Select(x => x.GetShortFolderName()));
+            Assert.Equal("dotnet5.3;portable-net452+win81", actualImports);
+        }
+
+        private async Task<DependencyGraphSpec> CaptureNominateResultAsync(
+            string projectFullPath, IVsProjectRestoreInfo pri)
+        {
+            DependencyGraphSpec capturedRestoreSpec = null;
+
             var cache = Mock.Of<IProjectSystemCache>();
-
-            DependencyGraphSpec actualRestoreSpec = null;
-
             Mock.Get(cache)
                 .Setup(x => x.AddProjectRestoreInfo(
                     It.IsAny<ProjectNames>(),
                     It.IsAny<DependencyGraphSpec>()))
                 .Callback<ProjectNames, DependencyGraphSpec>(
-                    (_, dg) => { actualRestoreSpec = dg; })
+                    (_, dg) => { capturedRestoreSpec = dg; })
                 .Returns(true);
 
             var restoreWorker = Mock.Of<ISolutionRestoreWorker>();
@@ -184,35 +272,18 @@ namespace NuGet.SolutionRestoreManager.Test
                 cache, restoreWorker, NuGet.Common.NullLogger.Instance);
 
             // Act
-            var result = await service.NominateProjectAsync(projectFullPath, cps.Item3, CancellationToken.None);
+            var result = await service.NominateProjectAsync(projectFullPath, pri, CancellationToken.None);
 
             Assert.True(result, "Project restore nomination should succeed.");
-            Assert.NotNull(actualRestoreSpec);
-            SpecValidationUtility.ValidateDependencySpec(actualRestoreSpec);
 
-            Assert.NotNull(actualRestoreSpec.GetProjectSpec(projectFullPath));
-            var actualProjectSpec = actualRestoreSpec.GetProjectSpec(projectFullPath);
-
-            var actualToolSpec = actualRestoreSpec
-                .Projects
-                .Where(p => !object.ReferenceEquals(p, actualProjectSpec))
-                .Single();
-            var actualMetadata = actualToolSpec.RestoreMetadata;
-            Assert.NotNull(actualMetadata);
-            Assert.Equal(projectFullPath, actualMetadata.ProjectPath);
-            Assert.Equal(ProjectStyle.DotnetCliTool, actualMetadata.ProjectStyle);
-            Assert.Null(actualMetadata.OutputPath);
-            var toolLibrary = actualToolSpec
-                .TargetFrameworks
-                .Single()
-                .Dependencies
-                .Single();
-            Assert.Equal("Foo.Test.Tools", toolLibrary.Name);
-            Assert.Equal("2.0.0", toolLibrary.LibraryRange.VersionRange.OriginalString);
+            return capturedRestoreSpec;
         }
 
-        private Tuple<string, string, IVsProjectRestoreInfo> NewCpsProject(
-            string projectName = null, string projectJson = null, IEnumerable<LibraryRange> tools = null)
+        private Tuple<string, string, VsProjectRestoreInfo> NewCpsProject(
+            string projectName = null,
+            string projectJson = null,
+            bool crossTargeting = false,
+            IEnumerable<LibraryRange> tools = null)
         {
             const string DefaultProjectJson = @"{
     ""frameworks"": {
@@ -235,6 +306,7 @@ namespace NuGet.SolutionRestoreManager.Test
             var pri = ProjectRestoreInfoBuilder.Build(
                 spec,
                 baseIntermediatePath,
+                crossTargeting,
                 tools);
             return Tuple.Create(projectFullPath, baseIntermediatePath, pri);
         }

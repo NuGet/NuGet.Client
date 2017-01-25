@@ -6,6 +6,7 @@ using System.ComponentModel.Composition;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.PackageManagement.UI;
+using Microsoft.VisualStudio.Shell;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
@@ -19,17 +20,20 @@ namespace NuGet.PackageManagement.VisualStudio
         private const string _generalGUID = "0F052CF7-BF62-4743-B190-87FA4D49421E";
 
         private Action _closeCallback;
-        private readonly IVsUIShell _vsUIShell;
+        private readonly Lazy<IVsUIShell> _vsUIShell;
 
-        public OptionsPageActivator()
-            :
-                this(ServiceLocator.GetGlobalService<SVsUIShell, IVsUIShell>())
+        [ImportingConstructor]
+        public OptionsPageActivator(
+            [Import(typeof(SVsServiceProvider))]
+            IServiceProvider serviceProvider)
         {
-        }
+            if (serviceProvider == null)
+            {
+                throw new ArgumentNullException(nameof(serviceProvider));
+            }
 
-        public OptionsPageActivator(IVsUIShell vsUIShell)
-        {
-            _vsUIShell = vsUIShell;
+            _vsUIShell = new Lazy<IVsUIShell>(
+                () => serviceProvider.GetService<SVsUIShell, IVsUIShell>());
         }
 
         public void NotifyOptionsDialogClosed()
@@ -38,7 +42,7 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 // We want to clear the value of _closeCallback before invoking it.
                 // Hence copying the value into a local variable.
-                Action callback = _closeCallback;
+                var callback = _closeCallback;
                 _closeCallback = null;
 
                 callback();
@@ -58,15 +62,21 @@ namespace NuGet.PackageManagement.VisualStudio
             }
             else
             {
-                throw new ArgumentOutOfRangeException("page");
+                throw new ArgumentOutOfRangeException(nameof(page));
             }
         }
 
         private void ShowOptionsPage(string optionsPageGuid)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             object targetGuid = optionsPageGuid;
-            Guid toolsGroupGuid = VSConstants.GUID_VSStandardCommandSet97;
-            _vsUIShell.PostExecCommand(ref toolsGroupGuid, (uint)VSConstants.cmdidToolsOptions, (uint)0, ref targetGuid);
+            var toolsGroupGuid = VSConstants.GUID_VSStandardCommandSet97;
+            _vsUIShell.Value.PostExecCommand(
+                ref toolsGroupGuid,
+                (uint)VSConstants.cmdidToolsOptions,
+                (uint)0,
+                ref targetGuid);
         }
     }
 }

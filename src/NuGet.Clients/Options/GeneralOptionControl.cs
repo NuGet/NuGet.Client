@@ -44,8 +44,7 @@ namespace NuGet.Options
             {
                 try
                 {
-                    // not using the nuget.core version of PackageRestoreConsent
-                    var packageRestoreConsent = new PackageManagement.VisualStudio.PackageRestoreConsent(_settings);
+                    var packageRestoreConsent = new PackageManagement.PackageRestoreConsent(_settings);
 
                     packageRestoreConsentCheckBox.Checked = packageRestoreConsent.IsGrantedInSettings;
                     packageRestoreAutomaticCheckBox.Checked = packageRestoreConsent.IsAutomatic;
@@ -53,11 +52,17 @@ namespace NuGet.Options
 
                     var bindingRedirects = new BindingRedirectBehavior(_settings);
                     skipBindingRedirects.Checked = bindingRedirects.IsSkipped;
+#if !VS14
+                    // package management format selection
+                    var packageManagement = new PackageManagementFormat(_settings);
+                    defaultPackageManagementFormatItems.SelectedIndex = packageManagement.SelectedPackageManagementFormat;
+                    showPackageManagementChooser.Checked = packageManagement.IsDisabled;
+#endif
                 }
                 catch (InvalidOperationException)
                 {
                     MessageHelper.ShowErrorMessage(Resources.ShowError_ConfigInvalidOperation, Resources.ErrorDialogBoxTitle);
-                }
+               } 
                 catch (UnauthorizedAccessException)
                 {
                     MessageHelper.ShowErrorMessage(Resources.ShowError_ConfigUnauthorizedAccess, Resources.ErrorDialogBoxTitle);
@@ -71,12 +76,19 @@ namespace NuGet.Options
         {
             try
             {
-                var packageRestoreConsent = new PackageManagement.VisualStudio.PackageRestoreConsent(_settings);
+                var packageRestoreConsent = new PackageManagement.PackageRestoreConsent(_settings);
                 packageRestoreConsent.IsGrantedInSettings = packageRestoreConsentCheckBox.Checked;
                 packageRestoreConsent.IsAutomatic = packageRestoreAutomaticCheckBox.Checked;
 
                 var bindingRedirects = new BindingRedirectBehavior(_settings);
                 bindingRedirects.IsSkipped = skipBindingRedirects.Checked;
+#if !VS14
+                // package management format selection
+                var packageManagement = new PackageManagementFormat(_settings);
+                packageManagement.SelectedPackageManagementFormat = defaultPackageManagementFormatItems.SelectedIndex;
+                packageManagement.IsDisabled = showPackageManagementChooser.Checked;
+                packageManagement.ApplyChanges();
+#endif
             }
             catch (InvalidOperationException)
             {
@@ -169,5 +181,6 @@ namespace NuGet.Options
             localsCommandStatusText.Height = e.NewRectangle.Height + localsCommandStatusText.Margin.Top + localsCommandStatusText.Margin.Bottom;
             localsCommandStatusText.Width = e.NewRectangle.Width + localsCommandStatusText.Margin.Left + localsCommandStatusText.Margin.Right;
         }
+
     }
 }
