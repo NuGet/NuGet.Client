@@ -16,7 +16,9 @@ using NuGet.Frameworks;
 using NuGet.PackageManagement.UI;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
+#if !VS14
 using VSLangProj150;
+#endif
 using Constants = NuGet.ProjectManagement.Constants;
 using EnvDTEProject = EnvDTE.Project;
 using EnvDTEProjectItems = EnvDTE.ProjectItems;
@@ -184,11 +186,16 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             get
             {
+#if VS14
+                // VSProject4 doesn't apply for Dev14 so simply returns null.
+                return null;
+#else
                 return NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
                 {
                     await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
                     return EnvDTEProject.Object as VSProject4;
                 });
+#endif
             }
         }
 
@@ -795,7 +802,7 @@ namespace NuGet.PackageManagement.VisualStudio
             }
         }
 
-        #region Binding Redirects Stuff
+#region Binding Redirects Stuff
 
         private const string SilverlightTargetFrameworkIdentifier = "Silverlight";
 
@@ -868,7 +875,7 @@ namespace NuGet.PackageManagement.VisualStudio
             }
         }
 
-        #endregion Binding Redirects Stuff
+#endregion Binding Redirects Stuff
 
         public Task ExecuteScriptAsync(PackageIdentity identity, string packageInstallPath, string scriptRelativePath, bool throwOnFailure)
         {
