@@ -29,15 +29,14 @@ namespace NuGet.PackageManagement.VisualStudio
         // Non-unique names index. We need another dictionary for short names since there may be more than project name per short name
         private readonly Dictionary<string, HashSet<ProjectNames>> _shortNameCache = new Dictionary<string, HashSet<ProjectNames>>(StringComparer.OrdinalIgnoreCase);
 
+        /// <summary>
+        /// Returns the current value of _isCacheDirty.
+        /// </summary>
         public int IsCacheDirty
         {
             get
             {
                 return _isCacheDirty;
-            }
-            set
-            {
-                _isCacheDirty = value;
             }
         }
 
