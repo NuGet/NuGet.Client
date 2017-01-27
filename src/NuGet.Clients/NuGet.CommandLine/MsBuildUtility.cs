@@ -330,11 +330,14 @@ namespace NuGet.CommandLine
             }
             catch (Exception ex)
             {
+                var exMessage = ex.Message;
+                if (ex.InnerException != null)
+                    exMessage += "  " + ex.InnerException.Message;
                 var message = string.Format(
                     CultureInfo.CurrentCulture,
                     LocalizedResourceManager.GetString("Error_SolutionFileParseError"),
                     solutionFile,
-                    ex.Message);
+                    exMessage);
 
                 throw new CommandLineException(message);
             }
