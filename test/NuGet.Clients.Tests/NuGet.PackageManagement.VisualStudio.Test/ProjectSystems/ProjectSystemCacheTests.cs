@@ -212,10 +212,12 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
             // Act
             target.AddProject(projectNames, dteProject: null, nuGetProject: null);
-            
+
             // Assert
-            var getPackageSpecSuccess = target.TryGetProjectRestoreInfo(projectNames.FullName, out var actual);
-            var getProjectNameSuccess = target.TryGetProjectNames(projectNames.UniqueName, out var names);
+            DependencyGraphSpec actual;
+            ProjectNames names;
+            var getPackageSpecSuccess = target.TryGetProjectRestoreInfo(projectNames.FullName, out actual);
+            var getProjectNameSuccess = target.TryGetProjectNames(projectNames.UniqueName, out names);
 
             Assert.True(getPackageSpecSuccess);
             Assert.True(getProjectNameSuccess);
@@ -252,8 +254,10 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             target.AddProject(projectNames, dteProject: null, nuGetProject: null);
 
             // Assert
-            var getPackageSpecSuccess = target.TryGetProjectRestoreInfo(projectNames.FullName, out var actual);
-            var getProjectNameSuccess = target.TryGetProjectNames(projectNames.UniqueName, out var names);
+            DependencyGraphSpec actual;
+            ProjectNames names;
+            var getPackageSpecSuccess = target.TryGetProjectRestoreInfo(projectNames.FullName, out actual);
+            var getProjectNameSuccess = target.TryGetProjectNames(projectNames.UniqueName, out names);
 
             Assert.True(getPackageSpecSuccess);
             Assert.True(getProjectNameSuccess);
@@ -287,8 +291,10 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             target.AddProject(projectNames, dteProject: null, nuGetProject: null);
 
             // Assert
-            var getPackageSpecSuccess = target.TryGetProjectRestoreInfo(projectNames.FullName, out var actual);
-            var getProjectNameSuccess = target.TryGetProjectNames(projectNames.UniqueName, out var names);
+            DependencyGraphSpec actual;
+            ProjectNames names;
+            var getPackageSpecSuccess = target.TryGetProjectRestoreInfo(projectNames.FullName, out actual);
+            var getProjectNameSuccess = target.TryGetProjectNames(projectNames.UniqueName, out names);
 
             Assert.True(getPackageSpecSuccess);
             Assert.True(getProjectNameSuccess);
