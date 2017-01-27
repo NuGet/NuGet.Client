@@ -1024,7 +1024,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 if (_projectSystemCache.TestResetDirtyFlag())
                 {
                     // Fire the event only if the cache is dirty
-                    AfterNuGetCacheUpdated(this, e);
+                    AfterNuGetCacheUpdated?.Invoke(this, e);
                 }
             }
             catch (Exception ex)

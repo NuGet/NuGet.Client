@@ -493,7 +493,7 @@ namespace NuGet.PackageManagement.VisualStudio
             // We should fire the event only if the cache was clean before.
             // If the cache was dirty already then the VSSolutionsManager is yet to consume the event
             // and will consume current changes as well.
-            if(TestSetDirtyFlag())
+            if(CacheUpdated!= null && TestSetDirtyFlag())
             {
                 CacheUpdated(this, EventArgs.Empty);
             }
@@ -501,7 +501,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
 
         /// <summary>
-        /// Set the dirty flag to 1 (is Dirty) if the flag was not already set ( like TSL!!).
+        /// Set the dirty flag to 1 (is Dirty) if the flag was not already set.
         /// This is private so because an external caller should not be able to declare the cache is dirty.
         /// </summary>
         /// <returns><code>true</code> if the cache was not dirty before and <code>false</code> otherwise</returns>
@@ -511,7 +511,7 @@ namespace NuGet.PackageManagement.VisualStudio
         }
 
         /// <summary>
-        /// Reset the dirty flag to 0 (is Not Dirty) if the flag was already set ( like TSL!!).
+        /// Reset the dirty flag to 0 (is Not Dirty) if the flag was already set.
         /// This is public so that external callers can inform the cache that they have consumed the updated cache event.
         /// </summary>
         /// <returns><code>true</code> if the cache was dirty before and <code>false</code> otherwise</returns>
