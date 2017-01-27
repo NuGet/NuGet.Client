@@ -31,6 +31,8 @@
   <PropertyGroup Condition="'$(VisualStudioVersion)' == '15.0'">
     <VsixOutputDirName>VS15</VsixOutputDirName>
     <IsProductComponent>true</IsProductComponent>
+    <ExtensionInstallationRoot>CommonExtensions</ExtensionInstallationRoot>
+    <ExtensionInstallationFolder>Microsoft\NuGet</ExtensionInstallationFolder>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' And '$(BuildingInsideVisualStudio)' == 'True'">
     <StartAction>Program</StartAction>
