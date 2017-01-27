@@ -8,6 +8,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Threading.Tasks;
 using EnvDTE;
 using EnvDTE80;
@@ -81,6 +82,8 @@ namespace NuGet.PackageManagement.VisualStudio
         public event EventHandler<NuGetProjectEventArgs> NuGetProjectUpdated;
 
         public event EventHandler<NuGetProjectEventArgs> AfterNuGetProjectRenamed;
+
+        public event EventHandler AfterNuGetCacheUpdated;
 
         public event EventHandler SolutionClosed;
 
@@ -163,6 +166,8 @@ namespace NuGet.PackageManagement.VisualStudio
                 _solutionSaveEvent.AfterExecute += SolutionSaveAs_AfterExecute;
                 _solutionSaveAsEvent.BeforeExecute += SolutionSaveAs_BeforeExecute;
                 _solutionSaveAsEvent.AfterExecute += SolutionSaveAs_AfterExecute;
+
+                _projectSystemCache.CacheUpdated += NuGetCacheUpdate_After;
             });
         }
 
@@ -1004,7 +1009,32 @@ namespace NuGet.PackageManagement.VisualStudio
             dependentEnvDTEProjects.Add(dependentEnvDTEProject);
         }
 
-#region IVsSelectionEvents
+        private void NuGetCacheUpdate_After(object sender, EventArgs e)
+        {
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() => FireNuGetCahceUpdatedEventAsync(e));
+        }
+
+        private async Task FireNuGetCahceUpdatedEventAsync(EventArgs e)
+        {
+            try
+            {
+                // Await a delay of 100 mSec to batch multiple cache updated events
+                await Task.Delay(100);
+                // Check if the cache is still dirty
+                if (_projectSystemCache.TestResetDirtyFlag())
+                {
+                    // Fire the event only if the cache is dirty
+                    AfterNuGetCacheUpdated(this, e);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.ToString());
+            }
+        }
+
+
+        #region IVsSelectionEvents
 
         public int OnCmdUIContextChanged(uint dwCmdUICookie, int fActive)
         {

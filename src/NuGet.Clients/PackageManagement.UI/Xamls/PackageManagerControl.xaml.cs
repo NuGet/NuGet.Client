@@ -146,6 +146,7 @@ namespace NuGet.PackageManagement.UI
             solutionManager.NuGetProjectUpdated += SolutionManager_ProjectsUpdated;
             solutionManager.NuGetProjectRenamed += SolutionManager_ProjectRenamed;
             solutionManager.ActionsExecuted += SolutionManager_ActionsExecuted;
+            solutionManager.AfterCacheUpdated += SolutionManager_CacheUpdated;
 
             Model.Context.SourceProvider.PackageSourceProvider.PackageSourcesChanged += Sources_PackageSourcesChanged;
 
@@ -219,6 +220,11 @@ namespace NuGet.PackageManagement.UI
                     Refresh();
                 }
             }
+        }
+
+        private void SolutionManager_CacheUpdated(object sender, EventArgs e)
+        {
+            Refresh();
         }
 
         public PackageRestoreBar RestoreBar => _restoreBar;

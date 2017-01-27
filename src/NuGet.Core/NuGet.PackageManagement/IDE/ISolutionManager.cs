@@ -18,6 +18,8 @@ namespace NuGet.PackageManagement
 
         event EventHandler SolutionClosed;
 
+        event EventHandler AfterNuGetCacheUpdated;
+
         event EventHandler<NuGetProjectEventArgs> NuGetProjectAdded;
 
         event EventHandler<NuGetProjectEventArgs> NuGetProjectRemoved;
@@ -69,7 +71,6 @@ namespace NuGet.PackageManagement
         /// </summary>
         bool IsSolutionDPLEnabled { get; }
 
-
         INuGetProjectContext NuGetProjectContext { get; set; }
 
         IEnumerable<NuGetProject> GetNuGetProjects();
@@ -107,7 +108,7 @@ namespace NuGet.PackageManagement
         /// </summary>
         /// <param name="nuGetProject"></param>
         void SaveProject(NuGetProject nuGetProject);
-		
+
         /// <summary>
         /// It ensure to completely load the solution before continue if it was loaded with DPL.
         /// That is, not all the projects were loaded when solution was open.
