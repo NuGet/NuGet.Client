@@ -208,7 +208,7 @@ Function Install-DotnetCLI {
             Root = $CLIRootTest
             DotNetExe = Join-Path $CLIRootTest 'dotnet.exe'
             DotNetInstallUrl = 'https://raw.githubusercontent.com/dotnet/cli/58b0566d9ac399f5fa973315c6827a040b7aae1f/scripts/obtain/dotnet-install.ps1'
-            Version = '1.0.0-preview5-004275'
+            Version = '1.0.0-rc4-004616'
         }
     }
 

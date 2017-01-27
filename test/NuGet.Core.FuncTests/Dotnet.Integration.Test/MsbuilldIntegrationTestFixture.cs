@@ -8,6 +8,7 @@ using NuGet.XPlat.FuncTest;
 using NuGet.Test.Utility;
 using NuGet.Packaging;
 using NuGet.Packaging.PackageExtraction;
+using Xunit;
 
 namespace Dotnet.Integration.Test
 {
@@ -32,7 +33,8 @@ namespace Dotnet.Integration.Test
             var result = CommandRunner.Run(TestDotnetCli,
                 workingDirectory,
                 $"new {args}",
-                waitForExit: true);
+                waitForExit: true,
+                timeOutInMilliseconds: 300000);
         }
 
         internal void RestoreProject(string workingDirectory, string projectName, string args)
@@ -41,6 +43,8 @@ namespace Dotnet.Integration.Test
                 workingDirectory,
                 $"restore {projectName}.csproj {args}",
                 waitForExit: true);
+            Assert.True(result.Item1 == 0, $"Restore failed with following log information :\n {result.Item2}");
+            Assert.True(result.Item3 == "", $"Restore failed with following message in error stream :\n {result.Item3}");
         }
 
         internal void PackProject(string workingDirectory, string projectName, string args)
@@ -49,14 +53,18 @@ namespace Dotnet.Integration.Test
                 workingDirectory,
                 $"pack {projectName}.csproj {args}",
                 waitForExit: true);
+            Assert.True(result.Item1 == 0, $"Pack failed with following log information :\n {result.Item2}");
+            Assert.True(result.Item3 == "", $"Pack failed with following message in error stream :\n {result.Item3}");
         }
 
-        internal CommandRunnerResult BuildProject(string workingDirectory, string projectName, string args)
+        internal void BuildProject(string workingDirectory, string projectName, string args)
         {
-            return CommandRunner.Run(TestDotnetCli,
+            var result = CommandRunner.Run(TestDotnetCli,
                 workingDirectory,
                 $"msbuild {projectName}.csproj {args}",
                 waitForExit: true);
+            Assert.True(result.Item1 == 0, $"Build failed with following log information :\n {result.Item2}");
+            Assert.True(result.Item3 == "", $"Build failed with following message in error stream :\n {result.Item3}");
         }
 
         private string CopyLatestCliForPack()
