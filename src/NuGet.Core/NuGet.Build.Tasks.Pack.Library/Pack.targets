@@ -106,6 +106,7 @@ Copyright (c) .NET Foundation. All rights reserved.
               PackageFilesToExclude="@(_PackageFilesToExclude)"
               PackageVersion="$(PackageVersion)"
               PackageId="$(PackageId)"
+              Title="$(Title)"
               Authors="$(Authors)"
               Description="$(Description)"
               Copyright="$(Copyright)"

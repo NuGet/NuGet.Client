@@ -1281,6 +1281,67 @@ namespace Dotnet.Integration.Test
             }
         }
 
+        [Platform(Platform.Windows)]
+        [Fact]
+        public void PackCommand_NewProject_AddsTitleToNuspec()
+        {
+            using (var testDirectory = TestDirectory.Create())
+            {
+                var projectName = "ClassLibrary1";
+                var workingDirectory = Path.Combine(testDirectory, projectName);
+                var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
+
+                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " -t lib");
+
+                using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
+                {
+                    var xml = XDocument.Load(stream);
+                    ProjectFileUtils.SetTargetFrameworkForProject(xml, "TargetFramework", "netstandard1.4");
+                    ProjectFileUtils.AddProperty(xml, "Title", "MyPackageTitle");
+
+                    ProjectFileUtils.WriteXmlToFile(xml, stream);
+                }
+
+                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
+                msbuildFixture.PackProject(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}");
+
+                var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
+                var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
+
+                Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the expected place");
+                Assert.True(File.Exists(nuspecPath), "The intermediate nuspec file is not in the expected place");
+
+                using (var nupkgReader = new PackageArchiveReader(nupkgPath))
+                {
+                    var nuspecReader = nupkgReader.NuspecReader;
+                    var intermediateNuspec = new NuspecReader(nuspecPath);
+
+                    // Validate the output .nuspec.
+                    Assert.Equal("ClassLibrary1", nuspecReader.GetId());
+                    Assert.Equal("1.0.0", nuspecReader.GetVersion().ToFullString());
+                    Assert.Equal("MyPackageTitle", nuspecReader.GetTitle());
+                    Assert.Equal("ClassLibrary1", nuspecReader.GetAuthors());
+                    Assert.Equal("ClassLibrary1", nuspecReader.GetOwners());
+                    Assert.Equal("Package Description", nuspecReader.GetDescription());
+                    Assert.False(nuspecReader.GetRequireLicenseAcceptance());
+
+                    var dependencyGroups = nuspecReader.GetDependencyGroups().ToList();
+                    Assert.Equal(1, dependencyGroups.Count);
+                    Assert.Equal(FrameworkConstants.CommonFrameworks.NetStandard14, dependencyGroups[0].TargetFramework);
+                    var packages = dependencyGroups[0].Packages.ToList();
+                    Assert.Equal(1, packages.Count);
+                    Assert.Equal("NETStandard.Library", packages[0].Id);
+                    Assert.Equal(new VersionRange(new NuGetVersion("1.6.1")), packages[0].VersionRange);
+                    Assert.Equal(new List<string> { "Analyzers", "Build" }, packages[0].Exclude);
+                    Assert.Empty(packages[0].Include);
+
+                    // Validate title property in intermediate nuspec
+                    Assert.Equal("MyPackageTitle", intermediateNuspec.GetTitle());
+                }
+
+            }
+        }
+
     }
 }
 
