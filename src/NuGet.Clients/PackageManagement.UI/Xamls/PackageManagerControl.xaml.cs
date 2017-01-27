@@ -929,6 +929,7 @@ namespace NuGet.PackageManagement.UI
             solutionManager.NuGetProjectUpdated -= SolutionManager_ProjectsChanged;
             solutionManager.NuGetProjectRenamed -= SolutionManager_ProjectRenamed;
             solutionManager.ActionsExecuted -= SolutionManager_ActionsExecuted;
+            solutionManager.AfterNuGetCacheUpdated -= SolutionManager_CacheUpdated;
 
             Model.Context.SourceProvider.PackageSourceProvider.PackageSourcesChanged -= Sources_PackageSourcesChanged;
 
