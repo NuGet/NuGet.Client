@@ -116,15 +116,7 @@ namespace NuGet.PackageManagement.VisualStudio
         void Clear();
 
         /// <summary>
-        /// Set the dirty flag to 1 (is Dirty) if the flag was not already set ( like TSL!!).
-        /// This is private so because an external caller should not be able to declare the cache is dirty.
-        /// </summary>
-        /// <returns><code>true</code> if the cache was not dirty before and <code>false</code> otherwise</returns>
-        bool TestSetDirtyFlag();
-
-        /// <summary>
         /// Reset the dirty flag to 0 (is Not Dirty) if the flag was already set ( like TSL!!).
-        /// This is public so that external callers can inform the cache that they have consumed the updated cache event.
         /// </summary>
         /// <returns><code>true</code> if the cache was dirty before and <code>false</code> otherwise</returns>
         bool TestResetDirtyFlag();

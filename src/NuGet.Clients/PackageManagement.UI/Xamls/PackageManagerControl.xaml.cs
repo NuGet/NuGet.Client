@@ -146,7 +146,7 @@ namespace NuGet.PackageManagement.UI
             solutionManager.NuGetProjectUpdated += SolutionManager_ProjectsUpdated;
             solutionManager.NuGetProjectRenamed += SolutionManager_ProjectRenamed;
             solutionManager.ActionsExecuted += SolutionManager_ActionsExecuted;
-            solutionManager.AfterCacheUpdated += SolutionManager_CacheUpdated;
+            solutionManager.AfterNuGetCacheUpdated += SolutionManager_CacheUpdated;
 
             Model.Context.SourceProvider.PackageSourceProvider.PackageSourcesChanged += Sources_PackageSourcesChanged;
 
