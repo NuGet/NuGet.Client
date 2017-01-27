@@ -33,28 +33,29 @@ namespace NuGet.PackageManagement.UI
         /// Retrieve the CPS enabled JoinableTaskFactory for the current version of Visual Studio.
         /// This overrides the default VsTaskLibraryHelper.ServiceInstance JTF.
         /// </summary>
-        public static void SetJoinableTaskFactoryFromService(IComponentModel componentModel)
+        public static void SetJoinableTaskFactoryFromService(IProjectServiceAccessor projectServiceAccessor)
         {
-            if (componentModel == null)
+            if (projectServiceAccessor == null)
             {
-                throw new ArgumentNullException(nameof(componentModel));
+                throw new ArgumentNullException(nameof(projectServiceAccessor));
             }
 
-            _joinableTaskFactory = new Lazy<JoinableTaskFactory>(() =>
+            if (_joinableTaskFactory == null)
             {
-                var projectServiceAccessor = componentModel.GetService<IProjectServiceAccessor>();
-
+                _joinableTaskFactory = new Lazy<JoinableTaskFactory>(() =>
+                {
 #if VS14
-                // Use IThreadHandling.AsyncPump for Visual Studio 2015
-                ProjectService projectService = projectServiceAccessor.GetProjectService();
-                IThreadHandling threadHandling = projectService.Services.ThreadingPolicy;
-                return threadHandling.AsyncPump;
+                    // Use IThreadHandling.AsyncPump for Visual Studio 2015
+                    ProjectService projectService = projectServiceAccessor.GetProjectService();
+                    IThreadHandling threadHandling = projectService.Services.ThreadingPolicy;
+                    return threadHandling.AsyncPump;
 #else
-                // Use IProjectService for Visual Studio 2017
-                IProjectService projectService = projectServiceAccessor.GetProjectService();
-                return projectService.Services.ThreadingPolicy.JoinableTaskFactory;
+                    // Use IProjectService for Visual Studio 2017
+                    IProjectService projectService = projectServiceAccessor.GetProjectService();
+                    return projectService.Services.ThreadingPolicy.JoinableTaskFactory;
 #endif
-            });
+                });
+            }
         }
 
         /// <summary>

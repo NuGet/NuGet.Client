@@ -77,9 +77,6 @@ namespace NuGet.SolutionRestoreManager
                     new UserAgentStringBuilder().WithVisualStudioSKU(dte.GetFullVsVersionString()));
             });
 
-            // Lazy load the CPS enabled JoinableTaskFactory for the UI.
-            NuGetUIThreadHelper.SetJoinableTaskFactoryFromService(componentModel);
-
             await SolutionRestoreCommand.InitializeAsync(this);
 
             await base.InitializeAsync(cancellationToken, progress);

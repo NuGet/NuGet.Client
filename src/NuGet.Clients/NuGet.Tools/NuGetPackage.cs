@@ -158,9 +158,6 @@ namespace NuGetVSExtension
             _dteEvents = _dte.Events.DTEEvents;
             _dteEvents.OnBeginShutdown += OnBeginShutDown;
 
-            // Set the JoinableTaskFactory for the current version of visual studio.
-            NuGetUIThreadHelper.SetJoinableTaskFactoryFromService(componentModel);
-
             SetDefaultCredentialProvider();
 
             if (SolutionManager.NuGetProjectContext == null)
