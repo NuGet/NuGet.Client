@@ -97,6 +97,7 @@ namespace NuGet.Build.Tasks.Pack
             {
                 Id = request.PackageId,
                 Description = request.Description,
+                Title = request.Title,
                 Copyright = request.Copyright,
                 ReleaseNotes = request.ReleaseNotes,
                 RequireLicenseAcceptance = request.RequireLicenseAcceptance,
