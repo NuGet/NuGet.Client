@@ -19,8 +19,10 @@ namespace NuGet.PackageManagement.VisualStudio
     {
         private readonly IProjectSystemCache _projectSystemCache;
 
-        [Import]
-        private Lazy<ProjectSystem.IProjectServiceAccessor> ProjectServiceAccessor { get; set; }
+        // Reason it's lazy<object> is because we don't want to load any CPS assemblies untill
+        // we're really going to use any of CPS api. Which is why we also don't use nameof or typeof apis.
+        [Import("Microsoft.VisualStudio.ProjectSystem.IProjectServiceAccessor")]
+        private Lazy<object> ProjectServiceAccessor { get; set; }
 
         [ImportingConstructor]
         public LegacyCSProjPackageReferenceProjectProvider(IProjectSystemCache projectSystemCache)
@@ -56,7 +58,7 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             // Lazy load the CPS enabled JoinableTaskFactory for the UI.
-            NuGetUIThreadHelper.SetJoinableTaskFactoryFromService(ProjectServiceAccessor.Value);
+            NuGetUIThreadHelper.SetJoinableTaskFactoryFromService(ProjectServiceAccessor.Value as ProjectSystem.IProjectServiceAccessor);
 
             result = new LegacyCSProjPackageReferenceProject(
                 project,
