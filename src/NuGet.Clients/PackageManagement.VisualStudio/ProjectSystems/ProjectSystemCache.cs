@@ -29,9 +29,7 @@ namespace NuGet.PackageManagement.VisualStudio
         // Non-unique names index. We need another dictionary for short names since there may be more than project name per short name
         private readonly Dictionary<string, HashSet<ProjectNames>> _shortNameCache = new Dictionary<string, HashSet<ProjectNames>>(StringComparer.OrdinalIgnoreCase);
 
-        /// <summary>
-        /// Returns the current value of _isCacheDirty.
-        /// </summary>
+        // Returns the current value of _isCacheDirty.
         public int IsCacheDirty
         {
             get
@@ -149,7 +147,6 @@ namespace NuGet.PackageManagement.VisualStudio
                 _readerWriterLock.ExitUpgradeableReadLock();
             }
 
-            FireCacheUpdatedEvent();
         }
 
         public bool ContainsKey(string name)
@@ -267,8 +264,6 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 _readerWriterLock.ExitWriteLock();
             }
-
-            FireCacheUpdatedEvent();
 
             return true;
         }
@@ -451,8 +446,6 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 _readerWriterLock.ExitWriteLock();
             }
-
-            FireCacheUpdatedEvent();
         }
 
         private bool TryGetCacheEntry(string secondaryKey, out CacheEntry cacheEntry)
@@ -492,7 +485,7 @@ namespace NuGet.PackageManagement.VisualStudio
             // We should fire the event only if the cache was clean before.
             // If the cache was dirty already then the VSSolutionsManager is yet to consume the event
             // and will consume current changes as well.
-            if(CacheUpdated!= null && TestSetDirtyFlag())
+            if(CacheUpdated != null && TestSetDirtyFlag())
             {
                 CacheUpdated(this, EventArgs.Empty);
             }

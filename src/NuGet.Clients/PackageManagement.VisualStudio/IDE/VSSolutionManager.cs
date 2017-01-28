@@ -1009,12 +1009,20 @@ namespace NuGet.PackageManagement.VisualStudio
             dependentEnvDTEProjects.Add(dependentEnvDTEProject);
         }
 
+        /// <summary>
+        /// This method is invoked when ProjectSystemCache fires a CacheUpdated event.
+        /// This method inturn invokes AfterNuGetCacheUpdated event which is consumed by PackageManagerControl.xaml.cs
+        /// </summary>
+        /// <param name="sender">Event sender object</param>
+        /// <param name="e">Event arguments. This will be EventArgs.Empty</param>
         private void NuGetCacheUpdate_After(object sender, EventArgs e)
         {
-            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() => FireNuGetCahceUpdatedEventAsync(e));
+            // The AfterNuGetCacheUpdated event is raised on a separate Task to prevent blocking of the caller.
+            // E.g. - If Restore updates the cache entries on CPS nomination, then restore should not be blocked till UI is restored.
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() => FireNuGetCacheUpdatedEventAsync(e));
         }
 
-        private async Task FireNuGetCahceUpdatedEventAsync(EventArgs e)
+        private async Task FireNuGetCacheUpdatedEventAsync(EventArgs e)
         {
             try
             {

@@ -196,7 +196,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         }
 
         [Fact]
-        public void UpdatingCacheTriggersEvent_NoEventHandler()
+        public void AddProjectRestoreInfo_TriggersNoEvent_NoEventHandler()
         {
             // Arrange
             var target = new ProjectSystemCache();
@@ -208,10 +208,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             var projectNamesFromFullPath = ProjectNames.FromFullProjectPath(@"C:\src\project\project.csproj");
             var projectRestoreInfo = new DependencyGraphSpec();
 
-            target.AddProjectRestoreInfo(projectNamesFromFullPath, projectRestoreInfo);
-
             // Act
-            target.AddProject(projectNames, dteProject: null, nuGetProject: null);
+            target.AddProjectRestoreInfo(projectNamesFromFullPath, projectRestoreInfo);
 
             // Assert
             DependencyGraphSpec actual;
@@ -228,7 +226,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         }
 
         [Fact]
-        public void UpdatingCacheTriggersEvent_WithEventHandler_WithReset()
+        public void AddProjectRestoreInfo_TriggersEvent_WithEventHandler_WithReset()
         {
             // Arrange
             var target = new ProjectSystemCache();
@@ -248,9 +246,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 }
             };
 
-            target.AddProjectRestoreInfo(projectNamesFromFullPath, projectRestoreInfo);
-
             // Act
+            target.AddProjectRestoreInfo(projectNamesFromFullPath, projectRestoreInfo);            
             target.AddProject(projectNames, dteProject: null, nuGetProject: null);
 
             // Assert
@@ -264,11 +261,11 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             Assert.Same(projectRestoreInfo, actual);
             Assert.Equal(@"folder\project", names.CustomUniqueName);
             Assert.Equal(target.IsCacheDirty, 0);
-            Assert.Equal(eventCount, 2);
+            Assert.Equal(eventCount, 1);
         }
 
         [Fact]
-        public void UpdatingCacheTriggersEvent_WithEventHandler_NoReset()
+        public void AddProjectRestoreInfo_TriggersEvent_WithEventHandler_NoReset()
         {
             // Arrange
             var target = new ProjectSystemCache();
@@ -285,10 +282,9 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 eventCount++;
             };
 
-            target.AddProjectRestoreInfo(projectNamesFromFullPath, projectRestoreInfo);
-
             // Act
-            target.AddProject(projectNames, dteProject: null, nuGetProject: null);
+            target.AddProjectRestoreInfo(projectNamesFromFullPath, projectRestoreInfo);
+            target.AddProjectRestoreInfo(projectNamesFromFullPath, projectRestoreInfo);
 
             // Assert
             DependencyGraphSpec actual;
@@ -307,125 +303,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         }
 
         [Fact]
-        public void AddingProjectTriggersEvent_WithEventHandler_NoReset()
-        {
-            // Arrange
-            var target = new ProjectSystemCache();
-            var projectNames = new ProjectNames(
-                fullName: @"C:\src\project\project.csproj",
-                uniqueName: @"folder\project",
-                shortName: "project",
-                customUniqueName: @"folder\project");
-            var projectNamesFromFullPath = ProjectNames.FromFullProjectPath(@"C:\src\project\project.csproj");
-            var projectRestoreInfo = new DependencyGraphSpec();
-            var eventCount = 0;
-            target.CacheUpdated += delegate (object sender, EventArgs e)
-            {
-                eventCount++;
-            };
-
-            // Act
-            target.AddProject(projectNames, dteProject: null, nuGetProject: null);
-
-            // Assert
-            // Since no listener resets the dirty flag, the cache remains dirty and only 1 event is raised.
-            Assert.Equal(target.IsCacheDirty, 1);
-            Assert.Equal(eventCount, 1);
-        }
-
-        [Fact]
-        public void AddingProjectRestoreInfoTriggersEvent_WithEventHandler_NoReset()
-        {
-            // Arrange
-            var target = new ProjectSystemCache();
-            var projectNames = new ProjectNames(
-                fullName: @"C:\src\project\project.csproj",
-                uniqueName: @"folder\project",
-                shortName: "project",
-                customUniqueName: @"folder\project");
-            var projectNamesFromFullPath = ProjectNames.FromFullProjectPath(@"C:\src\project\project.csproj");
-            var projectRestoreInfo = new DependencyGraphSpec();
-            var eventCount = 0;
-            target.CacheUpdated += delegate (object sender, EventArgs e)
-            {
-                eventCount++;
-            };
-
-            // Act
-            target.AddProjectRestoreInfo(projectNamesFromFullPath, projectRestoreInfo);
-
-            // Assert
-            // Since no listener resets the dirty flag, the cache remains dirty and only 1 event is raised.
-            Assert.Equal(target.IsCacheDirty, 1);
-            Assert.Equal(eventCount, 1);
-        }
-
-        [Fact]
-        public void RemovingProjectTriggersEvent_WithEventHandler_NoReset()
-        {
-            // Arrange
-            var target = new ProjectSystemCache();
-            var projectNames = new ProjectNames(
-                fullName: @"C:\src\project\project.csproj",
-                uniqueName: @"folder\project",
-                shortName: "project",
-                customUniqueName: @"folder\project");
-            var projectNamesFromFullPath = ProjectNames.FromFullProjectPath(@"C:\src\project\project.csproj");
-            var projectRestoreInfo = new DependencyGraphSpec();
-            var eventCount = 0;
-
-            target.AddProjectRestoreInfo(projectNamesFromFullPath, projectRestoreInfo);
-            target.AddProject(projectNames, dteProject: null, nuGetProject: null);
-
-            target.CacheUpdated += delegate (object sender, EventArgs e)
-            {
-                eventCount++;
-            };
-
-            // Act
-            target.RemoveProject(projectNames.FullName);
-
-
-            // Assert
-            // Since no listener resets the dirty flag, the cache remains dirty and only 1 event is raised.
-            Assert.Equal(target.IsCacheDirty, 1);
-            Assert.Equal(eventCount, 1);
-        }
-
-        [Fact]
-        public void ClearTriggersEvent_WithEventHandler_NoReset()
-        {
-            // Arrange
-            var target = new ProjectSystemCache();
-            var projectNames = new ProjectNames(
-                fullName: @"C:\src\project\project.csproj",
-                uniqueName: @"folder\project",
-                shortName: "project",
-                customUniqueName: @"folder\project");
-            var projectNamesFromFullPath = ProjectNames.FromFullProjectPath(@"C:\src\project\project.csproj");
-            var projectRestoreInfo = new DependencyGraphSpec();
-            var eventCount = 0;
-
-            target.AddProjectRestoreInfo(projectNamesFromFullPath, projectRestoreInfo);
-            target.AddProject(projectNames, dteProject: null, nuGetProject: null);
-
-            target.CacheUpdated += delegate (object sender, EventArgs e)
-            {
-                eventCount++;
-            };
-
-            // Act
-            target.Clear();
-
-
-            // Assert
-            // Since no listener resets the dirty flag, the cache remains dirty and only 1 event is raised.
-            Assert.Equal(target.IsCacheDirty, 1);
-            Assert.Equal(eventCount, 1);
-        }
-
-        [Fact]
-        public void UpdatingCacheTriggersMultipleEvent_WithEventHandler_WithReset()
+        public void AddProjectRestoreInfo_TriggersMultipleEvent_WithEventHandler_WithReset()
         {
             // Arrange
             var target = new ProjectSystemCache();
@@ -447,13 +325,44 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
             // Act
             target.AddProjectRestoreInfo(projectNamesFromFullPath, projectRestoreInfo);
-            target.AddProject(projectNames, dteProject: null, nuGetProject: null);
-            target.RemoveProject(projectNames.FullName);
-            target.Clear();
+            target.AddProjectRestoreInfo(projectNamesFromFullPath, projectRestoreInfo);
+            target.AddProjectRestoreInfo(projectNamesFromFullPath, projectRestoreInfo);
+            target.AddProjectRestoreInfo(projectNamesFromFullPath, projectRestoreInfo);
 
             // Assert
             Assert.Equal(target.IsCacheDirty, 0);
             Assert.Equal(eventCount, 4);
+        }
+
+        [Fact]
+        public void AddProject_RemoveProject_Clear_TriggerNoEvent_WithEventHandler()
+        {
+            // Arrange
+            var target = new ProjectSystemCache();
+            var projectNames = new ProjectNames(
+                fullName: @"C:\src\project\project.csproj",
+                uniqueName: @"folder\project",
+                shortName: "project",
+                customUniqueName: @"folder\project");
+            var projectNamesFromFullPath = ProjectNames.FromFullProjectPath(@"C:\src\project\project.csproj");
+            var projectRestoreInfo = new DependencyGraphSpec();
+            var eventCount = 0;
+            target.CacheUpdated += delegate (object sender, EventArgs e)
+            {
+                if (target.TestResetDirtyFlag())
+                {
+                    eventCount++;
+                }
+            };
+
+            // Act
+            target.AddProject(projectNames, dteProject: null, nuGetProject: null);
+            target.RemoveProject(projectNames.FullName);
+            target.Clear();
+
+            // Assert
+            Assert.Equal(target.IsCacheDirty, 0);
+            Assert.Equal(eventCount, 0);
         }
     }
 }
