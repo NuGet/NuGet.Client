@@ -9,8 +9,10 @@ namespace NuGet.Configuration
     /// <summary>
     /// Represents credentials required to authenticate user within package source web requests.
     /// </summary>
-    public class PackageSourceCredential
+    public class PackageSourceCredential : IEquatable<PackageSourceCredential>
     {
+        private readonly int _hashCode;
+
         /// <summary>
         /// User name
         /// </summary>
@@ -86,6 +88,14 @@ namespace NuGet.Configuration
             Username = username;
             PasswordText = passwordText;
             IsPasswordClearText = isPasswordClearText;
+
+            unchecked
+            {
+                _hashCode = username.GetHashCode();
+                _hashCode = (_hashCode * 397) ^ (passwordText?.GetHashCode() ?? 0);
+                _hashCode = (_hashCode * 397) ^ IsPasswordClearText.GetHashCode();
+                _hashCode = (_hashCode * 397) ^ source.GetHashCode();
+            }
         }
 
         /// <summary>
@@ -124,5 +134,22 @@ namespace NuGet.Configuration
                     string.Format(CultureInfo.CurrentCulture, Resources.UnsupportedEncryptPassword, source), e);
             }
         }
+
+        public bool Equals(PackageSourceCredential other)
+        {
+            if (ReferenceEquals(null, other)) return false;
+            if (ReferenceEquals(this, other)) return true;
+            return string.Equals(Username, other.Username) && string.Equals(PasswordText, other.PasswordText) && IsPasswordClearText == other.IsPasswordClearText && string.Equals(Source, other.Source);
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            if (obj.GetType() != this.GetType()) return false;
+            return Equals((PackageSourceCredential) obj);
+        }
+
+        public override int GetHashCode() => _hashCode;
     }
 }
