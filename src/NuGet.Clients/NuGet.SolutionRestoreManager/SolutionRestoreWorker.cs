@@ -150,23 +150,22 @@ namespace NuGet.SolutionRestoreManager
 
         private void Reset(bool isDisposing = false)
         {
-            // Verify and cancel worker restore operation
-            if (_workerCts?.IsCancellationRequested == false)
-            {
-                _workerCts.Cancel();
-            }
+            // Make sure worker restore operation is cancelled
+            _workerCts?.Cancel();
 
             if (_backgroundJobRunner?.IsValueCreated == true)
             {
                 // Await completion of the background work
-                _joinableFactory.Run(async () =>
-                {
-                    using (_joinableCollection.Join())
+                _joinableFactory.Run(
+                    async () =>
                     {
-                        // Do not block VS forever
-                        await Task.WhenAny(_backgroundJobRunner.Value, Task.Delay(TimeSpan.FromSeconds(60)));
-                    }
-                });
+                        using (_joinableCollection.Join())
+                        {
+                            // Do not block VS forever
+                            await Task.WhenAny(_backgroundJobRunner.Value, Task.Delay(TimeSpan.FromSeconds(60)));
+                        }
+                    }, 
+                    JoinableTaskCreationOptions.LongRunning);
             }
 
             _pendingRestore?.Dispose();
@@ -198,10 +197,7 @@ namespace NuGet.SolutionRestoreManager
         private void SolutionEvents_BeforeClosing()
         {
             // Signal background runner to terminate execution
-            if (_workerCts?.IsCancellationRequested == false)
-            {
-                _workerCts?.Cancel();
-            }
+            _workerCts?.Cancel();
         }
 
         private void SolutionEvents_AfterClosing()
