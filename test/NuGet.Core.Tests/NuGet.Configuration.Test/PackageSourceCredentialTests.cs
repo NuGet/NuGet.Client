@@ -77,5 +77,31 @@ namespace NuGet.Configuration
 
             Assert.False(credentials.IsValid());
         }
+
+        [Fact]
+        public void Equals_WithDifferentPasswords_AreNotEqual()
+        {
+            var a = new PackageSourceCredential("source", "user", "Password", isPasswordClearText: false);
+            var b = new PackageSourceCredential("source", "user", "password", isPasswordClearText: false);
+
+            Assert.NotEqual(a,b);
+        }
+
+        [Fact]
+        public void Equals_WithUsernames_AreNotEqual()
+        {
+            var a = new PackageSourceCredential("source", "user1", "password", isPasswordClearText: false);
+            var b = new PackageSourceCredential("source", "user2", "password", isPasswordClearText: false);
+
+            Assert.NotEqual(a, b);
+        }
+
+        [Fact]
+        public void Equals_WithTheSameValues_AreEqual()
+        {
+            var a = new PackageSourceCredential("source", "user", "password", isPasswordClearText: false);
+            var b = new PackageSourceCredential("source", "user", "password", isPasswordClearText: false);
+            Assert.Equal(a,b);
+        }
     }
 }
