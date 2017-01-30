@@ -150,6 +150,7 @@ namespace NuGet.SolutionRestoreManager
 
         private void Reset(bool isDisposing = false)
         {
+            // Verify and cancel worker restore operation
             if (_workerCts?.IsCancellationRequested == false)
             {
                 _workerCts.Cancel();
@@ -197,7 +198,10 @@ namespace NuGet.SolutionRestoreManager
         private void SolutionEvents_BeforeClosing()
         {
             // Signal background runner to terminate execution
-            _workerCts?.Cancel();
+            if (_workerCts?.IsCancellationRequested == false)
+            {
+                _workerCts?.Cancel();
+            }
         }
 
         private void SolutionEvents_AfterClosing()
@@ -229,14 +233,15 @@ namespace NuGet.SolutionRestoreManager
             // on-board request onto pending restore operation
             _pendingRequests.Value.TryAdd(request);
 
-            // await completion of the requested restore operation
-            // the caller will be unblocked immediately upon
-            // cancellation request via provided token
-            var tcs = new TaskCompletionSource<bool>();
-            using (token.Register(s => ((TaskCompletionSource<bool>)s).SetResult(false), tcs))
+            // Await completion of the requested restore operation.
+            // The caller will be unblocked immediately upon
+            // cancellation request via provided token.
+            // Method returns false in case of cancellation is requested.
+            var cancellationTcs = new TaskCompletionSource<bool>();
+            using (token.Register(() => cancellationTcs.SetResult(false)))
             using (_joinableCollection.Join())
             {
-                return await await Task.WhenAny(pendingRestore.Task, tcs.Task);
+                return await await Task.WhenAny(pendingRestore.Task, cancellationTcs.Task);
             }
         }
 
