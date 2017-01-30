@@ -317,8 +317,11 @@ namespace NuGet.CommandLine
         public void CommandLineVersionPopulatesVersionPlaceholderForDependenciesInNuspec(string version)
         {
             // Arrange
-            var testAssembly = Assembly.GetExecutingAssembly();
-            const string inputSpec = @"<?xml version=""1.0""?>
+            // Arrange
+            using (var workingDirectory = TestDirectory.Create())
+            {
+                var testAssembly = Assembly.GetExecutingAssembly();
+                const string inputSpec = @"<?xml version=""1.0""?>
 	<package>
 	    <metadata>
 	        <id>$id$</id>
@@ -334,7 +337,7 @@ namespace NuGet.CommandLine
             </dependencies>
         </metadata>
 	</package>";
-            var projectXml = @"<?xml version=""1.0"" encoding=""utf-8""?>
+                var projectXml = @"<?xml version=""1.0"" encoding=""utf-8""?>
 	<Project ToolsVersion=""4.0"" xmlns=""http://schemas.microsoft.com/developer/msbuild/2003"">
 	    <PropertyGroup>
 	        <ProjectGuid>{F879F274-EFA0-4157-8404-33A19B4E6AEC}</ProjectGuid>
@@ -355,25 +358,25 @@ namespace NuGet.CommandLine
 	    <Import Project=""$(MSBuildToolsPath)\Microsoft.CSharp.targets"" />
 	</Project>";
 
-            // Version that we expect to be replaced
-            var cmdLineVersion = NuGetVersion.Parse(version);
+                // Version that we expect to be replaced
+                var cmdLineVersion = NuGetVersion.Parse(version);
 
-            // Set base path to the currently assembly's folder so that it will find the test assembly
-            var basePath = Path.GetDirectoryName(testAssembly.CodeBase);
+                // Set base path to the currently assembly's folder so that it will find the test assembly
+                var basePath = Path.GetDirectoryName(testAssembly.CodeBase);
+                var projectPath = Path.Combine(workingDirectory, $"test-{version}.csproj");
+                File.WriteAllText(projectPath, projectXml);
 
-            var project = new Microsoft.Build.Evaluation.Project(XmlReader.Create(new StringReader(projectXml)));
-            project.FullPath = Path.Combine(project.DirectoryPath, $"test-{version}.csproj");
+                // Act
+                var msbuildPath = Util.GetMsbuildPathOnWindows();
+                var factory = new ProjectFactory(msbuildPath, projectPath, null) { Build = false };
+                var packageBuilder = factory.CreateBuilder(basePath, cmdLineVersion, "", true);
+                var actual = Preprocessor.Process(inputSpec.AsStream(), factory, false);
 
-            // Act
-            var msbuildPath = Util.GetMsbuildPathOnWindows();
-            var factory = new ProjectFactory(msbuildPath, project) { Build = false };
-            var packageBuilder = factory.CreateBuilder(basePath, cmdLineVersion, "", true);
-            var actual = Preprocessor.Process(inputSpec.AsStream(), factory, false);
-
-            var xdoc = XDocument.Load(new StringReader(actual));
-            Assert.Equal(testAssembly.GetName().Name, xdoc.XPathSelectElement("/package/metadata/id").Value);
-            Assert.Equal(cmdLineVersion.ToString(), xdoc.XPathSelectElement("/package/metadata/version").Value);
-            Assert.Equal(cmdLineVersion.ToString(), xdoc.XPathSelectElement("/package/metadata/dependencies/dependency").Attribute("version").Value);
+                var xdoc = XDocument.Load(new StringReader(actual));
+                Assert.Equal(testAssembly.GetName().Name, xdoc.XPathSelectElement("/package/metadata/id").Value);
+                Assert.Equal(cmdLineVersion.ToString(), xdoc.XPathSelectElement("/package/metadata/version").Value);
+                Assert.Equal(cmdLineVersion.ToString(), xdoc.XPathSelectElement("/package/metadata/dependencies/dependency").Attribute("version").Value);
+            }
         }
 
         [Fact]

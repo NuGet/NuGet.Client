@@ -349,15 +349,6 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Custom JoinableTaskFactory is not allowed, since ThreadHelper.JoinableTaskFactory is available.
-        /// </summary>
-        public static string CustomJoinableTaskFactoryNotAllowed {
-            get {
-                return ResourceManager.GetString("CustomJoinableTaskFactoryNotAllowed", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Highest.
         /// </summary>
         public static string DependencyBehavior_Highest {

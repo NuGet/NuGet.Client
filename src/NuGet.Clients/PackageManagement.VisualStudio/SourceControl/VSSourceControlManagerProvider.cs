@@ -4,61 +4,54 @@
 using System;
 using System.ComponentModel.Composition;
 using System.Linq;
-using EnvDTE;
 using EnvDTE80;
 using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.Shell;
+using NuGet.PackageManagement.UI;
 using NuGet.ProjectManagement;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
     [Export(typeof(ISourceControlManagerProvider))]
-    public class VSSourceControlManagerProvider : ISourceControlManagerProvider
+    internal sealed class VSSourceControlManagerProvider : ISourceControlManagerProvider
     {
-        private readonly DTE _dte;
-        private readonly IComponentModel _componentModel;
+        private readonly Lazy<EnvDTE.DTE> _dte;
+        private readonly Lazy<IComponentModel> _componentModel;
+
         private const string TfsProviderName = "{4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}";
 
         [ImportingConstructor]
-        public VSSourceControlManagerProvider()
-            : this(ServiceLocator.GetInstance<DTE>(),
-                ServiceLocator.GetGlobalService<SComponentModel, IComponentModel>())
+        public VSSourceControlManagerProvider(
+            [Import(typeof(SVsServiceProvider))]
+            IServiceProvider serviceProvider)
         {
-        }
-
-        public VSSourceControlManagerProvider(DTE dte, IComponentModel componentModel)
-        {
-            if (dte == null)
+            if (serviceProvider == null)
             {
-                throw new ArgumentNullException("dte");
+                throw new ArgumentNullException(nameof(serviceProvider));
             }
 
-            if (componentModel == null)
-            {
-                throw new ArgumentNullException("componentModel");
-            }
-
-            _componentModel = componentModel;
-            _dte = dte;
+            _componentModel = new Lazy<IComponentModel>(
+                () => serviceProvider.GetComponentModel());
+            _dte = new Lazy<EnvDTE.DTE>(
+                () => serviceProvider.GetDTE());
         }
 
         public SourceControlManager GetSourceControlManager()
         {
-            return ThreadHelper.JoinableTaskFactory.Run(async delegate
+            return NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
                 {
-                    await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                    if (_dte != null
-                        && _dte.SourceControl != null)
+                    if (_dte.Value.SourceControl != null)
                     {
-                        var sourceControl = (SourceControl2)_dte.SourceControl;
+                        var sourceControl = (SourceControl2)_dte.Value.SourceControl;
                         if (sourceControl != null)
                         {
                             SourceControlBindings sourceControlBinding = null;
                             try
                             {
                                 // Get the binding for this solution
-                                sourceControlBinding = sourceControl.GetBindings(_dte.Solution.FullName);
+                                sourceControlBinding = sourceControl.GetBindings(_dte.Value.Solution.FullName);
                             }
                             catch (NotImplementedException)
                             {
@@ -75,7 +68,7 @@ namespace NuGet.PackageManagement.VisualStudio
                                 return null;
                             }
 
-                            var tfsProviders = _componentModel.GetExtensions<ITFSSourceControlManagerProvider>();
+                            var tfsProviders = _componentModel.Value.GetExtensions<ITFSSourceControlManagerProvider>();
                             if (tfsProviders != null
                                 && tfsProviders.Any())
                             {

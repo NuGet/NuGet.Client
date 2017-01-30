@@ -9,7 +9,6 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using Microsoft.VisualStudio.Shell;
-using NuGet.Configuration;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 
@@ -19,25 +18,16 @@ namespace NuGet.PackageManagement.VisualStudio
     /// An <see cref="DeleteOnRestartManager"/> manger which is used for surfacing errors and UI in VS.
     /// </summary>
     [Export(typeof(IDeleteOnRestartManager))]
-    public class VsDeleteOnRestartManager : IDeleteOnRestartManager
+    internal sealed class VsDeleteOnRestartManager : IDeleteOnRestartManager
     {
         // The file extension to add to the empty files which will be placed adjacent to partially uninstalled package
         // directories marking them for removal the next time the solution is opened.
         private const string DeletionMarkerSuffix = ".deleteme";
         private const string DeletionMarkerFilter = "*" + DeletionMarkerSuffix;
 
-        private string _packagesFolderPath = null;
+        private string _packagesFolderPath;
 
         public event EventHandler<PackagesMarkedForDeletionEventArgs> PackagesMarkedForDeletionFound;
-
-        /// <summary>
-        /// Creates a new instance of <see cref="VsDeleteOnRestartManager"/>.
-        /// </summary>
-        public VsDeleteOnRestartManager() : this(
-            ServiceLocator.GetInstance<Configuration.ISettings>(),
-            ServiceLocator.GetInstance<ISolutionManager>())
-        {
-        }
 
         /// <summary>
         /// Creates a new instance of <see cref="DeleteOnRestartManager"/>.
@@ -45,6 +35,7 @@ namespace NuGet.PackageManagement.VisualStudio
         /// <param name="settings">The <see cref="ISettings"/> associated with the current solution.</param>
         /// <param name="solutionManager">The <see cref="ISolutionManager"/> associated with the current solution.
         /// </param>
+        [ImportingConstructor]
         public VsDeleteOnRestartManager(
             Configuration.ISettings settings,
             ISolutionManager solutionManager)
@@ -65,9 +56,9 @@ namespace NuGet.PackageManagement.VisualStudio
             SolutionManager.SolutionClosed += OnSolutionOpenedOrClosed;
         }
 
-        public ISolutionManager SolutionManager { get; }
+        private ISolutionManager SolutionManager { get; }
 
-        public Configuration.ISettings Settings { get; }
+        private Configuration.ISettings Settings { get; }
 
         public string PackagesFolderPath
         {
@@ -117,7 +108,7 @@ namespace NuGet.PackageManagement.VisualStudio
         /// Checks for any pacakge directories that are pending to be deleted and raises the
         /// <see cref="PackagesMarkedForDeletionFound"/> event.
         /// </summary>
-        public virtual void CheckAndRaisePackageDirectoriesMarkedForDeletion()
+        public void CheckAndRaisePackageDirectoriesMarkedForDeletion()
         {
             var packages = GetPackageDirectoriesMarkedForDeletion();
             if (packages.Any() && PackagesMarkedForDeletionFound != null)

@@ -340,7 +340,12 @@ namespace NuGet.PackageManagement.UI
             return await Task.FromResult(true);
 #else
             var newProjectNames = new List<string>();
-            var msBuildProjects = uiService.Projects.Where(project => project is MSBuildNuGetProject);
+
+            // check if project is packages.config and it's dte project instance can also be converted to VSProject4.
+            // otherwise don't show format selector dialog for this project
+            var msBuildProjects = uiService.Projects.Where(project =>
+                project is MSBuildNuGetProject &&
+                (project as MSBuildNuGetProject).MSBuildNuGetProjectSystem.VSProject4 != null);
 
             // get all packages.config based projects with no installed packages
             foreach (var project in msBuildProjects)

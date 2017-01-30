@@ -28,6 +28,8 @@ function ExtractEndToEndZip
 
     $endToEndZipSrc = Join-Path $NuGetDropPath 'EndToEnd.zip'
     $endToEndZip = Join-Path $FuncTestRoot 'EndToEnd.zip'
+    $artifactsNuGetExe = Join-Path $NuGetDropPath 'NuGet.exe'
+    $endToEndNuGetExe = Join-Path $NuGetTestPath 'NuGet.exe'
 
     Copy-Item $endToEndZipSrc $endToEndZip -Force
 
@@ -35,6 +37,14 @@ function ExtractEndToEndZip
     mkdir $NuGetTestPath
 
     ExtractZip $endToEndZip $NuGetTestPath
+
+    if(Test-Path $artifactsNuGetExe){
+        Write-Host 'Copying ' $artifactsNuGetExe ' to ' $endToEndNuGetExe
+        Copy-Item $artifactsNuGetExe $endToEndNuGetExe -Force
+    }
+    else {
+        Write-Host 'NuGet.Exe not found at ' $artifactsNuGetExe
+    }
 }
 
 function CleanPaths($NuGetTestPath)

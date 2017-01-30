@@ -12,6 +12,7 @@ using Microsoft.VisualStudio.Threading;
 using NuGet.Configuration;
 using NuGet.PackageManagement;
 using NuGet.PackageManagement.PowerShellCmdlets;
+using NuGet.PackageManagement.UI;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
@@ -180,7 +181,7 @@ namespace NuGetConsole
         private async Task<IHost> GetHostAsync()
         {
             // Since we are creating the output console and the output window pane, switch to the main thread
-            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             // create the console and instantiate the PS host on demand
             var console = OutputConsoleProvider.CreatePowerShellConsole();

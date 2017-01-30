@@ -619,6 +619,198 @@ function Assert-NoProjectImport {
     }
 }
 
+function Get-NetCoreLockFilePath {
+    param(
+        [parameter(Mandatory = $true)]
+        $Project
+    )
+    
+    $dir = Split-Path -parent $Project.FullName
+
+    $netCoreLockFilePath = Join-Path $dir (Join-Path "obj" "project.assets.json")
+
+    return $netCoreLockFilePath
+}
+
+function Get-NetCoreLockFile {
+    param(
+        [parameter(Mandatory = $true)]
+        $Project
+    )
+    
+    $NetCoreLockFilePath = Get-NetCoreLockFilePath $project
+
+    Assert-PathExists $NetCoreLockFilePath "project.assets.json file does not exist"
+
+    $lockFileFormat = New-Object 'NuGet.ProjectModel.LockFileFormat'
+
+    return $lockFileFormat.Read($NetCoreLockFilePath)
+}
+
+function Get-NetCorePackageInLockFile {
+    param(
+        [parameter(Mandatory = $true)]
+        $lockFile,
+        [parameter(Mandatory = $true)]
+        [string]$Id,
+        [string]$Version   
+    )
+
+    $found = $false
+
+    foreach ($library in $lockFile.libraries) {
+        
+        if ($library.Name.ToUpperInvariant().Equals($Id.ToUpperInvariant()))
+        {
+            Write-Host $library.Name.ToUpperInvariant()
+            if ($Version)
+            {
+                if ($library.Version.Equals([NuGet.Versioning.NuGetVersion]::Parse($Version)))
+                {
+                    $found = $true
+                }
+            }
+            else
+            {
+                $found = $true
+            }
+        }
+    }
+}
+
+function Assert-NetCoreProjectCreation {
+    param(
+        [parameter(Mandatory = $true)]
+        $project
+        
+    )
+    Assert-PathExists ($project.FullName) "The project file $($project.FullName) not found."
+}
+
+function Assert-NetCorePackageInstall {
+    param(
+        [parameter(Mandatory = $true)]
+        $project,
+        [parameter(Mandatory = $true)]
+        [string]$Id,
+        [parameter(Mandatory = $true)]
+        [string]$Version        
+    )
+
+    Assert-NetCorePackageReference $project $id $Version
+    Assert-NetCorePackageInLockFile $project $id $Version
+}
+
+function Assert-NetCorePackageUninstall {
+    param(
+        [parameter(Mandatory = $true)]
+        $project,
+        [parameter(Mandatory = $true)]
+        [string]$Id,
+        [string]$Version        
+    )
+
+    Assert-NetCoreNoPackageReference $project $Id
+    Assert-NetCorePackageNotInLockFile $project $id
+}
+
+function Assert-NetCorePackageReference {
+    param(
+        [parameter(Mandatory = $true)]
+        $project,
+        [parameter(Mandatory = $true)]
+        [string]$Id,
+        [parameter(Mandatory = $true)]
+        [string]$Version        
+    )
+
+    $doc = [xml](Get-Content $project.FullName)
+    $references = $doc.SelectNodes("./Project/ItemGroup/PackageReference[@Include = '$id' and @Version = '$Version']")
+    
+    Assert-True ($references.Count -eq 1) "Project $($project.FullName) does not contain a reference to Package $($Id) $($Version)"
+}
+
+function Assert-NetCoreProjectReference {
+    param(
+        [parameter(Mandatory = $true)]
+        $projectA,
+        [parameter(Mandatory = $true)]
+        $projectB      
+    )
+
+    $doc = [xml](Get-Content $projectA.FullName)
+    $references = $doc.SelectNodes("./Project/ItemGroup/ProjectReference[contains(@Include, $projectB.Name)]")
+    
+    Assert-True ($references.Count -eq 1) "Project $($projectA.FullName) does not contain a reference to Project $($projectB.FullName)"
+}
+
+function Assert-NetCoreNoPackageReference {
+    param(
+        [parameter(Mandatory = $true)]
+        $project,
+        [parameter(Mandatory = $true)]
+        [string]$Id,
+        [string]$Version 
+    )
+
+    $doc = [xml](Get-Content $project.FullName)
+
+    if($version){
+        $references = $doc.SelectNodes("./Project/ItemGroup/PackageReference[@Include = '$id' and @Version = '$Version']")
+        Assert-True ($references.Count -eq 0) "Project $($project.FullName) contains a reference to Package $($Id) $($Version)"
+    }
+    else {
+        $references = $doc.SelectNodes("./Project/ItemGroup/PackageReference[@Include = '$id']")
+        Assert-True ($references.Count -eq 0) "Project $($project.FullName) contains a reference to Package $($Id)"
+    }
+}
+
+
+function Assert-NetCorePackageInLockFile {
+    param(
+        [parameter(Mandatory = $true)]
+        $project,
+        [parameter(Mandatory = $true)]
+        [string]$Id,
+        [parameter(Mandatory = $true)]
+        [string]$Version        
+    )
+
+    $lockFile = Get-NetCoreLockFile $project
+    Assert-NetCoreLockFileLocked $lockFile
+
+    $found = Get-NetCorePackageInLockFile $project $id $Version
+
+    Assert-True $found "Project $($project.FullName) lock file $($lockFile.FullName) does not contain reference for Package $($Id) $($Version)"    
+}
+
+function Assert-NetCorePackageNotInLockFile {
+    param(
+        [parameter(Mandatory = $true)]
+        $project,
+        [parameter(Mandatory = $true)]
+        [string]$Id,
+        [string]$Version        
+    )
+
+    $lockFile = Get-NetCoreLockFile $project
+    Assert-NetCoreLockFileLocked $lockFile
+
+    $found = Get-NetCorePackageInLockFile $project $id $Version
+
+    Assert-False $found "Project $($project.FullName) lock file $($lockFile.FullName) contains reference for Package $($Id) $($Version)"    
+}
+
+
+function Assert-NetCoreLockFileLocked{
+    param(
+        [parameter(Mandatory = $true)]
+        $lockFile
+    )
+    
+    Assert-True $lockFile.IsLocked "Project $($project.FullName) lock file $($lockFile.FullName) not locked"
+}
+
 function Get-PackagesDir {
     # TODO: Handle when the package location changes
     Join-Path (Get-SolutionDir) packages

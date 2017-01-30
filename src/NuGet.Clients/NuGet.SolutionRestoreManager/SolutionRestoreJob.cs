@@ -549,9 +549,9 @@ namespace NuGet.SolutionRestoreManager
 
         private async Task<bool> CheckPackagesConfigAsync()
         {
-            return await ThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+            return await NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {
-                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                 var dte = _serviceProvider.GetDTE();
                 var projects = dte.Solution.Projects;

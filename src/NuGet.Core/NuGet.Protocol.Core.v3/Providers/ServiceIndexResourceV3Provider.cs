@@ -7,7 +7,6 @@ using System.Globalization;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NuGet.Common;
 using NuGet.Protocol.Core.Types;
@@ -130,11 +129,11 @@ namespace NuGet.Protocol
                                 EnsureValidContents = stream => HttpStreamValidation.ValidateJObject(url, stream),
                                 MaxTries = 1
                             },
-                            httpSourceResult =>
+                            async httpSourceResult =>
                             {
-                                var result = ConsumeServiceIndexStream(httpSourceResult.Stream, utcNow);
+                                var result = await ConsumeServiceIndexStreamAsync(httpSourceResult.Stream, utcNow);
 
-                                return Task.FromResult(result);
+                                return result;
                             },
                             log,
                             token);
@@ -158,15 +157,10 @@ namespace NuGet.Protocol
             return null;
         }
 
-        private ServiceIndexResourceV3 ConsumeServiceIndexStream(Stream stream, DateTime utcNow)
+        private async Task<ServiceIndexResourceV3> ConsumeServiceIndexStreamAsync(Stream stream, DateTime utcNow)
         {
             // Parse the JSON
-            JObject json;
-            using (var reader = new StreamReader(stream))
-            using (var jsonReader = new JsonTextReader(reader))
-            {
-                json = JObject.Load(jsonReader);
-            }
+            JObject json = await stream.AsJObjectAsync();
 
             // Use SemVer instead of NuGetVersion, the service index should always be
             // in strict SemVer format

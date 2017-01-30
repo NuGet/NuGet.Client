@@ -11,6 +11,7 @@ using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.PackageManagement;
+using NuGet.PackageManagement.UI;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging.Core;
 
@@ -57,9 +58,9 @@ namespace NuGetVSExtension
         #region IVsSolutionEventsProjectUpgrade
         int IVsSolutionEventsProjectUpgrade.OnAfterUpgradeProject(IVsHierarchy pHierarchy, uint fUpgradeFlag, string bstrCopyLocation, SYSTEMTIME stUpgradeTime, IVsUpgradeLogger pLogger)
         {
-            ThreadHelper.JoinableTaskFactory.Run(async delegate
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
             {
-                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                 Debug.Assert(pHierarchy != null);
 

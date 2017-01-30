@@ -98,6 +98,28 @@ namespace NuGet.PackageManagement.VisualStudio
             }
         }
 
+        public string Version
+        {
+            get
+            {
+                ThreadHelper.ThrowIfNotOnUIThread();
+
+                var packageVersion = GetMSBuildProperty(AsIVsBuildPropertyStorage, "PackageVersion");
+
+                if (string.IsNullOrEmpty(packageVersion))
+                {
+                    packageVersion = GetMSBuildProperty(AsIVsBuildPropertyStorage, "Version");
+
+                    if (string.IsNullOrEmpty(packageVersion))
+                    {
+                        packageVersion = "1.0.0";
+                    }
+                }
+
+                return packageVersion;
+            }
+        }
+
         public string BaseIntermediateOutputPath
         {
             get
@@ -142,7 +164,14 @@ namespace NuGet.PackageManagement.VisualStudio
 
                 if (!_isLegacyCSProjPackageReferenceProject.HasValue)
                 {
-                    if (string.IsNullOrEmpty(_context.NuGetProjectStyle))
+                    var restoreProjectStyle = string.Empty;
+
+                    var hasRestoreProjectStyle = _context
+                        .MSBuildProperties
+                        .TryGetValue(ProjectSystemProviderContext.RestoreProjectStyle, out restoreProjectStyle)
+                        && !string.IsNullOrEmpty(restoreProjectStyle);
+
+                    if (!hasRestoreProjectStyle)
                     {
                         // A legacy CSProj can't be CPS, must cast to VSProject4 and *must* have at least one package
                         // reference already in the CSProj. In the future this logic may change. For now a user must
@@ -161,7 +190,8 @@ namespace NuGet.PackageManagement.VisualStudio
                             _isLegacyCSProjPackageReferenceProject = true;
                         }
                     }
-                    else if (_context.NuGetProjectStyle.Equals(ProjectStyle.PackageReference.ToString(), StringComparison.OrdinalIgnoreCase))
+                    else if (restoreProjectStyle.Equals(ProjectStyle.PackageReference.ToString(), 
+                        StringComparison.OrdinalIgnoreCase))
                     {
                         // if RestoreProjectStyle MSBuild property is set to PackageReference then set this project as 
                         // Legacy csproj

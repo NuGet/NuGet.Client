@@ -21,6 +21,7 @@ using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Frameworks;
+using NuGet.PackageManagement.UI;
 using NuGet.ProjectManagement;
 using VSLangProj;
 using VSLangProj80;
@@ -503,12 +504,12 @@ namespace NuGet.PackageManagement.VisualStudio
         /// </remarks>
         public static string GetCustomUniqueName(EnvDTEProject envDTEProject)
         {
-            return ThreadHelper.JoinableTaskFactory.Run(async delegate { return await GetCustomUniqueNameAsync(envDTEProject); });
+            return NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate { return await GetCustomUniqueNameAsync(envDTEProject); });
         }
 
         public static async Task<string> GetCustomUniqueNameAsync(EnvDTEProject envDTEProject)
         {
-            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             if (IsWebSite(envDTEProject))
             {
@@ -800,7 +801,7 @@ namespace NuGet.PackageManagement.VisualStudio
         private static async Task<bool> IncludeExistingFolderToProjectAsync(EnvDTEProject envDTEProject, string folderRelativePath)
         {
             // Execute command to include the existing folder into project. Must do this on UI thread.
-            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             IVsUIHierarchy projectHierarchy = (IVsUIHierarchy)VsHierarchyUtility.ToVsHierarchy(envDTEProject);
 
@@ -1339,9 +1340,9 @@ namespace NuGet.PackageManagement.VisualStudio
                 throw new ArgumentNullException(nameof(project));
             }
 
-            return ThreadHelper.JoinableTaskFactory.Run(async () =>
+            return NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
             {
-                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                 // Get the vs solution
                 IVsSolution solution = ServiceLocator.GetInstance<IVsSolution>();

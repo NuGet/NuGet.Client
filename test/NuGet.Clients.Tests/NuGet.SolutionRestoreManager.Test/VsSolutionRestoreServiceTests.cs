@@ -59,7 +59,7 @@ namespace NuGet.SolutionRestoreManager.Test
                 cache, restoreWorker, NuGet.Common.NullLogger.Instance);
 
             // Act
-            var actualRestoreTask = service.NominateProjectAsync(cps.Item1, cps.Item3, CancellationToken.None);
+            var actualRestoreTask = service.NominateProjectAsync(cps.ProjectFullPath, cps.ProjectRestoreInfo, CancellationToken.None);
 
             Assert.Same(completedRestoreTask, actualRestoreTask);
 
@@ -71,7 +71,7 @@ namespace NuGet.SolutionRestoreManager.Test
         }
 
         [Fact]
-        public async Task NominateProjectAsync_ConsoleAppTemplate_Succeeds()
+        public async Task NominateProjectAsync_ConsoleAppTemplate()
         {
             var consoleAppProjectJson = @"{
     ""frameworks"": {
@@ -90,46 +90,26 @@ namespace NuGet.SolutionRestoreManager.Test
     }
 }";
             var projectName = "ConsoleApp1";
-            var cps = NewCpsProject(projectName, consoleAppProjectJson);
-            var projectFullPath = cps.Item1;
-
-            var cache = Mock.Of<IProjectSystemCache>();
-
-            DependencyGraphSpec actualRestoreSpec = null;
-
-            Mock.Get(cache)
-                .Setup(x => x.AddProjectRestoreInfo(
-                    It.IsAny<ProjectNames>(),
-                    It.IsAny<DependencyGraphSpec>()))
-                .Callback<ProjectNames, DependencyGraphSpec>(
-                    (_, dg) => { actualRestoreSpec = dg; })
-                .Returns(true);
-
-            var restoreWorker = Mock.Of<ISolutionRestoreWorker>();
-            Mock.Get(restoreWorker)
-                .Setup(x => x.ScheduleRestoreAsync(
-                    It.IsAny<SolutionRestoreRequest>(),
-                    CancellationToken.None))
-                .ReturnsAsync(true);
-
-            var service = new VsSolutionRestoreService(
-                cache, restoreWorker, NuGet.Common.NullLogger.Instance);
+            var cps = NewCpsProject(consoleAppProjectJson, projectName);
+            var pri = cps.ProjectRestoreInfo;
+            var projectFullPath = cps.ProjectFullPath;
 
             // Act
-            var result = await service.NominateProjectAsync(projectFullPath, cps.Item3, CancellationToken.None);
+            var actualRestoreSpec = await CaptureNominateResultAsync(projectFullPath, pri);
 
-            Assert.True(result, "Project restore nomination should succeed.");
-            Assert.NotNull(actualRestoreSpec);
+            // Assert
             SpecValidationUtility.ValidateDependencySpec(actualRestoreSpec);
 
-            Assert.NotNull(actualRestoreSpec.GetProjectSpec(projectFullPath));
             var actualProjectSpec = actualRestoreSpec.GetProjectSpec(projectFullPath);
+            Assert.NotNull(actualProjectSpec);
+            Assert.Equal("1.0.0", actualProjectSpec.Version.ToString());
 
             var actualMetadata = actualProjectSpec.RestoreMetadata;
+            Assert.NotNull(actualMetadata);
             Assert.Equal(projectFullPath, actualMetadata.ProjectPath);
             Assert.Equal(projectName, actualMetadata.ProjectName);
             Assert.Equal(ProjectStyle.PackageReference, actualMetadata.ProjectStyle);
-            Assert.Equal(cps.Item2, actualMetadata.OutputPath);
+            Assert.Equal(pri.BaseIntermediatePath, actualMetadata.OutputPath);
 
             Assert.Single(actualProjectSpec.TargetFrameworks);
             var actualTfi = actualProjectSpec.TargetFrameworks.Single();
@@ -143,34 +123,188 @@ namespace NuGet.SolutionRestoreManager.Test
         }
 
         [Fact]
-        public async Task NominateProjectAsync_WithTools_Succeeds()
+        public async Task NominateProjectAsync_ProjectWithTools()
         {
             const string toolProjectJson = @"{
     ""frameworks"": {
         ""netcoreapp1.0"": { }
     }
 }";
+            var cps = NewCpsProject(toolProjectJson);
+            var pri = cps.Builder.WithTool("Foo.Test.Tools", "2.0.0").Build();
+            var projectFullPath = cps.ProjectFullPath;
+
+            // Act
+            var actualRestoreSpec = await CaptureNominateResultAsync(projectFullPath, pri);
+
+            // Assert
+            SpecValidationUtility.ValidateDependencySpec(actualRestoreSpec);
+
+            var actualProjectSpec = actualRestoreSpec.GetProjectSpec(projectFullPath);
+            Assert.NotNull(actualProjectSpec);
+
+            var actualToolSpec = actualRestoreSpec
+                .Projects
+                .Where(p => !object.ReferenceEquals(p, actualProjectSpec))
+                .Single();
+            var actualMetadata = actualToolSpec.RestoreMetadata;
+            Assert.NotNull(actualMetadata);
+            Assert.Equal(projectFullPath, actualMetadata.ProjectPath);
+            Assert.Equal(ProjectStyle.DotnetCliTool, actualMetadata.ProjectStyle);
+            Assert.Null(actualMetadata.OutputPath);
+            var actualToolLibrary = actualToolSpec
+                .TargetFrameworks
+                .Single()
+                .Dependencies
+                .Single();
+            Assert.Equal("Foo.Test.Tools", actualToolLibrary.Name);
+            Assert.Equal("2.0.0", actualToolLibrary.LibraryRange.VersionRange.OriginalString);
+        }
+
+        [Theory]
+        [InlineData(
+@"{
+    ""frameworks"": {
+        ""netstandard1.4"": { }
+    }
+}", "netstandard1.4", "netstandard1.4")]
+        [InlineData(
+@"{
+    ""frameworks"": {
+        ""netstandard1.4"": { },
+        ""net46"": { }
+    }
+}", "netstandard1.4;net46", "netstandard1.4;net46")]
+        [InlineData(
+@"{
+    ""frameworks"": {
+        ""netstandard1.4"": { },
+        ""net46"": { }
+    }
+}", "\r\n    netstandard1.4;\r\n    net46\r\n    ", "netstandard1.4;net46")]
+        public async Task NominateProjectAsync_CrossTargeting(
+            string projectJson, string rawOriginalTargetFrameworks, string expectedOriginalTargetFrameworks)
+        {
             var cps = NewCpsProject(
-                projectJson: toolProjectJson,
-                tools: new[]
-                {
-                    new LibraryRange(
-                        "Foo.Test.Tools",
-                        VersionRange.Parse("2.0.0"),
-                        LibraryDependencyTarget.Package)
-                });
-            var projectFullPath = cps.Item1;
+                projectJson: projectJson,
+                crossTargeting: true);
+            var projectFullPath = cps.ProjectFullPath;
+            var pri = cps.ProjectRestoreInfo;
+            pri.OriginalTargetFrameworks = rawOriginalTargetFrameworks;
+
+            // Act
+            var actualRestoreSpec = await CaptureNominateResultAsync(projectFullPath, pri);
+
+            // Assert
+            SpecValidationUtility.ValidateDependencySpec(actualRestoreSpec);
+
+            var actualProjectSpec = actualRestoreSpec.GetProjectSpec(projectFullPath);
+            Assert.NotNull(actualProjectSpec);
+
+            var actualMetadata = actualProjectSpec.RestoreMetadata;
+            Assert.NotNull(actualMetadata);
+            Assert.True(actualMetadata.CrossTargeting);
+
+            var actualOriginalTargetFrameworks = string.Join(";", actualMetadata.OriginalTargetFrameworks);
+            Assert.Equal(
+                expectedOriginalTargetFrameworks,
+                actualOriginalTargetFrameworks);
+        }
+
+        [Fact]
+        public async Task NominateProjectAsync_Imports()
+        {
+            const string projectJson = @"{
+    ""frameworks"": {
+        ""netstandard1.4"": {
+            ""imports"": [""dotnet5.3"",""portable-net452+win81""]
+        }
+    }
+}";
+            var cps = NewCpsProject(projectJson);
+            var projectFullPath = cps.ProjectFullPath;
+
+            // Act
+            var actualRestoreSpec = await CaptureNominateResultAsync(projectFullPath, cps.ProjectRestoreInfo);
+
+            // Assert
+            SpecValidationUtility.ValidateDependencySpec(actualRestoreSpec);
+
+            var actualProjectSpec = actualRestoreSpec.GetProjectSpec(projectFullPath);
+            Assert.NotNull(actualProjectSpec);
+
+            var actualTfi = actualProjectSpec.TargetFrameworks.Single();
+            var actualImports = string.Join(";", actualTfi.Imports.Select(x => x.GetShortFolderName()));
+            Assert.Equal("dotnet5.3;portable-net452+win81", actualImports);
+        }
+
+        [Fact]
+        public async Task NominateProjectAsync_WithValidPackageVersion_Passes()
+        {
+            const string projectJson = @"{
+    ""version"": ""1.2.0-beta1"",
+    ""frameworks"": {
+        ""netcoreapp1.0"": { }
+    }
+}";
+            var cps = NewCpsProject(projectJson);
+            var projectFullPath = cps.ProjectFullPath;
+
+            // Act
+            var actualRestoreSpec = await CaptureNominateResultAsync(projectFullPath, cps.ProjectRestoreInfo);
+
+            // Assert
+            SpecValidationUtility.ValidateDependencySpec(actualRestoreSpec);
+
+            var actualProjectSpec = actualRestoreSpec.GetProjectSpec(projectFullPath);
+            Assert.NotNull(actualProjectSpec);
+            Assert.Equal("1.2.0-beta1", actualProjectSpec.Version.ToString());
+        }
+
+        [Fact]
+        public async Task NominateProjectAsync_WithMultiplePackageVersions_Fails()
+        {
+            const string projectJson = @"{
+    ""version"": ""1.2.0-beta1"",
+    ""frameworks"": {
+        ""netcoreapp1.0"": { }
+    }
+}";
+            var cps = NewCpsProject(projectJson);
+            var projectFullPath = cps.ProjectFullPath;
+            var pri = cps.Builder
+                .WithTargetFrameworkInfo(
+                    new VsTargetFrameworkInfo(
+                        "net46",
+                        Enumerable.Empty<IVsReferenceItem>(),
+                        Enumerable.Empty<IVsReferenceItem>(),
+                        new[] { new VsProjectProperty("PackageVersion", "1.0.0") }))
+                .Build();
 
             var cache = Mock.Of<IProjectSystemCache>();
+            var restoreWorker = Mock.Of<ISolutionRestoreWorker>();
 
-            DependencyGraphSpec actualRestoreSpec = null;
+            var service = new VsSolutionRestoreService(
+                cache, restoreWorker, NuGet.Common.NullLogger.Instance);
 
+            // Act
+            var result = await service.NominateProjectAsync(projectFullPath, pri, CancellationToken.None);
+
+            Assert.False(result, "Project restore nomination must fail.");
+        }
+
+        private async Task<DependencyGraphSpec> CaptureNominateResultAsync(
+            string projectFullPath, IVsProjectRestoreInfo pri)
+        {
+            DependencyGraphSpec capturedRestoreSpec = null;
+
+            var cache = Mock.Of<IProjectSystemCache>();
             Mock.Get(cache)
                 .Setup(x => x.AddProjectRestoreInfo(
                     It.IsAny<ProjectNames>(),
                     It.IsAny<DependencyGraphSpec>()))
                 .Callback<ProjectNames, DependencyGraphSpec>(
-                    (_, dg) => { actualRestoreSpec = dg; })
+                    (_, dg) => { capturedRestoreSpec = dg; })
                 .Returns(true);
 
             var restoreWorker = Mock.Of<ISolutionRestoreWorker>();
@@ -184,35 +318,17 @@ namespace NuGet.SolutionRestoreManager.Test
                 cache, restoreWorker, NuGet.Common.NullLogger.Instance);
 
             // Act
-            var result = await service.NominateProjectAsync(projectFullPath, cps.Item3, CancellationToken.None);
+            var result = await service.NominateProjectAsync(projectFullPath, pri, CancellationToken.None);
 
             Assert.True(result, "Project restore nomination should succeed.");
-            Assert.NotNull(actualRestoreSpec);
-            SpecValidationUtility.ValidateDependencySpec(actualRestoreSpec);
 
-            Assert.NotNull(actualRestoreSpec.GetProjectSpec(projectFullPath));
-            var actualProjectSpec = actualRestoreSpec.GetProjectSpec(projectFullPath);
-
-            var actualToolSpec = actualRestoreSpec
-                .Projects
-                .Where(p => !object.ReferenceEquals(p, actualProjectSpec))
-                .Single();
-            var actualMetadata = actualToolSpec.RestoreMetadata;
-            Assert.NotNull(actualMetadata);
-            Assert.Equal(projectFullPath, actualMetadata.ProjectPath);
-            Assert.Equal(ProjectStyle.DotnetCliTool, actualMetadata.ProjectStyle);
-            Assert.Null(actualMetadata.OutputPath);
-            var toolLibrary = actualToolSpec
-                .TargetFrameworks
-                .Single()
-                .Dependencies
-                .Single();
-            Assert.Equal("Foo.Test.Tools", toolLibrary.Name);
-            Assert.Equal("2.0.0", toolLibrary.LibraryRange.VersionRange.OriginalString);
+            return capturedRestoreSpec;
         }
 
-        private Tuple<string, string, IVsProjectRestoreInfo> NewCpsProject(
-            string projectName = null, string projectJson = null, IEnumerable<LibraryRange> tools = null)
+        private TestContext NewCpsProject(
+            string projectJson = null,
+            string projectName = null,
+            bool crossTargeting = false)
         {
             const string DefaultProjectJson = @"{
     ""frameworks"": {
@@ -232,19 +348,16 @@ namespace NuGet.SolutionRestoreManager.Test
             Directory.CreateDirectory(baseIntermediatePath);
 
             var spec = JsonPackageSpecReader.GetPackageSpec(projectJson ?? DefaultProjectJson, projectName, projectFullPath);
-            var pri = ProjectRestoreInfoBuilder.Build(
+            var builder = ProjectRestoreInfoBuilder.FromPackageSpec(
                 spec,
                 baseIntermediatePath,
-                tools);
-            return Tuple.Create(projectFullPath, baseIntermediatePath, pri);
-        }
+                crossTargeting);
 
-        private static IVsReferenceItem ToReferenceItem(string itemName, string versionRange)
-        {
-            var properties = new VsReferenceProperties(
-                new[] { new VsReferenceProperty("Version", versionRange) }
-            );
-            return new VsReferenceItem(itemName, properties);
+            return new TestContext
+            {
+                ProjectFullPath = projectFullPath,
+                Builder = builder
+            };
         }
 
         private static void AssertPackages(TargetFrameworkInformation actualTfi, params string[] expectedPackages)
@@ -255,6 +368,14 @@ namespace NuGet.SolutionRestoreManager.Test
                 .Select(ld => $"{ld.Name}:{ld.LibraryRange.VersionRange.OriginalString}");
 
             Assert.Equal(expectedPackages, actualPackages);
+        }
+
+        private class TestContext
+        {
+            public string ProjectFullPath { get; set; }
+            public ProjectRestoreInfoBuilder Builder { get; set; }
+
+            public VsProjectRestoreInfo ProjectRestoreInfo => Builder.Build();
         }
     }
 }

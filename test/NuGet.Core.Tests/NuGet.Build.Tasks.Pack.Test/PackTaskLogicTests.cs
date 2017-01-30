@@ -352,14 +352,14 @@ namespace NuGet.Build.Tasks.Pack.Test
 
                     Assert.Equal(contentFiles.Count, 1);
                     Assert.Equal(contentFiles[0].BuildAction, "EmbeddedResource", StringComparer.Ordinal);
-                    Assert.Equal(contentFiles[0].Include, "any/net45/abc.txt", StringComparer.Ordinal);
+                    Assert.Equal(contentFiles[0].Include, "abc.txt", StringComparer.Ordinal);
 
                     // Validate the content items
                     var contentItems = nupkgReader.GetFiles("content").ToList();
                     var contentFileItems = nupkgReader.GetFiles("contentFiles").ToList();
                     Assert.Equal(contentItems.Count, 0);
                     Assert.Equal(contentFileItems.Count, 1);
-                    Assert.Contains("contentFiles/any/net45/abc.txt", contentFileItems, StringComparer.Ordinal);
+                    Assert.Contains("contentFiles/abc.txt", contentFileItems, StringComparer.Ordinal);
                 }
             }
         }

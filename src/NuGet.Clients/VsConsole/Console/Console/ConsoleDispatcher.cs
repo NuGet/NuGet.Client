@@ -13,6 +13,7 @@ using System.Windows.Media;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Text;
 using NuGet.Common;
+using NuGet.PackageManagement.UI;
 using Task = System.Threading.Tasks.Task;
 
 namespace NuGetConsole.Implementation.Console
@@ -140,9 +141,9 @@ namespace NuGetConsole.Implementation.Console
 
         private void RaiseEventSafe(EventHandler handler)
         {
-            ThreadHelper.JoinableTaskFactory.Run(async delegate
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
                 {
-                    await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
                     if (handler != null)
                     {
                         handler(this, EventArgs.Empty);
@@ -195,9 +196,9 @@ namespace NuGetConsole.Implementation.Console
                         ).ContinueWith(
                             task =>
                                 {
-                                    ThreadHelper.JoinableTaskFactory.Run(async delegate
+                                    NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
                                         {
-                                            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                                            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                                             if (task.IsFaulted)
                                             {

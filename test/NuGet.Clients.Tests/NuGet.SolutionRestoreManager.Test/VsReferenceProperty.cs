@@ -7,9 +7,9 @@ namespace NuGet.SolutionRestoreManager.Test
 {
     internal class VsReferenceProperty : IVsReferenceProperty
     {
-        public String Name { get; }
+        public string Name { get; }
 
-        public String Value { get; }
+        public string Value { get; }
 
         public VsReferenceProperty(string name, string value)
         {

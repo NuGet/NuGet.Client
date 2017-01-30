@@ -177,7 +177,6 @@
     <Compile Include="UserInterfaceService\NuGetUIContext.cs" />
     <Compile Include="UserInterfaceService\NuGetUIProjectContext.cs" />
     <Compile Include="UserSettings.cs" />
-    <Compile Include="Utility\NuGetUIThreadHelper.cs" />
     <Compile Include="Utility\PackageManagerProviderUtility.cs" />
     <Compile Include="Utility\RegistrySettingUtility.cs" />
     <Compile Include="Utility\TaskCombinators.cs" />

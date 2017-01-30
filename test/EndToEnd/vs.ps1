@@ -30,6 +30,61 @@ function New-BuildIntegratedProj
     }
 }
 
+function Wait-OnNetCoreRestoreCompletion{
+     param(
+        [parameter(Mandatory = $true)]
+        $Project
+    )
+    
+    $NetCoreLockFilePath = Get-NetCoreLockFilePath $Project
+    $timeout = New-Timespan -Minutes 2
+    $sw = [Diagnostics.Stopwatch]::StartNew()
+    while (!(Test-Path $NetCoreLockFilePath)) {
+        if ($sw.elapsed -ge $timeout) {
+            throw "Time out while waiting for .Net Core project restore on create"
+        }
+        Start-Sleep -Seconds 1
+    }
+}
+
+function New-NetCoreConsoleApp
+{
+    param(
+        [string]$ProjectName,
+        [string]$SolutionFolder
+    )
+    
+    if ((Get-VSVersion) -ge '15.0')
+    {
+        $project = New-Project NetCoreConsoleApp $ProjectName $SolutionFolder
+        Wait-OnNetCoreRestoreCompletion $project
+        return $project
+    }
+    else
+    {
+        throw "SKIP: $($_)"
+    }
+}
+
+function New-NetCoreWebApp10
+{
+    param(
+        [string]$ProjectName,
+        [string]$SolutionFolder
+    )
+    
+    if ((Get-VSVersion) -ge '15.0')
+    {
+        $project = New-Project NetCoreWebApplication1.0 $ProjectName $SolutionFolder
+        Wait-OnNetCoreRestoreCompletion $project
+        return $project
+    }
+    else
+    {
+        throw "SKIP: $($_)"
+    }
+}
+
 function New-CpsApp 
 {
     param(

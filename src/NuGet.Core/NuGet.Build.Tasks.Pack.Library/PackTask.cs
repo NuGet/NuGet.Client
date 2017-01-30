@@ -3,6 +3,7 @@
 
 using Microsoft.Build.Framework;
 using NuGet.Commands;
+using NuGet.Packaging;
 using ILogger = NuGet.Common.ILogger;
 
 namespace NuGet.Build.Tasks.Pack
@@ -18,6 +19,7 @@ namespace NuGet.Build.Tasks.Pack
         public string[] PackageTypes { get; set; }
         public string PackageId { get; set; }
         public string PackageVersion { get; set; }
+        public string Title { get; set; }
         public string[] Authors { get; set; }
         public string Description { get; set; }
         public string Copyright { get; set; }
@@ -42,13 +44,14 @@ namespace NuGet.Build.Tasks.Pack
         public string NuspecFile { get; set; }
         public string MinClientVersion { get; set; }
         public bool Serviceable { get; set; }
-        public string VersionSuffix { get; set; }
         public ITaskItem[] AssemblyReferences { get; set; }
         public bool ContinuePackingAfterGeneratingNuspec { get; set; }
         public string NuspecOutputPath { get; set; }
         public bool IncludeBuildOutput { get; set; }
         public string BuildOutputFolder { get; set; }
         public string[] ContentTargetFolders { get; set; }
+        public string[] NuspecProperties { get; set; }
+        public string NuspecBasePath { get; set; }
 
         public ILogger Logger => new MSBuildLogger(Log);
 
@@ -79,9 +82,16 @@ namespace NuGet.Build.Tasks.Pack
         {
             var request = GetRequest();
             var logic = PackTaskLogic;
-
+            PackageBuilder packageBuilder = null;
             var packArgs = logic.GetPackArgs(request);
-            var packageBuilder = logic.GetPackageBuilder(request);
+
+            // If packing using a Nuspec file, we don't need to build a PackageBuilder here
+            // as the package builder is built by reading the manifest file later in the code path.
+            // Passing a null package builder for nuspec file code path is perfectly valid.
+            if (string.IsNullOrEmpty(request.NuspecFile))
+            {
+                packageBuilder = logic.GetPackageBuilder(request);
+            }
             var packRunner = logic.GetPackCommandRunner(request, packArgs, packageBuilder);
             logic.BuildPackage(packRunner);
 
@@ -114,8 +124,10 @@ namespace NuGet.Build.Tasks.Pack
                 Logger = Logger,
                 MinClientVersion = MSBuildStringUtility.TrimAndGetNullForEmpty(MinClientVersion),
                 NoPackageAnalysis = NoPackageAnalysis,
+                NuspecBasePath = MSBuildStringUtility.TrimAndGetNullForEmpty(NuspecBasePath),
                 NuspecFile = MSBuildStringUtility.TrimAndGetNullForEmpty(NuspecFile),
                 NuspecOutputPath = MSBuildStringUtility.TrimAndGetNullForEmpty(NuspecOutputPath),
+                NuspecProperties = MSBuildStringUtility.TrimAndExcludeNullOrEmpty(NuspecProperties),
                 PackageFiles = MSBuildUtility.WrapMSBuildItem(PackageFiles),
                 PackageFilesToExclude = MSBuildUtility.WrapMSBuildItem(PackageFilesToExclude),
                 PackageId = MSBuildStringUtility.TrimAndGetNullForEmpty(PackageId),
@@ -135,7 +147,7 @@ namespace NuGet.Build.Tasks.Pack
                 TargetFrameworks = MSBuildStringUtility.TrimAndExcludeNullOrEmpty(TargetFrameworks),
                 TargetPathsToAssemblies = MSBuildStringUtility.TrimAndExcludeNullOrEmpty(TargetPathsToAssemblies),
                 TargetPathsToSymbols = MSBuildStringUtility.TrimAndExcludeNullOrEmpty(TargetPathsToSymbols),
-                VersionSuffix = MSBuildStringUtility.TrimAndGetNullForEmpty(VersionSuffix)
+                Title = MSBuildStringUtility.TrimAndGetNullForEmpty(Title),
             };
         }
     }

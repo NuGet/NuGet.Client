@@ -5,10 +5,10 @@ using System;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.Configuration;
 using NuGet.Credentials;
+using NuGet.PackageManagement.UI;
 using WebProxy = System.Net.WebProxy;
 
 namespace NuGetVSExtension
@@ -24,7 +24,7 @@ namespace NuGetVSExtension
                 throw new ArgumentNullException(nameof(webProxyService));
             }
             _webProxyService = webProxyService;
-            Id = $"{typeof (VisualStudioCredentialProvider).Name}_{Guid.NewGuid()}";
+            Id = $"{typeof(VisualStudioCredentialProvider).Name}_{Guid.NewGuid()}";
         }
 
         /// <summary>
@@ -112,9 +112,9 @@ namespace NuGetVSExtension
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            await ThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+            await NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {
-                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
 
                 result = _webProxyService.PrepareWebProxy(uri.OriginalString,
                     (uint)oldState,

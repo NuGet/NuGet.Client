@@ -7,6 +7,7 @@ using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.OLE.Interop;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
+using NuGet.PackageManagement.UI;
 
 namespace NuGetVSExtension
 {
@@ -61,9 +62,9 @@ namespace NuGetVSExtension
 
         public void Start()
         {
-            ThreadHelper.JoinableTaskFactory.Run(async () =>
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
             {
-                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                 SetStatus(VsSearchTaskStatus.Started);
 

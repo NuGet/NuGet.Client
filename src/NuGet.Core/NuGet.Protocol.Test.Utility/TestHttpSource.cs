@@ -34,6 +34,12 @@ namespace Test.Utility
         {
         }
 
+        /// <summary>
+        /// Modify or wrap the returned stream.
+        /// By default do nothing.
+        /// </summary>
+        public Func<Stream, Stream> StreamWrapper { get; set; } = (stream) => stream;
+
         public bool DisableCaching { get; set; } = true;
         public int CacheHits { get; private set; }
         public int CacheMisses { get; private set; }
@@ -54,6 +60,11 @@ namespace Test.Utility
             else
             {
                 CacheHits++;
+            }
+
+            if (result != null)
+            {
+                result = StreamWrapper(result);
             }
 
             return result;

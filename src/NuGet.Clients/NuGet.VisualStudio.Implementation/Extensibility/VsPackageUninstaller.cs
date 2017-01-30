@@ -12,6 +12,7 @@ using NuGet.PackageManagement;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
+using NuGet.PackageManagement.UI;
 
 namespace NuGet.VisualStudio
 {
@@ -36,7 +37,7 @@ namespace NuGet.VisualStudio
             _settings = settings;
             _solutionManager = solutionManager;
 
-            PumpingJTF = new PumpingJTF(ThreadHelper.JoinableTaskContext);
+            PumpingJTF = new PumpingJTF(NuGetUIThreadHelper.JoinableTaskFactory.Context);
             _deleteOnRestartManager = deleteOnRestartManager;
         }
 

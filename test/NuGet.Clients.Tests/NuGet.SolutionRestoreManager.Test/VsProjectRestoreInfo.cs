@@ -12,15 +12,17 @@ namespace NuGet.SolutionRestoreManager.Test
     /// </summary>
     internal class VsProjectRestoreInfo : IVsProjectRestoreInfo
     {
-        public String BaseIntermediatePath { get; }
+        public string BaseIntermediatePath { get; }
 
-        public string OriginalTargetFrameworks { get; }
+        public string OriginalTargetFrameworks { get; set; }
 
         public IVsTargetFrameworks TargetFrameworks { get; }
 
         public IVsReferenceItems ToolReferences { get; set; }
 
-        public VsProjectRestoreInfo(string baseIntermediatePath, IVsTargetFrameworks targetFrameworks)
+        public VsProjectRestoreInfo(
+            string baseIntermediatePath,
+            IVsTargetFrameworks targetFrameworks)
         {
             if (string.IsNullOrEmpty(baseIntermediatePath))
             {

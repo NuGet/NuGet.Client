@@ -237,14 +237,10 @@ namespace NuGet.Protocol
                 {
                     if (stream == null)
                     {
-                        return Task.FromResult((JObject)null);
+                        return Task.FromResult<JObject>(null);
                     }
 
-                    using (var reader = new StreamReader(stream))
-                    using (var jsonReader = new JsonTextReader(reader))
-                    {
-                        return Task.FromResult(JObject.Load(jsonReader));
-                    }
+                    return stream.AsJObjectAsync();
                 },
                 log: log,
                 token: token);

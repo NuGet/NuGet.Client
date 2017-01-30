@@ -5,29 +5,28 @@ using System;
 using System.ComponentModel.Composition;
 using System.Threading;
 using Microsoft.VisualStudio.Shell;
+using NuGet.PackageManagement.UI;
 using NuGet.Protocol.Core.Types;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
     [Export(typeof(IPackageRestoreManager))]
-    public class VSPackageRestoreManager : PackageRestoreManager
+    internal sealed class VSPackageRestoreManager : PackageRestoreManager
     {
         private ISolutionManager SolutionManager { get; }
 
-        public VSPackageRestoreManager()
-            : this(
-                ServiceLocator.GetInstance<ISourceRepositoryProvider>(),
-                ServiceLocator.GetInstance<Configuration.ISettings>(),
-                ServiceLocator.GetInstance<ISolutionManager>())
-        {
-        }
-
+        [ImportingConstructor]
         public VSPackageRestoreManager(
             ISourceRepositoryProvider sourceRepositoryProvider,
             Configuration.ISettings settings,
             ISolutionManager solutionManager)
             : base(sourceRepositoryProvider, settings, solutionManager)
         {
+            if (solutionManager == null)
+            {
+                throw new ArgumentNullException(nameof(solutionManager));
+            }
+
             SolutionManager = solutionManager;
             SolutionManager.NuGetProjectAdded += OnNuGetProjectAdded;
             SolutionManager.SolutionOpened += OnSolutionOpenedOrClosed;
@@ -39,7 +38,7 @@ namespace NuGet.PackageManagement.VisualStudio
             // This is a solution event. Should be on the UI thread
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            ThreadHelper.JoinableTaskFactory.Run(async delegate
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
                 {
                     // We need to do the check even on Solution Closed because, let's say if the yellow Update bar
                     // is showing and the user closes the solution; in that case, we want to hide the Update bar.
@@ -53,7 +52,7 @@ namespace NuGet.PackageManagement.VisualStudio
             // This is a solution event. Should be on the UI thread
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            ThreadHelper.JoinableTaskFactory.Run(async delegate
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
                 {
                     var solutionDirectory = SolutionManager.SolutionDirectory;
                     await RaisePackagesMissingEventForSolutionAsync(solutionDirectory, CancellationToken.None);

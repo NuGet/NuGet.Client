@@ -26,9 +26,9 @@ namespace NuGet.Build.Tasks.Pack
                 Logger = request.Logger,
                 OutputDirectory = request.PackageOutputPath,
                 Serviceable = request.Serviceable,
-                Suffix = request.VersionSuffix,
                 Tool = request.IsTool,
                 Symbols = request.IncludeSymbols,
+                BasePath = request.NuspecBasePath,
                 NoPackageAnalysis = request.NoPackageAnalysis,
                 PackTargetArgs = new MSBuildPackTargetArgs
                 {
@@ -53,6 +53,15 @@ namespace NuGet.Build.Tasks.Pack
                 }
 
                 packArgs.MinClientVersion = version;
+            }
+
+            if (request.NuspecProperties != null && request.NuspecProperties.Any())
+            {
+                packArgs.Properties.AddRange(ParsePropertiesAsDictionary(request.NuspecProperties));
+                if (packArgs.Properties.ContainsKey("version"))
+                {
+                    packArgs.Version = packArgs.Properties["version"];
+                }
             }
 
             InitCurrentDirectoryAndFileName(request, packArgs);
@@ -88,6 +97,7 @@ namespace NuGet.Build.Tasks.Pack
             {
                 Id = request.PackageId,
                 Description = request.Description,
+                Title = request.Title,
                 Copyright = request.Copyright,
                 ReleaseNotes = request.ReleaseNotes,
                 RequireLicenseAcceptance = request.RequireLicenseAcceptance,
@@ -324,8 +334,9 @@ namespace NuGet.Build.Tasks.Pack
                 contentTargetFolders
                 .Where(f => f.EndsWith(Path.DirectorySeparatorChar.ToString())));
 
+            var isPackagePathSpecified = packageFile.Properties.Contains("PackagePath");
             // if user specified a PackagePath, then use that. Look for any ** which are indicated by the RecrusiveDir metadata in msbuild.
-            if (packageFile.Properties.Contains("PackagePath"))
+            if (isPackagePathSpecified)
             {
                 // The rule here is that if the PackagePath is an empty string, then we add the file to the root of the package.
                 // Instead if it is a ';' delimited string, then the user needs to specify a '\' to indicate that the file should go to the root of the package.
@@ -354,24 +365,6 @@ namespace NuGet.Build.Tasks.Pack
                     }
                     targetPaths = newTargetPaths;
                 }
-
-                // this else if condition means the file is within the project directory and the target path should preserve this relative directory structure.
-                else if (sourcePath.StartsWith(packArgs.CurrentDirectory, StringComparison.CurrentCultureIgnoreCase) &&
-                         !Path.GetFileName(sourcePath)
-                             .Equals(packageFile.GetProperty(IdentityProperty), StringComparison.CurrentCultureIgnoreCase))
-                {
-                    var newTargetPaths = new List<string>();
-                    var identity = packageFile.GetProperty(IdentityProperty);
-                    if (identity.EndsWith(Path.GetFileName(sourcePath), StringComparison.CurrentCultureIgnoreCase))
-                    {
-                        identity = Path.GetDirectoryName(identity);
-                    }
-                    foreach (var targetPath in targetPaths)
-                    {
-                        newTargetPaths.Add(Path.Combine(targetPath, identity) + Path.DirectorySeparatorChar);
-                    }
-                    targetPaths = newTargetPaths;
-                }
             }
 
             var buildAction = BuildAction.Parse(packageFile.GetProperty("BuildAction"));
@@ -379,18 +372,84 @@ namespace NuGet.Build.Tasks.Pack
             // TODO: Do the work to get the right language of the project, tracked via https://github.com/NuGet/Home/issues/4100
             var language = buildAction.Equals(BuildAction.Compile) ? "cs" : "any";
 
+
             var setOfTargetPaths = new HashSet<string>(targetPaths, StringComparer.Ordinal);
-            if (setOfTargetPaths.Remove("contentFiles" + Path.DirectorySeparatorChar) 
-                || setOfTargetPaths.Remove("contentFiles"))
+
+            // If package path wasn't specified, then we expand the "contentFiles" value we
+            // got from ContentTargetFolders and expand it to contentFiles/any/<TFM>/
+            if (!isPackagePathSpecified)
             {
-                foreach (var framework in packArgs.PackTargetArgs.TargetFrameworks)
+                if (setOfTargetPaths.Remove("contentFiles" + Path.DirectorySeparatorChar)
+                || setOfTargetPaths.Remove("contentFiles" + Path.AltDirectorySeparatorChar)
+                || setOfTargetPaths.Remove("contentFiles"))
                 {
-                    setOfTargetPaths.Add(Path.Combine("contentFiles",
-                        Path.Combine(language, framework.GetShortFolderName())) + Path.DirectorySeparatorChar);
+                    foreach (var framework in packArgs.PackTargetArgs.TargetFrameworks)
+                    {
+                        setOfTargetPaths.Add(Path.Combine("contentFiles",
+                            Path.Combine(language, framework.GetShortFolderName())) + Path.DirectorySeparatorChar);
+                    }
                 }
             }
 
-            return setOfTargetPaths.Select(target => new ContentMetadata()
+            // this  if condition means there is no package path provided, file is within the project directory
+            // and the target path should preserve this relative directory structure.
+            // This case would be something like :
+            // <Content Include= "folderA\folderB\abc.txt">
+            // Since the package path wasn't specified, we will add this to the package paths obtained via ContentTargetFolders and preserve
+            // relative directory structure
+            if (!isPackagePathSpecified && 
+                sourcePath.StartsWith(packArgs.CurrentDirectory, StringComparison.CurrentCultureIgnoreCase) &&
+                     !Path.GetFileName(sourcePath)
+                         .Equals(packageFile.GetProperty(IdentityProperty), StringComparison.CurrentCultureIgnoreCase))
+            {
+                var newTargetPaths = new List<string>();
+                var identity = packageFile.GetProperty(IdentityProperty);
+                
+                // Identity can be a rooted absolute path too, in which case find the path relative to the current directory
+                if (Path.IsPathRooted(identity))
+                {
+                    identity = PathUtility.GetRelativePath(packArgs.CurrentDirectory + Path.DirectorySeparatorChar, identity);
+                    identity = Path.GetDirectoryName(identity);
+                }
+
+                // If identity is not a rooted path, then it is a relative path to the project directory
+                else if (identity.EndsWith(Path.GetFileName(sourcePath), StringComparison.CurrentCultureIgnoreCase))
+                {
+                    identity = Path.GetDirectoryName(identity);
+                }
+
+                foreach (var targetPath in setOfTargetPaths)
+                {
+                    var newTargetPath = Path.Combine(targetPath, identity);
+                    // We need to do this because evaluated identity in the above line of code can be an empty string
+                    // in the case when the original identity string was the absolute path to a file in project directory, and is in
+                    // the same directory as the csproj file. 
+                    if (!newTargetPath.EndsWith(Path.DirectorySeparatorChar.ToString()))
+                    {
+                        newTargetPath = newTargetPath + Path.DirectorySeparatorChar;
+                    }
+                    newTargetPaths.Add(newTargetPath);
+                }
+                setOfTargetPaths = new HashSet<string>(newTargetPaths, StringComparer.Ordinal);
+            }
+
+            // we take the final set of evaluated target paths and append the file name to it if not
+            // already done. we check whether the extension of the target path is the same as the extension
+            // of the source path and add the filename accordingly.
+            var totalSetOfTargetPaths = new HashSet<string>(StringComparer.Ordinal);
+            foreach (var targetPath in setOfTargetPaths)
+            {
+                var currentPath = targetPath;
+                var fileName = Path.GetFileName(sourcePath);
+                if (!Path.GetExtension(fileName)
+                    .Equals(Path.GetExtension(targetPath), StringComparison.OrdinalIgnoreCase))
+                {
+                    currentPath = Path.Combine(targetPath, fileName);
+                }
+                totalSetOfTargetPaths.Add(currentPath);
+            }
+            
+            return totalSetOfTargetPaths.Select(target => new ContentMetadata()
             {
                 BuildAction = buildAction.IsKnown ? buildAction.Value : null,
                 Source = sourcePath,
@@ -574,6 +633,28 @@ namespace NuGet.Build.Tasks.Pack
                     PackCommandRunner.AddLibraryDependency(packageDependency, dependencies);
                 }
             }
+        }
+
+        private static IDictionary<string, string> ParsePropertiesAsDictionary(string[] properties)
+        {
+            var dictionary = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            foreach (var item in properties)
+            {
+                int index = item.IndexOf("=");
+                // Make sure '=' is not the first or the last character of the string
+                if (index > 0 && index < item.Length - 1)
+                {
+                    var key = item.Substring(0, index);
+                    var value = item.Substring(index + 1);
+                    dictionary[key] = value;
+                }
+                else
+                {
+                    throw new InvalidOperationException(Strings.InvalidNuspecProperties);
+                }
+            }
+
+            return dictionary;
         }
     }
 }

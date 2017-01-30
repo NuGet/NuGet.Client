@@ -32,15 +32,6 @@ function Test-PackFromProjectWithDevelopmentDependencySet {
         $context
     )
 
-    # An MSBuild 15 dependency on an MSBuild 14 DLL is breaking this test. Leave it enabled for MSBuild 14 
-    # and remove this skip when issue addressed. Re-enabling tracked here: https://github.com/NuGet/Home/issues/3272
-    if ((Get-VSVersion) -eq "15.0") {
-        Write-Host "Skipping PackFromProjectWithDevelopmentDependencySet for VS15"
-        return
-    }
-
-    # This test is for bug 3378: Undue circular dependency detected when developmentDependency = "true"
-
     # Arrange 
 
     $p = New-WebApplication
