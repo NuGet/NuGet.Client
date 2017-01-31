@@ -83,7 +83,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public event EventHandler<NuGetProjectEventArgs> AfterNuGetProjectRenamed;
 
-        public event EventHandler AfterNuGetCacheUpdated;
+        public event EventHandler<NuGetEventArgs<string>> AfterNuGetCacheUpdated;
 
         public event EventHandler SolutionClosed;
 
@@ -1015,18 +1015,19 @@ namespace NuGet.PackageManagement.VisualStudio
         /// </summary>
         /// <param name="sender">Event sender object</param>
         /// <param name="e">Event arguments. This will be EventArgs.Empty</param>
-        private void NuGetCacheUpdate_After(object sender, EventArgs e)
+        private void NuGetCacheUpdate_After(object sender, NuGetEventArgs<string> e)
         {
             // The AfterNuGetCacheUpdated event is raised on a separate Task to prevent blocking of the caller.
             // E.g. - If Restore updates the cache entries on CPS nomination, then restore should not be blocked till UI is restored.
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() => FireNuGetCacheUpdatedEventAsync(e));
         }
 
-        private async Task FireNuGetCacheUpdatedEventAsync(EventArgs e)
+        private async Task FireNuGetCacheUpdatedEventAsync(NuGetEventArgs<string> e)
         {
             try
             {
-                // Await a delay of 100 mSec to batch multiple cache updated events
+                // Await a delay of 100 mSec to batch multiple cache updated events.
+                // This ensures the minimum duration between 2 consecutive UI refresh, caused by cache update, to be 100 mSec.
                 await Task.Delay(100);
                 // Check if the cache is still dirty
                 if (_projectSystemCache.TestResetDirtyFlag())

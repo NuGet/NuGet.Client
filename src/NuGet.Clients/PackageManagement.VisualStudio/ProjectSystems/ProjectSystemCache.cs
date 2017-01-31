@@ -39,7 +39,7 @@ namespace NuGet.PackageManagement.VisualStudio
         }
 
         // Event used to inform VSSolutionManager that cache is has been updated
-        public event EventHandler CacheUpdated;
+        public event EventHandler<NuGetEventArgs<string>> CacheUpdated;
 
         public bool TryGetNuGetProject(string name, out NuGetProject project)
         {
@@ -303,7 +303,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 _readerWriterLock.ExitWriteLock();
             }
 
-            FireCacheUpdatedEvent();
+            FireCacheUpdatedEvent(projectNames.FullName);
 
             return true;
         }
@@ -480,14 +480,14 @@ namespace NuGet.PackageManagement.VisualStudio
             public ProjectNames ProjectNames { get; set; }
         }
 
-        private void FireCacheUpdatedEvent()
+        private void FireCacheUpdatedEvent(string projectFullName)
         {
             // We should fire the event only if the cache was clean before.
             // If the cache was dirty already then the VSSolutionsManager is yet to consume the event
             // and will consume current changes as well.
             if(CacheUpdated != null && TestSetDirtyFlag())
             {
-                CacheUpdated(this, EventArgs.Empty);
+                CacheUpdated(this, new NuGetEventArgs<string>(projectFullName));
             }
         }
 

@@ -18,7 +18,7 @@ namespace NuGet.PackageManagement
 
         event EventHandler SolutionClosed;
 
-        event EventHandler AfterNuGetCacheUpdated;
+        event EventHandler<NuGetEventArgs<string>> AfterNuGetCacheUpdated;
 
         event EventHandler<NuGetProjectEventArgs> NuGetProjectAdded;
 

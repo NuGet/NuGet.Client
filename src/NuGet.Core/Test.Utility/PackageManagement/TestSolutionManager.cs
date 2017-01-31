@@ -191,7 +191,7 @@ namespace Test.Utility
 
         public event EventHandler SolutionOpening;
 
-        public event EventHandler AfterNuGetCacheUpdated;
+        private event EventHandler<NuGetEventArgs<string>> AfterNuGetCacheUpdated;
 
         public event EventHandler<ActionsExecutedEventArgs> ActionsExecuted;
 
@@ -206,6 +206,19 @@ namespace Test.Utility
         public void SaveProject(NuGetProject nuGetProject)
         {
             //do nothing.
+        }
+
+        event EventHandler<NuGetEventArgs<string>> ISolutionManager.AfterNuGetCacheUpdated
+        {
+            add
+            {
+                //do nothing.
+            }
+
+            remove
+            {
+                //do nothing.
+            }
         }
 
         public void Dispose()

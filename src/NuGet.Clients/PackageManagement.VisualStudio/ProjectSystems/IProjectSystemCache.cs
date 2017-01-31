@@ -19,7 +19,7 @@ namespace NuGet.PackageManagement.VisualStudio
         /// <summary>
         /// This event is used to inform VSSolutionManager that cache has been changed.
         /// </summary>
-        event EventHandler CacheUpdated;
+        event EventHandler<NuGetEventArgs<string>> CacheUpdated;
 
         /// <summary>
         /// Returns the _isCacheDirty value for the cache. This can be used by the caller to get the status of the cache. 

@@ -222,9 +222,31 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private void SolutionManager_CacheUpdated(object sender, EventArgs e)
+        private void SolutionManager_CacheUpdated(object sender, NuGetEventArgs<string> e)
         {
-            Refresh();
+            if (Model.IsSolution)
+            {
+                // This means that the UI is open for the solution.
+                Refresh();
+            }
+            else
+            {
+                // This is a project package manager, so there is one and only one project.
+                var project = Model.Context.Projects.First();
+
+                string projectFullName;
+
+                var projectContainsFullPath = project.TryGetMetadata(NuGetProjectMetadataKeys.FullPath, out projectFullName);
+
+                var eventProjectFullName = e.Arg;
+
+                // This ensures that we refresh the UI only if the event.project.FullName matches the NuGetProject.FullName.
+                // We also refresh the UI is either of the 2 values are not present.
+                if (e.Arg == null || !projectContainsFullPath || projectFullName == eventProjectFullName)
+                {
+                    Refresh();
+                }
+            }
         }
 
         public PackageRestoreBar RestoreBar => _restoreBar;

@@ -238,7 +238,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             var projectNamesFromFullPath = ProjectNames.FromFullProjectPath(@"C:\src\project\project.csproj");
             var projectRestoreInfo = new DependencyGraphSpec();
             var eventCount = 0;
-            target.CacheUpdated += delegate (object sender, EventArgs e)
+            target.CacheUpdated += delegate (object sender, NuGetEventArgs<string> e)
             {
                 if (target.TestResetDirtyFlag())
                 {
@@ -277,7 +277,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             var projectNamesFromFullPath = ProjectNames.FromFullProjectPath(@"C:\src\project\project.csproj");
             var projectRestoreInfo = new DependencyGraphSpec();
             var eventCount = 0;
-            target.CacheUpdated += delegate (object sender, EventArgs e)
+            target.CacheUpdated += delegate (object sender, NuGetEventArgs<string> e)
             {
                 eventCount++;
             };
@@ -315,7 +315,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             var projectNamesFromFullPath = ProjectNames.FromFullProjectPath(@"C:\src\project\project.csproj");
             var projectRestoreInfo = new DependencyGraphSpec();
             var eventCount = 0;
-            target.CacheUpdated += delegate (object sender, EventArgs e)
+            target.CacheUpdated += delegate (object sender, NuGetEventArgs<string> e)
             {
                 if (target.TestResetDirtyFlag())
                 {
@@ -347,7 +347,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             var projectNamesFromFullPath = ProjectNames.FromFullProjectPath(@"C:\src\project\project.csproj");
             var projectRestoreInfo = new DependencyGraphSpec();
             var eventCount = 0;
-            target.CacheUpdated += delegate (object sender, EventArgs e)
+            target.CacheUpdated += delegate (object sender, NuGetEventArgs<string> e)
             {
                 if (target.TestResetDirtyFlag())
                 {
