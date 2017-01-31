@@ -52,7 +52,7 @@ namespace NuGet.PackageManagement.UI.Test
         public async Task GetPackagesWithUpdatesAsync_WithAllVersions_RetrievesSingleUpdate()
         {
             // Arrange
-            var testPackageIdentity = new PackageIdentity("FakePackage", new NuGetVersion("1.0.0"));
+            var testPackageIdentity = new PackageCollectionItem("FakePackage", new NuGetVersion("1.0.0"), null);
 
             var projectA = SetupProject("FakePackage", "1.0.0");
             SetupRemotePackageMetadata("FakePackage", "0.0.1", "1.0.0", "2.0.1", "2.0.0", "1.0.1");
@@ -79,7 +79,7 @@ namespace NuGet.PackageManagement.UI.Test
         public async Task GetPackagesWithUpdatesAsync_WithAllowedVersions_RetrievesSingleUpdate()
         {
             // Arrange
-            var testPackageIdentity = new PackageIdentity("FakePackage", new NuGetVersion("1.0.0"));
+            var testPackageIdentity = new PackageCollectionItem("FakePackage", new NuGetVersion("1.0.0"), null);
 
             var projectA = SetupProject("FakePackage", "1.0.0", "[1,2)");
             SetupRemotePackageMetadata("FakePackage", "0.0.1", "1.0.0", "2.0.1", "2.0.0", "1.0.1");
@@ -106,7 +106,7 @@ namespace NuGet.PackageManagement.UI.Test
         public async Task GetPackagesWithUpdatesAsync_WithMultipleProjects_RetrievesSingleUpdate1()
         {
             // Arrange
-            var testPackageIdentity = new PackageIdentity("FakePackage", new NuGetVersion("1.0.0"));
+            var testPackageIdentity = new PackageCollectionItem("FakePackage", new NuGetVersion("1.0.0"), null);
 
             // Both projects need to be updated to different versions
             // projectA: 1.0.0 => 2.0.1
@@ -138,7 +138,7 @@ namespace NuGet.PackageManagement.UI.Test
         public async Task GetPackagesWithUpdatesAsync_WithMultipleProjects_RetrievesSingleUpdate2()
         {
             // Arrange
-            var testPackageIdentity = new PackageIdentity("FakePackage", NuGetVersion.Parse("1.0.0"));
+            var testPackageIdentity = new PackageCollectionItem("FakePackage", NuGetVersion.Parse("1.0.0"), null);
 
             // Only one project needs to be updated
             // projectA: 2.0.0 => 2.0.1
@@ -170,7 +170,7 @@ namespace NuGet.PackageManagement.UI.Test
         public async Task GetPackagesWithUpdatesAsync_WithMultipleProjects_RetrievesSingleUpdate3()
         {
             // Arrange
-            var testPackageIdentity = new PackageIdentity("FakePackage", NuGetVersion.Parse("1.0.0"));
+            var testPackageIdentity = new PackageCollectionItem("FakePackage", NuGetVersion.Parse("1.0.0"), null);
 
             // Only one project needs to be updated
             // projectA: 2.0.1 => None
@@ -202,7 +202,7 @@ namespace NuGet.PackageManagement.UI.Test
         public async Task GetPackagesWithUpdatesAsync_WithMultipleProjects_RetrievesNoUpdates()
         {
             // Arrange
-            var testPackageIdentity = new PackageIdentity("FakePackage", NuGetVersion.Parse("1.0.0"));
+            var testPackageIdentity = new PackageCollectionItem("FakePackage", NuGetVersion.Parse("1.0.0"), null);
 
             var projectA = SetupProject("FakePackage", "2.0.1");
             var projectB = SetupProject("FakePackage", "1.0.1", "[1,2)");

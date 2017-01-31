@@ -10,6 +10,9 @@ namespace NuGet.PackageManagement.UI
         // the latest applicable version is installed.
         Installed,
         
-        UpdateAvailable
+        UpdateAvailable,
+
+        // The package is installed but may not be managed.
+        AutoReferenced
     }
 }

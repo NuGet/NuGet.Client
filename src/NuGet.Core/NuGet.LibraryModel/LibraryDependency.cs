@@ -22,6 +22,11 @@ namespace NuGet.LibraryModel
             get { return LibraryRange.Name; }
         }
 
+        /// <summary>
+        /// True if the PackageReference is added by the SDK and not the user.
+        /// </summary>
+        public bool AutoReferenced { get; set; }
+
         public override string ToString()
         {
             var sb = new StringBuilder();
@@ -49,6 +54,7 @@ namespace NuGet.LibraryModel
             hashCode.AddObject(Type);
             hashCode.AddObject(IncludeType);
             hashCode.AddObject(SuppressParent);
+            hashCode.AddObject(AutoReferenced);
 
             return hashCode.CombinedHash;
         }
@@ -70,7 +76,8 @@ namespace NuGet.LibraryModel
                 return true;
             }
 
-            return EqualityUtility.EqualsWithNullCheck(LibraryRange, other.LibraryRange) &&
+            return AutoReferenced == other.AutoReferenced &&
+                   EqualityUtility.EqualsWithNullCheck(LibraryRange, other.LibraryRange) &&
                    EqualityUtility.EqualsWithNullCheck(Type, other.Type) &&
                    IncludeType == other.IncludeType &&
                    SuppressParent == other.SuppressParent;
@@ -88,7 +95,8 @@ namespace NuGet.LibraryModel
                     VersionRange = LibraryRange.VersionRange
                 },
                 SuppressParent = SuppressParent,
-                Type = Type
+                Type = Type,
+                AutoReferenced = AutoReferenced
             };
         }
     }

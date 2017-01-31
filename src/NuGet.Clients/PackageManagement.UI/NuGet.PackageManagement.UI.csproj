@@ -46,6 +46,7 @@
     <Compile Include="Common\NuGetEvent.cs" />
     <Compile Include="Common\NuGetEventTrigger.cs" />
     <Compile Include="Common\OptionsPage.cs" />
+    <Compile Include="Common\PackageCollectionItem.cs" />
     <Compile Include="Converters\RadioBoolToIntConverter.cs" />
     <Compile Include="Converters\TooltipConverter.cs" />
     <Compile Include="Converters\BooleanToFontWeightConverter.cs" />
@@ -58,6 +59,7 @@
     <Compile Include="Models\LoadingStatusViewModel.cs" />
     <Compile Include="Models\PackageSearchMetadataCache.cs" />
     <Compile Include="Models\PackageSearchStatus.cs" />
+    <Compile Include="Models\ProjectVersionConstraint.cs" />
     <Compile Include="PackageManagementFormat.cs" />
     <Compile Include="Prompts\DotnetDeprecatedPrompt.cs" />
     <Compile Include="Resources\Domain.cs" />

@@ -35,7 +35,7 @@
     "summary": "summary",
     "releaseNotes": "releaseNotes",
     "licenseUrl": "licenseUrl",
-    "requireLicenseAcceptance": "True"
+    "requireLicenseAcceptance": true
   },
   "restore": {
     "projectUniqueName": "projectUniqueName",
@@ -45,7 +45,7 @@
     "packagesPath": "packagesPath",
     "outputPath": "outputPath",
     "projectStyle": "PackageReference",
-    "crossTargeting": "True",
+    "crossTargeting": true,
     "fallbackFolders": [
       "b",
       "a",

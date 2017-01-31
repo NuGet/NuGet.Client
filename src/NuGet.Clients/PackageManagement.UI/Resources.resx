@@ -558,7 +558,7 @@ Packages installed into Website projects will not be restored during build. Cons
     <value>Blocked by package.config</value>
   </data>
   <data name="ToolTip_BlockedVersion" xml:space="preserve">
-    <value>Following versions are unavailable due to allowedVersions constraint in package.config</value>
+    <value>Following versions are unavailable due to additional constraints in the project or packages.config</value>
   </data>
   <data name="Warning_ProjectJson" xml:space="preserve">
     <value>These options are not applicable to projects managing their dependencies through project.json.</value>
@@ -616,6 +616,9 @@ Packages installed into Website projects will not be restored during build. Cons
   </data>
   <data name="Text_PackageFormatApply" xml:space="preserve">
     <value>The package manager format will apply to the following projects in this Solution</value>
+  </data>
+  <data name="Version_Blocked_Generic" xml:space="preserve">
+    <value>Blocked by project</value>
   </data>
   <data name="CheckBox_SelectProject_HelpText" xml:space="preserve">
     <value>Select this checkbox to install the NuGet Package to the project '{0}'</value>

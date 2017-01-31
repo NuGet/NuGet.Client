@@ -94,14 +94,29 @@
         Margin="0,11,0,0"
         BorderBrush="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}"
         BorderThickness="0,1,0,1">
-        <nuget:OptionsControl
-          x:Name="_optionsControl"
-          Margin="0,12,0,16"
-          DataContext="{Binding}" />
+        <Grid>
+          <TextBlock
+            x:Name="_optionsBlockedTextBox"
+            Margin="0,12,0,16"
+            Visibility="{Binding Path=OptionsBlockedMessage,Converter={StaticResource NullToVisibilityConverter}}">
+            <Run Text="{Binding OptionsBlockedMessage}"/>
+            <Hyperlink
+              NavigateUri="{Binding Path=OptionsBlockedUrl}"
+              Style="{StaticResource HyperlinkStyle}"
+              Command="{x:Static nuget:PackageManagerControlCommands.OpenExternalLink}">
+              <Run Text="{Binding Path=OptionsBlockedUrl}" />
+            </Hyperlink>
+          </TextBlock>
+          <nuget:OptionsControl
+            x:Name="_optionsControl"
+            Margin="0,12,0,16"
+            DataContext="{Binding}"
+            Visibility="{Binding Path=OptionsBlockedMessage,Converter={StaticResource InverseNullToVisibilityConverter}}" />
+        </Grid>
       </Border>
-
+      
       <nuget:PackageMetadataControl
-        Grid.Row="4"
+        Grid.Row="5"
         Margin="0,12,0,0"
         DataContext="{Binding PackageMetadata}" />
     </Grid>

@@ -29,6 +29,18 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
+        private bool _autoReferenced;
+
+        public bool AutoReferenced
+        {
+            get { return _autoReferenced; }
+            set
+            {
+                _autoReferenced = value;
+                OnPropertyChanged(nameof(AutoReferenced));
+            }
+        }
+
         public event EventHandler SelectedChanged;
 
         private bool _isSelected;
