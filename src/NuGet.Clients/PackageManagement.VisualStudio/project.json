@@ -1,8 +1,8 @@
 {
   "dependencies": {
-    "NuGet.PackageManagement": "3.5.0-rtm-*",
-    "NuGet.Protocol.VisualStudio": "3.5.0-rtm-*",
-    "NuGet.Common": "3.5.0-rtm-*",
+    "NuGet.PackageManagement": "3.6.0-octopus-*",
+    "NuGet.Protocol.VisualStudio": "3.6.0-octopus-*",
+    "NuGet.Common": "3.6.0-octopus-*",
     "Microsoft.VisualStudio.Shell.Interop": "7.10.6071",
     "Microsoft.VisualStudio.Shell.Interop.10.0": "10.0.30319",
     "Microsoft.VisualStudio.Shell.Interop.11.0": "11.0.61030",

@@ -1,11 +1,11 @@
 {
   "dependencies": {
-    "NuGet.PackageManagement": "3.5.0-rtm-*",
-    "NuGet.ProjectManagement": "3.5.0-rtm-*",
-    "NuGet.Protocol.Core.Types": "3.5.0-rtm-*",
-    "NuGet.Protocol.VisualStudio": "3.5.0-rtm-*",
+    "NuGet.PackageManagement": "3.6.0-octopus-*",
+    "NuGet.ProjectManagement": "3.6.0-octopus-*",
+    "NuGet.Protocol.Core.Types": "3.6.0-octopus-*",
+    "NuGet.Protocol.VisualStudio": "3.6.0-octopus-*",
     "System.Management.Automation_PowerShell_3.0": "6.3.9600.17400",
-    "Test.Utility": "3.5.0-rtm-*"
+    "Test.Utility": "3.6.0-octopus-*"
   },
   "frameworks": {
     "net46": {}

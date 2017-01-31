@@ -122,14 +122,6 @@ Invoke-BuildStep 'Building NuGet.Clients projects - VS15 dependencies' {
     -skip:$SkipVS15 `
     -ev +BuildErrors
 
-Invoke-BuildStep 'Creating NuGet.Clients packages - VS15 Toolset' {
-        param($Configuration, $ReleaseLabel, $BuildNumber, $MSPFXPath)
-        Build-ClientsPackages $Configuration $ReleaseLabel $BuildNumber -MSBuildVersion "15" -KeyFile $MSPFXPath
-    } `
-    -args $Configuration, $ReleaseLabel, $BuildNumber, $MSPFXPath `
-    -skip:($SkipILMerge -or $Fast -or $SkipVS15) `
-    -ev +BuildErrors
-    
 ## Building the VS14 Tooling solution
 Invoke-BuildStep 'Building NuGet.Clients projects - VS14 dependencies' {
         param($Configuration, $ReleaseLabel, $BuildNumber, $SkipRestore, $Fast)
@@ -139,6 +131,13 @@ Invoke-BuildStep 'Building NuGet.Clients projects - VS14 dependencies' {
     -skip:$SkipVS14 `
     -ev +BuildErrors
 
+Invoke-BuildStep 'Creating NuGet.Clients packages - VS14 Toolset' {
+        param($Configuration, $ReleaseLabel, $BuildNumber, $MSPFXPath)
+        Build-ClientsPackages $Configuration $ReleaseLabel $BuildNumber -MSBuildVersion "14" -KeyFile $MSPFXPath
+    } `
+    -args $Configuration, $ReleaseLabel, $BuildNumber, $MSPFXPath `
+    -skip:($SkipILMerge -or $Fast -or $SkipVS14) `
+    -ev +BuildErrors
 
 Invoke-BuildStep 'Running NuGet.Core tests' {
         param($SkipRestore, $Fast)

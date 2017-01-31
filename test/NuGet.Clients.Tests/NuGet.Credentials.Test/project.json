@@ -1,9 +1,11 @@
 ﻿{
   "dependencies": {
     "Moq": "4.2.1507.118",
-    "Test.Utility": "3.5.0-*",
+    "Test.Utility": "3.6.0-*",
     "xunit": "2.1.0",
-    "xunit.runner.visualstudio": "2.1.0"
+    "xunit.runner.visualstudio": "2.1.0",
+    "NuGet.Configuration": "3.6.0-octopus-*",
+    "NuGet.Common": "3.6.0-octopus-*"
   },
   "frameworks": {
     "net46": {

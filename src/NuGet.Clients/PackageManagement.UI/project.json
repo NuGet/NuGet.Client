@@ -10,11 +10,11 @@
     "Microsoft.VisualStudio.Shell.Interop.12.0": "12.0.30110",
     "Microsoft.VisualStudio.Shell.Interop.8.0": "8.0.50727",
     "Microsoft.VisualStudio.Shell.Interop.9.0": "9.0.30729",
-    "NuGet.Indexing": "3.5.0-rtm-*",
-    "NuGet.PackageManagement": "3.5.0-rtm-*",
-    "NuGet.ProjectManagement": "3.5.0-rtm-*",
-    "NuGet.Protocol.Core.Types": "3.5.0-rtm-*",
-    "NuGet.Resolver": "3.5.0-rtm-*"
+    "NuGet.Indexing": "3.6.0-octopus-*",
+    "NuGet.PackageManagement": "3.6.0-octopus-*",
+    "NuGet.ProjectManagement": "3.6.0-octopus-*",
+    "NuGet.Protocol.Core.Types": "3.6.0-octopus-*",
+    "NuGet.Resolver": "3.6.0-octopus-*"
   },
   "frameworks": {
     "net46": {}

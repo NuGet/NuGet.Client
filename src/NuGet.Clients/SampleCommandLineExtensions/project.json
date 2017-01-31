@@ -1,8 +1,8 @@
 {
   "dependencies": {
-    "NuGet.ProjectManagement": "3.5.0-octopus-*",
-    "NuGet.PackageManagement": "3.5.0-octopus-*",
-    "NuGet.Protocol.Core.v2": "3.5.0-octopus-*"
+    "NuGet.ProjectManagement": "3.6.0-octopus-*",
+    "NuGet.PackageManagement": "3.6.0-octopus-*",
+    "NuGet.Protocol.Core.v2": "3.6.0-octopus-*"
   },
   "frameworks": {
     "net46": {}
