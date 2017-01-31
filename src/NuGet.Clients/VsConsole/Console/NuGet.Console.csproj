@@ -71,7 +71,6 @@
     <Compile Include="Utils\ExtensionMethods.cs" />
     <Compile Include="Utils\Marshaler.cs" />
     <Compile Include="Utils\ObjectWithFactory.cs" />
-    <Compile Include="Utils\EventArgs.cs" />
     <Compile Include="Utils\UtilityMethods.cs" />
     <Compile Include="Console\ConsoleDispatcher.cs" />
     <Compile Include="Console\IHostNameMetadata.cs" />

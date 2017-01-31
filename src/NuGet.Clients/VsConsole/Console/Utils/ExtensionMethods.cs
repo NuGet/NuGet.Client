@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -6,6 +6,7 @@ using System.Runtime.InteropServices;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.OLE.Interop;
 using Microsoft.VisualStudio.Text;
+using NuGet.PackageManagement;
 
 namespace NuGetConsole
 {
@@ -28,11 +29,11 @@ namespace NuGetConsole
             }
         }
 
-        public static void Raise<T>(this EventHandler<EventArgs<T>> ev, object sender, T arg)
+        public static void Raise<T>(this EventHandler<NuGetEventArgs<T>> ev, object sender, T arg) where T: class
         {
             if (ev != null)
             {
-                ev(sender, new EventArgs<T>(arg));
+                ev(sender, new NuGetEventArgs<T>(arg));
             }
         }
 
