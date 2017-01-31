@@ -26,8 +26,6 @@ namespace NuGet.PackageManagement.VisualStudio
         /// </summary>
         private readonly Project _project;
 
-        private readonly ProjectSystemProviderContext _context;
-
         // Interface casts
         private IVsBuildPropertyStorage _asIVsBuildPropertyStorage;
         private IVsHierarchy _asIVsHierarchy;
@@ -38,20 +36,14 @@ namespace NuGet.PackageManagement.VisualStudio
         private string _projectFullPath;
         private bool? _isLegacyCSProjPackageReferenceProject;
 
-        public EnvDTEProjectAdapter(Project project, ProjectSystemProviderContext context)
+        public EnvDTEProjectAdapter(Project project)
         {
             if (project == null)
             {
                 throw new ArgumentNullException(nameof(project));
             }
 
-            if (context == null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
             _project = project;
-            _context = context;
         }
 
         public Project DTEProject
@@ -164,42 +156,21 @@ namespace NuGet.PackageManagement.VisualStudio
 
                 if (!_isLegacyCSProjPackageReferenceProject.HasValue)
                 {
-                    var restoreProjectStyle = string.Empty;
-
-                    var hasRestoreProjectStyle = _context
-                        .MSBuildProperties
-                        .TryGetValue(ProjectSystemProviderContext.RestoreProjectStyle, out restoreProjectStyle)
-                        && !string.IsNullOrEmpty(restoreProjectStyle);
-
-                    if (!hasRestoreProjectStyle)
+                    // A legacy CSProj can't be CPS, must cast to VSProject4 and *must* have at least one package
+                    // reference already in the CSProj. In the future this logic may change. For now a user must
+                    // hand code their first package reference. Laid out in longhand for readability.
+                    if (AsIVsHierarchy?.IsCapabilityMatch("CPS") ?? true)
                     {
-                        // A legacy CSProj can't be CPS, must cast to VSProject4 and *must* have at least one package
-                        // reference already in the CSProj. In the future this logic may change. For now a user must
-                        // hand code their first package reference. Laid out in longhand for readability.
-                        if (AsIVsHierarchy?.IsCapabilityMatch("CPS") ?? true)
-                        {
-                            _isLegacyCSProjPackageReferenceProject = false;
-                        }
-                        else if (AsVSProject4 == null ||
-                                (AsVSProject4.PackageReferences?.InstalledPackages?.Length ?? 0) == 0)
-                        {
-                            _isLegacyCSProjPackageReferenceProject = false;
-                        }
-                        else
-                        {
-                            _isLegacyCSProjPackageReferenceProject = true;
-                        }
+                        _isLegacyCSProjPackageReferenceProject = false;
                     }
-                    else if (restoreProjectStyle.Equals(ProjectStyle.PackageReference.ToString(), 
-                        StringComparison.OrdinalIgnoreCase))
+                    else if (AsVSProject4 == null ||
+                        (AsVSProject4.PackageReferences?.InstalledPackages?.Length ?? 0) == 0)
                     {
-                        // if RestoreProjectStyle MSBuild property is set to PackageReference then set this project as 
-                        // Legacy csproj
-                        _isLegacyCSProjPackageReferenceProject = true;
+                        _isLegacyCSProjPackageReferenceProject = false;
                     }
                     else
                     {
-                        _isLegacyCSProjPackageReferenceProject = false;
+                        _isLegacyCSProjPackageReferenceProject = true;
                     }
                 }
 

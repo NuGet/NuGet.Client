@@ -51,7 +51,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             result = null;
 
-            var project = new EnvDTEProjectAdapter(dteProject, context);
+            var project = new EnvDTEProjectAdapter(dteProject);
             if (!project.IsLegacyCSProjPackageReferenceProject)
             {
                 return false;
