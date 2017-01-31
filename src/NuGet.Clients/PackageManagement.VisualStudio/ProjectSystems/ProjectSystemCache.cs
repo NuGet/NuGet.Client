@@ -146,7 +146,6 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 _readerWriterLock.ExitUpgradeableReadLock();
             }
-
         }
 
         public bool ContainsKey(string name)
@@ -339,7 +338,6 @@ namespace NuGet.PackageManagement.VisualStudio
             _projectNamesCache[projectNames.CustomUniqueName] = projectNames;
             _projectNamesCache[projectNames.UniqueName] = projectNames;
             _projectNamesCache[projectNames.FullName] = projectNames;
-
         }
 
         public bool TryGetProjectNameByShortName(string name, out ProjectNames projectNames)
@@ -429,7 +427,6 @@ namespace NuGet.PackageManagement.VisualStudio
             _projectNamesCache.Remove(projectNames.UniqueName);
             _projectNamesCache.Remove(projectNames.FullName);
             _primaryCache.Remove(projectNames.FullName);
-
         }
 
         public void Clear()

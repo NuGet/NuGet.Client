@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using NuGet.PackageManagement;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.VisualStudio;
 using Task = System.Threading.Tasks.Task;
@@ -135,6 +136,29 @@ namespace API.Test
             return batchStartIds.Count == 1 &&
                    batchEndIds.Count == 1 &&
                    batchStartIds[0].Equals(batchEndIds[0], StringComparison.Ordinal);
+        }
+
+        public static int ProjectCacheEventApi(string id, string version)
+        {
+            var dte = ServiceLocator.GetInstance<EnvDTE.DTE>();
+            var vsSolutionManager = ServiceLocator.GetInstance<ISolutionManager>();
+            var installerServices = ServiceLocator.GetInstance<IVsPackageInstaller>();
+            var eventCount = 0;
+            Action<object, NuGetEventArgs<string>> eventHandler = delegate (object sender, NuGetEventArgs<string> e)
+            {
+                eventCount++;
+            };
+
+            vsSolutionManager.AfterNuGetCacheUpdated += eventHandler.Invoke;
+
+            foreach (EnvDTE.Project project in dte.Solution.Projects)
+            {
+                installerServices.InstallPackage(null, project, id, version, false);
+            }
+
+            vsSolutionManager.AfterNuGetCacheUpdated -= eventHandler.Invoke;
+
+            return eventCount;
         }
     }
 }

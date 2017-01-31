@@ -1,4 +1,4 @@
-# basic create for .net core template
+﻿# basic create for .net core template
 function Test-NetCoreConsoleAppCreate {
 
     # Arrange & Act
@@ -407,6 +407,21 @@ function Test-NetCoreWebApp10ProjectReference {
     # Assert
     Assert-NetCoreProjectReference $projectA $projectB
 }
+
+# VSSolutionManager and ProjectSystemCache event test for .net core
+function Test-NetCoreProjectSystemCacheUpdateEvent {
+    
+    # Arrange
+    $projectA = New-NetCoreConsoleApp ConsoleAppA
+    Assert-NetCoreProjectCreation $projectA
+
+    # Act 
+    $result = [API.Test.InternalAPITestHook]::ProjectCacheEventApi("Newtonsoft.Json","9.0.1") 
+
+    # Assert
+    Assert-True $result -eq 1
+}
+
 
 # # transitive package dependency test for .net core
 # # A -> B

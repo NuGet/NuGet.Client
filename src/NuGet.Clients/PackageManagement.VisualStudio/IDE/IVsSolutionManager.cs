@@ -14,7 +14,6 @@ namespace NuGet.PackageManagement.VisualStudio
     /// </summary>
     public interface IVsSolutionManager : ISolutionManager
     {
-
         /// <summary>
         /// Retrieves <see cref="NuGetProject"/> instance associated with VS project.
         /// Creates new instance if not found in project system cache.

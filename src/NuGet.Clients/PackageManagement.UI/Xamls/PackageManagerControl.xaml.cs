@@ -241,8 +241,8 @@ namespace NuGet.PackageManagement.UI
                 var eventProjectFullName = e.Arg;
 
                 // This ensures that we refresh the UI only if the event.project.FullName matches the NuGetProject.FullName.
-                // We also refresh the UI is either of the 2 values are not present.
-                if (e.Arg == null || !projectContainsFullPath || projectFullName == eventProjectFullName)
+                // We also refresh the UI if projectFullPath is not present.
+                if (!projectContainsFullPath || projectFullName == eventProjectFullName)
                 {
                     Refresh();
                 }

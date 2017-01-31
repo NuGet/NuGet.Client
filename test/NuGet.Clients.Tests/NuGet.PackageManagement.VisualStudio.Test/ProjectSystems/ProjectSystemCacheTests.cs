@@ -210,6 +210,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
             // Act
             target.AddProjectRestoreInfo(projectNamesFromFullPath, projectRestoreInfo);
+            target.AddProject(projectNames, dteProject: null, nuGetProject: null);
 
             // Assert
             DependencyGraphSpec actual;
@@ -285,6 +286,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             // Act
             target.AddProjectRestoreInfo(projectNamesFromFullPath, projectRestoreInfo);
             target.AddProjectRestoreInfo(projectNamesFromFullPath, projectRestoreInfo);
+            target.AddProject(projectNames, dteProject: null, nuGetProject: null);
 
             // Assert
             DependencyGraphSpec actual;
