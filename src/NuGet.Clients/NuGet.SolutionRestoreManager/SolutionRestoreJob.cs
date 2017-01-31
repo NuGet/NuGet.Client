@@ -137,6 +137,9 @@ namespace NuGet.SolutionRestoreManager
                 {
                     await RestoreAsync(request.ForceRestore, request.RestoreSource, token);
                 }
+                catch (OperationCanceledException) when (token.IsCancellationRequested)
+                {
+                }
                 catch (Exception e)
                 {
                     // Log the exception to the console and activity log

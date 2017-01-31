@@ -2349,7 +2349,7 @@ namespace NuGet.PackageManagement
 
                 originalLockFile = originalRestoreResult.Result.LockFile;
             }
-            
+
             foreach (var action in nuGetProjectActions)
             {
                 if (action.NuGetProjectActionType == NuGetProjectActionType.Uninstall)
@@ -2579,7 +2579,7 @@ namespace NuGet.PackageManagement
                 else
                 {
                     // Write out the lock file
-                    await RestoreRunner.Commit(projectAction.RestoreResultPair);
+                    await RestoreRunner.CommitAsync(projectAction.RestoreResultPair, token);
                 }
 
                 // Write out a message for each action
