@@ -16,12 +16,12 @@ namespace NuGet.PackageManagement.UI
     /// </summary>
     internal class InstalledPackageFeed : PlainPackageFeedBase
     {
-        private readonly IEnumerable<PackageIdentity> _installedPackages;
+        private readonly IEnumerable<PackageCollectionItem> _installedPackages;
         private readonly IPackageMetadataProvider _metadataProvider;
         private readonly Common.ILogger _logger;
 
         public InstalledPackageFeed(
-            IEnumerable<PackageIdentity> installedPackages,
+            IEnumerable<PackageCollectionItem> installedPackages,
             IPackageMetadataProvider metadataProvider,
             Common.ILogger logger)
         {

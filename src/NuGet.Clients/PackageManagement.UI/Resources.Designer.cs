@@ -1350,7 +1350,7 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Following versions are unavailable due to allowedVersions constraint in package.config.
+        ///   Looks up a localized string similar to Following versions are unavailable due to additional constraints in the project or packages.config.
         /// </summary>
         public static string ToolTip_BlockedVersion {
             get {
@@ -1445,6 +1445,15 @@ namespace NuGet.PackageManagement.UI {
         public static string Version_Blocked {
             get {
                 return ResourceManager.GetString("Version_Blocked", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Blocked by project.
+        /// </summary>
+        public static string Version_Blocked_Generic {
+            get {
+                return ResourceManager.GetString("Version_Blocked_Generic", resourceCulture);
             }
         }
         

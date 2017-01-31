@@ -123,34 +123,22 @@ namespace NuGet.ProjectModel
                 SetValue(writer, "projectStyle", msbuildMetadata.ProjectStyle.ToString());
             }
 
-            if (msbuildMetadata.CrossTargeting)
-            {
-                SetValue(writer, "crossTargeting", msbuildMetadata.CrossTargeting.ToString());
-            }
+            SetValueIfTrue(writer, "crossTargeting", msbuildMetadata.CrossTargeting);
 
-            if (msbuildMetadata.LegacyPackagesDirectory)
-            {
-                SetValue(
+            SetValueIfTrue(
                     writer,
                     "legacyPackagesDirectory",
-                    msbuildMetadata.LegacyPackagesDirectory.ToString());
-            }
+                    msbuildMetadata.LegacyPackagesDirectory);
 
-            if (msbuildMetadata.ValidateRuntimeAssets)
-            {
-                SetValue(
+            SetValueIfTrue(
                     writer,
                     "validateRuntimeAssets",
-                    msbuildMetadata.ValidateRuntimeAssets.ToString());
-            }
+                    msbuildMetadata.ValidateRuntimeAssets);
 
-            if (msbuildMetadata.SkipContentFileWrite)
-            {
-                SetValue(
+            SetValueIfTrue(
                     writer,
                     "skipContentFileWrite",
-                    msbuildMetadata.SkipContentFileWrite.ToString());
-            }
+                    msbuildMetadata.SkipContentFileWrite);
 
             SetArrayValue(writer, "fallbackFolders", msbuildMetadata.FallbackFolders);
             SetArrayValue(writer, "originalTargetFrameworks", msbuildMetadata.OriginalTargetFrameworks);
@@ -262,10 +250,7 @@ namespace NuGet.ProjectModel
             SetValue(writer, "releaseNotes", packageSpec.ReleaseNotes);
             SetValue(writer, "licenseUrl", packageSpec.LicenseUrl);
 
-            if (packageSpec.RequireLicenseAcceptance)
-            {
-                SetValue(writer, "requireLicenseAcceptance", packageSpec.RequireLicenseAcceptance.ToString());
-            }
+            SetValueIfTrue(writer, "requireLicenseAcceptance", packageSpec.RequireLicenseAcceptance);
 
             if (packOptions.PackageType != null)
             {
@@ -303,6 +288,7 @@ namespace NuGet.ProjectModel
                 var expandedMode = dependency.IncludeType != LibraryIncludeFlags.All
                     || dependency.SuppressParent != LibraryIncludeFlagUtils.DefaultSuppressParent
                     || dependency.Type != LibraryDependencyType.Default
+                    || dependency.AutoReferenced
                     || (dependency.LibraryRange.TypeConstraint != LibraryDependencyTarget.Reference
                         && dependency.LibraryRange.TypeConstraint != (LibraryDependencyTarget.All & ~LibraryDependencyTarget.Reference));
 
@@ -351,6 +337,8 @@ namespace NuGet.ProjectModel
                         SetValue(writer, "version", versionString);
                     }
 
+                    SetValueIfTrue(writer, "autoReferenced", dependency.AutoReferenced);
+
                     writer.WriteObjectEnd();
                 }
                 else
@@ -389,6 +377,14 @@ namespace NuGet.ProjectModel
                 }
 
                 writer.WriteObjectEnd();
+            }
+        }
+
+        private static void SetValueIfTrue(IObjectWriter writer, string name, bool value)
+        {
+            if (value)
+            {
+                writer.WriteNameValue(name, value);
             }
         }
 

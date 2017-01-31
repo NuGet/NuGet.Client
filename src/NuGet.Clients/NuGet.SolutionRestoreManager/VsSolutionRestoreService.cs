@@ -341,7 +341,9 @@ namespace NuGet.SolutionRestoreManager
                 LibraryRange = new LibraryRange(
                     name: item.Name,
                     versionRange: GetVersionRange(item),
-                    typeConstraint: LibraryDependencyTarget.Package)
+                    typeConstraint: LibraryDependencyTarget.Package),
+
+                AutoReferenced = GetPropertyBoolOrDefault(item, "AutoReferenced")
             };
 
             MSBuildRestoreUtility.ApplyIncludeFlags(
@@ -385,6 +387,23 @@ namespace NuGet.SolutionRestoreManager
             }
 
             return VersionRange.All;
+        }
+
+        private static bool GetPropertyBoolOrDefault(
+                IVsReferenceItem item, string propertyName)
+        {
+            try
+            {
+                return MSBuildStringUtility.IsTrue(item.Properties?.Item(propertyName)?.Value);
+            }
+            catch (ArgumentException)
+            {
+            }
+            catch (KeyNotFoundException)
+            {
+            }
+
+            return false;
         }
 
         private static string GetPropertyValueOrNull(
