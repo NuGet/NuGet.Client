@@ -57,7 +57,7 @@ namespace NuGet.PackageManagement.UI
 
         private void NuGetProjectChanged(object sender, NuGetProjectEventArgs e)
         {
-            _nugetProjects = _solutionManager.GetNuGetProjects();
+            _nugetProjects = new List<NuGetProject> { e.NuGetProject };
             UpdateInstalledVersion();
         }
 
