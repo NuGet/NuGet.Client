@@ -105,6 +105,7 @@
         <Setter Property="BorderThickness" Value="0" />
         <Setter Property="Margin" Value="0" />
         <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="IsTabStop" Value="False" />
         <Setter Property="Template">
           <Setter.Value>
             <ControlTemplate TargetType="{x:Type ListViewItem}">
@@ -171,6 +172,7 @@
       x:Name="_projectList"
       Margin="0,8,0,0"
       ScrollViewer.VerticalScrollBarVisibility="Visible"
+      KeyboardNavigation.TabNavigation="Continue"
       PreviewKeyUp="ProjectList_PreviewKeyUp"
       ItemsSource="{Binding Projects}"
       Background="{DynamicResource {x:Static local:Brushes.ListPaneBackground}}"
@@ -187,7 +189,9 @@
                   AutomationProperties.AutomationId="SolutionViewCheckBox"
                   IsChecked="{Binding SelectCheckBoxState}"
                   Checked="CheckBox_Checked"
-                  Unchecked="CheckBox_Unchecked" />
+                  Unchecked="CheckBox_Unchecked"
+                  AutomationProperties.Name="{x:Static local:Resources.CheckBox_SelectAllProjects}"
+                  AutomationProperties.HelpText="{x:Static local:Resources.CheckBox_SelectAllProjects_HelpText}"/>
               </GridViewColumnHeader>
             </GridViewColumn.Header>
 
@@ -195,7 +199,9 @@
               <DataTemplate>
                 <CheckBox
                   AutomationProperties.AutomationId="{Binding ProjectName, Mode=OneWay, StringFormat='ProjectCheckBox_{0}'}"
-                  IsChecked="{Binding IsSelected}" />
+                  IsChecked="{Binding IsSelected}"
+                  AutomationProperties.Name="{Binding ProjectName, Mode=OneWay}"
+                  AutomationProperties.HelpText="{Binding ProjectName, Mode=OneWay, StringFormat='{x:Static local:Resources.CheckBox_SelectProject_HelpText}'}"/>
               </DataTemplate>
             </GridViewColumn.CellTemplate>
           </GridViewColumn>
@@ -285,6 +291,7 @@
           VerticalAlignment="Center"
           AutomationProperties.AutomationId="InstalledVersion"
           Margin="4,0,0,0"
+          Focusable="True"
           Text="{Binding InstalledVersions}" />
       </Border>
 

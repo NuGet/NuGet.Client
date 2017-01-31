@@ -322,6 +322,33 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Select All Projects.
+        /// </summary>
+        public static string CheckBox_SelectAllProjects {
+            get {
+                return ResourceManager.GetString("CheckBox_SelectAllProjects", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Select this checkbox to install the NuGet Package to all projects in the solution.
+        /// </summary>
+        public static string CheckBox_SelectAllProjects_HelpText {
+            get {
+                return ResourceManager.GetString("CheckBox_SelectAllProjects_HelpText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Select this checkbox to install the NuGet Package to the project &apos;{0}&apos;.
+        /// </summary>
+        public static string CheckBox_SelectProject_HelpText {
+            get {
+                return ResourceManager.GetString("CheckBox_SelectProject_HelpText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Show preview window.
         /// </summary>
         public static string Checkbox_ShowPreviewWindow {

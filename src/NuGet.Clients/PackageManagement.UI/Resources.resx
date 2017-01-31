@@ -617,4 +617,16 @@ Packages installed into Website projects will not be restored during build. Cons
   <data name="Text_PackageFormatApply" xml:space="preserve">
     <value>The package manager format will apply to the following projects in this Solution</value>
   </data>
+  <data name="CheckBox_SelectProject_HelpText" xml:space="preserve">
+    <value>Select this checkbox to install the NuGet Package to the project '{0}'</value>
+    <comment>Help text for the checkbox to install a NuGet package to a specific project.</comment>
+  </data>
+  <data name="CheckBox_SelectAllProjects" xml:space="preserve">
+    <value>Select All Projects</value>
+    <comment>Name for the checkbox to be narrated by UI Automation Tree</comment>
+  </data>
+  <data name="CheckBox_SelectAllProjects_HelpText" xml:space="preserve">
+    <value>Select this checkbox to install the NuGet Package to all projects in the solution</value>
+    <comment>Help text for the checkbox to be narrated by UI Automation Tree</comment>
+  </data>
 </root>
