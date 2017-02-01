@@ -32,7 +32,7 @@
     <VsixOutputDirName>VS15</VsixOutputDirName>
     <IsProductComponent>true</IsProductComponent>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(VisualStudioVersion)' == '15.0' AND '$(Insertable)' == 'true'">
+  <PropertyGroup Condition="'$(VisualStudioVersion)' == '15.0' AND '$(IsInsertable)' == 'true'">
       <VsixOutputDirName>VS15</VsixOutputDirName>
       <IsProductComponent>true</IsProductComponent>
       <ExtensionInstallationRoot>CommonExtensions</ExtensionInstallationRoot>
@@ -321,10 +321,10 @@
     <ItemGroup Condition="'$(VisualStudioVersion)' == '14.0'">
       <SourceVsixManifest Include="source.extension.vs14.vsixmanifest" />
     </ItemGroup>
-    <ItemGroup Condition="'$(Insertable)' != 'true' AND '$(VisualStudioVersion)' == '15.0'">
+    <ItemGroup Condition="'$(IsInsertable)' != 'true' AND '$(VisualStudioVersion)' == '15.0'">
       <SourceVsixManifest Include="source.extension.vs15.vsixmanifest" />
     </ItemGroup>
-    <ItemGroup Condition="'$(Insertable)' == 'true' AND '$(VisualStudioVersion)' == '15.0'">
+    <ItemGroup Condition="'$(IsInsertable)' == 'true' AND '$(VisualStudioVersion)' == '15.0'">
       <SourceVsixManifest Include="source.extension.vs15.insertable.vsixmanifest" />
     </ItemGroup>
   </Target>
@@ -344,8 +344,8 @@
     </None>
   </ItemGroup>
   <ItemGroup />
-  <Target Name="AfterBuild" DependsOnTargets="AfterBuild14;AfterBuild15;AfterBuildIns15"/>
-  <Target Name="AfterBuild14"  Condition="'$(VisualStudioVersion)' == '14.0'">
+  <Target Name="AfterBuild" DependsOnTargets="PublishVS14;PublishVS15;PublishVS15Insertable"/>
+  <Target Name="PublishVS14"  Condition="'$(VisualStudioVersion)' == '14.0'">
     <PropertyGroup>
       <PublishDestination>$(ArtifactRoot)\$(VsixOutputDirName)</PublishDestination>
     </PropertyGroup>
@@ -358,30 +358,36 @@
     <Message Text="Copying symbols file '%(NuGetSymbolFiles.Identity)'" Condition=" '@(NuGetSymbolFiles)' != '' " />
     <Copy SourceFiles="@(NuGetSymbolFiles)" DestinationFolder="$(PublishDestination)\symbols" OverwriteReadOnlyFiles="true" />
   </Target>
-  <Target Name="AfterBuild15" Condition="'$(VisualStudioVersion)' == '15.0'">
+  <Target Name="PublishVS15" Condition="'$(VisualStudioVersion)' == '15.0'">
     <PropertyGroup>
       <PublishDestination>$(ArtifactRoot)\$(VsixOutputDirName)</PublishDestination>
     </PropertyGroup>
+    <ItemGroup>
+      <ManifestPath Include="$(OutputPath)Microsoft.VisualStudio.NuGet.Core.json"/>
+    </ItemGroup>
     <Message Text="Publishing VS15 VSIX package files..." Importance="high" />
     <Message Text="$(TargetVsixContainer) -&gt; $(PublishDestination)" Importance="high" />
     <Copy SourceFiles="$(TargetVsixContainer)" DestinationFolder="$(PublishDestination)" OverwriteReadOnlyFiles="true" />
-    <Message Text="$(ArtifactRoot)\NuGet.Tools\15.0\$(Configuration)\Microsoft.VisualStudio.NuGet.Core.json -&gt; $(PublishDestination)" Importance="high" />
-    <Copy SourceFiles="$(ArtifactRoot)\NuGet.Tools\15.0\$(Configuration)\Microsoft.VisualStudio.NuGet.Core.json" DestinationFolder="$(PublishDestination)" OverwriteReadOnlyFiles="true" />
+    <Message Text="@(ManifestPath) -&gt; $(PublishDestination)" Importance="high" />
+    <Copy SourceFiles="@(ManifestPath)" DestinationFolder="$(PublishDestination)" OverwriteReadOnlyFiles="true" />
     <ItemGroup>
       <NuGetSymbolFiles Include="$(OutputPath)NuGet*.pdb" />
     </ItemGroup>
     <Message Text="Copying symbols file '%(NuGetSymbolFiles.Identity)'" Condition=" '@(NuGetSymbolFiles)' != '' " />
     <Copy SourceFiles="@(NuGetSymbolFiles)" DestinationFolder="$(PublishDestination)\symbols" OverwriteReadOnlyFiles="true" />
   </Target>
-  <Target Name="AfterBuildIns15" Condition="'$(Insertable)' == 'true' AND '$(VisualStudioVersion)' == '15.0'">
+  <Target Name="PublishVS15Insertable" Condition="'$(IsInsertable)' == 'true' AND '$(VisualStudioVersion)' == '15.0'">
     <PropertyGroup>
       <PublishDestination>$(ArtifactRoot)\$(VsixOutputDirName)</PublishDestination>
     </PropertyGroup>
+    <ItemGroup>
+      <ManifestPath Include="$(OutputPath)Microsoft.VisualStudio.NuGet.Core.json"/>
+    </ItemGroup>
     <Message Text="Publishing VS15 Insertable VSIX package files..." Importance="high" />
     <Message Text="$(TargetVsixContainer) -&gt; $(PublishDestination)\Insertable" Importance="high" />
     <Copy SourceFiles="$(TargetVsixContainer)" DestinationFolder="$(PublishDestination)\Insertable" OverwriteReadOnlyFiles="true" />
-    <Message Text="$(ArtifactRoot)\NuGet.Tools\15.0\$(Configuration)\Microsoft.VisualStudio.NuGet.Core.json -&gt; $(PublishDestination)" Importance="high" />
-    <Copy SourceFiles="$(ArtifactRoot)\NuGet.Tools\15.0\$(Configuration)\Microsoft.VisualStudio.NuGet.Core.json" DestinationFolder="$(PublishDestination)" OverwriteReadOnlyFiles="true" />
+    <Message Text="@(ManifestPath) -&gt; $(PublishDestination)" Importance="high" />
+    <Copy SourceFiles="@(ManifestPath)" DestinationFolder="$(PublishDestination)" OverwriteReadOnlyFiles="true" />
     <ItemGroup>
       <NuGetSymbolFiles Include="$(OutputPath)NuGet*.pdb" />
     </ItemGroup>

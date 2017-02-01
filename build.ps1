@@ -138,10 +138,10 @@ Invoke-BuildStep 'Building NuGet.Tools.vsix for VS Insertion - VS15 Toolset' {
         -Configuration $Configuration `
         -ReleaseLabel $ReleaseLabel `
         -BuildNumber $BuildNumber `
-        -Parameters @{'Insertable'='true'} `
+        -Parameters @{'IsInsertable'='true'} `
         -ToolsetVersion 15 `
     } `
-    -skip:$SkipVS15 `
+    -skip:($SkipVS15 -or -not $CI) `
     -ev +BuildErrors
 
 ## Building the VS14 Tooling solution
