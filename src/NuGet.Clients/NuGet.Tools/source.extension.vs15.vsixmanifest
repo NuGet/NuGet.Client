@@ -7,7 +7,6 @@
     <PackageId>Microsoft.VisualStudio.NuGet.Core</PackageId>
     <Icon>Resources/nuget_96.png</Icon>
     <PreviewImage>Resources/nuget_256.png</PreviewImage>
-    <ShortcutPath>..\CommonExtensions\Microsoft\NuGet</ShortcutPath>
   </Metadata>
   <Prerequisites>
     <Prerequisite Id="Microsoft.VisualStudio.Component.CoreEditor" Version="[15.0,16.0)" DisplayName="Visual Studio core editor" />
