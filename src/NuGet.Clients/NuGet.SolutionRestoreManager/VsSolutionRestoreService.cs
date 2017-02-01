@@ -348,7 +348,8 @@ namespace NuGet.SolutionRestoreManager
                     versionRange: GetVersionRange(item),
                     typeConstraint: LibraryDependencyTarget.Package),
 
-                AutoReferenced = GetPropertyBoolOrDefault(item, "AutoReferenced")
+                // Mark packages coming from the SDK as AutoReferenced
+                AutoReferenced = GetPropertyBoolOrDefault(item, "IsImplicitlyDefined")
             };
 
             MSBuildRestoreUtility.ApplyIncludeFlags(
