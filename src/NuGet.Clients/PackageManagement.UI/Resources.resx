@@ -585,7 +585,7 @@ Packages installed into Website projects will not be restored during build. Cons
     <comment>This test goes immediately after the document link.</comment>
   </data>
   <data name="CheckBox_DefaultPackageFormat" xml:space="preserve">
-    <value>Make this package manager format the default and do not show this dialog again.</value>
+    <value>Allow format selection on first package install</value>
   </data>
   <data name="RadioBtn_PackageRef" xml:space="preserve">
     <value>PackageReference in project file</value>

@@ -268,7 +268,7 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Make this package manager format the default and do not show this dialog again..
+        ///   Looks up a localized string similar to Allow format selection on first package install.
         /// </summary>
         public static string CheckBox_DefaultPackageFormat {
             get {

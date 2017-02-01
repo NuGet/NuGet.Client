@@ -360,7 +360,7 @@ namespace NuGet.PackageManagement.UI
             if (newProjectNames.Count > 0)
             {
                 var packageManagementFormat = new PackageManagementFormat(uiService.Settings);
-                if (packageManagementFormat.IsDisabled)
+                if (!packageManagementFormat.Enabled)
                 {
                     // user disabled this prompt either through Tools->options or previous interaction of this dialog.
                     // now check for default package format, if its set to PackageReference then update the project.
