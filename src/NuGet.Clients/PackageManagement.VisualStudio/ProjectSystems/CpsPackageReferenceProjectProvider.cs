@@ -22,9 +22,9 @@ namespace NuGet.PackageManagement.VisualStudio
     [Microsoft.VisualStudio.Utilities.Order(After = nameof(ProjectKNuGetProjectProvider))]
     public class CpsPackageReferenceProjectProvider : IProjectSystemProvider
     {
-        private readonly string RestoreProjectStyle = "RestoreProjectStyle";
-        private readonly string TargetFramework = "TargetFramework";
-        private readonly string TargetFrameworks = "TargetFrameworks";
+        private const string RestoreProjectStyle = "RestoreProjectStyle";
+        private const string TargetFramework = "TargetFramework";
+        private const string TargetFrameworks = "TargetFrameworks";
 
         private readonly IProjectSystemCache _projectSystemCache;
 
