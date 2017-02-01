@@ -261,24 +261,62 @@ namespace NuGet.SolutionRestoreManager.Test
             Assert.Equal("1.2.0-beta1", actualProjectSpec.Version.ToString());
         }
 
-        [Fact]
-        public async Task NominateProjectAsync_WithMultiplePackageVersions_Fails()
+        [Theory]
+        [InlineData("1.2.3", "1.2.3")]
+        [InlineData("1.2.0-beta1", "1.2.0-beta1")]
+        [InlineData("1.0.0", "1.0.0.0")]
+        public async Task NominateProjectAsync_WithIdenticalPackageVersions_Passes(string version1, string version2)
         {
-            const string projectJson = @"{
-    ""version"": ""1.2.0-beta1"",
-    ""frameworks"": {
-        ""netcoreapp1.0"": { }
-    }
-}";
-            var cps = NewCpsProject(projectJson);
+            var cps = NewCpsProject("{ }");
             var projectFullPath = cps.ProjectFullPath;
             var pri = cps.Builder
+                .WithTargetFrameworkInfo(
+                    new VsTargetFrameworkInfo(
+                        "netcoreapp1.0",
+                        Enumerable.Empty<IVsReferenceItem>(),
+                        Enumerable.Empty<IVsReferenceItem>(),
+                        new[] { new VsProjectProperty("PackageVersion", version1) }))
                 .WithTargetFrameworkInfo(
                     new VsTargetFrameworkInfo(
                         "net46",
                         Enumerable.Empty<IVsReferenceItem>(),
                         Enumerable.Empty<IVsReferenceItem>(),
-                        new[] { new VsProjectProperty("PackageVersion", "1.0.0") }))
+                        new[] { new VsProjectProperty("PackageVersion", version2) }))
+                .Build();
+
+            // Act
+            var actualRestoreSpec = await CaptureNominateResultAsync(projectFullPath, cps.ProjectRestoreInfo);
+
+            // Assert
+            SpecValidationUtility.ValidateDependencySpec(actualRestoreSpec);
+
+            var actualProjectSpec = actualRestoreSpec.GetProjectSpec(projectFullPath);
+            Assert.NotNull(actualProjectSpec);
+            Assert.Equal(version1, actualProjectSpec.Version.ToString());
+        }
+
+        [Theory]
+        [InlineData("1.0.0", "1.2.3")]
+        [InlineData("1.0.0", "")]
+        [InlineData("1.0.0", "   ")]
+        [InlineData("1.0.0", null)]
+        public async Task NominateProjectAsync_WithDifferentPackageVersions_Fails(string version1, string version2)
+        {
+            var cps = NewCpsProject("{ }");
+            var projectFullPath = cps.ProjectFullPath;
+            var pri = cps.Builder
+                .WithTargetFrameworkInfo(
+                    new VsTargetFrameworkInfo(
+                        "netcoreapp1.0",
+                        Enumerable.Empty<IVsReferenceItem>(),
+                        Enumerable.Empty<IVsReferenceItem>(),
+                        new[] { new VsProjectProperty("PackageVersion", version1) }))
+                .WithTargetFrameworkInfo(
+                    new VsTargetFrameworkInfo(
+                        "net46",
+                        Enumerable.Empty<IVsReferenceItem>(),
+                        Enumerable.Empty<IVsReferenceItem>(),
+                        new[] { new VsProjectProperty("PackageVersion", version2) }))
                 .Build();
 
             var cache = Mock.Of<IProjectSystemCache>();
