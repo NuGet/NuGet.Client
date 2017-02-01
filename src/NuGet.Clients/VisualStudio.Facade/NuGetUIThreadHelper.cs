@@ -12,6 +12,10 @@ namespace NuGet.PackageManagement.UI
 {
     public static class NuGetUIThreadHelper
     {
+        /// <summary>
+        /// Initially it will be null and will be initialized to CPS JTF when there is CPS
+        /// based project is being created.
+        /// </summary>
         private static Lazy<JoinableTaskFactory> _joinableTaskFactory;
 
         /// <summary>
