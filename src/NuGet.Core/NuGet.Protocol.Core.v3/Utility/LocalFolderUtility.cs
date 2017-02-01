@@ -216,9 +216,9 @@ namespace NuGet.Protocol
             // Find the matching nupkg for each sub directory.
             if (rootDirInfo.Exists)
             {
-                foreach (var dir in rootDirInfo.GetDirectories())
+                foreach (var dir in GetDirectoriesSafe(rootDirInfo, log))
                 {
-                    var package = GetPackagesConfigFolderPackage(dir);
+                    var package = GetPackagesConfigFolderPackage(dir, log);
 
                     // Ensure that the nupkg file exists
                     if (package != null)
@@ -261,7 +261,7 @@ namespace NuGet.Protocol
             {
                 var searchPattern = GetPackagesConfigFolderSearchPattern(id);
 
-                foreach (var dir in rootDirInfo.GetDirectories(searchPattern, SearchOption.TopDirectoryOnly))
+                foreach (var dir in GetDirectoriesSafe(rootDirInfo, searchPattern, SearchOption.TopDirectoryOnly, log))
                 {
                     // Check the id and version of the path, if the id matches and the version
                     // is valid this will be non-null;
@@ -269,7 +269,7 @@ namespace NuGet.Protocol
 
                     if (dirVersion != null)
                     {
-                        var package = GetPackagesConfigFolderPackage(dir);
+                        var package = GetPackagesConfigFolderPackage(dir, log);
 
                         if (package != null)
                         {
@@ -309,9 +309,9 @@ namespace NuGet.Protocol
             // Try matching the exact version format
             var idVersion = $"{identity.Id}.{identity.Version.ToString()}";
             var expectedPath = Path.Combine(rootDirInfo.FullName, idVersion, $"{idVersion}{PackagingCoreConstants.NupkgExtension}");
-            var expectedFile = new FileInfo(expectedPath);
+            var expectedFile = CreateFileInfoIfValidOrNull(expectedPath, log);
 
-            if (expectedFile.Exists)
+            if (expectedFile != null && expectedFile.Exists)
             {
                 var localPackage = GetPackageFromNupkg(expectedFile);
 
@@ -328,7 +328,7 @@ namespace NuGet.Protocol
             {
                 var searchPattern = GetPackagesConfigFolderSearchPattern(identity.Id);
 
-                foreach (var dir in rootDirInfo.GetDirectories(searchPattern, SearchOption.TopDirectoryOnly))
+                foreach (var dir in GetDirectoriesSafe(rootDirInfo, searchPattern, SearchOption.TopDirectoryOnly, log))
                 {
                     // Check the id and version of the path, if the id matches and the version
                     // is valid this will be non-null;
@@ -336,7 +336,7 @@ namespace NuGet.Protocol
 
                     if (identity.Version == dirVersion)
                     {
-                        var localPackage = GetPackagesConfigFolderPackage(dir);
+                        var localPackage = GetPackagesConfigFolderPackage(dir, log);
 
                         // Verify that the nuspec matches the expected id/version.
                         if (localPackage != null && identity.Equals(localPackage.Identity))
@@ -406,7 +406,7 @@ namespace NuGet.Protocol
         /// Return the package nupkg from a packages.config folder sub directory.
         /// </summary>
         /// <param name="dir">Package directory in the format id.version</param>
-        private static LocalPackageInfo GetPackagesConfigFolderPackage(DirectoryInfo dir)
+        private static LocalPackageInfo GetPackagesConfigFolderPackage(DirectoryInfo dir, ILogger log)
         {
             LocalPackageInfo result = null;
 
@@ -414,9 +414,9 @@ namespace NuGet.Protocol
                 dir.FullName,
                 $"{dir.Name}{PackagingCoreConstants.NupkgExtension}");
 
-            var nupkgFile = new FileInfo(nupkgPath);
+            var nupkgFile = CreateFileInfoIfValidOrNull(nupkgPath, log);
 
-            if (nupkgFile.Exists)
+            if (nupkgFile != null && nupkgFile.Exists)
             {
                 result = GetPackageFromNupkg(nupkgFile);
             }
@@ -991,6 +991,20 @@ namespace NuGet.Protocol
             return new DirectoryInfo[0];
         }
 
+        private static DirectoryInfo[] GetDirectoriesSafe(DirectoryInfo root, string filter, SearchOption searchOption, ILogger log)
+        {
+            try
+            {
+                return root.GetDirectories(filter, searchOption);
+            }
+            catch (Exception e)
+            {
+                log.LogWarning(e.Message);
+            }
+
+            return new DirectoryInfo[0];
+        }
+
         /// <summary>
         /// Retrieve files and log exceptions that occur.
         /// </summary>
@@ -1075,6 +1089,20 @@ namespace NuGet.Protocol
             }
 
             return null;
+        }
+
+        private static FileInfo CreateFileInfoIfValidOrNull(string localPath, ILogger log)
+        {
+            FileInfo fileInfo = null;
+            try
+            {
+                fileInfo = new FileInfo(localPath);
+            }
+            catch (PathTooLongException e)
+            {
+                log.LogDebug(e.Message);
+            }
+            return fileInfo;
         }
     }
 }

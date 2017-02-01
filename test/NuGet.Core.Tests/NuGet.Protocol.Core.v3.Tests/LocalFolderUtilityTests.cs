@@ -241,6 +241,30 @@ namespace NuGet.Protocol.Core.v3.Tests
         }
 
         [Fact]
+        public void LocalFolderUtility_GetPackagesConfigFolderPackage_LongPackageIdDoesNotThrow()
+        {
+            using (var root = TestDirectory.Create())
+            {
+                // Arrange
+                var testLogger = new TestLogger();
+                var id = "aa";
+
+                for (int i = 0; i < 200; i++)
+                {
+                    id += "aa";
+                }
+
+                var a = new PackageIdentity(id, NuGetVersion.Parse("1.0.0"));
+                
+                // Act
+                var foundA = LocalFolderUtility.GetPackagesConfigFolderPackage(root, a, testLogger);
+
+                // Assert
+                Assert.Null(foundA);
+            }
+        }
+
+        [Fact]
         public void LocalFolderUtility_GetPackagesConfigFolderPackage_NonNormalizedInFolder()
         {
             using (var root = TestDirectory.Create())
