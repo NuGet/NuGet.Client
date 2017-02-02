@@ -96,14 +96,14 @@ namespace NuGet.PackageManagement.UI
 
                     if (range != null && !VersionRange.All.Equals(range))
                     {
-                        var constaint = new ProjectVersionConstraint()
+                        var constraint = new ProjectVersionConstraint()
                         {
                             ProjectName = project.GetMetadata<string>(NuGetProjectMetadataKeys.Name),
                             VersionRange = range,
                             IsPackagesConfig = true,
                         };
 
-                        _projectVersionConstraints.Add(constaint);
+                        _projectVersionConstraints.Add(constraint);
                     }
                 }
                 else if (project is BuildIntegratedNuGetProject)
@@ -121,7 +121,7 @@ namespace NuGet.PackageManagement.UI
                     if (autoReferenced != null)
                     {
                         // Add constraint for auto referenced package.
-                        var constaint = new ProjectVersionConstraint()
+                        var constraint = new ProjectVersionConstraint()
                         {
                             ProjectName = project.GetMetadata<string>(NuGetProjectMetadataKeys.Name),
                             VersionRange = new VersionRange(
@@ -133,7 +133,7 @@ namespace NuGet.PackageManagement.UI
                             IsAutoReferenced = true,
                         };
 
-                        _projectVersionConstraints.Add(constaint);
+                        _projectVersionConstraints.Add(constraint);
                     }
                 }
             }

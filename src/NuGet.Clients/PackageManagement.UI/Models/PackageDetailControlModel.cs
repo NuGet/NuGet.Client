@@ -160,7 +160,7 @@ namespace NuGet.PackageManagement.UI
                     autoReferenced = true;
                 }
 
-                _versions.Add(new DisplayVersion(version, string.Empty, isCurrentInstalled: installed, autoReferenced: autoReferenced));
+                _versions.Add(new DisplayVersion(version, additionalInfo: string.Empty, isCurrentInstalled: installed, autoReferenced: autoReferenced));
             }
 
             // Disable controls if this is an auto referenced package.
