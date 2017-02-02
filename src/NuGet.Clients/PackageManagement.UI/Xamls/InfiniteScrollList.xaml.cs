@@ -13,11 +13,10 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
+using Microsoft.VisualStudio.Threading;
 using NuGet.Common;
-using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
 using Mvs = Microsoft.VisualStudio.Shell;
-using Microsoft.VisualStudio.Threading;
 using Resx = NuGet.PackageManagement.UI;
 
 namespace NuGet.PackageManagement.UI
@@ -113,7 +112,7 @@ namespace NuGet.PackageManagement.UI
             {
                 _itemsLock.Release();
             }
-            
+
 
             _selectedCount = 0;
 
@@ -404,7 +403,7 @@ namespace NuGet.PackageManagement.UI
             _loadingStatusBar.ItemsLoaded = 0;
         }
 
-        public void UpdatePackageStatus(PackageIdentity[] installedPackages)
+        public void UpdatePackageStatus(PackageCollectionItem[] installedPackages)
         {
             // in this case, we only need to update PackageStatus of
             // existing items in the package list

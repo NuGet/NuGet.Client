@@ -197,16 +197,7 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             return libraries
                 .Where(l => l.LibraryRange.TypeConstraint == LibraryDependencyTarget.Package)
-                .Select(l => ToPackageReference(l, targetFramework));
-        }
-
-        private static PackageReference ToPackageReference(LibraryDependency library, NuGetFramework targetFramework)
-        {
-            var identity = new PackageIdentity(
-                library.LibraryRange.Name,
-                library.LibraryRange.VersionRange.MinVersion);
-
-            return new PackageReference(identity, targetFramework);
+                .Select(l => new BuildIntegratedPackageReference(l, targetFramework));
         }
 
         public override async Task<bool> InstallPackageAsync(

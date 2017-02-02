@@ -79,6 +79,7 @@
       AutomationProperties.AutomationId="Project_Button_Uninstall"
       HorizontalAlignment="Left"
       Visibility="{Binding InstalledVersion, Converter={StaticResource NullToVisibilityConverter}, Mode=OneWay}"
+      IsEnabled="{Binding SelectedVersion.AutoReferenced,Converter={StaticResource NotNullOrTrueToBooleanConverter}}"
       Click="UninstallButton_Clicked"
       Content="{x:Static local:Resources.Button_Uninstall}" />
 
