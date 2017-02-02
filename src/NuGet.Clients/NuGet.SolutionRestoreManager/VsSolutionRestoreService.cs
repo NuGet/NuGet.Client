@@ -344,7 +344,7 @@ namespace NuGet.SolutionRestoreManager
                     typeConstraint: LibraryDependencyTarget.Package),
 
                 // Mark packages coming from the SDK as AutoReferenced
-                AutoReferenced = GetPropertyBoolOrDefault(item, "IsImplicitlyDefined")
+                AutoReferenced = GetPropertyBoolOrFalse(item, "IsImplicitlyDefined")
             };
 
             MSBuildRestoreUtility.ApplyIncludeFlags(
@@ -390,7 +390,7 @@ namespace NuGet.SolutionRestoreManager
             return VersionRange.All;
         }
 
-        private static bool GetPropertyBoolOrDefault(
+        private static bool GetPropertyBoolOrFalse(
                 IVsReferenceItem item, string propertyName)
         {
             try
