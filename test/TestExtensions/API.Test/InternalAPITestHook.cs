@@ -25,6 +25,11 @@ namespace API.Test
             {
                 return _cacheUpdateEventCount;
             }
+
+            set
+            {
+                _cacheUpdateEventCount = value;
+            }
         }
 
         public static void InstallLatestPackageApi(string id, bool prerelease)
@@ -164,16 +169,13 @@ namespace API.Test
             var dte = ServiceLocator.GetInstance<EnvDTE.DTE>();
             var vsSolutionManager = ServiceLocator.GetInstance<ISolutionManager>();
             var installerServices = ServiceLocator.GetInstance<IVsPackageInstaller>();
-            _cacheUpdateEventCount = 0;
-
             foreach (EnvDTE.Project project in dte.Solution.Projects)
             {
                 installerServices.InstallPackage(null, project, id, version, false);
             }
-
         }
 
-        public static void ProjectCacheEventApi_DettachHandler()
+        public static void ProjectCacheEventApi_DetachHandler()
         {
             var vsSolutionManager = ServiceLocator.GetInstance<ISolutionManager>();
             vsSolutionManager.AfterNuGetCacheUpdated -= _cacheUpdateEventHandler.Invoke;

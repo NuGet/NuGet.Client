@@ -415,12 +415,20 @@ function Test-NetCoreProjectSystemCacheUpdateEvent {
     $projectA = New-NetCoreConsoleApp ConsoleAppA
     Assert-NetCoreProjectCreation $projectA
 
-    # Act 
-    [API.Test.InternalAPITestHook]::ProjectCacheEventApi_AttachHandler()
-    [API.Test.InternalAPITestHook]::ProjectCacheEventApi_InstallPackage("Newtonsoft.Json", "9.0.1")
-    Build-Solution
-    [API.Test.InternalAPITestHook]::ProjectCacheEventApi_DettachHandler()
-    $result = [API.Test.InternalAPITestHook]::CacheUpdateEventCount 
+    # Act
+    Try
+    {
+        [API.Test.InternalAPITestHook]::ProjectCacheEventApi_AttachHandler()
+        [API.Test.InternalAPITestHook]::CacheUpdateEventCount = 0
+        [API.Test.InternalAPITestHook]::ProjectCacheEventApi_InstallPackage("Newtonsoft.Json", "9.0.1")
+        $projectA.Save($projectA.FullName)
+        Build-Solution
+    }
+    Finally 
+    {
+        [API.Test.InternalAPITestHook]::ProjectCacheEventApi_DetachHandler()
+        $result = [API.Test.InternalAPITestHook]::CacheUpdateEventCount 
+    }
 
     # Assert
     Assert-True $result -eq 1
