@@ -363,13 +363,13 @@
       <PublishDestination>$(ArtifactRoot)\$(VsixOutputDirName)</PublishDestination>
     </PropertyGroup>
     <ItemGroup>
-      <ManifestPath Include="$(OutputPath)Microsoft.VisualStudio.NuGet.Core.json"/>
+      <PackageManifest Include="$(OutputPath)Microsoft.VisualStudio.NuGet.Core.json"/>
     </ItemGroup>
     <Message Text="Publishing VS15 VSIX package files..." Importance="high" />
     <Message Text="$(TargetVsixContainer) -&gt; $(PublishDestination)" Importance="high" />
     <Copy SourceFiles="$(TargetVsixContainer)" DestinationFolder="$(PublishDestination)" OverwriteReadOnlyFiles="true" />
-    <Message Text="@(ManifestPath) -&gt; $(PublishDestination)" Importance="high" />
-    <Copy SourceFiles="@(ManifestPath)" DestinationFolder="$(PublishDestination)" OverwriteReadOnlyFiles="true" />
+    <Message Text="@(PackageManifest) -&gt; $(PublishDestination)" Importance="high" />
+    <Copy SourceFiles="@(PackageManifest)" DestinationFolder="$(PublishDestination)" OverwriteReadOnlyFiles="true" />
     <ItemGroup>
       <NuGetSymbolFiles Include="$(OutputPath)NuGet*.pdb" />
     </ItemGroup>
@@ -381,13 +381,13 @@
       <PublishDestination>$(ArtifactRoot)\$(VsixOutputDirName)</PublishDestination>
     </PropertyGroup>
     <ItemGroup>
-      <ManifestPath Include="$(OutputPath)Microsoft.VisualStudio.NuGet.Core.json"/>
+      <PackageManifest Include="$(OutputPath)Microsoft.VisualStudio.NuGet.Core.json"/>
     </ItemGroup>
     <Message Text="Publishing VS15 Insertable VSIX package files..." Importance="high" />
     <Message Text="$(TargetVsixContainer) -&gt; $(PublishDestination)\Insertable" Importance="high" />
     <Copy SourceFiles="$(TargetVsixContainer)" DestinationFolder="$(PublishDestination)\Insertable" OverwriteReadOnlyFiles="true" />
-    <Message Text="@(ManifestPath) -&gt; $(PublishDestination)" Importance="high" />
-    <Copy SourceFiles="@(ManifestPath)" DestinationFolder="$(PublishDestination)" OverwriteReadOnlyFiles="true" />
+    <Message Text="@(PackageManifest) -&gt; $(PublishDestination)" Importance="high" />
+    <Copy SourceFiles="@(PackageManifest)" DestinationFolder="$(PublishDestination)" OverwriteReadOnlyFiles="true" />
     <ItemGroup>
       <NuGetSymbolFiles Include="$(OutputPath)NuGet*.pdb" />
     </ItemGroup>
