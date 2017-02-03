@@ -77,16 +77,26 @@ namespace NuGetConsole.Host.PowerShell.Implementation
 
         // store the current solution directory which will be to check the solution change while executing init scripts.
         private string _currentSolutionDirectory;
-        
+
+        /// <summary>
+        /// An initial restore event used to compare against future (real) restore events. This value endures on
+        /// <see cref="_latestRestore"/> and <see cref="_currentRestore"/> as long as no restore occurs. Note that the
+        /// hash mentioned here cannot collide with a real hash.
+        /// </summary>
+        private static readonly SolutionRestoredEventArgs InitialRestore = new SolutionRestoredEventArgs(
+            isSuccess: true,
+            solutionSpecHash: "initial");
+
         /// <summary>
         /// This field tracks information about the latest restore.
         /// </summary>
-        private SolutionRestoredEventArgs _latestRestore;
+        private SolutionRestoredEventArgs _latestRestore = InitialRestore;
 
         /// <summary>
         /// This field tracks information about the most recent restore that had scripts executed for it.
         /// </summary>
-        private SolutionRestoredEventArgs _currentRestore;
+        private SolutionRestoredEventArgs _currentRestore = InitialRestore;
+
 
         protected PowerShellHost(string name, IRestoreEvents restoreEvents, IRunspaceManager runspaceManager)
         {
@@ -379,6 +389,9 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                 if (ShouldNoOpDueToRestore(latestRestore) &&
                     ShouldNoOpDueToSolutionDirectory(latestSolutionDirectory))
                 {
+                    _currentRestore = latestRestore;
+                    _currentSolutionDirectory = latestSolutionDirectory;
+
                     return;
                 }
 
@@ -738,6 +751,11 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             UpdateActiveSource(ActivePackageSource);
         }
 
+        private void RestoreEvents_SolutionRestoreCompleted(SolutionRestoredEventArgs args)
+        {
+            _latestRestore = args;
+        }
+
         private bool ShouldNoOpDueToRestore(SolutionRestoredEventArgs latestRestore)
         {
             return latestRestore != null &&
@@ -751,11 +769,6 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             return StringComparer.OrdinalIgnoreCase.Equals(
                 _currentSolutionDirectory,
                 latestSolutionDirectory);
-        }
-
-        private void RestoreEvents_SolutionRestoreCompleted(SolutionRestoredEventArgs args)
-        {
-            _latestRestore = args;
         }
 
         private void UpdateActiveSource(string activePackageSource)
@@ -925,6 +938,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
 
         public void Dispose()
         {
+            _restoreEvents.SolutionRestoreCompleted -= RestoreEvents_SolutionRestoreCompleted;
             _initScriptsLock.Dispose();
             Runspace?.Dispose();
         }
