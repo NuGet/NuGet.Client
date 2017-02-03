@@ -15,7 +15,6 @@ using NuGet.PackageManagement;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Protocol.Core.Types;
 using Task = System.Threading.Tasks.Task;
-using NuGet.PackageManagement.UI;
 
 namespace NuGet.SolutionRestoreManager
 {
