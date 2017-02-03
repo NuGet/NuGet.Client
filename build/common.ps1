@@ -1017,7 +1017,6 @@ Function Build-ClientsProjectHelper {
         [int]$BuildNumber = (Get-BuildNumber),
         [ValidateSet(14,15)]
         [int]$ToolsetVersion = $DefaultMSBuildVersion,
-        [hashtable]$Parameters,
         [switch]$IsSolution,
         [switch]$ExcludeBuildNumber,
         [switch]$Rebuild
@@ -1040,10 +1039,6 @@ Function Build-ClientsProjectHelper {
 
     if ($ExcludeBuildNumber) {
         $opts += "/p:ExcludeBuildNumber=true"
-    }
-
-    foreach($key in $Parameters.keys) {
-        $opts+="/p:$key=" + $Parameters[$key]
     }
 
     $opts += "/p:VisualStudioVersion=${ToolsetVersion}.0"
