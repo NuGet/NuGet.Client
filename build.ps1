@@ -131,6 +131,19 @@ Invoke-BuildStep 'Building NuGet.Clients projects - VS15 Toolset' {
     -skip:$SkipVS15 `
     -ev +BuildErrors
 
+## Building the VS15 NuGet.Tools.vsix for VS insertion
+Invoke-BuildStep 'Building NuGet.Tools.vsix for VS Insertion - VS15 Toolset' {
+        Build-ClientsProjectHelper `
+        -SolutionOrProject (Join-Path $NuGetClientRoot .\src\NuGet.Clients\NuGet.Tools\NuGet.Tools.csproj -Resolve)`
+        -Configuration $Configuration `
+        -ReleaseLabel $ReleaseLabel `
+        -BuildNumber $BuildNumber `
+        -Parameters @{'IsInsertable'='true'} `
+        -ToolsetVersion 15 `
+    } `
+    -skip:($SkipVS15 -or -not $CI) `
+    -ev +BuildErrors
+
 ## Building the VS14 Tooling solution
 Invoke-BuildStep 'Building NuGet.Clients projects - VS14 Toolset' {
         Build-ClientsProjects $Configuration $ReleaseLabel $BuildNumber -ToolsetVersion 14
