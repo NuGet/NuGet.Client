@@ -440,61 +440,56 @@ namespace NuGet.PackageManagement.VisualStudio
                             TrySetSpecificVersion(reference);
                         }
                     }
-                });
 
-                if (!resolvedToPackage)
-                {
-                    // This should be done off the UI thread
-
-                    // Get the msbuild project for this project
-                    var buildProject = EnvDTEProjectUtility.AsMicrosoftBuildEvaluationProject(dteProjectFullName);
-
-                    if (buildProject != null)
+                    if (!resolvedToPackage)
                     {
-                        // Get the assembly name of the reference we are trying to add
-                        var assemblyName = AssemblyName.GetAssemblyName(assemblyFullPath);
+                        // This should be done off the UI thread
 
-                        // Try to find the item for the assembly name
-                        var item = (from assemblyReferenceNode in buildProject.GetAssemblyReferences()
-                                    where AssemblyNamesMatch(assemblyName, assemblyReferenceNode.Item2)
-                                    select assemblyReferenceNode.Item1).FirstOrDefault();
+                        // Get the msbuild project for this project
+                        var buildProject = EnvDTEProjectUtility.AsMicrosoftBuildEvaluationProject(dteProjectFullName);
 
-                        if (item != null)
+                        if (buildProject != null)
                         {
-                            // Add the <HintPath> metadata item as a relative path
-                            var projectPath = PathUtility.EnsureTrailingSlash(projectFullPath);
-                            var relativePath = PathUtility.GetRelativePath(projectPath, referencePath);
+                            // Get the assembly name of the reference we are trying to add
+                            var assemblyName = AssemblyName.GetAssemblyName(assemblyFullPath);
 
-                            item.SetMetadataValue("HintPath", relativePath);
+                            // Try to find the item for the assembly name
+                            var item = (from assemblyReferenceNode in buildProject.GetAssemblyReferences()
+                                        where AssemblyNamesMatch(assemblyName, assemblyReferenceNode.Item2)
+                                        select assemblyReferenceNode.Item1).FirstOrDefault();
 
-                            // Set <Private> to true
-                            item.SetMetadataValue("Private", "True");
-
-                            FileSystemUtility.MakeWritable(dteProjectFullName);
-
-                            // Change to the UI thread to save
-                            NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
+                            if (item != null)
                             {
-                                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                                // Add the <HintPath> metadata item as a relative path
+                                var projectPath = PathUtility.EnsureTrailingSlash(projectFullPath);
+                                var relativePath = PathUtility.GetRelativePath(projectPath, referencePath);
+
+                                item.SetMetadataValue("HintPath", relativePath);
+
+                                // Set <Private> to true
+                                item.SetMetadataValue("Private", "True");
+
+                                FileSystemUtility.MakeWritable(dteProjectFullName);
 
                                 // Save the project after we've modified it.
                                 EnvDTEProject.Save();
-                            });
+                            }
+                        }
+                        else
+                        {
+                            // The reference cannot be changed by modifying the project file.
+                            // This could be a failure, however that could be a breaking
+                            // change if there is a non-msbuild project system relying on this
+                            // to skip references.
+                            // Log a warning to let the user know that their reference may have failed.
+                            NuGetProjectContext.Log(
+                                ProjectManagement.MessageLevel.Warning,
+                                Strings.FailedToAddReference,
+                                name);
                         }
                     }
-                    else
-                    {
-                        // The reference cannot be changed by modifying the project file.
-                        // This could be a failure, however that could be a breaking
-                        // change if there is a non-msbuild project system relying on this
-                        // to skip references.
-                        // Log a warning to let the user know that their reference may have failed.
-                        NuGetProjectContext.Log(
-                            ProjectManagement.MessageLevel.Warning,
-                            Strings.FailedToAddReference,
-                            name);
-                    }
-                }
+                });
+                
             }
             catch (Exception e)
             {
@@ -889,7 +884,14 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public virtual void BeginProcessing()
         {
-            ProjectBuildSystem?.StartBatchEdit();
+            if (ProjectBuildSystem != null)
+            {
+                NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
+                {
+                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                    ProjectBuildSystem.StartBatchEdit();
+                });
+            }
         }
 
         public virtual void RegisterProcessedFiles(IEnumerable<string> files)
@@ -899,7 +901,14 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public virtual void EndProcessing()
         {
-            ProjectBuildSystem?.EndBatchEdit();
+            if (ProjectBuildSystem != null)
+            {
+                NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
+                {
+                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                    ProjectBuildSystem.EndBatchEdit();
+                });
+            }
         }
 
         public void DeleteDirectory(string path, bool recursive)
