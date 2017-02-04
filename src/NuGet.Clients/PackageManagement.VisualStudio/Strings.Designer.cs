@@ -61,6 +61,42 @@ namespace NuGet.PackageManagement.VisualStudio {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Could not get the account manager, unable to check the keychain..
+        /// </summary>
+        public static string AccountProvider_FailedToLoadAccountManager {
+            get {
+                return ResourceManager.GetString("AccountProvider_FailedToLoadAccountManager", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Could not get the account provider, unable to check the keychain..
+        /// </summary>
+        public static string AccountProvider_FailedToLoadVSOAccountProvider {
+            get {
+                return ResourceManager.GetString("AccountProvider_FailedToLoadVSOAccountProvider", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No valid credentials found for VSO account..
+        /// </summary>
+        public static string AccountProvider_NoValidCrededentialsFound {
+            get {
+                return ResourceManager.GetString("AccountProvider_NoValidCrededentialsFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unable to authenticate without prompting user..
+        /// </summary>
+        public static string AccountProvider_TriedToShowUIOnNonInteractive {
+            get {
+                return ResourceManager.GetString("AccountProvider_TriedToShowUIOnNonInteractive", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Value must be greater than or equal to {0}..
         /// </summary>
         public static string Argument_Must_Be_GreaterThanOrEqualTo {
@@ -84,6 +120,42 @@ namespace NuGet.PackageManagement.VisualStudio {
         public static string ConfigErrorDialogBoxTitle {
             get {
                 return ResourceManager.GetString("ConfigErrorDialogBoxTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The default credentials credential provider failed to load..
+        /// </summary>
+        public static string CredentialProviderFailed_DefaultCredentialsCredentialProvider {
+            get {
+                return ResourceManager.GetString("CredentialProviderFailed_DefaultCredentialsCredentialProvider", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Failed to load credential provider from assembly {0}..
+        /// </summary>
+        public static string CredentialProviderFailed_ImportedProvider {
+            get {
+                return ResourceManager.GetString("CredentialProviderFailed_ImportedProvider", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The Visual Studio or VSTS account provider failed to load..
+        /// </summary>
+        public static string CredentialProviderFailed_VisualStudioAccountProvider {
+            get {
+                return ResourceManager.GetString("CredentialProviderFailed_VisualStudioAccountProvider", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The Visual Studio credential provider failed to load..
+        /// </summary>
+        public static string CredentialProviderFailed_VisualStudioCredentialProvider {
+            get {
+                return ResourceManager.GetString("CredentialProviderFailed_VisualStudioCredentialProvider", resourceCulture);
             }
         }
         
