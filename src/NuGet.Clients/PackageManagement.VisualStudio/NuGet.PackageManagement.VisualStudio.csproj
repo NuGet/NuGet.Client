@@ -143,6 +143,7 @@
     <Compile Include="ScriptExecutionRequest.cs" />
     <Compile Include="ProjectSystems\VSMSBuildNuGetProject.cs" />
     <Compile Include="SolutionRestore\ISolutionRestoreWorker.cs" />
+    <Compile Include="ICredentialServiceProvider.cs" />
     <Compile Include="IDE\PackageInitPS1State.cs" />
     <Compile Include="IDE\VsCommonOperations.cs" />
     <Compile Include="IDE\VsHierarchyItem.cs" />

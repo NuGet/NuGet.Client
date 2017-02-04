@@ -40,6 +40,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="DataStreamFromComStream.cs" />
+    <Compile Include="DefaultVSCredentialServiceProvider.cs" />
     <Compile Include="FontAndColorsRegistrationAttribute.cs" />
     <Compile Include="Guids.cs" />
     <Compile Include="NuGetSettings.cs" />
