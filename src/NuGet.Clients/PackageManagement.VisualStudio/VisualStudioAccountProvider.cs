@@ -12,7 +12,7 @@ using System.Threading;
 using NuGet.Credentials;
 using NuGet.Configuration;
 
-namespace NuGetVSExtension
+namespace NuGet.PackageManagement.VisualStudio
 {
     /// <summary>
     /// This provider connects to Visual Studio Online endpoints by pulling the token

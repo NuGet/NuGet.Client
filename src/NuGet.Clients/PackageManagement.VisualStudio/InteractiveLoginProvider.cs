@@ -16,7 +16,7 @@ using Microsoft.VisualStudio.Shell;
 using NuGet.PackageManagement.UI;
 using NuGet.PackageManagement.VisualStudio;
 
-namespace NuGetVSExtension
+namespace NuGet.PackageManagement.VisualStudio
 {
     class InteractiveLoginProvider: IInteractiveLoginProvider
     {

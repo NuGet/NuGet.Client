@@ -12,7 +12,7 @@ using NuGet.PackageManagement.UI;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.VisualStudio;
 
-namespace NuGetVSExtension
+namespace NuGet.PackageManagement.VisualStudio
 {
     /// <summary>
     /// Find all MEF imports for IVsCredentialProvider, and handle inserting fallback provider

@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Diagnostics;
@@ -7,24 +10,22 @@ using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.Common;
 using NuGet.Credentials;
 using NuGet.PackageManagement.UI;
-using NuGet.PackageManagement.VisualStudio;
 using NuGet.ProjectManagement;
 
-namespace NuGetVSExtension
+namespace NuGet.PackageManagement.VisualStudio
 {
     [Export(typeof(ICredentialServiceProvider))]
     public class DefaultVSCredentialServiceProvider : ICredentialServiceProvider
     {
 
-        private readonly INuGetUILogger _outputConsoleLogger;
+        private readonly Lazy<INuGetUILogger> _outputConsoleLogger;
         private readonly IServiceProvider _serviceProvider;
 
         [ImportingConstructor]
         internal DefaultVSCredentialServiceProvider(
            [Import(typeof(SVsServiceProvider))]
             IServiceProvider serviceProvider,
-           [Import(typeof(INuGetUILogger))]
-           INuGetUILogger outputConsoleLogger
+           Lazy<INuGetUILogger> outputConsoleLogger
             )
         {
             if (serviceProvider == null)
@@ -41,6 +42,7 @@ namespace NuGetVSExtension
 
         public NuGet.Configuration.ICredentialService GetCredentialService()
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
             // Initialize the credential providers.
             var credentialProviders = new List<ICredentialProvider>();
 
@@ -116,7 +118,7 @@ namespace NuGetVSExtension
         private void LogCredentialProviderError(Exception exception, string failureMessage)
         {
             // Log the user-friendly message to the output console (no stack trace).
-            _outputConsoleLogger.Log(
+            _outputConsoleLogger.Value.Log(
                 MessageLevel.Error,
                 failureMessage +
                 Environment.NewLine +

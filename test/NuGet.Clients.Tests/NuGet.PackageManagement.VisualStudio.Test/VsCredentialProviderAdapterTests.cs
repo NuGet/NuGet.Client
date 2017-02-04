@@ -8,10 +8,9 @@ using System.Threading.Tasks;
 using NuGet.Configuration;
 using NuGet.Credentials;
 using NuGet.VisualStudio;
-using NuGetVSExtension;
 using Xunit;
 
-namespace NuGet.VsExtension.Test
+namespace NuGet.PackageManagement.VisualStudio.Test
 {
     public class VsCredentialProviderAdapterTests
     {
