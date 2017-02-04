@@ -48,7 +48,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             TryAddCredentialProviders(
                 credentialProviders,
-                Resources.CredentialProviderFailed_VisualStudioAccountProvider,
+                Strings.CredentialProviderFailed_VisualStudioAccountProvider,
                 () =>
                 {
                     var importer = new VsCredentialProviderImporter(
@@ -61,7 +61,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             TryAddCredentialProviders(
                 credentialProviders,
-                Resources.CredentialProviderFailed_VisualStudioCredentialProvider,
+                Strings.CredentialProviderFailed_VisualStudioCredentialProvider,
                 () =>
                 {
                     var webProxy = (IVsWebProxy)_serviceProvider.GetService(typeof(SVsWebProxy));
@@ -77,7 +77,7 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 TryAddCredentialProviders(
                 credentialProviders,
-                Resources.CredentialProviderFailed_DefaultCredentialsCredentialProvider,
+                Strings.CredentialProviderFailed_DefaultCredentialsCredentialProvider,
                 () =>
                 {
                     return new NuGet.Credentials.ICredentialProvider[] {

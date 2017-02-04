@@ -115,7 +115,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 }
                 catch (Exception exception)
                 {
-                    _errorDelegate(exception, Resources.CredentialProviderFailed_VisualStudioAccountProvider);
+                    _errorDelegate(exception, Strings.CredentialProviderFailed_VisualStudioAccountProvider);
                 }
             }
 
@@ -144,7 +144,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
                         _errorDelegate(
                             exception,
-                            string.Format(Resources.CredentialProviderFailed_ImportedProvider, targetAssemblyPath)
+                            string.Format(Strings.CredentialProviderFailed_ImportedProvider, targetAssemblyPath)
                             );
                     }
                 }

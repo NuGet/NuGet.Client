@@ -45,7 +45,7 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 //  If we are not supposed to interact with the user then we can't prompt for account so we
                 // need to fail.
-                throw new InvalidOperationException(Resources.AccountProvider_TriedToShowUIOnNonInteractive);
+                throw new InvalidOperationException(Strings.AccountProvider_TriedToShowUIOnNonInteractive);
             }
             Account account = null;
 

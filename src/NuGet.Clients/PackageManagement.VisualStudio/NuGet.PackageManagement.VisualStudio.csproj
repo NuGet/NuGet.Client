@@ -143,11 +143,6 @@
     <Compile Include="ProjectSystems\IProjectSystemCache.cs" />
     <Compile Include="ProjectSystems\CpsPackageReferenceProjectProvider.cs" Condition="'$(VisualStudioVersion)' == '15.0'" />
     <Compile Include="ProjectSystems\ProjectSystemProviderContext.cs" />
-    <Compile Include="Resources.Designer.cs">
-      <DependentUpon>Resources.resx</DependentUpon>
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-    </Compile>
     <Compile Include="SolutionEventsListener.cs" />
     <Compile Include="SolutionRestore\DeferredProjectRestoreData.cs" />
     <Compile Include="SolutionRestore\SolutionRestoreRequest.cs" />
@@ -248,11 +243,6 @@
   <ItemGroup>
     <EmbeddedResource Include="CommonResources.resx">
       <DependentUpon>CommonResources.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
-      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="Strings.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>

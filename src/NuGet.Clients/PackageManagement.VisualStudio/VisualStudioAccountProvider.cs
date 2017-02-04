@@ -106,7 +106,7 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 // we know this is a VSO endpoint but we are unable to get the credentials so we should
                 // throw so that the other providers will not be called
-                throw new InvalidOperationException(Resources.AccountProvider_FailedToLoadAccountManager);
+                throw new InvalidOperationException(Strings.AccountProvider_FailedToLoadAccountManager);
             }
 
             var provider = (VSAccountProvider) await _accountManager
@@ -116,7 +116,7 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 // we know this is a VSO endpoint but we are unable to get the credentials so we should
                 // throw so that the other providers will not be called
-                throw new InvalidOperationException(Resources.AccountProvider_FailedToLoadVSOAccountProvider);
+                throw new InvalidOperationException(Strings.AccountProvider_FailedToLoadVSOAccountProvider);
             }
 
             //  Ask keychain for all accounts
@@ -145,7 +145,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
                 if (credentials == null)
                 {
-                    throw new InvalidOperationException(Resources.AccountProvider_NoValidCrededentialsFound);
+                    throw new InvalidOperationException(Strings.AccountProvider_NoValidCrededentialsFound);
                 }
 
                 if (isRetry)
@@ -221,7 +221,7 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 // No credentials found but we know that this is a VSO endpoint so we want to throw an
                 // exception to prevent the other providers from being called
-                throw new InvalidOperationException(Resources.AccountProvider_NoValidCrededentialsFound);
+                throw new InvalidOperationException(Strings.AccountProvider_NoValidCrededentialsFound);
             }
 
             var response = new CredentialResponse(credentials);
