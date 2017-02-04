@@ -40,7 +40,6 @@ namespace NuGet.PackageManagement.VisualStudio
         private uint _solutionLoadedUICookie;
         private IVsSolution _vsSolution;
        
-
         private readonly IServiceProvider _serviceProvider;
         private readonly IProjectSystemCache _projectSystemCache;
         private readonly NuGetProjectFactory _projectSystemFactory;
@@ -109,7 +108,6 @@ namespace NuGet.PackageManagement.VisualStudio
             [Import(typeof(VisualStudioActivityLogger))]
             Common.ILogger logger)
         {
-            
             if (serviceProvider == null)
             {
                 throw new ArgumentNullException(nameof(serviceProvider));
