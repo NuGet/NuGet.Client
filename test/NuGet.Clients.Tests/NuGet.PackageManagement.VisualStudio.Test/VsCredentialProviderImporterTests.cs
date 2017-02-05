@@ -4,7 +4,6 @@
 using EnvDTE;
 using Moq;
 using NuGet.VisualStudio;
-using NuGetVSExtension;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -13,7 +12,7 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace NuGet.VsExtension.Test
+namespace NuGet.PackageManagement.VisualStudio.Test
 {
     // This namespace declaration is on-purpose, to allow for testing the MEF imported VSTS credential provider without actually importing it.
     namespace TeamSystem.NuGetCredentialProvider

@@ -21,6 +21,7 @@ using NuGet.PackageManagement.UI;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
 using NuGet.ProjectModel;
+using NuGet.Protocol;
 using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.PackageManagement.VisualStudio
@@ -38,10 +39,11 @@ namespace NuGet.PackageManagement.VisualStudio
         private IVsMonitorSelection _vsMonitorSelection;
         private uint _solutionLoadedUICookie;
         private IVsSolution _vsSolution;
-
+       
         private readonly IServiceProvider _serviceProvider;
         private readonly IProjectSystemCache _projectSystemCache;
         private readonly NuGetProjectFactory _projectSystemFactory;
+        private readonly ICredentialServiceProvider _credentialServiceProvider;
         private readonly Common.ILogger _logger;
 
         private bool _initialized;
@@ -101,6 +103,7 @@ namespace NuGet.PackageManagement.VisualStudio
             IServiceProvider serviceProvider,
             IProjectSystemCache projectSystemCache,
             NuGetProjectFactory projectSystemFactory,
+            ICredentialServiceProvider credentialServiceProvider,
             [Import(typeof(VisualStudioActivityLogger))]
             Common.ILogger logger)
         {
@@ -118,7 +121,10 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 throw new ArgumentNullException(nameof(projectSystemFactory));
             }
-
+            if (credentialServiceProvider == null)
+            {
+                throw new ArgumentNullException(nameof(credentialServiceProvider));
+            }
             if (logger == null)
             {
                 throw new ArgumentNullException(nameof(logger));
@@ -127,6 +133,7 @@ namespace NuGet.PackageManagement.VisualStudio
             _serviceProvider = serviceProvider;
             _projectSystemCache = projectSystemCache;
             _projectSystemFactory = projectSystemFactory;
+            _credentialServiceProvider = credentialServiceProvider;
             _logger = logger;
         }
 
@@ -135,7 +142,7 @@ namespace NuGet.PackageManagement.VisualStudio
             await NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
+                HttpHandlerResourceV3.CredentialService = _credentialServiceProvider.GetCredentialService();
                 _vsSolution = _serviceProvider.GetService<SVsSolution, IVsSolution>();
                 _vsMonitorSelection = _serviceProvider.GetService<SVsShellMonitorSelection, IVsMonitorSelection>();
 
@@ -145,7 +152,6 @@ namespace NuGet.PackageManagement.VisualStudio
                 uint cookie;
                 var hr = _vsMonitorSelection.AdviseSelectionEvents(this, out cookie);
                 ErrorHandler.ThrowOnFailure(hr);
-
                 var dte = _serviceProvider.GetDTE();
                 // Keep a reference to SolutionEvents so that it doesn't get GC'ed. Otherwise, we won't receive events.
                 _solutionEvents = dte.Events.SolutionEvents;

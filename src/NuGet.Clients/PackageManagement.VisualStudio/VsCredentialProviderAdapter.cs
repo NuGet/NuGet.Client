@@ -9,7 +9,7 @@ using NuGet.Configuration;
 using NuGet.Credentials;
 using NuGet.VisualStudio;
 
-namespace NuGetVSExtension
+namespace NuGet.PackageManagement.VisualStudio
 {
     /// <summary>
     /// Wraps an IVsCredentialProvider.  IVsCredentialProvider ensures that VS Extensions 

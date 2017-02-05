@@ -46,9 +46,6 @@
     <Compile Include="NuGetUIFactory.cs" />
     <Compile Include="OutputConsoleLogger.cs" />
     <Compile Include="SolutionUserOptions.cs" />
-    <Compile Include="VsCredentialProviderImporter.cs" />
-    <Compile Include="InteractiveLoginProvider.cs" />
-    <Compile Include="IInteractiveLoginProvider.cs" />
     <Compile Include="NuGetSearchProvider.cs" />
     <Compile Include="NuGetSearchTask.cs" />
     <Compile Include="NuGetStaticSearchResult.cs" />
@@ -64,9 +61,6 @@
       <DesignTime>True</DesignTime>
     </Compile>
     <Compile Include="Commands\ShowErrorsCommand.cs" />
-    <Compile Include="VisualStudioAccountProvider.cs" />
-    <Compile Include="VisualStudioCredentialProvider.cs" />
-    <Compile Include="VsCredentialProviderAdapter.cs" />
     <Compile Include="Handlers\ProjectRetargetingHandler.cs" />
     <Compile Include="Handlers\ProjectUpgradeHandler.cs" />
     <Compile Include="VsUtility.cs" />
