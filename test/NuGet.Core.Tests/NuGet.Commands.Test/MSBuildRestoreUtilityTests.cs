@@ -885,6 +885,169 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
+        public void MSBuildRestoreUtility_GetPackageSpec_NetCore_VerifyDuplicateItemsAreIgnored()
+        {
+            using (var workingDir = TestDirectory.Create())
+            {
+                // Arrange
+                var projectRoot = Path.Combine(workingDir, "a");
+                var projectPath = Path.Combine(projectRoot, "a.csproj");
+                var outputPath = Path.Combine(projectRoot, "obj");
+
+                var items = new List<IDictionary<string, string>>();
+
+                var specItem = new Dictionary<string, string>()
+                {
+                    { "Type", "ProjectSpec" },
+                    { "ProjectName", "a" },
+                    { "ProjectStyle", "PackageReference" },
+                    { "OutputPath", outputPath },
+                    { "ProjectUniqueName", "482C20DE-DFF9-4BD0-B90A-BD3201AA351A" },
+                    { "ProjectPath", projectPath },
+                    { "TargetFrameworks", "net46;netstandard1.6" },
+                    { "CrossTargeting", "true" },
+                };
+
+                // Add each item twice
+                items.Add(specItem);
+                items.Add(specItem);
+
+                // A -> B
+                var projectRef = new Dictionary<string, string>()
+                {
+                    { "Type", "ProjectReference" },
+                    { "ProjectUniqueName", "482C20DE-DFF9-4BD0-B90A-BD3201AA351A" },
+                    { "ProjectReferenceUniqueName", "AA2C20DE-DFF9-4BD0-B90A-BD3201AA351A" },
+                    { "ProjectPath", "otherProjectPath.csproj" },
+                    { "TargetFrameworks", "netstandard1.6" },
+                    { "CrossTargeting", "true" },
+                };
+
+                items.Add(projectRef);
+                items.Add(projectRef);
+
+                // Package references
+                // A netstandard1.6 -> Z
+                var packageRef1 = new Dictionary<string, string>()
+                {
+                    { "Type", "Dependency" },
+                    { "ProjectUniqueName", "482C20DE-DFF9-4BD0-B90A-BD3201AA351A" },
+                    { "Id", "z" },
+                    { "VersionRange", "2.0.0" },
+                    { "TargetFrameworks", "netstandard1.6" },
+                    { "CrossTargeting", "true" },
+                };
+
+                items.Add(packageRef1);
+                items.Add(packageRef1);
+
+                // B ALL -> Y
+                var packageRef2 = new Dictionary<string, string>()
+                {
+                    { "Type", "Dependency" },
+                    { "ProjectUniqueName", "482C20DE-DFF9-4BD0-B90A-BD3201AA351A" },
+                    { "Id", "y" },
+                    { "VersionRange", "[1.0.0]" },
+                    { "TargetFrameworks", "netstandard1.6;net46" },
+                    { "CrossTargeting", "true" },
+                };
+
+                items.Add(packageRef2);
+                items.Add(packageRef2);
+
+                // Framework assembly
+                var frameworkAssembly = new Dictionary<string, string>()
+                {
+                    { "Type", "FrameworkAssembly" },
+                    { "ProjectUniqueName", "482C20DE-DFF9-4BD0-B90A-BD3201AA351A" },
+                    { "Id", "System.IO" },
+                    { "TargetFrameworks", "net46" },
+                    { "CrossTargeting", "true" },
+                };
+
+                items.Add(frameworkAssembly);
+                items.Add(frameworkAssembly);
+
+                // TFM info
+                var tfmInfo = new Dictionary<string, string>()
+                {
+                    { "Type", "TargetFrameworkInformation" },
+                    { "ProjectUniqueName", "482C20DE-DFF9-4BD0-B90A-BD3201AA351A" },
+                    { "PackageTargetFallback", "portable-net45+win8;dnxcore50;;" },
+                    { "TargetFramework", "netstandard16" }
+                };
+
+                items.Add(tfmInfo);
+                items.Add(tfmInfo);
+
+                var wrappedItems = items.Select(CreateItems).ToList();
+
+                // Act
+                var dgSpec = MSBuildRestoreUtility.GetDependencySpec(wrappedItems);
+                var projectSpec = dgSpec.Projects.Single(e => e.Name == "a");
+
+                // Assert
+                Assert.Equal(0, projectSpec.Dependencies.Count);
+                Assert.Equal(1, dgSpec.Projects.Count);
+                Assert.Equal("System.IO|y", string.Join("|", projectSpec.GetTargetFramework(NuGetFramework.Parse("net46")).Dependencies.Select(e => e.Name)));
+                Assert.Equal("z|y", string.Join("|", projectSpec.GetTargetFramework(NuGetFramework.Parse("netstandard1.6")).Dependencies.Select(e => e.Name)));
+                Assert.Equal(2, projectSpec.RestoreMetadata.TargetFrameworks.Count);
+            }
+        }
+
+        [Fact]
+        public void MSBuildRestoreUtility_GetPackageSpec_NetCore_IgnoreBadItemWithMismatchedIds()
+        {
+            using (var workingDir = TestDirectory.Create())
+            {
+                // Arrange
+                var projectRoot = Path.Combine(workingDir, "a");
+                var projectPath = Path.Combine(projectRoot, "a.csproj");
+                var outputPath = Path.Combine(projectRoot, "obj");
+
+                var items = new List<IDictionary<string, string>>();
+
+                var specItem = new Dictionary<string, string>()
+                {
+                    { "Type", "ProjectSpec" },
+                    { "ProjectName", "a" },
+                    { "ProjectStyle", "PackageReference" },
+                    { "OutputPath", outputPath },
+                    { "ProjectUniqueName", "AA2C20DE-DFF9-4BD0-B90A-BD3201AA351A" },
+                    { "ProjectPath", projectPath },
+                    { "TargetFrameworks", "net46;netstandard1.6" },
+                    { "CrossTargeting", "true" },
+                };
+
+                items.Add(specItem);
+
+                // A -> B
+                var projectRef = new Dictionary<string, string>()
+                {
+                    { "Type", "ProjectReference" },
+
+                    // This ID does not match the project!
+                    { "ProjectUniqueName", "BB2C20DE-DFF9-4BD0-B90A-BD3201AA351A" },
+                    { "ProjectReferenceUniqueName", "CC2C20DE-DFF9-4BD0-B90A-BD3201AA351A" },
+                    { "ProjectPath", "otherProjectPath.csproj" },
+                    { "TargetFrameworks", "netstandard1.6" },
+                    { "CrossTargeting", "true" },
+                };
+
+                items.Add(projectRef);
+
+                var wrappedItems = items.Select(CreateItems).ToList();
+
+                // Act
+                var dgSpec = MSBuildRestoreUtility.GetDependencySpec(wrappedItems);
+                var projectSpec = dgSpec.Projects.Single(e => e.Name == "a");
+
+                // Assert
+                Assert.NotNull(projectSpec);
+            }
+        }
+
+        [Fact]
         public void MSBuildRestoreUtility_GetPackageSpec_UAP_P2P()
         {
             using (var workingDir = TestDirectory.Create())
