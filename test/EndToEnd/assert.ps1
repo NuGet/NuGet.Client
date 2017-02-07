@@ -166,6 +166,18 @@ function Assert-Reference {
     }
 }
 
+function Assert-MPReference {
+	param(
+		[parameter(Mandatory = $true)]
+        $Project,
+		[parameter(Mandatory = $true)]
+		[string]$Name
+	)
+	
+	$reference = Get-MPReference $Project $Name
+	Assert-NotNull $reference "Reference `"$Name`" does not exist"
+}
+
 function Assert-Throws {
     param(
         [parameter(Mandatory = $true)]
