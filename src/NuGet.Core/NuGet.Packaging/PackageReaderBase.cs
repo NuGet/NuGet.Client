@@ -269,6 +269,11 @@ namespace NuGet.Packaging
             {
                 result = true;
             }
+            else if (StringComparer.OrdinalIgnoreCase.Equals(extension, ".mpb") ||
+                StringComparer.OrdinalIgnoreCase.Equals(extension, ".mp"))
+            {
+                result = true;
+            }
 
             return result;
         }

@@ -574,7 +574,7 @@ namespace NuGet.ProjectManagement
                 return true;
             }
 
-            // Assembly reference must have a .dll|.exe|.winmd extension and is not a resource assembly;
+            // Assembly reference must have a .dll|.exe|.winmd|.mpb|.mp extension and is not a resource assembly;
             return !filePath.EndsWith(Constants.ResourceAssemblyExtension, StringComparison.OrdinalIgnoreCase) &&
                    Constants.AssemblyReferencesExtensions.Contains(Path.GetExtension(filePath), StringComparer.OrdinalIgnoreCase);
         }

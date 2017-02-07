@@ -38,7 +38,7 @@ function Test-InstallPackageWithValidRelativeLocalSource {
     # Arrange
     $package = "Rules"
     $project = New-ConsoleApplication
-	$source = "..\"
+    $source = "..\"
     $message = "Unable to find package '$package'"
 
     # Act & Assert
