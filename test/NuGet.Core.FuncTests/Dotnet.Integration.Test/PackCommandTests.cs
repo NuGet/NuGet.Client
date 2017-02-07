@@ -1342,6 +1342,49 @@ namespace Dotnet.Integration.Test
             }
         }
 
+        // This test checks to see that when GeneratePackageOnBuild is set to true, the generated nupkg and the intermediate
+        // nuspec exists when a rebuild is called instead of build.
+        [Platform(Platform.Windows)]
+        [Fact]
+        public void PackCommand_PackNewProject_GeneratesNupkgOnRebuild()
+        {
+            using (var testDirectory = TestDirectory.Create())
+            {
+                var projectName = "ClassLibrary1";
+                var workingDirectory = Path.Combine(testDirectory, projectName);
+                var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
+
+                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " -t lib");
+
+                using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
+                {
+                    var xml = XDocument.Load(stream);
+                    ProjectFileUtils.AddProperty(xml, "GeneratePackageOnBuild", "true");
+
+                    ProjectFileUtils.WriteXmlToFile(xml, stream);
+                }
+
+                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
+                msbuildFixture.BuildProject(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory} ");
+
+                var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
+                var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
+                Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the expected place");
+                Assert.True(File.Exists(nuspecPath), "The intermediate nuspec file is not in the expected place");
+
+                // Run the clean target
+                msbuildFixture.BuildProject(workingDirectory, projectName, $"/t:Clean /p:PackageOutputPath={workingDirectory}\\");
+
+                Assert.True(!File.Exists(nupkgPath), "The output .nupkg was not deleted by the Clean target");
+                Assert.True(!File.Exists(nuspecPath), "The intermediate nuspec file was not deleted by the Clean target");
+
+                msbuildFixture.BuildProject(workingDirectory, projectName, $"/t:Rebuild /p:PackageOutputPath={workingDirectory}");
+
+                Assert.True(File.Exists(nupkgPath), "The output .nupkg was not created on Rebuild");
+                Assert.True(File.Exists(nuspecPath), "The intermediate nuspec file was not created on Rebuild");
+            }
+        }
+
     }
 }
 

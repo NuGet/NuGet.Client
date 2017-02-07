@@ -53,7 +53,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     ============================================================
   -->
   <Target Name="_PackAsBuildAfterTarget"
-          AfterTargets="Build" 
+          AfterTargets="Build;Rebuild" 
           Condition="'$(GeneratePackageOnBuild)' == 'true' AND '$(IsInnerBuild)' != 'true'"
           DependsOnTargets="Pack">
   </Target>
