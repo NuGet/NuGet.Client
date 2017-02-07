@@ -526,6 +526,24 @@ function New-DNXConsoleApp
     }
 }
 
+function New-ManagementPack_2012R2
+{
+	param(
+		[string]$ProjectName,
+		[string]$SolutionFolder
+	)
+	
+	try
+	{
+		New-Project ManagementPack_2012R2 $ProjectName $SolutionFolder
+	}
+	catch {
+		# If we're unable to create the project that means we probably don't have some SDK installed
+        # Signal to the runner that we want to skip this test
+		throw "SKIP: $($_)"
+	}
+}
+
 function New-TextFile {
     Write-Verbose "New-TextFile method"
 
@@ -741,6 +759,24 @@ function Get-ProjectItem {
         # Force array
        return  ,$projectItems
     }
+}
+
+function Get-MPReference() {
+	param(
+		[parameter(Mandatory = $true)]
+        $Project,
+		[parameter(Mandatory = $true)]
+		[string]$Name
+	)
+	
+	$reference = $Project.Object.FirstChild.FirstChild
+	
+	while ($reference -ne $null -and $reference.Name -ne $Name)
+	{
+		$reference = $reference.NextSibling
+	}
+	
+	$reference
 }
 
 function Add-ProjectReference {

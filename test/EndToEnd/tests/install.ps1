@@ -38,11 +38,24 @@ function Test-InstallPackageWithValidRelativeLocalSource {
     # Arrange
     $package = "Rules"
     $project = New-ConsoleApplication
-    $source = "..\"
+	$source = "..\"
     $message = "Unable to find package '$package'"
 
     # Act & Assert
     Assert-Throws { Install-Package $package -ProjectName $project.Name -source $source } $message
+}
+
+function Test-InstallMPPackage {
+	# Arrange
+	$package = "FrameworkMP"
+	$project = New-ManagementPack_2012R2
+	$source = "..\"
+	
+	# Act
+	Install-Package $package -ProjectName $project.Name -Source $source
+	
+	# Assert
+	Assert-MPReference $project $package
 }
 
 function Test-InstallPackageWithInvalidHttpSource {
