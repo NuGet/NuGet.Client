@@ -254,18 +254,13 @@ namespace NuGet.SolutionRestoreManager
                         // Initialize if not already done.
                         await InitializeAsync();
 
-#if VS15
-                        if (request.RestoreSource == RestoreOperationSource.OnBuild)
+#if !VS14
+                        if (await ShouldSkipRestoreAsync(request))
                         {
-                            if (!await SolutionManager.SolutionHasDeferredProjectsAsync()
-                                && SolutionManager.GetNuGetProjects().All(p => p is CpsPackageReferenceProject))
-                            {
-                                // Do nothing if all projects are .NET Core projects (Roslyn project system)
-                                // in that case on-build restore is not needed
-                                return true;
-                            }
+                            return true;
                         }
 #endif
+
                         using (var restoreOperation = new BackgroundRestoreOperation())
                         {
                             await PromoteTaskToActiveAsync(restoreOperation, _workerCts.Token);
@@ -278,6 +273,30 @@ namespace NuGet.SolutionRestoreManager
                 },
                 JoinableTaskCreationOptions.LongRunning);
         }
+
+#if !VS14
+        private async Task<bool> ShouldSkipRestoreAsync(SolutionRestoreRequest request)
+        {
+            if (request.RestoreSource == RestoreOperationSource.OnBuild
+                && !request.ForceRestore)
+            {
+                if (!await SolutionManager.SolutionHasDeferredProjectsAsync())
+                {
+                    var projects = SolutionManager.GetNuGetProjects();
+
+                    if (projects.Any() &&
+                        projects.All(p => p is CpsPackageReferenceProject))
+                    {
+                        // Do nothing if all projects are .NET Core projects (Roslyn project system)
+                        // in that case on-build restore is not needed
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+#endif
 
         public void CleanCache()
         {
