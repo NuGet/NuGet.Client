@@ -50,6 +50,7 @@
     <Compile Include="VerbosityLevel.cs" />
     <Compile Include="VsSolutionRestoreService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="WaitDialogProgress.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\NuGet.SolutionRestoreManager.Interop\NuGet.SolutionRestoreManager.Interop.csproj">

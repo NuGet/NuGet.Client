@@ -164,7 +164,7 @@ namespace NuGet.SolutionRestoreManager
                             // Do not block VS forever
                             await Task.WhenAny(_backgroundJobRunner.Value, Task.Delay(TimeSpan.FromSeconds(60)));
                         }
-                    }, 
+                    },
                     JoinableTaskCreationOptions.LongRunning);
             }
 
@@ -188,7 +188,7 @@ namespace NuGet.SolutionRestoreManager
                 _pendingRequests = new Lazy<BlockingCollection<SolutionRestoreRequest>>(
                     () => new BlockingCollection<SolutionRestoreRequest>(RequestQueueLimit));
 
-                _pendingRestore = new BackgroundRestoreOperation();
+                _pendingRestore = new BackgroundRestoreOperation(SolutionRestoreRequest.OnUpdate());
                 _activeRestoreTask = Task.FromResult(true);
                 _restoreJobContext = new SolutionRestoreJobContext();
             }
@@ -251,7 +251,7 @@ namespace NuGet.SolutionRestoreManager
                         // Initialize if not already done.
                         await InitializeAsync();
 
-                        using (var restoreOperation = new BackgroundRestoreOperation())
+                        using (var restoreOperation = new BackgroundRestoreOperation(request))
                         {
                             await PromoteTaskToActiveAsync(restoreOperation, _workerCts.Token);
 
@@ -310,7 +310,9 @@ namespace NuGet.SolutionRestoreManager
                         // Replaces pending restore operation with a new one.
                         // Older value is ignored.
                         var ignore = Interlocked.CompareExchange(
-                            ref _pendingRestore, new BackgroundRestoreOperation(), restoreOperation);
+                            ref _pendingRestore,
+                            new BackgroundRestoreOperation(SolutionRestoreRequest.OnUpdate()),
+                            restoreOperation);
 
                         token.ThrowIfCancellationRequested();
 
@@ -350,29 +352,48 @@ namespace NuGet.SolutionRestoreManager
             return await joinableTask;
         }
 
-        private async Task PromoteTaskToActiveAsync(BackgroundRestoreOperation restoreOperation, CancellationToken token)
+        private async Task PromoteTaskToActiveAsync(
+            BackgroundRestoreOperation restoreOperation,
+            CancellationToken token)
         {
-            var pendingTask = restoreOperation.Task;
+            RestoreOperationProgressUI progressUI = null;
+
+            // Display progress dialog while waiting for active restore operation to complete
+            if (restoreOperation.RestoreRequest.RestoreSource == RestoreOperationSource.OnBuild
+                && !_activeRestoreTask.IsCompleted)
+            {
+                progressUI = await WaitDialogProgress.StartAsync(
+                    _serviceProvider,
+                    _joinableFactory,
+                    isCancelable: false,
+                    token: token);
+            }
 
             int attempt = 0;
-            for (var retry = true;
-                retry && !token.IsCancellationRequested && attempt != PromoteAttemptsLimit;
-                attempt++)
+
+            try
             {
-                // Grab local copy of active task
-                var activeTask = _activeRestoreTask;
+                var pendingTask = restoreOperation.Task;
 
-                // Await for the completion of the active *unbound* task
-                var cancelTcs = new TaskCompletionSource<bool>();
-                using (var ctr = token.Register(() => cancelTcs.TrySetCanceled()))
+                for (var retry = true;
+                    retry && !token.IsCancellationRequested && attempt != PromoteAttemptsLimit;
+                    attempt++)
                 {
-                    await Task.WhenAny(activeTask, cancelTcs.Task);
-                }
+                    // Grab local copy of active task
+                    var activeTask = _activeRestoreTask;
 
-                // Try replacing active task with the new one.
-                // Retry from the beginning if the active task has changed.
-                retry = Interlocked.CompareExchange(
-                    ref _activeRestoreTask, pendingTask, activeTask) != activeTask;
+                    // Await for the completion of the active *unbound* task
+                    await activeTask.WithCancellation(token);
+
+                    // Try replacing active task with the new one.
+                    // Retry from the beginning if the active task has changed.
+                    retry = Interlocked.CompareExchange(
+                        ref _activeRestoreTask, pendingTask, activeTask) != activeTask;
+                }
+            }
+            finally
+            {
+                progressUI?.Dispose();
             }
 
             if (attempt == PromoteAttemptsLimit)
@@ -422,9 +443,21 @@ namespace NuGet.SolutionRestoreManager
 
             private TaskCompletionSource<bool> JobTcs { get; } = new TaskCompletionSource<bool>();
 
+            public SolutionRestoreRequest RestoreRequest { get; }
+
             public Task<bool> Task => JobTcs.Task;
 
             public System.Runtime.CompilerServices.TaskAwaiter<bool> GetAwaiter() => Task.GetAwaiter();
+
+            public BackgroundRestoreOperation(SolutionRestoreRequest restoreRequest)
+            {
+                if (restoreRequest == null)
+                {
+                    throw new ArgumentNullException(nameof(restoreRequest));
+                }
+
+                RestoreRequest = restoreRequest;
+            }
 
             public void ContinuationAction(Task<bool> targetTask)
             {
