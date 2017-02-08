@@ -105,10 +105,6 @@
     <Reference Include="Microsoft.EnterpriseManagement.Packaging">
       <HintPath>$(MSBuildToolsPath)\..\..\..\Common7\IDE\PublicAssemblies\Microsoft.EnterpriseManagement.Packaging.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.SystemCenter.Authoring.ProjectSystem.14.0, Version=7.0.5000.8, Culture=neutral, PublicKeyToken=0a2e0a6a0e87c04b, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>$(MSBuildToolsPath)\..\..\..\Common7\IDE\Extensions\System Center\VSACProjectSystem\Microsoft.SystemCenter.Authoring.ProjectSystem.14.0.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '14.0'">
