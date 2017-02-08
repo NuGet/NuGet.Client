@@ -11,11 +11,13 @@ using NuGet.ProjectManagement;
 using System.Reflection;
 using System.IO;
 using System.Diagnostics;
-using Microsoft.EnterpriseManagement.Configuration;
 #if VisualStudioAuthoringExtensionsInstalled
-using Microsoft.EnterpriseManagement.Packaging;
-using System.Runtime.InteropServices;
+using Microsoft.EnterpriseManagement.Configuration;
 using Microsoft.EnterpriseManagement.Configuration.IO;
+using Microsoft.EnterpriseManagement.Packaging;
+using Microsoft.SystemCenter.Authoring.ProjectSystem;
+using Microsoft.VisualStudio.Project;
+using System.Runtime.InteropServices;
 #endif
 
 namespace NuGet.PackageManagement.VisualStudio
@@ -25,7 +27,8 @@ namespace NuGet.PackageManagement.VisualStudio
         private dynamic _projectMgr;
         private dynamic _mpReferenceContainerNode;
 
-        //private dynamic _referenceContainerNode;
+        delegate bool IsAlreadyAddedInternalDelegate(out ReferenceNode existingNodeInternal);
+        IsAlreadyAddedInternalDelegate isAlreadyAddedInternal;
 
         public ManagementPackProjectSystem(EnvDTEProject envDTEProject, INuGetProjectContext nuGetProjectContext)
             : base(envDTEProject, nuGetProjectContext)
@@ -44,8 +47,6 @@ namespace NuGet.PackageManagement.VisualStudio
                 _mpReferenceContainerNode = refFolderPropinfo.GetValue(oaReferenceFolderItem);
             }
 
-
-
         }
 
         public override void AddReference(string referencePath)
@@ -57,7 +58,6 @@ namespace NuGet.PackageManagement.VisualStudio
 #endif
 
             AddReferencesFromBundle(referencePath);
-
         }
 
         [Conditional("VisualStudioAuthoringExtensionsInstalled")]
@@ -65,6 +65,7 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             ManagementPackBundleReader bundleReader = ManagementPackBundleFactory.CreateBundleReader();
             var mpFileStore = new ManagementPackFileStore();
+
             try
             {
                 ManagementPackBundle bundle = bundleReader.Read(bundlePath, new ManagementPackFileStore());
@@ -76,14 +77,23 @@ namespace NuGet.PackageManagement.VisualStudio
                         if (!managementPack.Sealed)
                         {
                             LogProcessingResult(managementPack, ProcessStatus.NotSealed);
+                            continue;
                         }
 
                         ManagementPackReferenceNode packReferenceNode = new ManagementPackReferenceNode(_projectMgr, bundlePath, managementPack.Name);
                         ReferenceNode existingEquivalentNode;
-                        if (packReferenceNode.IsAlreadyAdded(out existingEquivalentNode))
+
+                        BindingFlags bindingFlags = BindingFlags.Instance | BindingFlags.NonPublic;
+                        isAlreadyAddedInternal = (IsAlreadyAddedInternalDelegate)Delegate.CreateDelegate(
+                                                      typeof(IsAlreadyAddedInternalDelegate),
+                                                      packReferenceNode,
+                                                      typeof(ManagementPackReferenceNode).GetMethod("IsAlreadyAdded", bindingFlags));
+
+                        if (isAlreadyAddedInternal(out existingEquivalentNode))
                         {
                             packReferenceNode.Dispose();
                             LogProcessingResult(managementPack, ProcessStatus.AlreadyExists);
+                            continue;
                         }
                         packReferenceNode.AddReference();
                         LogProcessingResult(managementPack, ProcessStatus.Success);
@@ -93,7 +103,6 @@ namespace NuGet.PackageManagement.VisualStudio
                         LogProcessingResult(managementPack, ProcessStatus.Failed, ex.Message);
                     }
                 }
-
 
             }
             catch (COMException ex)
@@ -106,6 +115,7 @@ namespace NuGet.PackageManagement.VisualStudio
             }
         }
 
+        [Conditional("VisualStudioAuthoringExtensionsInstalled")]
         private void LogProcessingResult(ManagementPack managementPack, ProcessStatus status, string detail = null)
         {
             string identity = $"{managementPack.Name} (Version={managementPack.Version},PublicKeyToken={managementPack.KeyToken})";
@@ -154,7 +164,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public override void RemoveReference(string name)
         {
-            base.RemoveReference(name);
+            NuGetProjectContext.Log(MessageLevel.Error, $"RemoveReference is not implemented.  Removing {name} skipped.");
         }
 
         protected override bool IsBindingRedirectSupported
@@ -165,21 +175,6 @@ namespace NuGet.PackageManagement.VisualStudio
             }
         }
 
-        public override string ProjectName
-        {
-            get
-            {
-                return base.ProjectName;
-            }
-        }
-
-        public override string ProjectUniqueName
-        {
-            get
-            {
-                return base.ProjectUniqueName;
-            }
-        }
         protected override void AddGacReference(string name)
         {
             // We disable GAC references for Management Pack projects
