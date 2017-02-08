@@ -78,15 +78,15 @@ namespace NuGet.PackageManagement.VisualStudio
                             LogProcessingResult(managementPack, ProcessStatus.NotSealed);
                         }
 
-                        //ManagementPackReferenceNode packReferenceNode = new ManagementPackReferenceNode(_projectMgr, bundlePath, managementPack.Name);
-                        //ReferenceNode existingEquivalentNode;
-                        //if (packReferenceNode.IsAlreadyAdded(out existingEquivalentNode))
-                        //{
-                        //    packReferenceNode.Dispose();
-                        //    LogProcessingResult(managementPack, ProcessStatus.AlreadyExists);
-                        //}
-                        //packReferenceNode.AddReference();
-                        //LogProcessingResult(managementPack, ProcessStatus.Success);
+                        ManagementPackReferenceNode packReferenceNode = new ManagementPackReferenceNode(_projectMgr, bundlePath, managementPack.Name);
+                        ReferenceNode existingEquivalentNode;
+                        if (packReferenceNode.IsAlreadyAdded(out existingEquivalentNode))
+                        {
+                            packReferenceNode.Dispose();
+                            LogProcessingResult(managementPack, ProcessStatus.AlreadyExists);
+                        }
+                        packReferenceNode.AddReference();
+                        LogProcessingResult(managementPack, ProcessStatus.Success);
                     }
                     catch (Exception ex)
                     {
