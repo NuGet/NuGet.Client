@@ -105,8 +105,9 @@
     <Reference Include="Microsoft.EnterpriseManagement.Packaging">
       <HintPath>$(MSBuildExtensionsPath)\Microsoft\VSAC\Microsoft.EnterpriseManagement.Packaging.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.SystemCenter.Authoring.ProjectSystem.14.0">
-      <HintPath>$(DevEnvDir)Extensions\System Center\VSACProjectSystem\Microsoft.SystemCenter.Authoring.ProjectSystem.14.0.dll</HintPath>
+    <Reference Include="Microsoft.SystemCenter.Authoring.ProjectSystem.14.0, Version=7.0.5000.8, Culture=neutral, PublicKeyToken=0a2e0a6a0e87c04b, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>>$(DevEnvDir)Extensions\System Center\VSACProjectSystem\Microsoft.SystemCenter.Authoring.ProjectSystem.14.0.dll</HintPath>
     </Reference>
   </ItemGroup>
   <Choose>

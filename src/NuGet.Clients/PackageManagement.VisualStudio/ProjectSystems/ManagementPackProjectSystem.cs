@@ -10,21 +10,28 @@ using EnvDTEProject = EnvDTE.Project;
 using NuGet.ProjectManagement;
 using System.Reflection;
 using System.IO;
+using System.Diagnostics;
+using Microsoft.EnterpriseManagement.Configuration;
+#if VisualStudioAuthoringExtensionsInstalled
 using Microsoft.EnterpriseManagement.Packaging;
 using System.Runtime.InteropServices;
 using Microsoft.EnterpriseManagement.Configuration.IO;
+#endif
 
 namespace NuGet.PackageManagement.VisualStudio
 {
     public class ManagementPackProjectSystem : VSMSBuildNuGetProjectSystem
     {
+        private dynamic _projectMgr;
         private dynamic _mpReferenceContainerNode;
 
         //private dynamic _referenceContainerNode;
 
-        public ManagementPackProjectSystem(EnvDTEProject envDTEProject, INuGetProjectContext nuGetProjectContext) 
+        public ManagementPackProjectSystem(EnvDTEProject envDTEProject, INuGetProjectContext nuGetProjectContext)
             : base(envDTEProject, nuGetProjectContext)
         {
+            _projectMgr = EnvDTEProject.Object;
+
             dynamic oaReferenceFolderItem = this.EnvDTEProject.ProjectItems.Item(1);
 
             // get the mp reference container node using reflection
@@ -45,64 +52,90 @@ namespace NuGet.PackageManagement.VisualStudio
         {
 #if !VisualStudioAuthoringExtensionsInstalled
 
-            NuGetProjectContext.Log(MessageLevel.Debug, "Visual Studio Authoring Extensions are not installed. Reference not added.");
+            NuGetProjectContext.Log(MessageLevel.Info, "Visual Studio Authoring Extensions are not installed. Reference not added.");
             return;
 #endif
 
-
-
-
-
-
-
-
+            AddReferencesFromBundle(referencePath);
 
         }
 
-
+        [Conditional("VisualStudioAuthoringExtensionsInstalled")]
         private void AddReferencesFromBundle(string bundlePath)
         {
-            //ManagementPackBundleReader bundleReader = ManagementPackBundleFactory.CreateBundleReader();
-            //var mpFileStore = new ManagementPackFileStore();
-            //try
-            //{
-            //    ManagementPackBundle bundle = bundleReader.Read(bundlePath, new ManagementPackFileStore());
+            ManagementPackBundleReader bundleReader = ManagementPackBundleFactory.CreateBundleReader();
+            var mpFileStore = new ManagementPackFileStore();
+            try
+            {
+                ManagementPackBundle bundle = bundleReader.Read(bundlePath, new ManagementPackFileStore());
+
+                foreach (var managementPack in bundle.ManagementPacks)
+                {
+                    try
+                    {
+                        if (!managementPack.Sealed)
+                        {
+                            LogProcessingResult(managementPack, ProcessStatus.NotSealed);
+                        }
+
+                        //ManagementPackReferenceNode packReferenceNode = new ManagementPackReferenceNode(_projectMgr, bundlePath, managementPack.Name);
+                        //ReferenceNode existingEquivalentNode;
+                        //if (packReferenceNode.IsAlreadyAdded(out existingEquivalentNode))
+                        //{
+                        //    packReferenceNode.Dispose();
+                        //    LogProcessingResult(managementPack, ProcessStatus.AlreadyExists);
+                        //}
+                        //packReferenceNode.AddReference();
+                        //LogProcessingResult(managementPack, ProcessStatus.Success);
+                    }
+                    catch (Exception ex)
+                    {
+                        LogProcessingResult(managementPack, ProcessStatus.Failed, ex.Message);
+                    }
+                }
 
 
-            //    BundledItem[] array = bundle.ManagementPacks.Select<ManagementPack, BundledItem>((Func<ManagementPack, BundledItem>)(mp => this.ProcessBundleManagementPack(mp, bundlePath))).ToArray<BundledItem>();
-
-            //    try
-            //    {
-            //        if (!managementPack.Sealed)
-            //            return new BundledItem(managementPack, BundledItem.Status.NotSealed, (object)null);
-            //        ManagementPackReferenceNode packReferenceNode = new ManagementPackReferenceNode(this.ProjectMgr, bundlePath, managementPack.Name);
-            //        ReferenceNode existingEquivalentNode;
-            //        if (packReferenceNode.IsAlreadyAdded(out existingEquivalentNode))
-            //        {
-            //            packReferenceNode.Dispose();
-            //            return new BundledItem(managementPack, BundledItem.Status.AlreadyExists, (object)null);
-            //        }
-            //        packReferenceNode.AddReference();
-            //        return new BundledItem(managementPack, BundledItem.Status.Success, (object)null);
-            //    }
-            //    catch (Exception ex)
-            //    {
-            //        return new BundledItem(managementPack, BundledItem.Status.Failed, (object)ex);
-            //    }
-
-            //}
-            //catch (COMException ex)
-            //{
-            //    ErrorDialogHelper.ShowError(Resources.AddReferencesFromBundleFailed, (Exception)ex, (string)null, (Window)null, ErrorSeverity.Error, false);
-            //    return ex.ErrorCode;
-            //}
-            //catch (Exception ex)
-            //{
-            //    ErrorDialogHelper.ShowError(Resources.AddReferencesFromBundleFailed, ex, (string)null, (Window)null, ErrorSeverity.Error, false);
-            //    return -2147467259;
-            //}
+            }
+            catch (COMException ex)
+            {
+                NuGetProjectContext.Log(MessageLevel.Error, $"Unexpected COM exception while adding reference: {ex.ErrorCode}-{ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                NuGetProjectContext.Log(MessageLevel.Error, $"Unexpected exception while adding reference: {ex.Message}");
+            }
         }
 
+        private void LogProcessingResult(ManagementPack managementPack, ProcessStatus status, string detail = null)
+        {
+            string identity = $"{managementPack.Name} (Version={managementPack.Version},PublicKeyToken={managementPack.KeyToken})";
+            string result;
+            switch (status)
+            {
+                case ProcessStatus.Success:
+                    result = "added.";
+                    break;
+                case ProcessStatus.AlreadyExists:
+                    result = "already exists.";
+                    break;
+                case ProcessStatus.NotSealed:
+                    result = "is not sealed.";
+                    break;
+                default:
+                    result = "failed while adding.";
+                    break;
+            }
+
+            NuGetProjectContext.Log(MessageLevel.Info, $"{identity} {result} {detail}");
+        }
+
+        protected enum ProcessStatus
+        {
+            NotSealed,
+            AlreadyExists,
+            Success,
+            Failed,
+        }
 
         public override bool ReferenceExists(string name)
         {
