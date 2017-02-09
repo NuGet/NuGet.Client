@@ -193,15 +193,7 @@ internal class EnumeratorAsync : IEnumeratorAsync<IPackageSearchMetadata>
                 : await _feedParser.GetPackagesPageAsync(_searchTerm, _filter, _skip, _take, _logger, _token);
 
             
-            var results = _allVersions?
-                _currentPage.Items.GroupBy(p => p.Id)
-                 .Select(group => group.OrderByDescending(p => p.Version)).SelectMany(pg => pg)
-                 .Select(
-                     package =>
-                         V2FeedUtilities.CreatePackageSearchResult(package, _filter,
-                             (V2FeedParser)_feedParser, _logger, _token)).Where(p => _filter.IncludeDelisted || p.IsListed)
-            :
-            _currentPage.Items.GroupBy(p => p.Id)
+            var results = _currentPage.Items.GroupBy(p => p.Id)
                  .Select(group => group.OrderByDescending(p => p.Version).First())
                  .Select(
                      package =>
@@ -226,15 +218,7 @@ internal class EnumeratorAsync : IEnumeratorAsync<IPackageSearchMetadata>
                                     ? await _feedParser.GetSearchPageAsync(_searchTerm, _filter, _skip, _take, _logger, _token)
                                     : await _feedParser.GetPackagesPageAsync(_searchTerm, _filter, _skip, _take, _logger, _token);
 
-                var results = _allVersions ?
-               _currentPage.Items.GroupBy(p => p.Id)
-                .Select(group => group.OrderByDescending(p => p.Version)).SelectMany(pg => pg)
-                .Select(
-                    package =>
-                        V2FeedUtilities.CreatePackageSearchResult(package, _filter,
-                            (V2FeedParser)_feedParser, _logger, _token)).Where(p => _filter.IncludeDelisted || p.IsListed)
-                :
-                _currentPage.Items.GroupBy(p => p.Id)
+                var results = _currentPage.Items.GroupBy(p => p.Id)
                  .Select(group => group.OrderByDescending(p => p.Version).First())
                  .Select(
                      package =>
