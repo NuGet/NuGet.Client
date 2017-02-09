@@ -2,15 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using EnvDTEProject = EnvDTE.Project;
 using NuGet.ProjectManagement;
 using System.Reflection;
 using System.IO;
 using System.Diagnostics;
+
 #if VisualStudioAuthoringExtensionsInstalled
 using Microsoft.EnterpriseManagement.Configuration;
 using Microsoft.EnterpriseManagement.Configuration.IO;
@@ -28,7 +25,8 @@ namespace NuGet.PackageManagement.VisualStudio
         private dynamic _mpReferenceContainerNode;
 
         delegate bool IsAlreadyAddedInternalDelegate(out ReferenceNode existingNodeInternal);
-        IsAlreadyAddedInternalDelegate isAlreadyAddedInternal;
+        private MethodInfo _isAlreadyAddedMethodInfo;
+        private bool _isVsaeInstalled = false;
 
         public ManagementPackProjectSystem(EnvDTEProject envDTEProject, INuGetProjectContext nuGetProjectContext)
             : base(envDTEProject, nuGetProjectContext)
@@ -47,16 +45,27 @@ namespace NuGet.PackageManagement.VisualStudio
                 _mpReferenceContainerNode = refFolderPropinfo.GetValue(oaReferenceFolderItem);
             }
 
+#if VisualStudioAuthoringExtensionsInstalled
+
+            _isVsaeInstalled = true;
+
+            _isAlreadyAddedMethodInfo = typeof(ManagementPackReferenceNode).GetMethod("IsAlreadyAdded",
+                bindingFlags,
+                null,
+                new[] { typeof(ReferenceNode).MakeByRefType() },
+                null);
+#endif
         }
 
         public override void AddReference(string referencePath)
         {
-#if !VisualStudioAuthoringExtensionsInstalled
+            if (!_isVsaeInstalled)
+            {
+                NuGetProjectContext.Log(MessageLevel.Info, "Visual Studio Authoring Extensions are not installed. Skipping AddReference.");
+                return;
+            }
 
-            NuGetProjectContext.Log(MessageLevel.Info, "Visual Studio Authoring Extensions are not installed. Reference not added.");
-            return;
-#endif
-
+            //TODO: handle case when referencePath is an .mp file (rather than an .mpb)
             AddReferencesFromBundle(referencePath);
         }
 
@@ -83,11 +92,10 @@ namespace NuGet.PackageManagement.VisualStudio
                         ManagementPackReferenceNode packReferenceNode = new ManagementPackReferenceNode(_projectMgr, bundlePath, managementPack.Name);
                         ReferenceNode existingEquivalentNode;
 
-                        BindingFlags bindingFlags = BindingFlags.Instance | BindingFlags.NonPublic;
-                        isAlreadyAddedInternal = (IsAlreadyAddedInternalDelegate)Delegate.CreateDelegate(
+                        var isAlreadyAddedInternal = (IsAlreadyAddedInternalDelegate)Delegate.CreateDelegate(
                                                       typeof(IsAlreadyAddedInternalDelegate),
                                                       packReferenceNode,
-                                                      typeof(ManagementPackReferenceNode).GetMethod("IsAlreadyAdded", bindingFlags));
+                                                      _isAlreadyAddedMethodInfo);
 
                         if (isAlreadyAddedInternal(out existingEquivalentNode))
                         {
@@ -95,12 +103,13 @@ namespace NuGet.PackageManagement.VisualStudio
                             LogProcessingResult(managementPack, ProcessStatus.AlreadyExists);
                             continue;
                         }
+
                         packReferenceNode.AddReference();
                         LogProcessingResult(managementPack, ProcessStatus.Success);
                     }
                     catch (Exception ex)
                     {
-                        LogProcessingResult(managementPack, ProcessStatus.Failed, ex.Message);
+                        LogProcessingResult(managementPack, ProcessStatus.Failed, true, ex.Message);
                     }
                 }
 
@@ -116,27 +125,27 @@ namespace NuGet.PackageManagement.VisualStudio
         }
 
         [Conditional("VisualStudioAuthoringExtensionsInstalled")]
-        private void LogProcessingResult(ManagementPack managementPack, ProcessStatus status, string detail = null)
+        private void LogProcessingResult(ManagementPack managementPack, ProcessStatus status, bool adding = true, string detail = null)
         {
             string identity = $"{managementPack.Name} (Version={managementPack.Version},PublicKeyToken={managementPack.KeyToken})";
             string result;
             switch (status)
             {
                 case ProcessStatus.Success:
-                    result = "added.";
+                    result = adding ? "added" : "removed";
                     break;
                 case ProcessStatus.AlreadyExists:
-                    result = "already exists.";
+                    result = "already exists";
                     break;
                 case ProcessStatus.NotSealed:
-                    result = "is not sealed.";
+                    result = "is not sealed";
                     break;
                 default:
-                    result = "failed while adding.";
+                    result = $"failed while {(adding ? "adding" : "removing")}";
                     break;
             }
 
-            NuGetProjectContext.Log(MessageLevel.Info, $"{identity} {result} {detail}");
+            NuGetProjectContext.Log(MessageLevel.Info, $"{identity} {result}. {detail}");
         }
 
         protected enum ProcessStatus
@@ -164,7 +173,11 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public override void RemoveReference(string name)
         {
-            NuGetProjectContext.Log(MessageLevel.Error, $"RemoveReference is not implemented.  Removing {name} skipped.");
+            if (!_isVsaeInstalled)
+            {
+                NuGetProjectContext.Log(MessageLevel.Info, "Visual Studio Authoring Extensions are not installed. Reference not added.");
+                return;
+            }
         }
 
         protected override bool IsBindingRedirectSupported

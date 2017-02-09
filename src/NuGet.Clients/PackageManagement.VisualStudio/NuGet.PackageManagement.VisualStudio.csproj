@@ -73,9 +73,6 @@
       <Private>False</Private>
     </Reference>
     <Reference Include="Microsoft.Build.Utilities.v4.0" />
-    <Reference Include="Microsoft.SystemCenter.Authoring.ProjectSystem.14.0">
-      <HintPath>..\..\..\..\..\..\..\..\Program Files (x86)\Microsoft Visual Studio 14.0\Common7\IDE\Extensions\System Center\VSACProjectSystem\Microsoft.SystemCenter.Authoring.ProjectSystem.14.0.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.Core" />
@@ -107,6 +104,9 @@
     </Reference>
     <Reference Include="Microsoft.EnterpriseManagement.Packaging">
       <HintPath>$(MSBuildToolsPath)\..\..\..\Common7\IDE\PublicAssemblies\Microsoft.EnterpriseManagement.Packaging.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.SystemCenter.Authoring.ProjectSystem.14.0">
+      <HintPath>$(MSBuildToolsPath)\..\..\..\Common7\IDE\Extensions\System Center\VSACProjectSystem\Microsoft.SystemCenter.Authoring.ProjectSystem.14.0.dll</HintPath>
     </Reference>
   </ItemGroup>
   <Choose>
