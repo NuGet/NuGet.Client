@@ -12,9 +12,9 @@ using System.Diagnostics;
 using Microsoft.EnterpriseManagement.Configuration;
 using Microsoft.EnterpriseManagement.Configuration.IO;
 using Microsoft.EnterpriseManagement.Packaging;
+using System.Runtime.InteropServices;
 using Microsoft.SystemCenter.Authoring.ProjectSystem;
 using Microsoft.VisualStudio.Project;
-using System.Runtime.InteropServices;
 #endif
 
 namespace NuGet.PackageManagement.VisualStudio
@@ -45,8 +45,6 @@ namespace NuGet.PackageManagement.VisualStudio
                 _mpReferenceContainerNode = refFolderPropinfo.GetValue(oaReferenceFolderItem);
             }
 
-#if VisualStudioAuthoringExtensionsInstalled
-
             _isVsaeInstalled = true;
 
             _isAlreadyAddedMethodInfo = typeof(ManagementPackReferenceNode).GetMethod("IsAlreadyAdded",
@@ -54,7 +52,6 @@ namespace NuGet.PackageManagement.VisualStudio
                 null,
                 new[] { typeof(ReferenceNode).MakeByRefType() },
                 null);
-#endif
         }
 
         public override void AddReference(string referencePath)
@@ -66,11 +63,11 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             //TODO: handle case when referencePath is an .mp file (rather than an .mpb)
-            AddReferencesFromBundle(referencePath);
+            AddManagementPackReferencesFromBundle(referencePath);
         }
 
-        [Conditional("VisualStudioAuthoringExtensionsInstalled")]
-        private void AddReferencesFromBundle(string bundlePath)
+        [Conditional("VisualStudioAuthoringExtensionsInstalled2")]
+        private void AddManagementPackReferencesFromBundle(string bundlePath)
         {
             ManagementPackBundleReader bundleReader = ManagementPackBundleFactory.CreateBundleReader();
             var mpFileStore = new ManagementPackFileStore();
@@ -105,6 +102,7 @@ namespace NuGet.PackageManagement.VisualStudio
                         }
 
                         packReferenceNode.AddReference();
+
                         LogProcessingResult(managementPack, ProcessStatus.Success);
                     }
                     catch (Exception ex)
@@ -158,17 +156,28 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public override bool ReferenceExists(string name)
         {
+            dynamic reference;
+            return TryGetExistingReference(name, out reference);
+        }
+
+        private bool TryGetExistingReference(string name, out dynamic managementPackReference)
+        {
+            bool found = false;
+            managementPackReference = null;
+
             var referenceName = Path.GetFileNameWithoutExtension(name);
 
             foreach (dynamic reference in _mpReferenceContainerNode.EnumReferences())
             {
                 if (String.Equals(reference.Name, referenceName, StringComparison.OrdinalIgnoreCase))
                 {
-                    return true;
+                    found = true;
+                    managementPackReference = reference;
+                    break;
                 }
             }
 
-            return false;
+            return found;
         }
 
         public override void RemoveReference(string name)
@@ -178,6 +187,19 @@ namespace NuGet.PackageManagement.VisualStudio
                 NuGetProjectContext.Log(MessageLevel.Info, "Visual Studio Authoring Extensions are not installed. Reference not added.");
                 return;
             }
+
+            RemoveManagementPackReference(name);
+        }
+
+        [Conditional("VisualStudioAuthoringExtensionsInstalled")]
+        private void RemoveManagementPackReference(string name)
+        {
+            dynamic reference;
+            if (TryGetExistingReference(name, out reference))
+            {
+
+            }
+
         }
 
         protected override bool IsBindingRedirectSupported

@@ -110,13 +110,6 @@
       <HintPath>$(VSACProjectSystemDir)\Microsoft.SystemCenter.Authoring.ProjectSystem.14.0.dll</HintPath>
     </Reference>
   </ItemGroup>
-  <Target Name="EchoBuildProperties" BeforeTargets="Build">
-    <Message Text="MSBuildExtensionsPath: $(MSBuildExtensionsPath)" Importance="high" />
-    <Message Text="MSBuildToolsPath: $(MSBuildToolsPath)" Importance="high" />
-    <Message Text="VSSDKRoot: $(VSSDKRoot)" Importance="high" />
-    <Message Text="VSInstallDir: $(VSInstallDir)" Importance="high" />
-    <Message Text="VSACProjectSystemDir: $(VSACProjectSystemDir)" Importance="high" />
-  </Target>
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '14.0'">
       <ItemGroup>
