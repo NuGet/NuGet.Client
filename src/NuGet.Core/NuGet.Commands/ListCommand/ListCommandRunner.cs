@@ -139,6 +139,25 @@ namespace NuGet.Commands
                                     p.LicenseUrl.OriginalString));
                         }
                         Console.WriteLine();
+                        if (listArgs.AllVersions)
+                        {
+                            foreach(var versionInfo in await p.GetVersionsAsync())
+                            {
+                                listArgs.PrintJustified(0, p.Identity.Id);
+                                listArgs.PrintJustified(1, versionInfo.Version.ToFullString());
+                                listArgs.PrintJustified(1, p.Description);
+                                if (!string.IsNullOrEmpty(p.LicenseUrl?.OriginalString))
+                                {
+                                    listArgs.PrintJustified(1,
+                                        string.Format(
+                                            CultureInfo.InvariantCulture,
+                                            listArgs.ListCommandLicenseUrl,
+                                            p.LicenseUrl.OriginalString));
+                                }
+                                Console.WriteLine();
+                            }
+                            
+                        }
                         hasPackages = true;
                     }
                 }
@@ -152,6 +171,11 @@ namespace NuGet.Commands
                     {
                         var p = asyncEnumerator.Current;
                         listArgs.PrintJustified(0, p.Identity.Id + " " + p.Identity.Version.ToFullString());
+                        if (listArgs.AllVersions)
+                        {
+                            foreach(var versionInfo in await p.GetVersionsAsync())
+                            listArgs.PrintJustified(0, p.Identity.Id + " " + p.Identity.Version.ToFullString());
+                        }
                         hasPackages = true;
                     }
                 }
