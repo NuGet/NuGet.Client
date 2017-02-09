@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -35,7 +36,7 @@ namespace NuGet.Test.Utility
             string identity,
             NuGetFramework framework,
             Dictionary<string, string> properties,
-            Dictionary<string,string> attributes )
+            Dictionary<string, string> attributes)
         {
             AddItem(doc, name, identity,
                 framework?.IsSpecificFramework == true ? framework.GetShortFolderName() : string.Empty, properties, attributes);
@@ -46,7 +47,7 @@ namespace NuGet.Test.Utility
             string identity,
             string framework,
             Dictionary<string, string> properties,
-            Dictionary<string,string> attributes )
+            Dictionary<string, string> attributes)
         {
             var ns = doc.Root.GetDefaultNamespace();
 
@@ -68,8 +69,15 @@ namespace NuGet.Test.Utility
 
             foreach (var pair in properties)
             {
-                var subItem = new XElement(XName.Get(pair.Key, ns.NamespaceName), pair.Value);
-                entry.Add(subItem);
+                if (pair.Key.Equals("version", StringComparison.OrdinalIgnoreCase))
+                {
+                    entry.Add(new XAttribute(XName.Get("Version"), pair.Value));
+                }
+                else
+                {
+                    var subItem = new XElement(XName.Get(pair.Key, ns.NamespaceName), pair.Value);
+                    entry.Add(subItem);
+                }
             }
 
             var lastItemGroup = doc.Root.Elements().LastOrDefault(e => e.Name.LocalName == "ItemGroup");
