@@ -416,8 +416,16 @@ namespace NuGet.Test.Utility
                         }
 
                         var props = new Dictionary<string, string>();
+                        var attributes = new Dictionary<string, string>();
 
-                        props.Add("Version", package.Version.ToString());
+                        if (ToolingVersion15)
+                        {
+                            attributes.Add("Version", package.Version.ToString());
+                        }
+                        else
+                        {
+                            props.Add("Version", package.Version.ToString());
+                        }
 
                         if (!string.IsNullOrEmpty(package.Include))
                         {
@@ -440,7 +448,7 @@ namespace NuGet.Test.Utility
                             package.Id,
                             referenceFramework,
                             props,
-                            new Dictionary<string, string>());
+                            attributes);
                     }
 
                     foreach (var project in frameworkInfo.ProjectReferences)
