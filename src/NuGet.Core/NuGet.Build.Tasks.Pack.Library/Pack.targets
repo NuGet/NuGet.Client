@@ -127,7 +127,7 @@ Copyright (c) .NET Foundation. All rights reserved.
               IsTool="$(IsTool)"
               RepositoryUrl="$(RepositoryUrl)"
               RepositoryType="$(RepositoryType)"
-              SourceFiles="@(_SourceFiles)"
+              SourceFiles="@(_SourceFiles->Distinct())"
               NoPackageAnalysis="$(NoPackageAnalysis)"
               MinClientVersion="$(MinClientVersion)"
               Serviceable="$(Serviceable)"

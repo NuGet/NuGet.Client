@@ -498,7 +498,7 @@ namespace NuGet.Build.Tasks.Pack
                         sourceProjectFile = Path.GetDirectoryName(sourceProjectFile);
                     }
 
-                    sourceFiles.Add(sourcePath, sourceProjectFile);
+                    sourceFiles[sourcePath] = sourceProjectFile;
                 }
             }
             return sourceFiles;

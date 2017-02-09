@@ -1342,6 +1342,73 @@ namespace Dotnet.Integration.Test
             }
         }
 
+        [Platform(Platform.Windows)]
+        [Theory]
+        [InlineData("TargetFramework", "netstandard1.4")]
+        [InlineData("TargetFrameworks", "netstandard1.4;net46")]
+        public void PackCommand_IncludeSource_AddsSourceFiles(string tfmProperty, string tfmValue)
+        {
+            using (var testDirectory = TestDirectory.Create())
+            {
+                var utilitySrcFileContent = @"using System;
+
+namespace ClassLibrary
+{
+    public class UtilityMethods
+    {
+    }
+}";
+                var extensionSrcFileContent = @"using System;
+
+namespace ClassLibrary
+{
+    public class ExtensionMethods
+    {
+    }
+}";
+                var projectName = "ClassLibrary1";
+                var workingDirectory = Path.Combine(testDirectory, projectName);
+                var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
+                Directory.CreateDirectory(Path.Combine(workingDirectory, "Utils"));
+                Directory.CreateDirectory(Path.Combine(workingDirectory, "Extensions"));
+                File.WriteAllText(Path.Combine(workingDirectory, "Utils", "Utility.cs"), utilitySrcFileContent);
+                File.WriteAllText(Path.Combine(workingDirectory, "Extensions", "ExtensionMethods.cs"), extensionSrcFileContent);
+
+                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " -t lib");
+
+                using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
+                {
+                    var xml = XDocument.Load(stream);
+                    ProjectFileUtils.SetTargetFrameworkForProject(xml, tfmProperty, tfmValue);
+                    
+                    ProjectFileUtils.WriteXmlToFile(xml, stream);
+                }
+
+                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
+                msbuildFixture.PackProject(workingDirectory, projectName, $"--include-source /p:PackageOutputPath={workingDirectory}");
+
+                var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
+                var symbolsNupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.symbols.nupkg");
+                var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
+
+                Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the expected place");
+                Assert.True(File.Exists(symbolsNupkgPath), "The output symbols nupkg is not in the expected place");
+                Assert.True(File.Exists(nuspecPath), "The intermediate nuspec file is not in the expected place");
+
+                using (var nupkgReader = new PackageArchiveReader(symbolsNupkgPath))
+                {
+                    var nuspecReader = nupkgReader.NuspecReader;
+                    // Validate the assets.
+                    var srcItems = nupkgReader.GetFiles("src").ToArray();
+                    Assert.True(srcItems.Length == 4);
+                    Assert.Contains("src/ClassLibrary1/ClassLibrary1.csproj", srcItems);
+                    Assert.Contains("src/ClassLibrary1/Class1.cs", srcItems);
+                    Assert.Contains("src/ClassLibrary1/Extensions/ExtensionMethods.cs", srcItems);
+                    Assert.Contains("src/ClassLibrary1/Utils/Utility.cs", srcItems);
+                }
+
+            }
+        }
     }
 }
 
