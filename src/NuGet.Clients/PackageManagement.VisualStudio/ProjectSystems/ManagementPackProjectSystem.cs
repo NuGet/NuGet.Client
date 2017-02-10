@@ -7,8 +7,8 @@ using NuGet.ProjectManagement;
 using System.Reflection;
 using System.IO;
 
+//TODO: refactor to safely build a no-op proxy when VSAE is not installed (DON'T BREAK THE BUILD)
 #if VisualStudioAuthoringExtensionsInstalled
-using Microsoft.EnterpriseManagement.Configuration;
 using Microsoft.EnterpriseManagement.Configuration.IO;
 using Microsoft.EnterpriseManagement.Packaging;
 using System.Runtime.InteropServices;
@@ -18,16 +18,16 @@ using Microsoft.VisualStudio.Project;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
-    //TODO: safely build a no-op proxy when VSAE is not installed (DON'T BREAK THE BUILD)
-
     public class ManagementPackProjectSystem : VSMSBuildNuGetProjectSystem
     {
         private dynamic _projectMgr;
         private dynamic _mpReferenceContainerNode;
-
-        delegate bool IsAlreadyAddedInternalDelegate(out ReferenceNode existingNodeInternal);
         private MethodInfo _isAlreadyAddedMethodInfo;
         private bool _isVsaeInstalled = false;
+
+#if VisualStudioAuthoringExtensionsInstalled
+        delegate bool IsAlreadyAddedInternalDelegate(out ReferenceNode existingNodeInternal);
+#endif
 
         public ManagementPackProjectSystem(EnvDTEProject envDTEProject, INuGetProjectContext nuGetProjectContext)
             : base(envDTEProject, nuGetProjectContext)
@@ -46,13 +46,15 @@ namespace NuGet.PackageManagement.VisualStudio
                 _mpReferenceContainerNode = refFolderPropinfo.GetValue(oaReferenceFolderItem);
             }
 
-            _isVsaeInstalled = true;
+#if VisualStudioAuthoringExtensionsInstalled
+        _isVsaeInstalled = true;
 
             _isAlreadyAddedMethodInfo = typeof(ManagementPackReferenceNode).GetMethod("IsAlreadyAdded",
                 bindingFlags,
                 null,
                 new[] { typeof(ReferenceNode).MakeByRefType() },
                 null);
+#endif
         }
 
         public override void AddReference(string referencePath)
@@ -69,6 +71,8 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private void AddManagementPackReferencesFromBundle(string bundlePath)
         {
+#if VisualStudioAuthoringExtensionsInstalled
+
             ManagementPackBundleReader bundleReader = ManagementPackBundleFactory.CreateBundleReader();
 
             try
@@ -79,11 +83,13 @@ namespace NuGet.PackageManagement.VisualStudio
 
                     foreach (var managementPack in bundle.ManagementPacks)
                     {
+                        string identity = $"{managementPack.Name} (Version={managementPack.Version},PublicKeyToken={managementPack.KeyToken})";
+
                         try
                         {
                             if (!managementPack.Sealed)
                             {
-                                LogInstallProcessingResult(managementPack, ProcessStatus.NotSealed);
+                                LogProcessingResult(identity, ProcessStatus.NotSealed);
                                 continue;
                             }
 
@@ -98,19 +104,19 @@ namespace NuGet.PackageManagement.VisualStudio
 
                                 if (isAlreadyAddedInternal(out existingEquivalentNode))
                                 {
-                                    LogInstallProcessingResult(managementPack, ProcessStatus.AlreadyExists);
+                                    LogProcessingResult(identity, ProcessStatus.AlreadyExists);
                                     existingEquivalentNode.Dispose();
                                     continue;
                                 }
 
                                 packReferenceNode.AddReference();
-                                LogInstallProcessingResult(managementPack, ProcessStatus.Success);
+                                LogProcessingResult(identity, ProcessStatus.Success);
                             }
 
                         }
                         catch (Exception ex)
                         {
-                            LogInstallProcessingResult(managementPack, ProcessStatus.Failed, ex.Message);
+                            LogProcessingResult(identity, ProcessStatus.Failed, ProcessingOp.AddingReference, ex.Message);
                         }
                     }
                 }
@@ -124,16 +130,16 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 NuGetProjectContext.Log(MessageLevel.Error, $"Unexpected exception while adding reference: {ex.Message}");
             }
+#endif
         }
 
-        private void LogInstallProcessingResult(ManagementPack managementPack, ProcessStatus status, string detail = null)
+        private void LogProcessingResult(string identity, ProcessStatus status, ProcessingOp operation = ProcessingOp.AddingReference, string detail = null)
         {
-            string identity = $"{managementPack.Name} (Version={managementPack.Version},PublicKeyToken={managementPack.KeyToken})";
             string result;
             switch (status)
             {
                 case ProcessStatus.Success:
-                    result = "added";
+                    result = (operation == ProcessingOp.AddingReference) ? "added" : "removed";
                     break;
                 case ProcessStatus.AlreadyExists:
                     result = "already exists";
@@ -142,30 +148,14 @@ namespace NuGet.PackageManagement.VisualStudio
                     result = "is not sealed";
                     break;
                 default:
-                    result = $"failed while adding";
+                    result = $"failed while {((operation == ProcessingOp.AddingReference) ? "adding" : "removing")}";
                     break;
             }
 
             NuGetProjectContext.Log(MessageLevel.Info, $"{identity} {result}. {detail}");
         }
 
-        private void LogUninstallProcessingResult(string identity, ProcessStatus status, string detail = null)
-        {
-            string result;
-            switch (status)
-            {
-                case ProcessStatus.Success:
-                    result = "removed";
-                    break;
-                default:
-                    result = $"failed while removing";
-                    break;
-            }
-
-            NuGetProjectContext.Log(MessageLevel.Info, $"{identity} {result}. {detail}");
-        }
-
-        protected enum ProcessStatus
+        private enum ProcessStatus
         {
             NotSealed,
             AlreadyExists,
@@ -173,8 +163,20 @@ namespace NuGet.PackageManagement.VisualStudio
             Failed,
         }
 
+        private enum ProcessingOp
+        {
+            AddingReference,
+            RemovingReference,
+        }
+
         public override bool ReferenceExists(string name)
         {
+            if (!_isVsaeInstalled)
+            {
+                NuGetProjectContext.Log(MessageLevel.Info, "Visual Studio Authoring Extensions are not installed. Skipping ReferenceExists.");
+                return false;
+            }
+
             dynamic reference;
             return TryGetExistingReference(name, out reference);
         }
@@ -218,12 +220,13 @@ namespace NuGet.PackageManagement.VisualStudio
                 var identity = reference.Name;
                 try
                 {
-                    reference.Remove(true);
-                    LogUninstallProcessingResult(identity, ProcessStatus.Success);
+                    bool shouldRemoveFromStorage = false; // the nuget folder uninstall will take care of file cleanup
+                    reference.Remove(shouldRemoveFromStorage);
+                    LogProcessingResult(identity, ProcessStatus.Success);
                 }
                 catch (Exception ex)
                 {
-                    LogUninstallProcessingResult(identity, ProcessStatus.Failed, ex.Message);
+                    LogProcessingResult(identity, ProcessStatus.Failed, ProcessingOp.RemovingReference, ex.Message);
                 }
             }
         }

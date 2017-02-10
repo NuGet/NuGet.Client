@@ -219,7 +219,7 @@ namespace NuGet.ProjectManagement
                 var folderPath = Path.GetDirectoryName(fullPath);
                 if (!string.IsNullOrEmpty(folderPath))
                 {
-                    nuGetProjectContext.Log(
+                    nuGetProjectContext?.Log(
                         MessageLevel.Debug,
                         Strings.Debug_RemovedFileFromFolder,
                         Path.GetFileName(fullPath),
@@ -227,7 +227,7 @@ namespace NuGet.ProjectManagement
                 }
                 else
                 {
-                    nuGetProjectContext.Log(MessageLevel.Debug, Strings.Debug_RemovedFile, Path.GetFileName(fullPath));
+                    nuGetProjectContext?.Log(MessageLevel.Debug, Strings.Debug_RemovedFile, Path.GetFileName(fullPath));
                 }
             }
             catch (FileNotFoundException)
@@ -248,7 +248,7 @@ namespace NuGet.ProjectManagement
                 }
                 else
                 {
-                    nuGetProjectContext.Log(MessageLevel.Warning, Strings.Warning_FileModified, packageFile.FileFullPath);
+                    nuGetProjectContext?.Log(MessageLevel.Warning, Strings.Warning_FileModified, packageFile.FileFullPath);
                 }
             }
 
@@ -376,7 +376,7 @@ namespace NuGet.ProjectManagement
                     Thread.Sleep(100);
                 }
 
-                nuGetProjectContext.Log(MessageLevel.Debug, Strings.Debug_RemovedFolder, fullPath);
+                nuGetProjectContext?.Log(MessageLevel.Debug, Strings.Debug_RemovedFolder, fullPath);
             }
             catch (DirectoryNotFoundException)
             {
