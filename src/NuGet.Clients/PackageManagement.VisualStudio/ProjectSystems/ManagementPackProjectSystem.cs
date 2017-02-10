@@ -18,6 +18,8 @@ using Microsoft.VisualStudio.Project;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
+    //TODO: safely build a no-op proxy when VSAE is not installed (DON'T BREAK THE BUILD)
+
     public class ManagementPackProjectSystem : VSMSBuildNuGetProjectSystem
     {
         private dynamic _projectMgr;
@@ -68,44 +70,48 @@ namespace NuGet.PackageManagement.VisualStudio
         private void AddManagementPackReferencesFromBundle(string bundlePath)
         {
             ManagementPackBundleReader bundleReader = ManagementPackBundleFactory.CreateBundleReader();
-            var mpFileStore = new ManagementPackFileStore();
 
             try
             {
-                ManagementPackBundle bundle = bundleReader.Read(bundlePath, new ManagementPackFileStore());
-
-                foreach (var managementPack in bundle.ManagementPacks)
+                using (var mpFileStore = new ManagementPackFileStore())
                 {
-                    try
+                    ManagementPackBundle bundle = bundleReader.Read(bundlePath, mpFileStore);
+
+                    foreach (var managementPack in bundle.ManagementPacks)
                     {
-                        if (!managementPack.Sealed)
+                        try
                         {
-                            LogProcessingResult(managementPack, ProcessStatus.NotSealed);
-                            continue;
+                            if (!managementPack.Sealed)
+                            {
+                                LogInstallProcessingResult(managementPack, ProcessStatus.NotSealed);
+                                continue;
+                            }
+
+                            using (var packReferenceNode = new ManagementPackReferenceNode(_projectMgr, bundlePath, managementPack.Name))
+                            {
+                                ReferenceNode existingEquivalentNode;
+
+                                var isAlreadyAddedInternal = (IsAlreadyAddedInternalDelegate)Delegate.CreateDelegate(
+                                                              typeof(IsAlreadyAddedInternalDelegate),
+                                                              packReferenceNode,
+                                                              _isAlreadyAddedMethodInfo);
+
+                                if (isAlreadyAddedInternal(out existingEquivalentNode))
+                                {
+                                    LogInstallProcessingResult(managementPack, ProcessStatus.AlreadyExists);
+                                    existingEquivalentNode.Dispose();
+                                    continue;
+                                }
+
+                                packReferenceNode.AddReference();
+                                LogInstallProcessingResult(managementPack, ProcessStatus.Success);
+                            }
+
                         }
-
-                        ManagementPackReferenceNode packReferenceNode = new ManagementPackReferenceNode(_projectMgr, bundlePath, managementPack.Name);
-                        ReferenceNode existingEquivalentNode;
-
-                        var isAlreadyAddedInternal = (IsAlreadyAddedInternalDelegate)Delegate.CreateDelegate(
-                                                      typeof(IsAlreadyAddedInternalDelegate),
-                                                      packReferenceNode,
-                                                      _isAlreadyAddedMethodInfo);
-
-                        if (isAlreadyAddedInternal(out existingEquivalentNode))
+                        catch (Exception ex)
                         {
-                            packReferenceNode.Dispose();
-                            LogProcessingResult(managementPack, ProcessStatus.AlreadyExists);
-                            continue;
+                            LogInstallProcessingResult(managementPack, ProcessStatus.Failed, ex.Message);
                         }
-
-                        packReferenceNode.AddReference();
-
-                        LogProcessingResult(managementPack, ProcessStatus.Success);
-                    }
-                    catch (Exception ex)
-                    {
-                        LogProcessingResult(managementPack, ProcessStatus.Failed, true, ex.Message);
                     }
                 }
 
@@ -120,14 +126,14 @@ namespace NuGet.PackageManagement.VisualStudio
             }
         }
 
-        private void LogProcessingResult(ManagementPack managementPack, ProcessStatus status, bool adding = true, string detail = null)
+        private void LogInstallProcessingResult(ManagementPack managementPack, ProcessStatus status, string detail = null)
         {
             string identity = $"{managementPack.Name} (Version={managementPack.Version},PublicKeyToken={managementPack.KeyToken})";
             string result;
             switch (status)
             {
                 case ProcessStatus.Success:
-                    result = adding ? "added" : "removed";
+                    result = "added";
                     break;
                 case ProcessStatus.AlreadyExists:
                     result = "already exists";
@@ -136,7 +142,23 @@ namespace NuGet.PackageManagement.VisualStudio
                     result = "is not sealed";
                     break;
                 default:
-                    result = $"failed while {(adding ? "adding" : "removing")}";
+                    result = $"failed while adding";
+                    break;
+            }
+
+            NuGetProjectContext.Log(MessageLevel.Info, $"{identity} {result}. {detail}");
+        }
+
+        private void LogUninstallProcessingResult(string identity, ProcessStatus status, string detail = null)
+        {
+            string result;
+            switch (status)
+            {
+                case ProcessStatus.Success:
+                    result = "removed";
+                    break;
+                default:
+                    result = $"failed while removing";
                     break;
             }
 
@@ -193,28 +215,17 @@ namespace NuGet.PackageManagement.VisualStudio
             dynamic reference;
             if (TryGetExistingReference(name, out reference))
             {
-
+                var identity = reference.Name;
+                try
+                {
+                    reference.Remove(true);
+                    LogUninstallProcessingResult(identity, ProcessStatus.Success);
+                }
+                catch (Exception ex)
+                {
+                    LogUninstallProcessingResult(identity, ProcessStatus.Failed, ex.Message);
+                }
             }
-
-            //dynamic oaReferenceFolderItem = this.EnvDTEProject.ProjectItems.Item(1);
-
-            //dynamic managementPackReference = null;
-
-            //var referenceName = Path.GetFileNameWithoutExtension(name);
-
-            //foreach (dynamic item in oaReferenceFolderItem.ProjectItems)
-            //{
-            //    if (String.Equals(item.Name, referenceName, StringComparison.OrdinalIgnoreCase))
-            //    {
-            //        managementPackReference = item;
-            //        break;
-            //    }
-            //}
-
-            //if (managementPackReference!= null)
-            //{
-            //    managementPackReference.Delete();
-            //}
         }
 
         protected override bool IsBindingRedirectSupported
