@@ -6,7 +6,6 @@ using EnvDTEProject = EnvDTE.Project;
 using NuGet.ProjectManagement;
 using System.Reflection;
 using System.IO;
-using System.Diagnostics;
 
 #if VisualStudioAuthoringExtensionsInstalled
 using Microsoft.EnterpriseManagement.Configuration;
@@ -66,7 +65,6 @@ namespace NuGet.PackageManagement.VisualStudio
             AddManagementPackReferencesFromBundle(referencePath);
         }
 
-        [Conditional("VisualStudioAuthoringExtensionsInstalled2")]
         private void AddManagementPackReferencesFromBundle(string bundlePath)
         {
             ManagementPackBundleReader bundleReader = ManagementPackBundleFactory.CreateBundleReader();
@@ -122,7 +120,6 @@ namespace NuGet.PackageManagement.VisualStudio
             }
         }
 
-        [Conditional("VisualStudioAuthoringExtensionsInstalled")]
         private void LogProcessingResult(ManagementPack managementPack, ProcessStatus status, bool adding = true, string detail = null)
         {
             string identity = $"{managementPack.Name} (Version={managementPack.Version},PublicKeyToken={managementPack.KeyToken})";
@@ -184,14 +181,13 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             if (!_isVsaeInstalled)
             {
-                NuGetProjectContext.Log(MessageLevel.Info, "Visual Studio Authoring Extensions are not installed. Reference not added.");
+                NuGetProjectContext.Log(MessageLevel.Info, "Visual Studio Authoring Extensions are not installed. Skipping RemoveReference.");
                 return;
             }
 
             RemoveManagementPackReference(name);
         }
 
-        [Conditional("VisualStudioAuthoringExtensionsInstalled")]
         private void RemoveManagementPackReference(string name)
         {
             dynamic reference;
@@ -200,6 +196,25 @@ namespace NuGet.PackageManagement.VisualStudio
 
             }
 
+            //dynamic oaReferenceFolderItem = this.EnvDTEProject.ProjectItems.Item(1);
+
+            //dynamic managementPackReference = null;
+
+            //var referenceName = Path.GetFileNameWithoutExtension(name);
+
+            //foreach (dynamic item in oaReferenceFolderItem.ProjectItems)
+            //{
+            //    if (String.Equals(item.Name, referenceName, StringComparison.OrdinalIgnoreCase))
+            //    {
+            //        managementPackReference = item;
+            //        break;
+            //    }
+            //}
+
+            //if (managementPackReference!= null)
+            //{
+            //    managementPackReference.Delete();
+            //}
         }
 
         protected override bool IsBindingRedirectSupported
