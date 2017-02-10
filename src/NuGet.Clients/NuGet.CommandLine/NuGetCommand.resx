@@ -5324,7 +5324,7 @@ nuget locals global-packages -list</value>
     <value>Forces the application to run using an invariant, English-based culture.</value>
   </data>
   <data name="RestoreCommandUsageExamples" xml:space="preserve">
-    <value>nuget restore MySoluion.sln</value>
+    <value>nuget restore MySolution.sln</value>
     <comment>command line example, do not localize</comment>
   </data>
   <data name="CommandDirectDownload" xml:space="preserve">
