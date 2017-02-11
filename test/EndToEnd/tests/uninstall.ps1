@@ -16,21 +16,6 @@ function Test-RemovingPackageFromProjectDoesNotRemoveIfInUse {
     Assert-SolutionPackage Ninject
 }
 
-function Test-UninstallPackageWhatIf {
-    # Arrange
-    $p1 = New-ClassLibrary
-    
-    Install-Package Ninject -ProjectName $p1.Name
-    Assert-Reference $p1 Ninject
-    
-	# Act
-    Uninstall-Package Ninject -ProjectName $p1.Name -What
-
-	# Assert: packages are not uninstalled
-	Assert-Reference $p1 Ninject
-	Assert-Package $p1 Ninject
-}
-
 function Test-RemovingPackageWithDependencyFromProjectDoesNotRemoveIfInUse {
     # Arrange
     $p1 = New-WebApplication
@@ -65,6 +50,25 @@ function Test-RemovePackageRemovesPackageFromSolutionIfNotInUse {
     Assert-Null (Get-AssemblyReference $p1 elmah)
     Assert-Null (Get-ProjectPackage $p1 elmah)
     Assert-Null (Get-SolutionPackage elmah)
+}
+
+function Test-RemoveMPPackageRemovesPackageFromSolutionIfNotInUse {
+	# Arrange
+	$package = "FrameworkMP"
+	$project = New-ManagementPack_2012R2
+	$source = "..\"
+	
+	Install-Package $package -ProjectName $project.Name -Source $source
+	Assert-MPReference $project $package
+	Assert-SolutionPackage $package
+
+	# Act
+	Uninstall-Package $package -ProjectName $project.Name
+	
+	# Assert
+	Assert-NoMPReference $project $package
+	# Assert-Null (Get-ProjectPackage $p1 $package)
+	Assert-Null (Get-SolutionPackage $package)
 }
 
 function Test-UninstallingPackageWithConfigTransformWhenConfigReadOnly {
