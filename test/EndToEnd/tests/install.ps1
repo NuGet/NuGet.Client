@@ -58,6 +58,21 @@ function Test-InstallMPPackage {
 	Assert-MPReference $project $package
 }
 
+function Test-UninstallMPPackage {
+	# Arrange
+	$package = "FrameworkMP"
+	$project = New-ManagementPack_2012R2
+	$source = "..\"
+	Install-Package $package -ProjectName $project.Name -Source $source
+	Assert-MPReference $project $package
+
+	# Act
+	Uninstall-Package $package -ProjectName $project.Name
+	
+	# Assert
+	Assert-MPReference $project $package
+}
+
 function Test-InstallPackageWithInvalidHttpSource {
     # Arrange
     $package = "Rules"
