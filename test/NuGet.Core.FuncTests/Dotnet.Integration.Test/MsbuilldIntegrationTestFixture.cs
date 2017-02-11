@@ -23,7 +23,7 @@ namespace Dotnet.Integration.Test
             TestDotnetCli = Path.Combine(cliDirectory, "dotnet.exe");
         }
 
-        internal void CreateDotnetNewProject(string solutionRoot, string projectName, string args = "")
+        internal void CreateDotnetNewProject(string solutionRoot, string projectName, string args = "console")
         {
             var workingDirectory = Path.Combine(solutionRoot, projectName);
             if (!Directory.Exists(workingDirectory))
@@ -35,6 +35,24 @@ namespace Dotnet.Integration.Test
                 $"new {args}",
                 waitForExit: true,
                 timeOutInMilliseconds: 300000);
+
+            // TODO : remove this workaround when https://github.com/dotnet/templating/issues/294 is fixed
+            if (result.Item1 != 0)
+            {
+                result = CommandRunner.Run(TestDotnetCli,
+                workingDirectory,
+                $"new {args} --debug:reinit",
+                waitForExit: true,
+                timeOutInMilliseconds: 300000);
+
+                result = CommandRunner.Run(TestDotnetCli,
+                workingDirectory,
+                $"new {args} ",
+                waitForExit: true,
+                timeOutInMilliseconds: 300000);
+            }
+            Assert.True(result.Item1 == 0, $"Creating project failed with following log information :\n {result.Item3}");
+            Assert.True(result.Item3 == "", $"Creating project failed with following message in error stream :\n {result.Item3}");
         }
 
         internal void RestoreProject(string workingDirectory, string projectName, string args)
@@ -43,7 +61,7 @@ namespace Dotnet.Integration.Test
                 workingDirectory,
                 $"restore {projectName}.csproj {args}",
                 waitForExit: true);
-            Assert.True(result.Item1 == 0, $"Restore failed with following log information :\n {result.Item2}");
+            Assert.True(result.Item1 == 0, $"Restore failed with following log information :\n {result.Item3}");
             Assert.True(result.Item3 == "", $"Restore failed with following message in error stream :\n {result.Item3}");
         }
 
@@ -53,7 +71,7 @@ namespace Dotnet.Integration.Test
                 workingDirectory,
                 $"pack {projectName}.csproj {args}",
                 waitForExit: true);
-            Assert.True(result.Item1 == 0, $"Pack failed with following log information :\n {result.Item2}");
+            Assert.True(result.Item1 == 0, $"Pack failed with following log information :\n {result.Item3}");
             Assert.True(result.Item3 == "", $"Pack failed with following message in error stream :\n {result.Item3}");
         }
 
@@ -63,7 +81,7 @@ namespace Dotnet.Integration.Test
                 workingDirectory,
                 $"msbuild {projectName}.csproj {args}",
                 waitForExit: true);
-            Assert.True(result.Item1 == 0, $"Build failed with following log information :\n {result.Item2}");
+            Assert.True(result.Item1 == 0, $"Build failed with following log information :\n {result.Item3}");
             Assert.True(result.Item3 == "", $"Build failed with following message in error stream :\n {result.Item3}");
         }
 
@@ -120,7 +138,10 @@ namespace Dotnet.Integration.Test
                 foreach (var coreClrDll in Directory.GetFiles(Path.Combine(pathToPackSdk, "CoreCLR")))
                 {
                     var fileName = Path.GetFileName(coreClrDll);
-                    File.Copy(coreClrDll, Path.Combine(pathToSdkInCli, fileName), true);
+                    if (fileName != "NuGet.Build.Tasks.Pack.dll")
+                    {
+                        File.Copy(coreClrDll, Path.Combine(pathToSdkInCli, fileName), true);
+                    }
                 }
             }
 

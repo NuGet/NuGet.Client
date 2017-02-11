@@ -34,7 +34,7 @@ namespace Dotnet.Integration.Test
                 var projectName = "ClassLibrary1";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
                 // Act
-                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, "-t lib");
+                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib");
                 msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
                 msbuildFixture.PackProject(workingDirectory, projectName, $"-o {workingDirectory}");
 
@@ -61,7 +61,7 @@ namespace Dotnet.Integration.Test
                     var packages = dependencyGroups[0].Packages.ToList();
                     Assert.Equal(1, packages.Count);
                     Assert.Equal("NETStandard.Library", packages[0].Id);
-                    Assert.Equal(new VersionRange(new NuGetVersion("1.6.1")), packages[0].VersionRange);
+                    Assert.Equal(new VersionRange(new NuGetVersion("1.6.0")), packages[0].VersionRange);
                     Assert.Equal(new List<string> { "Analyzers", "Build" }, packages[0].Exclude);
                     Assert.Empty(packages[0].Include);
 
@@ -164,27 +164,27 @@ namespace Dotnet.Integration.Test
                     Assert.Equal(2, libItems.Count);
                     Assert.Equal(FrameworkConstants.CommonFrameworks.NetCoreApp10, libItems[0].TargetFramework);
                     Assert.Equal(FrameworkConstants.CommonFrameworks.Net45, libItems[1].TargetFramework);
-                    Assert.Equal(new[] { "lib/netcoreapp1.0/ClassLibrary1.dll" }, libItems[0].Items);
-                    Assert.Equal(new[] { "lib/net45/ClassLibrary1.exe" }, libItems[1].Items);
+                    Assert.Equal(new[] { "lib/netcoreapp1.0/ClassLibrary1.dll", "lib/netcoreapp1.0/ClassLibrary1.runtimeconfig.json" }, libItems[0].Items);
+                    Assert.Equal(new[] { "lib/net45/ClassLibrary1.exe", "lib/net45/ClassLibrary1.runtimeconfig.json" }, libItems[1].Items);
                 }
             }
         }
 
         [Platform(Platform.Windows)]
         [Theory]
-        [InlineData(null, null, null, true, "", "Analyzers,Build")]
-        [InlineData(null, "Native", null, true, "", "Analyzers,Build,Native")]
-        [InlineData("Compile", null, null, true, "", "Analyzers,Build,Native,Runtime")]
-        [InlineData("Compile;Runtime", null, null, true, "", "Analyzers,Build,Native")]
-        [InlineData("All", null, "None", true, "All", "")]
-        [InlineData("All", null, "Compile", true, "Analyzers,Build,ContentFiles,Native,Runtime", "")]
-        [InlineData("All", null, "Compile;Build", true, "Analyzers,ContentFiles,Native,Runtime", "")]
-        [InlineData("All", "Native", "Compile;Build", true, "Analyzers,ContentFiles,Runtime", "")]
-        [InlineData("All", "Native", "Native;Build", true, "Analyzers,Compile,ContentFiles,Runtime", "")]
-        [InlineData("Compile", "Native", "Native;Build", true, "", "Analyzers,Build,Native,Runtime")]
-        [InlineData("All", "All", null, false, null, null)]
-        [InlineData("Compile;Runtime", "All", null, false, null, null)]
-        [InlineData(null, null, "All", false, null, null)]
+        [InlineData(null,                null,               null,               true,               "",                                                "Analyzers,Build")]
+        [InlineData(null,               "Native",            null,               true,               "",                                                "Analyzers,Build,Native")]
+        [InlineData("Compile",           null,               null,               true,               "",                                                "Analyzers,Build,Native,Runtime")]
+        [InlineData("Compile;Runtime",   null,               null,               true,               "",                                                "Analyzers,Build,Native")]
+        [InlineData("All",               null,               "None",             true,               "All",                                             "")]
+        [InlineData("All",               null,               "Compile",          true,               "Analyzers,Build,ContentFiles,Native,Runtime",     "")]
+        [InlineData("All",               null,               "Compile;Build",    true,               "Analyzers,ContentFiles,Native,Runtime",           "")]
+        [InlineData("All",               "Native",           "Compile;Build",    true,               "Analyzers,ContentFiles,Runtime",                  "")]
+        [InlineData("All",               "Native",           "Native;Build",     true,               "Analyzers,Compile,ContentFiles,Runtime",          "")]
+        [InlineData("Compile",           "Native",           "Native;Build",     true,               "",                                                "Analyzers,Build,Native,Runtime")]
+        [InlineData("All",               "All",              null,               false,              null,                                               null)]
+        [InlineData("Compile;Runtime",   "All",              null,               false,              null,                                               null)]
+        [InlineData(null,                null,               "All",              false,              null,                                               null)]
         public void PackCommand_SupportsIncludeExcludePrivateAssets_OnPackages(
             string includeAssets,
             string excludeAssets,
@@ -199,7 +199,7 @@ namespace Dotnet.Integration.Test
                 var projectName = "ClassLibrary1";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
-                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, "-t lib");
+                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib");
 
                 using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
                 {
@@ -281,7 +281,7 @@ namespace Dotnet.Integration.Test
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
 
                 msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName);
-                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, referencedProject, "-t lib");
+                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, referencedProject, "classlib");
 
                 using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
                 {
@@ -332,7 +332,7 @@ namespace Dotnet.Integration.Test
                     Assert.Equal(2,
                                     packagesA.Count);
                     Assert.Equal("NETStandard.Library", packagesA[1].Id);
-                    Assert.Equal(new VersionRange(new NuGetVersion("1.6.1")), packagesA[1].VersionRange);
+                    Assert.Equal(new VersionRange(new NuGetVersion("1.6.0")), packagesA[1].VersionRange);
                     Assert.Equal(new List<string> { "Analyzers", "Build" }, packagesA[1].Exclude);
                     Assert.Empty(packagesA[1].Include);
                     
@@ -345,7 +345,7 @@ namespace Dotnet.Integration.Test
                     var libItems = nupkgReader.GetLibItems().ToList();
                     Assert.Equal(1, libItems.Count);
                     Assert.Equal(FrameworkConstants.CommonFrameworks.NetStandard14, libItems[0].TargetFramework);
-                    Assert.Equal(new[] { "lib/netstandard1.4/ClassLibrary1.dll" }, libItems[0].Items);
+                    Assert.Equal(new[] { "lib/netstandard1.4/ClassLibrary1.dll", "lib/netstandard1.4/ClassLibrary1.runtimeconfig.json" }, libItems[0].Items);
                 }
             }
         }
@@ -372,7 +372,7 @@ namespace Dotnet.Integration.Test
                 var projectName = "ClassLibrary1";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
                 // Act
-                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, "-t lib");
+                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib");
                 msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
                 File.WriteAllText(Path.Combine(workingDirectory, "input.nuspec"), nuspecFileContent);
                 File.WriteAllText(Path.Combine(workingDirectory, "abc.txt"), "sample text");
@@ -435,7 +435,7 @@ namespace Dotnet.Integration.Test
                 var projectName = "ClassLibrary1";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
                 // Act
-                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, "-t lib");
+                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib");
                 msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
                 File.WriteAllText(Path.Combine(workingDirectory, "input.nuspec"), nuspecFileContent);
                 File.WriteAllText(Path.Combine(workingDirectory, "abc.txt"), "sample text");
@@ -488,7 +488,7 @@ namespace Dotnet.Integration.Test
                 var projectName = "ClassLibrary1";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
                 // Act
-                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, "-t lib");
+                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib");
                 msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
                 File.WriteAllText(Path.Combine(workingDirectory, "input.nuspec"), nuspecFileContent);
                 File.WriteAllText(Path.Combine(basePathDirectory, "abc.txt"), "sample text");
@@ -580,7 +580,7 @@ namespace Dotnet.Integration.Test
                 Directory.CreateDirectory(Path.Combine(workingDirectory, "folderA", "folderB"));
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
 
-                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, "-t lib");
+                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib");
 
                 using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
                 {
@@ -654,7 +654,7 @@ namespace Dotnet.Integration.Test
                 var workingDirectory = Path.Combine(testDirectory, projectName);
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
 
-                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " -t lib");
+                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib");
 
                 using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
                 {
@@ -766,7 +766,7 @@ namespace Dotnet.Integration.Test
                 }
                 File.WriteAllText(pathToContent, "this is sample text in the content file");
 
-                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, "-t lib");
+                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib");
 
                 using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
                 {
@@ -861,7 +861,7 @@ namespace Dotnet.Integration.Test
                 }
                 File.WriteAllText(pathToContent, "this is sample text in the content file");
 
-                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, "-t lib");
+                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib");
 
                 using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
                 {
@@ -928,7 +928,7 @@ namespace Dotnet.Integration.Test
                 var workingDirectory = Path.Combine(testDirectory, projectName);
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
 
-                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " -t lib");
+                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib");
 
                 using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
                 {
@@ -966,7 +966,7 @@ namespace Dotnet.Integration.Test
                     var packages = dependencyGroups[0].Packages.ToList();
                     Assert.Equal(1, packages.Count);
                     Assert.Equal("NETStandard.Library", packages[0].Id);
-                    Assert.Equal(new VersionRange(new NuGetVersion("1.6.1")), packages[0].VersionRange);
+                    Assert.Equal(new VersionRange(new NuGetVersion("1.6.0")), packages[0].VersionRange);
                     Assert.Equal(new List<string> { "Analyzers", "Build" }, packages[0].Exclude);
                     Assert.Empty(packages[0].Include);
 
@@ -993,7 +993,7 @@ namespace Dotnet.Integration.Test
                 var workingDirectory = Path.Combine(testDirectory, projectName);
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
 
-                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " -t lib");
+                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib");
 
                 using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
                 {
@@ -1054,7 +1054,7 @@ namespace Dotnet.Integration.Test
                 var projectName = "ClassLibrary1";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
                 // Act
-                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, "-t lib");
+                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib");
                 msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
                 msbuildFixture.PackProject(workingDirectory, projectName, $"-o {workingDirectory} /p:IncludeBuildOutput=false");
 
@@ -1081,7 +1081,7 @@ namespace Dotnet.Integration.Test
                     var packages = dependencyGroups[0].Packages.ToList();
                     Assert.Equal(1, packages.Count);
                     Assert.Equal("NETStandard.Library", packages[0].Id);
-                    Assert.Equal(new VersionRange(new NuGetVersion("1.6.1")), packages[0].VersionRange);
+                    Assert.Equal(new VersionRange(new NuGetVersion("1.6.0")), packages[0].VersionRange);
                     Assert.Equal(new List<string> { "Analyzers", "Build" }, packages[0].Exclude);
                     Assert.Empty(packages[0].Include);
 
@@ -1104,7 +1104,7 @@ namespace Dotnet.Integration.Test
                 var projectName = "ClassLibrary1";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
                 // Act
-                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, "-t lib");
+                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib");
                 msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
                 msbuildFixture.PackProject(workingDirectory, projectName, $"-o {workingDirectory} /p:BuildOutputTargetFolder={buildOutputTargetFolder}");
 
@@ -1138,7 +1138,7 @@ namespace Dotnet.Integration.Test
                 var workingDirectory = Path.Combine(testDirectory, projectName);
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
 
-                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " -t lib");
+                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib");
 
                 using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
                 {
@@ -1229,7 +1229,7 @@ namespace Dotnet.Integration.Test
                 Directory.CreateDirectory(Path.Combine(workingDirectory, "folderA", "folderB"));
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
 
-                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, "-t lib");
+                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib");
 
                 using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
                 {
@@ -1291,7 +1291,7 @@ namespace Dotnet.Integration.Test
                 var workingDirectory = Path.Combine(testDirectory, projectName);
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
 
-                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " -t lib");
+                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib");
 
                 using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
                 {
@@ -1331,7 +1331,7 @@ namespace Dotnet.Integration.Test
                     var packages = dependencyGroups[0].Packages.ToList();
                     Assert.Equal(1, packages.Count);
                     Assert.Equal("NETStandard.Library", packages[0].Id);
-                    Assert.Equal(new VersionRange(new NuGetVersion("1.6.1")), packages[0].VersionRange);
+                    Assert.Equal(new VersionRange(new NuGetVersion("1.6.0")), packages[0].VersionRange);
                     Assert.Equal(new List<string> { "Analyzers", "Build" }, packages[0].Exclude);
                     Assert.Empty(packages[0].Include);
 
@@ -1374,7 +1374,7 @@ namespace ClassLibrary
                 File.WriteAllText(Path.Combine(workingDirectory, "Utils", "Utility.cs"), utilitySrcFileContent);
                 File.WriteAllText(Path.Combine(workingDirectory, "Extensions", "ExtensionMethods.cs"), extensionSrcFileContent);
 
-                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " -t lib");
+                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib");
 
                 using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
                 {
