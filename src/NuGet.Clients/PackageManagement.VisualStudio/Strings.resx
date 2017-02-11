@@ -205,7 +205,7 @@
     <comment>{0} is the full path to the project.</comment>
   </data>
   <data name="ProjectCouldNotBeCastedToBuildPropertyStorage" xml:space="preserve">
-    <value>The project '{0}' could not be casted to a build property storage interace, which is required to get MSBuild properties inside Visual Studio.</value>
+    <value>The project '{0}' could not be cast to a build property storage interface, which is required to get MSBuild properties inside Visual Studio.</value>
     <comment>{0} is the full path to the project.</comment>
   </data>
   <data name="UnableToGetCPSPackageInstallationService" xml:space="preserve">
