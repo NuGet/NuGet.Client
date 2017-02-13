@@ -21,6 +21,9 @@ namespace NuGet.PackageManagement.VisualStudio
     /// </summary>
     public class EnvDTEProjectAdapter : IEnvDTEProjectAdapter
     {
+        private const string RestoreProjectStyle = "RestoreProjectStyle";
+        private const string ProjectStylePackageReference = "PackageReference";
+
         /// <summary>
         /// The adaptee for this adapter
         /// </summary>
@@ -156,10 +159,15 @@ namespace NuGet.PackageManagement.VisualStudio
 
                 if (!_isLegacyCSProjPackageReferenceProject.HasValue)
                 {
+                    var restoreProjectStyle = GetMSBuildProperty(AsIVsBuildPropertyStorage, RestoreProjectStyle);
+                    if (!string.IsNullOrWhiteSpace(restoreProjectStyle) && restoreProjectStyle.Equals(ProjectStylePackageReference, StringComparison.OrdinalIgnoreCase))
+                    {
+                        _isLegacyCSProjPackageReferenceProject = true;
+                    }
                     // A legacy CSProj can't be CPS, must cast to VSProject4 and *must* have at least one package
                     // reference already in the CSProj. In the future this logic may change. For now a user must
                     // hand code their first package reference. Laid out in longhand for readability.
-                    if (AsIVsHierarchy?.IsCapabilityMatch("CPS") ?? true)
+                    else if (AsIVsHierarchy?.IsCapabilityMatch("CPS") ?? true)
                     {
                         _isLegacyCSProjPackageReferenceProject = false;
                     }
