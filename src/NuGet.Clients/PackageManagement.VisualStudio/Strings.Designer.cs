@@ -223,6 +223,15 @@ namespace NuGet.PackageManagement.VisualStudio {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Cannot create NuGet project. The VS project might be invalid or the solution is not saved on disk..
+        /// </summary>
+        public static string Error_FailureToCreateNuGetProject {
+            get {
+                return ResourceManager.GetString("Error_FailureToCreateNuGetProject", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Failed to load &apos;{0}&apos;, while updating binding redirects. {1}.
         /// </summary>
         public static string Error_WhileLoadingConfigForBindingRedirects {
