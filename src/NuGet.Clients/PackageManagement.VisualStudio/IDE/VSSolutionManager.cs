@@ -815,6 +815,10 @@ namespace NuGet.PackageManagement.VisualStudio
 
             // Create the NuGet project first. If this throws we bail out and do not change the cache.
             var nuGetProject = CreateNuGetProject(envDTEProject);
+            if(nuGetProject == null)
+            {
+                throw new InvalidOperationException(Strings.Error_FailureToCreateNuGetProject);
+            }
 
             // Then create the project name from the project.
             var newEnvDTEProjectName = ProjectNames.FromDTEProject(envDTEProject);
@@ -927,7 +931,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 return result;
             }
 
-            return null;
+            return null
         }
 
         // REVIEW: This might be inefficient, see what we can do with caching projects until references change
