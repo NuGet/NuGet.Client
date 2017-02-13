@@ -68,20 +68,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <Delete Files="@(_PackageFilesToDelete)"/>
   </Target>
 
-  <!--
-    ============================================================
-    Pack
-    Main entry point for packing packages
-    ============================================================
-  -->
-  <Target Name="Pack" DependsOnTargets="_IntermediatePack;$(PackDependsOn)">
-  </Target>
-  <Target Name="_IntermediatePack">
-    <PropertyGroup>
-      <ContinuePackingAfterGeneratingNuspec>true</ContinuePackingAfterGeneratingNuspec>
-    </PropertyGroup>
-  </Target>
-  <Target Name="GenerateNuspec" DependsOnTargets="$(GenerateNuspecDependsOn)" Condition="$(IsPackable) == 'true'">
+  <Target Name="_CalculateInputsOutputsForPack">
     <PropertyGroup Condition="$(ContinuePackingAfterGeneratingNuspec) == '' ">
       <ContinuePackingAfterGeneratingNuspec>false</ContinuePackingAfterGeneratingNuspec>
     </PropertyGroup>
@@ -99,7 +86,47 @@ Copyright (c) .NET Foundation. All rights reserved.
     <ConvertToAbsolutePath Condition="$(NuspecFile) != ''" Paths="$(NuspecFile)">
       <Output TaskParameter="AbsolutePaths" PropertyName="NuspecFileAbsolutePath" />
     </ConvertToAbsolutePath>
-    
+
+    <ItemGroup>
+      <!--This catches changes to properties-->
+      <NuGetPackInput Include="$(MSBuildAllProjects)"/>
+      <NuGetPackInput Include="@(_PackageFiles)"/>
+      <NuGetPackInput Include="@(_PackageFilesToExclude)"/>
+      <NuGetPackInput Include="@(_TargetPathsToAssemblies->'%(FinalOutputPath)')"/>
+      <NuGetPackInput Include="@(_TargetPathsToSymbols)"/>
+      <NuGetPackInput Include="@(_SourceFiles)"/>
+      <NuGetPackInput Include="@(_References)"/>
+      <NuGetPackOutput Include="$(RestoreOutputAbsolutePath)$(PackageId).$(PackageVersion).nuspec"/>
+
+      <NuGetPackOutput Include="$(PackageOutputAbsolutePath)$(PackageId).$(PackageVersion).nupkg" 
+                       Condition="'$(ContinuePackingAfterGeneratingNuspec)' == 'true'"/>
+
+      <NuGetPackOutput Include="$(PackageOutputAbsolutePath)$(PackageId).$(PackageVersion).symbols.nupkg"
+                       Condition="'$(IncludeSource)' == 'true'
+                               OR '$(IncludeSymbols)' == 'true'"/>
+
+      <NuGetPackOutput Include="$(RestoreOutputAbsolutePath)$(PackageId).$(PackageVersion).symbols.nuspec"
+                       Condition="'$(IncludeSource)' == 'true'
+                             OR '$(IncludeSymbols)' == 'true'"/>
+    </ItemGroup>
+  </Target>
+  
+  <!--
+    ============================================================
+    Pack
+    Main entry point for packing packages
+    ============================================================
+  -->
+  <Target Name="Pack" DependsOnTargets="_IntermediatePack;$(PackDependsOn)">
+  </Target>
+  <Target Name="_IntermediatePack">
+    <PropertyGroup>
+      <ContinuePackingAfterGeneratingNuspec>true</ContinuePackingAfterGeneratingNuspec>
+    </PropertyGroup>
+  </Target>
+  
+  <Target Name="GenerateNuspec" DependsOnTargets="$(GenerateNuspecDependsOn);_CalculateInputsOutputsForPack" Condition="$(IsPackable) == 'true'"
+          Inputs="@(NuGetPackInput)" Outputs="@(NuGetPackOutput)">
     <!-- Call Pack -->
     <PackTask PackItem="$(PackProjectInputFile)"
               PackageFiles="@(_PackageFiles)"
