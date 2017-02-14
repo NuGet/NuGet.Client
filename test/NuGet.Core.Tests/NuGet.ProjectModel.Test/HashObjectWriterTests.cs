@@ -97,6 +97,31 @@ namespace NuGet.ProjectModel.Test
         }
 
         [Fact]
+        public void WriteNameValue_WithBoolValue_ThrowsForNullName()
+        {
+            Assert.Throws<ArgumentNullException>(() => _writer.WriteNameValue(name: null, value: true));
+        }
+
+        [Fact]
+        public void WriteNameValue_WithBoolValue_ThrowsIfReadOnly()
+        {
+            MakeReadOnly();
+
+            Assert.Throws<InvalidOperationException>(() => _writer.WriteNameValue("a", value: true));
+        }
+
+        [Fact]
+        public void WriteNameValue_WithBoolValue_SupportsEmptyName()
+        {
+            _writer.WriteNameValue(name: "", value: true);
+
+            const string expectedHash = "h+DBc/HiHXmYua4cJFF3KTsac/iwr0KN4TQNtXZdHgZA05PwtMldoPNkXQ/H+8bGw3OCxzDolEdgCkLF4F559A==";
+            var actualHash = _writer.GetHash();
+
+            Assert.Equal(expectedHash, actualHash);
+        }
+
+        [Fact]
         public void WriteNameValue_WithIntValue_ThrowsForNullName()
         {
             Assert.Throws<ArgumentNullException>(() => _writer.WriteNameValue(name: null, value: 0));

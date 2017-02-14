@@ -34,7 +34,8 @@ namespace NuGet.PackageManagement.UI
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1051:DoNotDeclareVisibleInstanceFields")]
         protected ItemFilter _filter;
 
-        protected Dictionary<string, VersionRange> _projectVersionRangeDict;
+        // Project constraints on the allowed package versions.
+        protected List<ProjectVersionConstraint> _projectVersionConstraints;
 
         private Dictionary<NuGetVersion, DetailedPackageMetadata> _metadataDict;
 
@@ -77,18 +78,64 @@ namespace NuGet.PackageManagement.UI
 
             var getVersionsTask = searchResultPackage.GetVersionsAsync();
 
-            _projectVersionRangeDict = new Dictionary<string, VersionRange>(StringComparer.OrdinalIgnoreCase);
+            var cacheContext = new DependencyGraphCacheContext();
+            _projectVersionConstraints = new List<ProjectVersionConstraint>();
 
-            // filter project.json based projects since allowedVersion is only applicable to packages.config
-            var packagesConfigProjects = _nugetProjects.Where(project => !(project is INuGetIntegratedProject));
+            // Filter out projects that are not managed by NuGet.
+            var projects = _nugetProjects.Where(project => !(project is ProjectKNuGetProjectBase)).ToArray();
 
-            foreach (var project in packagesConfigProjects)
+            foreach (var project in projects)
             {
-                // cache allowed version range for each nuget project for current selected package
-                var packageReference = (await project.GetInstalledPackagesAsync(CancellationToken.None))
-                    .FirstOrDefault(r => StringComparer.OrdinalIgnoreCase.Equals(r.PackageIdentity.Id, searchResultPackage.Id));
+                if (project is MSBuildNuGetProject)
+                {
+                    // cache allowed version range for each nuget project for current selected package
+                    var packageReference = (await project.GetInstalledPackagesAsync(CancellationToken.None))
+                        .FirstOrDefault(r => StringComparer.OrdinalIgnoreCase.Equals(r.PackageIdentity.Id, searchResultPackage.Id));
 
-                _projectVersionRangeDict.Add(project.GetMetadata<string>(NuGetProjectMetadataKeys.Name), packageReference?.AllowedVersions);
+                    var range = packageReference?.AllowedVersions;
+
+                    if (range != null && !VersionRange.All.Equals(range))
+                    {
+                        var constraint = new ProjectVersionConstraint()
+                        {
+                            ProjectName = project.GetMetadata<string>(NuGetProjectMetadataKeys.Name),
+                            VersionRange = range,
+                            IsPackagesConfig = true,
+                        };
+
+                        _projectVersionConstraints.Add(constraint);
+                    }
+                }
+                else if (project is BuildIntegratedNuGetProject)
+                {
+                    var packageReferences = await project.GetInstalledPackagesAsync(CancellationToken.None);
+
+                    // First the lowest auto referenced version of this package.
+                    var autoReferenced = packageReferences.Where(e => StringComparer.OrdinalIgnoreCase.Equals(searchResultPackage.Id, e.PackageIdentity.Id)
+                                                                      && e.PackageIdentity.Version != null)
+                                                        .Select(e => e as BuildIntegratedPackageReference)
+                                                        .Where(e => e?.Dependency?.AutoReferenced == true)
+                                                        .OrderBy(e => e.PackageIdentity.Version)
+                                                        .FirstOrDefault();
+
+                    if (autoReferenced != null)
+                    {
+                        // Add constraint for auto referenced package.
+                        var constraint = new ProjectVersionConstraint()
+                        {
+                            ProjectName = project.GetMetadata<string>(NuGetProjectMetadataKeys.Name),
+                            VersionRange = new VersionRange(
+                                minVersion: autoReferenced.PackageIdentity.Version,
+                                includeMinVersion: true,
+                                maxVersion: autoReferenced.PackageIdentity.Version,
+                                includeMaxVersion: true),
+
+                            IsAutoReferenced = true,
+                        };
+
+                        _projectVersionConstraints.Add(constraint);
+                    }
+                }
             }
 
             // Add Current package version to package versions list.
@@ -368,6 +415,39 @@ namespace NuGet.PackageManagement.UI
 
         public abstract bool IsSolution { get; }
 
+        private string _optionsBlockedMessage;
+
+        public virtual string OptionsBlockedMessage
+        {
+            get
+            {
+                return _optionsBlockedMessage;
+            }
+
+            set
+            {
+                _optionsBlockedMessage = value;
+                OnPropertyChanged(nameof(OptionsBlockedMessage));
+            }
+        }
+
+        private Uri _optionsBlockedUrl;
+
+        public virtual Uri OptionsBlockedUrl
+        {
+            get
+            {
+                return _optionsBlockedUrl;
+            }
+
+            set
+            {
+                _optionsBlockedUrl = value;
+                OnPropertyChanged(nameof(OptionsBlockedUrl));
+                OnPropertyChanged(nameof(OptionsBlockedMessage));
+            }
+        }
+
         private Options _options;
 
         public Options Options
@@ -385,6 +465,66 @@ namespace NuGet.PackageManagement.UI
             get
             {
                 return _nugetProjects;
+            }
+        }
+
+        protected void AddBlockedVersions(NuGetVersion[] blockedVersions)
+        {
+            // add a separator
+            if (blockedVersions.Length > 0)
+            {
+                if (_versions.Count > 0)
+                {
+                    _versions.Add(null);
+                }
+
+                var blockedMessage = Resources.Version_Blocked_Generic;
+
+                if (_projectVersionConstraints.All(e => e.IsPackagesConfig))
+                {
+                    // Use the packages.config specific message.
+                    blockedMessage = Resources.Version_Blocked;
+                }
+
+                _versions.Add(new DisplayVersion(new VersionRange(new NuGetVersion(0, 0, 0)), blockedMessage, isValidVersion: false));
+            }
+
+            // add all the versions blocked to disable the update button
+            foreach (var version in blockedVersions)
+            {
+                _versions.Add(new DisplayVersion(version, string.Empty, isValidVersion: false));
+            }
+        }
+
+        protected void SetAutoReferencedCheck(NuGetVersion installedVersion)
+        {
+            var autoReferenced = installedVersion != null
+                    && _projectVersionConstraints.Any(e => e.IsAutoReferenced);
+
+            SetAutoReferencedCheck(autoReferenced);
+        }
+
+        protected void SetAutoReferencedCheck(bool autoReferenced)
+        {
+            if (autoReferenced)
+            {
+                OptionsBlockedUrl = new Uri("https://go.microsoft.com/fwlink/?linkid=841238");
+                OptionsBlockedMessage = "AutoReferenced";
+
+                if (_searchResultPackage != null)
+                {
+                    _searchResultPackage.AutoReferenced = true;
+                }
+            }
+            else
+            {
+                OptionsBlockedUrl = null;
+                OptionsBlockedMessage = null;
+
+                if (_searchResultPackage != null)
+                {
+                    _searchResultPackage.AutoReferenced = false;
+                }
             }
         }
     }

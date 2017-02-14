@@ -11,7 +11,7 @@ using NuGet.Credentials;
 using NuGet.PackageManagement.UI;
 using WebProxy = System.Net.WebProxy;
 
-namespace NuGetVSExtension
+namespace NuGet.PackageManagement.VisualStudio
 {
     public class VisualStudioCredentialProvider : ICredentialProvider
     {

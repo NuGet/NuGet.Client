@@ -268,7 +268,7 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Make this package manager format the default and do not show this dialog again..
+        ///   Looks up a localized string similar to Allow format selection on first package install.
         /// </summary>
         public static string CheckBox_DefaultPackageFormat {
             get {
@@ -318,6 +318,33 @@ namespace NuGet.PackageManagement.UI {
         public static string Checkbox_SelectAllPackages {
             get {
                 return ResourceManager.GetString("Checkbox_SelectAllPackages", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Select All Projects.
+        /// </summary>
+        public static string CheckBox_SelectAllProjects {
+            get {
+                return ResourceManager.GetString("CheckBox_SelectAllProjects", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Select this checkbox to install the NuGet Package to all projects in the solution.
+        /// </summary>
+        public static string CheckBox_SelectAllProjects_HelpText {
+            get {
+                return ResourceManager.GetString("CheckBox_SelectAllProjects_HelpText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Select this checkbox to install the NuGet Package to the project &apos;{0}&apos;.
+        /// </summary>
+        public static string CheckBox_SelectProject_HelpText {
+            get {
+                return ResourceManager.GetString("CheckBox_SelectProject_HelpText", resourceCulture);
             }
         }
         
@@ -1323,7 +1350,7 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Following versions are unavailable due to allowedVersions constraint in package.config.
+        ///   Looks up a localized string similar to Following versions are unavailable due to additional constraints in the project or packages.config.
         /// </summary>
         public static string ToolTip_BlockedVersion {
             get {
@@ -1418,6 +1445,15 @@ namespace NuGet.PackageManagement.UI {
         public static string Version_Blocked {
             get {
                 return ResourceManager.GetString("Version_Blocked", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Blocked by project.
+        /// </summary>
+        public static string Version_Blocked_Generic {
+            get {
+                return ResourceManager.GetString("Version_Blocked_Generic", resourceCulture);
             }
         }
         

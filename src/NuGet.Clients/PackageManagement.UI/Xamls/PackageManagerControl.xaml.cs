@@ -146,6 +146,7 @@ namespace NuGet.PackageManagement.UI
             solutionManager.NuGetProjectUpdated += SolutionManager_ProjectsUpdated;
             solutionManager.NuGetProjectRenamed += SolutionManager_ProjectRenamed;
             solutionManager.ActionsExecuted += SolutionManager_ActionsExecuted;
+            solutionManager.AfterNuGetCacheUpdated += SolutionManager_CacheUpdated;
 
             Model.Context.SourceProvider.PackageSourceProvider.PackageSourcesChanged += Sources_PackageSourcesChanged;
 
@@ -215,6 +216,33 @@ namespace NuGet.PackageManagement.UI
                 // we need refresh when packages are installed into or uninstalled from the project
                 if (e.Actions.Any(action =>
                     NuGetProject.GetUniqueNameOrName(action.Project) == projectName))
+                {
+                    Refresh();
+                }
+            }
+        }
+
+        private void SolutionManager_CacheUpdated(object sender, NuGetEventArgs<string> e)
+        {
+            if (Model.IsSolution)
+            {
+                // This means that the UI is open for the solution.
+                Refresh();
+            }
+            else
+            {
+                // This is a project package manager, so there is one and only one project.
+                var project = Model.Context.Projects.First();
+
+                string projectFullName;
+
+                var projectContainsFullPath = project.TryGetMetadata(NuGetProjectMetadataKeys.FullPath, out projectFullName);
+
+                var eventProjectFullName = e.Arg;
+
+                // This ensures that we refresh the UI only if the event.project.FullName matches the NuGetProject.FullName.
+                // We also refresh the UI if projectFullPath is not present.
+                if (!projectContainsFullPath || projectFullName == eventProjectFullName)
                 {
                     Refresh();
                 }
@@ -923,6 +951,7 @@ namespace NuGet.PackageManagement.UI
             solutionManager.NuGetProjectUpdated -= SolutionManager_ProjectsChanged;
             solutionManager.NuGetProjectRenamed -= SolutionManager_ProjectRenamed;
             solutionManager.ActionsExecuted -= SolutionManager_ActionsExecuted;
+            solutionManager.AfterNuGetCacheUpdated -= SolutionManager_CacheUpdated;
 
             Model.Context.SourceProvider.PackageSourceProvider.PackageSourcesChanged -= Sources_PackageSourcesChanged;
 

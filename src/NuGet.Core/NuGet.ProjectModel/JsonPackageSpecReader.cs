@@ -208,10 +208,10 @@ namespace NuGet.ProjectModel
             msbuildMetadata.ProjectJsonPath = rawMSBuildMetadata.GetValue<string>("projectJsonPath");
             msbuildMetadata.ProjectName = rawMSBuildMetadata.GetValue<string>("projectName");
             msbuildMetadata.ProjectPath = rawMSBuildMetadata.GetValue<string>("projectPath");
-            msbuildMetadata.CrossTargeting = rawMSBuildMetadata.GetValue<bool>("crossTargeting");
-            msbuildMetadata.LegacyPackagesDirectory = rawMSBuildMetadata.GetValue<bool>("legacyPackagesDirectory");
-            msbuildMetadata.ValidateRuntimeAssets = rawMSBuildMetadata.GetValue<bool>("validateRuntimeAssets");
-            msbuildMetadata.SkipContentFileWrite = rawMSBuildMetadata.GetValue<bool>("skipContentFileWrite");
+            msbuildMetadata.CrossTargeting = GetBoolOrFalse(rawMSBuildMetadata, "crossTargeting", packageSpec.FilePath);
+            msbuildMetadata.LegacyPackagesDirectory = GetBoolOrFalse(rawMSBuildMetadata, "legacyPackagesDirectory", packageSpec.FilePath);
+            msbuildMetadata.ValidateRuntimeAssets = GetBoolOrFalse(rawMSBuildMetadata, "validateRuntimeAssets", packageSpec.FilePath);
+            msbuildMetadata.SkipContentFileWrite = GetBoolOrFalse(rawMSBuildMetadata, "skipContentFileWrite", packageSpec.FilePath);
 
             msbuildMetadata.Sources = new List<PackageSource>();
 
@@ -317,20 +317,7 @@ namespace NuGet.ProjectModel
             packageSpec.ReleaseNotes = rawPackOptions.GetValue<string>("releaseNotes");
             packageSpec.LicenseUrl = rawPackOptions.GetValue<string>("licenseUrl");
 
-
-            var requireLicenseAcceptance = rawPackOptions["requireLicenseAcceptance"];
-
-            if (requireLicenseAcceptance != null)
-            {
-                try
-                {
-                    packageSpec.RequireLicenseAcceptance = rawPackOptions.GetValue<bool?>("requireLicenseAcceptance") ?? false;
-                }
-                catch (Exception ex)
-                {
-                    throw FileFormatException.Create(ex, requireLicenseAcceptance, packageSpec.FilePath);
-                }
-            }
+            packageSpec.RequireLicenseAcceptance = GetBoolOrFalse(rawPackOptions, "requireLicenseAcceptance", packageSpec.FilePath);
 
             var rawPackageType = rawPackOptions[PackageType];
             if (rawPackageType != null &&
@@ -446,6 +433,8 @@ namespace NuGet.ProjectModel
                                                     ? LibraryDependencyTarget.Reference
                                                     : LibraryDependencyTarget.All & ~LibraryDependencyTarget.Reference;
 
+                    var autoReferenced = false;
+
                     string dependencyVersionValue = null;
                     var dependencyVersionToken = dependencyValue;
 
@@ -521,6 +510,8 @@ namespace NuGet.ProjectModel
                                 throw FileFormatException.Create(message, targetToken, packageSpecPath);
                             }
                         }
+
+                        autoReferenced = GetBoolOrFalse(dependencyValue, "autoReferenced", packageSpecPath);
                     }
 
                     VersionRange dependencyVersionRange = null;
@@ -570,7 +561,8 @@ namespace NuGet.ProjectModel
                         },
                         Type = dependencyTypeValue,
                         IncludeType = includeFlags,
-                        SuppressParent = suppressParentFlagsValue
+                        SuppressParent = suppressParentFlagsValue,
+                        AutoReferenced = autoReferenced,
                     });
                 }
             }
@@ -768,6 +760,43 @@ namespace NuGet.ProjectModel
         private static NuGetFramework GetFramework(string key)
         {
             return NuGetFramework.Parse(key);
+        }
+
+        /// <summary>
+        /// Returns true if the property is set to true. Otherwise false.
+        /// </summary>
+        private static bool GetBoolOrFalse(JToken parent, string propertyName, string filePath)
+        {
+            var jObj = parent as JObject;
+
+            if (jObj != null)
+            {
+                return GetBoolOrFalse(jObj, propertyName, filePath);
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Returns true if the property is set to true. Otherwise false.
+        /// </summary>
+        private static bool GetBoolOrFalse(JObject parent, string propertyName, string filePath)
+        {
+            var token = parent[propertyName];
+
+            if (token != null)
+            {
+                try
+                {
+                    return parent.GetValue<bool?>(propertyName) ?? false;
+                }
+                catch (Exception ex)
+                {
+                    throw FileFormatException.Create(ex, token, filePath);
+                }
+            }
+
+            return false;
         }
     }
 }

@@ -19,6 +19,33 @@ namespace NuGet.ProjectModel.Test
         private static readonly PackageSpec _emptyPackageSpec = JsonPackageSpecReader.GetPackageSpec(new JObject());
 
         [Fact]
+        public void RoundTripAutoReferencedProperty()
+        {
+            // Arrange
+            var json = @"{
+                    ""dependencies"": {
+                        ""b"": {
+                            ""version"": ""1.0.0"",
+                            ""autoReferenced"": true
+                        }
+                    },
+                  ""frameworks"": {
+                    ""net46"": {
+                        ""dependencies"": {
+                            ""a"": {
+                                ""version"": ""1.0.0"",
+                                ""autoReferenced"": true
+                            }
+                        }
+                    }
+                  }
+                }";
+
+            // Act & Assert
+            VerifyJsonPackageSpecRoundTrip(json);
+        }
+
+        [Fact]
         public void Write_ThrowsForNullPackageSpec()
         {
             var writer = new JsonObjectWriter();
@@ -260,8 +287,10 @@ namespace NuGet.ProjectModel.Test
 
             var actualResult = writer.GetJson();
 
+            var expected = JObject.Parse(json).ToString();
+
             // Assert
-            Assert.Equal(json, actualResult);
+            Assert.Equal(expected, actualResult);
         }
     }
 }

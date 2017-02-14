@@ -232,22 +232,27 @@ namespace NuGet.SolutionRestoreManager
         private static NuGetVersion GetPackageVersion(IVsTargetFrameworks tfms)
         {
             // $(PackageVersion) property if set overrides the $(Version)
-            var versionPropertyValue = 
-                GetNonEvaluatedPropertyOrNull(tfms, PackageVersion) 
-                ?? GetNonEvaluatedPropertyOrNull(tfms, Version);
+            var versionPropertyValue =
+                GetNonEvaluatedPropertyOrNull(tfms, PackageVersion, NuGetVersion.Parse)
+                ?? GetNonEvaluatedPropertyOrNull(tfms, Version, NuGetVersion.Parse);
 
-            return versionPropertyValue != null
-                ? NuGetVersion.Parse(versionPropertyValue)
-                : PackageSpec.DefaultVersion;
+            return versionPropertyValue ?? PackageSpec.DefaultVersion;
         }
 
         // Trying to fetch a property value from tfm property bags.
         // If defined the property should have identical values in all of the occurances.
-        private static string GetNonEvaluatedPropertyOrNull(IVsTargetFrameworks tfms, string propertyName)
+        private static TValue GetNonEvaluatedPropertyOrNull<TValue>(
+            IVsTargetFrameworks tfms,
+            string propertyName,
+            Func<string, TValue> valueFactory)
         {
             return tfms
                 .Cast<IVsTargetFrameworkInfo>()
-                .Select(tfm => GetPropertyValueOrNull(tfm.Properties, propertyName))
+                .Select(tfm =>
+                {
+                    var val = GetPropertyValueOrNull(tfm.Properties, propertyName);
+                    return val != null ? valueFactory(val) : default(TValue);
+                })
                 .Distinct()
                 .SingleOrDefault();
         }
@@ -341,7 +346,10 @@ namespace NuGet.SolutionRestoreManager
                 LibraryRange = new LibraryRange(
                     name: item.Name,
                     versionRange: GetVersionRange(item),
-                    typeConstraint: LibraryDependencyTarget.Package)
+                    typeConstraint: LibraryDependencyTarget.Package),
+
+                // Mark packages coming from the SDK as AutoReferenced
+                AutoReferenced = GetPropertyBoolOrFalse(item, "IsImplicitlyDefined")
             };
 
             MSBuildRestoreUtility.ApplyIncludeFlags(
@@ -385,6 +393,23 @@ namespace NuGet.SolutionRestoreManager
             }
 
             return VersionRange.All;
+        }
+
+        private static bool GetPropertyBoolOrFalse(
+                IVsReferenceItem item, string propertyName)
+        {
+            try
+            {
+                return MSBuildStringUtility.IsTrue(item.Properties?.Item(propertyName)?.Value);
+            }
+            catch (ArgumentException)
+            {
+            }
+            catch (KeyNotFoundException)
+            {
+            }
+
+            return false;
         }
 
         private static string GetPropertyValueOrNull(

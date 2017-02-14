@@ -56,7 +56,7 @@ namespace NuGet.Options
                     // package management format selection
                     var packageManagement = new PackageManagementFormat(_settings);
                     defaultPackageManagementFormatItems.SelectedIndex = packageManagement.SelectedPackageManagementFormat;
-                    showPackageManagementChooser.Checked = packageManagement.IsDisabled;
+                    showPackageManagementChooser.Checked = packageManagement.Enabled;
 #endif
                 }
                 catch (InvalidOperationException)
@@ -86,7 +86,7 @@ namespace NuGet.Options
                 // package management format selection
                 var packageManagement = new PackageManagementFormat(_settings);
                 packageManagement.SelectedPackageManagementFormat = defaultPackageManagementFormatItems.SelectedIndex;
-                packageManagement.IsDisabled = showPackageManagementChooser.Checked;
+                packageManagement.Enabled = showPackageManagementChooser.Checked;
                 packageManagement.ApplyChanges();
 #endif
             }

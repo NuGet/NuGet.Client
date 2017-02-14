@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -9,6 +9,7 @@ using System.Linq;
 using System.Windows.Media;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Classification;
+using NuGet.PackageManagement;
 
 namespace NuGetConsole.Implementation.Console
 {
@@ -77,7 +78,7 @@ namespace NuGetConsole.Implementation.Console
             }
         }
 
-        private void Console_ExecuteInputLine(object sender, EventArgs<Tuple<SnapshotSpan, bool>> e)
+        private void Console_ExecuteInputLine(object sender, NuGetEventArgs<Tuple<SnapshotSpan, bool>> e)
         {
             // Don't add empty spans (e.g. executed "cls")
             SnapshotSpan snapshotSpan = e.Arg.Item1.TranslateTo(Console.WpfTextView.TextSnapshot, SpanTrackingMode.EdgePositive);
@@ -87,7 +88,7 @@ namespace NuGetConsole.Implementation.Console
             }
         }
 
-        private void Console_NewColorSpan(object sender, EventArgs<Tuple<SnapshotSpan, Color?, Color?>> e)
+        private void Console_NewColorSpan(object sender, NuGetEventArgs<Tuple<SnapshotSpan, Color?, Color?>> e)
         {
             // At least one of foreground or background must be specified, otherwise we don't care.
             if (e.Arg.Item2 != null

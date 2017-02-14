@@ -3,7 +3,6 @@
 
 using Microsoft.VisualStudio.Services.Client.AccountManagement;
 using Moq;
-using NuGetVSExtension;
 using System;
 using System.Collections.Generic;
 using System.Net;
@@ -13,7 +12,7 @@ using NuGet.Credentials;
 using Xunit;
 using NuGet.Configuration;
 
-namespace NuGet.VsExtension.Test
+namespace NuGet.PackageManagement.VisualStudio.Test
 {
     public class VisualStudioAccountProviderTests
     {

@@ -43,6 +43,14 @@ namespace NuGet.PackageManagement.VisualStudio
             ThreadHelper.ThrowIfNotOnUIThread();
 
             var buildPropertyStorage = pHierarchy as IVsBuildPropertyStorage;
+
+            return GetMSBuildProperty(buildPropertyStorage, name);
+        }
+
+        public static string GetMSBuildProperty(IVsBuildPropertyStorage buildPropertyStorage, string name)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             string output = null;
 
             if (buildPropertyStorage != null)

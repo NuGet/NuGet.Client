@@ -23,6 +23,9 @@
     <Reference Include="System.ComponentModel.Composition" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Events\IRestoreEvents.cs" />
+    <Compile Include="Events\IRestoreEventsPublisher.cs" />
+    <Compile Include="Events\SolutionRestoredEventArgs.cs" />
     <Compile Include="NuGetUIThreadHelper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ProjectSystem\ProjectHelper.cs" />

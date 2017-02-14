@@ -143,6 +143,20 @@ namespace NuGet.RuntimeModel.Test
         }
 
         [Fact]
+        public void WriteNameValue_WithBoolValue_ThrowsForNullName()
+        {
+            Assert.Throws<ArgumentNullException>(() => _writer.WriteNameValue(name: null, value: true));
+        }
+
+        [Fact]
+        public void WriteNameValue_WithBoolValue_ThrowsIfReadOnly()
+        {
+            MakeReadOnly();
+
+            Assert.Throws<InvalidOperationException>(() => _writer.WriteNameValue("a", true));
+        }
+
+        [Fact]
         public void WriteNameValue_WithIntValue_SupportsEmptyName()
         {
             _writer.WriteNameValue(name: "", value: 3);

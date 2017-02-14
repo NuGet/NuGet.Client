@@ -8,6 +8,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Threading.Tasks;
 using EnvDTE;
 using EnvDTE80;
@@ -20,6 +21,7 @@ using NuGet.PackageManagement.UI;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
 using NuGet.ProjectModel;
+using NuGet.Protocol;
 using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.PackageManagement.VisualStudio
@@ -37,10 +39,11 @@ namespace NuGet.PackageManagement.VisualStudio
         private IVsMonitorSelection _vsMonitorSelection;
         private uint _solutionLoadedUICookie;
         private IVsSolution _vsSolution;
-
+       
         private readonly IServiceProvider _serviceProvider;
         private readonly IProjectSystemCache _projectSystemCache;
         private readonly NuGetProjectFactory _projectSystemFactory;
+        private readonly ICredentialServiceProvider _credentialServiceProvider;
         private readonly Common.ILogger _logger;
 
         private bool _initialized;
@@ -82,6 +85,8 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public event EventHandler<NuGetProjectEventArgs> AfterNuGetProjectRenamed;
 
+        public event EventHandler<NuGetEventArgs<string>> AfterNuGetCacheUpdated;
+
         public event EventHandler SolutionClosed;
 
         public event EventHandler SolutionClosing;
@@ -98,6 +103,7 @@ namespace NuGet.PackageManagement.VisualStudio
             IServiceProvider serviceProvider,
             IProjectSystemCache projectSystemCache,
             NuGetProjectFactory projectSystemFactory,
+            ICredentialServiceProvider credentialServiceProvider,
             [Import(typeof(VisualStudioActivityLogger))]
             Common.ILogger logger)
         {
@@ -115,7 +121,10 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 throw new ArgumentNullException(nameof(projectSystemFactory));
             }
-
+            if (credentialServiceProvider == null)
+            {
+                throw new ArgumentNullException(nameof(credentialServiceProvider));
+            }
             if (logger == null)
             {
                 throw new ArgumentNullException(nameof(logger));
@@ -124,6 +133,7 @@ namespace NuGet.PackageManagement.VisualStudio
             _serviceProvider = serviceProvider;
             _projectSystemCache = projectSystemCache;
             _projectSystemFactory = projectSystemFactory;
+            _credentialServiceProvider = credentialServiceProvider;
             _logger = logger;
         }
 
@@ -132,7 +142,7 @@ namespace NuGet.PackageManagement.VisualStudio
             await NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
+                HttpHandlerResourceV3.CredentialService = _credentialServiceProvider.GetCredentialService();
                 _vsSolution = _serviceProvider.GetService<SVsSolution, IVsSolution>();
                 _vsMonitorSelection = _serviceProvider.GetService<SVsShellMonitorSelection, IVsMonitorSelection>();
 
@@ -142,7 +152,6 @@ namespace NuGet.PackageManagement.VisualStudio
                 uint cookie;
                 var hr = _vsMonitorSelection.AdviseSelectionEvents(this, out cookie);
                 ErrorHandler.ThrowOnFailure(hr);
-
                 var dte = _serviceProvider.GetDTE();
                 // Keep a reference to SolutionEvents so that it doesn't get GC'ed. Otherwise, we won't receive events.
                 _solutionEvents = dte.Events.SolutionEvents;
@@ -163,6 +172,8 @@ namespace NuGet.PackageManagement.VisualStudio
                 _solutionSaveEvent.AfterExecute += SolutionSaveAs_AfterExecute;
                 _solutionSaveAsEvent.BeforeExecute += SolutionSaveAs_BeforeExecute;
                 _solutionSaveAsEvent.AfterExecute += SolutionSaveAs_AfterExecute;
+
+                _projectSystemCache.CacheUpdated += NuGetCacheUpdate_After;
             });
         }
 
@@ -198,17 +209,12 @@ namespace NuGet.PackageManagement.VisualStudio
 
                 var settings = ServiceLocator.GetInstance<ISettings>();
 
-                var msBuildProperties = new Dictionary<string, string> {
-                    { ProjectSystemProviderContext.RestoreProjectStyle, ProjectStyle.PackageReference.ToString() }
-                };
-                   
                 var context = new ProjectSystemProviderContext(
                     EmptyNuGetProjectContext,
-                    () => PackagesFolderPathUtility.GetPackagesFolderPath(this, settings),
-                    msBuildProperties);
+                    () => PackagesFolderPathUtility.GetPackagesFolderPath(this, settings));
 
                 return new LegacyCSProjPackageReferenceProject(
-                    new EnvDTEProjectAdapter(dteProject, context),
+                    new EnvDTEProjectAdapter(dteProject),
                     VsHierarchyUtility.GetProjectId(dteProject));
             });
 
@@ -910,28 +916,10 @@ namespace NuGet.PackageManagement.VisualStudio
         private NuGetProject CreateNuGetProject(Project envDTEProject, INuGetProjectContext projectContext = null)
         {
             var settings = ServiceLocator.GetInstance<ISettings>();
-            var vsHierarchy = VsHierarchyUtility.ToVsHierarchy(envDTEProject);
-            // read MSBuild property RestoreProjectStyle which can be set to any NuGet project sytle
-            // and pass it on to NugetFactory which can pass it to each NuGet project provider to consume.
-            var restoreProjectStyle = VsHierarchyUtility.GetMSBuildProperty(vsHierarchy, 
-                ProjectSystemProviderContext.RestoreProjectStyle);
-
-            var targetFramework = VsHierarchyUtility.GetMSBuildProperty(vsHierarchy, 
-                ProjectSystemProviderContext.TargetFramework);
-
-            var targetFrameworks = VsHierarchyUtility.GetMSBuildProperty(vsHierarchy, 
-                ProjectSystemProviderContext.TargetFrameworks);
-
-            var msBuildProperties = new Dictionary<string, string> {
-                {ProjectSystemProviderContext.RestoreProjectStyle, restoreProjectStyle },
-                {ProjectSystemProviderContext.TargetFramework, targetFramework},
-                {ProjectSystemProviderContext.TargetFrameworks, targetFrameworks }
-            };
 
             var context = new ProjectSystemProviderContext(
                 projectContext ?? EmptyNuGetProjectContext,
-                () => PackagesFolderPathUtility.GetPackagesFolderPath(this, settings),
-                msBuildProperties);
+                () => PackagesFolderPathUtility.GetPackagesFolderPath(this, settings));
 
             NuGetProject result;
             if (_projectSystemFactory.TryCreateNuGetProject(envDTEProject, context, out result))
@@ -1004,7 +992,41 @@ namespace NuGet.PackageManagement.VisualStudio
             dependentEnvDTEProjects.Add(dependentEnvDTEProject);
         }
 
-#region IVsSelectionEvents
+        /// <summary>
+        /// This method is invoked when ProjectSystemCache fires a CacheUpdated event.
+        /// This method inturn invokes AfterNuGetCacheUpdated event which is consumed by PackageManagerControl.xaml.cs
+        /// </summary>
+        /// <param name="sender">Event sender object</param>
+        /// <param name="e">Event arguments. This will be EventArgs.Empty</param>
+        private void NuGetCacheUpdate_After(object sender, NuGetEventArgs<string> e)
+        {
+            // The AfterNuGetCacheUpdated event is raised on a separate Task to prevent blocking of the caller.
+            // E.g. - If Restore updates the cache entries on CPS nomination, then restore should not be blocked till UI is restored.
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() => FireNuGetCacheUpdatedEventAsync(e));
+        }
+
+        private async Task FireNuGetCacheUpdatedEventAsync(NuGetEventArgs<string> e)
+        {
+            try
+            {
+                // Await a delay of 100 mSec to batch multiple cache updated events.
+                // This ensures the minimum duration between 2 consecutive UI refresh, caused by cache update, to be 100 mSec.
+                await Task.Delay(100);
+                // Check if the cache is still dirty
+                if (_projectSystemCache.TestResetDirtyFlag())
+                {
+                    // Fire the event only if the cache is dirty
+                    AfterNuGetCacheUpdated?.Invoke(this, e);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.ToString());
+            }
+        }
+
+
+        #region IVsSelectionEvents
 
         public int OnCmdUIContextChanged(uint dwCmdUICookie, int fActive)
         {

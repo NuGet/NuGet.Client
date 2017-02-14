@@ -394,7 +394,8 @@ namespace NuGet.Test.Utility
                     });
                 }
 
-                var addedToAll = new HashSet<SimpleTestProjectContext>();
+                var addedToAllProjectReferences = new HashSet<SimpleTestProjectContext>();
+                var addedToAllPackageReferences = new HashSet<SimpleTestPackageContext>();
 
                 foreach (var frameworkInfo in Frameworks)
                 {
@@ -406,11 +407,25 @@ namespace NuGet.Test.Utility
                         if (Frameworks.All(f => f.PackageReferences.Contains(package)))
                         {
                             referenceFramework = NuGetFramework.AnyFramework;
+
+                            if (!addedToAllPackageReferences.Add(package))
+                            {
+                                // Skip since this was already added
+                                continue;
+                            }
                         }
 
                         var props = new Dictionary<string, string>();
+                        var attributes = new Dictionary<string, string>();
 
-                        props.Add("Version", package.Version.ToString());
+                        if (ToolingVersion15)
+                        {
+                            attributes.Add("Version", package.Version.ToString());
+                        }
+                        else
+                        {
+                            props.Add("Version", package.Version.ToString());
+                        }
 
                         if (!string.IsNullOrEmpty(package.Include))
                         {
@@ -433,7 +448,7 @@ namespace NuGet.Test.Utility
                             package.Id,
                             referenceFramework,
                             props,
-                            new Dictionary<string, string>());
+                            attributes);
                     }
 
                     foreach (var project in frameworkInfo.ProjectReferences)
@@ -445,7 +460,7 @@ namespace NuGet.Test.Utility
                         {
                             referenceFramework = NuGetFramework.AnyFramework;
 
-                            if (!addedToAll.Add(project))
+                            if (!addedToAllProjectReferences.Add(project))
                             {
                                 // Skip since this was already added
                                 continue;

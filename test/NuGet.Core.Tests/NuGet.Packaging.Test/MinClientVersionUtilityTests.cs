@@ -11,6 +11,7 @@ namespace NuGet.Packaging.Test
     {
         [Theory]
         [InlineData("1.0.0", true)]
+        [InlineData("4.0.0", true)]
         [InlineData("9.0.0", false)]
         public void MinClientVersionUtility_CheckCompatible(string version, bool expected)
         {

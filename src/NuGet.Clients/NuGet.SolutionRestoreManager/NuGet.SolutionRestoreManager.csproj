@@ -34,6 +34,7 @@
     <Compile Include="Guids.cs" />
     <Compile Include="ISolutionRestoreJob.cs" />
     <Compile Include="PkgCmdID.cs" />
+    <Compile Include="RestoreEventPublisher.cs" />
     <Compile Include="RestoreManagerPackage.cs" />
     <Compile Include="RestoreOperationLogger.cs" />
     <Compile Include="RestoreOperationProgressUI.cs" />

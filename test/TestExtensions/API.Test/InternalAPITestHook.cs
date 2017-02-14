@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using NuGet.PackageManagement;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.VisualStudio;
 using Task = System.Threading.Tasks.Task;
@@ -12,6 +13,25 @@ namespace API.Test
 {
     public static class InternalAPITestHook
     {
+        private static int _cacheUpdateEventCount = 0;
+        private static Action<object, NuGetEventArgs<string>> _cacheUpdateEventHandler = delegate (object sender, NuGetEventArgs<string> e)
+        {
+            _cacheUpdateEventCount++;
+        };
+
+        public static int CacheUpdateEventCount
+        {
+            get
+            {
+                return _cacheUpdateEventCount;
+            }
+
+            set
+            {
+                _cacheUpdateEventCount = value;
+            }
+        }
+
         public static void InstallLatestPackageApi(string id, bool prerelease)
         {
             var dte = ServiceLocator.GetInstance<EnvDTE.DTE>();
@@ -135,6 +155,30 @@ namespace API.Test
             return batchStartIds.Count == 1 &&
                    batchEndIds.Count == 1 &&
                    batchStartIds[0].Equals(batchEndIds[0], StringComparison.Ordinal);
+        }
+
+        public static void ProjectCacheEventApi_AttachHandler()
+        {
+            var vsSolutionManager = ServiceLocator.GetInstance<ISolutionManager>();
+            vsSolutionManager.AfterNuGetCacheUpdated += _cacheUpdateEventHandler.Invoke;
+        }
+
+
+        public static void ProjectCacheEventApi_InstallPackage(string id, string version)
+        {
+            var dte = ServiceLocator.GetInstance<EnvDTE.DTE>();
+            var vsSolutionManager = ServiceLocator.GetInstance<ISolutionManager>();
+            var installerServices = ServiceLocator.GetInstance<IVsPackageInstaller>();
+            foreach (EnvDTE.Project project in dte.Solution.Projects)
+            {
+                installerServices.InstallPackage(null, project, id, version, false);
+            }
+        }
+
+        public static void ProjectCacheEventApi_DetachHandler()
+        {
+            var vsSolutionManager = ServiceLocator.GetInstance<ISolutionManager>();
+            vsSolutionManager.AfterNuGetCacheUpdated -= _cacheUpdateEventHandler.Invoke;
         }
     }
 }

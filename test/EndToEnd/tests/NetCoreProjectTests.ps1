@@ -1,4 +1,4 @@
-# basic create for .net core template
+﻿# basic create for .net core template
 function Test-NetCoreConsoleAppCreate {
 
     # Arrange & Act
@@ -407,6 +407,51 @@ function Test-NetCoreWebApp10ProjectReference {
     # Assert
     Assert-NetCoreProjectReference $projectA $projectB
 }
+
+function Test-NetCoreWebAppExecuteInitScriptsOnlyOnce
+{
+    param($context)
+
+    # Arrange
+    $global:PackageInitPS1Var = 0
+    $p = New-NetCoreWebApp10 WebApp
+    
+    # Act & Assert
+    Install-Package PackageInitPS1 -Project $p.Name -Source $context.RepositoryPath
+    Build-Solution    
+    Assert-True ($global:PackageInitPS1Var -eq 1)
+
+    $p | Install-Package jquery -Version 1.9
+    Build-Solution
+    Assert-True ($global:PackageInitPS1Var -eq 1)
+}
+
+# VSSolutionManager and ProjectSystemCache event test for .net core
+function Test-NetCoreProjectSystemCacheUpdateEvent {
+    
+    # Arrange
+    $projectA = New-NetCoreConsoleApp ConsoleAppA
+    Assert-NetCoreProjectCreation $projectA
+
+    # Act
+    Try
+    {
+        [API.Test.InternalAPITestHook]::ProjectCacheEventApi_AttachHandler()
+        [API.Test.InternalAPITestHook]::CacheUpdateEventCount = 0
+        [API.Test.InternalAPITestHook]::ProjectCacheEventApi_InstallPackage("Newtonsoft.Json", "9.0.1")
+        $projectA.Save($projectA.FullName)
+        Build-Solution
+    }
+    Finally 
+    {
+        [API.Test.InternalAPITestHook]::ProjectCacheEventApi_DetachHandler()
+        $result = [API.Test.InternalAPITestHook]::CacheUpdateEventCount 
+    }
+
+    # Assert
+    Assert-True $result -eq 1
+}
+
 
 # # transitive package dependency test for .net core
 # # A -> B

@@ -69,6 +69,18 @@ namespace NuGet.RuntimeModel
             _currentContainer[name] = value;
         }
 
+        public void WriteNameValue(string name, bool value)
+        {
+            if (name == null)
+            {
+                throw new ArgumentNullException(nameof(name));
+            }
+
+            ThrowIfReadOnly();
+
+            _currentContainer[name] = value;
+        }
+
         public void WriteNameValue(string name, string value)
         {
             if (name == null)

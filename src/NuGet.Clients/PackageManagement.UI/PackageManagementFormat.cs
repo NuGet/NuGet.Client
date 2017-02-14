@@ -16,8 +16,11 @@ namespace NuGet.PackageManagement.UI
 
         private readonly Configuration.ISettings _settings;
 
+        // keep track of current value for selected package format
         private int SelectedPackageFormat = -1;
-        private bool DoNotShowDialogValue;
+
+        // keep track of current value for shwo dialog checkbox
+        private bool? ShowDialogValue;
 
         public PackageManagementFormat(Configuration.ISettings settings)
         {
@@ -58,23 +61,23 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        public bool IsDisabled
+        public bool Enabled
         {
             get
             {
-                if (DoNotShowDialogValue)
+                if (ShowDialogValue.HasValue)
                 {
-                    return DoNotShowDialogValue;
+                    return ShowDialogValue.Value;
                 }
 
                 string settingsValue = _settings.GetValue(PackageManagementSection, DoNotShowPackageManagementSelectionKey) ?? string.Empty;
-                DoNotShowDialogValue = IsSet(settingsValue, false);
-                return DoNotShowDialogValue;
+                ShowDialogValue = IsSet(settingsValue, false);
+                return ShowDialogValue.Value;
             }
 
             set
             {
-                DoNotShowDialogValue = value;
+                ShowDialogValue = value;
             }
         }
 
@@ -101,7 +104,7 @@ namespace NuGet.PackageManagement.UI
         public void ApplyChanges()
         {
             _settings.SetValue(PackageManagementSection, DefaultPackageManagementFormatKey, SelectedPackageFormat.ToString(CultureInfo.InvariantCulture));
-            _settings.SetValue(PackageManagementSection, DoNotShowPackageManagementSelectionKey, DoNotShowDialogValue.ToString(CultureInfo.InvariantCulture));
+            _settings.SetValue(PackageManagementSection, DoNotShowPackageManagementSelectionKey, ShowDialogValue.Value.ToString(CultureInfo.InvariantCulture));
         }
 
         private static bool IsSet(string value, bool defaultValue)

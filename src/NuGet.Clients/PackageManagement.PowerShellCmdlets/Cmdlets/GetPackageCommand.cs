@@ -10,6 +10,7 @@ using System.Linq;
 using System.Management.Automation;
 using System.Management.Automation.Host;
 using NuGet.PackageManagement.UI;
+using NuGet.Packaging;
 using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
@@ -193,6 +194,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         private async Task WriteUpdatePackagesFromRemoteSourceAsync(NuGetProject project)
         {
             var installedPackages = await project.GetInstalledPackagesAsync(Token);
+            installedPackages = installedPackages.Where(p => !IsAutoReferenced(p));
 
             VersionType versionType;
             if (CollapseVersions)
@@ -358,6 +360,11 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             // Add a line after
             WriteLine();
             return choice;
+        }
+
+        private static bool IsAutoReferenced(PackageReference reference)
+        {
+            return (reference as BuildIntegratedPackageReference)?.Dependency?.AutoReferenced == true;
         }
     }
 }
