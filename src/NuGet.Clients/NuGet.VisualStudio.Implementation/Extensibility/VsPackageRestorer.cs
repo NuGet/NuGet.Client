@@ -54,7 +54,7 @@ namespace NuGet.VisualStudio
             }
             catch (Exception ex)
             {
-                ExceptionHelper.WriteToActivityLog(ex);
+                ExceptionHelper.WriteErrorToActivityLog(ex);
             }
         }
     }

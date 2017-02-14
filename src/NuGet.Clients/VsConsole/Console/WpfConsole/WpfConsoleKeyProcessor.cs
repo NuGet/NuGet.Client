@@ -543,7 +543,7 @@ namespace NuGetConsole.Implementation.Console
             catch (Exception x)
             {
                 // Ignore exception from expansion, but write it to the activity log
-                ExceptionHelper.WriteToActivityLog(x);
+                ExceptionHelper.WriteErrorToActivityLog(x);
             }
             finally
             {

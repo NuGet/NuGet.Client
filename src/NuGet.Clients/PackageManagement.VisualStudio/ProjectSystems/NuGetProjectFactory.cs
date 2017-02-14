@@ -49,6 +49,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             ThreadHelper.ThrowIfNotOnUIThread();
 
+            var exceptions = new List<Exception>();
             result = _providers
                 .Select(p =>
                 {
@@ -60,15 +61,21 @@ namespace NuGet.PackageManagement.VisualStudio
                             return nuGetProject;
                         }
                     }
-                    catch
+                    catch (Exception e)
                     {
                         // Ignore failures. If this method returns null, the problem falls 
                         // into one of the other NuGet project types.
+                        exceptions.Add(e);
                     }
 
                     return null;
                 })
                 .FirstOrDefault(p => p != null);
+
+            if (result == null)
+            {
+                exceptions.ForEach(ExceptionHelper.WriteWarningToActivityLog);
+            }
 
             return result != null;
         }

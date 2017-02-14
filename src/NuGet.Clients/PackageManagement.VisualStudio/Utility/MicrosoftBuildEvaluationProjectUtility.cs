@@ -29,7 +29,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 }
                 catch (Exception exception)
                 {
-                    ExceptionHelper.WriteToActivityLog(exception);
+                    ExceptionHelper.WriteErrorToActivityLog(exception);
                     // Swallow any exceptions we might get because of malformed assembly names
                 }
 

@@ -52,12 +52,12 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             catch (RuntimeException e)
             {
                 ReportError(e.ErrorRecord);
-                ExceptionHelper.WriteToActivityLog(e);
+                ExceptionHelper.WriteErrorToActivityLog(e);
             }
             catch (Exception e)
             {
                 ReportError(e);
-                ExceptionHelper.WriteToActivityLog(e);
+                ExceptionHelper.WriteErrorToActivityLog(e);
             }
 
             return false; // Error occurred, command not executing

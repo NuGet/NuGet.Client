@@ -259,7 +259,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                 }
                 catch (Exception ex)
                 {
-                    ExceptionHelper.WriteToActivityLog(ex);
+                    ExceptionHelper.WriteErrorToActivityLog(ex);
                 }
                 return prompt;
             });
@@ -342,7 +342,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                             IsCommandEnabled = false;
                             ReportError(ex);
 
-                            ExceptionHelper.WriteToActivityLog(ex);
+                            ExceptionHelper.WriteErrorToActivityLog(ex);
                         }
                     }
                 });
@@ -597,7 +597,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                 // If execution of an init.ps1 scripts fails, do not let it crash our console.
                 ReportError(ex);
 
-                ExceptionHelper.WriteToActivityLog(ex);
+                ExceptionHelper.WriteErrorToActivityLog(ex);
             }
         }
 
