@@ -49,7 +49,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 catch (UnauthorizedAccessException exception)
                 {
                     // log IO permission error
-                    ExceptionHelper.WriteToActivityLog(exception);
+                    ExceptionHelper.WriteErrorToActivityLog(exception);
                 }
             }
         }
@@ -97,7 +97,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 catch (UnauthorizedAccessException exception)
                 {
                     // log IO permission error
-                    ExceptionHelper.WriteToActivityLog(exception);
+                    ExceptionHelper.WriteErrorToActivityLog(exception);
                 }
             }
         }

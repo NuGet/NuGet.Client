@@ -29,7 +29,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             }
             catch (Exception e)
             {
-                ExceptionHelper.WriteToActivityLog(e);
+                ExceptionHelper.WriteErrorToActivityLog(e);
                 throw;
             }
 

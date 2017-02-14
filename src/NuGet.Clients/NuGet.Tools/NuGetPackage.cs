@@ -776,7 +776,7 @@ namespace NuGetVSExtension
             catch (Exception exception)
             {
                 MessageHelper.ShowErrorMessage(exception, Resources.ErrorDialogBoxTitle);
-                ExceptionHelper.WriteToActivityLog(exception);
+                ExceptionHelper.WriteErrorToActivityLog(exception);
             }
         }
 

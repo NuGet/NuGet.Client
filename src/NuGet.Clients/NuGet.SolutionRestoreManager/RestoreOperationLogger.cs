@@ -298,7 +298,7 @@ namespace NuGet.SolutionRestoreManager
                     WriteLine(VerbosityLevel.Quiet, message);
                 }
 
-                ExceptionHelper.WriteToActivityLog(ex);
+                ExceptionHelper.WriteErrorToActivityLog(ex);
             });
         }
 

@@ -154,7 +154,7 @@ namespace NuGetConsole.Implementation
                     }
                     catch (Exception x)
                     {
-                        ExceptionHelper.WriteToActivityLog(x);
+                        ExceptionHelper.WriteErrorToActivityLog(x);
                     }
                 };
             timer.Start();
@@ -489,7 +489,7 @@ namespace NuGetConsole.Implementation
                     ConsoleParentPane.NotifyInitializationCompleted();
 
                     WpfConsole.WriteLine(x.GetBaseException().ToString());
-                    ExceptionHelper.WriteToActivityLog(x);
+                    ExceptionHelper.WriteErrorToActivityLog(x);
                 }
             }
             else

@@ -787,7 +787,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 }
                 catch (Exception ex1)
                 {
-                    ExceptionHelper.WriteToActivityLog(ex1);
+                    ExceptionHelper.WriteErrorToActivityLog(ex1);
                 }
 
                 // Remove the NuGetImportStamp so that VC++ project file won't be updated with this stamp on disk,
@@ -798,7 +798,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 }
                 catch (Exception ex2)
                 {
-                    ExceptionHelper.WriteToActivityLog(ex2);
+                    ExceptionHelper.WriteErrorToActivityLog(ex2);
                 }
             }
         }
