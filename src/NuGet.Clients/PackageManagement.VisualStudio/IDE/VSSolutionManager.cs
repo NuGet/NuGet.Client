@@ -220,6 +220,11 @@ namespace NuGet.PackageManagement.VisualStudio
 
             var added = _projectSystemCache.AddProject(oldEnvDTEProjectName, dteProject, nuGetProject);
 
+            if (DefaultNuGetProjectName == null)
+            {
+                DefaultNuGetProjectName = projectName;
+            } 
+
             if (NuGetProjectUpdated != null)
             {
                 NuGetProjectUpdated(this, new NuGetProjectEventArgs(nuGetProject));
