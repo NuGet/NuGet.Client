@@ -24,7 +24,7 @@ if ((Test-Path $nugetExePath) -eq $False)
     Write-Host "Downloading nuget.exe"
     wget https://dist.nuget.org/win-x86-commandline/latest-prerelease/nuget.exe -OutFile $nugetExePath
 }
-
+
 # Enable NuGet Test Mode
 $env:NuGetTestModeEnabled = "True"
 

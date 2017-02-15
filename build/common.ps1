@@ -177,11 +177,17 @@ Function Update-Submodules {
 Function Install-NuGet {
     [CmdletBinding()]
     param(
-        [switch]$Force
+        [switch]$Force,
+        [switch]$CI
     )
     if ($Force -or -not (Test-Path $NuGetExe)) {
         Trace-Log 'Downloading nuget.exe'
-        wget https://dist.nuget.org/win-x86-commandline/latest-prerelease/nuget.exe -OutFile $NuGetExe
+        if($CI){
+            wget https://dist.nuget.org/win-x86-commandline/v3.5.0/nuget.exe -OutFile $NuGetExe
+        }
+        else {
+            wget https://dist.nuget.org/win-x86-commandline/latest-prerelease/nuget.exe -OutFile $NuGetExe
+        }
     }
 
     # Display nuget info
@@ -1017,6 +1023,7 @@ Function Build-ClientsProjectHelper {
         [int]$BuildNumber = (Get-BuildNumber),
         [ValidateSet(14,15)]
         [int]$ToolsetVersion = $DefaultMSBuildVersion,
+        [hashtable]$Parameters,
         [switch]$IsSolution,
         [switch]$ExcludeBuildNumber,
         [switch]$Rebuild
@@ -1039,6 +1046,10 @@ Function Build-ClientsProjectHelper {
 
     if ($ExcludeBuildNumber) {
         $opts += "/p:ExcludeBuildNumber=true"
+    }
+
+    foreach($key in $Parameters.keys) {
+        $opts+="/p:$key=" + $Parameters[$key]
     }
 
     $opts += "/p:VisualStudioVersion=${ToolsetVersion}.0"
