@@ -21,12 +21,12 @@ namespace NuGet.PackageManagement.VisualStudio
 {
     public class ManagementPackProjectSystem : VSMSBuildNuGetProjectSystem
     {
-        private dynamic _projectMgr;
-        private dynamic _mpReferenceContainerNode;
+        private readonly dynamic _projectMgr;
+        private readonly dynamic _mpReferenceContainerNode;
 
 #if VisualStudioAuthoringExtensionsInstalled
-        private MethodInfo _isAlreadyAddedMethodInfo;
-        delegate bool IsAlreadyAddedInternalDelegate(out ReferenceNode existingNodeInternal);
+        private readonly MethodInfo _isAlreadyAddedMethodInfo;
+        private delegate bool IsAlreadyAddedInternalDelegate(out ReferenceNode existingNodeInternal);
 #endif
 
         public ManagementPackProjectSystem(EnvDTEProject envDTEProject, INuGetProjectContext nuGetProjectContext)
@@ -40,12 +40,16 @@ namespace NuGet.PackageManagement.VisualStudio
 
                 // get the mp reference container node using reflection
                 Type refFolderType = oaReferenceFolderItem.GetType();
-                BindingFlags bindingFlags = BindingFlags.Instance | BindingFlags.NonPublic;
-                PropertyInfo refFolderPropinfo = refFolderType.GetProperty("Node", bindingFlags);
+                const BindingFlags bindingFlags = BindingFlags.Instance | BindingFlags.NonPublic;
+                var refFolderPropinfo = refFolderType.GetProperty("Node", bindingFlags);
 
                 if (refFolderPropinfo != null)
                 {
                     _mpReferenceContainerNode = refFolderPropinfo.GetValue(oaReferenceFolderItem);
+                }
+                else
+                {
+                    //TODO:  Log a message or throw?
                 }
 
 #if VisualStudioAuthoringExtensionsInstalled
@@ -69,17 +73,17 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 var extension = Path.GetExtension(referencePath);
 
-                if (extension == ".mpb") // management pack bundle
+                switch (extension)
                 {
-                    AddManagementPackReferencesFromBundle(referencePath);
-                }
-                else if (extension == ".mp") // sealed management pack
-                {
-                    AddManagementPackReferenceFromSealedMp(referencePath);
-                }
-                else
-                {
-                    NuGetProjectContext.Log(MessageLevel.Warning, $"Unexpected reference extension ({extension}). Skipping AddReference.");
+                    case ".mpb": // management pack bundle
+                        AddManagementPackReferencesFromBundle(referencePath);
+                        break;
+                    case ".mp": // sealed management pack
+                        AddManagementPackReferenceFromSealedMp(referencePath);
+                        break;
+                    default:
+                        NuGetProjectContext.Log(MessageLevel.Warning, $"Unexpected reference extension ({extension}). Skipping AddReference.");
+                        break;
                 }
             }
             catch (Exception ex)
@@ -118,13 +122,13 @@ namespace NuGet.PackageManagement.VisualStudio
         {
 #if VisualStudioAuthoringExtensionsInstalled
 
-            ManagementPackBundleReader bundleReader = ManagementPackBundleFactory.CreateBundleReader();
+            var bundleReader = ManagementPackBundleFactory.CreateBundleReader();
 
             try
             {
                 using (var mpFileStore = new ManagementPackFileStore())
                 {
-                    ManagementPackBundle bundle = bundleReader.Read(bundlePath, mpFileStore);
+                    var bundle = bundleReader.Read(bundlePath, mpFileStore);
 
                     foreach (var managementPack in bundle.ManagementPacks) using (managementPack)
                         {
@@ -199,6 +203,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 case ProcessStatus.NotSealed:
                     result = "is not sealed";
                     break;
+                case ProcessStatus.Failed:
                 default:
                     result = $"failed while {((operation == ProcessingOp.AddingReference) ? "adding" : "removing")}";
                     break;
@@ -223,7 +228,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public override bool ReferenceExists(string name)
         {
-            bool result = false;
+            var result = false;
 
             try
             {
@@ -244,8 +249,10 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private bool TryGetExistingReference(string name, out dynamic managementPackReference)
         {
-            bool found = false;
+            var found = false;
             managementPackReference = null;
+
+            //TODO:  add a check for null for the _mpReferenceContainerNode
 
             var referenceName = Path.GetFileNameWithoutExtension(name);
 
@@ -257,10 +264,8 @@ namespace NuGet.PackageManagement.VisualStudio
                     managementPackReference = reference;
                     break;
                 }
-                else
-                {
-                    (reference as IDisposable)?.Dispose();
-                }
+
+                (reference as IDisposable)?.Dispose();
             }
 
             return found;
@@ -281,20 +286,21 @@ namespace NuGet.PackageManagement.VisualStudio
         private void RemoveManagementPackReference(string name)
         {
             dynamic reference;
-            if (TryGetExistingReference(name, out reference)) using (reference)
+            if (!TryGetExistingReference(name, out reference)) return;
+            using (reference)
+            {
+                var identity = reference.Name;
+                try
                 {
-                    var identity = reference.Name;
-                    try
-                    {
-                        bool shouldRemoveFromStorage = false; // the nuget folder uninstall will take care of file cleanup
-                        reference.Remove(shouldRemoveFromStorage);
-                        LogProcessingResult(identity, ProcessStatus.Success);
-                    }
-                    catch (Exception ex)
-                    {
-                        LogProcessingResult(identity, ProcessStatus.Failed, ProcessingOp.RemovingReference, ex.Message);
-                    }
+                    var shouldRemoveFromStorage = false; // the nuget folder uninstall will take care of file cleanup
+                    reference.Remove(shouldRemoveFromStorage);
+                    LogProcessingResult(identity, ProcessStatus.Success);
                 }
+                catch (Exception ex)
+                {
+                    LogProcessingResult(identity, ProcessStatus.Failed, ProcessingOp.RemovingReference, ex.Message);
+                }
+            }
         }
 
         protected override bool IsBindingRedirectSupported
