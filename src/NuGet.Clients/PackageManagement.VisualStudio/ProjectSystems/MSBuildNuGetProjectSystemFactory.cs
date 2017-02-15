@@ -22,7 +22,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 { NuGetVSConstants.WixProjectTypeGuid, (project, nuGetProjectContext) => new WixProjectSystem(project, nuGetProjectContext) },
                 { NuGetVSConstants.JsProjectTypeGuid, (project, nuGetProjectContext) => new JsProjectSystem(project, nuGetProjectContext) },
                 { NuGetVSConstants.WindowsStoreProjectTypeGuid, (project, nuGetProjectContext) => new WindowsStoreProjectSystem(project, nuGetProjectContext) },
-                { NuGetVSConstants.ManagementPackProjectTypeGuid, (project, nuGetProjectContext) => new ManagementPackProjectSystem(project, nuGetProjectContext) },
+                { NuGetVSConstants.ManagementPackProjectTypeGuid, (project, nuGetProjectContext) => ManagementPackProjectSystemFactory.CreateManagementPackProjectSystem(project, nuGetProjectContext) },
                 { NuGetVSConstants.DeploymentProjectTypeGuid, (project, nuGetProjectContext) => new VSMSBuildNuGetProjectSystem(project, nuGetProjectContext) }
             };
 

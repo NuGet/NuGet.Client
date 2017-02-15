@@ -148,6 +148,7 @@
     <Compile Include="IDE\IVsSolutionManager.cs" />
     <Compile Include="IInteractiveLoginProvider.cs" />
     <Compile Include="InteractiveLoginProvider.cs" />
+    <Compile Include="ProjectSystems\ManagementPackProjectSystemFactory.cs" />
     <Compile Include="ProjectSystems\CpsPackageReferenceProject.cs" Condition="'$(VisualStudioVersion)' == '15.0'" />
     <Compile Include="ProjectSystems\IProjectSystemProvider.cs" />
     <Compile Include="ProjectSystems\ManagementPackProjectSystem.cs" />
@@ -159,6 +160,7 @@
     <Compile Include="ProjectSystems\IProjectSystemCache.cs" />
     <Compile Include="ProjectSystems\CpsPackageReferenceProjectProvider.cs" Condition="'$(VisualStudioVersion)' == '15.0'" />
     <Compile Include="ProjectSystems\ProjectSystemProviderContext.cs" />
+    <Compile Include="ProjectSystems\VsaeProjectSystemDynamicProxy.cs" />
     <Compile Include="SolutionEventsListener.cs" />
     <Compile Include="SolutionRestore\DeferredProjectRestoreData.cs" />
     <Compile Include="SolutionRestore\SolutionRestoreRequest.cs" />
