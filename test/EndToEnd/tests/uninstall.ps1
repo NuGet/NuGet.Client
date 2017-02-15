@@ -16,6 +16,21 @@ function Test-RemovingPackageFromProjectDoesNotRemoveIfInUse {
     Assert-SolutionPackage Ninject
 }
 
+function Test-UninstallPackageWhatIf {
+    # Arrange
+    $p1 = New-ClassLibrary
+    
+    Install-Package Ninject -ProjectName $p1.Name
+    Assert-Reference $p1 Ninject
+    
+	# Act
+    Uninstall-Package Ninject -ProjectName $p1.Name -What
+
+	# Assert: packages are not uninstalled
+	Assert-Reference $p1 Ninject
+	Assert-Package $p1 Ninject
+}
+
 function Test-RemovingPackageWithDependencyFromProjectDoesNotRemoveIfInUse {
     # Arrange
     $p1 = New-WebApplication
