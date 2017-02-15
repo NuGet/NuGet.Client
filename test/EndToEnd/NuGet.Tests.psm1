@@ -22,7 +22,7 @@ if ((Test-Path $nugetExePath) -eq $False)
 {
     Write-Host -BackgroundColor Yellow -ForegroundColor Black 'nuget.exe cannot be found at' $nugetExePath
     Write-Host "Downloading nuget.exe"
-    wget https://dist.nuget.org/win-x86-commandline/v3.5.0/nuget.exe -OutFile $nugetExePath
+    wget https://dist.nuget.org/win-x86-commandline/latest-prerelease/nuget.exe -OutFile $nugetExePath
 }
 
 # Enable NuGet Test Mode
