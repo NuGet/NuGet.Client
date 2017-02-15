@@ -132,12 +132,12 @@ function Test-UpdatingSealedManagementPackPackageVersion {
 
 	# Act
 	Install-Package $package -Version 1.0.3 -ProjectName $project.Name -Source $context.RepositoryRoot
-	Assert-ManagementPackReference $project ComponentMP -Version 1.0.0.3
+	Assert-ManagementPackReference $project ComponentMP -Version 1.0.0.0
 	
 	Update-Package $package -ProjectName $project.Name -Source $context.RepositoryRoot
 	
 	# Assert
-	Assert-ManagementPackReference $project ComponentMP -Version 1.0.0.4
+	Assert-ManagementPackReference $project ComponentMP -Version 1.0.0.2
 }
 
 function Test-UpdatingManagementPackBundlePackageVersion {
