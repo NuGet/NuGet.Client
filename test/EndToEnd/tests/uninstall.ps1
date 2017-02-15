@@ -53,12 +53,15 @@ function Test-RemovePackageRemovesPackageFromSolutionIfNotInUse {
 }
 
 function Test-RemoveMPPackageRemovesPackageFromSolutionIfNotInUse {
+	param(
+        $context
+    )
+	
 	# Arrange
 	$package = "FrameworkMP"
 	$project = New-ManagementPack_2012R2
-	$source = "..\"
 	
-	Install-Package $package -ProjectName $project.Name -Source $source
+	Install-Package $package -ProjectName $project.Name -Source $context.RepositoryRoot
 	Assert-MPReference $project $package
 	Assert-SolutionPackage $package
 
@@ -67,7 +70,7 @@ function Test-RemoveMPPackageRemovesPackageFromSolutionIfNotInUse {
 	
 	# Assert
 	Assert-NoMPReference $project $package
-	# Assert-Null (Get-ProjectPackage $p1 $package)
+	# TODO:  Assert-Null (Get-ProjectPackage $p1 $package)
 	Assert-Null (Get-SolutionPackage $package)
 }
 

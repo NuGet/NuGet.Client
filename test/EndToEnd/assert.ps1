@@ -171,11 +171,22 @@ function Assert-MPReference {
 		[parameter(Mandatory = $true)]
         $Project,
 		[parameter(Mandatory = $true)]
-		[string]$Name
+		[string]$Name,
+		[string]$Version
 	)
 	
 	$reference = Get-MPReference $Project $Name
 	Assert-NotNull $reference "Reference `"$Name`" does not exist"
+
+	$path = $reference.ManagementPackPath
+
+    Assert-NotNull $path "Reference `"$Name`" exists but is broken"
+    Assert-PathExists $path "Reference `"$Name`" exists but is broken"
+
+    if($Version) {
+        $actualVersion = [Version]::Parse($Version)
+        Assert-AreEqual $actualVersion $reference.ActualVersion
+    }
 }
 
 function Assert-NoMPReference {
