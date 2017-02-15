@@ -166,7 +166,7 @@ function Assert-Reference {
     }
 }
 
-function Assert-MPReference {
+function Assert-ManagementPackReference {
 	param(
 		[parameter(Mandatory = $true)]
         $Project,
@@ -175,7 +175,7 @@ function Assert-MPReference {
 		[string]$Version
 	)
 	
-	$reference = Get-MPReference $Project $Name
+	$reference = Get-ManagementPackReference $Project $Name
 	Assert-NotNull $reference "Reference `"$Name`" does not exist"
 
 	$path = $reference.ManagementPackPath
@@ -189,7 +189,7 @@ function Assert-MPReference {
     }
 }
 
-function Assert-NoMPReference {
+function Assert-NoManagementPackReference {
 	param(
 		[parameter(Mandatory = $true)]
 		$Project,
@@ -197,7 +197,7 @@ function Assert-NoMPReference {
 		[string]$Name
 	)
 	
-	$reference = Get-MPReference $Project $Name
+	$reference = Get-ManagementPackReference $Project $Name
 	Assert-Null $reference "Reference `"$Name`" exists"
 }
 

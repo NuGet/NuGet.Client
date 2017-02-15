@@ -45,38 +45,36 @@ function Test-InstallPackageWithValidRelativeLocalSource {
     Assert-Throws { Install-Package $package -ProjectName $project.Name -source $source } $message
 }
 
-function Test-InstallSealedMPPackage {
-	param(
-        $context
-    )
-	
-	# TODO
-}
-
-function Test-InstallUnsealedMPPackage {
-	param(
-        $context
-    )
-	
-	#TODO
-	#not installed
-	#logged?
-}
-
-function Test-InstallSealedMPBundlePackage {
+function Test-InstallSealedManagementPackPackage {
 	param(
         $context
     )
 	
 	# Arrange
-	$package = "FrameworkMP"
+	$package = "PackageWithSealedManagementPackReference"
 	$project = New-ManagementPack_2012R2
 	
 	# Act
 	Install-Package $package -ProjectName $project.Name -Source $context.RepositoryRoot
 	
 	# Assert
-	Assert-MPReference $project $package
+	Assert-ManagementPackReference $project $package
+}
+
+function Test-InstallManagementPackBundlePackage {
+	param(
+        $context
+    )
+	
+	# Arrange
+	$package = "PackageWithManagementPackBundleReference"
+	$project = New-ManagementPack_2012R2
+	
+	# Act
+	Install-Package $package -ProjectName $project.Name -Source $context.RepositoryRoot
+	
+	# Assert
+	Assert-ManagementPackReference $project $package
 }
 
 function Test-InstallPackageWithInvalidHttpSource {

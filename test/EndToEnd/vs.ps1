@@ -761,7 +761,7 @@ function Get-ProjectItem {
     }
 }
 
-function Get-MPReference() {
+function Get-ManagementPackReference() {
 	param(
 		[parameter(Mandatory = $true)]
         $Project,
