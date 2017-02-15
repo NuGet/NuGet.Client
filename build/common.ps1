@@ -177,11 +177,17 @@ Function Update-Submodules {
 Function Install-NuGet {
     [CmdletBinding()]
     param(
-        [switch]$Force
+        [switch]$Force,
+        [switch]$CI
     )
     if ($Force -or -not (Test-Path $NuGetExe)) {
         Trace-Log 'Downloading nuget.exe'
-        wget https://dist.nuget.org/win-x86-commandline/latest-prerelease/nuget.exe -OutFile $NuGetExe
+        if($CI){
+            wget https://dist.nuget.org/win-x86-commandline/v3.5.0/nuget.exe -OutFile $NuGetExe
+        }
+        else {
+            wget https://dist.nuget.org/win-x86-commandline/latest-prerelease/nuget.exe -OutFile $NuGetExe
+        }
     }
 
     # Display nuget info

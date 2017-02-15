@@ -42,7 +42,7 @@ Invoke-BuildStep 'Configuring git repo' {
 } -ev +BuildErrors
 
 Invoke-BuildStep 'Installing NuGet.exe' {
-    Install-NuGet -Force:$Force
+    Install-NuGet -Force:$Force -CI:$CI
 } -ev +BuildErrors
 
 Invoke-BuildStep 'Installing .NET CLI' {
