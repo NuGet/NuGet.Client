@@ -58,7 +58,9 @@ function Test-InstallSealedManagementPackPackage {
 	Install-Package $package -ProjectName $project.Name -Source $context.RepositoryRoot
 	
 	# Assert
-	Assert-ManagementPackReference $project $package
+	Assert-ManagementPackReference $project ComponentMP
+	Assert-Package $project $package
+    Assert-SolutionPackage $package
 }
 
 function Test-InstallManagementPackBundlePackage {
@@ -74,7 +76,9 @@ function Test-InstallManagementPackBundlePackage {
 	Install-Package $package -ProjectName $project.Name -Source $context.RepositoryRoot
 	
 	# Assert
-	Assert-ManagementPackReference $project $package
+	Assert-ManagementPackReference $project FrameworkMP
+	Assert-Package $project $package
+    Assert-SolutionPackage $package
 }
 
 function Test-InstallPackageWithInvalidHttpSource {

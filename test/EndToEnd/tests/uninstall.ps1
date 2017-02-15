@@ -62,14 +62,15 @@ function Test-RemoveSealedManagementPackPackageRemovesPackageFromSolutionIfNotIn
 	$project = New-ManagementPack_2012R2
 	
 	Install-Package $package -ProjectName $project.Name -Source $context.RepositoryRoot
-	Assert-ManagementPackReference $project $package
+	Assert-ManagementPackReference $project ComponentMP
+	Assert-Package $project $package
 	Assert-SolutionPackage $package
 
 	# Act
 	Uninstall-Package $package -ProjectName $project.Name
 	
 	# Assert
-	Assert-NoManagementPackReference $project $package
+	Assert-NoManagementPackReference $project ComponentMP
 	Assert-Null (Get-ProjectPackage $project $package)
 	Assert-Null (Get-SolutionPackage $package)
 }
@@ -84,14 +85,15 @@ function Test-RemoveManagementPackBundlePackageRemovesPackageFromSolutionIfNotIn
 	$project = New-ManagementPack_2012R2
 	
 	Install-Package $package -ProjectName $project.Name -Source $context.RepositoryRoot
-	Assert-ManagementPackReference $project $package
+	Assert-ManagementPackReference $project FrameworkMP
+	Assert-Package $project $package
 	Assert-SolutionPackage $package
 
 	# Act
 	Uninstall-Package $package -ProjectName $project.Name
 	
 	# Assert
-	Assert-NoManagementPackReference $project $package
+	Assert-NoManagementPackReference $project FrameworkMP
 	Assert-Null (Get-ProjectPackage $project $package)
 	Assert-Null (Get-SolutionPackage $package)
 }

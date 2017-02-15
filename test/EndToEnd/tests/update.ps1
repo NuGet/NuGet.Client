@@ -131,13 +131,13 @@ function Test-UpdatingSealedManagementPackPackageVersion {
 	$project = New-ManagementPack_2012R2
 
 	# Act
-	Install-Package $package -Version 1.0.0.3 -ProjectName $project.Name -Source $context.RepositoryRoot
-	Assert-ManagementPackReference $project $package -Version 1.0.0.3
+	Install-Package $package -Version 1.0.3 -ProjectName $project.Name -Source $context.RepositoryRoot
+	Assert-ManagementPackReference $project ComponentMP -Version 1.0.0.3
 	
 	Update-Package $package -ProjectName $project.Name -Source $context.RepositoryRoot
 	
 	# Assert
-	Assert-ManagementPackReference $project $package -Version 1.0.0.4
+	Assert-ManagementPackReference $project ComponentMP -Version 1.0.0.4
 }
 
 function Test-UpdatingManagementPackBundlePackageVersion {
@@ -150,13 +150,13 @@ function Test-UpdatingManagementPackBundlePackageVersion {
 	$project = New-ManagementPack_2012R2
 
 	# Act
-	Install-Package $package -Version 1.0.0.3 -ProjectName $project.Name -Source $context.RepositoryRoot
-	Assert-ManagementPackReference $project $package -Version 1.0.0.3
+	Install-Package $package -Version 1.0.3 -ProjectName $project.Name -Source $context.RepositoryRoot
+	Assert-ManagementPackReference $project FrameworkMP -Version 1.0.0.3
 	
 	Update-Package $package -ProjectName $project.Name -Source $context.RepositoryRoot
 	
 	# Assert
-	Assert-ManagementPackReference $project $package -Version 1.0.0.4
+	Assert-ManagementPackReference $project FrameworkMP -Version 1.0.0.4
 }
 
 function Test-UpdatingPackageWhatIf {
