@@ -7,6 +7,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using NuGet.ProjectManagement;
+using NuGet.Common;
 
 namespace NuGet.PackageManagement.VisualStudio
 {

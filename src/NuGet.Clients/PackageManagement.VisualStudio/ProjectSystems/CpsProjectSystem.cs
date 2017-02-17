@@ -4,6 +4,7 @@
 using System;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using NuGet.Common;
 using NuGet.PackageManagement.UI;
 using NuGet.ProjectManagement;
 using EnvDTEProject = EnvDTE.Project;

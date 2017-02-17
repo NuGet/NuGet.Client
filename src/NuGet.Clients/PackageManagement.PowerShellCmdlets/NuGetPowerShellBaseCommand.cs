@@ -1025,7 +1025,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             {
                 if (path != null)
                 {
-                    string command = "& " + ProjectManagement.PathUtility.EscapePSPath(path) + " $__rootPath $__toolsPath $__package $__project";
+                    string command = "& " + PathUtility.EscapePSPath(path) + " $__rootPath $__toolsPath $__package $__project";
                     LogCore(MessageLevel.Info, String.Format(CultureInfo.CurrentCulture, Resources.Cmdlet_ExecutingScript, path));
 
                     InvokeCommand.InvokeScript(command, false, PipelineResultTypes.Error, null, null);

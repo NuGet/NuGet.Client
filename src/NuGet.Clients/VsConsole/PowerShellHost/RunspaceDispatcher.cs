@@ -11,7 +11,7 @@ using System.Management.Automation.Runspaces;
 using System.Threading;
 using Microsoft.PowerShell;
 using NuGet;
-using PathUtility = NuGet.ProjectManagement.PathUtility;
+using PathUtility = NuGet.Common.PathUtility;
 
 namespace NuGetConsole.Host.PowerShell.Implementation
 {

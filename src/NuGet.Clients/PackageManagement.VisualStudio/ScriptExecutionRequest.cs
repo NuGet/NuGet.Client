@@ -5,8 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using NuGet.Common;
 using NuGet.Packaging.Core;
-using NuGet.ProjectManagement;
 using EnvDTEProject = EnvDTE.Project;
 
 namespace NuGet.PackageManagement.VisualStudio
