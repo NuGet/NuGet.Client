@@ -13,12 +13,16 @@ namespace NuGet.PackageManagement.VisualStudio
             IVsaeProjectSystemProxy proxy;
             try
             {
-                // we're assuming we'd get an assembly load exception if VSAE does not exist at developer runtime 
-                // this could be overkill, since we presumably wouldn't have the project type to initiate this workflow
+#if VisualStudioAuthoringExtensionsInstalled
                 proxy = new VsaeProjectSystemDynamicProxy(envDTEProject, nuGetProjectContext);
+#else
+                proxy = new VsaeProjectSystemNoOpProxy(nuGetProjectContext);
+#endif
             }
             catch
             {
+                // we're assuming we'd get an assembly load exception if VSAE does not exist at developer runtime 
+                // this could be overkill, since we presumably wouldn't have the project type to initiate this workflow
                 proxy = new VsaeProjectSystemNoOpProxy(nuGetProjectContext);
             }
 

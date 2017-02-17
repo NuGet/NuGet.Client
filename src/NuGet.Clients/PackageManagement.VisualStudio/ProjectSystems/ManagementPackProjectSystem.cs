@@ -6,7 +6,6 @@ using EnvDTEProject = EnvDTE.Project;
 using NuGet.ProjectManagement;
 using System.IO;
 
-
 namespace NuGet.PackageManagement.VisualStudio
 {
     public class ManagementPackProjectSystem : VSMSBuildNuGetProjectSystem
@@ -30,10 +29,10 @@ namespace NuGet.PackageManagement.VisualStudio
 
                 switch (extension)
                 {
-                    case ManagementPackBundleExtension: 
+                    case ManagementPackBundleExtension:
                         _proxy.AddManagementPackReferencesFromBundle(referencePath);
                         break;
-                    case SealedManagementPackExtension: 
+                    case SealedManagementPackExtension:
                         _proxy.AddManagementPackReferenceFromSealedMp(referencePath);
                         break;
                     default:
@@ -47,36 +46,36 @@ namespace NuGet.PackageManagement.VisualStudio
             }
         }
 
-
-        public override bool ReferenceExists(string name)
+        public override bool ReferenceExists(string referencePath)
         {
-            var result = false;
-
-            try
-            {
-                result = _proxy.ReferenceExists(name);
-            }
-            catch (Exception ex)
-            {
-                NuGetProjectContext.Log(MessageLevel.Error, $"Unexpected exception in ReferenceExists: {ex.Message}.");
-            }
-
-            return result;
+            // due to the option and complexity of MP bundles, we skip this optimization and test during add reference
+            return false;
         }
 
-
-        public override void RemoveReference(string name)
+        public override void RemoveReference(string referencePath)
         {
             try
             {
-                _proxy.RemoveManagementPackReference(name);
+                var extension = Path.GetExtension(referencePath);
+
+                switch (extension)
+                {
+                    case ManagementPackBundleExtension:
+                        _proxy.RemoveManagementPackReferencesFromBundle(referencePath);
+                        break;
+                    case SealedManagementPackExtension:
+                        _proxy.RemoveManagementPackReferenceFromSealedMp(referencePath);
+                        break;
+                    default:
+                        NuGetProjectContext.Log(MessageLevel.Warning, $"Unexpected reference extension ({extension}). Skipping RemoveReference.");
+                        break;
+                }
             }
             catch (Exception ex)
             {
                 NuGetProjectContext.Log(MessageLevel.Error, $"Unexpected exception in RemoveReference: {ex.Message}.");
             }
         }
-
 
         protected override bool IsBindingRedirectSupported
         {

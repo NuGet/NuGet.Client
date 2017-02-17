@@ -6,6 +6,7 @@ using NuGet.ProjectManagement;
 using System;
 using System.IO;
 using System.Reflection;
+using System.Linq;
 
 //NOTE: Safely build a no-op proxy when VSAE is not installed (DON'T BREAK THE BUILD)
 #if VisualStudioAuthoringExtensionsInstalled
@@ -22,10 +23,11 @@ namespace NuGet.PackageManagement.VisualStudio
     {
         void AddManagementPackReferenceFromSealedMp(string sealedMpPath);
         void AddManagementPackReferencesFromBundle(string bundlePath);
-        void RemoveManagementPackReference(string name);
-        bool ReferenceExists(string name);
+        void RemoveManagementPackReferenceFromSealedMp(string sealedMpPath);
+        void RemoveManagementPackReferencesFromBundle(string bundlePath);
     }
 
+#if VisualStudioAuthoringExtensionsInstalled
     /// <summary>
     /// FUTURE:  We are highly leveraging Visual Studio Authoring Extensions (VSAE) for this project system.
     /// Unfortunately, we have to reflect some of the members needed at present.
@@ -34,13 +36,11 @@ namespace NuGet.PackageManagement.VisualStudio
     public class VsaeProjectSystemDynamicProxy : IVsaeProjectSystemProxy
     {
         private readonly dynamic _projectMgr;
-        private readonly dynamic _mpReferenceContainerNode;
         private INuGetProjectContext _nuGetProjectContext;
 
-#if VisualStudioAuthoringExtensionsInstalled
         private readonly MethodInfo _isAlreadyAddedMethodInfo;
+        private readonly ManagementPackReferenceContainerNode _mpReferenceContainerNode;
         private delegate bool IsAlreadyAddedInternalDelegate(out ReferenceNode existingNodeInternal);
-#endif
 
         public VsaeProjectSystemDynamicProxy(EnvDTEProject envDTEProject, INuGetProjectContext nuGetProjectContext)
         {
@@ -55,16 +55,14 @@ namespace NuGet.PackageManagement.VisualStudio
                 Type refFolderType = oaReferenceFolderItem.GetType();
                 const BindingFlags bindingFlags = BindingFlags.Instance | BindingFlags.NonPublic;
                 var refFolderPropinfo = refFolderType.GetProperty("Node", bindingFlags);
-                _mpReferenceContainerNode = refFolderPropinfo.GetValue(oaReferenceFolderItem);
 
-#if VisualStudioAuthoringExtensionsInstalled
+                _mpReferenceContainerNode = (ManagementPackReferenceContainerNode)refFolderPropinfo.GetValue(oaReferenceFolderItem);
 
                 _isAlreadyAddedMethodInfo = typeof(ManagementPackReferenceNode).GetMethod("IsAlreadyAdded",
                     bindingFlags,
                     null,
                     new[] { typeof(ReferenceNode).MakeByRefType() },
                     null);
-#endif
             }
             catch (Exception ex)
             {
@@ -75,8 +73,6 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public void AddManagementPackReferenceFromSealedMp(string sealedMpPath)
         {
-#if VisualStudioAuthoringExtensionsInstalled
-
             using (var mpFileStore = new ManagementPackFileStore())
             {
                 mpFileStore.AddDirectory(Path.GetDirectoryName(sealedMpPath));
@@ -85,13 +81,15 @@ namespace NuGet.PackageManagement.VisualStudio
                     AddManagementPackReference(managementPack, sealedMpPath);
                 }
             }
-#endif
         }
 
         public void AddManagementPackReferencesFromBundle(string bundlePath)
         {
-#if VisualStudioAuthoringExtensionsInstalled
+            PerformOnManagementPacksInBundle(bundlePath, (mp, path) => AddManagementPackReference(mp, path));
+        }
 
+        private void PerformOnManagementPacksInBundle(string bundlePath, Action<ManagementPack, string> processManagementPack)
+        {
             var bundleReader = ManagementPackBundleFactory.CreateBundleReader();
 
             using (var mpFileStore = new ManagementPackFileStore())
@@ -100,14 +98,11 @@ namespace NuGet.PackageManagement.VisualStudio
 
                 foreach (var managementPack in bundle.ManagementPacks) using (managementPack)
                     {
-                        AddManagementPackReference(managementPack, bundlePath);
+                        processManagementPack(managementPack, bundlePath);
                     }
             }
-
-#endif
         }
 
-#if VisualStudioAuthoringExtensionsInstalled
         private void AddManagementPackReference(ManagementPack managementPack, string hintPath)
         {
             string identity = $"{managementPack.Name} (Version={managementPack.Version},PublicKeyToken={managementPack.KeyToken})";
@@ -146,9 +141,8 @@ namespace NuGet.PackageManagement.VisualStudio
                 LogProcessingResult(identity, ProcessStatus.Failed, ProcessingOp.AddingReference, ex.Message);
             }
         }
-#endif
 
-        private void LogProcessingResult(string identity, ProcessStatus status, ProcessingOp operation = ProcessingOp.AddingReference, string detail = null)
+        private void LogProcessingResult(string identity, ProcessStatus status, ProcessingOp operation = ProcessingOp.AddingReference, string detail = "")
         {
             string result;
             switch (status)
@@ -185,41 +179,46 @@ namespace NuGet.PackageManagement.VisualStudio
             RemovingReference,
         }
 
-        public void RemoveManagementPackReference(string name)
+        public void RemoveManagementPackReferenceFromSealedMp(string sealedMpPath)
         {
-            dynamic reference;
-            if (!TryGetExistingReference(name, out reference)) return;
-            using (reference)
+            var referenceName = Path.GetFileNameWithoutExtension(sealedMpPath);
+
+            SafeRemoveManagementPackReference(referenceName);
+        }
+
+        public void RemoveManagementPackReferencesFromBundle(string bundleName)
+        {
+            string fullPath;
+            if (TryGetFullBundlePath(bundleName, out fullPath))
             {
-                var identity = reference.Name;
-                var shouldRemoveFromStorage = false; // the nuget folder uninstall will take care of file cleanup
-                reference.Remove(shouldRemoveFromStorage);
-                LogProcessingResult(identity, ProcessStatus.Success);
+                PerformOnManagementPacksInBundle(fullPath, (mp, path) => SafeRemoveManagementPackReference(mp.Name));
             }
         }
 
-        public bool ReferenceExists(string name)
-        {
-            var result = false;
-
-            dynamic reference;
-            if (TryGetExistingReference(name, out reference))
-            {
-                result = true;
-                (reference as IDisposable)?.Dispose();
-            }
-
-            return result;
-        }
-
-        private bool TryGetExistingReference(string name, out dynamic managementPackReference)
+        private bool TryGetFullBundlePath(string bundleName, out string fullPath)
         {
             var found = false;
-            managementPackReference = null;
+            fullPath = null;
 
-            var referenceName = Path.GetFileNameWithoutExtension(name);
+            foreach (var reference in _mpReferenceContainerNode.EnumReferences().Cast<ManagementPackReferenceNode>()) using (reference)
+                {
+                    if (reference.ManagementPackPath.EndsWith(bundleName, StringComparison.OrdinalIgnoreCase))
+                    {
+                        found = true;
+                        fullPath = reference.ManagementPackPath;
+                        break;
+                    }
+                }
 
-            foreach (dynamic reference in _mpReferenceContainerNode.EnumReferences())
+            return found;
+        }
+
+        private void SafeRemoveManagementPackReference(string referenceName)
+        {
+            var found = false;
+            ManagementPackReferenceNode managementPackReference = null;
+
+            foreach (var reference in _mpReferenceContainerNode.EnumReferences().Cast<ManagementPackReferenceNode>())
             {
                 if (string.Equals(reference.Name, referenceName, StringComparison.OrdinalIgnoreCase))
                 {
@@ -231,10 +230,20 @@ namespace NuGet.PackageManagement.VisualStudio
                 (reference as IDisposable)?.Dispose();
             }
 
-            return found;
+            if (found)
+            {
+                using (managementPackReference)
+                {
+                    var identity = managementPackReference.Name;
+                    var shouldRemoveFromStorage = false; // the nuget folder uninstall will take care of file cleanup
+                    managementPackReference.Remove(shouldRemoveFromStorage);
+                    LogProcessingResult(identity, ProcessStatus.Success, ProcessingOp.RemovingReference);
+                }
+            }
         }
 
     }
+#endif
 
     public class VsaeProjectSystemNoOpProxy : IVsaeProjectSystemProxy
     {
@@ -247,21 +256,20 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public void AddManagementPackReferenceFromSealedMp(string sealedMpPath)
         {
-            LogNotImplemented("AddManagementPackReferenceFromSealedMp");
+            LogNotImplemented("AddManagementPackReference");
         }
 
         public void AddManagementPackReferencesFromBundle(string bundlePath)
         {
-            LogNotImplemented("AddManagementPackReferencesFromBundle");
+            LogNotImplemented("AddManagementPackReference");
         }
 
-        public bool ReferenceExists(string name)
+        public void RemoveManagementPackReferenceFromSealedMp(string sealedMpPath)
         {
-            LogNotImplemented("ReferenceExists");
-            return false;
+            LogNotImplemented("RemoveManagementPackReference");
         }
 
-        public void RemoveManagementPackReference(string name)
+        public void RemoveManagementPackReferencesFromBundle(string bundlePath)
         {
             LogNotImplemented("RemoveManagementPackReference");
         }
