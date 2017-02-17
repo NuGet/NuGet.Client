@@ -176,16 +176,9 @@ namespace NuGet.SolutionRestoreManager
                 _joinableFactory.Run(
                     async () =>
                     {
-                        try
-                        {
-                            // Do not block VS forever
-                            // After the specified delay the task will disjoin.
-                            await _backgroundJobRunner.GetValueAsync().WithTimeout(TimeSpan.FromSeconds(60));
-                        }
-                        catch (Exception e)
-                        {
-                            Logger.LogError(e.ToString());
-                        }
+                        // Do not block VS forever
+                        // After the specified delay the task will disjoin.
+                        await _backgroundJobRunner.GetValueAsync().WithTimeout(TimeSpan.FromSeconds(60));
                     },
                     JoinableTaskCreationOptions.LongRunning);
             }
@@ -245,8 +238,6 @@ namespace NuGet.SolutionRestoreManager
             // on-board request onto pending restore operation
             _pendingRequests.Value.TryAdd(request);
 
-            Logger.LogInformation($"Scheduled restore request {pendingRestore}.");
-
             try
             {
                 using (_joinableCollection.Join())
@@ -264,17 +255,12 @@ namespace NuGet.SolutionRestoreManager
             }
             catch (OperationCanceledException) when (token.IsCancellationRequested)
             {
-                Logger.LogInformation($"Restore operation {pendingRestore} has been canceled.");
                 return false;
             }
             catch (Exception e)
             {
                 Logger.LogError(e.ToString());
                 return false;
-            }
-            finally
-            {
-                Logger.LogInformation($"Restore operation {pendingRestore} has completed.");
             }
         }
 
@@ -308,8 +294,6 @@ namespace NuGet.SolutionRestoreManager
 
         private async Task<bool> StartBackgroundJobRunnerAsync(CancellationToken token)
         {
-            Logger.LogInformation("Background restore job runner has started.");
-
             // Hops onto a background pool thread
             await TaskScheduler.Default;
 
@@ -329,8 +313,6 @@ namespace NuGet.SolutionRestoreManager
                         var request = _pendingRequests.Value.Take(token);
 
                         token.ThrowIfCancellationRequested();
-
-                        Logger.LogInformation($"Processing restore operation {restoreOperation}.");
 
                         // Claims the ownership over the active task
                         // Awaits for currently running restore to complete
@@ -366,7 +348,6 @@ namespace NuGet.SolutionRestoreManager
                     catch (OperationCanceledException) when (token.IsCancellationRequested)
                     {
                         // Ignores
-                        Logger.LogInformation($"Restore operation {restoreOperation} has been cancelled");
                     }
                     catch (Exception e)
                     {
@@ -453,8 +434,6 @@ namespace NuGet.SolutionRestoreManager
 
         public override int OnAfterBackgroundSolutionLoadComplete()
         {
-            Logger.LogInformation("Background solution load has completed.");
-
             _solutionLoadedEvent.Set();
 
             return VSConstants.S_OK;
