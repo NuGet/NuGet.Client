@@ -26,8 +26,8 @@
           "version": "1.0.0"
         },
         "moq.netcore": "4.4.0-beta8",
-        "System.Diagnostics.TraceSource": "4.0.1",
-        "System.Security.Cryptography.ProtectedData": "4.0.1",
+        "System.Diagnostics.TraceSource": "4.0.0",
+        "System.Security.Cryptography.ProtectedData": "4.0.0",
         "System.Threading.Tasks.Parallel": "4.0.1"
       },
       "buildOptions": {

@@ -21,7 +21,7 @@
     }
   },
   "dependencies": {
-    "System.Runtime.InteropServices.RuntimeInformation": "4.0.1",
+    "System.Runtime.InteropServices.RuntimeInformation": "4.0.0",
     "Microsoft.Extensions.CommandLineUtils": "1.0.0-*",
     "NuGet.Commands": {
       "target": "project"
