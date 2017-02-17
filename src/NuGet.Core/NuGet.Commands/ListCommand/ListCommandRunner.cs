@@ -11,6 +11,7 @@ using NuGet.Configuration;
 using NuGet.Packaging.Core;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
+using NuGet.Versioning;
 
 namespace NuGet.Commands
 {
@@ -58,13 +59,14 @@ namespace NuGet.Commands
                         listArgs.IncludeDelisted, log, listArgs.CancellationToken);
                 allPackages.Add(packagesFromSource);
             }
-            ComparePackageSearchMetadata comparer = new ComparePackageSearchMetadata();
-            await PrintPackages(listArgs, new AggregateEnumerableAsync<IPackageSearchMetadata>(allPackages, comparer, comparer).GetEnumeratorAsync());
+            CompareIdPackageSearchMetadata idComparer = new CompareIdPackageSearchMetadata();
+            CompareVersionPackageSearchMetadata versionComparer = new CompareVersionPackageSearchMetadata();
+            await PrintPackages(listArgs, new AggregatePackageSearchResultsEnumerableAsync(allPackages, idComparer, versionComparer, idComparer).GetEnumeratorAsync());
         }
 
-        private class ComparePackageSearchMetadata : IComparer<IPackageSearchMetadata>, IEqualityComparer<IPackageSearchMetadata>
+        private class CompareVersionPackageSearchMetadata : IComparer<IPackageSearchMetadata>
         {
-            public PackageIdentityComparer _comparer { get; set; } = PackageIdentityComparer.Default;
+            public VersionComparer _comparer { get; set; } = new VersionComparer();
             public int Compare(IPackageSearchMetadata x, IPackageSearchMetadata y)
             {
                 if (ReferenceEquals(x, y))
@@ -81,7 +83,30 @@ namespace NuGet.Commands
                 {
                     return 1;
                 }
-                return _comparer.Compare(x.Identity, y.Identity);
+
+                return _comparer.Compare(x.Identity.Version, y.Identity.Version);
+            }
+        }
+
+        private class CompareIdPackageSearchMetadata : IComparer<IPackageSearchMetadata>, IEqualityComparer<IPackageSearchMetadata>
+        {
+            public int Compare(IPackageSearchMetadata x, IPackageSearchMetadata y)
+            {
+                if (ReferenceEquals(x, y))
+                {
+                    return 0;
+                }
+
+                if (ReferenceEquals(x, null))
+                {
+                    return -1;
+                }
+
+                if (ReferenceEquals(y, null))
+                {
+                    return 1;
+                }
+                return StringComparer.OrdinalIgnoreCase.Compare(x.Identity.Id, y.Identity.Id);
             }
 
             public bool Equals(IPackageSearchMetadata x, IPackageSearchMetadata y)
@@ -95,7 +120,7 @@ namespace NuGet.Commands
                 {
                     return false;
                 }
-                return _comparer.Equals(x.Identity, y.Identity);
+                return StringComparer.OrdinalIgnoreCase.Equals(x.Identity.Id, y.Identity.Id);
             }
 
             public int GetHashCode(IPackageSearchMetadata obj)
@@ -104,7 +129,7 @@ namespace NuGet.Commands
                 {
                     return 0;
                 }
-                return _comparer.GetHashCode(obj.Identity);
+                return StringComparer.OrdinalIgnoreCase.GetHashCode(obj.Identity.Id);
             }
         }
 
@@ -170,7 +195,6 @@ namespace NuGet.Commands
                     while (await asyncEnumerator.MoveNextAsync())
                     {
                         var p = asyncEnumerator.Current;
-                        listArgs.PrintJustified(0, p.Identity.Id + " " + p.Identity.Version.ToFullString());
                         if (listArgs.AllVersions)
                         {
                             foreach(var versionInfo in await p.GetVersionsAsync())

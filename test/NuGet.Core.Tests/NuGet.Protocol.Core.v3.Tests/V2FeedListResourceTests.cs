@@ -3,23 +3,26 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.Configuration;
-using NuGet.Packaging.Core;
-using NuGet.Protocol.Core.Types;
-using NuGet.Test.Utility;
-using NuGet.Versioning;
 using Test.Utility;
 using Xunit;
+using Xunit.Abstractions;
+
 
 namespace NuGet.Protocol.Tests
 {
     public class V2FeedListResourceTests
     {
+        private readonly ITestOutputHelper _output;
+
+        public V2FeedListResourceTests(ITestOutputHelper output)
+        {
+            _output = output;
+        }
 
         [Fact]
         public async Task TestListDelistedNoPrereleaseNotAllVersionsDelistedOnlyResponse()
@@ -47,6 +50,8 @@ namespace NuGet.Protocol.Tests
 
             int ExpectedCount = 6;
             int ActualCount = 0;
+            int ExpectedUniqueCount = 6;
+            int ActualUniqueCount = 0;
             var enumerator = enumerable.GetEnumeratorAsync();
 
 
@@ -54,15 +59,18 @@ namespace NuGet.Protocol.Tests
             {
                 if (enumerator.Current != null)
                 {
-                    ActualCount++;
-                    Assert.True(ExpectedCount >= ActualCount, "Too many results");
+                    ActualUniqueCount++;
+                    foreach (var version in await enumerator.Current.GetVersionsAsync())
+                    {
+                        ActualCount++;
+                    }
                 }
                 else
                 {
                     Assert.False(false, "Null Value, this shouldn't happen.");
                 }
             }
-
+            Assert.Equal(ExpectedUniqueCount, ActualUniqueCount);
             Assert.Equal(ExpectedCount, ActualCount);
         }
 
@@ -101,6 +109,11 @@ namespace NuGet.Protocol.Tests
                 {
                     ActualCount++;
                     Assert.True(ExpectedCount >= ActualCount, "Too many results");
+                    foreach (var version in await enumerator.Current.GetVersionsAsync())
+                    {
+                        ActualCount++;
+                        Assert.True(ExpectedCount >= ActualCount, "Too many results");
+                    }
                 }
                 else
                 {
@@ -148,6 +161,11 @@ namespace NuGet.Protocol.Tests
                 {
                     ActualCount++;
                     Assert.True(ExpectedCount >= ActualCount, "Too many results");
+                    foreach (var version in await enumerator.Current.GetVersionsAsync())
+                    {
+                        ActualCount++;
+                        Assert.True(ExpectedCount >= ActualCount, "Too many results");
+                    }
                 }
                 else
                 {
@@ -193,6 +211,11 @@ namespace NuGet.Protocol.Tests
                 {
                     ActualCount++;
                     Assert.True(ExpectedCount >= ActualCount, "Too many results");
+                    foreach (var version in await enumerator.Current.GetVersionsAsync())
+                    {
+                        ActualCount++;
+                        Assert.True(ExpectedCount >= ActualCount, "Too many results");
+                    }
                 }
                 else
                 {
@@ -229,7 +252,7 @@ namespace NuGet.Protocol.Tests
             var enumerable = await resource.ListAsync(searchTerm: "Windows.AzureStorage",
                 prerelease: true, allVersions: false, includeDelisted: true, logger: NullLogger.Instance, token: CancellationToken.None);
 
-            int ExpectedCount = 2;
+            int ExpectedCount = 47;
             int ActualCount = 0;
             var enumerator = enumerable.GetEnumeratorAsync();
 
@@ -286,6 +309,11 @@ namespace NuGet.Protocol.Tests
                 {
                     ActualCount++;
                     Assert.True(ExpectedCount >= ActualCount, "Too many results");
+                    foreach (var version in await enumerator.Current.GetVersionsAsync())
+                    {
+                        ActualCount++;
+                        Assert.True(ExpectedCount >= ActualCount, "Too many results");
+                    }
                 }
                 else
                 {
@@ -322,7 +350,7 @@ namespace NuGet.Protocol.Tests
             var enumerable = await resource.ListAsync(searchTerm: "Windows.AzureStorage",
                 prerelease: true, allVersions: true, includeDelisted: true, logger: NullLogger.Instance, token: CancellationToken.None);
 
-            //Only 2 packages are listed in this resource
+            //Only 2 different packages are listed in this resource
             int ExpectedCount = 47;
             int ActualCount = 0;
             var enumerator = enumerable.GetEnumeratorAsync();
@@ -334,6 +362,11 @@ namespace NuGet.Protocol.Tests
                 {
                     ActualCount++;
                     Assert.True(ExpectedCount >= ActualCount, "Too many results");
+                    foreach( var version in await enumerator.Current.GetVersionsAsync())
+                    {
+                        ActualCount++;
+                        Assert.True(ExpectedCount >= ActualCount, "Too many results");
+                    }
                 }
                 else
                 {
@@ -353,9 +386,9 @@ namespace NuGet.Protocol.Tests
             var responses = new Dictionary<string, string>();
 
             responses.Add(serviceAddress + "/Search()?$orderby=Id&searchTerm='Windows.AzureStorage'&targetFramework=''&includePrerelease=false&$skip=0&$top=30",
-               TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.WindowsAzureStorageSearchPackage30Entries.xml", GetType()));
+               TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.V2FeedNoPrereleaseAllVersions30Entries.xml", GetType()));
             responses.Add(serviceAddress + "/Search()?$orderby=Id&searchTerm='Windows.AzureStorage'&targetFramework=''&includePrerelease=false&$skip=30&$top=30",
-                TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.WindowsAzureStorageSearchPackage17Entries.xml", GetType()));
+                TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.V2FeedNoPrereleaseAllVersions6Entries.xml", GetType()));
             responses.Add(serviceAddress, string.Empty);
             responses.Add(serviceAddress + "/$metadata",
                 TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.MetadataTT.xml", GetType()));
@@ -370,8 +403,10 @@ namespace NuGet.Protocol.Tests
             var enumerable = await resource.ListAsync(searchTerm: "Windows.AzureStorage",
                 prerelease: false, allVersions: true, includeDelisted: false, logger: NullLogger.Instance, token: CancellationToken.None);
 
-            int ExpectedCount = 44;
+            int ExpectedCount = 36;
             int ActualCount = 0;
+            int ExpectedUniqueCount = 36;
+            int ActualUniqueCount = 0;
             var enumerator = enumerable.GetEnumeratorAsync();
 
 
@@ -379,8 +414,13 @@ namespace NuGet.Protocol.Tests
             {
                 if (enumerator.Current != null)
                 {
-                    ActualCount++;
-                    Assert.True(ExpectedCount >= ActualCount, "Too many results");
+                    ActualUniqueCount++;
+                    _output.WriteLine("Unique = " + enumerator.Current.Identity.Id + " " + enumerator.Current.Identity.Version);
+                    foreach (var version in await enumerator.Current.GetVersionsAsync())
+                    {
+                        _output.WriteLine(enumerator.Current.Identity.Id + " " + version.Version);
+                        ActualCount++;
+                    }
                 }
                 else
                 {
