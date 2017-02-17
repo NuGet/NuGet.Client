@@ -14,6 +14,8 @@ using NuGet.PackageManagement.UI;
 using NuGet.PackageManagement.VisualStudio;
 using NuGetConsole;
 using Task = System.Threading.Tasks.Task;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
 
 namespace NuGet.SolutionRestoreManager
 {
@@ -22,10 +24,11 @@ namespace NuGet.SolutionRestoreManager
     /// </summary>
     [Export]
     [PartCreationPolicy(CreationPolicy.NonShared)]
-    internal sealed class RestoreOperationLogger : ILogger
+    internal sealed class RestoreOperationLogger : ILogger, IDisposable
     {
         private readonly IServiceProvider _serviceProvider;
         private readonly IOutputConsoleProvider _outputConsoleProvider;
+        private const int MessageLimit = 1024;
 
         private RestoreOperationSource _operationSource;
         private ErrorListProvider _errorListProvider;
@@ -33,6 +36,9 @@ namespace NuGet.SolutionRestoreManager
         private CancellationTokenSource _externalCts;
         private Func<CancellationToken, Task<RestoreOperationProgressUI>> _progressFactory;
         private IOutputConsole _outputConsole;
+        private Task _messagePumpTask;
+        private BlockingCollection<LogMessage> _waitingMessages;
+        private CancellationTokenSource _messagePumpCts;
 
         private bool _cancelled;
         private bool _hasHeaderBeenShown;
@@ -87,6 +93,8 @@ namespace NuGet.SolutionRestoreManager
             _taskFactory = jtf;
             _externalCts = cts;
             _externalCts.Token.Register(() => _cancelled = true);
+            _waitingMessages = new BlockingCollection<LogMessage>(MessageLimit);
+            _messagePumpCts = new CancellationTokenSource();
 
 #if VS14
             _progressFactory = t => WaitDialogProgress.StartAsync(_serviceProvider, _taskFactory, t);
@@ -118,21 +126,40 @@ namespace NuGet.SolutionRestoreManager
 
                 errorListProvider.Tasks.Clear();
             });
+
+            // Start pumping messages to the UI
+            _messagePumpTask = Task.Run(async () => await PumpMessagesAsync(_messagePumpCts.Token));
+        }
+
+        /// <summary>
+        /// Stop the pump and log all remaining messages.
+        /// This should only be called once per instance.
+        /// </summary>
+        public async Task StopAsync()
+        {
+            if (_messagePumpTask != null)
+            {
+                // Request the pump stop.
+                _messagePumpCts.Cancel();
+
+                // Wait for all messages to be logged.
+                await _messagePumpTask;
+            }
         }
 
         public void LogDebug(string data)
         {
-            LogToVS(VerbosityLevel.Diagnostic, data);
+            LogToQueue(VerbosityLevel.Diagnostic, data);
         }
 
         public void LogVerbose(string data)
         {
-            LogToVS(VerbosityLevel.Detailed, data);
+            LogToQueue(VerbosityLevel.Detailed, data);
         }
 
         public void LogInformation(string data)
         {
-            LogToVS(VerbosityLevel.Normal, data);
+            LogToQueue(VerbosityLevel.Normal, data);
         }
 
         public void LogMinimal(string data)
@@ -142,12 +169,12 @@ namespace NuGet.SolutionRestoreManager
 
         public void LogWarning(string data)
         {
-            LogToVS(VerbosityLevel.Minimal, data);
+            LogToQueue(VerbosityLevel.Minimal, data);
         }
 
         public void LogError(string data)
         {
-            LogToVS(VerbosityLevel.Quiet, data);
+            LogToQueue(VerbosityLevel.Quiet, data);
         }
 
         public void LogInformationSummary(string data)
@@ -162,7 +189,7 @@ namespace NuGet.SolutionRestoreManager
             LogDebug(data);
         }
 
-        private void LogToVS(VerbosityLevel verbosityLevel, string message)
+        private void LogToQueue(VerbosityLevel verbosityLevel, string message)
         {
             if (_cancelled)
             {
@@ -180,13 +207,26 @@ namespace NuGet.SolutionRestoreManager
                 return;
             }
 
-            Do((_, progress) =>
+            // Add the message to the queue to avoid blocking
+            _waitingMessages.Add(new LogMessage(verbosityLevel, message));
+        }
+
+        /// <summary>
+        /// Log the message to VS. Messages should go through LogToQueue first.
+        /// </summary>
+        private Task LogToVSAsync(LogMessage logMessage)
+        {
+            var verbosityLevel = logMessage.VerbosityLevel;
+            var message = logMessage.Message;
+
+            return DoAsync((_, progress) =>
             {
                 // Only show messages with VerbosityLevel.Normal. That is, info messages only.
                 // Do not show errors, warnings, verbose or debug messages on the progress dialog
                 // Avoid showing indented messages, these are typically not useful for the progress dialog since
                 // they are missing the context of the parent text above it
-                if (verbosityLevel == VerbosityLevel.Normal &&
+                if (progress != null &&
+                    verbosityLevel == VerbosityLevel.Normal &&
                     message.Length == message.TrimStart().Length)
                 {
                     progress?.ReportProgress(message);
@@ -224,9 +264,13 @@ namespace NuGet.SolutionRestoreManager
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            if (OutputVerbosity >= (int)verbosity && _outputConsole != null)
+            if (_outputConsole != null && OutputVerbosity >= (int)verbosity)
             {
                 _outputConsole.WriteLine(format, args);
+            }
+            else
+            {
+
             }
         }
 
@@ -426,6 +470,59 @@ namespace NuGet.SolutionRestoreManager
                 return (int)value;
             }
             return 0;
+        }
+
+        private async Task PumpMessagesAsync(CancellationToken pumpToken)
+        {
+            // Use the pump cancellation token for waiting on the queue.
+            // Once the token is canceled the rest of the messages need to 
+            // be drained, to do this the token will then be ignored until 
+            // the queue is empty.
+            var waitToken = pumpToken;
+
+            // Run until the pump is stopped AND there are no messages left.
+            while (!pumpToken.IsCancellationRequested || _waitingMessages.Count > 0)
+            {
+                if (pumpToken.IsCancellationRequested)
+                {
+                    // Continue logging until the queue is empty.
+                    waitToken = CancellationToken.None;
+                }
+
+                try
+                {
+                    // Block and wait for a message or until the token is canceled
+                    var message = _waitingMessages.Take(waitToken);
+
+                    // Log the message to the UI
+                    await LogToVSAsync(message);
+                }
+                catch (OperationCanceledException)
+                {
+                    // Thrown when the pump is stopped.
+                }
+            }
+        }
+
+        public void Dispose()
+        {
+            _messagePumpCts?.Dispose();
+            _waitingMessages?.Dispose();
+            _externalCts?.Dispose();
+            _messagePumpTask?.Dispose();
+        }
+
+        private class LogMessage
+        {
+            public VerbosityLevel VerbosityLevel { get; }
+
+            public string Message { get; }
+
+            public LogMessage(VerbosityLevel level, string message)
+            {
+                VerbosityLevel = level;
+                Message = message;
+            }
         }
 
         private class WaitDialogProgress : RestoreOperationProgressUI
