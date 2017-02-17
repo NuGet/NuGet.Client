@@ -1,5 +1,5 @@
 {
-  "version": "4.0.0-*",
+  "version": "4.0.1-*",
   "description": "NuGet v3 core library.",
   "copyright": "Copyright .NET Foundation. All rights reserved.",
   "packOptions": {
