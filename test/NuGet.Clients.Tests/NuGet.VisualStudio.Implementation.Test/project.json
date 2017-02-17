@@ -1,4 +1,4 @@
-﻿{
+{
   "dependencies": {
     "Moq": "4.2.1507.118",
     "xunit": "2.1.0",
@@ -7,7 +7,7 @@
   "frameworks": {
     "net46": {
       "frameworkAssemblies": {
-        "System.ComponentModel.DataAnnotations": "4.0.0.0"
+        "System.ComponentModel.DataAnnotations": "4.0.1.0"
       }
     }
   },

@@ -1,5 +1,5 @@
 {
-  "version": "4.0.0-*",
+  "version": "4.0.1-*",
   "description": "The core data structures for NuGet.Packaging",
   "authors": [
     "NuGet"

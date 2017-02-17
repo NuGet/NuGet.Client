@@ -74,7 +74,7 @@
       Semantic Version. See http://semver.org for full details.
       Update for every public release.
     -->
-    <SemanticVersion>4.0.0</SemanticVersion>
+    <SemanticVersion>4.0.1</SemanticVersion>
     <PreReleaseVersion>0</PreReleaseVersion>
   </PropertyGroup>
 
