@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.ComponentModel.Composition;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio;
@@ -46,6 +47,8 @@ namespace NuGet.SolutionRestoreManager
 
         private readonly JoinableTaskCollection _joinableCollection;
         private readonly JoinableTaskFactory _joinableFactory;
+
+        private IVsSolutionManager SolutionManager => _solutionManager.Value;
 
         private ErrorListProvider ErrorListProvider => NuGetUIThreadHelper.JoinableTaskFactory.Run(_errorListProvider.GetValueAsync);
 
@@ -217,7 +220,7 @@ namespace NuGet.SolutionRestoreManager
             // Initialize if not already done.
             await InitializeAsync();
 
-            if (_solutionManager.Value.IsSolutionFullyLoaded)
+            if (SolutionManager.IsSolutionFullyLoaded)
             {
                 // start background runner if not yet started
                 // ignore the value
@@ -251,6 +254,13 @@ namespace NuGet.SolutionRestoreManager
                         // Initialize if not already done.
                         await InitializeAsync();
 
+#if !VS14
+                        if (await ShouldSkipRestoreAsync(request))
+                        {
+                            return true;
+                        }
+#endif
+
                         using (var restoreOperation = new BackgroundRestoreOperation())
                         {
                             await PromoteTaskToActiveAsync(restoreOperation, _workerCts.Token);
@@ -263,6 +273,30 @@ namespace NuGet.SolutionRestoreManager
                 },
                 JoinableTaskCreationOptions.LongRunning);
         }
+
+#if !VS14
+        private async Task<bool> ShouldSkipRestoreAsync(SolutionRestoreRequest request)
+        {
+            if (request.RestoreSource == RestoreOperationSource.OnBuild
+                && !request.ForceRestore)
+            {
+                if (!await SolutionManager.SolutionHasDeferredProjectsAsync())
+                {
+                    var projects = SolutionManager.GetNuGetProjects();
+
+                    if (projects.Any() &&
+                        projects.All(p => p is CpsPackageReferenceProject))
+                    {
+                        // Do nothing if all projects are .NET Core projects (Roslyn project system)
+                        // in that case on-build restore is not needed
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+#endif
 
         public void CleanCache()
         {
