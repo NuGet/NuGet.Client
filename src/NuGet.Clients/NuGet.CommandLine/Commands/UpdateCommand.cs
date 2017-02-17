@@ -380,8 +380,8 @@ namespace NuGet.CommandLine
                 if (Directory.Exists(packagesDir))
                 {
                     string relativePath =
-                        NuGet.Commands.PathUtility.GetRelativePath(
-                            NuGet.Commands.PathUtility.EnsureTrailingSlash(CurrentDirectory), packagesDir);
+                        PathUtility.GetRelativePath(
+                            PathUtility.EnsureTrailingSlash(CurrentDirectory), packagesDir);
                     Console.LogVerbose(
                         string.Format(
                             CultureInfo.CurrentCulture,

@@ -10,6 +10,7 @@ using System.Linq;
 using EnvDTE80;
 using Microsoft.TeamFoundation.Client;
 using Microsoft.TeamFoundation.VersionControl.Client;
+using NuGet.Common;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.ProjectManagement;
 
@@ -157,7 +158,7 @@ namespace NuGet.TeamFoundationServer
             // Undo exact file deletes
             var pendingFileDeletesToUndo = pendingDeletes.Where(delete =>
                 fullPaths.Any(f =>
-                    String.Equals(delete.LocalItem, ProjectManagement.PathUtility.ReplaceAltDirSeparatorWithDirSeparator(f), StringComparison.OrdinalIgnoreCase)))
+                    String.Equals(delete.LocalItem, PathUtility.ReplaceAltDirSeparatorWithDirSeparator(f), StringComparison.OrdinalIgnoreCase)))
                 .ToArray();
 
             if (pendingFileDeletesToUndo.Any())

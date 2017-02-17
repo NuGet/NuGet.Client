@@ -9,6 +9,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using Microsoft.VisualStudio.Shell;
+using NuGet.Common;
 using NuGet.PackageManagement.UI;
 using NuGet.ProjectManagement;
 using VsWebSite;
