@@ -1,5 +1,5 @@
 {
-  "version": "4.0.0-*",
+  "version": "4.0.1-*",
   "dependencies": {
     "dotnet-test-xunit": "1.0.0-rc2-173384-19",
     "Microsoft.Build.Runtime": "15.1.0-preview-000370-00",

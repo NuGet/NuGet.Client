@@ -352,7 +352,7 @@
     <Message Text="Copying symbols file '%(NuGetSymbolFiles.Identity)'" Condition=" '@(NuGetSymbolFiles)' != '' " />
     <Copy SourceFiles="@(NuGetSymbolFiles)" DestinationFolder="$(PublishDestination)\symbols" OverwriteReadOnlyFiles="true" />
   </Target>
-  <Target Name="PublishVS15" Condition="'$(VisualStudioVersion)' == '15.0'">
+  <Target Name="PublishVS15" Condition="'$(IsInsertable)' != 'true' AND '$(VisualStudioVersion)' == '15.0'">
     <PropertyGroup>
       <PublishDestination>$(ArtifactRoot)\$(VsixOutputDirName)</PublishDestination>
     </PropertyGroup>

@@ -5,7 +5,7 @@ $DefaultMSBuildVersion = 15
 
 # The pack version can be inferred from the .nuspec files on disk. This is only necessary as long
 # as the following issue is open: https://github.com/NuGet/Home/issues/3530
-$PackageReleaseVersion = "4.0.0"
+$PackageReleaseVersion = "4.0.1"
 
 $NuGetClientRoot = Split-Path -Path $PSScriptRoot -Parent
 $CLIRoot = Join-Path $NuGetClientRoot cli

@@ -11,9 +11,12 @@
     {
         $ProgramFilesPath = ${env:ProgramFiles(x86)}
     }
-
-    $VSFolderPath = Join-Path $ProgramFilesPath ("Microsoft Visual Studio " + $VSVersion)
-
+    $VS15RelativePath = "Microsoft Visual Studio\2017\Enterprise"
+    if(($VSVersion -eq "15.0") -and (Test-Path (Join-Path $ProgramFilesPath $VS15RelativePath))){
+        $VSFolderPath = Join-Path $ProgramFilesPath $VS15RelativePath
+    } else {
+        $VSFolderPath = Join-Path $ProgramFilesPath ("Microsoft Visual Studio " + $VSVersion)
+    }
     return $VSFolderPath
 }
 
@@ -171,7 +174,7 @@ function InstallVSIX
     $VSIXInstallerPath = GetVSIXInstallerPath $VSVersion
 
     Write-Host "Installing VSIX from $vsixpath..."
-    $p = start-process "$VSIXInstallerPath" -Wait -PassThru -NoNewWindow -ArgumentList "/q /a $vsixpath"
+    $p = start-process "$VSIXInstallerPath" -Wait -PassThru -NoNewWindow -ArgumentList "/q $vsixpath"
 
     if ($p.ExitCode -ne 0)
     {
