@@ -83,6 +83,27 @@ function Test-InstallManagementPackBundlePackage {
     Assert-SolutionPackage $package
 }
 
+function Test-InstallCompositeManagementPackBundlePackage {
+	param(
+        $context
+    )
+	
+	# Arrange
+	$package = "PackageWithMpBundleContainingMultipleMpReferences"
+	$project = New-ManagementPack_2012R2
+	
+	# Act
+	Install-Package $package -ProjectName $project.Name -Source $context.RepositoryRoot
+	
+	# Assert
+	Assert-ManagementPackReference $project Element1MP
+	Assert-ManagementPackReference $project Element2MP
+	Assert-ManagementPackReference $project Element3MP
+	#TODO: Assert-Package calls Get-PackagesConfigNuGetProject which assumes project has TargetFrameworkMoniker property
+	#Assert-Package $project $package
+    Assert-SolutionPackage $package
+}
+
 function Test-InstallPackageWithInvalidHttpSource {
     # Arrange
     $package = "Rules"

@@ -117,6 +117,35 @@ function Test-RemoveManagementPackBundlePackageRemovesPackageFromSolutionIfNotIn
 	Assert-Null (Get-SolutionPackage $package)
 }
 
+function Test-RemoveCompositeManagementPackBundlePackageRemovesPackageFromSolutionIfNotInUse {
+	param(
+        $context
+    )
+	
+	# Arrange
+	$package = "PackageWithMpBundleContainingMultipleMpReferences"
+	$project = New-ManagementPack_2012R2
+	
+	Install-Package $package -ProjectName $project.Name -Source $context.RepositoryRoot
+	Assert-ManagementPackReference $project Element1MP
+	Assert-ManagementPackReference $project Element2MP
+	Assert-ManagementPackReference $project Element3MP
+	#TODO: Assert-Package calls Get-PackagesConfigNuGetProject which assumes project has TargetFrameworkMoniker property
+	#Assert-Package $project $package
+	Assert-SolutionPackage $package
+
+	# Act
+	Uninstall-Package $package -ProjectName $project.Name
+	
+	# Assert
+	Assert-NoManagementPackReference $project Element1MP
+	Assert-NoManagementPackReference $project Element2MP
+	Assert-NoManagementPackReference $project Element3MP
+	#TODO: Get-ProjectPackage calls Get-PackagesConfigNuGetProject which assumes project has TargetFrameworkMoniker property
+	#Assert-Null (Get-ProjectPackage $project $package)
+	Assert-Null (Get-SolutionPackage $package)
+}
+
 function Test-UninstallingPackageWithConfigTransformWhenConfigReadOnly {
     # Arrange
     $p1 = New-WebApplication
