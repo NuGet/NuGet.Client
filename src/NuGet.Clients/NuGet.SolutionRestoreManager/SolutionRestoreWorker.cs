@@ -36,7 +36,7 @@ namespace NuGet.SolutionRestoreManager
 
         private EnvDTE.SolutionEvents _solutionEvents;
         private CancellationTokenSource _workerCts;
-        private Lazy<Task> _backgroundJobRunner;
+        private AsyncLazy<bool> _backgroundJobRunner;
         private Lazy<BlockingCollection<SolutionRestoreRequest>> _pendingRequests;
         private BackgroundRestoreOperation _pendingRestore;
         private Task<bool> _activeRestoreTask;
@@ -46,6 +46,11 @@ namespace NuGet.SolutionRestoreManager
 
         private readonly JoinableTaskCollection _joinableCollection;
         private readonly JoinableTaskFactory _joinableFactory;
+        private readonly AsyncManualResetEvent _solutionLoadedEvent;
+
+        private IVsSolutionManager SolutionManager => _solutionManager.Value;
+
+        private Common.ILogger Logger => _logger.Value;
 
         private ErrorListProvider ErrorListProvider => NuGetUIThreadHelper.JoinableTaskFactory.Run(_errorListProvider.GetValueAsync);
 
@@ -105,6 +110,8 @@ namespace NuGet.SolutionRestoreManager
                 },
                 _joinableFactory);
 
+            _solutionLoadedEvent = new AsyncManualResetEvent();
+
             Reset();
         }
 
@@ -126,6 +133,16 @@ namespace NuGet.SolutionRestoreManager
                     Advise(_serviceProvider);
 #endif
                 });
+            }
+
+            // Signal the background job runner solution is loaded
+            // Needed when OnAfterBackgroundSolutionLoadComplete fires before
+            // Advise has been called.
+            // IsSolutionFullyLoaded may be expensive so make sure it's called only once.
+            if (!_solutionLoadedEvent.IsSet
+                && SolutionManager.IsSolutionFullyLoaded)
+            {
+                _solutionLoadedEvent.Set();
             }
         }
 
@@ -159,12 +176,10 @@ namespace NuGet.SolutionRestoreManager
                 _joinableFactory.Run(
                     async () =>
                     {
-                        using (_joinableCollection.Join())
-                        {
-                            // Do not block VS forever
-                            await Task.WhenAny(_backgroundJobRunner.Value, Task.Delay(TimeSpan.FromSeconds(60)));
-                        }
-                    }, 
+                        // Do not block VS forever
+                        // After the specified delay the task will disjoin.
+                        await _backgroundJobRunner.GetValueAsync().WithTimeout(TimeSpan.FromSeconds(60));
+                    },
                     JoinableTaskCreationOptions.LongRunning);
             }
 
@@ -178,12 +193,13 @@ namespace NuGet.SolutionRestoreManager
 
             if (!isDisposing)
             {
+                _solutionLoadedEvent.Reset();
+
                 _workerCts = new CancellationTokenSource();
 
-                _backgroundJobRunner = new Lazy<Task>(
-                    valueFactory: () => Task.Run(
-                        function: () => StartBackgroundJobRunnerAsync(_workerCts.Token),
-                        cancellationToken: _workerCts.Token));
+                _backgroundJobRunner = new AsyncLazy<bool>(
+                    () => StartBackgroundJobRunnerAsync(_workerCts.Token),
+                    _joinableFactory);
 
                 _pendingRequests = new Lazy<BlockingCollection<SolutionRestoreRequest>>(
                     () => new BlockingCollection<SolutionRestoreRequest>(RequestQueueLimit));
@@ -217,27 +233,34 @@ namespace NuGet.SolutionRestoreManager
             // Initialize if not already done.
             await InitializeAsync();
 
-            if (_solutionManager.Value.IsSolutionFullyLoaded)
-            {
-                // start background runner if not yet started
-                // ignore the value
-                var ignore = _backgroundJobRunner.Value;
-            }
-
             var pendingRestore = _pendingRestore;
 
             // on-board request onto pending restore operation
             _pendingRequests.Value.TryAdd(request);
 
-            // Await completion of the requested restore operation.
-            // The caller will be unblocked immediately upon
-            // cancellation request via provided token.
-            // Method returns false in case of cancellation is requested.
-            var cancellationTcs = new TaskCompletionSource<bool>();
-            using (token.Register(() => cancellationTcs.SetResult(false)))
-            using (_joinableCollection.Join())
+            try
             {
-                return await await Task.WhenAny(pendingRestore.Task, cancellationTcs.Task);
+                using (_joinableCollection.Join())
+                {
+                    // Await completion of the requested restore operation or
+                    // preliminary termination of the job runner.
+                    // The caller will be unblocked immediately upon
+                    // cancellation request via provided token.
+                    return await await Task
+                        .WhenAny(
+                            pendingRestore.Task,
+                            _backgroundJobRunner.GetValueAsync())
+                        .WithCancellation(token);
+                }
+            }
+            catch (OperationCanceledException) when (token.IsCancellationRequested)
+            {
+                return false;
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e.ToString());
+                return false;
             }
         }
 
@@ -269,10 +292,13 @@ namespace NuGet.SolutionRestoreManager
             Interlocked.Exchange(ref _restoreJobContext, new SolutionRestoreJobContext());
         }
 
-        private async Task StartBackgroundJobRunnerAsync(CancellationToken token)
+        private async Task<bool> StartBackgroundJobRunnerAsync(CancellationToken token)
         {
             // Hops onto a background pool thread
             await TaskScheduler.Default;
+
+            // Waits until the solution is fully loaded or canceled
+            await _solutionLoadedEvent.WaitAsync().WithCancellation(token);
 
             // Loops forever until it's get cancelled
             while (!token.IsCancellationRequested)
@@ -326,11 +352,14 @@ namespace NuGet.SolutionRestoreManager
                     catch (Exception e)
                     {
                         // Writes stack to activity log
-                        _logger.Value.LogError(e.ToString());
+                        Logger.LogError(e.ToString());
                         // Do not die just yet
                     }
                 }
             }
+
+            // returns false on preliminary exit (cancellation)
+            return false;
         }
 
         private async Task<bool> ProcessRestoreRequestAsync(
@@ -405,12 +434,7 @@ namespace NuGet.SolutionRestoreManager
 
         public override int OnAfterBackgroundSolutionLoadComplete()
         {
-            if (_pendingRequests.IsValueCreated)
-            {
-                // ensure background runner has started
-                // ignore the value
-                var ignore = _backgroundJobRunner.Value;
-            }
+            _solutionLoadedEvent.Set();
 
             return VSConstants.S_OK;
         }
