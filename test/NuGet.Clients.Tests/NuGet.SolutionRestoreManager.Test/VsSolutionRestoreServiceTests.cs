@@ -331,6 +331,31 @@ namespace NuGet.SolutionRestoreManager.Test
             Assert.False(result, "Project restore nomination must fail.");
         }
 
+        [Fact]
+        public async Task NominateProjectAsync_PackageId()
+        {
+            var cps = NewCpsProject("{ }");
+            var projectFullPath = cps.ProjectFullPath;
+            var pri = cps.Builder
+                .WithTargetFrameworkInfo(
+                    new VsTargetFrameworkInfo(
+                        "netcoreapp1.0",
+                        Enumerable.Empty<IVsReferenceItem>(),
+                        Enumerable.Empty<IVsReferenceItem>(),
+                        new[] { new VsProjectProperty("PackageId", "TestPackage") }))
+                .Build();
+
+            // Act
+            var actualRestoreSpec = await CaptureNominateResultAsync(projectFullPath, cps.ProjectRestoreInfo);
+
+            // Assert
+            SpecValidationUtility.ValidateDependencySpec(actualRestoreSpec);
+
+            var actualProjectSpec = actualRestoreSpec.GetProjectSpec(projectFullPath);
+            Assert.NotNull(actualProjectSpec);
+            Assert.Equal("TestPackage", actualProjectSpec.Name);
+        }
+
         private async Task<DependencyGraphSpec> CaptureNominateResultAsync(
             string projectFullPath, IVsProjectRestoreInfo pri)
         {
