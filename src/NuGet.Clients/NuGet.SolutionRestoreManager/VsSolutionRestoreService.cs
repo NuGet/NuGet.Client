@@ -29,6 +29,7 @@ namespace NuGet.SolutionRestoreManager
     [Export(typeof(IVsSolutionRestoreService))]
     public sealed class VsSolutionRestoreService : IVsSolutionRestoreService
     {
+        private const string PackageId = nameof(PackageId);
         private const string PackageVersion = nameof(PackageVersion);
         private const string Version = nameof(Version);
         private const string IncludeAssets = "IncludeAssets";
@@ -203,7 +204,7 @@ namespace NuGet.SolutionRestoreManager
 
             var packageSpec = new PackageSpec(tfis)
             {
-                Name = projectNames.ShortName,
+                Name = GetPackageId(projectNames, projectRestoreInfo.TargetFrameworks),
                 Version = GetPackageVersion(projectRestoreInfo.TargetFrameworks),
                 FilePath = projectFullPath,
                 RestoreMetadata = new ProjectRestoreMetadata
@@ -227,6 +228,12 @@ namespace NuGet.SolutionRestoreManager
             };
 
             return packageSpec;
+        }
+
+        private static string GetPackageId(ProjectNames projectNames, IVsTargetFrameworks tfms)
+        {
+            var packageId = GetNonEvaluatedPropertyOrNull(tfms, PackageId, v => v);
+            return packageId ?? projectNames.ShortName;
         }
 
         private static NuGetVersion GetPackageVersion(IVsTargetFrameworks tfms)
