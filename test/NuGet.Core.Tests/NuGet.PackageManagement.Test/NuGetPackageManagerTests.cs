@@ -4504,7 +4504,7 @@ namespace NuGet.Test
 
                 var nugetProjectActions = await nuGetPackageManager.PreviewInstallPackageAsync(
                     nuGetProject,
-                    target,
+                    new PackageIdentity(target,new NuGetVersion(3,17,5)),
                     new ResolutionContext(DependencyBehavior.Lowest, false, false, VersionConstraints.None),
                     new TestNuGetProjectContext(),
                     sourceRepositoryProvider.GetRepositories().First(),
