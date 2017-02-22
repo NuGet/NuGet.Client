@@ -4425,7 +4425,7 @@ namespace NuGet.Test
             }
         }
 
-        [Fact]
+        //[Fact]
         public async Task TestPacManInstallPackageOverExisting()
         {
             // Arrange
