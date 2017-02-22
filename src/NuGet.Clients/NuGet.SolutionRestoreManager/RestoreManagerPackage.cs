@@ -24,10 +24,10 @@ namespace NuGet.SolutionRestoreManager
     /// Visual Studio extension package designed to bootstrap solution restore components.
     /// Loads on solution open to attach to build events.
     /// </summary>
-    // Flag AllowsBackgroundLoading is set to False because switching to Main thread wiht JTF is creating
-    // performance overhead in InitializeAsync() API.
+    // Flag AllowsBackgroundLoading is set to True and Flag PackageAutoLoadFlags is set to BackgroundLoad
+    // which will allow this package to be loaded asynchronously
     [PackageRegistration(UseManagedResourcesOnly = true, AllowsBackgroundLoading = true)]
-    [ProvideAutoLoad(VSConstants.UICONTEXT.SolutionExists_string)]
+    [ProvideAutoLoad(VSConstants.UICONTEXT.SolutionExists_string, PackageAutoLoadFlags.BackgroundLoad)]
     [Guid(PackageGuidString)]
     public sealed class RestoreManagerPackage : AsyncPackage
     {
