@@ -56,7 +56,14 @@ namespace NuGet.SolutionRestoreManager
             var menuCommandId = new CommandID(CommandSet, CommandId);
             var menuItem = new OleMenuCommand(
                 OnRestorePackages, null, BeforeQueryStatusForPackageRestore, menuCommandId);
-            commandService?.AddCommand(menuItem);
+
+            // call AddCommand through explicitly moving to UI thread since this is now being 
+            // initiliazed as part of AsynPackage
+            ThreadHelper.JoinableTaskFactory.Run(async () =>
+            {
+                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                commandService?.AddCommand(menuItem);
+            });
 
             _vsMonitorSelection = vsMonitorSelection;
 
