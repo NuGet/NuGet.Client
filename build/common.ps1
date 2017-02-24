@@ -5,7 +5,7 @@ $DefaultMSBuildVersion = 15
 
 # The pack version can be inferred from the .nuspec files on disk. This is only necessary as long
 # as the following issue is open: https://github.com/NuGet/Home/issues/3530
-$PackageReleaseVersion = "4.0.0"
+$PackageReleaseVersion = "4.0.1"
 
 $NuGetClientRoot = Split-Path -Path $PSScriptRoot -Parent
 $CLIRoot = Join-Path $NuGetClientRoot cli
@@ -177,11 +177,17 @@ Function Update-Submodules {
 Function Install-NuGet {
     [CmdletBinding()]
     param(
-        [switch]$Force
+        [switch]$Force,
+        [switch]$CI
     )
     if ($Force -or -not (Test-Path $NuGetExe)) {
         Trace-Log 'Downloading nuget.exe'
-        wget https://dist.nuget.org/win-x86-commandline/latest-prerelease/nuget.exe -OutFile $NuGetExe
+        if($CI){
+            wget https://dist.nuget.org/win-x86-commandline/v3.5.0/nuget.exe -OutFile $NuGetExe
+        }
+        else {
+            wget https://dist.nuget.org/win-x86-commandline/latest-prerelease/nuget.exe -OutFile $NuGetExe
+        }
     }
 
     # Display nuget info
@@ -208,7 +214,7 @@ Function Install-DotnetCLI {
             Root = $CLIRootTest
             DotNetExe = Join-Path $CLIRootTest 'dotnet.exe'
             DotNetInstallUrl = 'https://raw.githubusercontent.com/dotnet/cli/58b0566d9ac399f5fa973315c6827a040b7aae1f/scripts/obtain/dotnet-install.ps1'
-            Version = '1.0.0-preview5-004275'
+            Version = '1.0.0-rc4-004788'
         }
     }
 
@@ -1017,6 +1023,7 @@ Function Build-ClientsProjectHelper {
         [int]$BuildNumber = (Get-BuildNumber),
         [ValidateSet(14,15)]
         [int]$ToolsetVersion = $DefaultMSBuildVersion,
+        [hashtable]$Parameters,
         [switch]$IsSolution,
         [switch]$ExcludeBuildNumber,
         [switch]$Rebuild
@@ -1039,6 +1046,10 @@ Function Build-ClientsProjectHelper {
 
     if ($ExcludeBuildNumber) {
         $opts += "/p:ExcludeBuildNumber=true"
+    }
+
+    foreach($key in $Parameters.keys) {
+        $opts+="/p:$key=" + $Parameters[$key]
     }
 
     $opts += "/p:VisualStudioVersion=${ToolsetVersion}.0"

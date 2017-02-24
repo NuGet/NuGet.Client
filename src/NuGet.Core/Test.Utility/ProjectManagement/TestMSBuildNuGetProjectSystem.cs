@@ -99,6 +99,8 @@ namespace Test.Utility
             }
         }
 
+        public dynamic VSProject4 { get; }
+
         public string ProjectFullPath { get; }
 
         public string ProjectFileFullPath { get; }

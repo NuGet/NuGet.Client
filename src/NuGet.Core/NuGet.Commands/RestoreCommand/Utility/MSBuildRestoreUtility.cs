@@ -62,7 +62,9 @@ namespace NuGet.Commands
             }
 
             // Add projects
-            foreach (var spec in itemsById.Values.Select(GetPackageSpec))
+            var validProjectSpecs = itemsById.Values.Select(GetPackageSpec).Where(e => e != null);
+
+            foreach (var spec in validProjectSpecs)
             {
                 if (spec.RestoreMetadata.ProjectStyle == ProjectStyle.PackageReference
                     || spec.RestoreMetadata.ProjectStyle == ProjectStyle.ProjectJson
@@ -118,7 +120,10 @@ namespace NuGet.Commands
 
             PackageSpec result = null;
 
-            var specItem = items.SingleOrDefault(item =>
+            // There should only be one ProjectSpec per project in the item set, 
+            // but if multiple do appear take only the first one in an effort
+            // to handle this gracefully.
+            var specItem = items.FirstOrDefault(item =>
                 "projectSpec".Equals(item.GetProperty("Type"),
                 StringComparison.OrdinalIgnoreCase));
 

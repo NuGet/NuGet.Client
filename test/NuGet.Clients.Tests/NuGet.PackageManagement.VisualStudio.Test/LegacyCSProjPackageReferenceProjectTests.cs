@@ -12,6 +12,7 @@ using NuGet.ProjectManagement;
 using NuGet.ProjectModel;
 using NuGet.RuntimeModel;
 using NuGet.Test.Utility;
+using NuGet.Versioning;
 using Xunit;
 using Task = System.Threading.Tasks.Task;
 
@@ -79,6 +80,61 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             }
         }
 
+        [Fact]
+        public async Task LCPRP_PackageVersion()
+        {
+            // Arrange
+            using (var randomTestFolder = TestDirectory.Create())
+            {
+                var testEnvDTEProjectAdapter = new EnvDTEProjectAdapterMock(randomTestFolder);
+                testEnvDTEProjectAdapter
+                    .Setup(x => x.TargetNuGetFramework)
+                    .Returns(new NuGetFramework("netstandard13"));
+                testEnvDTEProjectAdapter
+                    .Setup(x => x.Version)
+                    .Returns("2.2.3");
+
+                var testProject = new LegacyCSProjPackageReferenceProject(
+                    project: testEnvDTEProjectAdapter.Object,
+                    projectId: "",
+                    callerIsUnitTest: true);
+
+                var testDependencyGraphCacheContext = new DependencyGraphCacheContext();
+
+                // Act
+                var installedPackages = await testProject.GetPackageSpecsAsync(testDependencyGraphCacheContext);
+
+                // Assert
+                Assert.Equal(new NuGetVersion("2.2.3"), installedPackages.First().Version);
+            }
+        }
+
+        [Fact]
+        public async Task LCPRP_PackageVersion_Default()
+        {
+            // Arrange
+            using (var randomTestFolder = TestDirectory.Create())
+            {
+                var testEnvDTEProjectAdapter = new EnvDTEProjectAdapterMock(randomTestFolder);
+                testEnvDTEProjectAdapter
+                    .Setup(x => x.TargetNuGetFramework)
+                    .Returns(new NuGetFramework("netstandard13"));
+
+                var testProject = new LegacyCSProjPackageReferenceProject(
+                    project: testEnvDTEProjectAdapter.Object,
+                    projectId: "",
+                    callerIsUnitTest: true);
+
+                var testDependencyGraphCacheContext = new DependencyGraphCacheContext();
+
+                // Act
+                var installedPackages = await testProject.GetPackageSpecsAsync(testDependencyGraphCacheContext);
+
+                // Assert
+                Assert.Equal(new NuGetVersion("1.0.0"), installedPackages.First().Version);
+            }
+        }
+
         private class EnvDTEProjectAdapterMock : Mock<IEnvDTEProjectAdapter>
         {
             public EnvDTEProjectAdapterMock()
@@ -91,6 +147,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     .Returns(Enumerable.Empty<RuntimeDescription>);
                 Setup(x => x.Supports)
                     .Returns(Enumerable.Empty<CompatibilityProfile>);
+                Setup(x => x.Version)
+                    .Returns("1.0.0");
             }
 
             public EnvDTEProjectAdapterMock(string fullPath): this()

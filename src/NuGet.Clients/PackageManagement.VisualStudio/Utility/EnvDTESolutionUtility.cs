@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.Shell;
+using NuGet.PackageManagement.UI;
 using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.PackageManagement.VisualStudio
@@ -18,7 +19,7 @@ namespace NuGet.PackageManagement.VisualStudio
         /// </summary>
         public static IEnumerable<EnvDTE.Project> GetAllEnvDTEProjects(EnvDTE.DTE dte)
         {
-            return ThreadHelper.JoinableTaskFactory.Run(async delegate
+            return NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
                 {
                     var result = await GetAllEnvDTEProjectsAsync(dte);
                     return result;
@@ -27,7 +28,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public static async Task<IEnumerable<EnvDTE.Project>> GetAllEnvDTEProjectsAsync(EnvDTE.DTE dte)
         {
-            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             var envDTESolution = dte.Solution;
             if (envDTESolution == null

@@ -319,8 +319,12 @@ namespace NuGet.DependencyResolver
             {
                 var work = queue.Dequeue();
                 var innerState = visitor(work.Item1, work.Item2);
-                foreach (var innerNode in work.Item1.InnerNodes)
+
+                // avoid Foreach here since it's inside 3 layer nested loops which might make it to
+                // be called 100 of 1000 times so GetEnumerator() might end up taking lot of memory space.
+                for (int i = 0; i < work.Item1.InnerNodes.Count; i++)
                 {
+                    var innerNode = work.Item1.InnerNodes[i];
                     queue.Enqueue(Tuple.Create(innerNode, innerState));
                 }
             }
@@ -328,9 +332,10 @@ namespace NuGet.DependencyResolver
 
         public static void ForEach<TItem>(this IEnumerable<GraphNode<TItem>> roots, Action<GraphNode<TItem>> visitor)
         {
-            foreach (var root in roots)
+            var graphNodes = roots.ToList();
+            for (int i = 0; i < graphNodes.Count; i++)
             {
-                root.ForEach(visitor);
+                graphNodes[i].ForEach(visitor);
             }
         }
 

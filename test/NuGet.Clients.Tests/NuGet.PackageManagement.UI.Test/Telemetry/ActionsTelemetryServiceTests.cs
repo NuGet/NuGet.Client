@@ -35,10 +35,10 @@ namespace NuGet.PackageManagement.UI.Test
                 projectIds: new[] { Guid.NewGuid().ToString() },
                 operationType: operationType,
                 source: source,
-                startTime: DateTime.Now.AddSeconds(-3),
+                startTime: DateTimeOffset.Now.AddSeconds(-3),
                 status: NuGetOperationStatus.Succeeded,
                 packageCount: 1,
-                endTime: DateTime.Now,
+                endTime: DateTimeOffset.Now,
                 duration: 2.10);
             var service = new ActionsTelemetryService(telemetrySession.Object);
 
@@ -72,10 +72,10 @@ namespace NuGet.PackageManagement.UI.Test
                 projectIds: new[] { Guid.NewGuid().ToString() },
                 operationType: operationType,
                 source: source,
-                startTime: DateTime.Now.AddSeconds(-2),
+                startTime: DateTimeOffset.Now.AddSeconds(-2),
                 status: NuGetOperationStatus.Failed,
                 packageCount: 1,
-                endTime: DateTime.Now,
+                endTime: DateTimeOffset.Now,
                 duration: 1.30);
             var service = new ActionsTelemetryService(telemetrySession.Object);
 
@@ -106,10 +106,10 @@ namespace NuGet.PackageManagement.UI.Test
                 projectIds: new[] { Guid.NewGuid().ToString() },
                 operationType: operationType,
                 source: OperationSource.PMC,
-                startTime: DateTime.Now.AddSeconds(-1),
+                startTime: DateTimeOffset.Now.AddSeconds(-1),
                 status: NuGetOperationStatus.NoOp,
                 packageCount: 1,
-                endTime: DateTime.Now,
+                endTime: DateTimeOffset.Now,
                 duration: .40);
             var service = new ActionsTelemetryService(telemetrySession.Object);
 

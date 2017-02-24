@@ -34,10 +34,10 @@ namespace NuGet.PackageManagement.UI.Test
                 operationId: operationId,
                 projectIds: new[] { Guid.NewGuid().ToString() },
                 source: source,
-                startTime: DateTime.Now.AddSeconds(-3),
+                startTime: DateTimeOffset.Now.AddSeconds(-3),
                 status: status,
                 packageCount: 2,
-                endTime: DateTime.Now,
+                endTime: DateTimeOffset.Now,
                 duration: 2.10);
             var service = new RestoreTelemetryService(telemetrySession.Object);
 

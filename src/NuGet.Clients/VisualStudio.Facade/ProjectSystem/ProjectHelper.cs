@@ -6,9 +6,9 @@ using EnvDTE;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.ProjectSystem;
-using Microsoft.VisualStudio.Shell;
 using MsBuildProject = Microsoft.Build.Evaluation.Project;
 using Task = System.Threading.Tasks.Task;
+using NuGet.PackageManagement.UI;
 #if VS14
 using Microsoft.VisualStudio.ProjectSystem.Designers;
 #elif VS15
@@ -21,7 +21,7 @@ namespace NuGet.VisualStudio.Facade.ProjectSystem
     {
         public static async Task DoWorkInWriterLockAsync(Project project, IVsHierarchy hierarchy, Action<MsBuildProject> action)
         {
-            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             var vsProject = (IVsProject)hierarchy;
             UnconfiguredProject unconfiguredProject = GetUnconfiguredProject(vsProject);

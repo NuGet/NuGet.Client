@@ -3,7 +3,7 @@
 
 using System;
 using System.IO;
-using Microsoft.VisualStudio.Shell;
+using NuGet.PackageManagement.UI;
 using NuGet.ProjectManagement;
 using EnvDTEProject = EnvDTE.Project;
 using Task = System.Threading.Tasks.Task;
@@ -29,11 +29,10 @@ namespace NuGet.PackageManagement.VisualStudio
                 return;
             }
 
-            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
             // Get the project items for the folder path
             string folderPath = Path.GetDirectoryName(path);
             string fullPath = FileSystemUtility.GetFullPath(ProjectFullPath, path);
-            ;
 
             VCProjectHelper.AddFileToProject(EnvDTEProject.Object, fullPath, folderPath);
 

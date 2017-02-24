@@ -58,7 +58,7 @@ Write-Output "Updating NuGet version [$OldVersion => $NewVersion]"
 gci -r project.json | %{ $_.FullName } | ReplaceTextInFiles -old $OldVersion -new $NewVersion
 
 $miscFiles = @(
-    "src\NuGet.Clients\VsExtension\NuGetPackage.cs",
+    "src\NuGet.Clients\NuGet.Tools\NuGetPackage.cs",
     "src\NuGet.Clients\NuGet.CommandLine\NuGet.CommandLine.nuspec",
     "build\common.props",
     "build\common.ps1",

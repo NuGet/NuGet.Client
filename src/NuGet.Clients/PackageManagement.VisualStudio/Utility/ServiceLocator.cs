@@ -52,7 +52,7 @@ namespace NuGet.PackageManagement.VisualStudio
             return NuGetUIThreadHelper.JoinableTaskFactory.Run(GetInstanceAsync<TService>);
         }
 
-        public static async Task<TService> GetInstanceAsync<TService>() where TService : class
+        private static async Task<TService> GetInstanceAsync<TService>() where TService : class
         {
             // VS Threading Rule #1
             // Access to ServiceProvider and a lot of casts are performed in this method,

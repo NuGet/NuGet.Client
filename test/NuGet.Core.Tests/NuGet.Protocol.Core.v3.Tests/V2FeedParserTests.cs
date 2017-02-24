@@ -11,6 +11,7 @@ using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
+using NuGet.Protocol.Core.v3.Tests;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
 using Test.Utility;
@@ -764,6 +765,32 @@ namespace NuGet.Protocol.Tests
 
             var SecondV2FeedPage = await parser.GetPackagesPageAsync("WindowsAzure.Storage", filter, skip + take, take, NullLogger.Instance, CancellationToken.None);
             Assert.Equal(17, SecondV2FeedPage.Items.Count);
+        }
+
+        [Fact]
+        public async Task V2FeedParser_VerifySyncReadIsNotUsed()
+        {
+            // Arrange
+            var serviceAddress = TestUtility.CreateServiceAddress();
+
+            var responses = new Dictionary<string, string>();
+            responses.Add(serviceAddress + "Packages(Id='WindowsAzure.Storage',Version='4.3.2-preview')",
+                TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.WindowsAzureStorageGetPackages.xml", GetType()));
+            responses.Add(serviceAddress, string.Empty);
+
+            var httpSource = new TestHttpSource(new PackageSource(serviceAddress), responses);
+
+            // throw if sync .Read is used
+            httpSource.StreamWrapper = (stream) => new NoSyncReadStream(stream);
+
+            V2FeedParser parser = new V2FeedParser(httpSource, serviceAddress);
+
+            // Act
+            var package = await parser.GetPackage(new PackageIdentity("WindowsAzure.Storage", new NuGetVersion("4.3.2-preview")), NullLogger.Instance, CancellationToken.None);
+
+            // Assert
+            // Verify no failures from reading the stream
+            Assert.NotNull(package);
         }
     }
 }

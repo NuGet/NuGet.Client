@@ -71,6 +71,7 @@ namespace NuGet.PackageManagement.UI
                 {
                     project.InstalledVersion = installedVersion.PackageIdentity.Version;
                     hash.Add(installedVersion.PackageIdentity.Version);
+                    project.AutoReferenced = (installedVersion as BuildIntegratedPackageReference)?.Dependency?.AutoReferenced == true;
                 }
                 else
                 {
@@ -173,26 +174,18 @@ namespace NuGet.PackageManagement.UI
                 _versions.Add(new DisplayVersion(version, string.Empty));
             }
 
-            // add a separator
-            if (blockedVersions.Any())
-            {
-                if (_versions.Count > 0)
-                {
-                    _versions.Add(null);
-                }
+            var selectedProjects = GetConstraintsForSelectedProjects().ToArray();
 
-                _versions.Add(new DisplayVersion(new VersionRange(new NuGetVersion("0.0.0")), Resources.Version_Blocked, false));
-            }
+            var autoReferenced = selectedProjects.Length > 0 && selectedProjects.All(e => e.IsAutoReferenced);
 
-            // add versions which are blocked because of version constraint in package.config
-            bool isBlockedVersionEnabled = Options.SelectedDependencyBehavior.Behavior == Resolver.DependencyBehavior.Ignore;
+            // Disable controls if this is an auto referenced package.
+            SetAutoReferencedCheck(autoReferenced);
 
-            foreach (var version in blockedVersions)
-            {
-                _versions.Add(new DisplayVersion(version, string.Empty, isBlockedVersionEnabled));
-            }
+            // Add disabled versions
+            AddBlockedVersions(blockedVersions);
 
             SelectVersion();
+
             OnPropertyChanged(nameof(Versions));
         }
 
@@ -383,22 +376,26 @@ namespace NuGet.PackageManagement.UI
 
         private void UpdateCanInstallAndCanUninstall()
         {
-            CanUninstall = Projects.Any(project => project.IsSelected && project.InstalledVersion != null);
+            CanUninstall = Projects.Any(project => project.IsSelected && project.InstalledVersion != null && !project.AutoReferenced);
 
             CanInstall = SelectedVersion != null && Projects.Any(
                 project => project.IsSelected &&
                     VersionComparer.Default.Compare(SelectedVersion.Version, project.InstalledVersion) != 0);
         }
 
+        private IEnumerable<ProjectVersionConstraint> GetConstraintsForSelectedProjects()
+        {
+            var selectedProjectsNames = Projects.Where(p => p.IsSelected).Select(p => p.NuGetProject.GetMetadata<string>(NuGetProjectMetadataKeys.Name));
+
+            return _projectVersionConstraints.Where(e => selectedProjectsNames.Contains(e.ProjectName, StringComparer.OrdinalIgnoreCase));
+        }
+
         private VersionRange GetAllowedVersions()
         {
-            // selected list of projects
-            var selectedProjectsName = Projects.Where(p => p.IsSelected).Select(p => p.NuGetProject.GetMetadata<string>(NuGetProjectMetadataKeys.Name));
-
             // allowed version ranges for selected list of projects
-            var allowedVersionsRange = _projectVersionRangeDict.Where(kvp => selectedProjectsName.Contains(kvp.Key, StringComparer.OrdinalIgnoreCase))
-                .Select(kvp => kvp.Value);
-            allowedVersionsRange = allowedVersionsRange.Where(v => v != null);
+            var allowedVersionsRange = GetConstraintsForSelectedProjects()
+                .Select(e => e.VersionRange)
+                .Where(v => v != null);
 
             // if version constraints exist then merge all the ranges and return common range which satisfies all
             return allowedVersionsRange.Any() ? VersionRange.CommonSubSet(allowedVersionsRange) : VersionRange.All;
@@ -518,7 +515,9 @@ namespace NuGet.PackageManagement.UI
                 if (action.Action == NuGetProjectActionType.Install)
                 {
                     // for install, the installed version can't be the same as the version to be installed.
-                    if (VersionComparer.Default.Compare(
+                    // AutoReferenced packages should be ignored
+                    if (!project.AutoReferenced &&
+                        VersionComparer.Default.Compare(
                         project.InstalledVersion,
                         action.Version) != 0)
                     {
@@ -528,7 +527,7 @@ namespace NuGet.PackageManagement.UI
                 else
                 {
                     // for uninstall, the package must be already installed
-                    if (project.InstalledVersion != null)
+                    if (project.InstalledVersion != null && !project.AutoReferenced)
                     {
                         selectedProjects.Add(project.NuGetProject);
                     }

@@ -87,6 +87,15 @@ namespace NuGet.Build.Tasks.Pack {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to NuspecProperties should be in the form of &quot;key1=value1;key2=value2&quot;..
+        /// </summary>
+        public static string InvalidNuspecProperties {
+            get {
+                return ResourceManager.GetString("InvalidNuspecProperties", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to PackageReference {0} needs to have a valid version..
         /// </summary>
         public static string InvalidPackageReferenceVersion {

@@ -8,7 +8,6 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.VisualStudio.Shell;
 using NuGet.Commands;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
@@ -30,6 +29,8 @@ namespace NuGet.SolutionRestoreManager
     [Export(typeof(IVsSolutionRestoreService))]
     public sealed class VsSolutionRestoreService : IVsSolutionRestoreService
     {
+        private const string PackageVersion = nameof(PackageVersion);
+        private const string Version = nameof(Version);
         private const string IncludeAssets = "IncludeAssets";
         private const string ExcludeAssets = "ExcludeAssets";
         private const string PrivateAssets = "PrivateAssets";
@@ -109,6 +110,12 @@ namespace NuGet.SolutionRestoreManager
                 return restoreTask;
             }
             catch (Exception e)
+            when (e is InvalidOperationException || e is ArgumentException || e is FormatException)
+            {
+                _logger.LogError(e.ToString());
+                return Task.FromResult(false);
+            }
+            catch (Exception e)
             {
                 _logger.LogError(e.ToString());
                 throw;
@@ -182,16 +189,14 @@ namespace NuGet.SolutionRestoreManager
             // Initialize OTF and CT values when original value of OTF property is not provided.
             var originalTargetFrameworks = tfis
                 .Select(tfi => tfi.FrameworkName.GetShortFolderName())
-                .ToList();
-            var crossTargeting = originalTargetFrameworks.Count > 1;
+                .ToArray();
+            var crossTargeting = originalTargetFrameworks.Length > 1;
 
             // if "TargetFrameworks" property presents in the project file prefer the raw value.
             if (!string.IsNullOrWhiteSpace(projectRestoreInfo.OriginalTargetFrameworks))
             {
-                originalTargetFrameworks = projectRestoreInfo
-                    .OriginalTargetFrameworks
-                    .Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries)
-                    .ToList();
+                originalTargetFrameworks = MSBuildStringUtility.Split(
+                    projectRestoreInfo.OriginalTargetFrameworks);
                 // cross-targeting is always ON even in case of a single tfm in the list.
                 crossTargeting = true;
             }
@@ -199,6 +204,7 @@ namespace NuGet.SolutionRestoreManager
             var packageSpec = new PackageSpec(tfis)
             {
                 Name = projectNames.ShortName,
+                Version = GetPackageVersion(projectRestoreInfo.TargetFrameworks),
                 FilePath = projectFullPath,
                 RestoreMetadata = new ProjectRestoreMetadata
                 {
@@ -223,6 +229,34 @@ namespace NuGet.SolutionRestoreManager
             return packageSpec;
         }
 
+        private static NuGetVersion GetPackageVersion(IVsTargetFrameworks tfms)
+        {
+            // $(PackageVersion) property if set overrides the $(Version)
+            var versionPropertyValue =
+                GetNonEvaluatedPropertyOrNull(tfms, PackageVersion, NuGetVersion.Parse)
+                ?? GetNonEvaluatedPropertyOrNull(tfms, Version, NuGetVersion.Parse);
+
+            return versionPropertyValue ?? PackageSpec.DefaultVersion;
+        }
+
+        // Trying to fetch a property value from tfm property bags.
+        // If defined the property should have identical values in all of the occurances.
+        private static TValue GetNonEvaluatedPropertyOrNull<TValue>(
+            IVsTargetFrameworks tfms,
+            string propertyName,
+            Func<string, TValue> valueFactory)
+        {
+            return tfms
+                .Cast<IVsTargetFrameworkInfo>()
+                .Select(tfm =>
+                {
+                    var val = GetPropertyValueOrNull(tfm.Properties, propertyName);
+                    return val != null ? valueFactory(val) : default(TValue);
+                })
+                .Distinct()
+                .SingleOrDefault();
+        }
+
         private static RuntimeGraph GetRuntimeGraph(IVsProjectRestoreInfo projectRestoreInfo)
         {
             var runtimes = projectRestoreInfo
@@ -230,11 +264,10 @@ namespace NuGet.SolutionRestoreManager
                 .Cast<IVsTargetFrameworkInfo>()
                 .SelectMany(tfi => new[]
                 {
-                    GetPropertyValueOrDefault(tfi.Properties, RuntimeIdentifier),
-                    GetPropertyValueOrDefault(tfi.Properties, RuntimeIdentifiers),
+                    GetPropertyValueOrNull(tfi.Properties, RuntimeIdentifier),
+                    GetPropertyValueOrNull(tfi.Properties, RuntimeIdentifiers),
                 })
-                .SelectMany(s => s.Split(';'))
-                .Where(s => !string.IsNullOrWhiteSpace(s))
+                .SelectMany(MSBuildStringUtility.Split)
                 .Distinct(StringComparer.Ordinal)
                 .Select(rid => new RuntimeDescription(rid))
                 .ToList();
@@ -242,9 +275,8 @@ namespace NuGet.SolutionRestoreManager
             var supports = projectRestoreInfo
                 .TargetFrameworks
                 .Cast<IVsTargetFrameworkInfo>()
-                .Select(tfi => GetPropertyValueOrDefault(tfi.Properties, RuntimeSupports))
-                .SelectMany(s => s.Split(';'))
-                .Where(s => !string.IsNullOrWhiteSpace(s))
+                .Select(tfi => GetPropertyValueOrNull(tfi.Properties, RuntimeSupports))
+                .SelectMany(MSBuildStringUtility.Split)
                 .Distinct(StringComparer.Ordinal)
                 .Select(s => new CompatibilityProfile(s))
                 .ToList();
@@ -260,11 +292,10 @@ namespace NuGet.SolutionRestoreManager
                 FrameworkName = NuGetFramework.Parse(targetFrameworkInfo.TargetFrameworkMoniker)
             };
 
-            var ptf = GetPropertyValueOrDefault(targetFrameworkInfo.Properties, PackageTargetFallback);
+            var ptf = GetPropertyValueOrNull(targetFrameworkInfo.Properties, PackageTargetFallback);
             if (!string.IsNullOrEmpty(ptf))
             {
-                var fallbackList = ptf
-                    .Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries)
+                var fallbackList = MSBuildStringUtility.Split(ptf)
                     .Select(NuGetFramework.Parse)
                     .ToList();
 
@@ -315,14 +346,17 @@ namespace NuGet.SolutionRestoreManager
                 LibraryRange = new LibraryRange(
                     name: item.Name,
                     versionRange: GetVersionRange(item),
-                    typeConstraint: LibraryDependencyTarget.Package)
+                    typeConstraint: LibraryDependencyTarget.Package),
+
+                // Mark packages coming from the SDK as AutoReferenced
+                AutoReferenced = GetPropertyBoolOrFalse(item, "IsImplicitlyDefined")
             };
 
             MSBuildRestoreUtility.ApplyIncludeFlags(
                 dependency,
-                includeAssets: GetPropertyValueOrDefault(item, IncludeAssets),
-                excludeAssets: GetPropertyValueOrDefault(item, ExcludeAssets),
-                privateAssets: GetPropertyValueOrDefault(item, PrivateAssets));
+                includeAssets: GetPropertyValueOrNull(item, IncludeAssets),
+                excludeAssets: GetPropertyValueOrNull(item, ExcludeAssets),
+                privateAssets: GetPropertyValueOrNull(item, PrivateAssets));
 
             return dependency;
         }
@@ -342,18 +376,18 @@ namespace NuGet.SolutionRestoreManager
 
             MSBuildRestoreUtility.ApplyIncludeFlags(
                 dependency,
-                includeAssets: GetPropertyValueOrDefault(item, IncludeAssets),
-                excludeAssets: GetPropertyValueOrDefault(item, ExcludeAssets),
-                privateAssets: GetPropertyValueOrDefault(item, PrivateAssets));
+                includeAssets: GetPropertyValueOrNull(item, IncludeAssets),
+                excludeAssets: GetPropertyValueOrNull(item, ExcludeAssets),
+                privateAssets: GetPropertyValueOrNull(item, PrivateAssets));
 
             return dependency;
         }
 
         private static VersionRange GetVersionRange(IVsReferenceItem item)
         {
-            var versionRange = GetPropertyValueOrDefault(item, "Version");
+            var versionRange = GetPropertyValueOrNull(item, "Version");
 
-            if (!string.IsNullOrEmpty(versionRange))
+            if (versionRange != null)
             {
                 return VersionRange.Parse(versionRange);
             }
@@ -361,12 +395,12 @@ namespace NuGet.SolutionRestoreManager
             return VersionRange.All;
         }
 
-        private static string GetPropertyValueOrDefault(
-            IVsReferenceItem item, string propertyName, string defaultValue = "")
+        private static bool GetPropertyBoolOrFalse(
+                IVsReferenceItem item, string propertyName)
         {
             try
             {
-                return item.Properties?.Item(propertyName)?.Value ?? defaultValue;
+                return MSBuildStringUtility.IsTrue(item.Properties?.Item(propertyName)?.Value);
             }
             catch (ArgumentException)
             {
@@ -375,15 +409,15 @@ namespace NuGet.SolutionRestoreManager
             {
             }
 
-            return defaultValue;
+            return false;
         }
 
-        private static string GetPropertyValueOrDefault(
-            IVsProjectProperties properties, string propertyName, string defaultValue = "")
+        private static string GetPropertyValueOrNull(
+            IVsReferenceItem item, string propertyName)
         {
             try
             {
-                return properties?.Item(propertyName)?.Value ?? defaultValue;
+                return MSBuildStringUtility.TrimAndGetNullForEmpty(item.Properties?.Item(propertyName)?.Value);
             }
             catch (ArgumentException)
             {
@@ -392,7 +426,24 @@ namespace NuGet.SolutionRestoreManager
             {
             }
 
-            return defaultValue;
+            return null;
+        }
+
+        private static string GetPropertyValueOrNull(
+            IVsProjectProperties properties, string propertyName)
+        {
+            try
+            {
+                return MSBuildStringUtility.TrimAndGetNullForEmpty(properties?.Item(propertyName)?.Value);
+            }
+            catch (ArgumentException)
+            {
+            }
+            catch (KeyNotFoundException)
+            {
+            }
+
+            return null;
         }
     }
 }

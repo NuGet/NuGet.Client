@@ -13,7 +13,23 @@ namespace NuGet.PackageManagement.VisualStudio
     [PartCreationPolicy(CreationPolicy.Shared)]
     public class VSSettings : Configuration.ISettings
     {
-        private Configuration.ISettings SolutionSettings { get; set; }
+        // to initialize SolutionSettings first time outside MEF constructor
+        private Configuration.ISettings _solutionSettings;
+
+        private Configuration.ISettings SolutionSettings
+        {
+            get
+            {
+                if (_solutionSettings == null)
+                {
+                    // first time set _solutionSettings via ResetSolutionSettings API call.
+                    ResetSolutionSettings();
+                }
+
+                return _solutionSettings;
+            }
+        }
+
         private ISolutionManager SolutionManager { get; set; }
         private Configuration.IMachineWideSettings MachineWideSettings { get; set; }
 
@@ -34,7 +50,6 @@ namespace NuGet.PackageManagement.VisualStudio
 
             SolutionManager = solutionManager;
             MachineWideSettings = machineWideSettings;
-            ResetSolutionSettings();
             SolutionManager.SolutionOpening += OnSolutionOpenedOrClosed;
             SolutionManager.SolutionClosed += OnSolutionOpenedOrClosed;
         }
@@ -55,16 +70,16 @@ namespace NuGet.PackageManagement.VisualStudio
 
             try
             {
-                SolutionSettings = Configuration.Settings.LoadDefaultSettings(root, configFileName: null, machineWideSettings: MachineWideSettings);
+                _solutionSettings = Configuration.Settings.LoadDefaultSettings(root, configFileName: null, machineWideSettings: MachineWideSettings);
             }
             catch (Configuration.NuGetConfigurationException ex)
             {
                 MessageHelper.ShowErrorMessage(ExceptionUtilities.DisplayMessage(ex), Strings.ConfigErrorDialogBoxTitle);
             }
 
-            if (SolutionSettings == null)
+            if (_solutionSettings == null)
             {
-                SolutionSettings = Configuration.NullSettings.Instance;
+                _solutionSettings = Configuration.NullSettings.Instance;
             }
         }
 

@@ -13,5 +13,10 @@ namespace NuGet.SolutionRestoreManager.Test
         public VsReferenceProperties(IEnumerable<IVsReferenceProperty> collection) : base(collection) { }
 
         protected override String GetKeyForItem(IVsReferenceProperty value) => value.Name;
+
+        public void Add(string propertyName, string propertyValue)
+        {
+            Add(new VsReferenceProperty(propertyName, propertyValue));
+        }
     }
 }

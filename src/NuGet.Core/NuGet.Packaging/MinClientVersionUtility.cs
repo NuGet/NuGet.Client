@@ -87,7 +87,12 @@ namespace NuGet.Packaging
                     throw new InvalidOperationException(Strings.UnableToParseClientVersion);
                 }
 
-                _clientVersion = clientVersion;
+                // Remove pre-release info from the version and return a stable version.
+                _clientVersion = new NuGetVersion(
+                    major: clientVersion.Major,
+                    minor: clientVersion.Minor,
+                    patch: clientVersion.Patch,
+                    revision: clientVersion.Revision);
             }
 
             return _clientVersion;

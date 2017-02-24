@@ -13,6 +13,7 @@ using System.Runtime.Versioning;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
+using NuGet.PackageManagement.UI;
 using NuGet.ProjectManagement;
 using EnvDTEProject = EnvDTE.Project;
 using Task = System.Threading.Tasks.Task;
@@ -32,7 +33,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             try
             {
-                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                 // Keep track of visited projects
                 if (EnvDTEProjectUtility.SupportsBindingRedirects(envDTEProject))
@@ -114,7 +115,7 @@ namespace NuGet.PackageManagement.VisualStudio
             INuGetProjectContext nuGetProjectContext)
         {
             // Run this on the UI thread since it enumerates all references
-            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             var redirects = Enumerable.Empty<AssemblyBinding>();
             var msBuildNuGetProjectSystem = GetMSBuildNuGetProjectSystem(solutionManager, envDTEProject);

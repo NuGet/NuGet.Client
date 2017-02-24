@@ -9,6 +9,7 @@ using EnvDTE;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
+using NuGet.PackageManagement.UI;
 using Task = System.Threading.Tasks.Task;
 using TaskExpandedNodes = System.Threading.Tasks.Task<System.Collections.Generic.IDictionary<string, System.Collections.Generic.ISet<NuGet.PackageManagement.VisualStudio.VsHierarchyItem>>>;
 
@@ -42,6 +43,14 @@ namespace NuGet.PackageManagement.VisualStudio
             ThreadHelper.ThrowIfNotOnUIThread();
 
             var buildPropertyStorage = pHierarchy as IVsBuildPropertyStorage;
+
+            return GetMSBuildProperty(buildPropertyStorage, name);
+        }
+
+        public static string GetMSBuildProperty(IVsBuildPropertyStorage buildPropertyStorage, string name)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             string output = null;
 
             if (buildPropertyStorage != null)
@@ -61,7 +70,7 @@ namespace NuGet.PackageManagement.VisualStudio
             return output;
         }
 
-public static VsHierarchyItem GetHierarchyItemForProject(Project project)
+        public static VsHierarchyItem GetHierarchyItemForProject(Project project)
         {
             Debug.Assert(ThreadHelper.CheckAccess());
 
@@ -133,7 +142,7 @@ public static VsHierarchyItem GetHierarchyItemForProject(Project project)
         public static async TaskExpandedNodes GetAllExpandedNodesAsync(ISolutionManager solutionManager)
         {
             // this operation needs to execute on UI thread
-            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             var dte = ServiceLocator.GetInstance<DTE>();
             var projects = dte.Solution.Projects;
@@ -154,7 +163,7 @@ public static VsHierarchyItem GetHierarchyItemForProject(Project project)
         public static async Task CollapseAllNodesAsync(ISolutionManager solutionManager, IDictionary<string, ISet<VsHierarchyItem>> ignoreNodes)
         {
             // this operation needs to execute on UI thread
-            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             var dte = ServiceLocator.GetInstance<DTE>();
             var projects = dte.Solution.Projects;

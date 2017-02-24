@@ -5,13 +5,12 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio;
-using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.Common;
+using NuGet.PackageManagement.UI;
 using NuGet.ProjectModel;
 using VSLangProj;
 using VSLangProj80;
@@ -29,10 +28,10 @@ namespace NuGet.PackageManagement.VisualStudio
             IEnumerable<string> resolvedProjects,
             ILogger log)
         {
-            return await ThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+            return await NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {
                 // DTE calls need to be done from the main thread
-                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                 var results = new List<ProjectRestoreReference>();
 
@@ -49,12 +48,18 @@ namespace NuGet.PackageManagement.VisualStudio
                     {
                         var reference3 = childReference as Reference3;
 
-                        // this will set a reference to be missing if
+                        // check if deferred projects resolved this reference, which means this is still not loaded so simply continue
+                        // We'll get this reference from deferred projects later
+                        if (reference3 != null &&
+                        resolvedProjects.Contains(reference3.Name, StringComparer.OrdinalIgnoreCase))
+                        {
+                            continue;
+                        }
+
+                        // Set missing reference if
                         // 1. reference is null OR
-                        // 2. reference is not resolved which means project is not loaded or assembly not found. OR
-                        // 3. in DPL case, even deferred projects doesn't have this referenced project.
-                        if (reference3 == null || !reference3.Resolved ||
-                            !resolvedProjects.Any(projectName => StringComparer.OrdinalIgnoreCase.Equals(projectName, reference3.Name)))
+                        // 2. reference is not resolved which means project is not loaded or assembly not found.
+                        else if (reference3 == null || !reference3.Resolved)
                         {
                             // Skip missing references and show a warning
                             hasMissingReferences = true;

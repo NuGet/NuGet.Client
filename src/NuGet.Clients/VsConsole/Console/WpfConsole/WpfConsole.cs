@@ -12,6 +12,7 @@ using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Editor;
 using Microsoft.VisualStudio.TextManager.Interop;
 using Microsoft.VisualStudio.Utilities;
+using NuGet.PackageManagement;
 using NuGet.PackageManagement.VisualStudio;
 using EditorDefGuidList = Microsoft.VisualStudio.Editor.DefGuidList;
 using IOleServiceProvider = Microsoft.VisualStudio.OLE.Interop.IServiceProvider;
@@ -365,7 +366,7 @@ namespace NuGetConsole.Implementation.Console
 
         #endregion
 
-        public event EventHandler<EventArgs<Tuple<SnapshotSpan, Color?, Color?>>> NewColorSpan;
+        public event EventHandler<NuGetEventArgs<Tuple<SnapshotSpan, Color?, Color?>>> NewColorSpan;
         public event EventHandler ConsoleCleared;
 
         private void SetReadOnlyRegionType(ReadOnlyRegionType value)

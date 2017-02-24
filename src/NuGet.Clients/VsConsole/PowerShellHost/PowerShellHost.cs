@@ -11,7 +11,6 @@ using System.IO;
 using System.Linq;
 using System.Management.Automation;
 using System.Management.Automation.Runspaces;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Media;
@@ -28,8 +27,8 @@ using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
 using NuGet.Protocol.Core.Types;
 using NuGet.Resolver;
+using NuGet.VisualStudio.Facade;
 using NuGetUIThreadHelper = NuGet.PackageManagement.UI.NuGetUIThreadHelper;
-using PathUtility = NuGet.ProjectManagement.PathUtility;
 using ThreadHelper = Microsoft.VisualStudio.Shell.ThreadHelper;
 
 namespace NuGetConsole.Host.PowerShell.Implementation
@@ -40,6 +39,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
 
         private readonly AsyncSemaphore _initScriptsLock = new AsyncSemaphore(1);
         private readonly string _name;
+        private readonly IRestoreEvents _restoreEvents;
         private readonly IRunspaceManager _runspaceManager;
         private readonly ISourceRepositoryProvider _sourceRepositoryProvider;
         private readonly ISolutionManager _solutionManager;
@@ -75,8 +75,32 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         // store the current CancellationToken. This will be set on the private data
         private CancellationToken _token;
 
-        protected PowerShellHost(string name, IRunspaceManager runspaceManager)
+        // store the current solution directory which will be to check the solution change while executing init scripts.
+        private string _currentSolutionDirectory;
+
+        /// <summary>
+        /// An initial restore event used to compare against future (real) restore events. This value endures on
+        /// <see cref="_latestRestore"/> and <see cref="_currentRestore"/> as long as no restore occurs. Note that the
+        /// hash mentioned here cannot collide with a real hash.
+        /// </summary>
+        private static readonly SolutionRestoredEventArgs InitialRestore = new SolutionRestoredEventArgs(
+            isSuccess: true,
+            solutionSpecHash: "initial");
+
+        /// <summary>
+        /// This field tracks information about the latest restore.
+        /// </summary>
+        private SolutionRestoredEventArgs _latestRestore = InitialRestore;
+
+        /// <summary>
+        /// This field tracks information about the most recent restore that had scripts executed for it.
+        /// </summary>
+        private SolutionRestoredEventArgs _currentRestore = InitialRestore;
+
+
+        protected PowerShellHost(string name, IRestoreEvents restoreEvents, IRunspaceManager runspaceManager)
         {
+            _restoreEvents = restoreEvents;
             _runspaceManager = runspaceManager;
 
             // TODO: Take these as ctor arguments
@@ -98,6 +122,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             InitializeSources();
 
             _sourceRepositoryProvider.PackageSourceProvider.PackageSourcesChanged += PackageSourceProvider_PackageSourcesChanged;
+            _restoreEvents.SolutionRestoreCompleted += RestoreEvents_SolutionRestoreCompleted;
         }
 
         private void InitializeSources()
@@ -275,21 +300,25 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                             UpdateWorkingDirectory();
                             await ExecuteInitScriptsAsync();
 
-                            // Hook up solution events
-                            _solutionManager.SolutionOpened += (o, e) =>
-                                {
-                                    _scriptExecutor.Reset();
+                            // check if PMC console is actually opened, then only hook to solution load/close events.
+                            if (console is IWpfConsole)
+                            {
+                                // Hook up solution events
+                                _solutionManager.SolutionOpened += (o, e) =>
+                                    {
+                                        _scriptExecutor.Reset();
 
                                     // Solution opened event is raised on the UI thread
                                     // Go off the UI thread before calling likely expensive call of ExecuteInitScriptsAsync
                                     // Also, it uses semaphores, do not call it from the UI thread
                                     Task.Run(delegate
-                                        {
-                                            UpdateWorkingDirectory();
-                                            return ExecuteInitScriptsAsync();
-                                        });
-                                };
-                            _solutionManager.SolutionClosed += (o, e) => UpdateWorkingDirectory();
+                                            {
+                                                UpdateWorkingDirectory();
+                                                return ExecuteInitScriptsAsync();
+                                            });
+                                    };
+                                _solutionManager.SolutionClosed += (o, e) => UpdateWorkingDirectory();
+                            }
                             _solutionManager.NuGetProjectAdded += (o, e) => UpdateWorkingDirectoryAndAvailableProjects();
                             _solutionManager.NuGetProjectRenamed += (o, e) => UpdateWorkingDirectoryAndAvailableProjects();
                             _solutionManager.NuGetProjectUpdated += (o, e) => UpdateWorkingDirectoryAndAvailableProjects();
@@ -352,6 +381,17 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                 Debug.Assert(_settings != null);
                 if (_settings == null)
                 {
+                    return;
+                }
+
+                var latestRestore = _latestRestore;
+                var latestSolutionDirectory = _solutionManager.SolutionDirectory;
+                if (ShouldNoOpDueToRestore(latestRestore) &&
+                    ShouldNoOpDueToSolutionDirectory(latestSolutionDirectory))
+                {
+                    _currentRestore = latestRestore;
+                    _currentSolutionDirectory = latestSolutionDirectory;
+
                     return;
                 }
 
@@ -435,6 +475,11 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                         sortedGlobalPackages,
                         finishedPackages);
                 }
+
+                // We are done executing scripts, so record the restore and solution directory that we executed for.
+                // This aids the no-op logic above.
+                _currentRestore = latestRestore;
+                _currentSolutionDirectory = latestSolutionDirectory;
             }
         }
 
@@ -585,6 +630,13 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                 throw new ArgumentNullException(nameof(command));
             }
 
+            // since install.ps1/uninstall.ps1 could depend on init scripts, so we need to make sure
+            // to run it once for each solution
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
+            {
+                await ExecuteInitScriptsAsync();
+            });
+
             NuGetEventTrigger.Instance.TriggerEvent(NuGetEvent.PackageManagerConsoleCommandExecutionBegin);
             ActiveConsole = console;
 
@@ -697,6 +749,26 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         {
             _packageSources = GetEnabledPackageSources(_sourceRepositoryProvider);
             UpdateActiveSource(ActivePackageSource);
+        }
+
+        private void RestoreEvents_SolutionRestoreCompleted(SolutionRestoredEventArgs args)
+        {
+            _latestRestore = args;
+        }
+
+        private bool ShouldNoOpDueToRestore(SolutionRestoredEventArgs latestRestore)
+        {
+            return latestRestore != null &&
+                   _currentRestore != null &&
+                   latestRestore.SolutionSpecHash == _currentRestore.SolutionSpecHash &&
+                   latestRestore.IsSuccess == _currentRestore.IsSuccess;
+        }
+
+        private bool ShouldNoOpDueToSolutionDirectory(string latestSolutionDirectory)
+        {
+            return StringComparer.OrdinalIgnoreCase.Equals(
+                _currentSolutionDirectory,
+                latestSolutionDirectory);
         }
 
         private void UpdateActiveSource(string activePackageSource)
@@ -866,6 +938,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
 
         public void Dispose()
         {
+            _restoreEvents.SolutionRestoreCompleted -= RestoreEvents_SolutionRestoreCompleted;
             _initScriptsLock.Dispose();
             Runspace?.Dispose();
         }

@@ -21,6 +21,7 @@ using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
 using NuGet.ProjectModel;
 using NuGet.Protocol.Core.Types;
+using NuGet.VisualStudio.Facade;
 using Strings = NuGet.PackageManagement.VisualStudio.Strings;
 using Task = System.Threading.Tasks.Task;
 
@@ -40,6 +41,7 @@ namespace NuGet.SolutionRestoreManager
         private readonly ISourceRepositoryProvider _sourceRepositoryProvider;
         private readonly ISettings _settings;
         private readonly IDeferredProjectWorkspaceService _deferredWorkspaceService;
+        private readonly IRestoreEventsPublisher _restoreEventsPublisher;
 
         private RestoreOperationLogger _logger;
         private string _dependencyGraphProjectCacheHash;
@@ -59,6 +61,7 @@ namespace NuGet.SolutionRestoreManager
             IPackageRestoreManager packageRestoreManager,
             IVsSolutionManager solutionManager,
             ISourceRepositoryProvider sourceRepositoryProvider,
+            IRestoreEventsPublisher restoreEventsPublisher,
 #if !VS14
             IDeferredProjectWorkspaceService deferredWorkspaceService,
 #endif
@@ -84,6 +87,11 @@ namespace NuGet.SolutionRestoreManager
                 throw new ArgumentNullException(nameof(sourceRepositoryProvider));
             }
 
+            if (restoreEventsPublisher == null)
+            {
+                throw new ArgumentNullException(nameof(restoreEventsPublisher));
+            }
+
             if (settings == null)
             {
                 throw new ArgumentNullException(nameof(settings));
@@ -93,6 +101,7 @@ namespace NuGet.SolutionRestoreManager
             _packageRestoreManager = packageRestoreManager;
             _solutionManager = solutionManager;
             _sourceRepositoryProvider = sourceRepositoryProvider;
+            _restoreEventsPublisher = restoreEventsPublisher;
             _settings = settings;
 #if VS14
             _deferredWorkspaceService = null;
@@ -136,6 +145,9 @@ namespace NuGet.SolutionRestoreManager
                 try
                 {
                     await RestoreAsync(request.ForceRestore, request.RestoreSource, token);
+                }
+                catch (OperationCanceledException) when (token.IsCancellationRequested)
+                {
                 }
                 catch (Exception e)
                 {
@@ -206,6 +218,21 @@ namespace NuGet.SolutionRestoreManager
                     isSolutionAvailable,
                     deferredProjectsData.PackageSpecs,
                     token);
+
+                // TODO: To limit risk, we only publish the event when there is a cross-platform PackageReference
+                // project in the solution. Extending this behavior to all solutions is tracked here:
+                // https://github.com/NuGet/Home/issues/4478
+#if !VS14
+                if (projects.OfType<CpsPackageReferenceProject>().Any() &&
+                    !string.IsNullOrEmpty(_dependencyGraphProjectCacheHash))
+                {
+                    // A no-op restore is considered successful. A cancellation is considered unsuccessful.
+                    var args = new SolutionRestoredEventArgs(
+                        isSuccess: _status == NuGetOperationStatus.Succeeded || _status == NuGetOperationStatus.NoOp,
+                        solutionSpecHash: _dependencyGraphProjectCacheHash);
+                    _restoreEventsPublisher.OnSolutionRestoreCompleted(args);
+                }
+#endif
             }
             finally
             {
@@ -549,9 +576,9 @@ namespace NuGet.SolutionRestoreManager
 
         private async Task<bool> CheckPackagesConfigAsync()
         {
-            return await ThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+            return await NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {
-                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                 var dte = _serviceProvider.GetDTE();
                 var projects = dte.Solution.Projects;

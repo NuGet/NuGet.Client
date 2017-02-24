@@ -5,6 +5,9 @@
     <DisplayName>NuGet.TestableVSCredentialProvider</DisplayName>
     <Description xml:space="preserve">Testable NuGet Credential Provider for Visual Studio</Description>
   </Metadata>
+  <Prerequisites>
+    <Prerequisite Id="Microsoft.VisualStudio.Component.CoreEditor" Version="[15.0,16.0)" DisplayName="Visual Studio core editor" />
+  </Prerequisites>
   <Installation>
     <InstallationTarget Id="Microsoft.VisualStudio.Community" Version="[14.0,]" />
   </Installation>

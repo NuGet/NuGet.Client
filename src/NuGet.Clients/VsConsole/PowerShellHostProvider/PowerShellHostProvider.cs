@@ -1,9 +1,10 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.ComponentModel.Composition;
 using System.Runtime.CompilerServices;
+using NuGet.VisualStudio.Facade;
 using NuGetConsole.Host.PowerShell.Implementation;
 
 namespace NuGetConsole.Host.PowerShellProvider
@@ -25,6 +26,19 @@ namespace NuGetConsole.Host.PowerShellProvider
         /// </summary>
         public const string PowerConsoleHostName = "Package Manager Host";
 
+        private readonly IRestoreEvents _restoreEvents;
+        
+        [ImportingConstructor]
+        public PowerShellHostProvider(IRestoreEvents restoreEvents)
+        {
+            if (restoreEvents == null)
+            {
+                throw new ArgumentNullException(nameof(restoreEvents));
+            }
+
+            _restoreEvents = restoreEvents;
+        }
+
         public IHost CreateHost(bool @async)
         {
             bool isPowerShell2Installed = RegistryHelper.CheckIfPowerShell2OrAboveInstalled();
@@ -36,7 +50,7 @@ namespace NuGetConsole.Host.PowerShellProvider
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private static IHost CreatePowerShellHost(bool @async)
+        private IHost CreatePowerShellHost(bool @async)
         {
             // backdoor: allow turning off async mode by setting enviroment variable NuGetSyncMode=1
             string syncModeFlag = Environment.GetEnvironmentVariable("NuGetSyncMode", EnvironmentVariableTarget.User);
@@ -45,7 +59,7 @@ namespace NuGetConsole.Host.PowerShellProvider
                 @async = false;
             }
 
-            return PowerShellHostService.CreateHost(PowerConsoleHostName, @async);
+            return PowerShellHostService.CreateHost(PowerConsoleHostName, _restoreEvents, @async);
         }
     }
 }

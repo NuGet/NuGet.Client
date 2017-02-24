@@ -32,7 +32,9 @@ namespace NuGet.Build.Tasks.Pack
         ILogger Logger { get; }
         string MinClientVersion { get; }
         bool NoPackageAnalysis { get; }
+        string NuspecBasePath { get; }
         string NuspecFile { get; }
+        string[] NuspecProperties { get; }
         string NuspecOutputPath { get; }
         TItem[] PackageFiles { get; }
         TItem[] PackageFilesToExclude { get; }
@@ -53,6 +55,6 @@ namespace NuGet.Build.Tasks.Pack
         string[] TargetFrameworks { get; }
         string[] TargetPathsToAssemblies { get; }
         string[] TargetPathsToSymbols { get; }
-        string VersionSuffix { get; }
+        string Title { get; }
     }
 }

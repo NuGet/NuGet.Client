@@ -11,6 +11,7 @@ using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.PackageManagement;
+using NuGet.PackageManagement.UI;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging.Core;
 
@@ -96,9 +97,9 @@ namespace NuGetVSExtension
 
         private void SolutionEvents_AfterClosing()
         {
-            ThreadHelper.JoinableTaskFactory.Run(async delegate
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
             {
-                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                 _errorListProvider.Tasks.Clear();
             });
@@ -109,9 +110,9 @@ namespace NuGetVSExtension
             // Clear the error list upon the first build action
             // Note that the retargeting error message is shown on the errorlistprovider this class creates
             // Hence, explicit clearing of the error list is required
-            ThreadHelper.JoinableTaskFactory.Run(async delegate
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
             {
-                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                 _errorListProvider.Tasks.Clear();
 
@@ -154,9 +155,9 @@ namespace NuGetVSExtension
         #region IVsTrackProjectRetargetingEvents
         int IVsTrackProjectRetargetingEvents.OnRetargetingAfterChange(string projRef, IVsHierarchy pAfterChangeHier, string fromTargetFramework, string toTargetFramework)
         {
-            ThreadHelper.JoinableTaskFactory.Run(async delegate
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
             {
-                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                 _errorListProvider.Tasks.Clear();
                 var project = VsHierarchyUtility.GetProjectFromHierarchy(pAfterChangeHier);
@@ -202,9 +203,9 @@ namespace NuGetVSExtension
         #region IVsTrackBatchRetargetingEvents
         int IVsTrackBatchRetargetingEvents.OnBatchRetargetingBegin()
         {
-            ThreadHelper.JoinableTaskFactory.Run(async delegate
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
             {
-                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                 var project = EnvDTEProjectUtility.GetActiveProject(_vsMonitorSelection);
 
@@ -224,9 +225,9 @@ namespace NuGetVSExtension
 
         int IVsTrackBatchRetargetingEvents.OnBatchRetargetingEnd()
         {
-            ThreadHelper.JoinableTaskFactory.Run(async delegate
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
             {
-                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                 _errorListProvider.Tasks.Clear();
                 if (_platformRetargetingProject != null)
