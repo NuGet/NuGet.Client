@@ -22,7 +22,6 @@ namespace NuGet.PackageManagement.VisualStudio
     public class EnvDTEProjectAdapter : IEnvDTEProjectAdapter
     {
         private const string RestoreProjectStyle = "RestoreProjectStyle";
-        private const string ProjectStylePackageReference = "PackageReference";
 
         /// <summary>
         /// The adaptee for this adapter
