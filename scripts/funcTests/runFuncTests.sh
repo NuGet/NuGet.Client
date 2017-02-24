@@ -60,8 +60,17 @@ do
 	if grep -q netcoreapp1.0 "$testProject"; then
 		pushd $testDir
 
-		echo "$DOTNET test $testDir --configuration release --framework netcoreapp1.0"
-		$DOTNET test $testDir --configuration release --framework netcoreapp1.0
+		case "$(uname -s)" in
+			Linux)
+				echo "$DOTNET test $testDir --configuration release --framework netcoreapp1.0 -notrait Platform=Windows -notrait Platform=Darwin"
+				$DOTNET test $testDir --configuration release --framework netcoreapp1.0 -notrait Platform=Windows -notrait Platform=Darwin
+				;;
+			Darwin)
+				echo "$DOTNET test $testDir --configuration release --framework netcoreapp1.0 -notrait Platform=Windows -notrait Platform=Linux"
+				$DOTNET test $testDir --configuration release --framework netcoreapp1.0 -notrait Platform=Windows -notrait Platform=Linux
+				;;
+			*) ;;
+		esac
 
 		if [ $? -ne 0 ]; then
 			echo "$testDir FAILED on CoreCLR"
@@ -80,7 +89,7 @@ XunitConsole="$DIR/packages/xunit.runner.console.2.1.0/tools/xunit.console.exe"
 NuGetExe="$DIR/.nuget/nuget.exe"
 
 #Get NuGet.exe
-wget -O $NuGetExe https://dist.nuget.org/win-x86-commandline/latest-prerelease/nuget.exe 
+wget -O $NuGetExe https://dist.nuget.org/win-x86-commandline/latest-prerelease/nuget.exe
 
 #restore solution packages
 mono $NuGetExe restore  "$DIR/.nuget/packages.config" -SolutionDirectory "$DIR"

@@ -16,14 +16,19 @@ using NuGet.ProjectManagement;
 namespace NuGet.TeamFoundationServer
 {
     [Export(typeof(ITFSSourceControlManagerProvider))]
-    public class TFSSourceControlManagerProvider : ITFSSourceControlManagerProvider
+    internal sealed class TFSSourceControlManagerProvider : ITFSSourceControlManagerProvider
     {
         private readonly Configuration.ISettings _settings;
 
         [ImportingConstructor]
-        public TFSSourceControlManagerProvider()
+        public TFSSourceControlManagerProvider(Configuration.ISettings vsSettings)
         {
-            _settings = ServiceLocator.GetInstanceSafe<Configuration.ISettings>();
+            if (vsSettings == null)
+            {
+                throw new ArgumentNullException(nameof(vsSettings));
+            }
+
+            _settings = vsSettings;
         }
 
         public SourceControlManager GetTFSSourceControlManager(SourceControlBindings sourceControlBindings)

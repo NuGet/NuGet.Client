@@ -44,6 +44,13 @@ namespace NuGet.RuntimeModel
         /// </summary>
         /// <param name="name">The name of the datum.  Throws if <c>null</c>.</param>
         /// <param name="value">The datum.</param>
+        void WriteNameValue(string name, bool value);
+
+        /// <summary>
+        /// Writes a name-value pair.
+        /// </summary>
+        /// <param name="name">The name of the datum.  Throws if <c>null</c>.</param>
+        /// <param name="value">The datum.</param>
         void WriteNameValue(string name, string value);
 
         /// <summary>

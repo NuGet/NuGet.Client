@@ -13,13 +13,15 @@ using System.Windows.Media;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Text;
 using NuGet.Common;
+using NuGet.PackageManagement;
+using NuGet.PackageManagement.UI;
 using Task = System.Threading.Tasks.Task;
 
 namespace NuGetConsole.Implementation.Console
 {
     internal interface IPrivateConsoleDispatcher : IConsoleDispatcher, IDisposable
     {
-        event EventHandler<EventArgs<Tuple<SnapshotSpan, bool>>> ExecuteInputLine;
+        event EventHandler<NuGetEventArgs<Tuple<SnapshotSpan, bool>>> ExecuteInputLine;
         void PostInputLine(InputLine inputLine);
         void PostKey(VsKeyInfo key);
         void CancelWaitKey();
@@ -140,9 +142,9 @@ namespace NuGetConsole.Implementation.Console
 
         private void RaiseEventSafe(EventHandler handler)
         {
-            ThreadHelper.JoinableTaskFactory.Run(async delegate
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
                 {
-                    await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
                     if (handler != null)
                     {
                         handler(this, EventArgs.Empty);
@@ -195,9 +197,9 @@ namespace NuGetConsole.Implementation.Console
                         ).ContinueWith(
                             task =>
                                 {
-                                    ThreadHelper.JoinableTaskFactory.Run(async delegate
+                                    NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
                                         {
-                                            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                                            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                                             if (task.IsFaulted)
                                             {
@@ -242,7 +244,7 @@ namespace NuGetConsole.Implementation.Console
 
         #region IPrivateConsoleDispatcher
 
-        public event EventHandler<EventArgs<Tuple<SnapshotSpan, bool>>> ExecuteInputLine;
+        public event EventHandler<NuGetEventArgs<Tuple<SnapshotSpan, bool>>> ExecuteInputLine;
 
         private void OnExecute(SnapshotSpan inputLineSpan, bool isComplete)
         {

@@ -51,9 +51,9 @@ namespace NuGetVSExtension
                 throw new ArgumentNullException(nameof(consoleProvider));
             }
 
-            ThreadHelper.JoinableTaskFactory.Run(async () =>
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
             {
-                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                 ErrorListProvider = new ErrorListProvider(serviceProvider);
 
@@ -71,9 +71,9 @@ namespace NuGetVSExtension
 
         public void Dispose()
         {
-            ThreadHelper.JoinableTaskFactory.Run(async () =>
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
             {
-                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                 ErrorListProvider.Dispose();
             });
@@ -81,9 +81,9 @@ namespace NuGetVSExtension
 
         public void End()
         {
-            ThreadHelper.JoinableTaskFactory.Run(async delegate
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
             {
-                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                 OutputConsole.WriteLine(Resources.Finished);
                 OutputConsole.WriteLine(string.Empty);
@@ -126,9 +126,9 @@ namespace NuGetVSExtension
 
         public void Start()
         {
-            ThreadHelper.JoinableTaskFactory.Run(async delegate
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
             {
-                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                 _verbosityLevel = GetMSBuildVerbosityLevel();
                 ErrorListProvider.Tasks.Clear();
@@ -163,9 +163,9 @@ namespace NuGetVSExtension
             else
             {
                 // Run in JTF
-                ThreadHelper.JoinableTaskFactory.Run(async delegate
+                NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
                 {
-                    await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                     action();
                 });

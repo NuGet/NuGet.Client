@@ -10,6 +10,7 @@ using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
+using NuGet.Common;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -52,17 +53,13 @@ namespace NuGet.PackageManagement.UI
         public async Task<IPackageSearchMetadata> GetPackageMetadataAsync(PackageIdentity identity, bool includePrerelease, CancellationToken cancellationToken)
         {
             var tasks = _sourceRepositories
-                .Select(r => r.GetPackageMetadataAsync(identity, includePrerelease, cancellationToken))
+                .Select(r => GetMetadataTaskAsyncSafe(() => r.GetPackageMetadataAsync(identity, includePrerelease, cancellationToken)))
                 .ToList();
 
             if (_localRepository != null)
             {
                 tasks.Add(_localRepository.GetPackageMetadataFromLocalSourceAsync(identity, cancellationToken));
             }
-
-            var ignored = tasks
-                .Select(task => task.ContinueWith(LogError, TaskContinuationOptions.OnlyOnFaulted))
-                .ToArray();
 
             var completed = (await Task.WhenAll(tasks))
                 .Where(m => m != null);
@@ -95,11 +92,7 @@ namespace NuGet.PackageManagement.UI
                 .FirstOrDefault(v => v != null) ?? VersionRange.All;
 
             var tasks = _sourceRepositories
-                .Select(r => r.GetLatestPackageMetadataAsync(identity.Id, includePrerelease, cancellationToken, allowedVersions))
-                .ToArray();
-
-            var ignored = tasks
-                .Select(task => task.ContinueWith(LogError, TaskContinuationOptions.OnlyOnFaulted))
+                .Select(r => GetMetadataTaskAsyncSafe(() => r.GetLatestPackageMetadataAsync(identity.Id, includePrerelease, cancellationToken, allowedVersions)))
                 .ToArray();
 
             var completed = (await Task.WhenAll(tasks))
@@ -120,11 +113,7 @@ namespace NuGet.PackageManagement.UI
             CancellationToken cancellationToken)
         {
             var tasks = _sourceRepositories
-                .Select(r => r.GetPackageMetadataListAsync(packageId, includePrerelease, includeUnlisted, cancellationToken))
-                .ToArray();
-
-            var ignored = tasks
-                .Select(task => task.ContinueWith(LogError, TaskContinuationOptions.OnlyOnFaulted))
+                .Select(r => GetMetadataTaskAsyncSafe(()=> r.GetPackageMetadataListAsync(packageId, includePrerelease, includeUnlisted, cancellationToken)))
                 .ToArray();
 
             var completed = (await Task.WhenAll(tasks))
@@ -192,31 +181,34 @@ namespace NuGet.PackageManagement.UI
         private async Task<IEnumerable<VersionInfo>> FetchAndMergeVersionsAsync(PackageIdentity identity, bool includePrerelease, CancellationToken cancellationToken)
         {
             var tasks = _sourceRepositories
-                .Select(r => r.GetPackageMetadataAsync(identity, includePrerelease, cancellationToken))
-                .ToList();
+                .Select(r => GetMetadataTaskAsyncSafe(() => r.GetPackageMetadataAsync(identity, includePrerelease, cancellationToken))).ToList();
 
             if (_localRepository != null)
             {
                 tasks.Add(_localRepository.GetPackageMetadataFromLocalSourceAsync(identity, cancellationToken));
             }
 
-            var ignored = tasks
-                .Select(task => task.ContinueWith(LogError, TaskContinuationOptions.OnlyOnFaulted))
-                .ToArray();
-
-            var completed = (await Task.WhenAll(tasks))
-                .Where(m => m != null);
+            var completed = (await Task.WhenAll(tasks)).Where(m => m != null);
 
             return await MergeVersionsAsync(identity, completed);
         }
 
-        private void LogError(Task task)
+        private async Task<T> GetMetadataTaskAsyncSafe<T>(Func<Task<T>> getMetadataTask) where T: class
         {
-            foreach (var ex in task.Exception.Flatten().InnerExceptions)
+            try
             {
-                _logger.LogError(ex.ToString());
+                return await getMetadataTask();
             }
+            catch (Exception e)
+            {
+                LogError(e);
+            }
+            return null;
         }
 
+        private void LogError(Exception exception)
+        {
+            _logger.LogError(ExceptionUtilities.DisplayMessage(exception));
+        }
     }
 }

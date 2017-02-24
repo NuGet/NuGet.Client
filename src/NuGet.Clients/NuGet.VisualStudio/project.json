@@ -4,7 +4,7 @@
     "Microsoft.VisualStudio.Shell.Interop": "7.10.6071",
     "Microsoft.VisualStudio.Shell.Interop.8.0": "8.0.50727",
     "Microsoft.VisualStudio.Shell.Interop.9.0": "9.0.30729",
-    "NuGet.Protocol.VisualStudio": "4.0.0-*"
+    "NuGet.Protocol.VisualStudio": "4.0.1-*"
   },
   "frameworks": {
     "net46": {}

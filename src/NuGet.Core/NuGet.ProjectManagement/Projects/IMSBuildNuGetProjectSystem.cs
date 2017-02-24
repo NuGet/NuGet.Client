@@ -23,6 +23,8 @@ namespace NuGet.ProjectManagement
         void RemoveFile(string path);
         bool FileExistsInProject(string path);
 
+        dynamic VSProject4 { get; }
+
         /// <summary>
         /// Method called when adding an assembly reference to the project.
         /// </summary>

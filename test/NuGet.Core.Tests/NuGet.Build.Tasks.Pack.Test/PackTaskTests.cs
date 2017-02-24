@@ -73,8 +73,7 @@ namespace NuGet.Build.Tasks.Pack.Test
                 ProjectUrl = " ProjectUrl \t ",
                 ReleaseNotes = " ReleaseNotes \t ",
                 RepositoryType = " RepositoryType \t ",
-                RepositoryUrl = " RepositoryUrl \t ",
-                VersionSuffix = " VersionSuffix \t "
+                RepositoryUrl = " RepositoryUrl \t "
             };
 
             // Act
@@ -96,7 +95,6 @@ namespace NuGet.Build.Tasks.Pack.Test
             Assert.Equal("ReleaseNotes", actual.ReleaseNotes);
             Assert.Equal("RepositoryType", actual.RepositoryType);
             Assert.Equal("RepositoryUrl", actual.RepositoryUrl);
-            Assert.Equal("VersionSuffix", actual.VersionSuffix);
         }
 
         [Fact]
@@ -120,7 +118,6 @@ namespace NuGet.Build.Tasks.Pack.Test
                 ReleaseNotes = " \t ",
                 RepositoryType = " \t ",
                 RepositoryUrl = " \t ",
-                VersionSuffix = " \t ",
             };
 
             // Act
@@ -142,7 +139,6 @@ namespace NuGet.Build.Tasks.Pack.Test
             Assert.Null(actual.ReleaseNotes);
             Assert.Null(actual.RepositoryType);
             Assert.Null(actual.RepositoryUrl);
-            Assert.Null(actual.VersionSuffix);
         }
 
         [Fact]
@@ -284,6 +280,7 @@ namespace NuGet.Build.Tasks.Pack.Test
                 MinClientVersion = "MinClientVersion",
                 NoPackageAnalysis = true,
                 NuspecOutputPath = "NuspecOutputPath",
+                NuspecProperties = new string[0],
                 PackItem = null, // This is asserted by other tests. It does not serialize well.
                 PackageFiles = new ITaskItem[0],
                 PackageFilesToExclude = new ITaskItem[0],
@@ -301,8 +298,7 @@ namespace NuGet.Build.Tasks.Pack.Test
                 Tags = new string[0],
                 TargetFrameworks = new string[0],
                 TargetPathsToAssemblies = new string[0],
-                TargetPathsToSymbols = new string[0],
-                VersionSuffix = "VersionSuffix"
+                TargetPathsToSymbols = new string[0]
             };
 
             var settings = new JsonSerializerSettings

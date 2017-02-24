@@ -64,7 +64,10 @@ namespace NuGet.Protocol
                     {
                         filter = new SearchFilter(includePrerelease: false,
                             filter: SearchFilterType.IsLatestVersion)
-                        { OrderBy = SearchOrderBy.Id };
+                        {
+                            OrderBy = SearchOrderBy.Id,
+                            IncludeDelisted = includeDelisted
+                        };
                     }
                 }
             }
@@ -95,7 +98,10 @@ namespace NuGet.Protocol
                     {
                         filter = new SearchFilter(includePrerelease: false,
                             filter: SearchFilterType.IsLatestVersion)
-                        { OrderBy = SearchOrderBy.Id };
+                        {
+                            OrderBy = SearchOrderBy.Id,
+                            IncludeDelisted = includeDelisted
+                        };
                     }
                 }
 

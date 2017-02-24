@@ -6,48 +6,64 @@ using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.IO;
 using System.Linq;
+using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
+using Microsoft.VisualStudio.Threading;
 using NuGet.ProjectManagement;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
     [Export(typeof(IVsSourceControlTracker))]
-    public class VsSourceControlTracker : IVsSourceControlTracker
+    internal sealed class VsSourceControlTracker : IVsSourceControlTracker
     {
         private readonly TrackProjectDocumentEventListener _projectDocumentListener;
-        private readonly IVsTrackProjectDocuments2 _projectTracker;
+        private readonly AsyncLazy<IVsTrackProjectDocuments2> _projectTracker;
         private readonly ISolutionManager _solutionManager;
         private readonly ISourceControlManagerProvider _sourceControlManagerProvider;
         private readonly Configuration.ISettings _vsSettings;
         private uint? _trackingCookie;
 
-        [ImportingConstructor]
-        public VsSourceControlTracker(ISolutionManager solutionManager, ISourceControlManagerProvider sourceControlManagerProvider, Configuration.ISettings vsSettings)
-            :
-                this(solutionManager, sourceControlManagerProvider, ServiceLocator.GetGlobalService<SVsTrackProjectDocuments, IVsTrackProjectDocuments2>(), vsSettings)
-        {
-        }
+        private IVsTrackProjectDocuments2 ProjectTracker => ThreadHelper.JoinableTaskFactory.Run(_projectTracker.GetValueAsync);
 
+        [ImportingConstructor]
         public VsSourceControlTracker(
+            [Import(typeof(SVsServiceProvider))]
+            IServiceProvider serviceProvider,
             ISolutionManager solutionManager,
             ISourceControlManagerProvider sourceControlManagerProvider,
-            IVsTrackProjectDocuments2 projectTracker,
             Configuration.ISettings vsSettings)
         {
-            if (projectTracker == null)
+            if (serviceProvider == null)
             {
-                throw new ArgumentNullException("projectTracker");
+                throw new ArgumentNullException(nameof(serviceProvider));
             }
 
             if (solutionManager == null)
             {
-                throw new ArgumentNullException("solutionManager");
+                throw new ArgumentNullException(nameof(solutionManager));
+            }
+
+            if (sourceControlManagerProvider == null)
+            {
+                throw new ArgumentNullException(nameof(sourceControlManagerProvider));
+            }
+
+            if (vsSettings == null)
+            {
+                throw new ArgumentNullException(nameof(vsSettings));
             }
 
             _solutionManager = solutionManager;
-            _projectTracker = projectTracker;
             _sourceControlManagerProvider = sourceControlManagerProvider;
             _vsSettings = vsSettings;
+
+            _projectTracker = new AsyncLazy<IVsTrackProjectDocuments2>(async () =>
+                {
+                    await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                    return serviceProvider.GetService<SVsTrackProjectDocuments, IVsTrackProjectDocuments2>();
+                },
+                ThreadHelper.JoinableTaskFactory);
+
             _projectDocumentListener = new TrackProjectDocumentEventListener(this);
 
             _solutionManager.SolutionOpened += OnSolutionOpened;
@@ -92,7 +108,7 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             uint cookie;
-            _projectTracker.AdviseTrackProjectDocumentsEvents(_projectDocumentListener, out cookie);
+            ProjectTracker.AdviseTrackProjectDocumentsEvents(_projectDocumentListener, out cookie);
             _trackingCookie = cookie;
         }
 
@@ -103,7 +119,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 return;
             }
 
-            _projectTracker.UnadviseTrackProjectDocumentsEvents((uint)_trackingCookie);
+            ProjectTracker.UnadviseTrackProjectDocumentsEvents((uint)_trackingCookie);
             _trackingCookie = null;
         }
 

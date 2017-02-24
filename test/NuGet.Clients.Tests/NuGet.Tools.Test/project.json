@@ -11,7 +11,7 @@
     "Microsoft.VisualStudio.Shell.Interop.8.0": "8.0.50727",
     "Microsoft.VisualStudio.Shell.Interop.9.0": "9.0.30729",
     "Moq": "4.2.1507.118",
-    "Test.Utility": "4.0.0-*",
+    "Test.Utility": "4.0.1-*",
     "xunit": "2.1.0",
     "xunit.runner.visualstudio": "2.1.0"
   },

@@ -6,13 +6,14 @@ using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.PackageManagement.VisualStudio;
+using NuGet.VisualStudio.Facade;
 
 namespace NuGetConsole.Host.PowerShell.Implementation
 {
     internal class SyncPowerShellHost : PowerShellHost
     {
-        public SyncPowerShellHost(string name, IRunspaceManager runspaceManager)
-            : base(name, runspaceManager)
+        public SyncPowerShellHost(string name, IRestoreEvents restoreEvents, IRunspaceManager runspaceManager)
+            : base(name, restoreEvents, runspaceManager)
         {
         }
 

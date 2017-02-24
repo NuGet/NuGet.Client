@@ -731,22 +731,29 @@ namespace NuGet.PackageManagement
 
                 foreach (var installedPackage in projectInstalledPackageReferences)
                 {
-                    var resolvedPackage = await GetLatestVersionAsync(
-                        installedPackage.PackageIdentity.Id,
-                        nuGetProject,
-                        resolutionContext,
-                        primarySources,
-                        log,
-                        token);
+                    // Skip auto referenced packages during update all.
+                    var buildPackageReference = installedPackage as BuildIntegratedPackageReference;
+                    var autoReferenced = buildPackageReference?.Dependency?.AutoReferenced == true;
 
-                    if (resolvedPackage != null && resolvedPackage.LatestVersion != null && resolvedPackage.LatestVersion > installedPackage.PackageIdentity.Version)
+                    if (!autoReferenced)
                     {
-                        lowLevelActions.Add(NuGetProjectAction.CreateUninstallProjectAction(installedPackage.PackageIdentity,
-                            nuGetProject));
-                        lowLevelActions.Add(NuGetProjectAction.CreateInstallProjectAction(
-                            new PackageIdentity(installedPackage.PackageIdentity.Id, resolvedPackage.LatestVersion),
-                            primarySources.FirstOrDefault(),
-                            nuGetProject));
+                        var resolvedPackage = await GetLatestVersionAsync(
+                            installedPackage.PackageIdentity.Id,
+                            nuGetProject,
+                            resolutionContext,
+                            primarySources,
+                            log,
+                            token);
+
+                        if (resolvedPackage != null && resolvedPackage.LatestVersion != null && resolvedPackage.LatestVersion > installedPackage.PackageIdentity.Version)
+                        {
+                            lowLevelActions.Add(NuGetProjectAction.CreateUninstallProjectAction(installedPackage.PackageIdentity,
+                                nuGetProject));
+                            lowLevelActions.Add(NuGetProjectAction.CreateInstallProjectAction(
+                                new PackageIdentity(installedPackage.PackageIdentity.Id, resolvedPackage.LatestVersion),
+                                primarySources.FirstOrDefault(),
+                                nuGetProject));
+                        }
                     }
                 }
 
@@ -2349,7 +2356,7 @@ namespace NuGet.PackageManagement
 
                 originalLockFile = originalRestoreResult.Result.LockFile;
             }
-            
+
             foreach (var action in nuGetProjectActions)
             {
                 if (action.NuGetProjectActionType == NuGetProjectActionType.Uninstall)
@@ -2579,7 +2586,7 @@ namespace NuGet.PackageManagement
                 else
                 {
                     // Write out the lock file
-                    await RestoreRunner.Commit(projectAction.RestoreResultPair);
+                    await RestoreRunner.CommitAsync(projectAction.RestoreResultPair, token);
                 }
 
                 // Write out a message for each action

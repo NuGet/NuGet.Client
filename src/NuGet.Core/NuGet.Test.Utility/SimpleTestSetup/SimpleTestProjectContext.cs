@@ -309,6 +309,7 @@ namespace NuGet.Test.Utility
         {
             var context = new SimpleTestProjectContext(projectName, ProjectStyle.PackageReference, solutionRoot);
             context.Frameworks.AddRange(frameworks.Select(e => new SimpleTestProjectFrameworkContext(e)));
+            context.Properties.Add("RestoreProjectStyle", "PackageReference");
             return context;
         }
 
@@ -368,18 +369,18 @@ namespace NuGet.Test.Utility
             var s = ResourceTestUtility.GetResource(sampleCSProjPath, typeof(SimpleTestProjectContext));
             var xml = XDocument.Parse(s);
 
-            AddProperties(xml, new Dictionary<string, string>()
+            ProjectFileUtils.AddProperties(xml, new Dictionary<string, string>()
             {
                 { "ProjectGuid", "{" + ProjectGuid.ToString() + "}" },
                 { "BaseIntermediateOutputPath", OutputPath },
                 { "AssemblyName", ProjectName }
             });
 
-            AddProperties(xml, Properties);
+            ProjectFileUtils.AddProperties(xml, Properties);
 
             if (Type == ProjectStyle.PackageReference)
             {
-                AddProperties(xml, new Dictionary<string, string>()
+                ProjectFileUtils.AddProperties(xml, new Dictionary<string, string>()
                 {
                     { "Version", Version },
                     { "DebugType", "portable" }
@@ -387,13 +388,14 @@ namespace NuGet.Test.Utility
 
                 if (!IsLegacyPackageReference)
                 {
-                    AddProperties(xml, new Dictionary<string, string>()
+                    ProjectFileUtils.AddProperties(xml, new Dictionary<string, string>()
                     {
                         { "TargetFrameworks", string.Join(";", Frameworks.Select(f => f.Framework.GetShortFolderName())) },
                     });
                 }
 
-                var addedToAll = new HashSet<SimpleTestProjectContext>();
+                var addedToAllProjectReferences = new HashSet<SimpleTestProjectContext>();
+                var addedToAllPackageReferences = new HashSet<SimpleTestPackageContext>();
 
                 foreach (var frameworkInfo in Frameworks)
                 {
@@ -405,11 +407,25 @@ namespace NuGet.Test.Utility
                         if (Frameworks.All(f => f.PackageReferences.Contains(package)))
                         {
                             referenceFramework = NuGetFramework.AnyFramework;
+
+                            if (!addedToAllPackageReferences.Add(package))
+                            {
+                                // Skip since this was already added
+                                continue;
+                            }
                         }
 
                         var props = new Dictionary<string, string>();
+                        var attributes = new Dictionary<string, string>();
 
-                        props.Add("Version", package.Version.ToString());
+                        if (ToolingVersion15)
+                        {
+                            attributes.Add("Version", package.Version.ToString());
+                        }
+                        else
+                        {
+                            props.Add("Version", package.Version.ToString());
+                        }
 
                         if (!string.IsNullOrEmpty(package.Include))
                         {
@@ -426,12 +442,13 @@ namespace NuGet.Test.Utility
                             props.Add("PrivateAssets", package.PrivateAssets);
                         }
 
-                        AddItem(
+                        ProjectFileUtils.AddItem(
                             xml,
                             "PackageReference",
                             package.Id,
                             referenceFramework,
-                            props);
+                            props,
+                            attributes);
                     }
 
                     foreach (var project in frameworkInfo.ProjectReferences)
@@ -443,7 +460,7 @@ namespace NuGet.Test.Utility
                         {
                             referenceFramework = NuGetFramework.AnyFramework;
 
-                            if (!addedToAll.Add(project))
+                            if (!addedToAllProjectReferences.Add(project))
                             {
                                 // Skip since this was already added
                                 continue;
@@ -469,12 +486,13 @@ namespace NuGet.Test.Utility
                             props.Add("PrivateAssets", project.PrivateAssets);
                         }
 
-                        AddItem(
+                        ProjectFileUtils.AddItem(
                             xml,
                             "ProjectReference",
                             $"{project.ProjectPath}",
                             referenceFramework,
-                            props);
+                            props,
+                            new Dictionary<string, string>());
                     }
                 }
 
@@ -484,12 +502,13 @@ namespace NuGet.Test.Utility
                     var props = new Dictionary<string, string>();
                     props.Add("Version", tool.Version.ToString());
 
-                    AddItem(
+                    ProjectFileUtils.AddItem(
                         xml,
                         "DotnetCLIToolReference",
                         $"{tool.Id}",
                         NuGetFramework.AnyFramework,
-                        props);
+                        props,
+                        new Dictionary<string, string>());
                 }
             }
             else
@@ -516,59 +535,17 @@ namespace NuGet.Test.Utility
                         props.Add("PrivateAssets", project.PrivateAssets);
                     }
 
-                    AddItem(
+                    ProjectFileUtils.AddItem(
                         xml,
                         "ProjectReference",
                         $"{project.ProjectPath}",
                         NuGetFramework.AnyFramework,
-                        props);
+                        props,
+                        new Dictionary<string, string>());
                 }
             }
 
             return xml;
-        }
-
-        private static void AddProperties(XDocument doc, Dictionary<string, string> properties)
-        {
-            var ns = doc.Root.GetDefaultNamespace();
-
-            var propertyGroup = new XElement(XName.Get("PropertyGroup", ns.NamespaceName));
-            foreach (var pair in properties)
-            {
-                var subItem = new XElement(XName.Get(pair.Key, ns.NamespaceName), pair.Value);
-                propertyGroup.Add(subItem);
-            }
-
-            var lastPropGroup = doc.Root.Elements().Where(e => e.Name.LocalName == "PropertyGroup").Last();
-            lastPropGroup.AddAfterSelf(propertyGroup);
-        }
-
-        private static void AddItem(XDocument doc,
-            string name,
-            string identity,
-            NuGetFramework framework,
-            Dictionary<string, string> properties)
-        {
-            var ns = doc.Root.GetDefaultNamespace();
-
-            var itemGroup = new XElement(XName.Get("ItemGroup", ns.NamespaceName));
-            var entry = new XElement(XName.Get(name, ns.NamespaceName));
-            entry.Add(new XAttribute(XName.Get("Include"), identity));
-            itemGroup.Add(entry);
-
-            if (framework?.IsSpecificFramework == true)
-            {
-                itemGroup.Add(new XAttribute(XName.Get("Condition"), $" '$(TargetFramework)' == '{framework.GetShortFolderName()}' "));
-            }
-
-            foreach (var pair in properties)
-            {
-                var subItem = new XElement(XName.Get(pair.Key, ns.NamespaceName), pair.Value);
-                entry.Add(subItem);
-            }
-
-            var lastItemGroup = doc.Root.Elements().Where(e => e.Name.LocalName == "ItemGroup").Last();
-            lastItemGroup.AddAfterSelf(itemGroup);
         }
 
         public override bool Equals(object obj)

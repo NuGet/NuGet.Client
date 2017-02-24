@@ -10,6 +10,7 @@ using NuGet.PackageManagement;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
+using NuGet.PackageManagement.UI;
 
 namespace NuGet.VisualStudio
 {
@@ -46,7 +47,7 @@ namespace NuGet.VisualStudio
                 // as part of the operations performed below. Powershell scripts need to be executed on the
                 // pipeline execution thread and they might try to access DTE. Doing that under
                 // ThreadHelper.JoinableTaskFactory.Run will consistently result in a hang
-                ThreadHelper.JoinableTaskFactory.Run(() =>
+                NuGetUIThreadHelper.JoinableTaskFactory.Run(() =>
                     _restoreManager.RestoreMissingPackagesInSolutionAsync(solutionDirectory,
                     nuGetProjectContext,
                     CancellationToken.None));

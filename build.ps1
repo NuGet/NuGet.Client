@@ -53,7 +53,7 @@ param (
     [ValidateSet("debug", "release")]
     [Alias('c')]
     [string]$Configuration,
-    [ValidateSet("release","rtm", "rc", "rc1", "rc2", "rc3", "beta", "beta1", "beta2", "final", "xprivate", "zlocal")]
+    [ValidateSet("release","rtm", "rc", "rc1", "rc2", "rc3", "rc4", "beta", "beta1", "beta2", "final", "xprivate", "zlocal")]
     [Alias('l')]
     [string]$ReleaseLabel = 'zlocal',
     [Alias('n')]
@@ -129,6 +129,19 @@ Invoke-BuildStep 'Building NuGet.Clients projects - VS15 Toolset' {
         Build-ClientsProjects $Configuration $ReleaseLabel $BuildNumber -ToolsetVersion 15
     } `
     -skip:$SkipVS15 `
+    -ev +BuildErrors
+
+## Building the VS15 NuGet.Tools.vsix for VS insertion
+Invoke-BuildStep 'Building NuGet.Tools.vsix for VS Insertion - VS15 Toolset' {
+        Build-ClientsProjectHelper `
+        -SolutionOrProject (Join-Path $NuGetClientRoot .\src\NuGet.Clients\NuGet.Tools\NuGet.Tools.csproj -Resolve)`
+        -Configuration $Configuration `
+        -ReleaseLabel $ReleaseLabel `
+        -BuildNumber $BuildNumber `
+        -Parameters @{'IsInsertable'='true'} `
+        -ToolsetVersion 15 `
+    } `
+    -skip:($SkipVS15 -or -not $CI) `
     -ev +BuildErrors
 
 ## Building the VS14 Tooling solution

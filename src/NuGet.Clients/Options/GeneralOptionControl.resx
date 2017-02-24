@@ -409,7 +409,7 @@
     <value>22</value>
   </data>
   <data name="showPackageManagementChooser.Text" xml:space="preserve">
-    <value>Do not &amp;show the format selector dialog on first package install</value>
+    <value>Allow &amp;format selection on first package install</value>
   </data>
   <data name="&gt;&gt;showPackageManagementChooser.Name" xml:space="preserve">
     <value>showPackageManagementChooser</value>

@@ -48,6 +48,8 @@ namespace NuGet.Common
 
         public string ProjectFileFullPath { get; }
 
+        public dynamic VSProject4 { get; }
+
         private NuGetFramework _targetFramework;
 
         public NuGetFramework TargetFramework

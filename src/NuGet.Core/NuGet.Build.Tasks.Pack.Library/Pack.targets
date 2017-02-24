@@ -31,6 +31,8 @@ Copyright (c) .NET Foundation. All rights reserved.
     <BuildOutputTargetFolder Condition="'$(BuildOutputTargetFolder)' == ''">lib</BuildOutputTargetFolder>
     <ContentTargetFolders Condition="'$(ContentTargetFolders)' == ''">content;contentFiles</ContentTargetFolders>
     <PackDependsOn>GenerateNuspec; $(PackDependsOn)</PackDependsOn>
+    <IsInnerBuild Condition="'$(TargetFramework)' != '' AND '$(TargetFrameworks)' != ''">true</IsInnerBuild>
+    <NoBuild Condition="'$(GeneratePackageOnBuild)' == 'true'">true</NoBuild>
   </PropertyGroup>
   <PropertyGroup Condition="'$(NoBuild)' == 'true' ">
     <GenerateNuspecDependsOn>$(GenerateNuspecDependsOn)</GenerateNuspecDependsOn>
@@ -52,8 +54,18 @@ Copyright (c) .NET Foundation. All rights reserved.
   -->
   <Target Name="_PackAsBuildAfterTarget"
           AfterTargets="Build" 
-          Condition="'$(GeneratePackageOnBuild)' == 'true'"
+          Condition="'$(GeneratePackageOnBuild)' == 'true' AND '$(IsInnerBuild)' != 'true'"
           DependsOnTargets="Pack">
+  </Target>
+
+  <Target Name="_CleanPackageFiles"
+          AfterTargets="Clean"
+          Condition="'$(GeneratePackageOnBuild)' == 'true'">
+    <ItemGroup>
+      <_PackageFilesToDelete Include="$(PackageOutputPath)*.nupkg"/>
+      <_PackageFilesToDelete Include="$(BaseIntermediateOutputPath)*.nuspec"/>
+    </ItemGroup>
+    <Delete Files="@(_PackageFilesToDelete)"/>
   </Target>
 
   <!--
@@ -81,6 +93,9 @@ Copyright (c) .NET Foundation. All rights reserved.
     <ConvertToAbsolutePath Paths="$(RestoreOutputPath)">
       <Output TaskParameter="AbsolutePaths" PropertyName="RestoreOutputAbsolutePath" />
     </ConvertToAbsolutePath>
+    <ConvertToAbsolutePath Paths="$(PackageOutputPath)">
+      <Output TaskParameter="AbsolutePaths" PropertyName="PackageOutputAbsolutePath" />
+    </ConvertToAbsolutePath>
     <ConvertToAbsolutePath Condition="$(NuspecFile) != ''" Paths="$(NuspecFile)">
       <Output TaskParameter="AbsolutePaths" PropertyName="NuspecFileAbsolutePath" />
     </ConvertToAbsolutePath>
@@ -91,6 +106,7 @@ Copyright (c) .NET Foundation. All rights reserved.
               PackageFilesToExclude="@(_PackageFilesToExclude)"
               PackageVersion="$(PackageVersion)"
               PackageId="$(PackageId)"
+              Title="$(Title)"
               Authors="$(Authors)"
               Description="$(Description)"
               Copyright="$(Copyright)"
@@ -104,18 +120,17 @@ Copyright (c) .NET Foundation. All rights reserved.
               TargetPathsToSymbols="@(_TargetPathsToSymbols)"
               TargetFrameworks="@(_TargetFrameworks)"
               AssemblyName="$(AssemblyName)"
-              PackageOutputPath="$(PackageOutputPath)"
+              PackageOutputPath="$(PackageOutputAbsolutePath)"
               IncludeSymbols="$(IncludeSymbols)"
               IncludeSource="$(IncludeSource)"
               PackageTypes="$(PackageType)"
               IsTool="$(IsTool)"
               RepositoryUrl="$(RepositoryUrl)"
               RepositoryType="$(RepositoryType)"
-              SourceFiles="@(_SourceFiles)"
+              SourceFiles="@(_SourceFiles->Distinct())"
               NoPackageAnalysis="$(NoPackageAnalysis)"
               MinClientVersion="$(MinClientVersion)"
               Serviceable="$(Serviceable)"
-              VersionSuffix= "$(VersionSuffix)"
               AssemblyReferences="@(_References)"
               ContinuePackingAfterGeneratingNuspec="$(ContinuePackingAfterGeneratingNuspec)"
               NuspecOutputPath="$(BaseIntermediateOutputPath)"
@@ -123,8 +138,11 @@ Copyright (c) .NET Foundation. All rights reserved.
               BuildOutputFolder="$(BuildOutputTargetFolder)"
               ContentTargetFolders="$(ContentTargetFolders)"
               RestoreOutputPath="$(RestoreOutputAbsolutePath)"
-              NuspecFile="$(NuspecFileAbsolutePath)"/>
+              NuspecFile="$(NuspecFileAbsolutePath)"
+              NuspecBasePath="$(NuspecBasePath)"
+              NuspecProperties="$(NuspecProperties)"/>
   </Target>
+  
   <!--
     ============================================================
     _LoadPackGraphEntryPoints
@@ -155,6 +173,15 @@ Copyright (c) .NET Foundation. All rights reserved.
           TaskParameter="TargetOutputs"
           ItemName="_TargetPathsToAssemblies" />
     </MSBuild>
+    
+    <!--Projects with target framework like UWP, Win8, wpa81 produce a Pri file
+    in their bin dir. This Pri file is not included in the BuiltProjectGroupOutput, and
+    has to be added manually here.-->
+    <ItemGroup Condition="'$(IncludeProjectPriFile)' == 'true'">
+      <_TargetPathsToAssemblies Include="$(ProjectPriFullPath)">
+        <FinalOutputPath>$(ProjectPriFullPath)</FinalOutputPath>
+      </_TargetPathsToAssemblies>
+    </ItemGroup>
 
     <MSBuild
       Condition="'$(IncludeSymbols)' == 'true' OR '$(IncludeSource)' == 'true'"

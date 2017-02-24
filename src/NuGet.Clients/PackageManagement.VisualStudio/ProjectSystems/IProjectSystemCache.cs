@@ -1,9 +1,11 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using NuGet.ProjectManagement;
 using NuGet.ProjectModel;
+
 
 namespace NuGet.PackageManagement.VisualStudio
 {
@@ -14,6 +16,18 @@ namespace NuGet.PackageManagement.VisualStudio
     /// </summary>
     public interface IProjectSystemCache
     {
+        /// <summary>
+        /// This event is used to inform VSSolutionManager that cache has been changed.
+        /// </summary>
+        event EventHandler<NuGetEventArgs<string>> CacheUpdated;
+
+        /// <summary>
+        /// Returns the _isCacheDirty value for the cache. This can be used by the caller to get the status of the cache. 
+        /// 0 - Not Dirty; 1 - Dirty;
+        /// Can be out of date and should not be used for synchronization.
+        /// </summary>
+        int IsCacheDirty { get; }
+
         /// <summary>
         /// Retrieves instance of <see cref="NuGetProject"/> associated with project name.
         /// </summary>
@@ -107,5 +121,12 @@ namespace NuGet.PackageManagement.VisualStudio
         /// Clears all project cache data.
         /// </summary>
         void Clear();
+
+        /// <summary>
+        /// Reset the dirty flag to 0 (is Not Dirty) if the flag was already set.
+        /// This is public so that external callers can inform the cache that they have consumed the updated cache event.
+        /// </summary>
+        /// <returns><code>true</code> if the cache was dirty before and <code>false</code> otherwise</returns>
+        bool TestResetDirtyFlag();
     }
 }

@@ -8,7 +8,7 @@ using Xunit;
 
 namespace NuGet.XPlat.FuncTest
 {
-    internal class DotnetCliUtil
+    public class DotnetCliUtil
     {
         private const string DotnetCliBinary = "dotnet";
         private const string DotnetCliExe = "dotnet.exe";
@@ -166,6 +166,20 @@ namespace NuGet.XPlat.FuncTest
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Provides the path to Nupkgs directory in the root of repo on the test machine.
+        /// </summary>
+        /// <returns>
+        /// <code>String</code> containing the path to the nupkg directory in the local repository.
+        /// </returns>
+        public static string GetNupkgDirectoryInRepo()
+        {
+            var dir = ParentDirectoryLookup()
+                .FirstOrDefault(d => DirectoryContains(d, "Nupkgs"));
+
+            return Path.Combine(dir?.FullName, "Nupkgs");
         }
 
         /// <summary>

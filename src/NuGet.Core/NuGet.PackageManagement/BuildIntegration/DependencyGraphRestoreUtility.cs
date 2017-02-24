@@ -90,7 +90,7 @@ namespace NuGet.PackageManagement
                         dgSpec,
                         userPackagesPath);
 
-                    var restoreSummaries = await RestoreRunner.Run(restoreContext);
+                    var restoreSummaries = await RestoreRunner.RunAsync(restoreContext, token);
 
                     RestoreSummary.Log(log, restoreSummaries);
 
@@ -131,7 +131,7 @@ namespace NuGet.PackageManagement
                         dgSpec,
                         userPackagesPath: null);
 
-                    var restoreSummaries = await RestoreRunner.Run(restoreContext);
+                    var restoreSummaries = await RestoreRunner.RunAsync(restoreContext, token);
 
                     RestoreSummary.Log(log, restoreSummaries);
 
@@ -247,7 +247,7 @@ namespace NuGet.PackageManagement
             token.ThrowIfCancellationRequested();
 
             // Write out the lock file and msbuild files
-            var summary = await RestoreRunner.Commit(result);
+            var summary = await RestoreRunner.CommitAsync(result, token);
 
             RestoreSummary.Log(log, new[] { summary });
 

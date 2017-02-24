@@ -100,6 +100,19 @@ namespace NuGet.ProjectModel
             _writer.WriteValue(value);
         }
 
+        public void WriteNameValue(string name, bool value)
+        {
+            if (name == null)
+            {
+                throw new ArgumentNullException(nameof(name));
+            }
+
+            ThrowIfReadOnly();
+
+            _writer.WritePropertyName(name);
+            _writer.WriteValue(value);
+        }
+
         public void WriteNameValue(string name, string value)
         {
             if (name == null)

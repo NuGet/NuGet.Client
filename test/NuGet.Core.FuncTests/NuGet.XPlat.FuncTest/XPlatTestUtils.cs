@@ -241,12 +241,12 @@ namespace NuGet.XPlat.FuncTest
                 return false;
             }
 
-            var versions = packageReferences
+            var versionAttribute = packageReferences
                 .First()
-                .Descendants("Version");
+                .Attribute("Version");
 
-            if (versions.Count() != 1 ||
-                !versions.First().Value.Equals(version, StringComparison.OrdinalIgnoreCase))
+            if (versionAttribute == null ||
+                !versionAttribute.Value.Equals(version, StringComparison.OrdinalIgnoreCase))
             {
                 return false;
             }

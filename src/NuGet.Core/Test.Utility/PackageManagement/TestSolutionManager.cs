@@ -172,6 +172,7 @@ namespace Test.Utility
         }
 
 #pragma warning disable 0067
+
         public event EventHandler<NuGetProjectEventArgs> NuGetProjectAdded;
 
         public event EventHandler<NuGetProjectEventArgs> NuGetProjectRemoved;
@@ -187,7 +188,11 @@ namespace Test.Utility
         public event EventHandler SolutionClosing;
 
         public event EventHandler SolutionOpened;
+
         public event EventHandler SolutionOpening;
+
+        public event EventHandler<NuGetEventArgs<string>> AfterNuGetCacheUpdated;
+
         public event EventHandler<ActionsExecutedEventArgs> ActionsExecuted;
 
         public void OnActionsExecuted(IEnumerable<ResolvedAction> actions)
@@ -212,6 +217,7 @@ namespace Test.Utility
                 _testDirectory = null;
             }
         }
+
 #pragma warning restore 0067
     }
 }

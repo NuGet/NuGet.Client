@@ -16,19 +16,7 @@ $testRepositoryPath = Join-Path $currentPath Packages
 
 $nugetRoot = Join-Path $currentPath "..\.."
 
-$dotNuGetFolder = Join-Path $nugetRoot ".nuget"
-
-$nugetExePath = [string]$null
-
-if ((Test-Path $dotNuGetFolder) -eq $True)
-{
-    $nugetExePath = Join-Path $dotNuGetFolder "nuget.exe"
-}
-else
-{
-    # Since there is no .nuget folder, assume that nuget.exe should be present alongside this module script
-    $nugetExePath = Join-Path $currentPath "nuget.exe"
-}
+$nugetExePath = Join-Path $currentPath "nuget.exe"
 
 if ((Test-Path $nugetExePath) -eq $False)
 {

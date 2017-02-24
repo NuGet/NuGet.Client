@@ -16,6 +16,10 @@ namespace NuGet.PackageManagement.VisualStudio
     [Export(typeof(IProjectSystemCache))]
     internal class ProjectSystemCache : IProjectSystemCache
     {
+        // Int used to indicate if the cache has been dirty.
+        // 0 - Cache is clean
+        // 1 - Cache is dirty
+        private int _isCacheDirty = 0;
         private readonly Dictionary<string, CacheEntry> _primaryCache = new Dictionary<string, CacheEntry>();
         private readonly ReaderWriterLockSlim _readerWriterLock = new ReaderWriterLockSlim();
 
@@ -24,6 +28,18 @@ namespace NuGet.PackageManagement.VisualStudio
 
         // Non-unique names index. We need another dictionary for short names since there may be more than project name per short name
         private readonly Dictionary<string, HashSet<ProjectNames>> _shortNameCache = new Dictionary<string, HashSet<ProjectNames>>(StringComparer.OrdinalIgnoreCase);
+
+        // Returns the current value of _isCacheDirty.
+        public int IsCacheDirty
+        {
+            get
+            {
+                return _isCacheDirty;
+            }
+        }
+
+        // Event used to inform VSSolutionManager that cache is has been updated
+        public event EventHandler<NuGetEventArgs<string>> CacheUpdated;
 
         public bool TryGetNuGetProject(string name, out NuGetProject project)
         {
@@ -286,6 +302,8 @@ namespace NuGet.PackageManagement.VisualStudio
                 _readerWriterLock.ExitWriteLock();
             }
 
+            FireCacheUpdatedEvent(projectNames.FullName);
+
             return true;
         }
 
@@ -307,7 +325,6 @@ namespace NuGet.PackageManagement.VisualStudio
                 newCacheEntry = addEntryFactory(primaryKey);
                 _primaryCache.Add(primaryKey, newCacheEntry);
             }
-
 
             return newCacheEntry;
         }
@@ -458,6 +475,38 @@ namespace NuGet.PackageManagement.VisualStudio
             public EnvDTE.Project EnvDTEProject { get; set; }
             public DependencyGraphSpec ProjectRestoreInfo { get; set; }
             public ProjectNames ProjectNames { get; set; }
+        }
+
+        private void FireCacheUpdatedEvent(string projectFullName)
+        {
+            // We should fire the event only if the cache was clean before.
+            // If the cache was dirty already then the VSSolutionsManager is yet to consume the event
+            // and will consume current changes as well.
+            if(CacheUpdated != null && TestSetDirtyFlag())
+            {
+                CacheUpdated(this, new NuGetEventArgs<string>(projectFullName));
+            }
+        }
+
+
+        /// <summary>
+        /// Set the dirty flag to 1 (is Dirty) if the flag was not already set.
+        /// This is private so because an external caller should not be able to declare the cache is dirty.
+        /// </summary>
+        /// <returns><code>true</code> if the cache was not dirty before and <code>false</code> otherwise</returns>
+        private bool TestSetDirtyFlag()
+        {
+            return (Interlocked.CompareExchange(location1: ref _isCacheDirty, value: 1, comparand: 0) == 0);
+        }
+
+        /// <summary>
+        /// Reset the dirty flag to 0 (is Not Dirty) if the flag was already set.
+        /// This is public so that external callers can inform the cache that they have consumed the updated cache event.
+        /// </summary>
+        /// <returns><code>true</code> if the cache was dirty before and <code>false</code> otherwise</returns>
+        public bool TestResetDirtyFlag()
+        {
+            return (Interlocked.CompareExchange(location1: ref _isCacheDirty, value: 0, comparand: 1) == 1);
         }
     }
 }

@@ -37,7 +37,7 @@ namespace NuGet.PackageManagement.UI
         {
             var selectedFormat = DataContext as PackageManagementFormat;
 
-            if (selectedFormat != null && selectedFormat.IsDisabled)
+            if (selectedFormat != null)
             {
                 selectedFormat.ApplyChanges();
             }

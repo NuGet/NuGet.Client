@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -60,7 +60,7 @@ namespace NuGetVSExtension
     public sealed class NuGetPackage : AsyncPackage, IVsPackageExtensionProvider, IVsPersistSolutionOpts
     {
         // It is displayed in the Help - About box of Visual Studio
-        public const string ProductVersion = "4.0.0";
+        public const string ProductVersion = "4.0.1";
 
         private static readonly object _credentialsPromptLock = new object();
 
@@ -158,8 +158,6 @@ namespace NuGetVSExtension
             _dteEvents = _dte.Events.DTEEvents;
             _dteEvents.OnBeginShutdown += OnBeginShutDown;
 
-            SetDefaultCredentialProvider();
-
             if (SolutionManager.NuGetProjectContext == null)
             {
                 SolutionManager.NuGetProjectContext = ProjectContext;
@@ -193,108 +191,6 @@ namespace NuGetVSExtension
                     Resx.Label_NuGetWindowCaption,
                     project.Name));
             }
-        }
-
-        /// <summary>
-        /// Set default credential provider for the HttpClient, which is used by V2 sources.
-        /// Also set up authenticated proxy handling for V3 sources.
-        /// </summary>
-        private void SetDefaultCredentialProvider()
-        {
-            var credentialService = GetCredentialService();
-
-            HttpHandlerResourceV3.CredentialService = credentialService;
-        }
-
-        private NuGet.Configuration.ICredentialService GetCredentialService()
-        {
-            // Initialize the credential providers.
-            var credentialProviders = new List<ICredentialProvider>();
-
-            TryAddCredentialProviders(
-                credentialProviders,
-                Resources.CredentialProviderFailed_VisualStudioAccountProvider,
-                () =>
-                {
-                    var importer = new VsCredentialProviderImporter(
-                        _dte,
-                        VisualStudioAccountProvider.FactoryMethod,
-                        (exception, failureMessage) => LogCredentialProviderError(exception, failureMessage));
-
-                    return importer.GetProviders();
-                });
-
-            TryAddCredentialProviders(
-                credentialProviders,
-                Resources.CredentialProviderFailed_VisualStudioCredentialProvider,
-                () =>
-                {
-                    var webProxy = (IVsWebProxy)GetService(typeof(SVsWebProxy));
-
-                    Debug.Assert(webProxy != null);
-
-                    return new NuGet.Credentials.ICredentialProvider[] {
-                        new VisualStudioCredentialProvider(webProxy)
-                    };
-                });
-
-            if (PreviewFeatureSettings.DefaultCredentialsAfterCredentialProviders)
-            {
-                TryAddCredentialProviders(
-                credentialProviders,
-                Resources.CredentialProviderFailed_DefaultCredentialsCredentialProvider,
-                () =>
-                {
-                    return new NuGet.Credentials.ICredentialProvider[] {
-                        new DefaultCredentialsCredentialProvider()
-                    };
-                });
-            }
-
-            // Initialize the credential service.
-            var credentialService = new CredentialService(credentialProviders, nonInteractive: false);
-
-            return credentialService;
-        }
-
-        private void TryAddCredentialProviders(
-            List<NuGet.Credentials.ICredentialProvider> credentialProviders,
-            string failureMessage,
-            Func<IEnumerable<NuGet.Credentials.ICredentialProvider>> factory)
-        {
-            try
-            {
-                var providers = factory();
-
-                if (providers != null)
-                {
-                    foreach (var credentialProvider in providers)
-                    {
-                        credentialProviders.Add(credentialProvider);
-                    }
-                }
-            }
-            catch (Exception exception)
-            {
-                LogCredentialProviderError(exception, failureMessage);
-            }
-        }
-
-        private void LogCredentialProviderError(Exception exception, string failureMessage)
-        {
-            // Log the user-friendly message to the output console (no stack trace).
-            OutputConsoleLogger.Log(
-                MessageLevel.Error,
-                failureMessage +
-                Environment.NewLine +
-                ExceptionUtilities.DisplayMessage(exception));
-
-            // Write the stack trace to the activity log.
-            ActivityLog.LogWarning(
-                ExceptionHelper.LogEntrySource,
-                failureMessage +
-                Environment.NewLine +
-                exception);
         }
 
         private async Task AddMenuCommandHandlersAsync()
@@ -568,7 +464,7 @@ namespace NuGetVSExtension
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            ThreadHelper.JoinableTaskFactory.Run(async delegate
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
             {
                 string parameterString = null;
                 OleMenuCmdEventArgs args = e as OleMenuCmdEventArgs;
@@ -760,7 +656,7 @@ namespace NuGetVSExtension
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            ThreadHelper.JoinableTaskFactory.Run(async delegate
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
             {
                 var windowFrame = await FindExistingSolutionWindowFrameAsync();
                 if (windowFrame == null)
@@ -814,9 +710,9 @@ namespace NuGetVSExtension
 
         private void BeforeQueryStatusForAddPackageDialog(object sender, EventArgs args)
         {
-            ThreadHelper.JoinableTaskFactory.Run(async delegate
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
             {
-                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                 OleMenuCommand command = (OleMenuCommand)sender;
 
@@ -837,9 +733,9 @@ namespace NuGetVSExtension
 
         private void BeforeQueryStatusForAddPackageForSolutionDialog(object sender, EventArgs args)
         {
-            ThreadHelper.JoinableTaskFactory.Run(async delegate
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
             {
-                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                 OleMenuCommand command = (OleMenuCommand)sender;
 

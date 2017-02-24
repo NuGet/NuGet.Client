@@ -223,14 +223,10 @@ namespace NuGet.CommandLine.XPlat
         {
             var packageVersion = packageDependency.VersionRange.OriginalString ??
                 packageDependency.VersionRange.MinVersion.ToString();
-            var packageMetadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-            { { VERSION_TAG, packageVersion } };
 
-            // Currently metadata is added as a metadata. As opposed to an attribute
-            // Due to https://github.com/Microsoft/msbuild/issues/1393
+            var item = itemGroup.AddItem(PACKAGE_REFERENCE_TYPE_TAG, packageDependency.Id);
+            item.AddMetadata(VERSION_TAG, packageVersion, expressAsAttribute: true);
 
-            itemGroup.AddItem(PACKAGE_REFERENCE_TYPE_TAG, packageDependency.Id, packageMetadata);
-            itemGroup.ContainingProject.Save();
             Logger.LogInformation(string.Format(CultureInfo.CurrentCulture,
                 Strings.Info_AddPkgAdded,
                 packageDependency.Id,

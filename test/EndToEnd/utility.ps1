@@ -3,7 +3,7 @@ function New-Guid {
 }
 
 function Get-HostSemanticVersion {
-    return [NuGet.Common.ClientVersionUtility]::GetNuGetAssemblyVersion()
+    return [NuGet.Packaging.MinClientVersionUtility]::GetNuGetClientVersion()
 }
 
 function Verify-BuildIntegratedMsBuildTask {

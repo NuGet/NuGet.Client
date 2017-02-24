@@ -1,7 +1,8 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Diagnostics.CodeAnalysis;
+using NuGet.VisualStudio.Facade;
 
 namespace NuGetConsole.Host.PowerShell.Implementation
 {
@@ -13,16 +14,16 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             "Microsoft.Reliability",
             "CA2000:Dispose objects before losing scope",
             Justification = "Can't dispose an object if we want to return it.")]
-        public static IHost CreateHost(string name, bool isAsync)
+        public static IHost CreateHost(string name, IRestoreEvents restoreEvents, bool isAsync)
         {
             IHost host;
             if (isAsync)
             {
-                host = new AsyncPowerShellHost(name, _runspaceManager);
+                host = new AsyncPowerShellHost(name, restoreEvents, _runspaceManager);
             }
             else
             {
-                host = new SyncPowerShellHost(name, _runspaceManager);
+                host = new SyncPowerShellHost(name, restoreEvents, _runspaceManager);
             }
 
             return host;

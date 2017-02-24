@@ -1,4 +1,4 @@
-﻿{
+{
   "dependencies": {
     "NuGet.Protocol.Core.v3": {
       "target": "project"
