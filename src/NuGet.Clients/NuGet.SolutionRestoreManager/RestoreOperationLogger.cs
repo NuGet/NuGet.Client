@@ -27,8 +27,8 @@ namespace NuGet.SolutionRestoreManager
         private readonly IServiceProvider _serviceProvider;
         private readonly IOutputConsoleProvider _outputConsoleProvider;
 
+        private Lazy<ErrorListTableDataSource> _errorListDataSource;
         private RestoreOperationSource _operationSource;
-        private ErrorListProvider _errorListProvider;
         private JoinableTaskFactory _taskFactory;
         private CancellationTokenSource _externalCts;
         private Func<CancellationToken, Task<RestoreOperationProgressUI>> _progressFactory;
@@ -36,6 +36,7 @@ namespace NuGet.SolutionRestoreManager
 
         private bool _cancelled;
         private bool _hasHeaderBeenShown;
+        private bool _showErrorList;
 
         // The value of the "MSBuild project build output verbosity" setting
         // of VS. From 0 (quiet) to 4 (Diagnostic).
@@ -63,13 +64,13 @@ namespace NuGet.SolutionRestoreManager
 
         public async Task StartAsync(
             RestoreOperationSource operationSource,
-            ErrorListProvider errorListProvider,
+            Lazy<ErrorListTableDataSource> errorListDataSource,
             JoinableTaskFactory jtf,
             CancellationTokenSource cts)
         {
-            if (errorListProvider == null)
+            if (errorListDataSource == null)
             {
-                throw new ArgumentNullException(nameof(errorListProvider));
+                throw new ArgumentNullException(nameof(errorListDataSource));
             }
 
             if (jtf == null)
@@ -83,7 +84,7 @@ namespace NuGet.SolutionRestoreManager
             }
 
             _operationSource = operationSource;
-            _errorListProvider = errorListProvider;
+            _errorListDataSource = errorListDataSource;
             _taskFactory = jtf;
             _externalCts = cts;
             _externalCts.Token.Register(() => _cancelled = true);
@@ -116,8 +117,26 @@ namespace NuGet.SolutionRestoreManager
                         break;
                 }
 
-                errorListProvider.Tasks.Clear();
+                if (_errorListDataSource.IsValueCreated)
+                {
+                    // Clear old entries
+                    _errorListDataSource.Value.ClearNuGetEntries();
+                }
             });
+        }
+
+        public async Task StopAsync()
+        {
+            if (_showErrorList)
+            {
+                await _taskFactory.RunAsync(async () =>
+                {
+                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                    // Give the error list focus
+                    _errorListDataSource.Value.BringToFront();
+                });
+            }
         }
 
         public void LogDebug(string data)
@@ -180,36 +199,57 @@ namespace NuGet.SolutionRestoreManager
                 return;
             }
 
-            Do((_, progress) =>
+            ErrorListTableEntry errorListEntry = null;
+
+            // VerbosityLevel.Quiet corresponds to ILogger.LogError, and,
+            // VerbosityLevel.Minimal corresponds to ILogger.LogWarning
+            // In these 2 cases, we add an error or warning to the error list window
+            if (verbosityLevel == VerbosityLevel.Quiet ||
+                verbosityLevel == VerbosityLevel.Minimal)
             {
-                // Only show messages with VerbosityLevel.Normal. That is, info messages only.
-                // Do not show errors, warnings, verbose or debug messages on the progress dialog
-                // Avoid showing indented messages, these are typically not useful for the progress dialog since
-                // they are missing the context of the parent text above it
-                if (verbosityLevel == VerbosityLevel.Normal &&
-                    message.Length == message.TrimStart().Length)
-                {
-                    progress?.ReportProgress(message);
-                }
+                var errorLevel = verbosityLevel == VerbosityLevel.Quiet ? LogLevel.Error : LogLevel.Warning;
+                errorListEntry = new ErrorListTableEntry(message, errorLevel);
 
-                // Write to the output window. Based on _msBuildOutputVerbosity, the message may or may not
-                // get shown on the output window. Default is VerbosityLevel.Minimal
-                WriteLine(verbosityLevel, message);
+                // Display the error list after restore completes
+                _showErrorList = true;
+            }
 
-                // VerbosityLevel.Quiet corresponds to ILogger.LogError, and,
-                // VerbosityLevel.Minimal corresponds to ILogger.LogWarning
-                // In these 2 cases, we add an error or warning to the error list window
-                if (verbosityLevel == VerbosityLevel.Quiet ||
-                    verbosityLevel == VerbosityLevel.Minimal)
+            // Only show messages with VerbosityLevel.Normal. That is, info messages only.
+            // Do not show errors, warnings, verbose or debug messages on the progress dialog
+            // Avoid showing indented messages, these are typically not useful for the progress dialog since
+            // they are missing the context of the parent text above it
+            var reportProgress = RestoreOperationProgressUI.Current != null
+                && verbosityLevel == VerbosityLevel.Normal
+                && message.Length == message.TrimStart().Length;
+
+            // Write to the output window if the verbosity level is high enough.
+            var showAsOutputMessage = ShowMessageAsOutput(verbosityLevel);
+
+            // Avoid moving to the UI thread unless there is work to do
+            if (reportProgress || showAsOutputMessage || errorListEntry != null)
+            {
+                // Run on the UI thread
+                Do((_, progress) =>
                 {
-                    MessageHelper.ShowError(
-                        _errorListProvider,
-                        verbosityLevel == VerbosityLevel.Quiet ? TaskErrorCategory.Error : TaskErrorCategory.Warning,
-                        TaskPriority.High,
-                        message,
-                        hierarchyItem: null);
-                }
-            });
+                    // Progress dialog
+                    if (reportProgress)
+                    {
+                        progress?.ReportProgress(message);
+                    }
+
+                    // Output console
+                    if (showAsOutputMessage)
+                    {
+                        WriteLine(verbosityLevel, message);
+                    }
+
+                    // Write to the error list
+                    if (errorListEntry != null)
+                    {
+                        _errorListDataSource.Value.AddEntries(errorListEntry);
+                    }
+                });
+            }
         }
 
         /// <summary>
@@ -224,10 +264,15 @@ namespace NuGet.SolutionRestoreManager
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            if (OutputVerbosity >= (int)verbosity && _outputConsole != null)
+            if (ShowMessageAsOutput(verbosity))
             {
                 _outputConsole.WriteLine(format, args);
             }
+        }
+
+        public bool ShowMessageAsOutput(VerbosityLevel verbosity)
+        {
+            return _outputConsole != null && OutputVerbosity >= (int)verbosity;
         }
 
         public Task LogExceptionAsync(Exception ex)
@@ -266,12 +311,10 @@ namespace NuGet.SolutionRestoreManager
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            MessageHelper.ShowError(
-                _errorListProvider,
-                TaskErrorCategory.Error,
-                TaskPriority.High,
-                errorText,
-                hierarchyItem: null);
+            var entry = new ErrorListTableEntry(errorText, LogLevel.Error);
+
+            _errorListDataSource.Value.AddEntries(entry);
+            _errorListDataSource.Value.BringToFront();
         }
 
         public Task WriteHeaderAsync()
@@ -317,7 +360,7 @@ namespace NuGet.SolutionRestoreManager
                         WriteLine(
                             quietOrMinimal,
                             Resources.PackageRestoreCanceled);
-                            break;
+                        break;
                     case NuGetOperationStatus.NoOp:
                         if (forceStatusWrite)
                         {
@@ -330,7 +373,7 @@ namespace NuGet.SolutionRestoreManager
                         WriteLine(
                             quietOrMinimal,
                             Resources.PackageRestoreFinishedWithError);
-                            break;
+                        break;
                     case NuGetOperationStatus.Succeeded:
                         WriteLine(
                             quietOrNormal,
