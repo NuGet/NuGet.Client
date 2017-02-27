@@ -10648,7 +10648,7 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to nuget restore MySoluion.sln.
+        ///   Looks up a localized string similar to nuget restore MySolution.sln.
         /// </summary>
         internal static string RestoreCommandUsageExamples {
             get {
