@@ -204,133 +204,134 @@ namespace NuGet.PackageManagement.UI
             var telemetryService = new TelemetryServiceHelper();
             uiService.ProjectContext.TelemetryService = telemetryService;
 
-            var lck = await _lockService.AcquireLockAsync(token);
+            //var lck = await _lockService.AcquireLockAsync(token);
 
-            try
+            await _lockService.EnterNuGetOperation(async () =>
             {
-                uiService.BeginOperation();
-
-                var acceptedFormat = await CheckPackageManagementFormat(uiService, token);
-                if (!acceptedFormat)
+                try
                 {
-                    return;
-                }
+                    uiService.BeginOperation();
 
-                TelemetryUtility.StartorResumeTimer();
-
-                var actions = await resolveActionsAsync();
-                var results = GetPreviewResults(actions);
-
-                if (operationType == NuGetOperationType.Uninstall)
-                {
-                    packageCount = results.SelectMany(result => result.Deleted).
-                        Select(package => package.Id).Distinct().Count();
-                }
-                else
-                {
-                    var addCount = results.SelectMany(result => result.Added).
-                        Select(package => package.Id).Distinct().Count();
-
-                    var updateCount = results.SelectMany(result => result.Updated).
-                        Select(result => result.New.Id).Distinct().Count();
-
-                    // update packages count
-                    packageCount = addCount + updateCount;
-
-                    if (updateCount > 0)
-                    {
-                        // set operation type to update when there are packages being updated
-                        operationType = NuGetOperationType.Update;
-                    }
-                }
-
-                TelemetryUtility.StopTimer();
-
-                // Show the preview window.
-                if (uiService.DisplayPreviewWindow)
-                {
-                    var shouldContinue = uiService.PromptForPreviewAcceptance(results);
-                    if (!shouldContinue)
+                    var acceptedFormat = await CheckPackageManagementFormat(uiService, token);
+                    if (!acceptedFormat)
                     {
                         return;
                     }
-                }
-
-                TelemetryUtility.StartorResumeTimer();
-
-                // Show the license acceptance window.
-                var accepted = await CheckLicenseAcceptanceAsync(uiService, results, token);
-
-                TelemetryUtility.StartorResumeTimer();
-
-                if (!accepted)
-                {
-                    return;
-                }
-
-                // Warn about the fact that the "dotnet" TFM is deprecated.
-                if (uiService.DisplayDeprecatedFrameworkWindow)
-                {
-                    var shouldContinue = ShouldContinueDueToDotnetDeprecation(uiService, actions, token);
 
                     TelemetryUtility.StartorResumeTimer();
 
-                    if (!shouldContinue)
+                    var actions = await resolveActionsAsync();
+                    var results = GetPreviewResults(actions);
+
+                    if (operationType == NuGetOperationType.Uninstall)
+                    {
+                        packageCount = results.SelectMany(result => result.Deleted).
+                            Select(package => package.Id).Distinct().Count();
+                    }
+                    else
+                    {
+                        var addCount = results.SelectMany(result => result.Added).
+                            Select(package => package.Id).Distinct().Count();
+
+                        var updateCount = results.SelectMany(result => result.Updated).
+                            Select(result => result.New.Id).Distinct().Count();
+
+                        // update packages count
+                        packageCount = addCount + updateCount;
+
+                        if (updateCount > 0)
+                        {
+                            // set operation type to update when there are packages being updated
+                            operationType = NuGetOperationType.Update;
+                        }
+                    }
+
+                    TelemetryUtility.StopTimer();
+
+                    // Show the preview window.
+                    if (uiService.DisplayPreviewWindow)
+                    {
+                        var shouldContinue = uiService.PromptForPreviewAcceptance(results);
+                        if (!shouldContinue)
+                        {
+                            return;
+                        }
+                    }
+
+                    TelemetryUtility.StartorResumeTimer();
+
+                    // Show the license acceptance window.
+                    var accepted = await CheckLicenseAcceptanceAsync(uiService, results, token);
+
+                    TelemetryUtility.StartorResumeTimer();
+
+                    if (!accepted)
                     {
                         return;
                     }
-                }
 
-                if (!token.IsCancellationRequested)
-                {
-                    // execute the actions
-                    await executeActionsAsync(actions);
+                    // Warn about the fact that the "dotnet" TFM is deprecated.
+                    if (uiService.DisplayDeprecatedFrameworkWindow)
+                    {
+                        var shouldContinue = ShouldContinueDueToDotnetDeprecation(uiService, actions, token);
 
-                    // fires ActionsExecuted event to update the UI
-                    uiService.OnActionsExecuted(actions);
+                        TelemetryUtility.StartorResumeTimer();
+
+                        if (!shouldContinue)
+                        {
+                            return;
+                        }
+                    }
+
+                    if (!token.IsCancellationRequested)
+                    {
+                        // execute the actions
+                        await executeActionsAsync(actions);
+
+                        // fires ActionsExecuted event to update the UI
+                        uiService.OnActionsExecuted(actions);
+                    }
                 }
-            }
-            catch (System.Net.Http.HttpRequestException ex)
-            {
-                status = NuGetOperationStatus.Failed;
-                if (ex.InnerException != null)
+                catch (System.Net.Http.HttpRequestException ex)
                 {
-                    uiService.ShowError(ex.InnerException);
+                    status = NuGetOperationStatus.Failed;
+                    if (ex.InnerException != null)
+                    {
+                        uiService.ShowError(ex.InnerException);
+                    }
+                    else
+                    {
+                        uiService.ShowError(ex);
+                    }
                 }
-                else
+                catch (Exception ex)
                 {
+                    status = NuGetOperationStatus.Failed;
                     uiService.ShowError(ex);
                 }
-            }
-            catch (Exception ex)
-            {
-                status = NuGetOperationStatus.Failed;
-                uiService.ShowError(ex);
-            }
-            finally
-            {
-                lck.Dispose();
+                finally
+                {
+                    TelemetryUtility.StopTimer();
 
-                TelemetryUtility.StopTimer();
+                    var duration = TelemetryUtility.GetTimerElapsedTime();
 
-                var duration = TelemetryUtility.GetTimerElapsedTime();
+                    uiService.ProjectContext.Log(MessageLevel.Info,
+                        string.Format(CultureInfo.CurrentCulture, Resources.Operation_TotalTime, duration));
 
-                uiService.ProjectContext.Log(MessageLevel.Info,
-                    string.Format(CultureInfo.CurrentCulture, Resources.Operation_TotalTime, duration));
+                    uiService.EndOperation();
 
-                uiService.EndOperation();
+                    var actionTelemetryEvent = TelemetryUtility.GetActionTelemetryEvent(
+                        uiService.Projects,
+                        operationType,
+                        OperationSource.UI,
+                        startTime,
+                        status,
+                        packageCount,
+                        duration.TotalSeconds);
 
-                var actionTelemetryEvent = TelemetryUtility.GetActionTelemetryEvent(
-                    uiService.Projects,
-                    operationType,
-                    OperationSource.UI,
-                    startTime,
-                    status,
-                    packageCount,
-                    duration.TotalSeconds);
-
-                ActionsTelemetryService.Instance.EmitActionEvent(actionTelemetryEvent, telemetryService.TelemetryEvents);
-            }
+                    ActionsTelemetryService.Instance.EmitActionEvent(actionTelemetryEvent, telemetryService.TelemetryEvents);
+                }
+            }, token);
         }
 
         private async Task<bool> CheckPackageManagementFormat(INuGetUI uiService, CancellationToken token)
