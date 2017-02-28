@@ -324,10 +324,20 @@ namespace NuGet.SolutionRestoreManager
                         while (!_pendingRequests.Value.IsCompleted
                             && !token.IsCancellationRequested)
                         {
-                            SolutionRestoreRequest discard;
-                            if (!_pendingRequests.Value.TryTake(out discard, IdleTimeoutMs, token))
+                            SolutionRestoreRequest next;
+                            if (!_pendingRequests.Value.TryTake(out next, IdleTimeoutMs, token))
                             {
                                 break;
+                            }
+
+                            // Upgrade request if necessary
+                            if (next.RestoreSource != request.RestoreSource)
+                            {
+                                // there could be requests of two types: Auto-Restore or Explicit
+                                // Explicit is always preferred.
+                                request = new SolutionRestoreRequest(
+                                    next.ForceRestore || request.ForceRestore,
+                                    RestoreOperationSource.Explicit);
                             }
                         }
 
