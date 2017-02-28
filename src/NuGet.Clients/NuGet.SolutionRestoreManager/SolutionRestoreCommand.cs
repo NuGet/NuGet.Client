@@ -5,6 +5,7 @@ using System;
 using System.ComponentModel.Composition;
 using System.ComponentModel.Design;
 using System.Linq;
+using System.Threading;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.Shell;
@@ -12,7 +13,6 @@ using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.PackageManagement;
 using NuGet.PackageManagement.UI;
 using NuGet.PackageManagement.VisualStudio;
-using NuGet.ProjectManagement;
 using NuGetConsole;
 using Task = System.Threading.Tasks.Task;
 
@@ -40,6 +40,8 @@ namespace NuGet.SolutionRestoreManager
 
         private readonly IVsMonitorSelection _vsMonitorSelection;
         private uint _solutionNotBuildingAndNotDebuggingContextCookie;
+
+        private Task _restoreTask = Task.CompletedTask;
 
         private SolutionRestoreCommand(
             IMenuCommandService commandService,
@@ -103,25 +105,23 @@ namespace NuGet.SolutionRestoreManager
         /// <param name="e">Event args.</param>
         private void OnRestorePackages(object sender, EventArgs args)
         {
-            if (!SolutionRestoreWorker.IsBusy)
+            if (_restoreTask.IsCompleted)
             {
-                SolutionRestoreWorker.Restore(SolutionRestoreRequest.ByMenu());
-            }
-            else
-            {
-                // QueryStatus should disable the context menu in most of the cases.
-                // Except when NuGetPackage was not loaded before VS won't send QueryStatus.
-                Logger.Log(MessageLevel.Info, Resources.SolutionRestoreFailed_RestoreWorkerIsBusy);
+                _restoreTask = NuGetUIThreadHelper.JoinableTaskFactory
+                    .RunAsync(() => SolutionRestoreWorker.ScheduleRestoreAsync(
+                        SolutionRestoreRequest.ByMenu(),
+                        CancellationToken.None))
+                    .Task;
             }
         }
 
         private void BeforeQueryStatusForPackageRestore(object sender, EventArgs args)
         {
-            NuGetUIThreadHelper.JoinableTaskFactory.Run((Func<Task>)async delegate
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
             {
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                OleMenuCommand command = (OleMenuCommand)sender;
+                var command = (OleMenuCommand)sender;
 
                 // Enable the 'Restore NuGet Packages' dialog menu
                 // - if the console is NOT busy executing a command, AND
@@ -130,10 +130,15 @@ namespace NuGet.SolutionRestoreManager
                 // - if the solution is DPL enabled or there are NuGetProjects. This means that there loaded, supported projects
                 // Checking for DPL more is a temporary code until we've the capability to get nuget projects
                 // even in DPL mode. See https://github.com/NuGet/Home/issues/3711
-                command.Enabled = !ConsoleStatus.IsBusy &&
+                command.Enabled =
+                    _restoreTask.IsCompleted &&
+                    !ConsoleStatus.IsBusy &&
                     !SolutionRestoreWorker.IsBusy &&
                     IsSolutionExistsAndNotDebuggingAndNotBuilding() &&
-                    (SolutionManager.IsSolutionDPLEnabled || Enumerable.Any<NuGetProject>(SolutionManager.GetNuGetProjects()));
+                    (
+                        SolutionManager.IsSolutionDPLEnabled ||
+                        Enumerable.Any(SolutionManager.GetNuGetProjects())
+                    );
             });
         }
 
