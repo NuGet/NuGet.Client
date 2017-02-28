@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using NuGet.Common;
 using NuGet.Protocol.Core.Types;
+using NuGet.Versioning;
 
 namespace NuGet.Commands
 {
@@ -12,10 +13,10 @@ namespace NuGet.Commands
     {
         private readonly IList<IEnumerableAsync<IPackageSearchMetadata>> _asyncEnumerables;
         private readonly IComparer<IPackageSearchMetadata> _idOrderingComparer;
-        private readonly IComparer<IPackageSearchMetadata> _versionOrderingComparer;
+        private readonly IComparer<NuGetVersion> _versionOrderingComparer;
         private readonly IEqualityComparer<IPackageSearchMetadata> _idEqualityComparer;
 
-        public AggregatePackageSearchResultsEnumerableAsync(List<IEnumerableAsync<IPackageSearchMetadata>> allPackages, IComparer<IPackageSearchMetadata> idOrderingComparer, IComparer<IPackageSearchMetadata> versionOrderingComparer, IEqualityComparer<IPackageSearchMetadata> idEqualityComparer)
+        public AggregatePackageSearchResultsEnumerableAsync(List<IEnumerableAsync<IPackageSearchMetadata>> allPackages, IComparer<IPackageSearchMetadata> idOrderingComparer, IComparer<NuGetVersion> versionOrderingComparer, IEqualityComparer<IPackageSearchMetadata> idEqualityComparer)
         {
             this._asyncEnumerables = allPackages;
             this._idOrderingComparer = idOrderingComparer;

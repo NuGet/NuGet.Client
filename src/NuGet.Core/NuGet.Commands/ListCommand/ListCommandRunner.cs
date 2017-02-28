@@ -59,33 +59,9 @@ namespace NuGet.Commands
                         listArgs.IncludeDelisted, log, listArgs.CancellationToken);
                 allPackages.Add(packagesFromSource);
             }
-            CompareIdPackageSearchMetadata idComparer = new CompareIdPackageSearchMetadata();
-            CompareVersionPackageSearchMetadata versionComparer = new CompareVersionPackageSearchMetadata();
+            var idComparer = new CompareIdPackageSearchMetadata();
+            var versionComparer = new VersionComparer();
             await PrintPackages(listArgs, new AggregatePackageSearchResultsEnumerableAsync(allPackages, idComparer, versionComparer, idComparer).GetEnumeratorAsync());
-        }
-
-        private class CompareVersionPackageSearchMetadata : IComparer<IPackageSearchMetadata>
-        {
-            public VersionComparer _comparer { get; set; } = new VersionComparer();
-            public int Compare(IPackageSearchMetadata x, IPackageSearchMetadata y)
-            {
-                if (ReferenceEquals(x, y))
-                {
-                    return 0;
-                }
-
-                if (ReferenceEquals(x, null))
-                {
-                    return -1;
-                }
-
-                if (ReferenceEquals(y, null))
-                {
-                    return 1;
-                }
-
-                return _comparer.Compare(x.Identity.Version, y.Identity.Version);
-            }
         }
 
         private class CompareIdPackageSearchMetadata : IComparer<IPackageSearchMetadata>, IEqualityComparer<IPackageSearchMetadata>

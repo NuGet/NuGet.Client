@@ -15,7 +15,7 @@ namespace NuGet.Commands
     public class AggregatePackageSearchResultsEnumeratorAsync : IEnumeratorAsync<IPackageSearchMetadata>
     {
         private IComparer<IPackageSearchMetadata> _idOrderingComparer;
-        private IComparer<IPackageSearchMetadata> _versionOrderingComparer;
+        private IComparer<NuGetVersion> _versionOrderingComparer;
 
         private readonly List<IEnumeratorAsync<IPackageSearchMetadata>> _asyncEnumerators = new List<IEnumeratorAsync<IPackageSearchMetadata>>();
         private readonly HashSet<IPackageSearchMetadata> _seen;
@@ -23,7 +23,7 @@ namespace NuGet.Commands
 
         private bool firstPass = true;
 
-        public AggregatePackageSearchResultsEnumeratorAsync(IList<IEnumerableAsync<IPackageSearchMetadata>> _asyncEnumerables, IComparer<IPackageSearchMetadata> _idOrderingComparer, IComparer<IPackageSearchMetadata> _versionOrderingComparer, IEqualityComparer<IPackageSearchMetadata> _idEqualityComparer)
+        public AggregatePackageSearchResultsEnumeratorAsync(IList<IEnumerableAsync<IPackageSearchMetadata>> _asyncEnumerables, IComparer<IPackageSearchMetadata> _idOrderingComparer, IComparer<NuGetVersion> _versionOrderingComparer, IEqualityComparer<IPackageSearchMetadata> _idEqualityComparer)
         {
             this._idOrderingComparer = _idOrderingComparer;
             this._versionOrderingComparer = _versionOrderingComparer;
@@ -67,8 +67,8 @@ namespace NuGet.Commands
                     firstPass = false;
                 }
                 foreach (IEnumeratorAsync<IPackageSearchMetadata> enumerator in _asyncEnumerators)
-                {
-                    if (candidate == null || (_idOrderingComparer.Compare(candidate, enumerator.Current) > 0 && _versionOrderingComparer.Compare(candidate,enumerator.Current) > 0 ))
+                {   //TODO NK - Can a package be without a version?
+                    if (candidate == null || (_idOrderingComparer.Compare(candidate, enumerator.Current) > 0 && _versionOrderingComparer.Compare(candidate.Identity.Version,enumerator.Current.Identity.Version) > 0 ))
                     {
                         candidate = enumerator.Current;
                     }
@@ -111,21 +111,35 @@ namespace NuGet.Commands
         }
 
         private async Task UpdateCurrentPackage(IPackageSearchMetadata candidate, List<IPackageSearchMetadata> packages)
-        {
-            var versions = await GetVersions(candidate, packages);
+        { 
+            var versions = await GetVersions(candidate, packages, new VersionInfoOrderingComparer(_versionOrderingComparer));
             CurrentPackage = PackageSearchMetadataBuilder.FromMetadata(candidate).WithVersions(AsyncLazy.New(versions)).Build();
-
-
         }
-        private static async Task<IEnumerable<VersionInfo>> GetVersions(IPackageSearchMetadata candidate, List<IPackageSearchMetadata> packages)
+
+        private class VersionInfoOrderingComparer : IComparer<VersionInfo>
         {
-            var uniqueVersions = new SortedSet<VersionInfo>();
+            private IComparer<NuGetVersion> _versionOrderingComparer;
+
+            public VersionInfoOrderingComparer(IComparer<NuGetVersion> _versionOrderingComparer)
+            {
+                this._versionOrderingComparer = _versionOrderingComparer;
+            }
+
+            public int Compare(VersionInfo x, VersionInfo y)
+            {
+                return _versionOrderingComparer.Compare(x.Version, y.Version);
+            }
+        }
+
+        private static async Task<IEnumerable<VersionInfo>> GetVersions(IPackageSearchMetadata candidate, List<IPackageSearchMetadata> packages, IComparer<VersionInfo> _versionOrderingComparer)
+        {
+            var uniqueVersions = new SortedSet<VersionInfo>(_versionOrderingComparer);
 
             foreach (var package in packages)
             {
                 foreach (var packageVersion in await package.GetVersionsAsync())
                 {
-                    if (uniqueVersions.Add(new VersionInfo(packageVersion.Version)))
+                    if (uniqueVersions.Add(packageVersion) && !package.Equals(candidate))
                     {
                         packageVersion.PackageSearchMetadata = candidate;
                     }
