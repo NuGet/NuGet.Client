@@ -14,7 +14,6 @@ namespace NuGet.Commands
 {
     public class AggregatePackageSearchResultsEnumeratorAsync : IEnumeratorAsync<IPackageSearchMetadata>
     {
-        private IList<IEnumerableAsync<IPackageSearchMetadata>> _asyncEnumerables;
         private IComparer<IPackageSearchMetadata> _idOrderingComparer;
         private IComparer<IPackageSearchMetadata> _versionOrderingComparer;
 
@@ -26,10 +25,13 @@ namespace NuGet.Commands
 
         public AggregatePackageSearchResultsEnumeratorAsync(IList<IEnumerableAsync<IPackageSearchMetadata>> _asyncEnumerables, IComparer<IPackageSearchMetadata> _idOrderingComparer, IComparer<IPackageSearchMetadata> _versionOrderingComparer, IEqualityComparer<IPackageSearchMetadata> _idEqualityComparer)
         {
-            this._asyncEnumerables = _asyncEnumerables;
             this._idOrderingComparer = _idOrderingComparer;
             this._versionOrderingComparer = _versionOrderingComparer;
             _seen = _idEqualityComparer == null ? new HashSet<IPackageSearchMetadata>() : new HashSet<IPackageSearchMetadata>(_idEqualityComparer);
+            foreach(var enumerable in _asyncEnumerables)
+            {
+                _asyncEnumerators.Add(enumerable.GetEnumeratorAsync());
+            }
 
         }
 
@@ -64,14 +66,11 @@ namespace NuGet.Commands
                     }
                     firstPass = false;
                 }
-                else
+                foreach (IEnumeratorAsync<IPackageSearchMetadata> enumerator in _asyncEnumerators)
                 {
-                    foreach (IEnumeratorAsync<IPackageSearchMetadata> enumerator in _asyncEnumerators)
+                    if (candidate == null || (_idOrderingComparer.Compare(candidate, enumerator.Current) > 0 && _versionOrderingComparer.Compare(candidate,enumerator.Current) > 0 ))
                     {
-                        if (candidate == null || (_idOrderingComparer.Compare(candidate, enumerator.Current) > 0 && _versionOrderingComparer.Compare(candidate,enumerator.Current) > 0 ))
-                        {
-                            candidate = enumerator.Current;
-                        }
+                        candidate = enumerator.Current;
                     }
                 }
 
@@ -120,13 +119,13 @@ namespace NuGet.Commands
         }
         private static async Task<IEnumerable<VersionInfo>> GetVersions(IPackageSearchMetadata candidate, List<IPackageSearchMetadata> packages)
         {
-            var uniqueVersions = new SortedSet<NuGetVersion>();
+            var uniqueVersions = new SortedSet<VersionInfo>();
 
             foreach (var package in packages)
             {
                 foreach (var packageVersion in await package.GetVersionsAsync())
                 {
-                    if (uniqueVersions.Add(packageVersion.Version))
+                    if (uniqueVersions.Add(new VersionInfo(packageVersion.Version)))
                     {
                         packageVersion.PackageSearchMetadata = candidate;
                     }

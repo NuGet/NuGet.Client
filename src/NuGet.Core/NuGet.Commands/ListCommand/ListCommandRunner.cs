@@ -195,11 +195,9 @@ namespace NuGet.Commands
                     while (await asyncEnumerator.MoveNextAsync())
                     {
                         var p = asyncEnumerator.Current;
-                        if (listArgs.AllVersions)
-                        {
-                            foreach(var versionInfo in await p.GetVersionsAsync())
-                            listArgs.PrintJustified(0, p.Identity.Id + " " + p.Identity.Version.ToFullString());
-                        }
+                        foreach(var versionInfo in await p.GetVersionsAsync())
+                        listArgs.PrintJustified(0, p.Identity.Id + " " + p.Identity.Version.ToFullString());
+
                         hasPackages = true;
                     }
                 }
