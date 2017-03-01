@@ -55,7 +55,15 @@ if ($OldVersion -eq $NewVersion -and -not $Force) {
 
 Write-Output "Updating NuGet version [$OldVersion => $NewVersion]"
 
-gci -r project.json | %{ $_.FullName } | ReplaceTextInFiles -old $OldVersion -new $NewVersion
+$SourcesLocation = Join-Path $NuGetRoot src -Resolve
+Get-ChildItem $SourcesLocation -Recurse -Filter project.json |
+    %{ $_.FullName } |
+    ReplaceTextInFiles -old $OldVersion -new $NewVersion -ef '*"System.*'
+
+$TestsLocation = Join-Path $NuGetRoot test -Resolve
+Get-ChildItem $TestsLocation -Recurse -Filter project.json |
+    %{ $_.FullName } |
+    ReplaceTextInFiles -old $OldVersion -new $NewVersion -ef '*"System.*'
 
 $miscFiles = @(
     "src\NuGet.Clients\NuGet.Tools\NuGetPackage.cs",
@@ -66,4 +74,5 @@ $miscFiles = @(
     "appveyor.yml"
 )
 
-$miscFiles | %{ Join-Path $NuGetRoot $_ -Resolve } | ReplaceTextInFiles -old $OldVersion -new $NewVersion
+$miscFiles | %{ Join-Path $NuGetRoot $_ -Resolve } |
+    ReplaceTextInFiles -old $OldVersion -new $NewVersion
