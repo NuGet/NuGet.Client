@@ -1,5 +1,5 @@
 {
-  "version": "4.0.1-*",
+  "version": "4.1.0-*",
   "description": "The understanding of target frameworks for NuGet.Packaging",
   "authors": [
     "NuGet"

@@ -60,7 +60,7 @@ namespace NuGetVSExtension
     public sealed class NuGetPackage : AsyncPackage, IVsPackageExtensionProvider, IVsPersistSolutionOpts
     {
         // It is displayed in the Help - About box of Visual Studio
-        public const string ProductVersion = "4.0.1";
+        public const string ProductVersion = "4.1.0";
 
         private static readonly object _credentialsPromptLock = new object();
 
