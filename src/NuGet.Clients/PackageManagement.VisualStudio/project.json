@@ -1,8 +1,8 @@
 {
   "dependencies": {
-    "NuGet.PackageManagement": "4.0.1-*",
-    "NuGet.Protocol.VisualStudio": "4.0.1-*",
-    "NuGet.Build.Tasks": "4.0.1-*",
+    "NuGet.PackageManagement": "4.3.0-*",
+    "NuGet.Protocol.VisualStudio": "4.3.0-*",
+    "NuGet.Build.Tasks": "4.3.0-*",
     "Microsoft.VisualStudio.Workspace.VSIntegration": "15.0.171-pre"
   },
   "frameworks": {

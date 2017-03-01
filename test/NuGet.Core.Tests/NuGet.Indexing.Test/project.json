@@ -1,5 +1,5 @@
 {
-  "version": "4.0.1-*",
+  "version": "4.3.0-*",
   "dependencies": {
     "Moq": "4.2.1507.118",
     "NuGet.Indexing": {
