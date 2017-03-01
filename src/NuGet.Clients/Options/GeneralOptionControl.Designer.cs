@@ -40,7 +40,9 @@
             this.PackageManagementHeader = new System.Windows.Forms.Label();
             this.defaultPackageManagementFormatLabel = new System.Windows.Forms.Label();
             this.showPackageManagementChooser = new System.Windows.Forms.CheckBox();
+            this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
             this.defaultPackageManagementFormatItems = new System.Windows.Forms.ComboBox();
+            this.tableLayoutPanel1.SuspendLayout();
 #endif
             this.SuspendLayout();
             // 
@@ -110,6 +112,13 @@
             this.showPackageManagementChooser.Name = "showPackageManagementChooser";
             this.showPackageManagementChooser.UseVisualStyleBackColor = true;
             // 
+            // tableLayoutPanel1
+            // 
+            resources.ApplyResources(this.tableLayoutPanel1, "tableLayoutPanel1");
+            this.tableLayoutPanel1.Controls.Add(this.defaultPackageManagementFormatItems, 1, 0);
+            this.tableLayoutPanel1.Controls.Add(this.defaultPackageManagementFormatLabel, 0, 0);
+            this.tableLayoutPanel1.Name = "tableLayoutPanel1";
+            // 
             // defaultPackageManagementFormatItems
             // 
             this.defaultPackageManagementFormatItems.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
@@ -125,10 +134,11 @@
             this.BindingRedirectsHeader.Location = new System.Drawing.Point(2, 92);
             this.localsCommandButton.Location = new System.Drawing.Point(5, 247);
             this.localsCommandStatusText.Location = new System.Drawing.Point(5, 276);
-            this.Controls.Add(this.defaultPackageManagementFormatItems);
+            this.Controls.Add(this.tableLayoutPanel1);
             this.Controls.Add(this.showPackageManagementChooser);
-            this.Controls.Add(this.defaultPackageManagementFormatLabel);
             this.Controls.Add(this.PackageManagementHeader);
+            this.tableLayoutPanel1.ResumeLayout(false);
+            this.tableLayoutPanel1.PerformLayout();
 #endif
             this.Controls.Add(this.BindingRedirectsHeader);
             this.Controls.Add(this.skipBindingRedirects);
@@ -140,7 +150,6 @@
             this.Name = "GeneralOptionControl";
             this.ResumeLayout(false);
             this.PerformLayout();
-
         }
 
         #endregion
@@ -156,6 +165,7 @@
         private System.Windows.Forms.Label PackageManagementHeader;
         private System.Windows.Forms.Label defaultPackageManagementFormatLabel;
         private System.Windows.Forms.CheckBox showPackageManagementChooser;
+        private System.Windows.Forms.TableLayoutPanel tableLayoutPanel1;
         private System.Windows.Forms.ComboBox defaultPackageManagementFormatItems;
 #endif
     }
