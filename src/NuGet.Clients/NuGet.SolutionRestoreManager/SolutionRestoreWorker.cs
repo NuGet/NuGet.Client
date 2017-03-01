@@ -150,19 +150,22 @@ namespace NuGet.SolutionRestoreManager
         {
             Reset(isDisposing: true);
 
-            _joinableFactory.Run(async () =>
+            if (_initialized != 0)
             {
-                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-                _solutionEvents.AfterClosing -= SolutionEvents_AfterClosing;
-#if VS15
-                Unadvise();
-#endif
-                if (_errorListProvider.IsValueCreated)
+                _joinableFactory.Run(async () =>
                 {
-                    (await _errorListProvider.GetValueAsync()).Dispose();
-                }
-            });
+                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                    _solutionEvents.AfterClosing -= SolutionEvents_AfterClosing;
+#if VS15
+                    Unadvise();
+#endif
+                    if (_errorListProvider.IsValueCreated)
+                    {
+                        (await _errorListProvider.GetValueAsync()).Dispose();
+                    }
+                });
+            }
         }
 
         private void Reset(bool isDisposing = false)
