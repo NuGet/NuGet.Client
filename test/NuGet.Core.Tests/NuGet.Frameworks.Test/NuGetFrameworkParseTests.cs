@@ -235,6 +235,7 @@ namespace NuGet.Test
         [InlineData("netcoreapp1.0", ".NETCoreApp,Version=v1.0")]
         [InlineData("netcoreapp1.5", ".NETCoreApp,Version=v1.5")]
         [InlineData("netcoreapp2.0", ".NetCoreApp,Version=v2.0")]
+        [InlineData("xamarinmacnet", "Xamarin.Mac.NET,Version=v0.0")]
         [InlineData("xamarinmacnet45", "Xamarin.Mac.NET,Version=v4.5")]
         public void NuGetFramework_ParseToShortName(string expected, string fullName)
         {
@@ -284,6 +285,8 @@ namespace NuGet.Test
         [InlineData("netcoreapp1", ".NETCoreApp,Version=v1.0")]
         [InlineData("netcoreapp1.5", ".NETCoreApp,Version=v1.5")]
         [InlineData("netcoreapp2", ".NETCoreApp,Version=v2.0")]
+        [InlineData("xamarinmacnet", "Xamarin.Mac.NET,Version=v0.0")]
+        [InlineData("xamarinmacnet0", "Xamarin.Mac.NET,Version=v0.0")]
         [InlineData("xamarinmacnet45", "Xamarin.Mac.NET,Version=v4.5")]
         public void NuGetFramework_Basic(string folderName, string fullName)
         {
