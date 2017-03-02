@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -171,7 +171,7 @@ namespace NuGetVSExtension
                 DeleteOnRestartManager.Value.DeleteMarkedPackageDirectories(ProjectContext);
             }
 
-            ProjectRetargetingHandler = new ProjectRetargetingHandler(_dte, SolutionManager, this);
+            ProjectRetargetingHandler = new ProjectRetargetingHandler(_dte, SolutionManager, this, componentModel);
             ProjectUpgradeHandler = new ProjectUpgradeHandler(this, SolutionManager);
 
             SolutionUserOptions.LoadSettings();
