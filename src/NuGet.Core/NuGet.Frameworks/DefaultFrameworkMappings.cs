@@ -489,7 +489,7 @@ namespace NuGet.Frameworks
                             CreateGenerationAndStandardMappingForAllVersions(
                                 FrameworkConstants.FrameworkIdentifiers.XamarinMacNet,
                                 FrameworkConstants.CommonFrameworks.DotNet56,
-                                FrameworkConstants.CommonFrameworks.NetStandard16),
+                                FrameworkConstants.CommonFrameworks.NetStandard20),
 
                             CreateGenerationAndStandardMappingForAllVersions(
                                 FrameworkConstants.FrameworkIdentifiers.XamarinPlayStation3,
