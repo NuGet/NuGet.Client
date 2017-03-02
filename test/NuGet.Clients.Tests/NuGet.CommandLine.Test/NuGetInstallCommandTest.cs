@@ -1084,12 +1084,13 @@ namespace NuGet.CommandLine.Test
         public void InstallCommand_DependencyResolution()
         {
             var nugetexe = Util.GetNuGetExePath();
-            // dependencyVersion switch, requested version, expected version
+            // Test variations
+            // dependencyVersion, requested version, expected version
             string[,] variations = 
             { 
-                {null, null, "1.1.0" },
-                {"Lowest", "1.2", "1.2.0" },
-                {"Highest", null, "2.0.0" },
+                {null,           null,  "1.1.0" },
+                {"Lowest",       "1.2", "1.2.0" },
+                {"Highest",      null,  "2.0.0" },
                 {"HighestMinor", "1.1", "1.2.0" },
                 {"HighestPatch", "1.1", "1.1.1" }
             };

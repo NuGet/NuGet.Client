@@ -212,6 +212,17 @@ namespace NuGet.CommandLine
             return new CommandLineSourceRepositoryProvider(SourceProvider);
         }
 
+        private DependencyBehavior GetSettingsDependencyBehavior(Configuration.ISettings settings)
+        {
+            DependencyBehavior ret;
+
+            string depSetting = SettingsUtility.GetConfigValue(settings, "dependencyVersion");
+            if (!Enum.TryParse<DependencyBehavior>(depSetting, out ret))
+                ret = DependencyBehavior.Lowest; // if fails, set to default behavior
+
+            return ret;
+        }
+
         private async Task InstallPackage(
             string packageId,
             NuGetVersion version,
@@ -236,20 +247,20 @@ namespace NuGet.CommandLine
             var primaryRepositories = packageSources.Select(sourceRepositoryProvider.CreateRepository);
 
             var allowPrerelease = Prerelease || (version != null && version.IsPrerelease);
+            
+            DependencyBehavior depBehavior = GetSettingsDependencyBehavior(Settings);
 
-            DependencyBehavior depBehavior;
-            if(String.IsNullOrWhiteSpace(DependencyVersion))
+            if (!String.IsNullOrWhiteSpace(DependencyVersion))
             {
-                // default behavior
-                depBehavior = DependencyBehavior.Lowest;
-            }
-            else if (!Enum.TryParse<DependencyBehavior>(DependencyVersion, out depBehavior))
-            {
-                var message = string.Format(
-                        CultureInfo.CurrentCulture,
-                        LocalizedResourceManager.GetString("UnknownDependencyVersion"),
-                        packageId);
-                throw new CommandLineException(message);
+                // if dependency version specified by command line, try to parse
+                if (!Enum.TryParse<DependencyBehavior>(DependencyVersion, out depBehavior))
+                {
+                    var message = string.Format(
+                            CultureInfo.CurrentCulture,
+                            LocalizedResourceManager.GetString("UnknownDependencyVersion"),
+                            packageId);
+                    throw new CommandLineException(message);
+                }
             }
 
             var resolutionContext = new ResolutionContext(
