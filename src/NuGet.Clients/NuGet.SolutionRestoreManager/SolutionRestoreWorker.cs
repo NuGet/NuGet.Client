@@ -154,7 +154,10 @@ namespace NuGet.SolutionRestoreManager
             {
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                _solutionEvents.AfterClosing -= SolutionEvents_AfterClosing;
+                if (_solutionEvents != null)
+                {
+                    _solutionEvents.AfterClosing -= SolutionEvents_AfterClosing;
+                }
 #if VS15
                 Unadvise();
 #endif
