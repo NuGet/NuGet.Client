@@ -170,7 +170,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
                         // For legacy csproj, either the RestoreProjectStyle must be set to PackageReference or
                         // project has atleast one package dependency defined as PackageReference
-                        if (restoreProjectStyle?.Equals(ProjectStyle.PackageReference.ToString(), StringComparison.OrdinalIgnoreCase) ?? true
+                        if (restoreProjectStyle?.Equals(ProjectStyle.PackageReference.ToString(), StringComparison.OrdinalIgnoreCase) ?? false
                             || (AsVSProject4.PackageReferences?.InstalledPackages?.Length ?? 0) > 0)
                         {
                             _isLegacyCSProjPackageReferenceProject = true;
