@@ -112,6 +112,12 @@ namespace NuGet.ProjectManagement.Projects
             return Task.FromResult(ProjectJsonPathUtilities.GetLockFilePath(JsonConfigPath));
         }
 
+        public override Task<string> GetAssetsFilePathOrNullAsync()
+        {
+            // project.json projects can always have their lock file path determined.
+            return GetAssetsFilePathAsync();
+        }
+
         /// <summary>
         /// project.json path
         /// </summary>

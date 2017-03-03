@@ -89,7 +89,24 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public override async Task<string> GetAssetsFilePathAsync()
         {
-            return Path.Combine(await GetBaseIntermediatePathAsync(), LockFileFormat.AssetsFileName);
+            return await GetAssetsFilePathAsync(shouldThrow: true);
+        }
+
+        public override async Task<string> GetAssetsFilePathOrNullAsync()
+        {
+            return await GetAssetsFilePathAsync(shouldThrow: false);
+        }
+
+        private async Task<string> GetAssetsFilePathAsync(bool shouldThrow)
+        {
+            var baseIntermediatePath = await GetBaseIntermediatePathAsync(shouldThrow);
+
+            if (baseIntermediatePath == null)
+            {
+                return null;
+            }
+
+            return Path.Combine(baseIntermediatePath, LockFileFormat.AssetsFileName);
         }
 
         public override async Task<bool> ExecuteInitScriptAsync(
@@ -177,12 +194,12 @@ namespace NuGet.PackageManagement.VisualStudio
 
         #endregion
 
-        private async Task<string> GetBaseIntermediatePathAsync()
+        private async Task<string> GetBaseIntermediatePathAsync(bool shouldThrow)
         {
-            return await RunOnUIThread(GetBaseIntermediatePath);
+            return await RunOnUIThread(() => GetBaseIntermediatePath(shouldThrow));
         }
 
-        private string GetBaseIntermediatePath()
+        private string GetBaseIntermediatePath(bool shouldThrow = true)
         {
             EnsureUIThread();
 
@@ -190,7 +207,14 @@ namespace NuGet.PackageManagement.VisualStudio
 
             if (string.IsNullOrEmpty(baseIntermediatePath) || !Directory.Exists(baseIntermediatePath))
             {
-                throw new InvalidDataException(nameof(_project.BaseIntermediateOutputPath));
+                if (shouldThrow)
+                {
+                    throw new InvalidDataException(nameof(_project.BaseIntermediateOutputPath));
+                }
+                else
+                {
+                    return null;
+                }
             }
 
             return baseIntermediatePath;

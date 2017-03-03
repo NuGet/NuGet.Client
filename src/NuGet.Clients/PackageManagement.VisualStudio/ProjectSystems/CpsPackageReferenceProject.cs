@@ -98,13 +98,30 @@ namespace NuGet.PackageManagement.VisualStudio
                         _envDTEProject, throwOnFailure);
         }
 
-        public override Task<String> GetAssetsFilePathAsync()
+        public override async Task<String> GetAssetsFilePathAsync()
+        {
+            return await GetAssetsFilePathAsync(shouldThrow: true);
+        }
+
+        public override async Task<String> GetAssetsFilePathOrNullAsync()
+        {
+            return await GetAssetsFilePathAsync(shouldThrow: false);
+        }
+
+        private Task<string> GetAssetsFilePathAsync(bool shouldThrow)
         {
             var packageSpec = GetPackageSpec();
             if (packageSpec == null)
             {
-                throw new InvalidOperationException(
-                    string.Format(Strings.ProjectNotLoaded_RestoreFailed, ProjectName));
+                if (shouldThrow)
+                {
+                    throw new InvalidOperationException(
+                        string.Format(Strings.ProjectNotLoaded_RestoreFailed, ProjectName));
+                }
+                else
+                {
+                    return Task.FromResult<string>(null);
+                }
             }
 
             return Task.FromResult(Path.Combine(
