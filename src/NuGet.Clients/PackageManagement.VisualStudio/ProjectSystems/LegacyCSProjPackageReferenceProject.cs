@@ -205,7 +205,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             var baseIntermediatePath = _project.BaseIntermediateOutputPath;
 
-            if (string.IsNullOrEmpty(baseIntermediatePath) || !Directory.Exists(baseIntermediatePath))
+            if (string.IsNullOrEmpty(baseIntermediatePath))
             {
                 if (shouldThrow)
                 {
