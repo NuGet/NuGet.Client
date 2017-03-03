@@ -9,7 +9,6 @@ using Microsoft.VisualStudio.Shell;
 using Moq;
 using NuGet.Frameworks;
 using NuGet.ProjectManagement;
-using NuGet.ProjectModel;
 using NuGet.RuntimeModel;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
@@ -43,6 +42,25 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
                 // Assert
                 Assert.Equal(Path.Combine(testBaseIntermediateOutputPath, "project.assets.json"), assetsPath);
+            }
+        }
+
+        [Fact]
+        public async Task LCPRP_WhenThereIsNoBaseIntermediateOutputPath_ThrowsException()
+        {
+            // Arrange
+            using (var randomTestFolder = TestDirectory.Create())
+            {
+                var testEnvDTEProjectAdapter = new Mock<IEnvDTEProjectAdapter>();
+
+                var testProject = new LegacyCSProjPackageReferenceProject(
+                    project: testEnvDTEProjectAdapter.Object,
+                    projectId: String.Empty,
+                    callerIsUnitTest: true);
+
+                // Act & Assert
+                await Assert.ThrowsAsync<InvalidDataException>(
+                    () => testProject.GetAssetsFilePathAsync());
             }
         }
 
