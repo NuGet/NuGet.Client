@@ -49,6 +49,8 @@ namespace NuGet.Test.Utility
         /// </summary>
         public string RuntimeJson { get; set; }
 
+        public bool IsSymbolPackage { get; set; }
+
         public PackageIdentity Identity
         {
             get

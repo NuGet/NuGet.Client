@@ -3,6 +3,7 @@
 
 using System;
 using System.Net.Http;
+using NuGet.Packaging;
 
 namespace NuGet.Protocol.Core.Types
 {
@@ -40,6 +41,7 @@ namespace NuGet.Protocol.Core.Types
             if (!string.IsNullOrEmpty(UserAgentString))
             {
                 client.DefaultRequestHeaders.Add("user-agent", UserAgentString);
+                client.DefaultRequestHeaders.Add("X-NuGet-Client-Version", MinClientVersionUtility.GetNuGetClientVersion().ToNormalizedString());
             }
         }
     }
