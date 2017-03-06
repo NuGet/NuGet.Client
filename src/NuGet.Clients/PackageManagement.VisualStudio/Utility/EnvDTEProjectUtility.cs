@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -627,7 +627,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             var projectPath = GetFullProjectPath(envDTEProject);
             var platformIdentifier = GetPropertyValue<string>(envDTEProject, "TargetPlatformIdentifier");
-            var platformVersion = GetPropertyValue<string>(envDTEProject, "TargetPlatformVersion");
+            var platformVersion = GetPropertyValue<string>(envDTEProject, "TargetPlatformMinVersion");
             var targetFrameworkMoniker = GetPropertyValue<string>(envDTEProject, "TargetFrameworkMoniker");
             var isManagementPackProject = IsManagementPackProject(envDTEProject);
             var isXnaWindowsPhoneProject = IsXnaWindowsPhoneProject(envDTEProject);
@@ -640,7 +640,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 targetFramework: null,
                 targetFrameworkMoniker: targetFrameworkMoniker,
                 targetPlatformIdentifier: platformIdentifier,
-                targetPlatformVersion: platformVersion,
+                targetPlatformMinVersion: platformVersion,
                 isManagementPackProject: isManagementPackProject,
                 isXnaWindowsPhoneProject: isXnaWindowsPhoneProject);
 
