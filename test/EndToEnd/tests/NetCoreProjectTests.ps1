@@ -579,8 +579,8 @@ function Test-NetStandardClassLibraryInstallMultiplePackages {
     $project = New-NetStandardClassLibrary ClassLibrary1
     $id1 = 'NuGet.Versioning'
     $version1 = '3.5.0'
-    $id2 = 'NUnit'
-    $version2 = '3.6.0'
+    $id2 = 'Newtonsoft.Json'
+    $version2 = '9.0.1'
 
     # Act
     Install-Package $id1 -ProjectName $project.Name -version $version1
@@ -599,8 +599,8 @@ function Test-NetStandardClassLibraryUninstallMultiplePackage {
     $project = New-NetStandardClassLibrary ClassLibrary1
     $id1 = 'NuGet.Versioning'
     $version1 = '3.5.0'
-    $id2 = 'NUnit'
-    $version2 = '3.6.0'
+    $id2 = 'Newtonsoft.Json'
+    $version2 = '9.0.1'
 
     # Act
     Install-Package $id1 -ProjectName $project.Name -version $version1
