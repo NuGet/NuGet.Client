@@ -33,7 +33,7 @@ namespace NuGet.Build.Tasks
         /// <summary>
         /// Optional TargetPlatformVersion property value.
         /// </summary>
-        public string TargetPlatformVersion { get; set; }
+        public string TargetPlatformMinVersion { get; set; }
 
         /// <summary>
         /// Optional TargetFrameworks property value.
@@ -57,7 +57,7 @@ namespace NuGet.Build.Tasks
             log.LogDebug($"(in) ProjectPath '{ProjectPath}'");
             log.LogDebug($"(in) TargetFrameworkMoniker '{TargetFrameworkMoniker}'");
             log.LogDebug($"(in) TargetPlatformIdentifier '{TargetPlatformIdentifier}'");
-            log.LogDebug($"(in) TargetPlatformVersion '{TargetPlatformVersion}'");
+            log.LogDebug($"(in) TargetPlatformMinVersion '{TargetPlatformMinVersion}'");
             log.LogDebug($"(in) TargetFrameworks '{TargetFrameworks}'");
             log.LogDebug($"(in) TargetFramework '{TargetFramework}'");
 
@@ -68,7 +68,7 @@ namespace NuGet.Build.Tasks
                 targetFramework: TargetFramework,
                 targetFrameworkMoniker: TargetFrameworkMoniker,
                 targetPlatformIdentifier: TargetPlatformIdentifier,
-                targetPlatformVersion: TargetPlatformVersion);
+                targetPlatformMinVersion: TargetPlatformMinVersion);
 
             ProjectTargetFrameworks = string.Join(";", frameworks);
 

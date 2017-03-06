@@ -18,7 +18,7 @@ namespace NuGet.Commands
             string targetFramework,
             string targetFrameworkMoniker,
             string targetPlatformIdentifier,
-            string targetPlatformVersion)
+            string targetPlatformMinVersion)
         {
             return GetProjectFrameworkStrings(
                 projectFilePath,
@@ -26,7 +26,7 @@ namespace NuGet.Commands
                 targetFramework,
                 targetFrameworkMoniker,
                 targetPlatformIdentifier,
-                targetPlatformVersion,
+                targetPlatformMinVersion,
                 isManagementPackProject: false,
                 isXnaWindowsPhoneProject: false);
         }
@@ -40,7 +40,7 @@ namespace NuGet.Commands
             string targetFramework,
             string targetFrameworkMoniker,
             string targetPlatformIdentifier,
-            string targetPlatformVersion,
+            string targetPlatformMinVersion,
             bool isXnaWindowsPhoneProject,
             bool isManagementPackProject)
         {
@@ -85,13 +85,13 @@ namespace NuGet.Commands
 
             // UAP/Windows store projects
             var platformIdentifier = MSBuildStringUtility.TrimAndGetNullForEmpty(targetPlatformIdentifier);
-            var platformVersion = MSBuildStringUtility.TrimAndGetNullForEmpty(targetPlatformVersion);
+            var platformVersion = MSBuildStringUtility.TrimAndGetNullForEmpty(targetPlatformMinVersion);
 
             // Check for JS project
             if (projectFilePath?.EndsWith(".jsproj", StringComparison.OrdinalIgnoreCase) == true)
             {
                 // JavaScript apps do not have a TargetFrameworkMoniker property set.
-                // We read the TargetPlatformIdentifier and TargetPlatformVersion instead
+                // We read the TargetPlatformIdentifier and targetPlatformMinVersion instead
                 // use the default values for JS if they were not given
                 if (string.IsNullOrEmpty(platformVersion))
                 {

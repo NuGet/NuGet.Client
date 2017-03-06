@@ -66,7 +66,7 @@ namespace NuGet.CommandLine.Test
                 // Assert
                 Assert.Equal(ProjectStyle.PackageReference, projectSpec.RestoreMetadata.ProjectStyle);
                 Assert.Equal("PackageReference", styleNode.Value);
-                Assert.Equal(NuGetFramework.Parse("UAP10.0.14393.0"), projectSpec.TargetFrameworks.Single().FrameworkName);
+                Assert.Equal(NuGetFramework.Parse("UAP10.0.10586.0"), projectSpec.TargetFrameworks.Single().FrameworkName);
             }
         }
 
@@ -120,7 +120,7 @@ namespace NuGet.CommandLine.Test
                 // Assert
                 Assert.Equal(ProjectStyle.PackageReference, projectSpec.RestoreMetadata.ProjectStyle);
                 Assert.Equal("PackageReference", styleNode.Value);
-                Assert.Equal(NuGetFramework.Parse("UAP10.0.14393.0"), projectSpec.TargetFrameworks.Single().FrameworkName);
+                Assert.Equal(NuGetFramework.Parse("UAP10.0.10586.0"), projectSpec.TargetFrameworks.Single().FrameworkName);
 
                 Assert.DoesNotContain("a.txt", propsXML.ToString());
             }
@@ -162,7 +162,7 @@ namespace NuGet.CommandLine.Test
                 // Assert
                 Assert.Equal(ProjectStyle.PackageReference, projectSpec.RestoreMetadata.ProjectStyle);
                 Assert.Equal("PackageReference", styleNode.Value);
-                Assert.Equal(NuGetFramework.Parse("UAP10.0.14393.0"), projectSpec.TargetFrameworks.Single().FrameworkName);
+                Assert.Equal(NuGetFramework.Parse("UAP10.0.10586.0"), projectSpec.TargetFrameworks.Single().FrameworkName);
             }
         }
 
