@@ -279,7 +279,6 @@ namespace NuGet.Protocol.Core.Types
                 response =>
                 {
                     response.EnsureSuccessStatusCode();
-                    response.LogServerWarning(logger);
 
                     return Task.FromResult(0);
                 },
@@ -408,7 +407,6 @@ namespace NuGet.Protocol.Core.Types
                 response =>
                 {
                     response.EnsureSuccessStatusCode();
-                    response.LogServerWarning(logger);
 
                     return Task.FromResult(0);
                 },

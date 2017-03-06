@@ -1,10 +1,22 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using Xunit.Abstractions;
 
 namespace NuGet.Test.Utility
 {
     public class TestLogger : Common.ILogger
     {
+        private readonly ITestOutputHelper _output;
+
+        public TestLogger()
+        {
+        }
+
+        public TestLogger(ITestOutputHelper output)
+        {
+            _output = output;
+        }
+
         /// <summary>
         /// Logged messages
         /// </summary>
@@ -76,6 +88,7 @@ namespace NuGet.Test.Utility
         {
             // NOTE(anurse): Uncomment this to help when debugging tests
             //Console.WriteLine($"{level}: {data}");
+            _output?.WriteLine($"{level}: {data}");
         }
 
         public void Clear()

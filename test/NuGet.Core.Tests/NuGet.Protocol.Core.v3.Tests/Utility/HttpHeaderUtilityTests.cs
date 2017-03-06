@@ -20,7 +20,7 @@ namespace NuGet.Protocol.Core.v3.Tests.Utility
         [Fact]
         public void LogsServerWarningWhenNuGetWarningHeaderPresent()
         {
-            var testLogger = new TestLogger();
+            var testLogger = new TestLogger(_output);
             var response = new HttpResponseMessage();
             response.Headers.Add(ProtocolConstants.ServerWarningHeader, "test");
 
