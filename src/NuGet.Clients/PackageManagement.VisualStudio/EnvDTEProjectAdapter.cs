@@ -192,15 +192,6 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 ThreadHelper.ThrowIfNotOnUIThread();
 
-                // Uncached, in case project file edited
-                // ex-project.json (e.g. UWP)
-                var nuGetTargetFramework = GetMSBuildProperty(AsIVsBuildPropertyStorage, "NuGetTargetFramework");
-                if (!string.IsNullOrEmpty(nuGetTargetFramework))
-                {
-                    return NuGetFramework.ParseFrameworkName(nuGetTargetFramework, DefaultFrameworkNameProvider.Instance);
-                }
-
-                // ex-packages.config
                 return EnvDTEProjectUtility.GetTargetNuGetFramework(_project);
             }
         }
