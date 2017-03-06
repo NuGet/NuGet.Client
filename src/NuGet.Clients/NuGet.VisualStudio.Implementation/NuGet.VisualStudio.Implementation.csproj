@@ -49,6 +49,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CommonResources.cs" />
+    <Compile Include="Extensibility\VsIndexedPathContext.cs" />
+    <Compile Include="Utility\PathLookupTrie.cs" />
     <Compile Include="Extensibility\VsPathContext.cs" />
     <Compile Include="Extensibility\VsPathContextProvider.cs" />
     <Compile Include="Extensibility\VsPackageInstallerProjectEvents.cs" />
