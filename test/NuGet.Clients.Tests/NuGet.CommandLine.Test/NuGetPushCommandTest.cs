@@ -303,7 +303,7 @@ namespace NuGet.CommandLine.Test
             var nugetexe = Util.GetNuGetExePath();
 
             // Arrange
-            using (var packageDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packageDirectory = TestDirectory.Create())
             {
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
                 using (var server = new MockServer())
@@ -316,7 +316,7 @@ namespace NuGet.CommandLine.Test
                     server.Start();
 
                     // Act
-                    string[] args = new string[]
+                    var args = new string[]
                     {"push", packageFileName, "-Source", server.Uri + "push", "-Apikey", "token"};
                     var result = CommandRunner.Run(
                         nugetexe,
