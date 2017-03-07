@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Diagnostics;
 using System.Linq;
@@ -20,8 +21,7 @@ namespace NuGet.SolutionRestoreManager
     {
         private readonly object _lockObj = new object();
         private readonly IServiceProvider _serviceProvider;
-
-        private TableSubscription _tableSubscription;
+        private readonly List<TableSubscription> _subscriptions = new List<TableSubscription>();
 
         public string SourceTypeIdentifier => StandardTableDataSources.ErrorTableDataSource;
 
@@ -48,8 +48,18 @@ namespace NuGet.SolutionRestoreManager
 
         public IDisposable Subscribe(ITableDataSink sink)
         {
-            _tableSubscription = new TableSubscription(sink);
-            return _tableSubscription;
+            var subscription = new TableSubscription(sink);
+
+            lock (_subscriptions)
+            {
+                // Clean out disposed subscriptions
+                _subscriptions.RemoveAll(e => e.Disposed);
+
+                // Add the new subscription
+                _subscriptions.Add(subscription);
+            }
+
+            return subscription;
         }
 
         /// <summary>
@@ -59,12 +69,15 @@ namespace NuGet.SolutionRestoreManager
         {
             EnsureInitialized();
 
-            _tableSubscription?.RunWithLock((sink) =>
+            foreach (var subscription in GetSubscriptionsWithLock())
             {
-                var entries = _errorList.TableControl.Entries.Where(IsNuGetEntry).ToArray();
+                subscription.RunWithLock((sink) =>
+                {
+                    var entries = _errorList.TableControl.Entries.Where(IsNuGetEntry).ToArray();
 
-                sink.RemoveEntries(entries);
-            });
+                    sink.RemoveEntries(entries);
+                });
+            }
         }
 
         /// <summary>
@@ -76,10 +89,13 @@ namespace NuGet.SolutionRestoreManager
             {
                 EnsureInitialized();
 
-                _tableSubscription?.RunWithLock((sink) =>
+                foreach (var subscription in GetSubscriptionsWithLock())
                 {
-                    sink.AddEntries(entries.ToList(), removeAllEntries: false);
-                });
+                    subscription.RunWithLock((sink) =>
+                    {
+                        sink.AddEntries(entries.ToList(), removeAllEntries: false);
+                    });
+                }
             }
         }
 
@@ -121,6 +137,21 @@ namespace NuGet.SolutionRestoreManager
             }
         }
 
+        /// <summary>
+        /// Lock and enumerate subscriptions.
+        /// </summary>
+        private TableSubscription[] GetSubscriptionsWithLock()
+        {
+            lock (_subscriptions)
+            {
+                // Clean out disposed subscriptions
+                _subscriptions.RemoveAll(e => e.Disposed);
+
+                // Create a copy of the list to enumerate on
+                return _subscriptions.ToArray();
+            }
+        }
+
         private static bool IsNuGetEntry(ITableEntryHandle entry)
         {
             object sourceObj;
@@ -146,6 +177,8 @@ namespace NuGet.SolutionRestoreManager
             private readonly object _lockObj = new object();
             private ITableDataSink _sink;
 
+            public bool Disposed { get; private set; }
+
             public TableSubscription(ITableDataSink sink)
             {
                 _sink = sink;
@@ -155,11 +188,14 @@ namespace NuGet.SolutionRestoreManager
             {
                 lock (_lockObj)
                 {
-                    Debug.Assert(_sink != null, "ITableDataSink null, unable to log warnings/errors");
-
-                    if (_sink != null)
+                    if (!Disposed)
                     {
-                        action(_sink);
+                        Debug.Assert(_sink != null, "ITableDataSink null, unable to log warnings/errors");
+
+                        if (_sink != null)
+                        {
+                            action(_sink);
+                        }
                     }
                 }
             }
@@ -169,6 +205,7 @@ namespace NuGet.SolutionRestoreManager
                 lock (_lockObj)
                 {
                     _sink = null;
+                    Disposed = true;
                 }
             }
         }
