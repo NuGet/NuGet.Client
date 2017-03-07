@@ -432,25 +432,26 @@ namespace NuGet.SolutionRestoreManager
             {
                 var componentModel = await _componentModel.GetValueAsync(jobCts.Token);
 
-                var logger = componentModel.GetService<RestoreOperationLogger>();
-
-                try
+                using (var logger = componentModel.GetService<RestoreOperationLogger>())
                 {
-                    // Start logging
-                    await logger.StartAsync(
-                        request.RestoreSource,
-                        _errorListTableDataSource,
-                        _joinableFactory,
-                        jobCts);
+                    try
+                    {
+                        // Start logging
+                        await logger.StartAsync(
+                            request.RestoreSource,
+                            _errorListTableDataSource,
+                            _joinableFactory,
+                            jobCts);
 
-                    // Run restore
-                    var job = componentModel.GetService<ISolutionRestoreJob>();
-                    return await job.ExecuteAsync(request, _restoreJobContext, logger, jobCts.Token);
-                }
-                finally
-                {
-                    // Complete all logging
-                    await logger.StopAsync();
+                        // Run restore
+                        var job = componentModel.GetService<ISolutionRestoreJob>();
+                        return await job.ExecuteAsync(request, _restoreJobContext, logger, jobCts.Token);
+                    }
+                    finally
+                    {
+                        // Complete all logging
+                        await logger.StopAsync();
+                    }
                 }
             }
         }

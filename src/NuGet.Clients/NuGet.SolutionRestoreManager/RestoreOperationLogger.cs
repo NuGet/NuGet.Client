@@ -22,7 +22,7 @@ namespace NuGet.SolutionRestoreManager
     /// </summary>
     [Export]
     [PartCreationPolicy(CreationPolicy.NonShared)]
-    internal sealed class RestoreOperationLogger : ILogger
+    internal sealed class RestoreOperationLogger : ILogger, IDisposable
     {
         private readonly IServiceProvider _serviceProvider;
         private readonly IOutputConsoleProvider _outputConsoleProvider;
@@ -116,27 +116,24 @@ namespace NuGet.SolutionRestoreManager
                         _outputConsole.Clear();
                         break;
                 }
-
-                if (_errorListDataSource.IsValueCreated)
-                {
-                    // Clear old entries
-                    _errorListDataSource.Value.ClearNuGetEntries();
-                }
             });
+
+            if (_errorListDataSource.IsValueCreated)
+            {
+                // Clear old entries
+                _errorListDataSource.Value.ClearNuGetEntries();
+            }
         }
 
-        public async Task StopAsync()
+        public Task StopAsync()
         {
             if (_showErrorList)
             {
-                await _taskFactory.RunAsync(async () =>
-                {
-                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-                    // Give the error list focus
-                    _errorListDataSource.Value.BringToFront();
-                });
+                // Give the error list focus
+                _errorListDataSource.Value.BringToFront();
             }
+
+            return Task.FromResult(true);
         }
 
         public void LogDebug(string data)
@@ -199,8 +196,6 @@ namespace NuGet.SolutionRestoreManager
                 return;
             }
 
-            ErrorListTableEntry errorListEntry = null;
-
             // VerbosityLevel.Quiet corresponds to ILogger.LogError, and,
             // VerbosityLevel.Minimal corresponds to ILogger.LogWarning
             // In these 2 cases, we add an error or warning to the error list window
@@ -208,7 +203,10 @@ namespace NuGet.SolutionRestoreManager
                 verbosityLevel == VerbosityLevel.Minimal)
             {
                 var errorLevel = verbosityLevel == VerbosityLevel.Quiet ? LogLevel.Error : LogLevel.Warning;
-                errorListEntry = new ErrorListTableEntry(message, errorLevel);
+                var errorListEntry = new ErrorListTableEntry(message, errorLevel);
+
+                // Add the entry to the list
+                _errorListDataSource.Value.AddEntries(errorListEntry);
 
                 // Display the error list after restore completes
                 _showErrorList = true;
@@ -226,7 +224,7 @@ namespace NuGet.SolutionRestoreManager
             var showAsOutputMessage = ShowMessageAsOutput(verbosityLevel);
 
             // Avoid moving to the UI thread unless there is work to do
-            if (reportProgress || showAsOutputMessage || errorListEntry != null)
+            if (reportProgress || showAsOutputMessage)
             {
                 // Run on the UI thread
                 Do((_, progress) =>
@@ -241,12 +239,6 @@ namespace NuGet.SolutionRestoreManager
                     if (showAsOutputMessage)
                     {
                         WriteLine(verbosityLevel, message);
-                    }
-
-                    // Write to the error list
-                    if (errorListEntry != null)
-                    {
-                        _errorListDataSource.Value.AddEntries(errorListEntry);
                     }
                 });
             }
@@ -309,8 +301,6 @@ namespace NuGet.SolutionRestoreManager
 
         public void ShowError(string errorText)
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
-
             var entry = new ErrorListTableEntry(errorText, LogLevel.Error);
 
             _errorListDataSource.Value.AddEntries(entry);
@@ -469,6 +459,11 @@ namespace NuGet.SolutionRestoreManager
                 return (int)value;
             }
             return 0;
+        }
+
+        public void Dispose()
+        {
+            _externalCts?.Dispose();
         }
 
         private class WaitDialogProgress : RestoreOperationProgressUI

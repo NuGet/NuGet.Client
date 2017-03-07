@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel.Composition;
+using System.Diagnostics;
 using System.Linq;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
@@ -47,11 +48,8 @@ namespace NuGet.SolutionRestoreManager
 
         public IDisposable Subscribe(ITableDataSink sink)
         {
-            lock (_lockObj)
-            {
-                _tableSubscription = new TableSubscription(sink, _lockObj);
-                return _tableSubscription;
-            }
+            _tableSubscription = new TableSubscription(sink);
+            return _tableSubscription;
         }
 
         /// <summary>
@@ -59,22 +57,14 @@ namespace NuGet.SolutionRestoreManager
         /// </summary>
         public void ClearNuGetEntries()
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
-
             EnsureInitialized();
 
-            lock (_lockObj)
+            _tableSubscription?.RunWithLock((sink) =>
             {
-                var sink = _tableSubscription?.TableDataSink;
+                var entries = _errorList.TableControl.Entries.Where(IsNuGetEntry).ToArray();
 
-                if (sink != null)
-                {
-                    var entries = _errorList.TableControl?.Entries?.Where(IsNuGetEntry).ToArray()
-                        ?? new ITableEntryHandle[0];
-
-                    sink.RemoveEntries(entries);
-                }
-            }
+                sink.RemoveEntries(entries);
+            });
         }
 
         /// <summary>
@@ -82,18 +72,14 @@ namespace NuGet.SolutionRestoreManager
         /// </summary>
         public void AddEntries(params ErrorListTableEntry[] entries)
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
-
-            EnsureInitialized();
-
-            lock (_lockObj)
+            if (entries.Length > 0)
             {
-                var sink = _tableSubscription?.TableDataSink;
+                EnsureInitialized();
 
-                if (sink != null)
+                _tableSubscription?.RunWithLock((sink) =>
                 {
                     sink.AddEntries(entries.ToList(), removeAllEntries: false);
-                }
+                });
             }
         }
 
@@ -102,8 +88,6 @@ namespace NuGet.SolutionRestoreManager
         /// </summary>
         public void BringToFront()
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
-
             EnsureInitialized();
 
             // Give the error list focus.
@@ -111,19 +95,28 @@ namespace NuGet.SolutionRestoreManager
             vsErrorList?.BringToFront();
         }
 
+        // Lock before calling
         private void EnsureInitialized()
         {
             if (!_initialized)
             {
-                ThreadHelper.ThrowIfNotOnUIThread();
-
-                _errorList = _serviceProvider.GetService(typeof(SVsErrorList)) as IErrorList;
-                _tableManager = _errorList?.TableControl?.Manager;
-
-                if (_tableManager != null)
+                // Double check around locking since this is called often.
+                lock (_lockObj)
                 {
-                    _initialized = true;
-                    _tableManager.AddSource(this);
+                    if (!_initialized)
+                    {
+                        NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
+                        {
+                            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                            // Get the error list service from the UI thread
+                            _errorList = _serviceProvider.GetService(typeof(SVsErrorList)) as IErrorList;
+                            _tableManager = _errorList.TableControl.Manager;
+
+                            _tableManager.AddSource(this);
+                            _initialized = true;
+                        });
+                    }
                 }
             }
         }
@@ -138,21 +131,10 @@ namespace NuGet.SolutionRestoreManager
 
         public void Dispose()
         {
-            if (_tableManager != null && _initialized)
+            if (_initialized)
             {
-                try
-                {
-                    NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
-                    {
-                        await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-                        _tableManager.RemoveSource(this);
-                    });
-                }
-                catch (ObjectDisposedException)
-                {
-                    // Ignore disposed exceptions
-                }
+                // This does not need to be on the UI thread.
+                _tableManager.RemoveSource(this);
             }
         }
 
@@ -161,21 +143,32 @@ namespace NuGet.SolutionRestoreManager
         /// </summary>
         private class TableSubscription : IDisposable
         {
-            public ITableDataSink TableDataSink { get; private set; }
+            private readonly object _lockObj = new object();
+            private ITableDataSink _sink;
 
-            private readonly object _lockObj;
-
-            public TableSubscription(ITableDataSink sink, object lockObj)
+            public TableSubscription(ITableDataSink sink)
             {
-                TableDataSink = sink;
-                _lockObj = lockObj;
+                _sink = sink;
+            }
+
+            public void RunWithLock(Action<ITableDataSink> action)
+            {
+                lock (_lockObj)
+                {
+                    Debug.Assert(_sink != null, "ITableDataSink null, unable to log warnings/errors");
+
+                    if (_sink != null)
+                    {
+                        action(_sink);
+                    }
+                }
             }
 
             public void Dispose()
             {
                 lock (_lockObj)
                 {
-                    TableDataSink = null;
+                    _sink = null;
                 }
             }
         }
