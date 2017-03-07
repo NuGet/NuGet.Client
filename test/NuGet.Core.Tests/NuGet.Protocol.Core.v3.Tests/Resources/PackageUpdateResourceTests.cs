@@ -101,7 +101,7 @@ namespace NuGet.Protocol.Tests
                 Assert.Equal(HttpMethod.Delete, actualRequest.Method);
 
                 IEnumerable<string> values;
-                actualRequest.Headers.TryGetValues(ApiKeyHeader, out values);
+                actualRequest.Headers.TryGetValues(ProtocolConstants.ApiKeyHeader, out values);
                 Assert.Null(values);
 
                 Assert.True(
@@ -151,7 +151,7 @@ namespace NuGet.Protocol.Tests
                 Assert.Equal(HttpMethod.Put, actualRequest.Method);
 
                 IEnumerable<string> values;
-                actualRequest.Headers.TryGetValues(ApiKeyHeader, out values);
+                actualRequest.Headers.TryGetValues(ProtocolConstants.ApiKeyHeader, out values);
                 Assert.Equal(1, values.Count());
                 Assert.Equal(apiKey, values.First());
 
@@ -202,7 +202,7 @@ namespace NuGet.Protocol.Tests
                 Assert.Equal(HttpMethod.Put, actualRequest.Method);
 
                 IEnumerable<string> values;
-                actualRequest.Headers.TryGetValues(ApiKeyHeader, out values);
+                actualRequest.Headers.TryGetValues(ProtocolConstants.ApiKeyHeader, out values);
                 Assert.Null(values);
 
                 Assert.True(
