@@ -19,9 +19,10 @@ namespace NuGet.SolutionRestoreManager
     [PartCreationPolicy(CreationPolicy.Shared)]
     internal sealed class ErrorListTableDataSource : ITableDataSource
     {
-        private readonly object _lockObj = new object();
+        private readonly object _initLockObj = new object();
+        private readonly object _subscribeLockObj = new object();
         private readonly IServiceProvider _serviceProvider;
-        private readonly List<TableSubscription> _subscriptions = new List<TableSubscription>();
+        private IReadOnlyList<TableSubscription> _subscriptions = new List<TableSubscription>();
 
         public string SourceTypeIdentifier => StandardTableDataSources.ErrorTableDataSource;
 
@@ -50,13 +51,17 @@ namespace NuGet.SolutionRestoreManager
         {
             var subscription = new TableSubscription(sink);
 
-            lock (_subscriptions)
+            lock (_subscribeLockObj)
             {
-                // Clean out disposed subscriptions
-                _subscriptions.RemoveAll(e => e.Disposed);
+                // Add valid subscriptions to the new list to start
+                var updatedSubscriptions = new List<TableSubscription>(_subscriptions.Where(e => !e.Disposed))
+                {
+                    // Add the new subscription
+                    subscription
+                };
 
-                // Add the new subscription
-                _subscriptions.Add(subscription);
+                // Apply changes
+                _subscriptions = updatedSubscriptions;
             }
 
             return subscription;
@@ -69,7 +74,8 @@ namespace NuGet.SolutionRestoreManager
         {
             EnsureInitialized();
 
-            foreach (var subscription in GetSubscriptionsWithLock())
+            var subscriptions = _subscriptions;
+            foreach (var subscription in subscriptions)
             {
                 subscription.RunWithLock((sink) =>
                 {
@@ -89,7 +95,8 @@ namespace NuGet.SolutionRestoreManager
             {
                 EnsureInitialized();
 
-                foreach (var subscription in GetSubscriptionsWithLock())
+                var subscriptions = _subscriptions;
+                foreach (var subscription in subscriptions)
                 {
                     subscription.RunWithLock((sink) =>
                     {
@@ -117,7 +124,7 @@ namespace NuGet.SolutionRestoreManager
             if (!_initialized)
             {
                 // Double check around locking since this is called often.
-                lock (_lockObj)
+                lock (_initLockObj)
                 {
                     if (!_initialized)
                     {
@@ -134,21 +141,6 @@ namespace NuGet.SolutionRestoreManager
                         });
                     }
                 }
-            }
-        }
-
-        /// <summary>
-        /// Lock and enumerate subscriptions.
-        /// </summary>
-        private TableSubscription[] GetSubscriptionsWithLock()
-        {
-            lock (_subscriptions)
-            {
-                // Clean out disposed subscriptions
-                _subscriptions.RemoveAll(e => e.Disposed);
-
-                // Create a copy of the list to enumerate on
-                return _subscriptions.ToArray();
             }
         }
 
