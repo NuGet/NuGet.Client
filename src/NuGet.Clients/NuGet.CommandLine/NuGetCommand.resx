@@ -333,7 +333,7 @@ nuget pack foo.nuspec -Version 2.1.0</value>
   <data name="PushCommandUsageExamples" xml:space="preserve">
     <value>nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a
 
-nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -s http://customsource/
+nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -src http://customsource/
 
 nuget push foo.nupkg
 
@@ -2986,7 +2986,7 @@ nuget pack foo.nuspec -Version 2.1.0</value>
   <data name="PushCommandUsageExamples_csy" xml:space="preserve">
     <value>nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a
 
-nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -s http://customsource/
+nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -src http://customsource/
 
 nuget push foo.nupkg
 
@@ -2997,7 +2997,7 @@ nuget push foo.nupkg -Timeout 360</value>
   <data name="PushCommandUsageExamples_deu" xml:space="preserve">
     <value>nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a
 
-nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -s http://customsource/
+nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -src http://customsource/
 
 nuget push foo.nupkg
 
@@ -3008,7 +3008,7 @@ nuget push foo.nupkg -Timeout 360</value>
   <data name="PushCommandUsageExamples_esp" xml:space="preserve">
     <value>nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a
 
-nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -s http://customsource/
+nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -src http://customsource/
 
 nuget push foo.nupkg
 
@@ -3019,7 +3019,7 @@ nuget push foo.nupkg -Timeout 360</value>
   <data name="PushCommandUsageExamples_fra" xml:space="preserve">
     <value>nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a
 
-nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -s http://customsource/
+nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -src http://customsource/
 
 nuget push foo.nupkg
 
@@ -3041,7 +3041,7 @@ nuget push foo.nupkg -Timeout 360</value>
   <data name="PushCommandUsageExamples_jpn" xml:space="preserve">
     <value>nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a
 
-nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -s http://customsource/
+nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -src http://customsource/
 
 nuget push foo.nupkg
 
@@ -3052,7 +3052,7 @@ nuget push foo.nupkg -Timeout 360</value>
   <data name="PushCommandUsageExamples_kor" xml:space="preserve">
     <value>nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a
 
-nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -s http://customsource/
+nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -src http://customsource/
 
 nuget push foo.nupkg
 
@@ -3063,7 +3063,7 @@ nuget push foo.nupkg -Timeout 360</value>
   <data name="PushCommandUsageExamples_plk" xml:space="preserve">
     <value>nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a
 
-nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -s http://customsource/
+nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -src http://customsource/
 
 nuget push foo.nupkg
 
@@ -3074,7 +3074,7 @@ nuget push foo.nupkg -Timeout 360</value>
   <data name="PushCommandUsageExamples_ptb" xml:space="preserve">
     <value>nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a
 
-nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -s http://customsource/
+nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -src http://customsource/
 
 nuget push foo.nupkg
 
@@ -3085,7 +3085,7 @@ nuget push foo.nupkg -Timeout 360</value>
   <data name="PushCommandUsageExamples_rus" xml:space="preserve">
     <value>nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a
 
-nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -s http://customsource/
+nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -src http://customsource/
 
 nuget push foo.nupkg
 
@@ -3096,7 +3096,7 @@ nuget push foo.nupkg -Timeout 360</value>
   <data name="PushCommandUsageExamples_trk" xml:space="preserve">
     <value>nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a
 
-nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -s http://customsource/
+nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -src http://customsource/
 
 nuget push foo.nupkg
 
@@ -3107,7 +3107,7 @@ nuget push foo.nupkg -Timeout 360</value>
   <data name="PushCommandUsageExamples_chs" xml:space="preserve">
     <value>nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a
 
-nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -s http://customsource/
+nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -src http://customsource/
 
 nuget push foo.nupkg
 
@@ -3118,7 +3118,7 @@ nuget push foo.nupkg -Timeout 360</value>
   <data name="PushCommandUsageExamples_cht" xml:space="preserve">
     <value>nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a
 
-nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -s http://customsource/
+nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -src http://customsource/
 
 nuget push foo.nupkg
 
