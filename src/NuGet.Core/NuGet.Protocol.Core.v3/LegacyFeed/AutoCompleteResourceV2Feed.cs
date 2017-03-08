@@ -45,7 +45,7 @@ namespace NuGet.Protocol
         {
             var apiEndpointUri = new UriBuilder(new Uri(_baseUri, @"package-ids"))
             {
-                Query = $"partialId={packageIdPrefix}&includePrerelease={includePrerelease.ToString()}"
+                Query = $"partialId={packageIdPrefix}&includePrerelease={includePrerelease}&semVerLevel=2.0.0"
             };
 
             return await GetResults(apiEndpointUri.Uri, log, token);
@@ -60,12 +60,13 @@ namespace NuGet.Protocol
         {
             var apiEndpointUri = new UriBuilder(new Uri(_baseUri, @"package-versions/" + packageId))
             {
-                Query = $"includePrerelease={includePrerelease.ToString()}"
+                Query = $"includePrerelease={includePrerelease}&semVerLevel=2.0.0"
             };
 
             var results = await GetResults(apiEndpointUri.Uri, log, token);
             var versions = results.ToList();
-            versions = versions.Where(item => item.StartsWith(versionPrefix, StringComparison.OrdinalIgnoreCase))
+            versions = versions
+                .Where(item => item.StartsWith(versionPrefix, StringComparison.OrdinalIgnoreCase))
                 .ToList();
 
             return versions.Select(item => NuGetVersion.Parse(item));

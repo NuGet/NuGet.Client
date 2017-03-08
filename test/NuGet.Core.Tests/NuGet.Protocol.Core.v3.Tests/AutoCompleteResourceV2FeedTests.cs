@@ -19,7 +19,7 @@ namespace NuGet.Protocol.Tests
             var serviceAddress = TestUtility.CreateServiceAddress();
 
             var responses = new Dictionary<string, string>();
-            responses.Add(serviceAddress + "package-ids?partialId=Azure&includePrerelease=False",
+            responses.Add(serviceAddress + "package-ids?partialId=Azure&includePrerelease=False&semVerLevel=2.0.0",
                  TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.AzureAutoComplete.json", GetType()));
             responses.Add(serviceAddress, string.Empty);
 
@@ -41,7 +41,7 @@ namespace NuGet.Protocol.Tests
             var serviceAddress = TestUtility.CreateServiceAddress();
 
             var responses = new Dictionary<string, string>();
-            responses.Add(serviceAddress + "package-versions/xunit?includePrerelease=False",
+            responses.Add(serviceAddress + "package-versions/xunit?includePrerelease=False&semVerLevel=2.0.0",
                  TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.XunitVersionAutoComplete.json", GetType()));
             responses.Add(serviceAddress, string.Empty);
 
@@ -63,7 +63,7 @@ namespace NuGet.Protocol.Tests
             var serviceAddress = TestUtility.CreateServiceAddress();
 
             var responses = new Dictionary<string, string>();
-            responses.Add(serviceAddress + "package-versions/azure?includePrerelease=False", "[]");
+            responses.Add(serviceAddress + "package-versions/azure?includePrerelease=False&semVerLevel=2.0.0", "[]");
             responses.Add(serviceAddress, string.Empty);
 
             var repo = StaticHttpHandler.CreateSource(serviceAddress, Repository.Provider.GetCoreV3(), responses);

@@ -9,7 +9,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 using NuGet.Protocol.Core.Types;
-using NuGet.Protocol;
 using NuGet.Versioning;
 
 namespace NuGet.Protocol
@@ -44,7 +43,9 @@ namespace NuGet.Protocol
             // Construct the query
             var queryUrl = new UriBuilder(searchUrl.AbsoluteUri);
             var queryString =
-                "q=" + WebUtility.UrlEncode(packageIdPrefix) + "&includePrerelease=" + includePrerelease.ToString().ToLowerInvariant();
+                "q=" + WebUtility.UrlEncode(packageIdPrefix) +
+                "&includePrerelease=" + includePrerelease.ToString().ToLowerInvariant() +
+                "&semVerLevel=2.0.0";
 
             queryUrl.Query = queryString;
 
