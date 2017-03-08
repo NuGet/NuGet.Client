@@ -1363,6 +1363,7 @@ EndProject";
                 Assert.NotEqual(0, r.Item1);
                 var error = r.Item3;
                 Assert.True(error.Contains("Error parsing solution file"));
+                Assert.True(error.Contains("Error parsing a project section"));
             }
         }
 

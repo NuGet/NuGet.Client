@@ -37,6 +37,10 @@ namespace NuGet.Client
             PropertyNames.CodeLanguage,
             parser: CodeLanguage_Parser);
 
+        private static readonly Dictionary<string, object> NetTFMTable = new Dictionary<string, object>
+        {
+            { "tfm", new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Net, FrameworkConstants.EmptyVersion) }
+        };
 
         private static readonly Dictionary<string, object> DefaultTfmAny = new Dictionary<string, object>
         {
@@ -344,9 +348,14 @@ namespace NuGet.Client
             public PatternSet RuntimeAssemblies { get; }
 
             /// <summary>
-            /// Pattern used to locate all files designed for using as managed code references at compile-time
+            /// Pattern used to locate ref assemblies for compile.
             /// </summary>
-            public PatternSet CompileAssemblies { get; }
+            public PatternSet CompileRefAssemblies { get; }
+
+            /// <summary>
+            /// Pattern used to locate lib assemblies for compile.
+            /// </summary>
+            public PatternSet CompileLibAssemblies { get; }
 
             /// <summary>
             /// Pattern used to locate all files designed for loading as native code libraries at run-time
@@ -394,23 +403,16 @@ namespace NuGet.Client
                     {
                         new PatternDefinition("runtimes/{rid}/lib/{tfm}/{any?}", table: DotnetAnyTable),
                         new PatternDefinition("lib/{tfm}/{any?}", table: DotnetAnyTable),
-                        new PatternDefinition("lib/{assembly?}", table: DotnetAnyTable,
-                            defaults: new Dictionary<string, object>
-                            {
-                                { "tfm", new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Net, FrameworkConstants.EmptyVersion) }
-                            })
+                        new PatternDefinition("lib/{assembly?}", table: DotnetAnyTable, defaults: NetTFMTable)
                     },
                     pathPatterns: new PatternDefinition[]
                     {
                         new PatternDefinition("runtimes/{rid}/lib/{tfm}/{assembly}", table: DotnetAnyTable),
                         new PatternDefinition("lib/{tfm}/{assembly}", table: DotnetAnyTable),
-                        new PatternDefinition("lib/{assembly}", table: DotnetAnyTable, defaults: new Dictionary<string, object>
-                            {
-                                { "tfm", new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Net, FrameworkConstants.EmptyVersion) }
-                            })
+                        new PatternDefinition("lib/{assembly}", table: DotnetAnyTable, defaults: NetTFMTable)
                     });
 
-                CompileAssemblies = new PatternSet(
+                CompileRefAssemblies = new PatternSet(
                     conventions.Properties,
                     groupPatterns: new PatternDefinition[]
                         {
@@ -419,6 +421,19 @@ namespace NuGet.Client
                     pathPatterns: new PatternDefinition[]
                         {
                             new PatternDefinition("ref/{tfm}/{assembly}", table: DotnetAnyTable),
+                        });
+
+                CompileLibAssemblies = new PatternSet(
+                    conventions.Properties,
+                    groupPatterns: new PatternDefinition[]
+                        {
+                            new PatternDefinition("lib/{tfm}/{any?}", table: DotnetAnyTable),
+                            new PatternDefinition("lib/{assembly?}", table: DotnetAnyTable, defaults: NetTFMTable)
+                        },
+                    pathPatterns: new PatternDefinition[]
+                        {
+                            new PatternDefinition("lib/{tfm}/{assembly}", table: DotnetAnyTable),
+                            new PatternDefinition("lib/{assembly}", table: DotnetAnyTable, defaults: NetTFMTable)
                         });
 
                 NativeLibraries = new PatternSet(

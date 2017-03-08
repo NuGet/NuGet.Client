@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using NuGet.Client;
+using NuGet.Common;
 using NuGet.ContentModel;
 using NuGet.DependencyResolver;
 using NuGet.Frameworks;
@@ -144,11 +145,12 @@ namespace NuGet.Commands
             var orderedCriteria = CreateCriteria(targetGraph, framework);
 
             // Compile
+            // ref takes precedence over lib
             var compileGroup = GetLockFileItems(
                 orderedCriteria,
                 contentItems,
-                targetGraph.Conventions.Patterns.CompileAssemblies,
-                targetGraph.Conventions.Patterns.RuntimeAssemblies);
+                targetGraph.Conventions.Patterns.CompileRefAssemblies,
+                targetGraph.Conventions.Patterns.CompileLibAssemblies);
 
             lockFileLib.CompileTimeAssemblies.AddRange(compileGroup);
 
@@ -365,11 +367,12 @@ namespace NuGet.Commands
                     var orderedCriteria = CreateCriteria(targetGraph, targetGraph.Framework);
 
                     // Compile
+                    // ref takes precedence over lib
                     var compileGroup = GetLockFileItems(
                         orderedCriteria,
                         contentItems,
-                        targetGraph.Conventions.Patterns.CompileAssemblies,
-                        targetGraph.Conventions.Patterns.RuntimeAssemblies);
+                        targetGraph.Conventions.Patterns.CompileRefAssemblies,
+                        targetGraph.Conventions.Patterns.CompileLibAssemblies);
 
                     projectLib.CompileTimeAssemblies.AddRange(
                         ConvertToProjectPaths(fileLookup, projectDir, compileGroup));

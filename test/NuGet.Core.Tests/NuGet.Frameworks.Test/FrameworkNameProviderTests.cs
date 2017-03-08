@@ -33,7 +33,8 @@ namespace NuGet.Test
             Assert.Equal(FrameworkConstants.CommonFrameworks.NetStandard15, versions[5]);
             Assert.Equal(FrameworkConstants.CommonFrameworks.NetStandard16, versions[6]);
             Assert.Equal(FrameworkConstants.CommonFrameworks.NetStandard17, versions[7]);
-            Assert.Equal(8, versions.Length);
+            Assert.Equal(FrameworkConstants.CommonFrameworks.NetStandard20, versions[8]);
+            Assert.Equal(9, versions.Length);
         }
 
         [Fact]

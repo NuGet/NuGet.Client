@@ -21,6 +21,8 @@ namespace NuGet.PackageManagement.VisualStudio
     /// </summary>
     public class EnvDTEProjectAdapter : IEnvDTEProjectAdapter
     {
+        private const string RestoreProjectStyle = "RestoreProjectStyle";
+
         /// <summary>
         /// The adaptee for this adapter
         /// </summary>
@@ -156,21 +158,27 @@ namespace NuGet.PackageManagement.VisualStudio
 
                 if (!_isLegacyCSProjPackageReferenceProject.HasValue)
                 {
-                    // A legacy CSProj can't be CPS, must cast to VSProject4 and *must* have at least one package
-                    // reference already in the CSProj. In the future this logic may change. For now a user must
-                    // hand code their first package reference. Laid out in longhand for readability.
-                    if (AsIVsHierarchy?.IsCapabilityMatch("CPS") ?? true)
-                    {
-                        _isLegacyCSProjPackageReferenceProject = false;
-                    }
-                    else if (AsVSProject4 == null ||
-                        (AsVSProject4.PackageReferences?.InstalledPackages?.Length ?? 0) == 0)
+                    // A legacy CSProj must cast to VSProject4 to manipulate package references
+                    if (AsVSProject4 == null)
                     {
                         _isLegacyCSProjPackageReferenceProject = false;
                     }
                     else
                     {
-                        _isLegacyCSProjPackageReferenceProject = true;
+                        // Check for RestoreProjectStyle property
+                        var restoreProjectStyle = GetMSBuildProperty(AsIVsBuildPropertyStorage, RestoreProjectStyle, configName: null);
+
+                        // For legacy csproj, either the RestoreProjectStyle must be set to PackageReference or
+                        // project has atleast one package dependency defined as PackageReference
+                        if (restoreProjectStyle?.Equals(ProjectStyle.PackageReference.ToString(), StringComparison.OrdinalIgnoreCase) ?? true
+                            || (AsVSProject4.PackageReferences?.InstalledPackages?.Length ?? 0) > 0)
+                        {
+                            _isLegacyCSProjPackageReferenceProject = true;
+                        }
+                        else
+                        {
+                            _isLegacyCSProjPackageReferenceProject = false;
+                        }
                     }
                 }
 
@@ -371,12 +379,17 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private static string GetMSBuildProperty(IVsBuildPropertyStorage buildPropertyStorage, string name)
         {
+            return GetMSBuildProperty(buildPropertyStorage, name, string.Empty);
+        }
+
+        private static string GetMSBuildProperty(IVsBuildPropertyStorage buildPropertyStorage, string name, string configName)
+        {
             ThreadHelper.ThrowIfNotOnUIThread();
 
             string output;
             var result = buildPropertyStorage.GetPropertyValue(
                 name,
-                string.Empty,
+                configName,
                 (uint)_PersistStorageType.PST_PROJECT_FILE,
                 out output);
 

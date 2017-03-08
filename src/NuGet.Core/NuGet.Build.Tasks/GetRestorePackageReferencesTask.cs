@@ -37,13 +37,22 @@ namespace NuGet.Build.Tasks
             log.LogDebug($"(in) PackageReferences '{string.Join(";", PackageReferences.Select(p => p.ItemSpec))}'");
 
             var entries = new List<ITaskItem>();
+            var seenIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
             foreach (var msbuildItem in PackageReferences)
             {
+                var packageId = msbuildItem.ItemSpec;
+
+                if (string.IsNullOrEmpty(packageId) || !seenIds.Add(packageId))
+                {
+                    // Skip empty or already processed ids
+                    continue;
+                }
+
                 var properties = new Dictionary<string, string>();
                 properties.Add("ProjectUniqueName", ProjectUniqueName);
                 properties.Add("Type", "Dependency");
-                properties.Add("Id", msbuildItem.ItemSpec);
+                properties.Add("Id", packageId);
                 BuildTasksUtility.CopyPropertyIfExists(msbuildItem, properties, "Version", "VersionRange");
 
                 if (!string.IsNullOrEmpty(TargetFrameworks))

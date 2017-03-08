@@ -150,19 +150,22 @@ namespace NuGet.SolutionRestoreManager
         {
             Reset(isDisposing: true);
 
-            _joinableFactory.Run(async () =>
+            if (_initialized != 0)
             {
-                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-                _solutionEvents.AfterClosing -= SolutionEvents_AfterClosing;
-#if VS15
-                Unadvise();
-#endif
-                if (_errorListProvider.IsValueCreated)
+                _joinableFactory.Run(async () =>
                 {
-                    (await _errorListProvider.GetValueAsync()).Dispose();
-                }
-            });
+                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                    _solutionEvents.AfterClosing -= SolutionEvents_AfterClosing;
+#if VS15
+                    Unadvise();
+#endif
+                    if (_errorListProvider.IsValueCreated)
+                    {
+                        (await _errorListProvider.GetValueAsync()).Dispose();
+                    }
+                });
+            }
         }
 
         private void Reset(bool isDisposing = false)
@@ -324,10 +327,20 @@ namespace NuGet.SolutionRestoreManager
                         while (!_pendingRequests.Value.IsCompleted
                             && !token.IsCancellationRequested)
                         {
-                            SolutionRestoreRequest discard;
-                            if (!_pendingRequests.Value.TryTake(out discard, IdleTimeoutMs, token))
+                            SolutionRestoreRequest next;
+                            if (!_pendingRequests.Value.TryTake(out next, IdleTimeoutMs, token))
                             {
                                 break;
+                            }
+
+                            // Upgrade request if necessary
+                            if (next.RestoreSource != request.RestoreSource)
+                            {
+                                // there could be requests of two types: Auto-Restore or Explicit
+                                // Explicit is always preferred.
+                                request = new SolutionRestoreRequest(
+                                    next.ForceRestore || request.ForceRestore,
+                                    RestoreOperationSource.Explicit);
                             }
                         }
 

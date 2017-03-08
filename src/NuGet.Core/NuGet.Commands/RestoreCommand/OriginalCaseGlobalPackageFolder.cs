@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Common;
 using NuGet.DependencyResolver;
 using NuGet.LibraryModel;
 using NuGet.Packaging;

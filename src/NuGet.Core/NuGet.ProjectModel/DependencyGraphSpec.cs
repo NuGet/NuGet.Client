@@ -121,6 +121,15 @@ namespace NuGet.ProjectModel
                 throw new ArgumentNullException(nameof(rootUniqueName));
             }
 
+            var projectsByPathDict = _projects
+                .Where(t => !string.IsNullOrEmpty(t.Value?.RestoreMetadata?.ProjectPath))
+                .GroupBy(t => t.Value.RestoreMetadata.ProjectPath)
+                .ToDictionary(t => t.Key, t => t.First().Value);
+
+            var projectsByPath = new SortedDictionary<string, PackageSpec>(
+                projectsByPathDict,
+                PathUtility.GetStringComparerBasedOnOS());
+            
             var closure = new List<PackageSpec>();
 
             var added = new SortedSet<string>(StringComparer.Ordinal);
@@ -139,7 +148,7 @@ namespace NuGet.ProjectModel
                     closure.Add(spec);
 
                     // Find children
-                    foreach (var projectName in GetProjectReferenceNames(spec))
+                    foreach (var projectName in GetProjectReferenceNames(spec, projectsByPath))
                     {
                         if (added.Add(projectName))
                         {
@@ -152,13 +161,15 @@ namespace NuGet.ProjectModel
             return closure;
         }
 
-        private static IEnumerable<string> GetProjectReferenceNames(PackageSpec spec)
+        private IEnumerable<string> GetProjectReferenceNames(PackageSpec spec, IDictionary<string, PackageSpec> projectsByPath)
         {
             // Handle projects which may not have specs, and which may not have references
             return spec?.RestoreMetadata?
                 .TargetFrameworks
                 .SelectMany(e => e.ProjectReferences)
-                .Select(project => project.ProjectUniqueName)
+                .Where(project => projectsByPath.ContainsKey(project.ProjectPath))
+                .Select(project => projectsByPath[project.ProjectPath]?.RestoreMetadata?.ProjectUniqueName)
+                .Where(t => !string.IsNullOrEmpty(t))
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 ?? Enumerable.Empty<string>();
         }
