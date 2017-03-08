@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -21,7 +24,6 @@ namespace NuGet.Protocol.Core.Types
     public class PackageUpdateResource : INuGetResource
     {
         private const string ServiceEndpoint = "/api/v2/package";
-        private const string ApiKeyHeader = "X-NuGet-ApiKey";
 
         private HttpSource _httpSource;
         private string _source;
@@ -277,6 +279,7 @@ namespace NuGet.Protocol.Core.Types
                 response =>
                 {
                     response.EnsureSuccessStatusCode();
+
                     return Task.FromResult(0);
                 },
                 logger,
@@ -313,7 +316,7 @@ namespace NuGet.Protocol.Core.Types
 
             if (hasApiKey)
             {
-                request.Headers.Add(ApiKeyHeader, apiKey);
+                request.Headers.Add(ProtocolConstants.ApiKeyHeader, apiKey);
             }
 
             return request;
@@ -396,7 +399,7 @@ namespace NuGet.Protocol.Core.Types
 
                         if (hasApiKey)
                         {
-                            request.Headers.Add(ApiKeyHeader, apiKey);
+                            request.Headers.Add(ProtocolConstants.ApiKeyHeader, apiKey);
                         }
 
                         return request;
@@ -404,6 +407,7 @@ namespace NuGet.Protocol.Core.Types
                 response =>
                 {
                     response.EnsureSuccessStatusCode();
+
                     return Task.FromResult(0);
                 },
                 logger,
