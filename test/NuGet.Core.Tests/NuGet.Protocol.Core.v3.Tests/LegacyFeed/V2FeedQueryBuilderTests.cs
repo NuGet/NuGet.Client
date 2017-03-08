@@ -28,7 +28,7 @@ namespace NuGet.Protocol.Tests
                 take: null);
 
             // Assert
-            Assert.Equal("/Packages", actual);
+            Assert.Equal("/Packages?semVerLevel=2.0.0", actual);
         }
 
         /// <summary>
@@ -48,7 +48,7 @@ namespace NuGet.Protocol.Tests
                 take: null);
 
             // Assert
-            Assert.Equal("/Packages?$skip=100", actual);
+            Assert.Equal("/Packages?$skip=100&semVerLevel=2.0.0", actual);
         }
 
         /// <summary>
@@ -71,7 +71,7 @@ namespace NuGet.Protocol.Tests
                 take: 30);
 
             // Assert
-            Assert.Equal("/Packages()?$orderby=Id&$skip=0&$top=30", actual);
+            Assert.Equal("/Packages()?$orderby=Id&$skip=0&$top=30&semVerLevel=2.0.0", actual);
         }
 
         /// <summary>
@@ -94,7 +94,7 @@ namespace NuGet.Protocol.Tests
                 take: 30);
 
             // Assert
-            Assert.Equal("/Packages()?$filter=IsAbsoluteLatestVersion&$orderby=Id&$skip=0&$top=30", actual);
+            Assert.Equal("/Packages()?$filter=IsAbsoluteLatestVersion&$orderby=Id&$skip=0&$top=30&semVerLevel=2.0.0", actual);
         }
 
         /// <summary>
@@ -118,7 +118,7 @@ namespace NuGet.Protocol.Tests
                 take: 30);
 
             // Assert
-            Assert.Equal("/Packages()?$filter=IsLatestVersion&$orderby=Id&$skip=0&$top=30", actual);
+            Assert.Equal("/Packages()?$filter=IsLatestVersion&$orderby=Id&$skip=0&$top=30&semVerLevel=2.0.0", actual);
         }
 
         /// <summary>
@@ -140,8 +140,8 @@ namespace NuGet.Protocol.Tests
             // Assert
             Assert.Equal(
                 "/Packages()?$filter=(((Id%20ne%20null)%20and%20substringof('nuget',tolower(Id)))%20or%20" +
-                "((Description%20ne%20null)%20and%20substringof('nuget',tolower(Description))))%20or%20" + 
-                "((Tags%20ne%20null)%20and%20substringof('%20nuget%20',tolower(Tags)))",
+                "((Description%20ne%20null)%20and%20substringof('nuget',tolower(Description))))%20or%20" +
+                "((Tags%20ne%20null)%20and%20substringof('%20nuget%20',tolower(Tags)))&semVerLevel=2.0.0",
                 actual);
         }
 
@@ -168,8 +168,8 @@ namespace NuGet.Protocol.Tests
             Assert.Equal(
                 "/Packages()?$filter=((((Id%20ne%20null)%20and%20substringof('nuget',tolower(Id)))%20or%20" +
                 "((Description%20ne%20null)%20and%20substringof('nuget',tolower(Description))))%20or%20" + 
-                "((Tags%20ne%20null)%20and%20substringof('%20nuget%20',tolower(Tags))))%20and%20" + 
-                "IsAbsoluteLatestVersion&$orderby=Id&$skip=0&$top=30",
+                "((Tags%20ne%20null)%20and%20substringof('%20nuget%20',tolower(Tags))))%20and%20" +
+                "IsAbsoluteLatestVersion&$orderby=Id&$skip=0&$top=30&semVerLevel=2.0.0",
                 actual);
         }
 
@@ -199,7 +199,7 @@ namespace NuGet.Protocol.Tests
                 "substringof('%20bar%20',tolower(Tags))))%20or%20((Id%20ne%20null)%20and%20" +
                 "substringof('baz',tolower(Id))))%20or%20((Description%20ne%20null)%20and%20" + 
                 "substringof('baz',tolower(Description))))%20or%20((Tags%20ne%20null)%20and%20" +
-                "substringof('%20baz%20',tolower(Tags)))",
+                "substringof('%20baz%20',tolower(Tags)))&semVerLevel=2.0.0",
                 actual);
         }
 
@@ -213,7 +213,7 @@ namespace NuGet.Protocol.Tests
             var actual = target.BuildFindPackagesByIdUri("Newtonsoft.Json");
 
             // Assert
-            Assert.Equal("/FindPackagesById()?id='Newtonsoft.Json'", actual);
+            Assert.Equal("/FindPackagesById()?id='Newtonsoft.Json'&semVerLevel=2.0.0", actual);
         }
 
         [Fact]
@@ -226,7 +226,7 @@ namespace NuGet.Protocol.Tests
             var actual = target.BuildFindPackagesByIdUri("foo! bar/ baz?");
 
             // Assert
-            Assert.Equal("/FindPackagesById()?id='foo%21%20bar%2F%20baz%3F'", actual);
+            Assert.Equal("/FindPackagesById()?id='foo%21%20bar%2F%20baz%3F'&semVerLevel=2.0.0", actual);
         }
 
         [Fact]
@@ -290,7 +290,7 @@ namespace NuGet.Protocol.Tests
             // Assert
             Assert.Equal(
                 "/Search()?$filter=IsAbsoluteLatestVersion&$orderby=Id&searchTerm='foo%21%20bar%2F%20baz%3F'&" +
-                "targetFramework='net45%7Cnetcoreapp1.0'&includePrerelease=true&$skip=0&$top=30",
+                "targetFramework='net45%7Cnetcoreapp1.0'&includePrerelease=true&$skip=0&$top=30&semVerLevel=2.0.0",
                 actual);
         }
 
@@ -310,7 +310,7 @@ namespace NuGet.Protocol.Tests
             // Assert
             Assert.Equal(
                 "/Search()?searchTerm='foo%21%20bar%2F%20baz%3F'&targetFramework=''" +
-                "&includePrerelease=true&$skip=0&$top=30",
+                "&includePrerelease=true&$skip=0&$top=30&semVerLevel=2.0.0",
                 actual);
         }
     }

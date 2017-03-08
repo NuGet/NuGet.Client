@@ -1,9 +1,14 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Common;
 using NuGet.Protocol.Core.Types;
+using NuGet.Versioning;
 using Test.Utility;
 using Xunit;
 
@@ -16,15 +21,54 @@ namespace NuGet.Protocol.VisualStudio.Tests
         public PowershellAutoCompleteResourceTests()
         {
             ResponsesDict = new Dictionary<string, string>();
-            ResponsesDict.Add("http://testsource.com/v3/index.json", JsonData.IndexJson);
-            ResponsesDict.Add("https://api-v3search-0.nuget.org/autocomplete?q=elm", JsonData.PsAutoCompleteV3Example);
-            ResponsesDict.Add("https://nuget.org/api/v2/package-ids?partialId=elm", JsonData.PSAutoCompleteV2Example);
+            ResponsesDict.Add(
+                "http://source.test/v3/index.json",
+                JsonData.IndexJson);
+            ResponsesDict.Add(
+                "https://nuget.org/api/v2/",
+                string.Empty);
+            ResponsesDict.Add(
+                "https://api-v3search-0.nuget.org/autocomplete?q=elm&includePrerelease=true&semVerLevel=2.0.0",
+                JsonData.AutoCompleteV3Example);
+            ResponsesDict.Add(
+                "https://api.nuget.org/v3/registration0/nuget.versioning/index.json",
+                JsonData.VersionAutocompleteRegistrationExample);
+            ResponsesDict.Add(
+                "https://nuget.org/api/v2/package-ids?partialId=elm&includePrerelease=True&semVerLevel=2.0.0",
+                JsonData.AutoCompleteV2Example);
+            ResponsesDict.Add(
+                "https://nuget.org/api/v2/package-versions/NuGet.Versioning?includePrerelease=True&semVerLevel=2.0.0",
+                JsonData.VersionAutoCompleteV2Example);
         }
 
+        [Theory]
+        [InlineData("http://source.test/v3/index.json")]
+        [InlineData("https://nuget.org/api/v2/")]
+        public async Task PowershellAutoComplete_VersionStartsWithReturnsExpectedResults(string sourceUrl)
+        {
+            // Arrange
+            var source = StaticHttpHandler.CreateSource(sourceUrl, Repository.Provider.GetVisualStudio(), ResponsesDict);
+            var resource = await source.GetResourceAsync<AutoCompleteResource>();
+            Assert.NotNull(resource);
 
-        //[Theory]
-        //[InlineData("http://testsource.com/v3/index.json")]
-        //[InlineData("https://nuget.org/api/v2/")]
+            // Act
+            var versions = await resource.VersionStartsWith(
+                "NuGet.Versioning",
+                "3.",
+                includePrerelease: true,
+                log: NullLogger.Instance,
+                token: CancellationToken.None);
+
+            // Assert
+            Assert.NotNull(versions);
+            Assert.Equal(2, versions.Count());
+            Assert.Contains(new NuGetVersion("3.5.0-rc1-final"), versions);
+            Assert.Contains(new NuGetVersion("3.5.0"), versions);
+        }
+
+        [Theory]
+        [InlineData("http://source.test/v3/index.json")]
+        [InlineData("https://nuget.org/api/v2/")]
         public async Task PowershellAutoComplete_IdStartsWithReturnsExpectedResults(string sourceUrl)
         {
             // Arrange
@@ -41,9 +85,9 @@ namespace NuGet.Protocol.VisualStudio.Tests
             Assert.Contains("elmah", packages);
         }
 
-        //[Theory]
-        //[InlineData("http://testsource.com/v3/index.json")]
-        //[InlineData("https://nuget.org/api/v2/")]
+        [Theory]
+        [InlineData("http://source.test/v3/index.json")]
+        [InlineData("https://nuget.org/api/v2/")]
         public async Task PowershellAutoComplete_IdStartsWithCancelsAsAppropriate(string sourceUrl)
         {
             // Arrange
