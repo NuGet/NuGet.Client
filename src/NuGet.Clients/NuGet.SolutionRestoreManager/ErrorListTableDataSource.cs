@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System.Diagnostics;
 using System.Linq;
 using Microsoft.VisualStudio.Shell;
@@ -17,7 +20,7 @@ namespace NuGet.SolutionRestoreManager
     /// </summary>
     [Export(typeof(ErrorListTableDataSource))]
     [PartCreationPolicy(CreationPolicy.Shared)]
-    internal sealed class ErrorListTableDataSource : ITableDataSource
+    internal sealed class ErrorListTableDataSource : ITableDataSource, IDisposable
     {
         private readonly object _initLockObj = new object();
         private readonly object _subscribeLockObj = new object();
@@ -30,8 +33,8 @@ namespace NuGet.SolutionRestoreManager
 
         public string DisplayName => "NuGet_Restore_Manager_Table_Data_Source";
 
-        public IErrorList _errorList;
-        public ITableManager _tableManager;
+        private IErrorList _errorList;
+        private ITableManager _tableManager;
         private bool _initialized;
 
         [ImportingConstructor]
