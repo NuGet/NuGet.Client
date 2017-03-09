@@ -29,8 +29,10 @@ namespace NuGet.Protocol.Tests
 
             var responses = new Dictionary<string, string>();
 
-            responses.Add(serviceAddress + "/Search()?$filter=IsLatestVersion&$orderby=Id&searchTerm='newton'&targetFramework=''&includePrerelease=false&$skip=0&$top=30",
-               TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.6DelistedEntries.xml", GetType()));
+            responses.Add(
+                serviceAddress + "/Search()?$filter=IsLatestVersion&$orderby=Id&searchTerm='newton'" +
+                "&targetFramework=''&includePrerelease=false&$skip=0&$top=30&semVerLevel=2.0.0",
+                TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.6DelistedEntries.xml", GetType()));
             responses.Add(serviceAddress, string.Empty);
             responses.Add(serviceAddress + "/$metadata",
                 TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.MetadataTT.xml", GetType()));
@@ -74,8 +76,10 @@ namespace NuGet.Protocol.Tests
 
             var responses = new Dictionary<string, string>();
 
-            responses.Add(serviceAddress + "/Search()?$filter=IsLatestVersion&$orderby=Id&searchTerm='newton'&targetFramework=''&includePrerelease=false&$skip=0&$top=30",
-               TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.6DelistedEntries.xml", GetType()));
+            responses.Add(
+                serviceAddress + "/Search()?$filter=IsLatestVersion&$orderby=Id&searchTerm='newton'" +
+                "&targetFramework=''&includePrerelease=false&$skip=0&$top=30&semVerLevel=2.0.0",
+                TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.6DelistedEntries.xml", GetType()));
             responses.Add(serviceAddress, string.Empty);
             responses.Add(serviceAddress + "/$metadata",
                 TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.MetadataTT.xml", GetType()));
