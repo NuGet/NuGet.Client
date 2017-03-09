@@ -55,7 +55,9 @@ namespace NuGet.Protocol.Tests
             var serviceAddress = TestUtility.CreateServiceAddress();
 
             var responses = new Dictionary<string, string>();
-            responses.Add(serviceAddress + "?q=azure%20b&skip=0&take=1&prerelease=false&supportedFramework=.NETFramework,Version=v4.5",
+            responses.Add(
+                serviceAddress + "?q=azure%20b&skip=0&take=1&prerelease=false" +
+                "&supportedFramework=.NETFramework,Version=v4.5&semVerLevel=2.0.0",
                 TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.V3Search.json", GetType()));
             responses.Add(serviceAddress, string.Empty);
 
