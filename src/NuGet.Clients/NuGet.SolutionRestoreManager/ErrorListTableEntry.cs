@@ -20,9 +20,9 @@ namespace NuGet.SolutionRestoreManager
             }
         }
 
-        public string Message { get; set; }
+        public string Message { get; }
 
-        public LogLevel LogLevel { get; set; }
+        public LogLevel LogLevel { get; }
 
         public ErrorListTableEntry(string message, LogLevel level)
         {

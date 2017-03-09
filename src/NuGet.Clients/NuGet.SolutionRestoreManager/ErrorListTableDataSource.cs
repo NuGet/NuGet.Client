@@ -1,9 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.Composition;
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+using System.Collections.Generic;
+using System.ComponentModel.Composition;
 using System.Diagnostics;
 using System.Linq;
 using Microsoft.VisualStudio.Shell;
@@ -26,6 +26,7 @@ namespace NuGet.SolutionRestoreManager
         private readonly object _subscribeLockObj = new object();
         private readonly IServiceProvider _serviceProvider;
         private IReadOnlyList<TableSubscription> _subscriptions = new List<TableSubscription>();
+        private readonly List<ErrorListTableEntry> _entries = new List<ErrorListTableEntry>();
 
         public string SourceTypeIdentifier => StandardTableDataSources.ErrorTableDataSource;
 
@@ -50,9 +51,25 @@ namespace NuGet.SolutionRestoreManager
             _serviceProvider = serviceProvider;
         }
 
+
+        /// <summary>
+        /// This method is called by the TableManager during the call to EnsureInitialized().
+        /// Locks should be careful to avoid a deadlock here due to this flow.
+        /// </summary>
         public IDisposable Subscribe(ITableDataSink sink)
         {
-            var subscription = new TableSubscription(sink);
+            TableSubscription subscription = null;
+
+            lock (_entries)
+            {
+                subscription = new TableSubscription(sink);
+
+                subscription.RunWithLock((s) =>
+                {
+                    // Add all existing entries to the new sink
+                    s.AddEntries(_entries.ToList(), removeAllEntries: false);
+                });
+            }
 
             lock (_subscribeLockObj)
             {
@@ -75,34 +92,52 @@ namespace NuGet.SolutionRestoreManager
         /// </summary>
         public void ClearNuGetEntries()
         {
-            EnsureInitialized();
-
-            var subscriptions = _subscriptions;
-            foreach (var subscription in subscriptions)
+            if (_initialized)
             {
-                subscription.RunWithLock((sink) =>
+                lock (_entries)
                 {
-                    var entries = _errorList.TableControl.Entries.Where(IsNuGetEntry).ToArray();
-
-                    sink.RemoveEntries(entries);
-                });
-            }
-        }
-
-        /// <summary>
-        /// Add error list entries
-        /// </summary>
-        public void AddEntries(params ErrorListTableEntry[] entries)
-        {
-            if (entries.Length > 0)
-            {
-                EnsureInitialized();
+                    // Clear all entries
+                    _entries.Clear();
+                }
 
                 var subscriptions = _subscriptions;
                 foreach (var subscription in subscriptions)
                 {
                     subscription.RunWithLock((sink) =>
                     {
+                    // Find all entries in the sink that belong to NuGet, this ensures we won't miss any.
+                    var entries = _errorList.TableControl.Entries.Where(IsNuGetEntry).ToArray();
+
+                    // Remove all found entries.
+                    sink.RemoveEntries(entries);
+                    });
+                }
+            }
+        }
+
+        /// <summary>
+        /// Add error list entries
+        /// </summary>
+        public void AddNuGetEntries(params ErrorListTableEntry[] entries)
+        {
+            if (entries.Length > 0)
+            {
+                EnsureInitialized();
+
+                lock (_entries)
+                {
+                    // Update the full set of entries
+                    _entries.AddRange(entries);
+                }
+
+                // Add new entries to each sink
+                var subscriptions = _subscriptions;
+                foreach (var subscription in subscriptions)
+                {
+                    subscription.RunWithLock((sink) =>
+                    {
+                        // Copy the list we pass off
+                        // Add everything to the sink
                         sink.AddEntries(entries.ToList(), removeAllEntries: false);
                     });
                 }
@@ -171,7 +206,10 @@ namespace NuGet.SolutionRestoreManager
         {
             private readonly object _lockObj = new object();
             private ITableDataSink _sink;
-
+            
+            /// <summary>
+            /// True if the TableManager has called Dipose on this.
+            /// </summary>
             public bool Disposed { get; private set; }
 
             public TableSubscription(ITableDataSink sink)
@@ -195,6 +233,12 @@ namespace NuGet.SolutionRestoreManager
                 }
             }
 
+            /// <summary>
+            /// When disposed we set the sink to null and later
+            /// all null sinks will be cleared out of the list.
+            /// Setting it to null also means that operations on this
+            /// will end up as a noop.
+            /// </summary>
             public void Dispose()
             {
                 lock (_lockObj)

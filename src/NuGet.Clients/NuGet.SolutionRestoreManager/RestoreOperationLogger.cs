@@ -206,7 +206,7 @@ namespace NuGet.SolutionRestoreManager
                 var errorListEntry = new ErrorListTableEntry(message, errorLevel);
 
                 // Add the entry to the list
-                _errorListDataSource.Value.AddEntries(errorListEntry);
+                _errorListDataSource.Value.AddNuGetEntries(errorListEntry);
 
                 // Display the error list after restore completes
                 _showErrorList = true;
@@ -221,7 +221,7 @@ namespace NuGet.SolutionRestoreManager
                 && message.Length == message.TrimStart().Length;
 
             // Write to the output window if the verbosity level is high enough.
-            var showAsOutputMessage = ShowMessageAsOutput(verbosityLevel);
+            var showAsOutputMessage = ShouldShowMessageAsOutput(verbosityLevel);
 
             // Avoid moving to the UI thread unless there is work to do
             if (reportProgress || showAsOutputMessage)
@@ -256,13 +256,16 @@ namespace NuGet.SolutionRestoreManager
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            if (ShowMessageAsOutput(verbosity))
+            if (ShouldShowMessageAsOutput(verbosity))
             {
                 _outputConsole.WriteLine(format, args);
             }
         }
 
-        public bool ShowMessageAsOutput(VerbosityLevel verbosity)
+        /// <summary>
+        /// True if this message will be written out.
+        /// </summary>
+        public bool ShouldShowMessageAsOutput(VerbosityLevel verbosity)
         {
             return _outputConsole != null && OutputVerbosity >= (int)verbosity;
         }
@@ -303,7 +306,7 @@ namespace NuGet.SolutionRestoreManager
         {
             var entry = new ErrorListTableEntry(errorText, LogLevel.Error);
 
-            _errorListDataSource.Value.AddEntries(entry);
+            _errorListDataSource.Value.AddNuGetEntries(entry);
             _errorListDataSource.Value.BringToFront();
         }
 
