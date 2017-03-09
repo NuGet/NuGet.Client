@@ -2342,12 +2342,13 @@ function Test-FileTransformWorksOnDependentFile
     Install-Package test -Source $context.RepositoryPath
 
     # Assert
+	Assert-Package $p TTFile
+	Assert-Package $p test
 
-    $projectDir = Split-Path -parent -path $p.FullName
+	$projectDir = Split-Path -parent -path $p.FullName
     $configFilePath = Join-Path -path $projectDir -childpath "one.config"
-    $content = get-content $configFilePath
-    $matches = @($content | ? { ($_.IndexOf('foo="bar"') -gt -1) })
-    Assert-True ($matches.Count -gt 0)
+	$content = [xml](Get-Content $configFilePath)
+    Assert-AreEqual "bar" $content.configuration["system.web"].compilation.foo
 }
 
 # Solution level package used

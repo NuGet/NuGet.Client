@@ -18,6 +18,7 @@ namespace NuGet.Commands
             string targetFramework,
             string targetFrameworkMoniker,
             string targetPlatformIdentifier,
+            string targetPlatformVersion,
             string targetPlatformMinVersion)
         {
             return GetProjectFrameworkStrings(
@@ -26,6 +27,7 @@ namespace NuGet.Commands
                 targetFramework,
                 targetFrameworkMoniker,
                 targetPlatformIdentifier,
+                targetPlatformVersion,
                 targetPlatformMinVersion,
                 isManagementPackProject: false,
                 isXnaWindowsPhoneProject: false);
@@ -40,6 +42,7 @@ namespace NuGet.Commands
             string targetFramework,
             string targetFrameworkMoniker,
             string targetPlatformIdentifier,
+            string targetPlatformVersion,
             string targetPlatformMinVersion,
             bool isXnaWindowsPhoneProject,
             bool isManagementPackProject)
@@ -86,6 +89,12 @@ namespace NuGet.Commands
             // UAP/Windows store projects
             var platformIdentifier = MSBuildStringUtility.TrimAndGetNullForEmpty(targetPlatformIdentifier);
             var platformVersion = MSBuildStringUtility.TrimAndGetNullForEmpty(targetPlatformMinVersion);
+
+            // if targetPlatformMinVersion isn't defined then fallback to targetPlatformVersion
+            if (string.IsNullOrEmpty(platformVersion))
+            {
+                platformVersion = MSBuildStringUtility.TrimAndGetNullForEmpty(targetPlatformVersion);
+            }
 
             // Check for JS project
             if (projectFilePath?.EndsWith(".jsproj", StringComparison.OrdinalIgnoreCase) == true)

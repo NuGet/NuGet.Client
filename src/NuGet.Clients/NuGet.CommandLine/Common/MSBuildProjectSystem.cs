@@ -64,6 +64,7 @@ namespace NuGet.Common
                         targetFramework: GetPropertyValue("TargetFramework"),
                         targetFrameworkMoniker: GetPropertyValue("TargetFrameworkMoniker"),
                         targetPlatformIdentifier: GetPropertyValue("TargetPlatformIdentifier"),
+                        targetPlatformVersion: GetPropertyValue("TargetPlatformVersion"),
                         targetPlatformMinVersion: GetPropertyValue("TargetPlatformMinVersion"));
 
                     // Parse the framework of the project or return unsupported.
