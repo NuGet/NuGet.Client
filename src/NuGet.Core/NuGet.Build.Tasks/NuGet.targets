@@ -370,6 +370,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       TargetFramework="$(TargetFramework)"
       TargetFrameworkMoniker="$(TargetFrameworkMoniker)"
       TargetPlatformIdentifier="$(TargetPlatformIdentifier)"
+      TargetPlatformVersion="$(TargetPlatformVersion)"
       TargetPlatformMinVersion="$(TargetPlatformMinVersion)">
       <Output
         TaskParameter="ProjectTargetFrameworks"

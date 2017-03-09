@@ -627,7 +627,8 @@ namespace NuGet.PackageManagement.VisualStudio
 
             var projectPath = GetFullProjectPath(envDTEProject);
             var platformIdentifier = GetPropertyValue<string>(envDTEProject, "TargetPlatformIdentifier");
-            var platformVersion = GetPropertyValue<string>(envDTEProject, "TargetPlatformMinVersion");
+            var platformVersion = GetPropertyValue<string>(envDTEProject, "TargetPlatformVersion");
+            var platformMinVersion = GetPropertyValue<string>(envDTEProject, "TargetPlatformMinVersion");
             var targetFrameworkMoniker = GetPropertyValue<string>(envDTEProject, "TargetFrameworkMoniker");
             var isManagementPackProject = IsManagementPackProject(envDTEProject);
             var isXnaWindowsPhoneProject = IsXnaWindowsPhoneProject(envDTEProject);
@@ -640,7 +641,8 @@ namespace NuGet.PackageManagement.VisualStudio
                 targetFramework: null,
                 targetFrameworkMoniker: targetFrameworkMoniker,
                 targetPlatformIdentifier: platformIdentifier,
-                targetPlatformMinVersion: platformVersion,
+                targetPlatformVersion: platformVersion,
+                targetPlatformMinVersion: platformMinVersion,
                 isManagementPackProject: isManagementPackProject,
                 isXnaWindowsPhoneProject: isXnaWindowsPhoneProject);
 
