@@ -817,7 +817,7 @@ namespace NuGet.PackageManagement.VisualStudio
             var nuGetProject = CreateNuGetProject(envDTEProject);
             if(nuGetProject == null)
             {
-                throw new InvalidOperationException(Strings.Error_FailureToCreateNuGetProject);
+                throw new InvalidOperationException("Cannot create NuGet project. The VS project might be invalid or the solution is not saved on disk.");
             }
 
             // Then create the project name from the project.
