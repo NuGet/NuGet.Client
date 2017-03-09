@@ -295,7 +295,7 @@ namespace NuGet.PackageManagement.VisualStudio {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The project &apos;{0}&apos; could not be cast to a build property storage interface, which is required to get MSBuild properties inside Visual Studio..
+        ///   Looks up a localized string similar to The project &apos;{0}&apos; could not be casted to a build property storage interface, which is required to get MSBuild properties inside Visual Studio..
         /// </summary>
         public static string ProjectCouldNotBeCastedToBuildPropertyStorage {
             get {
