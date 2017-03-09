@@ -815,10 +815,6 @@ namespace NuGet.PackageManagement.VisualStudio
 
             // Create the NuGet project first. If this throws or returns null we bail out and do not change the cache.
             var nuGetProject = CreateNuGetProject(envDTEProject);
-            if (nuGetProject == null)
-            {
-                throw new InvalidOperationException("Cannot create NuGet project. The VS project might be invalid or the solution is not saved on disk.");
-            }
 
             // Then create the project name from the project.
             var newEnvDTEProjectName = ProjectNames.FromDTEProject(envDTEProject);

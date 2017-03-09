@@ -181,6 +181,15 @@ namespace NuGet.SolutionRestoreManager
             {
                 var solutionDirectory = _solutionManager.SolutionDirectory;
                 var isSolutionAvailable = _solutionManager.IsSolutionAvailable;
+                if (solutionDirectory == null) {
+                    await _logger.DoAsync((l, _) =>
+                    {
+                        _status = NuGetOperationStatus.Failed;
+                        l.ShowError(Strings.SolutionIsNotSaved);
+                        l.WriteLine(VerbosityLevel.Minimal, Strings.SolutionIsNotSaved);
+                    });
+                    return;
+                }
 
                 // Check if solution has deferred projects
                 var deferredProjectsData = new DeferredProjectRestoreData(new Dictionary<PackageReference, List<string>>(), new List<PackageSpec>());
