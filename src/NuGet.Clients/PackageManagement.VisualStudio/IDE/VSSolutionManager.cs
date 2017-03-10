@@ -813,8 +813,12 @@ namespace NuGet.PackageManagement.VisualStudio
             ProjectNames oldEnvDTEProjectName;
             _projectSystemCache.TryGetProjectNameByShortName(EnvDTEProjectUtility.GetName(envDTEProject), out oldEnvDTEProjectName);
 
-            // Create the NuGet project first. If this throws we bail out and do not change the cache.
+            // Create the NuGet project first. If this throws or returns null we bail out and do not change the cache.
             var nuGetProject = CreateNuGetProject(envDTEProject);
+            if(nuGetProject == null)
+            {
+                throw new InvalidOperationException(Strings.Error_FailureToCreateNuGetProject);
+            }
 
             // Then create the project name from the project.
             var newEnvDTEProjectName = ProjectNames.FromDTEProject(envDTEProject);

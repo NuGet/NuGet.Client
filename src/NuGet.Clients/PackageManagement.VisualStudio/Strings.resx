@@ -236,4 +236,7 @@
   <data name="CredentialProviderFailed_ImportedProvider" xml:space="preserve">
     <value>Failed to load credential provider from assembly {0}.</value>
   </data>
+  <data name="Error_FailureToCreateNuGetProject" xml:space="preserve">
+    <value>Cannot create NuGet project. The VS project might be invalid or the solution is not saved on disk.</value>
+  </data>
 </root>
