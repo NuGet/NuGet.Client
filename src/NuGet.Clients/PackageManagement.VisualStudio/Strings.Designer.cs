@@ -223,6 +223,24 @@ namespace NuGet.PackageManagement.VisualStudio {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Failed to migrate project &apos;{0}&apos; as there are multiple target frameworks in project.json file..
+        /// </summary>
+        public static string Error_MultipleFrameworksUwp {
+            get {
+                return ResourceManager.GetString("Error_MultipleFrameworksUwp", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Failed to migrate dependencies for project &apos;{0}&apos; as they target a framework other than UAP.
+        /// </summary>
+        public static string Error_TargetFrameworkNotUwp {
+            get {
+                return ResourceManager.GetString("Error_TargetFrameworkNotUwp", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Failed to load &apos;{0}&apos;, while updating binding redirects. {1}.
         /// </summary>
         public static string Error_WhileLoadingConfigForBindingRedirects {
@@ -295,7 +313,7 @@ namespace NuGet.PackageManagement.VisualStudio {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The project &apos;{0}&apos; could not be casted to a build property storage interface, which is required to get MSBuild properties inside Visual Studio..
+        ///   Looks up a localized string similar to The project &apos;{0}&apos; could not be cast to a build property storage interface, which is required to get MSBuild properties inside Visual Studio..
         /// </summary>
         public static string ProjectCouldNotBeCastedToBuildPropertyStorage {
             get {

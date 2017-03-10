@@ -86,6 +86,10 @@
     <Compile Include="VSAPIProjectContext.cs" />
     <Compile Include="VsTemplateWizard.cs" />
   </ItemGroup>
+  <ItemGroup Condition="'$(VisualStudioVersion)' == '15.0'">
+    <Compile Include="Extensibility\VsProjectJsonMigrateResult.cs" />
+    <Compile Include="Extensibility\VsProjectJsonMigrator.cs" />
+  </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\NuGet.VisualStudio\NuGet.VisualStudio.csproj">
       <Project>{e5556bc6-a7fd-4d8e-8a7d-7648df1d7471}</Project>
