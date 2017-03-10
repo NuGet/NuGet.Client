@@ -182,7 +182,8 @@ namespace NuGet.SolutionRestoreManager
                 var solutionDirectory = _solutionManager.SolutionDirectory;
                 var isSolutionAvailable = _solutionManager.IsSolutionAvailable;
 
-                if (solutionDirectory == null) {
+                if (solutionDirectory == null)
+                {
                     await _logger.DoAsync((l, _) =>
                     {
                         _status = NuGetOperationStatus.Failed;
