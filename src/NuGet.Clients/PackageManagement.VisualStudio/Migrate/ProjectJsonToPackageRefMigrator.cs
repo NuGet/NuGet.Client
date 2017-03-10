@@ -17,67 +17,52 @@ using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
-    public class ProjectJsonToPackageRefMigrator
+    public static class ProjectJsonToPackageRefMigrator
     {
-        private readonly LegacyCSProjPackageReferenceProject _project;
-        private readonly Project _envdteProject;
-
-        public ProjectJsonToPackageRefMigrator(LegacyCSProjPackageReferenceProject project, Project envDteProject)
+        public static async Task<ProjectJsonToPackageRefMigrateResult> MigrateAsync(LegacyCSProjPackageReferenceProject project, Project envDteProject)
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
-            _project = project;
-            _envdteProject = envDteProject;            
-        }
-
-        internal string ProjectJsonFilePath { get; private set; }
-
-        public async Task<ProjectJsonToPackageRefMigrateResult> MigrateAsync()
-        {
-            ProjectJsonFilePath = ProjectJsonPathUtilities.GetProjectConfigPath(Path.GetDirectoryName(_project.MSBuildProjectPath),
-                Path.GetFileNameWithoutExtension(_project.MSBuildProjectPath));
+            var legacyProject = project;
+            var dteProject = envDteProject;
+            var projectJsonFilePath = ProjectJsonPathUtilities.GetProjectConfigPath(Path.GetDirectoryName(legacyProject.MSBuildProjectPath),
+                Path.GetFileNameWithoutExtension(legacyProject.MSBuildProjectPath));
 
             var packageSpec = JsonPackageSpecReader.GetPackageSpec(
-                Path.GetFileNameWithoutExtension(_project.MSBuildProjectPath),
-                ProjectJsonFilePath);
+                Path.GetFileNameWithoutExtension(legacyProject.MSBuildProjectPath),
+                projectJsonFilePath);
 
-            await MigrateDependencies(packageSpec);
+            await MigrateDependencies(legacyProject, packageSpec);
 
-            var buildProject = EnvDTEProjectUtility.AsMicrosoftBuildEvaluationProject(_envdteProject.FullName);
+            var buildProject = EnvDTEProjectUtility.AsMicrosoftBuildEvaluationProject(dteProject.FullName);
 
             MigrateRuntimes(packageSpec, buildProject);
 
-            RemoveProjectJsonReference(buildProject);
+            RemoveProjectJsonReference(buildProject, projectJsonFilePath);
 
             string backupProjectFile, backupJsonFile;
-            CreateBackupAndSave(out backupProjectFile, out backupJsonFile);
+
+            CreateBackup(legacyProject,
+                projectJsonFilePath, 
+                out backupProjectFile,
+                out backupJsonFile);
 
             return new ProjectJsonToPackageRefMigrateResult(true, backupProjectFile, backupJsonFile);
         }
 
-        private async Task MigrateDependencies(PackageSpec packageSpec)
+        private static async Task MigrateDependencies(LegacyCSProjPackageReferenceProject project, PackageSpec packageSpec)
         {
             if (packageSpec.TargetFrameworks.Count > 1)
             {
                 throw new InvalidOperationException(
                     string.Format(
                         CultureInfo.CurrentCulture,
-                        Strings.Error_MultipleFrameworksUwp,
-                        _project.MSBuildProjectPath));
+                        Strings.Error_MultipleFrameworks,
+                        project.MSBuildProjectPath));
             }
 
             var dependencies = new List<LibraryDependency>();
             foreach (var targetFramework in packageSpec.TargetFrameworks)
             {
-                if (targetFramework.FrameworkName != NuGetFramework.Parse("uap10.0"))
-                {
-                    throw new InvalidOperationException(
-                    string.Format(
-                        CultureInfo.CurrentCulture,
-                        Strings.Error_TargetFrameworkNotUwp,
-                        _project.MSBuildProjectPath));
-                }
                 dependencies.AddRange(targetFramework.Dependencies);
-
             }
 
             dependencies.AddRange(packageSpec.Dependencies);
@@ -99,11 +84,11 @@ namespace NuGet.PackageManagement.VisualStudio
                     metadataValues.Add(LibraryIncludeFlagUtils.GetFlagString(privateAssetsFlag).Replace(',',';'));
                 }
 
-                await _project.InstallPackageWithMetadataAsync(dependency.Name, dependency.LibraryRange.VersionRange, metadataElements, metadataValues);
+                await project.InstallPackageWithMetadataAsync(dependency.Name, dependency.LibraryRange.VersionRange, metadataElements, metadataValues);
             }
         }
 
-        private void MigrateRuntimes(PackageSpec packageSpec, Microsoft.Build.Evaluation.Project buildProject)
+        private static void MigrateRuntimes(PackageSpec packageSpec, Microsoft.Build.Evaluation.Project buildProject)
         {
             var runtimes = packageSpec.RuntimeGraph.Runtimes;
             var supports = packageSpec.RuntimeGraph.Supports;
@@ -124,10 +109,10 @@ namespace NuGet.PackageManagement.VisualStudio
             buildProject.SetProperty("RuntimeIdentifiers", union);
         }
 
-        private void RemoveProjectJsonReference(Microsoft.Build.Evaluation.Project buildProject)
+        private static void RemoveProjectJsonReference(Microsoft.Build.Evaluation.Project buildProject, string projectJsonFilePath)
         {
             var projectJsonItem = buildProject.GetItems("None")
-                .Where(t => string.Equals(t.EvaluatedInclude, Path.GetFileName(ProjectJsonFilePath), StringComparison.OrdinalIgnoreCase))
+                .Where(t => string.Equals(t.EvaluatedInclude, Path.GetFileName(projectJsonFilePath), StringComparison.OrdinalIgnoreCase))
                 .FirstOrDefault();
 
             if (projectJsonItem != null)
@@ -137,20 +122,19 @@ namespace NuGet.PackageManagement.VisualStudio
 
         }
 
-        private void CreateBackupAndSave(out string backupProjectFile, out string backupJsonFile)
+        private static void CreateBackup(LegacyCSProjPackageReferenceProject project,
+            string projectJsonFilePath,
+            out string backupProjectFile,
+            out string backupJsonFile)
         {
-            var backupDirectory = Path.Combine(Path.GetDirectoryName(_project.MSBuildProjectPath), "Backup");
-            if(!Directory.Exists(backupDirectory))
-            {
-                Directory.CreateDirectory(backupDirectory);
-            }
+            var backupDirectory = Path.Combine(Path.GetDirectoryName(project.MSBuildProjectPath), "Backup");
 
-            backupJsonFile = Path.Combine(backupDirectory, Path.GetFileName(ProjectJsonFilePath));
-            File.Move(ProjectJsonFilePath, backupJsonFile);
-            backupProjectFile = Path.Combine(backupDirectory, Path.GetFileName(_project.MSBuildProjectPath));
-            File.Copy(_project.MSBuildProjectPath, backupProjectFile);
-            _envdteProject.Save();
-        }
-        
+            Directory.CreateDirectory(backupDirectory);
+
+            backupJsonFile = Path.Combine(backupDirectory, Path.GetFileName(projectJsonFilePath));
+            FileUtility.Move(projectJsonFilePath, backupJsonFile);
+            backupProjectFile = Path.Combine(backupDirectory, Path.GetFileName(project.MSBuildProjectPath));
+            File.Copy(project.MSBuildProjectPath, backupProjectFile);
+        }        
     }
 }

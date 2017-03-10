@@ -223,20 +223,11 @@ namespace NuGet.PackageManagement.VisualStudio {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Failed to migrate project &apos;{0}&apos; as there are multiple target frameworks in project.json file..
+        ///   Looks up a localized string similar to Failed to migrate project &apos;{0}&apos;. The project may only contain one target framework..
         /// </summary>
-        public static string Error_MultipleFrameworksUwp {
+        public static string Error_MultipleFrameworks {
             get {
-                return ResourceManager.GetString("Error_MultipleFrameworksUwp", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Failed to migrate dependencies for project &apos;{0}&apos; as they target a framework other than UAP.
-        /// </summary>
-        public static string Error_TargetFrameworkNotUwp {
-            get {
-                return ResourceManager.GetString("Error_TargetFrameworkNotUwp", resourceCulture);
+                return ResourceManager.GetString("Error_MultipleFrameworks", resourceCulture);
             }
         }
         

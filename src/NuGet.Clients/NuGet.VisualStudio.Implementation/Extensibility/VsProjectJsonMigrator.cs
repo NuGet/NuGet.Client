@@ -55,12 +55,18 @@ namespace NuGet.VisualStudio
             {
                 var legacyPackageRefBasedProject = await 
                     _solutionManager.UpdateNuGetProjectToPackageRef(nuGetProject) as LegacyCSProjPackageReferenceProject;
-
-                var projectJsonMigrator = new ProjectJsonToPackageRefMigrator(
-                    legacyPackageRefBasedProject, 
-                    project);
                 
-                return new VsProjectJsonMigrateResult(await projectJsonMigrator.MigrateAsync());
+                var result = new VsProjectJsonMigrateResult(await 
+                    ProjectJsonToPackageRefMigrator.MigrateAsync(
+                        legacyPackageRefBasedProject,
+                        project));
+
+                if(result.IsSuccess)
+                {
+                    project.Save();
+                }
+
+                return result;
             }
             catch(Exception ex)
             {
