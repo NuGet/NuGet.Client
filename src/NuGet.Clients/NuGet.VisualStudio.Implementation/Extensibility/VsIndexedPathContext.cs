@@ -43,11 +43,11 @@ namespace NuGet.VisualStudio
             _referenceLookupIndex = index;
         }
 
-        public bool TryResolveReference(string referenceFilePath, out string packageDirectoryPath)
+        public bool TryResolvePackageAsset(string packageAssetPath, out string packageDirectoryPath)
         {
             try
             {
-                packageDirectoryPath = _referenceLookupIndex[referenceFilePath];
+                packageDirectoryPath = _referenceLookupIndex[packageAssetPath];
                 return true;
             }
             catch (KeyNotFoundException)

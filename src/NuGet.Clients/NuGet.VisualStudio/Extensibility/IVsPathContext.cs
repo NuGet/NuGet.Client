@@ -30,7 +30,7 @@ namespace NuGet.VisualStudio
         /// <summary>
         /// Fetch a package directory containing the provided asset path.
         /// </summary>
-        /// <param name="referenceFilePath">Absolute path to package asset file.</param>
+        /// <param name="packageAssetPath">Absolute path to package asset file.</param>
         /// <param name="packageDirectoryPath">Full path to a package directory. 
         /// <code>null</code> if returned falue is <code>false</code>.</param>
         /// <returns>
@@ -53,6 +53,6 @@ namespace NuGet.VisualStudio
         /// - C:\src\MyProject\packages\Autofac.3.5.2
         /// - C:\src\MyProject\packages\Autofac.3.5.2
         /// </example>
-        bool TryResolveReference(string referenceFilePath, out string packageDirectoryPath);
+        bool TryResolvePackageAsset(string packageAssetPath, out string packageDirectoryPath);
     }
 }

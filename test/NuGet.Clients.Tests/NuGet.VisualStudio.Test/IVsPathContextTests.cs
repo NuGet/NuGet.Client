@@ -15,7 +15,7 @@ namespace NuGet.VisualStudio.Test
             var context = Mock.Of<IVsPathContext>();
 
             string packageDirectoryPath;
-            var result = context.TryResolveReference(
+            var result = context.TryResolvePackageAsset(
                 "path/to/reference.dll", out packageDirectoryPath);
 
             Assert.False(result);

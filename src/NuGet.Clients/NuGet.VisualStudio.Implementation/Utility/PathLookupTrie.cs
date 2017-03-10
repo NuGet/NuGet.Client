@@ -83,7 +83,7 @@ namespace NuGet.VisualStudio
             private readonly LinkedList<PathSegmentTrieNode> _children;
             private TValue _value;
 
-            public TValue Value { get => _value; set { IsTerminal = true; _value = value; } }
+            public TValue Value { get { return _value; } set { IsTerminal = true; _value = value; } }
 
             public bool IsTerminal { get; private set; }
 

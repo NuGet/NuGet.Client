@@ -44,7 +44,7 @@ namespace NuGet.VisualStudio
             FallbackPackageFolders = fallbackPackageFolders.ToList();
         }
 
-        public bool TryResolveReference(string referenceFilePath, out string packageDirectoryPath)
+        public bool TryResolvePackageAsset(string packageAssetPath, out string packageDirectoryPath)
         {
             // unable to resolve the reference file path without the index
             packageDirectoryPath = null;

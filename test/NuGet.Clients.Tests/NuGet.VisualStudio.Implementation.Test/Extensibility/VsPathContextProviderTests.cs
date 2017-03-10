@@ -150,12 +150,12 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
 
                 var packageRootA = Path.Combine(userPackageFolder, "Foo", "1.0.1");
                 var assetFileA = Path.Combine(packageRootA, "lib", "net40", "a.dll");
-                Assert.True(actual.TryResolveReference(assetFileA, out actualPackageDirectory));
+                Assert.True(actual.TryResolvePackageAsset(assetFileA, out actualPackageDirectory));
                 Assert.Equal(packageRootA, actualPackageDirectory, ignoreCase: true);
 
                 var packageRootB = Path.Combine(fallbackPackageFolder, "Bar", "1.0.2");
                 var assetFileB = Path.Combine(packageRootB, "lib", "net46", "b.dll");
-                Assert.True(actual.TryResolveReference(assetFileB, out actualPackageDirectory));
+                Assert.True(actual.TryResolvePackageAsset(assetFileB, out actualPackageDirectory));
                 Assert.Equal(packageRootB, actualPackageDirectory, ignoreCase: true);
             }
         }
@@ -206,7 +206,7 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
 
                 var packageRootA = Path.Combine(userPackageFolder, "Foo.1.0.1");
                 var assetFileA = Path.Combine(packageRootA, "lib", "net45", "a.dll");
-                Assert.True(actual.TryResolveReference(assetFileA, out actualPackageDirectory));
+                Assert.True(actual.TryResolvePackageAsset(assetFileA, out actualPackageDirectory));
                 Assert.Equal(packageRootA, actualPackageDirectory, ignoreCase: true);
             }
         }
