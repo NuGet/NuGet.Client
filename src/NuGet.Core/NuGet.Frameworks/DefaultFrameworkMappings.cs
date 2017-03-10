@@ -344,10 +344,10 @@ namespace NuGet.Frameworks
                             FrameworkConstants.CommonFrameworks.Tizen3,
                             FrameworkConstants.CommonFrameworks.NetStandard16),
 
-                        // Tizen4 projects support NETStandard1.7
+                        // Tizen4 projects support NETStandard2.0
                         CreateStandardMapping(
                             FrameworkConstants.CommonFrameworks.Tizen4,
-                            FrameworkConstants.CommonFrameworks.NetStandard17),
+                            FrameworkConstants.CommonFrameworks.NetStandard20),
 
                         // NetCoreApp1.0 projects support NetStandard1.6
                         CreateStandardMapping(
