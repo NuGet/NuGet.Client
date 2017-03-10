@@ -92,6 +92,7 @@ namespace NuGet.Frameworks
                             new KeyValuePair<string, string>(FrameworkConstants.FrameworkIdentifiers.NetCore, "netcore"),
                             new KeyValuePair<string, string>(FrameworkConstants.FrameworkIdentifiers.WinRT, "winrt"), // legacy
                             new KeyValuePair<string, string>(FrameworkConstants.FrameworkIdentifiers.UAP, "uap"),
+                            new KeyValuePair<string, string>(FrameworkConstants.FrameworkIdentifiers.Tizen, "tizen"),
                         };
                 }
 
@@ -195,6 +196,11 @@ namespace NuGet.Frameworks
                             new KeyValuePair<NuGetFramework, NuGetFramework>(
                                 new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.WindowsPhoneApp, FrameworkConstants.EmptyVersion),
                                 FrameworkConstants.CommonFrameworks.WPA81),
+
+                            // tizen <-> tizen3
+                            new KeyValuePair<NuGetFramework, NuGetFramework>(
+                                new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Tizen, FrameworkConstants.EmptyVersion),
+                                FrameworkConstants.CommonFrameworks.Tizen3),
 
                             // dnx <-> dnx45
                             new KeyValuePair<NuGetFramework, NuGetFramework>(
@@ -332,6 +338,11 @@ namespace NuGet.Frameworks
                             new FrameworkRange(
                                 new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.WinRT, FrameworkConstants.EmptyVersion),
                                 new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.WinRT, new Version(4, 5, 0, 0)))),
+
+                        // Tizen3 projects support NETStandard2.0
+                        CreateStandardMapping(
+                            FrameworkConstants.CommonFrameworks.Tizen3,
+                            FrameworkConstants.CommonFrameworks.NetStandard20),
 
                         // NetCoreApp1.0 projects support NetStandard1.6
                         CreateStandardMapping(
