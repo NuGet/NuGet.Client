@@ -87,8 +87,8 @@
     <Compile Include="VsTemplateWizard.cs" />
   </ItemGroup>
   <ItemGroup Condition="'$(VisualStudioVersion)' == '15.0'">
-    <Compile Include="Extensibility\VsProjectJsonMigrateResult.cs" />
-    <Compile Include="Extensibility\VsProjectJsonMigrator.cs" />
+    <Compile Include="Extensibility\VsProjectJsonToPackageReferenceMigrateResult.cs" />
+    <Compile Include="Extensibility\VsProjectJsonToPackageReferenceMigrator.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\NuGet.VisualStudio\NuGet.VisualStudio.csproj">

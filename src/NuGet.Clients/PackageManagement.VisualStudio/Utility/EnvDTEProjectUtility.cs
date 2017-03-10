@@ -509,27 +509,31 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public static async Task<string> GetCustomUniqueNameAsync(EnvDTEProject envDTEProject)
         {
-            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-            if (IsWebSite(envDTEProject))
+            return await NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {
-                // website projects always have unique name
-                return envDTEProject.Name;
-            }
-            Stack<string> nameParts = new Stack<string>();
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            EnvDTEProject cursor = envDTEProject;
-            nameParts.Push(GetName(cursor));
+                if (IsWebSite(envDTEProject))
+                {
+                    // website projects always have unique name
+                    return envDTEProject.Name;
+                }
+                Stack<string> nameParts = new Stack<string>();
 
-            // walk up till the solution root
-            while (cursor.ParentProjectItem != null
-                   && cursor.ParentProjectItem.ContainingProject != null)
-            {
-                cursor = cursor.ParentProjectItem.ContainingProject;
+                EnvDTEProject cursor = envDTEProject;
                 nameParts.Push(GetName(cursor));
-            }
 
-            return String.Join("\\", nameParts);
+                // walk up till the solution root
+                while (cursor.ParentProjectItem != null
+                       && cursor.ParentProjectItem.ContainingProject != null)
+                {
+                    cursor = cursor.ParentProjectItem.ContainingProject;
+                    nameParts.Push(GetName(cursor));
+                }
+
+                return String.Join("\\", nameParts);
+            });
+            
         }
 
         internal static bool IsExplicitlyUnsupported(EnvDTEProject envDTEProject)

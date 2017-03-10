@@ -120,6 +120,38 @@ namespace NuGet.Versioning
                 case 'T':
                     s = GetLegacyShortString(range);
                     break;
+                case 'A':
+                    s = GetShortString(range);
+                    break;
+            }
+
+            return s;
+        }
+
+        private string GetShortString(VersionRange range)
+        {
+            string s = null;
+
+            if (range.HasLowerBound
+                && range.IsMinInclusive
+                && !range.HasUpperBound)
+            {
+                s = range.IsFloating ? 
+                    range.Float.ToString() :
+                    string.Format(_versionFormatter, ZeroN, range.MinVersion);
+            }
+            else if (range.HasLowerAndUpperBounds
+                     && range.IsMinInclusive
+                     && range.IsMaxInclusive
+                     &&
+                     range.MinVersion.Equals(range.MaxVersion))
+            {
+                // Floating should be ignored here.
+                s = string.Format(_versionFormatter, "[{0:N}]", range.MinVersion);
+            }
+            else
+            {
+                s = GetNormalizedString(range);
             }
 
             return s;

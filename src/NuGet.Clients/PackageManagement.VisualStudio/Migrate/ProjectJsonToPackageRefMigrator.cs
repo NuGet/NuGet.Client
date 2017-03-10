@@ -1,10 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using EnvDTE;
-using Microsoft.VisualStudio.Shell;
 using NuGet.Common;
-using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.ProjectModel;
 using System;
@@ -14,38 +11,31 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Task = System.Threading.Tasks.Task;
+using NuGet.PackageManagement.UI;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
     public static class ProjectJsonToPackageRefMigrator
     {
-        public static async Task<ProjectJsonToPackageRefMigrateResult> MigrateAsync(LegacyCSProjPackageReferenceProject project, Project envDteProject)
+        public static async Task MigrateAsync(LegacyCSProjPackageReferenceProject project, string dteProjectFullName)
         {
-            var legacyProject = project;
-            var dteProject = envDteProject;
-            var projectJsonFilePath = ProjectJsonPathUtilities.GetProjectConfigPath(Path.GetDirectoryName(legacyProject.MSBuildProjectPath),
-                Path.GetFileNameWithoutExtension(legacyProject.MSBuildProjectPath));
+            var projectJsonFilePath = ProjectJsonPathUtilities.GetProjectConfigPath(Path.GetDirectoryName(project.MSBuildProjectPath),
+                Path.GetFileNameWithoutExtension(project.MSBuildProjectPath));
 
             var packageSpec = JsonPackageSpecReader.GetPackageSpec(
-                Path.GetFileNameWithoutExtension(legacyProject.MSBuildProjectPath),
+                Path.GetFileNameWithoutExtension(project.MSBuildProjectPath),
                 projectJsonFilePath);
 
-            await MigrateDependencies(legacyProject, packageSpec);
+            await MigrateDependencies(project, packageSpec);
 
-            var buildProject = EnvDTEProjectUtility.AsMicrosoftBuildEvaluationProject(dteProject.FullName);
+            var buildProject = EnvDTEProjectUtility.AsMicrosoftBuildEvaluationProject(dteProjectFullName);
 
             MigrateRuntimes(packageSpec, buildProject);
 
             RemoveProjectJsonReference(buildProject, projectJsonFilePath);
 
-            string backupProjectFile, backupJsonFile;
-
-            CreateBackup(legacyProject,
-                projectJsonFilePath, 
-                out backupProjectFile,
-                out backupJsonFile);
-
-            return new ProjectJsonToPackageRefMigrateResult(true, backupProjectFile, backupJsonFile);
+            CreateBackup(project,
+                projectJsonFilePath);
         }
 
         private static async Task MigrateDependencies(LegacyCSProjPackageReferenceProject project, PackageSpec packageSpec)
@@ -106,34 +96,39 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             var union = string.Join(";", runtimeIdentifiers.Union(runtimeSupports));
-            buildProject.SetProperty("RuntimeIdentifiers", union);
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
+            {
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                buildProject.SetProperty("RuntimeIdentifiers", union);
+            });            
         }
 
         private static void RemoveProjectJsonReference(Microsoft.Build.Evaluation.Project buildProject, string projectJsonFilePath)
         {
-            var projectJsonItem = buildProject.GetItems("None")
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
+            {
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                var projectJsonItem = buildProject.GetItems("None")
                 .Where(t => string.Equals(t.EvaluatedInclude, Path.GetFileName(projectJsonFilePath), StringComparison.OrdinalIgnoreCase))
                 .FirstOrDefault();
 
-            if (projectJsonItem != null)
-            {
-                buildProject.RemoveItem(projectJsonItem);
-            }
-
+                if (projectJsonItem != null)
+                {
+                    buildProject.RemoveItem(projectJsonItem);
+                }
+            });
         }
 
         private static void CreateBackup(LegacyCSProjPackageReferenceProject project,
-            string projectJsonFilePath,
-            out string backupProjectFile,
-            out string backupJsonFile)
+            string projectJsonFilePath)
         {
             var backupDirectory = Path.Combine(Path.GetDirectoryName(project.MSBuildProjectPath), "Backup");
 
             Directory.CreateDirectory(backupDirectory);
 
-            backupJsonFile = Path.Combine(backupDirectory, Path.GetFileName(projectJsonFilePath));
+            var backupJsonFile = Path.Combine(backupDirectory, Path.GetFileName(projectJsonFilePath));
             FileUtility.Move(projectJsonFilePath, backupJsonFile);
-            backupProjectFile = Path.Combine(backupDirectory, Path.GetFileName(project.MSBuildProjectPath));
+            var backupProjectFile = Path.Combine(backupDirectory, Path.GetFileName(project.MSBuildProjectPath));
             File.Copy(project.MSBuildProjectPath, backupProjectFile);
         }        
     }

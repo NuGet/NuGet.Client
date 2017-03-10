@@ -179,7 +179,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 // We don't adjust package reference metadata from UI
                 _project.AddOrUpdateLegacyCSProjPackage(
                     packageId,
-                    range.MinVersion.ToNormalizedString(),
+                    range.OriginalString ?? range.ToShortString(),
                     metadataElements?.ToArray() ?? new string[0],
                     metadataValues?.ToArray() ?? new string[0]);
 
