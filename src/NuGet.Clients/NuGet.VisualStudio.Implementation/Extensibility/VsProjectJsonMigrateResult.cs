@@ -1,14 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.Composition;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using NuGet.PackageManagement.VisualStudio;
 
 namespace NuGet.VisualStudio
 {
-    class VsProjectJsonMigrateResult : IVsProjectJsonMigrateResult
+    internal class VsProjectJsonMigrateResult : IVsProjectJsonMigrateResult
     {
         public bool IsSuccess { get; }
 
@@ -29,8 +26,6 @@ namespace NuGet.VisualStudio
         {
             IsSuccess = false;
             ErrorMessage = errorMessage;
-            BackupProjectFile = string.Empty;
-            BackupProjectJsonFile = string.Empty;
         }
     }
 }

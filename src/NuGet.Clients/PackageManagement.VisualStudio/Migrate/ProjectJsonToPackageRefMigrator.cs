@@ -1,59 +1,57 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.IO;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using EnvDTE;
 using Microsoft.VisualStudio.Shell;
-using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.ProjectModel;
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
 using Task = System.Threading.Tasks.Task;
-using EnvDTE;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
     public class ProjectJsonToPackageRefMigrator
     {
-        private LegacyCSProjPackageReferenceProject _project;
-        private IVsBuildPropertyStorage _buildPropertyStorage;
-        private Project _envdteProject;
-        private IVsHierarchy _ivsHierarchy;
-        public ProjectJsonToPackageRefMigrator(LegacyCSProjPackageReferenceProject project, Project envDteProject, IVsHierarchy hierarchy)
+        private readonly LegacyCSProjPackageReferenceProject _project;
+        private readonly Project _envdteProject;
+
+        public ProjectJsonToPackageRefMigrator(LegacyCSProjPackageReferenceProject project, Project envDteProject)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
             _project = project;
-            _envdteProject = envDteProject;
-            _ivsHierarchy = hierarchy;
-            _buildPropertyStorage = hierarchy as IVsBuildPropertyStorage;
-            if (_buildPropertyStorage == null)
-            {
-                throw new InvalidOperationException(string.Format(
-                    Strings.ProjectCouldNotBeCastedToBuildPropertyStorage,
-                    project.MSBuildProjectPath));
-            }
-
-            ProjectJsonFilePath = ProjectJsonPathUtilities.GetProjectConfigPath(Path.GetDirectoryName(project.MSBuildProjectPath),
-                Path.GetFileNameWithoutExtension(project.MSBuildProjectPath));
+            _envdteProject = envDteProject;            
         }
 
         internal string ProjectJsonFilePath { get; private set; }
 
         public async Task<ProjectJsonToPackageRefMigrateResult> MigrateAsync()
         {
-            var packageSpec = await Task.Run(() =>
-                                    JsonPackageSpecReader.GetPackageSpec(Path.GetFileNameWithoutExtension(_project.MSBuildProjectPath),
-                                                                         ProjectJsonFilePath));
+            ProjectJsonFilePath = ProjectJsonPathUtilities.GetProjectConfigPath(Path.GetDirectoryName(_project.MSBuildProjectPath),
+                Path.GetFileNameWithoutExtension(_project.MSBuildProjectPath));
+
+            var packageSpec = JsonPackageSpecReader.GetPackageSpec(
+                Path.GetFileNameWithoutExtension(_project.MSBuildProjectPath),
+                ProjectJsonFilePath);
+
             await MigrateDependencies(packageSpec);
+
             var buildProject = EnvDTEProjectUtility.AsMicrosoftBuildEvaluationProject(_envdteProject.FullName);
+
             MigrateRuntimes(packageSpec, buildProject);
+
             RemoveProjectJsonReference(buildProject);
+
             string backupProjectFile, backupJsonFile;
             CreateBackupAndSave(out backupProjectFile, out backupJsonFile);
-            return await Task.FromResult(new ProjectJsonToPackageRefMigrateResult(true, backupProjectFile, backupJsonFile));
+
+            return new ProjectJsonToPackageRefMigrateResult(true, backupProjectFile, backupJsonFile);
         }
 
         private async Task MigrateDependencies(PackageSpec packageSpec)
@@ -92,14 +90,15 @@ namespace NuGet.PackageManagement.VisualStudio
                 if (includeFlags != LibraryIncludeFlags.All)
                 {
                     metadataElements.Add("IncludeAssets");
-                    metadataValues.Add(LibraryIncludeFlagUtils.GetFlagString(includeFlags));
+                    metadataValues.Add(LibraryIncludeFlagUtils.GetFlagString(includeFlags).Replace(',',';'));
                 }
 
                 if (privateAssetsFlag != LibraryIncludeFlagUtils.DefaultSuppressParent)
                 {
                     metadataElements.Add("PrivateAssets");
-                    metadataValues.Add(LibraryIncludeFlagUtils.GetFlagString(privateAssetsFlag));
+                    metadataValues.Add(LibraryIncludeFlagUtils.GetFlagString(privateAssetsFlag).Replace(',',';'));
                 }
+
                 await _project.InstallPackageWithMetadataAsync(dependency.Name, dependency.LibraryRange.VersionRange, metadataElements, metadataValues);
             }
         }
@@ -107,11 +106,22 @@ namespace NuGet.PackageManagement.VisualStudio
         private void MigrateRuntimes(PackageSpec packageSpec, Microsoft.Build.Evaluation.Project buildProject)
         {
             var runtimes = packageSpec.RuntimeGraph.Runtimes;
+            var supports = packageSpec.RuntimeGraph.Supports;
+            var runtimeIdentifiers = new List<string>();
+            var runtimeSupports = new List<string>();
             if (runtimes != null && runtimes.Count > 0)
             {
-                var runtimeIdentifierValues = string.Join(";", runtimes.Keys);
-                buildProject.SetProperty("RuntimeIdentifiers", runtimeIdentifierValues);
+                runtimeIdentifiers.AddRange(runtimes.Keys);
+                
             }
+
+            if(supports != null && supports.Count > 0)
+            {
+                runtimeSupports.AddRange(supports.Keys);
+            }
+
+            var union = string.Join(";", runtimeIdentifiers.Union(runtimeSupports));
+            buildProject.SetProperty("RuntimeIdentifiers", union);
         }
 
         private void RemoveProjectJsonReference(Microsoft.Build.Evaluation.Project buildProject)
