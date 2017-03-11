@@ -5,30 +5,23 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using NuGet.Configuration;
 
 namespace NuGet.VisualStudio
 {
-    // Implementation of IVsPathContext without support of reference resolving.
-    // Used when project is not managed by NuGet or given project doesn't have any packages installed.
-    internal class VsPathContext : IVsPathContext
+    // Full functional implementation of IVsPathContext providing support for
+    // reference resolving via reference lookup trie structure.
+    internal class VsIndexedPathContext : IVsPathContext
     {
+        private readonly PathLookupTrie<string> _referenceLookupIndex;
+
         public string UserPackageFolder { get; }
 
         public IEnumerable FallbackPackageFolders { get; }
 
-        public VsPathContext(NuGetPathContext pathContext)
-        {
-            if (pathContext == null)
-            {
-                throw new ArgumentNullException(nameof(pathContext));
-            }
-
-            UserPackageFolder = pathContext.UserPackageFolder;
-            FallbackPackageFolders = pathContext.FallbackPackageFolders;
-        }
-
-        public VsPathContext(string userPackageFolder, IEnumerable<string> fallbackPackageFolders)
+        public VsIndexedPathContext(
+            string userPackageFolder,
+            IEnumerable<string> fallbackPackageFolders,
+            PathLookupTrie<string> index)
         {
             if (userPackageFolder == null)
             {
@@ -40,15 +33,28 @@ namespace NuGet.VisualStudio
                 throw new ArgumentNullException(nameof(fallbackPackageFolders));
             }
 
+            if (index == null)
+            {
+                throw new ArgumentNullException(nameof(index));
+            }
+
             UserPackageFolder = userPackageFolder;
             FallbackPackageFolders = fallbackPackageFolders.ToList();
+            _referenceLookupIndex = index;
         }
 
         public bool TryResolvePackageAsset(string packageAssetPath, out string packageDirectoryPath)
         {
-            // unable to resolve the reference file path without the index
-            packageDirectoryPath = null;
-            return false;
+            try
+            {
+                packageDirectoryPath = _referenceLookupIndex[packageAssetPath];
+                return true;
+            }
+            catch (KeyNotFoundException)
+            {
+                packageDirectoryPath = null;
+                return false;
+            }
         }
     }
 }
