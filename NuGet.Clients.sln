@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26228.0
+VisualStudioVersion = 15.0.26228.4
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{3EF356B5-E2D3-45E3-B515-99F4611ACBDA}"
 EndProject
@@ -120,6 +120,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
 	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NuGet.VisualStudio.Test", "test\NuGet.Clients.Tests\NuGet.VisualStudio.Test\NuGet.VisualStudio.Test.csproj", "{D94C66B2-0404-4606-B719-1FE57F981552}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -381,6 +383,14 @@ Global
 		{5E2D927E-87E3-431A-A062-16DF6EC98BFB}.Release VS14|Any CPU.Build.0 = Release|Any CPU
 		{5E2D927E-87E3-431A-A062-16DF6EC98BFB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5E2D927E-87E3-431A-A062-16DF6EC98BFB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D94C66B2-0404-4606-B719-1FE57F981552}.Debug VS14|Any CPU.ActiveCfg = Debug|Any CPU
+		{D94C66B2-0404-4606-B719-1FE57F981552}.Debug VS14|Any CPU.Build.0 = Debug|Any CPU
+		{D94C66B2-0404-4606-B719-1FE57F981552}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D94C66B2-0404-4606-B719-1FE57F981552}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D94C66B2-0404-4606-B719-1FE57F981552}.Release VS14|Any CPU.ActiveCfg = Release|Any CPU
+		{D94C66B2-0404-4606-B719-1FE57F981552}.Release VS14|Any CPU.Build.0 = Release|Any CPU
+		{D94C66B2-0404-4606-B719-1FE57F981552}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D94C66B2-0404-4606-B719-1FE57F981552}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -405,5 +415,6 @@ Global
 		{7D0DDCB8-E362-4283-8AC8-3FF1E9B0263E} = {6F6D0E69-329D-4D0E-9795-A253FB2CA0CD}
 		{F7837EEB-1B49-482F-8722-EB35BA0937CC} = {25E91311-400E-47A6-A844-733D604E662A}
 		{5E2D927E-87E3-431A-A062-16DF6EC98BFB} = {25E91311-400E-47A6-A844-733D604E662A}
+		{D94C66B2-0404-4606-B719-1FE57F981552} = {25E91311-400E-47A6-A844-733D604E662A}
 	EndGlobalSection
 EndGlobal

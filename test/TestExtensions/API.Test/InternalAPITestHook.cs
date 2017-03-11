@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using NuGet.PackageManagement;
 using NuGet.PackageManagement.VisualStudio;
@@ -99,15 +100,12 @@ namespace API.Test
 
         public static IVsPathContext GetVsPathContext(string projectUniqueName)
         {
-            var dte = ServiceLocator.GetInstance<EnvDTE.DTE>();
-            var factory = ServiceLocator.GetInstance<IVsPathContextProvider>();
+            var provider = ServiceLocator.GetInstance<IVsPathContextProvider>();
 
-            foreach (EnvDTE.Project project in dte.Solution.Projects)
+            IVsPathContext context;
+            if (provider.TryCreateContext(projectUniqueName, out context))
             {
-                if (project.UniqueName == projectUniqueName)
-                {
-                    return factory.CreateAsync(project, CancellationToken.None).Result;
-                }
+                return context;
             }
 
             return null;
