@@ -158,6 +158,18 @@ namespace NuGet.PackageManagement.VisualStudio
             BuildIntegratedInstallationContext installationContext,
             CancellationToken token)
         {
+            return await InstallPackageWithMetadataAsync(packageId,
+                range,
+                metadataElements: new string[0],
+                metadataValues: new string[0]);
+        }
+
+        public async Task<Boolean> InstallPackageWithMetadataAsync(
+            string packageId,
+            VersionRange range,
+            IEnumerable<string> metadataElements,
+            IEnumerable<string> metadataValues)
+        {
             var success = false;
 
             await NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async delegate
@@ -167,9 +179,9 @@ namespace NuGet.PackageManagement.VisualStudio
                 // We don't adjust package reference metadata from UI
                 _project.AddOrUpdateLegacyCSProjPackage(
                     packageId,
-                    range.MinVersion.ToNormalizedString(),
-                    metadataElements: new string[0],
-                    metadataValues: new string[0]);
+                    range.OriginalString ?? range.ToShortString(),
+                    metadataElements?.ToArray() ?? new string[0],
+                    metadataValues?.ToArray() ?? new string[0]);
 
                 success = true;
             });

@@ -236,4 +236,8 @@
   <data name="CredentialProviderFailed_ImportedProvider" xml:space="preserve">
     <value>Failed to load credential provider from assembly {0}.</value>
   </data>
+  <data name="Error_MultipleFrameworks" xml:space="preserve">
+    <value>Failed to migrate project '{0}'. The project may only contain one target framework.</value>
+    <comment>{0} is the full path to the project.</comment>
+  </data>
 </root>
