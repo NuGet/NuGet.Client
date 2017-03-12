@@ -70,6 +70,15 @@ namespace NuGet.VisualStudio.Implementation.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Project {0} does not exist in the project system cache..
+        /// </summary>
+        internal static string Error_ProjectNotInCache {
+            get {
+                return ResourceManager.GetString("Error_ProjectNotInCache", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The specified framework name &apos;{0}&apos; must be .NETStandard..
         /// </summary>
         internal static string InvalidNetStandardFramework {

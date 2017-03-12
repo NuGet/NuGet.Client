@@ -92,6 +92,10 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Extensibility\IVsProjectJsonToPackageReferenceMigrateResult.cs" />
+    <Compile Include="Extensibility\IVsProjectJsonToPackageReferenceMigrator.cs" />
+  </ItemGroup>
+  <ItemGroup>
     <None Include="install.ps1" />
     <None Include="NuGet.VisualStudio.nuspec" />
     <None Include="project.json" />

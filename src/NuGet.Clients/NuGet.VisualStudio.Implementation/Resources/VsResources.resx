@@ -176,4 +176,7 @@
     <comment>Arguments in order:
 The string representation of the user's input framework name.</comment>
   </data>
+  <data name="Error_ProjectNotInCache" xml:space="preserve">
+    <value>Project {0} does not exist in the project system cache.</value>
+  </data>
 </root>

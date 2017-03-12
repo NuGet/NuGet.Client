@@ -350,5 +350,13 @@ namespace NuGet.Versioning
 
             return nonSnapshotVersion;
         }
+
+        /// <summary>
+        /// ToLegacyShortString that also includes floating ranges
+        /// </summary>
+        public virtual string ToShortString()
+        {
+            return ToString("A", new VersionRangeFormatter());
+        }
     }
 }
