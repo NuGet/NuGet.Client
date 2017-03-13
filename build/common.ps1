@@ -1043,7 +1043,7 @@ Function Build-ClientsProjectHelper {
     }
 
     if ($IsSolution -And $ToolsetVersion -eq 14) {
-        $opts += "/p:Configuration=$Configuration VS14"
+        $opts += "/p:Configuration=`"$Configuration VS14`""
     }
     else {
         $opts += "/p:Configuration=$Configuration"
