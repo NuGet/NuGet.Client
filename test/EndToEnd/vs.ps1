@@ -13,6 +13,23 @@ function Get-VSVersion
     return $version
 }
 
+function New-UwpClassLibrary
+{
+    param(
+        [string]$ProjectName,
+        [string]$SolutionFolder
+    )
+
+    if ((Get-VSVersion) -ge '15.0')
+    {
+        New-Project UwpClassLibrary $ProjectName $SolutionFolder
+    }
+    else
+    {
+        throw "SKIP: $($_)"
+    }
+}
+
 function New-BuildIntegratedProj
 {
     param(
@@ -606,6 +623,20 @@ function Get-MsBuildPropertyValue {
 
     $msBuildProject = Get-MsBuildProject $project
     return $msBuildProject.GetPropertyValue($PropertyName)
+
+    return $null
+}
+
+function Get-MsBuildItems {
+    param(
+        [parameter(Mandatory = $true)]
+        $Project,
+        [parameter(Mandatory = $true)]
+        [string]$ItemName
+    )
+
+    $msBuildProject = Get-MsBuildProject $project
+    return $msBuildProject.GetItems($ItemName)
 
     return $null
 }
