@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using Microsoft.VisualStudio.Shell;
 using NuGet.PackageManagement;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.VisualStudio;
@@ -177,6 +178,16 @@ namespace API.Test
         {
             var vsSolutionManager = ServiceLocator.GetInstance<ISolutionManager>();
             vsSolutionManager.AfterNuGetCacheUpdated -= _cacheUpdateEventHandler.Invoke;
+        }
+
+        public static IVsProjectJsonToPackageReferenceMigrateResult MigrateJsonProject(string projectName)
+        {
+            var migrator = ServiceLocator.GetInstance<IVsProjectJsonToPackageReferenceMigrator>();
+            return ThreadHelper.JoinableTaskFactory.Run(async () =>
+            {
+                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                return migrator.MigrateProjectJsonToPackageReference(projectName);
+            });
         }
     }
 }
