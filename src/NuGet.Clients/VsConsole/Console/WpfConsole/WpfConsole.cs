@@ -588,6 +588,7 @@ namespace NuGetConsole.Implementation.Console
             }
         }
 
+        [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD010", Justification = "NuGet/Home#4833 Baseline")]
         private void WriteProgress(string operation, int percentComplete)
         {
             if (operation == null)
@@ -620,6 +621,7 @@ namespace NuGetConsole.Implementation.Console
             }
         }
 
+        [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD010", Justification = "NuGet/Home#4833 Baseline")]
         private void HideProgress()
         {
             VsStatusBar.Progress(
@@ -630,6 +632,7 @@ namespace NuGetConsole.Implementation.Console
                 (uint)100);
         }
 
+        [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD010", Justification = "NuGet/Home#4833 Baseline")]
         public void SetExecutionMode(bool isExecuting)
         {
             _consoleStatus.SetBusyState(isExecuting);
@@ -683,6 +686,7 @@ namespace NuGetConsole.Implementation.Console
             "Microsoft.Design",
             "CA1031:DoNotCatchGeneralExceptionTypes",
             Justification = "We don't want to crash VS when it exits.")]
+        [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD010", Justification = "NuGet/Home#4833 Baseline")]
         protected virtual void Dispose(bool disposing)
         {
             if (disposing)

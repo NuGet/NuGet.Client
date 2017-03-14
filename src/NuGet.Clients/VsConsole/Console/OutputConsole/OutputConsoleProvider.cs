@@ -44,17 +44,21 @@ namespace NuGetConsole
 
             _hostProviders = hostProviders;
 
-            _vsOutputWindow = new AsyncLazy<IVsOutputWindow>(async () =>
+            _vsOutputWindow = new AsyncLazy<IVsOutputWindow>(
+                async () =>
                 {
                     await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
                     return serviceProvider.GetService<SVsOutputWindow, IVsOutputWindow>();
-                });
+                },
+                NuGetUIThreadHelper.JoinableTaskFactory);
 
-            _vsUIShell = new AsyncLazy<IVsUIShell>(async () =>
+            _vsUIShell = new AsyncLazy<IVsUIShell>(
+                async () =>
                 {
                     await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
                     return serviceProvider.GetService<SVsUIShell, IVsUIShell>();
-                });
+                },
+                NuGetUIThreadHelper.JoinableTaskFactory);
 
             _cachedOutputConsole = new Lazy<IConsole>(
                 () => new OutputConsole(VsOutputWindow, VsUIShell));

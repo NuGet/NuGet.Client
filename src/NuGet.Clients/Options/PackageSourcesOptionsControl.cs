@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Text;
@@ -236,7 +237,7 @@ namespace NuGet.Options
                 return false;
             }
 
-            // find the enabled package source 
+            // find the enabled package source
             return true;
         }
 
@@ -533,9 +534,9 @@ namespace NuGet.Options
 
                     if (_checkBoxSize.IsEmpty)
                     {
-                        // save the checkbox size so that we can detect mouse click on the 
+                        // save the checkbox size so that we can detect mouse click on the
                         // checkbox in the MouseUp event handler.
-                        // here we assume that all checkboxes have the same size, which is reasonable. 
+                        // here we assume that all checkboxes have the same size, which is reasonable.
                         _checkBoxSize = checkBoxSize;
                     }
 
@@ -546,7 +547,7 @@ namespace NuGet.Options
                         graphics.TextRenderingHint = TextRenderingHint.ClearTypeGridFit;
 
                         // draw each package source as
-                        // 
+                        //
                         // [checkbox] Name
                         //            Source (italics)
 
@@ -664,6 +665,7 @@ namespace NuGet.Options
             }
         }
 
+        [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD010", Justification = "NuGet/Home#4833 Baseline")]
         private void OnBrowseButtonClicked(object sender, EventArgs e)
         {
             const int MaxDirectoryLength = 1000;

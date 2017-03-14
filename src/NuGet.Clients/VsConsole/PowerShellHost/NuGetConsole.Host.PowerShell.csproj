@@ -16,7 +16,6 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>NuGetConsole.Host.PowerShell</RootNamespace>
     <AssemblyName>NuGetConsole.Host.PowerShell</AssemblyName>
-    <CodeAnalysisRuleSet>..\..\..\..\NuGet.ruleset</CodeAnalysisRuleSet>
     <NuGetPackageImportStamp>d946fd5a</NuGetPackageImportStamp>
   </PropertyGroup>
   <ItemGroup>

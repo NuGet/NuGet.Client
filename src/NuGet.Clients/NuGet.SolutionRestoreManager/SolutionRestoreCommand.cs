@@ -4,6 +4,7 @@
 using System;
 using System.ComponentModel.Composition;
 using System.ComponentModel.Design;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using Microsoft.VisualStudio;
@@ -42,6 +43,7 @@ namespace NuGet.SolutionRestoreManager
 
         private Task _restoreTask = Task.CompletedTask;
 
+        [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD010", Justification = "NuGet/Home#4833 Baseline")]
         private SolutionRestoreCommand(
             IMenuCommandService commandService,
             IVsMonitorSelection vsMonitorSelection,
@@ -56,7 +58,7 @@ namespace NuGet.SolutionRestoreManager
             var menuItem = new OleMenuCommand(
                 OnRestorePackages, null, BeforeQueryStatusForPackageRestore, menuCommandId);
 
-            // call AddCommand through explicitly moving to UI thread since this is now being 
+            // call AddCommand through explicitly moving to UI thread since this is now being
             // initiliazed as part of AsynPackage
             ThreadHelper.JoinableTaskFactory.Run(async () =>
             {
@@ -87,6 +89,7 @@ namespace NuGet.SolutionRestoreManager
         /// Initializes the singleton instance of the command.
         /// </summary>
         /// <param name="package">Owner package, not null.</param>
+        [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD010", Justification = "NuGet/Home#4833 Baseline")]
         public static async Task InitializeAsync(AsyncPackage package)
         {
             if (package == null)
@@ -148,6 +151,7 @@ namespace NuGet.SolutionRestoreManager
             });
         }
 
+        [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD010", Justification = "NuGet/Home#4833 Baseline")]
         private bool IsSolutionExistsAndNotDebuggingAndNotBuilding()
         {
             int pfActive;

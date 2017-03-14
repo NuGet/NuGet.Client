@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using EnvDTE;
@@ -24,6 +25,7 @@ namespace NuGet.PackageManagement.VisualStudio
         /// Constructs and Registers ("Advises") for Project retargeting events if the IVsSolutionEvents service is available
         /// Otherwise, it simply exits
         /// </summary>
+        [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD010", Justification = "NuGet/Home#4833 Baseline")]
         public ProjectUpgradeHandler(IServiceProvider serviceProvider, ISolutionManager solutionManager)
         {
             if (serviceProvider == null)
@@ -132,6 +134,8 @@ namespace NuGet.PackageManagement.VisualStudio
         }
         #endregion
 
+
+        [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD010", Justification = "NuGet/Home#4833 Baseline")]
         public void Dispose()
         {
             if (_cookie != 0 && _vsSolution2 != null)

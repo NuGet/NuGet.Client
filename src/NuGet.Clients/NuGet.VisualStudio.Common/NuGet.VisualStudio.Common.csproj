@@ -19,23 +19,23 @@
       <HintPath>$(MSBuildToolsPath)\Microsoft.Build.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <PackageReference Version="14.95.3" Include="Microsoft.TeamFoundationServer.ExtendedClient" />
-    <PackageReference Version="14.2.25123" Include="Microsoft.VisualStudio.CoreUtility" />
-    <PackageReference Version="14.2.25123" Include="Microsoft.VisualStudio.Editor" />
-    <PackageReference Version="14.2.25123" Include="Microsoft.VisualStudio.Language.Intellisense" />
-    <PackageReference Version="14.2.25123" Include="Microsoft.VisualStudio.Language.StandardClassification" />
-    <PackageReference Version="14.95.3" Include="Microsoft.VisualStudio.Services.Client" />
-    <PackageReference Version="14.95.3" Include="Microsoft.VisualStudio.Services.InteractiveClient" />
-    <PackageReference Version="14.2.25123" Include="Microsoft.VisualStudio.Shell.14.0" />
-    <PackageReference Version="14.2.25123" Include="Microsoft.VisualStudio.Shell.Immutable.14.0" />
-    <PackageReference Version="14.2.25123" Include="Microsoft.VisualStudio.Text.Data" />
-    <PackageReference Version="14.2.25123" Include="Microsoft.VisualStudio.Text.Logic" />
-    <PackageReference Version="14.2.25123" Include="Microsoft.VisualStudio.Text.UI" />
-    <PackageReference Version="14.2.25123" Include="Microsoft.VisualStudio.Text.UI.Wpf" />
-    <PackageReference Version="14.1.131" Include="Microsoft.VisualStudio.Threading" />
-    <PackageReference Version="14.3.25420" Include="Microsoft.VSSDK.BuildTools" />
-    <PackageReference Version="14.1.680-update09A45013" Include="Microsoft.VisualStudio.Telemetry" />
+    <PackageReference Include="Microsoft.TeamFoundationServer.ExtendedClient" Version="14.95.3" />
     <PackageReference Include="Microsoft.VisualStudio.ComponentModelHost.NuGet" Version="14.0.0.0" />
+    <PackageReference Include="Microsoft.VisualStudio.CoreUtility" Version="14.2.25123" />
+    <PackageReference Include="Microsoft.VisualStudio.Editor" Version="14.2.25123" />
+    <PackageReference Include="Microsoft.VisualStudio.Language.Intellisense" Version="14.2.25123" />
+    <PackageReference Include="Microsoft.VisualStudio.Language.StandardClassification" Version="14.2.25123" />
+    <PackageReference Include="Microsoft.VisualStudio.Services.Client" Version="14.95.3" />
+    <PackageReference Include="Microsoft.VisualStudio.Services.InteractiveClient" Version="14.95.3" />
+    <PackageReference Include="Microsoft.VisualStudio.Shell.14.0" Version="14.2.25123" />
+    <PackageReference Include="Microsoft.VisualStudio.Shell.Immutable.14.0" Version="14.2.25123" />
+    <PackageReference Include="Microsoft.VisualStudio.Telemetry" Version="14.1.680-update09A45013" />
+    <PackageReference Include="Microsoft.VisualStudio.Text.Data" Version="14.2.25123" />
+    <PackageReference Include="Microsoft.VisualStudio.Text.Logic" Version="14.2.25123" />
+    <PackageReference Include="Microsoft.VisualStudio.Text.UI" Version="14.2.25123" />
+    <PackageReference Include="Microsoft.VisualStudio.Text.UI.Wpf" Version="14.2.25123" />
+    <PackageReference Include="Microsoft.VisualStudio.Threading" Version="14.1.131" />
+    <PackageReference Include="Microsoft.VSSDK.BuildTools" Version="14.3.25420" />
   </ItemGroup>
   <ItemGroup Condition="'$(VisualStudioVersion)' == '15.0'">
     <Reference Include="Microsoft.VisualStudio.ProjectSystem">
@@ -45,24 +45,25 @@
       <HintPath>$(EnlistmentRoot)\packages\Microsoft.Build.15.1.262-preview5\lib\net46\Microsoft.Build.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <PackageReference Version="15.112.1" Include="Microsoft.TeamFoundationServer.ExtendedClient" />
-    <PackageReference Version="15.0.26201" Include="Microsoft.VisualStudio.CoreUtility" />
-    <PackageReference Version="15.0.26201" Include="Microsoft.VisualStudio.Editor" />
-    <PackageReference Version="15.0.26201" Include="Microsoft.VisualStudio.Language.Intellisense" />
-    <PackageReference Version="15.0.26201" Include="Microsoft.VisualStudio.Language.StandardClassification" />
-    <PackageReference Version="15.112.1" Include="Microsoft.VisualStudio.Services.Client" />
-    <PackageReference Version="15.112.1" Include="Microsoft.VisualStudio.Services.InteractiveClient" />
-    <PackageReference Version="15.0.25123-Dev15Preview" Include="Microsoft.VisualStudio.Shell.15.0" />
-    <PackageReference Version="15.0.25123-Dev15Preview" Include="Microsoft.VisualStudio.Shell.Immutable.15.0" />
-    <PackageReference Version="15.0.26201" Include="Microsoft.VisualStudio.Text.Data" />
-    <PackageReference Version="15.0.26201" Include="Microsoft.VisualStudio.Text.Logic" />
-    <PackageReference Version="15.0.26201" Include="Microsoft.VisualStudio.Text.UI" />
-    <PackageReference Version="15.0.26201" Include="Microsoft.VisualStudio.Text.UI.Wpf" />
-    <PackageReference Version="15.0.240" Include="Microsoft.VisualStudio.Threading" />
-    <PackageReference Version="15.0.26201" Include="Microsoft.VSSDK.BuildTools" />
-    <PackageReference Version="15.0.691-master31907920" Include="Microsoft.VisualStudio.Telemetry" />
-    <PackageReference Version="8.0.3" Include="Newtonsoft.Json" />
+    <PackageReference Include="Microsoft.TeamFoundationServer.ExtendedClient" Version="15.112.1" />
     <PackageReference Include="Microsoft.VisualStudio.ComponentModelHost" Version="15.0.26201" />
+    <PackageReference Include="Microsoft.VisualStudio.CoreUtility" Version="15.0.26201" />
+    <PackageReference Include="Microsoft.VisualStudio.Editor" Version="15.0.26201" />
+    <PackageReference Include="Microsoft.VisualStudio.Language.Intellisense" Version="15.0.26201" />
+    <PackageReference Include="Microsoft.VisualStudio.Language.StandardClassification" Version="15.0.26201" />
+    <PackageReference Include="Microsoft.VisualStudio.Services.Client" Version="15.112.1" />
+    <PackageReference Include="Microsoft.VisualStudio.Services.InteractiveClient" Version="15.112.1" />
+    <PackageReference Include="Microsoft.VisualStudio.Shell.15.0" Version="15.0.25123-Dev15Preview" />
+    <PackageReference Include="Microsoft.VisualStudio.Shell.Immutable.15.0" Version="15.0.25123-Dev15Preview" />
+    <PackageReference Include="Microsoft.VisualStudio.Telemetry" Version="15.0.691-master31907920" />
+    <PackageReference Include="Microsoft.VisualStudio.Text.Data" Version="15.0.26201" />
+    <PackageReference Include="Microsoft.VisualStudio.Text.Logic" Version="15.0.26201" />
+    <PackageReference Include="Microsoft.VisualStudio.Text.UI" Version="15.0.26201" />
+    <PackageReference Include="Microsoft.VisualStudio.Text.UI.Wpf" Version="15.0.26201" />
+    <PackageReference Include="Microsoft.VisualStudio.Threading" Version="15.0.240" />
+    <PackageReference Include="Microsoft.VisualStudio.Threading.Analyzers" Version="15.0.240" />
+    <PackageReference Include="Microsoft.VSSDK.BuildTools" Version="15.0.26201" />
+    <PackageReference Include="Newtonsoft.Json" Version="8.0.3" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="PresentationCore" />
@@ -73,8 +74,8 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="EnvDTE80" Version="8.0.1" />
-    <PackageReference Version="7.10.6071" Include="Microsoft.VisualStudio.Shell.Interop" />
-    <PackageReference Version="11.0.61030" Include="Microsoft.VisualStudio.Shell.Interop.11.0" />
+    <PackageReference Include="Microsoft.VisualStudio.Shell.Interop" Version="7.10.6071" />
+    <PackageReference Include="Microsoft.VisualStudio.Shell.Interop.11.0" Version="11.0.61030" />
     <PackageReference Include="Microsoft.VisualStudio.Workspace.VSIntegration" Version="15.0.198-pre" />
   </ItemGroup>
   <ItemGroup>

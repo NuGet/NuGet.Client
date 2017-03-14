@@ -3,6 +3,7 @@
 
 using System;
 using System.ComponentModel.Composition;
+using System.Diagnostics.CodeAnalysis;
 using System.Security;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.ComponentModelHost;
@@ -14,6 +15,7 @@ namespace NuGetConsole
     [PartCreationPolicy(CreationPolicy.Shared)]
     public class ConsoleInitializer : IConsoleInitializer
     {
+        [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD011", Justification = "NuGet/Home#4833 Baseline")]
         private readonly Lazy<Task<Action>> _initializeTask = new Lazy<Task<Action>>(GetInitializeTask);
 
         public Task<Action> Initialize()

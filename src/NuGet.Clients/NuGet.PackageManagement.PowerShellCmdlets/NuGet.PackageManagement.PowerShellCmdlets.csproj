@@ -13,7 +13,6 @@
     <AssemblyName>NuGet.PackageManagement.PowerShellCmdlets</AssemblyName>
     <FileAlignment>512</FileAlignment>
     <NuGetPackageImportStamp>44966557</NuGetPackageImportStamp>
-    <CodeAnalysisRuleSet>..\..\..\NuGet.ruleset</CodeAnalysisRuleSet>
     <PackagesDirectory>$(UserProfile)\.nuget\packages</PackagesDirectory>
     <ResolveNuGetPackages>true</ResolveNuGetPackages>
     <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>

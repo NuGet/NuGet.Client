@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -59,6 +60,7 @@ namespace NuGet.PackageManagement.VisualStudio
             return base.PreProcessAsync(nuGetProjectContext, token);
         }
 
+        [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD002", Justification = "NuGet/Home#4833 Baseline")]
         public ProjectKNuGetProject(INuGetPackageManager project, string projectName, string uniqueName, string projectId)
         {
             _project = project;
@@ -108,7 +110,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             // Get additional information from the package that the INuGetPackageManager can act on.
             packageStream.Seek(0, SeekOrigin.Begin);
-            
+
             IEnumerable<NuGetFramework> supportedFrameworks;
             IEnumerable<PackageType> packageTypes;
             using (var packageReader = new PackageArchiveReader(packageStream, leaveStreamOpen: true))

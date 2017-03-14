@@ -25,7 +25,7 @@
     <XunitConsoleExePath>$(SolutionPackagesFolder)xunit.runner.console.2.2.0\tools\xunit.console.x86.exe</XunitConsoleExePath>
     <ILMergeExePath>$(SolutionPackagesFolder)ILMerge.2.14.1208\tools\ILMerge.exe</ILMergeExePath>
     <EnlistmentRoot>$(RepositoryRootDirectory)</EnlistmentRoot>
-    <EnlistmentRootSrc>$(RepositoryRootDirectory)\src</EnlistmentRootSrc>
+    <EnlistmentRootSrc>$(RepositoryRootDirectory)src</EnlistmentRootSrc>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">$(RepositoryRootDirectory)</SolutionDir>
     <ArtifactRoot>$(ArtifactsDirectory)</ArtifactRoot>
     <TestUtilitiesDirectory>$(RepositoryRootDirectory)test\TestUtilities\</TestUtilitiesDirectory>
@@ -54,10 +54,12 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <NoWarn>$(NoWarn);1762</NoWarn>
+    <!-- Code Analysis is OFF by default -->
+    <RunCodeAnalysis Condition=" '$(RunCodeAnalysis)' == ''">false</RunCodeAnalysis>
   </PropertyGroup>
 
   <!-- DEBUG specific configuration settings -->
-  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' Or '$(Configuration)' == 'Mono Debug' ">
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
@@ -65,7 +67,7 @@
   </PropertyGroup>
 
   <!-- RELEASE specific configuration settings -->
-  <PropertyGroup Condition=" '$(Configuration)' == 'Release' Or '$(Configuration)' == 'Mono Release' ">
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <DefineConstants>TRACE</DefineConstants>
@@ -74,7 +76,7 @@
   <PropertyGroup Condition="'$(VisualStudioVersion)' == '14.0'">
     <MinimumVisualStudioVersion>14.0</MinimumVisualStudioVersion>
     <DefineConstants>$(DefineConstants);VS14</DefineConstants>
-    <VSSDKRoot>$(RepositoryRootDirectory)\packages\Microsoft.VSSDK.BuildTools.14.3.25420</VSSDKRoot>
+    <VSSDKRoot>$(RepositoryRootDirectory)packages\Microsoft.VSSDK.BuildTools.14.3.25420</VSSDKRoot>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(VSSDKRoot)\tools</VSToolsPath>
     <VsixOutputDirName>VS14</VsixOutputDirName>
   </PropertyGroup>
@@ -82,9 +84,10 @@
   <PropertyGroup Condition="'$(VisualStudioVersion)' == '15.0'">
     <MinimumVisualStudioVersion>15.0</MinimumVisualStudioVersion>
     <DefineConstants>$(DefineConstants);VS15</DefineConstants>
-    <VSSDKRoot>$(RepositoryRootDirectory)\packages\Microsoft.VSSDK.BuildTools.15.0.26201</VSSDKRoot>
+    <VSSDKRoot>$(RepositoryRootDirectory)packages\Microsoft.VSSDK.BuildTools.15.0.26201</VSSDKRoot>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(VSSDKRoot)\tools</VSToolsPath>
     <VsixOutputDirName>VS15</VsixOutputDirName>
+    <CodeAnalysisRuleSet Condition="'$(CodeAnalysisRuleSet)' == ''">$(BuildCommonDirectory)NuGet.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(BuildRTM)' == 'true' ">
@@ -94,7 +97,7 @@
   <PropertyGroup Condition=" '$(PreReleaseVersion)' == '' ">
     <PreReleaseVersion>0</PreReleaseVersion>
   </PropertyGroup>
-  
+
   <!--Setting the Pre-release/Build meta-data from CI if Version is set-->
   <PropertyGroup Condition="'$(BuildNumber)' != ''">
     <PreReleaseVersion>$(BuildNumber)</PreReleaseVersion>
@@ -126,7 +129,7 @@
     <!-- Create different folders for 14.0, 15.0, 15.0-RTM -->
     <BuildVariationFolder>$(VisualStudioVersion)</BuildVariationFolder>
     <BuildVariationFolder Condition=" '$(BuildRTM)' == 'true' ">$(BuildVariationFolder)-RTM</BuildVariationFolder>
-    
+
     <!-- output paths -->
     <BaseIntermediateOutputPath>$(ArtifactsDirectory)$(MSBuildProjectName)\$(BuildVariationFolder)\obj\</BaseIntermediateOutputPath>
     <IntermediateOutputPath>$(BaseIntermediateOutputPath)$(Configuration)\</IntermediateOutputPath>
@@ -134,7 +137,7 @@
     <OutputPath>$(BaseOutputPath)$(Configuration)\</OutputPath>
     <AppxPackageDir>$(OutputPath)</AppxPackageDir>
   </PropertyGroup>
-  
+
   <!-- Generate AssemblyFileVersion and AssemblyVersion attributes. -->
   <PropertyGroup Condition=" '$(IsNetCoreProject)' != 'true' ">
     <!-- Turn on dynamic assembly attribute generation -->
@@ -190,6 +193,7 @@
   <!-- Add symbols to the dll for test dlls -->
   <PropertyGroup Condition=" '$(TestProject)' == 'true' ">
     <DebugType>full</DebugType>
+    <CodeAnalysisRuleSet Condition="'$(CodeAnalysisRuleSet)' == ''">$(BuildCommonDirectory)NuGet.Tests.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
 
 </Project>

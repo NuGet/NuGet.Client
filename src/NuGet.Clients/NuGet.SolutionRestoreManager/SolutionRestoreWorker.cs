@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.ComponentModel.Composition;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio;
@@ -476,6 +477,7 @@ namespace NuGet.SolutionRestoreManager
 
             public System.Runtime.CompilerServices.TaskAwaiter<bool> GetAwaiter() => Task.GetAwaiter();
 
+            [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD002", Justification = "NuGet/Home#4833 Baseline")]
             public void ContinuationAction(Task<bool> targetTask)
             {
                 // propagate the restore target task status to the *unbound* active task.

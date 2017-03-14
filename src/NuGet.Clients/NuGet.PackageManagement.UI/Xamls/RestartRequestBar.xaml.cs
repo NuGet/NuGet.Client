@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
@@ -18,6 +19,7 @@ namespace NuGet.PackageManagement.UI
     /// <summary>
     /// Interaction logic for RestartRequestBar.xaml
     /// </summary>
+    [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD010", Justification = "NuGet/Home#4833 Baseline")]
     public partial class RestartRequestBar : UserControl, INuGetProjectContext
     {
         private readonly IDeleteOnRestartManager _deleteOnRestartManager;
@@ -138,6 +140,6 @@ namespace NuGet.PackageManagement.UI
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
                 RequestRestartMessage.Text = message;
             });
-        }       
+        }
     }
 }

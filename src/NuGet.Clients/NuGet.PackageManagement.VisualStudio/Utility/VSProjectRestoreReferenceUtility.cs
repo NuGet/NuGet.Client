@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
@@ -135,6 +136,7 @@ namespace NuGet.PackageManagement.VisualStudio
         /// <summary>
         /// Get the unique names of all references which have ReferenceOutputAssembly set to false.
         /// </summary>
+        [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD010", Justification = "NuGet/Home#4833 Baseline")]
         private static List<string> GetExcludedReferences(
             EnvDTEProject project,
             IVsEnumHierarchyItemsFactory itemsFactory)

@@ -169,7 +169,7 @@ namespace NuGet.PackageManagement.VisualStudio
         /// <summary>
         /// Marks the packages to be reinstalled on the projects' packages.config
         /// </summary>
-        public static async void MarkPackagesForReinstallation(NuGetProject project, IList<PackageIdentity> packagesToBeReinstalled)
+        public static async Task MarkPackagesForReinstallation(NuGetProject project, IList<PackageIdentity> packagesToBeReinstalled)
         {
             Debug.Assert(project != null);
             Debug.Assert(packagesToBeReinstalled != null);

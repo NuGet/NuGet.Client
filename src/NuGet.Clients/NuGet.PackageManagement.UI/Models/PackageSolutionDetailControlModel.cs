@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using NuGet.ProjectManagement;
@@ -443,6 +444,7 @@ namespace NuGet.PackageManagement.UI
             return packageReference != null;
         }
 
+        [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD100", Justification = "NuGet/Home#4833 Baseline")]
         protected override async void OnCurrentPackageChanged()
         {
             if (_searchResultPackage == null)
