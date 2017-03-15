@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.VisualStudio.Shell;
 using NuGet.PackageManagement;
 using NuGet.PackageManagement.VisualStudio;
@@ -180,14 +181,10 @@ namespace API.Test
             vsSolutionManager.AfterNuGetCacheUpdated -= _cacheUpdateEventHandler.Invoke;
         }
 
-        public static IVsProjectJsonToPackageReferenceMigrateResult MigrateJsonProject(string projectName)
+        public static async Task<IVsProjectJsonToPackageReferenceMigrateResult> MigrateJsonProject(string projectName)
         {
             var migrator = ServiceLocator.GetInstance<IVsProjectJsonToPackageReferenceMigrator>();
-            return ThreadHelper.JoinableTaskFactory.Run(async () =>
-            {
-                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                return migrator.MigrateProjectJsonToPackageReference(projectName);
-            });
+            return (IVsProjectJsonToPackageReferenceMigrateResult)await migrator.MigrateProjectJsonToPackageReferenceAsync(projectName);
         }
     }
 }

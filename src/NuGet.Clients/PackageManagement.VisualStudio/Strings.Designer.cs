@@ -223,6 +223,24 @@ namespace NuGet.PackageManagement.VisualStudio {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to File &apos;{0}&apos; does not exist on disk. .
+        /// </summary>
+        public static string Error_FileNotExists {
+            get {
+                return ResourceManager.GetString("Error_FileNotExists", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &apos;{0}&apos; is an invalid json file..
+        /// </summary>
+        public static string Error_InvalidJson {
+            get {
+                return ResourceManager.GetString("Error_InvalidJson", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Failed to migrate project &apos;{0}&apos;. The project may only contain one target framework..
         /// </summary>
         public static string Error_MultipleFrameworks {
