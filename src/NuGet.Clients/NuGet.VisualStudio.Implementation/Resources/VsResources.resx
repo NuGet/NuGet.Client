@@ -179,4 +179,10 @@ The string representation of the user's input framework name.</comment>
   <data name="Error_ProjectNotInCache" xml:space="preserve">
     <value>Project {0} does not exist in the project system cache.</value>
   </data>
+  <data name="Error_InvalidPackageRefProjectCast" xml:space="preserve">
+    <value>The project '{0}' does not support PackageReference.</value>
+  </data>
+  <data name="Error_FileNotExists" xml:space="preserve">
+    <value>The project file '{0}' does not exist on disk.</value>
+  </data>
 </root>

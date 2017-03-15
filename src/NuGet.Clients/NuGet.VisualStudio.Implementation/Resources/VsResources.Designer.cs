@@ -70,6 +70,24 @@ namespace NuGet.VisualStudio.Implementation.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The project file &apos;{0}&apos; does not exist on disk..
+        /// </summary>
+        internal static string Error_FileNotExists {
+            get {
+                return ResourceManager.GetString("Error_FileNotExists", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The project &apos;{0}&apos; does not support PackageReference..
+        /// </summary>
+        internal static string Error_InvalidPackageRefProjectCast {
+            get {
+                return ResourceManager.GetString("Error_InvalidPackageRefProjectCast", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Project {0} does not exist in the project system cache..
         /// </summary>
         internal static string Error_ProjectNotInCache {
