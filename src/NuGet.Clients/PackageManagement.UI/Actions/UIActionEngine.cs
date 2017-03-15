@@ -649,7 +649,7 @@ namespace NuGet.PackageManagement.UI
             // first check all the packages with local sources.
             var completed = (await TaskCombinators.ThrottledAsync(
                 allPackages,
-                (p, t) => GetPackageMetadataAsync(sources, p, t),
+                (p, t) => GetPackageMetadataAsync(localSources, p, t),
                 token)).Where(metadata => metadata != null).ToArray();
 
             results.AddRange(completed);
