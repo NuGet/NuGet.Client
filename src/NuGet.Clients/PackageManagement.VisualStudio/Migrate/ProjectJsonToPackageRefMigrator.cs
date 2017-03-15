@@ -11,7 +11,9 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Task = System.Threading.Tasks.Task;
+using Microsoft.VisualStudio.Threading;
 using NuGet.PackageManagement.UI;
+using Microsoft.VisualStudio.Shell;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
@@ -19,14 +21,26 @@ namespace NuGet.PackageManagement.VisualStudio
     {
         public static async Task MigrateAsync(LegacyCSProjPackageReferenceProject project, string dteProjectFullName)
         {
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
             var projectJsonFilePath = ProjectJsonPathUtilities.GetProjectConfigPath(Path.GetDirectoryName(project.MSBuildProjectPath),
                 Path.GetFileNameWithoutExtension(project.MSBuildProjectPath));
+
+            if (!File.Exists(projectJsonFilePath))
+            {
+                throw new FileNotFoundException(string.Format(Strings.Error_FileNotExists, projectJsonFilePath));
+            }
 
             var packageSpec = JsonPackageSpecReader.GetPackageSpec(
                 Path.GetFileNameWithoutExtension(project.MSBuildProjectPath),
                 projectJsonFilePath);
 
-            await MigrateDependencies(project, packageSpec);
+            if (packageSpec == null)
+            {
+                throw new InvalidOperationException(
+                    string.Format(Strings.Error_InvalidJson, projectJsonFilePath));
+            }
+
+            await MigrateDependenciesAsync(project, packageSpec);
 
             var buildProject = EnvDTEProjectUtility.AsMicrosoftBuildEvaluationProject(dteProjectFullName);
 
@@ -34,12 +48,13 @@ namespace NuGet.PackageManagement.VisualStudio
 
             RemoveProjectJsonReference(buildProject, projectJsonFilePath);
 
-            CreateBackup(project,
+            await CreateBackupAsync(project,
                 projectJsonFilePath);
         }
 
-        private static async Task MigrateDependencies(LegacyCSProjPackageReferenceProject project, PackageSpec packageSpec)
+        private static async Task MigrateDependenciesAsync(LegacyCSProjPackageReferenceProject project, PackageSpec packageSpec)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
             if (packageSpec.TargetFrameworks.Count > 1)
             {
                 throw new InvalidOperationException(
@@ -65,13 +80,13 @@ namespace NuGet.PackageManagement.VisualStudio
                 if (includeFlags != LibraryIncludeFlags.All)
                 {
                     metadataElements.Add("IncludeAssets");
-                    metadataValues.Add(LibraryIncludeFlagUtils.GetFlagString(includeFlags).Replace(',',';'));
+                    metadataValues.Add(LibraryIncludeFlagUtils.GetFlagString(includeFlags).Replace(',', ';'));
                 }
 
                 if (privateAssetsFlag != LibraryIncludeFlagUtils.DefaultSuppressParent)
                 {
                     metadataElements.Add("PrivateAssets");
-                    metadataValues.Add(LibraryIncludeFlagUtils.GetFlagString(privateAssetsFlag).Replace(',',';'));
+                    metadataValues.Add(LibraryIncludeFlagUtils.GetFlagString(privateAssetsFlag).Replace(',', ';'));
                 }
 
                 await project.InstallPackageWithMetadataAsync(dependency.Name, dependency.LibraryRange.VersionRange, metadataElements, metadataValues);
@@ -80,6 +95,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private static void MigrateRuntimes(PackageSpec packageSpec, Microsoft.Build.Evaluation.Project buildProject)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
             var runtimes = packageSpec.RuntimeGraph.Runtimes;
             var supports = packageSpec.RuntimeGraph.Supports;
             var runtimeIdentifiers = new List<string>();
@@ -87,49 +103,51 @@ namespace NuGet.PackageManagement.VisualStudio
             if (runtimes != null && runtimes.Count > 0)
             {
                 runtimeIdentifiers.AddRange(runtimes.Keys);
-                
+
             }
 
-            if(supports != null && supports.Count > 0)
+            if (supports != null && supports.Count > 0)
             {
                 runtimeSupports.AddRange(supports.Keys);
             }
 
             var union = string.Join(";", runtimeIdentifiers.Union(runtimeSupports));
-            NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
-            {
-                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                buildProject.SetProperty("RuntimeIdentifiers", union);
-            });            
+            buildProject.SetProperty("RuntimeIdentifiers", union);
         }
 
         private static void RemoveProjectJsonReference(Microsoft.Build.Evaluation.Project buildProject, string projectJsonFilePath)
         {
-            NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
+            ThreadHelper.ThrowIfNotOnUIThread();
+            var projectJsonItem = buildProject.GetItems("None")
+            .Where(t => string.Equals(t.EvaluatedInclude, Path.GetFileName(projectJsonFilePath), StringComparison.OrdinalIgnoreCase))
+            .FirstOrDefault();
+
+            if (projectJsonItem != null)
             {
-                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                var projectJsonItem = buildProject.GetItems("None")
-                .Where(t => string.Equals(t.EvaluatedInclude, Path.GetFileName(projectJsonFilePath), StringComparison.OrdinalIgnoreCase))
-                .FirstOrDefault();
-
-                if (projectJsonItem != null)
-                {
-                    buildProject.RemoveItem(projectJsonItem);
-                }
-            });
+                buildProject.RemoveItem(projectJsonItem);
+            }
         }
+        
 
-        private static void CreateBackup(LegacyCSProjPackageReferenceProject project,
+        private static async Task CreateBackupAsync(LegacyCSProjPackageReferenceProject project,
             string projectJsonFilePath)
         {
-            var backupDirectory = Path.Combine(Path.GetDirectoryName(project.MSBuildProjectPath), "Backup");
+            try
+            {
+                await TaskScheduler.Default;
+                var backupDirectory = Path.Combine(Path.GetDirectoryName(project.MSBuildProjectPath), "Backup");
 
-            Directory.CreateDirectory(backupDirectory);
+                Directory.CreateDirectory(backupDirectory);
 
-            var backupJsonFile = Path.Combine(backupDirectory, Path.GetFileName(projectJsonFilePath));
-            FileUtility.Move(projectJsonFilePath, backupJsonFile);
-            var backupProjectFile = Path.Combine(backupDirectory, Path.GetFileName(project.MSBuildProjectPath));
-            File.Copy(project.MSBuildProjectPath, backupProjectFile);
-        }        
+                var backupJsonFile = Path.Combine(backupDirectory, Path.GetFileName(projectJsonFilePath));
+                FileUtility.Move(projectJsonFilePath, backupJsonFile);
+                var backupProjectFile = Path.Combine(backupDirectory, Path.GetFileName(project.MSBuildProjectPath));
+                File.Copy(project.MSBuildProjectPath, backupProjectFile);
+            }
+            finally
+            {
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+            }
+        }
     }
 }
