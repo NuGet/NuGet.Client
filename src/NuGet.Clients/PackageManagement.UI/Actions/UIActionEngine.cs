@@ -411,8 +411,8 @@ namespace NuGet.PackageManagement.UI
                     licenseCheck.Add(pkg.New);
                 }
             }
-
-            var licenseMetadata = await GetPackageMetadataAsync(uiService, licenseCheck, token);
+            var sources = _sourceProvider.GetRepositories().Where(e => e.PackageSource.IsEnabled);
+            var licenseMetadata = await GetPackageMetadataAsync(sources, licenseCheck, token);
 
             TelemetryUtility.StopTimer();
 
@@ -633,16 +633,16 @@ namespace NuGet.PackageManagement.UI
         /// Get the package metadata to see if RequireLicenseAcceptance is true
         /// </summary>
         private async Task<List<IPackageSearchMetadata>> GetPackageMetadataAsync(
-            INuGetUI uiService,
+            IEnumerable<SourceRepository> sources,
             IEnumerable<PackageIdentity> packages,
             CancellationToken token)
         {
             var results = new List<IPackageSearchMetadata>();
 
             // local sources
-            var sources = new List<SourceRepository>();
-            sources.Add(_packageManager.PackagesFolderSourceRepository);
-            sources.AddRange(_packageManager.GlobalPackageFolderRepositories);
+            var localSources = new List<SourceRepository>();
+            localSources.Add(_packageManager.PackagesFolderSourceRepository);
+            localSources.AddRange(_packageManager.GlobalPackageFolderRepositories);
 
             var allPackages = packages.ToArray();
 
@@ -661,7 +661,7 @@ namespace NuGet.PackageManagement.UI
 
                 var remoteResults = (await TaskCombinators.ThrottledAsync(
                     remainingPackages,
-                    (p, t) => GetPackageMetadataAsync(uiService.ActiveSources, p, t),
+                    (p, t) => GetPackageMetadataAsync(sources, p, t),
                     token)).Where(metadata => metadata != null).ToArray();
 
                 results.AddRange(remoteResults);
