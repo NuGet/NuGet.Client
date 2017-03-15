@@ -726,8 +726,15 @@ function Assert-NetCorePackageReference {
 
     $doc = [xml](Get-Content $project.FullName)
     $references = $doc.SelectNodes("./Project/ItemGroup/PackageReference[@Include = '$id' and @Version = '$Version']")
-    
-    Assert-True ($references.Count -eq 1) "Project $($project.FullName) does not contain a reference to Package $($Id) $($Version)"
+    if($references.Count -eq 0)
+    {
+        Assert-True ($doc.SelectNodes(".//*[name()='PackageReference'][@Include=$Id]").Version -eq $Version) 
+        "Project $($project.FullName) does not contain a reference to Package $($Id) $($Version) with version as element or attribute"
+    }
+    else
+    {
+        Assert-True ($references.Count -eq 1) "Project $($project.FullName) does not contain a reference to Package $($Id) $($Version)"
+    }
 }
 
 function Assert-NetCoreProjectReference {
