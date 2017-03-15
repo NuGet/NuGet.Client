@@ -30,6 +30,23 @@ function New-UwpClassLibrary
     }
 }
 
+function New-UwpPackageRefClassLibrary
+{
+    param(
+        [string]$ProjectName,
+        [string]$SolutionFolder
+    )
+
+    if ((Get-VSVersion) -ge '15.0')
+    {
+        New-Project UwpPackageRefClassLibrary $ProjectName $SolutionFolder
+    }
+    else
+    {
+        throw "SKIP: $($_)"
+    }
+}
+
 function New-BuildIntegratedProj
 {
     param(
