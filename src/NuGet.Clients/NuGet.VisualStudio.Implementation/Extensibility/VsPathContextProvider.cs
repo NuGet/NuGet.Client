@@ -2,10 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.LibraryModel;
 using NuGet.PackageManagement.UI;
@@ -24,12 +26,15 @@ namespace NuGet.VisualStudio
     {
         private readonly Lazy<ISettings> _settings;
         private readonly Lazy<IVsSolutionManager> _solutionManager;
+        private readonly Lazy<ILogger> _logger;
         private readonly Func<BuildIntegratedNuGetProject, Task<LockFile>> _getLockFileOrNullAsync;
 
         [ImportingConstructor]
         public VsPathContextProvider(
             Lazy<ISettings> settings,
-            Lazy<IVsSolutionManager> solutionManager)
+            Lazy<IVsSolutionManager> solutionManager,
+            [Import("VisualStudioActivityLogger")]
+            Lazy<ILogger> logger)
         {
             if (settings == null)
             {
@@ -41,8 +46,14 @@ namespace NuGet.VisualStudio
                 throw new ArgumentNullException(nameof(solutionManager));
             }
 
+            if (logger == null)
+            {
+                throw new ArgumentNullException(nameof(logger));
+            }
+
             _settings = settings;
             _solutionManager = solutionManager;
+            _logger = logger;
             _getLockFileOrNullAsync = BuildIntegratedProjectUtility.GetLockFileOrNull;
         }
 
@@ -52,6 +63,7 @@ namespace NuGet.VisualStudio
         public VsPathContextProvider(
             ISettings settings,
             IVsSolutionManager solutionManager,
+            ILogger logger,
             Func<BuildIntegratedNuGetProject, Task<LockFile>> getLockFileOrNullAsync)
         {
             if (settings == null)
@@ -64,8 +76,14 @@ namespace NuGet.VisualStudio
                 throw new ArgumentNullException(nameof(solutionManager));
             }
 
+            if (logger == null)
+            {
+                throw new ArgumentNullException(nameof(logger));
+            }
+
             _settings = new Lazy<ISettings>(() => settings);
             _solutionManager = new Lazy<IVsSolutionManager>(() => solutionManager);
+            _logger = new Lazy<ILogger>(() => logger);
             _getLockFileOrNullAsync = getLockFileOrNullAsync ?? BuildIntegratedProjectUtility.GetLockFileOrNull;
         }
 
@@ -87,22 +105,33 @@ namespace NuGet.VisualStudio
 
             // invoke async operation from within synchronous method
             outputPathContext = NuGetUIThreadHelper.JoinableTaskFactory.Run(
-                () => CreatePathContextAsync(nuGetProject));
+                () => CreatePathContextAsync(nuGetProject, CancellationToken.None));
 
             return outputPathContext != null;
         }
 
-        public async Task<IVsPathContext> CreatePathContextAsync(NuGetProject nuGetProject)
+        public async Task<IVsPathContext> CreatePathContextAsync(NuGetProject nuGetProject, CancellationToken token)
         {
-            var context = await GetPathContextFromAssetsFileAsync(
-                nuGetProject, CancellationToken.None);
+            IVsPathContext context;
 
-            context = context ?? await GetPathContextFromPackagesConfigAsync(
-                nuGetProject, CancellationToken.None);
+            try
+            {
+                context = await GetPathContextFromAssetsFileAsync(
+                    nuGetProject, token);
 
-            // Fallback to reading the path context from the solution's settings. Note that project level settings in
-            // VS are not currently supported.
-            context = context ?? GetSolutionPathContext();
+                context = context ?? await GetPathContextFromPackagesConfigAsync(
+                    nuGetProject, token);
+
+                // Fallback to reading the path context from the solution's settings. Note that project level settings in
+                // VS are not currently supported.
+                context = context ?? GetSolutionPathContext();
+            }
+            catch (Exception e) when (e is KeyNotFoundException || e is InvalidOperationException)
+            {
+                var projectUniqueName = NuGetProject.GetUniqueNameOrName(nuGetProject);
+                _logger.Value.LogError($"Failed creating a path context for \"{projectUniqueName}\". Reason: {e.Message}.");
+                throw new InvalidOperationException(projectUniqueName, e);
+            }
 
             return context;
         }
@@ -123,15 +152,11 @@ namespace NuGet.VisualStudio
                 return null;
             }
 
-            // It's possible the lock file doesn't exist or it's an older format that doesn't have the package folders
-            // property persisted.
             var lockFile = await _getLockFileOrNullAsync(buildIntegratedProject);
 
-            if (lockFile == null ||
-                lockFile.PackageFolders == null ||
-                lockFile.PackageFolders.Count == 0)
+            if ((lockFile?.PackageFolders?.Count ?? 0) == 0)
             {
-                return null;
+                throw new InvalidOperationException("The lock file doesn't exist or it's an older format that doesn't have the package folders property persisted.");
             }
 
             // The user packages folder is always the first package folder. Subsequent package folders are always
@@ -160,10 +185,12 @@ namespace NuGet.VisualStudio
                 .Select(l => new PackageIdentity(l.Name, l.Version)))
             {
                 var packageInstallPath = fppr.GetPackageDirectory(pid.Id, pid.Version);
-                if (packageInstallPath != null)
+                if (string.IsNullOrEmpty(packageInstallPath))
                 {
-                    trie[packageInstallPath] = packageInstallPath;
+                    throw new KeyNotFoundException($"Package directory for \"{pid}\" is not found");
                 }
+
+                trie[packageInstallPath] = packageInstallPath;
             }
 
             return new VsIndexedPathContext(
@@ -184,14 +211,15 @@ namespace NuGet.VisualStudio
             var trie = new PathLookupTrie<string>();
 
             var packageReferences = await msbuildNuGetProject.GetInstalledPackagesAsync(token);
-            foreach (var pr in packageReferences)
+            foreach (var pid in packageReferences.Select(pr => pr.PackageIdentity))
             {
-                var packageInstallPath = msbuildNuGetProject.FolderNuGetProject.GetInstalledPath(
-                    pr.PackageIdentity);
-                if (packageInstallPath != null)
+                var packageInstallPath = msbuildNuGetProject.FolderNuGetProject.GetInstalledPath(pid);
+                if (string.IsNullOrEmpty(packageInstallPath))
                 {
-                    trie[packageInstallPath] = packageInstallPath;
+                    throw new KeyNotFoundException($"Package directory for \"{pid}\" is not found");
                 }
+
+                trie[packageInstallPath] = packageInstallPath;
             }
 
             var pathContext = GetSolutionPathContext();
