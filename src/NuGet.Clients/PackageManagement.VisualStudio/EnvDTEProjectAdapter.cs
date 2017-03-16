@@ -38,7 +38,6 @@ namespace NuGet.PackageManagement.VisualStudio
         // Property caches
         private string _projectFullPath;
         private bool? _isLegacyCSProjPackageReferenceProject;
-        private NuGetFramework _nugetFramework;
 
         public EnvDTEProjectAdapter(Project project)
         {
@@ -192,41 +191,36 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             get
             {
-                if (_nugetFramework == null)
+                ThreadHelper.ThrowIfNotOnUIThread();
+
+                var nugetFramework = NuGetFramework.UnsupportedFramework;
+                var projectPath = ProjectFullPath;
+                var platformIdentifier = GetMSBuildProperty(AsIVsBuildPropertyStorage, "TargetPlatformIdentifier");
+                var platformVersion = GetMSBuildProperty(AsIVsBuildPropertyStorage, "TargetPlatformVersion");
+                var platformMinVersion = GetMSBuildProperty(AsIVsBuildPropertyStorage, "TargetPlatformMinVersion");
+                var targetFrameworkMoniker = GetMSBuildProperty(AsIVsBuildPropertyStorage, "TargetFrameworkMoniker");
+
+                // Projects supporting TargetFramework and TargetFrameworks are detected before
+                // this check. The values can be passed as null here.
+                var frameworkStrings = MSBuildProjectFrameworkUtility.GetProjectFrameworkStrings(
+                    projectFilePath: projectPath,
+                    targetFrameworks: null,
+                    targetFramework: null,
+                    targetFrameworkMoniker: targetFrameworkMoniker,
+                    targetPlatformIdentifier: platformIdentifier,
+                    targetPlatformVersion: platformVersion,
+                    targetPlatformMinVersion: platformMinVersion,
+                    isManagementPackProject: false,
+                    isXnaWindowsPhoneProject: false);
+
+                var frameworkString = frameworkStrings.FirstOrDefault();
+
+                if (!string.IsNullOrEmpty(frameworkString))
                 {
-                    ThreadHelper.ThrowIfNotOnUIThread();
-                    var projectPath = ProjectFullPath;
-                    var platformIdentifier = GetMSBuildProperty(AsIVsBuildPropertyStorage, "TargetPlatformIdentifier");
-                    var platformVersion = GetMSBuildProperty(AsIVsBuildPropertyStorage, "TargetPlatformVersion");
-                    var platformMinVersion = GetMSBuildProperty(AsIVsBuildPropertyStorage, "TargetPlatformMinVersion");
-                    var targetFrameworkMoniker = GetMSBuildProperty(AsIVsBuildPropertyStorage, "TargetFrameworkMoniker");
-
-                    // Projects supporting TargetFramework and TargetFrameworks are detected before
-                    // this check. The values can be passed as null here.
-                    var frameworkStrings = MSBuildProjectFrameworkUtility.GetProjectFrameworkStrings(
-                        projectFilePath: projectPath,
-                        targetFrameworks: null,
-                        targetFramework: null,
-                        targetFrameworkMoniker: targetFrameworkMoniker,
-                        targetPlatformIdentifier: platformIdentifier,
-                        targetPlatformVersion: platformVersion,
-                        targetPlatformMinVersion: platformMinVersion,
-                        isManagementPackProject: false,
-                        isXnaWindowsPhoneProject: false);
-
-                    var frameworkString = frameworkStrings.FirstOrDefault();
-                    if (!string.IsNullOrEmpty(frameworkString))
-                    {
-                        _nugetFramework = NuGetFramework.Parse(frameworkString);
-                    }
-                    else
-                    {
-                        _nugetFramework = NuGetFramework.UnsupportedFramework;
-                    }
-                    
+                    nugetFramework = NuGetFramework.Parse(frameworkString);
                 }
 
-                return _nugetFramework;
+                return nugetFramework;
             }
         }
 
