@@ -34,12 +34,6 @@ $VSIXPath = Join-Path $FuncTestRoot 'NuGet.Tools.vsix'
 
 Copy-Item $VSIXSrcPath $VSIXPath
 
-$success = UninstallVSIX $NuGetVSIXID $VSVersion $VSIXInstallerWaitTimeInSecs
-if ($success -eq $false)
-{
-    exit 1
-}
-
 $success = InstallVSIX $VSIXPath $VSVersion $VSIXInstallerWaitTimeInSecs
 if ($success -eq $false)
 {
