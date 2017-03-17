@@ -597,7 +597,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         internal static MicrosoftBuildEvaluationProject AsMicrosoftBuildEvaluationProject(string dteProjectFullName)
         {
-            // Need NOT be on the UI thread
+            // Should be called from the UI thread
 
             return ProjectCollection.GlobalProjectCollection.GetLoadedProjects(dteProjectFullName).FirstOrDefault() ??
                    ProjectCollection.GlobalProjectCollection.LoadProject(dteProjectFullName);

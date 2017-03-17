@@ -3,6 +3,7 @@
 
 using System;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 
 namespace NuGet.VisualStudio
 {
@@ -10,16 +11,17 @@ namespace NuGet.VisualStudio
     /// Contains methods to migrate a project.json based legacy project to PackageReference based project.
     /// </summary>
     [ComImport]
-    [Guid("2CB0AF9B-241D-4201-99ED-00F796C416BB")]
+    [Guid("00E00EFE-A8F7-4011-BFEB-8FFFD6687C98")]
     public interface IVsProjectJsonToPackageReferenceMigrator
     {
         /// <summary>
-        /// Migrates a legacy Project.json based project to Package Reference based project.
+        /// Migrates a legacy Project.json based project to Package Reference based project. The result 
+        /// should be casted to type <see cref="IVsProjectJsonToPackageReferenceMigrateResult"/>
         /// The backup of the original project file and project.json file is creatd in the Backup folder
         /// in the root of the project directory.
         /// </summary>
         /// <param name="projectUniqueName">The full path to the project that needs to be migrated</param>
-        IVsProjectJsonToPackageReferenceMigrateResult MigrateProjectJsonToPackageReference(string projectUniqueName);
+        Task<object> MigrateProjectJsonToPackageReferenceAsync(string projectUniqueName);
 
     }
 }
