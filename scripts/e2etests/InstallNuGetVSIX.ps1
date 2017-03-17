@@ -39,3 +39,9 @@ if ($success -eq $false)
 {
     exit 1
 }
+
+$success = ClearMEFCache $VSVersion $VSIXInstallerWaitTimeInSecs
+if ($success -eq $false)
+{
+    exit 1
+}

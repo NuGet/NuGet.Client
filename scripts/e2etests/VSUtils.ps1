@@ -121,6 +121,21 @@ function GetVSIXInstallerPath
     return $VSIXInstallerPath
 }
 
+function GetDevenvPath
+{
+    param(
+        [Parameter(Mandatory=$true)]
+        [ValidateSet("15.0", "14.0", "12.0", "11.0", "10.0")]
+        [string]$VSVersion
+    )
+
+    $VSIDEFolderPath = GetVSIDEFolderPath $VSVersion
+    $DevenvPath = Join-Path $VSIDEFolderPath "devenv.exe"
+
+    return $DevenvPath
+}
+
+
 function UninstallVSIX
 {
     param(
@@ -184,6 +199,34 @@ function InstallVSIX
 
     start-sleep -Seconds $VSIXInstallerWaitTimeInSecs
     Write-Host "VSIX has been installed successfully."
+
+    return $true
+}
+
+
+function ClearMEFCache
+{
+    param(
+        [Parameter(Mandatory=$true)]
+        [ValidateSet("15.0", "14.0", "12.0", "11.0", "10.0")]
+        [string]$VSVersion,
+        [Parameter(Mandatory=$true)]
+        [int]$VSIXInstallerWaitTimeInSecs
+    )
+    
+    $DevenvPath = GetDevenvPath $VSVersion
+
+    Write-Host "running $DevenvPath /setup... to clear MEF cache"
+    $p = start-process "$DevenvPath" -Wait -PassThru -NoNewWindow -ArgumentList "/setup"
+
+    if ($p.ExitCode -ne 0)
+    {
+        Write-Error "Error clearing MEF cache! Exit code: " $p.ExitCode
+        return $false
+    }
+
+    # start-sleep -Seconds $VSIXInstallerWaitTimeInSecs
+    Write-Host "MEF Cache has been cleared!"
 
     return $true
 }
