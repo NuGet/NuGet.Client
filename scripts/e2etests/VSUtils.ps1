@@ -135,6 +135,15 @@ function GetDevenvPath
     return $DevenvPath
 }
 
+function GetDev15MEFCachePath
+{
+
+    $cachePath = $env:localappdata
+    @( "Microsoft", "VisualStudio", "15.*", "ComponentModelCache" ) | %{ $cachePath = Join-Path $cachePath $_ }
+    
+    return $cachePath
+}
+
 
 function UninstallVSIX
 {
@@ -204,29 +213,14 @@ function InstallVSIX
 }
 
 
-function ClearMEFCache
+function ClearDev15MEFCache
 {
-    param(
-        [Parameter(Mandatory=$true)]
-        [ValidateSet("15.0", "14.0", "12.0", "11.0", "10.0")]
-        [string]$VSVersion,
-        [Parameter(Mandatory=$true)]
-        [int]$VSIXInstallerWaitTimeInSecs
-    )
     
-    $DevenvPath = GetDevenvPath $VSVersion
+    $dev15MEFCachePath = GetDev15MEFCachePath
 
-    Write-Host "running $DevenvPath /setup... to clear MEF cache"
-    $p = start-process "$DevenvPath" -Wait -PassThru -NoNewWindow -ArgumentList "/setup"
+    Write-Host "rm -r $dev15MEFCachePath..."
+    rm -r $dev15MEFCachePath
+    
+    Write-Host "Done clearing dev15 MEF cache..."
 
-    if ($p.ExitCode -ne 0)
-    {
-        Write-Error "Error clearing MEF cache! Exit code: " $p.ExitCode
-        return $false
-    }
-
-    # start-sleep -Seconds $VSIXInstallerWaitTimeInSecs
-    Write-Host "MEF Cache has been cleared!"
-
-    return $true
 }
