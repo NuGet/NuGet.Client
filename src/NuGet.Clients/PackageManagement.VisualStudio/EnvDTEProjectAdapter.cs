@@ -167,7 +167,7 @@ namespace NuGet.PackageManagement.VisualStudio
                     else
                     {
                         // Check for RestoreProjectStyle property
-                        var restoreProjectStyle = GetMSBuildProperty(AsIVsBuildPropertyStorage, RestoreProjectStyle, configName: null);
+                        var restoreProjectStyle = GetMSBuildProperty(AsIVsBuildPropertyStorage, RestoreProjectStyle);
 
                         // For legacy csproj, either the RestoreProjectStyle must be set to PackageReference or
                         // project has atleast one package dependency defined as PackageReference
@@ -398,19 +398,16 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private static string GetMSBuildProperty(IVsBuildPropertyStorage buildPropertyStorage, string name)
         {
-            return GetMSBuildProperty(buildPropertyStorage, name, string.Empty);
-        }
-
-        private static string GetMSBuildProperty(IVsBuildPropertyStorage buildPropertyStorage, string name, string configName)
-        {
             ThreadHelper.ThrowIfNotOnUIThread();
 
             string output;
+            // passing pszConfigName as null since string.Empty causes it to reevaluate
+            // for each property read.
             var result = buildPropertyStorage.GetPropertyValue(
-                name,
-                configName,
-                (uint)_PersistStorageType.PST_PROJECT_FILE,
-                out output);
+                pszPropName: name,
+                pszConfigName: null,
+                storage: (uint)_PersistStorageType.PST_PROJECT_FILE,
+                pbstrPropValue: out output);
 
             if (result != NuGetVSConstants.S_OK || string.IsNullOrWhiteSpace(output))
             {
