@@ -34,20 +34,6 @@
           "IS_CORECLR"
         ]
       }
-    },
-    "net46": {
-      "frameworkAssemblies": {
-        "Microsoft.CSharp": "",
-        "System": "",
-        "System.Core": "",
-        "System.Runtime": "",
-        "System.Threading.Tasks": ""
-      },
-      "buildOptions": {
-        "define": [
-          "IS_DESKTOP"
-        ]
-      }
     }
   },
   "testRunner": "xunit"

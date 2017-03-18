@@ -61,7 +61,7 @@ namespace Dotnet.Integration.Test
                     var packages = dependencyGroups[0].Packages.ToList();
                     Assert.Equal(1, packages.Count);
                     Assert.Equal("NETStandard.Library", packages[0].Id);
-                    Assert.Equal(new VersionRange(new NuGetVersion("1.6.0")), packages[0].VersionRange);
+                    Assert.Equal(new VersionRange(new NuGetVersion("1.6.1")), packages[0].VersionRange);
                     Assert.Equal(new List<string> { "Analyzers", "Build" }, packages[0].Exclude);
                     Assert.Empty(packages[0].Include);
 
@@ -332,7 +332,7 @@ namespace Dotnet.Integration.Test
                     Assert.Equal(2,
                                     packagesA.Count);
                     Assert.Equal("NETStandard.Library", packagesA[1].Id);
-                    Assert.Equal(new VersionRange(new NuGetVersion("1.6.0")), packagesA[1].VersionRange);
+                    Assert.Equal(new VersionRange(new NuGetVersion("1.6.1")), packagesA[1].VersionRange);
                     Assert.Equal(new List<string> { "Analyzers", "Build" }, packagesA[1].Exclude);
                     Assert.Empty(packagesA[1].Include);
                     
@@ -966,7 +966,7 @@ namespace Dotnet.Integration.Test
                     var packages = dependencyGroups[0].Packages.ToList();
                     Assert.Equal(1, packages.Count);
                     Assert.Equal("NETStandard.Library", packages[0].Id);
-                    Assert.Equal(new VersionRange(new NuGetVersion("1.6.0")), packages[0].VersionRange);
+                    Assert.Equal(new VersionRange(new NuGetVersion("1.6.1")), packages[0].VersionRange);
                     Assert.Equal(new List<string> { "Analyzers", "Build" }, packages[0].Exclude);
                     Assert.Empty(packages[0].Include);
 
@@ -1081,7 +1081,7 @@ namespace Dotnet.Integration.Test
                     var packages = dependencyGroups[0].Packages.ToList();
                     Assert.Equal(1, packages.Count);
                     Assert.Equal("NETStandard.Library", packages[0].Id);
-                    Assert.Equal(new VersionRange(new NuGetVersion("1.6.0")), packages[0].VersionRange);
+                    Assert.Equal(new VersionRange(new NuGetVersion("1.6.1")), packages[0].VersionRange);
                     Assert.Equal(new List<string> { "Analyzers", "Build" }, packages[0].Exclude);
                     Assert.Empty(packages[0].Include);
 
@@ -1331,7 +1331,7 @@ namespace Dotnet.Integration.Test
                     var packages = dependencyGroups[0].Packages.ToList();
                     Assert.Equal(1, packages.Count);
                     Assert.Equal("NETStandard.Library", packages[0].Id);
-                    Assert.Equal(new VersionRange(new NuGetVersion("1.6.0")), packages[0].VersionRange);
+                    Assert.Equal(new VersionRange(new NuGetVersion("1.6.1")), packages[0].VersionRange);
                     Assert.Equal(new List<string> { "Analyzers", "Build" }, packages[0].Exclude);
                     Assert.Empty(packages[0].Include);
 
