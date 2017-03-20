@@ -1,7 +1,7 @@
 {
   "dependencies": {
-    "NuGet.PackageManagement": "4.1.0-rtm-*",
-    "NuGet.ProjectManagement": "4.1.0-rtm-*",
+    "NuGet.PackageManagement": "4.2.0-rtm-*",
+    "NuGet.ProjectManagement": "4.2.0-rtm-*",
     "Microsoft.VisualStudio.Shell.Immutable.14.0": "14.3.25407"
   },
   "frameworks": {
