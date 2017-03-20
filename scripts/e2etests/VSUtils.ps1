@@ -121,6 +121,16 @@ function GetVSIXInstallerPath
     return $VSIXInstallerPath
 }
 
+function GetDev15MEFCachePath
+{
+
+    $cachePath = $env:localappdata
+    @( "Microsoft", "VisualStudio", "15.*", "ComponentModelCache" ) | %{ $cachePath = Join-Path $cachePath $_ }
+    
+    return $cachePath
+}
+
+
 function UninstallVSIX
 {
     param(
@@ -186,4 +196,17 @@ function InstallVSIX
     Write-Host "VSIX has been installed successfully."
 
     return $true
+}
+
+
+function ClearDev15MEFCache
+{
+    
+    $dev15MEFCachePath = GetDev15MEFCachePath
+
+    Write-Host "rm -r $dev15MEFCachePath..."
+    rm -r $dev15MEFCachePath
+    
+    Write-Host "Done clearing dev15 MEF cache..."
+
 }
