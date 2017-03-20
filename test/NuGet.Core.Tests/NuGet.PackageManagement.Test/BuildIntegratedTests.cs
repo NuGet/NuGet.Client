@@ -703,7 +703,8 @@ namespace NuGet.Test
         public async Task TestPacManBuildIntegratedUpdatePackageToHighest()
         {
             // Arrange
-            var oldJson = new PackageIdentity("Newtonsoft.Json", NuGetVersion.Parse("6.0.4"));
+            var nugetVersioningId = "Nuget.Versioning";
+            var oldJson = new PackageIdentity(nugetVersioningId, NuGetVersion.Parse("3.5.0"));
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV2OnlySourceRepositoryProvider();
             using (var testSolutionManager = new TestSolutionManager(true))
             using (var randomProjectFolderPath = TestDirectory.Create())
@@ -719,9 +720,9 @@ namespace NuGet.Test
                 var randomConfig = Path.Combine(randomProjectFolderPath, "project.json");
                 var token = CancellationToken.None;
 
-                CreateConfigJson(randomConfig);
+                CreateConfigJsonNet452(randomConfig);
 
-                var projectTargetFramework = NuGetFramework.Parse("netcore50");
+                var projectTargetFramework = NuGetFramework.Parse("net45");
                 var testNuGetProjectContext = new TestNuGetProjectContext();
                 var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, testNuGetProjectContext, randomProjectFolderPath);
                 var projectFilePath = Path.Combine(randomProjectFolderPath, $"{msBuildNuGetProjectSystem.ProjectName}.csproj");
@@ -734,7 +735,7 @@ namespace NuGet.Test
 
                 // Act
                 var actions = await nuGetPackageManager.PreviewUpdatePackagesAsync(
-                    "Newtonsoft.Json",
+                    nugetVersioningId,
                     new List<NuGetProject> { buildIntegratedProject },
                     new ResolutionContext(),
                     new TestNuGetProjectContext(),
@@ -846,8 +847,10 @@ namespace NuGet.Test
         public async Task TestPacManBuildIntegratedUpdatePackageAll()
         {
             // Arrange
-            var oldMvvm = new PackageIdentity("MvvmLight", NuGetVersion.Parse("4.2.32.7"));
-            var oldJson = new PackageIdentity("Newtonsoft.Json", NuGetVersion.Parse("6.0.8"));
+            var nugetVersioningId = "NuGet.Versioning";
+            var mvvmLightId = "MvvmLight";
+            var oldMvvm = new PackageIdentity(mvvmLightId, NuGetVersion.Parse("4.2.32.7"));
+            var oldJson = new PackageIdentity(nugetVersioningId, NuGetVersion.Parse("3.5.0"));
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV2OnlySourceRepositoryProvider();
 
             using (var testSolutionManager = new TestSolutionManager(true))
@@ -864,7 +867,7 @@ namespace NuGet.Test
                 var randomConfig = Path.Combine(randomProjectFolderPath, "project.json");
                 var token = CancellationToken.None;
 
-                CreateConfigJson(randomConfig);
+                CreateConfigJsonNet452(randomConfig);
 
                 var projectTargetFramework = NuGetFramework.Parse("net45");
                 var testNuGetProjectContext = new TestNuGetProjectContext();
@@ -922,11 +925,11 @@ namespace NuGet.Test
                     Assert.Equal(NuGetProjectActionType.Install, actions.First().NuGetProjectActionType);
                     Assert.Equal(2, installedPackages.Count());
 
-                    var newMvvm = installedPackages.FirstOrDefault(x => x.PackageIdentity.Id == "MvvmLight");
+                    var newMvvm = installedPackages.FirstOrDefault(x => x.PackageIdentity.Id == mvvmLightId);
                     Assert.NotNull(newMvvm);
                     Assert.True(newMvvm.PackageIdentity.Version > oldMvvm.Version);
 
-                    var newJson = installedPackages.FirstOrDefault(x => x.PackageIdentity.Id == "Newtonsoft.Json");
+                    var newJson = installedPackages.FirstOrDefault(x => x.PackageIdentity.Id == nugetVersioningId);
                     Assert.NotNull(newJson);
                     Assert.True(newJson.PackageIdentity.Version > oldJson.Version);
 
@@ -939,7 +942,7 @@ namespace NuGet.Test
         public async Task TestPacManBuildIntegratedUpdatePackageAllNoop()
         {
             // Arrange
-            var oldJson = new PackageIdentity("Newtonsoft.Json", NuGetVersion.Parse("6.0.8"));
+            var oldJson = new PackageIdentity("NuGet.Versioning", NuGetVersion.Parse("3.5.0"));
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV2OnlySourceRepositoryProvider();
 
             using (var testSolutionManager = new TestSolutionManager(true))
@@ -956,7 +959,7 @@ namespace NuGet.Test
                 var randomConfig = Path.Combine(randomProjectFolderPath, "project.json");
                 var token = CancellationToken.None;
 
-                CreateConfigJson(randomConfig);
+                CreateConfigJsonNet452(randomConfig);
 
                 var projectTargetFramework = NuGetFramework.Parse("net45");
                 var testNuGetProjectContext = new TestNuGetProjectContext();
@@ -1732,6 +1735,7 @@ namespace NuGet.Test
         {
             public HashSet<PackageIdentity> ExecuteInitScriptAsyncCalls { get; }
                 = new HashSet<PackageIdentity>(PackageIdentity.Comparer);
+
             public List<TestExternalProjectReference> ProjectReferences { get; }
                 = new List<TestExternalProjectReference>();
 
@@ -1757,7 +1761,7 @@ namespace NuGet.Test
 
             public override async Task<IReadOnlyList<PackageSpec>> GetPackageSpecsAsync(DependencyGraphCacheContext context)
             {
-                if (IsCacheEnabled )
+                if (IsCacheEnabled)
                 {
                     PackageSpec cachedResult;
                     if (context.PackageSpecCache.TryGetValue(MSBuildProjectPath, out cachedResult))
