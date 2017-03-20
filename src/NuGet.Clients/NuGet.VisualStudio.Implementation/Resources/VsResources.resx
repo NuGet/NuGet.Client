@@ -185,4 +185,15 @@ The string representation of the user's input framework name.</comment>
   <data name="Error_FileNotExists" xml:space="preserve">
     <value>The project file '{0}' does not exist on disk.</value>
   </data>
+  <data name="PathContext_CreateContextError" xml:space="preserve">
+    <value>Failed creating a path context for "{0}". Reason: {1}</value>
+    <comment>{0} is the project name or full path, {1} is the error message generated earlier</comment>
+  </data>
+  <data name="PathContext_LockFileError" xml:space="preserve">
+    <value>The lock file doesn't exist or it's an older format that doesn't have the package folders property persisted.</value>
+  </data>
+  <data name="PathContext_PackageDirectoryNotFound" xml:space="preserve">
+    <value>Package directory for "{0}" is not found.</value>
+    <comment>{0} is the package ID</comment>
+  </data>
 </root>
