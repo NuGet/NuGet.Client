@@ -386,7 +386,7 @@ namespace NuGet.Common
             dynamic targetElement = null;
             foreach (dynamic target in Project.Xml.Targets)
             {
-                if (string.Equals(target.Name, targetsPath, StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(target.Name, TargetName, StringComparison.OrdinalIgnoreCase))
                 {
                     targetElement = target;
                     break;
