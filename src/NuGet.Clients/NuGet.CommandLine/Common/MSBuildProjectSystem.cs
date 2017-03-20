@@ -413,7 +413,7 @@ namespace NuGet.Common
             }
 
             taskElement.Parent.RemoveChild(taskElement);
-            if (targetElement.Tasks.Count == 0)
+            if (((System.Collections.ICollection)targetElement.Tasks).Count == 0)
             {
                 targetElement.Parent.RemoveChild(targetElement);
             }
