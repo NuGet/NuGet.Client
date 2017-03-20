@@ -34,10 +34,24 @@ $VSIXPath = Join-Path $FuncTestRoot 'NuGet.Tools.vsix'
 
 Copy-Item $VSIXSrcPath $VSIXPath
 
+# Since dev14 vsix is not uild with vssdk 3.0, we can uninstall and re installing
+# For dev 15, we upgrade an installed system component vsix
+if($VSVersion -eq '14.0')
+{
+	$success = UninstallVSIX $NuGetVSIXID $VSVersion $VSIXInstallerWaitTimeInSecs
+	if ($success -eq $false)
+	{
+		exit 1
+	}
+}
+else 
+{
+	# Clearing MEF cache helps load the right dlls for vsix
+	ClearDev15MEFCache
+}
+
 $success = InstallVSIX $VSIXPath $VSVersion $VSIXInstallerWaitTimeInSecs
 if ($success -eq $false)
 {
     exit 1
 }
-
-ClearDev15MEFCache

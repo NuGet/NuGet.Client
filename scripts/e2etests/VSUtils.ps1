@@ -121,20 +121,6 @@ function GetVSIXInstallerPath
     return $VSIXInstallerPath
 }
 
-function GetDevenvPath
-{
-    param(
-        [Parameter(Mandatory=$true)]
-        [ValidateSet("15.0", "14.0", "12.0", "11.0", "10.0")]
-        [string]$VSVersion
-    )
-
-    $VSIDEFolderPath = GetVSIDEFolderPath $VSVersion
-    $DevenvPath = Join-Path $VSIDEFolderPath "devenv.exe"
-
-    return $DevenvPath
-}
-
 function GetDev15MEFCachePath
 {
 
