@@ -20,7 +20,7 @@
     <FluentAssertionsVersion>4.19.2</FluentAssertionsVersion>
     <MicrosoftBuildPackageVersion>0.1.0-preview-00038-160914</MicrosoftBuildPackageVersion>
   </PropertyGroup>
-  
+
   <!-- Config -->
   <PropertyGroup>
     <RepositoryName>NuGet</RepositoryName>

@@ -1,5 +1,8 @@
 # Basic install into project K project
 function Test-ProjectKInstallPackage {
+    [SkipTestForVS15()]
+    param()
+
     # Arrange
     $project = New-DNXClassLibrary
 
@@ -12,25 +15,31 @@ function Test-ProjectKInstallPackage {
 
 # Basic uninstall
 function Test-ProjectKUninstallPackage {
+    [SkipTestForVS15()]
+    param()
+
     # Arrange
     $project = New-DNXConsoleApp
     Install-Package EntityFramework -ProjectName $project.Name -version 6.1.3
 
     # Act
-    Uninstall-Package EntityFramework 
+    Uninstall-Package EntityFramework
 
     # Assert
     Assert-ProjectJsonDependencyNotFound $project EntityFramework
 }
 
 # Basic update
-function ProjectKUpdatePackage {
+function Test-ProjectKUpdatePackage {
+    [SkipTestForVS15()]
+    param()
+
     # Arrange
     $project = New-DNXConsoleApp
     Install-Package log4net -ProjectName $project.Name -version 2.0.1
 
     # Act
-    Update-Package log4net 
+    Update-Package log4net
 
     # Assert
     Assert-ProjectJsonDependencyWithinTargetFramework $project log4net 2.0.3
@@ -38,39 +47,48 @@ function ProjectKUpdatePackage {
 
 # Install multiple packages
 function Test-ProjectKInstallMultiplePackages {
+    [SkipTestForVS15()]
+    param()
+
     # Arrange
     $project = New-DNXClassLibrary
 
     # Act
     Install-Package newtonsoft.json -ProjectName $project.Name -version 7.0.1
-	Install-Package jQuery.Validation -version 1.14.0 -DependencyVersion HighestMinor
+    Install-Package jQuery.Validation -version 1.14.0 -DependencyVersion HighestMinor
 
     # Assert
-	Assert-ProjectJsonDependency $project newtonsoft.json 7.0.1
-	Assert-ProjectJsonDependency $project jQuery.Validation 1.14.0
-	Assert-ProjectJsonDependencyNotFound $project jQuery
+    Assert-ProjectJsonDependency $project newtonsoft.json 7.0.1
+    Assert-ProjectJsonDependency $project jQuery.Validation 1.14.0
+    Assert-ProjectJsonDependencyNotFound $project jQuery
 }
 
 # Uninstall multiple packages
 function ProjectKUninstallMultiplePackages {
+    [SkipTestForVS15()]
+    param()
+
     # Arrange
     $project = New-DNXClassLibrary
 
     # Act
     Install-Package Microsoft.Dnx.TestHost -ProjectName $project.Name -pre
-	Install-Package Knockoutjs -ProjectName $project.Name 
-	Install-Package TestPackage.OnlyDNXCore -ProjectName $project.Name 
-	Uninstall-Package Microsoft.Dnx.TestHost -RemoveDependencies
-	UnInstall-Package TestPackage.OnlyDNXCore 
+    Install-Package Knockoutjs -ProjectName $project.Name
+    Install-Package TestPackage.OnlyDNXCore -ProjectName $project.Name
+    Uninstall-Package Microsoft.Dnx.TestHost -RemoveDependencies
+    UnInstall-Package TestPackage.OnlyDNXCore
 
     # Assert
-	Assert-ProjectJsonDependencyNotFound $project Microsoft.Dnx.TestHost
-	Assert-ProjectJsonDependencyNotFound $project TestPackage.OnlyDNXCore
-	Assert-ProjectJsonDependency $project Knockoutjs
+    Assert-ProjectJsonDependencyNotFound $project Microsoft.Dnx.TestHost
+    Assert-ProjectJsonDependencyNotFound $project TestPackage.OnlyDNXCore
+    Assert-ProjectJsonDependency $project Knockoutjs
 }
 
 # Update to prerelease MVC packages that contains DNXCore50 dependencies
 function Test-ProjectKUpdateMVCPackagePrerelease {
+    [SkipTestForVS15()]
+    param()
+
     # Arrange
     $project = New-DNXConsoleApp
     Install-Package Microsoft.AspNet.Mvc -ProjectName $project.Name -version 5.2.2
@@ -84,6 +102,9 @@ function Test-ProjectKUpdateMVCPackagePrerelease {
 
 # Update all packages
 function Test-ProjectKUpdateAllPackages {
+    [SkipTestForVS15()]
+    param()
+
     # Arrange
     $project = New-DNXConsoleApp
     Install-Package TestPackage.danliutestpackage -ProjectName $project.Name -version 6.0.0
@@ -97,25 +118,31 @@ function Test-ProjectKUpdateAllPackages {
 
 # No package update available. Latest version already installed.
 function ProjectKUpdatePackageNoUpdateAvailable {
+    [SkipTestForVS15()]
+    param()
+
     # Arrange
-    $project = New-DNXConsoleApp 
+    $project = New-DNXConsoleApp
 
     # Act
-	Install-Package TestPackage.JustContent -version 1.0.0
-	Update-Package TestPackage.JustContent
+    Install-Package TestPackage.JustContent -version 1.0.0
+    Update-Package TestPackage.JustContent
 
-	#Assert
+    #Assert
     Assert-ProjectJsonDependencyWithinTargetFramework $project TestPackage.JustContent 1.0.0
 }
 
 # Update-Package -reinstall
 function Test-ProjectKUpdatePackageReinstall {
+    [SkipTestForVS15()]
+    param()
+
     # Arrange
     $project = New-DNXClassLibrary
     Install-Package Microsoft.AspNet.Mvc -ProjectName $project.Name -version 5.2.3
 
     # Act
-    Update-Package Microsoft.AspNet.Mvc -reinstall 
+    Update-Package Microsoft.AspNet.Mvc -reinstall
 
     # Assert
     Assert-ProjectJsonDependency $project Microsoft.AspNet.Mvc 5.2.3
@@ -123,28 +150,37 @@ function Test-ProjectKUpdatePackageReinstall {
 
 # Test whatIf for package actions
 function Test-ProjectKPackageActionsWhatIf {
+    [SkipTestForVS15()]
+    param()
+
     # Arrange
     $project = New-DNXConsoleApp
 
     # Act
     Install-Package jQuery -version 2.0.1 -WhatIf
-	Install-Package jQuery -version 2.0.3 
-	Uninstall-Package jQuery -WhatIf
-	Update-Package jQuery -WhatIf
+    Install-Package jQuery -version 2.0.3
+    Uninstall-Package jQuery -WhatIf
+    Update-Package jQuery -WhatIf
 
     # Assert
     Assert-ProjectJsonDependency $project jQuery 2.0.3
 }
 
 function Test-ProjectKInstallNonExistentPackage {
+    [SkipTestForVS15()]
+    param()
+
     # Arrange
-    $project = New-DNXClassLibrary
+    New-DNXClassLibrary
 
     # Act and Assert
     Assert-Throws { Install-Package NonExisting } "Unable to find package 'NonExisting'"
 }
 
 function Test-ProjectKUpdateNonExistentPackage {
+    [SkipTestForVS15()]
+    param()
+
     # Arrange
     $project = New-DNXConsoleApp
 
@@ -153,35 +189,54 @@ function Test-ProjectKUpdateNonExistentPackage {
 }
 
 function Test-ProjectKUninstallNonExistentPackage {
+    [SkipTestForVS15()]
+    param()
+
     # Arrange
     $project = New-DNXClassLibrary
 
     # Act and Assert
-	$expectedMessage = "Package 'Antlr' to be uninstalled could not be found in project '" + $project.Name + "'"
+    $expectedMessage = "Package 'Antlr' to be uninstalled could not be found in project '" + $project.Name + "'"
     Assert-Throws { Uninstall-Package Antlr -ProjectName $project.Name } $expectedMessage
 }
 
 # This test covers the scenario of installing a package that supports only non-dnxcore frameworks
 # It should be installed the correct dependency group, not global dependencies.
-function ProjectKInstallNonDNXCorePackage {
+function Test-ProjectKInstallNonDNXCorePackage {
+    [SkipTestForVS15()]
+    param()
+
     # Arrange
     $project = New-DNXClassLibrary
 
     # Act
-	Install-Package Moq -version 4.2.1510.2205
-	Build-Solution
+    Install-Package Moq -version 4.2.1510.2205
+    Build-Solution
 
-	# Assert
-	# Verify Moq is not added to global dependencies group, i.e. outer "dependencies": { ... }
+    # Assert
+    # Verify Moq is not added to global dependencies group, i.e. outer "dependencies": { ... }
     Assert-ProjectJsonDependencyNotFound $project Moq
 
-	# Verify Moq is only added under frameworks/dnx451
-	Assert-ProjectJsonDependencyWithinTargetFramework $project Moq 4.2.1510.2205
+    # Verify Moq is only added under frameworks/dnx451
+    Assert-ProjectJsonDependencyWithinTargetFramework $project Moq 4.2.1510.2205
 
-	# "frameworks": {
+    # "frameworks": {
     # "dnx451": {
     #  "dependencies": {
     #    "Moq": "4.2.1510.2205"
     #  }
     # },
+}
+
+function Test-GetProjectForDNXClassLibrary {
+    [SkipTestForVS15()]
+    param()
+
+    New-DNXClassLibrary
+
+    #Act
+    $name = @(Get-Project)
+
+    # Assert
+    Assert-NotNull $name
 }
