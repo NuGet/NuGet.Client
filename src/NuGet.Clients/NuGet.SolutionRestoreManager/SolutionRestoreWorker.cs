@@ -428,31 +428,33 @@ namespace NuGet.SolutionRestoreManager
             await TaskScheduler.Default;
 
             using (var jobCts = CancellationTokenSource.CreateLinkedTokenSource(token))
-            using (var lck = await _lockService.Value.AcquireLockAsync(jobCts.Token))
             {
-                var componentModel = await _componentModel.GetValueAsync(jobCts.Token);
-
-                using (var logger = componentModel.GetService<RestoreOperationLogger>())
+                return await _lockService.Value.ExecuteNuGetOperationAsync(async () =>
                 {
-                    try
-                    {
-                        // Start logging
-                        await logger.StartAsync(
-                            request.RestoreSource,
-                            _errorListTableDataSource,
-                            _joinableFactory,
-                            jobCts);
+                    var componentModel = await _componentModel.GetValueAsync(jobCts.Token);
 
-                        // Run restore
-                        var job = componentModel.GetService<ISolutionRestoreJob>();
-                        return await job.ExecuteAsync(request, _restoreJobContext, logger, jobCts.Token);
-                    }
-                    finally
+                    using (var logger = componentModel.GetService<RestoreOperationLogger>())
                     {
-                        // Complete all logging
-                        await logger.StopAsync();
+                        try
+                        {
+                            // Start logging
+                            await logger.StartAsync(
+                                request.RestoreSource,
+                                _errorListTableDataSource,
+                                _joinableFactory,
+                                jobCts);
+
+                            // Run restore
+                            var job = componentModel.GetService<ISolutionRestoreJob>();
+                            return await job.ExecuteAsync(request, _restoreJobContext, logger, jobCts.Token);
+                        }
+                        finally
+                        {
+                            // Complete all logging
+                            await logger.StopAsync();
+                        }
                     }
-                }
+                }, jobCts.Token);
             }
         }
 
