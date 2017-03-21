@@ -17,7 +17,7 @@ namespace NuGet.VisualStudio
         /// <summary>
         /// Migrates a legacy Project.json based project to Package Reference based project. The result 
         /// should be casted to type <see cref="IVsProjectJsonToPackageReferenceMigrateResult"/>
-        /// The backup of the original project file and project.json file is creatd in the Backup folder
+        /// The backup of the original project file and project.json file is created in the Backup folder
         /// in the root of the project directory.
         /// </summary>
         /// <param name="projectUniqueName">The full path to the project that needs to be migrated</param>
