@@ -38,8 +38,7 @@ namespace NuGet.PackageManagement.VisualStudio
         private CommandEvents _solutionSaveAsEvent;
         private IVsMonitorSelection _vsMonitorSelection;
         private uint _solutionLoadedUICookie;
-        private IVsSolution _vsSolution;
-       
+
         private readonly IServiceProvider _serviceProvider;
         private readonly IProjectSystemCache _projectSystemCache;
         private readonly NuGetProjectFactory _projectSystemFactory;
@@ -143,7 +142,6 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
                 HttpHandlerResourceV3.CredentialService = _credentialServiceProvider.GetCredentialService();
-                _vsSolution = _serviceProvider.GetService<SVsSolution, IVsSolution>();
                 _vsMonitorSelection = _serviceProvider.GetService<SVsShellMonitorSelection, IVsMonitorSelection>();
 
                 var solutionLoadedGuid = VSConstants.UICONTEXT.SolutionExistsAndFullyLoaded_guid;
@@ -223,7 +221,7 @@ namespace NuGet.PackageManagement.VisualStudio
             if (DefaultNuGetProjectName == null)
             {
                 DefaultNuGetProjectName = projectName;
-            } 
+            }
 
             if (NuGetProjectUpdated != null)
             {
@@ -361,7 +359,7 @@ namespace NuGet.PackageManagement.VisualStudio
                         // Solution is open and 'Save As' is not required. Return true.
                         return true;
                     }
-                    
+
                     var projects = _projectSystemCache.GetNuGetProjects();
                     if (!projects.Any() || projects.Any(project => !(project is INuGetIntegratedProject)))
                     {
@@ -394,24 +392,32 @@ namespace NuGet.PackageManagement.VisualStudio
                 var projectPaths = new List<string>();
                 IEnumHierarchies enumHierarchies;
                 var guid = Guid.Empty;
-                var hr = _vsSolution.GetProjectEnum((uint)__VSENUMPROJFLAGS3.EPF_DEFERRED, ref guid, out enumHierarchies);
 
-                ErrorHandler.ThrowOnFailure(hr);
+                var vsSolution = _serviceProvider.GetService<SVsSolution, IVsSolution>();
 
-                // Loop all projects found
-                if (enumHierarchies != null)
+                Debug.Assert(vsSolution != null, "Failed to get IVsSolution from service provider.");
+
+                if (vsSolution != null)
                 {
-                    // Loop projects found
-                    var hierarchy = new IVsHierarchy[1];
-                    uint fetched = 0;
-                    while (enumHierarchies.Next(1, hierarchy, out fetched) == VSConstants.S_OK && fetched == 1)
-                    {
-                        string projectPath;
-                        hierarchy[0].GetCanonicalName(VSConstants.VSITEMID_ROOT, out projectPath);
+                    var hr = vsSolution.GetProjectEnum((uint)__VSENUMPROJFLAGS3.EPF_DEFERRED, ref guid, out enumHierarchies);
 
-                        if (!string.IsNullOrEmpty(projectPath))
+                    ErrorHandler.ThrowOnFailure(hr);
+
+                    // Loop all projects found
+                    if (enumHierarchies != null)
+                    {
+                        // Loop projects found
+                        var hierarchy = new IVsHierarchy[1];
+                        uint fetched = 0;
+                        while (enumHierarchies.Next(1, hierarchy, out fetched) == VSConstants.S_OK && fetched == 1)
                         {
-                            projectPaths.Add(projectPath);
+                            string projectPath;
+                            hierarchy[0].GetCanonicalName(VSConstants.VSITEMID_ROOT, out projectPath);
+
+                            if (!string.IsNullOrEmpty(projectPath))
+                            {
+                                projectPaths.Add(projectPath);
+                            }
                         }
                     }
                 }
@@ -438,8 +444,8 @@ namespace NuGet.PackageManagement.VisualStudio
                 }
 
                 // Get deferred projects count of current solution
-                var value = GetVSSolutionProperty((int)(__VSPROPID7.VSPROPID_DeferredProjectCount));
-                return (int)value != 0;
+                var value = GetVSSolutionPropertyOrDefault<int>((int)(__VSPROPID7.VSPROPID_DeferredProjectCount));
+                return value != 0;
             });
 #endif
         }
@@ -457,7 +463,7 @@ namespace NuGet.PackageManagement.VisualStudio
                     await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                     EnsureInitialize();
-                    var vsSolution7 = _vsSolution as IVsSolution7;
+                    var vsSolution7 = _serviceProvider.GetService<SVsSolution, IVsSolution7>();
 
                     if (vsSolution7 != null && vsSolution7.IsSolutionLoadDeferred())
                     {
@@ -479,8 +485,8 @@ namespace NuGet.PackageManagement.VisualStudio
                     await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                     EnsureInitialize();
-                    var value = GetVSSolutionProperty((int)(__VSPROPID4.VSPROPID_IsSolutionFullyLoaded));
-                    return (bool)value;
+                    var value = GetVSSolutionPropertyOrDefault<bool>((int)(__VSPROPID4.VSPROPID_IsSolutionFullyLoaded));
+                    return value;
                 });
             }
         }
@@ -492,7 +498,8 @@ namespace NuGet.PackageManagement.VisualStudio
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                 EnsureInitialize();
-                var vsSolution4 = _vsSolution as IVsSolution4;
+
+                var vsSolution4 = _serviceProvider.GetService<SVsSolution, IVsSolution4>();
 
                 if (vsSolution4 != null)
                 {
@@ -561,27 +568,31 @@ namespace NuGet.PackageManagement.VisualStudio
             Debug.Assert(ThreadHelper.CheckAccess());
 
             // Check if user is doing File - New File without saving the solution.
-            var value = GetVSSolutionProperty((int)(__VSPROPID.VSPROPID_IsSolutionSaveAsRequired));
-            if ((bool)value)
+            var value = GetVSSolutionPropertyOrDefault<bool>((int)(__VSPROPID.VSPROPID_IsSolutionSaveAsRequired));
+            if (value)
             {
                 return true;
             }
 
             // Check if user unchecks the "Tools - Options - Project & Soltuions - Save new projects when created" option
-            value = GetVSSolutionProperty((int)(__VSPROPID2.VSPROPID_DeferredSaveSolution));
-            return (bool)value;
+            value = GetVSSolutionPropertyOrDefault<bool>((int)(__VSPROPID2.VSPROPID_DeferredSaveSolution));
+            return value;
         }
 
-        private object GetVSSolutionProperty(int propId)
+        private T GetVSSolutionPropertyOrDefault<T>(int propId)
         {
-            Debug.Assert(ThreadHelper.CheckAccess());
+            ThreadHelper.ThrowIfNotOnUIThread();
+            object result = null;
+            var vsSolution = _serviceProvider.GetService<SVsSolution, IVsSolution>();
 
-            object value;
-            int hr = _vsSolution.GetProperty(propId, out value);
+            if (vsSolution != null)
+            {
+                int hr = vsSolution.GetProperty(propId, out result);
 
-            ErrorHandler.ThrowOnFailure(hr);
+                ErrorHandler.ThrowOnFailure(hr);
+            }
 
-            return value;
+            return result != null ? (T)result : default(T);
         }
 
         private void OnSolutionExistsAndFullyLoaded()
@@ -1063,9 +1074,9 @@ namespace NuGet.PackageManagement.VisualStudio
             }
         }
 
-#endregion IVsSelectionEvents
+        #endregion IVsSelectionEvents
 
-#region IVsSolutionManager
+        #region IVsSolutionManager
 
         public async Task<NuGetProject> GetOrCreateProjectAsync(EnvDTE.Project project, INuGetProjectContext projectContext)
         {
@@ -1084,6 +1095,6 @@ namespace NuGet.PackageManagement.VisualStudio
             return nuGetProject;
         }
 
-#endregion
+        #endregion
     }
 }
