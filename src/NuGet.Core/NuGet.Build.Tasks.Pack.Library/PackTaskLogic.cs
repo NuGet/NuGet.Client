@@ -33,8 +33,8 @@ namespace NuGet.Build.Tasks.Pack
                 NoPackageAnalysis = request.NoPackageAnalysis,
                 PackTargetArgs = new MSBuildPackTargetArgs
                 {
-                    TargetPathsToAssemblies = GetTargetPathsToAssemblies(request),
-                    TargetPathsToSymbols = request.TargetPathsToSymbols,
+                    TargetPathsToAssemblies = InitLibFiles(request.BuildOutputInPackage),
+                    TargetPathsToSymbols = InitLibFiles(request.TargetPathsToSymbols),
                     AssemblyName = request.AssemblyName,
                     IncludeBuildOutput = request.IncludeBuildOutput,
                     BuildOutputFolder = request.BuildOutputFolder,
@@ -200,19 +200,48 @@ namespace NuGet.Build.Tasks.Pack
             runner.BuildPackage();
         }
 
-        private string[] GetTargetPathsToAssemblies(IPackTaskRequest<IMSBuildItem> request)
+        private IEnumerable<OutputLibFile> InitLibFiles(IMSBuildItem[] libFiles)
         {
-            if (request.TargetPathsToAssemblies == null)
+            var assemblies = new List<OutputLibFile>();
+            if (libFiles == null)
             {
-                return new string[0];
+                return assemblies;
             }
 
-            return request.TargetPathsToAssemblies
-                .Where(path => path != null)
-                .Select(path => path.Trim())
-                .Where(path => path != string.Empty)
-                .Distinct()
-                .ToArray();
+
+            foreach (var assembly in libFiles)
+            {
+                var finalOutputPath = assembly.GetProperty("FinalOutputPath");
+                var targetPath = assembly.GetProperty("TargetPath");
+                var targetFramework = assembly.GetProperty("TargetFramework");
+
+                if (!File.Exists(finalOutputPath))
+                {
+                    throw new FileNotFoundException(string.Format(CultureInfo.CurrentCulture, Strings.Error_FileNotFound, finalOutputPath));
+                }
+
+                // If target path is not set, default it to the file name. Only satellite DLLs have a special target path
+                // where culture is part of the target path. This condition holds true for files like runtimeconfig.json file
+                // in netcore projects.
+                if (targetPath == null)
+                {
+                    targetPath = Path.GetFileName(finalOutputPath);
+                }
+
+                if (string.IsNullOrEmpty(targetFramework) || NuGetFramework.Parse(targetFramework).IsSpecificFramework == false)
+                {
+                    throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Strings.InvalidTargetFramework, finalOutputPath));
+                }
+                
+                assemblies.Add(new OutputLibFile()
+                {
+                    FinalOutputPath = finalOutputPath,
+                    TargetPath = targetPath,
+                    TargetFramework = targetFramework
+                });
+            }
+
+            return assemblies;
         }
 
         private ISet<NuGetFramework> ParseFrameworks(IPackTaskRequest<IMSBuildItem> request)
@@ -285,12 +314,12 @@ namespace NuGet.Build.Tasks.Pack
             }
         }
 
-        private Dictionary<string, HashSet<ContentMetadata>> ProcessContentToIncludeInPackage(
+        private Dictionary<string, IEnumerable<ContentMetadata>> ProcessContentToIncludeInPackage(
             IPackTaskRequest<IMSBuildItem> request,
             PackArgs packArgs)
         {
             // This maps from source path on disk to target path inside the nupkg.
-            var fileModel = new Dictionary<string, HashSet<ContentMetadata>>();
+            var fileModel = new Dictionary<string, IEnumerable<ContentMetadata>>();
             if (request.PackageFiles != null)
             {
                 var excludeFiles = CalculateFilesToExcludeInPack(request);
@@ -307,11 +336,11 @@ namespace NuGet.Build.Tasks.Pack
                     if (fileModel.ContainsKey(sourcePath))
                     {
                         var existingContentMetadata = fileModel[sourcePath];
-                        existingContentMetadata.AddRange(totalContentMetadata);
+                        fileModel[sourcePath] = existingContentMetadata.Concat(totalContentMetadata);
                     }
                     else
                     {
-                        var existingContentMetadata = new HashSet<ContentMetadata>();
+                        var existingContentMetadata = new List<ContentMetadata>();
                         existingContentMetadata.AddRange(totalContentMetadata);
                         fileModel.Add(sourcePath, existingContentMetadata);
                     }
@@ -437,7 +466,7 @@ namespace NuGet.Build.Tasks.Pack
             // we take the final set of evaluated target paths and append the file name to it if not
             // already done. we check whether the extension of the target path is the same as the extension
             // of the source path and add the filename accordingly.
-            var totalSetOfTargetPaths = new HashSet<string>(StringComparer.Ordinal);
+            var totalSetOfTargetPaths = new List<string>();
             foreach (var targetPath in setOfTargetPaths)
             {
                 var currentPath = targetPath;

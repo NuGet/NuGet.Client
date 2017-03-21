@@ -17,6 +17,7 @@ namespace NuGet.Build.Tasks.Pack
         public ITaskItem[] PackageFilesToExclude { get; set; }
         public string[] TargetFrameworks { get; set; }
         public string[] PackageTypes { get; set; }
+        public ITaskItem[] BuildOutputInPackage { get; set; }
         public string PackageId { get; set; }
         public string PackageVersion { get; set; }
         public string Title { get; set; }
@@ -30,8 +31,7 @@ namespace NuGet.Build.Tasks.Pack
         public string IconUrl { get; set; }
         public string[] Tags { get; set; }
         public string ReleaseNotes { get; set; }
-        public string[] TargetPathsToAssemblies { get; set; }
-        public string[] TargetPathsToSymbols { get; set; }
+        public ITaskItem[] TargetPathsToSymbols { get; set; }
         public string AssemblyName { get; set; }
         public string PackageOutputPath { get; set; }
         public bool IsTool { get; set; }
@@ -110,6 +110,7 @@ namespace NuGet.Build.Tasks.Pack
                 AssemblyName = MSBuildStringUtility.TrimAndGetNullForEmpty(AssemblyName),
                 AssemblyReferences = MSBuildUtility.WrapMSBuildItem(AssemblyReferences),
                 Authors = MSBuildStringUtility.TrimAndExcludeNullOrEmpty(Authors),
+                BuildOutputInPackage = MSBuildUtility.WrapMSBuildItem(BuildOutputInPackage),
                 BuildOutputFolder = MSBuildStringUtility.TrimAndGetNullForEmpty(BuildOutputFolder),
                 ContinuePackingAfterGeneratingNuspec = ContinuePackingAfterGeneratingNuspec,
                 ContentTargetFolders = MSBuildStringUtility.TrimAndExcludeNullOrEmpty(ContentTargetFolders),
@@ -145,8 +146,7 @@ namespace NuGet.Build.Tasks.Pack
                 SourceFiles = MSBuildUtility.WrapMSBuildItem(SourceFiles),
                 Tags = MSBuildStringUtility.TrimAndExcludeNullOrEmpty(Tags),
                 TargetFrameworks = MSBuildStringUtility.TrimAndExcludeNullOrEmpty(TargetFrameworks),
-                TargetPathsToAssemblies = MSBuildStringUtility.TrimAndExcludeNullOrEmpty(TargetPathsToAssemblies),
-                TargetPathsToSymbols = MSBuildStringUtility.TrimAndExcludeNullOrEmpty(TargetPathsToSymbols),
+                TargetPathsToSymbols = MSBuildUtility.WrapMSBuildItem(TargetPathsToSymbols),
                 Title = MSBuildStringUtility.TrimAndGetNullForEmpty(Title),
             };
         }

@@ -404,7 +404,11 @@ namespace NuGet.Build.Tasks.Pack.Test
                     RestoreOutputPath = Path.Combine(testDir, "obj"),
                     ContinuePackingAfterGeneratingNuspec = true,
                     TargetFrameworks = new[] { "net45" },
-                    TargetPathsToAssemblies = new[] { dllPath },
+                    BuildOutputInPackage = new[] { new MSBuildItem(dllPath, new Dictionary<string, string>
+                    {
+                        {"FinalOutputPath", dllPath },
+                        {"TargetFramework", "net45" }
+                    })},
                     Logger = new TestLogger()
                 };
             }

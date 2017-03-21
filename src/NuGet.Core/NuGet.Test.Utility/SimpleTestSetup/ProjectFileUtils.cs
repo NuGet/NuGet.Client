@@ -84,6 +84,12 @@ namespace NuGet.Test.Utility
             }
         }
 
+        public static void AddCustomXmlToProjectRoot(XDocument doc, string xml)
+        {
+            var element = XElement.Parse(xml);
+            doc.Root.Add(element);
+        }
+
         public static void SetTargetFrameworkForProject(XDocument doc, string targetFrameworkPropertyName, string targetFrameworkValue)
         {
             var existingFrameworkProperty = "TargetFramework";
