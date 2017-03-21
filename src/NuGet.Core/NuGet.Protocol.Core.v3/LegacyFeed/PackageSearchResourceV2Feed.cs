@@ -33,7 +33,7 @@ namespace NuGet.Protocol
             _feedParser = new V2FeedParser(_httpSource, baseAddress, packageSource.Source);
         }
 
-        public async override Task<IEnumerable<IPackageSearchMetadata>> SearchAsync(
+        public override async Task<IEnumerable<IPackageSearchMetadata>> SearchAsync(
             string searchTerm,
             SearchFilter filters,
             int skip,

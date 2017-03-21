@@ -2181,6 +2181,7 @@
       <d:IsAbsoluteLatestVersion m:type="Edm.Boolean">true</d:IsAbsoluteLatestVersion>
       <d:IsPrerelease m:type="Edm.Boolean">true</d:IsPrerelease>
       <d:Language m:null="true" />
+      <d:LastEdited m:type="Edm.DateTime" m:null="true"/>
       <d:Published m:type="Edm.DateTime">2015-12-11T01:25:11.37</d:Published>
       <d:PackageHash>UBhAaxcKpTntWL3n2+cSuOwMngGf9dyxn7q2H8gSC76KZ3SLBF+qKFTgvz41ef/77jffNJDQuElf62zGgyC7kg==</d:PackageHash>
       <d:PackageHashAlgorithm>SHA512</d:PackageHashAlgorithm>

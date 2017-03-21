@@ -21,6 +21,8 @@ namespace NuGet.Protocol
             Owners = string.Join(", ", package.Owners);
             PackageId = package.Id;
             ProjectUrl = GetUriSafe(package.ProjectUrl);
+            Created = package.Created;
+            LastEdited = package.LastEdited;
             Published = package.Published;
             ReportAbuseUrl = GetUriSafe(package.ReportAbuseUrl);
             RequireLicenseAcceptance = package.RequireLicenseAcceptance;
@@ -56,6 +58,10 @@ namespace NuGet.Protocol
         public string PackageId { get; private set; }
 
         public Uri ProjectUrl { get; private set; }
+
+        public DateTimeOffset? Created { get; private set; }
+
+        public DateTimeOffset? LastEdited { get; private set; }
 
         public DateTimeOffset? Published { get; private set; }
 

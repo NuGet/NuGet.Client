@@ -10,6 +10,7 @@ using Newtonsoft.Json.Linq;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
 using NuGet.Protocol;
+using NuGet.Protocol.Utility;
 using NuGet.Versioning;
 
 namespace NuGet.Protocol
@@ -30,7 +31,8 @@ namespace NuGet.Protocol
         public override async Task<IEnumerable<IPackageSearchMetadata>> GetMetadataAsync(string packageId, bool includePrerelease, bool includeUnlisted, Common.ILogger log, CancellationToken token)
         {
             var metadataList = await _regResource.GetPackageMetadata(packageId, includePrerelease, includeUnlisted, log, token);
-            return metadataList.Select(ParseMetadata);
+            var metadataCache = new MetadataReferenceCache();
+            return metadataList.Select(ParseMetadata).Select(m => metadataCache.GetObject(m));
         }
 
         public override async Task<IPackageSearchMetadata> GetMetadataAsync(PackageIdentity package, Common.ILogger log, CancellationToken token)

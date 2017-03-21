@@ -21,6 +21,8 @@ namespace NuGet.Protocol.Core.Types
         Uri LicenseUrl { get; }
         Uri ProjectUrl { get; }
         Uri ReportAbuseUrl { get; }
+        DateTimeOffset? Created { get; }
+        DateTimeOffset? LastEdited { get; }
         DateTimeOffset? Published { get; }
         string Owners { get; }
         bool RequireLicenseAcceptance { get; }

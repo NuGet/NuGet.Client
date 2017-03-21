@@ -16,6 +16,7 @@ using System.Xml.Linq;
 using NuGet.Common;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
+using NuGet.Protocol.Utility;
 using NuGet.Versioning;
 
 namespace NuGet.Protocol
@@ -47,6 +48,8 @@ namespace NuGet.Protocol
         private static readonly XName _xnameDependencies = XName.Get("Dependencies", DataServicesNS);
         private static readonly XName _xnameRequireLicenseAcceptance = XName.Get("RequireLicenseAcceptance", DataServicesNS);
         private static readonly XName _xnameDownloadCount = XName.Get("DownloadCount", DataServicesNS);
+        private static readonly XName _xnameCreated = XName.Get("Created", DataServicesNS);
+        private static readonly XName _xnameLastEdited = XName.Get("LastEdited", DataServicesNS);
         private static readonly XName _xnamePublished = XName.Get("Published", DataServicesNS);
         private static readonly XName _xnameName = XName.Get("name", W3Atom);
         private static readonly XName _xnameAuthor = XName.Get("author", W3Atom);
@@ -309,24 +312,29 @@ namespace NuGet.Protocol
         /// <summary>
         /// Finds all entries on the page and parses them
         /// </summary>
-        private IEnumerable<V2FeedPackageInfo> ParsePage(XDocument doc, string id)
+        private IEnumerable<V2FeedPackageInfo> ParsePage(XDocument doc, string id, MetadataReferenceCache metadataCache = null)
         {
             if (doc.Root.Name == _xnameEntry)
             {
-                return new List<V2FeedPackageInfo> { ParsePackage(id, doc.Root) };
+                return new List<V2FeedPackageInfo> { ParsePackage(id, doc.Root, metadataCache) };
             }
             else
             {
                 return doc.Root.Elements(_xnameEntry)
-                    .Select(x => ParsePackage(id, x));
+                    .Select(x => ParsePackage(id, x, metadataCache));
             }
         }
 
         /// <summary>
         /// Parse an entry into a V2FeedPackageInfo
         /// </summary>
-        private V2FeedPackageInfo ParsePackage(string id, XElement element)
+        private V2FeedPackageInfo ParsePackage(string id, XElement element, MetadataReferenceCache metadataCache = null)
         {
+            if (metadataCache == null)
+            {
+                metadataCache = new MetadataReferenceCache();
+            }
+
             var properties = element.Element(_xnameProperties);
             var idElement = properties.Element(_xnameId);
             var titleElement = element.Element(_xnameTitle);
@@ -336,41 +344,29 @@ namespace NuGet.Protocol
             // Use the given Id as final fallback if all elements above don't exist
             string identityId = idElement?.Value ?? titleElement?.Value ?? id;
             string versionString = properties.Element(_xnameVersion).Value;
-            NuGetVersion version = NuGetVersion.Parse(versionString);
-            string downloadUrl = element.Element(_xnameContent).Attribute("src").Value;
+            NuGetVersion version = metadataCache.GetVersion(versionString);
+            string downloadUrl = metadataCache.GetString(element.Element(_xnameContent).Attribute("src").Value);
 
-            string title = titleElement?.Value;
-            string summary = GetValue(element, _xnameSummary);
-            string description = GetValue(properties, _xnameDescription);
-            string iconUrl = GetValue(properties, _xnameIconUrl);
-            string licenseUrl = GetValue(properties, _xnameLicenseUrl);
-            string projectUrl = GetValue(properties, _xnameProjectUrl);
-            string reportAbuseUrl = GetValue(properties, _xnameReportAbuseUrl);
-            string tags = GetValue(properties, _xnameTags);
-            string dependencies = GetValue(properties, _xnameDependencies);
+            string title = metadataCache.GetString(titleElement?.Value);
+            string summary = metadataCache.GetString(GetValue(element, _xnameSummary));
+            string description = metadataCache.GetString(GetValue(properties, _xnameDescription));
+            string iconUrl = metadataCache.GetString(GetValue(properties, _xnameIconUrl));
+            string licenseUrl = metadataCache.GetString(GetValue(properties, _xnameLicenseUrl));
+            string projectUrl = metadataCache.GetString(GetValue(properties, _xnameProjectUrl));
+            string reportAbuseUrl = metadataCache.GetString(GetValue(properties, _xnameReportAbuseUrl));
+            string tags = metadataCache.GetString(GetValue(properties, _xnameTags));
+            string dependencies = metadataCache.GetString(GetValue(properties, _xnameDependencies));
 
-            string downloadCount = GetValue(properties, _xnameDownloadCount);
+            string downloadCount = metadataCache.GetString(GetValue(properties, _xnameDownloadCount));
             bool requireLicenseAcceptance = GetValue(properties, _xnameRequireLicenseAcceptance) == "true";
 
-            string packageHash = GetValue(properties, _xnamePackageHash);
-            string packageHashAlgorithm = GetValue(properties, _xnamePackageHashAlgorithm);
-            string minClientVersionString = GetValue(properties, _xnameMinClientVersion);
+            string packageHash = metadataCache.GetString(GetValue(properties, _xnamePackageHash));
+            string packageHashAlgorithm = metadataCache.GetString(GetValue(properties, _xnamePackageHashAlgorithm));
+            NuGetVersion minClientVersion = metadataCache.GetVersion(GetValue(properties, _xnameMinClientVersion));
 
-            NuGetVersion minClientVersion = null;
-
-            if (minClientVersionString != null)
-            {
-                NuGetVersion.TryParse(minClientVersionString, out minClientVersion);
-            }
-
-            DateTimeOffset? published = null;
-
-            DateTimeOffset pubVal = DateTimeOffset.MinValue;
-            string pubString = GetValue(properties, _xnamePublished);
-            if (DateTimeOffset.TryParse(pubString, out pubVal))
-            {
-                published = pubVal;
-            }
+            DateTimeOffset? created = metadataCache.GetDate(GetValue(properties, _xnameCreated));
+            DateTimeOffset? lastEdited = metadataCache.GetDate(GetValue(properties, _xnameLastEdited));
+            DateTimeOffset? published = metadataCache.GetDate(GetValue(properties, _xnamePublished));
 
             // TODO: is this ever populated in v2?
             IEnumerable<string> owners = null;
@@ -383,14 +379,10 @@ namespace NuGet.Protocol
                 authors = authorNode.Elements(_xnameName).Select(e => e.Value);
             }
 
-            return new V2FeedPackageInfo(new PackageIdentity(identityId, version),
-                title, summary, description, authors, owners, iconUrl, licenseUrl,
-                projectUrl, reportAbuseUrl, tags, published, dependencies,
-                requireLicenseAcceptance, downloadUrl, downloadCount,
-                packageHash,
-                packageHashAlgorithm,
-                minClientVersion
-                );
+            return new V2FeedPackageInfo(new PackageIdentity(identityId, version), title, summary, description, authors,
+                owners, iconUrl, licenseUrl, projectUrl, reportAbuseUrl, tags, created, lastEdited, published,
+                dependencies, requireLicenseAcceptance, downloadUrl, downloadCount, packageHash, packageHashAlgorithm,
+                minClientVersion);
         }
 
         /// <summary>
@@ -421,6 +413,7 @@ namespace NuGet.Protocol
             ILogger log,
             CancellationToken token)
         {
+            var metadataCache = new MetadataReferenceCache();
             var results = new List<V2FeedPackageInfo>();
             var uris = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             var page = 1;
@@ -443,7 +436,7 @@ namespace NuGet.Protocol
                 var doc = await docRequest;
                 if (doc != null)
                 {
-                    var result = ParsePage(doc, id);
+                    var result = ParsePage(doc, id, metadataCache);
                     results.AddRange(result);
 
                     nextUri = GetNextUrl(doc);

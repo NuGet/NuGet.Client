@@ -8,7 +8,7 @@ using NuGet.Protocol;
 
 namespace NuGet.Protocol.Tests
 {
-    public class JasonExtensionsTest
+    public class JsonExtensionsTest
     {
         [Fact]
         public void FromJTokenWithBadUrl()

@@ -27,6 +27,8 @@ namespace NuGet.Protocol.Core.Types
             public Uri LicenseUrl { get; set; }
             public string Owners { get; set; }
             public Uri ProjectUrl { get; set; }
+            public DateTimeOffset? Created { get; set; }
+            public DateTimeOffset? LastEdited { get; set; }
             public DateTimeOffset? Published { get; set; }
             public Uri ReportAbuseUrl { get; set; }
             public bool RequireLicenseAcceptance { get; set; }
@@ -69,6 +71,8 @@ namespace NuGet.Protocol.Core.Types
                 LicenseUrl = _metadata.LicenseUrl,
                 Owners = _metadata.Owners,
                 ProjectUrl = _metadata.ProjectUrl,
+                Created = _metadata.Created,
+                LastEdited = _metadata.LastEdited,
                 Published = _metadata.Published,
                 ReportAbuseUrl = _metadata.ReportAbuseUrl,
                 RequireLicenseAcceptance = _metadata.RequireLicenseAcceptance,
