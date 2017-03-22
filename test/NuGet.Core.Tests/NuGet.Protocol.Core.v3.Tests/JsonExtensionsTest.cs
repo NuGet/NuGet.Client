@@ -14,7 +14,7 @@ namespace NuGet.Protocol.Tests
         public void FromJTokenWithBadUrl()
         {
             // Arrange
-            var toke = JToken.Parse(JsonData.badProjectUrlJsonData);
+            var toke = JToken.Parse(JsonData.BadProjectUrlJsonData);
 
             // Act
             var metaData = toke.FromJToken<PackageSearchMetadata>();

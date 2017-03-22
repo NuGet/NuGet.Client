@@ -56,12 +56,6 @@ namespace NuGet.Protocol
         [JsonConverter(typeof(SafeUriConverter))]
         public Uri ProjectUrl { get; private set; }
 
-        [JsonProperty(PropertyName = JsonProperties.Created)]
-        public DateTimeOffset? Created { get; private set; }
-
-        [JsonProperty(PropertyName = JsonProperties.LastEdited)]
-        public DateTimeOffset? LastEdited { get; private set; }
-
         [JsonProperty(PropertyName = JsonProperties.Published)]
         public DateTimeOffset? Published { get; private set; }
 
@@ -102,7 +96,8 @@ namespace NuGet.Protocol
         public VersionInfo[] ParsedVersions { get; private set; }
 
         public Task<IEnumerable<VersionInfo>> GetVersionsAsync() => Task.FromResult<IEnumerable<VersionInfo>>(ParsedVersions);
-        //The V3 source currently does not return a listed property
+
+        // The V3 source currently does not return a listed property
         public bool IsListed => true;
     }
 }

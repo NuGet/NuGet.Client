@@ -43,10 +43,6 @@ namespace NuGet.Protocol
 
         public Uri ProjectUrl => Convert(_nuspec.GetProjectUrl());
 
-        public DateTimeOffset? Created => null;
-
-        public DateTimeOffset? LastEdited => null;
-
         public DateTimeOffset? Published => _package.LastWriteTimeUtc;
 
         // There is no report abuse url for local packages.
