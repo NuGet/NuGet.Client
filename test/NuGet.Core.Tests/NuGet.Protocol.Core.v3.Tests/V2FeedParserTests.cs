@@ -2,9 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
@@ -12,6 +15,7 @@ using NuGet.Configuration;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
 using NuGet.Protocol.Core.v3.Tests;
+using NuGet.Protocol.Utility;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
 using Test.Utility;
@@ -117,37 +121,83 @@ namespace NuGet.Protocol.Tests
             Assert.Equal("dotnet5.4", latest.DependencySets.First().TargetFramework.GetShortFolderName());
         }
 
+        private class ReferenceEqualityComparer<T> : IEqualityComparer, IEqualityComparer<T>
+        {
+            public bool Equals(T x, T y) => Equals((object) x, y);
+
+            public int GetHashCode(T obj) => GetHashCode((object) obj);
+
+            bool IEqualityComparer.Equals(object x, object y) => ReferenceEquals(x, y);
+
+            public int GetHashCode(object obj) => RuntimeHelpers.GetHashCode(obj);
+        }
+
         [Fact]
         public async Task V2FeedParser_UsesReferenceCache()
         {
-            // Arrange
+            while (!System.Diagnostics.Debugger.IsAttached)
+            {
+            }
+
+            //// Arrange
             var serviceAddress = TestUtility.CreateServiceAddress();
 
             var responses = new Dictionary<string, string>();
-            responses.Add(serviceAddress + "FindPackagesById()?id='WindowsAzure.Storage'&semVerLevel=2.0.0",
-                TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.WindowsAzureStorageFindPackagesById.xml", GetType()));
+            responses.Add(serviceAddress + "FindPackagesById()?id='afine'&semVerLevel=2.0.0",
+                TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.FindPackagesByIdWithDuplicateBesidesVersion.xml", GetType()));
             responses.Add(serviceAddress, string.Empty);
 
             var httpSource = new TestHttpSource(new PackageSource(serviceAddress), responses);
 
             V2FeedParser parser = new V2FeedParser(httpSource, serviceAddress);
 
-            // Act
-            var packages = await parser.FindPackagesByIdAsync("WindowsAzure.Storage", NullLogger.Instance, CancellationToken.None);
+            //// Act
+            var packages = await parser.FindPackagesByIdAsync("afine", NullLogger.Instance, CancellationToken.None);
 
-            var v621Pre = packages.FirstOrDefault(p => p.Version == SemanticVersion.Parse("6.2.1-preview"));
-            var v622Pre = packages.FirstOrDefault(p => p.Version == SemanticVersion.Parse("6.2.2-preview"));
+            var first = packages[0];
+            var second = packages[1];
 
-            // Assert
-            Assert.NotNull(v621Pre);
-            Assert.NotNull(v622Pre);
-            Assert.Same(v621Pre.Id, v622Pre.Id);
-            Assert.Same(v621Pre.Title, v622Pre.Title);
-            Assert.Same(v621Pre.Description, v622Pre.Description);
-            Assert.Same(v621Pre.Summary, v622Pre.Summary);
-            Assert.Same(v621Pre.LicenseUrl, v622Pre.LicenseUrl);
-            Assert.Same(v621Pre.Tags, v622Pre.Tags);
-            Assert.Same(v621Pre.IconUrl, v622Pre.IconUrl);
+            //// Assert
+            Assert.NotNull(first);
+            Assert.NotNull(second);
+            Assert.IsType(typeof(V2FeedPackageInfo), first);
+            Assert.IsType(typeof(V2FeedPackageInfo), second);
+            
+            // Get all properties that can be cached and are not Version (because the version of the two packages is different).
+            var properties =
+                typeof(V2FeedPackageInfo).GetTypeInfo()
+                    .DeclaredProperties.Where(
+                        p =>
+                            p.Name != nameof(PackageIdentity.Version) &&
+                            MetadataReferenceCache.CachableTypes.Contains(p.PropertyType) && p.GetMethod != null);
+
+            // Check that all cached references between the two packages are identical.
+            foreach (var property in properties)
+            {
+                var firstValue = property.GetMethod.Invoke(first, null);
+                var secondValue = property.GetMethod.Invoke(second, null);
+                Assert.Same(firstValue, secondValue);
+            }
+
+            // Get all properties that are IEnumerables of a type that can be cached.
+            var enumerableProperties =
+                typeof(V2FeedPackageInfo).GetTypeInfo()
+                    .DeclaredProperties.Where(
+                        p =>
+                            p.PropertyType.IsConstructedGenericType &&
+                            p.PropertyType.GetGenericTypeDefinition() == typeof(IEnumerable<>) &&
+                            p.PropertyType.GenericTypeArguments.Length == 1 &&
+                            MetadataReferenceCache.CachableTypes.Contains(p.PropertyType.GenericTypeArguments[0]) &&
+                            p.GetMethod != null);
+
+            // Check that all cached references stored in IEnumerables between the two packages are identical.
+            foreach (var enumerableProperty in enumerableProperties)
+            {
+                var firstEnumerable = enumerableProperty.GetMethod.Invoke(first, null);
+                var secondEnumerable = enumerableProperty.GetMethod.Invoke(second, null);
+                Assert.Equal((IEnumerable<string>) firstEnumerable, (IEnumerable<string>) secondEnumerable,
+                    new ReferenceEqualityComparer<string>());
+            }
         }
 
         [Fact]

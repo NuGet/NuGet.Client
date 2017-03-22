@@ -9,15 +9,14 @@ namespace NuGet.Protocol.Utility
     /// <summary>
     /// Cache strings, dates, and versions to reduce memory.
     /// </summary>
-    internal class MetadataReferenceCache
+    public class MetadataReferenceCache
     {
         private readonly Dictionary<string, string> _stringCache = new Dictionary<string, string>(StringComparer.Ordinal);
-        private readonly Dictionary<DateTimeOffset, DateTimeOffset> _dateCache = new Dictionary<DateTimeOffset, DateTimeOffset>();
-        private readonly Dictionary<Version, Version> _systemVersionCache = new Dictionary<Version, Version>();
-
+        
         // Include metadata in the compare.
         // All catalog versions are normalized so the original string is not a concern.
         private readonly Dictionary<NuGetVersion, NuGetVersion> _versionCache = new Dictionary<NuGetVersion, NuGetVersion>(VersionComparer.VersionReleaseMetadata);
+        private readonly Dictionary<Version, Version> _systemVersionCache = new Dictionary<Version, Version>();
 
         /// <summary>
         /// Checks if <paramref name="s"/> already exists in the cache.
@@ -41,41 +40,6 @@ namespace NuGet.Protocol.Utility
             {
                 _stringCache.Add(s, s);
                 cachedValue = s;
-            }
-
-            return cachedValue;
-        }
-
-        /// <summary>
-        /// Parses <paramref name="s"/> into a <see cref="DateTimeOffset"/>.
-        /// If <paramref name="s"/> cannot be parsed into a <see cref="DateTimeOffset"/>, returns null.
-        /// Otherwise, checks if the parsed value already exists in the cache.
-        /// If so, returns the cached instance.
-        /// If not, caches the parsed value and returns it.
-        /// </summary>
-        public DateTimeOffset? GetDate(string s)
-        {
-            DateTimeOffset date;
-            if (!DateTimeOffset.TryParse(s, out date))
-            {
-                return null;
-            }
-
-            return GetDate(date);
-        }
-
-        /// <summary>
-        /// Checks if <paramref name="date"/> already exists in the cache.
-        /// If so, returns the cached instance.
-        /// If not, caches <paramref name="date"/> and returns it.
-        /// </summary>
-        public DateTimeOffset GetDate(DateTimeOffset date)
-        {
-            DateTimeOffset cachedValue;
-            if (!_dateCache.TryGetValue(date, out cachedValue))
-            {
-                _dateCache.Add(date, date);
-                cachedValue = date;
             }
 
             return cachedValue;
@@ -106,8 +70,8 @@ namespace NuGet.Protocol.Utility
         /// </summary>
         public NuGetVersion GetVersion(NuGetVersion version)
         {
-            NuGetVersion cachedValue;
-            if (!_versionCache.TryGetValue(version, out cachedValue))
+            NuGetVersion cachedVersion;
+            if (!_versionCache.TryGetValue(version, out cachedVersion))
             {
                 var systemVersion = GetSystemVersion(version);
 
@@ -118,33 +82,39 @@ namespace NuGet.Protocol.Utility
                 version = new NuGetVersion(systemVersion, releaseLabels, GetString(version.Metadata), originalVersion: null);
 
                 _versionCache.Add(version, version);
-                cachedValue = version;
+                cachedVersion = version;
             }
 
-            return cachedValue;
+            return cachedVersion;
         }
 
         private Version GetSystemVersion(NuGetVersion nugetVersion)
         {
             var version = new Version(nugetVersion.Major, nugetVersion.Minor, nugetVersion.Patch, nugetVersion.Revision);
 
-            Version cachedValue;
-            if (!_systemVersionCache.TryGetValue(version, out cachedValue))
+            Version cachedVersion;
+            if (!_systemVersionCache.TryGetValue(version, out cachedVersion))
             {
                 _systemVersionCache.Add(version, version);
-                cachedValue = version;
+                cachedVersion = version;
             }
 
-            return cachedValue;
+            return cachedVersion;
         }
 
-        private readonly IDictionary<Type, string> _cachableTypes = new Dictionary<Type, string>
+        /// <summary>
+        /// Mapping of input parameter type to caching method.
+        /// </summary>
+        private static readonly IDictionary<Type, string> CachableTypesMap = new Dictionary<Type, string>
         {
             {typeof(string), nameof(GetString)},
-            {typeof(DateTimeOffset?), nameof(GetDate)},
-            {typeof(DateTimeOffset), nameof(GetDate)},
             {typeof(NuGetVersion), nameof(GetVersion)}
         };
+
+        /// <summary>
+        /// <see cref="IEnumerable{Type}"/> containing all types that can be cached.
+        /// </summary>
+        public static IEnumerable<Type> CachableTypes => CachableTypesMap.Keys;
         
         /// <summary>
         /// Iterates through the properties of <paramref name="input"/> that are either <see cref="string"/>s, <see cref="DateTimeOffset"/>s, or <see cref="NuGetVersion"/>s and checks them against the cache.
@@ -155,7 +125,7 @@ namespace NuGet.Protocol.Utility
             var properties =
                 typeof(T).GetTypeInfo()
                     .DeclaredProperties.Where(
-                        p => _cachableTypes.ContainsKey(p.PropertyType) && p.GetMethod != null && p.SetMethod != null);
+                        p => CachableTypesMap.ContainsKey(p.PropertyType) && p.GetMethod != null && p.SetMethod != null);
 
             foreach (var property in properties)
             {
@@ -164,8 +134,8 @@ namespace NuGet.Protocol.Utility
                     typeof(MetadataReferenceCache).GetTypeInfo()
                         .DeclaredMethods.FirstOrDefault(
                             m =>
-                                m.Name == _cachableTypes[property.PropertyType] &&
-                                m.GetParameters().Select(p => p.ParameterType) == new Type[] {property.PropertyType})
+                                m.Name == CachableTypesMap[property.PropertyType] &&
+                                m.GetParameters().Select(p => p.ParameterType).SequenceEqual(new Type[] {property.PropertyType}))
                         .Invoke(this, new[] {value});
                 property.SetMethod.Invoke(input, new[] {cachedValue});
             }
