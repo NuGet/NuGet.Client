@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFrameworks>netstandard1.4;net46</TargetFrameworks>
-    <PackageId>NuGet.TestPackage</PackageId>
+    <PackageId>TestPackage.$safeprojectname$</PackageId>
     <PackageVersion>1.0.1-preview</PackageVersion>
   </PropertyGroup>
 
