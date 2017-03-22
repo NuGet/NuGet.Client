@@ -135,10 +135,6 @@ namespace NuGet.Protocol.Tests
         [Fact]
         public async Task V2FeedParser_UsesReferenceCache()
         {
-            while (!System.Diagnostics.Debugger.IsAttached)
-            {
-            }
-
             //// Arrange
             var serviceAddress = TestUtility.CreateServiceAddress();
 
