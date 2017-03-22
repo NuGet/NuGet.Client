@@ -7,7 +7,8 @@ using System.ComponentModel.Composition;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using NuGet.Common;
+using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Threading;
 using NuGet.Configuration;
 using NuGet.LibraryModel;
 using NuGet.PackageManagement.UI;
@@ -22,20 +23,31 @@ namespace NuGet.VisualStudio
 {
     // Implementation of IVsPathContextProvider as a MEF-exported component.
     [Export(typeof(IVsPathContextProvider))]
+    [PartCreationPolicy(CreationPolicy.Shared)]
     public sealed class VsPathContextProvider : IVsPathContextProvider
     {
         private readonly Lazy<ISettings> _settings;
         private readonly Lazy<IVsSolutionManager> _solutionManager;
-        private readonly Lazy<ILogger> _logger;
+        private readonly Lazy<Common.ILogger> _logger;
         private readonly Func<BuildIntegratedNuGetProject, Task<LockFile>> _getLockFileOrNullAsync;
+
+        private readonly AsyncLazy<EnvDTE.DTE> _dte;
+        private readonly Lazy<INuGetProjectContext> _projectContext = new Lazy<INuGetProjectContext>(() => new VSAPIProjectContext());
 
         [ImportingConstructor]
         public VsPathContextProvider(
+            [Import(typeof(SVsServiceProvider))]
+            IServiceProvider serviceProvider,
             Lazy<ISettings> settings,
             Lazy<IVsSolutionManager> solutionManager,
             [Import("VisualStudioActivityLogger")]
-            Lazy<ILogger> logger)
+            Lazy<Common.ILogger> logger)
         {
+            if (serviceProvider == null)
+            {
+                throw new ArgumentNullException(nameof(serviceProvider));
+            }
+
             if (settings == null)
             {
                 throw new ArgumentNullException(nameof(settings));
@@ -55,6 +67,14 @@ namespace NuGet.VisualStudio
             _solutionManager = solutionManager;
             _logger = logger;
             _getLockFileOrNullAsync = BuildIntegratedProjectUtility.GetLockFileOrNull;
+
+            _dte = new AsyncLazy<EnvDTE.DTE>(
+                async () =>
+                {
+                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                    return serviceProvider.GetDTE();
+                },
+                NuGetUIThreadHelper.JoinableTaskFactory);
         }
 
         /// <summary>
@@ -63,7 +83,7 @@ namespace NuGet.VisualStudio
         public VsPathContextProvider(
             ISettings settings,
             IVsSolutionManager solutionManager,
-            ILogger logger,
+            Common.ILogger logger,
             Func<BuildIntegratedNuGetProject, Task<LockFile>> getLockFileOrNullAsync)
         {
             if (settings == null)
@@ -83,7 +103,7 @@ namespace NuGet.VisualStudio
 
             _settings = new Lazy<ISettings>(() => settings);
             _solutionManager = new Lazy<IVsSolutionManager>(() => solutionManager);
-            _logger = new Lazy<ILogger>(() => logger);
+            _logger = new Lazy<Common.ILogger>(() => logger);
             _getLockFileOrNullAsync = getLockFileOrNullAsync ?? BuildIntegratedProjectUtility.GetLockFileOrNull;
         }
 
@@ -94,18 +114,39 @@ namespace NuGet.VisualStudio
                 throw new ArgumentNullException(nameof(projectUniqueName));
             }
 
-            var nuGetProject = _solutionManager.Value.GetNuGetProject(projectUniqueName);
-
-            // It's possible the project isn't a NuGet-compatible project at all.
-            if (nuGetProject == null)
-            {
-                outputPathContext = null;
-                return false;
-            }
-
             // invoke async operation from within synchronous method
             outputPathContext = NuGetUIThreadHelper.JoinableTaskFactory.Run(
-                () => CreatePathContextAsync(nuGetProject, CancellationToken.None));
+                async () =>
+                {
+                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                    var dte = await _dte.GetValueAsync();
+
+                    EnvDTE.Project dteProject = null;
+                    var lookup = await EnvDTESolutionUtility.GetPathToDTEProjectLookupAsync(dte);
+
+                    if (lookup.ContainsKey(projectUniqueName))
+                    {
+                        dteProject = lookup[projectUniqueName];
+                    }
+
+                    if (dteProject == null)
+                    {
+                        return null;
+                    }
+
+                    var nuGetProject = await _solutionManager.Value.GetOrCreateProjectAsync(dteProject, _projectContext.Value);
+
+                    // It's possible the project isn't a NuGet-compatible project at all.
+                    if (nuGetProject == null)
+                    {
+                        return null;
+                    }
+
+                    await TaskScheduler.Default;
+
+                    return await CreatePathContextAsync(nuGetProject, CancellationToken.None);
+                });
 
             return outputPathContext != null;
         }
