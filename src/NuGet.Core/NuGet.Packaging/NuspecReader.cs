@@ -476,11 +476,13 @@ namespace NuGet.Packaging
                     if (!versionParsedSuccessfully && useStrictVersionCheck)
                     {
                         // Invalid version
+                        var dependencyId = GetAttributeValue(depNode, Id);
                         var message = string.Format(
                             CultureInfo.CurrentCulture,
-                            Strings.ErrorInvalidPackageVersion,
-                            rangeNode,
-                            GetIdentity());
+                            Strings.ErrorInvalidPackageVersionForDependency,
+                            dependencyId,
+                            GetIdentity(),
+                            rangeNode);
 
                         throw new PackagingException(message);
                     }
