@@ -255,6 +255,24 @@ namespace NuGet.Packaging.Test
                   </metadata>
                 </package>";
 
+        private const string InvalidVersionRangeInDependency = @"<?xml version=""1.0"" encoding=""utf-8"" standalone=""yes""?>
+                <package xmlns=""http://schemas.microsoft.com/packaging/2011/10/nuspec.xsd"">
+                  <metadata>
+                    <id>ServiceStack.Extras.Serilog</id>
+                    <version>2.0.1.0</version>
+                    <title>ServiceStack.Extras.Serilog</title>
+                    <authors>Alexey Zimarev, Nick Van Eeckhout</authors>
+                    <licenseUrl>https://github.com/alexeyzimarev/ServiceStack.Extras.Serilog/blob/master/LICENSE</licenseUrl>
+                    <projectUrl>https://github.com/alexeyzimarev/ServiceStack.Extras.Serilog</projectUrl>
+                    <description>Serilog logging adapter for ServiceStack</description>
+                    <tags>ServiceStack Serilog</tags>
+                    <dependencies>
+                      <dependency id=""ServiceStack.Interfaces"" version=""0.0.0-~4"" />
+                      <dependency id=""Serilog"" version=""0.0.0-~1.5"" />
+                    </dependencies>
+                  </metadata>
+                </package>";
+
         [Fact]
         public void NuspecReaderTests_NamespaceOnMetadata()
         {
@@ -305,6 +323,23 @@ namespace NuGet.Packaging.Test
             var dependencies = reader.GetDependencyGroups().ToList();
 
             Assert.Equal(2, dependencies.Count);
+        }
+
+        [Fact]
+        public void NuspecReaderTests_InvalidVersionRangeInDependency()
+        {
+            NuspecReader reader = GetReader(InvalidVersionRangeInDependency);
+            try
+            {
+                var dependencies = reader.GetDependencyGroups(useStrictVersion: true).ToList();
+                Assert.True(false, "No exception was thrown");
+            }
+            catch(Exception ex)
+            {
+                Assert.NotNull(ex);
+                // check the message contains invalid version range
+                Assert.NotNull(ex.Message);
+            }
         }
 
         [Fact]
