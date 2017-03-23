@@ -1,8 +1,10 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using Microsoft.Build.Framework;
 using NuGet.Commands;
+using NuGet.Common;
 using NuGet.Packaging;
 using ILogger = NuGet.Common.ILogger;
 
@@ -80,22 +82,31 @@ namespace NuGet.Build.Tasks.Pack
 
         public override bool Execute()
         {
-            var request = GetRequest();
-            var logic = PackTaskLogic;
-            PackageBuilder packageBuilder = null;
-            var packArgs = logic.GetPackArgs(request);
-
-            // If packing using a Nuspec file, we don't need to build a PackageBuilder here
-            // as the package builder is built by reading the manifest file later in the code path.
-            // Passing a null package builder for nuspec file code path is perfectly valid.
-            if (string.IsNullOrEmpty(request.NuspecFile))
+            try
             {
-                packageBuilder = logic.GetPackageBuilder(request);
-            }
-            var packRunner = logic.GetPackCommandRunner(request, packArgs, packageBuilder);
-            logic.BuildPackage(packRunner);
+                var request = GetRequest();
+                var logic = PackTaskLogic;
+                PackageBuilder packageBuilder = null;
+                var packArgs = logic.GetPackArgs(request);
 
-            return true;
+                // If packing using a Nuspec file, we don't need to build a PackageBuilder here
+                // as the package builder is built by reading the manifest file later in the code path.
+                // Passing a null package builder for nuspec file code path is perfectly valid.
+                if (string.IsNullOrEmpty(request.NuspecFile))
+                {
+                    packageBuilder = logic.GetPackageBuilder(request);
+                }
+                var packRunner = logic.GetPackCommandRunner(request, packArgs, packageBuilder);
+                logic.BuildPackage(packRunner);
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                ExceptionUtilities.HandleException(ex, Logger);
+                return false;
+            }
+            
         }
 
         /// <summary>
