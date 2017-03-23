@@ -52,7 +52,7 @@ namespace NuGet.Protocol.Core.v3.Tests
 
             var responses = new Dictionary<string, string>();
             responses.Add("https://api-v3search-0.nuget.org/query?q=entityframework&skip=0&take=1&prerelease=false&semVerLevel=2.0.0",
-                TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.SearchWithDuplicateBesidesVersion.json", GetType()));
+                TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.SearchV3WithDuplicateBesidesVersion.json", GetType()));
             responses.Add(serviceAddress, string.Empty);
 
             var repo = StaticHttpHandler.CreateSource("http://testsource.com/v3/index.json", Repository.Provider.GetCoreV3(), responses);
