@@ -89,19 +89,7 @@ namespace NuGet.Build.Tasks
             }
             catch (Exception e)
             {
-                // Log the error
-                if (ExceptionLogger.Instance.ShowStack)
-                {
-                    log.LogError(e.ToString());
-                }
-                else
-                {
-                    log.LogError(ExceptionUtilities.DisplayMessage(e));
-                }
-
-                // Log the stack trace as verbose output.
-                log.LogVerbose(e.ToString());
-
+                ExceptionUtilities.HandleException(e, log);
                 return false;
             }
         }
