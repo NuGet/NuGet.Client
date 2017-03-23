@@ -78,6 +78,15 @@ namespace NuGet.Build.Tasks.Pack {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to The file &apos;{0}&apos; to be packed was not found on disk..
+        /// </summary>
+        public static string Error_FileNotFound {
+            get {
+                return ResourceManager.GetString("Error_FileNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to MinClientVersion string specified &apos;{0}&apos; is invalid..
         /// </summary>
         public static string InvalidMinClientVersion {
@@ -110,6 +119,15 @@ namespace NuGet.Build.Tasks.Pack {
         public static string InvalidPackageVersion {
             get {
                 return ResourceManager.GetString("InvalidPackageVersion", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Invalid target framework for the file &apos;{0}&apos;..
+        /// </summary>
+        public static string InvalidTargetFramework {
+            get {
+                return ResourceManager.GetString("InvalidTargetFramework", resourceCulture);
             }
         }
         

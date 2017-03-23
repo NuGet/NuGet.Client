@@ -11,6 +11,7 @@ namespace NuGet.Build.Tasks.Pack
         public string AssemblyName { get; set; }
         public IMSBuildItem[] AssemblyReferences { get; set; }
         public string[] Authors { get; set; }
+        public IMSBuildItem[] BuildOutputInPackage { get; set; }
         public string BuildOutputFolder { get; set; }
         public string[] ContentTargetFolders { get; set; }
         public bool ContinuePackingAfterGeneratingNuspec { get; set; }
@@ -46,8 +47,7 @@ namespace NuGet.Build.Tasks.Pack
         public IMSBuildItem[] SourceFiles { get; set; }
         public string[] Tags { get; set; }
         public string[] TargetFrameworks { get; set; }
-        public string[] TargetPathsToAssemblies { get; set; }
-        public string[] TargetPathsToSymbols { get; set; }
+        public IMSBuildItem[] TargetPathsToSymbols { get; set; }
         public string Title { get; set; }
     }
 }
