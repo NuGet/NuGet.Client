@@ -472,7 +472,8 @@ namespace NuGet.Packaging
 
                 if (!string.IsNullOrEmpty(rangeNode))
                 {
-                    if (useStrictVersionCheck && !VersionRange.TryParse(rangeNode, out range))
+                    var versionParsedSuccessfully = VersionRange.TryParse(rangeNode, out range);
+                    if (!versionParsedSuccessfully && useStrictVersionCheck)
                     {
                         // Invalid version
                         var message = string.Format(

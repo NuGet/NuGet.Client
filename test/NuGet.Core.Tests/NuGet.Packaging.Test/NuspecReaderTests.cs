@@ -7,6 +7,8 @@ using System.Linq;
 using System.Text;
 using NuGet.Frameworks;
 using Xunit;
+using NuGet.Packaging.Core;
+using System.Collections.Generic;
 
 namespace NuGet.Packaging.Test
 {
@@ -255,23 +257,82 @@ namespace NuGet.Packaging.Test
                   </metadata>
                 </package>";
 
-        private const string InvalidVersionRangeInDependency = @"<?xml version=""1.0"" encoding=""utf-8"" standalone=""yes""?>
+        private const string VersionRangeInDependency = @"<?xml version=""1.0"" encoding=""utf-8"" standalone=""yes""?>
                 <package xmlns=""http://schemas.microsoft.com/packaging/2011/10/nuspec.xsd"">
                   <metadata>
-                    <id>ServiceStack.Extras.Serilog</id>
+                    <id>PackageA</id>
                     <version>2.0.1.0</version>
-                    <title>ServiceStack.Extras.Serilog</title>
-                    <authors>Alexey Zimarev, Nick Van Eeckhout</authors>
-                    <licenseUrl>https://github.com/alexeyzimarev/ServiceStack.Extras.Serilog/blob/master/LICENSE</licenseUrl>
-                    <projectUrl>https://github.com/alexeyzimarev/ServiceStack.Extras.Serilog</projectUrl>
-                    <description>Serilog logging adapter for ServiceStack</description>
+                    <title>Package A</title>
+                    <authors>ownera, ownerb</authors>
+                    <description>Package A description</description>
                     <tags>ServiceStack Serilog</tags>
                     <dependencies>
-                      <dependency id=""ServiceStack.Interfaces"" version=""0.0.0-~4"" />
-                      <dependency id=""Serilog"" version=""0.0.0-~1.5"" />
+                      <dependency id=""PackageB"" version=""{0}"" />
                     </dependencies>
                   </metadata>
                 </package>";
+
+        public static IEnumerable<object[]> GetValidVersions()
+        {
+            return GetVersionRange(validVersions: true);
+        }
+
+        public static IEnumerable<object[]> GetInValidVersions()
+        {
+            return GetVersionRange(validVersions: false);
+        }
+
+        private static IEnumerable<object[]> GetVersionRange(bool validVersions)
+        {
+            IEnumerable<string> range = validVersions
+                ? ValidVersionRange()
+                : InvalidVersionRange();
+
+            foreach (var s in range)
+            {
+                yield return new object[] { s };
+            }
+        }
+
+        private static IEnumerable<string> ValidVersionRange()
+        {
+            yield return null;
+            yield return "0.0.0";
+            yield return "1.0.0";
+            yield return "0.0.1";
+            yield return "1.0.0-BETA";
+            yield return "1.0.0";
+            yield return "1.0";
+            yield return "1.0.0.0";
+            yield return "1.0.1";
+            yield return "1.0.01";
+            yield return "00000001.000000000.0000000001";
+            yield return "00000001.000000000.0000000001-beta";
+            yield return "1.0.01-alpha";
+            yield return "1.0.1-alpha.1.2.3";
+            yield return "1.0.1-alpha.1.2.3+metadata";
+            yield return "1.0.1-alpha.1.2.3+a.b.c.d";
+            yield return "1.0.1+metadata";
+            yield return "1.0.1+security.fix.ce38429";
+            yield return "1.0.1-alpha.10.a";
+            yield return "1.0.1--";
+            yield return "1.0.1-a.really.long.version.release.label";
+            yield return "1238234.198231.2924324.2343432";
+            yield return "1238234.198231.2924324.2343432+final";
+            yield return "00.00.00.00-alpha";
+            yield return "0.0-alpha.1";
+            yield return "9.9.9-9";
+        }
+
+        private static IEnumerable<string> InvalidVersionRange()
+        {
+            yield return "~1";
+            yield return "~1.0.0";
+            yield return "0.0.0-~4";
+            yield return "$version$";
+            yield return "Invalid";
+            yield return "[15.106.0.preview]";
+        }
 
         [Fact]
         public void NuspecReaderTests_NamespaceOnMetadata()
@@ -325,20 +386,60 @@ namespace NuGet.Packaging.Test
             Assert.Equal(2, dependencies.Count);
         }
 
-        [Fact]
-        public void NuspecReaderTests_InvalidVersionRangeInDependency()
+        [Theory]
+        [MemberData("GetValidVersions")]
+        [MemberData("GetInValidVersions")]
+        public void NuspecReaderTests_NonStrictCheckInDependencyShouldNotThrowException(string versionRange)
         {
-            NuspecReader reader = GetReader(InvalidVersionRangeInDependency);
+            var formattedNuspec = string.Format(VersionRangeInDependency, versionRange);
+            NuspecReader reader = GetReader(formattedNuspec);
             try
             {
-                var dependencies = reader.GetDependencyGroups(useStrictVersion: true).ToList();
-                Assert.True(false, "No exception was thrown");
+                var dependencies = reader.GetDependencyGroups().ToList();
+                Assert.Equal(1, dependencies.Count);
             }
-            catch(Exception ex)
+            catch (Exception)
             {
-                Assert.NotNull(ex);
-                // check the message contains invalid version range
-                Assert.NotNull(ex.Message);
+                Assert.True(false, "Exception should not be thrown for any version range");
+            }
+        }
+
+        [Theory]
+        [MemberData("GetInValidVersions")]
+        public void NuspecReaderTests_InvalidVersionRangeInDependencyThrowsExceptionForStrictCheck(string versionRange)
+        {
+            var formattedNuspec = string.Format(VersionRangeInDependency, versionRange);
+            NuspecReader reader = GetReader(formattedNuspec);
+            try
+            {
+                var dependencies = reader.GetDependencyGroups(useStrictVersionCheck: true).ToList();
+                Assert.True(false, "Failed to throw exception.");
+            }
+            catch (PackagingException pex)
+            {
+                Assert.NotNull(pex);
+                Assert.NotNull(pex.Message);
+            }
+            catch (Exception)
+            {
+                Assert.True(false, "PackagingException was expected");
+            }
+        }
+
+        [Theory]
+        [MemberData("GetValidVersions")]
+        public void NuspecReaderTests_ValidVersionRangeInDependencyReturnsResultForStrictCheck(string versionRange)
+        {
+            var formattedNuspec = string.Format(VersionRangeInDependency, versionRange);
+            NuspecReader reader = GetReader(formattedNuspec);
+            try
+            {
+                var dependencies = reader.GetDependencyGroups(useStrictVersionCheck: true).ToList();
+                Assert.Equal(1, dependencies.Count);
+            }
+            catch (Exception)
+            {
+                Assert.True(false, "Exception should not be thrown for valid version range");
             }
         }
 
