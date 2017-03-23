@@ -15,15 +15,7 @@ namespace NuGet.Protocol.Tests
    ""@type"": ""SearchQueryService""
   },
   {
-   ""@id"": ""https://api-v3search-1.nuget.org/query"",
-   ""@type"": ""SearchQueryService""
-  },
-  {
    ""@id"": ""https://api-v3search-0.nuget.org/autocomplete"",
-   ""@type"": ""SearchAutocompleteService""
-  },
-  {
-   ""@id"": ""https://api-v3search-1.nuget.org/autocomplete"",
    ""@type"": ""SearchAutocompleteService""
   },
   {
@@ -51,15 +43,7 @@ namespace NuGet.Protocol.Tests
    ""@type"": ""SearchQueryService/3.0.0-rc""
   },
   {
-   ""@id"": ""https://api-v3search-1.nuget.org/query"",
-   ""@type"": ""SearchQueryService/3.0.0-rc""
-  },
-  {
    ""@id"": ""https://api-v3search-0.nuget.org/autocomplete"",
-   ""@type"": ""SearchAutocompleteService/3.0.0-rc""
-  },
-  {
-   ""@id"": ""https://api-v3search-1.nuget.org/autocomplete"",
    ""@type"": ""SearchAutocompleteService/3.0.0-rc""
   },
   {
@@ -91,15 +75,7 @@ namespace NuGet.Protocol.Tests
    ""@type"": ""SearchQueryService/3.0.0-beta""
   },
   {
-   ""@id"": ""https://api-v3search-1.nuget.org/query"",
-   ""@type"": ""SearchQueryService/3.0.0-beta""
-  },
-  {
    ""@id"": ""https://api-v3search-0.nuget.org/autocomplete"",
-   ""@type"": ""SearchAutocompleteService/3.0.0-beta""
-  },
-  {
-   ""@id"": ""https://api-v3search-1.nuget.org/autocomplete"",
    ""@type"": ""SearchAutocompleteService/3.0.0-beta""
   },
   {
@@ -140,15 +116,7 @@ namespace NuGet.Protocol.Tests
    ""@type"": ""SearchQueryService""
   },
   {
-   ""@id"": ""https://api-v3search-1.nuget.org/query"",
-   ""@type"": ""SearchQueryService""
-  },
-  {
    ""@id"": ""https://api-v3search-0.nuget.org/autocomplete"",
-   ""@type"": ""SearchAutocompleteService""
-  },
-  {
-   ""@id"": ""https://api-v3search-1.nuget.org/autocomplete"",
    ""@type"": ""SearchAutocompleteService""
   },
   {
@@ -181,15 +149,7 @@ namespace NuGet.Protocol.Tests
    ""@type"": ""SearchQueryService/3.0.0-rc""
   },
   {
-   ""@id"": ""https://api-v3search-1.nuget.org/query"",
-   ""@type"": ""SearchQueryService/3.0.0-rc""
-  },
-  {
    ""@id"": ""https://api-v3search-0.nuget.org/autocomplete"",
-   ""@type"": ""SearchAutocompleteService/3.0.0-rc""
-  },
-  {
-   ""@id"": ""https://api-v3search-1.nuget.org/autocomplete"",
    ""@type"": ""SearchAutocompleteService/3.0.0-rc""
   },
   {
@@ -221,15 +181,7 @@ namespace NuGet.Protocol.Tests
    ""@type"": ""SearchQueryService/3.0.0-beta""
   },
   {
-   ""@id"": ""https://api-v3search-1.nuget.org/query"",
-   ""@type"": ""SearchQueryService/3.0.0-beta""
-  },
-  {
    ""@id"": ""https://api-v3search-0.nuget.org/autocomplete"",
-   ""@type"": ""SearchAutocompleteService/3.0.0-beta""
-  },
-  {
-   ""@id"": ""https://api-v3search-1.nuget.org/autocomplete"",
    ""@type"": ""SearchAutocompleteService/3.0.0-beta""
   },
   {

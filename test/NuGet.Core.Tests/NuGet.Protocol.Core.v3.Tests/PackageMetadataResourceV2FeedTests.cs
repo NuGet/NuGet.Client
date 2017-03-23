@@ -58,6 +58,7 @@ namespace NuGet.Protocol.Tests
             Assert.Equal("dotnet5.4", latestPackage.DependencySets.First().TargetFramework.GetShortFolderName());
         }
 
+        [Fact]
         public async Task PackageMetadataResource_UsesReferenceCache()
         {
             // Arrange

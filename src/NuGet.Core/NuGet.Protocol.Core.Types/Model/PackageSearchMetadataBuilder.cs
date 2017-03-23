@@ -16,7 +16,7 @@ namespace NuGet.Protocol.Core.Types
         private readonly IPackageSearchMetadata _metadata;
         private AsyncLazy<IEnumerable<VersionInfo>> _lazyVersionsFactory;
 
-        private class ClonedPackageSearchMetadata : IPackageSearchMetadata
+        public class ClonedPackageSearchMetadata : IPackageSearchMetadata
         {
             public string Authors { get; set; }
             public IEnumerable<PackageDependencyGroup> DependencySets { get; set; }

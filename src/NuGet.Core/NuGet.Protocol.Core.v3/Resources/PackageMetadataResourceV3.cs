@@ -28,9 +28,13 @@ namespace NuGet.Protocol
 
         public override async Task<IEnumerable<IPackageSearchMetadata>> GetMetadataAsync(string packageId, bool includePrerelease, bool includeUnlisted, Common.ILogger log, CancellationToken token)
         {
-            var metadataList = await _regResource.GetPackageMetadata(packageId, includePrerelease, includeUnlisted, log, token);
             var metadataCache = new MetadataReferenceCache();
-            return metadataList.Select(ParseMetadata).Select(m => metadataCache.GetObject((PackageSearchMetadataRegistration) m)).ToArray();
+
+            return
+                (await _regResource.GetPackageMetadata(packageId, includePrerelease, includeUnlisted, log, token))
+                    .Select(ParseMetadata)
+                    .Select(m => metadataCache.GetObject(m))
+                    .ToArray();
         }
 
         public override async Task<IPackageSearchMetadata> GetMetadataAsync(PackageIdentity package, Common.ILogger log, CancellationToken token)
@@ -43,7 +47,7 @@ namespace NuGet.Protocol
             return null;
         }
 
-        private IPackageSearchMetadata ParseMetadata(JObject metadata)
+        private PackageSearchMetadataRegistration ParseMetadata(JObject metadata)
         {
             var parsed = metadata.FromJToken<PackageSearchMetadataRegistration>();
             parsed.ReportAbuseUrl = _reportAbuseResource?.GetReportAbuseUrl(parsed.PackageId, parsed.Version);

@@ -32,7 +32,7 @@ namespace NuGet.Protocol
             var searchResults = searchResultJsonObjects
                 .Select(s => s.FromJToken<PackageSearchMetadata>())
                 .Select(m => m.WithVersions(() => GetVersions(m, filter)))
-                .Select(m => metadataCache.GetObject((PackageSearchMetadata) m))
+                .Select(m => metadataCache.GetObject((PackageSearchMetadataBuilder.ClonedPackageSearchMetadata) m))
                 .ToArray();
 
             return searchResults;

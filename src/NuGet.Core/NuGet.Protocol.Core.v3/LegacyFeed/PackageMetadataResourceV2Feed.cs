@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
+using NuGet.Protocol.Utility;
 
 namespace NuGet.Protocol
 {
@@ -46,7 +47,8 @@ namespace NuGet.Protocol
         {
             var packages = await _feedParser.FindPackagesByIdAsync(packageId, includeUnlisted, includePrerelease, log, token);
 
-            return packages.Select(p => new PackageSearchMetadataV2Feed(p)).ToList();
+            var metadataCache = new MetadataReferenceCache();
+            return packages.Select(p => new PackageSearchMetadataV2Feed(p, metadataCache)).ToList();
         }
 
         public override async Task<IPackageSearchMetadata> GetMetadataAsync(
