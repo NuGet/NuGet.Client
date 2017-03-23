@@ -101,10 +101,8 @@ namespace NuGet.Commands
         {
             // Add output files
             Files.Clear();
-            if (PackTargetArgs.IncludeBuildOutput)
-            {
-                AddOutputFiles(builder);
-            }
+
+            AddOutputFiles(builder);
 
             // Add content files if there are any. They could come from a project or nuspec file
             AddContentFiles(builder);
@@ -142,50 +140,38 @@ namespace NuGet.Commands
 
         private void AddOutputFiles(PackageBuilder builder)
         {
-            var allowedOutputExtensions = _allowedOutputExtensions;
-            var listOfFiles = PackTargetArgs.TargetPathsToAssemblies.ToList();
-            if (IncludeSymbols)
+            if (PackTargetArgs.IncludeBuildOutput)
             {
-                // Include pdbs for symbol packages
-                allowedOutputExtensions = _allowedOutputExtensionsForSymbols;
-                listOfFiles.AddRange(PackTargetArgs.TargetPathsToSymbols);
+                if (IncludeSymbols)
+                {
+                    // Include pdbs for symbol packages
+                    AddOutputLibFiles(PackTargetArgs.TargetPathsToSymbols, _allowedOutputExtensionsForSymbols);
+                }
+
+                AddOutputLibFiles(PackTargetArgs.TargetPathsToAssemblies, _allowedOutputExtensions);
             }
-            
-            // By default we add all files in the project's output directory
-            foreach (var file in listOfFiles)
+        }
+
+        private void AddOutputLibFiles(IEnumerable<OutputLibFile> libFiles, HashSet<string> allowedExtensions)
+        {
+            var targetFolder = PackTargetArgs.BuildOutputFolder;
+            foreach (var file in libFiles)
             {
-                var projectOutputDirectory = Path.GetDirectoryName(file);
-                var extension = Path.GetExtension(file);
+                var extension = Path.GetExtension(file.FinalOutputPath);
 
                 // Only look at files we care about
-                if (!allowedOutputExtensions.Contains(extension))
+                if (!allowedExtensions.Contains(extension))
                 {
                     continue;
                 }
-
-                var targetFolder = PackTargetArgs.BuildOutputFolder;
-                
-                if (!IsTool)
-                {
-                    if (PackTargetArgs.TargetFrameworks.Count > 0)
-                    {
-                        //This should always execute in the new MSBuild world. This is the case where project.json is not being read,
-                        // therefore packagebuilder has no targetframeworks
-                        var frameworkName = Path.GetFileName(projectOutputDirectory);
-                        var folderNameAsNuGetFramework = NuGetFramework.Parse(frameworkName);
-                        var shortFolderName = string.Empty;
-                        if (PackTargetArgs.TargetFrameworks.Contains(folderNameAsNuGetFramework))
-                        {
-                            shortFolderName = folderNameAsNuGetFramework.GetShortFolderName();
-                        }
-                        targetFolder = Path.Combine(targetFolder, shortFolderName);
-                    }
-                }
+                var tfm = NuGetFramework.Parse(file.TargetFramework).GetShortFolderName();
+                var targetPath = file.TargetPath;
                 var packageFile = new ManifestFile()
                 {
-                    Source = file,
-                    Target = Path.Combine(targetFolder, Path.GetFileName(file))
+                    Source = file.FinalOutputPath,
+                    Target = IsTool ? Path.Combine(targetFolder, targetPath) : Path.Combine(targetFolder, tfm, targetPath)
                 };
+
                 AddFileToBuilder(packageFile);
             }
         }

@@ -14,6 +14,22 @@ namespace NuGet.Common
     /// </summary>
     public static class ExceptionUtilities
     {
+        public static void HandleException(Exception ex, ILogger logger)
+        {
+            // Log the error
+            if (ExceptionLogger.Instance.ShowStack)
+            {
+                logger.LogError(ex.ToString());
+            }
+            else
+            {
+                logger.LogError(ExceptionUtilities.DisplayMessage(ex));
+            }
+
+            // Log the stack trace as verbose output.
+            logger.LogVerbose(ex.ToString());
+        }
+
         public static string DisplayMessage(Exception exception, bool indent)
         {
             if (exception == null)

@@ -373,7 +373,7 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 LibraryRange = new LibraryRange(
                     name: item.Name,
-                    versionRange: new VersionRange(new NuGetVersion(item.Version), originalString: item.Version),
+                    versionRange: VersionRange.Parse(item.Version),
                     typeConstraint: LibraryDependencyTarget.Package)
             };
 

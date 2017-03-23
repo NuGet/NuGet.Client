@@ -86,7 +86,7 @@ namespace Dotnet.Integration.Test
         {
             var result = CommandRunner.Run(TestDotnetCli,
                 workingDirectory,
-                $"pack {projectName}.csproj {args} /p:AppendRuntimeIdentifierToOutputPath=false",
+                $"pack {projectName}.csproj {args} ",
                 waitForExit: true);
             Assert.True(result.Item1 == 0, $"Pack failed with following log information :\n {result.Item3}");
             Assert.True(result.Item3 == "", $"Pack failed with following message in error stream :\n {result.Item3}");

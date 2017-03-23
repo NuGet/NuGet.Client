@@ -3,6 +3,7 @@
 
 using System;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -17,16 +18,20 @@ namespace NuGet.PackageManagement.UI
         bool IsLockHeld { get; }
 
         /// <summary>
-        /// Obtains a lock, asynchronously awaiting for the lock if it is not immediately awailable.
+        /// Obtains NuGet specific lock and execute action.
         /// </summary>
-        /// <param name="token">A token whose cancellation indicates lost interest in obtaining the lock.</param>
-        /// <returns>An awaitable object whose result is the lock releaser.</returns>
-        IAsyncLockAwaitable AcquireLockAsync(CancellationToken token);
+        /// <param name="action">NuGet action to be executed</param>
+        /// <param name="token">Cancellation token</param>
+        /// <returns>Awaitable Task</returns>
+        Task ExecuteNuGetOperationAsync(Func<Task> action, CancellationToken token);
 
         /// <summary>
-        /// Obtains a lock in synchronous/blocking manner.
+        /// Obtains NuGet specific lock and execute action. And return an awaitable task of T.
         /// </summary>
-        /// <returns>A disposable object that will release the lock on disposed event.</returns>
-        IDisposable AcquireLock();
+        /// <typeparam name="T">Return type template</typeparam>
+        /// <param name="action">NuGet action to be executed</param>
+        /// <param name="token">Cancellation token</param>
+        /// <returns>Awaitable Task with T</returns>
+        Task<T> ExecuteNuGetOperationAsync<T>(Func<Task<T>> action, CancellationToken token);
     }
 }

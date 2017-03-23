@@ -133,6 +133,33 @@ namespace NuGet.VisualStudio.Implementation.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Failed creating a path context for &quot;{0}&quot;. Reason: {1}.
+        /// </summary>
+        internal static string PathContext_CreateContextError {
+            get {
+                return ResourceManager.GetString("PathContext_CreateContextError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The lock file doesn&apos;t exist or it&apos;s an older format that doesn&apos;t have the package folders property persisted..
+        /// </summary>
+        internal static string PathContext_LockFileError {
+            get {
+                return ResourceManager.GetString("PathContext_LockFileError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Package directory for &quot;{0}&quot; is not found..
+        /// </summary>
+        internal static string PathContext_PackageDirectoryNotFound {
+            get {
+                return ResourceManager.GetString("PathContext_PackageDirectoryNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Error accessing Extension Manager..
         /// </summary>
         internal static string PreinstalledPackages_ExtensionManagerError {

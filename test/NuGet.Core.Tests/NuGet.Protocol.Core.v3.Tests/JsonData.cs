@@ -4039,7 +4039,7 @@ namespace NuGet.Protocol.Tests
             ""version"": ""1.4.1""
           }";
         #endregion
-
+        
         #region DuplicatePackageBesidesVersion
         public const string DuplicatePackageBesidesVersionRegistrationIndex = @"{
   ""@id"": ""https://api.nuget.org/v3/registration0/afine/index.json"",
@@ -4187,6 +4187,13 @@ namespace NuGet.Protocol.Tests
   }
 }";
         #endregion
-
+        
+        #region TempApiKeyResponse
+        public const string tempApiKeyJsonData = @"{{
+            ""Key"": ""{0}"",
+            ""Expires"": ""2017-03-09T16:47:16""
+            }}";
+        #endregion
+        
     }
 }

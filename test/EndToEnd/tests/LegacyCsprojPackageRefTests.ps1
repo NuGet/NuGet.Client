@@ -1,26 +1,28 @@
-# basic create for uwp package ref based project
-function Test-UwpPackageRefClassLibraryCreate {
+## Skipping these Tests because current E2E machines (Win2016 Server) do not allow creating new UWP projects.
 
-    # Arrange & Act
-    $project = New-UwpPackageRefClassLibrary UwpLibrary1
+# # basic create for uwp package ref based project
+# function Test-UwpPackageRefClassLibraryCreate {
 
-    # Assert
-    Assert-NetCoreProjectCreation $project
-}
+#     # Arrange & Act
+#     $project = New-UwpPackageRefClassLibrary UwpLibrary1
 
-# install package test for uwp legacy csproj package ref
-function Test-UwpPackageRefClassLibInstallPackage {
+#     # Assert
+#     Assert-NetCoreProjectCreation $project
+# }
 
-    # Arrange
-    $project = New-UwpPackageRefClassLibrary UwpLibrary1
-    $id = 'Nuget.versioning'
-    $version = '3.5.0'
-    Assert-NetCoreProjectCreation $project
+# # install package test for uwp legacy csproj package ref
+# function Test-UwpPackageRefClassLibInstallPackage {
 
-    # Act
-    Install-Package $id -ProjectName $project.Name -version $version
-    $project.Save($project.FullName)
+#     # Arrange
+#     $project = New-UwpPackageRefClassLibrary UwpLibrary1
+#     $id = 'Nuget.versioning'
+#     $version = '3.5.0'
+#     Assert-NetCoreProjectCreation $project
 
-    # Assert
-    Assert-NetCorePackageInstall $project $id $version
-}
+#     # Act
+#     Install-Package $id -ProjectName $project.Name -version $version
+#     $project.Save($project.FullName)
+
+#     # Assert
+#     Assert-NetCorePackageInstall $project $id $version
+# }
