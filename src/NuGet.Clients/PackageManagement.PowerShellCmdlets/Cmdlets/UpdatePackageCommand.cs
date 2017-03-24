@@ -106,27 +106,30 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             // start timer for telemetry event
             TelemetryUtility.StartorResumeTimer();
 
+            // Run Preprocess outside of JTF
+            Preprocess();
+
             NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
             {
-                await _lockService.ExecuteNuGetOperationAsync(async () =>
+                await _lockService.ExecuteNuGetOperationAsync(() =>
                 {
-                    Preprocess();
-
                     SubscribeToProgressEvents();
 
                     // Update-Package without ID specified
                     if (!_idSpecified)
                     {
-                        await UpdateOrReinstallAllPackagesAsync();
+                        Task.Run(UpdateOrReinstallAllPackagesAsync);
                     }
                     // Update-Package with Id specified
                     else
                     {
-                        await UpdateOrReinstallSinglePackageAsync();
+                        Task.Run(UpdateOrReinstallSinglePackageAsync);
                     }
 
                     WaitAndLogPackageActions();
                     UnsubscribeFromProgressEvents();
+
+                    return Task.FromResult(true);
                 }, Token);
             });
 
