@@ -178,6 +178,7 @@ namespace NuGet.Build.Tasks.Pack.Test
                 IsTool = value,
                 NoPackageAnalysis = value,
                 RequireLicenseAcceptance = value,
+                DevelopmentDependency = value,
                 Serviceable = value
             };
 
@@ -192,6 +193,7 @@ namespace NuGet.Build.Tasks.Pack.Test
             Assert.Equal(value, actual.IsTool);
             Assert.Equal(value, actual.NoPackageAnalysis);
             Assert.Equal(value, actual.RequireLicenseAcceptance);
+            Assert.Equal(value, actual.DevelopmentDependency);
             Assert.Equal(value, actual.Serviceable);
         }
 
@@ -267,6 +269,7 @@ namespace NuGet.Build.Tasks.Pack.Test
                 ContinuePackingAfterGeneratingNuspec = true,
                 Copyright = "Copyright",
                 Description = "Description",
+                DevelopmentDependency = true,
                 IconUrl = "IconUrl",
                 IncludeBuildOutput = true,
                 IncludeSource = true,

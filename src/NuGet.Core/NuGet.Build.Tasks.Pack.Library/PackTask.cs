@@ -25,6 +25,7 @@ namespace NuGet.Build.Tasks.Pack
         public string Title { get; set; }
         public string[] Authors { get; set; }
         public string Description { get; set; }
+        public bool DevelopmentDependency { get; set; }
         public string Copyright { get; set; }
         public bool RequireLicenseAcceptance { get; set; }
         public string RestoreOutputPath { get; set; }
@@ -127,6 +128,7 @@ namespace NuGet.Build.Tasks.Pack
                 ContentTargetFolders = MSBuildStringUtility.TrimAndExcludeNullOrEmpty(ContentTargetFolders),
                 Copyright = MSBuildStringUtility.TrimAndGetNullForEmpty(Copyright),
                 Description = MSBuildStringUtility.TrimAndGetNullForEmpty(Description),
+                DevelopmentDependency = DevelopmentDependency,
                 IconUrl = MSBuildStringUtility.TrimAndGetNullForEmpty(IconUrl),
                 IncludeBuildOutput = IncludeBuildOutput,
                 IncludeSource = IncludeSource,

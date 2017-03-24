@@ -24,6 +24,7 @@ namespace NuGet.Build.Tasks.Pack
         bool ContinuePackingAfterGeneratingNuspec { get; }
         string Copyright { get; }
         string Description { get; }
+        bool DevelopmentDependency { get; }
         string IconUrl { get; }
         bool IncludeBuildOutput { get; }
         bool IncludeSource { get; }

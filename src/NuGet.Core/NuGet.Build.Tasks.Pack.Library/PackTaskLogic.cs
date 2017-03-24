@@ -104,6 +104,11 @@ namespace NuGet.Build.Tasks.Pack
                 RequireLicenseAcceptance = request.RequireLicenseAcceptance,
                 PackageTypes = ParsePackageTypes(request)
             };
+
+            if (request.DevelopmentDependency)
+            {
+                builder.DevelopmentDependency = true;
+            }
             
             if (request.PackageVersion != null)
             {
