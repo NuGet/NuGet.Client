@@ -182,17 +182,12 @@ Copyright (c) .NET Foundation. All rights reserved.
   <!--
     ============================================================
     _LoadPackGraphEntryPoints
-    Find project entry points and load them into items.
+    Find project entry point and load them into items.
     ============================================================
   -->
   <Target Name="_LoadPackInputItems">
-    <!-- Allow overriding items with ProjectFileToPack -->
+    <!-- Allow overriding items with PackProjectInputFile -->
     <PropertyGroup Condition="'$(PackProjectInputFile)' == ''">
-      <PackProjectInputFile>$(ProjectFileToPack)</PackProjectInputFile>
-    </PropertyGroup>
-
-    <!-- Project case -->
-    <PropertyGroup Condition="$(MSBuildProjectFullPath.EndsWith('.csproj')) == 'true' AND '$(PackProjectInputFile)' == ''">
       <PackProjectInputFile>$(MSBuildProjectFullPath)</PackProjectInputFile>
     </PropertyGroup>
   </Target>
