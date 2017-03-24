@@ -152,6 +152,7 @@ Copyright (c) .NET Foundation. All rights reserved.
               IconUrl="$(PackageIconUrl)"
               ReleaseNotes="$(PackageReleaseNotes)"
               Tags="$(PackageTags)"
+              DevelopmentDependency="$(DevelopmentDependency)"
               BuildOutputInPackage="@(_BuildOutputInPackage)"
               TargetPathsToSymbols="@(_TargetPathsToSymbols)"
               TargetFrameworks="@(_TargetFrameworks)"
