@@ -409,8 +409,7 @@ namespace NuGet.Build.Tasks.Pack
                     foreach (var framework in packArgs.PackTargetArgs.TargetFrameworks)
                     {
                         setOfTargetPaths.Add(PathUtility.EnsureTrailingSlash(
-                            Path.Combine("contentFiles",
-                            Path.Combine(language, framework.GetShortFolderName())
+                            Path.Combine("contentFiles", language, framework.GetShortFolderName()
                             )));
                     }
                 }

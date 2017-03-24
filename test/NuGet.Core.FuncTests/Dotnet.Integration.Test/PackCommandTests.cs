@@ -1683,20 +1683,21 @@ namespace ClassLibrary
                 File.WriteAllText(Path.Combine(workingDirectory, "folderA", "folderA.txt"), "hello world from subfolder A directory");
                 File.WriteAllText(Path.Combine(workingDirectory, "folderA", "folderB", "folderB.txt"), "hello world from subfolder B directory");
                 msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
+                var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
+                var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
 
                 // Act
                 msbuildFixture.PackProject(workingDirectory, projectName, $"-o {workingDirectory}");
 
                 // Assert
-                var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
-                var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
                 Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the expected place");
                 Assert.True(File.Exists(nuspecPath), "The intermediate nuspec file is not in the expected place");
-
                 using (var nupkgReader = new PackageArchiveReader(nupkgPath))
                 {
                     var items = new HashSet<string>(nupkgReader.GetFiles());
                     var expectedPaths = expectedTargetPaths.Split(';');
+                    // we add 5 because of the 5 standard files present in the nupkg that won't change.
+                    Assert.Equal(items.Count(), expectedPaths.Length + 5);
                     foreach (var path in expectedPaths)
                     {
                         Assert.Contains(path, items);

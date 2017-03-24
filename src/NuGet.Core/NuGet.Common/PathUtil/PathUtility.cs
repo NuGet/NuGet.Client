@@ -77,7 +77,7 @@ namespace NuGet.Common
             }
             // This condition checks if there is a different valid path separator than the one requested for.
             // In that case we replace this path separator.
-            else if (HasTrailingValidDirectorySeparator(path))
+            else if (HasTrailingDirectorySeparator(path))
             {
                 return path.Substring(0, path.Length - 1) +  trailingCharacter;
             }
@@ -101,7 +101,7 @@ namespace NuGet.Common
             return candidate.StartsWith(dir, StringComparison.OrdinalIgnoreCase);
         }
 
-        public static bool HasTrailingValidDirectorySeparator(string path)
+        public static bool HasTrailingDirectorySeparator(string path)
         {
             if (string.IsNullOrEmpty(path))
             {

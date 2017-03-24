@@ -8,6 +8,7 @@ using NuGet.XPlat.FuncTest;
 using NuGet.Test.Utility;
 using NuGet.Packaging;
 using NuGet.Packaging.PackageExtraction;
+using NuGet.Protocol;
 using Xunit;
 
 namespace Dotnet.Integration.Test
@@ -134,14 +135,13 @@ namespace Dotnet.Integration.Test
         private void UpdateCliWithLatestNuGetAssemblies(string cliDirectory)
         {
             var nupkgsDirectory = DotnetCliUtil.GetNupkgDirectoryInRepo();
-            var pathToPackNupkg = FindMostRecentPackNupkg(nupkgsDirectory);
-            string nupkgVersion;
+            var pathToPackNupkg = FindMostRecentNupkg(nupkgsDirectory, "NuGet.Build.Tasks.Pack");
+            var pathToRestoreNupkg = FindMostRecentNupkg(nupkgsDirectory, "NuGet.Build.Tasks");
             var pathToSdkInCli = Path.Combine(
                     Directory.GetDirectories(Path.Combine(cliDirectory, "sdk"))
                         .First());
             using (var nupkg = new PackageArchiveReader(pathToPackNupkg))
             {
-                nupkgVersion = nupkg.NuspecReader.GetMetadataValue("version");
                 var pathToPackSdk = Path.Combine(pathToSdkInCli, "Sdks", "NuGet.Build.Tasks.Pack");
                 var files = nupkg.GetFiles()
                 .Where(fileName => fileName.StartsWith("Desktop")
@@ -162,8 +162,6 @@ namespace Dotnet.Integration.Test
                 }
             }
 
-            var pathToRestoreNupkg = nupkgsDirectory + Path.DirectorySeparatorChar + "NuGet.Build.Tasks." +
-                                  nupkgVersion + ".nupkg";
             using (var nupkg = new PackageArchiveReader(pathToRestoreNupkg))
             {
                 var files = nupkg.GetFiles()
@@ -195,28 +193,14 @@ namespace Dotnet.Integration.Test
             Directory.Delete(destinationDir, true);
         }
 
-        private static string FindMostRecentPackNupkg(string nupkgDirectory)
+        private static string FindMostRecentNupkg(string nupkgDirectory, string id)
         {
-            var listOfMatchingNupkgs = Directory.GetFiles(nupkgDirectory, "NuGet.Build.Tasks.Pack.*", SearchOption.TopDirectoryOnly)
-                .Where(t => !t.Contains("symbols")
-                          && !t.Contains("NuGet.Build.Tasks.Pack.Library")).ToList();
-            if (listOfMatchingNupkgs.Count == 0)
-            {
-                throw new FileNotFoundException($"Could not find any nupkg with id = NuGet.Build.Tasks.Pack");
-            }
-            else if (listOfMatchingNupkgs.Count == 1)
-            {
-                return listOfMatchingNupkgs.First();
-            }
-            else
-            {
-                return FindLastModified(listOfMatchingNupkgs);
-            }
-        }
+            var info = LocalFolderUtility.GetPackagesV2(nupkgDirectory, new TestLogger());
 
-        private static string FindLastModified(IEnumerable<string> listOfNupkgs)
-        {
-            return listOfNupkgs.Select(t => new FileInfo(t)).OrderByDescending(p => p.LastWriteTime).First().FullName;
+            return info.Where(t => t.Identity.Id.Equals(id, StringComparison.OrdinalIgnoreCase))
+                .Where(t => !Path.GetExtension(Path.GetFileNameWithoutExtension(t.Path)).Equals(".symbols"))
+                .OrderByDescending(p => p.LastWriteTimeUtc)
+                .First().Path;
         }
 
         public void Dispose()

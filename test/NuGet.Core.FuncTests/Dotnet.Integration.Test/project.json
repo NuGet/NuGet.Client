@@ -13,6 +13,9 @@
     "NuGet.XPlat.FuncTest": {
       "target": "project"
     },
+    "NuGet.Protocol.Core.v3": {
+      "target": "project"
+    },
     "xunit": "2.1.0"
   },
   "frameworks": {
