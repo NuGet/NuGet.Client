@@ -356,14 +356,9 @@ namespace NuGet.Build.Tasks.Pack
             PackArgs packArgs, string[] contentTargetFolders)
         {
             var targetPaths = contentTargetFolders
-                .Where(f => !f.EndsWith(Path.DirectorySeparatorChar.ToString()))
-                .Select(f => string.Concat(f, Path.DirectorySeparatorChar))
+                .Select(PathUtility.EnsureTrailingSlash)
                 .ToList();
             
-            targetPaths.AddRange(
-                contentTargetFolders
-                .Where(f => f.EndsWith(Path.DirectorySeparatorChar.ToString())));
-
             var isPackagePathSpecified = packageFile.Properties.Contains("PackagePath");
             // if user specified a PackagePath, then use that. Look for any ** which are indicated by the RecrusiveDir metadata in msbuild.
             if (isPackagePathSpecified)
@@ -382,17 +377,16 @@ namespace NuGet.Build.Tasks.Pack
                 if (!string.IsNullOrEmpty(recursiveDir))
                 {
                     var newTargetPaths = new List<string>();
+                    var fileName = Path.GetFileName(sourcePath);
                     foreach (var targetPath in targetPaths)
                     {
-                        if (targetPath.EndsWith(Path.DirectorySeparatorChar.ToString()))
-                        {
-                            newTargetPaths.Add(Path.Combine(targetPath, recursiveDir));
-                        }
-                        else
-                        {
-                            newTargetPaths.Add(targetPath);
-                        }
+                        newTargetPaths.Add(PathUtility.GetStringComparerBasedOnOS().
+                            Compare(Path.GetExtension(fileName), 
+                            Path.GetExtension(targetPath)) == 0
+                                ? targetPath
+                                : Path.Combine(targetPath, recursiveDir));
                     }
+
                     targetPaths = newTargetPaths;
                 }
             }
@@ -403,20 +397,20 @@ namespace NuGet.Build.Tasks.Pack
             var language = buildAction.Equals(BuildAction.Compile) ? "cs" : "any";
 
 
-            var setOfTargetPaths = new HashSet<string>(targetPaths, StringComparer.Ordinal);
+            var setOfTargetPaths = new HashSet<string>(targetPaths, PathUtility.GetStringComparerBasedOnOS());
 
             // If package path wasn't specified, then we expand the "contentFiles" value we
             // got from ContentTargetFolders and expand it to contentFiles/any/<TFM>/
             if (!isPackagePathSpecified)
             {
                 if (setOfTargetPaths.Remove("contentFiles" + Path.DirectorySeparatorChar)
-                || setOfTargetPaths.Remove("contentFiles" + Path.AltDirectorySeparatorChar)
                 || setOfTargetPaths.Remove("contentFiles"))
                 {
                     foreach (var framework in packArgs.PackTargetArgs.TargetFrameworks)
                     {
-                        setOfTargetPaths.Add(Path.Combine("contentFiles",
-                            Path.Combine(language, framework.GetShortFolderName())) + Path.DirectorySeparatorChar);
+                        setOfTargetPaths.Add(PathUtility.EnsureTrailingSlash(
+                            Path.Combine("contentFiles", language, framework.GetShortFolderName()
+                            )));
                     }
                 }
             }
@@ -434,11 +428,11 @@ namespace NuGet.Build.Tasks.Pack
             {
                 var newTargetPaths = new List<string>();
                 var identity = packageFile.GetProperty(IdentityProperty);
-                
+
                 // Identity can be a rooted absolute path too, in which case find the path relative to the current directory
                 if (Path.IsPathRooted(identity))
                 {
-                    identity = PathUtility.GetRelativePath(packArgs.CurrentDirectory + Path.DirectorySeparatorChar, identity);
+                    identity = PathUtility.GetRelativePath(PathUtility.EnsureTrailingSlash(packArgs.CurrentDirectory), identity);
                     identity = Path.GetDirectoryName(identity);
                 }
 
@@ -454,13 +448,10 @@ namespace NuGet.Build.Tasks.Pack
                     // We need to do this because evaluated identity in the above line of code can be an empty string
                     // in the case when the original identity string was the absolute path to a file in project directory, and is in
                     // the same directory as the csproj file. 
-                    if (!newTargetPath.EndsWith(Path.DirectorySeparatorChar.ToString()))
-                    {
-                        newTargetPath = newTargetPath + Path.DirectorySeparatorChar;
-                    }
+                    newTargetPath = PathUtility.EnsureTrailingSlash(newTargetPath);
                     newTargetPaths.Add(newTargetPath);
                 }
-                setOfTargetPaths = new HashSet<string>(newTargetPaths, StringComparer.Ordinal);
+                setOfTargetPaths = new HashSet<string>(newTargetPaths, PathUtility.GetStringComparerBasedOnOS());
             }
 
             // we take the final set of evaluated target paths and append the file name to it if not

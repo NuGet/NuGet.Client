@@ -8,6 +8,7 @@ using NuGet.XPlat.FuncTest;
 using NuGet.Test.Utility;
 using NuGet.Packaging;
 using NuGet.Packaging.PackageExtraction;
+using NuGet.Protocol;
 using Xunit;
 
 namespace Dotnet.Integration.Test
@@ -134,9 +135,8 @@ namespace Dotnet.Integration.Test
         private void UpdateCliWithLatestNuGetAssemblies(string cliDirectory)
         {
             var nupkgsDirectory = DotnetCliUtil.GetNupkgDirectoryInRepo();
-            var productVersionInfo = FileVersionInfo.GetVersionInfo(DotnetCliUtil.GetXplatDll());
-            var pathToPackNupkg = nupkgsDirectory + Path.DirectorySeparatorChar + "NuGet.Build.Tasks.Pack." +
-                                  productVersionInfo.ProductVersion + ".nupkg";
+            var pathToPackNupkg = FindMostRecentNupkg(nupkgsDirectory, "NuGet.Build.Tasks.Pack");
+            var pathToRestoreNupkg = FindMostRecentNupkg(nupkgsDirectory, "NuGet.Build.Tasks");
             var pathToSdkInCli = Path.Combine(
                     Directory.GetDirectories(Path.Combine(cliDirectory, "sdk"))
                         .First());
@@ -162,8 +162,6 @@ namespace Dotnet.Integration.Test
                 }
             }
 
-            var pathToRestoreNupkg = nupkgsDirectory + Path.DirectorySeparatorChar + "NuGet.Build.Tasks." +
-                                  productVersionInfo.ProductVersion + ".nupkg";
             using (var nupkg = new PackageArchiveReader(pathToRestoreNupkg))
             {
                 var files = nupkg.GetFiles()
@@ -193,6 +191,16 @@ namespace Dotnet.Integration.Test
         private void DeleteFiles(string destinationDir)
         {
             Directory.Delete(destinationDir, true);
+        }
+
+        private static string FindMostRecentNupkg(string nupkgDirectory, string id)
+        {
+            var info = LocalFolderUtility.GetPackagesV2(nupkgDirectory, new TestLogger());
+
+            return info.Where(t => t.Identity.Id.Equals(id, StringComparison.OrdinalIgnoreCase))
+                .Where(t => !Path.GetExtension(Path.GetFileNameWithoutExtension(t.Path)).Equals(".symbols"))
+                .OrderByDescending(p => p.LastWriteTimeUtc)
+                .First().Path;
         }
 
         public void Dispose()

@@ -75,6 +75,12 @@ namespace NuGet.Common
             {
                 return path;
             }
+            // This condition checks if there is a different valid path separator than the one requested for.
+            // In that case we replace this path separator.
+            else if (HasTrailingDirectorySeparator(path))
+            {
+                return path.Substring(0, path.Length - 1) +  trailingCharacter;
+            }
 
             return path + trailingCharacter;
         }
@@ -93,6 +99,27 @@ namespace NuGet.Common
             dir = EnsureTrailingSlash(dir);
             candidate = Path.GetFullPath(candidate);
             return candidate.StartsWith(dir, StringComparison.OrdinalIgnoreCase);
+        }
+
+        public static bool HasTrailingDirectorySeparator(string path)
+        {
+            if (string.IsNullOrEmpty(path))
+            {
+                return false;
+            }
+            else
+            {
+                if (RuntimeEnvironmentHelper.IsWindows)
+                {
+                    // Windows has both '/' and '\' as valid directory separators.
+                    return (path[path.Length - 1] == Path.DirectorySeparatorChar ||
+                            path[path.Length - 1] == Path.AltDirectorySeparatorChar);
+                }
+                else
+                {
+                    return path[path.Length - 1] == Path.DirectorySeparatorChar;
+                }
+            }
         }
         
         public static void EnsureParentDirectory(string filePath)
