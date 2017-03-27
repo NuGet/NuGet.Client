@@ -34,8 +34,6 @@
     <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
   </ItemGroup>
 
-    <Compile Include="Utility\PathLookupTrieTests.cs" />
-    <Compile Include="PreinstalledRepositoryProviderTests.cs" />
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\NuGet.Clients\NuGet.VisualStudio.Implementation\NuGet.VisualStudio.Implementation.csproj">
       <Project>{9623cf30-192c-4864-b419-29649169ae30}</Project>
@@ -51,7 +49,7 @@
       <Name>NuGet.PackageManagement.VisualStudio</Name>
     </ProjectReference>
     
-    <ProjectReference Include="$(NuGetCoreSrcDirectory)\Test.Utility\Test.Utility.csproj" />
+    <ProjectReference Include="$(NuGetCoreSrcDirectory)Test.Utility\Test.Utility.csproj" />
     <ProjectReference Include="..\..\..\src\NuGet.Clients\VsConsole\Console\NuGet.Console.csproj" />
     <ProjectReference Include="..\..\..\src\NuGet.Clients\PackageManagement.PowerShellCmdlets\NuGet.PackageManagement.PowerShellCmdlets.csproj" />
     <ProjectReference Include="..\..\..\src\NuGet.Clients\PackageManagement.UI\NuGet.PackageManagement.UI.csproj" />
