@@ -30,11 +30,13 @@ namespace NuGet.Protocol
         {
             var metadataCache = new MetadataReferenceCache();
 
-            return
+            var packages =
                 (await _regResource.GetPackageMetadata(packageId, includePrerelease, includeUnlisted, log, token))
                     .Select(ParseMetadata)
                     .Select(m => metadataCache.GetObject(m))
                     .ToArray();
+
+            return packages;
         }
 
         public override async Task<IPackageSearchMetadata> GetMetadataAsync(PackageIdentity package, Common.ILogger log, CancellationToken token)
