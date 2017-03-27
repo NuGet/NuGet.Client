@@ -2,11 +2,12 @@
 <Project ToolsVersion="15.0">
   <PropertyGroup>
     <IsNetCoreProject>true</IsNetCoreProject>
+    <TestProject>true</TestProject>
   </PropertyGroup>
-
+  
   <!-- Load config -->
   <Import Project="config.props" />
 
   <!-- Additional props -->
-  <Import Project="build\common.project.props"/>
+  <Import Project="common.project.props"/>
 </Project>

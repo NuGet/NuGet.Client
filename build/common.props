@@ -1,12 +1,12 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0">
   <PropertyGroup>
-    <IsNetCoreProject>false</IsNetCoreProject>
+    <IsNetCoreProject>true</IsNetCoreProject>
   </PropertyGroup>
-  
+
   <!-- Load config -->
   <Import Project="config.props" />
 
   <!-- Additional props -->
-  <Import Project="build\common.project.props"/>
+  <Import Project="common.project.props"/>
 </Project>

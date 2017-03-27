@@ -8,7 +8,7 @@
 
   <!-- Common -->
   <PropertyGroup>
-    <RepositoryRootDirectory>$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'common.props'))\</RepositoryRootDirectory>
+    <RepositoryRootDirectory>$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\</RepositoryRootDirectory>
     <BuildCommonDirectory>$(RepositoryRootDirectory)build\</BuildCommonDirectory>
     <SolutionFile>$(RepositoryRootDirectory)$(RepositoryName).sln</SolutionFile>
     <ArtifactsDirectory>$(RepositoryRootDirectory)artifacts\</ArtifactsDirectory>
