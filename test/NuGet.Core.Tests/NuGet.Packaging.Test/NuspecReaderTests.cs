@@ -9,6 +9,7 @@ using NuGet.Frameworks;
 using Xunit;
 using NuGet.Packaging.Core;
 using System.Collections.Generic;
+using NuGet.Versioning;
 
 namespace NuGet.Packaging.Test
 {
@@ -297,31 +298,20 @@ namespace NuGet.Packaging.Test
         private static IEnumerable<string> ValidVersionRange()
         {
             yield return null;
+            yield return string.Empty;
             yield return "0.0.0";
-            yield return "1.0.0";
-            yield return "0.0.1";
-            yield return "1.0.0-BETA";
-            yield return "1.0.0";
-            yield return "1.0";
-            yield return "1.0.0.0";
-            yield return "1.0.1";
-            yield return "1.0.01";
-            yield return "00000001.000000000.0000000001";
-            yield return "00000001.000000000.0000000001-beta";
-            yield return "1.0.01-alpha";
+            yield return "1.0.0-beta";
             yield return "1.0.1-alpha.1.2.3";
-            yield return "1.0.1-alpha.1.2.3+metadata";
             yield return "1.0.1-alpha.1.2.3+a.b.c.d";
             yield return "1.0.1+metadata";
-            yield return "1.0.1+security.fix.ce38429";
-            yield return "1.0.1-alpha.10.a";
             yield return "1.0.1--";
             yield return "1.0.1-a.really.long.version.release.label";
-            yield return "1238234.198231.2924324.2343432";
-            yield return "1238234.198231.2924324.2343432+final";
             yield return "00.00.00.00-alpha";
             yield return "0.0-alpha.1";
-            yield return "9.9.9-9";
+            yield return "(1.0.0-alpha.1, )";
+            yield return "[1.0.0-alpha.1+metadata]";
+            yield return "[1.0, 2.0.0+metadata)";
+            yield return "[1.0+metadata, 2.0.0+metadata)";
         }
 
         private static IEnumerable<string> InvalidVersionRange()
@@ -332,6 +322,7 @@ namespace NuGet.Packaging.Test
             yield return "$version$";
             yield return "Invalid";
             yield return "[15.106.0.preview]";
+            yield return "15.106.0-preview.01"; // no leading zeros in numeric identifiers of release label
         }
 
         [Fact]
@@ -387,60 +378,65 @@ namespace NuGet.Packaging.Test
         }
 
         [Theory]
-        [MemberData("GetValidVersions")]
-        [MemberData("GetInValidVersions")]
+        [MemberData(nameof(GetValidVersions))]
+        [MemberData(nameof(GetInValidVersions))]
         public void NuspecReaderTests_NonStrictCheckInDependencyShouldNotThrowException(string versionRange)
         {
+            // Arrange
             var formattedNuspec = string.Format(VersionRangeInDependency, versionRange);
-            NuspecReader reader = GetReader(formattedNuspec);
-            try
-            {
-                var dependencies = reader.GetDependencyGroups().ToList();
-                Assert.Equal(1, dependencies.Count);
-            }
-            catch (Exception)
-            {
-                Assert.True(false, "Exception should not be thrown for any version range");
-            }
+            var nuspecReader = GetReader(formattedNuspec);
+
+            // Act
+            var dependencies = nuspecReader.GetDependencyGroups().ToList();
+
+            // Assert
+            Assert.Equal(1, dependencies.Count);
         }
 
         [Theory]
-        [MemberData("GetInValidVersions")]
+        [MemberData(nameof(GetInValidVersions))]
+        public void NuspecReaderTests_NonStrictCheckInDependencyShouldFallbackToAllRangeForInvalidVersions(
+            string versionRange)
+        {
+            // Arrange
+            var formattedNuspec = string.Format(VersionRangeInDependency, versionRange);
+            var nuspecReader = GetReader(formattedNuspec);
+
+            // Act
+            var dependencies = nuspecReader.GetDependencyGroups().ToList();
+
+            // Assert
+            Assert.Equal(VersionRange.All, dependencies.First().Packages.First().VersionRange);
+        }
+
+        [Theory]
+        [MemberData(nameof(GetInValidVersions))]
         public void NuspecReaderTests_InvalidVersionRangeInDependencyThrowsExceptionForStrictCheck(string versionRange)
         {
+            // Arrange
             var formattedNuspec = string.Format(VersionRangeInDependency, versionRange);
-            NuspecReader reader = GetReader(formattedNuspec);
-            try
-            {
-                var dependencies = reader.GetDependencyGroups(useStrictVersionCheck: true).ToList();
-                Assert.True(false, "Failed to throw exception.");
-            }
-            catch (PackagingException pex)
-            {
-                Assert.NotNull(pex);
-                Assert.NotNull(pex.Message);
-            }
-            catch (Exception)
-            {
-                Assert.True(false, "PackagingException was expected");
-            }
+            var nuspecReader = GetReader(formattedNuspec);
+            Action action = () => nuspecReader.GetDependencyGroups(useStrictVersionCheck: true).ToList();
+
+            // Act & Assert
+            Assert.Throws<PackagingException>(action);
         }
 
         [Theory]
-        [MemberData("GetValidVersions")]
+        [MemberData(nameof(GetValidVersions))]
         public void NuspecReaderTests_ValidVersionRangeInDependencyReturnsResultForStrictCheck(string versionRange)
         {
+            // Arrange
             var formattedNuspec = string.Format(VersionRangeInDependency, versionRange);
-            NuspecReader reader = GetReader(formattedNuspec);
-            try
-            {
-                var dependencies = reader.GetDependencyGroups(useStrictVersionCheck: true).ToList();
-                Assert.Equal(1, dependencies.Count);
-            }
-            catch (Exception)
-            {
-                Assert.True(false, "Exception should not be thrown for valid version range");
-            }
+            var nuspecReader = GetReader(formattedNuspec);
+            var expectedVersionRange = string.IsNullOrEmpty(versionRange) ? VersionRange.All : VersionRange.Parse(versionRange);
+
+            // Act
+            var dependencyGroups = nuspecReader.GetDependencyGroups(useStrictVersionCheck: true).ToList();
+
+            // Assert
+            Assert.Equal(1, dependencyGroups.Count);
+            Assert.Equal(expectedVersionRange, dependencyGroups.First().Packages.First().VersionRange);
         }
 
         [Fact]
