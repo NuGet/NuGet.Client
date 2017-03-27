@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
@@ -12,6 +12,7 @@ namespace NuGet.XPlat.FuncTest
     public class XPlatRestoreTests
     {
         [Theory(Skip = "Restore was removed! Update these tests!")]
+        //[FileExistsInNuGetRoamingTheory(XPlatTestUtils.CoreConfigFileName)]
         // Try with config file in the project directory
         //[InlineData(TestServers.Artifactory)]
         [InlineData(TestServers.Klondike)]
@@ -47,7 +48,7 @@ namespace NuGet.XPlat.FuncTest
                 };
 
                 // Act
-                int exitCode = Program.MainInternal(args.ToArray(), log);
+                int exitCode = NuGet.CommandLine.XPlat.Program.MainInternal(args.ToArray(), log);
 
                 Assert.Contains($@"OK {sourceUri}/FindPackagesById()?id='fody'", log.ShowMessages());
                 Assert.Equal(string.Empty, log.ShowErrors());
@@ -59,6 +60,7 @@ namespace NuGet.XPlat.FuncTest
         }
 
         [Theory(Skip = "Restore was removed! Update these tests!")]
+        // [FileExistsInNuGetRoamingTheory(XPlatTestUtils.CoreConfigFileName)]
         // Try with config file in a different directory
         //[InlineData(TestServers.Artifactory)]
         [InlineData(TestServers.Klondike)]
@@ -97,7 +99,7 @@ namespace NuGet.XPlat.FuncTest
                 };
 
                 // Act
-                int exitCode = Program.MainInternal(args.ToArray(), log);
+                int exitCode = NuGet.CommandLine.XPlat.Program.MainInternal(args.ToArray(), log);
 
                 Assert.Contains($@"OK {sourceUri}/FindPackagesById()?id='fody'", log.ShowMessages());
                 Assert.Equal(string.Empty, log.ShowErrors());

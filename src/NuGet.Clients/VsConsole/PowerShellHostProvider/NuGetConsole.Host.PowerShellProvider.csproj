@@ -1,19 +1,17 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="..\..\..\..\Build\Common.props" Condition="Exists('..\..\..\..\Build\Common.props')" />
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'common.props'))\common.props" />
+
   <PropertyGroup>
-    <PackagesDirectory>$(UserProfile)\.nuget\packages</PackagesDirectory>
-    <ResolveNuGetPackages>true</ResolveNuGetPackages>
-    <TargetFrameworkProfile />
-    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
+    <TargetFramework>net46</TargetFramework>
+    <Shipping>true</Shipping>
   </PropertyGroup>
+
   <PropertyGroup>
-    <ProjectGuid>{A5E7AEB3-738F-4C39-A459-00F90483B2FE}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>NuGetConsole.Host.PowerShellProvider</RootNamespace>
-    <AssemblyName>NuGetConsole.Host.PowerShellProvider</AssemblyName>
-    <CodeAnalysisRuleSet>..\..\..\..\NuGet.ruleset</CodeAnalysisRuleSet>
+    <AssemblyTitle>PowerShellHostProvider</AssemblyTitle>
+    <Description>This assembly loads the PowerShellHost when PS runtime is detected.</Description>
+    <Guid>B37BE991-002E-4D6D-9075-11572F0445FA</Guid>
+    <ComVisible>false</ComVisible>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.CSharp" />
@@ -28,27 +26,12 @@
     <Reference Include="System.Xml.Linq" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CommandTokenizerProvider.cs" />
-    <Compile Include="PowerShellCommandExpansionProvider.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="PowerShellHostProvider.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="RegistryHelper.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Resources.Designer.cs">
-      <DependentUpon>Resources.resx</DependentUpon>
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-    </Compile>
-    <Compile Include="UnsupportedHost.cs">
-      <SubType>Code</SubType>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
+    <ProjectReference Include="..\..\..\NuGet.Core\NuGet.PackageManagement\NuGet.PackageManagement.csproj">
+      <Project>{394aeb96-493c-4839-a5ac-8d93cd2fad40}</Project>
+      <Name>NuGet.PackageManagement</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\PackageManagement.UI\NuGet.PackageManagement.UI.csproj" />
+    <ProjectReference Include="..\..\PackageManagement.VisualStudio\NuGet.PackageManagement.VisualStudio.csproj" />
     <ProjectReference Include="..\..\VisualStudio.Facade\NuGet.VisualStudio.Facade.csproj">
       <Project>{eea49a74-6efc-410e-9745-bad367ac151d}</Project>
       <Name>NuGet.VisualStudio.Facade</Name>
@@ -63,16 +46,16 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Resources.resx">
-      <SubType>Designer</SubType>
+    <EmbeddedResource Update="Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+    <Compile Update="Resources.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
   </ItemGroup>
-  <ItemGroup>
-    <None Include="project.json" />
-  </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <Import Project="$(EnlistmentRoot)\build\common.targets" />
-  <Import Project="$(EnlistmentRoot)\build\sign.targets" />
+
+  <Import Project="$(BuildCommonDirectory)common.targets" />
 </Project>

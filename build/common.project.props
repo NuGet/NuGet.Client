@@ -1,0 +1,181 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0">
+  <!-- Helper properties -->
+  <PropertyGroup>
+    <IsXPlat>false</IsXPlat>
+    <IsXPlat Condition=" $(MSBuildProjectFullPath.StartsWith('/')) == 'true' OR $(MSBuildProjectFullPath.StartsWith('\')) == 'true' ">true</IsXPlat>
+  </PropertyGroup>
+
+  <!-- Common -->
+  <PropertyGroup>
+    <RepositoryRootDirectory>$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'common.props'))\</RepositoryRootDirectory>
+    <BuildCommonDirectory>$(RepositoryRootDirectory)build\</BuildCommonDirectory>
+    <SolutionFile>$(RepositoryRootDirectory)$(RepositoryName).sln</SolutionFile>
+    <ArtifactsDirectory>$(RepositoryRootDirectory)artifacts\</ArtifactsDirectory>
+    <DotnetExePath>$(RepositoryRootDirectory)cli\dotnet.exe</DotnetExePath>
+    <DotnetExePath Condition=" '$(IsXPlat)' == 'true' ">$(RepositoryRootDirectory)cli\dotnet</DotnetExePath>
+    <NuGetExePath>$(RepositoryRootDirectory).nuget\nuget.exe</NuGetExePath>
+    <SharedDirectory>$(RepositoryRootDirectory)Shared</SharedDirectory>
+    <NuGetCoreSrcDirectory>$(RepositoryRootDirectory)src\NuGet.Core\</NuGetCoreSrcDirectory>
+    <NuGetClientsSrcDirectory>$(RepositoryRootDirectory)src\NuGet.Clients\</NuGetClientsSrcDirectory>
+    <NupkgOutputDirectory Condition=" '$(BuildRTM)' != 'true' ">$(ArtifactsDirectory)nupkgs\</NupkgOutputDirectory>
+    <NupkgOutputDirectory Condition=" '$(BuildRTM)' == 'true' ">$(ArtifactsDirectory)ReleaseNupkgs\</NupkgOutputDirectory>
+    <SolutionPackagesFolder>$(RepositoryRootDirectory)packages\</SolutionPackagesFolder>
+    <XunitConoleExePath>$(SolutionPackagesFolder)xunit.runner.console.2.2.0\tools\xunit.console.x86.exe</XunitConoleExePath>
+    <EnlistmentRoot>$(RepositoryRootDirectory)</EnlistmentRoot>
+    <EnlistmentRootSrc>$(RepositoryRootDirectory)\src</EnlistmentRootSrc>
+    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">$(RepositoryRootDirectory)</SolutionDir>
+    <ArtifactRoot>$(ArtifactsDirectory)</ArtifactRoot>
+  </PropertyGroup>
+
+  <!-- Defaults -->
+  <PropertyGroup>
+    <TreatWarningsAsErrors Condition=" '$(TreatWarningsAsErrors)' == '' ">true</TreatWarningsAsErrors>
+    <GenerateAssemblyCompanyAttribute Condition=" '$(GenerateAssemblyCompanyAttribute)' == '' ">false</GenerateAssemblyCompanyAttribute>
+    <GenerateAssemblyProductAttribute Condition=" '$(GenerateAssemblyProductAttribute)' == '' ">false</GenerateAssemblyProductAttribute>
+    <GenerateAssemblyCopyrightAttribute Condition=" '$(GenerateAssemblyCopyrightAttribute)' == '' ">false</GenerateAssemblyCopyrightAttribute>
+    <GenerateNeutralResourcesLanguageAttribute Condition=" '$(GenerateNeutralResourcesLanguageAttribute)' == '' ">false</GenerateNeutralResourcesLanguageAttribute>
+  </PropertyGroup>
+
+  <!-- Default project configuration -->
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">15.0</VisualStudioVersion>
+    <!-- Always use 15.0 since we cannot build on msbuild 14.0 -->
+    <NuGetTargets>$(MSBuildExtensionsPath)\Microsoft\NuGet\15.0\Microsoft.NuGet.targets</NuGetTargets>
+    <ComVisible>false</ComVisible>
+  </PropertyGroup>
+
+
+  <!-- Common project build settings -->
+  <PropertyGroup>
+    <PlatformTarget>$(Platform)</PlatformTarget>
+    <Prefer32Bit>false</Prefer32Bit>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <NoWarn>$(NoWarn);1762</NoWarn>
+  </PropertyGroup>
+
+  <!-- DEBUG specific configuration settings -->
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' Or '$(Configuration)' == 'Mono Debug' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+  </PropertyGroup>
+
+  <!-- RELEASE specific configuration settings -->
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' Or '$(Configuration)' == 'Mono Release' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <DefineConstants>TRACE</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(VisualStudioVersion)' == '14.0'">
+    <MinimumVisualStudioVersion>14.0</MinimumVisualStudioVersion>
+    <DefineConstants>$(DefineConstants);VS14</DefineConstants>
+    <VSSDKRoot>$(RepositoryRootDirectory)\packages\Microsoft.VSSDK.BuildTools.14.3.25420</VSSDKRoot>
+    <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(VSSDKRoot)\tools</VSToolsPath>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(VisualStudioVersion)' == '15.0'">
+    <MinimumVisualStudioVersion>15.0</MinimumVisualStudioVersion>
+    <DefineConstants>$(DefineConstants);VS15</DefineConstants>
+    <VSSDKRoot>$(RepositoryRootDirectory)\packages\Microsoft.VSSDK.BuildTools.15.0.26201</VSSDKRoot>
+    <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(VSSDKRoot)\tools</VSToolsPath>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(PreReleaseVersion)' == '' ">
+    <PreReleaseVersion>0</PreReleaseVersion>
+  </PropertyGroup>
+  
+  <!--Setting the Pre-release/Build meta-data from CI if Version is set-->
+  <PropertyGroup Condition="'$(BuildNumber)' != ''">
+    <PreReleaseVersion>$(BuildNumber)</PreReleaseVersion>
+  </PropertyGroup>
+
+  <!--Setting the product information for Beta builds-->
+  <Choose>
+    <!-- If we aren't excluding the build number, use the release label and the build number. -->
+    <When Condition="'$(ExcludeBuildNumber)' != 'true' AND '$(PreReleaseVersion)' != '' AND '$(PreReleaseVersion)' != '0' ">
+      <PropertyGroup>
+        <PreReleaseInformationVersion>-$(ReleaseLabel)-$(PreReleaseVersion)</PreReleaseInformationVersion>
+      </PropertyGroup>
+    </When>
+    <!-- If we are excluding the build number, show the release label unless we are RTM. -->
+    <When Condition="'$(ReleaseLabel)' != 'rtm'">
+      <PropertyGroup>
+        <PreReleaseInformationVersion>-$(ReleaseLabel)</PreReleaseInformationVersion>
+      </PropertyGroup>
+    </When>
+  </Choose>
+
+  <PropertyGroup Condition=" '$(Version)' == '' ">
+    <Version>$(SemanticVersion)$(PreReleaseInformationVersion)</Version>
+    <Version Condition=" '$(BuildRTM)' == 'true' ">$(SemanticVersion)</Version>
+  </PropertyGroup>
+
+  <!-- Set the output location for all non-test projects -->
+  <!-- Test projects currently fail when the output dir is moved -->
+  <PropertyGroup Condition=" '$(TestProject)' != 'true' ">
+    <!-- Create different folders for 14.0, 15.0, 15.0-RTM -->
+    <BuildVariationFolder>$(VisualStudioVersion)</BuildVariationFolder>
+    <BuildVariationFolder Condition=" '$(BuildRTM)' == 'true' ">$(BuildVariationFolder)-RTM</BuildVariationFolder>
+    
+    <!-- output paths -->
+    <BaseIntermediateOutputPath>$(ArtifactsDirectory)$(MSBuildProjectName)\$(BuildVariationFolder)\obj\</BaseIntermediateOutputPath>
+    <IntermediateOutputPath>$(BaseIntermediateOutputPath)$(Configuration)\</IntermediateOutputPath>
+    <BaseOutputPath>$(ArtifactsDirectory)$(MSBuildProjectName)\$(BuildVariationFolder)\bin\</BaseOutputPath>
+    <OutputPath>$(BaseOutputPath)$(Configuration)\</OutputPath>
+    <AppxPackageDir>$(OutputPath)</AppxPackageDir>
+  </PropertyGroup>
+  
+  <!-- Generate AssemblyFileVersion and AssemblyVersion attributes. -->
+  <PropertyGroup>
+    <!-- Turn on dynamic assembly attribute generation -->
+    <AssemblyAttributesPath>$(IntermediateOutputPath)AssemblyInfo.g.cs</AssemblyAttributesPath>
+    <GenerateAdditionalSources>true</GenerateAdditionalSources>
+    <PreReleaseVersion>0</PreReleaseVersion>
+  </PropertyGroup>
+
+  <!-- Assembly attributes -->
+  <ItemGroup Condition=" '$(SkipAssemblyAttributes)' != 'true' AND '$(IsNetCoreProject)' != 'true' ">
+    <!--
+      AssemblyVersion and AssemblyFileVersion attributes are generated automatically for every build.
+      NuGet package version is derived from AssemblyFileVersion.
+    -->
+    <AssemblyAttributes Include="AssemblyVersion">
+      <_Parameter1>$(SemanticVersion).$(PreReleaseVersion)</_Parameter1>
+    </AssemblyAttributes>
+    <AssemblyAttributes Include="AssemblyFileVersion">
+      <_Parameter1>$(SemanticVersion).$(PreReleaseVersion)</_Parameter1>
+    </AssemblyAttributes>
+    <AssemblyAttributes Include="AssemblyInformationalVersion">
+      <_Parameter1>$(SemanticVersion)$(PreReleaseInformationVersion)</_Parameter1>
+    </AssemblyAttributes>
+    <AssemblyAttributes Include="AssemblyCompany">
+      <_Parameter1>Microsoft Corporation</_Parameter1>
+    </AssemblyAttributes>
+    <AssemblyAttributes Include="AssemblyProduct">
+      <_Parameter1>NuGet</_Parameter1>
+    </AssemblyAttributes>
+    <AssemblyAttributes Include="AssemblyCopyright">
+      <_Parameter1>Microsoft Corporation. All rights reserved.</_Parameter1>
+    </AssemblyAttributes>
+    <AssemblyAttributes Include="System.Resources.NeutralResourcesLanguage">
+      <_Parameter1>en-US</_Parameter1>
+    </AssemblyAttributes>
+  </ItemGroup>
+
+  <PropertyGroup Condition=" '$(IsNetCoreProject)' == 'true' ">
+    <SchemaVersion>2.0</SchemaVersion>
+    <TypeScriptCompileBlocked>True</TypeScriptCompileBlocked>
+    <ProduceOutputsOnBuild>True</ProduceOutputsOnBuild>
+  </PropertyGroup>
+
+  <!-- Add symbols to the dll for test dlls -->
+  <PropertyGroup Condition=" '$(TestProject)' == 'true' ">
+    <DebugType>embedded</DebugType>
+  </PropertyGroup>
+</Project>

@@ -1,75 +1,84 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="..\..\..\Build\Common.props" Condition="Exists('..\..\..\Build\Common.props')" />
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'common.props'))\common.props" />
+
   <PropertyGroup>
-    <TargetFrameworkProfile />
-    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
+    <TargetFramework>net46</TargetFramework>
+    <Shipping>true</Shipping>
   </PropertyGroup>
+
   <PropertyGroup>
-    <ProjectGuid>{EEA49A74-6EFC-410E-9745-BAD367AC151D}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>NuGet.VisualStudio.Facade</RootNamespace>
-    <AssemblyName>NuGet.VisualStudio.Facade</AssemblyName>
-    <CodeAnalysisRuleSet>$(EnlistmentRoot)\NuGet.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
-  <ItemGroup>
-    <Reference Include="envdte, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-      <EmbedInteropTypes>False</EmbedInteropTypes>
+
+  <ItemGroup Condition="'$(VisualStudioVersion)' == '14.0'">
+    <Reference Include="Microsoft.VisualStudio.ProjectSystem.V14Only, Version=14.1.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>$(EnlistmentRoot)\packages\Microsoft.VisualStudio.ProjectSystem.14.1.127-pre\lib\net451\Microsoft.VisualStudio.ProjectSystem.V14Only.dll</HintPath>
     </Reference>
+    <Reference Include="Microsoft.Build">
+      <HintPath>$(MSBuildToolsPath)\Microsoft.Build.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <PackageReference Version="14.95.3" Include="Microsoft.TeamFoundationServer.ExtendedClient" />
+    <PackageReference Version="14.2.25123" Include="Microsoft.VisualStudio.CoreUtility" />
+    <PackageReference Version="14.2.25123" Include="Microsoft.VisualStudio.Editor" />
+    <PackageReference Version="14.2.25123" Include="Microsoft.VisualStudio.Language.Intellisense" />
+    <PackageReference Version="14.2.25123" Include="Microsoft.VisualStudio.Language.StandardClassification" />
+    <PackageReference Version="14.95.3" Include="Microsoft.VisualStudio.Services.Client" />
+    <PackageReference Version="14.95.3" Include="Microsoft.VisualStudio.Services.InteractiveClient" />
+    <PackageReference Version="14.2.25123" Include="Microsoft.VisualStudio.Shell.14.0" />
+    <PackageReference Version="14.2.25123" Include="Microsoft.VisualStudio.Shell.Immutable.14.0" />
+    <PackageReference Version="14.2.25123" Include="Microsoft.VisualStudio.Text.Data" />
+    <PackageReference Version="14.2.25123" Include="Microsoft.VisualStudio.Text.Logic" />
+    <PackageReference Version="14.2.25123" Include="Microsoft.VisualStudio.Text.UI" />
+    <PackageReference Version="14.2.25123" Include="Microsoft.VisualStudio.Text.UI.Wpf" />
+    <PackageReference Version="14.1.131" Include="Microsoft.VisualStudio.Threading" />
+    <PackageReference Version="14.3.25420" Include="Microsoft.VSSDK.BuildTools" />
+    <PackageReference Version="14.1.680-update09A45013" Include="Microsoft.VisualStudio.Telemetry" />
+    <PackageReference Include="Microsoft.VisualStudio.ComponentModelHost.NuGet" Version="14.0.0.0" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(VisualStudioVersion)' == '15.0'">
+    <Reference Include="Microsoft.VisualStudio.ProjectSystem">
+      <HintPath>$(EnlistmentRoot)\packages\Microsoft.VisualStudio.ProjectSystem.15.0.582-pre-g76aab6d79c\lib\net46\Microsoft.VisualStudio.ProjectSystem.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Build">
+      <HintPath>$(EnlistmentRoot)\packages\Microsoft.Build.15.1.262-preview5\lib\net46\Microsoft.Build.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <PackageReference Version="15.98.0-preview" Include="Microsoft.TeamFoundationServer.ExtendedClient" />
+    <PackageReference Version="15.0.25123-Dev15Preview" Include="Microsoft.VisualStudio.CoreUtility" />
+    <PackageReference Version="15.0.25123-Dev15Preview" Include="Microsoft.VisualStudio.Editor" />
+    <PackageReference Version="15.0.25123-Dev15Preview" Include="Microsoft.VisualStudio.Language.Intellisense" />
+    <PackageReference Version="15.0.25123-Dev15Preview" Include="Microsoft.VisualStudio.Language.StandardClassification" />
+    <PackageReference Version="15.107.0-preview" Include="Microsoft.VisualStudio.Services.Client" />
+    <PackageReference Version="15.107.0-preview" Include="Microsoft.VisualStudio.Services.InteractiveClient" />
+    <PackageReference Version="15.0.25123-Dev15Preview" Include="Microsoft.VisualStudio.Shell.15.0" />
+    <PackageReference Version="15.0.25123-Dev15Preview" Include="Microsoft.VisualStudio.Shell.Immutable.15.0" />
+    <PackageReference Version="15.0.25123-Dev15Preview" Include="Microsoft.VisualStudio.Text.Data" />
+    <PackageReference Version="15.0.25123-Dev15Preview" Include="Microsoft.VisualStudio.Text.Logic" />
+    <PackageReference Version="15.0.25123-Dev15Preview" Include="Microsoft.VisualStudio.Text.UI" />
+    <PackageReference Version="15.0.25123-Dev15Preview" Include="Microsoft.VisualStudio.Text.UI.Wpf" />
+    <PackageReference Version="15.0.20-pre" Include="Microsoft.VisualStudio.Threading" />
+    <PackageReference Version="15.0.25604-Preview4" Include="Microsoft.VSSDK.BuildTools" />
+    <PackageReference Version="15.0.691-master31907920" Include="Microsoft.VisualStudio.Telemetry" />
+    <PackageReference Version="6.0.4" Include="Newtonsoft.Json" />
+    <PackageReference Include="Microsoft.VisualStudio.ComponentModelHost" Version="15.0.26201" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.Composition" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Events\IRestoreEvents.cs" />
-    <Compile Include="Events\IRestoreEventsPublisher.cs" />
-    <Compile Include="Events\SolutionRestoredEventArgs.cs" />
-    <Compile Include="NuGetUIThreadHelper.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ProjectSystem\ProjectHelper.cs" />
-    <Compile Include="Telemetry\ITelemetrySession.cs" />
-    <Compile Include="Telemetry\TelemetryEvent.cs" />
-    <Compile Include="Telemetry\TelemetrySession.cs" />
+    <PackageReference Include="EnvDTE" Version="8.0.1" />
+    <PackageReference Version="7.10.6071" Include="Microsoft.VisualStudio.Shell.Interop" />
+    <PackageReference Version="11.0.61030" Include="Microsoft.VisualStudio.Shell.Interop.11.0" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="project.json" />
+    <EmbeddedResource Update="Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
   </ItemGroup>
-  <Choose>
-    <When Condition="'$(VisualStudioVersion)' == '14.0'">
-      <ItemGroup>
-        <ProjectReference Include=".\VisualStudio14.Packages\NuGet.VisualStudio14.Packages.csproj">
-          <Project>{A3AB10FD-0E3E-426B-B3D9-B5BF34E5D190}</Project>
-          <Name>NuGet.VisualStudio14.Packages</Name>
-        </ProjectReference>
-        <Reference Include="Microsoft.VisualStudio.ProjectSystem.V14Only, Version=14.1.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-          <HintPath>$(EnlistmentRoot)\packages\Microsoft.VisualStudio.ProjectSystem.14.1.127-pre\lib\net451\Microsoft.VisualStudio.ProjectSystem.V14Only.dll</HintPath>
-        </Reference>
-        <Reference Include="Microsoft.Build">
-          <HintPath>$(MSBuildToolsPath)\Microsoft.Build.dll</HintPath>
-          <Private>False</Private>
-        </Reference>
-        <Reference Include="Microsoft.VisualStudio.ComponentModelHost, Version=14.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
-      </ItemGroup>
-    </When>
-    <When Condition="'$(VisualStudioVersion)' == '15.0'">
-      <ItemGroup>
-        <ProjectReference Include=".\VisualStudio15.Packages\NuGet.VisualStudio15.Packages.csproj">
-          <Project>{868ACCBA-B981-440D-9C98-2A235E1E861A}</Project>
-          <Name>NuGet.VisualStudio15.Packages</Name>
-        </ProjectReference>
-        <Reference Include="Microsoft.VisualStudio.ProjectSystem">
-          <HintPath>$(EnlistmentRoot)\packages\Microsoft.VisualStudio.ProjectSystem.15.0.582-pre-g76aab6d79c\lib\net46\Microsoft.VisualStudio.ProjectSystem.dll</HintPath>
-        </Reference>
-        <Reference Include="Microsoft.Build">
-          <HintPath>$(EnlistmentRoot)\packages\Microsoft.Build.15.1.262-preview5\lib\net46\Microsoft.Build.dll</HintPath>
-          <Private>False</Private>
-        </Reference>
-        <Reference Include="Microsoft.VisualStudio.ComponentModelHost, Version=15.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
-      </ItemGroup>
-    </When>
-  </Choose>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <Import Project="$(EnlistmentRoot)\build\sign.targets" />
+
+  <Import Project="$(BuildCommonDirectory)common.targets" />
 </Project>

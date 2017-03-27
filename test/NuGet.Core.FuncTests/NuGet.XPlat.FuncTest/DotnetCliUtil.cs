@@ -14,7 +14,6 @@ namespace NuGet.XPlat.FuncTest
         private const string DotnetCliExe = "dotnet.exe";
         private const string XPlatDll = "NuGet.CommandLine.XPlat.dll";
         private static readonly string XPlatBuildRelativePath;
-        private static readonly string XPlatPublishRelativePath;
         private static readonly string BuildOutputDirectory;
         private static readonly string[] TestFileNames = new string[] { "file1.txt", "file2.txt" };
 
@@ -24,21 +23,10 @@ namespace NuGet.XPlat.FuncTest
             BuildOutputDirectory = Path.GetDirectoryName(assemblyLocation);
 
             XPlatBuildRelativePath = Path.Combine(
-                "src",
-                "NuGet.Core",
-                "NuGet.CommandLine.XPlat",
-                "bin",
-#if DEBUG
-                "debug",
-#else
-                "release",
-#endif
-                "netcoreapp1.0", XPlatDll);
-
-            XPlatPublishRelativePath = Path.Combine(
                 "artifacts",
                 "NuGet.CommandLine.XPlat",
-                "publish",
+                "15.0",
+                "bin",
 #if DEBUG
                 "debug",
 #else
@@ -55,9 +43,9 @@ namespace NuGet.XPlat.FuncTest
         /// <code>String</code> containing the path to the dotnet cli within the local repository.
         /// Can return <code>null</code> if no cli directory or dotnet cli is found, in which case the tests can fail.
         /// </returns>
-        public static string GetDotnetCli(bool getLatestCli = false)
+        public static string GetDotnetCli(bool getTestCli = false)
         {
-            var cliDirName = getLatestCli ? "cli_test" : "cli";
+            var cliDirName = getTestCli ? "cli_test" : "cli";
             var dir = ParentDirectoryLookup()
                 .FirstOrDefault(d => DirectoryContains(d, cliDirName));
             if (dir != null)
@@ -94,7 +82,7 @@ namespace NuGet.XPlat.FuncTest
         {
             return directoryInfo
                 .EnumerateDirectories()
-                .Any(dir => StringComparer.Ordinal.Equals(dir.Name, subDirectory));
+                .Any(dir => StringComparer.OrdinalIgnoreCase.Equals(dir.Name, subDirectory));
         }
 
         /// <summary>
@@ -152,13 +140,7 @@ namespace NuGet.XPlat.FuncTest
 
             if (dir != null)
             {
-                var xplatDll = Path.Combine(dir.FullName, XPlatPublishRelativePath);
-                if (File.Exists(xplatDll))
-                {
-                    return xplatDll;
-                }
-
-                xplatDll = Path.Combine(dir.FullName, XPlatBuildRelativePath);
+                var xplatDll = Path.Combine(dir.FullName, XPlatBuildRelativePath);
                 if (File.Exists(xplatDll))
                 {
                     return xplatDll;
@@ -176,10 +158,12 @@ namespace NuGet.XPlat.FuncTest
         /// </returns>
         public static string GetNupkgDirectoryInRepo()
         {
-            var dir = ParentDirectoryLookup()
-                .FirstOrDefault(d => DirectoryContains(d, "Nupkgs"));
+            var repositoryRootDir = ParentDirectoryLookup()
+                .FirstOrDefault(d => DirectoryContains(d, "artifacts"));
 
-            return Path.Combine(dir?.FullName, "Nupkgs");
+            var artifactsDir = Path.Combine(repositoryRootDir?.FullName, "artifacts");
+
+            return Path.Combine(artifactsDir, "Nupkgs");
         }
 
         /// <summary>

@@ -1,0 +1,32 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'common.props'))\common.props" />
+
+  <PropertyGroup>
+    <TargetFrameworks>net45;netstandard1.3</TargetFrameworks>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="compiler\resources\*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\NuGet.Packaging\NuGet.Packaging.csproj" />
+    <ProjectReference Include="..\NuGet.ProjectModel\NuGet.ProjectModel.csproj" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net45' ">
+    <Reference Include="System.IO.Compression" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.3' ">
+    <PackageReference Include="System.Diagnostics.Process" Version="4.1.0" />
+    <PackageReference Include="System.IO.Compression.ZipFile" Version="4.0.1" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <PackageReference Include="xunit" Version="$(XunitVersion)" />
+  </ItemGroup>
+
+  <Import Project="$(BuildCommonDirectory)common.targets"/>
+</Project>

@@ -1,0 +1,14 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'common.props'))\common.props" />
+
+  <PropertyGroup>
+    <TargetFrameworks>net45;netstandard1.0</TargetFrameworks>
+    <Description>NuGet's implementation of Semantic Versioning.</Description>
+    <PackageTags>semver;semantic versioning</PackageTags>
+    <NetStandardImplicitPackageVersion Condition=" '$(TargetFramework)' == 'netstandard1.0' ">$(NetStandardPackageVersion)</NetStandardImplicitPackageVersion>
+    <PackProject>true</PackProject>
+    <Shipping>true</Shipping>
+  </PropertyGroup>
+
+  <Import Project="$(BuildCommonDirectory)common.targets"/>
+</Project>

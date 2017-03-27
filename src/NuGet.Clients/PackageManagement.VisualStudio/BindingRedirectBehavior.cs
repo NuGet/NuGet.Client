@@ -3,6 +3,7 @@
 
 using System;
 using System.Globalization;
+using NuGet.Configuration;
 
 namespace NuGet.PackageManagement.VisualStudio
 {

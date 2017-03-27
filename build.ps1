@@ -17,9 +17,6 @@ Path to a code signing certificate for delay-sigining (optional)
 .PARAMETER NuGetPFXPath
 Path to a code signing certificate for delay-sigining (optional)
 
-.PARAMETER SkipXProj
-Skips building the NuGet.Core XProj projects
-
 .PARAMETER SkipVS14
 Skips building binaries targeting Visual Studio "14" (released as Visual Studio 2015)
 
@@ -62,15 +59,16 @@ param (
     [string]$MSPFXPath,
     [Alias('nugetpfx')]
     [string]$NuGetPFXPath,
-    [Alias('sx')]
-    [switch]$SkipXProj,
     [Alias('s14')]
     [switch]$SkipVS14,
     [Alias('s15')]
     [switch]$SkipVS15,
+    [Alias('su')]
+    [switch]$SkipUnitTest,
     [Alias('f')]
     [switch]$Fast,
-    [switch]$CI
+    [switch]$CI,
+    [switch]$Rebuild
 )
 
 . "$PSScriptRoot\build\common.ps1"
@@ -107,55 +105,105 @@ if (-not $SkipVS15 -and -not $VS15Installed) {
 $BuildErrors = @()
 
 Invoke-BuildStep 'Cleaning artifacts' {
-        Clear-Artifacts
-        Clear-Nupkgs
-    } `
-    -skip:($Fast -or $SkipXProj) `
-    -ev +BuildErrors
+    Clear-Artifacts
+    Clear-Nupkgs
+} `
+-skip:$Fast `
+-ev +BuildErrors
 
 Invoke-BuildStep 'Set delay signing options' {
-        Set-DelaySigning $MSPFXPath $NuGetPFXPath
-    } `
-    -ev +BuildErrors
+    Set-DelaySigning $MSPFXPath $NuGetPFXPath
+} `
+-ev +BuildErrors
 
-Invoke-BuildStep 'Building NuGet.Core projects' {
-        Build-CoreProjects $Configuration $ReleaseLabel $BuildNumber -CI:$CI
-    } `
-    -skip:$SkipXProj `
-    -ev +BuildErrors
+if($SkipUnitTest){
+    $VS14Target = "BuildVS14";
+    $VS14Message = "Running Build for VS 14.0";
+    $VS15Target = "BuildVS15;Pack";
+    $VS15Message = "Running Build for VS 15.0"
+}
+else {
+    $VS14Target = "RunVS14";
+    $VS14Message = "Running Build and Unit tests for VS 14.0";
+    $VS15Target = "RunVS15";
+    $VS15Message = "Running Build, Pack, Core unit tests, and Unit tests for VS 15.0";
+}
 
-## Building the VS15 Tooling solution
-Invoke-BuildStep 'Building NuGet.Clients projects - VS15 Toolset' {
-        Build-ClientsProjects $Configuration $ReleaseLabel $BuildNumber -ToolsetVersion 15
-    } `
-    -skip:$SkipVS15 `
-    -ev +BuildErrors
+Invoke-BuildStep 'Running Restore for VS 15.0' {
 
-## Building the VS15 NuGet.Tools.vsix for VS insertion
-Invoke-BuildStep 'Building NuGet.Tools.vsix for VS Insertion - VS15 Toolset' {
-        Build-ClientsProjectHelper `
-        -SolutionOrProject (Join-Path $NuGetClientRoot .\src\NuGet.Clients\NuGet.Tools\NuGet.Tools.csproj -Resolve)`
-        -Configuration $Configuration `
-        -ReleaseLabel $ReleaseLabel `
-        -BuildNumber $BuildNumber `
-        -Parameters @{'IsInsertable'='true'} `
-        -ToolsetVersion 15 `
-    } `
-    -skip:($SkipVS15 -or -not $CI) `
-    -ev +BuildErrors
+    # Restore for VS 15.0
+    Trace-Log ". `"$MSBuildExe`" build\build.proj /t:RestoreVS15 /p:Configuration=$Configuration /p:ReleaseLabel=$ReleaseLabel /p:BuildNumber=$BuildNumber /v:m /m:1"
+    & $MSBuildExe build\build.proj /t:RestoreVS15 /p:Configuration=$Configuration /p:ReleaseLabel=$ReleaseLabel /p:BuildNumber=$BuildNumber /v:m /m:1
 
-## Building the VS14 Tooling solution
-Invoke-BuildStep 'Building NuGet.Clients projects - VS14 Toolset' {
-        Build-ClientsProjects $Configuration $ReleaseLabel $BuildNumber -ToolsetVersion 14
-    } `
-    -skip:$SkipVS14 `
-    -ev +BuildErrors
+    if (-not $?)
+    {
+        Write-Error "Restore failed!"
+        exit 1
+    }
+} `
+-skip:$SkipVS15 `
+-ev +BuildErrors
 
-Invoke-BuildStep 'Publishing NuGet.Clients packages - VS14 Toolset' {
-        Publish-ClientsPackages $Configuration $ReleaseLabel $BuildNumber -ToolsetVersion 14 -KeyFile $MSPFXPath -CI:$CI
+
+Invoke-BuildStep $VS15Message {
+
+    # Build and (If not $SkipUnitTest) Pack, Core unit tests, and Unit tests for VS 15.0
+    Trace-Log ". `"$MSBuildExe`" build\build.proj /t:$VS15Target /p:Configuration=$Configuration /p:ReleaseLabel=$ReleaseLabel /p:BuildNumber=$BuildNumber /v:m /m:1"
+    & $MSBuildExe build\build.proj /t:$VS15Target /p:Configuration=$Configuration /p:ReleaseLabel=$ReleaseLabel /p:BuildNumber=$BuildNumber /v:m /m:1
+
+    if (-not $?)
+    {
+        Write-Error "VS 15 build and unit tests failed!"
+        exit 1
+    }
+} `
+-skip:$SkipVS15 `
+-ev +BuildErrors
+
+
+Invoke-BuildStep 'Running Restore for VS 14.0' {
+
+    # Restore for VS 14.0
+    Trace-Log ". `"$MSBuildExe`" build\build.proj /t:RestoreVS14 /p:Configuration=$Configuration /p:ReleaseLabel=$ReleaseLabel /p:BuildNumber=$BuildNumber /v:m /m:1"
+    & $MSBuildExe build\build.proj /t:RestoreVS14 /p:Configuration=$Configuration /p:ReleaseLabel=$ReleaseLabel /p:BuildNumber=$BuildNumber /v:m /m:1
+
+    if (-not $?)
+    {
+        Write-Error "Restore failed!"
+        exit 1
+    }
+} `
+-skip:$SkipVS14 `
+-ev +BuildErrors
+
+
+Invoke-BuildStep $VS14Message {
+
+    # Build and (If not $SkipUnitTest) Run Unit tests for VS 14.0
+    Trace-Log ". `"$MSBuildExe`" build\build.proj /t:$VS14Target /p:Configuration=$Configuration /p:ReleaseLabel=$ReleaseLabel /p:BuildNumber=$BuildNumber /v:m /m:1"
+    & $MSBuildExe build\build.proj /t:$VS14Target /p:Configuration=$Configuration /p:ReleaseLabel=$ReleaseLabel /p:BuildNumber=$BuildNumber /v:m /m:1
+
+    if (-not $?)
+    {
+        Write-Error "VS 14 build and unit tests failed!"
+        exit 1
+    }
+} `
+-skip:$SkipVS14 `
+-ev +BuildErrors
+
+# building the vs15 nuget.tools.vsix for vs insertion
+invoke-buildstep 'building nuget.tools.vsix for vs insertion - vs15 toolset' {
+        build-clientsprojecthelper `
+        -solutionorproject (join-path $nugetclientroot .\src\nuget.clients\nuget.tools\nuget.tools.csproj -resolve) `
+        -configuration $configuration `
+        -releaselabel $releaselabel `
+        -buildnumber $buildnumber `
+        -parameters @{'isinsertable'='true'} `
+        -toolsetversion 15 `
     } `
-    -skip:($Fast -or $SkipVS14) `
-    -ev +BuildErrors
+    -skip:($skipvs15 -or -not $ci) `
+    -ev +builderrors
 
 Invoke-BuildStep 'Publishing the VS14 EndToEnd test package' {
         param($Configuration)
@@ -177,7 +225,45 @@ Invoke-BuildStep 'Publishing the VS15 EndToEnd test package' {
     -skip:($Fast -or $SkipVS15) `
     -ev +BuildErrors
 
-Trace-Log ('-' * 60)
+if ($CI)
+{
+    Invoke-BuildStep 'Running Restore for VS 15.0 RTM' {
+
+        # Restore for VS 15.0
+        Trace-Log ". `"$MSBuildExe`" build\build.proj /t:RestoreVS15 /p:Configuration=$Configuration /p:BuildRTM=true /v:m /m:1"
+        & $MSBuildExe build\build.proj /t:RestoreVS15 /p:Configuration=$Configuration /p:BuildRTM=true /v:m /m:1
+
+        if (-not $?)
+        {
+            Write-Error "Restore failed!"
+            exit 1
+        }
+    } `
+    -skip:$SkipVS15 `
+    -ev +BuildErrors
+
+
+    Invoke-BuildStep 'Packing VS15 RTM' {
+
+        # Build and (If not $SkipUnitTest) Pack, Core unit tests, and Unit tests for VS 15.0
+        Trace-Log ". `"$MSBuildExe`" build\build.proj /t:RestoreVS15 /p:Configuration=$Configuration /p:BuildRTM=true /v:m /m:1"
+        & $MSBuildExe build\build.proj /t:BuildVS15`;Pack /p:Configuration=$Configuration /p:BuildRTM=true /v:m /m:1
+
+        if (-not $?)
+        {
+            Write-Error "VS15 RTM build failed!"
+            exit 1
+        }
+    } `
+    -skip:$SkipVS15 `
+    -ev +BuildErrors
+}
+
+Invoke-BuildStep 'Publishing nuget.exe packages' {
+        Publish-NuGetExePackage $Configuration $ReleaseLabel $BuildNumber -ToolsetVersion 15 -KeyFile $MSPFXPath -CI:$CI
+    } `
+    -skip:($Fast -or $SkipVS15) `
+    -ev +BuildErrors
 
 ## Calculating Build time
 $endTime = [DateTime]::UtcNow

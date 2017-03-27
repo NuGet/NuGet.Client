@@ -11,5 +11,4 @@ using System.Runtime.InteropServices;
 #if !IS_NET40_CLIENT
 [assembly: AssemblyMetadata("Serviceable", "True")]
 #endif
-[assembly: ComVisible(false)]
 [assembly: NeutralResourcesLanguage("en-US")]

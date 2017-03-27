@@ -1,8 +1,8 @@
-<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Condition="Exists($(NUGET_PFX_PATH))">
-	<SignAssembly>true</SignAssembly>
-	<AssemblyOriginatorKeyFile Condition=" '$(AssemblyOriginatorKeyFile)' == '' ">$(NUGET_PFX_PATH)</AssemblyOriginatorKeyFile>
+    <SignAssembly>true</SignAssembly>
+    <AssemblyOriginatorKeyFile Condition=" '$(AssemblyOriginatorKeyFile)' == '' ">$(NUGET_PFX_PATH)</AssemblyOriginatorKeyFile>
     <DelaySign>true</DelaySign>
-	<DefineConstants>$(DefineConstants);SIGNED_BUILD</DefineConstants>
+    <DefineConstants>$(DefineConstants);SIGNED_BUILD</DefineConstants>
   </PropertyGroup>
 </Project>

@@ -69,22 +69,44 @@ namespace NuGet.XPlat.FuncTest
             }
         }
 
+        internal const string CoreConfigFileName = "NuGet.Core.FuncTests.Config";
+
+        public static string CoreConfigPath
+        {
+            get
+            {
+                string fullPath = NuGetEnvironment.GetFolderPath(NuGetFolderPath.UserSettingsDirectory);
+
+                return Path.Combine(fullPath, CoreConfigFileName);
+            }
+        }
+
         /// <summary>
         /// Copies test sources configuration to a test folder
         /// </summary>
         public static string CopyFuncTestConfig(string destinationFolder)
         {
-            var sourceConfigFolder = NuGetEnvironment.GetFolderPath(NuGetFolderPath.UserSettingsDirectory);
-            var sourceConfigFile = Path.Combine(sourceConfigFolder, "NuGet.Core.FuncTests.Config");
             var destConfigFile = Path.Combine(destinationFolder, "NuGet.Config");
-            File.Copy(sourceConfigFile, destConfigFile);
+            File.Copy(CoreConfigPath, destConfigFile);
             return destConfigFile;
+        }
+
+        internal const string ProtocolConfigFileName = "NuGet.Protocol.FuncTest.config";
+
+        public static string ProtocolConfigPath
+        {
+            get
+            {
+                string fullPath = NuGetEnvironment.GetFolderPath(NuGetFolderPath.UserSettingsDirectory);
+
+                return Path.Combine(fullPath, ProtocolConfigFileName);
+            }
         }
 
         public static string ReadApiKey(string feedName)
         {
             string fullPath = NuGetEnvironment.GetFolderPath(NuGetFolderPath.UserSettingsDirectory);
-            using (Stream configStream = File.OpenRead(Path.Combine(fullPath, "NuGet.Protocol.FuncTest.config")))
+            using (Stream configStream = File.OpenRead(ProtocolConfigPath))
             {
                 var doc = XDocument.Load(XmlReader.Create(configStream));
                 var element = doc.Root.Element(feedName);

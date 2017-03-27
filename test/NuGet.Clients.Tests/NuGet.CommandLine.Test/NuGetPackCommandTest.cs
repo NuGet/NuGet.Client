@@ -4111,7 +4111,7 @@ stuff \n &lt;&lt;
                 var r = CommandRunner.Run(
                     nugetexe,
                     workingDirectory,
-                    "pack packageA.nuspec",
+                    "pack packageA.nuspec -verbosity detailed",
                     waitForExit: true);
                 Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
 
@@ -4671,7 +4671,7 @@ stuff \n <<".Replace("\r\n", "\n");
             }
         }
 
-        [Fact]
+        [Fact(Skip = "This command relies on an older version of dotnet.exe, project.json is no longer supported for NETCore. Fix this feature and test!")]
         public void PackCommand_BuildBareMinimumProjectJson()
         {
             var nugetexe = Util.GetNuGetExePath();
@@ -4719,7 +4719,7 @@ stuff \n <<".Replace("\r\n", "\n");
             }
         }
 
-        [Fact]
+        [Fact(Skip = "This command relies on an older version of dotnet.exe, project.json is no longer supported for NETCore. Fix this feature and test!")]
         public void PackCommand_BuildProjectJson()
         {
             var nugetexe = Util.GetNuGetExePath();
@@ -4782,7 +4782,8 @@ stuff \n <<".Replace("\r\n", "\n");
             }
         }
 
-        [SkipMono]
+        //[SkipMono]
+        [Fact(Skip = "This command relies on an older version of dotnet.exe, project.json is no longer supported for NETCore. Fix this feature and test!")]
         public void PackCommand_BuildProjectJsonWithFullBasePath()
         {
             var nugetexe = Util.GetNuGetExePath();
@@ -4846,7 +4847,8 @@ stuff \n <<".Replace("\r\n", "\n");
             }
         }
 
-        [SkipMono]
+        //[SkipMono]
+        [Fact(Skip = "This command relies on an older version of dotnet.exe, project.json is no longer supported for NETCore. Fix this feature and test!")]
         public void PackCommand_BuildProjectJsonWithRelativeBasePath()
         {
             var nugetexe = Util.GetNuGetExePath();

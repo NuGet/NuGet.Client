@@ -57,7 +57,7 @@ try {
     Write-Verbose "Copying all test files from '$TestSource' to '$WorkingDirectory'"
     & robocopy $TestSource $WorkingDirectory $opts
 
-    $TestExtension = Join-Path $NuGetRoot "artifacts\API.Test\${ToolsetVersion}.0\${Configuration}\API.Test.dll" -Resolve
+    $TestExtension = Join-Path $NuGetRoot "artifacts\API.Test\${ToolsetVersion}.0\bin\${Configuration}\net46\API.Test.dll" -Resolve
     Write-Verbose "Copying test extension from '$TestExtension' to '$WorkingDirectory'"
     Copy-Item $TestExtension $WorkingDirectory
 

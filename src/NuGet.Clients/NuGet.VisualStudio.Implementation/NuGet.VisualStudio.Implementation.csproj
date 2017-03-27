@@ -1,38 +1,18 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
-  <Import Project="..\..\..\Build\Common.props" />
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'common.props'))\common.props" />
+
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <ProjectGuid>{9623CF30-192C-4864-B419-29649169AE30}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>NuGet.VisualStudio.Implementation</RootNamespace>
-    <AssemblyName>NuGet.VisualStudio.Implementation</AssemblyName>
-    <FileAlignment>512</FileAlignment>
-    <ResolveNuGetPackages>true</ResolveNuGetPackages>
-    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
+    <TargetFramework>net46</TargetFramework>
+    <Shipping>true</Shipping>
   </PropertyGroup>
-  <Choose>
-    <When Condition="'$(VisualStudioVersion)' == '14.0'">
-      <ItemGroup>
-        <Reference Include="Microsoft.VisualStudio.ComponentModelHost, Version=14.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
-      </ItemGroup>
-    </When>
-    <When Condition="'$(VisualStudioVersion)' == '15.0'">
-      <ItemGroup>
-        <Reference Include="Microsoft.VisualStudio.ComponentModelHost, Version=15.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
-      </ItemGroup>
-    </When>
-  </Choose>
+
+  <PropertyGroup>
+    <Description>Implementation for NuGet.VisualStudio</Description>
+    <Guid>9623cf30-192c-4864-b419-29649169ae30</Guid>
+    <ImportedFromTypeLib>NuGet.VisualStudio.Implementation</ImportedFromTypeLib>
+  </PropertyGroup>
   <ItemGroup>
-    <Reference Include="envdte, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-      <EmbedInteropTypes>False</EmbedInteropTypes>
-    </Reference>
-    <Reference Include="envdte80, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-      <EmbedInteropTypes>False</EmbedInteropTypes>
-    </Reference>
-    <Reference Include="Microsoft.VisualStudio.TemplateWizardInterface, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.Core" />
@@ -48,55 +28,18 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CommonResources.cs" />
     <Compile Include="Extensibility\VsIndexedPathContext.cs" />
     <Compile Include="Utility\PathLookupTrie.cs" />
-    <Compile Include="Extensibility\VsPathContext.cs" />
-    <Compile Include="Extensibility\VsPathContextProvider.cs" />
-    <Compile Include="Extensibility\VsPackageInstallerProjectEvents.cs" />
-    <Compile Include="Extensibility\VsPackageProjectMetadata.cs" />
-    <Compile Include="Extensibility\VsSemanticVersionComparer.cs" />
-    <Compile Include="Extensibility\VsFrameworkParser.cs" />
-    <Compile Include="Extensibility\VsFrameworkCompatibility.cs" />
-    <Compile Include="Extensibility\VsPackageInstaller.cs" />
-    <Compile Include="Extensibility\VsPackageInstallerEvents.cs" />
-    <Compile Include="Extensibility\VsPackageInstallerServices.cs" />
-    <Compile Include="Extensibility\VsPackageMetadata.cs" />
-    <Compile Include="Extensibility\VsPackageMetadataComparer.cs" />
-    <Compile Include="Extensibility\VsPackageRestorer.cs" />
-    <Compile Include="Extensibility\VsPackageSourceProvider.cs" />
-    <Compile Include="Extensibility\VsPackageUninstaller.cs" />
-    <Compile Include="Extensibility\VsGlobalPackagesInitScriptExecutor.cs" />
-    <Compile Include="ExtensionManagerShim.cs" />
-    <Compile Include="MessageHelper.cs" />
-    <Compile Include="NativeMethods.cs" />
-    <Compile Include="PackageManagementHelpers.cs" />
-    <Compile Include="PackageOperationEventArgs.cs" />
-    <Compile Include="PreinstalledPackageConfiguration.cs" />
-    <Compile Include="PreinstalledPackageInfo.cs" />
-    <Compile Include="PreinstalledPackageInstaller.cs" />
-    <Compile Include="PreinstalledRepositoryProvider.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="RegistryKeyWrapper.cs" />
-    <Compile Include="Resources\VsResources.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>VsResources.resx</DependentUpon>
-    </Compile>
-    <Compile Include="Utility\PumpingJTF.cs" />
-    <Compile Include="Utility\XmlUtility.cs" />
-    <Compile Include="VSAPIProjectContext.cs" />
-    <Compile Include="VsTemplateWizard.cs" />
   </ItemGroup>
   <ItemGroup Condition="'$(VisualStudioVersion)' == '15.0'">
     <Compile Include="Extensibility\VsProjectJsonToPackageReferenceMigrateResult.cs" />
     <Compile Include="Extensibility\VsProjectJsonToPackageReferenceMigrator.cs" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\NuGet.VisualStudio\NuGet.VisualStudio.csproj">
       <Project>{e5556bc6-a7fd-4d8e-8a7d-7648df1d7471}</Project>
       <Name>NuGet.VisualStudio</Name>
     </ProjectReference>
+    <ProjectReference Include="..\PackageManagement.PowerShellCmdlets\NuGet.PackageManagement.PowerShellCmdlets.csproj" />
+    <ProjectReference Include="..\PackageManagement.UI\NuGet.PackageManagement.UI.csproj" />
     <ProjectReference Include="..\VisualStudio.Facade\NuGet.VisualStudio.Facade.csproj">
       <Project>{eea49a74-6efc-410e-9745-bad367ac151d}</Project>
       <Name>NuGet.VisualStudio.Facade</Name>
@@ -115,19 +58,29 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="CommonResources.resx">
-      <DependentUpon>CommonResources.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\VsResources.resx">
-      <SubType>Designer</SubType>
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>VsResources.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
+    <PackageReference Include="EnvDTE" Version="8.0.1" />
+    <PackageReference Include="EnvDTE80" Version="8.0.1" />
+    <PackageReference Version="7.10.6071" Include="Microsoft.VisualStudio.Shell.Interop" />
+    <PackageReference Version="10.0.30319" Include="Microsoft.VisualStudio.Shell.Interop.10.0" />
+    <PackageReference Version="11.0.61030" Include="Microsoft.VisualStudio.Shell.Interop.11.0" />
+    <PackageReference Version="12.0.30110" Include="Microsoft.VisualStudio.Shell.Interop.12.0" />
+    <PackageReference Version="8.0.50727" Include="Microsoft.VisualStudio.Shell.Interop.8.0" />
+    <PackageReference Version="9.0.30729" Include="Microsoft.VisualStudio.Shell.Interop.9.0" />
+    <PackageReference Version="7.10.6070" Include="Microsoft.VisualStudio.OLE.Interop" />
+    <PackageReference Include="VSSDK.TemplateWizardInterface" Version="12.0.4" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="project.json" />
+    <EmbeddedResource Update="CommonResources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>CommonResources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <Compile Update="CommonResources.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>CommonResources.resx</DependentUpon>
+    </Compile>
   </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <Import Project="$(EnlistmentRoot)\build\common.targets" />
-  <Import Project="$(EnlistmentRoot)\build\sign.targets" />
+
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <Import Project="$(BuildCommonDirectory)common.targets" />
 </Project>

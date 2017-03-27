@@ -1,0 +1,40 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'common.test.props'))\common.test.props" />
+  <PropertyGroup>
+    <TargetFrameworks>netcoreapp1.0;net46</TargetFrameworks>
+    <TargetFrameworks Condition=" '$(IsXPlat)' == 'true' ">netcoreapp1.0</TargetFrameworks>
+    <TestProject>true</TestProject>
+    <TestProjectType>functional</TestProjectType>
+    <SkipTests>true</SkipTests>
+    <!--<CSharpTargetsPath>$(BaseOutputPath)$(Configuration)\$(TargetFramework)\$(RuntimeIdentifier)\</CSharpTargetsPath>-->
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Build.Runtime" Version="15.1.548" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Build.Tasks" Version="3.0.0-beta1-61516-01" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.0.0-beta1-61516-01" />
+    <PackageReference Include="System.Collections.Immutable" Version="1.2.1" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\src\NuGet.Core\NuGet.CommandLine.XPlat\NuGet.CommandLine.XPlat.csproj" />
+    <ProjectReference Include="..\..\..\src\NuGet.Core\NuGet.Test.Utility\NuGet.Test.Utility.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{82a7f48d-3b50-4b1e-b82e-3ada8210c358}" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="xunit.runner.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp1.0'">
+    <PackageReference Include="Microsoft.Net.Compilers.netcore">
+      <Version>2.0.0-rc4</Version>
+    </PackageReference>
+  </ItemGroup>
+  <Import Project="$(BuildCommonDirectory)common.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>xcopy /y $(MSBuildProjectDirectory)\bin\$(Configuration)\$(OutputPath)$(TargetFramework)\$(RuntimeIdentifier)\Microsoft.CSharp.Core.targets $(MSBuildProjectDirectory)\bin\$(Configuration)\$(OutputPath)$(TargetFramework)\$(RuntimeIdentifier)\Roslyn\</PostBuildEvent>
+  </PropertyGroup>
+
+</Project>
