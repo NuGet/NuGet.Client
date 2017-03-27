@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -107,7 +106,7 @@ namespace NuGet.Packaging
         /// </summary>
         public IEnumerable<PackageDependencyGroup> GetDependencyGroups()
         {
-            return GetAllDependencyGroups(useStrictVersionCheck: false);
+            return GetDependencyGroups(useStrictVersionCheck: false);
         }
 
         /// <summary>
@@ -115,7 +114,45 @@ namespace NuGet.Packaging
         /// </summary>
         public IEnumerable<PackageDependencyGroup> GetDependencyGroups(bool useStrictVersionCheck)
         {
-            return GetAllDependencyGroups(useStrictVersionCheck);
+            var ns = MetadataNode.GetDefaultNamespace().NamespaceName;
+            var dependencyNode = MetadataNode
+                .Elements(XName.Get(Dependencies, ns));
+
+            var groupFound = false;
+            var dependencyGroups = dependencyNode
+                .Elements(XName.Get(Group, ns));
+
+            foreach (var depGroup in dependencyGroups)
+            {
+                groupFound = true;
+
+                var groupFramework = GetAttributeValue(depGroup, TargetFramework);
+
+                var dependencies = depGroup
+                    .Elements(XName.Get(Dependency, ns));
+
+                var packages = GetPackageDependencies(dependencies, useStrictVersionCheck);
+
+                var framework = string.IsNullOrEmpty(groupFramework)
+                    ? NuGetFramework.AnyFramework
+                    : NuGetFramework.Parse(groupFramework, _frameworkProvider);
+
+                yield return new PackageDependencyGroup(framework, packages);
+            }
+
+            // legacy behavior
+            if (!groupFound)
+            {
+                var legacyDependencies = dependencyNode
+                    .Elements(XName.Get(Dependency, ns));
+
+                var packages = GetPackageDependencies(legacyDependencies, useStrictVersionCheck);
+
+                if (packages.Any())
+                {
+                    yield return new PackageDependencyGroup(NuGetFramework.AnyFramework, packages);
+                }
+            }
         }
 
         /// <summary>
@@ -413,51 +450,6 @@ namespace NuGet.Packaging
                 StringComparer.OrdinalIgnoreCase);
 
             return set.OrderBy(s => s, StringComparer.OrdinalIgnoreCase).ToList();
-        }
-
-        private IEnumerable<PackageDependencyGroup> GetAllDependencyGroups(bool useStrictVersionCheck)
-        {
-            var ns = MetadataNode.GetDefaultNamespace().NamespaceName;
-            var dependencyNode = MetadataNode
-                .Elements(XName.Get(Dependencies, ns));
-
-            var groupFound = false;
-            var dependencyGroups = dependencyNode
-                .Elements(XName.Get(Group, ns));
-
-            foreach (var depGroup in dependencyGroups)
-            {
-                groupFound = true;
-
-                var groupFramework = GetAttributeValue(depGroup, TargetFramework);
-
-                var dependencies = depGroup
-                    .Elements(XName.Get(Dependency, ns));
-
-                var packages = GetPackageDependencies(dependencies, useStrictVersionCheck);
-
-                var framework = string.IsNullOrEmpty(groupFramework)
-                    ? NuGetFramework.AnyFramework
-                    : NuGetFramework.Parse(groupFramework, _frameworkProvider);
-
-                yield return new PackageDependencyGroup(framework, packages);
-            }
-
-            // legacy behavior
-            if (!groupFound)
-            {
-                var legacyDependencies = dependencyNode
-                    .Elements(XName.Get(Dependency, ns));
-
-                var packages = GetPackageDependencies(legacyDependencies, useStrictVersionCheck);
-
-                if (packages.Any())
-                {
-                    yield return new PackageDependencyGroup(NuGetFramework.AnyFramework, packages);
-                }
-            }
-
-            yield break;
         }
 
         private HashSet<PackageDependency> GetPackageDependencies(IEnumerable<XElement> nodes, bool useStrictVersionCheck)
