@@ -97,15 +97,15 @@
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
     <Content Include="$(SolutionPackagesFolder)Newtonsoft.Json.9.0.1\lib\net45\Newtonsoft.Json.dll">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <Link>Newtonsoft.Json.dll</Link>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
     <Content Include="$(SolutionPackagesFolder)Microsoft.Web.Xdt.2.1.1\lib\net40\Microsoft.Web.XmlTransform.dll">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <Link>Microsoft.Web.XmlTransform.dll</Link>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
     <Content Include="$(SolutionPackagesFolder)Lucene.Net.3.0.3\lib\NET40\Lucene.Net.dll">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <Link>Lucene.Net.dll</Link>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
     <Content Include="Resources\nuget_256.png">
