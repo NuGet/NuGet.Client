@@ -1896,8 +1896,8 @@ namespace NuGet.CommandLine.Test
                 var targetB = target.Libraries.SingleOrDefault(e => e.Name == "b");
                 var libB = projectA.AssetsFile.Libraries.SingleOrDefault(e => e.Name == "b");
 
-                var targetX = projectA.AssetsFile.Targets.Single(target => string.IsNullOrEmpty(target.RuntimeIdentifier)).Libraries.SingleOrDefault(e => e.Name == "x");
-                var targetY = projectA.AssetsFile.Targets.Single(target => string.IsNullOrEmpty(target.RuntimeIdentifier)).Libraries.SingleOrDefault(e => e.Name == "y");
+                var targetX = projectA.AssetsFile.Targets.Single(t => string.IsNullOrEmpty(t.RuntimeIdentifier)).Libraries.SingleOrDefault(e => e.Name == "x");
+                var targetY = projectA.AssetsFile.Targets.Single(t => string.IsNullOrEmpty(t.RuntimeIdentifier)).Libraries.SingleOrDefault(e => e.Name == "y");
 
                 Assert.Equal("1.0.0", targetB.Version.ToNormalizedString());
                 Assert.Equal("project", targetB.Type);

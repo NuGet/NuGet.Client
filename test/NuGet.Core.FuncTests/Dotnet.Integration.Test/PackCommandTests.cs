@@ -74,8 +74,7 @@ namespace Dotnet.Integration.Test
             }
         }
 
-        [PlatformFact(Platform.Windows)]
-        [Theory]
+        [PlatformTheory(Platform.Windows)]
         [InlineData(true)]
         [InlineData(false)]
         public void PackCommand_PackConsoleAppWithRID_NupkgValid(bool includeSymbols)
@@ -134,7 +133,7 @@ namespace Dotnet.Integration.Test
             }
         }
 
-        [Platform(Platform.Windows)]
+        [PlatformFact(Platform.Windows)]
         public void PackCommand_PackProject_SupportMultipleFrameworks()
         {
             // Arrange
@@ -1473,8 +1472,7 @@ namespace ClassLibrary
             }
         }
 
-        [Platform(Platform.Windows)]
-        [Theory]
+        [PlatformTheory(Platform.Windows)]
         [InlineData("TargetFramework", "netstandard1.4")]
         [InlineData("TargetFrameworks", "netstandard1.4;net46")]
         public void PackCommand_ContentInnerTargetExtension_AddsTfmSpecificContent(string tfmProperty, string tfmValue)
@@ -1542,8 +1540,7 @@ namespace ClassLibrary
             }
         }
 
-        [Platform(Platform.Windows)]
-        [Theory]
+        [PlatformTheory(Platform.Windows)]
         [InlineData("TargetFramework", "netstandard1.4")]
         [InlineData("TargetFrameworks", "netstandard1.4;net46")]
         public void PackCommand_BuildOutputInnerTargetExtension_AddsTfmSpecificBuildOuput(string tfmProperty,
@@ -1611,8 +1608,7 @@ namespace ClassLibrary
             }
         }
 
-        [Platform(Platform.Windows)]
-        [Theory]
+        [PlatformTheory(Platform.Windows)]
         [InlineData("folderA\\**\\*",                           null,                           "content/folderA/folderA.txt;content/folderA/folderB/folderB.txt;" +
                                                                                                 "contentFiles/any/netstandard1.4/folderA/folderA.txt;" +
                                                                                                 "contentFiles/any/netstandard1.4/folderA/folderB/folderB.txt")]
