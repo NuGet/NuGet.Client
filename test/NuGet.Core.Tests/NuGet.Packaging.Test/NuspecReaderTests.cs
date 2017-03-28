@@ -7,6 +7,9 @@ using System.Linq;
 using System.Text;
 using NuGet.Frameworks;
 using Xunit;
+using NuGet.Packaging.Core;
+using System.Collections.Generic;
+using NuGet.Versioning;
 
 namespace NuGet.Packaging.Test
 {
@@ -255,6 +258,73 @@ namespace NuGet.Packaging.Test
                   </metadata>
                 </package>";
 
+        private const string VersionRangeInDependency = @"<?xml version=""1.0"" encoding=""utf-8"" standalone=""yes""?>
+                <package xmlns=""http://schemas.microsoft.com/packaging/2011/10/nuspec.xsd"">
+                  <metadata>
+                    <id>PackageA</id>
+                    <version>2.0.1.0</version>
+                    <title>Package A</title>
+                    <authors>ownera, ownerb</authors>
+                    <description>Package A description</description>
+                    <tags>ServiceStack Serilog</tags>
+                    <dependencies>
+                      <dependency id=""PackageB"" version=""{0}"" />
+                    </dependencies>
+                  </metadata>
+                </package>";
+
+        public static IEnumerable<object[]> GetValidVersions()
+        {
+            return GetVersionRange(validVersions: true);
+        }
+
+        public static IEnumerable<object[]> GetInValidVersions()
+        {
+            return GetVersionRange(validVersions: false);
+        }
+
+        private static IEnumerable<object[]> GetVersionRange(bool validVersions)
+        {
+            IEnumerable<string> range = validVersions
+                ? ValidVersionRange()
+                : InvalidVersionRange();
+
+            foreach (var s in range)
+            {
+                yield return new object[] { s };
+            }
+        }
+
+        private static IEnumerable<string> ValidVersionRange()
+        {
+            yield return null;
+            yield return string.Empty;
+            yield return "0.0.0";
+            yield return "1.0.0-beta";
+            yield return "1.0.1-alpha.1.2.3";
+            yield return "1.0.1-alpha.1.2.3+a.b.c.d";
+            yield return "1.0.1+metadata";
+            yield return "1.0.1--";
+            yield return "1.0.1-a.really.long.version.release.label";
+            yield return "00.00.00.00-alpha";
+            yield return "0.0-alpha.1";
+            yield return "(1.0.0-alpha.1, )";
+            yield return "[1.0.0-alpha.1+metadata]";
+            yield return "[1.0, 2.0.0+metadata)";
+            yield return "[1.0+metadata, 2.0.0+metadata)";
+        }
+
+        private static IEnumerable<string> InvalidVersionRange()
+        {
+            yield return "~1";
+            yield return "~1.0.0";
+            yield return "0.0.0-~4";
+            yield return "$version$";
+            yield return "Invalid";
+            yield return "[15.106.0.preview]";
+            yield return "15.106.0-preview.01"; // no leading zeros in numeric identifiers of release label
+        }
+
         [Fact]
         public void NuspecReaderTests_NamespaceOnMetadata()
         {
@@ -305,6 +375,68 @@ namespace NuGet.Packaging.Test
             var dependencies = reader.GetDependencyGroups().ToList();
 
             Assert.Equal(2, dependencies.Count);
+        }
+
+        [Theory]
+        [MemberData(nameof(GetValidVersions))]
+        [MemberData(nameof(GetInValidVersions))]
+        public void NuspecReaderTests_NonStrictCheckInDependencyShouldNotThrowException(string versionRange)
+        {
+            // Arrange
+            var formattedNuspec = string.Format(VersionRangeInDependency, versionRange);
+            var nuspecReader = GetReader(formattedNuspec);
+
+            // Act
+            var dependencies = nuspecReader.GetDependencyGroups().ToList();
+
+            // Assert
+            Assert.Equal(1, dependencies.Count);
+        }
+
+        [Theory]
+        [MemberData(nameof(GetInValidVersions))]
+        public void NuspecReaderTests_NonStrictCheckInDependencyShouldFallbackToAllRangeForInvalidVersions(
+            string versionRange)
+        {
+            // Arrange
+            var formattedNuspec = string.Format(VersionRangeInDependency, versionRange);
+            var nuspecReader = GetReader(formattedNuspec);
+
+            // Act
+            var dependencies = nuspecReader.GetDependencyGroups().ToList();
+
+            // Assert
+            Assert.Equal(VersionRange.All, dependencies.First().Packages.First().VersionRange);
+        }
+
+        [Theory]
+        [MemberData(nameof(GetInValidVersions))]
+        public void NuspecReaderTests_InvalidVersionRangeInDependencyThrowsExceptionForStrictCheck(string versionRange)
+        {
+            // Arrange
+            var formattedNuspec = string.Format(VersionRangeInDependency, versionRange);
+            var nuspecReader = GetReader(formattedNuspec);
+            Action action = () => nuspecReader.GetDependencyGroups(useStrictVersionCheck: true).ToList();
+
+            // Act & Assert
+            Assert.Throws<PackagingException>(action);
+        }
+
+        [Theory]
+        [MemberData(nameof(GetValidVersions))]
+        public void NuspecReaderTests_ValidVersionRangeInDependencyReturnsResultForStrictCheck(string versionRange)
+        {
+            // Arrange
+            var formattedNuspec = string.Format(VersionRangeInDependency, versionRange);
+            var nuspecReader = GetReader(formattedNuspec);
+            var expectedVersionRange = string.IsNullOrEmpty(versionRange) ? VersionRange.All : VersionRange.Parse(versionRange);
+
+            // Act
+            var dependencyGroups = nuspecReader.GetDependencyGroups(useStrictVersionCheck: true).ToList();
+
+            // Assert
+            Assert.Equal(1, dependencyGroups.Count);
+            Assert.Equal(expectedVersionRange, dependencyGroups.First().Packages.First().VersionRange);
         }
 
         [Fact]

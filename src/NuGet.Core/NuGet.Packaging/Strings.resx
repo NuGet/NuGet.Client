@@ -129,6 +129,12 @@
   <data name="ErrorInvalidPackageVersion" xml:space="preserve">
     <value>Invalid package version for package id '{0}': '{1}'</value>
   </data>
+  <data name="ErrorInvalidPackageVersionForDependency" xml:space="preserve">
+    <value>Invalid package version for a dependency with id '{0}' in package '{1}': '{2}'</value>
+    <comment>{0} is the dependency's package id.
+{1} is the package's identity.
+{2} is the dependency's version range.</comment>
+  </data>
   <data name="ErrorNullOrEmptyPackageId" xml:space="preserve">
     <value>Null or empty package id</value>
   </data>
