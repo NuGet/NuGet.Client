@@ -7,6 +7,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Protocol.Core.Types;
+using NuGet.Protocol.Utility;
 
 namespace NuGet.Protocol
 {
@@ -33,7 +34,7 @@ namespace NuGet.Protocol
             _feedParser = new V2FeedParser(_httpSource, baseAddress, packageSource.Source);
         }
 
-        public async override Task<IEnumerable<IPackageSearchMetadata>> SearchAsync(
+        public override async Task<IEnumerable<IPackageSearchMetadata>> SearchAsync(
             string searchTerm,
             SearchFilter filters,
             int skip,
@@ -49,10 +50,11 @@ namespace NuGet.Protocol
                 log,
                 cancellationToken);
 
+            var metadataCache = new MetadataReferenceCache();
             // NuGet.Server does not group packages by id, this resource needs to handle it.
             var results = query.GroupBy(p => p.Id)
                 .Select(group => group.OrderByDescending(p => p.Version).First())
-                .Select(package => V2FeedUtilities.CreatePackageSearchResult(package, filters, _feedParser, log, cancellationToken));
+                .Select(package => V2FeedUtilities.CreatePackageSearchResult(package, metadataCache, filters, _feedParser, log, cancellationToken));
 
             return results.ToList();
         }

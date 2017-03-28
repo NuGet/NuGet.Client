@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -96,7 +99,8 @@ namespace NuGet.Protocol
         public VersionInfo[] ParsedVersions { get; private set; }
 
         public Task<IEnumerable<VersionInfo>> GetVersionsAsync() => Task.FromResult<IEnumerable<VersionInfo>>(ParsedVersions);
-        //The V3 source currently does not return a listed property
+
+        // The V3 source currently does not return a listed property
         public bool IsListed => true;
     }
 }

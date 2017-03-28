@@ -20,7 +20,7 @@ namespace NuGet.Protocol.FuncTest
         [Fact]
         public async Task V2FeedParser_DownloadFromInvalidUrl()
         {
-        // Arrange
+            // Arrange
             var randomName = Guid.NewGuid().ToString();
             var repo = Repository.Factory.GetCoreV3(TestServers.NuGetV2);
 

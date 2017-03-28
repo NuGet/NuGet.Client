@@ -36,6 +36,8 @@ namespace NuGet.Protocol
         public const string ProjectUrl = "projectUrl";
         public const string Tags = "tags";
         public const string DownloadCount = "totalDownloads";
+        public const string Created = "created";
+        public const string LastEdited = "lastEdited";
         public const string Published = "published";
         public const string RequireLicenseAcceptance = "requireLicenseAcceptance";
         public const string DependencyGroups = "dependencyGroups";

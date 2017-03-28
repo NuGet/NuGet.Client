@@ -15,15 +15,7 @@ namespace NuGet.Protocol.Tests
    ""@type"": ""SearchQueryService""
   },
   {
-   ""@id"": ""https://api-v3search-1.nuget.org/query"",
-   ""@type"": ""SearchQueryService""
-  },
-  {
    ""@id"": ""https://api-v3search-0.nuget.org/autocomplete"",
-   ""@type"": ""SearchAutocompleteService""
-  },
-  {
-   ""@id"": ""https://api-v3search-1.nuget.org/autocomplete"",
    ""@type"": ""SearchAutocompleteService""
   },
   {
@@ -51,15 +43,7 @@ namespace NuGet.Protocol.Tests
    ""@type"": ""SearchQueryService/3.0.0-rc""
   },
   {
-   ""@id"": ""https://api-v3search-1.nuget.org/query"",
-   ""@type"": ""SearchQueryService/3.0.0-rc""
-  },
-  {
    ""@id"": ""https://api-v3search-0.nuget.org/autocomplete"",
-   ""@type"": ""SearchAutocompleteService/3.0.0-rc""
-  },
-  {
-   ""@id"": ""https://api-v3search-1.nuget.org/autocomplete"",
    ""@type"": ""SearchAutocompleteService/3.0.0-rc""
   },
   {
@@ -91,15 +75,7 @@ namespace NuGet.Protocol.Tests
    ""@type"": ""SearchQueryService/3.0.0-beta""
   },
   {
-   ""@id"": ""https://api-v3search-1.nuget.org/query"",
-   ""@type"": ""SearchQueryService/3.0.0-beta""
-  },
-  {
    ""@id"": ""https://api-v3search-0.nuget.org/autocomplete"",
-   ""@type"": ""SearchAutocompleteService/3.0.0-beta""
-  },
-  {
-   ""@id"": ""https://api-v3search-1.nuget.org/autocomplete"",
    ""@type"": ""SearchAutocompleteService/3.0.0-beta""
   },
   {
@@ -140,15 +116,7 @@ namespace NuGet.Protocol.Tests
    ""@type"": ""SearchQueryService""
   },
   {
-   ""@id"": ""https://api-v3search-1.nuget.org/query"",
-   ""@type"": ""SearchQueryService""
-  },
-  {
    ""@id"": ""https://api-v3search-0.nuget.org/autocomplete"",
-   ""@type"": ""SearchAutocompleteService""
-  },
-  {
-   ""@id"": ""https://api-v3search-1.nuget.org/autocomplete"",
    ""@type"": ""SearchAutocompleteService""
   },
   {
@@ -181,15 +149,7 @@ namespace NuGet.Protocol.Tests
    ""@type"": ""SearchQueryService/3.0.0-rc""
   },
   {
-   ""@id"": ""https://api-v3search-1.nuget.org/query"",
-   ""@type"": ""SearchQueryService/3.0.0-rc""
-  },
-  {
    ""@id"": ""https://api-v3search-0.nuget.org/autocomplete"",
-   ""@type"": ""SearchAutocompleteService/3.0.0-rc""
-  },
-  {
-   ""@id"": ""https://api-v3search-1.nuget.org/autocomplete"",
    ""@type"": ""SearchAutocompleteService/3.0.0-rc""
   },
   {
@@ -221,15 +181,7 @@ namespace NuGet.Protocol.Tests
    ""@type"": ""SearchQueryService/3.0.0-beta""
   },
   {
-   ""@id"": ""https://api-v3search-1.nuget.org/query"",
-   ""@type"": ""SearchQueryService/3.0.0-beta""
-  },
-  {
    ""@id"": ""https://api-v3search-0.nuget.org/autocomplete"",
-   ""@type"": ""SearchAutocompleteService/3.0.0-beta""
-  },
-  {
-   ""@id"": ""https://api-v3search-1.nuget.org/autocomplete"",
    ""@type"": ""SearchAutocompleteService/3.0.0-beta""
   },
   {
@@ -4066,7 +4018,7 @@ namespace NuGet.Protocol.Tests
         #endregion
 
         #region BadProjectUrl
-        public const string badProjectUrlJsonData = @"{
+        public const string BadProjectUrlJsonData = @"{
             ""@id"": ""https://api.nuget.org/v3/catalog0/data/2015.02.01.06.23.47/jquery.1.4.1.json"",
             ""@type"": ""PackageDetails"",
             ""authors"": ""John Resig"",
@@ -4087,13 +4039,161 @@ namespace NuGet.Protocol.Tests
             ""version"": ""1.4.1""
           }";
         #endregion
-
+        
+        #region DuplicatePackageBesidesVersion
+        public const string DuplicatePackageBesidesVersionRegistrationIndex = @"{
+  ""@id"": ""https://api.nuget.org/v3/registration0/afine/index.json"",
+  ""@type"": [ ""catalog:CatalogRoot"", ""PackageRegistration"", ""catalog:Permalink"" ],
+  ""commitId"": ""a74d3dda-43be-40b9-b20e-cf666c69dc02"",
+  ""commitTimeStamp"": ""2017-03-13T19:52:44.9940562Z"",
+  ""count"": 1,
+  ""items"": [
+    {
+      ""@id"": ""https://api.nuget.org/v3/registration0/afine/index.json#page/0.0.0/1.0.0"",
+      ""@type"": ""catalog:CatalogPage"",
+      ""commitId"": ""a74d3dda-43be-40b9-b20e-cf666c69dc02"",
+      ""commitTimeStamp"": ""2017-03-13T19:52:44.9940562Z"",
+      ""count"": 2,
+      ""items"": [
+        {
+          ""@id"": ""https://api.nuget.org/v3/registration0/afine/0.0.0.json"",
+          ""@type"": ""Package"",
+          ""commitId"": ""a74d3dda-43be-40b9-b20e-cf666c69dc02"",
+          ""commitTimeStamp"": ""2017-03-13T19:52:44.9940562Z"",
+          ""catalogEntry"": {
+            ""@id"": ""https://api.nuget.org/v3/catalog0/data/2017.03.13.19.52.34/afine.0.0.0.json"",
+            ""@type"": ""PackageDetails"",
+            ""authors"": ""scottbom"",
+            ""dependencyGroups"": [
+              {
+                ""@id"": ""https://api.nuget.org/v3/catalog0/data/2017.03.13.19.52.34/afine.0.0.0.json#dependencygroup"",
+                ""@type"": ""PackageDependencyGroup"",
+                ""dependencies"": [
+                  {
+                    ""@id"": ""https://api.nuget.org/v3/catalog0/data/2017.03.13.19.52.34/afine.0.0.0.json#dependencygroup/sampledependency"",
+                    ""@type"": ""PackageDependency"",
+                    ""id"": ""SampleDependency"",
+                    ""range"": ""[1.0.0, )"",
+                    ""registration"": ""https://api.nuget.org/v3/registration0/sampledependency/index.json""
+                  }
+                ]
+              }
+            ],
+            ""description"": ""Package description"",
+            ""iconUrl"": """",
+            ""id"": ""afine"",
+            ""language"": """",
+            ""licenseUrl"": ""http://license_url_here_or_delete_this_line/"",
+            ""listed"": true,
+            ""minClientVersion"": """",
+            ""packageContent"": ""https://api.nuget.org/packages/afine.0.0.0.nupkg"",
+            ""projectUrl"": """",
+            ""published"": ""2016-08-25T19:08:26.257+00:00"",
+            ""requireLicenseAcceptance"": false,
+            ""summary"": ""Test package"",
+            ""tags"": [ ""Tag1"", ""Tag2"" ],
+            ""title"": """",
+            ""version"": ""0.0.0""
+          },
+          ""packageContent"": ""https://api.nuget.org/packages/afine.0.0.0.nupkg"",
+          ""registration"": ""https://api.nuget.org/v3/registration0/afine/index.json""
+        },
+        {
+          ""@id"": ""https://api.nuget.org/v3/registration0/afine/0.0.1.json"",
+          ""@type"": ""Package"",
+          ""commitId"": ""a74d3dda-43be-40b9-b20e-cf666c69dc02"",
+          ""commitTimeStamp"": ""2017-03-13T19:52:44.9940562Z"",
+          ""catalogEntry"": {
+            ""@id"": ""https://api.nuget.org/v3/catalog0/data/2017.03.13.19.52.34/afine.0.0.0.json"",
+            ""@type"": ""PackageDetails"",
+            ""authors"": ""scottbom"",
+            ""dependencyGroups"": [
+              {
+                ""@id"": ""https://api.nuget.org/v3/catalog0/data/2017.03.13.19.52.34/afine.0.0.0.json#dependencygroup"",
+                ""@type"": ""PackageDependencyGroup"",
+                ""dependencies"": [
+                  {
+                    ""@id"": ""https://api.nuget.org/v3/catalog0/data/2017.03.13.19.52.34/afine.0.0.0.json#dependencygroup/sampledependency"",
+                    ""@type"": ""PackageDependency"",
+                    ""id"": ""SampleDependency"",
+                    ""range"": ""[1.0.0, )"",
+                    ""registration"": ""https://api.nuget.org/v3/registration0/sampledependency/index.json""
+                  }
+                ]
+              }
+            ],
+            ""description"": ""Package description"",
+            ""iconUrl"": """",
+            ""id"": ""afine"",
+            ""language"": """",
+            ""licenseUrl"": ""http://license_url_here_or_delete_this_line/"",
+            ""listed"": true,
+            ""minClientVersion"": """",
+            ""packageContent"": ""https://api.nuget.org/packages/afine.0.0.0.nupkg"",
+            ""projectUrl"": """",
+            ""published"": ""2016-08-25T19:08:26.257+00:00"",
+            ""requireLicenseAcceptance"": false,
+            ""summary"": ""Test package"",
+            ""tags"": [ ""Tag1"", ""Tag2"" ],
+            ""title"": """",
+            ""version"": ""0.0.0""
+          },
+          ""packageContent"": ""https://api.nuget.org/packages/afine.0.0.0.nupkg"",
+          ""registration"": ""https://api.nuget.org/v3/registration0/afine/index.json""
+        }
+      ],
+      ""parent"": ""https://api.nuget.org/v3/registration0/afine/index.json"",
+      ""lower"": ""0.0.0"",
+      ""upper"": ""1.0.0""
+    }
+  ],
+  ""@context"": {
+    ""@vocab"": ""http://schema.nuget.org/schema#"",
+    ""catalog"": ""http://schema.nuget.org/catalog#"",
+    ""xsd"": ""http://www.w3.org/2001/XMLSchema#"",
+    ""items"": {
+      ""@id"": ""catalog:item"",
+      ""@container"": ""@set""
+    },
+    ""commitTimeStamp"": {
+      ""@id"": ""catalog:commitTimeStamp"",
+      ""@type"": ""xsd:dateTime""
+    },
+    ""commitId"": { ""@id"": ""catalog:commitId"" },
+    ""count"": { ""@id"": ""catalog:count"" },
+    ""parent"": {
+      ""@id"": ""catalog:parent"",
+      ""@type"": ""@id""
+    },
+    ""tags"": {
+      ""@container"": ""@set"",
+      ""@id"": ""tag""
+    },
+    ""packageTargetFrameworks"": {
+      ""@container"": ""@set"",
+      ""@id"": ""packageTargetFramework""
+    },
+    ""dependencyGroups"": {
+      ""@container"": ""@set"",
+      ""@id"": ""dependencyGroup""
+    },
+    ""dependencies"": {
+      ""@container"": ""@set"",
+      ""@id"": ""dependency""
+    },
+    ""packageContent"": { ""@type"": ""@id"" },
+    ""published"": { ""@type"": ""xsd:dateTime"" },
+    ""registration"": { ""@type"": ""@id"" }
+  }
+}";
+        #endregion
+        
         #region TempApiKeyResponse
         public const string tempApiKeyJsonData = @"{{
             ""Key"": ""{0}"",
             ""Expires"": ""2017-03-09T16:47:16""
             }}";
         #endregion
-
+        
     }
 }
