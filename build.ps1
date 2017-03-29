@@ -230,8 +230,8 @@ if ($CI)
     Invoke-BuildStep 'Running Restore for VS 15.0 RTM' {
 
         # Restore for VS 15.0
-        Trace-Log ". `"$MSBuildExe`" build\build.proj /t:RestoreVS15 /p:Configuration=$Configuration /p:BuildRTM=true /v:m /m:1"
-        & $MSBuildExe build\build.proj /t:RestoreVS15 /p:Configuration=$Configuration /p:BuildRTM=true /v:m /m:1
+        Trace-Log ". `"$MSBuildExe`" build\build.proj /t:RestoreVS15 /p:Configuration=$Configuration /p:BuildRTM=true /p:ReleaseLabel=$ReleaseLabel /p:BuildNumber=$BuildNumber /v:m /m:1 "
+        & $MSBuildExe build\build.proj /t:RestoreVS15 /p:Configuration=$Configuration /p:BuildRTM=true /p:ReleaseLabel=$ReleaseLabel /p:BuildNumber=$BuildNumber /v:m /m:1
 
         if (-not $?)
         {
@@ -246,12 +246,12 @@ if ($CI)
     Invoke-BuildStep 'Packing VS15 RTM' {
 
         # Build and (If not $SkipUnitTest) Pack, Core unit tests, and Unit tests for VS 15.0
-        Trace-Log ". `"$MSBuildExe`" build\build.proj /t:RestoreVS15 /p:Configuration=$Configuration /p:BuildRTM=true /v:m /m:1"
-        & $MSBuildExe build\build.proj /t:BuildVS15`;Pack /p:Configuration=$Configuration /p:BuildRTM=true /v:m /m:1
+        Trace-Log ". `"$MSBuildExe`" build\build.proj /t:BuildVS15`;Pack /p:Configuration=$Configuration /p:BuildRTM=true /p:ReleaseLabel=$ReleaseLabel /p:BuildNumber=$BuildNumber /v:m /m:1"
+        & $MSBuildExe build\build.proj /t:BuildVS15`;Pack /p:Configuration=$Configuration /p:BuildRTM=true  /p:ReleaseLabel=$ReleaseLabel /p:BuildNumber=$BuildNumber /v:m /m:1 
 
         if (-not $?)
         {
-            Write-Error "VS15 RTM build failed!"
+            Write-Error "Packing VS15 RTM build failed!"
             exit 1
         }
     } `
