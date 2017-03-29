@@ -27,7 +27,7 @@ namespace NuGet.Protocol.Tests
             responses.Add(
                 serviceAddress + "?q=azure%20b&skip=0&take=1&prerelease=false" +
                 "&supportedFramework=.NETFramework,Version=v4.5&semVerLevel=2.0.0",
-                TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.V3Search.json", GetType()));
+                TestUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.V3Search.json", GetType()));
             responses.Add(serviceAddress, string.Empty);
 
             var httpSource = new TestHttpSource(new PackageSource(serviceAddress), responses);
@@ -58,7 +58,7 @@ namespace NuGet.Protocol.Tests
             responses.Add(
                 serviceAddress + "?q=azure%20b&skip=0&take=1&prerelease=false" +
                 "&supportedFramework=.NETFramework,Version=v4.5&semVerLevel=2.0.0",
-                TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.V3Search.json", GetType()));
+                TestUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.V3Search.json", GetType()));
             responses.Add(serviceAddress, string.Empty);
 
             var httpSource = new TestHttpSource(new PackageSource(serviceAddress), responses);

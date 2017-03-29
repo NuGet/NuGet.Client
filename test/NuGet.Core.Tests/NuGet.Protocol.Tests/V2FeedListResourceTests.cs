@@ -32,10 +32,10 @@ namespace NuGet.Protocol.Tests
             responses.Add(
                 serviceAddress + "/Search()?$filter=IsLatestVersion&$orderby=Id&searchTerm='newton'" +
                 "&targetFramework=''&includePrerelease=false&$skip=0&$top=30&semVerLevel=2.0.0",
-                TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.6DelistedEntries.xml", GetType()));
+                TestUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.6DelistedEntries.xml", GetType()));
             responses.Add(serviceAddress, string.Empty);
             responses.Add(serviceAddress + "/$metadata",
-                TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.MetadataTT.xml", GetType()));
+                TestUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.MetadataTT.xml", GetType()));
 
             var httpSource = new TestHttpSource(new PackageSource(serviceAddress), responses);
 
@@ -79,10 +79,10 @@ namespace NuGet.Protocol.Tests
             responses.Add(
                 serviceAddress + "/Search()?$filter=IsLatestVersion&$orderby=Id&searchTerm='newton'" +
                 "&targetFramework=''&includePrerelease=false&$skip=0&$top=30&semVerLevel=2.0.0",
-                TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.6DelistedEntries.xml", GetType()));
+                TestUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.6DelistedEntries.xml", GetType()));
             responses.Add(serviceAddress, string.Empty);
             responses.Add(serviceAddress + "/$metadata",
-                TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.MetadataTT.xml", GetType()));
+                TestUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.MetadataTT.xml", GetType()));
 
             var httpSource = new TestHttpSource(new PackageSource(serviceAddress), responses);
 
@@ -126,14 +126,14 @@ namespace NuGet.Protocol.Tests
             responses.Add(
                 serviceAddress + "/Search()?$filter=IsLatestVersion&$orderby=Id&searchTerm='newton'" +
                 "&targetFramework=''&includePrerelease=false&$skip=0&$top=30&semVerLevel=2.0.0",
-                TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.NewtonSearch30Entries.xml", GetType()));
+                TestUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.NewtonSearch30Entries.xml", GetType()));
             responses.Add(
                 serviceAddress + "/Search()?$filter=IsLatestVersion&$orderby=Id&searchTerm='newton'" +
                 "&targetFramework=''&includePrerelease=false&$skip=30&$top=30&semVerLevel=2.0.0",
-                TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.NewtonSearch3Entries.xml", GetType()));
+                TestUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.NewtonSearch3Entries.xml", GetType()));
             responses.Add(serviceAddress, string.Empty);
             responses.Add(serviceAddress + "/$metadata",
-                TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.MetadataTT.xml", GetType()));
+                TestUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.MetadataTT.xml", GetType()));
 
             var httpSource = new TestHttpSource(new PackageSource(serviceAddress), responses);
 
@@ -177,10 +177,10 @@ namespace NuGet.Protocol.Tests
             responses.Add(
                 serviceAddress + "/Search()?$filter=IsAbsoluteLatestVersion&$orderby=Id&searchTerm='NuGet.Exe'" +
                 "&targetFramework=''&includePrerelease=true&$skip=0&$top=30&semVerLevel=2.0.0",
-                TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.NuGetExeSearch.xml", GetType()));
+                TestUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.NuGetExeSearch.xml", GetType()));
             responses.Add(serviceAddress, string.Empty);
             responses.Add(serviceAddress + "/$metadata",
-                TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.MetadataTT.xml", GetType()));
+                TestUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.MetadataTT.xml", GetType()));
 
             var httpSource = new TestHttpSource(new PackageSource(serviceAddress), responses);
 
@@ -224,14 +224,14 @@ namespace NuGet.Protocol.Tests
             responses.Add(
                 serviceAddress + "/Search()?$filter=IsAbsoluteLatestVersion&$orderby=Id&searchTerm='Windows.AzureStorage'" +
                 "&targetFramework=''&includePrerelease=true&$skip=0&$top=30&semVerLevel=2.0.0",
-                TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.WindowsAzureStorageSearchPackage30Entries.xml", GetType()));
+                TestUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.WindowsAzureStorageSearchPackage30Entries.xml", GetType()));
             responses.Add(
                 serviceAddress + "/Search()?$filter=IsAbsoluteLatestVersion&$orderby=Id&searchTerm='Windows.AzureStorage'" +
                 "&targetFramework=''&includePrerelease=true&$skip=30&$top=30&semVerLevel=2.0.0",
-                TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.WindowsAzureStorageSearchPackage17Entries.xml", GetType()));
+                TestUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.WindowsAzureStorageSearchPackage17Entries.xml", GetType()));
             responses.Add(serviceAddress, string.Empty);
             responses.Add(serviceAddress + "/$metadata",
-                TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.MetadataTT.xml", GetType()));
+                TestUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.MetadataTT.xml", GetType()));
 
             var httpSource = new TestHttpSource(new PackageSource(serviceAddress), responses);
 
@@ -276,10 +276,10 @@ namespace NuGet.Protocol.Tests
             responses.Add(
                 serviceAddress + "/Search()?$orderby=Id&searchTerm='NuGet.Exe'&targetFramework=''" +
                 "&includePrerelease=true&$skip=0&$top=30&semVerLevel=2.0.0",
-                TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.NuGetExeSearch.xml", GetType()));
+                TestUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.NuGetExeSearch.xml", GetType()));
             responses.Add(serviceAddress, string.Empty);
             responses.Add(serviceAddress + "/$metadata",
-                TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.MetadataTT.xml", GetType()));
+                TestUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.MetadataTT.xml", GetType()));
 
             var httpSource = new TestHttpSource(new PackageSource(serviceAddress), responses);
 
@@ -323,14 +323,14 @@ namespace NuGet.Protocol.Tests
             responses.Add(
                 serviceAddress + "/Search()?$orderby=Id&searchTerm='Windows.AzureStorage'&targetFramework=''" +
                 "&includePrerelease=true&$skip=0&$top=30&semVerLevel=2.0.0",
-                TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.WindowsAzureStorageSearchPackage30Entries.xml", GetType()));
+                TestUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.WindowsAzureStorageSearchPackage30Entries.xml", GetType()));
             responses.Add(
                 serviceAddress + "/Search()?$orderby=Id&searchTerm='Windows.AzureStorage'&targetFramework=''" +
                 "&includePrerelease=true&$skip=30&$top=30&semVerLevel=2.0.0",
-                TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.WindowsAzureStorageSearchPackage17Entries.xml", GetType()));
+                TestUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.WindowsAzureStorageSearchPackage17Entries.xml", GetType()));
             responses.Add(serviceAddress, string.Empty);
             responses.Add(serviceAddress + "/$metadata",
-                TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.MetadataTT.xml", GetType()));
+                TestUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.MetadataTT.xml", GetType()));
 
             var httpSource = new TestHttpSource(new PackageSource(serviceAddress), responses);
 
@@ -375,14 +375,14 @@ namespace NuGet.Protocol.Tests
             responses.Add(
                 serviceAddress + "/Search()?$orderby=Id&searchTerm='Windows.AzureStorage'&targetFramework=''" +
                 "&includePrerelease=false&$skip=0&$top=30&semVerLevel=2.0.0",
-                TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.WindowsAzureStorageSearchPackage30Entries.xml", GetType()));
+                TestUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.WindowsAzureStorageSearchPackage30Entries.xml", GetType()));
             responses.Add(
                 serviceAddress + "/Search()?$orderby=Id&searchTerm='Windows.AzureStorage'&targetFramework=''" +
                 "&includePrerelease=false&$skip=30&$top=30&semVerLevel=2.0.0",
-                TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.WindowsAzureStorageSearchPackage17Entries.xml", GetType()));
+                TestUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.WindowsAzureStorageSearchPackage17Entries.xml", GetType()));
             responses.Add(serviceAddress, string.Empty);
             responses.Add(serviceAddress + "/$metadata",
-                TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.MetadataTT.xml", GetType()));
+                TestUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.MetadataTT.xml", GetType()));
 
             var httpSource = new TestHttpSource(new PackageSource(serviceAddress), responses);
 

@@ -8,11 +8,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.Protocol.Core.Types;
+using NuGet.Protocol.VisualStudio;
 using NuGet.Versioning;
 using Test.Utility;
 using Xunit;
 
-namespace NuGet.Protocol.VisualStudio.Tests
+namespace NuGet.Protocol.Tests
 {
     // Tests the Powershell autocomplete resource for V2 and v3 sources.  
     public class PowershellAutoCompleteResourceTests
@@ -23,22 +24,22 @@ namespace NuGet.Protocol.VisualStudio.Tests
             ResponsesDict = new Dictionary<string, string>();
             ResponsesDict.Add(
                 "http://source.test/v3/index.json",
-                JsonData.IndexJson);
+                PowershellJsonData.IndexJson);
             ResponsesDict.Add(
                 "https://nuget.org/api/v2/",
                 string.Empty);
             ResponsesDict.Add(
                 "https://api-v3search-0.nuget.org/autocomplete?q=elm&includePrerelease=true&semVerLevel=2.0.0",
-                JsonData.AutoCompleteV3Example);
+                PowershellJsonData.AutoCompleteV3Example);
             ResponsesDict.Add(
                 "https://api.nuget.org/v3/registration0/nuget.versioning/index.json",
-                JsonData.VersionAutocompleteRegistrationExample);
+                PowershellJsonData.VersionAutocompleteRegistrationExample);
             ResponsesDict.Add(
                 "https://nuget.org/api/v2/package-ids?partialId=elm&includePrerelease=True&semVerLevel=2.0.0",
-                JsonData.AutoCompleteV2Example);
+                PowershellJsonData.AutoCompleteV2Example);
             ResponsesDict.Add(
                 "https://nuget.org/api/v2/package-versions/NuGet.Versioning?includePrerelease=True&semVerLevel=2.0.0",
-                JsonData.VersionAutoCompleteV2Example);
+                PowershellJsonData.VersionAutoCompleteV2Example);
         }
 
         [Theory]

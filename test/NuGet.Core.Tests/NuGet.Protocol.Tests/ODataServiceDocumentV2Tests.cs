@@ -37,7 +37,7 @@ namespace NuGet.Protocol.Tests
             var serviceAddress = TestUtility.CreateServiceAddress();
 
             var responses = new Dictionary<string, string>();
-            responses.Add(serviceAddress, TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.ODataServiceDocument.xml", GetType()));
+            responses.Add(serviceAddress, TestUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.ODataServiceDocument.xml", GetType()));
 
             var repo = StaticHttpHandler.CreateSource(serviceAddress, Repository.Provider.GetCoreV3(), responses);
 

@@ -18,9 +18,7 @@
     <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.Packaging.Core.Types\NuGet.Packaging.Core.Types.csproj"/>
     <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.ProjectManagement\NuGet.ProjectManagement.csproj"/>
     <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.ProjectModel\NuGet.ProjectModel.csproj"/>
-    <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.Protocol.Core.Types\NuGet.Protocol.Core.Types.csproj"/>
-    <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.Protocol.Core.v3\NuGet.Protocol.Core.v3.csproj"/>
-    <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.Protocol.VisualStudio\NuGet.Protocol.VisualStudio.csproj"/>
+    <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.Protocol\NuGet.Protocol.csproj"/>
     <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.Repositories\NuGet.Repositories.csproj"/>
     <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.Resolver\NuGet.Resolver.csproj"/>
     <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.RuntimeModel\NuGet.RuntimeModel.csproj"/>

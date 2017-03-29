@@ -73,7 +73,7 @@ namespace NuGet.Protocol.Tests
                         serviceAddress + "FindPackagesById()?id='XUNIT'",
                         _ => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
                         {
-                            Content = new TestContent(TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.XunitFindPackagesById.xml", GetType()))
+                            Content = new TestContent(TestUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.XunitFindPackagesById.xml", GetType()))
                         })
                     },
                     {
@@ -131,7 +131,7 @@ namespace NuGet.Protocol.Tests
                         serviceAddress + "FindPackagesById()?id='WINDOWSAZURE.STORAGE'",
                         _ => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
                         {
-                            Content = new TestContent(TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.WindowsAzureStorageFindPackagesById.xml", GetType()))
+                            Content = new TestContent(TestUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.WindowsAzureStorageFindPackagesById.xml", GetType()))
                         })
                     },
                     {

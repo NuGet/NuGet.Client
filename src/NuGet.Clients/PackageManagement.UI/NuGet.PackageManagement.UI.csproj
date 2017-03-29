@@ -2,7 +2,6 @@
 <Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.legacy.props" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
-
   <PropertyGroup>
     <Shipping>true</Shipping>
     <AutoUnifyAssemblyReferences>true</AutoUnifyAssemblyReferences>
@@ -456,10 +455,6 @@
       <Project>{2995463d-9849-4bd3-8a87-0b7e1c5e6812}</Project>
       <Name>NuGet.ProjectManagement</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\NuGet.Core\NuGet.Protocol.Core.Types\NuGet.Protocol.Core.Types.csproj">
-      <Project>{37C02980-2278-4494-8FF7-208D8078C21E}</Project>
-      <Name>NuGet.Protocol.Core.Types</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\NuGet.Core\NuGet.Resolver\NuGet.Resolver.csproj">
       <Project>{51AA27A9-B8B4-458F-9211-E6889B441573}</Project>
       <Name>NuGet.Resolver</Name>
@@ -491,7 +486,6 @@
   <ItemGroup>
     <Resource Include="Resources\StatusInformation_16x.png" />
   </ItemGroup>
-
   <Import Project="$(BuildCommonDirectory)common.targets" />
   <Import Project="$(BuildCommonDirectory)legacy.imports.targets" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

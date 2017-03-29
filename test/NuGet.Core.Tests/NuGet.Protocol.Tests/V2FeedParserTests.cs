@@ -29,7 +29,7 @@ namespace NuGet.Protocol.Tests
 
             var responses = new Dictionary<string, string>();
             responses.Add(serviceAddress + "FindPackagesById()?id='WindowsAzure.Storage'&semVerLevel=2.0.0",
-                TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.WindowsAzureStorageFindPackagesById.xml", GetType()));
+                TestUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.WindowsAzureStorageFindPackagesById.xml", GetType()));
             responses.Add(serviceAddress, string.Empty);
 
             var httpSource = new TestHttpSource(new PackageSource(serviceAddress), responses);
@@ -55,12 +55,12 @@ namespace NuGet.Protocol.Tests
             var responses = new Dictionary<string, string>();
             responses.Add(
                 serviceAddress + "FindPackagesById()?id='ravendb.client'&semVerLevel=2.0.0",
-                TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.RavendbFindPackagesById.xml", GetType()));
+                TestUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.RavendbFindPackagesById.xml", GetType()));
             responses.Add(serviceAddress, string.Empty);
             responses.Add("https://www.nuget.org/api/v2/FindPackagesById?id='ravendb.client'&$skiptoken='RavenDB.Client','1.2.2067-Unstable'",
-               TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.RavendbFindPackagesByIdPage1.xml", GetType()));
+               TestUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.RavendbFindPackagesByIdPage1.xml", GetType()));
             responses.Add("https://www.nuget.org/api/v2/FindPackagesById?id='ravendb.client'&$skiptoken='RavenDB.Client','2.0.2183-Unstable'",
-                TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.RavendbFindPackagesByIdPage2.xml", GetType()));
+                TestUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.RavendbFindPackagesByIdPage2.xml", GetType()));
 
             var httpSource = new TestHttpSource(new PackageSource(serviceAddress), responses);
 
@@ -81,7 +81,7 @@ namespace NuGet.Protocol.Tests
 
             var responses = new Dictionary<string, string>();
             responses.Add(serviceAddress + "FindPackagesById()?id='WindowsAzure.Storage'&semVerLevel=2.0.0",
-                TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.WindowsAzureStorageFindPackagesById.xml", GetType()));
+                TestUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.WindowsAzureStorageFindPackagesById.xml", GetType()));
             responses.Add(serviceAddress, string.Empty);
 
             var httpSource = new TestHttpSource(new PackageSource(serviceAddress), responses);
@@ -155,11 +155,11 @@ namespace NuGet.Protocol.Tests
             responses.Add(serviceAddress + "Packages(Id='xunit',Version='1.0.0-notfound')", string.Empty);
             responses.Add(
                 serviceAddress + "FindPackagesById()?id='xunit'&semVerLevel=2.0.0",
-                TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.XunitFindPackagesById.xml", GetType()));
+                TestUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.XunitFindPackagesById.xml", GetType()));
             responses.Add(serviceAddress, string.Empty);
 
             var httpSource = new TestHttpSource(new PackageSource(serviceAddress), responses,
-                TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.500Error.xml", GetType()));
+                TestUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.500Error.xml", GetType()));
             V2FeedParser parser = new V2FeedParser(httpSource, serviceAddress);
 
             // Act
@@ -189,7 +189,7 @@ namespace NuGet.Protocol.Tests
             responses.Add(
                 serviceAddress + "Search()?$filter=IsLatestVersion&searchTerm='azure'&targetFramework='net40-client'" +
                 "&includePrerelease=false&$skip=0&$top=1&semVerLevel=2.0.0",
-                TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.AzureSearch.xml", GetType()));
+                TestUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.AzureSearch.xml", GetType()));
             responses.Add(serviceAddress, string.Empty);
 
             var httpSource = new TestHttpSource(new PackageSource(serviceAddress), responses);
@@ -236,7 +236,7 @@ namespace NuGet.Protocol.Tests
             responses.Add(
                 serviceAddress + "Search()?$orderby=Id&searchTerm=''&targetFramework=''&includePrerelease=false" +
                 "&$skip=0&$top=5&semVerLevel=2.0.0",
-                TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.SearchOrderById.xml", GetType()));
+                TestUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.SearchOrderById.xml", GetType()));
             responses.Add(serviceAddress, string.Empty);
 
             var httpSource = new TestHttpSource(new PackageSource(serviceAddress), responses);
@@ -273,7 +273,7 @@ namespace NuGet.Protocol.Tests
             responses.Add(
                 serviceAddress + "Search()?$filter=IsLatestVersion&searchTerm='azure%20%2B''%20b%20'" + 
                 "&targetFramework='portable-net45%2Bwin8'&includePrerelease=false&$skip=0&$top=1&semVerLevel=2.0.0",
-                TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.AzureSearch.xml", GetType()));
+                TestUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.AzureSearch.xml", GetType()));
             responses.Add(serviceAddress, string.Empty);
 
             var httpSource = new TestHttpSource(new PackageSource(serviceAddress), responses);
@@ -302,12 +302,12 @@ namespace NuGet.Protocol.Tests
             responses.Add(
                 serviceAddress + "Search()?$filter=IsLatestVersion&searchTerm='azure'&targetFramework='net40-client'" +
                 "&includePrerelease=false&$skip=0&$top=100&semVerLevel=2.0.0",
-                TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.AzureSearch100.xml", GetType()));
+                TestUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.AzureSearch100.xml", GetType()));
             responses.Add(
                 "https://www.nuget.org/api/v2/Search?searchTerm='azure'&targetFramework='net40-client'" +
                 "&includePrerelease=false&$filter=IsLatestVersion" +
                 "&$skiptoken='Haven.ServiceBus.Azure.ServiceBus.Publisher','1.0.5835.19676',100",
-                TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.AzureSearchNext100.xml", GetType()));
+                TestUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.AzureSearchNext100.xml", GetType()));
             responses.Add(serviceAddress, string.Empty);
 
             var httpSource = new TestHttpSource(new PackageSource(serviceAddress), responses);
@@ -406,7 +406,7 @@ namespace NuGet.Protocol.Tests
 
             var responses = new Dictionary<string, string>();
             responses.Add(serviceAddress + "Packages(Id='WindowsAzure.Storage',Version='4.3.2-preview')",
-                TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.WindowsAzureStorageGetPackages.xml", GetType()));
+                TestUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.WindowsAzureStorageGetPackages.xml", GetType()));
             responses.Add(serviceAddress, string.Empty);
 
             var httpSource = new TestHttpSource(new PackageSource(serviceAddress), responses);
@@ -447,11 +447,11 @@ namespace NuGet.Protocol.Tests
             var responses = new Dictionary<string, string>();
             responses.Add(serviceAddress + "Packages(Id='xunit',Version='1.0.0-notfound')", string.Empty);
             responses.Add(serviceAddress + "FindPackagesById()?id='xunit'&semVerLevel=2.0.0",
-                TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.XunitFindPackagesById.xml", GetType()));
+                TestUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.XunitFindPackagesById.xml", GetType()));
             responses.Add(serviceAddress, string.Empty);
 
             var httpSource = new TestHttpSource(new PackageSource(serviceAddress), responses,
-                TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.500Error.xml", GetType()));
+                TestUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.500Error.xml", GetType()));
 
             V2FeedParser parser = new V2FeedParser(httpSource, serviceAddress);
 
@@ -471,7 +471,7 @@ namespace NuGet.Protocol.Tests
             var responses = new Dictionary<string, string>();
             responses.Add(serviceAddress + "Packages(Id='WindowsAzure.Storage',Version='4.3.2-preview')", string.Empty);
             responses.Add(serviceAddress + "FindPackagesById()?id='WindowsAzure.Storage'&semVerLevel=2.0.0",
-                TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.WindowsAzureStorageFindPackagesById.xml", GetType()));
+                TestUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.WindowsAzureStorageFindPackagesById.xml", GetType()));
             responses.Add(serviceAddress, string.Empty);
 
             var httpSource = new TestHttpSource(new PackageSource(serviceAddress), responses);
@@ -516,7 +516,7 @@ namespace NuGet.Protocol.Tests
             responses.Add(serviceAddress, string.Empty);
 
             var httpSource = new TestHttpSource(new PackageSource(serviceAddress), responses,
-                TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.500Error.xml", GetType()));
+                TestUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.500Error.xml", GetType()));
 
             V2FeedParser parser = new V2FeedParser(httpSource, serviceAddress);
             var packageIdentity = new PackageIdentity("xunit", new NuGetVersion("1.0.0-notfound"));
@@ -545,7 +545,7 @@ namespace NuGet.Protocol.Tests
             responses.Add(serviceAddress, string.Empty);
 
             var httpSource = new TestHttpSource(new PackageSource(serviceAddress), responses,
-                TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.500Error.xml", GetType()));
+                TestUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.500Error.xml", GetType()));
 
             V2FeedParser parser = new V2FeedParser(httpSource, serviceAddress);
             var packageIdentity = new PackageIdentity("xunit", new NuGetVersion("1.0.0-InternalServerError"));
@@ -572,7 +572,7 @@ namespace NuGet.Protocol.Tests
             responses.Add(serviceAddress, string.Empty);
 
             var httpSource = new TestHttpSource(new PackageSource(serviceAddress), responses,
-                TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.500Error.xml", GetType()));
+                TestUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.500Error.xml", GetType()));
 
             V2FeedParser parser = new V2FeedParser(httpSource, serviceAddress);
 
@@ -599,7 +599,7 @@ namespace NuGet.Protocol.Tests
             responses.Add(serviceAddress, string.Empty);
 
             var httpSource = new TestHttpSource(new PackageSource(serviceAddress), responses,
-                TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.500Error.xml", GetType()));
+                TestUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.500Error.xml", GetType()));
 
             V2FeedParser parser = new V2FeedParser(httpSource, serviceAddress);
 
@@ -624,7 +624,7 @@ namespace NuGet.Protocol.Tests
             var responses = new Dictionary<string, string>();
             responses.Add(
                 serviceAddress + "FindPackagesById()?id='PackageA'&semVerLevel=2.0.0",
-                TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.NexusFindPackagesById.xml", GetType()));
+                TestUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.NexusFindPackagesById.xml", GetType()));
             responses.Add(serviceAddress, string.Empty);
 
             var httpSource = new TestHttpSource(new PackageSource(serviceAddress), responses);
@@ -659,12 +659,12 @@ namespace NuGet.Protocol.Tests
 
             var responses = new Dictionary<string, string>();
             responses.Add(serviceAddress + "FindPackagesById()?id='ravendb.client'&semVerLevel=2.0.0",
-                TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.CyclicDependency.xml", GetType()));
+                TestUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.CyclicDependency.xml", GetType()));
             responses.Add(serviceAddress, string.Empty);
             responses.Add(dupUrl,
-               TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.CyclicDependencyPage1.xml", GetType()));
+               TestUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.CyclicDependencyPage1.xml", GetType()));
             responses.Add("https://www.nuget.org/api/v2/FindPackagesById?id='ravendb.client'&$skiptoken='RavenDB.Client','2.0.2183-Unstable'",
-                TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.CyclicDependencyPage2.xml", GetType()));
+                TestUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.CyclicDependencyPage2.xml", GetType()));
 
             var httpSource = new TestHttpSource(new PackageSource(serviceAddress), responses);
 
@@ -684,7 +684,7 @@ namespace NuGet.Protocol.Tests
 
             // Assert
             Assert.NotNull(duplicateUrlException);
-            Assert.Equal(string.Format(CultureInfo.CurrentCulture, Strings.Protocol_duplicateUri, dupUrl), duplicateUrlException.Message);
+            Assert.Equal(string.Format(CultureInfo.CurrentCulture, "'{0}' is a duplicate url which has already been downloaded and will lead to a cyclic dependency. Please correct from server.", dupUrl), duplicateUrlException.Message);
         }
 
         [Fact]
@@ -698,7 +698,7 @@ namespace NuGet.Protocol.Tests
                 serviceAddress + "Search()?$filter=IsLatestVersion&searchTerm='azure%20%2B''%20b%20'" +
                 "&targetFramework='portable45-net45%2Bwin8%2Bwpa81%7Cwpa81%7Cmonoandroid60'&includePrerelease=false" +
                 "&$skip=0&$top=1&semVerLevel=2.0.0",
-                TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.AzureSearch.xml", GetType()));
+                TestUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.AzureSearch.xml", GetType()));
             responses.Add(serviceAddress, string.Empty);
 
             var httpSource = new TestHttpSource(new PackageSource(serviceAddress), responses);
@@ -733,11 +733,11 @@ namespace NuGet.Protocol.Tests
             responses.Add(
                 serviceAddress + "Search()?$filter=IsLatestVersion&searchTerm='WindowsAzure.Storage'" +
                 "&targetFramework=''&includePrerelease=false&$skip=0&$top=30&semVerLevel=2.0.0",
-                TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.WindowsAzureStorageSearchPackage30Entries.xml", GetType()));
+                TestUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.WindowsAzureStorageSearchPackage30Entries.xml", GetType()));
             responses.Add(
                 serviceAddress + "Search()?$filter=IsLatestVersion&searchTerm='WindowsAzure.Storage'" +
                 "&targetFramework=''&includePrerelease=false&$skip=30&$top=30&semVerLevel=2.0.0",
-                TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.WindowsAzureStorageSearchPackage17Entries.xml", GetType()));
+                TestUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.WindowsAzureStorageSearchPackage17Entries.xml", GetType()));
             responses.Add(serviceAddress, string.Empty);
 
             var httpSource = new TestHttpSource(new PackageSource(serviceAddress), responses);
@@ -768,12 +768,12 @@ namespace NuGet.Protocol.Tests
             responses.Add(serviceAddress + "Packages()?$filter=((((Id%20ne%20null)%20and%20substringof('WindowsAzure.Storage',tolower(Id)))"+
                 "%20or%20((Description%20ne%20null)%20and%20substringof('WindowsAzure.Storage',tolower(Description))))%20or%20((Tags%20ne%20null)"+
                 "%20and%20substringof('%20WindowsAzure.Storage%20',tolower(Tags))))%20and%20IsLatestVersion&$skip=0&$top=30&semVerLevel=2.0.0",
-                TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.WindowsAzureStorageSearchPackage30Entries.xml", GetType()));
+                TestUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.WindowsAzureStorageSearchPackage30Entries.xml", GetType()));
 
             responses.Add(serviceAddress +"Packages()?$filter=((((Id%20ne%20null)%20and%20substringof('WindowsAzure.Storage',tolower(Id)))" +
                 "%20or%20((Description%20ne%20null)%20and%20substringof('WindowsAzure.Storage',tolower(Description))))%20or%20((Tags%20ne%20null)" +
                 "%20and%20substringof('%20WindowsAzure.Storage%20',tolower(Tags))))%20and%20IsLatestVersion&$skip=30&$top=30&semVerLevel=2.0.0",
-                TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.WindowsAzureStorageSearchPackage17Entries.xml", GetType()));
+                TestUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.WindowsAzureStorageSearchPackage17Entries.xml", GetType()));
             responses.Add(serviceAddress, string.Empty);
 
             var httpSource = new TestHttpSource(new PackageSource(serviceAddress), responses);
@@ -802,7 +802,7 @@ namespace NuGet.Protocol.Tests
 
             var responses = new Dictionary<string, string>();
             responses.Add(serviceAddress + "Packages(Id='WindowsAzure.Storage',Version='4.3.2-preview')",
-                TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.WindowsAzureStorageGetPackages.xml", GetType()));
+                TestUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.WindowsAzureStorageGetPackages.xml", GetType()));
             responses.Add(serviceAddress, string.Empty);
 
             var httpSource = new TestHttpSource(new PackageSource(serviceAddress), responses);
