@@ -89,7 +89,24 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public override async Task<string> GetAssetsFilePathAsync()
         {
-            return Path.Combine(await GetBaseIntermediatePathAsync(), LockFileFormat.AssetsFileName);
+            return await GetAssetsFilePathAsync(shouldThrow: true);
+        }
+
+        public override async Task<string> GetAssetsFilePathOrNullAsync()
+        {
+            return await GetAssetsFilePathAsync(shouldThrow: false);
+        }
+
+        private async Task<string> GetAssetsFilePathAsync(bool shouldThrow)
+        {
+            var baseIntermediatePath = await GetBaseIntermediatePathAsync(shouldThrow);
+
+            if (baseIntermediatePath == null)
+            {
+                return null;
+            }
+
+            return Path.Combine(baseIntermediatePath, LockFileFormat.AssetsFileName);
         }
 
         public override async Task<bool> ExecuteInitScriptAsync(
@@ -141,6 +158,18 @@ namespace NuGet.PackageManagement.VisualStudio
             BuildIntegratedInstallationContext installationContext,
             CancellationToken token)
         {
+            return await InstallPackageWithMetadataAsync(packageId,
+                range,
+                metadataElements: new string[0],
+                metadataValues: new string[0]);
+        }
+
+        public async Task<Boolean> InstallPackageWithMetadataAsync(
+            string packageId,
+            VersionRange range,
+            IEnumerable<string> metadataElements,
+            IEnumerable<string> metadataValues)
+        {
             var success = false;
 
             await NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async delegate
@@ -150,9 +179,9 @@ namespace NuGet.PackageManagement.VisualStudio
                 // We don't adjust package reference metadata from UI
                 _project.AddOrUpdateLegacyCSProjPackage(
                     packageId,
-                    range.MinVersion.ToNormalizedString(),
-                    metadataElements: new string[0],
-                    metadataValues: new string[0]);
+                    range.OriginalString ?? range.ToShortString(),
+                    metadataElements?.ToArray() ?? new string[0],
+                    metadataValues?.ToArray() ?? new string[0]);
 
                 success = true;
             });
@@ -177,20 +206,27 @@ namespace NuGet.PackageManagement.VisualStudio
 
         #endregion
 
-        private async Task<string> GetBaseIntermediatePathAsync()
+        private async Task<string> GetBaseIntermediatePathAsync(bool shouldThrow)
         {
-            return await RunOnUIThread(GetBaseIntermediatePath);
+            return await RunOnUIThread(() => GetBaseIntermediatePath(shouldThrow));
         }
 
-        private string GetBaseIntermediatePath()
+        private string GetBaseIntermediatePath(bool shouldThrow = true)
         {
             EnsureUIThread();
 
             var baseIntermediatePath = _project.BaseIntermediateOutputPath;
 
-            if (string.IsNullOrEmpty(baseIntermediatePath) || !Directory.Exists(baseIntermediatePath))
+            if (string.IsNullOrEmpty(baseIntermediatePath))
             {
-                throw new InvalidDataException(nameof(_project.BaseIntermediateOutputPath));
+                if (shouldThrow)
+                {
+                    throw new InvalidDataException(nameof(_project.BaseIntermediateOutputPath));
+                }
+                else
+                {
+                    return null;
+                }
             }
 
             return baseIntermediatePath;
@@ -337,7 +373,7 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 LibraryRange = new LibraryRange(
                     name: item.Name,
-                    versionRange: new VersionRange(new NuGetVersion(item.Version), originalString: item.Version),
+                    versionRange: VersionRange.Parse(item.Version),
                     typeConstraint: LibraryDependencyTarget.Package)
             };
 

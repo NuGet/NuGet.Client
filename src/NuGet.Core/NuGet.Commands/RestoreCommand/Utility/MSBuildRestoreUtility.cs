@@ -236,48 +236,10 @@ namespace NuGet.Commands
                     {
                         projectDir = Path.GetDirectoryName(result.RestoreMetadata.ProjectPath);
                     }
-
-                    AddPlaceHolderFiles(result, projectDir);
                 }
             }
 
             return result;
-        }
-
-        /// <summary>
-        /// Add placeholder files, these will be used under the compile and runtime sections.
-        /// </summary>
-        private static void AddPlaceHolderFiles(PackageSpec spec,  string projectDir)
-        {
-            var files = new List<ProjectRestoreMetadataFile>();
-
-            // Create fake placeholder file names
-            var assemblyName = $"{spec.RestoreMetadata.ProjectName}.dll";
-            var absoluteRoot = Path.Combine(projectDir, "bin", "placeholder");
-
-            if (spec.RestoreMetadata.ProjectStyle == ProjectStyle.PackageReference
-                || spec.RestoreMetadata.ProjectStyle == ProjectStyle.ProjectJson)
-            {
-                // Add paths based on actual frameworks if they exist
-                foreach (var framework in spec.TargetFrameworks
-                    .Select(tfi => tfi.FrameworkName)
-                    .Where(f => f.IsSpecificFramework))
-                {
-                    var packagePath = $"lib/{framework.GetShortFolderName()}/{assemblyName}";
-                    var absolutePath = Path.Combine(absoluteRoot, framework.GetShortFolderName(), assemblyName);
-
-                    files.Add(new ProjectRestoreMetadataFile(packagePath, absolutePath));
-                }
-            }
-
-            // If no TFMs exist use LIBANY which to guarantee something is added
-            if (files.Count == 0)
-            {
-                var absolutePath = Path.Combine(absoluteRoot, "any", assemblyName);
-                files.Add(new ProjectRestoreMetadataFile(LockFileUtils.LIBANY, absolutePath));
-            }
-
-            spec.RestoreMetadata.Files = files;
         }
 
         private static void AddPackageTargetFallbacks(PackageSpec spec, IEnumerable<IMSBuildItem> items)

@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using NuGet.Client;
+using NuGet.Common;
 using NuGet.ContentModel;
 using NuGet.DependencyResolver;
 using NuGet.Frameworks;
@@ -144,11 +145,12 @@ namespace NuGet.Commands
             var orderedCriteria = CreateCriteria(targetGraph, framework);
 
             // Compile
+            // ref takes precedence over lib
             var compileGroup = GetLockFileItems(
                 orderedCriteria,
                 contentItems,
-                targetGraph.Conventions.Patterns.CompileAssemblies,
-                targetGraph.Conventions.Patterns.RuntimeAssemblies);
+                targetGraph.Conventions.Patterns.CompileRefAssemblies,
+                targetGraph.Conventions.Patterns.CompileLibAssemblies);
 
             lockFileLib.CompileTimeAssemblies.AddRange(compileGroup);
 
@@ -328,33 +330,51 @@ namespace NuGet.Commands
                 // Add files under asset groups
                 object filesObject;
                 object msbuildPath;
-                if (localMatch.LocalLibrary.Items.TryGetValue(KnownLibraryProperties.ProjectRestoreMetadataFiles, out filesObject)
-                     && localMatch.LocalLibrary.Items.TryGetValue(KnownLibraryProperties.MSBuildProjectPath, out msbuildPath))
+                if (localMatch.LocalLibrary.Items.TryGetValue(KnownLibraryProperties.MSBuildProjectPath, out msbuildPath))
                 {
-                    var files = (List<ProjectRestoreMetadataFile>)filesObject;
+                    var files = new List<ProjectRestoreMetadataFile>();
                     var fileLookup = new Dictionary<string, ProjectRestoreMetadataFile>(StringComparer.OrdinalIgnoreCase);
 
-                    foreach (var file in files)
+                    // Find the project path, this is provided by the resolver
+                    var msbuildFilePathInfo = new FileInfo((string)msbuildPath);
+
+                    // Ensure a trailing slash for the relative path helper.
+                    var projectDir = PathUtility.EnsureTrailingSlash(msbuildFilePathInfo.Directory.FullName);
+
+                    // Read files from the project if they were provided.
+                    if (localMatch.LocalLibrary.Items.TryGetValue(KnownLibraryProperties.ProjectRestoreMetadataFiles, out filesObject))
                     {
-                        var path = file.PackagePath;
+                        files.AddRange((List<ProjectRestoreMetadataFile>)filesObject);
+                    }
+
+                    var targetFrameworkShortName = targetGraph.Framework.GetShortFolderName();
+                    var libAnyPath = $"lib/{targetFrameworkShortName}/any.dll";
+
+                    if (files.Count == 0)
+                    {
+                        // If the project did not provide a list of assets, add in default ones.
+                        // These are used to detect transitive vs non-transitive project references.
+                        var absolutePath = Path.Combine(projectDir, "bin", "placeholder", $"{localMatch.Library.Name}.dll");
+
+                        files.Add(new ProjectRestoreMetadataFile(libAnyPath, absolutePath));
+                    }
+
+                    // Process and de-dupe files
+                    for (var i = 0; i < files.Count; i++)
+                    {
+                        var path = files[i].PackagePath;
 
                         // LIBANY avoid compatibility checks and will always be used.
                         if (LIBANY.Equals(path, StringComparison.Ordinal))
                         {
-                            path = $"lib/{targetGraph.Framework.GetShortFolderName()}/any.dll";
+                            path = libAnyPath;
                         }
 
                         if (!fileLookup.ContainsKey(path))
                         {
-                            fileLookup.Add(path, file);
+                            fileLookup.Add(path, files[i]);
                         }
                     }
-
-                    var msbuildFilePathInfo = new FileInfo((string)msbuildPath);
-
-                    // Ensure a trailing slash for the relative path helper.
-                    var projectDir = msbuildFilePathInfo.Directory.FullName
-                        .TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar;
 
                     var contentItems = new ContentItemCollection();
                     contentItems.Load(fileLookup.Keys);
@@ -365,11 +385,12 @@ namespace NuGet.Commands
                     var orderedCriteria = CreateCriteria(targetGraph, targetGraph.Framework);
 
                     // Compile
+                    // ref takes precedence over lib
                     var compileGroup = GetLockFileItems(
                         orderedCriteria,
                         contentItems,
-                        targetGraph.Conventions.Patterns.CompileAssemblies,
-                        targetGraph.Conventions.Patterns.RuntimeAssemblies);
+                        targetGraph.Conventions.Patterns.CompileRefAssemblies,
+                        targetGraph.Conventions.Patterns.CompileLibAssemblies);
 
                     projectLib.CompileTimeAssemblies.AddRange(
                         ConvertToProjectPaths(fileLookup, projectDir, compileGroup));
@@ -480,7 +501,7 @@ namespace NuGet.Commands
                     yield return props;
                 }
 
-                var targets = ordered.FirstOrDefault(c => 
+                var targets = ordered.FirstOrDefault(c =>
                     $"{packageId}.targets".Equals(
                         Path.GetFileName(c.Path),
                         StringComparison.OrdinalIgnoreCase));
@@ -569,7 +590,7 @@ namespace NuGet.Commands
         /// Clears a lock file group and replaces the first item with _._ if 
         /// the group has items. Empty groups are left alone.
         /// </summary>
-        private static void ClearIfExists<T>(IList<T> group) where T: LockFileItem
+        private static void ClearIfExists<T>(IList<T> group) where T : LockFileItem
         {
             if (GroupHasNonEmptyItems(group))
             {
@@ -589,7 +610,7 @@ namespace NuGet.Commands
                 group.Clear();
 
                 // Create a new item with the _._ path
-                var emptyItem = (T)Activator.CreateInstance(typeof(T), new [] { emptyDir });
+                var emptyItem = (T)Activator.CreateInstance(typeof(T), new[] { emptyDir });
 
                 // Copy over the properties from the first 
                 foreach (var pair in firstItem.Properties)

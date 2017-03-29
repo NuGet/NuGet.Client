@@ -105,6 +105,15 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to Invalid package version for a dependency with id &apos;{0}&apos; in package &apos;{1}&apos;: &apos;{2}&apos;.
+        /// </summary>
+        public static string ErrorInvalidPackageVersionForDependency {
+            get {
+                return ResourceManager.GetString("ErrorInvalidPackageVersionForDependency", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to Null or empty package id.
         /// </summary>
         public static string ErrorNullOrEmptyPackageId {

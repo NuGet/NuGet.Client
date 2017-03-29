@@ -1576,6 +1576,7 @@ namespace NuGet.Commands.FuncTest
 
             using (var packagesDir = TestDirectory.Create())
             using (var projectDir = TestDirectory.Create())
+            using (var sourceCacheContext = new SourceCacheContext())
             {
                 var specPath = Path.Combine(projectDir, "TestProject", "project.json");
                 var spec = JsonPackageSpecReader.GetPackageSpec(BasicConfig.ToString(), "TestProject", specPath);
@@ -1583,7 +1584,7 @@ namespace NuGet.Commands.FuncTest
                 AddDependency(spec, "NotARealPackage.ThisShouldNotExists.DontCreateIt.Seriously.JustDontDoIt.Please", "2.8.3");
 
                 var logger = new TestLogger();
-                var request = new TestRestoreRequest(spec, sources, packagesDir, logger);
+                var request = new TestRestoreRequest(spec, sources, packagesDir, sourceCacheContext, logger);
 
                 request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
 

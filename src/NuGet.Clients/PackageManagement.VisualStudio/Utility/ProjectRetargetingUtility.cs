@@ -127,7 +127,7 @@ namespace NuGet.PackageManagement.VisualStudio
             }
             catch (Exception ex)
             {
-                ExceptionHelper.WriteToActivityLog(ex);
+                ExceptionHelper.WriteErrorToActivityLog(ex);
             }
 
             // When all items are not compatible, the installed package should be retargeted.
@@ -211,7 +211,7 @@ namespace NuGet.PackageManagement.VisualStudio
                     }
                     catch (Exception ex)
                     {
-                        ExceptionHelper.WriteToActivityLog(ex);
+                        ExceptionHelper.WriteErrorToActivityLog(ex);
                     }
                 }
             }

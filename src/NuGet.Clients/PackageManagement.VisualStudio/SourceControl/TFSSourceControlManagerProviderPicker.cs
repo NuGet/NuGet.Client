@@ -42,7 +42,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 }
                 catch (Exception ex)
                 {
-                    ExceptionHelper.WriteToActivityLog(ex);
+                    ExceptionHelper.WriteErrorToActivityLog(ex);
                     _cachedTFSSourceControlManagerProvider = null;
                 }
             }

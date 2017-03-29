@@ -66,7 +66,6 @@
     <Compile Include="Extensibility\IVsGlobalPackagesInitScriptExecutor.cs" />
     <Compile Include="Extensibility\IVsFrameworkCompatibility.cs" />
     <Compile Include="Extensibility\IVsPathContext.cs" />
-    <Compile Include="Extensibility\IVsPathContextFactory.cs" />
     <Compile Include="Extensibility\IVsPackageInstaller2.cs" />
     <Compile Include="Extensibility\IVsPackageInstallerProjectEvents.cs" />
     <Compile Include="Extensibility\IVsPackageSourceProvider.cs" />
@@ -77,6 +76,7 @@
     <Compile Include="Extensibility\IVsPackageRestorer.cs" />
     <Compile Include="Extensibility\IVsPackageUninstaller.cs" />
     <Compile Include="Extensibility\IVsPackageProjectMetadata.cs" />
+    <Compile Include="Extensibility\IVsPathContextProvider.cs" />
     <Compile Include="Extensibility\IVsSemanticVersionComparer.cs" />
     <Compile Include="Extensibility\VsPackageEventHandler.cs" />
     <Compile Include="IVsPackageManagerProvider.cs" />
@@ -90,6 +90,10 @@
     <Compile Include="LegacyTypes\PackageSaveModes.cs" />
     <Compile Include="LegacyTypes\SemanticVersion.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Extensibility\IVsProjectJsonToPackageReferenceMigrateResult.cs" />
+    <Compile Include="Extensibility\IVsProjectJsonToPackageReferenceMigrator.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="install.ps1" />

@@ -49,6 +49,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CommonResources.cs" />
+    <Compile Include="Extensibility\VsIndexedPathContext.cs" />
+    <Compile Include="Utility\PathLookupTrie.cs" />
     <Compile Include="Extensibility\VsPathContext.cs" />
     <Compile Include="Extensibility\VsPathContextProvider.cs" />
     <Compile Include="Extensibility\VsPackageInstallerProjectEvents.cs" />
@@ -85,6 +87,10 @@
     <Compile Include="Utility\XmlUtility.cs" />
     <Compile Include="VSAPIProjectContext.cs" />
     <Compile Include="VsTemplateWizard.cs" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(VisualStudioVersion)' == '15.0'">
+    <Compile Include="Extensibility\VsProjectJsonToPackageReferenceMigrateResult.cs" />
+    <Compile Include="Extensibility\VsProjectJsonToPackageReferenceMigrator.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\NuGet.VisualStudio\NuGet.VisualStudio.csproj">

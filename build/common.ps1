@@ -5,7 +5,7 @@ $DefaultMSBuildVersion = 15
 
 # The pack version can be inferred from the .nuspec files on disk. This is only necessary as long
 # as the following issue is open: https://github.com/NuGet/Home/issues/3530
-$PackageReleaseVersion = "4.0.1"
+$PackageReleaseVersion = "4.3.0"
 
 $NuGetClientRoot = Split-Path -Path $PSScriptRoot -Parent
 $CLIRoot = Join-Path $NuGetClientRoot cli
@@ -214,7 +214,7 @@ Function Install-DotnetCLI {
             Root = $CLIRootTest
             DotNetExe = Join-Path $CLIRootTest 'dotnet.exe'
             DotNetInstallUrl = 'https://raw.githubusercontent.com/dotnet/cli/58b0566d9ac399f5fa973315c6827a040b7aae1f/scripts/obtain/dotnet-install.ps1'
-            Version = '1.0.0-rc4-004788'
+            Version = '1.0.1'
         }
     }
 
@@ -404,8 +404,15 @@ Function Set-DelaySigning {
 }
 
 Function Get-BuildNumber() {
-    $SemanticVersionDate = '2016-07-13'
-    [int](((Get-Date) - (Get-Date $SemanticVersionDate)).TotalMinutes / 5)
+    $SemanticVersionDate = '2017-02-27'
+    try {
+        [uint16](((Get-Date) - (Get-Date $SemanticVersionDate)).TotalMinutes / 5)
+    }
+    catch {
+        # Build number is a 16-bit integer. The limitation is imposed by VERSIONINFO.
+        # https://msdn.microsoft.com/en-gb/library/aa381058.aspx
+        Error-Log "Build number is out of range! Consider advancing SemanticVersionDate." -Fatal
+    }
 }
 
 Function Format-BuildNumber([int]$BuildNumber) {

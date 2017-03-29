@@ -9287,7 +9287,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a
         ///
-        ///nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -s http://customsource/
+        ///nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -src http://customsource/
         ///
         ///nuget push foo.nupkg
         ///
@@ -9304,7 +9304,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a
         ///
-        ///nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -s http://customsource/
+        ///nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -src http://customsource/
         ///
         ///nuget push foo.nupkg
         ///
@@ -9321,7 +9321,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a
         ///
-        ///nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -s http://customsource/
+        ///nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -src http://customsource/
         ///
         ///nuget push foo.nupkg
         ///
@@ -9338,7 +9338,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a
         ///
-        ///nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -s http://customsource/
+        ///nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -src http://customsource/
         ///
         ///nuget push foo.nupkg
         ///
@@ -9355,7 +9355,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a
         ///
-        ///nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -s http://customsource/
+        ///nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -src http://customsource/
         ///
         ///nuget push foo.nupkg
         ///
@@ -9372,7 +9372,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a
         ///
-        ///nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -s http://customsource/
+        ///nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -src http://customsource/
         ///
         ///nuget push foo.nupkg
         ///
@@ -9389,7 +9389,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a
         ///
-        ///nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -s http://customsource/
+        ///nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -src http://customsource/
         ///
         ///nuget push foo.nupkg
         ///
@@ -9423,7 +9423,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a
         ///
-        ///nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -s http://customsource/
+        ///nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -src http://customsource/
         ///
         ///nuget push foo.nupkg
         ///
@@ -9440,7 +9440,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a
         ///
-        ///nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -s http://customsource/
+        ///nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -src http://customsource/
         ///
         ///nuget push foo.nupkg
         ///
@@ -9457,7 +9457,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a
         ///
-        ///nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -s http://customsource/
+        ///nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -src http://customsource/
         ///
         ///nuget push foo.nupkg
         ///
@@ -9474,7 +9474,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a
         ///
-        ///nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -s http://customsource/
+        ///nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -src http://customsource/
         ///
         ///nuget push foo.nupkg
         ///
@@ -9491,7 +9491,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a
         ///
-        ///nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -s http://customsource/
+        ///nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -src http://customsource/
         ///
         ///nuget push foo.nupkg
         ///
@@ -9508,7 +9508,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a
         ///
-        ///nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -s http://customsource/
+        ///nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -src http://customsource/
         ///
         ///nuget push foo.nupkg
         ///
@@ -10648,7 +10648,7 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to nuget restore MySoluion.sln.
+        ///   Looks up a localized string similar to nuget restore MySolution.sln.
         /// </summary>
         internal static string RestoreCommandUsageExamples {
             get {

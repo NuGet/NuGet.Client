@@ -70,6 +70,33 @@ namespace NuGet.VisualStudio.Implementation.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The project file &apos;{0}&apos; does not exist on disk..
+        /// </summary>
+        internal static string Error_FileNotExists {
+            get {
+                return ResourceManager.GetString("Error_FileNotExists", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The project &apos;{0}&apos; does not support PackageReference..
+        /// </summary>
+        internal static string Error_InvalidPackageRefProjectCast {
+            get {
+                return ResourceManager.GetString("Error_InvalidPackageRefProjectCast", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Project {0} does not exist in the project system cache..
+        /// </summary>
+        internal static string Error_ProjectNotInCache {
+            get {
+                return ResourceManager.GetString("Error_ProjectNotInCache", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The specified framework name &apos;{0}&apos; must be .NETStandard..
         /// </summary>
         internal static string InvalidNetStandardFramework {
@@ -102,6 +129,33 @@ namespace NuGet.VisualStudio.Implementation.Resources {
         internal static string InvalidSource {
             get {
                 return ResourceManager.GetString("InvalidSource", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Failed creating a path context for &quot;{0}&quot;. Reason: {1}.
+        /// </summary>
+        internal static string PathContext_CreateContextError {
+            get {
+                return ResourceManager.GetString("PathContext_CreateContextError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The lock file doesn&apos;t exist or it&apos;s an older format that doesn&apos;t have the package folders property persisted..
+        /// </summary>
+        internal static string PathContext_LockFileError {
+            get {
+                return ResourceManager.GetString("PathContext_LockFileError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Package directory for &quot;{0}&quot; is not found..
+        /// </summary>
+        internal static string PathContext_PackageDirectoryNotFound {
+            get {
+                return ResourceManager.GetString("PathContext_PackageDirectoryNotFound", resourceCulture);
             }
         }
         

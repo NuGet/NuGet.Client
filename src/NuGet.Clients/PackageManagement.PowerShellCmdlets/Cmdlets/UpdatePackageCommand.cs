@@ -106,14 +106,32 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             // start timer for telemetry event
             TelemetryUtility.StartorResumeTimer();
 
-            using (var lck = _lockService.AcquireLock())
-            {
-                Preprocess();
+            // Run Preprocess outside of JTF
+            Preprocess();
 
-                SubscribeToProgressEvents();
-                PerformPackageUpdatesOrReinstalls();
-                UnsubscribeFromProgressEvents();
-            }
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
+            {
+                await _lockService.ExecuteNuGetOperationAsync(() =>
+                {
+                    SubscribeToProgressEvents();
+
+                    // Update-Package without ID specified
+                    if (!_idSpecified)
+                    {
+                        Task.Run(UpdateOrReinstallAllPackagesAsync);
+                    }
+                    // Update-Package with Id specified
+                    else
+                    {
+                        Task.Run(UpdateOrReinstallSinglePackageAsync);
+                    }
+
+                    WaitAndLogPackageActions();
+                    UnsubscribeFromProgressEvents();
+
+                    return Task.FromResult(true);
+                }, Token);
+            });
 
             // stop timer for telemetry event and create action telemetry event instance
             TelemetryUtility.StopTimer();
@@ -128,24 +146,6 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
             // emit telemetry event along with granular level for update operation
             ActionsTelemetryService.Instance.EmitActionEvent(actionTelemetryEvent, TelemetryService.TelemetryEvents);
-        }
-
-        /// <summary>
-        /// Perform package updates or reinstalls
-        /// </summary>
-        private void PerformPackageUpdatesOrReinstalls()
-        {
-            // Update-Package without ID specified
-            if (!_idSpecified)
-            {
-                Task.Run(UpdateOrReinstallAllPackagesAsync);
-            }
-            // Update-Package with Id specified
-            else
-            {
-                Task.Run(UpdateOrReinstallSinglePackageAsync);
-            }
-            WaitAndLogPackageActions();
         }
 
         /// <summary>

@@ -57,25 +57,31 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             // start timer for telemetry event
             TelemetryUtility.StartorResumeTimer();
 
-            using (var lck = _lockService.AcquireLock())
-            {
-                Preprocess();
+            // Run Preprocess outside of JTF
+            Preprocess();
 
-                SubscribeToProgressEvents();
-                if (!_readFromPackagesConfig
-                    && !_readFromDirectPackagePath
-                    && _nugetVersion == null)
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
+            {
+                await _lockService.ExecuteNuGetOperationAsync(() =>
                 {
-                    Task.Run(InstallPackageByIdAsync);
-                }
-                else
-                {
-                    var identities = GetPackageIdentities();
-                    Task.Run(() => InstallPackagesAsync(identities));
-                }
-                WaitAndLogPackageActions();
-                UnsubscribeFromProgressEvents();
-            }
+                    SubscribeToProgressEvents();
+                    if (!_readFromPackagesConfig
+                        && !_readFromDirectPackagePath
+                        && _nugetVersion == null)
+                    {
+                        Task.Run(InstallPackageByIdAsync);
+                    }
+                    else
+                    {
+                        var identities = GetPackageIdentities();
+                        Task.Run(() => InstallPackagesAsync(identities));
+                    }
+                    WaitAndLogPackageActions();
+                    UnsubscribeFromProgressEvents();
+
+                    return Task.FromResult(true);
+                }, Token);
+            });
 
             // stop timer for telemetry event and create action telemetry event instance
             TelemetryUtility.StopTimer();

@@ -19,7 +19,9 @@ namespace NuGet.Protocol.Tests
             var serviceAddress = TestUtility.CreateServiceAddress();
 
             var responses = new Dictionary<string, string>();
-            responses.Add(serviceAddress + "Search()?$filter=IsLatestVersion&searchTerm='azure'&targetFramework='net40-client'&includePrerelease=false&$skip=0&$top=1",
+            responses.Add(
+                serviceAddress + "Search()?$filter=IsLatestVersion&searchTerm='azure'&targetFramework='net40-client'" +
+                "&includePrerelease=false&$skip=0&$top=1&semVerLevel=2.0.0",
                 TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.AzureSearch.xml", GetType()));
             responses.Add(serviceAddress, string.Empty);
 
@@ -62,8 +64,10 @@ namespace NuGet.Protocol.Tests
             var serviceAddress = TestUtility.CreateServiceAddress();
 
             var responses = new Dictionary<string, string>();
-            responses.Add(serviceAddress + "Search()?$filter=IsLatestVersion&searchTerm='azure'&targetFramework='net40-client'&includePrerelease=false&$skip=0&$top=100",
-     TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.AzureSearch100.xml", GetType()));
+            responses.Add(
+                serviceAddress + "Search()?$filter=IsLatestVersion&searchTerm='azure'&targetFramework='net40-client'" +
+                "&includePrerelease=false&$skip=0&$top=100&semVerLevel=2.0.0",
+                TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.AzureSearch100.xml", GetType()));
             responses.Add(serviceAddress, string.Empty);
 
             var repo = StaticHttpHandler.CreateSource(serviceAddress, Repository.Provider.GetCoreV3(), responses);

@@ -8,6 +8,7 @@ using NuGet.XPlat.FuncTest;
 using NuGet.Test.Utility;
 using NuGet.Packaging;
 using NuGet.Packaging.PackageExtraction;
+using NuGet.Protocol;
 using Xunit;
 
 namespace Dotnet.Integration.Test
@@ -21,9 +22,25 @@ namespace Dotnet.Integration.Test
         {
             var cliDirectory = CopyLatestCliForPack();
             TestDotnetCli = Path.Combine(cliDirectory, "dotnet.exe");
+            // We do this here so that dotnet new will extract all the packages on the first run on the machine.
+            InitDotnetNewToExtractPackages();
         }
 
-        internal void CreateDotnetNewProject(string solutionRoot, string projectName, string args = "console")
+        private void InitDotnetNewToExtractPackages()
+        {
+            using (var testDirectory = TestDirectory.Create())
+            {
+                var projectName = "ClassLibrary1";
+                CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", timeOut: 300000);
+            }
+
+            using (var testDirectory = TestDirectory.Create())
+            {
+                var projectName = "ConsoleApp1";
+                CreateDotnetNewProject(testDirectory.Path, projectName, " console", timeOut: 300000);
+            }
+        }
+        internal void CreateDotnetNewProject(string solutionRoot, string projectName, string args = "console", int timeOut=60000)
         {
             var workingDirectory = Path.Combine(solutionRoot, projectName);
             if (!Directory.Exists(workingDirectory))
@@ -34,7 +51,7 @@ namespace Dotnet.Integration.Test
                 workingDirectory,
                 $"new {args}",
                 waitForExit: true,
-                timeOutInMilliseconds: 300000);
+                timeOutInMilliseconds: timeOut);
 
             // TODO : remove this workaround when https://github.com/dotnet/templating/issues/294 is fixed
             if (result.Item1 != 0)
@@ -51,6 +68,7 @@ namespace Dotnet.Integration.Test
                 waitForExit: true,
                 timeOutInMilliseconds: 300000);
             }
+
             Assert.True(result.Item1 == 0, $"Creating project failed with following log information :\n {result.Item3}");
             Assert.True(result.Item3 == "", $"Creating project failed with following message in error stream :\n {result.Item3}");
         }
@@ -69,7 +87,7 @@ namespace Dotnet.Integration.Test
         {
             var result = CommandRunner.Run(TestDotnetCli,
                 workingDirectory,
-                $"pack {projectName}.csproj {args}",
+                $"pack {projectName}.csproj {args} ",
                 waitForExit: true);
             Assert.True(result.Item1 == 0, $"Pack failed with following log information :\n {result.Item3}");
             Assert.True(result.Item3 == "", $"Pack failed with following message in error stream :\n {result.Item3}");
@@ -79,7 +97,7 @@ namespace Dotnet.Integration.Test
         {
             var result = CommandRunner.Run(TestDotnetCli,
                 workingDirectory,
-                $"msbuild {projectName}.csproj {args}",
+                $"msbuild {projectName}.csproj {args} /p:AppendRuntimeIdentifierToOutputPath=false",
                 waitForExit: true);
             Assert.True(result.Item1 == 0, $"Build failed with following log information :\n {result.Item3}");
             Assert.True(result.Item3 == "", $"Build failed with following message in error stream :\n {result.Item3}");
@@ -117,9 +135,8 @@ namespace Dotnet.Integration.Test
         private void UpdateCliWithLatestNuGetAssemblies(string cliDirectory)
         {
             var nupkgsDirectory = DotnetCliUtil.GetNupkgDirectoryInRepo();
-            var productVersionInfo = FileVersionInfo.GetVersionInfo(DotnetCliUtil.GetXplatDll());
-            var pathToPackNupkg = nupkgsDirectory + Path.DirectorySeparatorChar + "NuGet.Build.Tasks.Pack." +
-                                  productVersionInfo.ProductVersion + ".nupkg";
+            var pathToPackNupkg = FindMostRecentNupkg(nupkgsDirectory, "NuGet.Build.Tasks.Pack");
+            var pathToRestoreNupkg = FindMostRecentNupkg(nupkgsDirectory, "NuGet.Build.Tasks");
             var pathToSdkInCli = Path.Combine(
                     Directory.GetDirectories(Path.Combine(cliDirectory, "sdk"))
                         .First());
@@ -145,8 +162,6 @@ namespace Dotnet.Integration.Test
                 }
             }
 
-            var pathToRestoreNupkg = nupkgsDirectory + Path.DirectorySeparatorChar + "NuGet.Build.Tasks." +
-                                  productVersionInfo.ProductVersion + ".nupkg";
             using (var nupkg = new PackageArchiveReader(pathToRestoreNupkg))
             {
                 var files = nupkg.GetFiles()
@@ -176,6 +191,16 @@ namespace Dotnet.Integration.Test
         private void DeleteFiles(string destinationDir)
         {
             Directory.Delete(destinationDir, true);
+        }
+
+        private static string FindMostRecentNupkg(string nupkgDirectory, string id)
+        {
+            var info = LocalFolderUtility.GetPackagesV2(nupkgDirectory, new TestLogger());
+
+            return info.Where(t => t.Identity.Id.Equals(id, StringComparison.OrdinalIgnoreCase))
+                .Where(t => !Path.GetExtension(Path.GetFileNameWithoutExtension(t.Path)).Equals(".symbols"))
+                .OrderByDescending(p => p.LastWriteTimeUtc)
+                .First().Path;
         }
 
         public void Dispose()

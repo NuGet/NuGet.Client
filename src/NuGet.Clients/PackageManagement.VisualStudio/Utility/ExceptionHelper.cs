@@ -11,7 +11,7 @@ namespace NuGet.PackageManagement.VisualStudio
     {
         public const string LogEntrySource = "NuGet Package Manager";
 
-        public static void WriteToActivityLog(Exception exception)
+        public static void WriteErrorToActivityLog(Exception exception)
         {
             if (exception == null)
             {
@@ -19,6 +19,16 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             ActivityLog.LogError(LogEntrySource, exception.ToString());
+        }
+
+        public static void WriteWarningToActivityLog(Exception exception)
+        {
+            if (exception == null)
+            {
+                return;
+            }
+
+            ActivityLog.LogWarning(LogEntrySource, exception.ToString());
         }
     }
 }

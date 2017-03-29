@@ -13,6 +13,7 @@ namespace NuGet.Protocol
     /// </summary>
     public static class HttpRequestMessageFactory
     {
+
         /// <summary>
         /// Creates an instance of <see cref="HttpRequestMessage"/>.
         /// </summary>

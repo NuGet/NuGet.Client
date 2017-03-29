@@ -66,6 +66,59 @@ namespace NuGet.CommandLine.Test
                 // Assert
                 Assert.Equal(ProjectStyle.PackageReference, projectSpec.RestoreMetadata.ProjectStyle);
                 Assert.Equal("PackageReference", styleNode.Value);
+                Assert.Equal(NuGetFramework.Parse("UAP10.0.10586.0"), projectSpec.TargetFrameworks.Single().FrameworkName);
+            }
+        }
+
+        [Fact]
+        public async Task RestoreUAP_VerifyTargetPlatformVersionIsUsed()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var projectA = SimpleTestProjectContext.CreateLegacyPackageReference(
+                    "a",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.AnyFramework);
+
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+
+                projectA.AddPackageToAllFrameworks(packageX);
+
+                projectA.Properties.Add("TargetPlatformIdentifier", "UAP");
+                projectA.Properties.Add("TargetPlatformVersion", "10.0.14393.0");
+                projectA.Properties.Add("TargetPlatformMinVersion", "");
+                projectA.Properties.Add("RestoreProjectStyle", "PackageReference");
+
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX);
+
+                // Act
+                var r = RestoreSolution(pathContext);
+
+                var dgPath = Path.Combine(pathContext.WorkingDirectory, "out.dg");
+                var dgSpec = DependencyGraphSpec.Load(dgPath);
+
+                var propsXML = XDocument.Load(projectA.PropsOutput);
+                var styleNode = propsXML.Root.Elements().First().Elements(XName.Get("NuGetProjectStyle", "http://schemas.microsoft.com/developer/msbuild/2003")).FirstOrDefault();
+
+                var projectSpec = dgSpec.Projects.Single();
+
+                // Assert
+                Assert.Equal(ProjectStyle.PackageReference, projectSpec.RestoreMetadata.ProjectStyle);
+                Assert.Equal("PackageReference", styleNode.Value);
                 Assert.Equal(NuGetFramework.Parse("UAP10.0.14393.0"), projectSpec.TargetFrameworks.Single().FrameworkName);
             }
         }
@@ -120,7 +173,7 @@ namespace NuGet.CommandLine.Test
                 // Assert
                 Assert.Equal(ProjectStyle.PackageReference, projectSpec.RestoreMetadata.ProjectStyle);
                 Assert.Equal("PackageReference", styleNode.Value);
-                Assert.Equal(NuGetFramework.Parse("UAP10.0.14393.0"), projectSpec.TargetFrameworks.Single().FrameworkName);
+                Assert.Equal(NuGetFramework.Parse("UAP10.0.10586.0"), projectSpec.TargetFrameworks.Single().FrameworkName);
 
                 Assert.DoesNotContain("a.txt", propsXML.ToString());
             }
@@ -162,7 +215,7 @@ namespace NuGet.CommandLine.Test
                 // Assert
                 Assert.Equal(ProjectStyle.PackageReference, projectSpec.RestoreMetadata.ProjectStyle);
                 Assert.Equal("PackageReference", styleNode.Value);
-                Assert.Equal(NuGetFramework.Parse("UAP10.0.14393.0"), projectSpec.TargetFrameworks.Single().FrameworkName);
+                Assert.Equal(NuGetFramework.Parse("UAP10.0.10586.0"), projectSpec.TargetFrameworks.Single().FrameworkName);
             }
         }
 

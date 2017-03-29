@@ -138,6 +138,7 @@
     <Compile Include="LegacyCSProjPackageReference.cs" />
     <Compile Include="ProjectSystems\LegacyCSProjPackageReferenceProject.cs" />
     <Compile Include="ProjectSystems\LegacyCSProjPackageReferenceProjectProvider.cs" />
+    <Compile Include="Migrate\ProjectJsonToPackageRefMigrator.cs" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BindingRedirectBehavior.cs" />

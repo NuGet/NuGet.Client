@@ -68,6 +68,7 @@ namespace NuGet.Frameworks
             public const string XamarinXbox360 = "Xamarin.Xbox360";
             public const string XamarinXboxOne = "Xamarin.XboxOne";
             public const string UAP = "UAP";
+            public const string Tizen = "Tizen";
         }
 
         /// <summary>
@@ -103,8 +104,10 @@ namespace NuGet.Frameworks
             public static readonly NuGetFramework WP75 = new NuGetFramework(FrameworkIdentifiers.WindowsPhone, new Version(7, 5, 0, 0));
             public static readonly NuGetFramework WP8 = new NuGetFramework(FrameworkIdentifiers.WindowsPhone, new Version(8, 0, 0, 0));
             public static readonly NuGetFramework WP81 = new NuGetFramework(FrameworkIdentifiers.WindowsPhone, new Version(8, 1, 0, 0));
-
             public static readonly NuGetFramework WPA81 = new NuGetFramework(FrameworkIdentifiers.WindowsPhoneApp, new Version(8, 1, 0, 0));
+
+            public static readonly NuGetFramework Tizen3 = new NuGetFramework(FrameworkIdentifiers.Tizen, new Version(3, 0, 0, 0));
+            public static readonly NuGetFramework Tizen4 = new NuGetFramework(FrameworkIdentifiers.Tizen, new Version(4, 0, 0, 0));
 
             public static readonly NuGetFramework SCMPInfra = new NuGetFramework(FrameworkIdentifiers.SCMPInfra, EmptyVersion);
 
@@ -155,6 +158,8 @@ namespace NuGet.Frameworks
                 = new NuGetFramework(FrameworkIdentifiers.NetStandard, new Version(1, 6, 0, 0));
             public static readonly NuGetFramework NetStandard17
                 = new NuGetFramework(FrameworkIdentifiers.NetStandard, new Version(1, 7, 0, 0));
+            public static readonly NuGetFramework NetStandard20
+                = new NuGetFramework(FrameworkIdentifiers.NetStandard, new Version(2, 0, 0, 0));
 
             public static readonly NuGetFramework NetStandardApp15
                 = new NuGetFramework(FrameworkIdentifiers.NetStandardApp, new Version(1, 5, 0, 0));
@@ -166,6 +171,8 @@ namespace NuGet.Frameworks
                 = new NuGetFramework(FrameworkIdentifiers.NetCoreApp, new Version(1, 0, 0, 0));
             public static readonly NuGetFramework NetCoreApp11
                 = new NuGetFramework(FrameworkIdentifiers.NetCoreApp, new Version(1, 1, 0, 0));
+            public static readonly NuGetFramework NetCoreApp20
+                = new NuGetFramework(FrameworkIdentifiers.NetCoreApp, new Version(2, 0, 0, 0));
         }
     }
 }

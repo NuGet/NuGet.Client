@@ -233,6 +233,7 @@ namespace NuGet.Commands.Test
             string targetFrameworkMoniker = "",
             string targetPlatformIdentifier = "",
             string targetPlatformVersion="",
+            string targetPlatformMinVersion = "",
             bool isXnaWindowsPhoneProject=false,
             bool isManagementPackProject=false)
         {
@@ -244,6 +245,7 @@ namespace NuGet.Commands.Test
                     targetFrameworkMoniker,
                     targetPlatformIdentifier,
                     targetPlatformVersion,
+                    targetPlatformMinVersion,
                     isXnaWindowsPhoneProject,
                     isManagementPackProject))
                     .ToList();

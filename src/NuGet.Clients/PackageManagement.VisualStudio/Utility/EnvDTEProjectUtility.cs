@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -509,27 +509,31 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public static async Task<string> GetCustomUniqueNameAsync(EnvDTEProject envDTEProject)
         {
-            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-            if (IsWebSite(envDTEProject))
+            return await NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {
-                // website projects always have unique name
-                return envDTEProject.Name;
-            }
-            Stack<string> nameParts = new Stack<string>();
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            EnvDTEProject cursor = envDTEProject;
-            nameParts.Push(GetName(cursor));
+                if (IsWebSite(envDTEProject))
+                {
+                    // website projects always have unique name
+                    return envDTEProject.Name;
+                }
+                Stack<string> nameParts = new Stack<string>();
 
-            // walk up till the solution root
-            while (cursor.ParentProjectItem != null
-                   && cursor.ParentProjectItem.ContainingProject != null)
-            {
-                cursor = cursor.ParentProjectItem.ContainingProject;
+                EnvDTEProject cursor = envDTEProject;
                 nameParts.Push(GetName(cursor));
-            }
 
-            return String.Join("\\", nameParts);
+                // walk up till the solution root
+                while (cursor.ParentProjectItem != null
+                       && cursor.ParentProjectItem.ContainingProject != null)
+                {
+                    cursor = cursor.ParentProjectItem.ContainingProject;
+                    nameParts.Push(GetName(cursor));
+                }
+
+                return String.Join("\\", nameParts);
+            });
+            
         }
 
         internal static bool IsExplicitlyUnsupported(EnvDTEProject envDTEProject)
@@ -593,7 +597,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         internal static MicrosoftBuildEvaluationProject AsMicrosoftBuildEvaluationProject(string dteProjectFullName)
         {
-            // Need NOT be on the UI thread
+            // Should be called from the UI thread
 
             return ProjectCollection.GlobalProjectCollection.GetLoadedProjects(dteProjectFullName).FirstOrDefault() ??
                    ProjectCollection.GlobalProjectCollection.LoadProject(dteProjectFullName);
@@ -628,6 +632,7 @@ namespace NuGet.PackageManagement.VisualStudio
             var projectPath = GetFullProjectPath(envDTEProject);
             var platformIdentifier = GetPropertyValue<string>(envDTEProject, "TargetPlatformIdentifier");
             var platformVersion = GetPropertyValue<string>(envDTEProject, "TargetPlatformVersion");
+            var platformMinVersion = GetPropertyValue<string>(envDTEProject, "TargetPlatformMinVersion");
             var targetFrameworkMoniker = GetPropertyValue<string>(envDTEProject, "TargetFrameworkMoniker");
             var isManagementPackProject = IsManagementPackProject(envDTEProject);
             var isXnaWindowsPhoneProject = IsXnaWindowsPhoneProject(envDTEProject);
@@ -641,6 +646,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 targetFrameworkMoniker: targetFrameworkMoniker,
                 targetPlatformIdentifier: platformIdentifier,
                 targetPlatformVersion: platformVersion,
+                targetPlatformMinVersion: platformMinVersion,
                 isManagementPackProject: isManagementPackProject,
                 isXnaWindowsPhoneProject: isXnaWindowsPhoneProject);
 
@@ -1414,7 +1420,7 @@ namespace NuGet.PackageManagement.VisualStudio
             }
             catch (Exception ex)
             {
-                ExceptionHelper.WriteToActivityLog(ex);
+                ExceptionHelper.WriteErrorToActivityLog(ex);
             }
         }
 

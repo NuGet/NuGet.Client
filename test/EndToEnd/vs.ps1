@@ -13,13 +13,47 @@ function Get-VSVersion
     return $version
 }
 
+function New-UwpClassLibrary
+{
+    param(
+        [string]$ProjectName,
+        [string]$SolutionFolder
+    )
+
+    if ((Get-VSVersion) -ge '15.0')
+    {
+        New-Project UwpClassLibrary $ProjectName $SolutionFolder
+    }
+    else
+    {
+        throw "SKIP: $($_)"
+    }
+}
+
+function New-UwpPackageRefClassLibrary
+{
+    param(
+        [string]$ProjectName,
+        [string]$SolutionFolder
+    )
+
+    if ((Get-VSVersion) -ge '15.0')
+    {
+        New-Project UwpPackageRefClassLibrary $ProjectName $SolutionFolder
+    }
+    else
+    {
+        throw "SKIP: $($_)"
+    }
+}
+
 function New-BuildIntegratedProj
 {
     param(
         [string]$ProjectName,
         [string]$SolutionFolder
     )
-    
+
     if ((Get-VSVersion) -ge '14.0')
     {
         New-Project BuildIntegratedProj $ProjectName $SolutionFolder
@@ -35,7 +69,7 @@ function Wait-OnNetCoreRestoreCompletion{
         [parameter(Mandatory = $true)]
         $Project
     )
-    
+
     $NetCoreLockFilePath = Get-NetCoreLockFilePath $Project
     $timeout = New-Timespan -Minutes 2
     $sw = [Diagnostics.Stopwatch]::StartNew()
@@ -53,7 +87,7 @@ function New-NetCoreConsoleApp
         [string]$ProjectName,
         [string]$SolutionFolder
     )
-    
+
     if ((Get-VSVersion) -ge '15.0')
     {
         $project = New-Project NetCoreConsoleApp $ProjectName $SolutionFolder
@@ -72,7 +106,7 @@ function New-NetCoreWebApp10
         [string]$ProjectName,
         [string]$SolutionFolder
     )
-    
+
     if ((Get-VSVersion) -ge '15.0')
     {
         $project = New-Project NetCoreWebApplication1.0 $ProjectName $SolutionFolder
@@ -85,7 +119,26 @@ function New-NetCoreWebApp10
     }
 }
 
-function New-CpsApp 
+function New-NetStandardClassLibrary
+{
+    param(
+        [string]$ProjectName,
+        [string]$SolutionFolder
+    )
+
+    if ((Get-VSVersion) -ge '15.0')
+    {
+        $project = New-Project NetStandardClassLibrary $ProjectName $SolutionFolder
+        Wait-OnNetCoreRestoreCompletion $project
+        return $project
+    }
+    else
+    {
+        throw "SKIP: $($_)"
+    }
+}
+
+function New-CpsApp
 {
     param(
         [string]$ProjectName,
@@ -115,14 +168,14 @@ function Get-SolutionFullName {
     return [API.Test.VSSolutionHelper]::GetSolutionFullName()
 }
 
-function Close-Solution 
+function Close-Solution
 {
     Write-Verbose "Close-Solution function"
 
     [API.Test.VSSolutionHelper]::CloseSolution()
 }
 
-function Open-Solution 
+function Open-Solution
 {
     param
     (
@@ -131,7 +184,7 @@ function Open-Solution
         $Path
     )
     Write-Verbose "Open-Solution function"
-    
+
     [API.Test.VSSolutionHelper]::OpenSolution($Path)
 }
 
@@ -144,7 +197,7 @@ function SaveAs-Solution
         $Path
     )
     Write-Verbose "SaveAs-Solution function"
-    
+
     [API.Test.VSSolutionHelper]::SaveAsSolution($Path)
 }
 
@@ -214,7 +267,7 @@ function Rename-SolutionFolder {
 }
 
 function New-ClassLibrary {
-    param(        
+    param(
         [string]$ProjectName,
         [string]$SolutionFolderName
     )
@@ -222,7 +275,7 @@ function New-ClassLibrary {
     New-Project ClassLibrary $ProjectName $SolutionFolderName
 }
 
-function New-LightSwitchApplication 
+function New-LightSwitchApplication
 {
     param(
         [string]$ProjectName,
@@ -232,7 +285,7 @@ function New-LightSwitchApplication
     New-Project JScriptVisualBasicLightSwitchProjectTemplate $ProjectName $SolutionFolder
 }
 
-function New-PortableLibrary 
+function New-PortableLibrary
 {
     param(
         [string]$ProjectName,
@@ -246,11 +299,11 @@ function New-PortableLibrary
     }
     catch {
         # If we're unable to create the project that means we probably don't have some SDK installed
-        # Signal to the runner that we want to skip this test        
+        # Signal to the runner that we want to skip this test
         throw "SKIP: $($_)"
     }
 
-    if ($Profile) 
+    if ($Profile)
     {
         $name = $project.Name
         $project.Properties.Item("TargetFrameworkMoniker").Value = ".NETPortable,Version=v4.0,Profile=$Profile"
@@ -260,14 +313,14 @@ function New-PortableLibrary
     $project
 }
 
-function New-JavaScriptApplication 
+function New-JavaScriptApplication
 {
     param(
         [string]$ProjectName,
         [string]$SolutionFolder
     )
 
-    try 
+    try
     {
         if ((Get-VSVersion) -eq '12.0')
         {
@@ -277,44 +330,44 @@ function New-JavaScriptApplication
         {
             New-Project WinJS_Dev14 $ProjectName $SolutionFolder
         }
-        else 
+        else
         {
             New-Project WinJS $ProjectName $SolutionFolder
         }
     }
     catch {
         # If we're unable to create the project that means we probably don't have some SDK installed
-        # Signal to the runner that we want to skip this test        
+        # Signal to the runner that we want to skip this test
         throw "SKIP: $($_)"
     }
 }
 
-function New-JavaScriptApplication81 
+function New-JavaScriptApplication81
 {
     param(
         [string]$ProjectName,
         [string]$SolutionFolder
     )
 
-    try 
+    try
     {
         New-Project WinJSBlue $ProjectName $SolutionFolder
     }
     catch {
         # If we're unable to create the project that means we probably don't have some SDK installed
-        # Signal to the runner that we want to skip this test        
+        # Signal to the runner that we want to skip this test
         throw "SKIP: $($_)"
     }
 }
 
-function New-JavaScriptWindowsPhoneApp81 
+function New-JavaScriptWindowsPhoneApp81
 {
     param(
         [string]$ProjectName,
         [string]$SolutionFolder
     )
 
-    try 
+    try
     {
         New-Project WindowsPhoneApp81JS $ProjectName $SolutionFolder
     }
@@ -342,20 +395,20 @@ function New-NativeWinStoreApplication
         {
             New-Project CppWinStoreApplication_Dev14 $ProjectName $SolutionFolder
         }
-        else 
+        else
         {
             New-Project CppWinStoreApplication $ProjectName $SolutionFolder
         }
     }
     catch {
         # If we're unable to create the project that means we probably don't have some SDK installed
-        # Signal to the runner that we want to skip this test        
+        # Signal to the runner that we want to skip this test
         throw "SKIP: $($_)"
     }
 }
 
 function New-ConsoleApplication {
-    param(        
+    param(
         [string]$ProjectName,
         [string]$SolutionFolder
     )
@@ -364,7 +417,7 @@ function New-ConsoleApplication {
 }
 
 function New-WebApplication {
-    param(        
+    param(
         [string]$ProjectName,
         [string]$SolutionFolder
     )
@@ -373,7 +426,7 @@ function New-WebApplication {
 }
 
 function New-VBConsoleApplication {
-    param(        
+    param(
         [string]$ProjectName,
         [string]$SolutionFolder
     )
@@ -381,8 +434,8 @@ function New-VBConsoleApplication {
     New-Project VBConsoleApplication $ProjectName $SolutionFolder
 }
 
-function New-MvcApplication { 
-    param(        
+function New-MvcApplication {
+    param(
         [string]$ProjectName,
         [string]$SolutionFolder
     )
@@ -390,8 +443,8 @@ function New-MvcApplication {
     New-Project EmptyMvcWebApplicationProjectTemplatev4.0.csaspx $ProjectName $SolutionFolder
 }
 
-function New-MvcWebSite { 
-    param(        
+function New-MvcWebSite {
+    param(
         [string]$ProjectName,
         [string]$SolutionFolder
     )
@@ -400,7 +453,7 @@ function New-MvcWebSite {
 }
 
 function New-WebSite {
-    param(        
+    param(
         [string]$ProjectName,
         [string]$SolutionFolder
     )
@@ -409,7 +462,7 @@ function New-WebSite {
 }
 
 function New-FSharpLibrary {
-    param(        
+    param(
         [string]$ProjectName,
         [string]$SolutionFolder
     )
@@ -418,7 +471,7 @@ function New-FSharpLibrary {
 }
 
 function New-FSharpConsoleApplication {
-    param(        
+    param(
         [string]$ProjectName,
         [string]$SolutionFolder
     )
@@ -427,7 +480,7 @@ function New-FSharpConsoleApplication {
 }
 
 function New-WPFApplication {
-    param(        
+    param(
         [string]$ProjectName,
         [string]$SolutionFolder
     )
@@ -436,7 +489,7 @@ function New-WPFApplication {
 }
 
 function New-SilverlightClassLibrary {
-    param(        
+    param(
         [string]$ProjectName,
         [string]$SolutionFolder
     )
@@ -453,7 +506,7 @@ function New-SilverlightClassLibrary {
 }
 
 function New-SilverlightApplication {
-    param(        
+    param(
         [string]$ProjectName,
         [string]$SolutionFolder
     )
@@ -470,7 +523,7 @@ function New-SilverlightApplication {
 }
 
 function New-WindowsPhoneClassLibrary {
-    param(        
+    param(
         [string]$ProjectName,
         [string]$SolutionFolder
     )
@@ -485,7 +538,7 @@ function New-WindowsPhoneClassLibrary {
     }
     catch {
         # If we're unable to create the project that means we probably don't have some SDK installed
-        # Signal to the runner that we want to skip this test        
+        # Signal to the runner that we want to skip this test
         throw "SKIP: $($_)"
     }
 }
@@ -497,13 +550,13 @@ function New-DNXClassLibrary
         [string]$SolutionFolder
     )
 
-    try 
+    try
     {
         New-Project DNXClassLibrary $ProjectName $SolutionFolder
     }
     catch {
         # If we're unable to create the project that means we probably don't have some SDK installed
-        # Signal to the runner that we want to skip this test        
+        # Signal to the runner that we want to skip this test
         throw "SKIP: $($_)"
     }
 }
@@ -515,13 +568,13 @@ function New-DNXConsoleApp
         [string]$SolutionFolder
     )
 
-    try 
+    try
     {
         New-Project DNXConsoleApp $ProjectName $SolutionFolder
     }
     catch {
         # If we're unable to create the project that means we probably don't have some SDK installed
-        # Signal to the runner that we want to skip this test        
+        # Signal to the runner that we want to skip this test
         throw "SKIP: $($_)"
     }
 }
@@ -568,11 +621,11 @@ function Get-AssemblyReference {
         $Project,
         [parameter(Mandatory = $true)]
         [string]$Reference
-    )    
+    )
     try {
         return $Project.Object.References.Item($Reference)
     }
-    catch {        
+    catch {
     }
     return $null
 }
@@ -583,14 +636,14 @@ function Get-PropertyValue {
         $Project,
         [parameter(Mandatory = $true)]
         [string]$PropertyName
-    )    
+    )
     try {
-        $property = $Project.Properties.Item($PropertyName)        
+        $property = $Project.Properties.Item($PropertyName)
         if($property) {
             return $property.Value
         }
     }
-    catch {        
+    catch {
     }
     return $null
 }
@@ -601,7 +654,7 @@ function Get-MsBuildPropertyValue {
         $Project,
         [parameter(Mandatory = $true)]
         [string]$PropertyName
-    )    
+    )
 
     $msBuildProject = Get-MsBuildProject $project
     return $msBuildProject.GetPropertyValue($PropertyName)
@@ -609,7 +662,21 @@ function Get-MsBuildPropertyValue {
     return $null
 }
 
-function Get-MsBuildProject 
+function Get-MsBuildItems {
+    param(
+        [parameter(Mandatory = $true)]
+        $Project,
+        [parameter(Mandatory = $true)]
+        [string]$ItemName
+    )
+
+    $msBuildProject = Get-MsBuildProject $project
+    return $msBuildProject.GetItems($ItemName)
+
+    return $null
+}
+
+function Get-MsBuildProject
 {
     param(
         [parameter(Mandatory = $true)]
@@ -636,7 +703,7 @@ function Get-ProjectDir {
 
     # c++ project has ProjectDirectory
     $path = Get-PropertyValue $Project 'ProjectDirectory'
-    if ($path) 
+    if ($path)
     {
         return $path
     }
@@ -653,24 +720,24 @@ function Get-ProjectDir {
     $path
 }
 
-function Get-ProjectName 
+function Get-ProjectName
 {
     param(
         [parameter(Mandatory = $true)]
         $Project
     )
-    
+
     $projectName = $Project.Name
 
-    if ($project.Type -eq 'Web Site' -and $project.Properties.Item("WebSiteType").Value -eq "0") 
+    if ($project.Type -eq 'Web Site' -and $project.Properties.Item("WebSiteType").Value -eq "0")
     {
-        # If this is a WebSite project and WebSiteType = 0, meaning it's configured to use Casini as opposed to IIS Express, 
+        # If this is a WebSite project and WebSiteType = 0, meaning it's configured to use Casini as opposed to IIS Express,
         # then $Project.Name will return the full path to the website directory. We don't want to use the full path, thus
         # we extract the directory name out of it.
 
         $projectName = Split-Path -Leaf $projectName
     }
-    
+
     $projectName
 }
 
@@ -679,7 +746,7 @@ function Get-OutputPath {
         [parameter(Mandatory = $true)]
         $Project
     )
-    
+
     $outputPath = $Project.ConfigurationManager.ActiveConfiguration.Properties.Item("OutputPath").Value
     Join-Path (Get-ProjectDir) $outputPath
 }
@@ -706,7 +773,7 @@ function Get-ProjectItemPath {
         [string]$Path
     )
     $item = Get-ProjectItem $Project $Path
-    
+
     if($item) {
         return $item.Properties.Item("FullPath").Value
     }
@@ -736,12 +803,12 @@ function Get-ProjectItem {
     Process {
         $pathParts = $Path.Split('\')
         $projectItems = $Project.ProjectItems
-        
+
         foreach($part in $pathParts) {
             if(!$part -or $part -eq '') {
                 continue
             }
-            
+
             try {
                 $subItem = $projectItems.Item($part)
             }
@@ -755,7 +822,7 @@ function Get-ProjectItem {
         if($subItem.Kind -eq $FileKind) {
             return $subItem
         }
-        
+
         # Force array
        return  ,$projectItems
     }
@@ -811,11 +878,11 @@ function Enable-PackageRestore {
     }
 
     $componentService = Get-VSComponentModel
-    
+
     # change active package source to "All"
     $packageSourceProvider = $componentService.GetService([NuGet.VisualStudio.IVsPackageSourceProvider])
     $packageSourceProvider.ActivePackageSource = [NuGet.VisualStudio.AggregatePackageSource]::Instance
-    
+
     $packageRestoreManager = $componentService.GetService([NuGet.VisualStudio.IPackageRestoreManager])
     $packageRestoreManager.EnableCurrentSolutionForRestore($false)
 }
@@ -832,6 +899,6 @@ function Check-NuGetConfig {
     }
 }
 
-function Get-BuildOutput { 
+function Get-BuildOutput {
     return [API.Test.VSHelper]::GetBuildOutput()
 }

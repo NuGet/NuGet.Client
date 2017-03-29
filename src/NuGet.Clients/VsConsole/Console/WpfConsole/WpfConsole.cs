@@ -697,7 +697,7 @@ namespace NuGetConsole.Implementation.Console
                         }
                         catch (Exception exception)
                         {
-                            ExceptionHelper.WriteToActivityLog(exception);
+                            ExceptionHelper.WriteErrorToActivityLog(exception);
                         }
 
                         _bufferAdapter = null;

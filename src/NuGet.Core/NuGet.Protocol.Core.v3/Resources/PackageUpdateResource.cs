@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -12,6 +15,7 @@ using NuGet.Configuration;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Versioning;
+using Newtonsoft.Json;
 
 namespace NuGet.Protocol.Core.Types
 {
@@ -22,6 +26,12 @@ namespace NuGet.Protocol.Core.Types
     {
         private const string ServiceEndpoint = "/api/v2/package";
         private const string ApiKeyHeader = "X-NuGet-ApiKey";
+        private const string InvalidApiKey = "invalidapikey";
+
+        /// <summary>
+        /// Create temporary verification api key endpoint: "create-verification-key/[package id]/[package version]"
+        /// </summary>
+        private const string TempApiKeyServiceEndpoint = "create-verification-key/{0}/{1}";
 
         private HttpSource _httpSource;
         private string _source;
@@ -55,7 +65,6 @@ namespace NuGet.Protocol.Core.Types
             {
                 var requestTimeout = TimeSpan.FromSeconds(timeoutInSecond);
                 tokenSource.CancelAfter(requestTimeout);
-
                 var apiKey = getApiKey(_source);
 
                 await PushPackage(packagePath, _source, apiKey, requestTimeout, log, tokenSource.Token);
@@ -66,6 +75,7 @@ namespace NuGet.Protocol.Core.Types
                 if (!string.IsNullOrEmpty(symbolSource))
                 {
                     string symbolApiKey = getSymbolApiKey(symbolSource);
+
                     await PushSymbols(packagePath, symbolSource, symbolApiKey, requestTimeout, log, tokenSource.Token);
                 }
             }
@@ -269,18 +279,82 @@ namespace NuGet.Protocol.Core.Types
             CancellationToken token)
         {
             var serviceEndpointUrl = GetServiceEndpointUrl(source, string.Empty);
-            await _httpSource.ProcessResponseAsync(
-                new HttpSourceRequest(() => CreateRequest(serviceEndpointUrl, pathToPackage, apiKey, logger))
+            var useTempApiKey = IsSourceNuGetSymbolServer(source);
+
+            if (useTempApiKey)
+            {
+                var maxTries = 3;
+
+                using (var packageReader = new PackageArchiveReader(pathToPackage))
                 {
-                    RequestTimeout = requestTimeout
-                },
-                response =>
-                {
-                    response.EnsureSuccessStatusCode();
-                    return Task.FromResult(0);
-                },
-                logger,
-                token);
+                    var packageIdentity = packageReader.GetIdentity();
+                    var success = false;
+                    var retry = 0;
+
+                    while (retry < maxTries && !success)
+                    {
+                        try
+                        {
+                            retry++;
+                            success = true;
+                            // If user push to https://nuget.smbsrc.net/, use temp api key.
+                            var tmpApiKey = await GetSecureApiKey(packageIdentity, apiKey, requestTimeout, logger, token);
+
+                            await _httpSource.ProcessResponseAsync(
+                                new HttpSourceRequest(() => CreateRequest(serviceEndpointUrl, pathToPackage, tmpApiKey, logger))
+                                {
+                                    RequestTimeout = requestTimeout,
+                                    MaxTries = 1
+                                },
+                                response =>
+                                {
+                                    response.EnsureSuccessStatusCode();
+
+                                    return Task.FromResult(0);
+                                },
+                                logger,
+                                token);
+                        }
+                        catch (OperationCanceledException)
+                        {
+                            throw;
+                        }
+                        catch (Exception e)
+                        {
+                            if (retry == maxTries)
+                            {
+                                throw;
+                            }
+
+                            success = false;
+
+                            logger.LogInformation(string.Format(
+                                CultureInfo.CurrentCulture,
+                                Strings.Log_RetryingHttp,
+                                HttpMethod.Put,
+                                source)
+                                + Environment.NewLine
+                                + ExceptionUtilities.DisplayMessage(e));
+                        }
+                    }
+                }
+            }
+            else
+            {
+                await _httpSource.ProcessResponseAsync(
+                    new HttpSourceRequest(() => CreateRequest(serviceEndpointUrl, pathToPackage, apiKey, logger))
+                    {
+                        RequestTimeout = requestTimeout
+                    },
+                    response =>
+                    {
+                        response.EnsureSuccessStatusCode();
+
+                        return Task.FromResult(0);
+                    },
+                    logger,
+                    token);
+            }
         }
 
         private HttpRequestMessage CreateRequest(
@@ -313,7 +387,7 @@ namespace NuGet.Protocol.Core.Types
 
             if (hasApiKey)
             {
-                request.Headers.Add(ApiKeyHeader, apiKey);
+                request.Headers.Add(ProtocolConstants.ApiKeyHeader, apiKey);
             }
 
             return request;
@@ -396,7 +470,7 @@ namespace NuGet.Protocol.Core.Types
 
                         if (hasApiKey)
                         {
-                            request.Headers.Add(ApiKeyHeader, apiKey);
+                            request.Headers.Add(ProtocolConstants.ApiKeyHeader, apiKey);
                         }
 
                         return request;
@@ -404,6 +478,7 @@ namespace NuGet.Protocol.Core.Types
                 response =>
                 {
                     response.EnsureSuccessStatusCode();
+
                     return Task.FromResult(0);
                 },
                 logger,
@@ -521,6 +596,63 @@ namespace NuGet.Protocol.Core.Types
             }
 
             return true;
+        }
+
+        // Get a temp API key from nuget.org for pushing to https://nuget.smbsrc.net/
+        private async Task<string> GetSecureApiKey(
+            PackageIdentity packageIdentity,
+            string apiKey,
+            TimeSpan requestTimeout,
+            ILogger logger,
+            CancellationToken token)
+        {
+            if (string.IsNullOrEmpty(apiKey))
+            {
+                return apiKey;
+            }
+            var serviceEndpointUrl = GetServiceEndpointUrl(NuGetConstants.DefaultGalleryServerUrl,
+                string.Format(TempApiKeyServiceEndpoint, packageIdentity.Id, packageIdentity.Version));
+
+            try
+            {
+                var result = await _httpSource.GetJObjectAsync(
+                    new HttpSourceRequest(
+                        () =>
+                        {
+                            var request = HttpRequestMessageFactory.Create(
+                                HttpMethod.Post,
+                                serviceEndpointUrl,
+                                new HttpRequestMessageConfiguration(
+                                    logger: logger,
+                                    promptOn403: false));
+                            request.Headers.Add(ApiKeyHeader, apiKey);
+                            return request;
+                        })
+                    {
+                        RequestTimeout = requestTimeout,
+                        MaxTries = 1
+                    },
+                   logger,
+                   token);
+
+                return result.Value<string>("Key")?? InvalidApiKey;
+            }
+            catch(HttpRequestException ex)
+            {
+                if (ex.Message.Contains("Response status code does not indicate success: 403 (Forbidden)."))
+                {
+                    return InvalidApiKey;
+                }
+
+                throw;
+            }
+        }
+
+        private bool IsSourceNuGetSymbolServer(string source)
+        {
+            var sourceUri = UriUtility.CreateSourceUri(source);
+
+            return sourceUri.Host.Equals(NuGetConstants.NuGetSymbolHostName, StringComparison.OrdinalIgnoreCase);
         }
     }
 }

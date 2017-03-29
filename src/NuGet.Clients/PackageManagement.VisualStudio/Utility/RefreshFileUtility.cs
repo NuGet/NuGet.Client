@@ -7,6 +7,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using NuGet.ProjectManagement;
+using NuGet.Common;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
@@ -48,7 +49,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 catch (UnauthorizedAccessException exception)
                 {
                     // log IO permission error
-                    ExceptionHelper.WriteToActivityLog(exception);
+                    ExceptionHelper.WriteErrorToActivityLog(exception);
                 }
             }
         }
@@ -96,7 +97,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 catch (UnauthorizedAccessException exception)
                 {
                     // log IO permission error
-                    ExceptionHelper.WriteToActivityLog(exception);
+                    ExceptionHelper.WriteErrorToActivityLog(exception);
                 }
             }
         }

@@ -42,7 +42,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         private readonly IRestoreEvents _restoreEvents;
         private readonly IRunspaceManager _runspaceManager;
         private readonly ISourceRepositoryProvider _sourceRepositoryProvider;
-        private readonly ISolutionManager _solutionManager;
+        private readonly IVsSolutionManager _solutionManager;
         private readonly ISettings _settings;
         private readonly ISourceControlManagerProvider _sourceControlManagerProvider;
         private readonly ICommonOperations _commonOperations;
@@ -105,7 +105,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
 
             // TODO: Take these as ctor arguments
             _sourceRepositoryProvider = ServiceLocator.GetInstance<ISourceRepositoryProvider>();
-            _solutionManager = ServiceLocator.GetInstance<ISolutionManager>();
+            _solutionManager = ServiceLocator.GetInstance<IVsSolutionManager>();
             _settings = ServiceLocator.GetInstance<ISettings>();
             _deleteOnRestartManager = ServiceLocator.GetInstance<IDeleteOnRestartManager>();
             _scriptExecutor = ServiceLocator.GetInstance<IScriptExecutor>();
@@ -259,7 +259,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                 }
                 catch (Exception ex)
                 {
-                    ExceptionHelper.WriteToActivityLog(ex);
+                    ExceptionHelper.WriteErrorToActivityLog(ex);
                 }
                 return prompt;
             });
@@ -342,7 +342,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                             IsCommandEnabled = false;
                             ReportError(ex);
 
-                            ExceptionHelper.WriteToActivityLog(ex);
+                            ExceptionHelper.WriteErrorToActivityLog(ex);
                         }
                     }
                 });
@@ -398,6 +398,11 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                 // make sure all projects are loaded before start to execute init scripts. Since
                 // projects might not be loaded when DPL is enabled.
                 _solutionManager.EnsureSolutionIsLoaded();
+
+                if (!_solutionManager.IsSolutionFullyLoaded)
+                {
+                    return;
+                }
 
                 // invoke init.ps1 files in the order of package dependency.
                 // if A -> B, we invoke B's init.ps1 before A's.
@@ -597,7 +602,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                 // If execution of an init.ps1 scripts fails, do not let it crash our console.
                 ReportError(ex);
 
-                ExceptionHelper.WriteToActivityLog(ex);
+                ExceptionHelper.WriteErrorToActivityLog(ex);
             }
         }
 

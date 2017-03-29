@@ -12,6 +12,7 @@ using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Microsoft.CSharp.RuntimeBinder;
 using Microsoft.VisualStudio.Shell.Interop;
+using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.PackageManagement.UI;
 using NuGet.Packaging.Core;
@@ -786,7 +787,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 }
                 catch (Exception ex1)
                 {
-                    ExceptionHelper.WriteToActivityLog(ex1);
+                    ExceptionHelper.WriteErrorToActivityLog(ex1);
                 }
 
                 // Remove the NuGetImportStamp so that VC++ project file won't be updated with this stamp on disk,
@@ -797,7 +798,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 }
                 catch (Exception ex2)
                 {
-                    ExceptionHelper.WriteToActivityLog(ex2);
+                    ExceptionHelper.WriteErrorToActivityLog(ex2);
                 }
             }
         }

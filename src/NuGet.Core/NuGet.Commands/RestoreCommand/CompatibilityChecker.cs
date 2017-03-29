@@ -222,7 +222,7 @@ namespace NuGet.Commands
             var patterns = new[]
             {
                 graph.Conventions.Patterns.ResourceAssemblies,
-                graph.Conventions.Patterns.CompileAssemblies,
+                graph.Conventions.Patterns.CompileRefAssemblies,
                 graph.Conventions.Patterns.RuntimeAssemblies,
                 graph.Conventions.Patterns.ContentFiles
             };

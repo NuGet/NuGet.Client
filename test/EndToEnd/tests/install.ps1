@@ -121,7 +121,7 @@ function Test-InstallPackageWithInvalidHttpSourceVerbose {
     $project = New-ConsoleApplication
     $source = "http://example.com"
     $escapedSource = [regex]::Escape($source)
-    $escapedUrl = [regex]::Escape($source+"/FindPackagesById()?id='$package'")
+    $escapedUrl = [regex]::Escape($source+"/FindPackagesById()?id='$package'&semVerLevel=2.0.0")
     $message = "\ \ GET\ $escapedUrl\ \ \ NotFound\ $escapedUrl\ [\w]+\ An\ error\ occurred\ while\ retrieving\ package\ metadata\ for\ '$package'\ from\ source\ '$escapedSource'\.\r\n\ \ The\ V2\ feed\ at\ '$escapedUrl'\ returned\ an\ unexpected\ status\ code\ '404\ Not\ Found'\.\ Unable\ to\ find\ package\ '$package'\ at\ source\ '$escapedSource'\."
 
     # Act
@@ -2401,12 +2401,13 @@ function Test-FileTransformWorksOnDependentFile
     Install-Package test -Source $context.RepositoryPath
 
     # Assert
+	Assert-Package $p TTFile
+	Assert-Package $p test
 
-    $projectDir = Split-Path -parent -path $p.FullName
+	$projectDir = Split-Path -parent -path $p.FullName
     $configFilePath = Join-Path -path $projectDir -childpath "one.config"
-    $content = get-content $configFilePath
-    $matches = @($content | ? { ($_.IndexOf('foo="bar"') -gt -1) })
-    Assert-True ($matches.Count -gt 0)
+	$content = [xml](Get-Content $configFilePath)
+    Assert-AreEqual "bar" $content.configuration["system.web"].compilation.foo
 }
 
 # Solution level package used

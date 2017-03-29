@@ -125,6 +125,10 @@
     <value>The assets file produced by restore does not exist. Try restoring the project again. The expected location of the assets file is {0}.</value>
     <comment>{0} is the path to the assets file.</comment>
   </data>
+  <data name="Error_FileNotFound" xml:space="preserve">
+    <value>The file '{0}' to be packed was not found on disk.</value>
+    <comment>{0} is the file being packed.</comment>
+  </data>
   <data name="InvalidMinClientVersion" xml:space="preserve">
     <value>MinClientVersion string specified '{0}' is invalid.</value>
     <comment>{0} is the version.</comment>
@@ -139,6 +143,9 @@
   <data name="InvalidPackageVersion" xml:space="preserve">
     <value>PackageVersion string specified '{0}' is invalid.</value>
     <comment>{0} is the version.</comment>
+  </data>
+  <data name="InvalidTargetFramework" xml:space="preserve">
+    <value>Invalid target framework for the file '{0}'.</value>
   </data>
   <data name="NoPackItemProvided" xml:space="preserve">
     <value>No project was provided to the PackTask.</value>

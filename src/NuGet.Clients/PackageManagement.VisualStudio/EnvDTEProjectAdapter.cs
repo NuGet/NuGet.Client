@@ -8,6 +8,7 @@ using System.Linq;
 using EnvDTE;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
+using NuGet.Commands;
 using NuGet.Frameworks;
 using NuGet.ProjectModel;
 using NuGet.RuntimeModel;
@@ -21,6 +22,8 @@ namespace NuGet.PackageManagement.VisualStudio
     /// </summary>
     public class EnvDTEProjectAdapter : IEnvDTEProjectAdapter
     {
+        private const string RestoreProjectStyle = "RestoreProjectStyle";
+
         /// <summary>
         /// The adaptee for this adapter
         /// </summary>
@@ -156,21 +159,27 @@ namespace NuGet.PackageManagement.VisualStudio
 
                 if (!_isLegacyCSProjPackageReferenceProject.HasValue)
                 {
-                    // A legacy CSProj can't be CPS, must cast to VSProject4 and *must* have at least one package
-                    // reference already in the CSProj. In the future this logic may change. For now a user must
-                    // hand code their first package reference. Laid out in longhand for readability.
-                    if (AsIVsHierarchy?.IsCapabilityMatch("CPS") ?? true)
-                    {
-                        _isLegacyCSProjPackageReferenceProject = false;
-                    }
-                    else if (AsVSProject4 == null ||
-                        (AsVSProject4.PackageReferences?.InstalledPackages?.Length ?? 0) == 0)
+                    // A legacy CSProj must cast to VSProject4 to manipulate package references
+                    if (AsVSProject4 == null)
                     {
                         _isLegacyCSProjPackageReferenceProject = false;
                     }
                     else
                     {
-                        _isLegacyCSProjPackageReferenceProject = true;
+                        // Check for RestoreProjectStyle property
+                        var restoreProjectStyle = GetMSBuildProperty(AsIVsBuildPropertyStorage, RestoreProjectStyle);
+
+                        // For legacy csproj, either the RestoreProjectStyle must be set to PackageReference or
+                        // project has atleast one package dependency defined as PackageReference
+                        if (restoreProjectStyle?.Equals(ProjectStyle.PackageReference.ToString(), StringComparison.OrdinalIgnoreCase) ?? false
+                            || (AsVSProject4.PackageReferences?.InstalledPackages?.Length ?? 0) > 0)
+                        {
+                            _isLegacyCSProjPackageReferenceProject = true;
+                        }
+                        else
+                        {
+                            _isLegacyCSProjPackageReferenceProject = false;
+                        }
                     }
                 }
 
@@ -184,16 +193,34 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 ThreadHelper.ThrowIfNotOnUIThread();
 
-                // Uncached, in case project file edited
-                // ex-project.json (e.g. UWP)
-                var nuGetTargetFramework = GetMSBuildProperty(AsIVsBuildPropertyStorage, "NuGetTargetFramework");
-                if (!string.IsNullOrEmpty(nuGetTargetFramework))
+                var nugetFramework = NuGetFramework.UnsupportedFramework;
+                var projectPath = ProjectFullPath;
+                var platformIdentifier = GetMSBuildProperty(AsIVsBuildPropertyStorage, "TargetPlatformIdentifier");
+                var platformVersion = GetMSBuildProperty(AsIVsBuildPropertyStorage, "TargetPlatformVersion");
+                var platformMinVersion = GetMSBuildProperty(AsIVsBuildPropertyStorage, "TargetPlatformMinVersion");
+                var targetFrameworkMoniker = GetMSBuildProperty(AsIVsBuildPropertyStorage, "TargetFrameworkMoniker");
+
+                // Projects supporting TargetFramework and TargetFrameworks are detected before
+                // this check. The values can be passed as null here.
+                var frameworkStrings = MSBuildProjectFrameworkUtility.GetProjectFrameworkStrings(
+                    projectFilePath: projectPath,
+                    targetFrameworks: null,
+                    targetFramework: null,
+                    targetFrameworkMoniker: targetFrameworkMoniker,
+                    targetPlatformIdentifier: platformIdentifier,
+                    targetPlatformVersion: platformVersion,
+                    targetPlatformMinVersion: platformMinVersion,
+                    isManagementPackProject: false,
+                    isXnaWindowsPhoneProject: false);
+
+                var frameworkString = frameworkStrings.FirstOrDefault();
+
+                if (!string.IsNullOrEmpty(frameworkString))
                 {
-                    return NuGetFramework.ParseFrameworkName(nuGetTargetFramework, DefaultFrameworkNameProvider.Instance);
+                    nugetFramework = NuGetFramework.Parse(frameworkString);
                 }
 
-                // ex-packages.config
-                return EnvDTEProjectUtility.GetTargetNuGetFramework(_project);
+                return nugetFramework;
             }
         }
 
@@ -374,11 +401,13 @@ namespace NuGet.PackageManagement.VisualStudio
             ThreadHelper.ThrowIfNotOnUIThread();
 
             string output;
+            // passing pszConfigName as null since string.Empty causes it to reevaluate
+            // for each property read.
             var result = buildPropertyStorage.GetPropertyValue(
-                name,
-                string.Empty,
-                (uint)_PersistStorageType.PST_PROJECT_FILE,
-                out output);
+                pszPropName: name,
+                pszConfigName: null,
+                storage: (uint)_PersistStorageType.PST_PROJECT_FILE,
+                pbstrPropValue: out output);
 
             if (result != NuGetVSConstants.S_OK || string.IsNullOrWhiteSpace(output))
             {

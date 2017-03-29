@@ -148,23 +148,26 @@ namespace NuGet.VisualStudio
                                             project,
                                             new VSAPIProjectContext());
 
-                        var installedPackages = await nuGetProject.GetInstalledPackagesAsync(CancellationToken.None);
-
-                        foreach (var package in installedPackages)
+                        if (nuGetProject != null)
                         {
-                            // Get the install path for package
-                            string installPath = _packageManager.PackagesFolderNuGetProject.GetInstalledPath(
-                                                    package.PackageIdentity);
+                            var installedPackages = await nuGetProject.GetInstalledPackagesAsync(CancellationToken.None);
 
-                            if (!string.IsNullOrEmpty(installPath))
+                            foreach (var package in installedPackages)
                             {
-                                // normalize the path and take the dir if the nupkg path was given
-                                var dir = new DirectoryInfo(installPath);
-                                installPath = dir.FullName;
-                            }
+                                // Get the install path for package
+                                string installPath = _packageManager.PackagesFolderNuGetProject.GetInstalledPath(
+                                                        package.PackageIdentity);
 
-                            var metadata = new VsPackageMetadata(package.PackageIdentity, installPath);
-                            packages.Add(metadata);
+                                if (!string.IsNullOrEmpty(installPath))
+                                {
+                                    // normalize the path and take the dir if the nupkg path was given
+                                    var dir = new DirectoryInfo(installPath);
+                                    installPath = dir.FullName;
+                                }
+
+                                var metadata = new VsPackageMetadata(package.PackageIdentity, installPath);
+                                packages.Add(metadata);
+                            }
                         }
                     }
 

@@ -1,8 +1,10 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using Microsoft.Build.Framework;
 using NuGet.Commands;
+using NuGet.Common;
 using NuGet.Packaging;
 using ILogger = NuGet.Common.ILogger;
 
@@ -17,11 +19,13 @@ namespace NuGet.Build.Tasks.Pack
         public ITaskItem[] PackageFilesToExclude { get; set; }
         public string[] TargetFrameworks { get; set; }
         public string[] PackageTypes { get; set; }
+        public ITaskItem[] BuildOutputInPackage { get; set; }
         public string PackageId { get; set; }
         public string PackageVersion { get; set; }
         public string Title { get; set; }
         public string[] Authors { get; set; }
         public string Description { get; set; }
+        public bool DevelopmentDependency { get; set; }
         public string Copyright { get; set; }
         public bool RequireLicenseAcceptance { get; set; }
         public string RestoreOutputPath { get; set; }
@@ -30,8 +34,7 @@ namespace NuGet.Build.Tasks.Pack
         public string IconUrl { get; set; }
         public string[] Tags { get; set; }
         public string ReleaseNotes { get; set; }
-        public string[] TargetPathsToAssemblies { get; set; }
-        public string[] TargetPathsToSymbols { get; set; }
+        public ITaskItem[] TargetPathsToSymbols { get; set; }
         public string AssemblyName { get; set; }
         public string PackageOutputPath { get; set; }
         public bool IsTool { get; set; }
@@ -80,22 +83,31 @@ namespace NuGet.Build.Tasks.Pack
 
         public override bool Execute()
         {
-            var request = GetRequest();
-            var logic = PackTaskLogic;
-            PackageBuilder packageBuilder = null;
-            var packArgs = logic.GetPackArgs(request);
-
-            // If packing using a Nuspec file, we don't need to build a PackageBuilder here
-            // as the package builder is built by reading the manifest file later in the code path.
-            // Passing a null package builder for nuspec file code path is perfectly valid.
-            if (string.IsNullOrEmpty(request.NuspecFile))
+            try
             {
-                packageBuilder = logic.GetPackageBuilder(request);
-            }
-            var packRunner = logic.GetPackCommandRunner(request, packArgs, packageBuilder);
-            logic.BuildPackage(packRunner);
+                var request = GetRequest();
+                var logic = PackTaskLogic;
+                PackageBuilder packageBuilder = null;
+                var packArgs = logic.GetPackArgs(request);
 
-            return true;
+                // If packing using a Nuspec file, we don't need to build a PackageBuilder here
+                // as the package builder is built by reading the manifest file later in the code path.
+                // Passing a null package builder for nuspec file code path is perfectly valid.
+                if (string.IsNullOrEmpty(request.NuspecFile))
+                {
+                    packageBuilder = logic.GetPackageBuilder(request);
+                }
+                var packRunner = logic.GetPackCommandRunner(request, packArgs, packageBuilder);
+                logic.BuildPackage(packRunner);
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                ExceptionUtilities.HandleException(ex, Logger);
+                return false;
+            }
+            
         }
 
         /// <summary>
@@ -110,11 +122,13 @@ namespace NuGet.Build.Tasks.Pack
                 AssemblyName = MSBuildStringUtility.TrimAndGetNullForEmpty(AssemblyName),
                 AssemblyReferences = MSBuildUtility.WrapMSBuildItem(AssemblyReferences),
                 Authors = MSBuildStringUtility.TrimAndExcludeNullOrEmpty(Authors),
+                BuildOutputInPackage = MSBuildUtility.WrapMSBuildItem(BuildOutputInPackage),
                 BuildOutputFolder = MSBuildStringUtility.TrimAndGetNullForEmpty(BuildOutputFolder),
                 ContinuePackingAfterGeneratingNuspec = ContinuePackingAfterGeneratingNuspec,
                 ContentTargetFolders = MSBuildStringUtility.TrimAndExcludeNullOrEmpty(ContentTargetFolders),
                 Copyright = MSBuildStringUtility.TrimAndGetNullForEmpty(Copyright),
                 Description = MSBuildStringUtility.TrimAndGetNullForEmpty(Description),
+                DevelopmentDependency = DevelopmentDependency,
                 IconUrl = MSBuildStringUtility.TrimAndGetNullForEmpty(IconUrl),
                 IncludeBuildOutput = IncludeBuildOutput,
                 IncludeSource = IncludeSource,
@@ -145,8 +159,7 @@ namespace NuGet.Build.Tasks.Pack
                 SourceFiles = MSBuildUtility.WrapMSBuildItem(SourceFiles),
                 Tags = MSBuildStringUtility.TrimAndExcludeNullOrEmpty(Tags),
                 TargetFrameworks = MSBuildStringUtility.TrimAndExcludeNullOrEmpty(TargetFrameworks),
-                TargetPathsToAssemblies = MSBuildStringUtility.TrimAndExcludeNullOrEmpty(TargetPathsToAssemblies),
-                TargetPathsToSymbols = MSBuildStringUtility.TrimAndExcludeNullOrEmpty(TargetPathsToSymbols),
+                TargetPathsToSymbols = MSBuildUtility.WrapMSBuildItem(TargetPathsToSymbols),
                 Title = MSBuildStringUtility.TrimAndGetNullForEmpty(Title),
             };
         }

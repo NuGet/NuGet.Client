@@ -69,6 +69,15 @@ namespace NuGet.Common {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to Value must be greater than or equal to {0}.
+        /// </summary>
+        public static string Argument_Must_Be_GreaterThanOrEqualTo {
+            get {
+                return ResourceManager.GetString("Argument_Must_Be_GreaterThanOrEqualTo", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to Argument cannot be null or empty.
         /// </summary>
         public static string ArgumentNullOrEmpty {

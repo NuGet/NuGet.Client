@@ -3,7 +3,6 @@
 
 using System;
 using System.ComponentModel.Composition;
-using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -18,126 +17,49 @@ namespace NuGet.PackageManagement.UI
     {
         private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
 
+        private readonly AsyncLocal<int> _lockCount = new AsyncLocal<int>();
+
         public bool IsLockHeld => _semaphore.CurrentCount == 0;
 
-        public IDisposable AcquireLock()
+        public async Task<T> ExecuteNuGetOperationAsync<T>(Func<Task<T>> action, CancellationToken token)
         {
-            _semaphore.Wait();
-            return new SemaphoreLockReleaser(_semaphore);
-        }
-
-        public IAsyncLockAwaitable AcquireLockAsync(CancellationToken token)
-        {
-            return new SemaphoreLockAwaiter(_semaphore, token);
-        }
-
-        public void Dispose()
-        {
-            _semaphore.Dispose();
-        }
-
-        private class SemaphoreLockReleaser : IDisposable
-        {
-            private readonly SemaphoreSlim _semaphore;
-            private bool _isDisposed = false;
-
-            public SemaphoreLockReleaser(SemaphoreSlim semaphore)
+            if (_lockCount.Value == 0)
             {
-                _semaphore = semaphore;
-            }
-
-            public void Dispose()
-            {
-                Dispose(true);
-                GC.SuppressFinalize(this);
-            }
-
-            private void Dispose(bool _)
-            {
-                if (_isDisposed)
-                {
-                    return;
-                }
-
+                _lockCount.Value++;
                 try
                 {
-                    _semaphore.Release();
+                    await _semaphore.WaitAsync(token);
+                    return await action();
                 }
-                catch (ObjectDisposedException) { }
-
-                _isDisposed = true;
-            }
-
-            ~SemaphoreLockReleaser()
-            {
-                Dispose(false);
-            }
-        }
-
-        // Custom awaiter which wraps the awaiter for a task awaiting the semaphore lock.
-        // This awaiter implementation wraps a TaskAwaiter, and this implementation’s 
-        // IsCompleted, OnCompleted, and GetResult members delegate to the contained TaskAwaiter’s.
-        private class SemaphoreLockAwaiter : AsyncLockAwaiter, IAsyncLockAwaitable
-        {
-            private readonly SemaphoreSlim _semaphore;
-            private readonly CancellationToken _token;
-            private readonly TaskAwaiter _awaiter;
-
-            private bool _isReleased = false;
-
-            public SemaphoreLockAwaiter(SemaphoreSlim semaphore, CancellationToken token)
-            {
-                if (semaphore == null)
+                finally
                 {
-                    throw new ArgumentNullException(nameof(semaphore));
-                }
-
-                if (token == null)
-                {
-                    throw new ArgumentNullException(nameof(token));
-                }
-
-                _semaphore = semaphore;
-                _token = token;
-                _awaiter = _semaphore.WaitAsync(token).GetAwaiter();
-            }
-
-            public AsyncLockAwaiter GetAwaiter() => this;
-
-            public override bool IsCompleted => _awaiter.IsCompleted;
-
-            public override IDisposable GetResult()
-            {
-                try
-                {
-                    _awaiter.GetResult();
-                }
-                catch (TaskCanceledException) when (_token.IsCancellationRequested)
-                {
-                    // when token is canceled before WaitAsync is called 
-                    // GetResult would throw TaskCanceledException.
-                    // This clause solves this incosistency.
-                    throw new OperationCanceledException();
-                }
-
-                return new AsyncLockReleaser(this);
-            }
-
-            public override void OnCompleted(Action continuation) => _awaiter.OnCompleted(continuation);
-
-            public override void Release()
-            {
-                if (!_isReleased)
-                {
-                    _isReleased = true;
-
                     try
                     {
                         _semaphore.Release();
                     }
                     catch (ObjectDisposedException) { }
+
+                    _lockCount.Value--;
                 }
             }
+            else
+            {
+                return await action();
+            }
+        }
+
+        public Task ExecuteNuGetOperationAsync(Func<Task> action, CancellationToken token)
+        {
+            return ExecuteNuGetOperationAsync(async () =>
+            {
+                await action();
+                return true;
+            }, token);
+        }
+
+        public void Dispose()
+        {
+            _semaphore.Dispose();
         }
     }
 }

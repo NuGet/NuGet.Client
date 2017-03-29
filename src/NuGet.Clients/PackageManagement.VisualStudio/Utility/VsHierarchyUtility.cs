@@ -56,10 +56,10 @@ namespace NuGet.PackageManagement.VisualStudio
             if (buildPropertyStorage != null)
             {
                 var result = buildPropertyStorage.GetPropertyValue(
-                    name,
-                    string.Empty,
-                    (uint)_PersistStorageType.PST_PROJECT_FILE,
-                    out output);
+                    pszPropName: name,
+                    pszConfigName: null,
+                    storage: (uint)_PersistStorageType.PST_PROJECT_FILE,
+                    pbstrPropValue: out output);
 
                 if (result != NuGetVSConstants.S_OK || string.IsNullOrWhiteSpace(output))
                 {

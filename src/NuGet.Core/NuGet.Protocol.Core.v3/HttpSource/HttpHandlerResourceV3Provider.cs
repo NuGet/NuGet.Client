@@ -48,7 +48,7 @@ namespace NuGet.Protocol
             };
 
             // HTTP handler pipeline can be injected here, around the client handler
-            HttpMessageHandler messageHandler = clientHandler;
+            HttpMessageHandler messageHandler = new ServerWarningLogHandler(clientHandler);
 
             if (proxy != null)
             {

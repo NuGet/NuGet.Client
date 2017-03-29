@@ -7,6 +7,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using System.Text;
 using NuGet.Common;
 using NuGet.Protocol.Core.Types;
 using NuGet.Test.Utility;
@@ -18,6 +19,7 @@ namespace NuGet.Protocol.Tests
     public class PackageUpdateResourceTests
     {
         private const string ApiKeyHeader = "X-NuGet-ApiKey";
+        private const string NuGetClientVersionHeader = "X-NuGet-Client-Version";
 
         [Fact]
         public async Task PackageUpdateResource_IncludesApiKeyWhenDeleting()
@@ -56,7 +58,7 @@ namespace NuGet.Protocol.Tests
                 Assert.Equal(HttpMethod.Delete, actualRequest.Method);
 
                 IEnumerable<string> values;
-                actualRequest.Headers.TryGetValues(ApiKeyHeader, out values);
+                actualRequest.Headers.TryGetValues(ProtocolConstants.ApiKeyHeader, out values);
                 Assert.Equal(1, values.Count());
                 Assert.Equal(apiKey, values.First());
 
@@ -103,7 +105,7 @@ namespace NuGet.Protocol.Tests
                 Assert.Equal(HttpMethod.Delete, actualRequest.Method);
 
                 IEnumerable<string> values;
-                actualRequest.Headers.TryGetValues(ApiKeyHeader, out values);
+                actualRequest.Headers.TryGetValues(ProtocolConstants.ApiKeyHeader, out values);
                 Assert.Null(values);
 
                 Assert.True(
@@ -153,7 +155,7 @@ namespace NuGet.Protocol.Tests
                 Assert.Equal(HttpMethod.Put, actualRequest.Method);
 
                 IEnumerable<string> values;
-                actualRequest.Headers.TryGetValues(ApiKeyHeader, out values);
+                actualRequest.Headers.TryGetValues(ProtocolConstants.ApiKeyHeader, out values);
                 Assert.Equal(1, values.Count());
                 Assert.Equal(apiKey, values.First());
 
@@ -204,12 +206,497 @@ namespace NuGet.Protocol.Tests
                 Assert.Equal(HttpMethod.Put, actualRequest.Method);
 
                 IEnumerable<string> values;
-                actualRequest.Headers.TryGetValues(ApiKeyHeader, out values);
+                actualRequest.Headers.TryGetValues(ProtocolConstants.ApiKeyHeader, out values);
                 Assert.Null(values);
 
                 Assert.True(
                     actualRequest.GetOrCreateConfiguration().PromptOn403,
                     "When the API key is not provided, the user should be prompted on HTTP 403.");
+            }
+        }
+
+        [Theory]
+        [InlineData("https://nuget.smbsrc.net/")]
+        [InlineData("http://nuget.smbsrc.net/")]
+        [InlineData("https://nuget.smbsrc.net")]
+        [InlineData("https://nuget.smbsrc.net/api/v2/package/")]
+        public async Task PackageUpdateResource_SourceAndSymbolNuGetOrgPushing(string symbolSource)
+        {
+            // Arrange
+            using (var workingDir = TestDirectory.Create())
+            {
+                var source = "https://www.nuget.org/api/v2";
+                HttpRequestMessage sourceRequest = null;
+                HttpRequestMessage symbolRequest = null;
+                var apiKey = "serverapikey";
+
+                var packageInfo = SimpleTestPackageUtility.CreateFullPackage(workingDir, "test", "1.0.0");
+                var symbolPackageInfo = SimpleTestPackageUtility.CreateSymbolPackage(workingDir, "test", "1.0.0");
+
+                var responses = new Dictionary<string, Func<HttpRequestMessage, Task<HttpResponseMessage>>>
+                {
+                    {
+                        "https://www.nuget.org/api/v2/",
+                        request =>
+                        {
+                            sourceRequest = request;
+                            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK));
+                        }
+                    },
+                    {
+                        "https://nuget.smbsrc.net/api/v2/package/",
+                        request =>
+                        {
+                            symbolRequest = request;
+                            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK));
+                        }
+                    },
+                    {
+                        "http://nuget.smbsrc.net/api/v2/package/",
+                        request =>
+                        {
+                            symbolRequest = request;
+                            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK));
+                        }
+                    },
+                    {
+                        "https://www.nuget.org/api/v2/package/create-verification-key/test/1.0.0",
+                        request =>
+                        {
+                            var content = new StringContent(String.Format(JsonData.tempApiKeyJsonData,"tempkey"), Encoding.UTF8, "application/json");
+                            var response = new HttpResponseMessage(HttpStatusCode.OK);
+                            response.Content = content;
+                            return Task.FromResult(response);
+                        }
+                    }
+
+                };
+
+                var repo = StaticHttpHandler.CreateSource(source, Repository.Provider.GetCoreV3(), responses);
+                var resource = await repo.GetResourceAsync<PackageUpdateResource>();
+                UserAgent.SetUserAgentString(new UserAgentStringBuilder("test client"));
+
+                // Act
+                await resource.Push(
+                    packagePath: packageInfo.FullName,
+                    symbolSource: symbolSource,
+                    timeoutInSecond: 5,
+                    disableBuffering: false,
+                    getApiKey: _ => apiKey,
+                    getSymbolApiKey: _ => apiKey,
+                    log: NullLogger.Instance);
+
+                // Assert
+                IEnumerable<string> apiValues;
+                IEnumerable<string> symbolClientVersionValues;
+                IEnumerable<string> sourceClientVersionValues;
+                symbolRequest.Headers.TryGetValues(ApiKeyHeader, out apiValues);
+                symbolRequest.Headers.TryGetValues(NuGetClientVersionHeader, out symbolClientVersionValues);
+                sourceRequest.Headers.TryGetValues(NuGetClientVersionHeader, out sourceClientVersionValues);
+
+                Assert.Equal("tempkey", apiValues.First());
+                Assert.NotNull(symbolClientVersionValues.First());
+                Assert.NotNull(sourceClientVersionValues.First());
+            }
+        }
+
+        [Fact]
+        public async Task PackageUpdateResource_NuGetOrgSourceOnlyPushing()
+        {
+            // Arrange
+            using (var workingDir = TestDirectory.Create())
+            {
+                var source = "https://www.nuget.org/api/v2";
+                var symbolSource = "https://other.smbsrc.net/";
+                HttpRequestMessage sourceRequest = null;
+                HttpRequestMessage symbolRequest = null;
+                var apiKey = "serverapikey";
+
+                var packageInfo = SimpleTestPackageUtility.CreateFullPackage(workingDir, "test", "1.0.0");
+                var symbolPackageInfo = SimpleTestPackageUtility.CreateSymbolPackage(workingDir, "test", "1.0.0");
+
+                var responses = new Dictionary<string, Func<HttpRequestMessage, Task<HttpResponseMessage>>>
+                {
+                    {
+                        "https://www.nuget.org/api/v2/",
+                        request =>
+                        {
+                            sourceRequest = request;
+                            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK));
+                        }
+                    },
+                    {
+                        "https://other.smbsrc.net/api/v2/package/",
+                        request =>
+                        {
+                            symbolRequest = request;
+                            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK));
+                        }
+                    },
+                };
+
+                var repo = StaticHttpHandler.CreateSource(source, Repository.Provider.GetCoreV3(), responses);
+                var resource = await repo.GetResourceAsync<PackageUpdateResource>();
+                UserAgent.SetUserAgentString(new UserAgentStringBuilder("test client"));
+
+                // Act
+                await resource.Push(
+                    packagePath: packageInfo.FullName,
+                    symbolSource: symbolSource,
+                    timeoutInSecond: 5,
+                    disableBuffering: false,
+                    getApiKey: _ => apiKey,
+                    getSymbolApiKey: _ => apiKey,
+                    log: NullLogger.Instance);
+
+                // Assert
+                IEnumerable<string> apiValues;
+                IEnumerable<string> symbolClientVersionValues;
+                IEnumerable<string> sourceClientVersionValues;
+                symbolRequest.Headers.TryGetValues(ApiKeyHeader, out apiValues);
+                symbolRequest.Headers.TryGetValues(NuGetClientVersionHeader, out symbolClientVersionValues);
+                sourceRequest.Headers.TryGetValues(NuGetClientVersionHeader, out sourceClientVersionValues);
+
+                Assert.Equal("serverapikey", apiValues.First());
+                Assert.NotNull(symbolClientVersionValues.First());
+                Assert.NotNull(sourceClientVersionValues.First());
+            }
+        }
+
+        [Fact]
+        public async Task PackageUpdateResource_SymbolSourceOnlyPushing()
+        {
+            // Arrange
+            using (var workingDir = TestDirectory.Create())
+            {
+                var source = "https://www.myget.org/api/v2";
+                var symbolSource = "https://nuget.smbsrc.net/";
+                HttpRequestMessage sourceRequest = null;
+                HttpRequestMessage symbolRequest = null;
+                var apiKey = "serverapikey";
+
+                var packageInfo = SimpleTestPackageUtility.CreateFullPackage(workingDir, "test", "1.0.0");
+                var symbolPackageInfo = SimpleTestPackageUtility.CreateSymbolPackage(workingDir, "test", "1.0.0");
+
+                var responses = new Dictionary<string, Func<HttpRequestMessage, Task<HttpResponseMessage>>>
+                {
+                    {
+                        "https://www.myget.org/api/v2/",
+                        request =>
+                        {
+                            sourceRequest = request;
+                            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK));
+                        }
+                    },
+                    {
+                        "https://nuget.smbsrc.net/api/v2/package/",
+                        request =>
+                        {
+                            symbolRequest = request;
+                            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK));
+                        }
+                    },
+                    {
+                        "https://www.nuget.org/api/v2/package/create-verification-key/test/1.0.0",
+                        request =>
+                        {
+                            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.Forbidden));
+                        }
+                    }
+
+                };
+
+                var repo = StaticHttpHandler.CreateSource(source, Repository.Provider.GetCoreV3(), responses);
+                var resource = await repo.GetResourceAsync<PackageUpdateResource>();
+                UserAgent.SetUserAgentString(new UserAgentStringBuilder("test client"));
+
+                // Act
+                await resource.Push(
+                    packagePath: packageInfo.FullName,
+                    symbolSource: symbolSource,
+                    timeoutInSecond: 5,
+                    disableBuffering: false,
+                    getApiKey: _ => apiKey,
+                    getSymbolApiKey: _ => apiKey,
+                    log: NullLogger.Instance);
+
+                // Assert
+                IEnumerable<string> apiValues;
+                IEnumerable<string> symbolClientVersionValues;
+                symbolRequest.Headers.TryGetValues(ApiKeyHeader, out apiValues);
+                symbolRequest.Headers.TryGetValues(NuGetClientVersionHeader, out symbolClientVersionValues);
+
+                Assert.Equal("invalidapikey", apiValues.First());
+                Assert.NotNull(symbolClientVersionValues.First());
+
+            }
+        }
+
+        [Theory]
+        [InlineData("https://nuget.smbsrc.net/")]
+        [InlineData("http://nuget.smbsrc.net/")]
+        [InlineData("https://nuget.smbsrc.net")]
+        [InlineData("https://nuget.smbsrc.net/api/v2/package/")]
+        public async Task PackageUpdateResource_NoSymbolSourcePushingSymbol(string source)
+        {
+            // Arrange
+            using (var workingDir = TestDirectory.Create())
+            {
+                HttpRequestMessage symbolRequest = null;
+                var apiKey = "serverapikey";
+                var packageInfo = SimpleTestPackageUtility.CreateFullPackage(workingDir, "test", "1.0.0");
+                var symbolPackageInfo = SimpleTestPackageUtility.CreateSymbolPackage(workingDir, "test", "1.0.0");
+
+                var responses = new Dictionary<string, Func<HttpRequestMessage, Task<HttpResponseMessage>>>
+                {
+                    {
+                        "https://nuget.smbsrc.net/api/v2/package/",
+                        request =>
+                        {
+                            symbolRequest = request;
+                            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK));
+                        }
+                    },
+                    {
+                        "http://nuget.smbsrc.net/api/v2/package/",
+                        request =>
+                        {
+                            symbolRequest = request;
+                            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK));
+                        }
+                    },
+                    {
+                        "https://www.nuget.org/api/v2/package/create-verification-key/test/1.0.0",
+                        request =>
+                        {
+                            var content = new StringContent(String.Format(JsonData.tempApiKeyJsonData,"tempkey"), Encoding.UTF8, "application/json");
+                            var response = new HttpResponseMessage(HttpStatusCode.OK);
+                            response.Content = content;
+                            return Task.FromResult(response);
+                        }
+                    }
+
+                };
+
+                var repo = StaticHttpHandler.CreateSource(source, Repository.Provider.GetCoreV3(), responses);
+                var resource = await repo.GetResourceAsync<PackageUpdateResource>();
+                UserAgent.SetUserAgentString(new UserAgentStringBuilder("test client"));
+
+                // Act
+                await resource.Push(
+                    packagePath: packageInfo.FullName,
+                    symbolSource: null,
+                    timeoutInSecond: 5,
+                    disableBuffering: false,
+                    getApiKey: _ => apiKey,
+                    getSymbolApiKey: _ => null,
+                    log: NullLogger.Instance);
+
+                // Assert
+                IEnumerable<string> apiValues;
+                IEnumerable<string> symbolClientVersionValues;
+                symbolRequest.Headers.TryGetValues(ApiKeyHeader, out apiValues);
+                symbolRequest.Headers.TryGetValues(NuGetClientVersionHeader, out symbolClientVersionValues);
+
+                Assert.Equal("tempkey", apiValues.First());
+                Assert.NotNull(symbolClientVersionValues.First());
+            }
+        }
+
+        [Fact]
+        public async Task PackageUpdateResource_PackageNotExistOnNuGetOrgPushing()
+        {
+            // Arrange
+            using (var workingDir = TestDirectory.Create())
+            {
+                var source = "https://nuget.smbsrc.net/";
+
+                HttpRequestMessage symbolRequest = null;
+                var apiKey = "serverapikey";
+
+                var packageInfo = SimpleTestPackageUtility.CreateFullPackage(workingDir, "test", "1.0.0");
+                var symbolPackageInfo = SimpleTestPackageUtility.CreateSymbolPackage(workingDir, "test", "1.0.0");
+
+                var responses = new Dictionary<string, Func<HttpRequestMessage, Task<HttpResponseMessage>>>
+                {
+                    {
+                        "https://nuget.smbsrc.net/api/v2/package/",
+                        request =>
+                        {
+                            symbolRequest = request;
+                            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK));
+                        }
+                    },
+                    {
+                        "https://www.nuget.org/api/v2/package/create-verification-key/test/1.0.0",
+                        request =>
+                        {
+                            var content = new StringContent(String.Format(JsonData.tempApiKeyJsonData, "tempkey"), Encoding.UTF8, "application/json");
+                            var response = new HttpResponseMessage(HttpStatusCode.OK);
+                            response.Content = content;
+                            return Task.FromResult(response);
+                        }
+                    }
+
+                };
+
+                var repo = StaticHttpHandler.CreateSource(source, Repository.Provider.GetCoreV3(), responses);
+                var resource = await repo.GetResourceAsync<PackageUpdateResource>();
+                UserAgent.SetUserAgentString(new UserAgentStringBuilder("test client"));
+
+                // Act
+                await resource.Push(
+                    packagePath: packageInfo.FullName,
+                    symbolSource: null,
+                    timeoutInSecond: 5,
+                    disableBuffering: false,
+                    getApiKey: _ => apiKey,
+                    getSymbolApiKey: _ => null,
+                    log: NullLogger.Instance);
+
+                // Assert
+                IEnumerable<string> apiValues;
+                IEnumerable<string> symbolClientVersionValues;
+                symbolRequest.Headers.TryGetValues(ApiKeyHeader, out apiValues);
+                symbolRequest.Headers.TryGetValues(NuGetClientVersionHeader, out symbolClientVersionValues);
+
+                Assert.Equal("tempkey", apiValues.First());
+                Assert.NotNull(symbolClientVersionValues.First());
+            }
+        }
+
+        [Fact]
+        public async Task PackageUpdateResource_GetErrorFromCreateKeyPushing()
+        {
+            // Arrange
+            using (var workingDir = TestDirectory.Create())
+            {
+                var source = "https://www.myget.org/api/v2";
+                var symbolSource = "https://nuget.smbsrc.net/";
+                HttpRequestMessage sourceRequest = null;
+                HttpRequestMessage symbolRequest = null;
+                var apiKey = "serverapikey";
+
+                var packageInfo = SimpleTestPackageUtility.CreateFullPackage(workingDir, "test", "1.0.0");
+                var symbolPackageInfo = SimpleTestPackageUtility.CreateSymbolPackage(workingDir, "test", "1.0.0");
+
+                var responses = new Dictionary<string, Func<HttpRequestMessage, Task<HttpResponseMessage>>>
+                {
+                    {
+                        "https://www.myget.org/api/v2/",
+                        request =>
+                        {
+                            sourceRequest = request;
+                            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK));
+                        }
+                    },
+                    {
+                        "https://nuget.smbsrc.net/api/v2/package/",
+                        request =>
+                        {
+                            symbolRequest = request;
+                            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK));
+                        }
+                    },
+                    {
+                        "https://www.nuget.org/api/v2/package/create-verification-key/test/1.0.0",
+                        request =>
+                        {
+                            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.InternalServerError));
+                        }
+                    }
+
+                };
+
+                var repo = StaticHttpHandler.CreateSource(source, Repository.Provider.GetCoreV3(), responses);
+                var resource = await repo.GetResourceAsync<PackageUpdateResource>();
+                UserAgent.SetUserAgentString(new UserAgentStringBuilder("test client"));
+
+                // Act
+                var ex = await Assert.ThrowsAsync<HttpRequestException>(
+                    async () => await resource.Push(
+                        packagePath: packageInfo.FullName,
+                        symbolSource: symbolSource,
+                        timeoutInSecond: 5,
+                        disableBuffering: false,
+                        getApiKey: _ => apiKey,
+                        getSymbolApiKey: _ => apiKey,
+                        log: NullLogger.Instance));
+
+                // Assert
+                Assert.True(ex.Message.Contains("Response status code does not indicate success: 500 (Internal Server Error)"));
+
+            }
+        }
+
+        [Fact]
+        public async Task PackageUpdateResource_RetryNuGetSymbolPushing()
+        {
+            // Arrange
+            using (var workingDir = TestDirectory.Create())
+            {
+                var source = "https://nuget.smbsrc.net/";
+                var symbolRequest = new List<HttpRequestMessage>();
+                var apiKey = "serverapikey";
+                var symbolSourceRequestCount = 0;
+                var createKeyRequestCount = 0;
+
+                var symbolPackageInfo = SimpleTestPackageUtility.CreateSymbolPackage(workingDir, "test", "1.0.0");
+
+                var responses = new Dictionary<string, Func<HttpRequestMessage, Task<HttpResponseMessage>>>
+                {
+                    {
+                        "https://nuget.smbsrc.net/api/v2/package/",
+                        request =>
+                        {
+                            symbolRequest.Add(request);
+                            symbolSourceRequestCount++;
+                            if (symbolSourceRequestCount < 3)
+                            {
+                                return Task.FromResult(new HttpResponseMessage(HttpStatusCode.InternalServerError));
+                            }
+                            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK));
+                        }
+                    },
+                    {
+                        "https://www.nuget.org/api/v2/package/create-verification-key/test/1.0.0",
+                         request =>
+                         {
+                            createKeyRequestCount++;
+                            var content = new StringContent(string.Format(JsonData.tempApiKeyJsonData, $"tempkey{createKeyRequestCount}"), Encoding.UTF8, "application/json");
+                            var response = new HttpResponseMessage(HttpStatusCode.OK);
+                            response.Content = content;
+                            return Task.FromResult(response);
+                         }
+                    }
+
+                };
+
+                var repo = StaticHttpHandler.CreateSource(source, Repository.Provider.GetCoreV3(), responses);
+                var resource = await repo.GetResourceAsync<PackageUpdateResource>();
+                UserAgent.SetUserAgentString(new UserAgentStringBuilder("test client"));
+
+                // Act
+                await resource.Push(
+                    packagePath: symbolPackageInfo.FullName,
+                    symbolSource: null,
+                    timeoutInSecond: 5,
+                    disableBuffering: false,
+                    getApiKey: _ => apiKey,
+                    getSymbolApiKey: _ => null,
+                    log: NullLogger.Instance);
+
+                // Assert
+                var apikeys = new List<string>();
+
+                Assert.Equal(3, symbolRequest.Count);
+
+                IEnumerable<string> apiValues;
+                for (var i = 1; i <= 3; i++)
+                {
+                    symbolRequest[i - 1].Headers.TryGetValues(ApiKeyHeader, out apiValues);
+                    Assert.Equal($"tempkey{i}", apiValues.First());
+                }
             }
         }
     }

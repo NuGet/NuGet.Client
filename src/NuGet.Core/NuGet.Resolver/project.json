@@ -1,5 +1,5 @@
 {
-  "version": "4.0.1-*",
+  "version": "4.3.0-*",
   "description": "NuGet's dependency resolver within the NuGet.Packaging package",
   "authors": [
     "NuGet"

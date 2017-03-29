@@ -372,11 +372,8 @@
   <data name="defaultPackageManagementFormatLabel.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
-  <data name="defaultPackageManagementFormatLabel.Location" type="System.Drawing.Point, System.Drawing">
-    <value>16, 178</value>
-  </data>
   <data name="defaultPackageManagementFormatLabel.Size" type="System.Drawing.Size, System.Drawing">
-    <value>185, 13</value>
+    <value>185, 21</value>
   </data>
   <data name="defaultPackageManagementFormatLabel.TabIndex" type="System.Int32, mscorlib">
     <value>21</value>
@@ -391,10 +388,16 @@
     <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;defaultPackageManagementFormatLabel.Parent" xml:space="preserve">
-    <value>$this</value>
+    <value>tableLayoutPanel1</value>
   </data>
   <data name="&gt;&gt;defaultPackageManagementFormatLabel.ZOrder" xml:space="preserve">
     <value>6</value>
+  </data>
+  <data name="defaultPackageManagementFormatLabel.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
+    <value>MiddleLeft</value>
+  </data>
+  <data name="defaultPackageManagementFormatLabel.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
+    <value>Left</value>
   </data>
   <data name="showPackageManagementChooser.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -423,23 +426,14 @@
   <data name="&gt;&gt;showPackageManagementChooser.ZOrder" xml:space="preserve">
     <value>7</value>
   </data>
-  <metadata name="defaultPackageManagementFormatItems.Locked" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
+  <data name="tableLayoutPanel1.ColumnCount" type="System.Int32, mscorlib">
+    <value>2</value>
+  </data>
+  <data name="tableLayoutPanel1.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
-  </metadata>
-  <data name="defaultPackageManagementFormatItems.Items" xml:space="preserve">
-    <value>Packages.config</value>
   </data>
-  <data name="defaultPackageManagementFormatItems.Items1" xml:space="preserve">
-    <value>PackageReference</value>
-  </data>
-  <data name="defaultPackageManagementFormatItems.Location" type="System.Drawing.Point, System.Drawing">
-    <value>204, 173</value>
-  </data>
-  <data name="defaultPackageManagementFormatItems.Size" type="System.Drawing.Size, System.Drawing">
-    <value>121, 21</value>
-  </data>
-  <data name="defaultPackageManagementFormatItems.TabIndex" type="System.Int32, mscorlib">
-    <value>23</value>
+  <data name="tableLayoutPanel1.AutoSizeMode" type="System.Windows.Forms.AutoSizeMode, System.Windows.Forms">
+    <value>GrowAndShrink</value>
   </data>
   <data name="&gt;&gt;defaultPackageManagementFormatItems.Name" xml:space="preserve">
     <value>defaultPackageManagementFormatItems</value>
@@ -448,10 +442,49 @@
     <value>System.Windows.Forms.ComboBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;defaultPackageManagementFormatItems.Parent" xml:space="preserve">
-    <value>$this</value>
+    <value>tableLayoutPanel1</value>
   </data>
   <data name="&gt;&gt;defaultPackageManagementFormatItems.ZOrder" xml:space="preserve">
     <value>8</value>
+  </data>
+  <data name="tableLayoutPanel1.Location" type="System.Drawing.Point, System.Drawing">
+    <value>15, 172</value>
+  </data>
+  <data name="tableLayoutPanel1.RowCount" type="System.Int32, mscorlib">
+    <value>1</value>
+  </data>
+  <data name="tableLayoutPanel1.Size" type="System.Drawing.Size, System.Drawing">
+    <value>309, 21</value>
+  </data>
+  <data name="tableLayoutPanel1.TabIndex" type="System.Int32, mscorlib">
+    <value>24</value>
+  </data>
+  <data name="&gt;&gt;tableLayoutPanel1.Name" xml:space="preserve">
+    <value>tableLayoutPanel1</value>
+  </data>
+  <data name="&gt;&gt;tableLayoutPanel1.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TableLayoutPanel, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;tableLayoutPanel1.Parent" xml:space="preserve">
+    <value>$this</value>
+  </data>
+  <data name="&gt;&gt;tableLayoutPanel1.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <data name="tableLayoutPanel1.LayoutSettings" type="System.Windows.Forms.TableLayoutSettings, System.Windows.Forms">
+    <value>&lt;?xml version="1.0" encoding="utf-16"?&gt;&lt;TableLayoutSettings&gt;&lt;Controls&gt;&lt;Control Name="defaultPackageManagementFormatItems" Row="0" RowSpan="1" Column="1" ColumnSpan="1" /&gt;&lt;Control Name="defaultPackageManagementFormatLabel" Row="0" RowSpan="1" Column="0" ColumnSpan="1" /&gt;&lt;/Controls&gt;&lt;Columns Styles="AutoSize,0,Percent,100" /&gt;&lt;Rows Styles="Percent,100" /&gt;&lt;/TableLayoutSettings&gt;</value>
+  </data>
+  <data name="defaultPackageManagementFormatItems.Items" xml:space="preserve">
+    <value>Packages.config</value>
+  </data>
+  <data name="defaultPackageManagementFormatItems.Items1" xml:space="preserve">
+    <value>PackageReference</value>
+  </data>
+  <data name="defaultPackageManagementFormatItems.Size" type="System.Drawing.Size, System.Drawing">
+    <value>121, 21</value>
+  </data>
+  <data name="defaultPackageManagementFormatItems.TabIndex" type="System.Int32, mscorlib">
+    <value>23</value>
   </data>
   <metadata name="$this.Localizable" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
     <value>True</value>

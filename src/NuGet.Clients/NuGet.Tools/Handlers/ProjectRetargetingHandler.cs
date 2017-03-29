@@ -6,14 +6,17 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
+using System.Threading;
 using EnvDTE;
 using Microsoft.VisualStudio;
+using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.PackageManagement;
 using NuGet.PackageManagement.UI;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging.Core;
+using NuGet.ProjectManagement;
 
 namespace NuGetVSExtension
 {
@@ -28,6 +31,8 @@ namespace NuGetVSExtension
         private IVsMonitorSelection _vsMonitorSelection;
         private string _platformRetargetingProject;
 
+        private Lazy<ISolutionRestoreWorker> _solutionRestoreWorker;
+
         private const string NETCore45 = ".NETCore,Version=v4.5";
         private const string Windows80 = "Windows, Version=8.0";
         private const string NETCore451 = ".NETCore,Version=v4.5.1";
@@ -38,7 +43,7 @@ namespace NuGetVSExtension
         /// Otherwise, it simply exits
         /// </summary>
         /// <param name="dte"></param>
-        public ProjectRetargetingHandler(DTE dte, ISolutionManager solutionManager, IServiceProvider serviceProvider)
+        public ProjectRetargetingHandler(DTE dte, ISolutionManager solutionManager, IServiceProvider serviceProvider, IComponentModel componentModel)
         {
             if (dte == null)
             {
@@ -54,6 +59,14 @@ namespace NuGetVSExtension
             {
                 throw new ArgumentNullException(nameof(serviceProvider));
             }
+
+            if (componentModel == null)
+            {
+                throw new ArgumentNullException(nameof(componentModel));
+            }
+
+            _solutionRestoreWorker = new Lazy<ISolutionRestoreWorker>(
+                () => componentModel.GetService<ISolutionRestoreWorker>());
 
             var vsTrackProjectRetargeting = serviceProvider.GetService(typeof(SVsTrackProjectRetargeting)) as IVsTrackProjectRetargeting;
             if (vsTrackProjectRetargeting != null)
@@ -155,13 +168,14 @@ namespace NuGetVSExtension
         #region IVsTrackProjectRetargetingEvents
         int IVsTrackProjectRetargetingEvents.OnRetargetingAfterChange(string projRef, IVsHierarchy pAfterChangeHier, string fromTargetFramework, string toTargetFramework)
         {
+            NuGetProject retargetedProject = null;
             NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
             {
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                 _errorListProvider.Tasks.Clear();
                 var project = VsHierarchyUtility.GetProjectFromHierarchy(pAfterChangeHier);
-                var retargetedProject = EnvDTEProjectUtility.GetNuGetProject(project, _solutionManager);
+                retargetedProject = EnvDTEProjectUtility.GetNuGetProject(project, _solutionManager);
 
                 if (ProjectRetargetingUtility.IsProjectRetargetable(retargetedProject))
                 {
@@ -173,7 +187,13 @@ namespace NuGetVSExtension
                     ProjectRetargetingUtility.MarkPackagesForReinstallation(retargetedProject, packagesToBeReinstalled);
                 }
             });
-
+#if !VS14
+            if (retargetedProject != null && retargetedProject is LegacyCSProjPackageReferenceProject)
+            {
+                // trigger solution restore and don't wait for it to be complete and hold the UI thread
+                System.Threading.Tasks.Task.Run(() => _solutionRestoreWorker.Value.ScheduleRestoreAsync(SolutionRestoreRequest.ByMenu(), CancellationToken.None));
+            }
+#endif
             return VSConstants.S_OK;
         }
 
@@ -225,6 +245,7 @@ namespace NuGetVSExtension
 
         int IVsTrackBatchRetargetingEvents.OnBatchRetargetingEnd()
         {
+            NuGetProject nuGetProject = null;
             NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
             {
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
@@ -238,7 +259,7 @@ namespace NuGetVSExtension
 
                         if (project != null)
                         {
-                            var nuGetProject = EnvDTEProjectUtility.GetNuGetProject(project, _solutionManager);
+                            nuGetProject = EnvDTEProjectUtility.GetNuGetProject(project, _solutionManager);
 
                             if (ProjectRetargetingUtility.IsProjectRetargetable(nuGetProject))
                             {
@@ -266,7 +287,13 @@ namespace NuGetVSExtension
                     _platformRetargetingProject = null;
                 }
             });
-
+#if !VS14
+            if (nuGetProject != null && nuGetProject is LegacyCSProjPackageReferenceProject)
+            {
+                // trigger solution restore and don't wait for it to be complete and hold the UI thread
+                System.Threading.Tasks.Task.Run(() => _solutionRestoreWorker.Value.ScheduleRestoreAsync(SolutionRestoreRequest.ByMenu(), CancellationToken.None));
+            }
+#endif
             return VSConstants.S_OK;
         }
         #endregion

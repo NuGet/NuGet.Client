@@ -23,16 +23,17 @@ namespace NuGet.Protocol
         private const string IsLatestVersionFilterFlag = "IsLatestVersion";
         private const string IsAbsoluteLatestVersionFilterFlag = "IsAbsoluteLatestVersion";
         private const string IdProperty = "Id";
+        private const string SemVerLevel = "semVerLevel=2.0.0";
 
         // constants for /Packages(ID,VERSION) endpoint
         private const string GetSpecificPackageFormat = "/Packages(Id='{0}',Version='{1}')";
 
         // constants for /Search() endpoint
-        private const string SearchEndpointFormat = "/Search()?{0}{1}searchTerm='{2}'&targetFramework='{3}'&includePrerelease={4}&$skip={5}&$top={6}";
+        private const string SearchEndpointFormat = "/Search()?{0}{1}searchTerm='{2}'&targetFramework='{3}'&includePrerelease={4}&$skip={5}&$top={6}&" + SemVerLevel;
         private const string QueryDelimiter = "&";
 
         // constants for /FindPackagesById() endpoint
-        private const string FindPackagesByIdFormat = "/FindPackagesById()?id='{0}'";
+        private const string FindPackagesByIdFormat = "/FindPackagesById()?id='{0}'&" + SemVerLevel;
 
         // constants for /Packages() endpoint
         private const string GetPackagesFormat = "/Packages{0}";
@@ -177,6 +178,11 @@ namespace NuGet.Protocol
                     topParameter);
                 hasParameters = true;
             }
+
+            builder.AppendFormat(
+                hasParameters ? ParameterFormat : FirstParameterFormat,
+                SemVerLevel);
+            hasParameters = true;
 
             return builder.ToString();
         }

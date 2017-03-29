@@ -9,7 +9,6 @@ using Microsoft.VisualStudio.Shell;
 using Moq;
 using NuGet.Frameworks;
 using NuGet.ProjectManagement;
-using NuGet.ProjectModel;
 using NuGet.RuntimeModel;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
@@ -43,6 +42,25 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
                 // Assert
                 Assert.Equal(Path.Combine(testBaseIntermediateOutputPath, "project.assets.json"), assetsPath);
+            }
+        }
+
+        [Fact]
+        public async Task LCPRP_WhenThereIsNoBaseIntermediateOutputPath_ThrowsException()
+        {
+            // Arrange
+            using (var randomTestFolder = TestDirectory.Create())
+            {
+                var testEnvDTEProjectAdapter = new Mock<IEnvDTEProjectAdapter>();
+
+                var testProject = new LegacyCSProjPackageReferenceProject(
+                    project: testEnvDTEProjectAdapter.Object,
+                    projectId: String.Empty,
+                    callerIsUnitTest: true);
+
+                // Act & Assert
+                await Assert.ThrowsAsync<InvalidDataException>(
+                    () => testProject.GetAssetsFilePathAsync());
             }
         }
 
@@ -132,6 +150,46 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
                 // Assert
                 Assert.Equal(new NuGetVersion("1.0.0"), installedPackages.First().Version);
+            }
+        }
+
+        [Fact]
+        public async Task LCPRP_Dependency_PackageVersion()
+        {
+            // Arrange
+            using (var randomTestFolder = TestDirectory.Create())
+            {
+                var testEnvDTEProjectAdapter = new EnvDTEProjectAdapterMock(randomTestFolder);
+                testEnvDTEProjectAdapter
+                    .Setup(x => x.TargetNuGetFramework)
+                    .Returns(new NuGetFramework("netstandard13"));
+                testEnvDTEProjectAdapter
+                    .Setup(x => x.GetLegacyCSProjPackageReferences(It.IsAny<Array>()))
+                    .Returns(new LegacyCSProjPackageReference[] 
+                        {
+                            new LegacyCSProjPackageReference(
+                                name: "packageA",
+                                version: "1.*",
+                                metadataElements: null,
+                                metadataValues: null,
+                                targetNuGetFramework: new NuGetFramework("netstandard13"))
+                        });
+
+                var testProject = new LegacyCSProjPackageReferenceProject(
+                    project: testEnvDTEProjectAdapter.Object,
+                    projectId: "",
+                    callerIsUnitTest: true);
+
+                var testDependencyGraphCacheContext = new DependencyGraphCacheContext();
+
+                // Act
+                var packageSpec = await testProject.GetPackageSpecsAsync(testDependencyGraphCacheContext);
+
+                // Assert
+                var dependency = packageSpec.First().Dependencies.First();
+                Assert.NotNull(dependency);
+                Assert.Equal("packageA", dependency.LibraryRange.Name);
+                Assert.Equal(VersionRange.Parse("1.*"), dependency.LibraryRange.VersionRange);
             }
         }
 

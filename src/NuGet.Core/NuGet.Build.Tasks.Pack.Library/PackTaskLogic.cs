@@ -7,6 +7,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using NuGet.Commands;
+using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.Packaging;
@@ -32,8 +33,8 @@ namespace NuGet.Build.Tasks.Pack
                 NoPackageAnalysis = request.NoPackageAnalysis,
                 PackTargetArgs = new MSBuildPackTargetArgs
                 {
-                    TargetPathsToAssemblies = GetTargetPathsToAssemblies(request),
-                    TargetPathsToSymbols = request.TargetPathsToSymbols,
+                    TargetPathsToAssemblies = InitLibFiles(request.BuildOutputInPackage),
+                    TargetPathsToSymbols = InitLibFiles(request.TargetPathsToSymbols),
                     AssemblyName = request.AssemblyName,
                     IncludeBuildOutput = request.IncludeBuildOutput,
                     BuildOutputFolder = request.BuildOutputFolder,
@@ -103,6 +104,11 @@ namespace NuGet.Build.Tasks.Pack
                 RequireLicenseAcceptance = request.RequireLicenseAcceptance,
                 PackageTypes = ParsePackageTypes(request)
             };
+
+            if (request.DevelopmentDependency)
+            {
+                builder.DevelopmentDependency = true;
+            }
             
             if (request.PackageVersion != null)
             {
@@ -199,19 +205,48 @@ namespace NuGet.Build.Tasks.Pack
             runner.BuildPackage();
         }
 
-        private string[] GetTargetPathsToAssemblies(IPackTaskRequest<IMSBuildItem> request)
+        private IEnumerable<OutputLibFile> InitLibFiles(IMSBuildItem[] libFiles)
         {
-            if (request.TargetPathsToAssemblies == null)
+            var assemblies = new List<OutputLibFile>();
+            if (libFiles == null)
             {
-                return new string[0];
+                return assemblies;
             }
 
-            return request.TargetPathsToAssemblies
-                .Where(path => path != null)
-                .Select(path => path.Trim())
-                .Where(path => path != string.Empty)
-                .Distinct()
-                .ToArray();
+
+            foreach (var assembly in libFiles)
+            {
+                var finalOutputPath = assembly.GetProperty("FinalOutputPath");
+                var targetPath = assembly.GetProperty("TargetPath");
+                var targetFramework = assembly.GetProperty("TargetFramework");
+
+                if (!File.Exists(finalOutputPath))
+                {
+                    throw new FileNotFoundException(string.Format(CultureInfo.CurrentCulture, Strings.Error_FileNotFound, finalOutputPath));
+                }
+
+                // If target path is not set, default it to the file name. Only satellite DLLs have a special target path
+                // where culture is part of the target path. This condition holds true for files like runtimeconfig.json file
+                // in netcore projects.
+                if (targetPath == null)
+                {
+                    targetPath = Path.GetFileName(finalOutputPath);
+                }
+
+                if (string.IsNullOrEmpty(targetFramework) || NuGetFramework.Parse(targetFramework).IsSpecificFramework == false)
+                {
+                    throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Strings.InvalidTargetFramework, finalOutputPath));
+                }
+                
+                assemblies.Add(new OutputLibFile()
+                {
+                    FinalOutputPath = finalOutputPath,
+                    TargetPath = targetPath,
+                    TargetFramework = targetFramework
+                });
+            }
+
+            return assemblies;
         }
 
         private ISet<NuGetFramework> ParseFrameworks(IPackTaskRequest<IMSBuildItem> request)
@@ -284,12 +319,12 @@ namespace NuGet.Build.Tasks.Pack
             }
         }
 
-        private Dictionary<string, HashSet<ContentMetadata>> ProcessContentToIncludeInPackage(
+        private Dictionary<string, IEnumerable<ContentMetadata>> ProcessContentToIncludeInPackage(
             IPackTaskRequest<IMSBuildItem> request,
             PackArgs packArgs)
         {
             // This maps from source path on disk to target path inside the nupkg.
-            var fileModel = new Dictionary<string, HashSet<ContentMetadata>>();
+            var fileModel = new Dictionary<string, IEnumerable<ContentMetadata>>();
             if (request.PackageFiles != null)
             {
                 var excludeFiles = CalculateFilesToExcludeInPack(request);
@@ -306,11 +341,11 @@ namespace NuGet.Build.Tasks.Pack
                     if (fileModel.ContainsKey(sourcePath))
                     {
                         var existingContentMetadata = fileModel[sourcePath];
-                        existingContentMetadata.AddRange(totalContentMetadata);
+                        fileModel[sourcePath] = existingContentMetadata.Concat(totalContentMetadata);
                     }
                     else
                     {
-                        var existingContentMetadata = new HashSet<ContentMetadata>();
+                        var existingContentMetadata = new List<ContentMetadata>();
                         existingContentMetadata.AddRange(totalContentMetadata);
                         fileModel.Add(sourcePath, existingContentMetadata);
                     }
@@ -326,14 +361,9 @@ namespace NuGet.Build.Tasks.Pack
             PackArgs packArgs, string[] contentTargetFolders)
         {
             var targetPaths = contentTargetFolders
-                .Where(f => !f.EndsWith(Path.DirectorySeparatorChar.ToString()))
-                .Select(f => string.Concat(f, Path.DirectorySeparatorChar))
+                .Select(PathUtility.EnsureTrailingSlash)
                 .ToList();
             
-            targetPaths.AddRange(
-                contentTargetFolders
-                .Where(f => f.EndsWith(Path.DirectorySeparatorChar.ToString())));
-
             var isPackagePathSpecified = packageFile.Properties.Contains("PackagePath");
             // if user specified a PackagePath, then use that. Look for any ** which are indicated by the RecrusiveDir metadata in msbuild.
             if (isPackagePathSpecified)
@@ -352,17 +382,16 @@ namespace NuGet.Build.Tasks.Pack
                 if (!string.IsNullOrEmpty(recursiveDir))
                 {
                     var newTargetPaths = new List<string>();
+                    var fileName = Path.GetFileName(sourcePath);
                     foreach (var targetPath in targetPaths)
                     {
-                        if (targetPath.EndsWith(Path.DirectorySeparatorChar.ToString()))
-                        {
-                            newTargetPaths.Add(Path.Combine(targetPath, recursiveDir));
-                        }
-                        else
-                        {
-                            newTargetPaths.Add(targetPath);
-                        }
+                        newTargetPaths.Add(PathUtility.GetStringComparerBasedOnOS().
+                            Compare(Path.GetExtension(fileName), 
+                            Path.GetExtension(targetPath)) == 0
+                                ? targetPath
+                                : Path.Combine(targetPath, recursiveDir));
                     }
+
                     targetPaths = newTargetPaths;
                 }
             }
@@ -373,20 +402,20 @@ namespace NuGet.Build.Tasks.Pack
             var language = buildAction.Equals(BuildAction.Compile) ? "cs" : "any";
 
 
-            var setOfTargetPaths = new HashSet<string>(targetPaths, StringComparer.Ordinal);
+            var setOfTargetPaths = new HashSet<string>(targetPaths, PathUtility.GetStringComparerBasedOnOS());
 
             // If package path wasn't specified, then we expand the "contentFiles" value we
             // got from ContentTargetFolders and expand it to contentFiles/any/<TFM>/
             if (!isPackagePathSpecified)
             {
                 if (setOfTargetPaths.Remove("contentFiles" + Path.DirectorySeparatorChar)
-                || setOfTargetPaths.Remove("contentFiles" + Path.AltDirectorySeparatorChar)
                 || setOfTargetPaths.Remove("contentFiles"))
                 {
                     foreach (var framework in packArgs.PackTargetArgs.TargetFrameworks)
                     {
-                        setOfTargetPaths.Add(Path.Combine("contentFiles",
-                            Path.Combine(language, framework.GetShortFolderName())) + Path.DirectorySeparatorChar);
+                        setOfTargetPaths.Add(PathUtility.EnsureTrailingSlash(
+                            Path.Combine("contentFiles", language, framework.GetShortFolderName()
+                            )));
                     }
                 }
             }
@@ -404,11 +433,11 @@ namespace NuGet.Build.Tasks.Pack
             {
                 var newTargetPaths = new List<string>();
                 var identity = packageFile.GetProperty(IdentityProperty);
-                
+
                 // Identity can be a rooted absolute path too, in which case find the path relative to the current directory
                 if (Path.IsPathRooted(identity))
                 {
-                    identity = PathUtility.GetRelativePath(packArgs.CurrentDirectory + Path.DirectorySeparatorChar, identity);
+                    identity = PathUtility.GetRelativePath(PathUtility.EnsureTrailingSlash(packArgs.CurrentDirectory), identity);
                     identity = Path.GetDirectoryName(identity);
                 }
 
@@ -424,19 +453,16 @@ namespace NuGet.Build.Tasks.Pack
                     // We need to do this because evaluated identity in the above line of code can be an empty string
                     // in the case when the original identity string was the absolute path to a file in project directory, and is in
                     // the same directory as the csproj file. 
-                    if (!newTargetPath.EndsWith(Path.DirectorySeparatorChar.ToString()))
-                    {
-                        newTargetPath = newTargetPath + Path.DirectorySeparatorChar;
-                    }
+                    newTargetPath = PathUtility.EnsureTrailingSlash(newTargetPath);
                     newTargetPaths.Add(newTargetPath);
                 }
-                setOfTargetPaths = new HashSet<string>(newTargetPaths, StringComparer.Ordinal);
+                setOfTargetPaths = new HashSet<string>(newTargetPaths, PathUtility.GetStringComparerBasedOnOS());
             }
 
             // we take the final set of evaluated target paths and append the file name to it if not
             // already done. we check whether the extension of the target path is the same as the extension
             // of the source path and add the filename accordingly.
-            var totalSetOfTargetPaths = new HashSet<string>(StringComparer.Ordinal);
+            var totalSetOfTargetPaths = new List<string>();
             foreach (var targetPath in setOfTargetPaths)
             {
                 var currentPath = targetPath;

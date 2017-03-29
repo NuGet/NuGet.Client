@@ -221,6 +221,12 @@ namespace NuGet.Test
         [InlineData("portable-net45+win8", "portable-net45+win8+wp8+monoandroid1+monotouch1")]
         [InlineData("portable-net45+win8+monoandroid+monotouch", "portable-net45+win8+wp8")]
         [InlineData("portable-net45+win8+monoandroid1+monotouch1", "portable-net45+win8+wp8")]
+        [InlineData("monoandroid10", "portable-net45+win8")]
+        [InlineData("monotouch10", "portable-net45+win8")]
+        [InlineData("xamarinios10", "portable-net45+win8")]
+        [InlineData("xamarintvos10", "portable-net45+win8")]
+        [InlineData("xamarinwatchos10", "portable-net45+win8")]
+        [InlineData("xamarinmac20", "portable-net45+win8")]
         public void CompatibilityPCL_Optional(string fw1, string fw2)
         {
             var framework1 = NuGetFramework.Parse(fw1);

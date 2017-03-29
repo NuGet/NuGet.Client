@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -60,7 +60,7 @@ namespace NuGetVSExtension
     public sealed class NuGetPackage : AsyncPackage, IVsPackageExtensionProvider, IVsPersistSolutionOpts
     {
         // It is displayed in the Help - About box of Visual Studio
-        public const string ProductVersion = "4.0.1";
+        public const string ProductVersion = "4.3.0";
 
         private static readonly object _credentialsPromptLock = new object();
 
@@ -171,7 +171,7 @@ namespace NuGetVSExtension
                 DeleteOnRestartManager.Value.DeleteMarkedPackageDirectories(ProjectContext);
             }
 
-            ProjectRetargetingHandler = new ProjectRetargetingHandler(_dte, SolutionManager, this);
+            ProjectRetargetingHandler = new ProjectRetargetingHandler(_dte, SolutionManager, this, componentModel);
             ProjectUpgradeHandler = new ProjectUpgradeHandler(this, SolutionManager);
 
             SolutionUserOptions.LoadSettings();
@@ -776,7 +776,7 @@ namespace NuGetVSExtension
             catch (Exception exception)
             {
                 MessageHelper.ShowErrorMessage(exception, Resources.ErrorDialogBoxTitle);
-                ExceptionHelper.WriteToActivityLog(exception);
+                ExceptionHelper.WriteErrorToActivityLog(exception);
             }
         }
 

@@ -28,7 +28,6 @@ namespace NuGet.SolutionRestoreManager
         private const int PromoteAttemptsLimit = 150;
 
         private readonly IServiceProvider _serviceProvider;
-        private readonly AsyncLazy<ErrorListProvider> _errorListProvider;
         private readonly Lazy<IVsSolutionManager> _solutionManager;
         private readonly Lazy<INuGetLockService> _lockService;
         private readonly Lazy<Common.ILogger> _logger;
@@ -36,7 +35,7 @@ namespace NuGet.SolutionRestoreManager
 
         private EnvDTE.SolutionEvents _solutionEvents;
         private CancellationTokenSource _workerCts;
-        private Lazy<Task> _backgroundJobRunner;
+        private AsyncLazy<bool> _backgroundJobRunner;
         private Lazy<BlockingCollection<SolutionRestoreRequest>> _pendingRequests;
         private BackgroundRestoreOperation _pendingRestore;
         private Task<bool> _activeRestoreTask;
@@ -46,8 +45,13 @@ namespace NuGet.SolutionRestoreManager
 
         private readonly JoinableTaskCollection _joinableCollection;
         private readonly JoinableTaskFactory _joinableFactory;
+        private readonly AsyncManualResetEvent _solutionLoadedEvent;
 
-        private ErrorListProvider ErrorListProvider => NuGetUIThreadHelper.JoinableTaskFactory.Run(_errorListProvider.GetValueAsync);
+        private IVsSolutionManager SolutionManager => _solutionManager.Value;
+
+        private Common.ILogger Logger => _logger.Value;
+
+        private Lazy<ErrorListTableDataSource> _errorListTableDataSource;
 
         public Task<bool> CurrentRestoreOperation => _activeRestoreTask;
 
@@ -60,7 +64,8 @@ namespace NuGet.SolutionRestoreManager
             Lazy<IVsSolutionManager> solutionManager,
             Lazy<INuGetLockService> lockService,
             [Import(typeof(VisualStudioActivityLogger))]
-            Lazy<Common.ILogger> logger)
+            Lazy<Common.ILogger> logger,
+            Lazy<ErrorListTableDataSource> errorListTableDataSource)
         {
             if (serviceProvider == null)
             {
@@ -82,21 +87,20 @@ namespace NuGet.SolutionRestoreManager
                 throw new ArgumentNullException(nameof(logger));
             }
 
+            if (errorListTableDataSource == null)
+            {
+                throw new ArgumentNullException(nameof(errorListTableDataSource));
+            }
+
             _serviceProvider = serviceProvider;
             _solutionManager = solutionManager;
             _lockService = lockService;
             _logger = logger;
+            _errorListTableDataSource = errorListTableDataSource;
 
             var joinableTaskContextNode = new JoinableTaskContextNode(ThreadHelper.JoinableTaskContext);
             _joinableCollection = joinableTaskContextNode.CreateCollection();
             _joinableFactory = joinableTaskContextNode.CreateFactory(_joinableCollection);
-
-            _errorListProvider = new AsyncLazy<ErrorListProvider>(async () =>
-                {
-                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                    return new ErrorListProvider(serviceProvider);
-                },
-                _joinableFactory);
 
             _componentModel = new AsyncLazy<IComponentModel>(async () =>
                 {
@@ -104,6 +108,7 @@ namespace NuGet.SolutionRestoreManager
                     return serviceProvider.GetService<SComponentModel, IComponentModel>();
                 },
                 _joinableFactory);
+            _solutionLoadedEvent = new AsyncManualResetEvent();
 
             Reset();
         }
@@ -127,25 +132,34 @@ namespace NuGet.SolutionRestoreManager
 #endif
                 });
             }
+
+            // Signal the background job runner solution is loaded
+            // Needed when OnAfterBackgroundSolutionLoadComplete fires before
+            // Advise has been called.
+            // IsSolutionFullyLoaded may be expensive so make sure it's called only once.
+            if (!_solutionLoadedEvent.IsSet
+                && SolutionManager.IsSolutionFullyLoaded)
+            {
+                _solutionLoadedEvent.Set();
+            }
         }
 
         public void Dispose()
         {
             Reset(isDisposing: true);
 
-            _joinableFactory.Run(async () =>
+            if (_initialized != 0)
             {
-                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-                _solutionEvents.AfterClosing -= SolutionEvents_AfterClosing;
-#if VS15
-                Unadvise();
-#endif
-                if (_errorListProvider.IsValueCreated)
+                _joinableFactory.Run(async () =>
                 {
-                    (await _errorListProvider.GetValueAsync()).Dispose();
-                }
-            });
+                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                    _solutionEvents.AfterClosing -= SolutionEvents_AfterClosing;
+#if VS15
+                    Unadvise();
+#endif
+                });
+            }
         }
 
         private void Reset(bool isDisposing = false)
@@ -159,12 +173,10 @@ namespace NuGet.SolutionRestoreManager
                 _joinableFactory.Run(
                     async () =>
                     {
-                        using (_joinableCollection.Join())
-                        {
-                            // Do not block VS forever
-                            await Task.WhenAny(_backgroundJobRunner.Value, Task.Delay(TimeSpan.FromSeconds(60)));
-                        }
-                    }, 
+                        // Do not block VS forever
+                        // After the specified delay the task will disjoin.
+                        await _backgroundJobRunner.GetValueAsync().WithTimeout(TimeSpan.FromSeconds(60));
+                    },
                     JoinableTaskCreationOptions.LongRunning);
             }
 
@@ -178,12 +190,13 @@ namespace NuGet.SolutionRestoreManager
 
             if (!isDisposing)
             {
+                _solutionLoadedEvent.Reset();
+
                 _workerCts = new CancellationTokenSource();
 
-                _backgroundJobRunner = new Lazy<Task>(
-                    valueFactory: () => Task.Run(
-                        function: () => StartBackgroundJobRunnerAsync(_workerCts.Token),
-                        cancellationToken: _workerCts.Token));
+                _backgroundJobRunner = new AsyncLazy<bool>(
+                    () => StartBackgroundJobRunnerAsync(_workerCts.Token),
+                    _joinableFactory);
 
                 _pendingRequests = new Lazy<BlockingCollection<SolutionRestoreRequest>>(
                     () => new BlockingCollection<SolutionRestoreRequest>(RequestQueueLimit));
@@ -203,7 +216,12 @@ namespace NuGet.SolutionRestoreManager
         private void SolutionEvents_AfterClosing()
         {
             Reset();
-            ErrorListProvider.Tasks.Clear();
+
+            // Clear warnings/errors from nuget
+            if (_errorListTableDataSource.IsValueCreated)
+            {
+                _errorListTableDataSource.Value.ClearNuGetEntries();
+            }
         }
 
         public async Task<bool> ScheduleRestoreAsync(
@@ -217,27 +235,34 @@ namespace NuGet.SolutionRestoreManager
             // Initialize if not already done.
             await InitializeAsync();
 
-            if (_solutionManager.Value.IsSolutionFullyLoaded)
-            {
-                // start background runner if not yet started
-                // ignore the value
-                var ignore = _backgroundJobRunner.Value;
-            }
-
             var pendingRestore = _pendingRestore;
 
             // on-board request onto pending restore operation
             _pendingRequests.Value.TryAdd(request);
 
-            // Await completion of the requested restore operation.
-            // The caller will be unblocked immediately upon
-            // cancellation request via provided token.
-            // Method returns false in case of cancellation is requested.
-            var cancellationTcs = new TaskCompletionSource<bool>();
-            using (token.Register(() => cancellationTcs.SetResult(false)))
-            using (_joinableCollection.Join())
+            try
             {
-                return await await Task.WhenAny(pendingRestore.Task, cancellationTcs.Task);
+                using (_joinableCollection.Join())
+                {
+                    // Await completion of the requested restore operation or
+                    // preliminary termination of the job runner.
+                    // The caller will be unblocked immediately upon
+                    // cancellation request via provided token.
+                    return await await Task
+                        .WhenAny(
+                            pendingRestore.Task,
+                            _backgroundJobRunner.GetValueAsync())
+                        .WithCancellation(token);
+                }
+            }
+            catch (OperationCanceledException) when (token.IsCancellationRequested)
+            {
+                return false;
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e.ToString());
+                return false;
             }
         }
 
@@ -269,10 +294,13 @@ namespace NuGet.SolutionRestoreManager
             Interlocked.Exchange(ref _restoreJobContext, new SolutionRestoreJobContext());
         }
 
-        private async Task StartBackgroundJobRunnerAsync(CancellationToken token)
+        private async Task<bool> StartBackgroundJobRunnerAsync(CancellationToken token)
         {
             // Hops onto a background pool thread
             await TaskScheduler.Default;
+
+            // Waits until the solution is fully loaded or canceled
+            await _solutionLoadedEvent.WaitAsync().WithCancellation(token);
 
             // Loops forever until it's get cancelled
             while (!token.IsCancellationRequested)
@@ -298,10 +326,20 @@ namespace NuGet.SolutionRestoreManager
                         while (!_pendingRequests.Value.IsCompleted
                             && !token.IsCancellationRequested)
                         {
-                            SolutionRestoreRequest discard;
-                            if (!_pendingRequests.Value.TryTake(out discard, IdleTimeoutMs, token))
+                            SolutionRestoreRequest next;
+                            if (!_pendingRequests.Value.TryTake(out next, IdleTimeoutMs, token))
                             {
                                 break;
+                            }
+
+                            // Upgrade request if necessary
+                            if (next.RestoreSource != request.RestoreSource)
+                            {
+                                // there could be requests of two types: Auto-Restore or Explicit
+                                // Explicit is always preferred.
+                                request = new SolutionRestoreRequest(
+                                    next.ForceRestore || request.ForceRestore,
+                                    RestoreOperationSource.Explicit);
                             }
                         }
 
@@ -326,11 +364,14 @@ namespace NuGet.SolutionRestoreManager
                     catch (Exception e)
                     {
                         // Writes stack to activity log
-                        _logger.Value.LogError(e.ToString());
+                        Logger.LogError(e.ToString());
                         // Do not die just yet
                     }
                 }
             }
+
+            // returns false on preliminary exit (cancellation)
+            return false;
         }
 
         private async Task<bool> ProcessRestoreRequestAsync(
@@ -387,30 +428,39 @@ namespace NuGet.SolutionRestoreManager
             await TaskScheduler.Default;
 
             using (var jobCts = CancellationTokenSource.CreateLinkedTokenSource(token))
-            using (var lck = await _lockService.Value.AcquireLockAsync(jobCts.Token))
             {
-                var componentModel = await _componentModel.GetValueAsync(jobCts.Token);
+                return await _lockService.Value.ExecuteNuGetOperationAsync(async () =>
+                {
+                    var componentModel = await _componentModel.GetValueAsync(jobCts.Token);
 
-                var logger = componentModel.GetService<RestoreOperationLogger>();
-                await logger.StartAsync(
-                    request.RestoreSource,
-                    ErrorListProvider,
-                    _joinableFactory,
-                    jobCts);
+                    using (var logger = componentModel.GetService<RestoreOperationLogger>())
+                    {
+                        try
+                        {
+                            // Start logging
+                            await logger.StartAsync(
+                                request.RestoreSource,
+                                _errorListTableDataSource,
+                                _joinableFactory,
+                                jobCts);
 
-                var job = componentModel.GetService<ISolutionRestoreJob>();
-                return await job.ExecuteAsync(request, _restoreJobContext, logger, jobCts.Token);
+                            // Run restore
+                            var job = componentModel.GetService<ISolutionRestoreJob>();
+                            return await job.ExecuteAsync(request, _restoreJobContext, logger, jobCts.Token);
+                        }
+                        finally
+                        {
+                            // Complete all logging
+                            await logger.StopAsync();
+                        }
+                    }
+                }, jobCts.Token);
             }
         }
 
         public override int OnAfterBackgroundSolutionLoadComplete()
         {
-            if (_pendingRequests.IsValueCreated)
-            {
-                // ensure background runner has started
-                // ignore the value
-                var ignore = _backgroundJobRunner.Value;
-            }
+            _solutionLoadedEvent.Set();
 
             return VSConstants.S_OK;
         }

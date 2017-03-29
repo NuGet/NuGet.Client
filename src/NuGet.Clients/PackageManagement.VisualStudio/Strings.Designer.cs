@@ -223,6 +223,33 @@ namespace NuGet.PackageManagement.VisualStudio {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to File &apos;{0}&apos; does not exist on disk. .
+        /// </summary>
+        public static string Error_FileNotExists {
+            get {
+                return ResourceManager.GetString("Error_FileNotExists", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &apos;{0}&apos; is an invalid json file..
+        /// </summary>
+        public static string Error_InvalidJson {
+            get {
+                return ResourceManager.GetString("Error_InvalidJson", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Failed to migrate project &apos;{0}&apos;. The project may only contain one target framework..
+        /// </summary>
+        public static string Error_MultipleFrameworks {
+            get {
+                return ResourceManager.GetString("Error_MultipleFrameworks", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Failed to load &apos;{0}&apos;, while updating binding redirects. {1}.
         /// </summary>
         public static string Error_WhileLoadingConfigForBindingRedirects {
@@ -295,7 +322,7 @@ namespace NuGet.PackageManagement.VisualStudio {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The project &apos;{0}&apos; could not be casted to a build property storage interface, which is required to get MSBuild properties inside Visual Studio..
+        ///   Looks up a localized string similar to The project &apos;{0}&apos; could not be cast to a build property storage interface, which is required to get MSBuild properties inside Visual Studio..
         /// </summary>
         public static string ProjectCouldNotBeCastedToBuildPropertyStorage {
             get {

@@ -57,6 +57,21 @@ namespace NuGet.Test.Utility
             return CreateFullPackage(repositoryDir, package);
         }
 
+        public static FileInfo CreateSymbolPackage(
+           string repositoryDir,
+           string id,
+           string version)
+        {
+            var package = new SimpleTestPackageContext()
+            {
+                Id = id,
+                Version = version,
+                IsSymbolPackage = true
+            };
+
+            return CreateFullPackage(repositoryDir, package);
+        }
+
         /// <summary>
         /// Creates a net45 package containing lib, build, native, tools, and contentFiles
         /// </summary>
@@ -69,7 +84,8 @@ namespace NuGet.Test.Utility
             var runtimeJson = packageContext.RuntimeJson;
 
             var pathResolver = new VersionFolderPathResolver(null);
-            var packagePath = Path.Combine(repositoryDir, $"{id}.{version.ToString()}.nupkg");
+            var packageName = packageContext.IsSymbolPackage ? $"{id}.{version.ToString()}.symbols.nupkg" : $"{id}.{version.ToString()}.nupkg";
+            var packagePath = Path.Combine(repositoryDir, packageName);
             var file = new FileInfo(packagePath);
 
             file.Directory.Create();

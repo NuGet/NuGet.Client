@@ -12,6 +12,40 @@
     Assert-NotNull $installerServices
     Assert-NotNull $installerEvents
 }
+## Skipping the Test below, because current E2E machines (Win2016 Server) do not allow creating new UWP projects.
+
+# function Test-MigrateVanilaUwpProjectJsonToPackageReference {
+#     param(
+#         $context
+#     )
+
+#     # Arrange
+#     $p = New-UwpClassLibrary UwpClassLibrary1
+#     $cm = Get-VsComponentModel
+#     $projectDir = Get-ProjectDir $p
+#     $result = [API.Test.InternalAPITestHook]::MigrateJsonProject($p.FullName) 
+    
+#     # Assert
+
+#     # Check if runtimes were migrated correctly
+#     $expectRuntimeIds = 'win10-arm;win10-arm-aot;win10-x86;win10-x86-aot;win10-x64;win10-x64-aot'
+#     Assert-True($result.IsSuccess)
+#     $actualRuntimes = Get-MsBuildPropertyValue $p 'RuntimeIdentifiers'
+#     Assert-AreEqual $expectRuntimeIds $actualRuntimes
+    
+#     # Check if project.json file was deleted
+#     Assert-True !(Test-Path (Join-Path $projectDir project.json))
+    
+#     # Check if backup was created
+#     Assert-True (Test-Path (Join-Path $projectDir (Join-Path Backup project.json)))
+#     Assert-True (Test-Path (Join-Path $projectDir (Join-Path Backup UwpClassLibrary1.csproj)))
+
+#     # Check if package reference was added correctly
+#     $packageRefs = @(Get-MsBuildItems $p 'PackageReference')
+#     Assert-AreEqual 1 $packageRefs.Count
+#     Assert-AreEqual $packageRefs[0].GetMetadataValue("Identity") 'Microsoft.NETCore.UniversalWindowsPlatform'
+#     Assert-AreEqual $packageRefs[0].GetMetadataValue("Version") '5.2.2'
+# }
 
 function Test-VsPackageInstallerServices {
     param(
@@ -486,6 +520,7 @@ function Test-GetNetStandardVersions
     Assert-AreEqual ".NETStandard,Version=v1.5" ($actual | Select-Object -Index 5)
     Assert-AreEqual ".NETStandard,Version=v1.6" ($actual | Select-Object -Index 6)
     Assert-AreEqual ".NETStandard,Version=v1.7" ($actual | Select-Object -Index 7)
+    Assert-AreEqual ".NETStandard,Version=v2.0" ($actual | Select-Object -Index 8)
 }
 
 function Test-GetFrameworksSupportingNetStandard

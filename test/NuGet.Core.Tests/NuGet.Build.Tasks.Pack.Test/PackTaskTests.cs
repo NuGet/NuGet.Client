@@ -150,9 +150,7 @@ namespace NuGet.Build.Tasks.Pack.Test
                 Authors = new[] { "", "  ", " Authors \t ", null },
                 PackageTypes = new[] { "", "  ", " PackageTypes \t ", null },
                 Tags = new[] { "", "  ", " Tags \t ", null },
-                TargetFrameworks = new[] { "", "  ", " TargetFrameworks \t ", null },
-                TargetPathsToAssemblies = new[] { "", "  ", " TargetPathsToAssemblies \t ", null },
-                TargetPathsToSymbols = new[] { "", "  ", " TargetPathsToSymbols \t ", null }
+                TargetFrameworks = new[] { "", "  ", " TargetFrameworks \t ", null }
             };
 
             // Act
@@ -163,8 +161,6 @@ namespace NuGet.Build.Tasks.Pack.Test
             Assert.Equal(new[] { "PackageTypes" }, actual.PackageTypes);
             Assert.Equal(new[] { "Tags" }, actual.Tags);
             Assert.Equal(new[] { "TargetFrameworks" }, actual.TargetFrameworks);
-            Assert.Equal(new[] { "TargetPathsToAssemblies" }, actual.TargetPathsToAssemblies);
-            Assert.Equal(new[] { "TargetPathsToSymbols" }, actual.TargetPathsToSymbols);
         }
 
         [Theory]
@@ -182,6 +178,7 @@ namespace NuGet.Build.Tasks.Pack.Test
                 IsTool = value,
                 NoPackageAnalysis = value,
                 RequireLicenseAcceptance = value,
+                DevelopmentDependency = value,
                 Serviceable = value
             };
 
@@ -196,6 +193,7 @@ namespace NuGet.Build.Tasks.Pack.Test
             Assert.Equal(value, actual.IsTool);
             Assert.Equal(value, actual.NoPackageAnalysis);
             Assert.Equal(value, actual.RequireLicenseAcceptance);
+            Assert.Equal(value, actual.DevelopmentDependency);
             Assert.Equal(value, actual.Serviceable);
         }
 
@@ -237,7 +235,7 @@ namespace NuGet.Build.Tasks.Pack.Test
                 SourceFiles = null,
                 Tags = null,
                 TargetFrameworks = null,
-                TargetPathsToAssemblies = null,
+                BuildOutputInPackage = null,
                 TargetPathsToSymbols = null
             };
 
@@ -253,7 +251,7 @@ namespace NuGet.Build.Tasks.Pack.Test
             Assert.Equal(0, actual.SourceFiles.Length);
             Assert.Equal(0, actual.Tags.Length);
             Assert.Equal(0, actual.TargetFrameworks.Length);
-            Assert.Equal(0, actual.TargetPathsToAssemblies.Length);
+            Assert.Equal(0, actual.BuildOutputInPackage.Length);
             Assert.Equal(0, actual.TargetPathsToSymbols.Length);
         }
 
@@ -271,6 +269,7 @@ namespace NuGet.Build.Tasks.Pack.Test
                 ContinuePackingAfterGeneratingNuspec = true,
                 Copyright = "Copyright",
                 Description = "Description",
+                DevelopmentDependency = true,
                 IconUrl = "IconUrl",
                 IncludeBuildOutput = true,
                 IncludeSource = true,
@@ -297,8 +296,8 @@ namespace NuGet.Build.Tasks.Pack.Test
                 SourceFiles = new ITaskItem[0],
                 Tags = new string[0],
                 TargetFrameworks = new string[0],
-                TargetPathsToAssemblies = new string[0],
-                TargetPathsToSymbols = new string[0]
+                BuildOutputInPackage = new ITaskItem[0],
+                TargetPathsToSymbols = new ITaskItem[0]
             };
 
             var settings = new JsonSerializerSettings
