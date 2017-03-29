@@ -9,14 +9,14 @@
     <Shipping>true</Shipping>
   </PropertyGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\NuGet.Protocol.Core.v3\NuGet.Protocol.Core.v3.csproj" />
-  </ItemGroup>
-
   <ItemGroup Condition=" '$(TargetFramework)' == 'net46' ">
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Net" />
   </ItemGroup>
 
-  <Import Project="$(BuildCommonDirectory)common.targets"/>
+  <ItemGroup>
+    <ProjectReference Include="..\NuGet.Protocol\NuGet.Protocol.csproj" />
+  </ItemGroup>
+
+  <Import Project="$(BuildCommonDirectory)common.targets" />
 </Project>

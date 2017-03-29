@@ -33,9 +33,7 @@ NuGet.Packaging.Core.Types.dll
 NuGet.Packaging.dll
 NuGet.ProjectManagement.dll
 NuGet.ProjectModel.dll
-NuGet.Protocol.Core.Types.dll
-NuGet.Protocol.Core.v3.dll
-NuGet.Protocol.VisualStudio.dll
+NuGet.Protocol.dll
 NuGet.Repositories.dll
 NuGet.Resolver.dll
 NuGet.RuntimeModel.dll

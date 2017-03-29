@@ -8,7 +8,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\NuGet.PackageManagement\NuGet.PackageManagement.csproj" />
-    <ProjectReference Include="..\NuGet.Protocol.VisualStudio\NuGet.Protocol.VisualStudio.csproj" />
+    <ProjectReference Include="..\NuGet.Protocol\NuGet.Protocol.csproj" />
     <ProjectReference Include="..\NuGet.Test.Utility\NuGet.Test.Utility.csproj" />
   </ItemGroup>
 

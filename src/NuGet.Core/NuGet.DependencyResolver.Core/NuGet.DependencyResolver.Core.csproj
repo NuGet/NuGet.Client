@@ -12,10 +12,10 @@
   <ItemGroup>
     <ProjectReference Include="..\NuGet.LibraryModel\NuGet.LibraryModel.csproj" />
     <ProjectReference Include="..\NuGet.Frameworks\NuGet.Frameworks.csproj" />
-    <ProjectReference Include="..\NuGet.Protocol.Core.v3\NuGet.Protocol.Core.v3.csproj" />
+    <ProjectReference Include="..\NuGet.Protocol\NuGet.Protocol.csproj" />
     <ProjectReference Include="..\NuGet.Repositories\NuGet.Repositories.csproj" />
     <ProjectReference Include="..\NuGet.RuntimeModel\NuGet.RuntimeModel.csproj" />
   </ItemGroup>
 
-  <Import Project="$(BuildCommonDirectory)common.targets"/>
+  <Import Project="$(BuildCommonDirectory)common.targets" />
 </Project>

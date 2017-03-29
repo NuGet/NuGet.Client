@@ -28,7 +28,7 @@ namespace NuGet.Protocol.Tests
 
             var responses = new Dictionary<string, string>();
             responses.Add(serviceAddress + "/$metadata",
-                TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.MetadataTT.xml", GetType()));
+                TestUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.MetadataTT.xml", GetType()));
             responses.Add(serviceAddress, string.Empty);
 
             var httpSource = new TestHttpSource(new PackageSource(serviceAddress), responses);
@@ -50,7 +50,7 @@ namespace NuGet.Protocol.Tests
 
             var responses = new Dictionary<string, string>();
             responses.Add(serviceAddress + "/$metadata",
-                TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.MetadataTF.xml", GetType()));
+                TestUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.MetadataTF.xml", GetType()));
             responses.Add(serviceAddress, string.Empty);
 
             var httpSource = new TestHttpSource(new PackageSource(serviceAddress), responses);
@@ -72,7 +72,7 @@ namespace NuGet.Protocol.Tests
 
             var responses = new Dictionary<string, string>();
             responses.Add(serviceAddress + "/$metadata",
-                TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.MetadataFT.xml", GetType()));
+                TestUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.MetadataFT.xml", GetType()));
             responses.Add(serviceAddress, string.Empty);
 
             var httpSource = new TestHttpSource(new PackageSource(serviceAddress), responses);
@@ -94,7 +94,7 @@ namespace NuGet.Protocol.Tests
 
             var responses = new Dictionary<string, string>();
             responses.Add(serviceAddress + "/$metadata",
-                TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.MetadataFF.xml", GetType()));
+                TestUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.MetadataFF.xml", GetType()));
             responses.Add(serviceAddress, string.Empty);
 
             var httpSource = new TestHttpSource(new PackageSource(serviceAddress), responses);

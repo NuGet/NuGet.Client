@@ -20,7 +20,7 @@ namespace NuGet.Protocol.Tests
 
             var responses = new Dictionary<string, string>();
             responses.Add(serviceAddress + "package-ids?partialId=Azure&includePrerelease=False&semVerLevel=2.0.0",
-                 TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.AzureAutoComplete.json", GetType()));
+                 TestUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.AzureAutoComplete.json", GetType()));
             responses.Add(serviceAddress, string.Empty);
 
             var repo = StaticHttpHandler.CreateSource(serviceAddress, Repository.Provider.GetCoreV3(), responses);
@@ -42,7 +42,7 @@ namespace NuGet.Protocol.Tests
 
             var responses = new Dictionary<string, string>();
             responses.Add(serviceAddress + "package-versions/xunit?includePrerelease=False&semVerLevel=2.0.0",
-                 TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.XunitVersionAutoComplete.json", GetType()));
+                 TestUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.XunitVersionAutoComplete.json", GetType()));
             responses.Add(serviceAddress, string.Empty);
 
             var repo = StaticHttpHandler.CreateSource(serviceAddress, Repository.Provider.GetCoreV3(), responses);

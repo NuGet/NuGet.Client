@@ -14,8 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\NuGet.Versioning\NuGet.Versioning.csproj" />
-    <ProjectReference Include="..\NuGet.Protocol.Core.Types\NuGet.Protocol.Core.Types.csproj" />
+    <ProjectReference Include="..\NuGet.Protocol\NuGet.Protocol.csproj" />
   </ItemGroup>
 
   <ItemGroup>
