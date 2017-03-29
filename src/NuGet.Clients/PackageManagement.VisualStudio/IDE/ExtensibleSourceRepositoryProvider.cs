@@ -22,7 +22,7 @@ namespace NuGet.PackageManagement.VisualStudio
         // TODO: add support for reloading sources when changes occur
         private readonly Configuration.IPackageSourceProvider _packageSourceProvider;
         private IEnumerable<Lazy<INuGetResourceProvider>> _resourceProviders;
-        private List<SourceRepository> _repositories;
+        private Lazy<List<SourceRepository>> _repositories;
 
         /// <summary>
         /// Public parameter-less constructor for SourceRepositoryProvider
@@ -64,7 +64,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 ResetRepositories();
             }
 
-            return _repositories;
+            return _repositories.Value;
         }
 
         /// <summary>
@@ -90,6 +90,13 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private void ResetRepositories()
         {
+            // initialize it lazy since it doesn't impact RPS test performance and evaluate
+            // only when somebody reads repositories value.
+            _repositories = new Lazy<List<SourceRepository>>(GetRepositoriesCore);
+        }
+
+        private List<SourceRepository> GetRepositoriesCore()
+        {
             var repositories = new List<SourceRepository>();
             foreach (var source in _packageSourceProvider.LoadPackageSources())
             {
@@ -100,7 +107,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 }
             }
 
-            _repositories = repositories;
+            return repositories;
         }
     }
 }
