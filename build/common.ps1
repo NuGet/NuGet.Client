@@ -640,26 +640,9 @@ Function Set-DelaySigning {
     )
 
     if ($MSPFXPath -and (Test-Path $MSPFXPath)) {
+
         Trace-Log "Setting NuGet.Core projects to delay sign using $MSPFXPath"
-
-        Trace-Log "Using the Microsoft Key for NuGet Command line $MSPFXPath"
         $env:MS_PFX_PATH=$MSPFXPath
-
-        $coreProjectsLocation = Join-Path $NuGetClientRoot '\src\NuGet.Core'
-        Trace-Log "Adding KeyFile '$MSPFXPath' to project files in '$coreProjectsLocation'"
-        (Get-ChildItem $coreProjectsLocation -rec -Filter 'project.json') |
-            %{ $_.FullName } |
-            %{
-                Verbose-Log "Processing '$_'"
-                $xproject = (Get-Content $_ -Raw) | ConvertFrom-Json
-                if (-not $xproject) {
-                    Write-Error "'$_' is not a valid json file"
-                }
-                else {
-                    Enable-DelaySigningForDotNet $xproject $MSPFXPath
-                    Save-ProjectFile $xproject $_
-                }
-            }
     }
     else {
         Remove-Item Env:\MS_PFX_PATH -ErrorAction Ignore
