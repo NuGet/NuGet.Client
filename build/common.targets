@@ -21,7 +21,6 @@
     <Compile Include="$(BuildCommonDirectory)TestShared\*.cs" />
   </ItemGroup>
 
-  <!-- Projects that ship -->
   <ImportGroup>
     <Import Project="sign.targets" />
   </ImportGroup>

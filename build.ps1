@@ -137,7 +137,7 @@ Invoke-BuildStep 'Running Restore for VS 15.0' {
 
     if (-not $?)
     {
-        Write-Error "Restore failed!"
+        Write-Error "Failed - Running Restore for VS 15.0"
         exit 1
     }
 } `
@@ -153,7 +153,7 @@ Invoke-BuildStep $VS15Message {
 
     if (-not $?)
     {
-        Write-Error "VS 15 build and unit tests failed!"
+        Write-Error "Failed - $VS15Message"
         exit 1
     }
 } `
@@ -169,7 +169,7 @@ Invoke-BuildStep 'Running Restore for VS 14.0' {
 
     if (-not $?)
     {
-        Write-Error "Restore failed!"
+        Write-Error "Failed - Running Restore for VS 14.0"
         exit 1
     }
 } `
@@ -185,7 +185,7 @@ Invoke-BuildStep $VS14Message {
 
     if (-not $?)
     {
-        Write-Error "VS 14 build and unit tests failed!"
+        Write-Error "Failed - $VS14Message"
         exit 1
     }
 } `
