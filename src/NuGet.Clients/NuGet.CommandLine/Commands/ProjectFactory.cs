@@ -89,6 +89,7 @@ namespace NuGet.CommandLine
                 projectProperties,
                 null);
             Initialize(project);
+            AppDomain.CurrentDomain.AssemblyResolve -= new ResolveEventHandler(AssemblyResolve);
         }
 
         public ProjectFactory(string msbuildDirectory, dynamic project)

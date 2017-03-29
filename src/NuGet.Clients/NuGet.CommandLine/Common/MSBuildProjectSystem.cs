@@ -435,6 +435,7 @@ namespace NuGet.Common
             var project = Activator.CreateInstance(
                 _projectType,
                 new object[] { projectFile });
+            AppDomain.CurrentDomain.AssemblyResolve -= new ResolveEventHandler(AssemblyResolve);
             return project;
         }
     }
