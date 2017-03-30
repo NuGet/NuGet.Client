@@ -422,20 +422,27 @@ namespace NuGet.Common
         private dynamic GetProject(string projectFile)
         {
             AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(AssemblyResolve);
-            dynamic globalProjectCollection = _projectCollectionType
-                .GetProperty("GlobalProjectCollection")
-                .GetMethod
-                .Invoke(null, new object[] { });
-            var loadedProjects = globalProjectCollection.GetLoadedProjects(projectFile);
-            if (loadedProjects.Count > 0)
+            try
             {
-                return loadedProjects[0];
-            }
+                dynamic globalProjectCollection = _projectCollectionType
+                    .GetProperty("GlobalProjectCollection")
+                    .GetMethod
+                    .Invoke(null, new object[] { });
+                var loadedProjects = globalProjectCollection.GetLoadedProjects(projectFile);
+                if (loadedProjects.Count > 0)
+                {
+                    return loadedProjects[0];
+                }
 
-            var project = Activator.CreateInstance(
-                _projectType,
-                new object[] { projectFile });
-            return project;
+                var project = Activator.CreateInstance(
+                    _projectType,
+                    new object[] { projectFile });
+                return project;
+            }
+            finally
+            {
+                AppDomain.CurrentDomain.AssemblyResolve -= new ResolveEventHandler(AssemblyResolve);
+            }
         }
     }
 }
