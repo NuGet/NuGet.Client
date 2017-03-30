@@ -7,7 +7,7 @@ using Microsoft.Build.Framework;
 using NuGet.Commands;
 using NuGet.Common;
 
-namespace NuGet.Build
+namespace NuGet.Build.Tasks.Pack
 {
     internal static class MSBuildUtility
     {

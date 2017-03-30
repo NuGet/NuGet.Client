@@ -49,8 +49,8 @@
       <Project>{306CDDFA-FF0B-4299-930C-9EC6C9308160}</Project>
       <Name>NuGet.PackageManagement.VisualStudio</Name>
     </ProjectReference>
-    
-    <ProjectReference Include="$(NuGetCoreSrcDirectory)\Test.Utility\Test.Utility.csproj" />
+
+    <ProjectReference Include="$(TestUtilitiesDirectory)Test.Utility\Test.Utility.csproj" />
   </ItemGroup>
 
   <ItemGroup>

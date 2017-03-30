@@ -94,7 +94,7 @@ namespace NuGet.Packaging.Test
 
                 var sourcePath = Path.Combine(root, "source");
                 Directory.CreateDirectory(sourcePath);
-                var packageFileInfo = await TestPackages.GeneratePackageAsync(
+                var packageFileInfo = await TestPackagesCore.GeneratePackageAsync(
                    sourcePath,
                    identity.Id,
                    identity.Version.ToString(),
@@ -133,7 +133,7 @@ namespace NuGet.Packaging.Test
 
                 var sourcePath = Path.Combine(root, "source");
                 Directory.CreateDirectory(sourcePath);
-                var packageFileInfo = await TestPackages.GeneratePackageAsync(
+                var packageFileInfo = await TestPackagesCore.GeneratePackageAsync(
                     sourcePath,
                     identity.Id,
                     identity.Version.ToString(),
@@ -173,7 +173,7 @@ namespace NuGet.Packaging.Test
 
                 var sourcePath = Path.Combine(root, "source");
                 Directory.CreateDirectory(sourcePath);
-                var packageFileInfo = await TestPackages.GeneratePackageAsync(
+                var packageFileInfo = await TestPackagesCore.GeneratePackageAsync(
                    sourcePath,
                    identity.Id,
                    identity.Version.ToString(),
@@ -299,7 +299,7 @@ namespace NuGet.Packaging.Test
         public void PackageExtractor_WithContentXmlFile()
         {
             // Arrange
-            using (var packageStream = TestPackages.GetTestPackageWithContentXmlFile())
+            using (var packageStream = TestPackagesCore.GetTestPackageWithContentXmlFile())
             using (var root = TestDirectory.Create())
             using (var packageReader = new PackageArchiveReader(packageStream))
             {
@@ -324,7 +324,7 @@ namespace NuGet.Packaging.Test
         [Fact]
         public void PackageExtractor_DuplicateNupkg()
         {
-            using (var packageFile = TestPackages.GetLegacyTestPackage())
+            using (var packageFile = TestPackagesCore.GetLegacyTestPackage())
             {
                 using (var root = TestDirectory.Create())
                 using (var packageFolder = TestDirectory.Create())
@@ -360,7 +360,7 @@ namespace NuGet.Packaging.Test
             {
                 var resolver = new PackagePathResolver(root);
                 var identity = new PackageIdentity("A", new NuGetVersion("2.0.3"));
-                var packageFileInfo = await TestPackages.GeneratePackageAsync(
+                var packageFileInfo = await TestPackagesCore.GeneratePackageAsync(
                    root,
                    identity.Id,
                    identity.Version.ToString(),
@@ -392,7 +392,7 @@ namespace NuGet.Packaging.Test
         public void PackageExtractor_PackageSaveModeNupkg_FolderReader()
         {
             // Arrange
-            using (var packageFile = TestPackages.GetLegacyTestPackage())
+            using (var packageFile = TestPackagesCore.GetLegacyTestPackage())
             using (var root = TestDirectory.Create())
             using (var packageFolder = TestDirectory.Create())
             {
@@ -423,7 +423,7 @@ namespace NuGet.Packaging.Test
         public void PackageExtractor_PackageSaveModeNuspec_FolderReader()
         {
             // Arrange
-            using (var packageFile = TestPackages.GetLegacyTestPackage())
+            using (var packageFile = TestPackagesCore.GetLegacyTestPackage())
             using (var root = TestDirectory.Create())
             using (var packageFolder = TestDirectory.Create())
             {
@@ -454,7 +454,7 @@ namespace NuGet.Packaging.Test
         public void PackageExtractor_PackageSaveModeNuspecAndNupkg_PackageStream()
         {
             // Arrange
-            using (var packageFile = TestPackages.GetLegacyTestPackage())
+            using (var packageFile = TestPackagesCore.GetLegacyTestPackage())
             using (var root = TestDirectory.Create())
             using (var packageFolder = TestDirectory.Create())
             {
@@ -490,8 +490,8 @@ namespace NuGet.Packaging.Test
                 var resolver = new PackagePathResolver(root);
                 var identity = new PackageIdentity("A", new NuGetVersion("2.0.3"));
                 var satelliteIdentity = new PackageIdentity(identity.Id + ".fr", identity.Version);
-                var packageFileInfo = await TestPackages.GetRuntimePackageAsync(root, identity.Id, identity.Version.ToString());
-                var satellitePackageInfo = await TestPackages.GetSatellitePackageAsync(root, identity.Id, identity.Version.ToString(), "fr");
+                var packageFileInfo = await TestPackagesCore.GetRuntimePackageAsync(root, identity.Id, identity.Version.ToString());
+                var satellitePackageInfo = await TestPackagesCore.GetSatellitePackageAsync(root, identity.Id, identity.Version.ToString(), "fr");
                 
 
 
@@ -530,7 +530,7 @@ namespace NuGet.Packaging.Test
             {
                 var resolver = new PackagePathResolver(root);
                 var identity = new PackageIdentity("A", new NuGetVersion("2.0.3"));
-                var packageFileInfo = await TestPackages.GeneratePackageAsync(
+                var packageFileInfo = await TestPackagesCore.GeneratePackageAsync(
                    root,
                    identity.Id,
                    identity.Version.ToString(),
@@ -570,7 +570,7 @@ namespace NuGet.Packaging.Test
             {
                 var resolver = new PackagePathResolver(root);
                 var identity = new PackageIdentity("A", new NuGetVersion("2.0.3"));
-                var packageFileInfo = await TestPackages.GeneratePackageAsync(
+                var packageFileInfo = await TestPackagesCore.GeneratePackageAsync(
                    root,
                    identity.Id,
                    identity.Version.ToString(),
@@ -620,7 +620,7 @@ namespace NuGet.Packaging.Test
             {
                 var resolver = new PackagePathResolver(root);
                 var identity = new PackageIdentity("A", new NuGetVersion("2.0.3"));
-                var packageFileInfo = await TestPackages.GeneratePackageAsync(
+                var packageFileInfo = await TestPackagesCore.GeneratePackageAsync(
                    root,
                    identity.Id,
                    identity.Version.ToString(),
@@ -664,7 +664,7 @@ namespace NuGet.Packaging.Test
             {
                 var resolver = new PackagePathResolver(root);
                 var identity = new PackageIdentity("A", new NuGetVersion("2.0.3"));
-                var packageFileInfo = await TestPackages.GeneratePackageAsync(
+                var packageFileInfo = await TestPackagesCore.GeneratePackageAsync(
                    root,
                    identity.Id,
                    identity.Version.ToString(),
@@ -705,7 +705,7 @@ namespace NuGet.Packaging.Test
             {
                 var resolver = new PackagePathResolver(root);
                 var identity = new PackageIdentity("A", new NuGetVersion("2.0.3"));
-                var packageFileInfo = await TestPackages.GeneratePackageAsync(
+                var packageFileInfo = await TestPackagesCore.GeneratePackageAsync(
                    root,
                    identity.Id,
                    identity.Version.ToString(),
@@ -753,7 +753,7 @@ namespace NuGet.Packaging.Test
             {
                 var resolver = new PackagePathResolver(root);
                 var identity = new PackageIdentity("A", new NuGetVersion("2.0.3"));
-                var packageFileInfo = await TestPackages.GeneratePackageAsync(
+                var packageFileInfo = await TestPackagesCore.GeneratePackageAsync(
                    root,
                    identity.Id,
                    identity.Version.ToString(),
@@ -761,7 +761,7 @@ namespace NuGet.Packaging.Test
                    "lib/net45/A.dll",
                    "lib/net45/A.xml");
                 var satelliteIdentity = new PackageIdentity(identity.Id + ".fr", identity.Version);
-                var satellitePackageInfo = await TestPackages.GeneratePackageAsync(
+                var satellitePackageInfo = await TestPackagesCore.GeneratePackageAsync(
                    root,
                    satelliteIdentity.Id,
                    satelliteIdentity.Version.ToString(),
@@ -811,7 +811,7 @@ namespace NuGet.Packaging.Test
             {
                 var resolver = new PackagePathResolver(root);
                 var identity = new PackageIdentity("A", new NuGetVersion("2.0.3"));
-                var packageFileInfo = await TestPackages.GeneratePackageAsync(
+                var packageFileInfo = await TestPackagesCore.GeneratePackageAsync(
                    root,
                    identity.Id,
                    identity.Version.ToString(),
@@ -852,7 +852,7 @@ namespace NuGet.Packaging.Test
             {
                 var resolver = new PackagePathResolver(root);
                 var identity = new PackageIdentity("A", new NuGetVersion("2.0.3"));
-                var packageFileInfo = await TestPackages.GeneratePackageAsync(
+                var packageFileInfo = await TestPackagesCore.GeneratePackageAsync(
                    root,
                    identity.Id,
                    identity.Version.ToString(),
@@ -891,7 +891,7 @@ namespace NuGet.Packaging.Test
             {
                 var resolver = new PackagePathResolver(root);
                 var identity = new PackageIdentity("A", new NuGetVersion("2.0.3"));
-                var packageFileInfo = await TestPackages.GeneratePackageAsync(
+                var packageFileInfo = await TestPackagesCore.GeneratePackageAsync(
                    root,
                    identity.Id,
                    identity.Version.ToString(),
@@ -931,7 +931,7 @@ namespace NuGet.Packaging.Test
             {
                 var resolver = new PackagePathResolver(root);
                 var identity = new PackageIdentity("A", new NuGetVersion("2.0.3"));
-                var packageFileInfo = await TestPackages.GeneratePackageAsync(
+                var packageFileInfo = await TestPackagesCore.GeneratePackageAsync(
                    root,
                    identity.Id,
                    identity.Version.ToString(),
@@ -971,7 +971,7 @@ namespace NuGet.Packaging.Test
             {
                 var resolver = new PackagePathResolver(root);
                 var identity = new PackageIdentity("A", new NuGetVersion("2.0.3"));
-                var packageFileInfo = await TestPackages.GeneratePackageAsync(
+                var packageFileInfo = await TestPackagesCore.GeneratePackageAsync(
                    root,
                    identity.Id,
                    identity.Version.ToString(),
@@ -1011,7 +1011,7 @@ namespace NuGet.Packaging.Test
             {
                 var resolver = new PackagePathResolver(root);
                 var identity = new PackageIdentity("A", new NuGetVersion("2.0.3"));
-                var packageFileInfo = await TestPackages.GeneratePackageAsync(
+                var packageFileInfo = await TestPackagesCore.GeneratePackageAsync(
                    root,
                    identity.Id,
                    identity.Version.ToString(),
@@ -1051,7 +1051,7 @@ namespace NuGet.Packaging.Test
             {
                 var resolver = new PackagePathResolver(root);
                 var identity = new PackageIdentity("A", new NuGetVersion("2.0.3"));
-                var packageFileInfo = await TestPackages.GeneratePackageAsync(
+                var packageFileInfo = await TestPackagesCore.GeneratePackageAsync(
                    root,
                    identity.Id,
                    identity.Version.ToString(),
@@ -1091,7 +1091,7 @@ namespace NuGet.Packaging.Test
             {
                 var resolver = new VersionFolderPathResolver(root);
                 var identity = new PackageIdentity("A", new NuGetVersion("2.0.3"));
-                var packageFileInfo = await TestPackages.GeneratePackageAsync(
+                var packageFileInfo = await TestPackagesCore.GeneratePackageAsync(
                    root,
                    identity.Id,
                    identity.Version.ToString(),
@@ -1127,7 +1127,7 @@ namespace NuGet.Packaging.Test
             {
                 var resolver = new VersionFolderPathResolver(root);
                 var identity = new PackageIdentity("A", new NuGetVersion("2.0.3"));
-                var packageFileInfo = await TestPackages.GeneratePackageAsync(
+                var packageFileInfo = await TestPackagesCore.GeneratePackageAsync(
                    root,
                    identity.Id,
                    identity.Version.ToString(),
@@ -1164,7 +1164,7 @@ namespace NuGet.Packaging.Test
             {
                 var resolver = new VersionFolderPathResolver(root);
                 var identity = new PackageIdentity("A", new NuGetVersion("2.0.3"));
-                var packageFileInfo = await TestPackages.GeneratePackageAsync(
+                var packageFileInfo = await TestPackagesCore.GeneratePackageAsync(
                    root,
                    identity.Id,
                    identity.Version.ToString(),
@@ -1204,7 +1204,7 @@ namespace NuGet.Packaging.Test
 
                 var resolver = new PackagePathResolver(root);
                 var identity = new PackageIdentity("A", new NuGetVersion("2.0.3"));
-                var packageFileInfo = await TestPackages.GeneratePackageAsync(
+                var packageFileInfo = await TestPackagesCore.GeneratePackageAsync(
                         root,
                         identity.Id,
                         identity.Version.ToString(),
@@ -1248,7 +1248,7 @@ namespace NuGet.Packaging.Test
 
                 var resolver = new PackagePathResolver(root);
                 var identity = new PackageIdentity("A", new NuGetVersion("2.0.3"));
-                var packageFileInfo = await TestPackages.GeneratePackageAsync(
+                var packageFileInfo = await TestPackagesCore.GeneratePackageAsync(
                         root,
                         identity.Id,
                         identity.Version.ToString(),
