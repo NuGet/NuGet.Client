@@ -131,6 +131,7 @@
     <Compile Include="CommonResources.cs" />
     <Compile Include="DefaultVSCredentialServiceProvider.cs" />
     <Compile Include="IDE\DeferredProjectWorkspaceService.cs" Condition="'$(VisualStudioVersion)' == '15.0'" />
+    <Compile Include="IDE\ExtensibleSourceRepositoryProvider.cs" />
     <Compile Include="IDE\IDeferredProjectWorkspaceService.cs" />
     <Compile Include="IDE\IVsSolutionManager.cs" />
     <Compile Include="IInteractiveLoginProvider.cs" />
