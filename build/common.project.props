@@ -26,6 +26,7 @@
     <EnlistmentRootSrc>$(RepositoryRootDirectory)\src</EnlistmentRootSrc>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">$(RepositoryRootDirectory)</SolutionDir>
     <ArtifactRoot>$(ArtifactsDirectory)</ArtifactRoot>
+	<TestUtilitiesDirectory>$(RepositoryRootDirectory)test\TestUtilities\</TestUtilitiesDirectory>
   </PropertyGroup>
 
   <!-- Defaults -->

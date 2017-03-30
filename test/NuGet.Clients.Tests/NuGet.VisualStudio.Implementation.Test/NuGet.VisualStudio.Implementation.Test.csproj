@@ -48,12 +48,12 @@
       <Project>{306cddfa-ff0b-4299-930c-9ec6c9308160}</Project>
       <Name>NuGet.PackageManagement.VisualStudio</Name>
     </ProjectReference>
-    
-    <ProjectReference Include="$(NuGetCoreSrcDirectory)Test.Utility\Test.Utility.csproj" />
+
+    <ProjectReference Include="$(TestUtilitiesDirectory)Test.Utility\Test.Utility.csproj" />
     <ProjectReference Include="..\..\..\src\NuGet.Clients\VsConsole\Console\NuGet.Console.csproj" />
     <ProjectReference Include="..\..\..\src\NuGet.Clients\PackageManagement.PowerShellCmdlets\NuGet.PackageManagement.PowerShellCmdlets.csproj" />
     <ProjectReference Include="..\..\..\src\NuGet.Clients\PackageManagement.UI\NuGet.PackageManagement.UI.csproj" />
   </ItemGroup>
 
-  <Import Project="$(BuildCommonDirectory)common.targets"/>   
+  <Import Project="$(BuildCommonDirectory)common.targets" />   
 </Project>

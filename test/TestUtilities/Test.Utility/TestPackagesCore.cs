@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace NuGet.Test.Utility
 {
-    public static class TestPackages
+    public static class TestPackagesCore
     {
         private static readonly string NuspecStringFormat = @"<?xml version=""1.0"" encoding=""utf-8""?>
                             <package xmlns=""http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd"">

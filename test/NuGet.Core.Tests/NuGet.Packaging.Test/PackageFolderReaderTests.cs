@@ -267,7 +267,7 @@ namespace NuGet.Packaging.Test
         [Fact]
         public void PackageFolderReader_Basic()
         {
-            using (var packageFile = TestPackages.GetLegacyTestPackage())
+            using (var packageFile = TestPackagesCore.GetLegacyTestPackage())
             {
                 using (var zip = new ZipArchive(File.OpenRead(packageFile)))
                 using (var zipReader = new PackageArchiveReader(zip))

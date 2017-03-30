@@ -9,8 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\src\NuGet.Core\NuGet.ProjectManagement\NuGet.ProjectManagement.csproj" />
-    <ProjectReference Include="..\..\..\src\NuGet.Core\Test.Utility\Test.Utility.csproj" />
+    <ProjectReference Include="$(TestUtilitiesDirectory)Test.Utility\Test.Utility.csproj" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net46' ">

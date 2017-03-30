@@ -23,7 +23,7 @@ namespace Commands.Test
         public async Task PackageExpander_ExpandsPackage()
         {
             // Arrange
-            using (var package = TestPackages.GetNearestReferenceFilteringPackage())
+            using (var package = TestPackagesCore.GetNearestReferenceFilteringPackage())
             {
                 var version = new NuGetVersion(package.Version);
                 var identity = new PackageIdentity(package.Id, version);
@@ -64,7 +64,7 @@ namespace Commands.Test
         public async Task PackageExpander_ExpandsPackage_WithNupkgCopy()
         {
             // Arrange
-            using (var package = TestPackages.GetPackageWithNupkgCopy())
+            using (var package = TestPackagesCore.GetPackageWithNupkgCopy())
             {
 
                 var version = new NuGetVersion(package.Version);
@@ -106,7 +106,7 @@ namespace Commands.Test
         public async Task PackageExpander_ExpandsPackage_SkipsIfShaIsThere()
         {
             // Arrange
-            using (var package = TestPackages.GetNearestReferenceFilteringPackage())
+            using (var package = TestPackagesCore.GetNearestReferenceFilteringPackage())
             {
                 var version = new NuGetVersion(package.Version);
                 var identity = new PackageIdentity(package.Id, version);
@@ -158,7 +158,7 @@ namespace Commands.Test
         public async Task PackageExpander_CleansExtraFiles()
         {
             // Arrange
-            using (var package = TestPackages.GetNearestReferenceFilteringPackage())
+            using (var package = TestPackagesCore.GetNearestReferenceFilteringPackage())
             {
                 var version = new NuGetVersion(package.Version);
                 var identity = new PackageIdentity(package.Id, version);
@@ -214,7 +214,7 @@ namespace Commands.Test
         public async Task PackageExpander_Recovers_WhenStreamIsCorrupt()
         {
             // Arrange
-            using (var package = TestPackages.GetNearestReferenceFilteringPackage())
+            using (var package = TestPackagesCore.GetNearestReferenceFilteringPackage())
             {
 
                 var version = new NuGetVersion(package.Version);
@@ -269,7 +269,7 @@ namespace Commands.Test
         public async Task PackageExpander_Recovers_WhenFileIsLocked()
         {
             // Arrange
-            using (var package = TestPackages.GetNearestReferenceFilteringPackage())
+            using (var package = TestPackagesCore.GetNearestReferenceFilteringPackage())
             {
 
                 var version = new NuGetVersion(package.Version);
@@ -341,7 +341,7 @@ namespace Commands.Test
             // Arrange
             var package = new PackageIdentity("packageA", new NuGetVersion("2.0.3"));
 
-            using (var packageFileInfo = TestPackages.GetLegacyTestPackage())
+            using (var packageFileInfo = TestPackagesCore.GetLegacyTestPackage())
             using (var packagesDirectory = TestDirectory.Create())
             {
                 var pathResolver = new VersionFolderPathResolver(packagesDirectory);
@@ -379,7 +379,7 @@ namespace Commands.Test
             // Arrange
             var package = new PackageIdentity("packageA", new NuGetVersion("2.0.3"));
 
-            using (var packageFileInfo = TestPackages.GetLegacyTestPackage())
+            using (var packageFileInfo = TestPackagesCore.GetLegacyTestPackage())
             using (var packagesDirectory = TestDirectory.Create())
             {
                 var pathResolver = new VersionFolderPathResolver(packagesDirectory);
@@ -420,7 +420,7 @@ namespace Commands.Test
             using (var packagesDirectory = TestDirectory.Create())
             {
                 var pathResolver = new VersionFolderPathResolver(packagesDirectory);
-                var packageFileInfo = await TestPackages.GetPackageWithSHA512AtRoot(
+                var packageFileInfo = await TestPackagesCore.GetPackageWithSHA512AtRoot(
                     packagesDirectory,
                     package.Id,
                     package.Version.ToNormalizedString());
@@ -474,7 +474,7 @@ namespace Commands.Test
             using (var packagesDirectory = TestDirectory.Create())
             {
                 var pathResolver = new VersionFolderPathResolver(packagesDirectory);
-                var packageFileInfo = await TestPackages.GetPackageWithNupkgAtRoot(
+                var packageFileInfo = await TestPackagesCore.GetPackageWithNupkgAtRoot(
                     packagesDirectory,
                     package.Id,
                     package.Version.ToNormalizedString());
@@ -524,7 +524,7 @@ namespace Commands.Test
             using (var packagesDirectory = TestDirectory.Create())
             {
                 var pathResolver = new VersionFolderPathResolver(packagesDirectory);
-                var packageFileInfo = await TestPackages.GeneratePackageAsync(
+                var packageFileInfo = await TestPackagesCore.GeneratePackageAsync(
                     packagesDirectory,
                     package.Id,
                     package.Version.ToNormalizedString(),
@@ -564,7 +564,7 @@ namespace Commands.Test
             // Arrange
             var package = new PackageIdentity("packageA", new NuGetVersion("2.0.3"));
 
-            using (var packageFileInfo = TestPackages.GetLegacyTestPackage())
+            using (var packageFileInfo = TestPackagesCore.GetLegacyTestPackage())
             using (var packagesDirectory = TestDirectory.Create())
             {
                 var pathResolver = new VersionFolderPathResolver(packagesDirectory);

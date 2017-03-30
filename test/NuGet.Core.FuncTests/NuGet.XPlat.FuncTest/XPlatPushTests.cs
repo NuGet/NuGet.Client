@@ -25,7 +25,7 @@ namespace NuGet.XPlat.FuncTest
             {
                 var packageId = "XPlatPushTests.PushToServerSucceeds";
                 var packageVersion = "1.0.0";
-                var packageFile = await TestPackages.GetRuntimePackageAsync(packageDir, packageId, packageVersion);
+                var packageFile = await TestPackagesCore.GetRuntimePackageAsync(packageDir, packageId, packageVersion);
                 var configFile = XPlatTestUtils.CopyFuncTestConfig(packageDir);
                 var log = new TestCommandOutputLogger();
 

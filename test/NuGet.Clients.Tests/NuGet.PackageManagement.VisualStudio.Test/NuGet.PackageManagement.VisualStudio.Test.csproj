@@ -54,8 +54,8 @@
       <Project>{EEA49A74-6EFC-410E-9745-BAD367AC151D}</Project>
       <Name>NuGet.VisualStudio.Facade</Name>
     </ProjectReference>
-    
-    <ProjectReference Include="$(NuGetCoreSrcDirectory)\Test.Utility\Test.Utility.csproj" />
+
+    <ProjectReference Include="$(TestUtilitiesDirectory)Test.Utility\Test.Utility.csproj" />
   </ItemGroup>
   <Choose>
     <When Condition="$(VisualStudioVersion)=='14.0'">

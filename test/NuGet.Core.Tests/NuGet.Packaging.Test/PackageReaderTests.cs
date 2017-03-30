@@ -189,9 +189,9 @@ namespace NuGet.Packaging.Test
             // Copy of the InstallPackageRespectReferencesAccordingToDifferentFrameworks functional test
 
             // Arrange
-            using (var path = TestPackages.GetNearestReferenceFilteringPackage())
+            using (var path = TestPackagesCore.GetNearestReferenceFilteringPackage())
             {
-                using (var zip = TestPackages.GetZip(path.File))
+                using (var zip = TestPackagesCore.GetZip(path.File))
                 using (var reader = new PackageArchiveReader(zip))
                 {
                     // Act
@@ -213,9 +213,9 @@ namespace NuGet.Packaging.Test
         public void PackageReader_LegacyFolders()
         {
             // Verify legacy folder names such as 40 and 35 parse to frameworks
-            using (var packageFile = TestPackages.GetLegacyFolderPackage())
+            using (var packageFile = TestPackagesCore.GetLegacyFolderPackage())
             {
-                var zip = TestPackages.GetZip(packageFile);
+                var zip = TestPackagesCore.GetZip(packageFile);
 
                 using (PackageArchiveReader reader = new PackageArchiveReader(zip))
                 {
@@ -242,9 +242,9 @@ namespace NuGet.Packaging.Test
         [Fact]
         public void PackageReader_NestedReferenceItemsMixed()
         {
-            using (var packageFile = TestPackages.GetLibEmptyFolderPackage())
+            using (var packageFile = TestPackagesCore.GetLibEmptyFolderPackage())
             {
-                var zip = TestPackages.GetZip(packageFile);
+                var zip = TestPackagesCore.GetZip(packageFile);
 
                 using (PackageArchiveReader reader = new PackageArchiveReader(zip))
                 {
@@ -272,9 +272,9 @@ namespace NuGet.Packaging.Test
         [Fact]
         public void PackageReader_EmptyLibFolder()
         {
-            using (var packageFile = TestPackages.GetLibEmptyFolderPackage())
+            using (var packageFile = TestPackagesCore.GetLibEmptyFolderPackage())
             {
-                var zip = TestPackages.GetZip(packageFile);
+                var zip = TestPackagesCore.GetZip(packageFile);
 
                 using (PackageArchiveReader reader = new PackageArchiveReader(zip))
                 {
@@ -290,9 +290,9 @@ namespace NuGet.Packaging.Test
         [Fact]
         public void PackageReader_NestedReferenceItems()
         {
-            using (var packageFile = TestPackages.GetLibSubFolderPackage())
+            using (var packageFile = TestPackagesCore.GetLibSubFolderPackage())
             {
-                var zip = TestPackages.GetZip(packageFile);
+                var zip = TestPackagesCore.GetZip(packageFile);
 
                 using (PackageArchiveReader reader = new PackageArchiveReader(zip))
                 {
@@ -314,9 +314,9 @@ namespace NuGet.Packaging.Test
         [InlineData("2.5-beta", "2.5.0-beta")]
         public void PackageReader_MinClientVersion(string minClientVersion, string expected)
         {
-            using (var packageFile = TestPackages.GetLegacyTestPackageMinClient(minClientVersion))
+            using (var packageFile = TestPackagesCore.GetLegacyTestPackageMinClient(minClientVersion))
             {
-                var zip = TestPackages.GetZip(packageFile);
+                var zip = TestPackagesCore.GetZip(packageFile);
 
                 using (PackageArchiveReader reader = new PackageArchiveReader(zip))
                 {
@@ -330,9 +330,9 @@ namespace NuGet.Packaging.Test
         [Fact]
         public void PackageReader_ContentWithMixedFrameworks()
         {
-            using (var packageFile = TestPackages.GetLegacyContentPackageMixed())
+            using (var packageFile = TestPackagesCore.GetLegacyContentPackageMixed())
             {
-                var zip = TestPackages.GetZip(packageFile);
+                var zip = TestPackagesCore.GetZip(packageFile);
 
                 using (PackageArchiveReader reader = new PackageArchiveReader(zip))
                 {
@@ -346,9 +346,9 @@ namespace NuGet.Packaging.Test
         [Fact]
         public void PackageReader_ContentWithFrameworks()
         {
-            using (var packageFile = TestPackages.GetLegacyContentPackageWithFrameworks())
+            using (var packageFile = TestPackagesCore.GetLegacyContentPackageWithFrameworks())
             {
-                var zip = TestPackages.GetZip(packageFile);
+                var zip = TestPackagesCore.GetZip(packageFile);
 
                 using (PackageArchiveReader reader = new PackageArchiveReader(zip))
                 {
@@ -362,9 +362,9 @@ namespace NuGet.Packaging.Test
         [Fact]
         public void PackageReader_ContentNoFrameworks()
         {
-            using (var packageFile = TestPackages.GetLegacyContentPackage())
+            using (var packageFile = TestPackagesCore.GetLegacyContentPackage())
             {
-                var zip = TestPackages.GetZip(packageFile);
+                var zip = TestPackagesCore.GetZip(packageFile);
 
                 using (PackageArchiveReader reader = new PackageArchiveReader(zip))
                 {
@@ -383,9 +383,9 @@ namespace NuGet.Packaging.Test
         [Fact]
         public void PackageReader_NoReferences()
         {
-            using (var packageFile = TestPackages.GetLegacyTestPackage())
+            using (var packageFile = TestPackagesCore.GetLegacyTestPackage())
             {
-                var zip = TestPackages.GetZip(packageFile);
+                var zip = TestPackagesCore.GetZip(packageFile);
 
                 using (PackageArchiveReader reader = new PackageArchiveReader(zip))
                 {
@@ -402,9 +402,9 @@ namespace NuGet.Packaging.Test
         [Fact]
         public void PackageReader_ReferencesWithGroups()
         {
-            using (var packageFile = TestPackages.GetLegacyTestPackageWithReferenceGroups())
+            using (var packageFile = TestPackagesCore.GetLegacyTestPackageWithReferenceGroups())
             {
-                var zip = TestPackages.GetZip(packageFile);
+                var zip = TestPackagesCore.GetZip(packageFile);
 
                 using (PackageArchiveReader reader = new PackageArchiveReader(zip))
                 {
@@ -427,9 +427,9 @@ namespace NuGet.Packaging.Test
         [Fact]
         public void PackageReader_ReferencesWithoutGroups()
         {
-            using (var packageFile = TestPackages.GetLegacyTestPackageWithPre25References())
+            using (var packageFile = TestPackagesCore.GetLegacyTestPackageWithPre25References())
             {
-                var zip = TestPackages.GetZip(packageFile);
+                var zip = TestPackagesCore.GetZip(packageFile);
 
                 using (PackageArchiveReader reader = new PackageArchiveReader(zip))
                 {
@@ -455,9 +455,9 @@ namespace NuGet.Packaging.Test
         [Fact]
         public void PackageReader_SupportedFrameworks()
         {
-            using (var packageFile = TestPackages.GetLegacyTestPackage())
+            using (var packageFile = TestPackagesCore.GetLegacyTestPackage())
             {
-                var zip = TestPackages.GetZip(packageFile);
+                var zip = TestPackagesCore.GetZip(packageFile);
 
                 using (PackageArchiveReader reader = new PackageArchiveReader(zip))
                 {
@@ -475,9 +475,9 @@ namespace NuGet.Packaging.Test
         public void PackageReader_Serviceable()
         {
             // Arrange
-            using (var packageFile = TestPackages.GetServiceablePackage())
+            using (var packageFile = TestPackagesCore.GetServiceablePackage())
             {
-                var zip = TestPackages.GetZip(packageFile);
+                var zip = TestPackagesCore.GetZip(packageFile);
 
                 using (PackageArchiveReader reader = new PackageArchiveReader(zip))
                 {
@@ -494,9 +494,9 @@ namespace NuGet.Packaging.Test
         public void PackageReader_PackageTypes()
         {
             // Arrange
-            using (var packageFile = TestPackages.GetPackageWithPackageTypes())
+            using (var packageFile = TestPackagesCore.GetPackageWithPackageTypes())
             {
-                var zip = TestPackages.GetZip(packageFile);
+                var zip = TestPackagesCore.GetZip(packageFile);
 
                 using (PackageArchiveReader reader = new PackageArchiveReader(zip))
                 {
@@ -516,9 +516,9 @@ namespace NuGet.Packaging.Test
         [Fact]
         public void PackageReader_SupportedFrameworksForInvalidPortableFrameworkThrows()
         {
-            using (var packageFile = TestPackages.GetLegacyTestPackageWithInvalidPortableFrameworkFolderName())
+            using (var packageFile = TestPackagesCore.GetLegacyTestPackageWithInvalidPortableFrameworkFolderName())
             {
-                var zip = TestPackages.GetZip(packageFile);
+                var zip = TestPackagesCore.GetZip(packageFile);
 
                 using (PackageArchiveReader reader = new PackageArchiveReader(zip))
                 {
