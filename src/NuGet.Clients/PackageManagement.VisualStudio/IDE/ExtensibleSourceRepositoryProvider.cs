@@ -1,17 +1,16 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#if IS_DESKTOP
-
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Linq;
-using System.Threading;
 using NuGet.Configuration;
+using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
+using NuGet.Protocol.VisualStudio;
 
-namespace NuGet.Protocol.VisualStudio
+namespace NuGet.PackageManagement.VisualStudio
 {
     /// <summary>
     /// SourceRepositoryProvider is the high level source for repository objects representing package sources.
@@ -105,5 +104,3 @@ namespace NuGet.Protocol.VisualStudio
         }
     }
 }
-
-#endif
