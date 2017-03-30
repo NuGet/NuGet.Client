@@ -4,6 +4,7 @@
 *.pdb
 *.exe
 *.manifest
+*.json
 
 # ignore individual unsolicited files
 Microsoft.CSharp.dll

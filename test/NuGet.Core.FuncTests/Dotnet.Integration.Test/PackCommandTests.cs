@@ -25,8 +25,7 @@ namespace Dotnet.Integration.Test
             this.msbuildFixture = fixture;
         }
 
-        [Platform(Platform.Windows)]
-        [Fact]
+        [PlatformFact(Platform.Windows)]
         public void PackCommand_PackNewDefaultProject_NupkgExists()
         {
             using (var testDirectory = TestDirectory.Create())
@@ -75,8 +74,7 @@ namespace Dotnet.Integration.Test
             }
         }
 
-        [Platform(Platform.Windows)]
-        [Theory]
+        [PlatformTheory(Platform.Windows)]
         [InlineData(true)]
         [InlineData(false)]
         public void PackCommand_PackConsoleAppWithRID_NupkgValid(bool includeSymbols)
@@ -135,8 +133,7 @@ namespace Dotnet.Integration.Test
             }
         }
 
-        [Platform(Platform.Windows)]
-        [Fact]
+        [PlatformFact(Platform.Windows)]
         public void PackCommand_PackProject_SupportMultipleFrameworks()
         {
             // Arrange
@@ -233,8 +230,7 @@ namespace Dotnet.Integration.Test
             }
         }
 
-        [Platform(Platform.Windows)]
-        [Theory]
+        [PlatformTheory(Platform.Windows)]
         [InlineData(null, null, null, true, "", "Analyzers,Build")]
         [InlineData(null, "Native", null, true, "", "Analyzers,Build,Native")]
         [InlineData("Compile", null, null, true, "", "Analyzers,Build,Native,Runtime")]
@@ -331,8 +327,7 @@ namespace Dotnet.Integration.Test
             }
         }
 
-        [Platform(Platform.Windows)]
-        [Fact]
+        [PlatformFact(Platform.Windows)]
         public void PackCommand_PackProject_AddsProjectRefsAsPackageRefs()
         {
             // Arrange
@@ -416,8 +411,7 @@ namespace Dotnet.Integration.Test
             }
         }
 
-        [Platform(Platform.Windows)]
-        [Fact]
+        [PlatformFact(Platform.Windows)]
         public void PackCommand_PackProject_PacksFromNuspec()
         {
             var nuspecFileContent = @"<?xml version=""1.0""?>
@@ -469,8 +463,7 @@ namespace Dotnet.Integration.Test
             }
         }
 
-        [Platform(Platform.Windows)]
-        [Theory]
+        [PlatformTheory(Platform.Windows)]
         // Command line : /p:NuspecProperties=\"id=MyPackage;version=1.2.3;description="hello world"\"
         [InlineData("/p:NuspecProperties=\\\"id=MyPackage;version=1.2.3;description=\"hello world\"\\\"", "MyPackage",
             "1.2.3", "hello world")]
@@ -536,8 +529,7 @@ namespace Dotnet.Integration.Test
             }
         }
 
-        [Platform(Platform.Windows)]
-        [Fact]
+        [PlatformFact(Platform.Windows)]
         public void PackCommand_PackProject_PacksFromNuspecWithBasePath()
         {
             var nuspecFileContent = @"<?xml version=""1.0""?>
@@ -580,8 +572,7 @@ namespace Dotnet.Integration.Test
             }
         }
 
-        [Platform(Platform.Windows)]
-        [Theory]
+        [PlatformTheory(Platform.Windows)]
         [InlineData("abc.txt", null, "content/abc.txt;contentFiles/any/netstandard1.4/abc.txt")]
         [InlineData("folderA/abc.txt", null, "content/folderA/abc.txt;contentFiles/any/netstandard1.4/folderA/abc.txt")]
         [InlineData("folderA/folderB/abc.txt", null,
@@ -710,8 +701,7 @@ namespace Dotnet.Integration.Test
             }
         }
 
-        [Platform(Platform.Windows)]
-        [Theory]
+        [PlatformTheory(Platform.Windows)]
         [InlineData(null, null, null, "1.0.0")]
         [InlineData("1.2.3", null, null, "1.2.3")]
         [InlineData(null, "rtm-1234", null, "1.0.0-rtm-1234")]
@@ -765,8 +755,7 @@ namespace Dotnet.Integration.Test
             }
         }
 
-        [Platform(Platform.Windows)]
-        [Theory]
+        [PlatformTheory(Platform.Windows)]
         [InlineData("abc.txt", null, "any/netstandard1.4/abc.txt")]
         [InlineData("folderA/abc.txt", null, "any/netstandard1.4/folderA/abc.txt")]
         [InlineData("folderA/folderB/abc.txt", null, "any/netstandard1.4/folderA/folderB/abc.txt")]
@@ -902,8 +891,7 @@ namespace Dotnet.Integration.Test
             }
         }
 
-        [Platform(Platform.Windows)]
-        [Theory]
+        [PlatformTheory(Platform.Windows)]
         [InlineData("abc.txt", "any/net45/abc.txt;any/netstandard1.3/abc.txt")]
         [InlineData("folderA/abc.txt", "any/net45/folderA/abc.txt;any/netstandard1.3/folderA/abc.txt")]
         [InlineData("folderA/folderB/abc.txt",
@@ -997,8 +985,7 @@ namespace Dotnet.Integration.Test
             }
         }
 
-        [Platform(Platform.Windows)]
-        [Fact]
+        [PlatformFact(Platform.Windows)]
         public void PackCommand_SingleFramework_GeneratesPackageOnBuild()
         {
             using (var testDirectory = TestDirectory.Create())
@@ -1059,8 +1046,7 @@ namespace Dotnet.Integration.Test
             }
         }
 
-        [Platform(Platform.Windows)]
-        [Theory]
+        [PlatformTheory(Platform.Windows)]
         [InlineData("netstandard1.4")]
         [InlineData("netstandard1.4;net451")]
         [InlineData("netstandard1.4;net451;netcoreapp1.0")]
@@ -1124,8 +1110,7 @@ namespace Dotnet.Integration.Test
         }
 
         // This test checks to see that when IncludeBuildOutput=false, the generated nupkg does not contain lib folder
-        [Platform(Platform.Windows)]
-        [Fact]
+        [PlatformFact(Platform.Windows)]
         public void PackCommand_PackNewDefaultProject_IncludeBuildOutputDoesNotCreateLibFolder()
         {
             using (var testDirectory = TestDirectory.Create())
@@ -1174,8 +1159,7 @@ namespace Dotnet.Integration.Test
 
         // This test checks to see that when BuildOutputTargetFolder is specified, the generated nupkg has the DLLs in the specified output folder
         // instead of the default lib folder.
-        [Platform(Platform.Windows)]
-        [Fact]
+        [PlatformFact(Platform.Windows)]
         public void PackCommand_PackNewDefaultProject_BuildOutputTargetFolderOutputsLibsToRightFolder()
         {
             using (var testDirectory = TestDirectory.Create())
@@ -1210,8 +1194,7 @@ namespace Dotnet.Integration.Test
 
         // This test checks to see that when GeneratePackageOnBuild is set to true, the generated nupkg and the intermediate
         // nuspec is deleted when the clean target is invoked.
-        [Platform(Platform.Windows)]
-        [Fact]
+        [PlatformFact(Platform.Windows)]
         public void PackCommand_PackNewProject_CleanDeletesNupkgAndNuspec()
         {
             using (var testDirectory = TestDirectory.Create())
@@ -1247,8 +1230,7 @@ namespace Dotnet.Integration.Test
             }
         }
 
-        [Platform(Platform.Windows)]
-        [Theory]
+        [PlatformTheory(Platform.Windows)]
         [InlineData("abc.txt",                  null,                               "content/abc.txt;contentFiles/any/netstandard1.4/abc.txt")]
         [InlineData("folderA/abc.txt",          null,                               "content/folderA/abc.txt;contentFiles/any/netstandard1.4/folderA/abc.txt")]
         [InlineData("folderA/folderB/abc.txt",  null,                               "content/folderA/folderB/abc.txt;contentFiles/any/netstandard1.4/folderA/folderB/abc.txt")]
@@ -1363,8 +1345,7 @@ namespace Dotnet.Integration.Test
             }
         }
 
-        [Platform(Platform.Windows)]
-        [Fact]
+        [PlatformFact(Platform.Windows)]
         public void PackCommand_NewProject_AddsTitleToNuspec()
         {
             using (var testDirectory = TestDirectory.Create())
@@ -1424,8 +1405,7 @@ namespace Dotnet.Integration.Test
             }
         }
 
-        [Platform(Platform.Windows)]
-        [Theory]
+        [PlatformTheory(Platform.Windows)]
         [InlineData("TargetFramework", "netstandard1.4")]
         [InlineData("TargetFrameworks", "netstandard1.4;net46")]
         public void PackCommand_IncludeSource_AddsSourceFiles(string tfmProperty, string tfmValue)
@@ -1433,7 +1413,6 @@ namespace Dotnet.Integration.Test
             using (var testDirectory = TestDirectory.Create())
             {
                 var utilitySrcFileContent = @"using System;
-
 namespace ClassLibrary
 {
     public class UtilityMethods
@@ -1441,7 +1420,6 @@ namespace ClassLibrary
     }
 }";
                 var extensionSrcFileContent = @"using System;
-
 namespace ClassLibrary
 {
     public class ExtensionMethods
@@ -1494,8 +1472,7 @@ namespace ClassLibrary
             }
         }
 
-        [Platform(Platform.Windows)]
-        [Theory]
+        [PlatformTheory(Platform.Windows)]
         [InlineData("TargetFramework", "netstandard1.4")]
         [InlineData("TargetFrameworks", "netstandard1.4;net46")]
         public void PackCommand_ContentInnerTargetExtension_AddsTfmSpecificContent(string tfmProperty, string tfmValue)
@@ -1563,8 +1540,7 @@ namespace ClassLibrary
             }
         }
 
-        [Platform(Platform.Windows)]
-        [Theory]
+        [PlatformTheory(Platform.Windows)]
         [InlineData("TargetFramework", "netstandard1.4")]
         [InlineData("TargetFrameworks", "netstandard1.4;net46")]
         public void PackCommand_BuildOutputInnerTargetExtension_AddsTfmSpecificBuildOuput(string tfmProperty,
@@ -1632,8 +1608,7 @@ namespace ClassLibrary
             }
         }
 
-        [Platform(Platform.Windows)]
-        [Theory]
+        [PlatformTheory(Platform.Windows)]
         [InlineData("folderA\\**\\*",                           null,                           "content/folderA/folderA.txt;content/folderA/folderB/folderB.txt;" +
                                                                                                 "contentFiles/any/netstandard1.4/folderA/folderA.txt;" +
                                                                                                 "contentFiles/any/netstandard1.4/folderA/folderB/folderB.txt")]
@@ -1707,6 +1682,3 @@ namespace ClassLibrary
         }
     }
 }
-
-
-

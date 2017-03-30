@@ -1,0 +1,27 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.props" />
+
+  <PropertyGroup>
+    <Description>NuGet Package Management</Description>
+    <TargetFramework>net45</TargetFramework>
+    <NoWarn>$(NoWarn);CS1591;CS1580;CS1574;CS1573</NoWarn>
+    <PackProject>true</PackProject>
+    <Shipping>true</Shipping>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\NuGet.ProjectManagement\NuGet.ProjectManagement.csproj" />
+    <ProjectReference Include="..\NuGet.Commands\NuGet.Commands.csproj" />
+    <ProjectReference Include="..\NuGet.Resolver\NuGet.Resolver.csproj" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net45' ">
+    <Reference Include="System.ComponentModel.Composition" />
+    <Reference Include="Microsoft.Build" />
+    <Reference Include="System.IO.Compression" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="Microsoft.CSharp" />
+  </ItemGroup>
+
+  <Import Project="$(BuildCommonDirectory)common.targets" />
+</Project>

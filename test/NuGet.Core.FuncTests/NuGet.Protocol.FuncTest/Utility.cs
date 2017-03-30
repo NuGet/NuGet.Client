@@ -9,10 +9,26 @@ namespace NuGet.Protocol.FuncTest
 {
     public static class Utility
     {
+        internal const string ConfigFileName = "NuGet.Protocol.FuncTest.config";
+
+        public static string ConfigPath
+        {
+            get
+            {
+                string fullPath = NuGetEnvironment.GetFolderPath(NuGetFolderPath.UserSettingsDirectory);
+
+                return Path.Combine(fullPath, ConfigFileName);
+            }
+        }
+
         public static Tuple<string, string> ReadCredential(string feedName)
         {
-            string fullPath = NuGetEnvironment.GetFolderPath(NuGetFolderPath.UserSettingsDirectory);
-            using (Stream configStream = File.OpenRead(Path.Combine(fullPath, "NuGet.Protocol.FuncTest.config")))
+            if (!File.Exists(ConfigPath))
+            {
+                throw new FileNotFoundException($"Missing required file on the CI machine!!! {ConfigPath}");
+            }
+
+            using (Stream configStream = File.OpenRead(ConfigPath))
             {
                 var doc = XDocument.Load(XmlReader.Create(configStream));
                 var element = doc.Root.Element(feedName);

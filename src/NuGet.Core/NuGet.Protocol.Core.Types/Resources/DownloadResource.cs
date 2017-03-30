@@ -28,6 +28,6 @@ namespace NuGet.Protocol.Core.Types
             ILogger logger,
             CancellationToken token);
 
-        public event EventHandler<PackageProgressEventArgs> Progress;
+        // public event EventHandler<PackageProgressEventArgs> Progress;
     }
 }

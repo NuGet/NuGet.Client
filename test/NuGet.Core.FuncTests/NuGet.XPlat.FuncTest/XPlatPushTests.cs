@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
@@ -11,7 +11,7 @@ namespace NuGet.XPlat.FuncTest
 {
     public class XPlatPushTests
     {
-        [Theory]
+        [FileExistsInNuGetRoamingTheory(XPlatTestUtils.CoreConfigFileName, XPlatTestUtils.ProtocolConfigFileName)]
         [InlineData(TestServers.MyGet, nameof(TestServers.MyGet), false)]
         [InlineData(TestServers.ProGet, nameof(TestServers.ProGet), false)]
         [InlineData(TestServers.Nexus, nameof(TestServers.Nexus), true)]
@@ -48,7 +48,7 @@ namespace NuGet.XPlat.FuncTest
                 };
 
                 // Act
-                int exitCode = Program.MainInternal(pushArgs.ToArray(), log);
+                int exitCode = NuGet.CommandLine.XPlat.Program.MainInternal(pushArgs.ToArray(), log);
 
                 // Assert
                 Assert.Equal(string.Empty, log.ShowErrors());
@@ -78,7 +78,7 @@ namespace NuGet.XPlat.FuncTest
                 "--non-interactive"
             };
 
-            int exitCode = Program.MainInternal(args.ToArray(), log);
+            int exitCode = NuGet.CommandLine.XPlat.Program.MainInternal(args.ToArray(), log);
             Assert.InRange(exitCode, 0, 1);
 
             Assert.Contains($"DELETE {packageUri}", log.ShowMessages());

@@ -307,8 +307,8 @@ namespace NuGet.Commands.Test
         {
             var dir = Directory.GetCurrentDirectory();
 
-            var throwFlag = shouldAbandon ? Program.AbandonSwitch : string.Empty;
-            var debugFlag = debug ? Program.DebugSwitch : string.Empty;
+            var throwFlag = shouldAbandon ? SynchronizationTestApp.Program.AbandonSwitch : string.Empty;
+            var debugFlag = debug ? SynchronizationTestApp.Program.DebugSwitch : string.Empty;
 
             // Use a dummy file name so the whole system doesn't get locked
             var dummyFileName = Guid.NewGuid().ToString();

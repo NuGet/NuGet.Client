@@ -1,8 +1,5 @@
 {
   "dependencies": {
-    "NuGet.PackageManagement": "4.3.0-*",
-    "NuGet.ProjectManagement": "4.3.0-*",
-    "Microsoft.VisualStudio.Shell.Immutable.14.0": "14.3.25407"
   },
   "frameworks": {
     "net46": {}

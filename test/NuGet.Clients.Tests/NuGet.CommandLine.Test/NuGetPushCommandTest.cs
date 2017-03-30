@@ -1281,7 +1281,7 @@ namespace NuGet.CommandLine.Test
                     server.Stop();
 
                     // Assert
-                    Assert.Equal(1, r1.Item1);
+                    Assert.True(1 == r1.Item1, r1.Item2 + " " + r1.Item3);
                     Assert.Contains("401 (Unauthorized)", r1.Item3);
                     Assert.Contains($"Credential plugin {pluginPath} timed out", r1.Item2);
                     // ensure the process was killed

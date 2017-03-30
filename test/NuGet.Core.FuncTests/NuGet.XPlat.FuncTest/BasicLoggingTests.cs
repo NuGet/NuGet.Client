@@ -21,7 +21,7 @@ namespace NuGet.XPlat.FuncTest
             };
 
             // Act
-            var exitCode = Program.MainInternal(args, log);
+            var exitCode = NuGet.CommandLine.XPlat.Program.MainInternal(args, log);
 
             // Assert
             Assert.Equal(0, exitCode);
@@ -43,7 +43,7 @@ namespace NuGet.XPlat.FuncTest
             };
 
             // Act
-            var exitCode = Program.MainInternal(args, log);
+            var exitCode = NuGet.CommandLine.XPlat.Program.MainInternal(args, log);
 
             // Assert
             Assert.Equal(1, exitCode);
@@ -67,7 +67,7 @@ namespace NuGet.XPlat.FuncTest
             };
 
             // Act
-            var exitCode = Program.MainInternal(args, log);
+            var exitCode = NuGet.CommandLine.XPlat.Program.MainInternal(args, log);
 
             // Assert
             Assert.Equal(1, exitCode);
@@ -90,7 +90,7 @@ namespace NuGet.XPlat.FuncTest
             };
 
             // Act
-            var exitCode = Program.MainInternal(args, log);
+            var exitCode = NuGet.CommandLine.XPlat.Program.MainInternal(args, log);
 
             // Assert
             Assert.Equal(0, exitCode);

@@ -4,6 +4,7 @@
 using System;
 using System.Xml.Linq;
 using NuGet.ProjectManagement;
+using NuGet.Shared;
 
 namespace NuGet.PackageManagement.VisualStudio
 {

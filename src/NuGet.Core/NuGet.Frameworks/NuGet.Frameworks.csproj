@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.props" />
+
+  <PropertyGroup>
+    <Description>The understanding of target frameworks for NuGet.Packaging</Description>
+    <TargetFrameworks>net40;net45;netstandard1.3</TargetFrameworks>
+    <NoWarn>$(NoWarn);CS1591;CS1574;CS1573</NoWarn>
+    <LangVersion>5</LangVersion>
+    <NetStandardImplicitPackageVersion Condition=" '$(TargetFramework)' == 'netstandard1.3' ">$(NetStandardPackageVersion)</NetStandardImplicitPackageVersion>
+    <PackProject>true</PackProject>
+    <Shipping>true</Shipping>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'net40' ">
+    <DefineConstants>$(DefineConstants);IS_DESKTOP;IS_NET40_CLIENT</DefineConstants>
+  </PropertyGroup>
+
+  <Import Project="$(BuildCommonDirectory)common.targets"/>
+</Project>

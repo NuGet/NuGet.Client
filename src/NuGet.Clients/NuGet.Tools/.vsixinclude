@@ -1,4 +1,4 @@
-# NuGet delay signed assemblies
+﻿# NuGet delay signed assemblies
 NuGetConsole.Host.PowerShell.dll
 NuGetConsole.Host.PowerShellProvider.dll
 NuGet.Console.dll

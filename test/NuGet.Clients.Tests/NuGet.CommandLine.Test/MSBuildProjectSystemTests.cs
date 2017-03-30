@@ -39,8 +39,7 @@ namespace NuGet.CommandLine.Test
             }
         }
 
-        [Fact]
-        [Platform(Platform.Windows)]
+        [PlatformFact(Platform.Windows)]
         public void MSBuildProjectSystem_AddFile()
         {
             // Arrange
@@ -63,8 +62,7 @@ namespace NuGet.CommandLine.Test
             }
         }
 
-        [Fact]
-        [Platform(Platform.Windows)]
+        [PlatformFact(Platform.Windows)]
         public void MSBuildProjectSystem_RemoveFile()
         {
             // Arrange
@@ -90,8 +88,7 @@ namespace NuGet.CommandLine.Test
             }
         }
 
-        [Fact]
-        [Platform(Platform.Windows)]
+        [PlatformFact(Platform.Windows)]
         public void MSBuildProjectSystem_FileExistInProject()
         {
             // Arrange

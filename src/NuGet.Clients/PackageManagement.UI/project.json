@@ -9,12 +9,7 @@
     "Microsoft.VisualStudio.Shell.Interop.11.0": "11.0.61030",
     "Microsoft.VisualStudio.Shell.Interop.12.0": "12.0.30110",
     "Microsoft.VisualStudio.Shell.Interop.8.0": "8.0.50727",
-    "Microsoft.VisualStudio.Shell.Interop.9.0": "9.0.30729",
-    "NuGet.Indexing": "4.3.0-*",
-    "NuGet.PackageManagement": "4.3.0-*",
-    "NuGet.ProjectManagement": "4.3.0-*",
-    "NuGet.Protocol.Core.Types": "4.3.0-*",
-    "NuGet.Resolver": "4.3.0-*"
+    "Microsoft.VisualStudio.Shell.Interop.9.0": "9.0.30729"
   },
   "frameworks": {
     "net46": {}
