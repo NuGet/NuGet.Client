@@ -4,7 +4,6 @@
   <PropertyGroup>
     <TargetFrameworks>netcoreapp1.0</TargetFrameworks>
     <TestProject>true</TestProject>
-    <SkipTests>true</SkipTests>
   </PropertyGroup>
 
   <ItemGroup>

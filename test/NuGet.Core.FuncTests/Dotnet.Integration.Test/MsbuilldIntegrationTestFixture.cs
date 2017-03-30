@@ -15,7 +15,7 @@ namespace Dotnet.Integration.Test
 {
     public class MsbuilldIntegrationTestFixture : IDisposable
     {
-        private readonly string _dotnetCli = DotnetCliUtil.GetDotnetCli(true);
+        private readonly string _dotnetCli = DotnetCliUtil.GetDotnetCli();
         internal readonly string TestDotnetCli;
 
         public MsbuilldIntegrationTestFixture()

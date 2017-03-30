@@ -238,7 +238,7 @@ namespace NuGet.CommandLine.Test
                     string searchRequest = string.Empty;
 
                     server.Get.Add("/nuget/$metadata", r =>
-                        MockServerResource.NuGetV2APIMetadata);
+                        Util.GetMockServerResource());
                     server.Get.Add("/nuget/Search()", r =>
                         new Action<HttpListenerResponse>(response =>
                         {
@@ -297,7 +297,7 @@ namespace NuGet.CommandLine.Test
                     string searchRequest = string.Empty;
 
                     server.Get.Add("/nuget/$metadata", r =>
-                        MockServerResource.NuGetV2APIMetadata);
+                        Util.GetMockServerResource());
                     server.Get.Add("/nuget/Search()", r =>
                         new Action<HttpListenerResponse>(response =>
                         {
@@ -359,7 +359,7 @@ namespace NuGet.CommandLine.Test
                     string searchRequest = string.Empty;
 
                     server.Get.Add("/nuget/$metadata", r =>
-                        MockServerResource.NuGetV2APIMetadata);
+                        Util.GetMockServerResource());
                     server.Get.Add("/nuget/Search()", r =>
                         new Action<HttpListenerResponse>(response =>
                         {
@@ -417,7 +417,7 @@ namespace NuGet.CommandLine.Test
                     string searchRequest = string.Empty;
 
                     server.Get.Add("/nuget/$metadata", r =>
-                        MockServerResource.NuGetV2APIMetadata);
+                        Util.GetMockServerResource());
                     server.Get.Add("/nuget/Search()", r =>
                         new Action<HttpListenerResponse>(response =>
                         {
@@ -474,7 +474,7 @@ namespace NuGet.CommandLine.Test
                     string searchRequest = string.Empty;
 
                     server.Get.Add("/nuget/$metadata", r =>
-                        MockServerResource.NuGetV2APIMetadata);
+                        Util.GetMockServerResource());
                     server.Get.Add("/nuget/Search()", r =>
                         new Action<HttpListenerResponse>(response =>
                         {
@@ -532,7 +532,7 @@ namespace NuGet.CommandLine.Test
                     string searchRequest = string.Empty;
 
                     server.Get.Add("/nuget/$metadata", r =>
-                        MockServerResource.NuGetV2APIMetadata);
+                        Util.GetMockServerResource());
                     server.Get.Add("/nuget/Search()", r =>
                         new Action<HttpListenerResponse>(response =>
                         {
@@ -590,7 +590,7 @@ namespace NuGet.CommandLine.Test
                     string searchRequest = string.Empty;
 
                     server.Get.Add("/nuget/$metadata", r =>
-                        MockServerResource.NuGetV2APIMetadata);
+                        Util.GetMockServerResource());
                     server.Get.Add("/nuget/Search()", r =>
                         new Action<HttpListenerResponse>(response =>
                         {
@@ -680,7 +680,7 @@ namespace NuGet.CommandLine.Test
 
                             if (path == "/$metadata")
                             {
-                                return MockServerResource.NuGetV2APIMetadata;
+                                return Util.GetMockServerResource();
                             }
 
                             if (path == "/Search()")
@@ -1041,7 +1041,7 @@ namespace NuGet.CommandLine.Test
 
                         if (path == $"/{listEndpoint}/$metadata")
                         {
-                            return MockServerResource.NuGetV2APIMetadata;
+                            return Util.GetMockServerResource();
                         }
 
                         if (path == $"/{listEndpoint}/Search()")
@@ -1144,7 +1144,7 @@ namespace NuGet.CommandLine.Test
 
                         if (path == $"/{listEndpoint}/$metadata")
                         {
-                            return MockServerResource.NuGetV2APIMetadata;
+                            return Util.GetMockServerResource();
                         }
 
                         if (path == $"/{listEndpoint}/Search()")

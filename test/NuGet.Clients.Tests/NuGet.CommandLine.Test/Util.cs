@@ -16,6 +16,7 @@ using NuGet.Packaging.Core;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
 using Xunit;
+using System.Reflection;
 
 namespace NuGet.CommandLine.Test
 {
@@ -25,6 +26,19 @@ namespace NuGet.CommandLine.Test
 
         [DllImport("libc")]
         static extern int uname(IntPtr buf);
+
+        public static string GetMockServerResource()
+        {
+            return GetResource("NuGet.CommandLine.Test.compiler.resources.mockserver.xml");
+        }
+        
+        public static string GetResource(string name)
+        {
+            using (var reader = new StreamReader(typeof(Util).GetTypeInfo().Assembly.GetManifestResourceStream(name)))
+            {
+                return reader.ReadToEnd();
+            }
+        }
 
         public static string CreateTestPackage(
             string packageId,
@@ -335,7 +349,7 @@ namespace NuGet.CommandLine.Test
             var server = new MockServer();
 
             server.Get.Add("/nuget/$metadata", r =>
-                   MockServerResource.NuGetV2APIMetadata);
+                   Util.GetMockServerResource());
             server.Get.Add("/nuget/FindPackagesById()", r =>
                 new Action<HttpListenerResponse>(response =>
                 {

@@ -1168,7 +1168,7 @@ EndProject");
                     bool packageDownloadIsCalled = false;
 
                     server.Get.Add("/nuget/$metadata", r =>
-                       MockServerResource.NuGetV2APIMetadata);
+                       Util.GetMockServerResource());
                     server.Get.Add("/nuget/Packages(Id='testPackage1',Version='1.1.0')", r =>
                         new Action<HttpListenerResponse>(response =>
                         {

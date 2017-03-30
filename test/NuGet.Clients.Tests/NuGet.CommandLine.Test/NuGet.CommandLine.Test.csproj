@@ -6,7 +6,7 @@
     <TargetFrameworks>net46</TargetFrameworks>
     <TargetFrameworks Condition=" '$(IsXPlat)' == 'true' "></TargetFrameworks>
     <TestProject>true</TestProject>
-    <SkipTests>true</SkipTests>
+    <SkipTests>false</SkipTests>
   </PropertyGroup>
 
   <ItemGroup>
@@ -51,9 +51,14 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="compiler\resources\*" />
+    <EmbeddedResource Include="compiler\resources\*" />
+  </ItemGroup>
   
   <Import Project="$(BuildCommonDirectory)common.targets" />
-
+  
   <PropertyGroup>
     <PostBuildEvent>
       xcopy /diy $(ArtifactsDirectory)TestableCredentialProvider\$(VisualStudioVersion)\bin\$(Configuration)\net46\CredentialProvider.Testable.exe $(OutputPath)TestableCredentialProvider\

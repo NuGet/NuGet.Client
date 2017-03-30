@@ -50,7 +50,7 @@ namespace NuGet.CommandLine.Test
                         {
                             return new Action<HttpListenerResponse>(response =>
                             {
-                                MockServer.SetResponseContent(response, MockServerResource.NuGetV2APIMetadata);
+                                MockServer.SetResponseContent(response, Util.GetMockServerResource());
                             });
                         }
                         else if (path == "/package/testPackage1/1.1.0")
@@ -180,7 +180,7 @@ namespace NuGet.CommandLine.Test
                         {
                             return new Action<HttpListenerResponse>(response =>
                             {
-                                MockServer.SetResponseContent(response, MockServerResource.NuGetV2APIMetadata);
+                                MockServer.SetResponseContent(response, Util.GetMockServerResource());
                             });
                         }
                         else if (path == "/package/testPackage1/1.1.0")
