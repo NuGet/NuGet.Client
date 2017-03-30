@@ -1,16 +1,13 @@
 ﻿using System;
 using System.IO;
-using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
-using NuGet.Common;
 using NuGet.Test.Utility;
-using SynchronizationTestApp;
 using Xunit;
 
-namespace NuGet.Commands.Test
+namespace NuGet.Common.Test
 {
     public class SynchronizationTests
     {
@@ -24,7 +21,7 @@ namespace NuGet.Commands.Test
         public async Task ConcurrencyUtilities_WaitAcquiresLock()
         {
             // Arrange
-            string fileId = Guid.NewGuid().ToString();
+            var fileId = Guid.NewGuid().ToString();
 
             var ctsA = new CancellationTokenSource(DefaultTimeOut);
             var ctsB = new CancellationTokenSource(TimeSpan.Zero);
@@ -59,7 +56,7 @@ namespace NuGet.Commands.Test
         public async Task ConcurrencyUtilities_ZeroTimeoutStillGetsLock()
         {
             // Arrange
-            string fileId = Guid.NewGuid().ToString();
+            var fileId = Guid.NewGuid().ToString();
             var cts = new CancellationTokenSource(TimeSpan.Zero);
             var expected = 3;
 
@@ -77,7 +74,7 @@ namespace NuGet.Commands.Test
         public async Task ConcurrencyUtilityBlocksInProc()
         {
             // Arrange
-            string fileId = nameof(ConcurrencyUtilityBlocksInProc);
+            var fileId = nameof(ConcurrencyUtilityBlocksInProc);
 
             var timeout = new CancellationTokenSource(DefaultTimeOut * 2);
             var cts = new CancellationTokenSource(DefaultTimeOut);
@@ -119,73 +116,11 @@ namespace NuGet.Commands.Test
             Assert.False(timeout.IsCancellationRequested);
         }
 
-        [Fact(Skip="Unable to make socket connection on the CLI")]
-        public async Task ConcurrencyUtilityBlocksOutOfProc()
-        {
-            // Arrange
-            string fileId = Guid.NewGuid().ToString();
-
-            var timeout = new CancellationTokenSource(DefaultTimeOut);
-
-            var tasks = new Task<int>[3];
-
-            // Act
-            using (var sync = await Run(fileId, shouldAbandon: false, token: timeout.Token, shareProcessObject: true, debug: false))
-            {
-                var result = sync.Result;
-
-                await WaitForLockToEngage(sync);
-
-                _value1 = 0;
-
-                // We should now be blocked, so the value returned from here should not be returned until the process has terminated.
-                tasks[0] = ConcurrencyUtilities.ExecuteWithFileLockedAsync(fileId, WaitForInt1, timeout.Token);
-
-                _value1 = 1;
-
-                tasks[1] = ConcurrencyUtilities.ExecuteWithFileLockedAsync(fileId, WaitForInt1, timeout.Token);
-
-                Assert.False(result.Process.HasExited);
-
-                await ReleaseLock(sync);
-
-                using (result.Process)
-                {
-                    if (!result.Process.WaitForExit(10000))
-                    {
-                        throw new TimeoutException("Process timed out.");
-                    }
-                }
-
-                var fileIdReturned = result.Item2.Split(new char[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries)[0];
-
-                Assert.Equal(fileId, fileIdReturned.Trim());
-            }
-
-            await tasks[0]; // let the first tasks pass
-            await tasks[1]; // let the second tasks pass
-
-            _value1 = 2;
-
-            tasks[2] = ConcurrencyUtilities.ExecuteWithFileLockedAsync(fileId, WaitForInt1, timeout.Token);
-
-            await Task.WhenAll(tasks);
-
-            Task.WaitAll(tasks);
-
-            // Assert
-            Assert.True(1 == tasks[0].Result, "task[0]");
-            Assert.True(1 == tasks[1].Result, "task[1]");
-            Assert.True(2 == tasks[2].Result, "task[2]");
-
-            Assert.False(timeout.IsCancellationRequested);
-        }
-
         [Fact]
         public async Task ConcurrencyUtilityDoesntBlocksInProc()
         {
             // Arrange
-            string fileId = nameof(ConcurrencyUtilityDoesntBlocksInProc);
+            var fileId = nameof(ConcurrencyUtilityDoesntBlocksInProc);
 
             var timeout = new CancellationTokenSource(DefaultTimeOut * 2);
             var cts = new CancellationTokenSource(DefaultTimeOut);
@@ -227,147 +162,6 @@ namespace NuGet.Commands.Test
             Assert.Equal(2, tasks[3].Result);
 
             Assert.False(timeout.IsCancellationRequested);
-        }
-
-        [Fact(Skip = "Unable to make socket connection on the CLI")]
-        public async Task CrashingCommand()
-        {
-            // Arrange
-
-            // Use a dummy file name so the whole system doesn't get locked
-            var dummyFileName = Guid.NewGuid().ToString();
-
-            var timeout = new CancellationTokenSource(DefaultTimeOut);
-
-            // Act && Assert
-            using (var run = (await
-                Run(dummyFileName,
-                    shouldAbandon: true,
-                    token: timeout.Token,
-                    debug: false,
-                    shareProcessObject: true)))
-            {
-                await WaitForLockToEngage(run);
-
-                var r1 = run.Result;
-
-                await ReleaseLock(run);
-
-                var exited = r1.Process.WaitForExit(1000);
-
-                Assert.True(exited, "Timeout waiting for crashing process to exit.");
-
-                // Verify that the process crashed
-                if (RuntimeEnvironmentHelper.IsWindows)
-                {
-                    Assert.True(-1 == r1.Process.ExitCode,
-                        $"Failed to self kill, exitcode {r1.Process.ExitCode} {r1.Item2} {r1.Item3}");
-                }
-                else if (RuntimeEnvironmentHelper.IsLinux)
-                {
-                    Assert.True(137 == r1.Process.ExitCode,
-                        $"Failed to self kill, exitcode {r1.Process.ExitCode} {r1.Item2} {r1.Item3}");
-                }
-                else if (RuntimeEnvironmentHelper.IsMacOSX)
-                {
-                    Assert.True(146 == r1.Process.ExitCode,
-                        $"Failed to self kill, exitcode {r1.Process.ExitCode} {r1.Item2} {r1.Item3}");
-                }
-                else
-                {
-                    Assert.True(false, "unknown OS");
-                }
-
-                Assert.Empty(r1.Item3);
-
-                // Try to acquire the lock again with the same file name
-                using (var run2 = await
-                    Run(dummyFileName,
-                        shouldAbandon: false,
-                        token: timeout.Token,
-                        shareProcessObject: true,
-                        debug: false))
-                {
-                    await WaitForLockToEngage(run2);
-
-                    var r2 = run2.Result;
-
-                    await ReleaseLock(run2);
-
-                    exited = r2.Process.WaitForExit(DefaultTimeOut);
-
-                    Assert.True(exited, "Timeout waiting for second process to exit/failed to get lock.");
-
-                    Assert.True(0 == r2.Process.ExitCode, $"Failed To get lock: {r2.Item2} {r2.Item3}");
-                }
-            }
-        }
-
-        private async Task<SyncdRunResult> Run(string fileName, bool shouldAbandon, CancellationToken token, bool shareProcessObject = false, bool debug = false)
-        {
-            var dir = Directory.GetCurrentDirectory();
-
-            var throwFlag = shouldAbandon ? SynchronizationTestApp.Program.AbandonSwitch : string.Empty;
-            var debugFlag = debug ? SynchronizationTestApp.Program.DebugSwitch : string.Empty;
-
-            // Use a dummy file name so the whole system doesn't get locked
-            var dummyFileName = Guid.NewGuid().ToString();
-
-            var result = new SyncdRunResult();
-            result.Start();
-
-#if IS_CORECLR
-            var testDir = new DirectoryInfo(dir);
-
-            // Find the root test directory
-            while (testDir.Parent != null && !testDir.Name.Equals("test"))
-            {
-                testDir = testDir.Parent;
-            }
-
-            var coreRunPath = Path.Combine(testDir.Parent.FullName, "cli", "bin", "CoreRun.exe");
-
-            if (!File.Exists(coreRunPath))
-            {
-                throw new FileNotFoundException(coreRunPath);
-            }
-
-            var testAppDll = Directory.GetFiles(dir, "SynchronizationTestApp.dll", SearchOption.AllDirectories)
-                .Where(file => file.IndexOf("netstandard", StringComparison.OrdinalIgnoreCase) > -1)
-                .FirstOrDefault();
-
-            var inputParams = $"{testAppDll} {debugFlag} {fileName} {result.Port} {throwFlag}";
-
-            Console.WriteLine($"{coreRunPath} {inputParams}");
-
-            var r = CommandRunner.Run(
-                coreRunPath,
-                dir,
-                inputParams,
-                waitForExit: false,
-                timeOutInMilliseconds: 100000,
-                inputAction: null,
-                shareProcessObject: shareProcessObject);
-#else
-            var testAppName = nameof(SynchronizationTestApp);
-            testAppName += ".exe";
-
-            var r = CommandRunner.Run(
-                testAppName,
-                dir,
-                $"{debugFlag} {fileName} {result.Port} {throwFlag}",
-                waitForExit: false,
-                timeOutInMilliseconds: 100000,
-                inputAction: null,
-                shareProcessObject: shareProcessObject);
-#endif
-
-            // Act && Assert
-            result.Result = r;
-
-            await result.Connect(token);
-
-            return result;
         }
 
         private async Task WaitForLockToEngage(SyncdRunResult result)
@@ -418,7 +212,7 @@ namespace NuGet.Commands.Test
 
         private Task<int> WaitForInt1(CancellationToken token)
         {
-            int i = _value1;
+            var i = _value1;
 
             return Task.Run(() =>
             {
@@ -428,7 +222,7 @@ namespace NuGet.Commands.Test
 
         private async Task<int> WaitForInt2(CancellationToken token)
         {
-            int i = _value2;
+            var i = _value2;
 
             return await Task.Run(() =>
             {
@@ -450,7 +244,7 @@ namespace NuGet.Commands.Test
             public void Start()
             {
                 Port = 2224;
-                bool done = false;
+                var done = false;
                 while (!done)
                 {
                     try
