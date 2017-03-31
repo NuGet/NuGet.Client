@@ -33,7 +33,6 @@ NuGet.Packaging.dll
 NuGet.ProjectManagement.dll
 NuGet.ProjectModel.dll
 NuGet.Protocol.dll
-NuGet.Repositories.dll
 NuGet.Resolver.dll
 NuGet.RuntimeModel.dll
 NuGet.Versioning.dll

@@ -18,7 +18,6 @@
     <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.ProjectManagement\NuGet.ProjectManagement.csproj"/>
     <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.ProjectModel\NuGet.ProjectModel.csproj"/>
     <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.Protocol\NuGet.Protocol.csproj"/>
-    <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.Repositories\NuGet.Repositories.csproj"/>
     <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.Resolver\NuGet.Resolver.csproj"/>
     <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.RuntimeModel\NuGet.RuntimeModel.csproj"/>
     <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.Versioning\NuGet.Versioning.csproj"/>
