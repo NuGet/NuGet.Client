@@ -62,5 +62,4 @@
   </ItemGroup>
 
   <Import Project="$(BuildCommonDirectory)common.targets" />
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
