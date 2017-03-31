@@ -21,7 +21,7 @@ namespace NuGet.Protocol
     public class ServiceIndexResourceV3Provider : ResourceProvider
     {
         private static readonly TimeSpan _defaultCacheDuration = TimeSpan.FromMinutes(40);
-        protected readonly ConcurrentDictionary<string, ServiceIndexCacheInfo> _cache;
+        private readonly ConcurrentDictionary<string, ServiceIndexCacheInfo> _cache;
         private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
 
         /// <summary>
