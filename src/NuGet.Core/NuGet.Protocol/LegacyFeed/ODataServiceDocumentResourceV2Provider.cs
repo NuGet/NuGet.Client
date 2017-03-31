@@ -15,7 +15,7 @@ namespace NuGet.Protocol
     public class ODataServiceDocumentResourceV2Provider : ResourceProvider
     {
         private static readonly TimeSpan _defaultCacheDuration = TimeSpan.FromMinutes(40);
-        protected readonly ConcurrentDictionary<string, ODataServiceDocumentCacheInfo> _cache;
+        private readonly ConcurrentDictionary<string, ODataServiceDocumentCacheInfo> _cache;
         private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
 
         /// <summary>
