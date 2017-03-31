@@ -38,7 +38,6 @@
       <Name>NuGet.PackageManagement.VisualStudio</Name>
     </ProjectReference>
   </ItemGroup>
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
 
   <Import Project="$(BuildCommonDirectory)common.targets" />
 </Project>

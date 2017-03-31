@@ -37,18 +37,9 @@
       <Name>NuGet.SolutionRestoreManager.Interop</Name>
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </ProjectReference>
-    <ProjectReference Include="..\..\..\src\NuGet.Clients\NuGet.SolutionRestoreManager\NuGet.SolutionRestoreManager.csproj">
-      <Project>{06662133-1292-4918-90f3-36c930c0b16f}</Project>
-      <Name>NuGet.SolutionRestoreManager</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\..\src\NuGet.Clients\PackageManagement.UI\NuGet.PackageManagement.UI.csproj">
-      <Project>{538ADEFD-2170-40A9-A2C5-EC8369CFE490}</Project>
-      <Name>NuGet.PackageManagement.UI</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\..\src\NuGet.Clients\PackageManagement.VisualStudio\NuGet.PackageManagement.VisualStudio.csproj">
-      <Project>{306CDDFA-FF0B-4299-930C-9EC6C9308160}</Project>
-      <Name>NuGet.PackageManagement.VisualStudio</Name>
-    </ProjectReference>
+    <ProjectReference Include="..\..\..\src\NuGet.Clients\NuGet.SolutionRestoreManager\NuGet.SolutionRestoreManager.csproj" />
+    <ProjectReference Include="..\..\..\src\NuGet.Clients\PackageManagement.UI\NuGet.PackageManagement.UI.csproj" />
+    <ProjectReference Include="..\..\..\src\NuGet.Clients\PackageManagement.VisualStudio\NuGet.PackageManagement.VisualStudio.csproj" />
 
     <ProjectReference Include="$(TestUtilitiesDirectory)Test.Utility\Test.Utility.csproj" />
   </ItemGroup>
@@ -64,5 +55,4 @@
   </ItemGroup>
 
   <Import Project="$(BuildCommonDirectory)common.targets" />
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
