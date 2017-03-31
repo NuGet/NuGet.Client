@@ -3,7 +3,7 @@
   <!-- Version -->
   <PropertyGroup>
     <SemanticVersion Condition=" '$(SemanticVersion)' == '' ">4.3.0</SemanticVersion>
-    <ReleaseLabel Condition=" '$(ReleaseLabel)' == '' ">beta</ReleaseLabel>
+    <ReleaseLabel Condition=" '$(ReleaseLabel)' == '' ">preview1</ReleaseLabel>
   </PropertyGroup>
 
   <!-- Dependency versions -->
