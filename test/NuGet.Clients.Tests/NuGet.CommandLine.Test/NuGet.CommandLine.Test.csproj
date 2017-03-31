@@ -37,8 +37,8 @@
       <Name>NuGet.Credentials</Name>
     </ProjectReference>
     <ProjectReference Include="$(TestUtilitiesDirectory)Test.Utility\Test.Utility.csproj" />
-    <ProjectReference Include="..\..\TestExtensions\SampleCommandLineExtensions\SampleCommandLineExtensions.csproj" />
-    <ProjectReference Include="..\..\TestExtensions\TestablePluginCredentialProvider\TestableCredentialProvider.csproj" />
+    <ProjectReference Include="..\..\TestExtensions\SampleCommandLineExtensions\SampleCommandLineExtensions.csproj" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\..\TestExtensions\TestablePluginCredentialProvider\TestableCredentialProvider.csproj" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
   <ItemGroup>
