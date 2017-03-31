@@ -7,7 +7,6 @@
     <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.Commands\NuGet.Commands.csproj"/>
     <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.Common\NuGet.Common.csproj"/>
     <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.Configuration\NuGet.Configuration.csproj"/>
-    <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.ContentModel\NuGet.ContentModel.csproj"/>
     <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.DependencyResolver.Core\NuGet.DependencyResolver.Core.csproj"/>
     <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.Frameworks\NuGet.Frameworks.csproj"/>
     <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.Indexing\NuGet.Indexing.csproj"/>
@@ -19,7 +18,6 @@
     <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.ProjectModel\NuGet.ProjectModel.csproj"/>
     <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.Protocol\NuGet.Protocol.csproj"/>
     <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.Resolver\NuGet.Resolver.csproj"/>
-    <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.RuntimeModel\NuGet.RuntimeModel.csproj"/>
     <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.Versioning\NuGet.Versioning.csproj"/>
   </ItemGroup>
 

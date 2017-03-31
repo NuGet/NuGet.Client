@@ -3,11 +3,9 @@
 Microsoft.Web.XmlTransform.dll
 Newtonsoft.Json.dll
 NuGet.Build.Tasks.dll
-NuGet.Client.dll
 NuGet.Commands.dll
 NuGet.Common.dll
 NuGet.Configuration.dll
-NuGet.ContentModel.dll
 NuGet.Credentials.dll
 NuGet.DependencyResolver.Core.dll
 NuGet.Frameworks.dll
@@ -19,7 +17,6 @@ NuGet.ProjectManagement.dll
 NuGet.ProjectModel.dll
 NuGet.Protocol.dll
 NuGet.Resolver.dll
-NuGet.RuntimeModel.dll
 NuGet.Versioning.dll
 
 # Merge this one last so that duplicate types from 3.x are preferred.
