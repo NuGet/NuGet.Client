@@ -137,7 +137,6 @@
     <!-- Turn on dynamic assembly attribute generation -->
     <AssemblyAttributesPath>$(IntermediateOutputPath)AssemblyInfo.g.cs</AssemblyAttributesPath>
     <GenerateAdditionalSources>true</GenerateAdditionalSources>
-    <PreReleaseVersion>0</PreReleaseVersion>
   </PropertyGroup>
 
   <!-- Assembly attributes -->
