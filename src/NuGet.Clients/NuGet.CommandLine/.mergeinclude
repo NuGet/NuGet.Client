@@ -14,7 +14,6 @@ NuGet.Frameworks.dll
 NuGet.LibraryModel.dll
 NuGet.PackageManagement.dll
 NuGet.Packaging.Core.dll
-NuGet.Packaging.Core.Types.dll
 NuGet.Packaging.dll
 NuGet.ProjectManagement.dll
 NuGet.ProjectModel.dll

@@ -15,7 +15,6 @@
     <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.PackageManagement\NuGet.PackageManagement.csproj"/>
     <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.Packaging\NuGet.Packaging.csproj"/>
     <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.Packaging.Core\NuGet.Packaging.Core.csproj"/>
-    <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.Packaging.Core.Types\NuGet.Packaging.Core.Types.csproj"/>
     <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.ProjectManagement\NuGet.ProjectManagement.csproj"/>
     <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.ProjectModel\NuGet.ProjectModel.csproj"/>
     <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.Protocol\NuGet.Protocol.csproj"/>
