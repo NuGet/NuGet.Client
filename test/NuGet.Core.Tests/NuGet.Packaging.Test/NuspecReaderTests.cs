@@ -297,8 +297,6 @@ namespace NuGet.Packaging.Test
 
         private static IEnumerable<string> ValidVersionRange()
         {
-            yield return null;
-            yield return string.Empty;
             yield return "0.0.0";
             yield return "1.0.0-beta";
             yield return "1.0.1-alpha.1.2.3";
@@ -316,6 +314,8 @@ namespace NuGet.Packaging.Test
 
         private static IEnumerable<string> InvalidVersionRange()
         {
+            yield return null;
+            yield return string.Empty;
             yield return "~1";
             yield return "~1.0.0";
             yield return "0.0.0-~4";
