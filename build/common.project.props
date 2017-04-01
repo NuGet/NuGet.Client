@@ -171,11 +171,11 @@
   <!-- Assembly attributes for net core projects -->
   <PropertyGroup Condition=" '$(IsNetCoreProject)' == 'true' ">
     <AssemblyVersion>$(SemanticVersion).$(PreReleaseVersion)</AssemblyVersion>
-    <AssemblyFileVersion>$(SemanticVersion).$(PreReleaseVersion)</AssemblyFileVersion>
+    <!--<AssemblyFileVersion>$(SemanticVersion).$(PreReleaseVersion)</AssemblyFileVersion>
     <AssemblyInformationalVersion>$(SemanticVersion)$(PreReleaseInformationVersion)</AssemblyInformationalVersion>
-    <AssemblyCompany>Microsoft Corporation</AssemblyCompany>
+    <AssemblyCompany>Microsoft CoASDasdrporation</AssemblyCompany>
     <AssemblyProduct>NuGet</AssemblyProduct>
-    <AssemblyCopyright>Microsoft Corporation. All rights reserved.</AssemblyCopyright>
+    <AssemblyCopyright>Microsoft Corporation. All rights reserved.</AssemblyCopyright>-->
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(IsNetCoreProject)' == 'true' ">
