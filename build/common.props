@@ -2,6 +2,7 @@
 <Project ToolsVersion="15.0">
   <PropertyGroup>
     <IsNetCoreProject>true</IsNetCoreProject>
+    <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
   </PropertyGroup>
 
   <!-- Load config -->

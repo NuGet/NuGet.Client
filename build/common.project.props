@@ -133,13 +133,13 @@
   </PropertyGroup>
   
   <!-- Generate AssemblyFileVersion and AssemblyVersion attributes. -->
-  <PropertyGroup>
+  <PropertyGroup Condition=" '$(IsNetCoreProject)' != 'true' ">
     <!-- Turn on dynamic assembly attribute generation -->
     <AssemblyAttributesPath>$(IntermediateOutputPath)AssemblyInfo.g.cs</AssemblyAttributesPath>
     <GenerateAdditionalSources>true</GenerateAdditionalSources>
   </PropertyGroup>
 
-  <!-- Assembly attributes -->
+  <!-- Assembly attributes for non net core projects-->
   <ItemGroup Condition=" '$(SkipAssemblyAttributes)' != 'true' AND '$(IsNetCoreProject)' != 'true' ">
     <!--
       AssemblyVersion and AssemblyFileVersion attributes are generated automatically for every build.
@@ -167,6 +167,16 @@
       <_Parameter1>en-US</_Parameter1>
     </AssemblyAttributes>
   </ItemGroup>
+
+  <!-- Assembly attributes for net core projects -->
+  <PropertyGroup Condition=" '$(IsNetCoreProject)' == 'true' ">
+    <AssemblyVersion>$(SemanticVersion).$(PreReleaseVersion)</AssemblyVersion>
+    <AssemblyFileVersion>$(SemanticVersion).$(PreReleaseVersion)</AssemblyFileVersion>
+    <AssemblyInformationalVersion>$(SemanticVersion)$(PreReleaseInformationVersion)</AssemblyInformationalVersion>
+    <AssemblyCompany>Microsoft Corporation</AssemblyCompany>
+    <AssemblyProduct>NuGet</AssemblyProduct>
+    <AssemblyCopyright>Microsoft Corporation. All rights reserved.</AssemblyCopyright>
+  </PropertyGroup>
 
   <PropertyGroup Condition=" '$(IsNetCoreProject)' == 'true' ">
     <SchemaVersion>2.0</SchemaVersion>
