@@ -168,7 +168,6 @@
     </AssemblyAttributes>
   </ItemGroup>
 
-  
   <PropertyGroup Condition=" '$(IsNetCoreProject)' == 'true' ">
     <!-- Assembly attributes for net core projects -->
     <AssemblyVersion>$(SemanticVersion).$(PreReleaseVersion)</AssemblyVersion>
@@ -179,7 +178,7 @@
   </PropertyGroup>
 
   <!-- Add symbols to the dll for test dlls -->
-  <PropertyGroup Condition=" '$(TestProject)' == 'true' ">		
+  <PropertyGroup Condition=" '$(TestProject)' == 'true' ">
     <DebugType>embedded</DebugType>
   </PropertyGroup>
 
