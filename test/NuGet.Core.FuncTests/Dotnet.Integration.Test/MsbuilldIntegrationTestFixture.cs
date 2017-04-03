@@ -13,12 +13,12 @@ using Xunit;
 
 namespace Dotnet.Integration.Test
 {
-    public class MsbuilldIntegrationTestFixture : IDisposable
+    public class MsbuildIntegrationTestFixture : IDisposable
     {
-        private readonly string _dotnetCli = DotnetCliUtil.GetDotnetCli();
+        private readonly string _dotnetCli = DotnetCliUtil.GetDotnetCli(true);
         internal readonly string TestDotnetCli;
 
-        public MsbuilldIntegrationTestFixture()
+        public MsbuildIntegrationTestFixture()
         {
             var cliDirectory = CopyLatestCliForPack();
             TestDotnetCli = Path.Combine(cliDirectory, "dotnet.exe");
