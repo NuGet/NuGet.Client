@@ -447,10 +447,6 @@
       <Project>{D65583E4-8084-466A-BA4B-55A797EA047B}</Project>
       <Name>NuGet.Packaging.Core</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\NuGet.Core\NuGet.Packaging.Core.Types\NuGet.Packaging.Core.Types.csproj">
-      <Project>{46275450-3B62-4E89-8F7E-3FE2EE8513D2}</Project>
-      <Name>NuGet.Packaging.Core.Types</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\NuGet.Core\NuGet.ProjectManagement\NuGet.ProjectManagement.csproj">
       <Project>{2995463d-9849-4bd3-8a87-0b7e1c5e6812}</Project>
       <Name>NuGet.ProjectManagement</Name>

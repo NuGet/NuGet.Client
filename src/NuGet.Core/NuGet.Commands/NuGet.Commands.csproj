@@ -16,12 +16,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\NuGet.Client\NuGet.Client.csproj" />
-    <ProjectReference Include="..\NuGet.ContentModel\NuGet.ContentModel.csproj" />
     <ProjectReference Include="..\NuGet.ProjectModel\NuGet.ProjectModel.csproj" />
     <ProjectReference Include="..\NuGet.Configuration\NuGet.Configuration.csproj" />
     <ProjectReference Include="..\NuGet.DependencyResolver.Core\NuGet.DependencyResolver.Core.csproj" />
-    <ProjectReference Include="..\NuGet.RuntimeModel\NuGet.RuntimeModel.csproj" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net45' ">
@@ -34,5 +31,5 @@
     <PackageReference Include="System.Xml.XDocument" Version="4.0.11" />
   </ItemGroup>
 
-  <Import Project="$(BuildCommonDirectory)common.targets"/>
+  <Import Project="$(BuildCommonDirectory)common.targets" />
 </Project>
