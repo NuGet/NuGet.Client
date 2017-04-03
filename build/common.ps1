@@ -90,7 +90,7 @@ Function Trace-Time() {
 $Global:LastTraceTime = Get-Date
 
 Function Format-ElapsedTime($ElapsedTime) {
-    '{0:F0}:{1:D2}' -f $ElapsedTime.TotalMinutes, $ElapsedTime.Seconds
+    '{0:F0}:{1:D2}' -f $ElapsedTime.Minutes, $ElapsedTime.Seconds
 }
 
 Function Invoke-BuildStep {
