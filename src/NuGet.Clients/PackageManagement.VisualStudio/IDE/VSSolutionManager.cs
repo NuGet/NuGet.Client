@@ -470,19 +470,13 @@ namespace NuGet.PackageManagement.VisualStudio
             }
         }
 
-        public bool IsSolutionFullyLoaded
+        public async Task<bool> IsSolutionFullyLoadedAsync()
         {
-            get
-            {
-                return NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
-                {
-                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                    EnsureInitialize();
-                    var value = GetVSSolutionProperty((int)(__VSPROPID4.VSPROPID_IsSolutionFullyLoaded));
-                    return (bool)value;
-                });
-            }
+            EnsureInitialize();
+            var value = GetVSSolutionProperty((int)(__VSPROPID4.VSPROPID_IsSolutionFullyLoaded));
+            return (bool)value;
         }
 
         public void EnsureSolutionIsLoaded()

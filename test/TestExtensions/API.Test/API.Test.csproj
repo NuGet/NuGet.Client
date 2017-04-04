@@ -19,7 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="EnvDTE" Version="8.0.0" />
+    <PackageReference Include="EnvDTE" Version="8.0.1" />
   </ItemGroup>
 
   <ItemGroup>
@@ -28,7 +28,7 @@
     <ProjectReference Include="$(NuGetClientsSrcDirectory)PackageManagement.UI\NuGet.PackageManagement.UI.csproj" />
   </ItemGroup>
 
-  <Import Project="$(BuildCommonDirectory)common.targets"/>
+  <Import Project="$(BuildCommonDirectory)common.targets" />
 
   <Target Name="DeployToArtifacts" AfterTargets="Build;Rebuild">
   <!--
@@ -40,9 +40,6 @@
     </PropertyGroup>
     <Message Text="Publishing test extension artifacts..." Importance="high" />
     <Message Text="$(TargetPath) -&gt; $(PublishDestination)" Importance="high" />
-    <Copy
-      SourceFiles="$(TargetPath)"
-      DestinationFolder="$(PublishDestination)"
-      OverwriteReadOnlyFiles="true" />
+    <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(PublishDestination)" OverwriteReadOnlyFiles="true" />
   </Target>
 </Project>

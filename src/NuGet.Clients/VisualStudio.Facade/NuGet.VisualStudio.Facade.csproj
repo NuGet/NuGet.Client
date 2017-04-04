@@ -45,23 +45,23 @@
       <HintPath>$(EnlistmentRoot)\packages\Microsoft.Build.15.1.262-preview5\lib\net46\Microsoft.Build.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <PackageReference Version="15.98.0-preview" Include="Microsoft.TeamFoundationServer.ExtendedClient" />
-    <PackageReference Version="15.0.25123-Dev15Preview" Include="Microsoft.VisualStudio.CoreUtility" />
-    <PackageReference Version="15.0.25123-Dev15Preview" Include="Microsoft.VisualStudio.Editor" />
-    <PackageReference Version="15.0.25123-Dev15Preview" Include="Microsoft.VisualStudio.Language.Intellisense" />
-    <PackageReference Version="15.0.25123-Dev15Preview" Include="Microsoft.VisualStudio.Language.StandardClassification" />
-    <PackageReference Version="15.107.0-preview" Include="Microsoft.VisualStudio.Services.Client" />
-    <PackageReference Version="15.107.0-preview" Include="Microsoft.VisualStudio.Services.InteractiveClient" />
+    <PackageReference Version="15.112.1" Include="Microsoft.TeamFoundationServer.ExtendedClient" />
+    <PackageReference Version="15.0.26201" Include="Microsoft.VisualStudio.CoreUtility" />
+    <PackageReference Version="15.0.26201" Include="Microsoft.VisualStudio.Editor" />
+    <PackageReference Version="15.0.26201" Include="Microsoft.VisualStudio.Language.Intellisense" />
+    <PackageReference Version="15.0.26201" Include="Microsoft.VisualStudio.Language.StandardClassification" />
+    <PackageReference Version="15.112.1" Include="Microsoft.VisualStudio.Services.Client" />
+    <PackageReference Version="15.112.1" Include="Microsoft.VisualStudio.Services.InteractiveClient" />
     <PackageReference Version="15.0.25123-Dev15Preview" Include="Microsoft.VisualStudio.Shell.15.0" />
     <PackageReference Version="15.0.25123-Dev15Preview" Include="Microsoft.VisualStudio.Shell.Immutable.15.0" />
-    <PackageReference Version="15.0.25123-Dev15Preview" Include="Microsoft.VisualStudio.Text.Data" />
-    <PackageReference Version="15.0.25123-Dev15Preview" Include="Microsoft.VisualStudio.Text.Logic" />
-    <PackageReference Version="15.0.25123-Dev15Preview" Include="Microsoft.VisualStudio.Text.UI" />
-    <PackageReference Version="15.0.25123-Dev15Preview" Include="Microsoft.VisualStudio.Text.UI.Wpf" />
-    <PackageReference Version="15.0.20-pre" Include="Microsoft.VisualStudio.Threading" />
-    <PackageReference Version="15.0.25604-Preview4" Include="Microsoft.VSSDK.BuildTools" />
+    <PackageReference Version="15.0.26201" Include="Microsoft.VisualStudio.Text.Data" />
+    <PackageReference Version="15.0.26201" Include="Microsoft.VisualStudio.Text.Logic" />
+    <PackageReference Version="15.0.26201" Include="Microsoft.VisualStudio.Text.UI" />
+    <PackageReference Version="15.0.26201" Include="Microsoft.VisualStudio.Text.UI.Wpf" />
+    <PackageReference Version="15.0.240" Include="Microsoft.VisualStudio.Threading" />
+    <PackageReference Version="15.0.26201" Include="Microsoft.VSSDK.BuildTools" />
     <PackageReference Version="15.0.691-master31907920" Include="Microsoft.VisualStudio.Telemetry" />
-    <PackageReference Version="6.0.4" Include="Newtonsoft.Json" />
+    <PackageReference Version="8.0.3" Include="Newtonsoft.Json" />
     <PackageReference Include="Microsoft.VisualStudio.ComponentModelHost" Version="15.0.26201" />
   </ItemGroup>
   <ItemGroup>

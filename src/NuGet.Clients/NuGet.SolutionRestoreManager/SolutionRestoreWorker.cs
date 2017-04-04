@@ -138,7 +138,7 @@ namespace NuGet.SolutionRestoreManager
             // Advise has been called.
             // IsSolutionFullyLoaded may be expensive so make sure it's called only once.
             if (!_solutionLoadedEvent.IsSet
-                && SolutionManager.IsSolutionFullyLoaded)
+                && await SolutionManager.IsSolutionFullyLoadedAsync())
             {
                 _solutionLoadedEvent.Set();
             }

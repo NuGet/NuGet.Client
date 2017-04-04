@@ -399,7 +399,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                 // projects might not be loaded when DPL is enabled.
                 _solutionManager.EnsureSolutionIsLoaded();
 
-                if (!_solutionManager.IsSolutionFullyLoaded)
+                if (!await _solutionManager.IsSolutionFullyLoadedAsync())
                 {
                     return;
                 }

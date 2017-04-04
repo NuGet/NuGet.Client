@@ -33,7 +33,7 @@ namespace NuGet.PackageManagement.VisualStudio
         /// <summary>
         /// Return true if all projects in the solution have been loaded in background.
         /// </summary>
-        bool IsSolutionFullyLoaded { get; }
+        Task<bool> IsSolutionFullyLoadedAsync();
 
         /// <summary>
         /// Returns true if solution has any project in deferred state.
