@@ -136,6 +136,9 @@
   <data name="ErrorNestedPromptNotSupported" xml:space="preserve">
     <value>Nested prompt not supported.</value>
   </data>
+  <data name="Host_PSNotInstalled" xml:space="preserve">
+    <value>Error: The Package Manager Console requires PowerShell 2.0 runtime, which is not detected on this machine. Please install the PowerShell 2.0 from http://support.microsoft.com/kb/968929 and restart Visual Studio.</value>
+  </data>
   <data name="PowerShellHostTitle" xml:space="preserve">
     <value>Package Manager Console Host Version {0}</value>
   </data>

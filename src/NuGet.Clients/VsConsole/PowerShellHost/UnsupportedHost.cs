@@ -1,11 +1,11 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Windows.Media;
 using NuGet.PackageManagement;
 
-namespace NuGetConsole.Host.PowerShellProvider
+namespace NuGetConsole.Host
 {
     /// <summary>
     /// This host is used when PowerShell 2.0 runtime is not installed in the system. It's basically a no-op host.
@@ -20,7 +20,7 @@ namespace NuGetConsole.Host.PowerShellProvider
         public void Initialize(IConsole console)
         {
             // display the error message at the beginning
-            console.Write(Resources.Host_PSNotInstalled, Colors.Red, null);
+            console.Write(PowerShell.Resources.Host_PSNotInstalled, Colors.Red, null);
         }
 
         public string Prompt

@@ -139,6 +139,15 @@ namespace NuGetConsole.Host.PowerShell {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Error: The Package Manager Console requires PowerShell 2.0 runtime, which is not detected on this machine. Please install the PowerShell 2.0 from http://support.microsoft.com/kb/968929 and restart Visual Studio..
+        /// </summary>
+        internal static string Host_PSNotInstalled {
+            get {
+                return ResourceManager.GetString("Host_PSNotInstalled", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Package Manager Console Host Version {0}.
         /// </summary>
         internal static string PowerShellHostTitle {

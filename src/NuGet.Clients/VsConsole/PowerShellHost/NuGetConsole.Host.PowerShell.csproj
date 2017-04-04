@@ -29,6 +29,7 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="PresentationCore" />
     <Reference Include="System" />
+    <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.Core" />
     <Reference Include="System.IO.Compression" />
     <Reference Include="System.Management.Automation, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL" />
@@ -54,6 +55,11 @@
     <Compile Include="IRunspaceManager.cs" />
     <Compile Include="NativeMethods.cs" />
     <Compile Include="ProjectExtensions.cs" />
+    <Compile Include="Providers\CommandTokenizerProvider.cs" />
+    <Compile Include="Providers\PowerShellCommandExpansionProvider.cs" />
+    <Compile Include="Providers\PowerShellHostProvider.cs" />
+    <Compile Include="RegistryHelper.cs" />
+    <Compile Include="UnsupportedHost.cs" />
     <Compile Include="PSTypeWrapper.cs" />
     <Compile Include="RunspaceDispatcher.cs" />
     <Compile Include="RunspaceManager.cs" />
