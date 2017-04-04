@@ -35,11 +35,16 @@
     <CoreFuncTestProjects Include="$(RepositoryRootDirectory)test\NuGet.Core.FuncTests\*\*.csproj" />
   </ItemGroup>
 
+  <!-- All projects in the repository -->
   <ItemGroup Condition=" '$(IsXPlat)' != 'true' ">
-    <SolutionProjects Include="$(RepositoryRootDirectory)test\*\*\*.csproj" Exclude="$(RepositoryRootDirectory)test\EndToEnd\*\*.csproj" />
+    <SolutionProjects Include="$(RepositoryRootDirectory)test\*\*\*.csproj"
+                      Exclude="$(RepositoryRootDirectory)test\EndToEnd\*\*.csproj"
+                      Condition=" '$(ExcludeTestProjects)' != 'true' " />
+
     <SolutionProjects Include="$(RepositoryRootDirectory)src\*\*\*.csproj" />
   </ItemGroup>
 
+  <!-- All projects in the repository that support cross platform builds -->
   <ItemGroup Condition=" '$(IsXPlat)' == 'true' ">
     <SolutionProjects Include="@(CoreUnitTestProjects)" />
     <SolutionProjects Include="@(CoreFuncTestProjects)" />
@@ -175,7 +180,7 @@
   <Target Name="BuildVS14" Condition=" '$(IsXPlat)' != 'true' ">
     <Message Text="Building for VS14" Importance="high" />
 
-    <MSBuild Projects="$(SolutionFile)"
+    <MSBuild Projects="@(SolutionProjects)"
              Targets="Build"
              Properties="$(CommonMSBuildProperties);
                          VisualStudioVersion=14.0;" />
@@ -189,7 +194,7 @@
   <Target Name="BuildVS15" Condition=" '$(IsXPlat)' != 'true' ">
     <Message Text="Building for VS15" Importance="high" />
 
-    <MSBuild Projects="$(SolutionFile)"
+    <MSBuild Projects="@(SolutionProjects)"
              Targets="Build"
              Properties="$(CommonMSBuildProperties);
                          VisualStudioVersion=15.0;" />
@@ -328,7 +333,7 @@
       <!-- Build exe commands -->
       <TestResultsHtml Condition=" '$(TestResultsFileName)' != '' ">$(TestResultsDirectory)$(TestResultsFileName).html</TestResultsHtml>
       <VSTestCommand>$(DotnetExePath) vstest $(CoreInputTestAssembliesSpaced)</VSTestCommand>
-      <DesktopTestCommand>$(XunitConoleExePath) $(DesktopInputTestAssembliesSpaced)</DesktopTestCommand>
+      <DesktopTestCommand>$(XunitConsoleExePath) $(DesktopInputTestAssembliesSpaced)</DesktopTestCommand>
       <DesktopTestCommand Condition=" '$(TestResultsHtml)' != '' ">$(DesktopTestCommand) -html $(TestResultsHtml)</DesktopTestCommand>
     </PropertyGroup>
 
