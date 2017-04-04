@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Test.Apex;
@@ -36,6 +37,7 @@ namespace NuGet.Tests.Apex
                 if (_visualStudioHostConfiguration == null)
                 {
                     _visualStudioHostConfiguration = new VisualStudioHostConfiguration();
+                    _visualStudioHostConfiguration.AddCompositionAssembly(Assembly.GetExecutingAssembly().Location);
                 }
                 return _visualStudioHostConfiguration;
             }
