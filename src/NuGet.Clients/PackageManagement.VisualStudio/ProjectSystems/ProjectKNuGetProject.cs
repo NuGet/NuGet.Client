@@ -87,7 +87,7 @@ namespace NuGet.PackageManagement.VisualStudio
             var packageStream = downloadResourceResult.PackageStream;
             if (!packageStream.CanSeek)
             {
-                throw new ArgumentException(ProjectManagement.Strings.PackageStreamShouldBeSeekable);
+                throw new ArgumentException(Strings.PackageStreamShouldBeSeekable);
             }
 
             // Uninstall the package if it is already installed. This should only happen when an

@@ -109,7 +109,7 @@ namespace NuGet.Build.Tasks.Pack
             {
                 builder.DevelopmentDependency = true;
             }
-            
+
             if (request.PackageVersion != null)
             {
                 NuGetVersion version;
@@ -180,7 +180,7 @@ namespace NuGet.Build.Tasks.Pack
                     Strings.AssetsFileDoesNotHaveValidPackageSpec,
                     assetsFilePath));
             }
-            
+
             PopulateProjectAndPackageReferences(builder, assetsFile);
             return builder;
         }
@@ -237,7 +237,7 @@ namespace NuGet.Build.Tasks.Pack
                 {
                     throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Strings.InvalidTargetFramework, finalOutputPath));
                 }
-                
+
                 assemblies.Add(new OutputLibFile()
                 {
                     FinalOutputPath = finalOutputPath,
@@ -363,7 +363,7 @@ namespace NuGet.Build.Tasks.Pack
             var targetPaths = contentTargetFolders
                 .Select(PathUtility.EnsureTrailingSlash)
                 .ToList();
-            
+
             var isPackagePathSpecified = packageFile.Properties.Contains("PackagePath");
             // if user specified a PackagePath, then use that. Look for any ** which are indicated by the RecrusiveDir metadata in msbuild.
             if (isPackagePathSpecified)
@@ -386,7 +386,7 @@ namespace NuGet.Build.Tasks.Pack
                     foreach (var targetPath in targetPaths)
                     {
                         newTargetPaths.Add(PathUtility.GetStringComparerBasedOnOS().
-                            Compare(Path.GetExtension(fileName), 
+                            Compare(Path.GetExtension(fileName),
                             Path.GetExtension(targetPath)) == 0
                                 ? targetPath
                                 : Path.Combine(targetPath, recursiveDir));
@@ -426,7 +426,7 @@ namespace NuGet.Build.Tasks.Pack
             // <Content Include= "folderA\folderB\abc.txt">
             // Since the package path wasn't specified, we will add this to the package paths obtained via ContentTargetFolders and preserve
             // relative directory structure
-            if (!isPackagePathSpecified && 
+            if (!isPackagePathSpecified &&
                 sourcePath.StartsWith(packArgs.CurrentDirectory, StringComparison.CurrentCultureIgnoreCase) &&
                      !Path.GetFileName(sourcePath)
                          .Equals(packageFile.GetProperty(IdentityProperty), StringComparison.CurrentCultureIgnoreCase))
@@ -474,7 +474,7 @@ namespace NuGet.Build.Tasks.Pack
                 }
                 totalSetOfTargetPaths.Add(currentPath);
             }
-            
+
             return totalSetOfTargetPaths.Select(target => new ContentMetadata()
             {
                 BuildAction = buildAction.IsKnown ? buildAction.Value : null,

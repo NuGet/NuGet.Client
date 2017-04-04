@@ -71,7 +71,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             {
                 throw new PackageSourceException(string.Format(
                     CultureInfo.CurrentCulture,
-                    Strings.UnknownSourceWithId,
+                    Resources.UnknownSourceWithId,
                     Id,
                     result.Source));
             }
@@ -79,7 +79,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             {
                 throw new PackageSourceException(string.Format(
                     CultureInfo.CurrentCulture,
-                    Strings.UnknownSourceType,
+                    Resources.UnknownSourceType,
                     result.Source));
             }
 

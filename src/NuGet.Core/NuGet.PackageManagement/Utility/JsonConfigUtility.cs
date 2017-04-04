@@ -7,6 +7,7 @@ using System.Globalization;
 using System.Linq;
 using Newtonsoft.Json.Linq;
 using NuGet.Frameworks;
+using NuGet.PackageManagement;
 using NuGet.Packaging.Core;
 using NuGet.Versioning;
 

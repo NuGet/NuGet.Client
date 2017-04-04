@@ -22,5 +22,10 @@
     </Compile>
   </ItemGroup>
 
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net46' ">
+    <Reference Include="System.IO.Compression" />
+    <Reference Include="System.Net.Http" />
+  </ItemGroup>
+
   <Import Project="$(BuildCommonDirectory)common.targets" />
 </Project>

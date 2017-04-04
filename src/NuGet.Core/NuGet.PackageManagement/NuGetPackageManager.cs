@@ -1477,7 +1477,7 @@ namespace NuGet.PackageManagement
             var oldListOfInstalledPackages = projectInstalledPackageReferences.Select(p => p.PackageIdentity);
             if (oldListOfInstalledPackages.Any(p => p.Equals(packageIdentity)))
             {
-                var alreadyInstalledMessage = string.Format(ProjectManagement.Strings.PackageAlreadyExistsInProject, packageIdentity, projectName ?? string.Empty);
+                var alreadyInstalledMessage = string.Format(Strings.PackageAlreadyExistsInProject, packageIdentity, projectName ?? string.Empty);
                 throw new InvalidOperationException(alreadyInstalledMessage, new PackageAlreadyInstalledException(alreadyInstalledMessage));
             }
 
@@ -2922,15 +2922,15 @@ namespace NuGet.PackageManagement
             // 1. Check if the Package exists at root, if not, return false
             if (!PackagesFolderNuGetProject.PackageExists(packageIdentity))
             {
-                nuGetProjectContext.Log(ProjectManagement.MessageLevel.Warning, ProjectManagement.Strings.PackageDoesNotExistInFolder, packageIdentity, PackagesFolderNuGetProject.Root);
+                nuGetProjectContext.Log(ProjectManagement.MessageLevel.Warning, Strings.PackageDoesNotExistInFolder, packageIdentity, PackagesFolderNuGetProject.Root);
                 return false;
             }
 
-            nuGetProjectContext.Log(ProjectManagement.MessageLevel.Info, ProjectManagement.Strings.RemovingPackageFromFolder, packageIdentity, PackagesFolderNuGetProject.Root);
+            nuGetProjectContext.Log(ProjectManagement.MessageLevel.Info, Strings.RemovingPackageFromFolder, packageIdentity, PackagesFolderNuGetProject.Root);
             // 2. Delete the package folder and files from the root directory of this FileSystemNuGetProject
             // Remember that the following code may throw System.UnauthorizedAccessException
             await PackagesFolderNuGetProject.DeletePackage(packageIdentity, nuGetProjectContext, token);
-            nuGetProjectContext.Log(ProjectManagement.MessageLevel.Info, ProjectManagement.Strings.RemovedPackageFromFolder, packageIdentity, PackagesFolderNuGetProject.Root);
+            nuGetProjectContext.Log(ProjectManagement.MessageLevel.Info, Strings.RemovedPackageFromFolder, packageIdentity, PackagesFolderNuGetProject.Root);
             return true;
         }
 

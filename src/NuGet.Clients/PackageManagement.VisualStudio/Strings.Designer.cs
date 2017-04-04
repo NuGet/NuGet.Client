@@ -11,7 +11,6 @@
 namespace NuGet.PackageManagement.VisualStudio {
     using System;
     
-    
     /// <summary>
     ///   A strongly-typed resource class, for looking up localized strings, etc.
     /// </summary>
@@ -93,6 +92,15 @@ namespace NuGet.PackageManagement.VisualStudio {
         public static string AccountProvider_TriedToShowUIOnNonInteractive {
             get {
                 return ResourceManager.GetString("AccountProvider_TriedToShowUIOnNonInteractive", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Argument cannot be null or empty.
+        /// </summary>
+        public static string Argument_Cannot_Be_Null_Or_Empty {
+            get {
+                return ResourceManager.GetString("Argument_Cannot_Be_Null_Or_Empty", resourceCulture);
             }
         }
         
@@ -192,6 +200,15 @@ namespace NuGet.PackageManagement.VisualStudio {
         public static string Debug_RemovedFileFromFolder {
             get {
                 return ResourceManager.GetString("Debug_RemovedFileFromFolder", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Removed folder &apos;{0}&apos;..
+        /// </summary>
+        public static string Debug_RemovedFolder {
+            get {
+                return ResourceManager.GetString("Debug_RemovedFolder", resourceCulture);
             }
         }
         
@@ -313,6 +330,15 @@ namespace NuGet.PackageManagement.VisualStudio {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Package stream should be seekable.
+        /// </summary>
+        public static string PackageStreamShouldBeSeekable {
+            get {
+                return ResourceManager.GetString("PackageStreamShouldBeSeekable", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Path &apos;{0}&apos; to existing file is not found on disk. Cannot add to project &apos;{1}&apos;.
         /// </summary>
         public static string PathToExistingFileNotPresent {
@@ -372,6 +398,15 @@ namespace NuGet.PackageManagement.VisualStudio {
         public static string UnresolvedItemDuringProjectClosureWalk {
             get {
                 return ResourceManager.GetString("UnresolvedItemDuringProjectClosureWalk", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Directory &apos;{0}&apos; is not empty. Skipping....
+        /// </summary>
+        public static string Warning_DirectoryNotEmpty {
+            get {
+                return ResourceManager.GetString("Warning_DirectoryNotEmpty", resourceCulture);
             }
         }
         

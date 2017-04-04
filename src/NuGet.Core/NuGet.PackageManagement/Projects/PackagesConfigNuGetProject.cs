@@ -12,6 +12,7 @@ using System.Xml;
 using System.Xml.Linq;
 using NuGet.Common;
 using NuGet.Frameworks;
+using NuGet.PackageManagement;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;

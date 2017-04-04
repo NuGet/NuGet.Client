@@ -28,7 +28,6 @@ NuGet.PackageManagement.dll
 NuGet.PackageManagement.UI.dll
 NuGet.Packaging.Core.dll
 NuGet.Packaging.dll
-NuGet.ProjectManagement.dll
 NuGet.ProjectModel.dll
 NuGet.Protocol.dll
 NuGet.Resolver.dll

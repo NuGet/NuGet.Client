@@ -34,7 +34,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 throw new ArgumentException(
                     String.Format(
                         CultureInfo.CurrentCulture,
-                        ProjectManagement.Strings.Argument_Cannot_Be_Null_Or_Empty, "psPath"));
+                        Resources.Argument_Cannot_Be_Null_Or_Empty, "psPath"));
             }
 
             bool succeeded = false;

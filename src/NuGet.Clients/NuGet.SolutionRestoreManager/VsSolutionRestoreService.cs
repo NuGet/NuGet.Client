@@ -77,7 +77,7 @@ namespace NuGet.SolutionRestoreManager
         {
             if (string.IsNullOrEmpty(projectUniqueName))
             {
-                throw new ArgumentException(ProjectManagement.Strings.Argument_Cannot_Be_Null_Or_Empty, nameof(projectUniqueName));
+                throw new ArgumentException(Strings.Argument_Cannot_Be_Null_Or_Empty, nameof(projectUniqueName));
             }
 
             if (projectRestoreInfo == null)

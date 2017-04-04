@@ -27,7 +27,7 @@ namespace NuGet.PackageManagement.VisualStudio
             if (String.IsNullOrEmpty(configurationFile))
             {
                 throw new ArgumentException(
-                    ProjectManagement.Strings.Argument_Cannot_Be_Null_Or_Empty,
+                    Strings.Argument_Cannot_Be_Null_Or_Empty,
                     nameof(configurationFile));
             }
             if (msBuildNuGetProjectSystem == null)

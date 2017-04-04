@@ -26,7 +26,6 @@ using NuGet.Test.Utility;
 using NuGet.Versioning;
 using Test.Utility;
 using Xunit;
-using Strings = NuGet.ProjectManagement.Strings;
 
 namespace NuGet.Test
 {
@@ -307,7 +306,7 @@ namespace NuGet.Test
                 }
 
                 Assert.NotNull(alreadyInstalledException);
-                Assert.Equal(string.Format(Strings.PackageAlreadyExistsInProject, packageIdentity, msBuildNuGetProjectSystem.ProjectName),
+                Assert.Equal(string.Format("Package '{0}' already exists in project '{1}'", packageIdentity, msBuildNuGetProjectSystem.ProjectName),
                     alreadyInstalledException.Message);
                 Assert.Equal(alreadyInstalledException.InnerException.GetType(), typeof(PackageAlreadyInstalledException));
             }
@@ -2199,7 +2198,8 @@ namespace NuGet.Test
                         msBuildNuGetProject, packageIdentity, resolutionContext, new TestNuGetProjectContext(), sourceRepositoryProvider.GetRepositories().First(), null, token));
 
                 var errorMessage = string.Format(CultureInfo.CurrentCulture,
-                    Strings.UnableToFindCompatibleItems, packageIdentity.Id + " " + packageIdentity.Version.ToNormalizedString(), msBuildNuGetProject.MSBuildNuGetProjectSystem.TargetFramework);
+                    "Could not install package '{0}'. You are trying to install this package into a project that targets '{1}', but the package does not contain any assembly references or content files that are compatible with that framework. For more information, contact the package author.",
+                    packageIdentity.Id + " " + packageIdentity.Version.ToNormalizedString(), msBuildNuGetProject.MSBuildNuGetProjectSystem.TargetFramework);
                 Assert.Equal(errorMessage, exception.Message);
 
             }
