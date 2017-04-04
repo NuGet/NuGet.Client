@@ -21,7 +21,7 @@
     <NupkgOutputDirectory Condition=" '$(BuildRTM)' != 'true' ">$(ArtifactsDirectory)nupkgs\</NupkgOutputDirectory>
     <NupkgOutputDirectory Condition=" '$(BuildRTM)' == 'true' ">$(ArtifactsDirectory)ReleaseNupkgs\</NupkgOutputDirectory>
     <SolutionPackagesFolder>$(RepositoryRootDirectory)packages\</SolutionPackagesFolder>
-    <XunitConoleExePath>$(SolutionPackagesFolder)xunit.runner.console.2.2.0\tools\xunit.console.x86.exe</XunitConoleExePath>
+    <XunitConsoleExePath>$(SolutionPackagesFolder)xunit.runner.console.2.2.0\tools\xunit.console.x86.exe</XunitConsoleExePath>
     <EnlistmentRoot>$(RepositoryRootDirectory)</EnlistmentRoot>
     <EnlistmentRootSrc>$(RepositoryRootDirectory)\src</EnlistmentRootSrc>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">$(RepositoryRootDirectory)</SolutionDir>
@@ -133,14 +133,13 @@
   </PropertyGroup>
   
   <!-- Generate AssemblyFileVersion and AssemblyVersion attributes. -->
-  <PropertyGroup>
+  <PropertyGroup Condition=" '$(IsNetCoreProject)' != 'true' ">
     <!-- Turn on dynamic assembly attribute generation -->
     <AssemblyAttributesPath>$(IntermediateOutputPath)AssemblyInfo.g.cs</AssemblyAttributesPath>
     <GenerateAdditionalSources>true</GenerateAdditionalSources>
-    <PreReleaseVersion>0</PreReleaseVersion>
   </PropertyGroup>
 
-  <!-- Assembly attributes -->
+  <!-- Assembly attributes for non net core projects-->
   <ItemGroup Condition=" '$(SkipAssemblyAttributes)' != 'true' AND '$(IsNetCoreProject)' != 'true' ">
     <!--
       AssemblyVersion and AssemblyFileVersion attributes are generated automatically for every build.
@@ -170,6 +169,9 @@
   </ItemGroup>
 
   <PropertyGroup Condition=" '$(IsNetCoreProject)' == 'true' ">
+    <!-- Assembly attributes for net core projects -->
+    <AssemblyVersion>$(SemanticVersion).$(PreReleaseVersion)</AssemblyVersion>
+
     <SchemaVersion>2.0</SchemaVersion>
     <TypeScriptCompileBlocked>True</TypeScriptCompileBlocked>
     <ProduceOutputsOnBuild>True</ProduceOutputsOnBuild>
@@ -179,4 +181,5 @@
   <PropertyGroup Condition=" '$(TestProject)' == 'true' ">
     <DebugType>embedded</DebugType>
   </PropertyGroup>
+
 </Project>
