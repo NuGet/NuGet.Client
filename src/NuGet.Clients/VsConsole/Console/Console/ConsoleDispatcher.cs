@@ -183,7 +183,9 @@ namespace NuGetConsole.Implementation.Console
                     CultureInfo currentCulture = CultureInfo.CurrentCulture;
                     CultureInfo currentUICulture = CultureInfo.CurrentUICulture;
 
-                    Task.Factory.StartNew(
+                    // changed from Task.Factory.StartNew to Task.Run in order to run with
+                    // default TaskSchedular instead of current.
+                    Task.Run(
                         // gives the host a chance to do initialization works before the console starts accepting user inputs
                         () =>
                             {
