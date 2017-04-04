@@ -12,6 +12,7 @@
     </CommonMSBuildProperties>
   </PropertyGroup>
 
+    <ApexTestProjects Include="$(RepositoryRootDirectory)test\NuGet.Tests.Apex\*\*.csproj" />
   <!--
     ============================================================
     Run core functional tests (non-VS specific)
@@ -92,6 +93,32 @@
 
   <!--
     ============================================================
+    Run VS15 apex tests
+    ============================================================
+  -->
+  <Target Name="ApexTestsVS15">
+    <!-- Test inputs -->
+    <PropertyGroup>
+      <TestProjectPaths>@(ApexTestProjects)</TestProjectPaths>
+      <TestResultsFileName>ApexTestsVS15</TestResultsFileName>
+      <TestVisualStudioVersion>15.0</TestVisualStudioVersion>
+    </PropertyGroup>
+
+    <!-- Run tests as a batch -->
+    <MSBuild
+        Projects="$(MSBuildThisFileFullPath)"
+        Targets="RunTestsOnProjects"
+        Properties="$(CommonMSBuildProperties);
+                    VisualStudioVersion=$(TestVisualStudioVersion);
+                    TestResultsFileName=$(TestResultsFileName);
+                    TestProjectPaths=$(TestProjectPaths)">
+      <Output TaskParameter="TargetOutputs"
+              ItemName="TestAssemblyPath" />
+    </MSBuild>
+  </Target>
+
+  <!--
+    ============================================================
     Run VS14 unit tests
     ============================================================
   -->
@@ -121,7 +148,7 @@
     Build, Pack, Core Tests, Unit tests for VS 15
     ============================================================
   -->
-  <Target Name="RunVS15"  DependsOnTargets="BuildVS15;Pack;CoreUnitTests;UnitTestsVS15">
+  <Target Name="RunVS15"  DependsOnTargets="BuildVS15;Pack;CoreUnitTests;UnitTestsVS15;ApexTestsVS15">
     <Message Text="Running NuGet Build for VS 15" Importance="high" />
   </Target>
 
