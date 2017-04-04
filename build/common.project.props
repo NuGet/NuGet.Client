@@ -171,6 +171,12 @@
   <PropertyGroup Condition=" '$(IsNetCoreProject)' == 'true' ">
     <!-- Assembly attributes for net core projects -->
     <AssemblyVersion>$(SemanticVersion).$(PreReleaseVersion)</AssemblyVersion>
+    <AssemblyFileVersion>$(SemanticVersion).$(PreReleaseVersion)</AssemblyFileVersion>
+    <AssemblyInformationalVersion>$(SemanticVersion)$(PreReleaseInformationVersion)</AssemblyInformationalVersion>
+    <AssemblyCompany>Microsoft Corporation</AssemblyCompany>
+    <AssemblyProduct>NuGet</AssemblyProduct>
+    <AssemblyCopyright>Microsoft Corporation. All rights reserved.</AssemblyCopyright>
+    <NeutralResourcesLanguage>en-US</NeutralResourcesLanguage>
 
     <SchemaVersion>2.0</SchemaVersion>
     <TypeScriptCompileBlocked>True</TypeScriptCompileBlocked>
