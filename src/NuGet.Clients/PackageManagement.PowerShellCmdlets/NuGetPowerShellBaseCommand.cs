@@ -320,14 +320,14 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             {
                 throw new PackageSourceException(string.Format(
                     CultureInfo.CurrentCulture,
-                    Strings.UnknownSource,
+                    Resources.UnknownSource,
                     result.Source));
             }
             else if (result.Validity == SourceValidity.UnknownSourceType)
             {
                 throw new PackageSourceException(string.Format(
                     CultureInfo.CurrentCulture,
-                    Strings.UnknownSourceType,
+                    Resources.UnknownSourceType,
                     result.Source));
             }
         }

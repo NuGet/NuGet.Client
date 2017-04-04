@@ -191,7 +191,7 @@ namespace NuGet.PackageManagement.VisualStudio
             if (oldProject == null)
             {
                 throw new ArgumentException(
-                    ProjectManagement.Strings.Argument_Cannot_Be_Null_Or_Empty,
+                    Strings.Argument_Cannot_Be_Null_Or_Empty,
                     nameof(oldProject));
             }
 
@@ -239,7 +239,7 @@ namespace NuGet.PackageManagement.VisualStudio
             if (string.IsNullOrEmpty(nuGetProjectSafeName))
             {
                 throw new ArgumentException(
-                    ProjectManagement.Strings.Argument_Cannot_Be_Null_Or_Empty,
+                    Strings.Argument_Cannot_Be_Null_Or_Empty,
                     nameof(nuGetProjectSafeName));
             }
 
@@ -280,7 +280,7 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             if (string.IsNullOrEmpty(nuGetProjectSafeName))
             {
-                throw new ArgumentException(ProjectManagement.Strings.Argument_Cannot_Be_Null_Or_Empty, "nuGetProjectSafeName");
+                throw new ArgumentException(Strings.Argument_Cannot_Be_Null_Or_Empty, "nuGetProjectSafeName");
             }
 
             EnsureInitialize();

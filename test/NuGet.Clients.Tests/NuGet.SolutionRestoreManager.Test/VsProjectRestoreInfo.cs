@@ -26,7 +26,7 @@ namespace NuGet.SolutionRestoreManager.Test
         {
             if (string.IsNullOrEmpty(baseIntermediatePath))
             {
-                throw new ArgumentException(ProjectManagement.Strings.Argument_Cannot_Be_Null_Or_Empty, nameof(baseIntermediatePath));
+                throw new ArgumentException("Argument cannot be null or empty", nameof(baseIntermediatePath));
             }
 
             if (targetFrameworks == null)

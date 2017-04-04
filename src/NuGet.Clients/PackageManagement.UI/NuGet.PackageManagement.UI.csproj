@@ -447,10 +447,6 @@
       <Project>{D65583E4-8084-466A-BA4B-55A797EA047B}</Project>
       <Name>NuGet.Packaging.Core</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\NuGet.Core\NuGet.ProjectManagement\NuGet.ProjectManagement.csproj">
-      <Project>{2995463d-9849-4bd3-8a87-0b7e1c5e6812}</Project>
-      <Name>NuGet.ProjectManagement</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\NuGet.Core\NuGet.Resolver\NuGet.Resolver.csproj">
       <Project>{51AA27A9-B8B4-458F-9211-E6889B441573}</Project>
       <Name>NuGet.Resolver</Name>

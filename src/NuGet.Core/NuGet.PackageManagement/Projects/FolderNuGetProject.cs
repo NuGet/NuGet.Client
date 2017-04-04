@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.Frameworks;
+using NuGet.PackageManagement;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Protocol;

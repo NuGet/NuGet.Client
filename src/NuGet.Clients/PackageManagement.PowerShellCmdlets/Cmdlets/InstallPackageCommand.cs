@@ -141,7 +141,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 Log(MessageLevel.Debug, ExceptionUtilities.DisplayMessage(ex));
 
                 // Wrap FatalProtocolException coming from the server with a user friendly message
-                var error = String.Format(CultureInfo.CurrentUICulture, Strings.Exception_PackageNotFound, Id, Source);
+                var error = String.Format(CultureInfo.CurrentUICulture, Resources.Exception_PackageNotFound, Id, Source);
                 Log(MessageLevel.Error, error);
             }
             catch (Exception ex)

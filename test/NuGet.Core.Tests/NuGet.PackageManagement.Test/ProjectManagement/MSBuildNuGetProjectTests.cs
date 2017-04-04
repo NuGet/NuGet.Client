@@ -20,7 +20,6 @@ using NuGet.Test.Utility;
 using NuGet.Versioning;
 using Test.Utility;
 using Xunit;
-using Strings = NuGet.ProjectManagement.Strings;
 
 namespace ProjectManagement.Test
 {
@@ -521,7 +520,7 @@ namespace ProjectManagement.Test
                 Assert.NotNull(exception);
                 Assert.True(exception is InvalidOperationException);
                 var errorMessage = string.Format(CultureInfo.CurrentCulture,
-                    Strings.UnableToFindCompatibleItems, packageIdentity.Id + " " + packageIdentity.Version.ToNormalizedString(), projectTargetFramework);
+                    "Could not install package '{0}'. You are trying to install this package into a project that targets '{1}', but the package does not contain any assembly references or content files that are compatible with that framework. For more information, contact the package author.", packageIdentity.Id + " " + packageIdentity.Version.ToNormalizedString(), projectTargetFramework);
                 Assert.Equal(errorMessage, exception.Message);
             }
         }
@@ -1472,7 +1471,7 @@ namespace ProjectManagement.Test
                 Assert.True(exception is InvalidOperationException);
 
                 var errorMessage = string.Format(CultureInfo.CurrentCulture,
-                    Strings.UnableToFindCompatibleItems, packageIdentity.Id + " " + packageIdentity.Version.ToNormalizedString(), projectTargetFramework);
+                    "Could not install package '{0}'. You are trying to install this package into a project that targets '{1}', but the package does not contain any assembly references or content files that are compatible with that framework. For more information, contact the package author.", packageIdentity.Id + " " + packageIdentity.Version.ToNormalizedString(), projectTargetFramework);
                 Assert.Equal(errorMessage, exception.Message);
             }
         }
@@ -1522,9 +1521,8 @@ namespace ProjectManagement.Test
 
                 Assert.NotNull(exception);
                 Assert.True(exception is InvalidOperationException);
-                var errorMessage = string.Format(CultureInfo.CurrentCulture,
-                    Strings.UnableToFindCompatibleItems, packageIdentity.Id + " " + packageIdentity.Version.ToNormalizedString(), projectTargetFramework);
-                Assert.Equal(errorMessage, exception.Message);
+                var expected = "Could not install package 'packageA 1.0.0'. You are trying to install this package into a project that targets '.NETFramework,Version=v4.5', but the package does not contain any assembly references or content files that are compatible with that framework. For more information, contact the package author.";
+                Assert.Equal(expected, exception.Message);
             }
         }
 

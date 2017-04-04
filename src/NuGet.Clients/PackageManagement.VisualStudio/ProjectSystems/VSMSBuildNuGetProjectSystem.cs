@@ -909,7 +909,7 @@ namespace NuGet.PackageManagement.VisualStudio
             if (!recursive
                 && (FileSystemUtility.GetFiles(ProjectFullPath, path, "*.*", recursive).Any() || FileSystemUtility.GetDirectories(ProjectFullPath, path).Any()))
             {
-                NuGetProjectContext.Log(ProjectManagement.MessageLevel.Warning, ProjectManagement.Strings.Warning_DirectoryNotEmpty, path);
+                NuGetProjectContext.Log(ProjectManagement.MessageLevel.Warning, Strings.Warning_DirectoryNotEmpty, path);
                 return;
             }
 
@@ -923,7 +923,7 @@ namespace NuGet.PackageManagement.VisualStudio
                     var deletedProjectItem = await EnvDTEProjectUtility.DeleteProjectItemAsync(EnvDTEProject, path);
                     if (deletedProjectItem)
                     {
-                        NuGetProjectContext.Log(ProjectManagement.MessageLevel.Debug, ProjectManagement.Strings.Debug_RemovedFolder, path);
+                        NuGetProjectContext.Log(ProjectManagement.MessageLevel.Debug, Strings.Debug_RemovedFolder, path);
                     }
                 }
             });

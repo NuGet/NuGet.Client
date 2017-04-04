@@ -5,6 +5,7 @@
     <TargetFrameworks>net45;netstandard1.3</TargetFrameworks>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <AssemblyName>NuGet.Build.Tasks.Pack</AssemblyName>
+	<RootNamespace>$(AssemblyName)</RootNamespace>
     <PackageId>NuGet.Build.Tasks.Pack.Library</PackageId>
     <NetStandardImplicitPackageVersion Condition=" '$(TargetFramework)' == 'netstandard1.3' ">$(NetStandardPackageVersion)</NetStandardImplicitPackageVersion>
     <Shipping>true</Shipping>
@@ -30,6 +31,21 @@
     <PackageReference Include="Microsoft.Build.Framework" Version="$(MicrosoftBuildPackageVersion)" />
     <PackageReference Include="Microsoft.Build.Tasks.Core" Version="$(MicrosoftBuildPackageVersion)" />
     <PackageReference Include="Microsoft.Build.Utilities.Core" Version="$(MicrosoftBuildPackageVersion)" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <Compile Update="Strings.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Strings.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  
+  <ItemGroup>
+    <EmbeddedResource Update="Strings.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Strings.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
   </ItemGroup>
 
   <Import Project="$(BuildCommonDirectory)common.targets" />

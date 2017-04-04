@@ -246,4 +246,16 @@
   <data name="Error_FileNotExists" xml:space="preserve">
     <value>File '{0}' does not exist on disk. </value>
   </data>
+  <data name="Argument_Cannot_Be_Null_Or_Empty" xml:space="preserve">
+    <value>Argument cannot be null or empty</value>
+  </data>
+  <data name="Debug_RemovedFolder" xml:space="preserve">
+    <value>Removed folder '{0}'.</value>
+  </data>
+  <data name="PackageStreamShouldBeSeekable" xml:space="preserve">
+    <value>Package stream should be seekable</value>
+  </data>
+  <data name="Warning_DirectoryNotEmpty" xml:space="preserve">
+    <value>Directory '{0}' is not empty. Skipping...</value>
+  </data>
 </root>

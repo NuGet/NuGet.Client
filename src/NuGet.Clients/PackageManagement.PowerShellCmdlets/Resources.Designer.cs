@@ -61,6 +61,15 @@ namespace NuGet.PackageManagement.PowerShellCmdlets {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Argument cannot be null or empty.
+        /// </summary>
+        internal static string Argument_Cannot_Be_Null_Or_Empty {
+            get {
+                return ResourceManager.GetString("Argument_Cannot_Be_Null_Or_Empty", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to This Command/Parameter combination has been deprecated and will be removed in the next release. Please consider using the new command that replaces it: &apos;{0}&apos;..
         /// </summary>
         internal static string Cmdlet_CommandObsolete {
@@ -516,6 +525,42 @@ namespace NuGet.PackageManagement.PowerShellCmdlets {
         internal static string Cmdlet_YesDoNotPromptAgain {
             get {
                 return ResourceManager.GetString("Cmdlet_YesDoNotPromptAgain", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unable to find package &apos;{0}&apos; at source &apos;{1}&apos;..
+        /// </summary>
+        internal static string Exception_PackageNotFound {
+            get {
+                return ResourceManager.GetString("Exception_PackageNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Source &apos;{0}&apos; not found. Please provide an HTTP or local source..
+        /// </summary>
+        internal static string UnknownSource {
+            get {
+                return ResourceManager.GetString("UnknownSource", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unsupported type of source &apos;{0}&apos;. Please provide an HTTP or local source..
+        /// </summary>
+        internal static string UnknownSourceType {
+            get {
+                return ResourceManager.GetString("UnknownSourceType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unable to find package &apos;{0}&apos; at source &apos;{1}&apos;. Source not found..
+        /// </summary>
+        internal static string UnknownSourceWithId {
+            get {
+                return ResourceManager.GetString("UnknownSourceWithId", resourceCulture);
             }
         }
     }
