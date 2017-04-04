@@ -253,13 +253,6 @@
       <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup</IncludeOutputGroupsInVSIXLocalOnly>
       <Private>True</Private>
     </ProjectReference>
-    <ProjectReference Include="..\VsConsole\PowerShellHostProvider\NuGetConsole.Host.PowerShellProvider.csproj">
-      <Project>{a5e7aeb3-738f-4c39-a459-00f90483b2fe}</Project>
-      <Name>NuGetConsole.Host.PowerShellProvider</Name>
-      <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup</IncludeOutputGroupsInVSIX>
-      <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup</IncludeOutputGroupsInVSIXLocalOnly>
-      <Private>True</Private>
-    </ProjectReference>
     <ProjectReference Include="..\VsConsole\PowerShellHost\NuGetConsole.Host.PowerShell.csproj">
       <Project>{5a79eef3-51c0-4a14-8d37-50ef38ad835d}</Project>
       <Name>NuGetConsole.Host.PowerShell</Name>
