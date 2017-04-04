@@ -68,6 +68,8 @@
   <!--
     ============================================================
     PackProjects
+    This must be called after building. The dependency on build does
+    not exist to improve perf.
     ============================================================
   -->
   <Target Name="PackProjects" Condition=" '$(PackProject)' == 'true' ">
@@ -82,8 +84,7 @@
                   PackageOutputPath=$(NupkgOutputDirectory);
                   NoPackageAnalysis=true;
                   IncludeSymbols=true;
-                  IsPackable=true;
-                  GenerateDocsForPack=true">
+                  NoBuild=true;">
     </MSBuild>
   </Target>
 
