@@ -20,16 +20,20 @@ namespace NuGet.Tests.Apex
         {
             // Arrange
             EnsureVisualStudioHost();
+            var dte = VisualStudio.Dte;
             var solutionService = VisualStudio.Get<SolutionService>();
             var nugetTestService = GetNuGetTestService();
+
             solutionService.CreateEmptySolution();
-            var project = solutionService.AddProject(ProjectLanguage.CSharp, ProjectTemplate.ClassLibrary);
+            solutionService.AddProject(ProjectLanguage.CSharp, ProjectTemplate.ClassLibrary, ProjectTargetFramework.V46, "TestProject"); 
+
+            var project = dte.Solution.Projects.Item(1);
 
             // Act
-            nugetTestService.InstallPackage(project, "newtonsoft.json");
+            nugetTestService.InstallPackage(project.UniqueName, "newtonsoft.json");
 
             // Assert
-            nugetTestService.Verify.PackageIsInstalled(project, "newtonsoft.json");
+            nugetTestService.Verify.PackageIsInstalled(project.UniqueName, "newtonsoft.json");
         }
 
         [StaFact]
@@ -40,15 +44,17 @@ namespace NuGet.Tests.Apex
             var solutionService = VisualStudio.Get<SolutionService>();
             var nugetTestService = GetNuGetTestService();
             solutionService.CreateEmptySolution();
-            var project = solutionService.AddProject(ProjectLanguage.CSharp, ProjectTemplate.ClassLibrary);
+            solutionService.AddProject(ProjectLanguage.CSharp, ProjectTemplate.ClassLibrary,ProjectTargetFramework.V46, "TestProject");
+            var dte = VisualStudio.Dte;
+            var project = dte.Solution.Projects.Item(1);
 
             // Act & Assert
-            nugetTestService.InstallPackage(project, "newtonsoft.json");
-            nugetTestService.Verify.PackageIsInstalled(project, "newtonsoft.json");
+            nugetTestService.InstallPackage(project.UniqueName, "newtonsoft.json");
+            nugetTestService.Verify.PackageIsInstalled(project.UniqueName, "newtonsoft.json");
 
             // Act & Assert
-            nugetTestService.UninstallPackage(project, "newtonsoft.json");
-            nugetTestService.Verify.PackageIsNotInstalled(project, "newtonsoft.json");
+            nugetTestService.UninstallPackage(project.UniqueName, "newtonsoft.json");
+            nugetTestService.Verify.PackageIsNotInstalled(project.UniqueName, "newtonsoft.json");
         }
     }
 }

@@ -14,12 +14,12 @@ namespace NuGet.Tests.Apex
     public abstract class ApexBaseTestClass : IClassFixture<ApexTestRequirementsFixture>, IDisposable
     {
         private readonly Lazy<IVerifier> _lazyVerifier;
-        private readonly Lazy<NuGetPackageManagerTestService> _nuGetPackageManagerTestService;
+        private readonly Lazy<NuGetApexTestService> _nuGetPackageManagerTestService;
 
         public ApexBaseTestClass()
         {
             _lazyVerifier = new Lazy<IVerifier>(() => GetApexService<ITestLoggerFactoryService>().GetOrCreate("Testcase"));
-            _nuGetPackageManagerTestService = new Lazy<NuGetPackageManagerTestService>(() => VisualStudio.Get<NuGetPackageManagerTestService>());
+            _nuGetPackageManagerTestService = new Lazy<NuGetApexTestService>(() => VisualStudio.Get<NuGetApexTestService>());
         }
 
         public abstract VisualStudioHost VisualStudio { get; }
@@ -33,7 +33,7 @@ namespace NuGet.Tests.Apex
 
         public abstract void EnsureVisualStudioHost();
 
-        public virtual NuGetPackageManagerTestService GetNuGetTestService()
+        public virtual NuGetApexTestService GetNuGetTestService()
         {
             EnsureVisualStudioHost();
             return _nuGetPackageManagerTestService.Value;
