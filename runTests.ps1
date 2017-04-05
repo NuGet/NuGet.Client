@@ -20,12 +20,6 @@ Skips running NuGet.Clients.Tests and NuGet.Clients.FuncTests with VS14 toolset
 .PARAMETER SkipVS15
 Skips running NuGet.Clients.Tests and NuGet.Clients.FuncTests with VS15 toolset
 
-.PARAMETER SkipUnitTests
-Skips running NuGet.Core.Tests and NuGet.Clients.Tests
-
-.PARAMETER SkipFuncTests
-Skips running NuGet.Core.FuncTests and NuGet.Clients.FuncTests
-
 .PARAMETER CI
 Indicates the build script is invoked from CI
 
