@@ -32,10 +32,6 @@
   <!-- Defaults -->
   <PropertyGroup>
     <TreatWarningsAsErrors Condition=" '$(TreatWarningsAsErrors)' == '' ">true</TreatWarningsAsErrors>
-    <GenerateAssemblyCompanyAttribute Condition=" '$(GenerateAssemblyCompanyAttribute)' == '' ">false</GenerateAssemblyCompanyAttribute>
-    <GenerateAssemblyProductAttribute Condition=" '$(GenerateAssemblyProductAttribute)' == '' ">false</GenerateAssemblyProductAttribute>
-    <GenerateAssemblyCopyrightAttribute Condition=" '$(GenerateAssemblyCopyrightAttribute)' == '' ">false</GenerateAssemblyCopyrightAttribute>
-    <GenerateNeutralResourcesLanguageAttribute Condition=" '$(GenerateNeutralResourcesLanguageAttribute)' == '' ">false</GenerateNeutralResourcesLanguageAttribute>
   </PropertyGroup>
 
   <!-- Default project configuration -->
