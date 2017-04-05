@@ -4,8 +4,6 @@
 
   <PropertyGroup>
     <TargetFramework>net46</TargetFramework>
-    <SignAssembly>false</SignAssembly>
-    <DelaySign>false</DelaySign>
   </PropertyGroup>
 
   <ItemGroup>
