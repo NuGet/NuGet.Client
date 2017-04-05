@@ -4,6 +4,7 @@
 
   <PropertyGroup>
     <TargetFramework>net46</TargetFramework>
+    <SkipSigning>true</SkipSigning>
   </PropertyGroup>
 
   <ItemGroup>
