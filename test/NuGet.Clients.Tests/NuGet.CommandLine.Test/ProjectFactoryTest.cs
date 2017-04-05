@@ -86,7 +86,7 @@ namespace NuGet.CommandLine
                 testAssembly.GetCustomAttributes<AssemblyMetadataAttribute>()
                     .Where(attr => attr.Key == "owner")
                     .Select(attr => attr.Value)
-                    .FirstOrDefault(),
+                    .FirstOrDefault() ?? "",
                 xdoc.XPathSelectElement("/package/metadata/authors").Value);
             }
         }
