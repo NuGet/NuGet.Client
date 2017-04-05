@@ -1,6 +1,6 @@
 ﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
-  <!-- Use NuGet SNK by default for all projects and since we own NuGet SNK we can sign assemblies for good. -->
+  <!-- Use NuGet SNK by default for all projects except API.Test. -->
   <PropertyGroup Condition = " $(MSBuildProjectFullPath.Contains('API.Test')) == 'false' ">
     <StrongNameKey>$(NUGET_PFX_PATH)</StrongNameKey>
   </PropertyGroup>
