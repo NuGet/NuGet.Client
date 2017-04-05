@@ -6,7 +6,6 @@
     <TargetFrameworks>net46</TargetFrameworks>
     <TargetFrameworks Condition=" '$(IsXPlat)' == 'true' "></TargetFrameworks>
     <TestProject>true</TestProject>
-    <SkipTests>false</SkipTests>
   </PropertyGroup>
 
   <ItemGroup>
