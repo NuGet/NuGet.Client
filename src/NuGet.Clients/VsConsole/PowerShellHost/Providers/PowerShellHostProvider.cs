@@ -7,7 +7,7 @@ using System.Runtime.CompilerServices;
 using NuGet.VisualStudio.Facade;
 using NuGetConsole.Host.PowerShell.Implementation;
 
-namespace NuGetConsole.Host.PowerShellProvider
+namespace NuGetConsole.Host
 {
     [Export(typeof(IHostProvider))]
     [HostName(HostName)]

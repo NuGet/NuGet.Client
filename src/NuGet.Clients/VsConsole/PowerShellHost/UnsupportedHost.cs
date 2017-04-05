@@ -5,7 +5,7 @@ using System;
 using System.Windows.Media;
 using NuGet.PackageManagement;
 
-namespace NuGetConsole.Host.PowerShellProvider
+namespace NuGetConsole.Host
 {
     /// <summary>
     /// This host is used when PowerShell 2.0 runtime is not installed in the system. It's basically a no-op host.

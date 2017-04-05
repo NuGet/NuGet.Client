@@ -1,11 +1,11 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.ComponentModel.Composition;
 using NuGetConsole.Host.PowerShell.Implementation;
 
-namespace NuGetConsole.Host.PowerShellProvider
+namespace NuGetConsole.Host
 {
     [Export(typeof(ICommandTokenizerProvider))]
     [HostName(PowerShellHostProvider.HostName)]
