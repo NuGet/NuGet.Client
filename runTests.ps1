@@ -62,10 +62,6 @@ param (
     [switch]$SkipVS14,
     [Alias('s15')]
     [switch]$SkipVS15,
-    [Alias('sut')]
-    [switch]$SkipUnitTests,
-    [Alias('sft')]
-    [switch]$SkipFuncTests,
     [switch]$CI
 )
 
@@ -105,21 +101,6 @@ if (-not $SkipVS15 -and -not $VS15Installed) {
     $SkipVS15 = $True
 }
 
-$SkipCoreTests = "false";
-$SkipCoreFuncTests = "false";
-$SkipClientTests = "false";
-$SkipClientFuncTests = "false";
-
-if($SkipFuncTests){
-    $SkipCoreFuncTests = "true";
-    $SkipClientFuncTests = "true";
-}
-
-if($SkipUnitTests){
-    $SkipCoreTests = "true";
-    $SkipClientTests = "true";
-}
-
 $BuildErrors = @()
 
 Invoke-BuildStep 'Cleaning package cache' {
@@ -127,6 +108,21 @@ Invoke-BuildStep 'Cleaning package cache' {
     } `
     -skip:(-not $CI) `
     -ev +BuildErrors
+
+Invoke-BuildStep 'Copying Config Files for functest' {
+
+    Copy-Item $env.NuGetBuildRoot\ConfigFiles\NuGet.Config $env:APPDATA\NuGet\NuGet.Config
+    Copy-Item $env.NuGetBuildRoot\ConfigFiles\NuGet.Core.FuncTests.Config $env:APPDATA\NuGet\NuGet.Core.FuncTests.Config
+    Copy-Item $env.NuGetBuildRoot\ConfigFiles\NuGet.Protocol.FuncTest.config $env:APPDATA\NuGet\NuGet.Protocol.FuncTest.config
+    
+    if (-not $?)
+    {
+        Write-Error "Copying Config Files for functest failed!"
+        exit 1
+    }
+} `
+-skip:(-not $CI) `
+-ev +BuildErrors
 
 
 Invoke-BuildStep 'Running /t:RestoreVS15' {
