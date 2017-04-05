@@ -99,6 +99,21 @@
     </Reference>
     <Reference Include="WindowsBase" />
   </ItemGroup>
+  <PropertyGroup Condition="Exists('$(MSBuildExtensionsPath)\Microsoft\VSAC\Microsoft.SystemCenter.OperationsManager.targets')">
+    <DefineConstants>$(DefineConstants);VisualStudioAuthoringExtensionsInstalled</DefineConstants>
+    <VSACProjectSystemDir>$(MSBuildProgramFiles32)\Microsoft Visual Studio $(VisualStudioVersion)\Common7\IDE\Extensions\System Center\VSACProjectSystem</VSACProjectSystemDir>
+  </PropertyGroup>
+  <ItemGroup Condition="Exists('$(MSBuildExtensionsPath)\Microsoft\VSAC\Microsoft.SystemCenter.OperationsManager.targets')">
+    <Reference Include="Microsoft.EnterpriseManagement.Core">
+      <HintPath>$(MSBuildExtensionsPath)\Microsoft\VSAC\Microsoft.EnterpriseManagement.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.EnterpriseManagement.Packaging">
+      <HintPath>$(MSBuildExtensionsPath)\Microsoft\VSAC\Microsoft.EnterpriseManagement.Packaging.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.SystemCenter.Authoring.ProjectSystem.14.0">
+      <HintPath>$(VSACProjectSystemDir)\Microsoft.SystemCenter.Authoring.ProjectSystem.14.0.dll</HintPath>
+    </Reference>
+  </ItemGroup>
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '14.0'">
       <ItemGroup>
@@ -136,8 +151,10 @@
     <Compile Include="IDE\IVsSolutionManager.cs" />
     <Compile Include="IInteractiveLoginProvider.cs" />
     <Compile Include="InteractiveLoginProvider.cs" />
+    <Compile Include="ProjectSystems\ManagementPackProjectSystemFactory.cs" />
     <Compile Include="ProjectSystems\CpsPackageReferenceProject.cs" Condition="'$(VisualStudioVersion)' == '15.0'" />
     <Compile Include="ProjectSystems\IProjectSystemProvider.cs" />
+    <Compile Include="ProjectSystems\ManagementPackProjectSystem.cs" />
     <Compile Include="ProjectSystems\MSBuildNuGetProjectProvider.cs" />
     <Compile Include="ProjectSystems\ProjectKNuGetProjectProvider.cs" />
     <Compile Include="ProjectSystems\ProjectSystemCache.cs" />
@@ -146,6 +163,7 @@
     <Compile Include="ProjectSystems\IProjectSystemCache.cs" />
     <Compile Include="ProjectSystems\CpsPackageReferenceProjectProvider.cs" Condition="'$(VisualStudioVersion)' == '15.0'" />
     <Compile Include="ProjectSystems\ProjectSystemProviderContext.cs" />
+    <Compile Include="ProjectSystems\VsaeProjectSystemDynamicProxy.cs" />
     <Compile Include="SolutionEventsListener.cs" />
     <Compile Include="SolutionRestore\DeferredProjectRestoreData.cs" />
     <Compile Include="SolutionRestore\SolutionRestoreRequest.cs" />

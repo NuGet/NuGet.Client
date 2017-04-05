@@ -41,9 +41,10 @@ namespace NuGet.PackageManagement.VisualStudio
                                 context.ProjectContext);
 
             var isWebSite = msBuildNuGetProjectSystem is WebSiteProjectSystem;
+            var isManagementPack = msBuildNuGetProjectSystem is ManagementPackProjectSystem;
 
-            // Web sites cannot have project.json
-            if (!isWebSite)
+            // Web sites (and MPs) cannot have project.json
+            if (!isWebSite && !isManagementPack)
             {
                 // Find the project file path
                 var projectFilePath = EnvDTEProjectUtility.GetFullProjectPath(envDTEProject);

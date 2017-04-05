@@ -50,6 +50,7 @@ namespace NuGet.Frameworks
             public const string WindowsPhoneApp = "WindowsPhoneApp";
             public const string Dnx = "DNX";
             public const string DnxCore = "DNXCore";
+            public const string SCMPInfra = "SCMPInfra";
             public const string AspNet = "ASP.NET";
             public const string AspNetCore = "ASP.NETCore";
             public const string Silverlight = "Silverlight";
@@ -107,6 +108,8 @@ namespace NuGet.Frameworks
 
             public static readonly NuGetFramework Tizen3 = new NuGetFramework(FrameworkIdentifiers.Tizen, new Version(3, 0, 0, 0));
             public static readonly NuGetFramework Tizen4 = new NuGetFramework(FrameworkIdentifiers.Tizen, new Version(4, 0, 0, 0));
+
+            public static readonly NuGetFramework SCMPInfra = new NuGetFramework(FrameworkIdentifiers.SCMPInfra, EmptyVersion);
 
             public static readonly NuGetFramework AspNet = new NuGetFramework(FrameworkIdentifiers.AspNet, EmptyVersion);
             public static readonly NuGetFramework AspNetCore = new NuGetFramework(FrameworkIdentifiers.AspNetCore, EmptyVersion);

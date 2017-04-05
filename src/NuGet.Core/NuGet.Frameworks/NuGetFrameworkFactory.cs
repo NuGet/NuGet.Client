@@ -500,6 +500,9 @@ namespace NuGet.Frameworks
                 case "netcoreapp10":
                     framework = FrameworkConstants.CommonFrameworks.NetCoreApp10;
                     break;
+                case "scmpinfra":
+                    framework = FrameworkConstants.CommonFrameworks.SCMPInfra;
+                    break;
             }
 
             return framework != null;

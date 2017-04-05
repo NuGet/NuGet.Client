@@ -1,0 +1,15 @@
+﻿<VSTemplate Version="3.0.0" Type="Project" xmlns="http://schemas.microsoft.com/developer/vstemplate/2005">
+  <TemplateData>
+    <Name Package="{0cb04db4-04e2-4941-b95b-af25507fcab7}" ID="149" />
+    <Description Package="{0cb04db4-04e2-4941-b95b-af25507fcab7}" ID="150" />
+    <ProjectType>ManagementPack</ProjectType>
+    <Icon Package="{0cb04db4-04e2-4941-b95b-af25507fcab7}" ID="420" />
+    <DefaultName>ManagementPack</DefaultName>
+    <NumberOfParentCategoriesToRollUp>1</NumberOfParentCategoriesToRollUp>
+  </TemplateData>
+  <TemplateContent>
+    <Project File="ManagementPackProject_2012R2.mpproj" ReplaceParameters="true">
+    </Project>
+  </TemplateContent>
+</VSTemplate>
+

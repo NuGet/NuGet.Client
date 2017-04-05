@@ -166,6 +166,41 @@ function Assert-Reference {
     }
 }
 
+function Assert-ManagementPackReference {
+	param(
+		[parameter(Mandatory = $true)]
+        $Project,
+		[parameter(Mandatory = $true)]
+		[string]$Name,
+		[string]$Version
+	)
+	
+	$reference = Get-ManagementPackReference $Project $Name
+	Assert-NotNull $reference "Reference `"$Name`" does not exist"
+
+	$path = $reference.ManagementPackPath
+
+    Assert-NotNull $path "Reference `"$Name`" exists but is broken"
+    Assert-PathExists $path "Reference `"$Name`" exists but is broken"
+
+    if($Version) {
+        $actualVersion = [Version]::Parse($Version)
+        Assert-AreEqual $actualVersion $reference.ActualVersion
+    }
+}
+
+function Assert-NoManagementPackReference {
+	param(
+		[parameter(Mandatory = $true)]
+		$Project,
+		[parameter(Mandatory = $true)]
+		[string]$Name
+	)
+	
+	$reference = Get-ManagementPackReference $Project $Name
+	Assert-Null $reference "Reference `"$Name`" exists"
+}
+
 function Assert-Throws {
     param(
         [parameter(Mandatory = $true)]

@@ -31,7 +31,7 @@ namespace NuGet.ProjectManagement
             "CA2104:DoNotDeclareReadOnlyMutableReferenceTypes",
             Justification = "The type is immutable.")]
         public static readonly ICollection<string> AssemblyReferencesExtensions
-            = new ReadOnlyCollection<string>(new[] { ".dll", ".exe", ".winmd" });
+            = new ReadOnlyCollection<string>(new[] { ".dll", ".exe", ".winmd", ".mpb", ".mp" });
 
         public const string ResourceAssemblyExtension = ".resources.dll";
 

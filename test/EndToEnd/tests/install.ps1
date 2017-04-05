@@ -45,6 +45,65 @@ function Test-InstallPackageWithValidRelativeLocalSource {
     Assert-Throws { Install-Package $package -ProjectName $project.Name -source $source } $message
 }
 
+function Test-InstallSealedManagementPackPackage {
+	param(
+        $context
+    )
+	
+	# Arrange
+	$package = "PackageWithSealedManagementPackReference"
+	$project = New-ManagementPack_2012R2
+	
+	# Act
+	Install-Package $package -ProjectName $project.Name -Source $context.RepositoryRoot
+	
+	# Assert
+	Assert-ManagementPackReference $project ComponentMP
+	#TODO: Assert-Package calls Get-PackagesConfigNuGetProject which assumes project has TargetFrameworkMoniker property
+	#Assert-Package $project $package
+    Assert-SolutionPackage $package
+}
+
+function Test-InstallManagementPackBundlePackage {
+	param(
+        $context
+    )
+	
+	# Arrange
+	$package = "PackageWithManagementPackBundleReference"
+	$project = New-ManagementPack_2012R2
+	
+	# Act
+	Install-Package $package -ProjectName $project.Name -Source $context.RepositoryRoot
+	
+	# Assert
+	Assert-ManagementPackReference $project FrameworkMP
+	#TODO: Assert-Package calls Get-PackagesConfigNuGetProject which assumes project has TargetFrameworkMoniker property
+	#Assert-Package $project $package
+    Assert-SolutionPackage $package
+}
+
+function Test-InstallCompositeManagementPackBundlePackage {
+	param(
+        $context
+    )
+	
+	# Arrange
+	$package = "PackageWithMpBundleContainingMultipleMpReferences"
+	$project = New-ManagementPack_2012R2
+	
+	# Act
+	Install-Package $package -ProjectName $project.Name -Source $context.RepositoryRoot
+	
+	# Assert
+	Assert-ManagementPackReference $project Element1MP
+	Assert-ManagementPackReference $project Element2MP
+	Assert-ManagementPackReference $project Element3MP
+	#TODO: Assert-Package calls Get-PackagesConfigNuGetProject which assumes project has TargetFrameworkMoniker property
+	#Assert-Package $project $package
+    Assert-SolutionPackage $package
+}
+
 function Test-InstallPackageWithInvalidHttpSource {
     # Arrange
     $package = "Rules"
