@@ -122,7 +122,7 @@ namespace NuGet.Test.Utility
 
         private static bool GetCIVar()
         {
-            var val = Environment.GetEnvironmentVariable("CI");
+            var val = Environment.GetEnvironmentVariable("TEAMCITY_VERSION");
 
             if (!string.IsNullOrEmpty(val) && bool.TryParse(val, out var b) && b)
             {
