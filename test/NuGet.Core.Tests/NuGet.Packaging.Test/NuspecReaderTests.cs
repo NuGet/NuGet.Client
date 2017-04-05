@@ -285,7 +285,7 @@ namespace NuGet.Packaging.Test
 
         private static IEnumerable<object[]> GetVersionRange(bool validVersions)
         {
-            IEnumerable<string> range = validVersions
+            var range = validVersions
                 ? ValidVersionRange()
                 : InvalidVersionRange();
 
@@ -297,8 +297,6 @@ namespace NuGet.Packaging.Test
 
         private static IEnumerable<string> ValidVersionRange()
         {
-            yield return null;
-            yield return string.Empty;
             yield return "0.0.0";
             yield return "1.0.0-beta";
             yield return "1.0.1-alpha.1.2.3";
@@ -316,6 +314,10 @@ namespace NuGet.Packaging.Test
 
         private static IEnumerable<string> InvalidVersionRange()
         {
+            yield return null;
+            yield return string.Empty;
+            yield return " ";
+            yield return "\t";
             yield return "~1";
             yield return "~1.0.0";
             yield return "0.0.0-~4";
@@ -328,9 +330,9 @@ namespace NuGet.Packaging.Test
         [Fact]
         public void NuspecReaderTests_NamespaceOnMetadata()
         {
-            NuspecReader reader = GetReader(NamespaceOnMetadataNuspec);
+            var reader = GetReader(NamespaceOnMetadataNuspec);
 
-            string id = reader.GetId();
+            var id = reader.GetId();
 
             Assert.Equal("packageB", id);
         }
@@ -338,9 +340,9 @@ namespace NuGet.Packaging.Test
         [Fact]
         public void NuspecReaderTests_Id()
         {
-            NuspecReader reader = GetReader(BasicNuspec);
+            var reader = GetReader(BasicNuspec);
 
-            string id = reader.GetId();
+            var id = reader.GetId();
 
             Assert.Equal("packageA", id);
         }
@@ -348,7 +350,7 @@ namespace NuGet.Packaging.Test
         [Fact]
         public void NuspecReaderTests_EmptyGroups()
         {
-            NuspecReader reader = GetReader(EmptyGroups);
+            var reader = GetReader(EmptyGroups);
 
             var dependencies = reader.GetDependencyGroups().ToList();
             var references = reader.GetReferenceGroups().ToList();
@@ -360,7 +362,7 @@ namespace NuGet.Packaging.Test
         [Fact]
         public void NuspecReaderTests_DependencyGroups()
         {
-            NuspecReader reader = GetReader(BasicNuspec);
+            var reader = GetReader(BasicNuspec);
 
             var dependencies = reader.GetDependencyGroups().ToList();
 
@@ -370,7 +372,7 @@ namespace NuGet.Packaging.Test
         [Fact]
         public void NuspecReaderTests_DuplicateDependencyGroups()
         {
-            NuspecReader reader = GetReader(DuplicateGroups);
+            var reader = GetReader(DuplicateGroups);
 
             var dependencies = reader.GetDependencyGroups().ToList();
 
@@ -442,7 +444,7 @@ namespace NuGet.Packaging.Test
         [Fact]
         public void NuspecReaderTests_FrameworkGroups()
         {
-            NuspecReader reader = GetReader(CommaDelimitedFrameworksNuspec);
+            var reader = GetReader(CommaDelimitedFrameworksNuspec);
 
             var dependencies = reader.GetFrameworkReferenceGroups().ToList();
 
@@ -452,11 +454,11 @@ namespace NuGet.Packaging.Test
         [Fact]
         public void NuspecReaderTests_FrameworkSplitGroup()
         {
-            NuspecReader reader = GetReader(CommaDelimitedFrameworksNuspec);
+            var reader = GetReader(CommaDelimitedFrameworksNuspec);
 
             var groups = reader.GetFrameworkReferenceGroups();
 
-            var group = groups.Where(e => e.TargetFramework.Equals(NuGetFramework.Parse("net40"))).Single();
+            var group = groups.Single(e => e.TargetFramework.Equals(NuGetFramework.Parse("net40")));
 
             Assert.Equal(2, group.Items.Count());
 
@@ -467,7 +469,7 @@ namespace NuGet.Packaging.Test
         [Fact]
         public void NuspecReaderTests_Language()
         {
-            NuspecReader reader = GetReader(BasicNuspec);
+            var reader = GetReader(BasicNuspec);
 
             var language = reader.GetLanguage();
 
@@ -477,7 +479,7 @@ namespace NuGet.Packaging.Test
         [Fact]
         public void NuspecReaderTests_UnsupportedDependencyGroups()
         {
-            NuspecReader reader = GetReader(UnknownDependencyGroupsNuspec);
+            var reader = GetReader(UnknownDependencyGroupsNuspec);
 
             // verify we can handle multiple unsupported dependency groups gracefully
             var dependencies = reader.GetDependencyGroups().ToList();
@@ -485,14 +487,14 @@ namespace NuGet.Packaging.Test
             // unsupported frameworks remain ungrouped
             Assert.Equal(5, dependencies.Count);
 
-            Assert.Equal(4, dependencies.Where(g => g.TargetFramework == NuGetFramework.UnsupportedFramework).Count());
+            Assert.Equal(4, dependencies.Count(g => g.TargetFramework == NuGetFramework.UnsupportedFramework));
         }
 
         [Fact]
         public void NuspecReaderTests_DependencyWithSingleIncludeExclude()
         {
             // Arrange
-            NuspecReader reader = GetReader(IncludeExcludeNuspec);
+            var reader = GetReader(IncludeExcludeNuspec);
 
             // Act
             var group = reader.GetDependencyGroups().Single();
@@ -507,7 +509,7 @@ namespace NuGet.Packaging.Test
         public void NuspecReaderTests_DependencyWithMultipleInclude()
         {
             // Arrange
-            NuspecReader reader = GetReader(IncludeExcludeNuspec);
+            var reader = GetReader(IncludeExcludeNuspec);
 
             // Act
             var group = reader.GetDependencyGroups().Single();
@@ -522,7 +524,7 @@ namespace NuGet.Packaging.Test
         public void NuspecReaderTests_DependencyWithWhiteSpace()
         {
             // Arrange
-            NuspecReader reader = GetReader(IncludeExcludeNuspec);
+            var reader = GetReader(IncludeExcludeNuspec);
 
             // Act
             var group = reader.GetDependencyGroups().Single();
@@ -537,7 +539,7 @@ namespace NuGet.Packaging.Test
         public void NuspecReaderTests_DependencyWithMultipleExclude()
         {
             // Arrange
-            NuspecReader reader = GetReader(IncludeExcludeNuspec);
+            var reader = GetReader(IncludeExcludeNuspec);
 
             // Act
             var group = reader.GetDependencyGroups().Single();
@@ -552,7 +554,7 @@ namespace NuGet.Packaging.Test
         public void NuspecReaderTests_DependencyWithBlankExclude()
         {
             // Arrange
-            NuspecReader reader = GetReader(IncludeExcludeNuspec);
+            var reader = GetReader(IncludeExcludeNuspec);
 
             // Act
             var group = reader.GetDependencyGroups().Single();
@@ -567,7 +569,7 @@ namespace NuGet.Packaging.Test
         public void NuspecReaderTests_DependencyNoAttributesForIncludeExclude()
         {
             // Arrange
-            NuspecReader reader = GetReader(IncludeExcludeNuspec);
+            var reader = GetReader(IncludeExcludeNuspec);
 
             // Act
             var group = reader.GetDependencyGroups().Single();
@@ -582,7 +584,7 @@ namespace NuGet.Packaging.Test
         public void NuspecReaderTests_DependencyEmptyAttributesForIncludeExclude()
         {
             // Arrange
-            NuspecReader reader = GetReader(IncludeExcludeNuspec);
+            var reader = GetReader(IncludeExcludeNuspec);
 
             // Act
             var group = reader.GetDependencyGroups().Single();

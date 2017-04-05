@@ -479,6 +479,19 @@ namespace NuGet.Packaging
                         throw new PackagingException(message);
                     }
                 }
+                else if (useStrictVersionCheck)
+                {
+                    // Invalid version
+                    var dependencyId = GetAttributeValue(depNode, Id);
+                    var message = string.Format(
+                        CultureInfo.CurrentCulture,
+                        Strings.ErrorInvalidPackageVersionForDependency,
+                        dependencyId,
+                        GetIdentity(),
+                        rangeNode);
+
+                    throw new PackagingException(message);
+                }
 
                 var includeFlags = GetFlags(GetAttributeValue(depNode, IncludeFlags));
                 var excludeFlags = GetFlags(GetAttributeValue(depNode, ExcludeFlags));

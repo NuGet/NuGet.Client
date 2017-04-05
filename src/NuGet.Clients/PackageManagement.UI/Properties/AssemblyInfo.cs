@@ -16,7 +16,7 @@ using System.Windows.Markup;
 [assembly: InternalsVisibleTo("NuGet.PackageManagement.PowerShellCmdlets")]
 #endif
 
-[assembly: AssemblyTitle("NuGet's Package Management UI for Visual Studio")]
+[assembly: AssemblyTitle("NuGet.PackageManagement.UI")]
 [assembly: AssemblyDescription("NuGet's Package Management UI for Visual Studio")]
 [assembly: ComVisible(false)]
 

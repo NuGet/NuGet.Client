@@ -32,10 +32,6 @@
   <!-- Defaults -->
   <PropertyGroup>
     <TreatWarningsAsErrors Condition=" '$(TreatWarningsAsErrors)' == '' ">true</TreatWarningsAsErrors>
-    <GenerateAssemblyCompanyAttribute Condition=" '$(GenerateAssemblyCompanyAttribute)' == '' ">false</GenerateAssemblyCompanyAttribute>
-    <GenerateAssemblyProductAttribute Condition=" '$(GenerateAssemblyProductAttribute)' == '' ">false</GenerateAssemblyProductAttribute>
-    <GenerateAssemblyCopyrightAttribute Condition=" '$(GenerateAssemblyCopyrightAttribute)' == '' ">false</GenerateAssemblyCopyrightAttribute>
-    <GenerateNeutralResourcesLanguageAttribute Condition=" '$(GenerateNeutralResourcesLanguageAttribute)' == '' ">false</GenerateNeutralResourcesLanguageAttribute>
   </PropertyGroup>
 
   <!-- Default project configuration -->
@@ -171,6 +167,12 @@
   <PropertyGroup Condition=" '$(IsNetCoreProject)' == 'true' ">
     <!-- Assembly attributes for net core projects -->
     <AssemblyVersion>$(SemanticVersion).$(PreReleaseVersion)</AssemblyVersion>
+    <FileVersion>$(SemanticVersion).$(PreReleaseVersion)</FileVersion>
+    <InformationalVersion>$(SemanticVersion)$(PreReleaseInformationVersion)</InformationalVersion>
+    <Company>Microsoft Corporation</Company>
+    <Product>NuGet</Product>
+    <Copyright>Microsoft Corporation. All rights reserved.</Copyright>
+    <NeutralLanguage>en-US</NeutralLanguage>
 
     <SchemaVersion>2.0</SchemaVersion>
     <TypeScriptCompileBlocked>True</TypeScriptCompileBlocked>
