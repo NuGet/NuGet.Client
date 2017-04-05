@@ -18,9 +18,9 @@ namespace Dotnet.Integration.Test
     [Collection("Dotnet Integration Tests")]
     public class PackCommandTests
     {
-        private MsbuilldIntegrationTestFixture msbuildFixture;
+        private MsbuildIntegrationTestFixture msbuildFixture;
 
-        public PackCommandTests(MsbuilldIntegrationTestFixture fixture)
+        public PackCommandTests(MsbuildIntegrationTestFixture fixture)
         {
             this.msbuildFixture = fixture;
         }

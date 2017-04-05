@@ -751,7 +751,7 @@ namespace NuGet.CommandLine.Test
                     bool packageDownloadIsCalled = false;
 
                     server.Get.Add("/nuget/$metadata", r =>
-                       MockServerResource.NuGetV2APIMetadata);
+                       Util.GetMockServerResource());
                     server.Get.Add("/nuget/Packages(Id='testPackage1',Version='1.1.0')", r =>
                         new Action<HttpListenerResponse>(response =>
                         {
@@ -807,7 +807,7 @@ namespace NuGet.CommandLine.Test
                 {
                     List<string> requests = new List<string>();
                     server.Get.Add("/nuget/$metadata", r =>
-                       MockServerResource.NuGetV2APIMetadata);
+                       Util.GetMockServerResource());
                     server.Get.Add("/nuget/Packages", r =>
                     {
                         requests.Add(r.Url.ToString());
@@ -863,7 +863,7 @@ namespace NuGet.CommandLine.Test
                     bool packageDownloadIsCalled = false;
 
                     server.Get.Add("/nuget/$metadata", r =>
-                       MockServerResource.NuGetV2APIMetadata);
+                       Util.GetMockServerResource());
                     server.Get.Add("/nuget/FindPackagesById()", r =>
                         new Action<HttpListenerResponse>(response =>
                         {
@@ -947,7 +947,7 @@ namespace NuGet.CommandLine.Test
                     bool packageDownloadIsCalled = false;
 
                     server.Get.Add("/nuget/$metadata", r =>
-                       MockServerResource.NuGetV2APIMetadata);
+                       Util.GetMockServerResource());
                     server.Get.Add("/nuget/FindPackagesById()", r =>
                         new Action<HttpListenerResponse>(response =>
                         {
