@@ -479,8 +479,18 @@ namespace NuGet.PackageManagement.VisualStudio
                     await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                     EnsureInitialize();
-                    var value = GetVSSolutionProperty((int)(__VSPROPID4.VSPROPID_IsSolutionFullyLoaded));
-                    return (bool)value;
+                    // due to issue https://github.com/NuGet/Home/issues/4485, we are trying to avoid null ref here.
+                    if (_vsSolution != null)
+                    {
+                        var value = GetVSSolutionProperty((int)(__VSPROPID4.VSPROPID_IsSolutionFullyLoaded));
+                        return (bool)value;
+                    }
+                    else
+                    {
+                        Debug.Assert(vsSolution != null, "Failed to get IVsSolution from service provider.");
+
+                        return false;
+                    }
                 });
             }
         }
