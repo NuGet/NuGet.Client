@@ -17,7 +17,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Nuget.Core.FuncTests", "Nug
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shared", "Shared", "{DE23D071-162F-47A3-BC68-42E4A354835C}"
 	ProjectSection(SolutionItems) = preProject
-		Shared\CommonAssemblyInfo.cs = Shared\CommonAssemblyInfo.cs
 		Shared\EqualityUtility.cs = Shared\EqualityUtility.cs
 		Shared\HashCodeCombiner.cs = Shared\HashCodeCombiner.cs
 		Shared\TypeExtensions.cs = Shared\TypeExtensions.cs
