@@ -144,10 +144,11 @@ namespace NuGet.CommandLine
                         // Remove input list, everything has been loaded already
                         restoreContext.Inputs.Clear();
 
+                        // Create requests using settings based on the project directory. This is to provide
+                        // the same behavior as dotnet.exe restore and msbuild /t:restore
                         restoreContext.PreLoadedRequestProviders.Add(new DependencyGraphSpecRequestProvider(
                             providerCache,
-                            restoreInputs.ProjectReferenceLookup,
-                            Settings));
+                            restoreInputs.ProjectReferenceLookup));
                     }
                     else
                     {

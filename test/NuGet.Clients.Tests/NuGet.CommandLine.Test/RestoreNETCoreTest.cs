@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -8,16 +7,174 @@ using System.Xml.Linq;
 using Newtonsoft.Json.Linq;
 using NuGet.Frameworks;
 using NuGet.Packaging;
-using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
 using NuGet.Test.Utility;
-using NuGet.Versioning;
 using Xunit;
 
 namespace NuGet.CommandLine.Test
 {
     public class RestoreNetCoreTest
     {
+        /// <summary>
+        /// Create 3 projects, each with their own nuget.config file and source.
+        /// </summary>
+        [Fact]
+        public void RestoreNetCore_VerifyPerProjectConfigSourcesUsed()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+                var projects = new Dictionary<string, SimpleTestProjectContext>();
+
+                foreach (var letter in new[] { "A", "B", "C", "D" })
+                {
+                    // Project
+                    var project = SimpleTestProjectContext.CreateNETCore(
+                        $"project{letter}",
+                        pathContext.SolutionRoot,
+                        NuGetFramework.Parse("net45"));
+
+                    projects.Add(letter, project);
+                    solution.Projects.Add(project);
+
+                    // Package
+                    var package = new SimpleTestPackageContext()
+                    {
+                        Id = $"package{letter}",
+                        Version = "1.0.0"
+                    };
+
+                    project.AddPackageToAllFrameworks(package);
+                    project.Properties.Clear();
+
+                    // Source
+                    var source = Path.Combine(pathContext.WorkingDirectory, $"source{letter}");
+                    SimpleTestPackageUtility.CreatePackages(source, package);
+
+                    // Create a nuget.config for the project specific source.
+                    var projectDir = Path.GetDirectoryName(project.ProjectPath);
+                    Directory.CreateDirectory(projectDir);
+                    var configPath = Path.Combine(projectDir, "NuGet.Config");
+
+                    var doc = new XDocument();
+                    var configuration = new XElement(XName.Get("configuration"));
+                    doc.Add(configuration);
+
+                    var config = new XElement(XName.Get("config"));
+                    configuration.Add(config);
+
+                    var packageSources = new XElement(XName.Get("packageSources"));
+                    configuration.Add(packageSources);
+
+                    var sourceEntry = new XElement(XName.Get("add"));
+                    sourceEntry.Add(new XAttribute(XName.Get("key"), "projectSource"));
+                    sourceEntry.Add(new XAttribute(XName.Get("value"), source));
+                    packageSources.Add(sourceEntry);
+
+                    File.WriteAllText(configPath, doc.ToString());
+                }
+
+                solution.Create(pathContext.SolutionRoot);
+
+                // Act
+                var r = RestoreSolution(pathContext);
+
+                // Assert
+                Assert.True(projects.Count > 0);
+
+                foreach (var letter in projects.Keys)
+                {
+                    Assert.True(projects[letter].AssetsFile.Libraries.Select(e => e.Name).Contains($"package{letter}"));
+                }
+            }
+        }
+
+        /// <summary>
+        /// Verify the project level config can override a solution level config's sources.
+        /// </summary>
+        [Fact]
+        public void RestoreNetCore_VerifyProjectConfigCanOverrideSolutionConfig()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                // Project
+                var project = SimpleTestProjectContext.CreateNETCore(
+                    $"projectA",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("net45"));
+
+                solution.Projects.Add(project);
+
+                // Package
+                var packageGood = new SimpleTestPackageContext()
+                {
+                    Id = $"packageA",
+                    Version = "1.0.0"
+                };
+
+                var packageGoodDep = new SimpleTestPackageContext()
+                {
+                    Id = $"packageB",
+                    Version = "1.0.0"
+                };
+
+                packageGood.Dependencies.Add(packageGoodDep);
+
+                var packageBad = new SimpleTestPackageContext()
+                {
+                    Id = $"packageA",
+                    Version = "1.0.0"
+                };
+
+                project.AddPackageToAllFrameworks(packageBad);
+                project.Properties.Clear();
+
+                // Source
+                var source = Path.Combine(pathContext.WorkingDirectory, "sourceA");
+
+                // The override source contains an extra dependency
+                SimpleTestPackageUtility.CreatePackages(source, packageGood, packageGoodDep);
+
+                // The solution level source does not contain B
+                SimpleTestPackageUtility.CreatePackages(pathContext.PackageSource, packageBad);
+
+                // Create a nuget.config for the project specific source.
+                var projectDir = Path.GetDirectoryName(project.ProjectPath);
+                Directory.CreateDirectory(projectDir);
+                var configPath = Path.Combine(projectDir, "NuGet.Config");
+
+                var doc = new XDocument();
+                var configuration = new XElement(XName.Get("configuration"));
+                doc.Add(configuration);
+
+                var config = new XElement(XName.Get("config"));
+                configuration.Add(config);
+
+                var packageSources = new XElement(XName.Get("packageSources"));
+                configuration.Add(packageSources);
+                packageSources.Add(new XElement(XName.Get("clear")));
+
+                var sourceEntry = new XElement(XName.Get("add"));
+                sourceEntry.Add(new XAttribute(XName.Get("key"), "projectSource"));
+                sourceEntry.Add(new XAttribute(XName.Get("value"), source));
+                packageSources.Add(sourceEntry);
+
+                File.WriteAllText(configPath, doc.ToString());
+
+                solution.Create(pathContext.SolutionRoot);
+
+                // Act
+                var r = RestoreSolution(pathContext);
+
+                // Assert
+                Assert.True(project.AssetsFile.Libraries.Select(e => e.Name).Contains("packageB"));
+            }
+        }
+
         [Fact]
         public async Task RestoreNetCore_VerifyPackageReference_WithoutRestoreProjectStyle()
         {
@@ -170,7 +327,7 @@ namespace NuGet.CommandLine.Test
                     PackageSaveMode.Defaultv3,
                     packageX);
 
-                XDocument projectXML = XDocument.Load(projectA.ProjectPath);
+                var projectXML = XDocument.Load(projectA.ProjectPath);
                 projectXML.Root.AddFirst(new XElement(XName.Get("Target", "http://schemas.microsoft.com/developer/msbuild/2003"), new XAttribute(XName.Get("Name"), "_SplitProjectReferencesByFileExistence")));
                 projectXML.Save(projectA.ProjectPath);
 
@@ -232,7 +389,7 @@ namespace NuGet.CommandLine.Test
                     { "NUGET_PERSIST_DG_PATH", dgPath }
                 };
 
-                string[] args = new string[] {
+                var args = new string[] {
                     "restore",
                     projectA.ProjectPath,
                     "-Verbosity",
@@ -304,7 +461,7 @@ namespace NuGet.CommandLine.Test
                     { "NUGET_PERSIST_DG_PATH", dgPath }
                 };
 
-                string[] args = new string[] {
+                var args = new string[] {
                     "restore",
                     projectA.ProjectPath,
                     "-Verbosity",
@@ -714,7 +871,7 @@ namespace NuGet.CommandLine.Test
             using (var pathContext = new SimpleTestPathContext())
             {
                 // Create this many different tool versions and projects
-                int testCount = 10;
+                var testCount = 10;
 
                 // Set up solution, project, and packages
                 var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
@@ -735,7 +892,7 @@ namespace NuGet.CommandLine.Test
 
                 var projects = new List<SimpleTestProjectContext>();
 
-                for (int i = 0; i < testCount; i++)
+                for (var i = 0; i < testCount; i++)
                 {
                     var project = SimpleTestProjectContext.CreateNETCore(
                         $"proj{i}",
@@ -788,8 +945,6 @@ namespace NuGet.CommandLine.Test
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
             {
-                pathContext.CleanUp = false;
-
                 // Set up solution, project, and packages
                 var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
 
@@ -807,7 +962,7 @@ namespace NuGet.CommandLine.Test
 
                 var projects = new List<SimpleTestProjectContext>();
 
-                for (int i = 0; i < 10; i++)
+                for (var i = 0; i < 10; i++)
                 {
                     var project = SimpleTestProjectContext.CreateNETCore(
                         $"proj{i}",
@@ -849,8 +1004,6 @@ namespace NuGet.CommandLine.Test
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
             {
-                pathContext.CleanUp = false;
-
                 // Set up solution, project, and packages
                 var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
 
@@ -868,7 +1021,7 @@ namespace NuGet.CommandLine.Test
 
                 var projects = new List<SimpleTestProjectContext>();
 
-                for (int i = 0; i < 10; i++)
+                for (var i = 0; i < 10; i++)
                 {
                     var project = SimpleTestProjectContext.CreateNETCore(
                         $"proj{i}",
@@ -908,8 +1061,6 @@ namespace NuGet.CommandLine.Test
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
             {
-                pathContext.CleanUp = false;
-
                 // Set up solution, project, and packages
                 var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
 
@@ -1041,8 +1192,6 @@ namespace NuGet.CommandLine.Test
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
             {
-                pathContext.CleanUp = false;
-
                 // Set up solution, project, and packages
                 var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
 
@@ -1091,8 +1240,6 @@ namespace NuGet.CommandLine.Test
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
             {
-                pathContext.CleanUp = false;
-
                 // Set up solution, project, and packages
                 var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
 
@@ -2021,7 +2168,7 @@ namespace NuGet.CommandLine.Test
                     { "NUGET_PERSIST_DG_PATH", dgPath }
                 };
 
-                string[] args = new string[] {
+                var args = new string[] {
                     "restore",
                     projectA.ProjectPath,
                     "-Verbosity",
@@ -2121,7 +2268,7 @@ namespace NuGet.CommandLine.Test
                     { "NUGET_PERSIST_DG_PATH", dgPath }
                 };
 
-                string[] args = new string[] {
+                var args = new string[] {
                     "restore",
                     projectA.ProjectPath,
                     "-Verbosity",
@@ -2234,7 +2381,7 @@ namespace NuGet.CommandLine.Test
                     { "NUGET_PERSIST_DG_PATH", dgPath }
                 };
 
-                string[] args = new string[] {
+                var args = new string[] {
                     "restore",
                     projectA.ProjectPath,
                     "-Verbosity",
@@ -2312,7 +2459,7 @@ namespace NuGet.CommandLine.Test
                     { "NUGET_PERSIST_DG_PATH", dgPath }
                 };
 
-                string[] args = new string[] {
+                var args = new string[] {
                     "restore",
                     projectA.ProjectPath,
                     "-Verbosity",
@@ -2408,7 +2555,7 @@ namespace NuGet.CommandLine.Test
                     { "NUGET_PERSIST_DG_PATH", dgPath }
                 };
 
-                string[] args = new string[] {
+                var args = new string[] {
                     "restore",
                     projectA.ProjectPath,
                     "-Verbosity",
@@ -2509,7 +2656,7 @@ namespace NuGet.CommandLine.Test
                     { "NUGET_PERSIST_DG_PATH", dgPath }
                 };
 
-                string[] args = new string[] {
+                var args = new string[] {
                     "restore",
                     projectA.ProjectPath,
                     "-Verbosity",
@@ -3083,7 +3230,7 @@ namespace NuGet.CommandLine.Test
 
                 // Assert
                 var targetNet = projectA.AssetsFile.Targets.Single(e => e.TargetFramework.Equals(NuGetFramework.Parse("net46")) && string.IsNullOrEmpty(e.RuntimeIdentifier));
-                var targetNS = projectA.AssetsFile.Targets.Single(e => e.TargetFramework.Equals(NuGetFramework.Parse("netstandard1.6"))  && string.IsNullOrEmpty(e.RuntimeIdentifier));
+                var targetNS = projectA.AssetsFile.Targets.Single(e => e.TargetFramework.Equals(NuGetFramework.Parse("netstandard1.6")) && string.IsNullOrEmpty(e.RuntimeIdentifier));
 
                 Assert.Equal("x", targetNet.Libraries.Single(e => e.Type == "package").Name);
                 Assert.Equal("x", targetNS.Libraries.Single(e => e.Type == "package").Name);
@@ -3254,7 +3401,7 @@ namespace NuGet.CommandLine.Test
                     { "NUGET_PERSIST_DG_PATH", dgPath }
                 };
 
-            string[] args = new string[] {
+            var args = new string[] {
                     "restore",
                     pathContext.SolutionRoot,
                     "-Verbosity",

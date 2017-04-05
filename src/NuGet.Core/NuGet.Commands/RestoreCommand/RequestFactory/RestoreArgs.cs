@@ -105,7 +105,7 @@ namespace NuGet.Commands
 
             // Load from environment, nuget.config or default location, and resolve relative paths
             // to the project root.
-            string globalPath = SettingsUtility.GetGlobalPackagesFolder(settings);
+            var globalPath = SettingsUtility.GetGlobalPackagesFolder(settings);
             return Path.GetFullPath(Path.Combine(rootDirectory, globalPath));
         }
 
@@ -124,7 +124,9 @@ namespace NuGet.Commands
                 throw new ArgumentNullException(nameof(settings));
             }
 
-            return _sourcesCache.GetOrAdd(settings.Root, (root) => GetEffectiveSourcesCore(settings));
+            var cacheKey = string.Join("|", settings.Priority.Select(e => e.Root));
+
+            return _sourcesCache.GetOrAdd(cacheKey, (root) => GetEffectiveSourcesCore(settings));
         }
 
         private List<SourceRepository> GetEffectiveSourcesCore(ISettings settings)
