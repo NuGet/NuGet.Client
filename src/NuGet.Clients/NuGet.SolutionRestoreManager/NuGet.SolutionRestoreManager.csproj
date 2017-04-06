@@ -72,9 +72,9 @@
       <Project>{eea49a74-6efc-410e-9745-bad367ac151d}</Project>
       <Name>NuGet.VisualStudio.Facade</Name>
     </ProjectReference>
-    <ProjectReference Include="..\VsConsole\Console.Types\NuGet.Console.Types.csproj">
-      <Project>{6fd11460-39a3-4a10-ba63-7541b0a7d053}</Project>
-      <Name>NuGet.Console.Types</Name>
+    <ProjectReference Include="..\VsConsole\Console\NuGet.Console.csproj">
+      <Project>{50e33da2-af14-486d-81b8-bd8409744a38}</Project>
+      <Name>NuGet.Console</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
@@ -88,7 +88,6 @@
       <MergeWithCTO>true</MergeWithCTO>
     </EmbeddedResource>
   </ItemGroup>
-
   <Import Project="$(BuildCommonDirectory)legacy.imports.targets" />
   <Import Project="$(BuildCommonDirectory)common.targets" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
