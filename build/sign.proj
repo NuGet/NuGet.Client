@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" DefaultTargets="Test" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.props" />
+  <Import Project="$(SolutionPackagesFolder)microbuild.core.0.2.0\build\MicroBuild.Core.props"/>
+  
+  <!-- Configuration/global properties -->
+  <PropertyGroup>
+    <CommonMSBuildProperties>
+      Configuration=$(Configuration);
+      ReleaseLabel=$(ReleaseLabel);
+      BuildNumber=$(BuildNumber);
+      BuildRTM=$(BuildRTM);
+    </CommonMSBuildProperties>
+    <OutDir>$(ArtifactsDirectory)</OutDir>
+    <IntermediateOutputPath>$(ArtifactsDirectory)</IntermediateOutputPath>
+  </PropertyGroup>
+  
+  <!-- All projects in the repository -->
+  <ItemGroup> 
+      <SolutionProjects Include="$(RepositoryRootDirectory)src\*\*\*.csproj" />
+  </ItemGroup>
+
+  <Target Name="AfterBuild">
+    <MSBuild
+      Projects="@(SolutionProjects)"
+      Targets="GetSigningInputs">
+
+      <Output
+          TaskParameter="TargetOutputs"
+          ItemName="FilesToSign" />
+    </MSBuild>
+    <Message Text="Files to sign ----- @(FilesToSign)" Importance="High"/>
+  </Target>  
+  <Import Project="$(SolutionPackagesFolder)microbuild.core.0.2.0\build\MicroBuild.Core.targets" />
+</Project>

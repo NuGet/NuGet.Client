@@ -1,18 +1,18 @@
-<?xml version="1.0"?>
+﻿<?xml version="1.0"?>
 <package>
   <metadata>
     <id>NuGet.Build.Tasks.Pack</id>
     <version>$version$</version>
     <authors>Microsoft</authors>
     <owners>Microsoft</owners>
-    <description>NuGet 3 pack for dotnet CLI</description>
+    <description>NuGet  pack for dotnet CLI</description>
   </metadata>
   <files>
-    <file src="..\..\..\artifacts\NuGet.Build.Tasks.Pack.Library\15.0\bin\$configuration$\net45\ilmerge\NuGet.Build.Tasks.Pack.dll" target="Desktop\" />
-    <file src="..\..\..\artifacts\NuGet.Build.Tasks.Pack.Library\15.0\bin\$configuration$\net45\ilmerge\NuGet.Build.Tasks.Pack.xml" target="Desktop\" />
-    <file src="..\..\..\artifacts\NuGet.Build.Tasks.Pack.Library\15.0\bin\$configuration$\netstandard1.3\ilmerge\NuGet.Build.Tasks.Pack.dll" target="CoreCLR\" />
-    <file src="..\..\..\artifacts\NuGet.Build.Tasks.Pack.Library\15.0\bin\$configuration$\netstandard1.3\ilmerge\NuGet.Build.Tasks.Pack.xml" target="CoreCLR\" />
-    <file src="Pack.targets" target="buildCrossTargeting\NuGet.Build.Tasks.Pack.targets" />
-    <file src="Pack.targets" target="build\NuGet.Build.Tasks.Pack.targets" />
+    <file src="net45\ilmerge\NuGet.Build.Tasks.Pack.dll" target="Desktop\" />
+    <file src="net45\ilmerge\NuGet.Build.Tasks.Pack.xml" target="Desktop\" />
+    <file src="netstandard1.3\ilmerge\NuGet.Build.Tasks.Pack.dll" target="CoreCLR\" />
+    <file src="netstandard1.3\ilmerge\NuGet.Build.Tasks.Pack.xml" target="CoreCLR\" />
+    <file src="net45\Pack.targets" target="buildCrossTargeting\NuGet.Build.Tasks.Pack.targets" />
+    <file src="net45\Pack.targets" target="build\NuGet.Build.Tasks.Pack.targets" />
   </files>
 </package>

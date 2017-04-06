@@ -24,6 +24,9 @@
   <ImportGroup Condition=" '$(SkipSigning)' != 'true' ">
     <Import Project="sign.targets" />
   </ImportGroup>
+  <PropertyGroup Condition="'$(Shipping)' == 'true'">
+    <SignTargetsForRealSigning>GetBuildOutputWithSigningMetadata</SignTargetsForRealSigning>
+  </PropertyGroup>
 
   <!-- Write out .XML files for projects that will be packed. -->
   <PropertyGroup Condition=" '$(PackProject)' == 'true' ">
@@ -86,6 +89,37 @@
                   IncludeSymbols=true;
                   NoBuild=true;">
     </MSBuild>
+  </Target>
+
+  <!--
+    ============================================================
+    GatherSigningInputs - gathers the list of DLLs that need to
+    be signed from each project
+    ============================================================
+  -->
+  <Target Name="GetSigningInputs" Returns="@(DllsToSign)" Condition=" '$(Shipping)' == 'true' ">
+  <ItemGroup>
+    <_Tfm Condition="'$(TargetFramework)' == ''" Include="$(TargetFrameworks.Split(';'))"/>
+    <_Tfm Condition="'$(TargetFramework)' != ''" Include="$(TargetFramework)"/>
+  </ItemGroup>
+    <MSBuild
+      Projects="$(MSBuildProjectFullPath)"
+      Targets="$(SignTargetsForRealSigning)"
+      Properties="TargetFramework=%(_Tfm.Identity);">
+
+      <Output
+          TaskParameter="TargetOutputs"
+          ItemName="DllsToSign" />
+    </MSBuild>
+  </Target>
+
+  <Target Name="GetBuildOutputWithSigningMetadata" DependsOnTargets="BuiltProjectOutputGroup" Returns="@(DllsToSignWithMetadata)">
+    <ItemGroup>
+      <DllsToSignWithMetadata Include="@(BuiltProjectOutputGroupOutput->'%(FinalOutputPath)')" Condition="'%(Extension)' != '.json'" KeepDuplicates="false">
+        <StrongName>$(StrongNameCert)</StrongName>
+        <Authenticode>Microsoft</Authenticode>
+      </DllsToSignWithMetadata>
+    </ItemGroup>
   </Target>
 
   <!--

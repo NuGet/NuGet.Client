@@ -156,7 +156,7 @@
     <ProjectReference Include="..\NuGet.Tools\NuGet.Tools.csproj">
       <Project>{D0F9864B-D782-4471-81A2-29555E5DC0D7}</Project>
       <Name>NuGet.Tools</Name>
-      <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup%3bPkgdefProjectOutputGroup%3bGetCopyToOutputDirectoryItems</IncludeOutputGroupsInVSIX>
+      <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup;PkgdefProjectOutputGroup;GetCopyToOutputDirectoryItems</IncludeOutputGroupsInVSIX>
       <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup</IncludeOutputGroupsInVSIXLocalOnly>
     </ProjectReference>
     <ProjectReference Include="..\..\NuGet.Core\NuGet.Indexing\NuGet.Indexing.csproj">
@@ -180,7 +180,7 @@
     <ProjectReference Include="..\NuGet.SolutionRestoreManager\NuGet.SolutionRestoreManager.csproj">
       <Project>{06662133-1292-4918-90f3-36c930c0b16f}</Project>
       <Name>NuGet.SolutionRestoreManager</Name>
-      <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup%3bPkgdefProjectOutputGroup</IncludeOutputGroupsInVSIX>
+      <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup;PkgdefProjectOutputGroup</IncludeOutputGroupsInVSIX>
       <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup</IncludeOutputGroupsInVSIXLocalOnly>
     </ProjectReference>
     <ProjectReference Include="..\NuGet.VisualStudio.Implementation\NuGet.VisualStudio.Implementation.csproj">
@@ -234,7 +234,7 @@
     <ProjectReference Include="..\NuGetConsole.Host.PowerShell\NuGetConsole.Host.PowerShell.csproj">
       <Project>{5a79eef3-51c0-4a14-8d37-50ef38ad835d}</Project>
       <Name>NuGetConsole.Host.PowerShell</Name>
-      <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup%3bBuiltProjectOutputGroupDependencies%3bGetCopyToOutputDirectoryItems%3bSatelliteDllsProjectOutputGroup%3b</IncludeOutputGroupsInVSIX>
+      <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup;BuiltProjectOutputGroupDependencies;GetCopyToOutputDirectoryItems;SatelliteDllsProjectOutputGroup</IncludeOutputGroupsInVSIX>
       <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup</IncludeOutputGroupsInVSIXLocalOnly>
     </ProjectReference>
   </ItemGroup>

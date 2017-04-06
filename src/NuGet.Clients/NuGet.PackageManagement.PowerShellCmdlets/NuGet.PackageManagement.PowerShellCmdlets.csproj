@@ -68,7 +68,6 @@
     <Compile Include="Model\VersionType.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="PackageManagement.PowerShellCmdlets.nuspec" />
     <None Include="project.json" />
   </ItemGroup>
   <ItemGroup>

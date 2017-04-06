@@ -17,6 +17,7 @@
   <ItemGroup>
     <Compile Include="..\NuGet.Build.Tasks\Common\MSBuildLogger.cs" />
     <Content Include="Pack.targets">
+       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
 
@@ -73,9 +74,31 @@
   </Target>
 
   <Import Project="$(BuildCommonDirectory)common.targets" />
-
+  
+  <PropertyGroup>
+    <SignTargetsForRealSigning>GetBuildOutputWithReferences</SignTargetsForRealSigning>
+  </PropertyGroup>
+  
+  <!--These targets help get all the DLLs that are packed in the nuspec to be sent for signing.-->
+  <Target Name="GetBuildOutputWithReferences" DependsOnTargets="_GetDllsInOutputDirectory" Returns="@(DllsToSign)">
+    <ItemGroup>
+      <DllsToSign Include="@(DllsInOutputDir)" KeepDuplicates="false" />
+    </ItemGroup>
+    <Message Text="DllsToSign :  @(DllsToSign)" Importance="High" />
+  </Target>
+  
+  <Target Name="_GetDllsInOutputDirectory" Returns="@(DllsInOutputDir)">
+    <ItemGroup>
+      <DllsInOutputDir Include="$(OutputPath)\ilmerge\*.dll" KeepDuplicates="false">
+        <StrongName>MsSharedLib72</StrongName>
+        <Authenticode>Microsoft</Authenticode>
+      </DllsInOutputDir>
+    </ItemGroup>
+  </Target>
+  
   <PropertyGroup>
     <NuspecFile>NuGet.Build.Tasks.Pack.nuspec</NuspecFile>
     <NuspecProperties>version=$(Version);configuration=$(Configuration)</NuspecProperties>
+    <NuspecBasePath>$(OutputPath)</NuspecBasePath>
   </PropertyGroup>
 </Project>

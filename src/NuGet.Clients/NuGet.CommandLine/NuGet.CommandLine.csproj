@@ -98,4 +98,13 @@
   </PropertyGroup>
 
   <Import Project="$(BuildCommonDirectory)common.targets" />
+  
+  <Target Name="GetSigningInputs" Returns="@(DllsToSign)">
+  <ItemGroup>
+    <DllsToSign Include="$(ArtifactsDirectory)$(VsixOutputDirName)\NuGet.exe">
+      <StrongName>MsSharedLib72</StrongName>
+      <Authenticode>Microsoft</Authenticode>
+    </DllsToSign>
+  </ItemGroup>
+  </Target>
 </Project>

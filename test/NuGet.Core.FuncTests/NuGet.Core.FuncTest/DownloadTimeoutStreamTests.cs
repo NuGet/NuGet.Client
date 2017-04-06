@@ -83,7 +83,7 @@ namespace NuGet.Core.FuncTest
             await VerifyTimeoutOnReadAsync(stream => Task.FromResult(ReadStream(stream)));
         }
         
-        [Fact]
+        //[Fact]
         public async Task DownloadTimeoutStream_FailureSync()
         {
             await VerifyFailureOnReadAsync(stream => Task.FromResult(ReadStream(stream)));
