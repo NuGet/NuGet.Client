@@ -764,17 +764,15 @@ function Move-ConfigFile {
     # Turn off ReadOnly as that interferes with File.Delete in config file and sources command tests.
     if(-Not (Test-Path $DestPath)){
         Copy-Item $SrcPath $DestPath
-
         if (-not $?)
         {
-            Write-Error "Copying Config Files for functest failed!"
+            Write-Error "Copying Config Files for functest failed for file: $($ConfigFileName)"
         }       
     }
 
     Set-ItemProperty $DestPath -Name IsReadOnly -Value $false
-
     if (-not $?)
     {
-        Write-Error "Copying Config Files for functest failed!"
+        Write-Error "Turning ReadOnly off failed for file: $($ConfigFileName)"
     }
 }
