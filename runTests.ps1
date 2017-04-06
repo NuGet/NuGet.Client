@@ -107,11 +107,17 @@ Invoke-BuildStep 'Copying Config Files for functest' {
 
     # These Files are ReadOnly as they are copied from a TFS clone.
     # Turn off ReadOnly as that interferes with File.Delete in config file and sources command tests.
-    Copy-Item $env:NuGetBuildRoot\ConfigFiles\NuGet.Config $env:APPDATA\NuGet\NuGet.Config -PassThru
+    Copy-Item $env:NuGetBuildRoot\ConfigFiles\NuGet.Config $env:APPDATA\NuGet\NuGet.Config
 
     Copy-Item $env:NuGetBuildRoot\ConfigFiles\NuGet.Core.FuncTests.Config $env:APPDATA\NuGet\NuGet.Core.FuncTests.Config
 
     Copy-Item $env:NuGetBuildRoot\ConfigFiles\NuGet.Protocol.FuncTest.config $env:APPDATA\NuGet\NuGet.Protocol.FuncTest.config
+
+    Set-ItemProperty $env:APPDATA\NuGet\NuGet.Config -Name IsReadOnly -Value $false
+
+    Set-ItemProperty $env:APPDATA\NuGet\NuGet.Core.FuncTests.Config -Name IsReadOnly -Value $false
+
+    Set-ItemProperty $env:APPDATA\NuGet\NuGet.Protocol.FuncTest.config -Name IsReadOnly -Value $false
     
     if (-not $?)
     {
