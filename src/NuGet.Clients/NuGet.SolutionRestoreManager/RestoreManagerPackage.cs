@@ -48,11 +48,11 @@ namespace NuGet.SolutionRestoreManager
 
         private IVsSolutionBuildManager5 _solutionBuildManager;
 
-        // keeps a reference to BuildEvents so that our event handler
-        // won't get disconnected.
-        private EnvDTE.BuildEvents _buildEvents;
+        private IVsSolutionBuildManager3 _solutionBuildManager3;
 
         private uint _updateSolutionEventsCookie4;
+
+        private uint _updateSolutionEventsCookie3;
 
         protected override async Task InitializeAsync(
             CancellationToken cancellationToken,
@@ -73,15 +73,13 @@ namespace NuGet.SolutionRestoreManager
             var lockService = new Lazy<INuGetLockService>(
                 () => componentModel.GetService<INuGetLockService>());
 
-            var updateSolutionEvent = new VsUpdateSolutionEvent(lockService);
+            var updateSolutionEvent = new VsUpdateSolutionEvent(lockService, this);
 
             // Don't use CPS thread helper because of RPS perf regression
             await ThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {
                 await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
                 var dte = (EnvDTE.DTE)await GetServiceAsync(typeof(SDTE));
-                _buildEvents = dte.Events.BuildEvents;
-                _buildEvents.OnBuildBegin += BuildEvents_OnBuildBegin;
 
                 UserAgent.SetUserAgentString(
                     new UserAgentStringBuilder().WithVisualStudioSKU(dte.GetFullVsVersionString()));
@@ -90,6 +88,11 @@ namespace NuGet.SolutionRestoreManager
                 Assumes.Present(_solutionBuildManager);
 
                 _solutionBuildManager.AdviseUpdateSolutionEvents4(updateSolutionEvent, out _updateSolutionEventsCookie4);
+
+                _solutionBuildManager3 = (IVsSolutionBuildManager3)await GetServiceAsync(typeof(SVsSolutionBuildManager));
+                Assumes.Present(_solutionBuildManager3);
+
+                _solutionBuildManager3.AdviseUpdateSolutionEvents3(updateSolutionEvent, out _updateSolutionEventsCookie3);
             });
 
             await SolutionRestoreCommand.InitializeAsync(this);
@@ -105,28 +108,11 @@ namespace NuGet.SolutionRestoreManager
             {
                 _solutionBuildManager?.UnadviseUpdateSolutionEvents4(_updateSolutionEventsCookie4);
             }
-        }
 
-        private void BuildEvents_OnBuildBegin(
-            EnvDTE.vsBuildScope scope, EnvDTE.vsBuildAction Action)
-        {
-            if (Action == EnvDTE.vsBuildAction.vsBuildActionClean)
+            if (_updateSolutionEventsCookie3 != 0)
             {
-                // Clear the project.json restore cache on clean to ensure that the next build restores again
-                SolutionRestoreWorker.CleanCache();
-
-                return;
+                _solutionBuildManager3?.UnadviseUpdateSolutionEvents3(_updateSolutionEventsCookie3);
             }
-
-            if (!ShouldRestoreOnBuild)
-            {
-                return;
-            }
-
-            var forceRestore = Action == EnvDTE.vsBuildAction.vsBuildActionRebuildAll;
-
-            // Execute
-            SolutionRestoreWorker.Restore(SolutionRestoreRequest.OnBuild(forceRestore));
         }
 
         /// <summary>
@@ -141,13 +127,58 @@ namespace NuGet.SolutionRestoreManager
             }
         }
 
-        private sealed class VsUpdateSolutionEvent : IVsUpdateSolutionEvents4
+        private sealed class VsUpdateSolutionEvent : IVsUpdateSolutionEvents4, IVsUpdateSolutionEvents3
         {
+            private const uint REBUILD_FLAG = (uint)VSSOLNBUILDUPDATEFLAGS.SBF_OPERATION_FORCE_UPDATE + (uint)VSSOLNBUILDUPDATEFLAGS.SBF_OPERATION_BUILD;
+
             private Lazy<INuGetLockService> _lockService;
 
-            public VsUpdateSolutionEvent(Lazy<INuGetLockService> lockService)
+            private RestoreManagerPackage _restoreManagerPackage;
+
+            private Task _restoreTask = Task.CompletedTask;
+
+            private bool _issRestoreRunning = false;
+
+            public VsUpdateSolutionEvent(Lazy<INuGetLockService> lockService, RestoreManagerPackage restoreManagerPackage)
             {
+                Assumes.NotNull(restoreManagerPackage);
+
+                _restoreManagerPackage = restoreManagerPackage;
                 _lockService = lockService;
+            }
+
+            private void OnBuildRestore()
+            {
+                ThreadHelper.ThrowIfNotOnUIThread();
+
+                // Query build manager operation flag
+                uint buildManagerOperation;
+                _restoreManagerPackage._solutionBuildManager3.QueryBuildManagerBusyEx(out buildManagerOperation);
+
+                if (buildManagerOperation == (uint)VSSOLNBUILDUPDATEFLAGS.SBF_OPERATION_CLEAN)
+                {
+                    // Clear the project.json restore cache on clean to ensure that the next build restores again
+                    _restoreManagerPackage.SolutionRestoreWorker.CleanCache();
+
+                    return;
+                }
+
+                if (!_restoreManagerPackage.ShouldRestoreOnBuild)
+                {
+                    return;
+                }
+
+                var forceRestore = buildManagerOperation == REBUILD_FLAG;
+
+                // start a restore task
+                if (_restoreTask.IsCompleted)
+                {
+                    _restoreTask = NuGetUIThreadHelper.JoinableTaskFactory
+                        .RunAsync(() => _restoreManagerPackage.SolutionRestoreWorker.ScheduleRestoreAsync(
+                            SolutionRestoreRequest.OnBuild(forceRestore),
+                            CancellationToken.None))
+                        .Task;
+                }
             }
 
             public void UpdateSolution_QueryDelayFirstUpdateAction(out int pfDelay)
@@ -158,9 +189,30 @@ namespace NuGet.SolutionRestoreManager
                     // delay build by setting pfDelay to non-zero
                     pfDelay = 1;
                 }
+                // check if no build restore is running, then start a new one
+                else if (!_issRestoreRunning)
+                {
+                    // disable running more build restore
+                    _issRestoreRunning = true;
+
+                    // run build restore
+                    OnBuildRestore();
+
+                    // delay build until restore is running
+                    pfDelay = 1;
+
+                }
+                else if (!_restoreTask.IsCompleted)
+                {
+                    // delay build by setting pfDelay to non-zero since restore is still running
+                    pfDelay = 1;
+                }
                 else
                 {
-                    // Set delay to 0 which means don't delay build
+                    // enable running build restore again.
+                    _issRestoreRunning = false;
+
+                    // Set delay to 0 which means allow build to proceed.
                     pfDelay = 0;
                 }
             }
@@ -176,6 +228,16 @@ namespace NuGet.SolutionRestoreManager
             public void OnActiveProjectCfgChangeBatchBegin() { }
 
             public void OnActiveProjectCfgChangeBatchEnd() { }
+
+            public int OnBeforeActiveSolutionCfgChange(IVsCfg pOldActiveSlnCfg, IVsCfg pNewActiveSlnCfg)
+            {
+                return VSConstants.S_OK;
+            }
+
+            public int OnAfterActiveSolutionCfgChange(IVsCfg pOldActiveSlnCfg, IVsCfg pNewActiveSlnCfg)
+            {
+                return VSConstants.S_OK;
+            }
         }
     }
 }
