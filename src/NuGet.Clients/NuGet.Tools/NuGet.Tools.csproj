@@ -31,21 +31,13 @@
     </UpgradeBackupLocation>
     <OldToolsVersion>14.0</OldToolsVersion>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(VisualStudioVersion)' == '14.0'">
-    <VsixOutputDirName>VS14</VsixOutputDirName>
-  </PropertyGroup>
   <PropertyGroup Condition="'$(VisualStudioVersion)' == '15.0'">
-    <VsixOutputDirName>VS15</VsixOutputDirName>
     <IsProductComponent>true</IsProductComponent>
   </PropertyGroup>
   <PropertyGroup Condition="'$(VisualStudioVersion)' == '15.0' AND '$(IsInsertable)' == 'true'">
-    <VsixOutputDirName>VS15</VsixOutputDirName>
     <IsProductComponent>true</IsProductComponent>
     <ExtensionInstallationRoot>CommonExtensions</ExtensionInstallationRoot>
     <ExtensionInstallationFolder>Microsoft\NuGet</ExtensionInstallationFolder>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(BuildRTM)' == 'true' ">
-    <VsixOutputDirName>$(VsixOutputDirName)-RTM</VsixOutputDirName>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' And '$(BuildingInsideVisualStudio)' == 'True'">
     <StartAction>Program</StartAction>

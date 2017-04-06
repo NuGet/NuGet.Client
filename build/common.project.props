@@ -22,6 +22,7 @@
     <NupkgOutputDirectory Condition=" '$(BuildRTM)' == 'true' ">$(ArtifactsDirectory)ReleaseNupkgs\</NupkgOutputDirectory>
     <SolutionPackagesFolder>$(RepositoryRootDirectory)packages\</SolutionPackagesFolder>
     <XunitConsoleExePath>$(SolutionPackagesFolder)xunit.runner.console.2.2.0\tools\xunit.console.x86.exe</XunitConsoleExePath>
+    <ILMergeExePath>$(SolutionPackagesFolder)ILMerge.2.14.1208\tools\ILMerge.exe</ILMergeExePath>
     <EnlistmentRoot>$(RepositoryRootDirectory)</EnlistmentRoot>
     <EnlistmentRootSrc>$(RepositoryRootDirectory)\src</EnlistmentRootSrc>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">$(RepositoryRootDirectory)</SolutionDir>
@@ -74,6 +75,7 @@
     <DefineConstants>$(DefineConstants);VS14</DefineConstants>
     <VSSDKRoot>$(RepositoryRootDirectory)\packages\Microsoft.VSSDK.BuildTools.14.3.25420</VSSDKRoot>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(VSSDKRoot)\tools</VSToolsPath>
+    <VsixOutputDirName>VS14</VsixOutputDirName>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(VisualStudioVersion)' == '15.0'">
@@ -81,6 +83,11 @@
     <DefineConstants>$(DefineConstants);VS15</DefineConstants>
     <VSSDKRoot>$(RepositoryRootDirectory)\packages\Microsoft.VSSDK.BuildTools.15.0.26201</VSSDKRoot>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(VSSDKRoot)\tools</VSToolsPath>
+    <VsixOutputDirName>VS15</VsixOutputDirName>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(BuildRTM)' == 'true' ">
+    <VsixOutputDirName>$(VsixOutputDirName)-RTM</VsixOutputDirName>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(PreReleaseVersion)' == '' ">
