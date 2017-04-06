@@ -17,15 +17,18 @@ namespace NuGet.CommandLine.Test
     {
         /// <summary>
         /// Create 3 projects, each with their own nuget.config file and source.
+        /// When restoring without a solution settings should be found from the project folder.
+        /// Solution settings are verified in RestoreProjectJson_RestoreFromSlnUsesNuGetFolderSettings
         /// </summary>
         [Fact]
-        public void RestoreNetCore_VerifyPerProjectConfigSourcesUsed()
+        public void RestoreNetCore_VerifyPerProjectConfigSourcesAreUsedForChildProjectsWithoutSolution()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
             {
                 var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
                 var projects = new Dictionary<string, SimpleTestProjectContext>();
+                var sources = new List<string>();
 
                 foreach (var letter in new[] { "A", "B", "C", "D" })
                 {
@@ -45,12 +48,16 @@ namespace NuGet.CommandLine.Test
                         Version = "1.0.0"
                     };
 
+                    // Do not flow the reference up
+                    package.PrivateAssets = "all";
+
                     project.AddPackageToAllFrameworks(package);
                     project.Properties.Clear();
 
                     // Source
                     var source = Path.Combine(pathContext.WorkingDirectory, $"source{letter}");
                     SimpleTestPackageUtility.CreatePackages(source, package);
+                    sources.Add(source);
 
                     // Create a nuget.config for the project specific source.
                     var projectDir = Path.GetDirectoryName(project.ProjectPath);
@@ -75,10 +82,25 @@ namespace NuGet.CommandLine.Test
                     File.WriteAllText(configPath, doc.ToString());
                 }
 
+                // Create root project
+                var projectRoot = SimpleTestProjectContext.CreateNETCore(
+                    "projectRoot",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("net45"));
+
+                // Link the root project to all other projects
+                foreach (var child in projects.Values)
+                {
+                    projectRoot.AddProjectToAllFrameworks(child);
+                }
+
+                projectRoot.Save();
+                solution.Projects.Add(projectRoot);
+
                 solution.Create(pathContext.SolutionRoot);
 
                 // Act
-                var r = RestoreSolution(pathContext);
+                var r = Restore(pathContext, projectRoot.ProjectPath, exitCode: 0, additionalArgs: "-Recursive");
 
                 // Assert
                 Assert.True(projects.Count > 0);
@@ -168,7 +190,7 @@ namespace NuGet.CommandLine.Test
                 solution.Create(pathContext.SolutionRoot);
 
                 // Act
-                var r = RestoreSolution(pathContext);
+                var r = Restore(pathContext, project.ProjectPath);
 
                 // Assert
                 Assert.True(project.AssetsFile.Libraries.Select(e => e.Name).Contains("packageB"));
@@ -3391,6 +3413,11 @@ namespace NuGet.CommandLine.Test
 
         private static CommandRunnerResult RestoreSolution(SimpleTestPathContext pathContext, int exitCode = 0, params string[] additionalArgs)
         {
+            return Restore(pathContext, pathContext.SolutionRoot, exitCode, additionalArgs);
+        }
+
+        private static CommandRunnerResult Restore(SimpleTestPathContext pathContext, string inputPath, int exitCode = 0, params string[] additionalArgs)
+        {
             var nugetexe = Util.GetNuGetExePath();
 
             // Store the dg file for debugging
@@ -3403,7 +3430,7 @@ namespace NuGet.CommandLine.Test
 
             var args = new string[] {
                     "restore",
-                    pathContext.SolutionRoot,
+                    inputPath,
                     "-Verbosity",
                     "detailed"
                 };
