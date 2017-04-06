@@ -20,12 +20,6 @@ Skips running NuGet.Clients.Tests and NuGet.Clients.FuncTests with VS14 toolset
 .PARAMETER SkipVS15
 Skips running NuGet.Clients.Tests and NuGet.Clients.FuncTests with VS15 toolset
 
-.PARAMETER SkipUnitTests
-Skips running NuGet.Core.Tests and NuGet.Clients.Tests
-
-.PARAMETER SkipFuncTests
-Skips running NuGet.Core.FuncTests and NuGet.Clients.FuncTests
-
 .PARAMETER CI
 Indicates the build script is invoked from CI
 
@@ -62,10 +56,6 @@ param (
     [switch]$SkipVS14,
     [Alias('s15')]
     [switch]$SkipVS15,
-    [Alias('sut')]
-    [switch]$SkipUnitTests,
-    [Alias('sft')]
-    [switch]$SkipFuncTests,
     [switch]$CI
 )
 
@@ -105,21 +95,6 @@ if (-not $SkipVS15 -and -not $VS15Installed) {
     $SkipVS15 = $True
 }
 
-$SkipCoreTests = "false";
-$SkipCoreFuncTests = "false";
-$SkipClientTests = "false";
-$SkipClientFuncTests = "false";
-
-if($SkipFuncTests){
-    $SkipCoreFuncTests = "true";
-    $SkipClientFuncTests = "true";
-}
-
-if($SkipUnitTests){
-    $SkipCoreTests = "true";
-    $SkipClientTests = "true";
-}
-
 $BuildErrors = @()
 
 Invoke-BuildStep 'Cleaning package cache' {
@@ -127,6 +102,14 @@ Invoke-BuildStep 'Cleaning package cache' {
     } `
     -skip:(-not $CI) `
     -ev +BuildErrors
+
+Invoke-BuildStep 'Copying Config Files for functest' {
+    Move-ConfigFile NuGet.Config
+    Move-ConfigFile NuGet.Core.FuncTests.Config
+    Move-ConfigFile NuGet.Protocol.FuncTest.config
+} `
+-skip:(-not $CI) `
+-ev +BuildErrors
 
 
 Invoke-BuildStep 'Running /t:RestoreVS15' {
