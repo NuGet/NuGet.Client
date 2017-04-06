@@ -261,13 +261,6 @@ Invoke-BuildStep 'Packing VS15 RTM' {
 -skip:($SkipVS15 -or (-not $CI))`
 -ev +BuildErrors
 
-
-Invoke-BuildStep 'Publishing nuget.exe packages' {
-        Publish-NuGetExePackage $Configuration $ReleaseLabel $BuildNumber -ToolsetVersion 15 -KeyFile $MSPFXPath -CI:$CI
-    } `
-    -skip:($Fast -or $SkipVS15) `
-    -ev +BuildErrors
-
 ## Calculating Build time
 $endTime = [DateTime]::UtcNow
 Trace-Log "Build #$BuildNumber ended at $endTime"

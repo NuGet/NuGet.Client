@@ -1,10 +1,11 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.props" />
+  <Import Project="ilmerge.props"/>
 
   <PropertyGroup>
     <TargetFramework>net45</TargetFramework>
-    <PackProject>false</PackProject>
+    <PackProject>true</PackProject>
     <Shipping>true</Shipping>
     <PackageId>NuGet.CommandLine</PackageId>
   </PropertyGroup>
@@ -17,18 +18,6 @@
     <OutputType>Exe</OutputType>
     <ComVisible>false</ComVisible>
   </PropertyGroup>
-
-    <ItemGroup>
-      <None Include=".mergeallowdup">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </None>
-      <None Include=".mergeignore">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </None>
-      <None Include=".mergeinclude">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </None>
-    </ItemGroup>
 
   <ItemGroup>
     <Reference Include="Microsoft.Build.Utilities.v4.0" />
@@ -83,6 +72,29 @@
       <SubType>Designer</SubType>
     </EmbeddedResource>
   </ItemGroup>
+
+  <Target Name="ILMergeNuGetExe" AfterTargets="Build" Condition="'$(BuildingInsideVisualStudio)' != 'true'">
+    <ItemGroup>
+      <BuildArtifacts Include="$(OutputPath)\*.dll" Exclude="@(MergeExclude)"/>
+    </ItemGroup>
+    <Error Text="Build dependencies are inconsistent with mergeinclude specified in ilmerge.props"
+             Condition="'@(BuildArtifacts->Count())' != '@(MergeInclude->Count())'"/>
+    <PropertyGroup>
+      <PathToBuiltNuGetExe>$(OutputPath)NuGet.exe</PathToBuiltNuGetExe>
+      <IlmergeCommand>$(ILMergeExePath) $(PathToBuiltNuGetExe) /lib:$(OutputPath) @(BuildArtifacts->'%(filename)%(extension)', ' ') /out:$(ArtifactsDirectory)$(VsixOutputDirName)\NuGet.exe @(MergeAllowDup -> '/allowdup:%(Identity)', ' ')</IlmergeCommand>
+      <IlmergeCommand Condition="Exists($(MS_PFX_PATH))">$(IlmergeCommand) /delaysign /keyfile:$(MS_PFX_PATH)</IlmergeCommand>
+    </PropertyGroup>
+    <MakeDir  
+            Directories="$(ArtifactsDirectory)$(VsixOutputDirName)"/>
+    <Exec Command="$(IlmergeCommand)"
+          ContinueOnError="false" />
+  </Target>
+  
+  <PropertyGroup>
+    <NuspecFile>NuGet.CommandLine.nuspec</NuspecFile>
+    <NuspecProperties>version=$(Version);configuration=$(Configuration)</NuspecProperties>
+    <NuspecBasePath>$(ArtifactsDirectory)$(VsixOutputDirName)</NuspecBasePath>
+  </PropertyGroup>
 
   <Import Project="$(BuildCommonDirectory)common.targets" />
 </Project>
