@@ -752,9 +752,7 @@ Function Restore-SolutionPackages{
 }
 
 function Move-ConfigFile {
-    [CmdletBinding()]
     param(
-        [Alias('configFileName')]
         [string]$ConfigFileName
     )
 
