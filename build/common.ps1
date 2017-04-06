@@ -750,3 +750,31 @@ Function Restore-SolutionPackages{
         Error-Log "Restore failed @""$NuGetClientRoot"". Code: ${LASTEXITCODE}"
     }
 }
+
+function Move-ConfigFile {
+    [CmdletBinding()]
+    param(
+        [Alias('configFileName')]
+        [string]$ConfigFileName
+    )
+
+    $SrcPath = Join-Path(Join-Path($env:NuGetBuildRoot, 'ConfigFiles'), $ConfigFileName)
+    $DestPath = Join-Path(Join-Path($env:APPDATA, 'NuGet'), $ConfigFileName)
+    # These Files are ReadOnly as they are copied from a TFS clone.
+    # Turn off ReadOnly as that interferes with File.Delete in config file and sources command tests.
+    if(-Not (Test-Path $DestPath)){
+        Copy-Item $SrcPath $DestPath
+
+        if (-not $?)
+        {
+            Write-Error "Copying Config Files for functest failed!"
+        }       
+    }
+
+    Set-ItemProperty $DestPath -Name IsReadOnly -Value $false
+
+    if (-not $?)
+    {
+        Write-Error "Copying Config Files for functest failed!"
+    }
+}
