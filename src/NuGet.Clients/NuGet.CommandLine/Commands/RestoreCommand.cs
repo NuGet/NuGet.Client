@@ -81,8 +81,8 @@ namespace NuGet.CommandLine
             var restoreInputs = await DetermineRestoreInputsAsync();
 
             var hasPackagesConfigFiles = restoreInputs.PackagesConfigFiles.Count > 0;
-            var hasProjectJsonFiles = restoreInputs.RestoreV3Context.Inputs.Any();
-            if (!hasPackagesConfigFiles && !hasProjectJsonFiles)
+            var hasProjectJsonOrPackageReferences = restoreInputs.RestoreV3Context.Inputs.Any();
+            if (!hasPackagesConfigFiles && !hasProjectJsonOrPackageReferences)
             {
                 Console.LogMinimal(LocalizedResourceManager.GetString(restoreInputs.RestoringWithSolutionFile
                         ? "SolutionRestoreCommandNoPackagesConfigOrProjectJson"
@@ -97,8 +97,8 @@ namespace NuGet.CommandLine
                 restoreSummaries.Add(v2RestoreResult);
             }
 
-            // project.json
-            if (hasProjectJsonFiles)
+            // project.json and PackageReference
+            if (hasProjectJsonOrPackageReferences)
             {
                 // Read the settings outside of parallel loops.
                 ReadSettings(restoreInputs);
@@ -144,11 +144,15 @@ namespace NuGet.CommandLine
                         // Remove input list, everything has been loaded already
                         restoreContext.Inputs.Clear();
 
-                        // Create requests using settings based on the project directory. This is to provide
-                        // the same behavior as dotnet.exe restore and msbuild /t:restore
+                        // Create requests using settings based on the project directory if no solution was used.
+                        // If a solution was used read settings for the solution.
+                        // If null is used for settings they will be read per project.
+                        var settingsOverride = restoreInputs.RestoringWithSolutionFile ? Settings : null;
+
                         restoreContext.PreLoadedRequestProviders.Add(new DependencyGraphSpecRequestProvider(
                             providerCache,
-                            restoreInputs.ProjectReferenceLookup));
+                            restoreInputs.ProjectReferenceLookup,
+                            settingsOverride));
                     }
                     else
                     {
