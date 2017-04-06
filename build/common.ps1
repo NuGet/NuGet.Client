@@ -756,8 +756,9 @@ function Move-ConfigFile {
         [string]$ConfigFileName
     )
 
-    $SrcPath = Join-Path(Join-Path($env:NuGetBuildRoot, 'ConfigFiles'), $ConfigFileName)
-    $DestPath = Join-Path(Join-Path($env:APPDATA, 'NuGet'), $ConfigFileName)
+    $SrcPath = Join-Path(Join-Path $env:NuGetBuildRoot  'ConfigFiles') $ConfigFileName
+    $DestPath = Join-Path(Join-Path $env:APPDATA 'NuGet') $ConfigFileName
+
     # These Files are ReadOnly as they are copied from a TFS clone.
     # Turn off ReadOnly as that interferes with File.Delete in config file and sources command tests.
     if(-Not (Test-Path $DestPath)){
