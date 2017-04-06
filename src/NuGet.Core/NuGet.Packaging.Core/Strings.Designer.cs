@@ -12,6 +12,7 @@ namespace NuGet.Packaging.Core {
     using System;
     using System.Reflection;
     
+    
     /// <summary>
     ///   A strongly-typed resource class, for looking up localized strings, etc.
     /// </summary>
