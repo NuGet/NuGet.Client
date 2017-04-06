@@ -10,17 +10,6 @@
   <PropertyGroup>
     <RootNamespace>NuGet.VisualStudio</RootNamespace>
     <GenerateAssemblyInfo Condition="'$(GenerateAssemblyInfo)' == ''">false</GenerateAssemblyInfo>
-    <AssemblyTitle>NuGet.VisualStudio.Interop</AssemblyTitle>
-    <AssemblyDescription>NuGet/Visual Studio interop assembly</AssemblyDescription>
-    <Description>$(AssemblyDescription)</Description>
-    <AssemblyVersion>1.0.0.0</AssemblyVersion>
-    <AssemblyCompany>Microsoft Corporation</AssemblyCompany>
-    <AssemblyProduct>NuGet</AssemblyProduct>
-    <AssemblyCopyright>Microsoft Corporation. All rights reserved.</AssemblyCopyright>
-    <AssemblyConfiguration />
-    <AssemblyTrademark />
-    <ComVisible>false</ComVisible>
-    <NeutralResourcesLanguage>en-US</NeutralResourcesLanguage>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="EnvDTE, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
