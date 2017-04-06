@@ -125,7 +125,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NuGet.TeamFoundationServer"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NuGet.VisualStudio.Facade", "src\NuGet.Clients\VisualStudio.Facade\NuGet.VisualStudio.Facade.csproj", "{EEA49A74-6EFC-410E-9745-BAD367AC151D}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NuGet.VisualStudio.Interop", "src\NuGet.Clients\VisualStudio.Interop\NuGet.VisualStudio.Interop.csproj", "{7DB43FE1-75E1-49F9-B2C8-06A552BA2144}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NuGet.VisualStudio.Interop", "src\NuGet.Clients\NuGet.VisualStudio.Interop\NuGet.VisualStudio.Interop.csproj", "{7DB43FE1-75E1-49F9-B2C8-06A552BA2144}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NuGetConsole.Host.PowerShellProvider", "src\NuGet.Clients\VsConsole\PowerShellHostProvider\NuGetConsole.Host.PowerShellProvider.csproj", "{A5E7AEB3-738F-4C39-A459-00F90483B2FE}"
 EndProject

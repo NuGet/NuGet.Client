@@ -218,7 +218,7 @@
       <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup</IncludeOutputGroupsInVSIXLocalOnly>
       <Private>True</Private>
     </ProjectReference>
-    <ProjectReference Include="..\VisualStudio.Interop\NuGet.VisualStudio.Interop.csproj">
+    <ProjectReference Include="..\NuGet.VisualStudio.Interop\NuGet.VisualStudio.Interop.csproj">
       <Project>{7DB43FE1-75E1-49F9-B2C8-06A552BA2144}</Project>
       <Name>NuGet.VisualStudio.Interop</Name>
       <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup</IncludeOutputGroupsInVSIX>
