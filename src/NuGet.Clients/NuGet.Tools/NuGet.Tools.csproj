@@ -248,7 +248,7 @@
     <ProjectReference Include="..\VsConsole\PowerShellHost\NuGetConsole.Host.PowerShell.csproj">
       <Project>{5a79eef3-51c0-4a14-8d37-50ef38ad835d}</Project>
       <Name>NuGetConsole.Host.PowerShell</Name>
-      <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup</IncludeOutputGroupsInVSIX>
+      <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup%3bBuiltProjectOutputGroup%3bBuiltProjectOutputGroupDependencies%3bGetCopyToOutputDirectoryItems%3bSatelliteDllsProjectOutputGroup%3b</IncludeOutputGroupsInVSIX>
       <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup</IncludeOutputGroupsInVSIXLocalOnly>
       <Private>True</Private>
     </ProjectReference>
