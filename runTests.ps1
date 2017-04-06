@@ -107,19 +107,15 @@ Invoke-BuildStep 'Copying Config Files for functest' {
 
     # These Files are ReadOnly as they are copied from a TFS clone.
     # Turn off ReadOnly as that interferes with File.Delete in config file and sources command tests.
-    Copy-Item $env:NuGetBuildRoot\ConfigFiles\NuGet.Config $env:APPDATA\NuGet\NuGet.Config `
-    -PassThru | Set-ItemProperty -name isreadonly -Value $false
+    Copy-Item $env:NuGetBuildRoot\ConfigFiles\NuGet.Config $env:APPDATA\NuGet\NuGet.Config -PassThru | Set-ItemProperty -name isreadonly -Value $false
 
-    Copy-Item $env:NuGetBuildRoot\ConfigFiles\NuGet.Core.FuncTests.Config $env:APPDATA\NuGet\NuGet.Core.FuncTests.Config `
-    -PassThru | Set-ItemProperty -name isreadonly -Value $false
+    Copy-Item $env:NuGetBuildRoot\ConfigFiles\NuGet.Core.FuncTests.Config $env:APPDATA\NuGet\NuGet.Core.FuncTests.Config -PassThru | Set-ItemProperty -name isreadonly -Value $false
 
-    Copy-Item $env:NuGetBuildRoot\ConfigFiles\NuGet.Protocol.FuncTest.config $env:APPDATA\NuGet\NuGet.Protocol.FuncTest.config `
-    -PassThru | Set-ItemProperty -name isreadonly -Value $false
+    Copy-Item $env:NuGetBuildRoot\ConfigFiles\NuGet.Protocol.FuncTest.config $env:APPDATA\NuGet\NuGet.Protocol.FuncTest.config -PassThru | Set-ItemProperty -name isreadonly -Value $false
     
     if (-not $?)
     {
         Write-Error "Copying Config Files for functest failed!"
-        exit 1
     }
 } `
 -skip:(-not $CI) `
