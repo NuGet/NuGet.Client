@@ -102,7 +102,7 @@
   <!--Setting the product information for Beta builds-->
   <Choose>
     <!-- If we aren't excluding the build number, use the release label and the build number. -->
-    <When Condition="'$(ExcludeBuildNumber)' != 'true' AND '$(PreReleaseVersion)' != '' AND '$(PreReleaseVersion)' != '0' ">
+    <When Condition="'$(BuildRTM)' != 'true' AND '$(PreReleaseVersion)' != '' AND '$(PreReleaseVersion)' != '0' ">
       <PropertyGroup>
         <PreReleaseInformationVersion>-$(ReleaseLabel)-$(PreReleaseVersion)</PreReleaseInformationVersion>
       </PropertyGroup>
@@ -117,7 +117,6 @@
 
   <PropertyGroup Condition=" '$(Version)' == '' ">
     <Version>$(SemanticVersion)$(PreReleaseInformationVersion)</Version>
-    <Version Condition=" '$(BuildRTM)' == 'true' ">$(SemanticVersion)</Version>
   </PropertyGroup>
 
   <!-- Set the output location for all non-test projects -->
