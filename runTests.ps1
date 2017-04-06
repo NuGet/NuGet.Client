@@ -105,9 +105,9 @@ Invoke-BuildStep 'Cleaning package cache' {
 
 Invoke-BuildStep 'Copying Config Files for functest' {
 
-    Copy-Item $env:NuGetBuildRoot\ConfigFiles\NuGet.Config $env:APPDATA\NuGet\NuGet.Config
-    Copy-Item $env:NuGetBuildRoot\ConfigFiles\NuGet.Core.FuncTests.Config $env:APPDATA\NuGet\NuGet.Core.FuncTests.Config
-    Copy-Item $env:NuGetBuildRoot\ConfigFiles\NuGet.Protocol.FuncTest.config $env:APPDATA\NuGet\NuGet.Protocol.FuncTest.config
+    Copy-Item $env:NuGetBuildRoot\ConfigFiles\NuGet.Config $env:APPDATA\NuGet\NuGet.Config -PassThru | Set-ItemProperty -name isreadonly -Value $false
+    Copy-Item $env:NuGetBuildRoot\ConfigFiles\NuGet.Core.FuncTests.Config $env:APPDATA\NuGet\NuGet.Core.FuncTests.Config -PassThru | Set-ItemProperty -name isreadonly -Value $false
+    Copy-Item $env:NuGetBuildRoot\ConfigFiles\NuGet.Protocol.FuncTest.config $env:APPDATA\NuGet\NuGet.Protocol.FuncTest.config -PassThru | Set-ItemProperty -name isreadonly -Value $false
     
     if (-not $?)
     {
