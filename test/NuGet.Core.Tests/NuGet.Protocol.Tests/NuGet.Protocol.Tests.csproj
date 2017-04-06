@@ -5,7 +5,7 @@
     <TargetFrameworks>netcoreapp1.0;net46</TargetFrameworks>
     <TargetFrameworks Condition=" '$(IsXPlat)' == 'true' ">netcoreapp1.0</TargetFrameworks>
     <TestProject>true</TestProject>
-    <UseParallelXunit>false</UseParallelXunit>
+    <UseParallelXunit>true</UseParallelXunit>
   </PropertyGroup>
 
   <ItemGroup>
