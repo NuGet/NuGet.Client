@@ -8,6 +8,7 @@
     <PackProject>true</PackProject>
     <Shipping>true</Shipping>
     <PackageId>NuGet.CommandLine</PackageId>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
   </PropertyGroup>
 
   <PropertyGroup>
