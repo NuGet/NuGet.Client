@@ -74,18 +74,6 @@
          <Link>Lucene.Net.dll</Link>
          <IncludeInVSIX>true</IncludeInVSIX>
       </Content>
-      <!--<Content Include="Resources\nuget_256.png">
-         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-         <IncludeInVSIX>true</IncludeInVSIX>
-      </Content>
-      <Content Include="Resources\nuget_96.png">
-         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-         <IncludeInVSIX>true</IncludeInVSIX>
-      </Content>
-      <VSCTCompile Include="NuGetTools.vsct">
-         <ResourceName>Menus.ctmenu</ResourceName>
-         <SubType>Designer</SubType>
-      </VSCTCompile>-->
       <Content Include="..\VsConsole\PowerShellHost\Scripts\Add-WrapperMembers.ps1">
          <Link>Modules\NuGet\Add-WrapperMembers.ps1</Link>
          <IncludeInVSIX>true</IncludeInVSIX>
@@ -111,17 +99,14 @@
          <IncludeInVSIX>true</IncludeInVSIX>
       </Content>
       <None Include="project.json" />
-      <!--<None Include="Resources\nugetAbout.ico" />-->
-      <!--<None Include="Resources\Toolbar.png" />-->
    </ItemGroup>
    <ItemGroup>
       <ProjectReference Include="..\NuGet.Tools\NuGet.Tools.csproj">
-        <Project>{E030F195-BC08-4E51-81FF-772FEF22AC33}</Project>
+        <Project>{D0F9864B-D782-4471-81A2-29555E5DC0D7}</Project>
         <Name>NuGet.Tools</Name>
         <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup%3bPkgdefProjectOutputGroup%3bGetCopyToOutputDirectoryItems</IncludeOutputGroupsInVSIX>
         <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup</IncludeOutputGroupsInVSIXLocalOnly>
       </ProjectReference>
-
       <ProjectReference Include="..\..\NuGet.Core\NuGet.Indexing\NuGet.Indexing.csproj">
          <Project>{a2b06fa8-bdbc-4459-a92a-161862b2aa97}</Project>
          <Name>NuGet.Indexing</Name>
@@ -234,49 +219,6 @@
          <Private>True</Private>
       </ProjectReference>
    </ItemGroup>
-   <ItemGroup>
-      <Reference Include="EnvDTE, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-         <EmbedInteropTypes>False</EmbedInteropTypes>
-         <Private>False</Private>
-      </Reference>
-      <Reference Include="Microsoft.CSharp">
-         <Private>False</Private>
-      </Reference>
-      <Reference Include="Microsoft.VisualStudio.CommandBars, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-         <EmbedInteropTypes>False</EmbedInteropTypes>
-      </Reference>
-      <Reference Include="Microsoft.VisualStudio.Shell.Interop.14.0.DesignTime, Version=14.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-         <EmbedInteropTypes>True</EmbedInteropTypes>
-      </Reference>
-      <Reference Include="PresentationCore">
-         <Private>False</Private>
-      </Reference>
-      <Reference Include="PresentationFramework">
-         <Private>False</Private>
-      </Reference>
-      <Reference Include="System">
-         <Private>False</Private>
-      </Reference>
-      <Reference Include="System.ComponentModel.Composition">
-         <Private>False</Private>
-      </Reference>
-      <Reference Include="System.Design" />
-      <Reference Include="WindowsBase">
-         <Private>False</Private>
-      </Reference>
-   </ItemGroup>
-   <!--<ItemGroup>
-      <EmbeddedResource Include="Resources.resx">
-         <Generator>ResXFileCodeGenerator</Generator>
-         <LastGenOutput>Resources.Designer.cs</LastGenOutput>
-         <SubType>Designer</SubType>
-      </EmbeddedResource>
-      <EmbeddedResource Include="VSPackage.resx">
-         <MergeWithCTO>true</MergeWithCTO>
-         <ManifestResourceName>VSPackage</ManifestResourceName>
-         <SubType>Designer</SubType>
-      </EmbeddedResource>
-   </ItemGroup>-->
    <Choose>
       <When Condition="'$(Configuration)' == 'Release'">
          <ItemGroup>
