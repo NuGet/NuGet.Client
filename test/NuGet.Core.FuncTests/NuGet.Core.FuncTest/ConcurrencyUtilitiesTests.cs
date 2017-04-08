@@ -9,8 +9,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 using NuGet.Test.Utility;
+using NuGet.Common;
 
-namespace NuGet.Common.Test
+namespace NuGet.Core.FuncTest
 {
     public class ConcurrencyUtilitiesTests
     {
