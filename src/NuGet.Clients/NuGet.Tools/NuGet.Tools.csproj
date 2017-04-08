@@ -15,7 +15,6 @@
     <AssemblyName>NuGet.Tools</AssemblyName>
     <GeneratePkgDefFile>true</GeneratePkgDefFile>
     <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
-    <!--<ImportVSSDKTargets>true</ImportVSSDKTargets>-->
     <CreateVsixContainer>false</CreateVsixContainer>
     <FileAlignment>512</FileAlignment>
     <DeployExtension>false</DeployExtension>
@@ -183,24 +182,6 @@
       <Private>False</Private>
     </Reference>
   </ItemGroup>
-  <!--<Choose>
-    <When Condition="'$(Configuration)' == 'Release'">
-      <ItemGroup>
-        <Content Include="eula.rtf">
-          <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-          <IncludeInVSIX>true</IncludeInVSIX>
-        </Content>
-      </ItemGroup>
-    </When>
-    <Otherwise>
-      <ItemGroup>
-        <Content Include="LICENSE.txt">
-          <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-          <IncludeInVSIX>true</IncludeInVSIX>
-        </Content>
-      </ItemGroup>
-    </Otherwise>
-  </Choose>-->
   <Import Project="$(BuildCommonDirectory)legacy.imports.targets" />
   <Import Project="$(BuildCommonDirectory)common.targets" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
