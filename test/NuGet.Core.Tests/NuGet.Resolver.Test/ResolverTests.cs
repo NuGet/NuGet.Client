@@ -229,46 +229,6 @@ namespace NuGet.Resolver.Test
         }
 
         [Fact]
-        public void ResolveDependenciesForVeryDeepGraph()
-        {
-            // Arrange
-            var target = CreatePackage("Package0", "1.0", new Dictionary<string, string>() {
-                { "Package1", "1.0.0" },
-                { "Package2", "1.0.0" },
-                { "Package3", "1.0.0" },
-                { "Package4", "1.0.0" },
-                { "Package5", "1.0.0" },
-                { "Package6", "1.0.0" },
-                { "Package7", "1.0.0" },
-                { "Package8", "1.0.0" },
-            });
-
-            var sourceRepository = new List<ResolverPackage>();
-            sourceRepository.Add(target);
-
-            int next = 1;
-
-            // make lots of packages
-            for (int j = 1; j < 1000; j++)
-            {
-                next = j + 1;
-                sourceRepository.Add(CreatePackage($"Package{j}", "1.0.0", new Dictionary<string, string>() { { $"Package{next}", "1.0.0" } }));
-            }
-
-            sourceRepository.Add(CreatePackage($"Package{next}", "1.0.0"));
-
-            var resolver = new PackageResolver();
-
-            var context = CreatePackageResolverContext(DependencyBehavior.Lowest, target, sourceRepository);
-
-            // Act
-            var packages = resolver.Resolve(context, CancellationToken.None);
-
-            // Assert
-            Assert.Equal(1001, packages.Count());
-        }
-
-        [Fact]
         public void ResolveDependenciesForInstallDiamondDependencyGraphMissingPackage()
         {
             // Arrange

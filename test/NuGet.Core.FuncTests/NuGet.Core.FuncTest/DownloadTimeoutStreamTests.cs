@@ -2,14 +2,15 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Text;
 using System.IO;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Protocol;
+using Test.Utility;
 using Xunit;
-using System.Diagnostics;
 
-namespace NuGet.Protocol.Tests
+namespace NuGet.Core.FuncTest
 {
     public class DownloadTimeoutStreamTests
     {
@@ -50,8 +51,7 @@ namespace NuGet.Protocol.Tests
             await VerifyTimeoutOnReadAsync(ReadStreamAsync);
         }
         
-        // Skipping this as it is flaky and blocking migration
-        // [Fact]
+        [Fact]
         public async Task DownloadTimeoutStream_FailureAsync()
         {
             await VerifyFailureOnReadAsync(ReadStreamAsync);

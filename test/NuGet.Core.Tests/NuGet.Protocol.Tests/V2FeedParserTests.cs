@@ -116,36 +116,6 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public async Task V2FeedParser_DownloadFromUrl()
-        {
-            // Arrange
-            var repo = Repository.Factory.GetCoreV3("https://www.nuget.org/api/v2/");
-
-            var httpSource = HttpSource.Create(repo);
-
-            V2FeedParser parser = new V2FeedParser(httpSource, "https://www.nuget.org/api/v2/");
-
-            // Act & Assert
-            using (var packagesFolder = TestDirectory.Create())
-            using (var cacheContext = new SourceCacheContext())
-            using (var downloadResult = await parser.DownloadFromUrl(
-                new PackageIdentity("WindowsAzure.Storage", new NuGetVersion("6.2.0")),
-                new Uri("https://www.nuget.org/api/v2/package/WindowsAzure.Storage/6.2.0"),
-                new PackageDownloadContext(cacheContext),
-                packagesFolder,
-                NullLogger.Instance,
-                CancellationToken.None))
-            {
-                var packageReader = downloadResult.PackageReader;
-                var files = packageReader.GetFiles();
-
-                Assert.Equal(11, files.Count());
-            }
-        }
-
-
-
-        [Fact]
         public async Task V2FeedParser_DownloadFromIdentityInvalidId()
         {
             // Arrange

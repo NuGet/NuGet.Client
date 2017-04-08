@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26228.9
+VisualStudioVersion = 15.0.26403.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{BD1946CE-5544-4F28-A04A-9C3D51113E1A}"
 EndProject
@@ -194,6 +194,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{96255044
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "TestUtilities", "TestUtilities", "{79266117-FEDD-45B3-B603-33A4B6E9F12F}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NuGet.Core.FuncTest", "test\NuGet.Core.FuncTests\NuGet.Core.FuncTest\NuGet.Core.FuncTest.csproj", "{34750BB3-4A21-433A-9C55-C051CA70C4AE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -592,6 +594,12 @@ Global
 		{CC657FF4-F66E-4A28-9165-AF112A93EE89}.Mono Release|Any CPU.Build.0 = Mono Release|Any CPU
 		{CC657FF4-F66E-4A28-9165-AF112A93EE89}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CC657FF4-F66E-4A28-9165-AF112A93EE89}.Release|Any CPU.Build.0 = Release|Any CPU
+		{34750BB3-4A21-433A-9C55-C051CA70C4AE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{34750BB3-4A21-433A-9C55-C051CA70C4AE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{34750BB3-4A21-433A-9C55-C051CA70C4AE}.Mono Release|Any CPU.ActiveCfg = Mono Release|Any CPU
+		{34750BB3-4A21-433A-9C55-C051CA70C4AE}.Mono Release|Any CPU.Build.0 = Mono Release|Any CPU
+		{34750BB3-4A21-433A-9C55-C051CA70C4AE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{34750BB3-4A21-433A-9C55-C051CA70C4AE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -670,5 +678,6 @@ Global
 		{CC657FF4-F66E-4A28-9165-AF112A93EE89} = {23CEFC88-9365-4464-A517-700224ECA033}
 		{96255044-3776-439B-8496-C460DB9C4F97} = {A8F45E94-4CFD-478C-9FE2-8E6DEE7E0770}
 		{79266117-FEDD-45B3-B603-33A4B6E9F12F} = {D1549653-9631-4E16-9967-55427174A0DC}
+		{34750BB3-4A21-433A-9C55-C051CA70C4AE} = {BB63CACA-866F-454F-BA4C-78B788D032BB}
 	EndGlobalSection
 EndGlobal
