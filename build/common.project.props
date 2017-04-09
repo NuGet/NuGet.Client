@@ -172,7 +172,8 @@
 
   <PropertyGroup Condition=" '$(IsNetCoreProject)' == 'true' ">
     <!-- Assembly attributes for net core projects -->
-    <AssemblyVersion>$(SemanticVersion).$(PreReleaseVersion)</AssemblyVersion>
+    <!--AssemblyVersion should not contain the build number as all NuGet.Core projects had the build number as 0 every time -->
+    <AssemblyVersion>$(SemanticVersion).0</AssemblyVersion>
     <FileVersion>$(SemanticVersion).$(PreReleaseVersion)</FileVersion>
     <InformationalVersion>$(SemanticVersion)$(PreReleaseInformationVersion)</InformationalVersion>
     <Company>Microsoft Corporation</Company>
