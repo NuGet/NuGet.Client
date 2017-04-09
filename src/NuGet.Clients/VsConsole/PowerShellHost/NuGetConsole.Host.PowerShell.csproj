@@ -115,10 +115,7 @@
       <Project>{eea49a74-6efc-410e-9745-bad367ac151d}</Project>
       <Name>NuGet.VisualStudio.Facade</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Console.Types\NuGet.Console.Types.csproj">
-      <Project>{6FD11460-39A3-4A10-BA63-7541B0A7D053}</Project>
-      <Name>NuGet.Console.Types</Name>
-    </ProjectReference>
+    <ProjectReference Include="..\Console\NuGet.Console.csproj" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Scripts\about_NuGet.PackageManagement.PowerShellCmdlets.help.txt" />

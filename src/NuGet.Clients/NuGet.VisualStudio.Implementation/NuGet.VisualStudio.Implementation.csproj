@@ -33,7 +33,6 @@
     <ProjectReference Include="..\PackageManagement.UI\NuGet.PackageManagement.UI.csproj" />
     <ProjectReference Include="..\VisualStudio.Facade\NuGet.VisualStudio.Facade.csproj" />
     <ProjectReference Include="..\PackageManagement.VisualStudio\NuGet.PackageManagement.VisualStudio.csproj" />
-    <ProjectReference Include="..\VsConsole\Console.Types\NuGet.Console.Types.csproj" />
     <ProjectReference Include="..\VsConsole\Console\NuGet.Console.csproj" />
   </ItemGroup>
   <ItemGroup Condition="'$(VisualStudioVersion)' == '14.0'">
