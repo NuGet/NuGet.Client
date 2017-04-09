@@ -13,16 +13,16 @@
       <OutputType>Library</OutputType>
       <AppDesignerFolder>Properties</AppDesignerFolder>
       <RootNamespace>NuGet.VisualStudio.Client</RootNamespace>
-      <GeneratePkgDefFile>false</GeneratePkgDefFile> <!--TODO NK - Does -->
+      <GeneratePkgDefFile>false</GeneratePkgDefFile>
       <IncludeAssemblyInVSIXContainer>false</IncludeAssemblyInVSIXContainer>
       <IncludeCopyLocalReferencesInVSIXContainer>true</IncludeCopyLocalReferencesInVSIXContainer>
       <IncludeDebugSymbolsInVSIXContainer>false</IncludeDebugSymbolsInVSIXContainer>
       <IncludeDebugSymbolsInLocalVSIXDeployment>true</IncludeDebugSymbolsInLocalVSIXDeployment>
-      <CopyBuildOutputToOutputDirectory>true</CopyBuildOutputToOutputDirectory>
-      <CopyOutputSymbolsToOutputDirectory>true</CopyOutputSymbolsToOutputDirectory>
+      <CopyBuildOutputToOutputDirectory>false</CopyBuildOutputToOutputDirectory>
+      <CopyOutputSymbolsToOutputDirectory>false</CopyOutputSymbolsToOutputDirectory>
       <DeployExtension>false</DeployExtension>
       <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
-      <AssemblyName>NuGet.VisualStudio.Client</AssemblyName>
+      <AssemblyName>NuGet.Tools</AssemblyName> <!-- This name is only temporary, it should be renamed to something better to avoid the confusion-->
       <VSSDKTargetPlatformRegRootSuffix>Exp</VSSDKTargetPlatformRegRootSuffix>
       <MinimumVisualStudioVersion>15.0</MinimumVisualStudioVersion>
       <FileUpgradeFlags />
