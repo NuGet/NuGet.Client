@@ -406,7 +406,8 @@ namespace NuGet.Build.Tasks.Pack.Test
                         {"FinalOutputPath", dllPath },
                         {"TargetFramework", "net45" }
                     })},
-                    Logger = new TestLogger()
+                    Logger = new TestLogger(),
+                    FrameworkAssemblyReferences = new MSBuildItem[]{}
                 };
             }
 
