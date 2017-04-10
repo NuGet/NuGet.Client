@@ -101,7 +101,7 @@ namespace NuGet.Core.FuncTest
             var timeoutStream = new DownloadTimeoutStream(
                 "download",
                 slowStream,
-                TimeSpan.FromSeconds(1));
+                TimeSpan.FromSeconds(10));
             
             // Act & Assert
             var actual = await Assert.ThrowsAsync<IOException>(() =>
