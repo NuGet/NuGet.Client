@@ -13,18 +13,20 @@ namespace NuGet.Protocol
     {
         public static IPackageSearchMetadata CreatePackageSearchResult(
           V2FeedPackageInfo package,
+          MetadataReferenceCache metadataCache,
           SearchFilter filter,
           V2FeedParser feedParser,
           Common.ILogger log,
           CancellationToken cancellationToken)
         {
-            var metadata = new PackageSearchMetadataV2Feed(package);
+            var metadata = new PackageSearchMetadataV2Feed(package, metadataCache);
             return metadata
-                .WithVersions(() => GetVersions(package, filter, feedParser, log, cancellationToken));
+                .WithVersions(() => GetVersions(package, metadataCache, filter, feedParser, log, cancellationToken));
         }
 
         private static async Task<IEnumerable<VersionInfo>> GetVersions(
             V2FeedPackageInfo package,
+            MetadataReferenceCache metadataCache,
             SearchFilter filter,
             V2FeedParser feedParser,
             Common.ILogger log,
@@ -41,14 +43,14 @@ namespace NuGet.Protocol
 
             var uniqueVersions = new HashSet<NuGetVersion>();
             var results = new List<VersionInfo>();
-
+            
             foreach (var versionPackage in packages.OrderByDescending(p => p.Version))
             {
                 if (uniqueVersions.Add(versionPackage.Version))
                 {
                     var versionInfo = new VersionInfo(versionPackage.Version, versionPackage.DownloadCount)
                     {
-                        PackageSearchMetadata = new PackageSearchMetadataV2Feed(versionPackage)
+                        PackageSearchMetadata = new PackageSearchMetadataV2Feed(versionPackage, metadataCache)
                     };
 
                     results.Add(versionInfo);

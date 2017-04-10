@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using NuGet.Packaging;
@@ -10,7 +13,6 @@ namespace NuGet.Protocol
 {
     public class PackageSearchMetadataV2Feed : IPackageSearchMetadata
     {
-
         public PackageSearchMetadataV2Feed(V2FeedPackageInfo package)
         {
             Authors = string.Join(", ", package.Authors);
@@ -21,6 +23,35 @@ namespace NuGet.Protocol
             Owners = string.Join(", ", package.Owners);
             PackageId = package.Id;
             ProjectUrl = GetUriSafe(package.ProjectUrl);
+            Created = package.Created;
+            LastEdited = package.LastEdited;
+            Published = package.Published;
+            ReportAbuseUrl = GetUriSafe(package.ReportAbuseUrl);
+            RequireLicenseAcceptance = package.RequireLicenseAcceptance;
+            Summary = package.Summary;
+            Tags = package.Tags;
+            Title = package.Title;
+            Version = package.Version;
+            IsListed = package.IsListed;
+
+            long count;
+            if (long.TryParse(package.DownloadCount, out count))
+            {
+                DownloadCount = count;
+            }
+        }
+        public PackageSearchMetadataV2Feed(V2FeedPackageInfo package, MetadataReferenceCache metadataCache)
+        {
+            Authors = metadataCache.GetString(string.Join(", ", package.Authors));
+            DependencySets = package.DependencySets;
+            Description = package.Description;
+            IconUrl = GetUriSafe(package.IconUrl);
+            LicenseUrl = GetUriSafe(package.LicenseUrl);
+            Owners = metadataCache.GetString(string.Join(", ", package.Owners));
+            PackageId = package.Id;
+            ProjectUrl = GetUriSafe(package.ProjectUrl);
+            Created = package.Created;
+            LastEdited = package.LastEdited;
             Published = package.Published;
             ReportAbuseUrl = GetUriSafe(package.ReportAbuseUrl);
             RequireLicenseAcceptance = package.RequireLicenseAcceptance;
@@ -56,6 +87,10 @@ namespace NuGet.Protocol
         public string PackageId { get; private set; }
 
         public Uri ProjectUrl { get; private set; }
+
+        public DateTimeOffset? Created { get; private set; }
+
+        public DateTimeOffset? LastEdited { get; private set; }
 
         public DateTimeOffset? Published { get; private set; }
 

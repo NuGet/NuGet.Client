@@ -9,7 +9,7 @@ using NuGet.Test.Utility;
 using NuGet.Versioning;
 using Xunit;
 
-namespace NuGet.Protocol.Core.v3.Tests
+namespace NuGet.Protocol.Tests
 {
     public class LocalMetadataResourceTests
     {

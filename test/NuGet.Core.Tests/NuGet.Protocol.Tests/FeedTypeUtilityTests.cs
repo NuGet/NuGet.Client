@@ -11,7 +11,7 @@ using NuGet.Configuration;
 using NuGet.Test.Utility;
 using Xunit;
 
-namespace NuGet.Protocol.Core.v3.Tests
+namespace NuGet.Protocol.Tests
 {
     public class FeedTypeUtilityTests
     {

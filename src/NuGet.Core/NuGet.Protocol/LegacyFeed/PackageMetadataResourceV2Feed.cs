@@ -46,7 +46,8 @@ namespace NuGet.Protocol
         {
             var packages = await _feedParser.FindPackagesByIdAsync(packageId, includeUnlisted, includePrerelease, log, token);
 
-            return packages.Select(p => new PackageSearchMetadataV2Feed(p)).ToList();
+            var metadataCache = new MetadataReferenceCache();
+            return packages.Select(p => new PackageSearchMetadataV2Feed(p, metadataCache)).ToList();
         }
 
         public override async Task<IPackageSearchMetadata> GetMetadataAsync(

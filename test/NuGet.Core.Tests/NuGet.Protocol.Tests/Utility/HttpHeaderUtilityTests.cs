@@ -6,7 +6,7 @@ using NuGet.Test.Utility;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace NuGet.Protocol.Core.v3.Tests.Utility
+namespace NuGet.Protocol.Tests.Utility
 {
     public class HttpResponseMessageExtensionsTests
     {

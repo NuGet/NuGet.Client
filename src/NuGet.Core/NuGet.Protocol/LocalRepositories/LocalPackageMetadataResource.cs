@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -34,9 +37,11 @@ namespace NuGet.Protocol
 
             return Task.Run<IEnumerable<IPackageSearchMetadata>>(() =>
             {
+                var metadataCache = new MetadataReferenceCache();
                 return _localResource.FindPackagesById(packageId, log, token)
                     .Where(p => includePrerelease || !p.Identity.Version.IsPrerelease)
                     .Select(GetPackageMetadata)
+                    .Select(p => metadataCache.GetObject(p))
                     .ToList();
             },
             token);

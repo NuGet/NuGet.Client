@@ -6,7 +6,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Protocol.Core.Types;
-using NuGet.Protocol;
 
 namespace NuGet.Protocol
 {
@@ -22,13 +21,16 @@ namespace NuGet.Protocol
             _metadataResource = metadataResource;
         }
 
-        public async override Task<IEnumerable<IPackageSearchMetadata>> SearchAsync(string searchTerm, SearchFilter filter, int skip, int take, Common.ILogger log, CancellationToken cancellationToken)
+        public override async Task<IEnumerable<IPackageSearchMetadata>> SearchAsync(string searchTerm, SearchFilter filter, int skip, int take, Common.ILogger log, CancellationToken cancellationToken)
         {
             var searchResultJsonObjects = await _rawSearchResource.Search(searchTerm, filter, skip, take, Common.NullLogger.Instance, cancellationToken);
+
+            var metadataCache = new MetadataReferenceCache();
 
             var searchResults = searchResultJsonObjects
                 .Select(s => s.FromJToken<PackageSearchMetadata>())
                 .Select(m => m.WithVersions(() => GetVersions(m, filter)))
+                .Select(m => metadataCache.GetObject((PackageSearchMetadataBuilder.ClonedPackageSearchMetadata) m))
                 .ToArray();
 
             return searchResults;

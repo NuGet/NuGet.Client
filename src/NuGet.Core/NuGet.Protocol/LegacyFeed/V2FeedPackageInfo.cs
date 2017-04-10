@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -27,6 +30,8 @@ namespace NuGet.Protocol
         private readonly string _tags;
         private readonly string _downloadCount;
         private readonly bool _requireLicenseAcceptance;
+        private readonly DateTimeOffset? _created;
+        private readonly DateTimeOffset? _lastEdited;
         private readonly DateTimeOffset? _published;
         private readonly string _dependencies;
         private readonly string _downloadUrl;
@@ -37,7 +42,7 @@ namespace NuGet.Protocol
 
         public V2FeedPackageInfo(PackageIdentity identity, string title, string summary, string description, IEnumerable<string> authors, IEnumerable<string> owners,
             string iconUrl, string licenseUrl, string projectUrl, string reportAbuseUrl,
-            string tags, DateTimeOffset? published, string dependencies, bool requireLicenseAccept, string downloadUrl, string downloadCount,
+            string tags, DateTimeOffset? created, DateTimeOffset? lastEdited, DateTimeOffset? published, string dependencies, bool requireLicenseAccept, string downloadUrl, string downloadCount,
             string packageHash, string packageHashAlgorithm, NuGetVersion minClientVersion)
             : base(identity.Id, identity.Version)
         {
@@ -57,6 +62,8 @@ namespace NuGet.Protocol
             _title = title;
             _downloadUrl = downloadUrl;
             _downloadCount = downloadCount;
+            _created = created;
+            _lastEdited = lastEdited;
             _published = published;
             _packageHash = packageHash;
             _packageHashAlgorithm = packageHashAlgorithm;
@@ -169,6 +176,22 @@ namespace NuGet.Protocol
                 int x = 0;
                 Int32.TryParse(_downloadCount, out x);
                 return x;
+            }
+        }
+
+        public DateTimeOffset? Created
+        {
+            get
+            {
+                return _created;
+            }
+        }
+
+        public DateTimeOffset? LastEdited
+        {
+            get
+            {
+                return _lastEdited;
             }
         }
 

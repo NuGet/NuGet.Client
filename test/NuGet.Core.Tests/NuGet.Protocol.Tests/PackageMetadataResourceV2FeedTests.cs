@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -31,7 +34,7 @@ namespace NuGet.Protocol.Tests
 
             // Act
             var metadata = await packageMetadataResource.GetMetadataAsync("WindowsAzure.Storage", true, false, NullLogger.Instance, CancellationToken.None);
-            var latestPackage = metadata.OrderByDescending(e => e.Identity.Version, VersionComparer.VersionRelease).FirstOrDefault();
+            var latestPackage = (PackageSearchMetadataV2Feed) metadata.OrderByDescending(e => e.Identity.Version, VersionComparer.VersionRelease).FirstOrDefault();
 
             // Assert
             Assert.Equal(44, metadata.Count());
@@ -47,12 +50,39 @@ namespace NuGet.Protocol.Tests
             Assert.Equal("http://go.microsoft.com/fwlink/?LinkId=331471", latestPackage.LicenseUrl.AbsoluteUri);
             Assert.Equal("http://go.microsoft.com/fwlink/?LinkId=235168", latestPackage.ProjectUrl.AbsoluteUri);
             Assert.Equal(DateTimeOffset.Parse("2015-12-11T01:25:11.37"), latestPackage.Published.Value);
+            Assert.Equal(DateTimeOffset.Parse("2015-12-11T01:25:11.37"), latestPackage.Created.Value);
+            Assert.Null(latestPackage.LastEdited);
             Assert.Equal("https://www.nuget.org/package/ReportAbuse/WindowsAzure.Storage/6.2.2-preview", latestPackage.ReportAbuseUrl.AbsoluteUri);
             Assert.True(latestPackage.RequireLicenseAcceptance);
             Assert.Equal("A client library for working with Microsoft Azure storage services including blobs, files, tables, and queues.", latestPackage.Summary);
             Assert.Equal("Microsoft Azure Storage Table Blob File Queue Scalable windowsazureofficial", latestPackage.Tags);
             Assert.Equal(6, latestPackage.DependencySets.Count());
             Assert.Equal("dotnet5.4", latestPackage.DependencySets.First().TargetFramework.GetShortFolderName());
+        }
+
+        [Fact]
+        public async Task PackageMetadataResource_UsesReferenceCache()
+        {
+            // Arrange
+            var serviceAddress = TestUtility.CreateServiceAddress();
+
+            var responses = new Dictionary<string, string>();
+            responses.Add(serviceAddress + "FindPackagesById()?id='afine'&semVerLevel=2.0.0",
+                TestUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.FindPackagesByIdWithDuplicateBesidesVersion.xml", GetType()));
+            responses.Add(serviceAddress, string.Empty);
+
+            var repo = StaticHttpHandler.CreateSource(serviceAddress, Repository.Provider.GetCoreV3(), responses);
+
+            var packageMetadataResource = await repo.GetResourceAsync<PackageMetadataResource>();
+
+            // Act
+            var metadata = (IEnumerable<PackageSearchMetadataV2Feed>) await packageMetadataResource.GetMetadataAsync("afine", true, false, NullLogger.Instance, CancellationToken.None);
+
+            var first = metadata.ElementAt(0);
+            var second = metadata.ElementAt(1);
+
+            // Assert
+            MetadataReferenceCacheTestUtility.AssertPackagesHaveSameReferences(first, second);
         }
 
         [Fact]

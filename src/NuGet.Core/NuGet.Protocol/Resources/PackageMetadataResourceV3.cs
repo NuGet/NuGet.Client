@@ -1,7 +1,6 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -9,8 +8,6 @@ using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
-using NuGet.Protocol;
-using NuGet.Versioning;
 
 namespace NuGet.Protocol
 {
@@ -29,8 +26,15 @@ namespace NuGet.Protocol
 
         public override async Task<IEnumerable<IPackageSearchMetadata>> GetMetadataAsync(string packageId, bool includePrerelease, bool includeUnlisted, Common.ILogger log, CancellationToken token)
         {
-            var metadataList = await _regResource.GetPackageMetadata(packageId, includePrerelease, includeUnlisted, log, token);
-            return metadataList.Select(ParseMetadata);
+            var metadataCache = new MetadataReferenceCache();
+
+            var packages =
+                (await _regResource.GetPackageMetadata(packageId, includePrerelease, includeUnlisted, log, token))
+                    .Select(ParseMetadata)
+                    .Select(m => metadataCache.GetObject(m))
+                    .ToArray();
+
+            return packages;
         }
 
         public override async Task<IPackageSearchMetadata> GetMetadataAsync(PackageIdentity package, Common.ILogger log, CancellationToken token)
@@ -43,9 +47,9 @@ namespace NuGet.Protocol
             return null;
         }
 
-        private IPackageSearchMetadata ParseMetadata(JObject metadata)
+        private PackageSearchMetadataRegistration ParseMetadata(JObject metadata)
         {
-            var parsed = metadata.FromJToken<PackageSearchMetadata>();
+            var parsed = metadata.FromJToken<PackageSearchMetadataRegistration>();
             parsed.ReportAbuseUrl = _reportAbuseResource?.GetReportAbuseUrl(parsed.PackageId, parsed.Version);
             return parsed;
         }

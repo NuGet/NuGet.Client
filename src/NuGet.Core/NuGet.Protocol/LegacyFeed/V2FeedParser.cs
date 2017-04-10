@@ -47,6 +47,8 @@ namespace NuGet.Protocol
         private static readonly XName _xnameDependencies = XName.Get("Dependencies", DataServicesNS);
         private static readonly XName _xnameRequireLicenseAcceptance = XName.Get("RequireLicenseAcceptance", DataServicesNS);
         private static readonly XName _xnameDownloadCount = XName.Get("DownloadCount", DataServicesNS);
+        private static readonly XName _xnameCreated = XName.Get("Created", DataServicesNS);
+        private static readonly XName _xnameLastEdited = XName.Get("LastEdited", DataServicesNS);
         private static readonly XName _xnamePublished = XName.Get("Published", DataServicesNS);
         private static readonly XName _xnameName = XName.Get("name", W3Atom);
         private static readonly XName _xnameAuthor = XName.Get("author", W3Atom);
@@ -309,23 +311,23 @@ namespace NuGet.Protocol
         /// <summary>
         /// Finds all entries on the page and parses them
         /// </summary>
-        private IEnumerable<V2FeedPackageInfo> ParsePage(XDocument doc, string id)
+        private IEnumerable<V2FeedPackageInfo> ParsePage(XDocument doc, string id, MetadataReferenceCache metadataCache)
         {
             if (doc.Root.Name == _xnameEntry)
             {
-                return new List<V2FeedPackageInfo> { ParsePackage(id, doc.Root) };
+                return new List<V2FeedPackageInfo> { ParsePackage(id, doc.Root, metadataCache) };
             }
             else
             {
                 return doc.Root.Elements(_xnameEntry)
-                    .Select(x => ParsePackage(id, x));
+                    .Select(x => ParsePackage(id, x, metadataCache));
             }
         }
 
         /// <summary>
         /// Parse an entry into a V2FeedPackageInfo
         /// </summary>
-        private V2FeedPackageInfo ParsePackage(string id, XElement element)
+        private V2FeedPackageInfo ParsePackage(string id, XElement element, MetadataReferenceCache metadataCache)
         {
             var properties = element.Element(_xnameProperties);
             var idElement = properties.Element(_xnameId);
@@ -334,69 +336,61 @@ namespace NuGet.Protocol
             // If 'Id' element exist, use its value as accurate package Id
             // Otherwise, use the value of 'title' if it exist
             // Use the given Id as final fallback if all elements above don't exist
-            string identityId = idElement?.Value ?? titleElement?.Value ?? id;
+            string identityId = metadataCache.GetString(idElement?.Value ?? titleElement?.Value ?? id);
             string versionString = properties.Element(_xnameVersion).Value;
-            NuGetVersion version = NuGetVersion.Parse(versionString);
-            string downloadUrl = element.Element(_xnameContent).Attribute("src").Value;
+            NuGetVersion version = metadataCache.GetVersion(metadataCache.GetString(versionString));
+            string downloadUrl = metadataCache.GetString(element.Element(_xnameContent).Attribute("src").Value);
 
-            string title = titleElement?.Value;
-            string summary = GetValue(element, _xnameSummary);
-            string description = GetValue(properties, _xnameDescription);
-            string iconUrl = GetValue(properties, _xnameIconUrl);
-            string licenseUrl = GetValue(properties, _xnameLicenseUrl);
-            string projectUrl = GetValue(properties, _xnameProjectUrl);
-            string reportAbuseUrl = GetValue(properties, _xnameReportAbuseUrl);
-            string tags = GetValue(properties, _xnameTags);
-            string dependencies = GetValue(properties, _xnameDependencies);
+            string title = metadataCache.GetString(titleElement?.Value);
+            string summary = metadataCache.GetString(GetString(element, _xnameSummary));
+            string description = metadataCache.GetString(GetString(properties, _xnameDescription));
+            string iconUrl = metadataCache.GetString(GetString(properties, _xnameIconUrl));
+            string licenseUrl = metadataCache.GetString(GetString(properties, _xnameLicenseUrl));
+            string projectUrl = metadataCache.GetString(GetString(properties, _xnameProjectUrl));
+            string reportAbuseUrl = metadataCache.GetString(GetString(properties, _xnameReportAbuseUrl));
+            string tags = metadataCache.GetString(GetString(properties, _xnameTags));
+            string dependencies = metadataCache.GetString(GetString(properties, _xnameDependencies));
 
-            string downloadCount = GetValue(properties, _xnameDownloadCount);
-            bool requireLicenseAcceptance = GetValue(properties, _xnameRequireLicenseAcceptance) == "true";
+            string downloadCount = metadataCache.GetString(GetString(properties, _xnameDownloadCount));
+            bool requireLicenseAcceptance = StringComparer.OrdinalIgnoreCase.Equals(bool.TrueString, GetString(properties, _xnameRequireLicenseAcceptance));
 
-            string packageHash = GetValue(properties, _xnamePackageHash);
-            string packageHashAlgorithm = GetValue(properties, _xnamePackageHashAlgorithm);
-            string minClientVersionString = GetValue(properties, _xnameMinClientVersion);
+            string packageHash = metadataCache.GetString(GetString(properties, _xnamePackageHash));
+            string packageHashAlgorithm = metadataCache.GetString(GetString(properties, _xnamePackageHashAlgorithm));
 
             NuGetVersion minClientVersion = null;
 
-            if (minClientVersionString != null)
+            var minClientVersionString = GetString(properties, _xnameMinClientVersion);
+            if (!string.IsNullOrEmpty(minClientVersionString))
             {
-                NuGetVersion.TryParse(minClientVersionString, out minClientVersion);
+                if (NuGetVersion.TryParse(minClientVersionString, out minClientVersion))
+                {
+                    minClientVersion = metadataCache.GetVersion(minClientVersionString);
+                }
             }
 
-            DateTimeOffset? published = null;
+            DateTimeOffset? created = GetDate(properties, _xnameCreated);
+            DateTimeOffset? lastEdited = GetDate(properties, _xnameLastEdited);
+            DateTimeOffset? published = GetDate(properties, _xnamePublished);
 
-            DateTimeOffset pubVal = DateTimeOffset.MinValue;
-            string pubString = GetValue(properties, _xnamePublished);
-            if (DateTimeOffset.TryParse(pubString, out pubVal))
-            {
-                published = pubVal;
-            }
-
-            // TODO: is this ever populated in v2?
             IEnumerable<string> owners = null;
-
             IEnumerable<string> authors = null;
 
             var authorNode = element.Element(_xnameAuthor);
             if (authorNode != null)
             {
-                authors = authorNode.Elements(_xnameName).Select(e => e.Value);
+                authors = authorNode.Elements(_xnameName).Select(e => metadataCache.GetString(e.Value));
             }
 
-            return new V2FeedPackageInfo(new PackageIdentity(identityId, version),
-                title, summary, description, authors, owners, iconUrl, licenseUrl,
-                projectUrl, reportAbuseUrl, tags, published, dependencies,
-                requireLicenseAcceptance, downloadUrl, downloadCount,
-                packageHash,
-                packageHashAlgorithm,
-                minClientVersion
-                );
+            return new V2FeedPackageInfo(new PackageIdentity(identityId, version), title, summary, description, authors,
+                owners, iconUrl, licenseUrl, projectUrl, reportAbuseUrl, tags, created, lastEdited, published,
+                dependencies, requireLicenseAcceptance, downloadUrl, downloadCount, packageHash, packageHashAlgorithm,
+                minClientVersion);
         }
 
         /// <summary>
-        /// Retrieve an XML value safely
+        /// Retrieve an XML <see cref="string"/> value safely
         /// </summary>
-        private static string GetValue(XElement parent, XName childName)
+        private static string GetString(XElement parent, XName childName)
         {
             string value = null;
 
@@ -413,6 +407,22 @@ namespace NuGet.Protocol
             return value;
         }
 
+        /// <summary>
+        /// Retrieve an XML <see cref="DateTimeOffset"/> value safely
+        /// </summary>
+        private static DateTimeOffset? GetDate(XElement parent, XName childName)
+        {
+            var dateString = GetString(parent, childName);
+
+            DateTimeOffset date;
+            if (DateTimeOffset.TryParse(dateString, out date))
+            {
+                return date;
+            }
+
+            return null;
+        }
+
         public async Task<V2FeedPage> QueryV2FeedAsync(
             string relativeUri,
             string id,
@@ -421,6 +431,7 @@ namespace NuGet.Protocol
             ILogger log,
             CancellationToken token)
         {
+            var metadataCache = new MetadataReferenceCache();
             var results = new List<V2FeedPackageInfo>();
             var uris = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             var page = 1;
@@ -443,7 +454,7 @@ namespace NuGet.Protocol
                 var doc = await docRequest;
                 if (doc != null)
                 {
-                    var result = ParsePage(doc, id);
+                    var result = ParsePage(doc, id, metadataCache);
                     results.AddRange(result);
 
                     nextUri = GetNextUrl(doc);

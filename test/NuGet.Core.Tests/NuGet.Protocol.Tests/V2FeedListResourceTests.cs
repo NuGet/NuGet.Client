@@ -1,18 +1,12 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.Configuration;
-using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
-using NuGet.Test.Utility;
-using NuGet.Versioning;
 using Test.Utility;
 using Xunit;
 
@@ -413,6 +407,56 @@ namespace NuGet.Protocol.Tests
             }
 
             Assert.Equal(ExpectedCount, ActualCount);
+        }
+
+        [Fact]
+        public async Task TestUsesReferenceCache()
+        {
+            // Arrange
+            var serviceAddress = TestUtility.CreateServiceAddress() + "api/v2";
+
+            var responses = new Dictionary<string, string>();
+
+            responses.Add(
+                serviceAddress + "/Search()?$orderby=Id&searchTerm='afine'" +
+                "&targetFramework=''&includePrerelease=false&$skip=0&$top=30&semVerLevel=2.0.0",
+                TestUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.SearchV2WithDuplicateBesidesVersion.xml", GetType()));
+            responses.Add(serviceAddress, string.Empty);
+            responses.Add(serviceAddress + "/$metadata",
+                TestUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.MetadataTT.xml", GetType()));
+
+            var httpSource = new TestHttpSource(new PackageSource(serviceAddress), responses);
+
+            var parser = new V2FeedParser(httpSource, serviceAddress);
+            var legacyResource = new LegacyFeedCapabilityResourceV2Feed(parser, serviceAddress);
+            var resource = new V2FeedListResource(parser, legacyResource, serviceAddress);
+
+            var enumerable = await resource.ListAsync(searchTerm: "afine",
+                prerelease: false, allVersions: true, includeDelisted: true, logger: NullLogger.Instance, token: CancellationToken.None);
+
+            int ExpectedCount = 2;
+            int ActualCount = 0;
+            var enumerator = enumerable.GetEnumeratorAsync();
+
+            var packages = new List<PackageSearchMetadataBuilder.ClonedPackageSearchMetadata>();
+
+            while (await enumerator.MoveNextAsync())
+            {
+                if (enumerator.Current != null)
+                {
+                    ActualCount++;
+                    Assert.True(ExpectedCount >= ActualCount, "Too many results");
+                    packages.Add((PackageSearchMetadataBuilder.ClonedPackageSearchMetadata) enumerator.Current);
+                }
+                else
+                {
+                    Assert.False(false, "Null Value, this shouldn't happen.");
+                }
+            }
+
+            Assert.Equal(ExpectedCount, ActualCount);
+
+            MetadataReferenceCacheTestUtility.AssertPackagesHaveSameReferences(packages[0], packages[1]);
         }
 
     }

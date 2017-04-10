@@ -11,7 +11,6 @@ using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
-using NuGet.Protocol.Core.v3.Tests;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
 using Test.Utility;
@@ -105,7 +104,9 @@ namespace NuGet.Protocol.Tests
             Assert.Equal("http://go.microsoft.com/fwlink/?LinkID=288890", latest.IconUrl);
             Assert.Equal("http://go.microsoft.com/fwlink/?LinkId=331471", latest.LicenseUrl);
             Assert.Equal("http://go.microsoft.com/fwlink/?LinkId=235168", latest.ProjectUrl);
+            Assert.Equal(DateTimeOffset.Parse("2015-12-11T01:25:11.37"), latest.Created.Value);
             Assert.Equal(DateTimeOffset.Parse("2015-12-11T01:25:11.37"), latest.Published.Value);
+            Assert.Null(latest.LastEdited);
             Assert.Equal("https://www.nuget.org/package/ReportAbuse/WindowsAzure.Storage/6.2.2-preview", latest.ReportAbuseUrl);
             Assert.True(latest.RequireLicenseAcceptance);
             Assert.Equal("A client library for working with Microsoft Azure storage services including blobs, files, tables, and queues.", latest.Summary);
@@ -113,6 +114,31 @@ namespace NuGet.Protocol.Tests
             Assert.Equal("Microsoft.Data.OData:5.6.4:dotnet54|Microsoft.Data.Services.Client:5.6.4:dotnet54|System.Spatial:5.6.4:dotnet54|Newtonsoft.Json:6.0.8:dotnet54|System.Collections:4.0.11-beta-23225:dotnet54|System.Collections.Concurrent:4.0.11-beta-23225:dotnet54|System.Collections.Specialized:4.0.0-beta-23109:dotnet54|System.Diagnostics.Debug:4.0.11-beta-23225:dotnet54|System.Diagnostics.Tools:4.0.1-beta-23225:dotnet54|System.Diagnostics.TraceSource:4.0.0-beta-23225:dotnet54|System.Diagnostics.Tracing:4.0.21-beta-23225:dotnet54|System.Dynamic.Runtime:4.0.11-beta-23225:dotnet54|System.Globalization:4.0.11-beta-23225:dotnet54|System.IO:4.0.11-beta-23225:dotnet54|System.IO.FileSystem:4.0.1-beta-23225:dotnet54|System.IO.FileSystem.Primitives:4.0.1-beta-23225:dotnet54|System.Linq:4.0.1-beta-23225:dotnet54|System.Linq.Expressions:4.0.11-beta-23225:dotnet54|System.Linq.Queryable:4.0.0-beta-23109:dotnet54|System.Net.Http:4.0.1-beta-23225:dotnet54|System.Net.Primitives:4.0.11-beta-23225:dotnet54|System.Reflection:4.1.0-beta-23225:dotnet54|System.Reflection.Extensions:4.0.1-beta-23225:dotnet54|System.Reflection.TypeExtensions:4.0.1-beta-23225:dotnet54|System.Runtime:4.0.20-beta-23109:dotnet54|System.Runtime.Extensions:4.0.11-beta-23225:dotnet54|System.Runtime.InteropServices:4.0.21-beta-23225:dotnet54|System.Runtime.Serialization.Primitives:4.0.0-beta-23109:dotnet54|System.Runtime.Serialization.Xml:4.0.10-beta-23109:dotnet54|System.Security.Cryptography.Encoding:4.0.0-beta-23225:dotnet54|System.Security.Cryptography.Primitives:4.0.0-beta-23225:dotnet54|System.Security.Cryptography.Algorithms:4.0.0-beta-23225:dotnet54|System.Text.Encoding:4.0.11-beta-23225:dotnet54|System.Text.Encoding.Extensions:4.0.11-beta-23225:dotnet54|System.Text.RegularExpressions:4.0.11-beta-23225:dotnet54|System.Threading:4.0.11-beta-23225:dotnet54|System.Threading.Tasks:4.0.11-beta-23225:dotnet54|System.Threading.Thread:4.0.0-beta-23225:dotnet54|System.Threading.ThreadPool:4.0.10-beta-23225:dotnet54|System.Threading.Timer:4.0.1-beta-23225:dotnet54|System.Xml.ReaderWriter:4.0.11-beta-23225:dotnet54|System.Xml.XDocument:4.0.11-beta-23225:dotnet54|System.Xml.XmlSerializer:4.0.0-beta-23109:dotnet54|Microsoft.Data.OData:5.6.4:net40-Client|Newtonsoft.Json:6.0.8:net40-Client|Microsoft.Data.Services.Client:5.6.4:net40-Client|Microsoft.Azure.KeyVault.Core:1.0.0:net40-Client|Microsoft.Data.OData:5.6.4:win80|Newtonsoft.Json:6.0.8:win80|Microsoft.Data.OData:5.6.4:wpa|Newtonsoft.Json:6.0.8:wpa|Microsoft.Data.OData:5.6.4:wp80|Newtonsoft.Json:6.0.8:wp80|Microsoft.Azure.KeyVault.Core:1.0.0:wp80|Microsoft.Data.OData:5.6.4:portable-net45+win+wpa81+MonoAndroid10+MonoTouch10|Newtonsoft.Json:6.0.8:portable-net45+win+wpa81+MonoAndroid10+MonoTouch10", latest.Dependencies);
             Assert.Equal(6, latest.DependencySets.Count());
             Assert.Equal("dotnet5.4", latest.DependencySets.First().TargetFramework.GetShortFolderName());
+        }
+
+        [Fact]
+        public async Task V2FeedParser_UsesReferenceCache()
+        {
+            //// Arrange
+            var serviceAddress = TestUtility.CreateServiceAddress();
+
+            var responses = new Dictionary<string, string>();
+            responses.Add(serviceAddress + "FindPackagesById()?id='afine'&semVerLevel=2.0.0",
+                TestUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.FindPackagesByIdWithDuplicateBesidesVersion.xml", GetType()));
+            responses.Add(serviceAddress, string.Empty);
+
+            var httpSource = new TestHttpSource(new PackageSource(serviceAddress), responses);
+
+            V2FeedParser parser = new V2FeedParser(httpSource, serviceAddress);
+
+            //// Act
+            var packages = await parser.FindPackagesByIdAsync("afine", NullLogger.Instance, CancellationToken.None);
+
+            var first = packages[0];
+            var second = packages[1];
+
+            //// Assert
+            MetadataReferenceCacheTestUtility.AssertPackagesHaveSameReferences(first, second);
         }
 
         [Fact]
@@ -186,6 +212,8 @@ namespace NuGet.Protocol.Tests
             Assert.Equal("http://go.microsoft.com/fwlink/?LinkID=288890", package.IconUrl);
             Assert.Equal("http://go.microsoft.com/fwlink/?LinkId=331471", package.LicenseUrl);
             Assert.Equal("http://go.microsoft.com/fwlink/?LinkId=235168", package.ProjectUrl);
+            Assert.Equal(DateTimeOffset.Parse("2015-12-10T22:39:05.103"), package.Created.Value);
+            Assert.Equal(DateTimeOffset.Parse("2016-12-10T22:39:05.103"), package.LastEdited.Value);
             Assert.Equal(DateTimeOffset.Parse("2015-12-10T22:39:05.103"), package.Published.Value);
             Assert.Equal("https://www.nuget.org/package/ReportAbuse/WindowsAzure.Storage/6.2.0", package.ReportAbuseUrl);
             Assert.True(package.RequireLicenseAcceptance);
@@ -399,6 +427,8 @@ namespace NuGet.Protocol.Tests
             Assert.Equal("http://go.microsoft.com/fwlink/?LinkId=331471", package.LicenseUrl);
             Assert.Equal("http://go.microsoft.com/fwlink/?LinkId=235168", package.ProjectUrl);
             Assert.Equal(DateTimeOffset.Parse("2014-11-12T22:19:16.297"), package.Published.Value);
+            Assert.Equal(DateTimeOffset.Parse("2014-11-12T22:19:16.297"), package.Created.Value);
+            Assert.Null(package.LastEdited);
             Assert.Equal("https://www.nuget.org/package/ReportAbuse/WindowsAzure.Storage/4.3.2-preview", package.ReportAbuseUrl);
             Assert.True(package.RequireLicenseAcceptance);
             Assert.Equal("A client library for working with Microsoft Azure storage services including blobs, files, tables, and queues.", package.Summary);
@@ -465,6 +495,8 @@ namespace NuGet.Protocol.Tests
             Assert.Equal("http://go.microsoft.com/fwlink/?LinkId=331471", package.LicenseUrl);
             Assert.Equal("http://go.microsoft.com/fwlink/?LinkId=235168", package.ProjectUrl);
             Assert.Equal(DateTimeOffset.Parse("2014-11-12T22:19:16.297"), package.Published.Value);
+            Assert.Equal(DateTimeOffset.Parse("2014-11-12T22:19:16.297"), package.Created.Value);
+            Assert.Null(package.LastEdited);
             Assert.Equal("https://www.nuget.org/package/ReportAbuse/WindowsAzure.Storage/4.3.2-preview", package.ReportAbuseUrl);
             Assert.True(package.RequireLicenseAcceptance);
             Assert.Equal("A client library for working with Microsoft Azure storage services including blobs, files, tables, and queues.", package.Summary);
@@ -613,6 +645,9 @@ namespace NuGet.Protocol.Tests
             Assert.Equal("", String.Join(",", latest.Owners));
             Assert.True(latest.Description.StartsWith("Some description"));
             Assert.Equal(0, latest.DownloadCountAsInt);
+            Assert.Equal(DateTimeOffset.Parse("2016-04-06T12:46:30.942Z"), latest.Published.Value);
+            Assert.Equal(DateTimeOffset.Parse("2016-04-06T12:46:30.942Z"), latest.Created.Value);
+            Assert.Equal(DateTimeOffset.Parse("2017-04-06T12:46:30.942Z"), latest.LastEdited.Value);
             Assert.Equal("PackageB:null|EntityFramework:6.1.3|PackageC:3.7.0.15", latest.Dependencies);
             Assert.Equal(1, latest.DependencySets.Count());
             Assert.Equal(VersionRange.All, latest.DependencySets.Single().Packages.Where(p => p.Id == "PackageB").Single().VersionRange);

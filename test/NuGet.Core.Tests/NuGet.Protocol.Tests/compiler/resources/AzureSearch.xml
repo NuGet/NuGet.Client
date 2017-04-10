@@ -33,6 +33,7 @@
       <d:IsAbsoluteLatestVersion m:type="Edm.Boolean">false</d:IsAbsoluteLatestVersion>
       <d:IsPrerelease m:type="Edm.Boolean">false</d:IsPrerelease>
       <d:Language m:null="true" />
+      <d:LastEdited m:type="Edm.DateTime">2016-12-10T22:39:05.103</d:LastEdited>
       <d:Published m:type="Edm.DateTime">2015-12-10T22:39:05.103</d:Published>
       <d:PackageHash>goOiCbpHmw/H3CJYhWorrQ9kbLYMyqPaUi4IXE8ke0rZXeA9VuzXZe8bjQAPuoJT84sPWuXMqu5rSUBQTXN0dQ==</d:PackageHash>
       <d:PackageHashAlgorithm>SHA512</d:PackageHashAlgorithm>

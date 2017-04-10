@@ -30,6 +30,7 @@
       <d:IsPrerelease m:type="Edm.Boolean">false</d:IsPrerelease>
       <d:Published m:type="Edm.DateTime">2016-04-06T12:46:30.942Z</d:Published>
       <d:Language m:null="true"></d:Language>
+      <d:LastEdited m:type="Edm.DateTime">2017-04-06T12:46:30.942Z</d:LastEdited>
       <d:LicenseUrl m:null="true"></d:LicenseUrl>
       <d:PackageHash>aqIW4mRwo2ZXuknkKVM09X2on6INMwWd7ImzzZkenjUYNrEM+0XjL2uZlUg7tQpnUU2AzK0J3SNPWWiGuw4wgw==</d:PackageHash>
       <d:PackageHashAlgorithm>SHA512</d:PackageHashAlgorithm>
