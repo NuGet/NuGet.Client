@@ -77,7 +77,7 @@ if [ -z "$CI" ]; then
 fi
 
 #run mono test
-TestDir="$DIR/artifacts/NuGet.CommandLine.Test/15.0/Release"
+TestDir="$DIR/artifacts/NuGet.CommandLine.Test/"
 XunitConsole="$DIR/packages/xunit.runner.console.2.2.0/tools/xunit.console.exe"
 NuGetExe="$DIR/.nuget/nuget.exe"
 
@@ -99,11 +99,11 @@ rm -r -f "$TestDir/System.*" "$TestDir/WindowsBase.dll" "$TestDir/Microsoft.CSha
 case "$(uname -s)" in
 		Linux)
 			echo "mono $XunitConsole "$TestDir/NuGet.CommandLine.Test.dll" -notrait Platform=Windows -notrait Platform=Darwin"
-			mono $XunitConsole "$TestDir/NuGet.CommandLine.Test.dll" -notrait Platform=Windows -notrait Platform=Darwin
+			mono $XunitConsole "$TestDir/NuGet.CommandLine.Test.exe" -notrait Platform=Windows -notrait Platform=Darwin
 			;;
 		Darwin)
 			echo "mono $XunitConsole "$TestDir/NuGet.CommandLine.Test.dll" -notrait Platform=Windows -notrait Platform=Linux"
-			mono $XunitConsole "$TestDir/NuGet.CommandLine.Test.dll" -notrait Platform=Windows -notrait Platform=Linux
+			mono $XunitConsole "$TestDir/NuGet.CommandLine.Test.exe" -notrait Platform=Windows -notrait Platform=Linux
 			;;
 		*) ;;
 esac
