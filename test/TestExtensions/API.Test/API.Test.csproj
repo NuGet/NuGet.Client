@@ -24,8 +24,7 @@
 
   <ItemGroup>
     <ProjectReference Include="$(NuGetClientsSrcDirectory)NuGet.VisualStudio\NuGet.VisualStudio.csproj" />
-    <ProjectReference Include="$(NuGetClientsSrcDirectory)PackageManagement.VisualStudio\NuGet.PackageManagement.VisualStudio.csproj" />
-    <ProjectReference Include="$(NuGetClientsSrcDirectory)PackageManagement.UI\NuGet.PackageManagement.UI.csproj" />
+    <ProjectReference Include="..\..\..\src\NuGet.Clients\NuGet.VisualStudio.Common\NuGet.VisualStudio.Common.csproj" />
   </ItemGroup>
 
   <Import Project="$(BuildCommonDirectory)common.targets" />

@@ -8,7 +8,7 @@ using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.PackageManagement.UI;
-using NuGet.PackageManagement.VisualStudio;
+using NuGet.VisualStudio;
 using IStream = Microsoft.VisualStudio.OLE.Interop.IStream;
 
 namespace NuGetVSExtension

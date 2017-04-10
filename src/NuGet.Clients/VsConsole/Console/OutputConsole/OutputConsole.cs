@@ -6,6 +6,7 @@ using System.Globalization;
 using System.Windows.Media;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell.Interop;
+using NuGet.VisualStudio;
 
 namespace NuGetConsole
 {

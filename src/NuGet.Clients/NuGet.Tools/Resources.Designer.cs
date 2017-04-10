@@ -169,6 +169,15 @@ namespace NuGetVSExtension {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The project &apos;{0}&apos; is unsupported.
+        /// </summary>
+        internal static string DTE_ProjectUnsupported {
+            get {
+                return ResourceManager.GetString("DTE_ProjectUnsupported", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Operation failed.
         /// </summary>
         internal static string ErrorDialogBoxTitle {

@@ -6,7 +6,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.PackageManagement.VisualStudio;
-using NuGet.VisualStudio.Facade;
+using NuGet.VisualStudio;
 
 namespace NuGetConsole.Host.PowerShell.Implementation
 {

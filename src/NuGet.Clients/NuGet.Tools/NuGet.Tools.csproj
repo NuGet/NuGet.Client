@@ -38,8 +38,6 @@
     <Compile Include="DataStreamFromComStream.cs" />
     <Compile Include="FontAndColorsRegistrationAttribute.cs" />
     <Compile Include="Guids.cs" />
-    <Compile Include="Handlers\ProjectRetargetingHandler.cs" />
-    <Compile Include="Handlers\ProjectUpgradeHandler.cs" />
     <Compile Include="NuGetPackage.cs" />
     <Compile Include="NuGetSearchProvider.cs" />
     <Compile Include="NuGetSearchTask.cs" />
@@ -80,19 +78,19 @@
       <Project>{53ab7187-cdf3-48b5-b90e-8919d3cb904d}</Project>
       <Name>NuGet.Options</Name>
     </ProjectReference>
-    <ProjectReference Include="..\PackageManagement.PowerShellCmdlets\NuGet.PackageManagement.PowerShellCmdlets.csproj">
+    <ProjectReference Include="..\NuGet.PackageManagement.PowerShellCmdlets\NuGet.PackageManagement.PowerShellCmdlets.csproj">
       <Project>{26dc17ac-a390-4515-a2c0-07a0950036c5}</Project>
       <Name>NuGet.PackageManagement.PowerShellCmdlets</Name>
     </ProjectReference>
-    <ProjectReference Include="..\PackageManagement.UI\NuGet.PackageManagement.UI.csproj">
+    <ProjectReference Include="..\NuGet.PackageManagement.UI\NuGet.PackageManagement.UI.csproj">
       <Project>{538adefd-2170-40a9-a2c5-ec8369cfe490}</Project>
       <Name>NuGet.PackageManagement.UI</Name>
     </ProjectReference>
-    <ProjectReference Include="..\PackageManagement.VisualStudio\NuGet.PackageManagement.VisualStudio.csproj">
+    <ProjectReference Include="..\NuGet.PackageManagement.VisualStudio\NuGet.PackageManagement.VisualStudio.csproj">
       <Project>{306cddfa-ff0b-4299-930c-9ec6c9308160}</Project>
       <Name>NuGet.PackageManagement.VisualStudio</Name>
     </ProjectReference>
-    <ProjectReference Include="..\TeamFoundationServer\NuGet.TeamFoundationServer.csproj">
+    <ProjectReference Include="..\NuGet.TeamFoundationServer\NuGet.TeamFoundationServer.csproj">
       <Project>{e961d080-f10b-4f11-bea0-056509c086cc}</Project>
       <Name>NuGet.TeamFoundationServer</Name>
     </ProjectReference>
@@ -100,7 +98,7 @@
       <Project>{7DB43FE1-75E1-49F9-B2C8-06A552BA2144}</Project>
       <Name>NuGet.VisualStudio.Interop</Name>
     </ProjectReference>
-    <ProjectReference Include="..\VisualStudio.Facade\NuGet.VisualStudio.Facade.csproj">
+    <ProjectReference Include="..\NuGet.VisualStudio.Common\NuGet.VisualStudio.Common.csproj">
       <Project>{eea49a74-6efc-410e-9745-bad367ac151d}</Project>
       <Name>NuGet.VisualStudio.Facade</Name>
     </ProjectReference>
@@ -161,6 +159,10 @@
       <Project>{32a23995-14c7-483b-98c3-0ae4185373ea}</Project>
       <Name>NuGet.Credentials</Name>
     </ProjectReference>
+    <ProjectReference Include="..\NuGet.PackageManagement.VisualStudio\NuGet.PackageManagement.VisualStudio.csproj">
+      <Project>{306cddfa-ff0b-4299-930c-9ec6c9308160}</Project>
+      <Name>NuGet.PackageManagement.VisualStudio</Name>
+    </ProjectReference>
     <ProjectReference Include="..\NuGet.SolutionRestoreManager\NuGet.SolutionRestoreManager.csproj">
       <Project>{06662133-1292-4918-90f3-36c930c0b16f}</Project>
       <Name>NuGet.SolutionRestoreManager</Name>
@@ -173,19 +175,15 @@
       <Project>{53ab7187-cdf3-48b5-b90e-8919d3cb904d}</Project>
       <Name>NuGet.Options</Name>
     </ProjectReference>
-    <ProjectReference Include="..\PackageManagement.PowerShellCmdlets\NuGet.PackageManagement.PowerShellCmdlets.csproj">
+    <ProjectReference Include="..\NuGet.PackageManagement.PowerShellCmdlets\NuGet.PackageManagement.PowerShellCmdlets.csproj">
       <Project>{26dc17ac-a390-4515-a2c0-07a0950036c5}</Project>
       <Name>NuGet.PackageManagement.PowerShellCmdlets</Name>
     </ProjectReference>
-    <ProjectReference Include="..\PackageManagement.UI\NuGet.PackageManagement.UI.csproj">
+    <ProjectReference Include="..\NuGet.PackageManagement.UI\NuGet.PackageManagement.UI.csproj">
       <Project>{538adefd-2170-40a9-a2c5-ec8369cfe490}</Project>
       <Name>NuGet.PackageManagement.UI</Name>
     </ProjectReference>
-    <ProjectReference Include="..\PackageManagement.VisualStudio\NuGet.PackageManagement.VisualStudio.csproj">
-      <Project>{306cddfa-ff0b-4299-930c-9ec6c9308160}</Project>
-      <Name>NuGet.PackageManagement.VisualStudio</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\TeamFoundationServer\NuGet.TeamFoundationServer.csproj">
+    <ProjectReference Include="..\NuGet.TeamFoundationServer\NuGet.TeamFoundationServer.csproj">
       <Project>{e961d080-f10b-4f11-bea0-056509c086cc}</Project>
       <Name>NuGet.TeamFoundationServer</Name>
     </ProjectReference>
@@ -193,9 +191,9 @@
       <Project>{7DB43FE1-75E1-49F9-B2C8-06A552BA2144}</Project>
       <Name>NuGet.VisualStudio.Interop</Name>
     </ProjectReference>
-    <ProjectReference Include="..\VisualStudio.Facade\NuGet.VisualStudio.Facade.csproj">
+    <ProjectReference Include="..\NuGet.VisualStudio.Common\NuGet.VisualStudio.Common.csproj">
       <Project>{eea49a74-6efc-410e-9745-bad367ac151d}</Project>
-      <Name>NuGet.VisualStudio.Facade</Name>
+      <Name>NuGet.VisualStudio.Common</Name>
     </ProjectReference>
     <ProjectReference Include="..\NuGet.VisualStudio\NuGet.VisualStudio.csproj">
       <Project>{e5556bc6-a7fd-4d8e-8a7d-7648df1d7471}</Project>
@@ -211,10 +209,6 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="EnvDTE, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-      <EmbedInteropTypes>False</EmbedInteropTypes>
-      <Private>False</Private>
-    </Reference>
     <Reference Include="Microsoft.CSharp">
       <Private>False</Private>
     </Reference>
@@ -270,4 +264,4 @@
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(VSToolsPath)\VSSDK\Microsoft.VsSDK.targets" />
   <Import Project="$(VSSDKRoot)\build\Microsoft.VSSDK.BuildTools.targets" />
-  </Project>
+</Project>

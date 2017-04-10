@@ -28,12 +28,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\NuGet.Core\NuGet.Packaging.Core\NuGet.Packaging.Core.csproj" />
+    <ProjectReference Include="..\NuGet.PackageManagement.VisualStudio\NuGet.PackageManagement.VisualStudio.csproj" />
     <ProjectReference Include="..\NuGet.VisualStudio\NuGet.VisualStudio.csproj" />
-    <ProjectReference Include="..\PackageManagement.PowerShellCmdlets\NuGet.PackageManagement.PowerShellCmdlets.csproj" />
-    <ProjectReference Include="..\PackageManagement.UI\NuGet.PackageManagement.UI.csproj" />
-    <ProjectReference Include="..\VisualStudio.Facade\NuGet.VisualStudio.Facade.csproj" />
-    <ProjectReference Include="..\PackageManagement.VisualStudio\NuGet.PackageManagement.VisualStudio.csproj" />
-    <ProjectReference Include="..\VsConsole\Console\NuGet.Console.csproj" />
+    <ProjectReference Include="..\NuGet.VisualStudio.Common\NuGet.VisualStudio.Common.csproj" />
   </ItemGroup>
   <ItemGroup Condition="'$(VisualStudioVersion)' == '14.0'">
     <Compile Remove="Extensibility\VsProjectJsonToPackageReferenceMigrateResult.cs" />

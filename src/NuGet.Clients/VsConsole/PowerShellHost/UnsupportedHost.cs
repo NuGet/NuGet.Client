@@ -4,6 +4,7 @@
 using System;
 using System.Windows.Media;
 using NuGet.PackageManagement;
+using NuGet.VisualStudio;
 
 namespace NuGetConsole.Host
 {

@@ -11,10 +11,9 @@ using System.Reflection;
 using EnvDTE;
 using EnvDTE80;
 using Microsoft.PowerShell;
-using NuGet.Configuration;
 using NuGet.PackageManagement;
-using NuGet.PackageManagement.VisualStudio;
 using NuGet.Protocol.Core.Types;
+using NuGet.VisualStudio;
 
 namespace NuGetConsole.Host.PowerShell.Implementation
 {

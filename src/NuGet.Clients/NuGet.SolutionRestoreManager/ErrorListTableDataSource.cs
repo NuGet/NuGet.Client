@@ -4,13 +4,12 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
-using System.Diagnostics;
 using System.Linq;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Shell.TableControl;
 using Microsoft.VisualStudio.Shell.TableManager;
-using NuGet.PackageManagement.UI;
+using NuGet.VisualStudio;
 
 namespace NuGet.SolutionRestoreManager
 {

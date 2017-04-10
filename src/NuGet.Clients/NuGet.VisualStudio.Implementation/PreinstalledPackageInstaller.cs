@@ -271,7 +271,7 @@ namespace NuGet.VisualStudio
                 }
 
                 // RepositorySettings = null in unit tests
-                if (EnvDTEProjectUtility.IsWebSite(project))
+                if (EnvDTEProjectInfoUtility.IsWebSite(project))
                 {
                     CreateRefreshFilesInBin(
                         project,

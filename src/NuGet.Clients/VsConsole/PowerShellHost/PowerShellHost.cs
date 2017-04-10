@@ -27,15 +27,14 @@ using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
 using NuGet.Protocol.Core.Types;
 using NuGet.Resolver;
-using NuGet.VisualStudio.Facade;
-using NuGetUIThreadHelper = NuGet.PackageManagement.UI.NuGetUIThreadHelper;
+using NuGet.VisualStudio;
 using ThreadHelper = Microsoft.VisualStudio.Shell.ThreadHelper;
 
 namespace NuGetConsole.Host.PowerShell.Implementation
 {
     internal abstract class PowerShellHost : IHost, IPathExpansion, IDisposable
     {
-        private static readonly string AggregateSourceName = NuGet.PackageManagement.UI.Resources.AggregateSourceName;
+        private static readonly string AggregateSourceName = Resources.AggregateSourceName;
 
         private readonly AsyncSemaphore _initScriptsLock = new AsyncSemaphore(1);
         private readonly string _name;
@@ -836,7 +835,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             Debug.Assert(ThreadHelper.CheckAccess());
 
             List<string> projectNames = new List<string>();
-            var solutionManager = (VSSolutionManager)_solutionManager;
+            var solutionManager = (IVsSolutionManager)_solutionManager;
             foreach (var nuGetProject in allProjects)
             {
                 string displayName = GetDisplayName(nuGetProject, solutionManager);
@@ -849,17 +848,17 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         {
             Debug.Assert(ThreadHelper.CheckAccess());
 
-            var solutionManager = (VSSolutionManager)_solutionManager;
+            var solutionManager = (IVsSolutionManager)_solutionManager;
             return GetDisplayName(nuGetProject, solutionManager);
         }
 
-        private static string GetDisplayName(NuGetProject nuGetProject, VSSolutionManager solutionManager)
+        private static string GetDisplayName(NuGetProject nuGetProject, IVsSolutionManager solutionManager)
         {
             Debug.Assert(ThreadHelper.CheckAccess());
 
             var safeName = solutionManager.GetNuGetProjectSafeName(nuGetProject);
             var project = solutionManager.GetDTEProject(safeName);
-            return EnvDTEProjectUtility.GetDisplayName(project);
+            return EnvDTEProjectInfoUtility.GetDisplayName(project);
         }
 
         #region ITabExpansion

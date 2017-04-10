@@ -1,5 +1,6 @@
-{
+﻿{
   "dependencies": {
+    "EnvDTE": "8.0.1",
     "Lucene.Net": "3.0.3"
   },
   "frameworks": {

@@ -17,10 +17,9 @@ using Microsoft.VisualStudio.Language.Intellisense;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Editor;
 using Microsoft.Win32;
-using NuGet.PackageManagement.UI;
 using NuGet.PackageManagement.VisualStudio;
+using NuGet.VisualStudio;
 using ActivityLog = Microsoft.VisualStudio.Shell.ActivityLog;
-using ThreadHelper = Microsoft.VisualStudio.Shell.ThreadHelper;
 
 namespace NuGetConsole.Implementation.Console
 {
@@ -467,7 +466,7 @@ namespace NuGetConsole.Implementation.Console
                             textBuffer.Insert(WpfTextView.Caret.Position.BufferPosition.Position, pasteLine);
                         }
 
-                        this.Execute(VSConstants.VSStd2KCmdID.RETURN);
+                        (this).Execute(VSConstants.VSStd2KCmdID.RETURN);
                     }
                     else
                     {

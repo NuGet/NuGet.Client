@@ -15,8 +15,8 @@ using System.Windows.Forms.VisualStyles;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.Common;
-using NuGet.PackageManagement.VisualStudio;
 using NuGet.Protocol.Core.Types;
+using NuGet.VisualStudio;
 
 namespace NuGet.Options
 {
@@ -702,7 +702,7 @@ namespace NuGet.Options
                 NewPackageSource.Text = path;
 
                 // if the package name text box is empty, we fill it with the selected folder's name
-                if (String.IsNullOrEmpty(NewPackageName.Text))
+                if (string.IsNullOrEmpty(NewPackageName.Text))
                 {
                     NewPackageName.Text = Path.GetFileName(path);
                 }

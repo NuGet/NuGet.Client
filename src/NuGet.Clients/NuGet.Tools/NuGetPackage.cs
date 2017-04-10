@@ -18,18 +18,16 @@ using Microsoft.VisualStudio.OLE.Interop;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.Common;
-using NuGet.Credentials;
 using NuGet.Options;
 using NuGet.PackageManagement;
 using NuGet.PackageManagement.UI;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.ProjectManagement;
-using NuGet.Protocol;
+using NuGet.VisualStudio;
 using NuGetConsole;
 using NuGetConsole.Implementation;
 using ISettings = NuGet.Configuration.ISettings;
 using Resx = NuGet.PackageManagement.UI.Resources;
-using Strings = NuGet.PackageManagement.VisualStudio.Strings;
 using Task = System.Threading.Tasks.Task;
 using UI = NuGet.PackageManagement.UI;
 
@@ -97,9 +95,9 @@ namespace NuGetVSExtension
         [Import]
         private INuGetProjectContext ProjectContext { get; set; }
 
-        private ProjectRetargetingHandler ProjectRetargetingHandler { get; set; }
+        private IDisposable ProjectRetargetingHandler { get; set; }
 
-        private ProjectUpgradeHandler ProjectUpgradeHandler { get; set; }
+        private IDisposable ProjectUpgradeHandler { get; set; }
 
         [Import]
         private Lazy<ISettings> Settings { get; set; }
@@ -313,7 +311,7 @@ namespace NuGetVSExtension
 
                     var existingProject = projects.First();
                     var projectName = existingProject.GetMetadata<string>(NuGetProjectMetadataKeys.Name);
-                    if (String.Equals(projectName, project.Name, StringComparison.OrdinalIgnoreCase))
+                    if (string.Equals(projectName, project.Name, StringComparison.OrdinalIgnoreCase))
                     {
                         return windowFrame;
                     }
@@ -381,10 +379,10 @@ namespace NuGetVSExtension
 
             if (!SolutionManager.IsSolutionAvailable)
             {
-                throw new InvalidOperationException(Strings.SolutionIsNotSaved);
+                throw new InvalidOperationException(Resources.SolutionIsNotSaved);
             }
 
-            var nugetProject = SolutionManager.GetNuGetProject(EnvDTEProjectUtility.GetCustomUniqueName(project));
+            var nugetProject = SolutionManager.GetNuGetProject(EnvDTEProjectInfoUtility.GetCustomUniqueName(project));
 
             // If we failed to generate a cache entry in the solution manager something went wrong.
             if (nugetProject == null)
@@ -475,11 +473,11 @@ namespace NuGetVSExtension
                 var searchText = GetSearchText(parameterString);
 
                 // *** temp code
-                Project project = EnvDTEProjectUtility.GetActiveProject(VsMonitorSelection);
+                Project project = EnvDTEProjectInfoUtility.GetActiveProject(VsMonitorSelection);
 
                 if (project != null
                     &&
-                    !EnvDTEProjectUtility.IsUnloaded(project)
+                    !EnvDTEProjectInfoUtility.IsUnloaded(project)
                     &&
                     EnvDTEProjectUtility.IsSupported(project))
                 {
@@ -502,7 +500,7 @@ namespace NuGetVSExtension
 
                     string errorMessage = String.IsNullOrEmpty(projectName)
                         ? Resources.NoProjectSelected
-                        : String.Format(CultureInfo.CurrentCulture, Strings.DTE_ProjectUnsupported, projectName);
+                        : String.Format(CultureInfo.CurrentCulture, Resources.DTE_ProjectUnsupported, projectName);
 
                     MessageHelper.ShowWarningMessage(errorMessage, Resources.ErrorDialogBoxTitle);
                 }
@@ -566,7 +564,7 @@ namespace NuGetVSExtension
 
             if (!solutionManager.IsSolutionAvailable)
             {
-                throw new InvalidOperationException(Strings.SolutionIsNotSaved);
+                throw new InvalidOperationException(Resources.SolutionIsNotSaved);
             }
 
             // make sure all projects are loaded before showing manager ui even with DPL enabled.
@@ -788,8 +786,8 @@ namespace NuGetVSExtension
         {
             get
             {
-                Project project = EnvDTEProjectUtility.GetActiveProject(VsMonitorSelection);
-                return project != null && !EnvDTEProjectUtility.IsUnloaded(project)
+                Project project = EnvDTEProjectInfoUtility.GetActiveProject(VsMonitorSelection);
+                return project != null && !EnvDTEProjectInfoUtility.IsUnloaded(project)
                        && EnvDTEProjectUtility.IsSupported(project);
             }
         }
@@ -827,7 +825,7 @@ namespace NuGetVSExtension
             return VSConstants.S_OK;
         }
 
-        // Called by the shell when the SUO file is saved. The provider calls the shell back to let it 
+        // Called by the shell when the SUO file is saved. The provider calls the shell back to let it
         // know which options keys it will use in the suo file.
         public int SaveUserOptions(IVsSolutionPersistence pPersistence)
         {

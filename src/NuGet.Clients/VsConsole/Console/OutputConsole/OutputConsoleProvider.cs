@@ -8,8 +8,8 @@ using System.Linq;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Threading;
-using NuGet.PackageManagement.UI;
 using NuGet.PackageManagement.VisualStudio;
+using NuGet.VisualStudio;
 
 namespace NuGetConsole
 {

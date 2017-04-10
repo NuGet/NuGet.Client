@@ -3,6 +3,7 @@
 
 using System.ComponentModel.Composition;
 using System.Diagnostics.CodeAnalysis;
+using NuGet.VisualStudio;
 
 namespace NuGetConsole.Host
 {

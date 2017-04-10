@@ -11,8 +11,8 @@ using System.Threading.Tasks;
 using EnvDTE;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Threading;
+using NuGet.Common;
 using NuGet.PackageManagement;
-using NuGet.PackageManagement.UI;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
@@ -384,7 +384,7 @@ namespace NuGet.VisualStudio
 
                     foreach (var resource in metadataResources)
                     {
-                        tasks.Add(resource.GetVersions(dep.Id, Common.NullLogger.Instance, token));
+                        tasks.Add(resource.GetVersions(dep.Id, NullLogger.Instance, token));
                     }
 
                     var versions = await Task.WhenAll(tasks.ToArray());

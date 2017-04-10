@@ -9,7 +9,7 @@ NuGet.SolutionRestoreManager.dll
 NuGet.TeamFoundationServer.dll
 NuGet.Tools.dll
 NuGet.VisualStudio.dll
-NuGet.VisualStudio.Facade.dll
+NuGet.VisualStudio.Common.dll
 NuGet.VisualStudio.Interop.dll
 NuGet.VisualStudio.Implementation.dll
 

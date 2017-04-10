@@ -15,6 +15,7 @@ using NuGet.PackageManagement.VisualStudio;
 using NuGet.ProjectModel;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
+using NuGet.VisualStudio;
 using Xunit;
 
 namespace NuGet.SolutionRestoreManager.Test

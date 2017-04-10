@@ -21,9 +21,7 @@ using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 using NuGet.VisualStudio.Implementation.Resources;
-using NuGetConsole;
 using Task = System.Threading.Tasks.Task;
-using NuGet.PackageManagement.UI;
 
 namespace NuGet.VisualStudio
 {

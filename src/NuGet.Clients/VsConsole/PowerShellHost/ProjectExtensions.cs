@@ -5,10 +5,8 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Management.Automation;
 using EnvDTE;
-using Microsoft.VisualStudio.Shell;
-using NuGet.PackageManagement;
-using NuGet.PackageManagement.UI;
 using NuGet.PackageManagement.VisualStudio;
+using NuGet.VisualStudio;
 
 namespace NuGetConsole.Host.PowerShell.Implementation
 {
@@ -24,7 +22,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                 {
                     await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                    return EnvDTEProjectUtility.GetCustomUniqueName((Project)psObject.BaseObject);
+                    return EnvDTEProjectInfoUtility.GetCustomUniqueName((Project)psObject.BaseObject);
                 });
         }
 
@@ -38,7 +36,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                 throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, "projectName");
             }
 
-            var solutionManager = (VSSolutionManager)ServiceLocator.GetInstance<ISolutionManager>();
+            var solutionManager = ServiceLocator.GetInstance<IVsSolutionManager>();
             if (solutionManager != null)
             {
                 var project = solutionManager.GetDTEProject(projectName);

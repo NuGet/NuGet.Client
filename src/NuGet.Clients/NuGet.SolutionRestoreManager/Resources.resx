@@ -168,6 +168,9 @@ To prevent NuGet from restoring packages during build, open the Visual Studio Op
   <data name="RestoringPackages" xml:space="preserve">
     <value>Restoring NuGet packages...</value>
   </data>
+  <data name="SolutionIsNotSaved" xml:space="preserve">
+    <value>Solution is not saved. Please save your solution before managing NuGet packages.</value>
+  </data>
   <data name="SolutionRestoreFailed_RestoreWorkerIsBusy" xml:space="preserve">
     <value>Solution Restore cannot be started while an automatic restore is in progress.</value>
   </data>

@@ -3,10 +3,10 @@
 
 using Moq;
 using NuGet.PackageManagement.Telemetry;
-using NuGet.VisualStudio.Facade.Telemetry;
+using NuGet.VisualStudio.Telemetry;
 using Xunit;
 
-namespace NuGet.PackageManagement.VisualStudio.Test.Telemetry
+namespace NuGet.PackageManagement.VisualStudio.Test
 {
     public class NuGetTelemetryServiceTests
     {
