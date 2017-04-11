@@ -21,7 +21,7 @@ namespace NuGet.CommandLine
 
     public class ProjectFactoryTest
     {
-        [PlatformFact(Platform.Windows)]
+        [Fact]
         public void ProjectFactoryInitializesPropertiesForPreprocessorFromAssemblyMetadata()
         {
             // Arrange
@@ -91,7 +91,8 @@ namespace NuGet.CommandLine
             }
         }
 
-        [PlatformFact(Platform.Windows)]
+
+        [Fact]
         public void CommandLinePropertiesOverrideAssemblyMetadataForPreprocessor()
         {
             // Arrange
@@ -165,7 +166,7 @@ namespace NuGet.CommandLine
             }
         }
 
-        [PlatformFact(Platform.Windows)]
+        [Fact]
         public void CommandLinePropertiesApplyForPreprocessor()
         {
             // Arrange
@@ -239,7 +240,7 @@ namespace NuGet.CommandLine
             }
         }
 
-        [PlatformFact(Platform.Windows)]
+        [Fact]
         public void CommandLineIdPropertyOverridesAssemblyNameForPreprocessor()
         {
             // Arrange
@@ -404,7 +405,7 @@ namespace NuGet.CommandLine
                 Authors = new[] { "Outercurve Foundation" },
             };
             var projectMock = new Mock<MockProject>();
-            var msbuildDirectory = NuGet.CommandLine.MsBuildUtility.GetMsBuildDirectory("4.0", console: null);
+            var msbuildDirectory = NuGet.CommandLine.MsBuildUtility.GetMsBuildDirectory(null, null);
             var factory = new ProjectFactory(msbuildDirectory, projectMock.Object);
 
             // act
