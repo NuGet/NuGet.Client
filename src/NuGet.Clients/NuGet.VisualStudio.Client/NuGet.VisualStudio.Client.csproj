@@ -19,7 +19,7 @@
       <CopyOutputSymbolsToOutputDirectory>false</CopyOutputSymbolsToOutputDirectory>
       <DeployExtension>false</DeployExtension>
       <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
-      <AssemblyName>NuGet.Tools</AssemblyName> <!-- This name is only temporary, it should be renamed to something better to avoid the confusion-->
+      <AssemblyName>NuGet.VisualStudio.Client</AssemblyName>
       <VSSDKTargetPlatformRegRootSuffix>Exp</VSSDKTargetPlatformRegRootSuffix>
       <MinimumVisualStudioVersion>15.0</MinimumVisualStudioVersion>
       <FileUpgradeFlags />
@@ -249,8 +249,8 @@
          <PublishDestination>$(ArtifactRoot)\$(VsixOutputDirName)</PublishDestination>
       </PropertyGroup>
       <Message Text="Publishing VS14 VSIX package files..." Importance="high" />
-      <Message Text="$(TargetVsixContainer) -&amp;gt; $(PublishDestination)" Importance="high" />
-      <Copy SourceFiles="$(TargetVsixContainer)" DestinationFolder="$(PublishDestination)" OverwriteReadOnlyFiles="true" />
+      <Message Text="$(TargetVsixContainer) -&amp;gt; $(PublishDestination)\NuGet.Tools.vsix" Importance="high" />
+      <Copy SourceFiles="$(TargetVsixContainer)" DestinationFiles="$(PublishDestination)\NuGet.Tools.vsix" OverwriteReadOnlyFiles="true" />
       <ItemGroup>
          <NuGetSymbolFiles Include="$(OutputPath)NuGet*.pdb" />
       </ItemGroup>
@@ -265,9 +265,9 @@
          <PackageManifest Include="$(OutputPath)Microsoft.VisualStudio.NuGet.Core.json" />
       </ItemGroup>
       <Message Text="Publishing VS15 VSIX package files..." Importance="high" />
-      <Message Text="$(TargetVsixContainer) -&amp;gt; $(PublishDestination)" Importance="high" />
-      <Copy SourceFiles="$(TargetVsixContainer)" DestinationFolder="$(PublishDestination)" OverwriteReadOnlyFiles="true" />
-      <Message Text="@(PackageManifest) -&amp;gt; $(PublishDestination)" Importance="high" />
+      <Message Text="$(TargetVsixContainer) -&amp;gt; $(PublishDestination)\NuGet.Tools.vsix" Importance="high" />
+      <Copy SourceFiles="$(TargetVsixContainer)" DestinationFiles="$(PublishDestination)\NuGet.Tools.vsix" OverwriteReadOnlyFiles="true" />
+     <Message Text="@(PackageManifest) -&amp;gt; $(PublishDestination)" Importance="high" />
       <Copy SourceFiles="@(PackageManifest)" DestinationFolder="$(PublishDestination)" OverwriteReadOnlyFiles="true" />
       <ItemGroup>
          <NuGetSymbolFiles Include="$(OutputPath)NuGet*.pdb" />
@@ -283,8 +283,8 @@
          <PackageManifest Include="$(OutputPath)Microsoft.VisualStudio.NuGet.Core.json" />
       </ItemGroup>
       <Message Text="Publishing VS15 Insertable VSIX package files..." Importance="high" />
-      <Message Text="$(TargetVsixContainer) -&amp;gt; $(PublishDestination)\Insertable" Importance="high" />
-      <Copy SourceFiles="$(TargetVsixContainer)" DestinationFolder="$(PublishDestination)\Insertable" OverwriteReadOnlyFiles="true" />
+      <Message Text="$(TargetVsixContainer) -&amp;gt; $(PublishDestination)\NuGet.Tools.vsix" Importance="high" />
+      <Copy SourceFiles="$(TargetVsixContainer)" DestinationFiles="$(PublishDestination)\Insertable\NuGet.Tools.vsix" OverwriteReadOnlyFiles="true" />
       <Message Text="@(PackageManifest) -&amp;gt; $(PublishDestination)" Importance="high" />
       <Copy SourceFiles="@(PackageManifest)" DestinationFolder="$(PublishDestination)" OverwriteReadOnlyFiles="true" />
       <ItemGroup>
