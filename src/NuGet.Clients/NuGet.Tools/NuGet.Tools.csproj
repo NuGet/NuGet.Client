@@ -5,9 +5,6 @@
   <Import Project="$(VSSDKRoot)\build\Microsoft.VSSDK.BuildTools.props" />
   <PropertyGroup>
     <Shipping>true</Shipping>
-    <ResolveNuGetPackages>true</ResolveNuGetPackages>
-    <PackagesDirectory>$(UserProfile)\.nuget\packages</PackagesDirectory>
-    <TargetFrameworkProfile />
     <ProjectGuid>{D0F9864B-D782-4471-81A2-29555E5DC0D7}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
