@@ -28,17 +28,17 @@ namespace NuGet.CommandLine.XPlat
 
                 var id = listPkg.Option(
                     "--package",
-                    Strings.AddPkg_PackageIdDescription,
+                    Strings.ListPkg_PackageIdDescription,
                     CommandOptionType.SingleValue);
 
                 var projectPath = listPkg.Option(
                     "-p|--project",
-                    Strings.AddPkg_ProjectPathDescription,
+                    Strings.ListPkg_ProjectPathDescription,
                     CommandOptionType.SingleValue);
 
                 var frameworks = listPkg.Option(
                     "-f|--framework",
-                    Strings.AddPkg_FrameworksDescription,
+                    Strings.ListPkg_FrameworksDescription,
                     CommandOptionType.SingleValue);
 
 

@@ -73,7 +73,7 @@ namespace NuGet.CommandLine.XPlat {
         /// <summary>
         ///   Looks up a localized string similar to Adds a package reference to a project..
         /// </summary>
-        internal static string ListPkg_Description {
+        internal static string AddPkg_Description {
             get {
                 return ResourceManager.GetString("AddPkg_Description", resourceCulture);
             }
@@ -472,6 +472,42 @@ namespace NuGet.CommandLine.XPlat {
         internal static string InputFile_Description {
             get {
                 return ResourceManager.GetString("InputFile_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Lists package references for a project..
+        /// </summary>
+        internal static string ListPkg_Description {
+            get {
+                return ResourceManager.GetString("ListPkg_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Frameworks for which the package reference should be listed..
+        /// </summary>
+        internal static string ListPkg_FrameworksDescription {
+            get {
+                return ResourceManager.GetString("ListPkg_FrameworksDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Id of the package for listing references..
+        /// </summary>
+        internal static string ListPkg_PackageIdDescription {
+            get {
+                return ResourceManager.GetString("ListPkg_PackageIdDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Path to the project file..
+        /// </summary>
+        internal static string ListPkg_ProjectPathDescription {
+            get {
+                return ResourceManager.GetString("ListPkg_ProjectPathDescription", resourceCulture);
             }
         }
         
