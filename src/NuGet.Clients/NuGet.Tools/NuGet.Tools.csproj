@@ -4,8 +4,8 @@
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.common.props')" />
   <Import Project="$(VSSDKRoot)\build\Microsoft.VSSDK.BuildTools.props" />
   <PropertyGroup>
-      <Shipping>true</Shipping>    
-      <ResolveNuGetPackages>true</ResolveNuGetPackages>
+    <Shipping>true</Shipping>
+    <ResolveNuGetPackages>true</ResolveNuGetPackages>
     <PackagesDirectory>$(UserProfile)\.nuget\packages</PackagesDirectory>
     <TargetFrameworkProfile />
     <ProjectGuid>{D0F9864B-D782-4471-81A2-29555E5DC0D7}</ProjectGuid>
@@ -67,83 +67,57 @@
     <None Include="project.json" />
   </ItemGroup>
    <ItemGroup>
-    <ProjectReference Include="..\..\NuGet.Core\NuGet.Indexing\NuGet.Indexing.csproj">
-      <Project>{a2b06fa8-bdbc-4459-a92a-161862b2aa97}</Project>
-      <Name>NuGet.Indexing</Name>
-      <Private>True</Private>
-    </ProjectReference>
-    <ProjectReference Include="..\..\NuGet.Core\NuGet.Commands\NuGet.Commands.csproj">
-      <Project>{567E8582-0E73-4A34-A7D3-ED9486415523}</Project>
-      <Name>NuGet.Commands</Name>
-      <Private>True</Private>
-    </ProjectReference>
     <ProjectReference Include="..\NuGet.Credentials\NuGet.Credentials.csproj">
       <Project>{32a23995-14c7-483b-98c3-0ae4185373ea}</Project>
       <Name>NuGet.Credentials</Name>
-      <Private>True</Private>
     </ProjectReference>
     <ProjectReference Include="..\NuGet.SolutionRestoreManager\NuGet.SolutionRestoreManager.csproj">
       <Project>{06662133-1292-4918-90f3-36c930c0b16f}</Project>
       <Name>NuGet.SolutionRestoreManager</Name>
-      <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup%3bPkgdefProjectOutputGroup</IncludeOutputGroupsInVSIX>
-      <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup</IncludeOutputGroupsInVSIXLocalOnly>
     </ProjectReference>
     <ProjectReference Include="..\NuGet.VisualStudio.Implementation\NuGet.VisualStudio.Implementation.csproj">
       <Project>{9623cf30-192c-4864-b419-29649169ae30}</Project>
       <Name>NuGet.VisualStudio.Implementation</Name>
-      <Private>True</Private>
     </ProjectReference>
     <ProjectReference Include="..\Options\NuGet.Options.csproj">
       <Project>{53ab7187-cdf3-48b5-b90e-8919d3cb904d}</Project>
       <Name>NuGet.Options</Name>
-      <Private>True</Private>
     </ProjectReference>
     <ProjectReference Include="..\PackageManagement.PowerShellCmdlets\NuGet.PackageManagement.PowerShellCmdlets.csproj">
       <Project>{26dc17ac-a390-4515-a2c0-07a0950036c5}</Project>
       <Name>NuGet.PackageManagement.PowerShellCmdlets</Name>
-      <Private>True</Private>
     </ProjectReference>
     <ProjectReference Include="..\PackageManagement.UI\NuGet.PackageManagement.UI.csproj">
       <Project>{538adefd-2170-40a9-a2c5-ec8369cfe490}</Project>
       <Name>NuGet.PackageManagement.UI</Name>
-      <Private>True</Private>
     </ProjectReference>
     <ProjectReference Include="..\PackageManagement.VisualStudio\NuGet.PackageManagement.VisualStudio.csproj">
       <Project>{306cddfa-ff0b-4299-930c-9ec6c9308160}</Project>
       <Name>NuGet.PackageManagement.VisualStudio</Name>
-      <Private>True</Private>
     </ProjectReference>
     <ProjectReference Include="..\TeamFoundationServer\NuGet.TeamFoundationServer.csproj">
       <Project>{e961d080-f10b-4f11-bea0-056509c086cc}</Project>
       <Name>NuGet.TeamFoundationServer</Name>
-      <Private>True</Private>
     </ProjectReference>
     <ProjectReference Include="..\NuGet.VisualStudio.Interop\NuGet.VisualStudio.Interop.csproj">
       <Project>{7DB43FE1-75E1-49F9-B2C8-06A552BA2144}</Project>
       <Name>NuGet.VisualStudio.Interop</Name>
-      <Private>True</Private>
     </ProjectReference>
     <ProjectReference Include="..\VisualStudio.Facade\NuGet.VisualStudio.Facade.csproj">
       <Project>{eea49a74-6efc-410e-9745-bad367ac151d}</Project>
       <Name>NuGet.VisualStudio.Facade</Name>
-      <Private>True</Private>
     </ProjectReference>
     <ProjectReference Include="..\NuGet.VisualStudio\NuGet.VisualStudio.csproj">
       <Project>{e5556bc6-a7fd-4d8e-8a7d-7648df1d7471}</Project>
       <Name>NuGet.VisualStudio</Name>
-      <Private>True</Private>
     </ProjectReference>
     <ProjectReference Include="..\VsConsole\Console\NuGet.Console.csproj">
       <Project>{50e33da2-af14-486d-81b8-bd8409744a38}</Project>
       <Name>NuGet.Console</Name>
-      <Private>True</Private>
     </ProjectReference>
     <ProjectReference Include="..\VsConsole\PowerShellHost\NuGetConsole.Host.PowerShell.csproj">
       <Project>{5a79eef3-51c0-4a14-8d37-50ef38ad835d}</Project>
       <Name>NuGetConsole.Host.PowerShell</Name>
-      <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup%3bBuiltProjectOutputGroup%3bBuiltProjectOutputGroupDependencies%3bGetCopyToOutputDirectoryItems%3bSatelliteDllsProjectOutputGroup%3b</IncludeOutputGroupsInVSIX>
-      <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup</IncludeOutputGroupsInVSIXLocalOnly>
-      <Private>True</Private>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
@@ -177,26 +151,18 @@
       <Private>False</Private>
     </Reference>
   </ItemGroup>
-  <Import Project="$(BuildCommonDirectory)legacy.imports.targets" />
-  <Import Project="$(BuildCommonDirectory)common.targets" />
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <Import Project="$(VSToolsPath)\VSSDK\Microsoft.VsSDK.targets" />
-  <Import Project="$(VSSDKRoot)\build\Microsoft.VSSDK.BuildTools.targets" />
- <ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\..\NuGet.Core\NuGet.Indexing\NuGet.Indexing.csproj">
       <Project>{a2b06fa8-bdbc-4459-a92a-161862b2aa97}</Project>
       <Name>NuGet.Indexing</Name>
-      <Private>True</Private>
     </ProjectReference>
     <ProjectReference Include="..\..\NuGet.Core\NuGet.Commands\NuGet.Commands.csproj">
       <Project>{567E8582-0E73-4A34-A7D3-ED9486415523}</Project>
       <Name>NuGet.Commands</Name>
-      <Private>True</Private>
     </ProjectReference>
     <ProjectReference Include="..\NuGet.Credentials\NuGet.Credentials.csproj">
       <Project>{32a23995-14c7-483b-98c3-0ae4185373ea}</Project>
       <Name>NuGet.Credentials</Name>
-      <Private>True</Private>
     </ProjectReference>
     <ProjectReference Include="..\NuGet.SolutionRestoreManager\NuGet.SolutionRestoreManager.csproj">
       <Project>{06662133-1292-4918-90f3-36c930c0b16f}</Project>
@@ -205,57 +171,46 @@
     <ProjectReference Include="..\NuGet.VisualStudio.Implementation\NuGet.VisualStudio.Implementation.csproj">
       <Project>{9623cf30-192c-4864-b419-29649169ae30}</Project>
       <Name>NuGet.VisualStudio.Implementation</Name>
-      <Private>True</Private>
     </ProjectReference>
     <ProjectReference Include="..\Options\NuGet.Options.csproj">
       <Project>{53ab7187-cdf3-48b5-b90e-8919d3cb904d}</Project>
       <Name>NuGet.Options</Name>
-      <Private>True</Private>
     </ProjectReference>
     <ProjectReference Include="..\PackageManagement.PowerShellCmdlets\NuGet.PackageManagement.PowerShellCmdlets.csproj">
       <Project>{26dc17ac-a390-4515-a2c0-07a0950036c5}</Project>
       <Name>NuGet.PackageManagement.PowerShellCmdlets</Name>
-      <Private>True</Private>
     </ProjectReference>
     <ProjectReference Include="..\PackageManagement.UI\NuGet.PackageManagement.UI.csproj">
       <Project>{538adefd-2170-40a9-a2c5-ec8369cfe490}</Project>
       <Name>NuGet.PackageManagement.UI</Name>
-      <Private>True</Private>
     </ProjectReference>
     <ProjectReference Include="..\PackageManagement.VisualStudio\NuGet.PackageManagement.VisualStudio.csproj">
       <Project>{306cddfa-ff0b-4299-930c-9ec6c9308160}</Project>
       <Name>NuGet.PackageManagement.VisualStudio</Name>
-      <Private>True</Private>
     </ProjectReference>
     <ProjectReference Include="..\TeamFoundationServer\NuGet.TeamFoundationServer.csproj">
       <Project>{e961d080-f10b-4f11-bea0-056509c086cc}</Project>
       <Name>NuGet.TeamFoundationServer</Name>
-      <Private>True</Private>
     </ProjectReference>
     <ProjectReference Include="..\NuGet.VisualStudio.Interop\NuGet.VisualStudio.Interop.csproj">
       <Project>{7DB43FE1-75E1-49F9-B2C8-06A552BA2144}</Project>
       <Name>NuGet.VisualStudio.Interop</Name>
-      <Private>True</Private>
     </ProjectReference>
     <ProjectReference Include="..\VisualStudio.Facade\NuGet.VisualStudio.Facade.csproj">
       <Project>{eea49a74-6efc-410e-9745-bad367ac151d}</Project>
       <Name>NuGet.VisualStudio.Facade</Name>
-      <Private>True</Private>
     </ProjectReference>
     <ProjectReference Include="..\NuGet.VisualStudio\NuGet.VisualStudio.csproj">
       <Project>{e5556bc6-a7fd-4d8e-8a7d-7648df1d7471}</Project>
       <Name>NuGet.VisualStudio</Name>
-      <Private>True</Private>
     </ProjectReference>
     <ProjectReference Include="..\VsConsole\Console\NuGet.Console.csproj">
       <Project>{50e33da2-af14-486d-81b8-bd8409744a38}</Project>
       <Name>NuGet.Console</Name>
-      <Private>True</Private>
     </ProjectReference>
     <ProjectReference Include="..\VsConsole\PowerShellHost\NuGetConsole.Host.PowerShell.csproj">
       <Project>{5a79eef3-51c0-4a14-8d37-50ef38ad835d}</Project>
       <Name>NuGetConsole.Host.PowerShell</Name>
-      <Private>True</Private>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
@@ -292,11 +247,9 @@
   <ItemGroup>
     <Content Include="Resources\nuget_256.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
     <Content Include="Resources\nuget_96.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
     <VSCTCompile Include="NuGetTools.vsct">
       <ResourceName>Menus.ctmenu</ResourceName>
