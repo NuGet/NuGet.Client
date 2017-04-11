@@ -73,7 +73,7 @@ namespace NuGet.CommandLine.XPlat {
         /// <summary>
         ///   Looks up a localized string similar to Adds a package reference to a project..
         /// </summary>
-        internal static string AddPkg_Description {
+        internal static string ListPkg_Description {
             get {
                 return ResourceManager.GetString("AddPkg_Description", resourceCulture);
             }

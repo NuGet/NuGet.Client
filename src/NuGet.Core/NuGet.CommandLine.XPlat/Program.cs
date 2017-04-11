@@ -84,7 +84,7 @@ namespace NuGet.CommandLine.XPlat
 
             log.LogVerbose(string.Format(CultureInfo.CurrentCulture, Strings.OutputNuGetVersion, app.FullName, app.LongVersionGetter()));
 
-            int exitCode = 0;
+            var exitCode = 0;
 
             try
             {
@@ -143,6 +143,7 @@ namespace NuGet.CommandLine.XPlat
             {
                 AddPackageReferenceCommand.Register(app, () => log, () => new AddPackageReferenceCommandRunner());
                 RemovePackageReferenceCommand.Register(app, () => log, () => new RemovePackageReferenceCommandRunner());
+                ListPackageReferenceCommand.Register(app, () => log, () => new ListPackageReferenceCommandRunner());
             }
             else
             {
@@ -159,7 +160,7 @@ namespace NuGet.CommandLine.XPlat
         /// </summary>
         private static bool TryParseVerbosity(string[] args, CommandOption verbosity, out LogLevel logLevel)
         {
-            bool found = false;
+            var found = false;
 
             for (var index = 0; index < args.Length; index++)
             {
