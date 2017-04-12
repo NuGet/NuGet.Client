@@ -5,11 +5,13 @@
     <TargetFrameworks>netstandard1.3;net45</TargetFrameworks>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <AssemblyName>NuGet.Build.Tasks.Pack</AssemblyName>
-	<RootNamespace>$(AssemblyName)</RootNamespace>
-    <PackageId>NuGet.Build.Tasks.Pack.Library</PackageId>
+    <RootNamespace>$(AssemblyName)</RootNamespace>
     <NetStandardImplicitPackageVersion Condition=" '$(TargetFramework)' == 'netstandard1.3' ">$(NetStandardPackageVersion)</NetStandardImplicitPackageVersion>
     <Shipping>true</Shipping>
     <PackProject>true</PackProject>
+    <NoBuild>true</NoBuild>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+    <RuntimeIdentifier>win10-x64</RuntimeIdentifier>
   </PropertyGroup>
 
   <ItemGroup>
@@ -47,6 +49,28 @@
       <LastGenOutput>Strings.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>
+
+  <Target Name="PublishAndMergePackNupkg" AfterTargets="AfterBuild" Condition="'$(TargetFramework)' != '' AND '$(IsXPlat)' == 'false' AND '$(BuildingInsideVisualStudio)' != 'true'">
+    <MSBuild
+      Projects="$(MSBuildProjectFullPath)"
+      Targets="Publish;ILMergeNuGetPack"/>
+  </Target>
+
+  <Target Name="ILMergeNuGetPack"  Condition="'$(TargetFramework)' != ''">
+    <PropertyGroup>
+      <ILMergeResultDir>$(OutputPath)ilmerge</ILMergeResultDir>
+    </PropertyGroup>
+    <MakeDir Directories="$(ILMergeResultDir)"/>
+    <ItemGroup>
+      <BuildArtifacts Include="$(OutputPath)*.dll" Exclude="$(OutputPath)*Pack.dll" />
+    </ItemGroup>
+    <PropertyGroup>
+      <PathToMergedNuGetPack>$(ILMergeResultDir)\NuGet.Build.Tasks.Pack.dll</PathToMergedNuGetPack>
+      <IlmergeCommand>$(ILMergeExePath) $(OutputPath)NuGet.Build.Tasks.Pack.dll @(BuildArtifacts, ' ') /out:$(PathToMergedNuGetPack) /lib:$(DotnetSharedSDKDirectory) /lib:$(OutputPath)$(RuntimeIdentifier)\publish /internalize /xmldocs /log:$(ILMergeResultDir)\IlMergeLog.txt</IlmergeCommand>
+      <IlmergeCommand Condition="Exists($(MS_PFX_PATH))">$(IlmergeCommand) /delaysign /keyfile:$(MS_PFX_PATH)</IlmergeCommand>
+    </PropertyGroup>
+    <Exec Command="$(IlmergeCommand)" ContinueOnError="false" />
+  </Target>
 
   <Import Project="$(BuildCommonDirectory)common.targets" />
 

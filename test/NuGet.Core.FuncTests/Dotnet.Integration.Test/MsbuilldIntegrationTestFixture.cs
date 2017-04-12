@@ -18,7 +18,7 @@ namespace Dotnet.Integration.Test
 {
     public class MsbuildIntegrationTestFixture : IDisposable
     {
-        private readonly string _dotnetCli = DotnetCliUtil.GetDotnetCli(true);
+        private readonly string _dotnetCli = DotnetCliUtil.GetDotnetCli(false);
         internal readonly string TestDotnetCli;
 
         public MsbuildIntegrationTestFixture()
@@ -154,30 +154,6 @@ namespace Dotnet.Integration.Test
 
                 DeleteFiles(pathToPackSdk);
                 CopyNupkgFilesToTarget(nupkg, pathToPackSdk, files);
-
-                foreach (var coreClrDll in Directory.GetFiles(Path.Combine(pathToPackSdk, "CoreCLR")))
-                {
-                    var fileName = Path.GetFileName(coreClrDll);
-                    if (fileName != "NuGet.Build.Tasks.Pack.dll")
-                    {
-                        File.Copy(coreClrDll, Path.Combine(pathToSdkInCli, fileName), true);
-                    }
-                }
-            }
-
-            using (var nupkg = new PackageArchiveReader(pathToRestoreNupkg))
-            {
-                var files = nupkg.GetFiles()
-                    .Where(fileName => fileName.StartsWith("lib/netstandard1.3")
-                                       || fileName.StartsWith("runtimes"));
-                File.Delete(Path.Combine(pathToSdkInCli, "NuGet.Build.Tasks.dll"));
-                File.Delete(Path.Combine(pathToSdkInCli, "NuGet.Build.Tasks.xml"));
-                File.Delete(Path.Combine(pathToSdkInCli, "NuGet.targets"));
-                foreach (var file in files)
-                {
-                    var stream = nupkg.GetStream(file);
-                    stream.CopyToFile(Path.Combine(pathToSdkInCli, Path.GetFileName(file)));
-                }
             }
         }
 
