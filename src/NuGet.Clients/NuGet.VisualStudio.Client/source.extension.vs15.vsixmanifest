@@ -11,7 +11,7 @@
   <Prerequisites>
     <Prerequisite Id="Microsoft.VisualStudio.Component.CoreEditor" Version="[15.0,16.0)" DisplayName="Visual Studio core editor" />
   </Prerequisites>
-  <Installation SystemComponent="true" InstalledByMsi="false" AllUsers="true">
+  <Installation SystemComponent="true" InstalledByMsi="false" AllUsers="false" Experimental="true">
     <InstallationTarget Id="Microsoft.VisualStudio.Pro" Version="[15.0,16.0)" />
     <InstallationTarget Id="Microsoft.VisualStudio.Community" Version="[15.0,16.0)" />
     <InstallationTarget Id="Microsoft.VisualStudio.VWDExpress" Version="[15.0,16.0)" />
@@ -20,12 +20,12 @@
     <InstallationTarget Id="Microsoft.VisualStudio.VSWinDesktopExpress" Version="[15.0,16.0)" />
   </Installation>
   <Assets>
-    <Asset Type="Microsoft.VisualStudio.VsPackage" d:Source="Project" d:ProjectName="%CurrentProject%" Path="|%CurrentProject%;PkgdefProjectOutputGroup|" />
+    <Asset Type="Microsoft.VisualStudio.VsPackage" d:Source="Project" d:ProjectName="NuGet.Tools" Path="|NuGet.Tools;PkgdefProjectOutputGroup|" />
     <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="Project" d:ProjectName="NuGet.PackageManagement.VisualStudio" Path="|NuGet.PackageManagement.VisualStudio|" />
     <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="File" Path="NuGet.PackageManagement.dll" />
     <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="File" Path="NuGet.PackageManagement.UI.dll" />
     <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="File" Path="NuGet.Protocol.dll" />
-    <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="Project" d:ProjectName="%CurrentProject%" Path="|%CurrentProject%|" />
+    <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="Project" d:ProjectName="NuGet.Tools" Path="|NuGet.Tools|" />
     <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="Project" d:ProjectName="NuGet.Console" Path="|NuGet.Console|" />
     <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="File" Path="NuGet.Configuration.dll" />
     <Asset Type="Microsoft.VisualStudio.Assembly" d:Source="Project" d:ProjectName="NuGet.VisualStudio.Interop" Path="|NuGet.VisualStudio.Interop|" AssemblyName="|NuGet.VisualStudio.Interop;AssemblyName|" />
