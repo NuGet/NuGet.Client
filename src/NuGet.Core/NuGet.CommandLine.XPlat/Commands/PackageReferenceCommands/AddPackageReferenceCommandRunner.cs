@@ -162,7 +162,8 @@ namespace NuGet.CommandLine.XPlat
                     packageReferenceArgs.PackageDependency.Id,
                     packageReferenceArgs.ProjectPath));
 
-                var compatibleOriginalFrameworks = originalPackageSpec.RestoreMetadata
+                var compatibleOriginalFrameworks = originalPackageSpec
+                    .RestoreMetadata
                     .OriginalTargetFrameworks
                     .Where(s => compatibleFrameworks.Contains(NuGetFramework.Parse(s)));
 

@@ -10,6 +10,7 @@ using Microsoft.Build.Construction;
 using Microsoft.Build.Evaluation;
 using NuGet.Commands;
 using NuGet.Common;
+using NuGet.Frameworks;
 using NuGet.Packaging.Core;
 
 namespace NuGet.CommandLine.XPlat
@@ -145,28 +146,50 @@ namespace NuGet.CommandLine.XPlat
         /// </summary>
         /// <param name="projectPath">Path to the csproj file of the project.</param>
         /// <param name="packageDependency">Package Dependency of the package to be added.</param>
-        /// <param name="frameworks">Target Frameworks for which the package reference should be added.</param>
-        public IEnumerable<ProjectItem> ListPackageReference(string projectPath, PackageDependency packageDependency,
-            IEnumerable<string> frameworks)
+        /// <param name="userInputFrameworks">Target Frameworks for which the package reference should be added.</param>
+        public Dictionary<string, IEnumerable<Tuple<string, string>>> ListPackageReference(string projectPath, 
+            PackageDependency packageDependency,
+            IEnumerable<string> userInputFrameworks)
         {
-            var packageDependencies = new Dictionary<string, Tuple<string, string>>();
-            var packageReferences = new List<ProjectItem>();
-            if (frameworks.Any())
-            {
-                var project = GetProject(projectPath);
-                foreach (var framework in frameworks)
-                {
-                    packageReferences.AddRange(GetPackageReferencesPerFramework(project, packageDependency, framework));
-                }
+            var project = GetProject(projectPath);
+            var packageReferencesPerFramework = new Dictionary<string, IEnumerable<Tuple<string, string>>>();            
+            var projectFrameworks = new HashSet<NuGetFramework>(GetProjectFrameworks(project).Select(f => NuGetFramework.Parse(f)));               
 
+            if (!userInputFrameworks.Any())
+            {
+                var unconditionalpackageReferences = GetPackageReferences(project, packageDependency);
+
+                packageReferencesPerFramework.Add(Strings.AddPkg_All,
+                    unconditionalpackageReferences.Select(i => Tuple.Create(i.EvaluatedInclude, i.GetMetadataValue(VERSION_TAG))));
+
+                foreach (var framework in projectFrameworks)
+                {
+                    var conditionalpackageReferences = GetPackageReferencesPerFramework(project, packageDependency, framework.ToString());
+
+                    packageReferencesPerFramework.Add(framework.ToString(),
+                        conditionalpackageReferences.Select(i => Tuple.Create(i.EvaluatedInclude, i.GetMetadataValue(VERSION_TAG))));
+                }
             }
             else
             {
-                var project = GetProject(projectPath);
-                packageReferences = GetPackageReferencesForAllFrameworks(project, packageDependency)
-                    .ToList();
+                foreach (var userInputFramework in userInputFrameworks)
+                {
+                    var framework = NuGetFramework.Parse(userInputFramework);
+                    if (projectFrameworks.Contains(framework))
+                    {
+                        var conditionalpackageReferences = GetPackageReferencesPerFramework(project, packageDependency, framework.ToString());
+
+                        packageReferencesPerFramework.Add(userInputFramework,
+                            conditionalpackageReferences.Select(i => Tuple.Create(i.EvaluatedInclude, i.GetMetadataValue(VERSION_TAG))));
+                    }
+                    else
+                    {
+                        packageReferencesPerFramework.Add(userInputFramework, null);
+                    }
+                }
             }
-            return packageReferences;
+
+            return packageReferencesPerFramework;
         }
 
 
@@ -362,7 +385,12 @@ namespace NuGet.CommandLine.XPlat
             }
         }
 
-        private static IEnumerable<string> GetProjectFrameworks(Project project)
+        /// <summary>
+        /// This method returns all the Target Franeworks for a project.
+        /// </summary>
+        /// <param name="project"></param>
+        /// <returns><code>IEnumerable</code> of target frameworks in the project as <code>strings</code></returns>
+        public static IEnumerable<string> GetProjectFrameworks(Project project)
         {
             var frameworks = project
                 .AllEvaluatedProperties
