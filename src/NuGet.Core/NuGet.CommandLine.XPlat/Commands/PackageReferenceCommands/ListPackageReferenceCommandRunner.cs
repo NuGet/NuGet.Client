@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Build.Evaluation;
@@ -32,19 +33,24 @@ namespace NuGet.CommandLine.XPlat
                 foreach (var framework in packageReferences.Keys)
                 {
                     logger.LogInformation($"Framework '{framework}' - ");
+                    logger.LogInformation($"--------------------------------------------------");
 
-                    if(packageReferences[framework] == null)
+                    if (packageReferences[framework] == null)
                     {
                         logger.LogInformation($"This poject does not target '{framework}'");
                     }
+                    else if(!packageReferences[framework].Any())
+                    {
+                        logger.LogInformation($"This poject does not reference any package for '{framework}'");
+                    }
                     else
                     {
-                        logger.LogInformation($"Package ID \t\t Version");
                         foreach (var packageReference in packageReferences[framework])
                         {
-                            logger.LogInformation($"{packageReference.Item1} \t\t {packageReference.Item2}");
+                            logger.LogInformation($"{packageReference.Item1} {packageReference.Item2}");
                         }
                     }
+                    logger.LogInformation($"--------------------------------------------------");
                 }
             }
         }
