@@ -11,12 +11,12 @@ using System.Threading.Tasks;
 using NuGet.Commands;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
-using NuGet.PackageManagement.UI;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging;
 using NuGet.ProjectModel;
 using NuGet.RuntimeModel;
 using NuGet.Versioning;
+using NuGet.VisualStudio;
 
 namespace NuGet.SolutionRestoreManager
 {
@@ -77,7 +77,7 @@ namespace NuGet.SolutionRestoreManager
         {
             if (string.IsNullOrEmpty(projectUniqueName))
             {
-                throw new ArgumentException(Strings.Argument_Cannot_Be_Null_Or_Empty, nameof(projectUniqueName));
+                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(projectUniqueName));
             }
 
             if (projectRestoreInfo == null)

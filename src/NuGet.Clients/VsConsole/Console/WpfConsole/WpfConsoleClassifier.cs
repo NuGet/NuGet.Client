@@ -10,6 +10,7 @@ using System.Windows.Media;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Classification;
 using NuGet.PackageManagement;
+using NuGet.VisualStudio;
 
 namespace NuGetConsole.Implementation.Console
 {

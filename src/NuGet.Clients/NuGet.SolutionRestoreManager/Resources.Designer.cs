@@ -208,6 +208,15 @@ namespace NuGet.SolutionRestoreManager {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Solution is not saved. Please save your solution before managing NuGet packages..
+        /// </summary>
+        internal static string SolutionIsNotSaved {
+            get {
+                return ResourceManager.GetString("SolutionIsNotSaved", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Solution Restore cannot be started while an automatic restore is in progress..
         /// </summary>
         internal static string SolutionRestoreFailed_RestoreWorkerIsBusy {

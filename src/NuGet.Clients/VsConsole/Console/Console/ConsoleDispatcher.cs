@@ -10,11 +10,10 @@ using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Media;
-using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Text;
 using NuGet.Common;
 using NuGet.PackageManagement;
-using NuGet.PackageManagement.UI;
+using NuGet.VisualStudio;
 using Task = System.Threading.Tasks.Task;
 
 namespace NuGetConsole.Implementation.Console

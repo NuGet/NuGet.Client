@@ -14,15 +14,13 @@ using Microsoft.VisualStudio.Threading;
 using NuGet.Commands;
 using NuGet.Configuration;
 using NuGet.PackageManagement;
-using NuGet.PackageManagement.UI;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
 using NuGet.ProjectModel;
 using NuGet.Protocol.Core.Types;
-using NuGet.VisualStudio.Facade;
-using Strings = NuGet.PackageManagement.VisualStudio.Strings;
+using NuGet.VisualStudio;
 using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.SolutionRestoreManager
@@ -187,8 +185,8 @@ namespace NuGet.SolutionRestoreManager
                     await _logger.DoAsync((l, _) =>
                     {
                         _status = NuGetOperationStatus.Failed;
-                        l.ShowError(Strings.SolutionIsNotSaved);
-                        l.WriteLine(VerbosityLevel.Minimal, Strings.SolutionIsNotSaved);
+                        l.ShowError(Resources.SolutionIsNotSaved);
+                        l.WriteLine(VerbosityLevel.Minimal, Resources.SolutionIsNotSaved);
                     });
                     return;
                 }
@@ -483,8 +481,8 @@ namespace NuGet.SolutionRestoreManager
                     {
                         await _logger.DoAsync((l, _) =>
                         {
-                            l.ShowError(Strings.SolutionIsNotSaved);
-                            l.WriteLine(VerbosityLevel.Quiet, Strings.SolutionIsNotSaved);
+                            l.ShowError(Resources.SolutionIsNotSaved);
+                            l.WriteLine(VerbosityLevel.Quiet, Resources.SolutionIsNotSaved);
                         });
                     }
 
@@ -595,7 +593,7 @@ namespace NuGet.SolutionRestoreManager
                 var projects = dte.Solution.Projects;
                 return projects
                     .OfType<EnvDTE.Project>()
-                    .Select(p => new ProjectInfo(EnvDTEProjectUtility.GetFullPath(p), p.Name))
+                    .Select(p => new ProjectInfo(EnvDTEProjectInfoUtility.GetFullPath(p), p.Name))
                     .Any(p => p.CheckPackagesConfig());
             });
         }

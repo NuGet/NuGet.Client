@@ -2,12 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.ComponentModel;
+using System.ComponentModel.Composition;
 using System.Threading.Tasks;
 using NuGet.Common;
-using NuGet.PackageManagement.UI;
-using NuGet.VisualStudio.Facade;
-using System.ComponentModel.Composition;
+using NuGet.VisualStudio;
 
 namespace NuGet.SolutionRestoreManager
 {

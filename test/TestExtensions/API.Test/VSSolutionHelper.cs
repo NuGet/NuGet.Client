@@ -1,12 +1,11 @@
 ﻿using System;
 using System.Collections;
-using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
 using EnvDTE;
 using EnvDTE80;
 using Microsoft.VisualStudio.Shell;
-using NuGet.PackageManagement.VisualStudio;
+using NuGet.VisualStudio;
 using Task = System.Threading.Tasks.Task;
 
 namespace API.Test

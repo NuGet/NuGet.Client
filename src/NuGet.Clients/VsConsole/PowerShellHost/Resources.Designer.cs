@@ -94,6 +94,15 @@ namespace NuGetConsole.Host.PowerShell {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to All.
+        /// </summary>
+        internal static string AggregateSourceName {
+            get {
+                return ResourceManager.GetString("AggregateSourceName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Value cannot be null or an empty string..
         /// </summary>
         internal static string Argument_Cannot_Be_Null_Or_Empty {

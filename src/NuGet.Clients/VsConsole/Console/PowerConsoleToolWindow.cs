@@ -19,6 +19,7 @@ using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.TextManager.Interop;
 using NuGet.PackageManagement;
 using NuGet.PackageManagement.VisualStudio;
+using NuGet.VisualStudio;
 using NuGetConsole.Implementation.Console;
 using NuGetConsole.Implementation.PowerConsole;
 

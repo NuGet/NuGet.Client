@@ -6,8 +6,6 @@ using System.ComponentModel.Composition;
 using System.IO;
 using System.Threading.Tasks;
 using EnvDTE;
-using Microsoft.VisualStudio.Shell;
-using NuGet.PackageManagement.UI;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.VisualStudio.Implementation.Resources;
 
@@ -52,7 +50,7 @@ namespace NuGet.VisualStudio
                 throw new InvalidOperationException(string.Format(VsResources.Error_ProjectNotInCache, projectUniqueName));
             }
 
-            var projectSafeName = await EnvDTEProjectUtility.GetCustomUniqueNameAsync(project);
+            var projectSafeName = await EnvDTEProjectInfoUtility.GetCustomUniqueNameAsync(project);
 
             var nuGetProject = _solutionManager.Value.GetNuGetProject(projectSafeName);
 

@@ -1,9 +1,9 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using Moq;
 using NuGet.ProjectModel;
+using NuGet.VisualStudio;
 using Xunit;
 
 namespace NuGet.PackageManagement.VisualStudio.Test

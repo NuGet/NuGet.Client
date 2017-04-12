@@ -12,7 +12,6 @@ using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Threading;
 using NuGet.Configuration;
 using NuGet.LibraryModel;
-using NuGet.PackageManagement.UI;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
@@ -30,7 +29,7 @@ namespace NuGet.VisualStudio
     {
         private readonly Lazy<ISettings> _settings;
         private readonly Lazy<IVsSolutionManager> _solutionManager;
-        private readonly Lazy<Common.ILogger> _logger;
+        private readonly Lazy<NuGet.Common.ILogger> _logger;
         private readonly Func<BuildIntegratedNuGetProject, Task<LockFile>> _getLockFileOrNullAsync;
 
         private readonly AsyncLazy<EnvDTE.DTE> _dte;
@@ -43,7 +42,7 @@ namespace NuGet.VisualStudio
             Lazy<ISettings> settings,
             Lazy<IVsSolutionManager> solutionManager,
             [Import("VisualStudioActivityLogger")]
-            Lazy<Common.ILogger> logger)
+            Lazy<NuGet.Common.ILogger> logger)
         {
             if (serviceProvider == null)
             {
@@ -85,7 +84,7 @@ namespace NuGet.VisualStudio
         public VsPathContextProvider(
             ISettings settings,
             IVsSolutionManager solutionManager,
-            Common.ILogger logger,
+            NuGet.Common.ILogger logger,
             Func<BuildIntegratedNuGetProject, Task<LockFile>> getLockFileOrNullAsync)
         {
             if (settings == null)
@@ -105,7 +104,7 @@ namespace NuGet.VisualStudio
 
             _settings = new Lazy<ISettings>(() => settings);
             _solutionManager = new Lazy<IVsSolutionManager>(() => solutionManager);
-            _logger = new Lazy<Common.ILogger>(() => logger);
+            _logger = new Lazy<NuGet.Common.ILogger>(() => logger);
             _getLockFileOrNullAsync = getLockFileOrNullAsync ?? BuildIntegratedProjectUtility.GetLockFileOrNull;
         }
 

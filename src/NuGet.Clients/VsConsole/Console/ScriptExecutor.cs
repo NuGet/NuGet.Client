@@ -11,12 +11,11 @@ using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Threading;
 using NuGet.Configuration;
 using NuGet.PackageManagement;
-using NuGet.PackageManagement.PowerShellCmdlets;
-using NuGet.PackageManagement.UI;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
+using NuGet.VisualStudio;
 using EnvDTEProject = EnvDTE.Project;
 using Task = System.Threading.Tasks.Task;
 

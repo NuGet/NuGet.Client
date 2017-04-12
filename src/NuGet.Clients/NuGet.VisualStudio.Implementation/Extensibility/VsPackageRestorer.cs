@@ -5,12 +5,9 @@ using System;
 using System.ComponentModel.Composition;
 using System.Threading;
 using EnvDTE;
-using Microsoft.VisualStudio.Shell;
 using NuGet.PackageManagement;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.ProjectManagement;
-using NuGet.Protocol.Core.Types;
-using NuGet.PackageManagement.UI;
 
 namespace NuGet.VisualStudio
 {

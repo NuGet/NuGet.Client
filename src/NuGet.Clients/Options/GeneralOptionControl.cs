@@ -11,13 +11,13 @@ using NuGet.Configuration;
 using NuGet.PackageManagement.UI;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.ProjectManagement;
-using NuGetConsole;
+using NuGet.VisualStudio;
 
 namespace NuGet.Options
 {
     public partial class GeneralOptionControl : UserControl
     {
-        private readonly Configuration.ISettings _settings;
+        private readonly ISettings _settings;
         private bool _initialized;
         private readonly IServiceProvider _serviceprovider;
         private readonly INuGetUILogger _outputConsoleLogger;

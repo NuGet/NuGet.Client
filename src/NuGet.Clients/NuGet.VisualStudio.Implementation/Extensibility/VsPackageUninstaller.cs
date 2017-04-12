@@ -6,13 +6,11 @@ using System.ComponentModel.Composition;
 using System.Globalization;
 using System.Threading;
 using EnvDTE;
-using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Threading;
 using NuGet.PackageManagement;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
-using NuGet.PackageManagement.UI;
 
 namespace NuGet.VisualStudio
 {

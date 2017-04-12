@@ -4,7 +4,7 @@
 using System;
 using System.ComponentModel.Composition;
 using System.Runtime.CompilerServices;
-using NuGet.VisualStudio.Facade;
+using NuGet.VisualStudio;
 using NuGetConsole.Host.PowerShell.Implementation;
 
 namespace NuGetConsole.Host
