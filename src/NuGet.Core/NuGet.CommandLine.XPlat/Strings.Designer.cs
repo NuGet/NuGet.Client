@@ -476,11 +476,29 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to All Frameworks.
+        /// </summary>
+        internal static string ListPkg_AllFrameworks {
+            get {
+                return ResourceManager.GetString("ListPkg_AllFrameworks", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Lists package references for a project..
         /// </summary>
         internal static string ListPkg_Description {
             get {
                 return ResourceManager.GetString("ListPkg_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Framework &apos;{0}&apos; -.
+        /// </summary>
+        internal static string ListPkg_Framework {
+            get {
+                return ResourceManager.GetString("ListPkg_Framework", resourceCulture);
             }
         }
         
@@ -494,6 +512,42 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to This poject does not target framework &apos;{0}&apos;..
+        /// </summary>
+        internal static string ListPkg_NonTargetedFramework {
+            get {
+                return ResourceManager.GetString("ListPkg_NonTargetedFramework", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to This poject does not reference any package for framework &apos;{0}&apos;..
+        /// </summary>
+        internal static string ListPkg_NoPackageRefsForFramework {
+            get {
+                return ResourceManager.GetString("ListPkg_NoPackageRefsForFramework", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Project &apos;{0}&apos; has no package references..
+        /// </summary>
+        internal static string ListPkg_NoPackageRefsForProject {
+            get {
+                return ResourceManager.GetString("ListPkg_NoPackageRefsForProject", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Package &apos;{0}&apos; Version &apos;{1}&apos;..
+        /// </summary>
+        internal static string ListPkg_PackageAndVersion {
+            get {
+                return ResourceManager.GetString("ListPkg_PackageAndVersion", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Id of the package for listing references..
         /// </summary>
         internal static string ListPkg_PackageIdDescription {
@@ -503,11 +557,29 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to This poject does not reference package &apos;{0}&apos; for framework &apos;{1}&apos;..
+        /// </summary>
+        internal static string ListPkg_PackageNotReferencedForFramework {
+            get {
+                return ResourceManager.GetString("ListPkg_PackageNotReferencedForFramework", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Path to the project file..
         /// </summary>
         internal static string ListPkg_ProjectPathDescription {
             get {
                 return ResourceManager.GetString("ListPkg_ProjectPathDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Project &apos;{0}&apos; has following package references per framework -.
+        /// </summary>
+        internal static string ListPkg_References {
+            get {
+                return ResourceManager.GetString("ListPkg_References", resourceCulture);
             }
         }
         

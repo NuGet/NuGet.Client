@@ -152,8 +152,9 @@ namespace NuGet.CommandLine.XPlat
             IEnumerable<string> userInputFrameworks)
         {
             var project = GetProject(projectPath);
-            var packageReferencesPerFramework = new Dictionary<string, IEnumerable<Tuple<string, string>>>();            
-            var projectFrameworks = new HashSet<NuGetFramework>(GetProjectFrameworks(project).Select(f => NuGetFramework.Parse(f)));               
+            var packageReferencesPerFramework = new Dictionary<string, IEnumerable<Tuple<string, string>>>();
+            var projectFrameworkStrings = GetProjectFrameworks(project);
+            var projectFrameworks = new HashSet<NuGetFramework>(GetProjectFrameworks(project).Select(f => NuGetFramework.Parse(f)));
 
             if (!userInputFrameworks.Any())
             {
@@ -162,11 +163,11 @@ namespace NuGet.CommandLine.XPlat
                 packageReferencesPerFramework.Add(Strings.AddPkg_All,
                     unconditionalpackageReferences.Select(i => Tuple.Create(i.EvaluatedInclude, i.GetMetadataValue(VERSION_TAG))));
 
-                foreach (var framework in projectFrameworks)
+                foreach (var framework in projectFrameworkStrings)
                 {
-                    var conditionalpackageReferences = GetPackageReferencesPerFramework(project, packageDependency, framework.ToString());
+                    var conditionalpackageReferences = GetPackageReferencesPerFramework(project, packageDependency, framework);
 
-                    packageReferencesPerFramework.Add(framework.ToString(),
+                    packageReferencesPerFramework.Add(framework,
                         conditionalpackageReferences.Select(i => Tuple.Create(i.EvaluatedInclude, i.GetMetadataValue(VERSION_TAG))));
                 }
             }
@@ -177,7 +178,7 @@ namespace NuGet.CommandLine.XPlat
                     var framework = NuGetFramework.Parse(userInputFramework);
                     if (projectFrameworks.Contains(framework))
                     {
-                        var conditionalpackageReferences = GetPackageReferencesPerFramework(project, packageDependency, framework.ToString());
+                        var conditionalpackageReferences = GetPackageReferencesPerFramework(project, packageDependency, userInputFramework);
 
                         packageReferencesPerFramework.Add(userInputFramework,
                             conditionalpackageReferences.Select(i => Tuple.Create(i.EvaluatedInclude, i.GetMetadataValue(VERSION_TAG))));

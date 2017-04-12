@@ -51,6 +51,7 @@ namespace NuGet.CommandLine.XPlat
 
                     var packageReferenceArgs = new PackageReferenceArgs(projectPath.Value(), logger)
                     {
+                        PackageDependency = id.HasValue() ? new PackageDependency(id.Value(), VersionRange.Parse("*")) : null,
                         Frameworks = MSBuildStringUtility.Split(frameworks.Value()),
                     };
 

@@ -15,39 +15,51 @@ namespace NuGet.CommandLine.XPlat
              var packagReferences = msBuild.ListPackageReference(packageReferenceArgs.ProjectPath,
                     packageReferenceArgs.PackageDependency, packageReferenceArgs.Frameworks);
 
-            PrintPackageReferences(packagReferences, packageReferenceArgs.Logger, packageReferenceArgs.ProjectPath);
+            PrintPackageReferences(packagReferences, packageReferenceArgs);
 
             return Task.FromResult(0);
         }
 
-        public void PrintPackageReferences(Dictionary<string, IEnumerable<Tuple<string, string>>> packageReferences, ILogger logger, string projectPath)
+        public void PrintPackageReferences(Dictionary<string, IEnumerable<Tuple<string, string>>> packageReferences, PackageReferenceArgs packageReferenceArgs)
         {
+            var logger = packageReferenceArgs.Logger;
+            var projectPath = packageReferenceArgs.ProjectPath;
+            var packageDependency = packageReferenceArgs.PackageDependency;
             if(packageReferences.Keys.Count == 0)
             {
-                logger.LogInformation($"Project '{projectPath}' has no package references.");
+                logger.LogInformation(string.Format(Strings.ListPkg_NoPackageRefsForProject, projectPath));
             }
             else
             {
-                logger.LogInformation($"Project '{projectPath}' has following package references.");
+                logger.LogInformation(string.Format(Strings.ListPkg_References, projectPath));
 
                 foreach (var framework in packageReferences.Keys)
                 {
-                    logger.LogInformation($"Framework '{framework}' - ");
-                    logger.LogInformation($"--------------------------------------------------");
+                    logger.LogInformation(string.Format(Strings.ListPkg_Framework, framework));
+                    logger.LogInformation("--------------------------------------------------");
 
                     if (packageReferences[framework] == null)
                     {
-                        logger.LogInformation($"This poject does not target '{framework}'");
+                        logger.LogInformation(string.Format(Strings.ListPkg_NonTargetedFramework, framework));
                     }
                     else if(!packageReferences[framework].Any())
                     {
-                        logger.LogInformation($"This poject does not reference any package for '{framework}'");
+                        if(packageDependency == null)
+                        {
+                            logger.LogInformation(string.Format(Strings.ListPkg_NoPackageRefsForFramework, framework));
+                        }
+                        else
+                        {
+                            logger.LogInformation(string.Format(Strings.ListPkg_PackageNotReferencedForFramework, 
+                                packageDependency.Id, 
+                                framework));
+                        }
                     }
                     else
                     {
                         foreach (var packageReference in packageReferences[framework])
                         {
-                            logger.LogInformation($"{packageReference.Item1} {packageReference.Item2}");
+                            logger.LogInformation(string.Format(Strings.ListPkg_PackageAndVersion, packageReference.Item1, packageReference.Item2));
                         }
                     }
                     logger.LogInformation($"--------------------------------------------------");

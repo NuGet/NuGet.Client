@@ -492,4 +492,37 @@ For more information, visit http://docs.nuget.org/docs/reference/command-line-re
   <data name="ListPkg_ProjectPathDescription" xml:space="preserve">
     <value>Path to the project file.</value>
   </data>
+  <data name="ListPkg_AllFrameworks" xml:space="preserve">
+    <value>All Frameworks</value>
+  </data>
+  <data name="ListPkg_Framework" xml:space="preserve">
+    <value>Framework '{0}' -</value>
+    <comment>{0} - Framework Identifier</comment>
+  </data>
+  <data name="ListPkg_NonTargetedFramework" xml:space="preserve">
+    <value>This poject does not target framework '{0}'.</value>
+    <comment>{0} - Framework Identifier</comment>
+  </data>
+  <data name="ListPkg_NoPackageRefsForFramework" xml:space="preserve">
+    <value>This poject does not reference any package for framework '{0}'.</value>
+    <comment>{0} - Framework Identifier</comment>
+  </data>
+  <data name="ListPkg_NoPackageRefsForProject" xml:space="preserve">
+    <value>Project '{0}' has no package references.</value>
+    <comment>{0} - Path to the project file.</comment>
+  </data>
+  <data name="ListPkg_PackageAndVersion" xml:space="preserve">
+    <value>Package '{0}' Version '{1}'.</value>
+    <comment>{0} - Package Identifier
+{1} - Package Version</comment>
+  </data>
+  <data name="ListPkg_PackageNotReferencedForFramework" xml:space="preserve">
+    <value>This poject does not reference package '{0}' for framework '{1}'.</value>
+    <comment>{0} - Package Identifier
+{1} - Framework Identifier</comment>
+  </data>
+  <data name="ListPkg_References" xml:space="preserve">
+    <value>Project '{0}' has following package references per framework -</value>
+    <comment>{0} - Path to the project file.</comment>
+  </data>
 </root>
