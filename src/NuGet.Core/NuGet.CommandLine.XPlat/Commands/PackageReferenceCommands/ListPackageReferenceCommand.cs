@@ -48,13 +48,8 @@ namespace NuGet.CommandLine.XPlat
                     ValidateProjectPath(projectPath, listPkg.Name);
 
                     var logger = getLogger();
-                    PackageDependency packageDependency = null;
-                    if (id.HasValue())
-                    {
-                        packageDependency = new PackageDependency(id.Values[0], VersionRange.Parse("*"));
-                    }
 
-                    var packageReferenceArgs = new PackageReferenceArgs(projectPath.Value(), packageDependency, logger)
+                    var packageReferenceArgs = new PackageReferenceArgs(projectPath.Value(), logger)
                     {
                         Frameworks = MSBuildStringUtility.Split(frameworks.Value()),
                     };

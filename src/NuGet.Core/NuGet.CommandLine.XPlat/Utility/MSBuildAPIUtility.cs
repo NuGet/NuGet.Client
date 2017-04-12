@@ -151,19 +151,20 @@ namespace NuGet.CommandLine.XPlat
         {
             var packageDependencies = new Dictionary<string, Tuple<string, string>>();
             var packageReferences = new List<ProjectItem>();
-            if (frameworks == null)
-            {
-                var project = GetProject(projectPath);
-                packageReferences = GetPackageReferencesForAllFrameworks(project, packageDependency)
-                    .ToList();
-            }
-            else
+            if (frameworks.Any())
             {
                 var project = GetProject(projectPath);
                 foreach (var framework in frameworks)
                 {
                     packageReferences.AddRange(GetPackageReferencesPerFramework(project, packageDependency, framework));
                 }
+
+            }
+            else
+            {
+                var project = GetProject(projectPath);
+                packageReferences = GetPackageReferencesForAllFrameworks(project, packageDependency)
+                    .ToList();
             }
             return packageReferences;
         }
@@ -346,8 +347,7 @@ namespace NuGet.CommandLine.XPlat
         private static IEnumerable<ProjectItem> GetPackageReferences(Project project, PackageDependency packageDependency)
         {
             var packageReferences = project.AllEvaluatedItems
-                .Where(item => item.ItemType.Equals(PACKAGE_REFERENCE_TYPE_TAG, StringComparison.OrdinalIgnoreCase) &&
-                               item.EvaluatedInclude.Equals(packageDependency.Id, StringComparison.OrdinalIgnoreCase));
+                .Where(item => item.ItemType.Equals(PACKAGE_REFERENCE_TYPE_TAG, StringComparison.OrdinalIgnoreCase));
 
             if (packageDependency == null)
             {
