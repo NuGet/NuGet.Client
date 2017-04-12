@@ -21,7 +21,7 @@ namespace NuGet.CommandLine.Test
 {
     public class NuGetUpdateCommandTests
     {
-        [PlatformFact(Platform.Windows)]
+        [Fact]
         public async Task UpdateCommand_Success_Update_DeletedFile()
         {
             using (var packagesSourceDirectory = TestDirectory.Create())
@@ -131,7 +131,7 @@ namespace NuGet.CommandLine.Test
             }
         }
 
-        [PlatformFact(Platform.Windows)]
+        [Fact]
         public async Task UpdateCommand_Success_References()
         {
             using (var packagesSourceDirectory = TestDirectory.Create())
@@ -210,7 +210,7 @@ namespace NuGet.CommandLine.Test
             }
         }
 
-        [PlatformFact(Platform.Windows)]
+        [Fact]
         public async Task UpdateCommand_Success_References_MultipleProjects()
         {
 
@@ -339,7 +339,7 @@ namespace NuGet.CommandLine.Test
             }
         }
 
-        [PlatformFact(Platform.Windows)]
+        [Fact]
         public async Task UpdateCommand_Fails_References_MultipleProjectsInSameDirectory()
         {
             // Arrange
@@ -435,7 +435,7 @@ namespace NuGet.CommandLine.Test
             }
         }
 
-        [PlatformFact(Platform.Windows)]
+        [Fact]
         public async Task UpdateCommand_Success_NOPrerelease()
         {
             using (var packagesSourceDirectory = TestDirectory.Create())
@@ -513,7 +513,8 @@ namespace NuGet.CommandLine.Test
             }
         }
 
-        [PlatformFact(Platform.Windows)]
+
+        [Fact]
         public async Task UpdateCommand_Success_Prerelease()
         {
             using (var packagesSourceDirectory = TestDirectory.Create())
@@ -593,7 +594,8 @@ namespace NuGet.CommandLine.Test
             }
         }
 
-        [PlatformFact(Platform.Windows)]
+
+        [Fact]
         public async Task UpdateCommand_Success_Version_Upgrade()
         {
             using (var packagesSourceDirectory = TestDirectory.Create())
@@ -684,7 +686,7 @@ namespace NuGet.CommandLine.Test
             }
         }
 
-        [PlatformFact(Platform.Windows)]
+        [Fact]
         public async Task UpdateCommand_Success_Version_Downgrade()
         {
             using (var packagesSourceDirectory = TestDirectory.Create())
@@ -775,7 +777,7 @@ namespace NuGet.CommandLine.Test
             }
         }
 
-        [PlatformFact(Platform.Windows)]
+        [Fact]
         public async Task UpdateCommand_Success_ProjectFile_References()
         {
             using (var packagesSourceDirectory = TestDirectory.Create())
@@ -854,7 +856,7 @@ namespace NuGet.CommandLine.Test
             }
         }
 
-        [PlatformFact(Platform.Windows)]
+        [Fact]
         public async Task UpdateCommand_Success_PackagesConfig_References()
         {
             using (var packagesSourceDirectory = TestDirectory.Create())
@@ -935,7 +937,8 @@ namespace NuGet.CommandLine.Test
             }
         }
 
-        [PlatformFact(Platform.Windows)]
+
+        [Fact]
         public async Task UpdateCommand_Success_ContentFiles()
         {
             // Arrange
@@ -1048,7 +1051,8 @@ namespace NuGet.CommandLine.Test
             }
         }
 
-        [PlatformFact(Platform.Windows)]
+
+        [Fact]
         public async Task UpdateCommand_Success_CustomPackagesFolder_RelativePath()
         {
             // Arrange
@@ -1141,7 +1145,8 @@ namespace NuGet.CommandLine.Test
         }
 
 
-        [PlatformFact(Platform.Windows)]
+
+        [Fact]
         public async Task UpdateCommand_Success_CustomPackagesFolder_AbsolutePath()
         {
             // Arrange
@@ -1234,7 +1239,8 @@ namespace NuGet.CommandLine.Test
             }
         }
 
-        [PlatformFact(Platform.Windows)]
+
+        [Fact]
         public async Task UpdateCommand_Native_JS_Projects_Success()
         {
             using (var packagesSourceDirectory = TestDirectory.Create())
