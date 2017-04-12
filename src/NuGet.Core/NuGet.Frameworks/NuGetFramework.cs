@@ -416,6 +416,7 @@ namespace NuGet.Frameworks
                         FrameworkConstants.FrameworkIdentifiers.NetStandardApp,
                         FrameworkConstants.FrameworkIdentifiers.NetCoreApp,
                         FrameworkConstants.FrameworkIdentifiers.UAP,
+                        FrameworkConstants.FrameworkIdentifiers.Tizen,
             },
             StringComparer.OrdinalIgnoreCase);
     }
