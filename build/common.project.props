@@ -14,6 +14,7 @@
     <ArtifactsDirectory>$(RepositoryRootDirectory)artifacts\</ArtifactsDirectory>
     <DotnetExePath>$(RepositoryRootDirectory)cli\dotnet.exe</DotnetExePath>
     <DotnetExePath Condition=" '$(IsXPlat)' == 'true' ">$(RepositoryRootDirectory)cli\dotnet</DotnetExePath>
+    <DotnetSharedSDKDirectory>$(RepositoryRootDirectory)cli\shared\Microsoft.NETCore.App\1.0.4\</DotnetSharedSDKDirectory>
     <NuGetExePath>$(RepositoryRootDirectory).nuget\nuget.exe</NuGetExePath>
     <SharedDirectory>$(BuildCommonDirectory)Shared</SharedDirectory>
     <NuGetCoreSrcDirectory>$(RepositoryRootDirectory)src\NuGet.Core\</NuGetCoreSrcDirectory>
@@ -27,7 +28,7 @@
     <EnlistmentRootSrc>$(RepositoryRootDirectory)\src</EnlistmentRootSrc>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">$(RepositoryRootDirectory)</SolutionDir>
     <ArtifactRoot>$(ArtifactsDirectory)</ArtifactRoot>
-	<TestUtilitiesDirectory>$(RepositoryRootDirectory)test\TestUtilities\</TestUtilitiesDirectory>
+    <TestUtilitiesDirectory>$(RepositoryRootDirectory)test\TestUtilities\</TestUtilitiesDirectory>
   </PropertyGroup>
 
   <!-- Defaults -->
