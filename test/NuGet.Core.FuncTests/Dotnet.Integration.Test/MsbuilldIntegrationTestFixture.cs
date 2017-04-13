@@ -20,11 +20,15 @@ namespace Dotnet.Integration.Test
     {
         private readonly string _dotnetCli = DotnetCliUtil.GetDotnetCli(false);
         internal readonly string TestDotnetCli;
+        internal readonly string MsBuildSdksPath;
 
         public MsbuildIntegrationTestFixture()
         {
             var cliDirectory = CopyLatestCliForPack();
             TestDotnetCli = Path.Combine(cliDirectory, "dotnet.exe");
+            MsBuildSdksPath = Path.Combine(Directory.GetDirectories
+                (Path.Combine(cliDirectory, "sdk"))
+                .First(), "Sdks");
             // We do this here so that dotnet new will extract all the packages on the first run on the machine.
             InitDotnetNewToExtractPackages();
         }
@@ -88,10 +92,13 @@ namespace Dotnet.Integration.Test
 
         internal void PackProject(string workingDirectory, string projectName, string args)
         {
+            var envVar = new Dictionary<string, string>();
+            envVar.Add("MSBuildSDKsPath", MsBuildSdksPath);
             var result = CommandRunner.Run(TestDotnetCli,
                 workingDirectory,
                 $"pack {projectName}.csproj {args} ",
-                waitForExit: true);
+                waitForExit: true,
+                environmentVariables: envVar);
             Assert.True(result.Item1 == 0, $"Pack failed with following log information :\n {result.Item3}");
             Assert.True(result.Item3 == "", $"Pack failed with following message in error stream :\n {result.Item3}");
         }
