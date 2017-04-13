@@ -202,7 +202,6 @@ Function Install-DotnetCLI {
             DotNetInstallUrl = 'https://raw.githubusercontent.com/dotnet/cli/58b0566d9ac399f5fa973315c6827a040b7aae1f/scripts/obtain/dotnet-install.ps1'
             Version = '1.0.1'
         }
-    }
     
     if ([Environment]::Is64BitOperatingSystem) {
         $arch = "x64";
