@@ -63,7 +63,7 @@ namespace NuGet.SolutionRestoreManager
             IServiceProvider serviceProvider,
             Lazy<IVsSolutionManager> solutionManager,
             Lazy<INuGetLockService> lockService,
-            [Import(typeof(VisualStudioActivityLogger))]
+            [Import("VisualStudioActivityLogger")]
             Lazy<Common.ILogger> logger,
             Lazy<ErrorListTableDataSource> errorListTableDataSource)
         {

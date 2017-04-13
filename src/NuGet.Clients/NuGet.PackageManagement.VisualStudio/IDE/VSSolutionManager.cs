@@ -102,7 +102,7 @@ namespace NuGet.PackageManagement.VisualStudio
             IProjectSystemCache projectSystemCache,
             NuGetProjectFactory projectSystemFactory,
             ICredentialServiceProvider credentialServiceProvider,
-            [Import(typeof(VisualStudioActivityLogger))]
+            [Import("VisualStudioActivityLogger")]
             Common.ILogger logger)
         {
             if (serviceProvider == null)

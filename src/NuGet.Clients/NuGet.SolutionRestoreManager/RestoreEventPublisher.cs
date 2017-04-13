@@ -20,7 +20,7 @@ namespace NuGet.SolutionRestoreManager
         
         [ImportingConstructor]
         public RestoreEventPublisher(
-            [Import(typeof(VisualStudioActivityLogger))]
+            [Import("VisualStudioActivityLogger")]
             Lazy<ILogger> logger)
         {
             if (logger == null)
