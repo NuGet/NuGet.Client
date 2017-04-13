@@ -34,6 +34,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <PackDependsOn>GenerateNuspec; $(PackDependsOn)</PackDependsOn>
     <IsInnerBuild Condition="'$(TargetFramework)' != '' AND '$(TargetFrameworks)' != ''">true</IsInnerBuild>
     <NoBuild Condition="'$(GeneratePackageOnBuild)' == 'true'">true</NoBuild>
+    <AddPriFileDependsOn Condition="'$(MicrosoftPortableCurrentVersionPropsHasBeenImported)' == 'true'">DeterminePortableBuildCapabilities</AddPriFileDependsOn>
   </PropertyGroup>
   <PropertyGroup Condition="'$(NoBuild)' == 'true' ">
     <GenerateNuspecDependsOn>$(GenerateNuspecDependsOn)</GenerateNuspecDependsOn>
@@ -270,7 +271,8 @@ Copyright (c) .NET Foundation. All rights reserved.
     in their bin dir. This Pri file is not included in the BuiltProjectGroupOutput, and
     has to be added manually here.-->
   <Target Name="_AddPriFileToPackBuildOutput"
-          Returns="@(_PathToPriFile)">
+          Returns="@(_PathToPriFile)"
+          DependsOnTargets="$(AddPriFileDependsOn)">
     <ItemGroup Condition="'$(IncludeProjectPriFile)' == 'true'">
       <_PathToPriFile Include="$(ProjectPriFullPath)">
         <FinalOutputPath>$(ProjectPriFullPath)</FinalOutputPath>
