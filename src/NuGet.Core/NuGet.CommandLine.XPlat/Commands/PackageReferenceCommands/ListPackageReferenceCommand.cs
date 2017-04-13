@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -11,7 +14,7 @@ using NuGet.Versioning;
 
 namespace NuGet.CommandLine.XPlat
 { 
-    class ListPackageReferenceCommand
+    public class ListPackageReferenceCommand
     {
         public static void Register(CommandLineApplication app, Func<ILogger> getLogger,
         Func<IPackageReferenceCommandRunner> getCommandRunner)

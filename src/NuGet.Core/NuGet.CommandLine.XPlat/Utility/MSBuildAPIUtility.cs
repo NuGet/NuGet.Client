@@ -160,7 +160,7 @@ namespace NuGet.CommandLine.XPlat
             {
                 var unconditionalpackageReferences = GetPackageReferences(project, packageDependency);
 
-                packageReferencesPerFramework.Add(Strings.AddPkg_All,
+                packageReferencesPerFramework.Add(Strings.ListPkg_AllFrameworks,
                     unconditionalpackageReferences.Select(i => Tuple.Create(i.EvaluatedInclude, i.GetMetadataValue(VERSION_TAG))));
 
                 foreach (var framework in projectFrameworkStrings)
@@ -190,6 +190,7 @@ namespace NuGet.CommandLine.XPlat
                 }
             }
 
+            ProjectCollection.GlobalProjectCollection.UnloadProject(project);
             return packageReferencesPerFramework;
         }
 
@@ -404,7 +405,7 @@ namespace NuGet.CommandLine.XPlat
                     .AllEvaluatedProperties
                     .Where(p => p.Name.Equals(FRAMEWORKS_TAG, StringComparison.OrdinalIgnoreCase))
                     .Select(p => p.EvaluatedValue)
-                    .FirstOrDefault();
+                    .LastOrDefault();
                 frameworks = MSBuildStringUtility.Split(frameworksString);
             }
             return frameworks;
