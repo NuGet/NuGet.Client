@@ -48,7 +48,7 @@ namespace NuGet.SolutionRestoreManager
         public VsSolutionRestoreService(
             IProjectSystemCache projectSystemCache,
             ISolutionRestoreWorker restoreWorker,
-            [Import(typeof(VisualStudioActivityLogger))]
+            [Import("VisualStudioActivityLogger")]
             NuGet.Common.ILogger logger)
         {
             if (projectSystemCache == null)

@@ -213,6 +213,7 @@
     <Compile Include="Utility\VCProjectHelper.cs" />
     <Compile Include="Utility\VSProjectRestoreReferenceUtility.cs" />
     <Compile Include="VisualStudioAccountProvider.cs" />
+    <Compile Include="VisualStudioActivityLogger.cs" />
     <Compile Include="VisualStudioCredentialProvider.cs" />
     <Compile Include="VsCredentialProviderAdapter.cs" />
     <Compile Include="VsCredentialProviderImporter.cs" />

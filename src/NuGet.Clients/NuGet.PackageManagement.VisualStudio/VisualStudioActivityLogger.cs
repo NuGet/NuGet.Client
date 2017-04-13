@@ -5,14 +5,12 @@ using System.ComponentModel.Composition;
 using Microsoft.VisualStudio.Shell;
 using NuGet.Common;
 
-namespace NuGet.VisualStudio
+namespace NuGet.PackageManagement.VisualStudio
 {
     /// <summary>
     /// Logger routing messages into VS ActivityLog
     /// </summary>
-    /// 
-    [Export("VisualStudioActivityLogger", typeof(ILogger))]
-    [Export(typeof(VisualStudioActivityLogger))]
+    [Export, Export("VisualStudioActivityLogger", typeof(ILogger))]
     public sealed class VisualStudioActivityLogger : ILogger
     {
         private const string LogEntrySource = "NuGet Package Manager";
