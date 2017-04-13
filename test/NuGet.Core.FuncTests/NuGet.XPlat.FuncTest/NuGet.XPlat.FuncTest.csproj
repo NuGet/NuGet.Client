@@ -33,8 +33,8 @@
     </PackageReference>
   </ItemGroup>
   <Import Project="$(BuildCommonDirectory)common.targets" />
-  <PropertyGroup>
-    <PostBuildEvent Condition=" '$(IsXPlat)' != 'true' ">xcopy /y $(MSBuildProjectDirectory)\bin\$(Configuration)\$(OutputPath)$(TargetFramework)\$(RuntimeIdentifier)\Microsoft.CSharp.Core.targets $(MSBuildProjectDirectory)\bin\$(Configuration)\$(OutputPath)$(TargetFramework)\$(RuntimeIdentifier)\Roslyn\</PostBuildEvent>
-  </PropertyGroup>
+  <Target Name="AfterBuild">
+    <Copy SourceFiles="$(MSBuildProjectDirectory)\bin\$(Configuration)\$(OutputPath)$(TargetFramework)\$(RuntimeIdentifier)\Microsoft.CSharp.Core.targets" DestinationFolder="$(MSBuildProjectDirectory)\bin\$(Configuration)\$(OutputPath)$(TargetFramework)\$(RuntimeIdentifier)\Roslyn\"/>
+  </Target>
 
 </Project>
