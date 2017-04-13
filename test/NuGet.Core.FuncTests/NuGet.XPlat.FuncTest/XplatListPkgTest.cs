@@ -22,7 +22,7 @@ namespace NuGet.XPlat.FuncTest
         private static readonly string projectName = "test_project_listpkg";
 
         private static MSBuildAPIUtility MsBuild => new MSBuildAPIUtility(new TestCommandOutputLogger());
-        
+
         // Argument parsing related tests
 
         [Theory]
@@ -99,7 +99,7 @@ namespace NuGet.XPlat.FuncTest
 
                 var projectA = XPlatTestUtils.CreateProject(projectName, pathContext, packageX, "netcoreapp1.0");
 
-                // Verify that the package reference exists before removing.
+                // Verify that the package reference exists before listing.
                 var projectXmlRoot = XPlatTestUtils.LoadCSProj(projectA.ProjectPath).Root;
                 var itemGroup = XPlatTestUtils.GetItemGroupForAllFrameworks(projectXmlRoot);
 
@@ -122,16 +122,16 @@ namespace NuGet.XPlat.FuncTest
             using (var pathContext = new SimpleTestPathContext())
             {
                 // Generate Package
-                var packageX = XPlatTestUtils.CreatePackage(frameworkString:"netcoreapp1.0");
+                var packageX = XPlatTestUtils.CreatePackage(frameworkString: "netcoreapp1.0");
                 await SimpleTestPackageUtility.CreateFolderFeedV3(
                     pathContext.PackageSource,
                     PackageSaveMode.Defaultv3,
                     packageX);
 
-                var projectA = XPlatTestUtils.CreateProject(projectName, pathContext, packageX, 
+                var projectA = XPlatTestUtils.CreateProject(projectName, pathContext, packageX,
                     projectFrameworks: "netcoreapp1.0;netstandard1.3;", packageFramework: "netcoreapp1.0");
 
-                // Verify that the package reference exists before removing.
+                // Verify that the package reference exists before listing.
                 var projectXmlRoot = XPlatTestUtils.LoadCSProj(projectA.ProjectPath).Root;
                 var itemGroup = XPlatTestUtils.GetItemGroupForFramework(projectXmlRoot, "netcoreapp1.0");
 
@@ -168,7 +168,7 @@ namespace NuGet.XPlat.FuncTest
 
                 projectA.Save();
 
-                // Verify that the package reference exists before removing.
+                // Verify that the package reference exists before listing.
                 var projectXmlRoot = XPlatTestUtils.LoadCSProj(projectA.ProjectPath).Root;
                 var itemGroupNetCore = XPlatTestUtils.GetItemGroupForFramework(projectXmlRoot, "netcoreapp1.0");
                 var itemGroupNetStandard = XPlatTestUtils.GetItemGroupForFramework(projectXmlRoot, "netstandard1.3");
@@ -194,7 +194,6 @@ namespace NuGet.XPlat.FuncTest
         public async void ListPkg_MultipleConditionalWithPackageFilterReferences()
         {
             // Arrange
-            //XPlatTestUtils.WaitForDebugger();
             using (var pathContext = new SimpleTestPathContext())
             {
                 // Generate Package
@@ -212,59 +211,7 @@ namespace NuGet.XPlat.FuncTest
 
                 projectA.Save();
 
-                // Verify that the package reference exists before removing.
-                var projectXmlRoot = XPlatTestUtils.LoadCSProj(projectA.ProjectPath).Root;
-                var itemGroupNetCore = XPlatTestUtils.GetItemGroupForFramework(projectXmlRoot, "netcoreapp1.0");
-                var itemGroupNetStandard = XPlatTestUtils.GetItemGroupForFramework(projectXmlRoot, "netstandard1.3");
-
-                Assert.NotNull(itemGroupNetCore);
-                Assert.True(XPlatTestUtils.ValidateReference(itemGroupNetCore, packageX.Id, "1.0.0"));
-                Assert.NotNull(itemGroupNetStandard);
-                Assert.True(XPlatTestUtils.ValidateReference(itemGroupNetStandard, packageY.Id, "1.0.0"));
-
-                // Act
-                var PackageXReferences = MsBuild.ListPackageReference(projectA.ProjectPath, 
-                    packageDependency: new PackageDependency(packageX.Id, VersionRange.Parse("*")), 
-                    userInputFrameworks: new string[0]);
-
-                var PackageYReferences = MsBuild.ListPackageReference(projectA.ProjectPath, 
-                    packageDependency: new PackageDependency(packageY.Id, VersionRange.Parse("*")), 
-                    userInputFrameworks: new string[0]);
-
-                // Assert
-                Assert.True(PackageXReferences.ContainsKey("netcoreapp1.0"));
-                Assert.True(PackageXReferences["netcoreapp1.0"].Where(p => p.Item1.Equals(packageX.Id)).Count() == 1);
-                Assert.False(PackageXReferences["netstandard1.3"].Any());
-
-                Assert.True(PackageYReferences.ContainsKey("netstandard1.3"));
-                Assert.True(PackageYReferences["netstandard1.3"].Where(p => p.Item1.Equals(packageY.Id)).Count() == 1);
-                Assert.False(PackageYReferences["netcoreapp1.0"].Any());
-            }
-        }
-
-        [Fact]
-        public async void ListPkg_MultipleConditionalWithFrameworkFilterReferences()
-        {
-            // Arrange
-            //XPlatTestUtils.WaitForDebugger();
-            using (var pathContext = new SimpleTestPathContext())
-            {
-                // Generate Package
-                var packageX = XPlatTestUtils.CreatePackage(packageId: "packageX", frameworkString: "netcoreapp1.0");
-                var packageY = XPlatTestUtils.CreatePackage(packageId: "packageY", frameworkString: "netstandard1.3");
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
-                    pathContext.PackageSource,
-                    PackageSaveMode.Defaultv3,
-                    packageX);
-
-                var projectA = XPlatTestUtils.CreateProject(projectName, pathContext, packageX,
-                    projectFrameworks: "netcoreapp1.0;netstandard1.3;", packageFramework: "netcoreapp1.0");
-
-                projectA.AddPackageToFramework("netstandard1.3", packageY);
-
-                projectA.Save();
-
-                // Verify that the package reference exists before removing.
+                // Verify that the package reference exists before listing.
                 var projectXmlRoot = XPlatTestUtils.LoadCSProj(projectA.ProjectPath).Root;
                 var itemGroupNetCore = XPlatTestUtils.GetItemGroupForFramework(projectXmlRoot, "netcoreapp1.0");
                 var itemGroupNetStandard = XPlatTestUtils.GetItemGroupForFramework(projectXmlRoot, "netstandard1.3");
@@ -286,8 +233,193 @@ namespace NuGet.XPlat.FuncTest
                 // Assert
                 Assert.True(PackageXReferences.ContainsKey("netcoreapp1.0"));
                 Assert.True(PackageXReferences["netcoreapp1.0"].Where(p => p.Item1.Equals(packageX.Id)).Count() == 1);
+                Assert.False(PackageXReferences["netstandard1.3"].Any());
+
                 Assert.True(PackageYReferences.ContainsKey("netstandard1.3"));
                 Assert.True(PackageYReferences["netstandard1.3"].Where(p => p.Item1.Equals(packageY.Id)).Count() == 1);
+                Assert.False(PackageYReferences["netcoreapp1.0"].Any());
+            }
+        }
+
+        [Fact]
+        public async void ListPkg_MultipleConditionalWithPackageAndFrameworkFilterReferences()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Generate Package
+                var packageX = XPlatTestUtils.CreatePackage(packageId: "packageX", frameworkString: "netcoreapp1.0");
+                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX);
+
+                var projectA = XPlatTestUtils.CreateProject(projectName, pathContext, packageX,
+                    projectFrameworks: "netcoreapp1.0;netstandard1.3;", packageFramework: "netcoreapp1.0");
+
+                // Verify that the package reference exists before listing.
+                var projectXmlRoot = XPlatTestUtils.LoadCSProj(projectA.ProjectPath).Root;
+                var itemGroupNetCore = XPlatTestUtils.GetItemGroupForFramework(projectXmlRoot, "netcoreapp1.0");
+
+                Assert.NotNull(itemGroupNetCore);
+                Assert.True(XPlatTestUtils.ValidateReference(itemGroupNetCore, packageX.Id, "1.0.0"));
+
+                // Act
+                var NetCoreReferences = MsBuild.ListPackageReference(projectA.ProjectPath,
+                    packageDependency: new PackageDependency(packageX.Id, VersionRange.Parse("*")),
+                    userInputFrameworks: MSBuildStringUtility.Split("netcoreapp1.0"));
+
+                var NetStandardReferences = MsBuild.ListPackageReference(projectA.ProjectPath,
+                    packageDependency: new PackageDependency(packageX.Id, VersionRange.Parse("*")),
+                    userInputFrameworks: MSBuildStringUtility.Split("netstandard1.3"));
+
+                // Assert
+                Assert.True(NetCoreReferences.ContainsKey("netcoreapp1.0"));
+                Assert.True(NetCoreReferences.Keys.Count() == 1);
+                Assert.True(NetCoreReferences["netcoreapp1.0"].Where(p => p.Item1.Equals(packageX.Id)).Count() == 1);
+
+                Assert.True(NetStandardReferences.ContainsKey("netstandard1.3"));
+                Assert.True(NetStandardReferences.Keys.Count() == 1);
+                Assert.False(NetStandardReferences["netstandard1.3"].Any());
+            }
+        }
+
+        [Fact]
+        public async void ListPkg_MultipleConditionalWithFrameworkFilterReferences()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Generate Package
+                var packageX = XPlatTestUtils.CreatePackage(packageId: "packageX", frameworkString: "netcoreapp1.0");
+                var packageY = XPlatTestUtils.CreatePackage(packageId: "packageY", frameworkString: "netstandard1.3");
+                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX);
+
+                var projectA = XPlatTestUtils.CreateProject(projectName, pathContext, packageX,
+                    projectFrameworks: "netcoreapp1.0;netstandard1.3;", packageFramework: "netcoreapp1.0");
+
+                projectA.AddPackageToFramework("netstandard1.3", packageY);
+
+                projectA.Save();
+
+                // Verify that the package reference exists before listing.
+                var projectXmlRoot = XPlatTestUtils.LoadCSProj(projectA.ProjectPath).Root;
+                var itemGroupNetCore = XPlatTestUtils.GetItemGroupForFramework(projectXmlRoot, "netcoreapp1.0");
+                var itemGroupNetStandard = XPlatTestUtils.GetItemGroupForFramework(projectXmlRoot, "netstandard1.3");
+
+                Assert.NotNull(itemGroupNetCore);
+                Assert.True(XPlatTestUtils.ValidateReference(itemGroupNetCore, packageX.Id, "1.0.0"));
+                Assert.NotNull(itemGroupNetStandard);
+                Assert.True(XPlatTestUtils.ValidateReference(itemGroupNetStandard, packageY.Id, "1.0.0"));
+
+                // Act
+                var NetCoreReferences = MsBuild.ListPackageReference(projectA.ProjectPath,
+                    packageDependency: null,
+                    userInputFrameworks: MSBuildStringUtility.Split("netcoreapp1.0"));
+
+                var NetStandardReferences = MsBuild.ListPackageReference(projectA.ProjectPath,
+                    packageDependency: null,
+                    userInputFrameworks: MSBuildStringUtility.Split("netstandard1.3"));
+
+                // Assert
+                Assert.True(NetCoreReferences.ContainsKey("netcoreapp1.0"));
+                Assert.True(NetCoreReferences.Keys.Count() == 1);
+                Assert.True(NetCoreReferences["netcoreapp1.0"].Where(p => p.Item1.Equals(packageX.Id)).Count() == 1);
+
+                Assert.True(NetStandardReferences.ContainsKey("netstandard1.3"));
+                Assert.True(NetStandardReferences.Keys.Count() == 1);
+                Assert.True(NetStandardReferences["netstandard1.3"].Where(p => p.Item1.Equals(packageY.Id)).Count() == 1);
+            }
+        }
+
+        [Fact]
+        public void ListPkg_NonReferencedPackageWithPackageFilter()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                var projectA = SimpleTestProjectContext.CreateNETCoreWithSDK(
+                    projectName: projectName,
+                    solutionRoot: pathContext.SolutionRoot,
+                    isToolingVersion15: true,
+                    frameworks: MSBuildStringUtility.Split("netcoreapp1.0;netstandard1.3;"));
+
+                projectA.Save();
+
+                // Act
+                var packageReferences = MsBuild.ListPackageReference(projectA.ProjectPath,
+                    packageDependency: null,
+                    userInputFrameworks: new string[0]);
+
+                // Assert
+                Assert.True(packageReferences.Keys.Count() == 3);
+                foreach (var key in packageReferences.Keys)
+                {
+                    Assert.False(packageReferences[key].Where(p => p.Item1.Equals("packageX")).Any());
+                }
+            }
+        }
+
+        [Fact]
+        public void ListPkg_NonReferencedPackageWithFrameworkFilter()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                var projectA = SimpleTestProjectContext.CreateNETCoreWithSDK(
+                    projectName: projectName,
+                    solutionRoot: pathContext.SolutionRoot,
+                    isToolingVersion15: true,
+                    frameworks: MSBuildStringUtility.Split("netcoreapp1.0;netstandard1.3;"));
+
+                projectA.Save();
+
+                // Act
+                var packageReferences = MsBuild.ListPackageReference(projectA.ProjectPath,
+                    packageDependency: null,
+                    userInputFrameworks: MSBuildStringUtility.Split("netstandard1.3"));
+
+                // Assert
+                Assert.True(packageReferences.Keys.Count() == 1);
+                Assert.False(packageReferences["netstandard1.3"].Where(p => p.Item1.Equals("packageX")).Any());
+            }
+        }
+
+        [Fact]
+        public async void ListPkg_ReferencedPackageWithInvalidFrameworkFilter()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Generate Package
+                var packageX = XPlatTestUtils.CreatePackage(frameworkString: "netcoreapp1.0");
+                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX);
+
+                var projectA = XPlatTestUtils.CreateProject(projectName, pathContext, packageX,
+                    projectFrameworks: "netcoreapp1.0;netstandard1.3;", packageFramework: "netcoreapp1.0");
+
+                // Verify that the package reference exists before listing.
+                var projectXmlRoot = XPlatTestUtils.LoadCSProj(projectA.ProjectPath).Root;
+                var itemGroup = XPlatTestUtils.GetItemGroupForFramework(projectXmlRoot, "netcoreapp1.0");
+
+                Assert.NotNull(itemGroup);
+                Assert.True(XPlatTestUtils.ValidateReference(itemGroup, packageX.Id, "1.0.0"));
+
+                // Act
+                var packageReferences = MsBuild.ListPackageReference(projectA.ProjectPath, 
+                    packageDependency: null, 
+                    userInputFrameworks: MSBuildStringUtility.Split("net_foo_bar"));
+
+                // Assert
+                Assert.True(packageReferences.ContainsKey("net_foo_bar"));
+                Assert.True(packageReferences.Keys.Count() == 1);
+                Assert.Null(packageReferences["net_foo_bar"]);
             }
         }
     }
