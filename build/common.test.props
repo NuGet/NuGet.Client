@@ -3,6 +3,7 @@
   <PropertyGroup>
     <IsNetCoreProject>true</IsNetCoreProject>
     <TestProject>true</TestProject>
+    <SkipTests>true</SkipTests>
   </PropertyGroup>
   
   <!-- Load config -->
