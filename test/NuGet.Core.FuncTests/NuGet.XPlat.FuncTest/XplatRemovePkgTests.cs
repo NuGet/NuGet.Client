@@ -13,6 +13,7 @@ using Xunit;
 
 namespace NuGet.XPlat.FuncTest
 {
+    [Collection("NuGet XPlat Test Collection")]
     public class XPlatRemovePkgTests
     {
         private static readonly string projectName = "test_project_removepkg";
