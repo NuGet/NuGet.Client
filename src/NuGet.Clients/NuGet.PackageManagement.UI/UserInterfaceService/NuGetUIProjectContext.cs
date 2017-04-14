@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Windows.Threading;
 using System.Xml.Linq;
 using NuGet.PackageManagement.VisualStudio;
@@ -47,6 +48,8 @@ namespace NuGet.PackageManagement.UI
             _logger.Log(level, message, args);
         }
 
+
+        [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD001", Justification = "NuGet/Home#4833 Baseline")]
         public FileConflictAction ShowFileConflictResolution(string message)
         {
             if (!_uiDispatcher.CheckAccess())

@@ -3,16 +3,17 @@
 
 using System;
 using EnvDTE;
-using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.ProjectSystem;
-using MsBuildProject = Microsoft.Build.Evaluation.Project;
-using Task = System.Threading.Tasks.Task;
 #if VS14
 using Microsoft.VisualStudio.ProjectSystem.Designers;
 #elif VS15
 using Microsoft.VisualStudio.ProjectSystem.Properties;
 #endif
+using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Shell.Interop;
+using MsBuildProject = Microsoft.Build.Evaluation.Project;
+using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.VisualStudio
 {
@@ -51,6 +52,8 @@ namespace NuGet.VisualStudio
 
         private static UnconfiguredProject GetUnconfiguredProject(IVsProject project)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             IVsBrowseObjectContext context = project as IVsBrowseObjectContext;
             if (context == null)
             {

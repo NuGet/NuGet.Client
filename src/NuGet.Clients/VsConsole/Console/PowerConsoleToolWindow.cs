@@ -29,6 +29,7 @@ namespace NuGetConsole.Implementation
     /// This class implements the tool window.
     /// </summary>
     [Guid("0AD07096-BBA9-4900-A651-0598D26F6D24")]
+    [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD010", Justification = "NuGet/Home#4833 Baseline")]
     public sealed class PowerConsoleToolWindow : ToolWindowPane, IOleCommandTarget, IPowerConsoleService
     {
         /// <summary>

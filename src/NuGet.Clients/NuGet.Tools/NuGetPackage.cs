@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.ComponentModel.Design;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -114,6 +115,7 @@ namespace NuGetVSExtension
         [Import]
         private IVsSourceControlTracker SourceControlTracker { get; set; }
 
+        [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD010", Justification = "NuGet/Home#4833 Baseline")]
         private IVsMonitorSelection VsMonitorSelection
         {
             get
@@ -178,6 +180,7 @@ namespace NuGetVSExtension
             UI.Commands.ShowErrorsCommand = new ShowErrorsCommand(this);
         }
 
+        [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD010", Justification = "NuGet/Home#4833 Baseline")]
         private void SolutionManager_NuGetProjectRenamed(object sender, NuGetProjectEventArgs e)
         {
             var project = SolutionManager.GetDTEProject(SolutionManager.GetNuGetProjectSafeName(e.NuGetProject));
@@ -241,6 +244,7 @@ namespace NuGetVSExtension
             }
         }
 
+        [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD010", Justification = "NuGet/Home#4833 Baseline")]
         private void ExecutePowerConsoleCommand(object sender, EventArgs e)
         {
             // Get the instance number 0 of this tool window. This window is single instance so this instance
@@ -283,6 +287,7 @@ namespace NuGetVSExtension
             _powerConsoleCommandExecuting = false;
         }
 
+        [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD010", Justification = "NuGet/Home#4833 Baseline")]
         private IVsWindowFrame FindExistingWindowFrame(
             Project project)
         {
@@ -321,6 +326,7 @@ namespace NuGetVSExtension
             return null;
         }
 
+        [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD010", Justification = "NuGet/Home#4833 Baseline")]
         private async Task<IVsWindowFrame> CreateNewWindowFrameAsync(Project project)
         {
             Debug.Assert(ThreadHelper.CheckAccess());
@@ -367,6 +373,7 @@ namespace NuGetVSExtension
             return await CreateDocWindowAsync(project, documentName, hier, itemId);
         }
 
+        [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD010", Justification = "NuGet/Home#4833 Baseline")]
         private async Task<IVsWindowFrame> CreateDocWindowAsync(
             Project project,
             string documentName,
@@ -458,6 +465,7 @@ namespace NuGetVSExtension
             return windowFrame;
         }
 
+        [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD010", Justification = "NuGet/Home#4833 Baseline")]
         private void ShowManageLibraryPackageDialog(object sender, EventArgs e)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
@@ -507,6 +515,7 @@ namespace NuGetVSExtension
             });
         }
 
+        [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD010", Justification = "NuGet/Home#4833 Baseline")]
         private async Task<IVsWindowFrame> FindExistingSolutionWindowFrameAsync()
         {
             var uiShell = await GetServiceAsync(typeof(SVsUIShell)) as IVsUIShell;
@@ -551,6 +560,7 @@ namespace NuGetVSExtension
             return parameterString.Substring(0, lastIndexOfSearchInSwitch);
         }
 
+        [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD010", Justification = "NuGet/Home#4833 Baseline")]
         private async Task<IVsWindowFrame> CreateDocWindowForSolutionAsync()
         {
             IVsWindowFrame windowFrame = null;
@@ -650,6 +660,7 @@ namespace NuGetVSExtension
             return windowFrame;
         }
 
+        [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD010", Justification = "NuGet/Home#4833 Baseline")]
         private void ShowManageLibraryPackageForSolutionDialog(object sender, EventArgs e)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
@@ -748,6 +759,7 @@ namespace NuGetVSExtension
             });
         }
 
+        [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD010", Justification = "NuGet/Home#4833 Baseline")]
         public bool IsSolutionExistsAndNotDebuggingAndNotBuilding()
         {
             int pfActive;

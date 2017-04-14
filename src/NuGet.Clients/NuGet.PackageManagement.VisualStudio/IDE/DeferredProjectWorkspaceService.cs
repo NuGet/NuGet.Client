@@ -34,11 +34,13 @@ namespace NuGet.PackageManagement.VisualStudio
                 throw new ArgumentNullException(nameof(serviceProvider));
             }
 
-            _solutionWorkspaceService = new AsyncLazy<IVsSolutionWorkspaceService>(async () =>
-            {
-                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                return (IVsSolutionWorkspaceService)serviceProvider.GetService(typeof(SVsSolutionWorkspaceService));
-            });
+            _solutionWorkspaceService = new AsyncLazy<IVsSolutionWorkspaceService>(
+                async () =>
+                {
+                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                    return (IVsSolutionWorkspaceService)serviceProvider.GetService(typeof(SVsSolutionWorkspaceService));
+                },
+                NuGetUIThreadHelper.JoinableTaskFactory);
         }
 
         public async Task<bool> EntityExists(string filePath)

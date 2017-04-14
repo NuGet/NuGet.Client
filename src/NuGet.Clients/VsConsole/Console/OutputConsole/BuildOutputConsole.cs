@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Windows.Media;
 using Microsoft.VisualStudio;
@@ -35,6 +36,7 @@ namespace NuGetConsole
 
         public int ConsoleWidth => DefaultConsoleWidth;
 
+        [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD010", Justification = "NuGet/Home#4833 Baseline")]
         public void Activate()
         {
             if (_outputWindowPane == null)
@@ -49,6 +51,7 @@ namespace NuGetConsole
         {
         }
 
+        [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD010", Justification = "NuGet/Home#4833 Baseline")]
         public void Write(string text)
         {
             _outputWindowPane?.OutputStringThreadSafe(text);

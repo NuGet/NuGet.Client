@@ -249,7 +249,7 @@ namespace NuGet.VisualStudio
 
         private static void CollapseVsHierarchyItem(VsHierarchyItem vsHierarchyItem, IVsUIHierarchyWindow vsHierarchyWindow)
         {
-            Debug.Assert(ThreadHelper.CheckAccess());
+            ThreadHelper.ThrowIfNotOnUIThread();
 
             if (vsHierarchyItem == null
                 || vsHierarchyWindow == null)
@@ -262,7 +262,7 @@ namespace NuGet.VisualStudio
 
         private static bool IsVsHierarchyItemExpanded(VsHierarchyItem hierarchyItem, IVsUIHierarchyWindow uiWindow)
         {
-            Debug.Assert(ThreadHelper.CheckAccess());
+            ThreadHelper.ThrowIfNotOnUIThread();
 
             if (!hierarchyItem.IsExpandable())
             {

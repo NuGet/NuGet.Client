@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Windows;
@@ -20,6 +21,7 @@ using NuGet.VisualStudio;
 
 namespace NuGet.PackageManagement.UI
 {
+    [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD001", Justification = "NuGet/Home#4833 Baseline")]
     public sealed class NuGetUI : INuGetUI
     {
         public const string LogEntrySource = "NuGet Package Manager";

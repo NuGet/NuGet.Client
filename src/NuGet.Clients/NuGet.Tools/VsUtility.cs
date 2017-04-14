@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.PackageManagement.UI;
@@ -7,6 +8,7 @@ namespace NuGetVSExtension
 {
     internal class VsUtility
     {
+        [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD010", Justification = "NuGet/Home#4833 Baseline")]
         public static IEnumerable<IVsWindowFrame> GetDocumentWindows(IVsUIShell uiShell)
         {
             IEnumWindowFrames documentWindowEnumerator;
@@ -26,6 +28,7 @@ namespace NuGetVSExtension
         }
 
         // Gets the package manager control hosted in the window frame.
+        [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD010", Justification = "NuGet/Home#4833 Baseline")]
         public static PackageManagerControl GetPackageManagerControl(IVsWindowFrame windowFrame)
         {
             object property;

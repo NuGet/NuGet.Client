@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.Common;
@@ -40,6 +41,7 @@ namespace NuGet.PackageManagement.VisualStudio
             _outputConsoleLogger = outputConsoleLogger;
         }
 
+        [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD010", Justification = "NuGet/Home#4833 Baseline")]
         public NuGet.Configuration.ICredentialService GetCredentialService()
         {
             ThreadHelper.ThrowIfNotOnUIThread();

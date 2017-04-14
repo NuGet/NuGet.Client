@@ -1,14 +1,16 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26321.1
+VisualStudioVersion = 15.0.26409.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{BD1946CE-5544-4F28-A04A-9C3D51113E1A}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{4A4623E9-CE1F-4DF2-A4C2-513CE8377D2A}"
 	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
 		src\NuGet.Core\global.json = src\NuGet.Core\global.json
 		src\NuGet.Core\NuGet.Config = src\NuGet.Core\NuGet.Config
+		build\NuGet.ruleset = build\NuGet.ruleset
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "NuGet.Core.UnitTests", "NuGet.Core.UnitTests", "{7323F93B-D141-4001-BB9E-7AF14031143E}"
@@ -395,8 +397,6 @@ Global
 		{D0F9864B-D782-4471-81A2-29555E5DC0D7}.Release|Any CPU.Build.0 = Release|Any CPU
 		{3B96F91B-3B58-40ED-B06E-5CD133A79A63}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{3B96F91B-3B58-40ED-B06E-5CD133A79A63}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{3B96F91B-3B58-40ED-B06E-5CD133A79A63}.Mono Release|Any CPU.ActiveCfg = Release|Any CPU
-		{3B96F91B-3B58-40ED-B06E-5CD133A79A63}.Mono Release|Any CPU.Build.0 = Release|Any CPU
 		{3B96F91B-3B58-40ED-B06E-5CD133A79A63}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3B96F91B-3B58-40ED-B06E-5CD133A79A63}.Release|Any CPU.Build.0 = Release|Any CPU
 		{306CDDFA-FF0B-4299-930C-9EC6C9308160}.Debug|Any CPU.ActiveCfg = Debug|Any CPU

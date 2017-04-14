@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -773,7 +774,7 @@ namespace NuGet.PackageManagement.VisualStudio
         /// </summary>
         protected static void UpdateImportStamp(EnvDTEProject envDTEProject)
         {
-            Debug.Assert(ThreadHelper.CheckAccess());
+            ThreadHelper.ThrowIfNotOnUIThread();
 
             IVsBuildPropertyStorage propStore = VsHierarchyUtility.ToVsHierarchy(envDTEProject) as IVsBuildPropertyStorage;
             if (propStore != null)
@@ -887,6 +888,7 @@ namespace NuGet.PackageManagement.VisualStudio
             return Task.FromResult(false);
         }
 
+        [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD010", Justification = "NuGet/Home#4833 Baseline")]
         public virtual void BeginProcessing()
         {
             ProjectBuildSystem?.StartBatchEdit();
@@ -897,6 +899,7 @@ namespace NuGet.PackageManagement.VisualStudio
             // No-op, this is implemented in other project systems, like website.
         }
 
+        [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD010", Justification = "NuGet/Home#4833 Baseline")]
         public virtual void EndProcessing()
         {
             ProjectBuildSystem?.EndBatchEdit();

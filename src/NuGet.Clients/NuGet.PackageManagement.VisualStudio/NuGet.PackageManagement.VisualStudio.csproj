@@ -12,7 +12,6 @@
     <RootNamespace>NuGet.PackageManagement.VisualStudio</RootNamespace>
     <AssemblyName>NuGet.PackageManagement.VisualStudio</AssemblyName>
     <FileAlignment>512</FileAlignment>
-    <CodeAnalysisRuleSet>..\..\..\NuGet.ruleset</CodeAnalysisRuleSet>
     <ResolveNuGetPackages>true</ResolveNuGetPackages>
     <SkipValidatePackageReferences>true</SkipValidatePackageReferences>
     <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>

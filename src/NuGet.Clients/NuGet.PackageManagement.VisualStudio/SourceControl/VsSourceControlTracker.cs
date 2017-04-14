@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using Microsoft.VisualStudio;
@@ -94,6 +95,7 @@ namespace NuGet.PackageManagement.VisualStudio
             get { return _trackingCookie != null; }
         }
 
+        [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD010", Justification = "NuGet/Home#4833 Baseline")]
         private void StartTracking()
         {
             // don't track again if already tracking
@@ -114,6 +116,7 @@ namespace NuGet.PackageManagement.VisualStudio
             _trackingCookie = cookie;
         }
 
+        [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD010", Justification = "NuGet/Home#4833 Baseline")]
         private void StopTracking()
         {
             if (!IsTracking)
@@ -176,7 +179,7 @@ namespace NuGet.PackageManagement.VisualStudio
             public int OnAfterSccStatusChanged(int cProjects, int cFiles, IVsProject[] rgpProjects, int[] rgFirstIndices, string[] rgpszMkDocuments, uint[] rgdwSccStatus)
             {
                 // The value 0x1F is the AND of the following bits.
-                // We want to check if any of these 5 bits is on. 
+                // We want to check if any of these 5 bits is on.
 
                 // SCC_STATUS_CONTROLLED = 1,
                 // SCC_STATUS_CHECKEDOUT = 2,

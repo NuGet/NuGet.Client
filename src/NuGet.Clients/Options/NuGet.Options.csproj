@@ -15,7 +15,6 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>NuGet.Options</RootNamespace>
     <AssemblyName>NuGet.Options</AssemblyName>
-    <CodeAnalysisRuleSet>..\..\..\NuGet.ruleset</CodeAnalysisRuleSet>
     <SkipValidatePackageReferences>true</SkipValidatePackageReferences>
   </PropertyGroup>
   <ItemGroup>

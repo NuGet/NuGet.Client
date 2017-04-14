@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Windows.Input;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell.Interop;
@@ -17,6 +18,7 @@ namespace NuGetVSExtension
         private readonly IVsOutputWindow _vsOutputWindow;
         private readonly IVsUIShell _vsUiShell;
 
+        [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD010", Justification = "NuGet/Home#4833 Baseline")]
         public ShowErrorsCommand(IServiceProvider serviceProvider)
         {
             if (serviceProvider == null)
@@ -41,6 +43,7 @@ namespace NuGetVSExtension
             return _vsUiShell != null && _vsOutputWindow != null;
         }
 
+        [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD010", Justification = "NuGet/Home#4833 Baseline")]
         public void Execute(object parameter)
         {
             IVsWindowFrame toolWindow = null;

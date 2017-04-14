@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell.Interop;
 
@@ -30,6 +31,7 @@ namespace NuGet.VisualStudio
         {
         }
 
+        [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD010", Justification = "NuGet/Home#4833 Baseline")]
         internal bool TryGetProjectId(out Guid projectId)
         {
             var result = _hierarchy.GetGuidProperty(
@@ -55,6 +57,7 @@ namespace NuGet.VisualStudio
             return (o is int) && (int)o != 0;
         }
 
+        [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD010", Justification = "NuGet/Home#4833 Baseline")]
         public IVsUIHierarchy UIHierarchy()
         {
             return _hierarchy as IVsUIHierarchy;
@@ -65,6 +68,7 @@ namespace NuGet.VisualStudio
             return GetProperty(_vsitemid, (int)propid);
         }
 
+        [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD010", Justification = "NuGet/Home#4833 Baseline")]
         private object GetProperty(uint itemid, int propid)
         {
             try
@@ -85,7 +89,7 @@ namespace NuGet.VisualStudio
 
         internal int WalkDepthFirst(bool fVisible, ProcessItemDelegate processCallback, object callerObject)
         {
-            // 
+            //
             // TODO Need to see what to do if this is a sub project
             //
             // Get the node type
@@ -119,7 +123,7 @@ namespace NuGet.VisualStudio
                 while (child != null)
                 {
                     object isNonMemberItemValue = child.GetProperty(__VSHPROPID.VSHPROPID_IsNonMemberItem);
-                    // Some project systems (e.g. F#) don't support querying for the VSHPROPID_IsNonMemberItem property. 
+                    // Some project systems (e.g. F#) don't support querying for the VSHPROPID_IsNonMemberItem property.
                     // In that case, we treat this child as belonging to the project
                     bool isMemberOfProject = isNonMemberItemValue == null || (bool)isNonMemberItemValue == false;
                     if (isMemberOfProject)

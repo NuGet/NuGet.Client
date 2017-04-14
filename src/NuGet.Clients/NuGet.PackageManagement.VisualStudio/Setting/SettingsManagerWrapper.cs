@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell.Interop;
 
@@ -12,12 +13,14 @@ namespace NuGet.PackageManagement.VisualStudio
     {
         private readonly IVsSettingsManager _settingsManager;
 
+        [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD010", Justification = "NuGet/Home#4833 Baseline")]
         public SettingsManagerWrapper(IServiceProvider serviceProvider)
         {
             _settingsManager = (IVsSettingsManager)serviceProvider.GetService(typeof(SVsSettingsManager));
             Debug.Assert(_settingsManager != null);
         }
 
+        [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD010", Justification = "NuGet/Home#4833 Baseline")]
         public ISettingsStore GetReadOnlySettingsStore()
         {
             IVsSettingsStore settingsStore;
@@ -31,6 +34,7 @@ namespace NuGet.PackageManagement.VisualStudio
             return null;
         }
 
+        [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD010", Justification = "NuGet/Home#4833 Baseline")]
         public IWritableSettingsStore GetWritableSettingsStore()
         {
             IVsWritableSettingsStore settingsStore;

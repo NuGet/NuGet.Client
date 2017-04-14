@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Threading;
@@ -41,6 +42,7 @@ namespace NuGet.PackageManagement.VisualStudio
         /// Otherwise, it simply exits
         /// </summary>
         /// <param name="dte"></param>
+        [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD010", Justification = "NuGet/Home#4833 Baseline")]
         public ProjectRetargetingHandler(DTE dte, ISolutionManager solutionManager, IServiceProvider serviceProvider, IComponentModel componentModel)
         {
             if (dte == null)
@@ -182,7 +184,11 @@ namespace NuGet.PackageManagement.VisualStudio
                     {
                         ShowRetargetingErrorTask(packagesToBeReinstalled.Select(p => p.Id), pAfterChangeHier, TaskErrorCategory.Error, TaskPriority.High);
                     }
+// NuGet/Home#4833 Baseline
+// Because this call is not awaited, execution of the current method continues before the call is completed. Consider applying the 'await' operator to the result of the call.
+#pragma warning disable CS4014
                     ProjectRetargetingUtility.MarkPackagesForReinstallation(retargetedProject, packagesToBeReinstalled);
+#pragma warning restore CS4014
                 }
             });
 #if !VS14
@@ -241,6 +247,7 @@ namespace NuGet.PackageManagement.VisualStudio
             return VSConstants.S_OK;
         }
 
+
         int IVsTrackBatchRetargetingEvents.OnBatchRetargetingEnd()
         {
             NuGetProject nuGetProject = null;
@@ -273,7 +280,11 @@ namespace NuGet.PackageManagement.VisualStudio
                                         IVsHierarchy projectHierarchy = VsHierarchyUtility.ToVsHierarchy(project);
                                         ShowRetargetingErrorTask(packagesToBeReinstalled.Select(p => p.Id), projectHierarchy, TaskErrorCategory.Error, TaskPriority.High);
                                     }
+// NuGet/Home#4833 Baseline
+// Because this call is not awaited, execution of the current method continues before the call is completed. Consider applying the 'await' operator to the result of the call.
+#pragma warning disable CS4014
                                     ProjectRetargetingUtility.MarkPackagesForReinstallation(nuGetProject, packagesToBeReinstalled);
+#pragma warning restore CS4014
                                 }
                             }
                         }
@@ -296,6 +307,7 @@ namespace NuGet.PackageManagement.VisualStudio
         }
         #endregion
 
+        [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD010", Justification = "NuGet/Home#4833 Baseline")]
         public void Dispose()
         {
             // Nothing is initialized if _vsTrackProjectRetargeting is null. Check if it is not null

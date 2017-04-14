@@ -566,7 +566,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private object GetVSSolutionProperty(int propId)
         {
-            Debug.Assert(ThreadHelper.CheckAccess());
+            ThreadHelper.ThrowIfNotOnUIThread();
 
             object value;
             int hr = _vsSolution.GetProperty(propId, out value);

@@ -5,7 +5,6 @@
   <PropertyGroup>
     <Shipping>true</Shipping>
     <AutoUnifyAssemblyReferences>true</AutoUnifyAssemblyReferences>
-    <CodeAnalysisRuleSet>..\..\..\NuGet.ruleset</CodeAnalysisRuleSet>
     <RestoreNuGetPackages>true</RestoreNuGetPackages>
     <PackagesDir>$(UserProfile)\.nuget\packages</PackagesDir>
     <AssemblyOriginatorKeyFile>$(MS_PFX_PATH)</AssemblyOriginatorKeyFile>

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Windows.Media;
 using Microsoft.VisualStudio;
@@ -24,6 +25,7 @@ namespace NuGetConsole
 
         private IVsOutputWindowPane VsOutputWindowPane => _outputWindowPane.Value;
 
+        [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD010", Justification = "NuGet/Home#4833 Baseline")]
         public OutputConsole(
             IVsOutputWindow vsOutputWindow,
             IVsUIShell vsUiShell)
@@ -71,6 +73,7 @@ namespace NuGetConsole
 
         public int ConsoleWidth => DefaultConsoleWidth;
 
+        [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD010", Justification = "NuGet/Home#4833 Baseline")]
         public void Write(string text)
         {
             if (String.IsNullOrEmpty(text))
@@ -108,6 +111,7 @@ namespace NuGetConsole
         {
         }
 
+        [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD010", Justification = "NuGet/Home#4833 Baseline")]
         public void Activate()
         {
             IVsWindowFrame toolWindow = null;
@@ -119,6 +123,7 @@ namespace NuGetConsole
             VsOutputWindowPane.Activate();
         }
 
+        [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD010", Justification = "NuGet/Home#4833 Baseline")]
         public void Clear()
         {
             Start();
