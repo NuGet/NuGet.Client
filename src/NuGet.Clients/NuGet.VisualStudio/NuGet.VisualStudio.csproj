@@ -15,34 +15,12 @@
     <ComVisible>false</ComVisible>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="System" />
     <Reference Include="System.ComponentModel.Composition" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.IO.Compression" />
-    <Reference Include="System.Net.Http" />
-    <Reference Include="System.Net.Http.WebRequest" />
-    <Reference Include="System.Runtime.Serialization" />
-    <Reference Include="System.Security" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="EnvDTE" Version="8.0.1" />
     <PackageReference Include="EnvDTE80" Version="8.0.1" />
-    <PackageReference Version="7.10.6070" Include="Microsoft.VisualStudio.OLE.Interop" />
-    <PackageReference Version="7.10.6071" Include="Microsoft.VisualStudio.Shell.Interop" />
-    <PackageReference Include="Microsoft.VisualStudio.Shell.Interop.10.0" Version="10.0.30319" />
-    <PackageReference Include="Microsoft.VisualStudio.Shell.Interop.11.0" Version="11.0.61030" />
     <PackageReference Include="Microsoft.VisualStudio.Shell.Interop.12.0" Version="12.0.30110" />
-    <PackageReference Version="8.0.50727" Include="Microsoft.VisualStudio.Shell.Interop.8.0" />
-    <PackageReference Version="9.0.30729" Include="Microsoft.VisualStudio.Shell.Interop.9.0" />
     <PackageReference Include="VSSDK.TemplateWizardInterface" Version="12.0.4" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\NuGet.VisualStudio.Common\NuGet.VisualStudio.Common.csproj" />
   </ItemGroup>
 
   <PropertyGroup>

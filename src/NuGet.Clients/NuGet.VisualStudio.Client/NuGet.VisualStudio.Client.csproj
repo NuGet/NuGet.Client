@@ -52,11 +52,11 @@
     <Content Include="source.extension.vs15.insertable.vsixmanifest" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="..\VsConsole\PowerShellHost\Scripts\about_NuGet.PackageManagement.PowerShellCmdlets.help.txt">
+    <Content Include="..\NuGetConsole.Host.PowerShell\Scripts\about_NuGet.PackageManagement.PowerShellCmdlets.help.txt">
       <Link>Modules\NuGet\about_NuGet.PackageManagement.PowerShellCmdlets.help.txt</Link>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
-    <Content Include="..\VsConsole\PowerShellHost\Scripts\NuGet.PackageManagement.PowerShellCmdlets.dll-Help.xml">
+    <Content Include="..\NuGetConsole.Host.PowerShell\Scripts\NuGet.PackageManagement.PowerShellCmdlets.dll-Help.xml">
       <Link>Modules\NuGet\NuGet.PackageManagement.PowerShellCmdlets.dll-Help.xml</Link>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
@@ -72,27 +72,27 @@
       <Link>Lucene.Net.dll</Link>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
-    <Content Include="..\VsConsole\PowerShellHost\Scripts\Add-WrapperMembers.ps1">
+    <Content Include="..\NuGetConsole.Host.PowerShell\Scripts\Add-WrapperMembers.ps1">
       <Link>Modules\NuGet\Add-WrapperMembers.ps1</Link>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
-    <Content Include="..\VsConsole\PowerShellHost\Scripts\NuGet.Format.ps1xml">
+    <Content Include="..\NuGetConsole.Host.PowerShell\Scripts\NuGet.Format.ps1xml">
       <Link>Modules\NuGet\NuGet.Format.ps1xml</Link>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
-    <Content Include="..\VsConsole\PowerShellHost\Scripts\NuGet.psd1">
+    <Content Include="..\NuGetConsole.Host.PowerShell\Scripts\NuGet.psd1">
       <Link>Modules\NuGet\NuGet.psd1</Link>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
-    <Content Include="..\VsConsole\PowerShellHost\Scripts\nuget.psm1">
+    <Content Include="..\NuGetConsole.Host.PowerShell\Scripts\nuget.psm1">
       <Link>Modules\NuGet\nuget.psm1</Link>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
-    <Content Include="..\VsConsole\PowerShellHost\Scripts\NuGet.Types.ps1xml">
+    <Content Include="..\NuGetConsole.Host.PowerShell\Scripts\NuGet.Types.ps1xml">
       <Link>Modules\NuGet\NuGet.Types.ps1xml</Link>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
-    <Content Include="..\VsConsole\PowerShellHost\Scripts\Profile.ps1">
+    <Content Include="..\NuGetConsole.Host.PowerShell\Scripts\Profile.ps1">
       <Link>Modules\NuGet\Profile.ps1</Link>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
@@ -189,12 +189,6 @@
       <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup</IncludeOutputGroupsInVSIX>
       <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup</IncludeOutputGroupsInVSIXLocalOnly>
     </ProjectReference>
-    <ProjectReference Include="..\Options\NuGet.Options.csproj">
-      <Project>{53ab7187-cdf3-48b5-b90e-8919d3cb904d}</Project>
-      <Name>NuGet.Options</Name>
-      <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup</IncludeOutputGroupsInVSIX>
-      <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup</IncludeOutputGroupsInVSIXLocalOnly>
-    </ProjectReference>
     <ProjectReference Include="..\NuGet.PackageManagement.PowerShellCmdlets\NuGet.PackageManagement.PowerShellCmdlets.csproj">
       <Project>{26dc17ac-a390-4515-a2c0-07a0950036c5}</Project>
       <Name>NuGet.PackageManagement.PowerShellCmdlets</Name>
@@ -237,13 +231,13 @@
       <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup</IncludeOutputGroupsInVSIX>
       <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup</IncludeOutputGroupsInVSIXLocalOnly>
     </ProjectReference>
-    <ProjectReference Include="..\VsConsole\Console\NuGet.Console.csproj">
+    <ProjectReference Include="..\NuGet.Console\NuGet.Console.csproj">
       <Project>{50e33da2-af14-486d-81b8-bd8409744a38}</Project>
       <Name>NuGet.Console</Name>
       <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup</IncludeOutputGroupsInVSIX>
       <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup</IncludeOutputGroupsInVSIXLocalOnly>
     </ProjectReference>
-    <ProjectReference Include="..\VsConsole\PowerShellHost\NuGetConsole.Host.PowerShell.csproj">
+    <ProjectReference Include="..\NuGetConsole.Host.PowerShell\NuGetConsole.Host.PowerShell.csproj">
       <Project>{5a79eef3-51c0-4a14-8d37-50ef38ad835d}</Project>
       <Name>NuGetConsole.Host.PowerShell</Name>
       <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup%3bBuiltProjectOutputGroupDependencies%3bGetCopyToOutputDirectoryItems%3bSatelliteDllsProjectOutputGroup%3b</IncludeOutputGroupsInVSIX>
@@ -301,7 +295,7 @@
   <Target Name="AfterBuild" DependsOnTargets="PublishVS14;PublishVS15;PublishVS15Insertable" />
   <Target Name="PublishVS14" Condition="'$(VisualStudioVersion)' == '14.0'">
     <PropertyGroup>
-      <PublishDestination>$(ArtifactRoot)\$(VsixOutputDirName)</PublishDestination>
+      <PublishDestination>$(ArtifactRoot)$(VsixOutputDirName)</PublishDestination>
     </PropertyGroup>
     <Message Text="Publishing VS14 VSIX package files..." Importance="high" />
     <Message Text="$(TargetVsixContainer) -&gt; $(PublishDestination)\NuGet.Tools.vsix" Importance="high" />
@@ -314,7 +308,7 @@
   </Target>
   <Target Name="PublishVS15" Condition="'$(IsInsertable)' != 'true' AND '$(VisualStudioVersion)' == '15.0'">
     <PropertyGroup>
-      <PublishDestination>$(ArtifactRoot)\$(VsixOutputDirName)</PublishDestination>
+      <PublishDestination>$(ArtifactRoot)$(VsixOutputDirName)</PublishDestination>
     </PropertyGroup>
     <ItemGroup>
       <PackageManifest Include="$(OutputPath)Microsoft.VisualStudio.NuGet.Core.json" />
@@ -332,7 +326,7 @@
   </Target>
   <Target Name="PublishVS15Insertable" Condition="'$(IsInsertable)' == 'true' AND '$(VisualStudioVersion)' == '15.0'">
     <PropertyGroup>
-      <PublishDestination>$(ArtifactRoot)\$(VsixOutputDirName)</PublishDestination>
+      <PublishDestination>$(ArtifactRoot)$(VsixOutputDirName)</PublishDestination>
     </PropertyGroup>
     <ItemGroup>
       <PackageManifest Include="$(OutputPath)Microsoft.VisualStudio.NuGet.Core.json" />

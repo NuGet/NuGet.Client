@@ -124,6 +124,24 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Select a Package Source Folder.
+        /// </summary>
+        public static string BrowseFolderDialogDescription {
+            get {
+                return ResourceManager.GetString("BrowseFolderDialogDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Select.
+        /// </summary>
+        public static string BrowseFolderDialogSelectButton {
+            get {
+                return ResourceManager.GetString("BrowseFolderDialogSelectButton", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Cancel.
         /// </summary>
         public static string Button_Cancel {
@@ -435,6 +453,15 @@ namespace NuGet.PackageManagement.UI {
         public static string Error_NoActiveRepository {
             get {
                 return ResourceManager.GetString("Error_NoActiveRepository", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Operation failed.
+        /// </summary>
+        public static string ErrorDialogBoxTitle {
+            get {
+                return ResourceManager.GetString("ErrorDialogBoxTitle", resourceCulture);
             }
         }
         
@@ -968,6 +995,134 @@ namespace NuGet.PackageManagement.UI {
         public static string ShowDetails {
             get {
                 return ResourceManager.GetString("ShowDetails", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to NuGet.Config is malformed, Please check NuGet.Config.
+        /// </summary>
+        public static string ShowError_ConfigInvalidOperation {
+            get {
+                return ResourceManager.GetString("ShowError_ConfigInvalidOperation", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Can not access NuGet.Config, Please check NuGet.Config.
+        /// </summary>
+        public static string ShowError_ConfigUnauthorizedAccess {
+            get {
+                return ResourceManager.GetString("ShowError_ConfigUnauthorizedAccess", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to All packages have been cleared from the cache..
+        /// </summary>
+        public static string ShowInfo_ClearPackageCache {
+            get {
+                return ResourceManager.GetString("ShowInfo_ClearPackageCache", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to NuGet cache(s) clear failed at {0}. 
+        ///Error: {1}
+        ///Please see https://aka.ms/troubleshoot_nuget_cache for more help..
+        /// </summary>
+        public static string ShowMessage_LocalsCommandFailure {
+            get {
+                return ResourceManager.GetString("ShowMessage_LocalsCommandFailure", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to NuGet cache(s) cleared at {0}.
+        /// </summary>
+        public static string ShowMessage_LocalsCommandSuccess {
+            get {
+                return ResourceManager.GetString("ShowMessage_LocalsCommandSuccess", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Clearing all NuGet cache(s). .
+        /// </summary>
+        public static string ShowMessage_LocalsCommandWorking {
+            get {
+                return ResourceManager.GetString("ShowMessage_LocalsCommandWorking", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The source specified is invalid. Please provide a valid source..
+        /// </summary>
+        public static string ShowWarning_InvalidSource {
+            get {
+                return ResourceManager.GetString("ShowWarning_InvalidSource", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The name and source specified cannot be empty. Please provide a valid name and source..
+        /// </summary>
+        public static string ShowWarning_NameAndSourceRequired {
+            get {
+                return ResourceManager.GetString("ShowWarning_NameAndSourceRequired", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The name specified cannot be empty. Please provide a valid name..
+        /// </summary>
+        public static string ShowWarning_NameRequired {
+            get {
+                return ResourceManager.GetString("ShowWarning_NameRequired", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The specified source&apos;s name is an official package source name, but there is already an official package source. Please provide a different name..
+        /// </summary>
+        public static string ShowWarning_OfficialSourceName {
+            get {
+                return ResourceManager.GetString("ShowWarning_OfficialSourceName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The source specified cannot be empty. Please provide a valid source..
+        /// </summary>
+        public static string ShowWarning_SourceRequried {
+            get {
+                return ResourceManager.GetString("ShowWarning_SourceRequried", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Package Manager Options.
+        /// </summary>
+        public static string ShowWarning_Title {
+            get {
+                return ResourceManager.GetString("ShowWarning_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The name specified has already been added to the list of available package sources. Please provide a unique name..
+        /// </summary>
+        public static string ShowWarning_UniqueName {
+            get {
+                return ResourceManager.GetString("ShowWarning_UniqueName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The source specified has already been added to the list of available package sources. Please provide a unique source..
+        /// </summary>
+        public static string ShowWarning_UniqueSource {
+            get {
+                return ResourceManager.GetString("ShowWarning_UniqueSource", resourceCulture);
             }
         }
         

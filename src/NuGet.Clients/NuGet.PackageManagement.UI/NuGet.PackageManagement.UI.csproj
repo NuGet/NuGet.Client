@@ -57,6 +57,28 @@
     <Compile Include="Models\LoadingStatusViewModel.cs" />
     <Compile Include="Models\PackageSearchStatus.cs" />
     <Compile Include="Models\ProjectVersionConstraint.cs" />
+    <Compile Include="Options\GeneralOptionControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Options\GeneralOptionControl.Designer.cs">
+      <DependentUpon>GeneralOptionControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Options\GeneralOptionPage.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Options\GlobalSuppressions.cs" />
+    <Compile Include="Options\OptionsPageBase.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Options\PackageSourceOptionsPage.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Options\PackageSourcesOptionsControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Options\PackageSourcesOptionsControl.Designer.cs">
+      <DependentUpon>PackageSourcesOptionsControl.cs</DependentUpon>
+    </Compile>
     <Compile Include="Resources\Domain.cs" />
     <Compile Include="Resources\Resources.xaml.cs">
       <DependentUpon>Resources.xaml</DependentUpon>
@@ -363,6 +385,12 @@
     <None Include="project.json" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Options\GeneralOptionControl.resx">
+      <DependentUpon>GeneralOptionControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Options\PackageSourcesOptionsControl.resx">
+      <DependentUpon>PackageSourcesOptionsControl.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Resources.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
       <SubType>Designer</SubType>
@@ -406,6 +434,10 @@
       <Project>{D65583E4-8084-466A-BA4B-55A797EA047B}</Project>
       <Name>NuGet.Packaging.Core</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\NuGet.Core\NuGet.Protocol\NuGet.Protocol.csproj">
+      <Project>{020f4c88-3a5c-4b89-9868-089e867cc223}</Project>
+      <Name>NuGet.Protocol</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\NuGet.Core\NuGet.Resolver\NuGet.Resolver.csproj">
       <Project>{51AA27A9-B8B4-458F-9211-E6889B441573}</Project>
       <Name>NuGet.Resolver</Name>
@@ -442,6 +474,5 @@
     <Resource Include="Resources\StatusInformation_16x.png" />
   </ItemGroup>
   <Import Project="$(BuildCommonDirectory)common.targets" />
-  <Import Project="$(BuildCommonDirectory)legacy.imports.targets" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

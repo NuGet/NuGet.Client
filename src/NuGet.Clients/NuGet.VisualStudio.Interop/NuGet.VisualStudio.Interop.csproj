@@ -9,30 +9,26 @@
   </PropertyGroup>
   <PropertyGroup>
     <RootNamespace>NuGet.VisualStudio</RootNamespace>
-    
+
     <!-- Override common.project assembly metadata -->
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
     <FileVersion>1.0.0.0</FileVersion>
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="EnvDTE, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-      <EmbedInteropTypes>False</EmbedInteropTypes>
-    </Reference>
-    <Reference Include="Microsoft.VisualStudio.TemplateWizardInterface, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
-    <Reference Include="System" />
+    <ProjectReference Include="..\NuGet.VisualStudio\NuGet.VisualStudio.csproj" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(VisualStudioVersion)' == '14.0'">
+    <PackageReference Include="Microsoft.VisualStudio.Shell.14.0" Version="14.2.25123" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(VisualStudioVersion)' == '15.0'">
+    <PackageReference Include="Microsoft.VisualStudio.Shell.15.0" Version="15.0.26201" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.VisualStudio.ComponentModelHost" Version="15.0.26201" />
+  </ItemGroup>
+  <ItemGroup>
     <Reference Include="System.ComponentModel.Composition" />
-    <Reference Include="System.Core" />
-    <Reference Include="Microsoft.CSharp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\NuGet.VisualStudio\NuGet.VisualStudio.csproj">
-      <Project>{e5556bc6-a7fd-4d8e-8a7d-7648df1d7471}</Project>
-      <Name>NuGet.VisualStudio</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Version="7.10.6070" Include="Microsoft.VisualStudio.OLE.Interop" />
   </ItemGroup>
 
   <Import Project="$(BuildCommonDirectory)common.targets" />

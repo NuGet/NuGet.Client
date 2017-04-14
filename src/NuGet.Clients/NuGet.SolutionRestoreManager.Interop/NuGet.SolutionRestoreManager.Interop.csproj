@@ -1,56 +1,17 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.legacy.props" />
-  
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.props" />
+
   <PropertyGroup>
+    <TargetFramework>net46</TargetFramework>
     <Shipping>true</Shipping>
     <PackProject>true</PackProject>
-    <CustomPack>true</CustomPack>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <ProjectGuid>{4003E1AB-70DE-4B9C-8999-96160EE91D84}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>NuGet.SolutionRestoreManager</RootNamespace>
-    <AssemblyName>NuGet.SolutionRestoreManager.Interop</AssemblyName>
-    <FileAlignment>512</FileAlignment>
-    <TargetFrameworkProfile />
-    <NuGetPackageImportStamp>7013ed3d</NuGetPackageImportStamp>
-    <ResolveNuGetPackages>true</ResolveNuGetPackages>
-    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
   </PropertyGroup>
-  <ItemGroup>
-    <None Include="install.ps1" />
-    <None Include="NuGet.SolutionRestoreManager.Interop.nuspec" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="IVsProjectProperties.cs" />
-    <Compile Include="IVsProjectProperty.cs" />
-    <Compile Include="IVsProjectRestoreInfo.cs" />
-    <Compile Include="IVsReferenceItem.cs" />
-    <Compile Include="IVsReferenceProperties.cs" />
-    <Compile Include="IVsReferenceProperty.cs" />
-    <Compile Include="IVsReferenceItems.cs" />
-    <Compile Include="IVsSolutionRestoreService.cs" />
-    <Compile Include="IVsTargetFrameworkInfo.cs" />
-    <Compile Include="IVsTargetFrameworks.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <Reference Include="System" />
-  </ItemGroup>
+
+  <PropertyGroup>
+    <NuspecFile>NuGet.SolutionRestoreManager.Interop.nuspec</NuspecFile>
+    <NuspecProperties>version=$(Version);configuration=$(Configuration)</NuspecProperties>
+  </PropertyGroup>
 
   <Import Project="$(BuildCommonDirectory)common.targets" />
-
-  <!-- Custom pack, called by build.proj -->
-  <Target Name="Pack">
-    <ItemGroup>
-      <Nuspec Include="*.nuspec" />
-      <PackageInclude Include="install.ps1" />
-    </ItemGroup>
-    <Copy SourceFiles="%(PackageInclude.Identity)" DestinationFolder="$(TargetDir)" />
-    <Exec Command="$(NuGetExePath) pack %(Nuspec.Identity) -Version $(Version) -BasePath $(TargetDir) -OutputDirectory $(NupkgOutputDirectory) -Symbols" />
-  </Target>
-  
-  <Import Project="$(BuildCommonDirectory)legacy.imports.targets" />
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

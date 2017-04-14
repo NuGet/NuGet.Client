@@ -1,7 +1,8 @@
 ﻿{
   "dependencies": {
-    "EnvDTE80": "8.0.1",
-    "Microsoft.VisualStudio.Workspace.VSIntegration": "15.0.198-pre"
+    "Microsoft.VisualStudio.Workspace.VSIntegration": "15.0.198-pre",
+    "VSLangProj110": "11.0.61030",
+    "VSLangProj2": "7.0.5000"
   },
   "frameworks": {
     "net46": {}

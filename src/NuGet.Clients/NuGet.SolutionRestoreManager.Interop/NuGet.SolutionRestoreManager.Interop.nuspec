@@ -12,8 +12,8 @@
     <copyright>© Microsoft Corporation. All rights reserved.</copyright>
   </metadata>
   <files>
-     <file src="NuGet.SolutionRestoreManager.Interop.dll" target="lib\net46\NuGet.SolutionRestoreManager.Interop.dll" />
-     <file src="NuGet.SolutionRestoreManager.Interop.XML" target="lib\net46\NuGet.SolutionRestoreManager.Interop.XML" />
+    <file src="..\..\..\artifacts\NuGet.SolutionRestoreManager.Interop\15.0\bin\$configuration$\net46\NuGet.SolutionRestoreManager.Interop.dll" target="lib\net46\NuGet.SolutionRestoreManager.Interop.dll" />
+     <file src="..\..\..\artifacts\NuGet.SolutionRestoreManager.Interop\15.0\bin\$configuration$\net46\NuGet.SolutionRestoreManager.Interop.xml" target="lib\net46\NuGet.SolutionRestoreManager.Interop.xml" />
      <file src="install.ps1" target="tools\install.ps1" />
   </files>
 </package>
