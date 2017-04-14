@@ -9,7 +9,6 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Newtonsoft.Json.Linq;
 using NuGet.Common;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
@@ -31,10 +30,8 @@ namespace NuGet.Protocol
     {
         private const int MaxRetries = 3;
         private readonly HttpSource _httpSource;
-        private readonly ConcurrentDictionary<string, Task<SortedDictionary<NuGetVersion, PackageInfo>>> _packageInfoCache =
-            new ConcurrentDictionary<string, Task<SortedDictionary<NuGetVersion, PackageInfo>>>(StringComparer.OrdinalIgnoreCase);
-        private readonly ConcurrentDictionary<PackageIdentity, Task<PackageIdentity>> _packageIdentityCache
-            = new ConcurrentDictionary<PackageIdentity, Task<PackageIdentity>>();
+        private readonly ConcurrentDictionary<string, AsyncLazy<SortedDictionary<NuGetVersion, PackageInfo>>> _packageInfoCache =
+            new ConcurrentDictionary<string, AsyncLazy<SortedDictionary<NuGetVersion, PackageInfo>>>(StringComparer.OrdinalIgnoreCase);
         private readonly IReadOnlyList<Uri> _baseUris;
         private readonly FindPackagesByIdNupkgDownloader _nupkgDownloader;
 
@@ -71,36 +68,6 @@ namespace NuGet.Protocol
             return packageInfos.Keys;
         }
 
-        public override async Task<PackageIdentity> GetOriginalIdentityAsync(
-            string id,
-            NuGetVersion version,
-            SourceCacheContext cacheContext,
-            ILogger logger,
-            CancellationToken cancellationToken)
-        {
-            var packageInfos = await EnsurePackagesAsync(id, cacheContext, logger, cancellationToken);
-
-            PackageInfo packageInfo;
-            if (!packageInfos.TryGetValue(version, out packageInfo))
-            {
-                return null;
-            }
-
-            return await _packageIdentityCache.GetOrAdd(
-                packageInfo.Identity,
-                async identity =>
-                {
-                    var reader = await _nupkgDownloader.GetNuspecReaderFromNupkgAsync(
-                        packageInfo.Identity,
-                        packageInfo.ContentUri,
-                        cacheContext,
-                        logger,
-                        cancellationToken);
-
-                    return reader.GetIdentity();
-                });
-        }
-
         public override async Task<FindPackageByIdDependencyInfo> GetDependencyInfoAsync(
             string id,
             NuGetVersion version,
@@ -119,10 +86,6 @@ namespace NuGet.Protocol
                     cacheContext,
                     logger,
                     cancellationToken);
-
-                // Populate the package identity cache while we have the .nuspec open.
-                var identity = reader.GetIdentity();
-                _packageIdentityCache.TryAdd(identity, Task.FromResult(identity));
 
                 return GetDependencyInfo(reader);
             }
@@ -155,17 +118,33 @@ namespace NuGet.Protocol
             return false;
         }
 
-        private Task<SortedDictionary<NuGetVersion, PackageInfo>> EnsurePackagesAsync(
+        private async Task<SortedDictionary<NuGetVersion, PackageInfo>> EnsurePackagesAsync(
             string id,
             SourceCacheContext cacheContext,
             ILogger logger,
             CancellationToken cancellationToken)
         {
-            return _packageInfoCache.GetOrAdd(id, (keyId) => FindPackagesByIdAsync(
-                keyId,
-                cacheContext,
-                logger,
-                cancellationToken));
+            AsyncLazy<SortedDictionary<NuGetVersion, PackageInfo>> result = null;
+
+            Func<string, AsyncLazy<SortedDictionary<NuGetVersion, PackageInfo>>> findPackages =
+                (keyId) => new AsyncLazy<SortedDictionary<NuGetVersion, PackageInfo>>(() => FindPackagesByIdAsync(
+                                keyId,
+                                cacheContext,
+                                logger,
+                                cancellationToken));
+
+            if (cacheContext.RefreshMemoryCache)
+            {
+                // Update the cache
+                result = _packageInfoCache.AddOrUpdate(id, findPackages, (k, v) => findPackages(id));
+            }
+            else
+            {
+                // Read the cache if it exists
+                result = _packageInfoCache.GetOrAdd(id, findPackages);
+            }
+
+            return await result;
         }
 
         private async Task<SortedDictionary<NuGetVersion, PackageInfo>> FindPackagesByIdAsync(
@@ -246,7 +225,7 @@ namespace NuGet.Protocol
 
         private async Task<SortedDictionary<NuGetVersion, PackageInfo>> ConsumeFlatContainerIndexAsync(Stream stream, string id, string baseUri)
         {
-            JObject doc = await stream.AsJObjectAsync();
+            var doc = await stream.AsJObjectAsync();
 
             var streamResults = new SortedDictionary<NuGetVersion, PackageInfo>();
 

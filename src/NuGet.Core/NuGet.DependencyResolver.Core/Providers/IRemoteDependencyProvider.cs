@@ -6,8 +6,10 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
+using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
+using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
 
 namespace NuGet.DependencyResolver
@@ -16,6 +18,12 @@ namespace NuGet.DependencyResolver
     {
         bool IsHttp { get; }
 
+        /// <summary>
+        /// Feed package source.
+        /// </summary>
+        /// <remarks>Optional. This will be null for project providers.</remarks>
+        PackageSource Source { get; }
+
         Task<LibraryIdentity> FindLibraryAsync(
             LibraryRange libraryRange,
             NuGetFramework targetFramework,
@@ -23,7 +31,7 @@ namespace NuGet.DependencyResolver
             ILogger logger,
             CancellationToken cancellationToken);
 
-        Task<IEnumerable<LibraryDependency>> GetDependenciesAsync(
+        Task<LibraryDependencyInfo> GetDependenciesAsync(
             LibraryIdentity match,
             NuGetFramework targetFramework,
             SourceCacheContext cacheContext,

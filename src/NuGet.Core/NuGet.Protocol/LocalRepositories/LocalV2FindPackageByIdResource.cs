@@ -39,24 +39,8 @@ namespace NuGet.Protocol
             ILogger logger,
             CancellationToken token)
         {
-            var infos = GetPackageInfos(id, logger);
+            var infos = GetPackageInfos(id, cacheContext, logger);
             return Task.FromResult(infos.Select(p => p.Identity.Version));
-        }
-
-        public override Task<PackageIdentity> GetOriginalIdentityAsync(
-            string id,
-            NuGetVersion version,
-            SourceCacheContext cacheContext,
-            ILogger logger,
-            CancellationToken token)
-        {
-            var info = GetPackageInfo(id, version, logger);
-            if (info != null)
-            {
-                return Task.FromResult(info.Identity);
-            }
-
-            return Task.FromResult<PackageIdentity>(null);
         }
 
         public override async Task<bool> CopyNupkgToStreamAsync(
@@ -67,7 +51,7 @@ namespace NuGet.Protocol
             ILogger logger,
             CancellationToken token)
         {
-            var info = GetPackageInfo(id, version, logger);
+            var info = GetPackageInfo(id, version, cacheContext, logger);
 
             if (info != null)
             {
@@ -89,7 +73,7 @@ namespace NuGet.Protocol
             CancellationToken token)
         {
             FindPackageByIdDependencyInfo dependencyInfo = null;
-            var info = GetPackageInfo(id, version, logger);
+            var info = GetPackageInfo(id, version, cacheContext, logger);
             if (info != null)
             {
                 dependencyInfo = GetDependencyInfo(info.Nuspec);
@@ -98,14 +82,27 @@ namespace NuGet.Protocol
             return Task.FromResult(dependencyInfo);
         }
 
-        private LocalPackageInfo GetPackageInfo(string id, NuGetVersion version, ILogger logger)
+        private LocalPackageInfo GetPackageInfo(string id, NuGetVersion version, SourceCacheContext cacheContext, ILogger logger)
         {
-            return GetPackageInfos(id, logger).FirstOrDefault(package => package.Identity.Version == version);
+            return GetPackageInfos(id, cacheContext, logger).FirstOrDefault(package => package.Identity.Version == version);
         }
 
-        private IReadOnlyList<LocalPackageInfo> GetPackageInfos(string id, ILogger logger)
+        private IReadOnlyList<LocalPackageInfo> GetPackageInfos(string id, SourceCacheContext cacheContext, ILogger logger)
         {
-            return _packageInfoCache.GetOrAdd(id, (packageId) => GetPackageInfosCore(packageId, logger));
+            IReadOnlyList<LocalPackageInfo> results = null;
+
+            Func<string, IReadOnlyList<LocalPackageInfo>> findPackages = (packageId) => GetPackageInfosCore(packageId, logger);
+
+            if (cacheContext.RefreshMemoryCache)
+            {
+                results = _packageInfoCache.AddOrUpdate(id, findPackages, (k, v) => findPackages(k));
+            }
+            else
+            {
+                results = _packageInfoCache.GetOrAdd(id, findPackages);
+            }
+
+            return results;
         }
 
         private IReadOnlyList<LocalPackageInfo> GetPackageInfosCore(string id, ILogger logger)

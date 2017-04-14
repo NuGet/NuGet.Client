@@ -5,17 +5,36 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using NuGet.Packaging;
+using NuGet.Packaging.Core;
 
 namespace NuGet.Protocol.Core.Types
 {
     public class FindPackageByIdDependencyInfo
     {
         /// <summary>
+        /// Original package identity from the package.
+        /// This contains the exact casing for the id and version.
+        /// </summary>
+        public PackageIdentity PackageIdentity { get; }
+
+        /// <summary>
+        /// Gets the package dependecy groups.
+        /// </summary>
+        public IReadOnlyList<PackageDependencyGroup> DependencyGroups { get; }
+
+        /// <summary>
+        /// Gets the framework reference groups.
+        /// </summary>
+        public IReadOnlyList<FrameworkSpecificGroup> FrameworkReferenceGroups { get; }
+
+        /// <summary>
         /// DependencyInfo
         /// </summary>
+        /// <param name="packageIdentity">original package identity</param>
         /// <param name="dependencyGroups">package dependency groups</param>
         /// <param name="frameworkReferenceGroups">Sequence of <see cref="FrameworkSpecificGroup" />s.</param>
         public FindPackageByIdDependencyInfo(
+            PackageIdentity packageIdentity,
             IEnumerable<PackageDependencyGroup> dependencyGroups,
             IEnumerable<FrameworkSpecificGroup> frameworkReferenceGroups)
         {
@@ -29,18 +48,9 @@ namespace NuGet.Protocol.Core.Types
                 throw new ArgumentNullException(nameof(frameworkReferenceGroups));
             }
 
+            PackageIdentity = packageIdentity ?? throw new ArgumentNullException(nameof(packageIdentity));
             DependencyGroups = dependencyGroups.ToList();
             FrameworkReferenceGroups = frameworkReferenceGroups.ToList();
         }
-
-        /// <summary>
-        /// Gets the package dependecy groups.
-        /// </summary>
-        public IReadOnlyList<PackageDependencyGroup> DependencyGroups { get; }
-
-        /// <summary>
-        /// Gets the framework reference groups.
-        /// </summary>
-        public IReadOnlyList<FrameworkSpecificGroup> FrameworkReferenceGroups { get; }
     }
 }

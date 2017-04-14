@@ -2,11 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
 using System.Xml.Linq;
 
 namespace NuGet.Test.Utility
@@ -30,6 +26,8 @@ namespace NuGet.Test.Utility
 
         public string FallbackFolder { get; }
 
+        public string HttpCacheFolder { get; }
+
         public bool CleanUp { get; set; } = true;
 
         public SimpleTestPathContext()
@@ -42,6 +40,7 @@ namespace NuGet.Test.Utility
             NuGetConfig = Path.Combine(WorkingDirectory, "NuGet.Config");
             PackageSource = Path.Combine(WorkingDirectory.Path, "source");
             FallbackFolder = Path.Combine(WorkingDirectory.Path, "fallback");
+            HttpCacheFolder = Path.Combine(WorkingDirectory.Path, "v3-cache");
 
             Directory.CreateDirectory(SolutionRoot);
             Directory.CreateDirectory(UserPackagesFolder);

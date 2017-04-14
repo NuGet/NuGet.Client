@@ -93,7 +93,7 @@ namespace NuGet.Protocol.Tests
                     var resource = await repo.GetResourceAsync<FindPackageByIdResource>();
 
                     // Act
-                    var identity = await resource.GetOriginalIdentityAsync(
+                    var info = await resource.GetDependencyInfoAsync(
                         "XUNIT",
                         new NuGetVersion("2.2.0-BETA1-build3239"),
                         cacheContext,
@@ -102,8 +102,8 @@ namespace NuGet.Protocol.Tests
 
                     // Assert
                     Assert.IsType<RemoteV2FindPackageByIdResource>(resource);
-                    Assert.Equal("xunit", identity.Id);
-                    Assert.Equal("2.2.0-beta1-build3239", identity.Version.ToNormalizedString());
+                    Assert.Equal("xunit", info.PackageIdentity.Id);
+                    Assert.Equal("2.2.0-beta1-build3239", info.PackageIdentity.Version.ToNormalizedString());
                 }
             }
         }
@@ -151,7 +151,7 @@ namespace NuGet.Protocol.Tests
                     var resource = await repo.GetResourceAsync<FindPackageByIdResource>();
 
                     // Act
-                    var identity = await resource.GetOriginalIdentityAsync(
+                    var info = await resource.GetDependencyInfoAsync(
                         "WINDOWSAZURE.STORAGE",
                         new NuGetVersion("6.2.2-PREVIEW"),
                         cacheContext,
@@ -160,8 +160,8 @@ namespace NuGet.Protocol.Tests
 
                     // Assert
                     Assert.IsType<RemoteV2FindPackageByIdResource>(resource);
-                    Assert.Equal("WindowsAzure.Storage", identity.Id);
-                    Assert.Equal("6.2.2-preview", identity.Version.ToNormalizedString());
+                    Assert.Equal("WindowsAzure.Storage", info.PackageIdentity.Id);
+                    Assert.Equal("6.2.2-preview", info.PackageIdentity.Version.ToNormalizedString());
                 }
             }
         }

@@ -68,7 +68,7 @@ namespace NuGet.Protocol.Tests
                 tc.StatusCode = statusCode;
 
                 // Act & Assert
-                var exception = await Assert.ThrowsAsync<FatalProtocolException>(
+                var exception = await Assert.ThrowsAsync<PackageNotFoundProtocolException>(
                     () => tc.Target.GetNuspecReaderFromNupkgAsync(
                         tc.Identity,
                         tc.NupkgUrl,

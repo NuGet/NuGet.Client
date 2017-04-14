@@ -257,5 +257,34 @@ namespace NuGet.Repositories.Test
                 Assert.Equal("2.0.0-BETA", package.Version.ToNormalizedString());
             }
         }
+
+        [Fact]
+        public async Task NuGetv3LocalRepository_FindPackage_VerifyNuspecsCached()
+        {
+            // Arrange
+            using (var workingDir = TestDirectory.Create())
+            {
+                var id = "Foo";
+                var target = new NuGetv3LocalRepository(workingDir);
+                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                    workingDir,
+                    PackageSaveMode.Defaultv3,
+                    new SimpleTestPackageContext(id, "1.0.0"),
+                    new SimpleTestPackageContext(id, "2.0.0-Beta"));
+
+                // Act
+                var package1 = target.FindPackage(id, NuGetVersion.Parse("2.0.0-beta"));
+                var package2 = target.FindPackage(id, NuGetVersion.Parse("2.0.0-BETA"));
+                var package3 = target.FindPackage(id, NuGetVersion.Parse("2.0.0-beta"));
+
+                // Assert
+                Assert.True(ReferenceEquals(package1, package3));
+                Assert.True(ReferenceEquals(package1.Nuspec, package2.Nuspec));
+                Assert.True(ReferenceEquals(package1.Nuspec, package3.Nuspec));
+
+                // These should contain different versions
+                Assert.False(ReferenceEquals(package1, package2));
+            }
+        }
     }
 }

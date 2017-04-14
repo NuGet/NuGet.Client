@@ -323,15 +323,6 @@ namespace NuGet.Protocol {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Unable to load package &apos;{0}&apos;..
-        /// </summary>
-        internal static string Log_FailedToGetNupkgStream {
-            get {
-                return ResourceManager.GetString("Log_FailedToGetNupkgStream", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Unable to load nuspec from package &apos;{0}&apos;..
         /// </summary>
         internal static string Log_FailedToGetNuspecStream {
@@ -490,6 +481,15 @@ namespace NuGet.Protocol {
         internal static string PackageActionDescriptionWrapper_UnrecognizedAction {
             get {
                 return ResourceManager.GetString("PackageActionDescriptionWrapper_UnrecognizedAction", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unable to find package &apos;{0}&apos;..
+        /// </summary>
+        internal static string PackageNotFound {
+            get {
+                return ResourceManager.GetString("PackageNotFound", resourceCulture);
             }
         }
         

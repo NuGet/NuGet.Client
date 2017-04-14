@@ -100,7 +100,7 @@ namespace NuGet.CommandLine.Test
                 solution.Create(pathContext.SolutionRoot);
 
                 // Act
-                var r = Restore(pathContext, projectRoot.ProjectPath, exitCode: 0, additionalArgs: "-Recursive");
+                var r = Util.Restore(pathContext, projectRoot.ProjectPath, expectedExitCode: 0, additionalArgs: "-Recursive");
 
                 // Assert
                 Assert.True(projects.Count > 0);
@@ -190,7 +190,7 @@ namespace NuGet.CommandLine.Test
                 solution.Create(pathContext.SolutionRoot);
 
                 // Act
-                var r = Restore(pathContext, project.ProjectPath);
+                var r = Util.Restore(pathContext, project.ProjectPath);
 
                 // Assert
                 Assert.True(project.AssetsFile.Libraries.Select(e => e.Name).Contains("packageB"));
@@ -229,7 +229,7 @@ namespace NuGet.CommandLine.Test
                     packageX);
 
                 // Act
-                var r = RestoreSolution(pathContext);
+                var r = Util.RestoreSolution(pathContext);
 
                 var dgPath = Path.Combine(pathContext.WorkingDirectory, "out.dg");
                 var dgSpec = DependencyGraphSpec.Load(dgPath);
@@ -289,7 +289,7 @@ namespace NuGet.CommandLine.Test
                     packageX);
 
                 // Act
-                var r = RestoreSolution(pathContext);
+                var r = Util.RestoreSolution(pathContext);
 
                 var dgPath = Path.Combine(pathContext.WorkingDirectory, "out.dg");
                 var dgSpec = DependencyGraphSpec.Load(dgPath);
@@ -354,7 +354,7 @@ namespace NuGet.CommandLine.Test
                 projectXML.Save(projectA.ProjectPath);
 
                 // Act
-                var r = RestoreSolution(pathContext);
+                var r = Util.RestoreSolution(pathContext);
 
                 var dgPath = Path.Combine(pathContext.WorkingDirectory, "out.dg");
                 var dgSpec = DependencyGraphSpec.Load(dgPath);
@@ -542,7 +542,7 @@ namespace NuGet.CommandLine.Test
                     packageX);
 
                 // Act
-                var r = RestoreSolution(pathContext);
+                var r = Util.RestoreSolution(pathContext);
 
                 // Assert
                 Assert.True(File.Exists(projectA.AssetsFileOutputPath), r.Item2);
@@ -594,7 +594,7 @@ namespace NuGet.CommandLine.Test
                     packageX);
 
                 // Act
-                var r = RestoreSolution(pathContext, exitCode: 1);
+                var r = Util.RestoreSolution(pathContext, expectedExitCode: 1);
 
                 // Assert
                 Assert.True(r.Item1 == 1);
@@ -638,7 +638,7 @@ namespace NuGet.CommandLine.Test
                     packageX);
 
                 // Act
-                var r = RestoreSolution(pathContext);
+                var r = Util.RestoreSolution(pathContext);
 
                 // Assert
                 Assert.True(r.Item1 == 0);
@@ -692,7 +692,7 @@ namespace NuGet.CommandLine.Test
                     packageX);
 
                 // Act
-                var r = RestoreSolution(pathContext, exitCode: 1);
+                var r = Util.RestoreSolution(pathContext, expectedExitCode: 1);
 
                 // Assert
                 Assert.True(r.Item1 == 1);
@@ -733,7 +733,7 @@ namespace NuGet.CommandLine.Test
                     packageX);
 
                 // Act
-                var r = RestoreSolution(pathContext);
+                var r = Util.RestoreSolution(pathContext);
 
                 // Assert
                 Assert.True(File.Exists(projectA.AssetsFileOutputPath), r.Item2);
@@ -782,7 +782,7 @@ namespace NuGet.CommandLine.Test
                     packageX);
 
                 // Act
-                var r = RestoreSolution(pathContext);
+                var r = Util.RestoreSolution(pathContext);
 
                 // Assert
                 Assert.True(File.Exists(projectA.AssetsFileOutputPath), r.Item2);
@@ -831,7 +831,7 @@ namespace NuGet.CommandLine.Test
                     packageX);
 
                 // Act
-                var r = RestoreSolution(pathContext);
+                var r = Util.RestoreSolution(pathContext);
 
                 // Assert
                 Assert.True(File.Exists(projectA.AssetsFileOutputPath), r.Item2);
@@ -872,7 +872,7 @@ namespace NuGet.CommandLine.Test
                     packageX);
 
                 // Act
-                var r = RestoreSolution(pathContext);
+                var r = Util.RestoreSolution(pathContext);
 
                 // Assert
                 Assert.True(File.Exists(projectA.AssetsFileOutputPath), r.Item2);
@@ -950,7 +950,7 @@ namespace NuGet.CommandLine.Test
                 var zPath = Path.Combine(pathContext.UserPackagesFolder, ".tools", "z");
 
                 // Act
-                var r = RestoreSolution(pathContext);
+                var r = Util.RestoreSolution(pathContext);
 
                 // Assert
                 // Version should not be used
@@ -1012,7 +1012,7 @@ namespace NuGet.CommandLine.Test
                 var zPath = Path.Combine(pathContext.UserPackagesFolder, ".tools", "z");
 
                 // Act
-                var r = RestoreSolution(pathContext);
+                var r = Util.RestoreSolution(pathContext);
 
                 // Assert
                 Assert.True(File.Exists(path), r.Item2);
@@ -1070,7 +1070,7 @@ namespace NuGet.CommandLine.Test
                 var path = Path.Combine(pathContext.UserPackagesFolder, ".tools", "z", "1.0.0", "netcoreapp1.0", "project.assets.json");
 
                 // Act
-                var r = RestoreSolution(pathContext);
+                var r = Util.RestoreSolution(pathContext);
 
                 // Assert
                 Assert.True(File.Exists(path), r.Item2);
@@ -1132,7 +1132,7 @@ namespace NuGet.CommandLine.Test
                 var path = Path.Combine(pathContext.UserPackagesFolder, ".tools", "z", "1.0.0", "netcoreapp1.0", "project.assets.json");
 
                 // Act
-                var r = RestoreSolution(pathContext);
+                var r = Util.RestoreSolution(pathContext);
 
                 // Assert
                 Assert.True(File.Exists(path), r.Item2);
@@ -1194,11 +1194,11 @@ namespace NuGet.CommandLine.Test
                 var path = Path.Combine(pathContext.UserPackagesFolder, ".tools", "z", "1.0.0", "netcoreapp1.0", "project.assets.json");
 
                 // Act
-                var r = RestoreSolution(pathContext);
+                var r = Util.RestoreSolution(pathContext);
 
                 File.AppendAllText(path, "\n\n\n\n\n");
 
-                r = RestoreSolution(pathContext);
+                r = Util.RestoreSolution(pathContext);
 
                 var text = File.ReadAllText(path);
 
@@ -1249,7 +1249,7 @@ namespace NuGet.CommandLine.Test
                 var path = Path.Combine(pathContext.UserPackagesFolder, ".tools", "x", "1.0.0", "netcoreapp1.0", "project.assets.json");
 
                 // Act
-                var r = RestoreSolution(pathContext, exitCode: 0, additionalArgs: "-Recursive");
+                var r = Util.RestoreSolution(pathContext, expectedExitCode: 0, additionalArgs: "-Recursive");
 
                 // Assert
                 Assert.True(File.Exists(path), r.Item2);
@@ -1297,7 +1297,7 @@ namespace NuGet.CommandLine.Test
                 var path = Path.Combine(pathContext.UserPackagesFolder, ".tools", "x", "1.0.0", "netcoreapp1.0", "project.assets.json");
 
                 // Act
-                var r = RestoreSolution(pathContext);
+                var r = Util.RestoreSolution(pathContext);
 
                 // Assert
                 Assert.False(File.Exists(path), r.Item2);
@@ -1374,7 +1374,7 @@ namespace NuGet.CommandLine.Test
                     packageX);
 
                 // Act
-                var r = RestoreSolution(pathContext);
+                var r = Util.RestoreSolution(pathContext);
 
                 // Assert
                 Assert.True(File.Exists(projectA.TargetsOutput), r.Item2);
@@ -1450,7 +1450,7 @@ namespace NuGet.CommandLine.Test
                     packageX);
 
                 // Act
-                var r = RestoreSolution(pathContext);
+                var r = Util.RestoreSolution(pathContext);
 
                 // Assert
                 Assert.True(File.Exists(projectA.TargetsOutput), r.Item2);
@@ -1500,7 +1500,7 @@ namespace NuGet.CommandLine.Test
                     packageX);
 
                 // Act
-                var r = RestoreSolution(pathContext);
+                var r = Util.RestoreSolution(pathContext);
 
                 // Assert
                 Assert.True(File.Exists(projectA.TargetsOutput), r.Item2);
@@ -1560,7 +1560,7 @@ namespace NuGet.CommandLine.Test
                     packageX);
 
                 // Act
-                var r = RestoreSolution(pathContext);
+                var r = Util.RestoreSolution(pathContext);
 
                 // Assert
                 Assert.False(File.Exists(projectA.TargetsOutput), r.Item2);
@@ -1603,7 +1603,7 @@ namespace NuGet.CommandLine.Test
                     packageX);
 
                 // Act
-                var r = RestoreSolution(pathContext);
+                var r = Util.RestoreSolution(pathContext);
 
                 var msbuildTargetsItems = TargetsUtility.GetMSBuildPackageImports(projectA.TargetsOutput);
                 var msbuildPropsItems = TargetsUtility.GetMSBuildPackageImports(projectA.PropsOutput);
@@ -1663,7 +1663,7 @@ namespace NuGet.CommandLine.Test
                     packageY);
 
                 // Act
-                var r = RestoreSolution(pathContext);
+                var r = Util.RestoreSolution(pathContext);
 
                 var msbuildTargetsItems = TargetsUtility.GetMSBuildPackageImports(projectA.TargetsOutput);
                 var msbuildPropsItems = TargetsUtility.GetMSBuildPackageImports(projectA.PropsOutput);
@@ -1709,7 +1709,7 @@ namespace NuGet.CommandLine.Test
                     packageX);
 
                 // Restore one
-                var r = RestoreSolution(pathContext);
+                var r = Util.RestoreSolution(pathContext);
 
                 var msbuildTargetsItems = TargetsUtility.GetMSBuildPackageImports(projectA.TargetsOutput);
                 var msbuildPropsItems = TargetsUtility.GetMSBuildPackageImports(projectA.PropsOutput);
@@ -1721,7 +1721,7 @@ namespace NuGet.CommandLine.Test
 
 
                 // Act
-                r = RestoreSolution(pathContext);
+                r = Util.RestoreSolution(pathContext);
                 Assert.True(File.Exists(projectA.TargetsOutput), r.Item2);
 
                 msbuildTargetsItems = TargetsUtility.GetMSBuildPackageImports(projectA.TargetsOutput);
@@ -1778,11 +1778,11 @@ namespace NuGet.CommandLine.Test
                     packageX);
 
                 // Restore one
-                var r = RestoreSolution(pathContext);
+                var r = Util.RestoreSolution(pathContext);
                 Assert.True(File.Exists(projectA.TargetsOutput), r.Item2);
 
                 // Act
-                r = RestoreSolution(pathContext);
+                r = Util.RestoreSolution(pathContext);
                 Assert.True(r.Item1 == 0);
                 Assert.True(File.Exists(projectA.TargetsOutput), r.Item2);
             }
@@ -1877,7 +1877,7 @@ namespace NuGet.CommandLine.Test
                 solution.Create(pathContext.SolutionRoot);
 
                 // Act
-                var r = RestoreSolution(pathContext);
+                var r = Util.RestoreSolution(pathContext);
 
                 // Assert
                 var targets = projectA.AssetsFile.Targets.Single(target => string.IsNullOrEmpty(target.RuntimeIdentifier)).Libraries.ToDictionary(e => e.Name);
@@ -1927,7 +1927,7 @@ namespace NuGet.CommandLine.Test
                 solution.Create(pathContext.SolutionRoot);
 
                 // Act
-                var r = RestoreSolution(pathContext);
+                var r = Util.RestoreSolution(pathContext);
 
                 // Assert
                 var targetB = projectA.AssetsFile.Targets.Single(target => string.IsNullOrEmpty(target.RuntimeIdentifier)).Libraries.SingleOrDefault(e => e.Name == "b");
@@ -1982,7 +1982,7 @@ namespace NuGet.CommandLine.Test
                 solution.Create(pathContext.SolutionRoot);
 
                 // Act
-                var r = RestoreSolution(pathContext);
+                var r = Util.RestoreSolution(pathContext);
 
                 // Assert
                 var targetB = projectA.AssetsFile.Targets.Single(target => string.IsNullOrEmpty(target.RuntimeIdentifier)).Libraries.SingleOrDefault(e => e.Name == "b");
@@ -2057,7 +2057,7 @@ namespace NuGet.CommandLine.Test
                 solution.Create(pathContext.SolutionRoot);
 
                 // Act
-                var r = RestoreSolution(pathContext);
+                var r = Util.RestoreSolution(pathContext);
 
                 // Assert
                 var tfm = NuGetFramework.Parse("UAP10.0");
@@ -2118,7 +2118,7 @@ namespace NuGet.CommandLine.Test
                 solution.Create(pathContext.SolutionRoot);
 
                 // Act
-                var r = RestoreSolution(pathContext);
+                var r = Util.RestoreSolution(pathContext);
 
                 // Assert
                 var targetB = projectA.AssetsFile.Targets.Single(e => e.TargetFramework.Equals(NuGetFramework.Parse("UAP10.0"))).Libraries.SingleOrDefault(e => e.Name == "b");
@@ -2736,7 +2736,7 @@ namespace NuGet.CommandLine.Test
 
                 // Act
                 // Verify failure
-                var r = RestoreSolution(pathContext, exitCode: 1);
+                var r = Util.RestoreSolution(pathContext, expectedExitCode: 1);
 
                 var targets = TargetsUtility.GetMSBuildPackageImports(projectA.TargetsOutput);
 
@@ -2780,7 +2780,7 @@ namespace NuGet.CommandLine.Test
                     packageX);
 
                 // Act
-                var r = RestoreSolution(pathContext);
+                var r = Util.RestoreSolution(pathContext);
 
                 // Assert
                 Assert.True(File.Exists(projectA.AssetsFileOutputPath), r.Item2);
@@ -2825,7 +2825,7 @@ namespace NuGet.CommandLine.Test
                     packageX);
 
                 // Act
-                var r = RestoreSolution(pathContext);
+                var r = Util.RestoreSolution(pathContext);
                 var xTarget = projectA.AssetsFile.Targets.Single(target => string.IsNullOrEmpty(target.RuntimeIdentifier)).Libraries.Single();
 
                 // Assert
@@ -2869,7 +2869,7 @@ namespace NuGet.CommandLine.Test
                     packageX);
 
                 // Act
-                var r = RestoreSolution(pathContext);
+                var r = Util.RestoreSolution(pathContext);
                 var xTarget = projectA.AssetsFile.Targets.Single(target => string.IsNullOrEmpty(target.RuntimeIdentifier)).Libraries.Single();
 
                 // Assert
@@ -2913,7 +2913,7 @@ namespace NuGet.CommandLine.Test
                     packageX);
 
                 // Act
-                var r = RestoreSolution(pathContext);
+                var r = Util.RestoreSolution(pathContext);
 
                 // Assert
                 Assert.True(File.Exists(projectA.AssetsFileOutputPath), r.Item2);
@@ -2943,7 +2943,7 @@ namespace NuGet.CommandLine.Test
 
                 // Act && Assert
                 // Verify this is a noop and not a failure
-                var r = RestoreSolution(pathContext);
+                var r = Util.RestoreSolution(pathContext);
             }
         }
 
@@ -2974,7 +2974,7 @@ namespace NuGet.CommandLine.Test
                 solution.Create(pathContext.SolutionRoot);
 
                 // Act
-                var r = RestoreSolution(pathContext);
+                var r = Util.RestoreSolution(pathContext);
 
                 // Assert
                 var targetB = projectA.AssetsFile.Targets.Single(target => string.IsNullOrEmpty(target.RuntimeIdentifier)).Libraries.SingleOrDefault(e => e.Name == "b");
@@ -3022,7 +3022,7 @@ namespace NuGet.CommandLine.Test
                 solution.Create(pathContext.SolutionRoot);
 
                 // Act
-                var r = RestoreSolution(pathContext);
+                var r = Util.RestoreSolution(pathContext);
 
                 // Assert
                 var targetB = projectA.AssetsFile
@@ -3078,7 +3078,7 @@ namespace NuGet.CommandLine.Test
                 File.Delete(projectB.ProjectPath);
 
                 // Act && Assert
-                var r = RestoreSolution(pathContext, exitCode: 1);
+                var r = Util.RestoreSolution(pathContext, expectedExitCode: 1);
             }
         }
 
@@ -3123,7 +3123,7 @@ namespace NuGet.CommandLine.Test
                     packageX);
 
                 // Act
-                var r = RestoreSolution(pathContext);
+                var r = Util.RestoreSolution(pathContext);
 
                 // Assert
                 var targetX = projectA.AssetsFile.Targets.Single(target => string.IsNullOrEmpty(target.RuntimeIdentifier)).Libraries.SingleOrDefault(e => e.Name == "x");
@@ -3185,7 +3185,7 @@ namespace NuGet.CommandLine.Test
                     packageY);
 
                 // Act
-                var r = RestoreSolution(pathContext);
+                var r = Util.RestoreSolution(pathContext);
 
                 // Assert
                 var targetNet = projectA.AssetsFile.Targets.Single(e => e.TargetFramework.Equals(NuGetFramework.Parse("net46")) && string.IsNullOrEmpty(e.RuntimeIdentifier));
@@ -3248,7 +3248,7 @@ namespace NuGet.CommandLine.Test
                     packageX);
 
                 // Act
-                var r = RestoreSolution(pathContext);
+                var r = Util.RestoreSolution(pathContext);
 
                 // Assert
                 var targetNet = projectA.AssetsFile.Targets.Single(e => e.TargetFramework.Equals(NuGetFramework.Parse("net46")) && string.IsNullOrEmpty(e.RuntimeIdentifier));
@@ -3313,7 +3313,7 @@ namespace NuGet.CommandLine.Test
                     packageX);
 
                 // Act
-                var r = RestoreSolution(pathContext);
+                var r = Util.RestoreSolution(pathContext);
 
                 // Assert
                 var xLibraryInA = projectA.AssetsFile.Libraries.Single(x => x.Name == packageX.Id);
@@ -3360,7 +3360,7 @@ namespace NuGet.CommandLine.Test
                     packageX);
 
                 // Act
-                var r = RestoreSolution(pathContext);
+                var r = Util.RestoreSolution(pathContext);
                 var xLibrary = projectA.AssetsFile.Libraries.Single();
 
                 // Assert
@@ -3403,52 +3403,12 @@ namespace NuGet.CommandLine.Test
                     packageX);
 
                 // Act
-                var r = RestoreSolution(pathContext);
+                var r = Util.RestoreSolution(pathContext);
                 var xLibrary = projectA.AssetsFile.Libraries.Single();
 
                 // Assert
                 Assert.Equal("packagex/1.0.0-beta", xLibrary.Path);
             }
-        }
-
-        private static CommandRunnerResult RestoreSolution(SimpleTestPathContext pathContext, int exitCode = 0, params string[] additionalArgs)
-        {
-            return Restore(pathContext, pathContext.SolutionRoot, exitCode, additionalArgs);
-        }
-
-        private static CommandRunnerResult Restore(SimpleTestPathContext pathContext, string inputPath, int exitCode = 0, params string[] additionalArgs)
-        {
-            var nugetexe = Util.GetNuGetExePath();
-
-            // Store the dg file for debugging
-            var dgPath = Path.Combine(pathContext.WorkingDirectory, "out.dg");
-            var envVars = new Dictionary<string, string>()
-                {
-                    { "NUGET_PERSIST_DG", "true" },
-                    { "NUGET_PERSIST_DG_PATH", dgPath }
-                };
-
-            var args = new string[] {
-                    "restore",
-                    inputPath,
-                    "-Verbosity",
-                    "detailed"
-                };
-
-            args = args.Concat(additionalArgs).ToArray();
-
-            // Act
-            var r = CommandRunner.Run(
-                nugetexe,
-                pathContext.WorkingDirectory.Path,
-                string.Join(" ", args),
-                waitForExit: true,
-                environmentVariables: envVars);
-
-            // Assert
-            Assert.True(exitCode == r.Item1, r.Item3 + "\n\n" + r.Item2);
-
-            return r;
         }
     }
 }

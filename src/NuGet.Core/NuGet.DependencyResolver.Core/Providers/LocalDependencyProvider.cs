@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -7,6 +7,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
+using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.Protocol.Core.Types;
@@ -23,6 +24,8 @@ namespace NuGet.DependencyResolver
         }
 
         public bool IsHttp { get; private set; }
+
+        public PackageSource Source { get; private set; }
 
         public Task<LibraryIdentity> FindLibraryAsync(
             LibraryRange libraryRange,
@@ -41,7 +44,7 @@ namespace NuGet.DependencyResolver
             return Task.FromResult(library.Identity);
         }
 
-        public Task<IEnumerable<LibraryDependency>> GetDependenciesAsync(
+        public Task<LibraryDependencyInfo> GetDependenciesAsync(
             LibraryIdentity library,
             NuGetFramework targetFramework,
             SourceCacheContext cacheContext,
@@ -50,7 +53,12 @@ namespace NuGet.DependencyResolver
         {
             var description = _dependencyProvider.GetLibrary(library, targetFramework);
 
-            return Task.FromResult(description.Dependencies);
+            var dependencyInfo = LibraryDependencyInfo.Create(
+                description.Identity,
+                targetFramework,
+                description.Dependencies);
+
+            return Task.FromResult(dependencyInfo);
         }
 
         public Task CopyToAsync(
