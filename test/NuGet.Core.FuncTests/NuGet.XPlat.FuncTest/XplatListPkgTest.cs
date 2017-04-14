@@ -16,9 +16,10 @@ using Xunit;
 
 namespace NuGet.XPlat.FuncTest
 {
+
+    [Collection("NuGet XPlat Test Collection")]
     public class XplatListPkgTest
     {
-
         private static readonly string projectName = "test_project_listpkg";
 
         private static MSBuildAPIUtility MsBuild => new MSBuildAPIUtility(new TestCommandOutputLogger());
