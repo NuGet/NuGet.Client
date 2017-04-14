@@ -147,6 +147,8 @@ namespace NuGet.CommandLine.XPlat
         /// <param name="projectPath">Path to the csproj file of the project.</param>
         /// <param name="packageDependency">Package Dependency of the package to be added.</param>
         /// <param name="userInputFrameworks">Target Frameworks for which the package reference should be added.</param>
+        /// <returns>Returns a dictionary indexed on target frameworks containing a list of package references.
+        /// The list of package references will be null if the target framework is not targeted by the project.</returns>
         public Dictionary<string, IEnumerable<Tuple<string, string>>> ListPackageReference(string projectPath, 
             PackageDependency packageDependency,
             IEnumerable<string> userInputFrameworks)
