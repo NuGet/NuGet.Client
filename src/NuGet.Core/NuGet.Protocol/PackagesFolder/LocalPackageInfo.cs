@@ -1,7 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.IO;
+using System;
 using NuGet.Packaging;
 using NuGet.Versioning;
 
@@ -9,20 +9,22 @@ namespace NuGet.Repositories
 {
     public class LocalPackageInfo
     {
-        private NuspecReader _nuspec;
+        private readonly Lazy<NuspecReader> _nuspec;
 
         public LocalPackageInfo(
             string packageId,
             NuGetVersion version,
             string path,
             string manifestPath,
-            string zipPath)
+            string zipPath,
+            Lazy<NuspecReader> nuspec)
         {
             Id = packageId;
             Version = version;
             ExpandedPath = path;
             ManifestPath = manifestPath;
             ZipPath = zipPath;
+            _nuspec = nuspec;
         }
 
         public string Id { get; }
@@ -39,30 +41,7 @@ namespace NuGet.Repositories
         /// Caches the nuspec reader.
         /// If the nuspec does not exist this will throw a friendly exception.
         /// </summary>
-        public NuspecReader Nuspec
-        {
-            get
-            {
-                if (_nuspec == null)
-                {
-                    // Verify that the nuspec has the correct name before opening it
-                    if (File.Exists(ManifestPath))
-                    {
-                        _nuspec = new NuspecReader(File.OpenRead(ManifestPath));
-                    }
-                    else
-                    {
-                        // Scan the folder for the nuspec
-                        var folderReader = new PackageFolderReader(ExpandedPath);
-
-                        // This will throw if the nuspec is not found
-                        _nuspec = new NuspecReader(folderReader.GetNuspec());
-                    }
-                }
-
-                return _nuspec;
-            }
-        }
+        public NuspecReader Nuspec => _nuspec.Value;
 
         public override string ToString()
         {

@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -6,6 +6,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using NuGet.Common;
 using NuGet.Packaging;
 using NuGet.Versioning;
 
@@ -19,7 +20,7 @@ namespace NuGet.Repositories
     {
         // Folder path -> Package
         private readonly ConcurrentDictionary<string, LocalPackageInfo> _packageCache
-            = new ConcurrentDictionary<string, LocalPackageInfo>(StringComparer.Ordinal);
+            = new ConcurrentDictionary<string, LocalPackageInfo>(PathUtility.GetStringComparerBasedOnOS());
 
         // Id -> Packages
         private readonly ConcurrentDictionary<string, IEnumerable<LocalPackageInfo>> _cache
@@ -28,6 +29,10 @@ namespace NuGet.Repositories
         // Per package id locks
         private readonly ConcurrentDictionary<string, object> _idLocks
             = new ConcurrentDictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+
+        // Cache nuspecs lazily
+        private readonly ConcurrentDictionary<string, Lazy<NuspecReader>> _nuspecCache
+            = new ConcurrentDictionary<string, Lazy<NuspecReader>>(PathUtility.GetStringComparerBasedOnOS());
 
         public VersionFolderPathResolver PathResolver { get; }
 
@@ -49,12 +54,24 @@ namespace NuGet.Repositories
                 return null;
             }
 
+            // Check for an exact match on casing
+            if (StringComparer.Ordinal.Equals(packageId, package.Id)
+                && StringComparer.Ordinal.Equals(version.ToNormalizedString(), package.Version.ToNormalizedString()))
+            {
+                return package;
+            }
+
+            // nuspec
+            var nuspec = _nuspecCache.GetOrAdd(package.ExpandedPath, new Lazy<NuspecReader>(() => GetNuspec(package.ManifestPath, package.ExpandedPath)));
+
+            // Create a new info to match the given id/version
             return new LocalPackageInfo(
                 packageId,
                 version,
                 package.ExpandedPath,
                 package.ManifestPath,
-                package.ZipPath);
+                package.ZipPath,
+                nuspec);
         }
 
         public IEnumerable<LocalPackageInfo> FindPackagesById(string packageId)
@@ -108,7 +125,9 @@ namespace NuGet.Repositories
                         var manifestPath = PathResolver.GetManifestFilePath(id, version);
                         var zipPath = PathResolver.GetPackageFilePath(id, version);
 
-                        package = new LocalPackageInfo(id, version, fullVersionDir, manifestPath, zipPath);
+                        var nuspec = _nuspecCache.GetOrAdd(fullVersionDir, new Lazy<NuspecReader>(() => GetNuspec(manifestPath, fullVersionDir)));
+
+                        package = new LocalPackageInfo(id, version, fullVersionDir, manifestPath, zipPath, nuspec);
 
                         // Cache the package, if it is valid it will not change
                         // for the life of this restore.
@@ -147,6 +166,27 @@ namespace NuGet.Repositories
         private object GetLockObj(string privateId)
         {
             return _idLocks.GetOrAdd(privateId, new object());
+        }
+
+        private static NuspecReader GetNuspec(string manifest, string expanded)
+        {
+            NuspecReader nuspec = null;
+
+            // Verify that the nuspec has the correct name before opening it
+            if (File.Exists(manifest))
+            {
+                nuspec = new NuspecReader(File.OpenRead(manifest));
+            }
+            else
+            {
+                // Scan the folder for the nuspec
+                var folderReader = new PackageFolderReader(expanded);
+
+                // This will throw if the nuspec is not found
+                nuspec = new NuspecReader(folderReader.GetNuspec());
+            }
+
+            return nuspec;
         }
     }
 }

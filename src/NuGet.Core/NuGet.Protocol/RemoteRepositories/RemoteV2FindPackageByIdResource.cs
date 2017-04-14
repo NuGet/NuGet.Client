@@ -35,8 +35,6 @@ namespace NuGet.Protocol
         private readonly string _baseUri;
         private readonly HttpSource _httpSource;
         private readonly Dictionary<string, Task<IEnumerable<PackageInfo>>> _packageVersionsCache = new Dictionary<string, Task<IEnumerable<PackageInfo>>>(StringComparer.OrdinalIgnoreCase);
-        private readonly ConcurrentDictionary<PackageIdentity, Task<PackageIdentity>> _packageIdentityCache
-            = new ConcurrentDictionary<PackageIdentity, Task<PackageIdentity>>();
         private readonly FindPackagesByIdNupkgDownloader _nupkgDownloader;
 
         public RemoteV2FindPackageByIdResource(PackageSource packageSource, HttpSource httpSource)
@@ -60,40 +58,6 @@ namespace NuGet.Protocol
             return result.Select(item => item.Identity.Version);
         }
 
-        public override async Task<PackageIdentity> GetOriginalIdentityAsync(
-            string id,
-            NuGetVersion version,
-            SourceCacheContext cacheContext,
-            ILogger logger,
-            CancellationToken cancellationToken)
-        {
-            return await _packageIdentityCache.GetOrAdd(
-                new PackageIdentity(id, version),
-                async original =>
-                {
-                    var packageInfo = await GetPackageInfoAsync(
-                        original.Id,
-                        original.Version,
-                        cacheContext,
-                        logger,
-                        cancellationToken);
-
-                    if (packageInfo == null)
-                    {
-                        return null;
-                    }
-
-                    var reader = await _nupkgDownloader.GetNuspecReaderFromNupkgAsync(
-                        packageInfo.Identity,
-                        packageInfo.ContentUri,
-                        cacheContext,
-                        logger,
-                        cancellationToken);
-
-                    return reader.GetIdentity();
-                });
-        }
-
         public override async Task<FindPackageByIdDependencyInfo> GetDependencyInfoAsync(
             string id,
             NuGetVersion version,
@@ -114,11 +78,6 @@ namespace NuGet.Protocol
                 cacheContext,
                 logger,
                 cancellationToken);
-
-            // Populate the package identity cache while we have the .nuspec open.
-            _packageIdentityCache.TryAdd(
-                new PackageIdentity(id, version),
-                Task.FromResult(reader.GetIdentity()));
 
             return GetDependencyInfo(reader);
         }
@@ -167,7 +126,7 @@ namespace NuGet.Protocol
 
             lock (_packageVersionsCache)
             {
-                if (!_packageVersionsCache.TryGetValue(id, out task))
+                if (cacheContext.RefreshMemoryCache || !_packageVersionsCache.TryGetValue(id, out task))
                 {
                     task = FindPackagesByIdAsyncCore(id, cacheContext, logger, cancellationToken);
                     _packageVersionsCache[id] = task;
@@ -267,7 +226,7 @@ namespace NuGet.Protocol
                 }
                 catch (Exception ex) when (retry < 2)
                 {
-                    string message = string.Format(CultureInfo.CurrentCulture, Strings.Log_RetryingFindPackagesById, nameof(FindPackagesByIdAsyncCore), uri)
+                    var message = string.Format(CultureInfo.CurrentCulture, Strings.Log_RetryingFindPackagesById, nameof(FindPackagesByIdAsyncCore), uri)
                         + Environment.NewLine
                         + ExceptionUtilities.DisplayMessage(ex);
                     logger.LogMinimal(message);

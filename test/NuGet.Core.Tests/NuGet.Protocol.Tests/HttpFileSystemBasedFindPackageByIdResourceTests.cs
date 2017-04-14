@@ -61,7 +61,7 @@ namespace NuGet.Protocol.Tests
                     var resource = await repo.GetResourceAsync<FindPackageByIdResource>();
 
                     // Act
-                    var identity = await resource.GetOriginalIdentityAsync(
+                    var info = await resource.GetDependencyInfoAsync(
                         "DEEPEQUAL",
                         new NuGetVersion("1.4.0.1-RC"),
                         cacheContext,
@@ -70,8 +70,8 @@ namespace NuGet.Protocol.Tests
 
                     // Assert
                     Assert.IsType<HttpFileSystemBasedFindPackageByIdResource>(resource);
-                    Assert.Equal("DeepEqual", identity.Id);
-                    Assert.Equal("1.4.0.1-rc", identity.Version.ToNormalizedString());
+                    Assert.Equal("DeepEqual", info.PackageIdentity.Id);
+                    Assert.Equal("1.4.0.1-rc", info.PackageIdentity.Version.ToNormalizedString());
                 }
             }
         }

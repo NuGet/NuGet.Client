@@ -8,6 +8,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
+using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.Protocol.Core.Types;
@@ -828,6 +829,8 @@ namespace NuGet.DependencyResolver.Tests
                 }
             }
 
+            public PackageSource Source => new PackageSource("Test");
+
             public Task CopyToAsync(
                 LibraryIdentity match,
                 Stream stream,
@@ -850,7 +853,7 @@ namespace NuGet.DependencyResolver.Tests
                 return Task.FromResult(packages.FindBestMatch(libraryRange.VersionRange, i => i?.Version));
             }
 
-            public Task<IEnumerable<LibraryDependency>> GetDependenciesAsync(
+            public Task<LibraryDependencyInfo> GetDependenciesAsync(
                 LibraryIdentity match,
                 NuGetFramework targetFramework,
                 SourceCacheContext cacheContext,
@@ -860,9 +863,10 @@ namespace NuGet.DependencyResolver.Tests
                 List<LibraryDependency> dependencies;
                 if (_graph.TryGetValue(match, out dependencies))
                 {
-                    return Task.FromResult<IEnumerable<LibraryDependency>>(dependencies);
+                    return Task.FromResult(LibraryDependencyInfo.Create(match, targetFramework, dependencies));
                 }
-                return Task.FromResult(Enumerable.Empty<LibraryDependency>());
+
+                return Task.FromResult(LibraryDependencyInfo.Create(match, targetFramework, Enumerable.Empty<LibraryDependency>()));
             }
 
             public TestPackage Package(string id, string version)

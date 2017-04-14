@@ -8,6 +8,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
+using NuGet.Configuration;
 using NuGet.DependencyResolver.Tests;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
@@ -116,6 +117,8 @@ namespace NuGet.DependencyResolver.Core.Tests
 
             public bool IsHttp => true;
 
+            public PackageSource Source => new PackageSource("Test");
+
             public Task CopyToAsync(
                 LibraryIdentity match,
                 Stream stream,
@@ -141,14 +144,14 @@ namespace NuGet.DependencyResolver.Core.Tests
                 return _libraries.FindBestMatch(libraryRange.VersionRange, l => l?.Version);
             }
 
-            public Task<IEnumerable<LibraryDependency>> GetDependenciesAsync(
+            public Task<LibraryDependencyInfo> GetDependenciesAsync(
                 LibraryIdentity match,
                 NuGetFramework targetFramework,
                 SourceCacheContext cacheContext,
                 ILogger logger,
                 CancellationToken cancellationToken)
             {
-                return Task.FromResult(Enumerable.Empty<LibraryDependency>());
+                return Task.FromResult(LibraryDependencyInfo.Create(match, targetFramework, Enumerable.Empty<LibraryDependency>()));
             }
         }
     }
