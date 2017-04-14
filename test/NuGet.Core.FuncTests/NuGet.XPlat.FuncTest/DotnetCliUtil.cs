@@ -31,11 +31,12 @@ namespace NuGet.XPlat.FuncTest
                 "15.0",
                 "bin",
 #if DEBUG
-                "debug",
+                "Debug",
 #else
-                "release",
+                "Release",
 #endif
-                "netcoreapp1.0", XPlatDll);
+                "netcoreapp1.0",
+                XPlatDll);
         }
 
         /// <summary>
