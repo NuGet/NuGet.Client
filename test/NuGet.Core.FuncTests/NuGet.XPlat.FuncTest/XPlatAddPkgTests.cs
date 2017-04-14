@@ -97,7 +97,7 @@ namespace NuGet.XPlat.FuncTest
                 .ReturnsAsync(0);
 
             testApp.Name = "dotnet nuget_test";
-            ListPackageReferenceCommand.Register(testApp,
+            AddPackageReferenceCommand.Register(testApp,
                 () => logger,
                 () => mockCommandRunner.Object);
 
