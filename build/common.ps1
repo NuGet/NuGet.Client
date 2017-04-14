@@ -156,7 +156,7 @@ Function Install-NuGet {
     param()
     if (-not (Test-Path $NuGetExe)) {
         Trace-Log 'Downloading nuget.exe'
-        wget https://dist.nuget.org/win-x86-commandline/latest-prerelease/nuget.exe -OutFile $NuGetExe
+        wget https://dist.nuget.org/win-x86-commandline/v3.4.4/nuget.exe -OutFile $NuGetExe
     }
 }
 
@@ -259,7 +259,7 @@ Function Enable-DelaySigning {
 }
 
 Function Get-BuildNumber() {
-    $SemanticVersionDate = '2016-07-13'
+    $SemanticVersionDate = '2017-04-13'
     [int](((Get-Date) - (Get-Date $SemanticVersionDate)).TotalMinutes / 5)
 }
 
