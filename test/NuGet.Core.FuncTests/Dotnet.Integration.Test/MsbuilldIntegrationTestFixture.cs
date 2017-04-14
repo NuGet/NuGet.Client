@@ -18,7 +18,7 @@ namespace Dotnet.Integration.Test
 {
     public class MsbuildIntegrationTestFixture : IDisposable
     {
-        private readonly string _dotnetCli = DotnetCliUtil.GetDotnetCli(false);
+        private readonly string _dotnetCli = DotnetCliUtil.GetDotnetCli();
         internal readonly string TestDotnetCli;
         internal readonly string MsBuildSdksPath;
 

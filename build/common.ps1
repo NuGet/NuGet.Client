@@ -193,26 +193,15 @@ Function Install-NuGet {
 Function Install-DotnetCLI {
     [CmdletBinding()]
     param(
-        [switch]$Test,
         [switch]$Force
     )
 
-    $cli = if (-not $Test) {
-        @{
+    $cli = @{
             Root = $CLIRoot
             DotNetExe = Join-Path $CLIRoot 'dotnet.exe'
             DotNetInstallUrl = 'https://raw.githubusercontent.com/dotnet/cli/58b0566d9ac399f5fa973315c6827a040b7aae1f/scripts/obtain/dotnet-install.ps1'
             Version = '1.0.1'
         }
-    }
-    else {
-        @{
-            Root = $CLIRootTest
-            DotNetExe = Join-Path $CLIRootTest 'dotnet.exe'
-            DotNetInstallUrl = 'https://raw.githubusercontent.com/dotnet/cli/58b0566d9ac399f5fa973315c6827a040b7aae1f/scripts/obtain/dotnet-install.ps1'
-            Version = '1.0.1'
-        }
-    }
     
     if ([Environment]::Is64BitOperatingSystem) {
         $arch = "x64";

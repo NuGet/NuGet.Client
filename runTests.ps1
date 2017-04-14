@@ -77,7 +77,7 @@ if (-not $BuildNumber) {
 }
 
 Invoke-BuildStep 'Installing .NET CLI for tests' {
-        Install-DotnetCLI -Test -Force:$Force
+        Install-DotnetCLI -Force:$Force
     } -ev +BuildErrors
 
 Trace-Log "Test suite run #$BuildNumber started at $startTime"

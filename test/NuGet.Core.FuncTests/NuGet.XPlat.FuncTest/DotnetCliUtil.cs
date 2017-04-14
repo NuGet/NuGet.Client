@@ -31,11 +31,12 @@ namespace NuGet.XPlat.FuncTest
                 "15.0",
                 "bin",
 #if DEBUG
-                "debug",
+                "Debug",
 #else
-                "release",
+                "Release",
 #endif
-                "netcoreapp1.0", XPlatDll);
+                "netcoreapp1.0",
+                XPlatDll);
         }
 
         /// <summary>
@@ -46,9 +47,9 @@ namespace NuGet.XPlat.FuncTest
         /// <code>String</code> containing the path to the dotnet cli within the local repository.
         /// Can return <code>null</code> if no cli directory or dotnet cli is found, in which case the tests can fail.
         /// </returns>
-        public static string GetDotnetCli(bool getTestCLI = false)
+        public static string GetDotnetCli()
         {
-            var cliDirName = getTestCLI ? "cli_test" : "cli";
+            var cliDirName = "cli";
             var dir = ParentDirectoryLookup()
                 .FirstOrDefault(d => DirectoryContains(d, cliDirName));
             if (dir != null)
