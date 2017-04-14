@@ -1,0 +1,69 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<LCX SchemaVersion="6.0" Name="C:\dd2\NuGetVisualStudio\Main\bin\Release\NuGetTools\14\Microsoft.Web.XmlTransform.dll" PsrId="211" FileType="1" SrcCul="en-US" Desc="Commenting file created by LCXAdmin. For more information, please visit http://localizability/longhorn/LcxAdmin.asp" xmlns="http://schemas.microsoft.com/locstudio/2006/6/lcx">
+  <OwnedComments>
+    <Cmt Name="LcxAdmin" />
+  </OwnedComments>
+  <Item ItemId=";Managed Resources" ItemType="0" PsrId="211" Leaf="true">
+    <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" />
+  </Item>
+  <Item ItemId=";Microsoft.Web.XmlTransform.SR.resources" ItemType="0" PsrId="211" Leaf="false">
+    <Disp Icon="Str" Expand="true" Disp="true" LocTbl="false" Path=" \ ;Managed Resources \ 0 \ 0" />
+    <Item ItemId=";Strings" ItemType="0" PsrId="211" Leaf="false">
+      <Disp Icon="Str" LocTbl="false" />
+      <Item ItemId=";XMLTRANSFORMATION_BadAttributeValue" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Transform and Locator attributes must contain only a type name, or a type name followed by a list of attributes in parentheses.]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="Transform"} {Locked="Locator"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";XMLTRANSFORMATION_ImportAttributeConflict" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Import tag cannot have both a 'path' and an 'assembly']]></Val>
+        </Str>
+        <Disp Icon="Str" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="path"} {Locked="assembly"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";XMLTRANSFORMATION_ImportMissingAssembly" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Import tag must have a 'path' or an 'assembly']]></Val>
+        </Str>
+        <Disp Icon="Str" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="path"} {Locked="assembly"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";XMLTRANSFORMATION_ImportMissingNamespace" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Import tag must have a 'namespace']]></Val>
+        </Str>
+        <Disp Icon="Str" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="namespace"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";XMLTRANSFORMATION_InsertMissingArgument" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[{0} requires an XPath argument]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="XPath"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";XMLTRANSFORMATION_MatchAttributeDoesNotExist" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[No attribute '{0}' exists for the Match Locator]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="Match"}]]></Cmt>
+        </Cmts>
+      </Item>
+    </Item>
+  </Item>
+</LCX>

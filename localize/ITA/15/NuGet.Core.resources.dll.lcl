@@ -1,0 +1,2328 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<LCX SchemaVersion="6.0" Name="D:\DD\Dev10\OffCycle\AspNet\Plan9\Main\bin\Release\NuGet.Core.dll" PsrId="211" FileType="1" SrcCul="en-US" TgtCul="it-IT" xmlns="http://schemas.microsoft.com/locstudio/2006/6/lcx">
+  <Props>
+    <Str Name="CustomName1" Val="Custom 1" />
+    <Str Name="CustomName2" Val="Custom 2" />
+    <Str Name="CustomName3" Val="Custom 3" />
+    <Str Name="CustomName4" Val="Custom 4" />
+    <Str Name="CustomName5" Val="Custom 5" />
+    <Str Name="CustomName6" Val="IQA" />
+    <Str Name="HobbitID" Val="310bb0fd-4f45-41cf-8a13-0b66811c095f" />
+  </Props>
+  <OwnedComments>
+    <Cmt Name="Dev" />
+    <Cmt Name="LcxAdmin" />
+    <Cmt Name="Note" />
+    <Cmt Name="Rccx" />
+  </OwnedComments>
+  <Settings Name="@vsLocTools@\default.lss" Type="Lss" />
+  <Item ItemId=";Managed Resources" ItemType="0" PsrId="211" Leaf="true">
+    <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" />
+    <Modified By="v-hugeng" DateTime="2010-11-02T10:54:20Z" />
+  </Item>
+  <Item ItemId=";NuGet.Authoring.nuspec.xsd" ItemType="0" PsrId="210" Leaf="true">
+    <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" Path=" \ ;XML \ 0 \ 0" />
+    <Modified By="v-hugeng" DateTime="2010-11-02T10:54:20Z" />
+  </Item>
+  <Item ItemId=";NuGet.CommonResources.resources" ItemType="0" PsrId="211" Leaf="false">
+    <Disp Icon="Str" Expand="true" Disp="true" LocTbl="false" Path=" \ ;Managed Resources \ 0 \ 0" />
+    <Modified By="federicomu" DateTime="2012-05-28T20:01:00Z" />
+    <Item ItemId=";Strings" ItemType="0" PsrId="211" Leaf="false">
+      <Disp Icon="Str" LocTbl="false" />
+      <Modified By="federicomu" DateTime="2012-05-28T20:01:00Z" />
+      <Item ItemId=";Argument_Cannot_Be_Null_Or_Empty" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Value cannot be null or an empty string.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[Il valore non può essere null o una stringa vuota.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="nicolasp" DateTime="2012-05-28T20:26:45Z" />
+      </Item>
+      <Item ItemId=";Argument_Must_Be_Between" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Value must be between {0} and {1}.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[Il valore deve essere compreso tra {0} e {1}.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="nicolasp" DateTime="2012-05-28T20:26:45Z" />
+      </Item>
+      <Item ItemId=";Argument_Must_Be_Enum_Member" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Value must be a value from the "{0}" enumeration.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[Il valore deve provenire dall'enumerazione "{0}".]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="nicolasp" DateTime="2012-05-28T20:26:45Z" />
+      </Item>
+      <Item ItemId=";Argument_Must_Be_GreaterThan" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Value must be greater than {0}.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[Il valore deve essere maggiore di {0}.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="nicolasp" DateTime="2012-05-28T20:26:45Z" />
+      </Item>
+      <Item ItemId=";Argument_Must_Be_GreaterThanOrEqualTo" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Value must be greater than or equal to {0}.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[Il valore deve essere maggiore o uguale a {0}.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="nicolasp" DateTime="2012-05-28T20:26:45Z" />
+      </Item>
+      <Item ItemId=";Argument_Must_Be_LessThan" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Value must be less than {0}.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[Il valore deve essere minore di {0}.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="nicolasp" DateTime="2012-05-28T20:26:45Z" />
+      </Item>
+      <Item ItemId=";Argument_Must_Be_LessThanOrEqualTo" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Value must be less than or equal to {0}.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[Il valore deve essere minore o uguale a {0}.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="nicolasp" DateTime="2012-05-28T20:26:45Z" />
+      </Item>
+      <Item ItemId=";Argument_Must_Be_Null_Or_Non_Empty" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Value cannot be an empty string. It must either be null or a non-empty string.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[Il valore non può essere una stringa vuota. Deve essere null o una stringa non vuota.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="nicolasp" DateTime="2012-05-28T20:26:45Z" />
+      </Item>
+      <Item ItemId=";EnsureImportedMessage" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[This project references NuGet package(s) that are missing on this computer. Enable NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Questo progetto fa riferimento a pacchetti NuGet che non sono presenti in questo computer. Abilitare lo strumento di ripristino dei pacchetti NuGet per scaricarli. Per altre informazioni, vedere http://go.microsoft.com/fwlink/?LinkID=322105. Il file mancante è {0}.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="spoto" DateTime="2015-10-21T11:10:44Z" />
+      </Item>
+    </Item>
+  </Item>
+  <Item ItemId=";NuGet.Resources.AnalysisResources.resources" ItemType="0" PsrId="211" Leaf="false">
+    <Disp Icon="Str" Expand="true" Disp="true" LocTbl="false" Path=" \ ;Managed Resources \ 0 \ 0" />
+    <Modified By="julior" DateTime="2012-02-06T15:13:28Z" />
+    <Item ItemId=";Strings" ItemType="0" PsrId="211" Leaf="false">
+      <Disp Icon="Str" LocTbl="false" />
+      <Modified By="julior" DateTime="2012-02-06T15:13:28Z" />
+      <Item ItemId=";AssemblyOutsideLibDescription" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The assembly '{0}' is not inside the 'lib' folder and hence it won't be added as reference when the package is installed into a project.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[L'assembly '{0}' non si trova all'interno della cartella 'lib'. Non verrà pertanto aggiunto come riferimento quando il pacchetto viene installato in un progetto.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="mori" DateTime="2012-02-10T17:26:08Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="lib"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";AssemblyOutsideLibSolution" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Move it into the 'lib' folder if it should be referenced.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Spostare l'assembly nella cartella 'lib' se deve essere utilizzato come riferimento.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="mori" DateTime="2012-02-10T17:26:08Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="lib"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";AssemblyOutsideLibTitle" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Assembly outside lib folder.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Assembly fuori dalla cartella lib.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="mori" DateTime="2012-02-10T17:26:08Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="lib"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";AssemblyUnderLibDescription" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The assembly '{0}' is placed directly under 'lib' folder. It is recommended that assemblies be placed inside a framework-specific folder.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[L'assembly '{0}' si trova direttamente nella cartella 'lib'. Si consiglia di inserire gli assembly all'interno di una cartella specifica per un framework.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="mori" DateTime="2012-02-10T17:26:08Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="lib"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";AssemblyUnderLibSolution" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Move it into a framework-specific folder. If this assembly is targeted for multiple frameworks, ignore this warning.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Spostare l'assembly in una cartella specifica per un framework. Se tale assembly è destinato a più framework, ignorare questo avviso.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="mori" DateTime="2012-02-10T17:26:08Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";AssemblyUnderLibTitle" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Assembly not inside a framework folder.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Assembly non presente all'interno di una cartella per framework.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="mori" DateTime="2012-02-10T17:26:08Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";InvalidFrameworkDescription" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The folder '{0}' under 'lib' is not recognized as a valid framework name or a supported culture identifier.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[La cartella '{0}' in 'lib' non è riconosciuta come nome di framework valido o come identificatore delle impostazioni cultura supportato.]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[The folder '{0}' under 'lib' is not recognized as a valid framework name.]]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="nicolasp" DateTime="2012-06-01T19:05:08Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="lib"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";InvalidFrameworkSolution" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Rename it to a valid framework name.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Rinominare la cartella con un nome di framework valido.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="mori" DateTime="2012-02-10T17:26:08Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";InvalidFrameworkTitle" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Invalid framework folder.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Cartella per framework non valida.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="mori" DateTime="2012-02-10T17:26:08Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";MisplacedInitScriptDescription" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The file '{0}' will be ignored by NuGet because it is not directly under 'tools' folder.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Il file '{0}' verrà ignorato da NuGet perché non si trova direttamente nella cartella 'tools'.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="spoto" DateTime="2013-01-08T12:26:19Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="NuGet", "tools"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom5" Val="HO1" />
+        </Props>
+      </Item>
+      <Item ItemId=";MisplacedInitScriptSolution" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Place the file directly under 'tools' folder.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Inserire il file direttamente nella cartella 'tools'.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="spoto" DateTime="2013-01-08T10:50:26Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="tools"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom5" Val="HO1" />
+        </Props>
+      </Item>
+      <Item ItemId=";MisplacedInitScriptTitle" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Init.ps1 script will be ignored.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Lo script Init.ps1 verrà ignorato.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="spoto" DateTime="2013-01-08T10:50:26Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="Init.ps1"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom5" Val="HO1" />
+        </Props>
+      </Item>
+      <Item ItemId=";MisplacedTransformFileDescription" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The transform file '{0}' is outside the 'content' folder and hence will not be transformed during installation of this package.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Il file di trasformazione '{0}' si trova fuori dalla cartella 'content' e non verrà pertanto trasformato durante l'installazione di questo pacchetto.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="mori" DateTime="2012-02-10T17:26:08Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="content"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";MisplacedTransformFileSolution" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Move it into the 'content' folder.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Spostare il file nella cartella 'content'.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="mori" DateTime="2012-02-10T17:26:08Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="content"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";MisplacedTransformFileTitle" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Transform file outside content folder.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[File di trasformazione fuori dalla cartella content.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="mori" DateTime="2012-02-10T17:26:08Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="content"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";MissingSummaryDescription" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The Description text is long but the Summary text is empty. This means the Description text will be truncated in the 'Manage NuGet Packages' dialog.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Il testo Description è lungo, mentre il testo Summary è vuoto. Nella finestra di dialogo per la gestione dei pacchetti NuGet il testo Description risulterà quindi troncato.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="mori" DateTime="2012-06-13T16:04:09Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="Description"} {Locked="Summary"} {Locked="NuGet"} Description and Summary refer to XML elements]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";MissingSummarySolution" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Provide a brief summary of the package in the Summary field.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Fornire un breve riepilogo del pacchetto nel campo Summary.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="mori" DateTime="2012-06-13T16:03:31Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="Summary"} XML element name]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";MissingSummaryTitle" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Consider providing Summary text.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Fornire un testo Summary.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="mori" DateTime="2012-06-13T16:03:07Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="Summary"} XML element name]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";ScriptOutsideToolsDescription" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The script file '{0}' is outside the 'tools' folder and hence will not be executed during installation of this package.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Il file di script '{0}' si trova fuori dalla cartella 'tools' e non verrà pertanto eseguito durante l'installazione di questo pacchetto.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="mori" DateTime="2012-02-10T17:26:08Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="tools"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";ScriptOutsideToolsSolution" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Move it into the 'tools' folder.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Spostare il file nella cartella 'tools'.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="mori" DateTime="2012-02-10T17:26:08Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="tools"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";ScriptOutsideToolsTitle" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[PowerShell file outside tools folder.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[File PowerShell fuori dalla cartella tools.]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[PowerScript file outside tools folder.]]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="laura" DateTime="2013-12-30T11:54:34Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="PowerShell"} {Locked="tools"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";UnrecognizedScriptDescription" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The script file '{0}' is not recognized by NuGet and hence will not be executed during installation of this package.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Il file di script '{0}' non è riconosciuto da NuGet e non verrà pertanto eseguito durante l'installazione di questo pacchetto.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="mori" DateTime="2012-02-10T17:26:08Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="NuGet"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";UnrecognizedScriptSolution" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Rename it to install.ps1, uninstall.ps1 or init.ps1 and place it directly under 'tools'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Rinominare il file come install.ps1, uninstall.ps1 o init.ps1 e inserirlo direttamente in 'tools'.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="mori" DateTime="2012-02-10T17:26:08Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="install.ps1, uninstall.ps1"} {Locked="init.ps1"} {Locked="tools"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";UnrecognizedScriptTitle" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Unrecognized PowerShell file.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[File PowerShell non riconosciuto.]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Unrecognized PowerScript file.]]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="laura" DateTime="2013-12-30T11:54:34Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="PowerShell"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";WinRTObsoleteDescription" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The file at '{0}' uses the obsolete 'WinRT' as the framework folder.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Il file in '{0}' utilizza il nome 'WinRT' obsoleto come cartella per framework.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="spoto" DateTime="2013-01-08T12:29:28Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="WinRT"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom5" Val="HO1" />
+        </Props>
+      </Item>
+      <Item ItemId=";WinRTObsoleteSolution" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Replace 'WinRT' or 'WinRT45' with 'NetCore45'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Sostituire 'WinRT' o 'WinRT45' con 'NetCore45'.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="spoto" DateTime="2013-01-08T10:50:26Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="'WinRT'", "'WinRT45'", "'NetCore45'"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom5" Val="HO1" />
+        </Props>
+      </Item>
+      <Item ItemId=";WinRTObsoleteTitle" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The framework name 'WinRT' is obsolete.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Il nome di framework 'WinRT' è obsoleto.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="spoto" DateTime="2013-01-08T12:27:49Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="WinRT"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom5" Val="HO1" />
+        </Props>
+      </Item>
+    </Item>
+  </Item>
+  <Item ItemId=";NuGet.Resources.NuGetResources.resources" ItemType="0" PsrId="211" Leaf="false">
+    <Disp Icon="Str" Expand="true" Disp="true" LocTbl="false" Path=" \ ;Managed Resources \ 0 \ 0" />
+    <Modified By="v-hugeng" DateTime="2010-11-02T10:54:20Z" />
+    <Item ItemId=";Strings" ItemType="0" PsrId="211" Leaf="false">
+      <Disp Icon="Str" LocTbl="false" />
+      <Modified By="v-hugeng" DateTime="2010-11-02T10:54:20Z" />
+      <Item ItemId=";AdditonalConstraintsDefined" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA['{0}' has an additional constraint {1} defined in {2}.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA['{0}' include un vincolo aggiuntivo {1} definito in {2}.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="mori" DateTime="2012-02-10T17:26:08Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";AggregateQueriesRequireOrder" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Aggregate queries require at least one OrderBy.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="Approved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Le query di aggregazione richiedono almeno un elemento OrderBy.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="v-canl" DateTime="2012-02-03T11:50:04Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Placeholder="OrderBy"} Linq term]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom1" Val="IIS_Razor_HO3" />
+          <Str Name="Custom2" Val="New" />
+        </Props>
+      </Item>
+      <Item ItemId=";CannotCreateEmptyPackage" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Cannot create a package that has no dependencies nor content.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="Approved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Impossibile creare un pacchetto senza dipendenze o contenuto.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="v-canl" DateTime="2012-02-03T11:50:04Z" />
+        <Props>
+          <Str Name="Custom1" Val="IIS_Razor_HO3" />
+          <Str Name="Custom2" Val="New" />
+        </Props>
+      </Item>
+      <Item ItemId=";CircularDependencyDetected" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Circular dependency detected '{0}'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" Confidence="100">
+            <Val><![CDATA[Rilevata dipendenza circolare '{0}'.]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Circular dependency detected '{0}']]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="julior" DateTime="2012-02-06T20:14:58Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+          <Str Name="Custom2" Val="New" />
+        </Props>
+      </Item>
+      <Item ItemId=";ConflictErrorWithDependent" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Updating '{0}' to '{1}' failed. Unable to find a version of '{2}' that is compatible with '{1}'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[Aggiornamento di '{0}' a '{1}' non riuscito. Impossibile trovare una versione di '{2}' compatibile con '{1}'.]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Conflict occurred. '{0}' referenced but requested '{1}'. '{2}' depends on '{0}']]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="mori" DateTime="2012-02-10T17:26:08Z" />
+        <Props>
+          <Str Name="Custom1" Val="IIS_Razor_HO1" />
+          <Str Name="Custom2" Val="New" />
+        </Props>
+      </Item>
+      <Item ItemId=";ConflictErrorWithDependents" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Updating '{0}' to '{1}' failed. Unable to find versions of '{2}' that are compatible with '{1}'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[Aggiornamento di '{0}' a '{1}' non riuscito. Impossibile trovare versioni di '{2}' compatibili con '{1}'.]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Conflict occurred. '{0}' referenced but requested '{1}'. '{2}' depend on '{0}']]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="mori" DateTime="2012-02-10T17:26:08Z" />
+        <Props>
+          <Str Name="Custom1" Val="IIS_Razor_HO1" />
+          <Str Name="Custom2" Val="New" />
+        </Props>
+      </Item>
+      <Item ItemId=";Debug_AddedFile" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Added file '{0}'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" Confidence="100">
+            <Val><![CDATA[File '{0}' aggiunto.]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Added file '{0}']]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="julior" DateTime="2012-02-06T20:14:58Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+          <Str Name="Custom2" Val="New" />
+        </Props>
+      </Item>
+      <Item ItemId=";Debug_AddedFileToFolder" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Added file '{0}' to folder '{1}'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" Confidence="100">
+            <Val><![CDATA[File '{0}' aggiunto alla cartella '{1}'.]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Added file '{0}' to folder '{1}']]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="julior" DateTime="2012-02-06T20:14:58Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+          <Str Name="Custom2" Val="New" />
+        </Props>
+      </Item>
+      <Item ItemId=";Debug_LookingForUpdates" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Looking for updates for '{0}'...]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="Approved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Ricerca di aggiornamenti per '{0}' in corso...]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="v-canl" DateTime="2012-02-03T11:50:04Z" />
+        <Props>
+          <Str Name="Custom1" Val="IIS_Razor_HO1" />
+          <Str Name="Custom2" Val="New" />
+        </Props>
+      </Item>
+      <Item ItemId=";Debug_RemovedFile" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Removed file '{0}'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" Confidence="100">
+            <Val><![CDATA[File '{0}' rimosso.]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Removed file '{0}']]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="julior" DateTime="2012-02-06T20:14:58Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+          <Str Name="Custom2" Val="New" />
+        </Props>
+      </Item>
+      <Item ItemId=";Debug_RemovedFileFromFolder" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Removed file '{0}' to folder '{1}'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[Il file '{0}' è stato rimosso dalla cartella '{1}'.]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Removed file '{0}' to folder '{1}']]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="spoto" DateTime="2015-12-17T11:47:52Z" />
+        <Props>
+          <Str Name="Custom1" Val="IIS_Razor_HO1" />
+          <Str Name="Custom2" Val="New" />
+        </Props>
+      </Item>
+      <Item ItemId=";Debug_RemovedFolder" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Removed folder '{0}'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" Confidence="100">
+            <Val><![CDATA[Cartella '{0}' rimossa.]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Removed folder '{0}']]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="julior" DateTime="2012-02-06T20:14:58Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+          <Str Name="Custom2" Val="New" />
+        </Props>
+      </Item>
+      <Item ItemId=";Debug_TargetFrameworkInfo" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[>> {0} are being added from '{1}'{2}]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[>> {0} vengono aggiunti da '{1}'{2}]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="spoto" DateTime="2015-10-21T11:00:20Z" />
+      </Item>
+      <Item ItemId=";Debug_TargetFrameworkInfoPrefix" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[For adding package '{0}' to project '{1}' that targets '{2}',]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Per l'aggiunta del pacchetto '{0}' al progetto '{1}' destinato a '{2}',]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="laura" DateTime="2013-12-30T12:24:19Z" />
+      </Item>
+      <Item ItemId=";Debug_TargetFrameworkInfo_AssemblyReferences" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Assembly references]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Riferimenti ad assembly]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="laura" DateTime="2013-12-30T12:24:19Z" />
+      </Item>
+      <Item ItemId=";Debug_TargetFrameworkInfo_BuildFiles" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Build files]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[File di compilazione]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="laura" DateTime="2013-12-30T12:24:19Z" />
+      </Item>
+      <Item ItemId=";Debug_TargetFrameworkInfo_ContentFiles" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Content files]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[File di contenuto]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="laura" DateTime="2013-12-30T12:24:19Z" />
+      </Item>
+      <Item ItemId=";Debug_TargetFrameworkInfo_NotFrameworkSpecific" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[ (not framework-specific)]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[ (non specifico del framework)]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="laura" DateTime="2013-12-30T12:24:19Z" />
+      </Item>
+      <Item ItemId=";Debug_TargetFrameworkInfo_PowershellScripts" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[>> PowerShell scripts are being executed from '{0}'{1}]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[>> Gli script di PowerShell vengono eseguiti da '{0}'{1}]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="spoto" DateTime="2015-10-21T10:37:44Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="PowerShell"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";DependencyHasInvalidVersion" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Dependency '{0}' has an invalid version.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="Approved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[La versione della dipendenza '{0}' non è valida.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="v-canl" DateTime="2012-02-03T11:50:04Z" />
+        <Props>
+          <Str Name="Custom1" Val="IIS_Razor_HO3" />
+          <Str Name="Custom2" Val="New" />
+        </Props>
+      </Item>
+      <Item ItemId=";DependencyOnlyCannotMixDependencies" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Child dependencies of dependency only packages cannot mix external and project packages.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" Confidence="100">
+            <Val><![CDATA[Nelle dipendenze figlio di pacchetti di sola dipendenza non possono essere combinati pacchetti esterni e di progetto.]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Child dependencies of dependency only packages cannot mix external and project packages]]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="julior" DateTime="2012-02-06T20:14:58Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+          <Str Name="Custom2" Val="New" />
+        </Props>
+      </Item>
+      <Item ItemId=";DownloadProgressStatus" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Downloading {0} {1}...]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Download di {0} {1} in corso...]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="mori" DateTime="2012-02-10T17:26:08Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";DuplicateDependenciesDefined" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA['{0}' already has a dependency defined for '{1}'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="Approved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA['{0}' già include una dipendenza definita per '{1}'.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="v-canl" DateTime="2012-02-03T11:50:04Z" />
+        <Props>
+          <Str Name="Custom1" Val="IIS_Razor_HO3" />
+          <Str Name="Custom2" Val="New" />
+        </Props>
+      </Item>
+      <Item ItemId=";ErrorLoadingPackages" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[An error occurred while loading packages from '{0}': {1}]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[Si è verificato un errore durante il caricamento dei pacchetti da '{0}': {1}]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[An error occurred while loading packages from'{0}': {1}]]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="laura" DateTime="2013-12-30T11:54:34Z" />
+      </Item>
+      <Item ItemId=";ErrorReadingFile" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Error reading '{0}'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Si è verificato un errore durante la lettura di '{0}'.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="spoto" DateTime="2015-12-17T11:59:37Z" />
+        <Props>
+          <Str Name="Custom1" Val="IIS_Razor_HO3" />
+          <Str Name="Custom2" Val="New" />
+        </Props>
+      </Item>
+      <Item ItemId=";ErrorReadingPackage" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Unable to read package from path '{0}'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Impossibile leggere il pacchetto dal percorso '{0}'.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="spoto" DateTime="2013-01-08T10:50:26Z" />
+        <Props>
+          <Str Name="Custom5" Val="HO1" />
+        </Props>
+      </Item>
+      <Item ItemId=";Error_InvalidPackage" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Unable to load version '{0}' of package '{1}'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Non è possibile caricare la versione '{0}' del pacchetto '{1}'.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="spoto" DateTime="2015-10-21T09:05:38Z" />
+      </Item>
+      <Item ItemId=";Error_NoWritableConfig" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[There are no writable config files.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Non sono presenti file di configurazione accessibili in scrittura.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="spoto" DateTime="2015-10-21T10:15:42Z" />
+      </Item>
+      <Item ItemId=";Error_PackageAlreadyExists" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Package '{0}' already exists.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Pacchetto '{0}' già esistente.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="laura" DateTime="2013-12-30T12:24:19Z" />
+      </Item>
+      <Item ItemId=";Error_TooManyRedirections" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Too many automatic redirections were attempted.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Sono stati tentati troppi reindirizzamenti automatici.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="spoto" DateTime="2015-10-21T09:05:38Z" />
+      </Item>
+      <Item ItemId=";ExternalPackagesCannotDependOnProjectLevelPackages" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[External packages cannot depend on packages that target projects.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="Approved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[I pacchetti esterni non possono dipendere da pacchetti destinati a progetti.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="v-canl" DateTime="2012-02-03T11:50:04Z" />
+        <Props>
+          <Str Name="Custom1" Val="IIS_Razor_HO1" />
+          <Str Name="Custom2" Val="New" />
+        </Props>
+      </Item>
+      <Item ItemId=";FileConflictMessage" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[File '{0}' already exists in project '{1}'. Do you want to overwrite it?]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Il file {0} esiste già nel progetto '{1}'. Sovrascriverlo?]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="spoto" DateTime="2015-10-21T11:16:55Z" />
+      </Item>
+      <Item ItemId=";FileDoesNotExit" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[File '{0}' does not exist.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Il file '{0}' non esiste.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="spoto" DateTime="2013-05-07T16:49:09Z" />
+      </Item>
+      <Item ItemId=";GetUpdatesParameterMismatch" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The 'packages' and 'versionConstraints' parameters must have the same number of elements.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[I parametri 'packages' e 'versionConstraints' devono avere lo stesso numero di elementi.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="spoto" DateTime="2013-05-07T16:49:09Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="packages"} {Locked="versionConstraints"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";IncompatibleSchema" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The schema version of '{0}' is incompatible with version {1} of NuGet. Please upgrade NuGet to the latest version from http://go.microsoft.com/fwlink/?LinkId=213942.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[La versione dello schema di '{0}' è incompatibile con la versione {1} di NuGet. Aggiornare NuGet alla versione più recente disponibile all'indirizzo http://go.microsoft.com/fwlink/?LinkId=213942.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="mori" DateTime="2012-02-10T17:26:08Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Placeholder="NuGet"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";Info_OverwriteExistingFile" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Overwrite existing file '{0}'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Sovrascrivi file '{0}' esistente.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="spoto" DateTime="2013-05-07T16:49:09Z" />
+      </Item>
+      <Item ItemId=";InvalidFeed" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Could not connect to the feed specified at '{0}'. Please verify that the package source (located in the Package Manager Settings) is valid and ensure your network connectivity.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Impossibile connettersi al feed specificato in '{0}'. Verificare che l'origine del pacchetto (in Impostazioni di Gestione pacchetti) sia valida e controllare la connettività di rete.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="mori" DateTime="2012-02-10T17:26:08Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";InvalidFrameworkNameFormat" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Invalid framework name format. Expected {framework}{version}-{profile}.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Formato del nome di framework non valido. Formato previsto: {framework}{version}-{profile}.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="mori" DateTime="2012-02-10T17:26:08Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";InvalidNullSettingsOperation" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA["{0}" cannot be called on a NullSettings. This may be caused on account of insufficient permissions to read or write to "%AppData%\NuGet\NuGet.config".]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[Non è possibile chiamare "{0}" su NullSettings. È possibile che l'account non disponga delle autorizzazioni necessarie per la lettura o la scrittura su "%AppData%\NuGet\NuGet.config".]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA["{0}" cannot be called on a NullSettings.]]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="spoto" DateTime="2015-10-21T10:45:14Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="NullSettings", "%AppData%\NuGet\NuGet.config"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";InvalidPackageId" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The package ID '{0}' contains invalid characters. Examples of valid package IDs include 'MyPackage' and 'MyPackage.Sample'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[L'ID di pacchetto '{0}' contiene caratteri non validi. Esempi di ID di pacchetto validi sono 'MyPackage' e 'MyPackage.Sample'.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="mori" DateTime="2012-02-10T17:26:08Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="'MyPackage'", "'MyPackage.Sample'"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";InvalidVersionString" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA['{0}' is not a valid version string.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" Confidence="100">
+            <Val><![CDATA['{0}' non è una stringa di versione valida.]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA['{0}' is not a valid version string]]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="julior" DateTime="2012-02-06T20:14:58Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+          <Str Name="Custom2" Val="New" />
+        </Props>
+      </Item>
+      <Item ItemId=";Log_ApplyingConstraints" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Applying constraint '{0} {1}' defined in {2}.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Applicazione del vincolo '{0} {1}' definita in {2}.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="mori" DateTime="2012-02-10T17:26:08Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";Log_AttemptingToRetrievePackageFromSource" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Attempting to resolve dependency '{0}'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[Tentativo di risolvere la dipendenza '{0}'.]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA['{0}' not installed. Attempting to retrieve dependency from source...]]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="mori" DateTime="2012-02-10T17:26:08Z" />
+        <Props>
+          <Str Name="Custom1" Val="IIS_Razor_HO1" />
+          <Str Name="Custom2" Val="New" />
+        </Props>
+      </Item>
+      <Item ItemId=";Log_BeginAddPackageReference" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Adding '{0}' to {1}.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Aggiunta di '{0}' a {1}.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="spoto" DateTime="2013-05-07T16:49:09Z" />
+      </Item>
+      <Item ItemId=";Log_BeginInstallPackage" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Installing '{0}'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Installazione di '{0}'.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="spoto" DateTime="2013-05-07T16:49:09Z" />
+      </Item>
+      <Item ItemId=";Log_BeginRemovePackageReference" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Removing '{0}' from {1}.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Rimozione di '{0}' da {1}.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="spoto" DateTime="2013-05-07T16:49:09Z" />
+      </Item>
+      <Item ItemId=";Log_BeginUninstallPackage" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Uninstalling '{0}'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Disinstallazione di '{0}'.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="spoto" DateTime="2013-05-07T16:49:09Z" />
+      </Item>
+      <Item ItemId=";Log_InstallPackage" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Install '{0}']]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Installa '{0}']]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="spoto" DateTime="2015-10-21T09:05:38Z" />
+      </Item>
+      <Item ItemId=";Log_InstallPackageIntoProject" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Add '{0}' to project {1}.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Aggiungere '{0}' al progetto {1}.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="spoto" DateTime="2015-10-21T09:05:38Z" />
+      </Item>
+      <Item ItemId=";Log_NoUpdatesAvailable" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[No updates available for '{0}'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" Confidence="100">
+            <Val><![CDATA[Nessun aggiornamento disponibile per '{0}'.]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[No updates available for '{0}']]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="julior" DateTime="2012-02-06T20:14:58Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+          <Str Name="Custom2" Val="New" />
+        </Props>
+      </Item>
+      <Item ItemId=";Log_NoUpdatesAvailableForProject" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[No updates available for '{0}' in project '{1}'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Nessun aggiornamento disponibile per '{0}' nel progetto '{1}'.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="mori" DateTime="2012-02-10T17:26:08Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";Log_PackageAlreadyInstalled" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA['{0}' already installed.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[Il pacchetto '{0}' è già installato.]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA['{0}' already installed]]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="spoto" DateTime="2015-10-21T09:55:42Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+          <Str Name="Custom2" Val="New" />
+        </Props>
+      </Item>
+      <Item ItemId=";Log_PackageInstalledSuccessfully" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Successfully installed '{0}'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" Confidence="100">
+            <Val><![CDATA[Installazione di '{0}' completata.]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Successfully installed '{0}']]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="julior" DateTime="2012-02-06T20:14:58Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+          <Str Name="Custom2" Val="New" />
+        </Props>
+      </Item>
+      <Item ItemId=";Log_ProjectAlreadyReferencesPackage" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[{0} already has a reference to '{1}'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" Confidence="100">
+            <Val><![CDATA[È già presente un riferimento in {0} a '{1}'.]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[{0} already has a reference to '{1}']]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="julior" DateTime="2012-02-06T20:14:58Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+          <Str Name="Custom2" Val="New" />
+        </Props>
+      </Item>
+      <Item ItemId=";Log_SuccessfullyAddedPackageReference" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Successfully added '{0}' to {1}.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" Confidence="100">
+            <Val><![CDATA[Aggiunta di '{0}' a {1} completata.]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Successfully added '{0}' to {1}]]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="julior" DateTime="2012-02-06T20:14:58Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+          <Str Name="Custom2" Val="New" />
+        </Props>
+      </Item>
+      <Item ItemId=";Log_SuccessfullyRemovedPackageReference" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Successfully removed '{0}' from {1}.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" Confidence="100">
+            <Val><![CDATA[Rimozione di '{0}' da {1} completata.]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Successfully removed '{0}' from {1}]]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="julior" DateTime="2012-02-06T20:14:58Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+          <Str Name="Custom2" Val="New" />
+        </Props>
+      </Item>
+      <Item ItemId=";Log_SuccessfullyUninstalledPackage" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Successfully uninstalled '{0}'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" Confidence="100">
+            <Val><![CDATA[Disinstallazione di '{0}' completata.]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Successfully uninstalled '{0}']]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="julior" DateTime="2012-02-06T20:14:58Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+          <Str Name="Custom2" Val="New" />
+        </Props>
+      </Item>
+      <Item ItemId=";Log_UninstallPackage" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Uninstall '{0}'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Disinstallare '{0}'.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="spoto" DateTime="2015-10-21T09:05:38Z" />
+      </Item>
+      <Item ItemId=";Log_UninstallPackageFromProject" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Remove '{0}' from project {1}.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Rimuovere '{0}' dal progetto {1}.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="spoto" DateTime="2015-10-21T09:05:38Z" />
+      </Item>
+      <Item ItemId=";Log_UpdatingPackages" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Updating '{0}' from version '{1}' to '{2}' in project '{3}'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Aggiornamento di '{0}' dalla versione '{1}' a '{2}' nel progetto '{3}'.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="mori" DateTime="2012-02-10T17:26:08Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";Log_UpdatingPackagesWithoutOldVersion" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Updating '{0}' to version '{1}' in project '{2}'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Aggiornamento di '{0}' alla versione '{1}' nel progetto '{2}'.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="laura" DateTime="2013-12-30T12:24:19Z" />
+      </Item>
+      <Item ItemId=";Manifest_AssemblyNameRequired" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Assembly name is required.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Nome di assembly obbligatorio.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="mori" DateTime="2012-02-10T17:26:08Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";Manifest_DependenciesHasMixedElements" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[<dependencies> element must not contain both <group> and <dependency> child elements.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[L'elemento <dependencies> non deve contenere entrambi gli elementi figlio <group> e <dependency>.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="mori" DateTime="2012-06-12T13:37:04Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="<dependencies>"} {Locked="<group>"} {Locked="<dependency>"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";Manifest_DependencyIdRequired" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Dependency Id is required.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="Approved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[L'ID dipendenza è obbligatorio.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="v-canl" DateTime="2012-02-03T11:50:04Z" />
+        <Props>
+          <Str Name="Custom1" Val="IIS_Razor_HO3" />
+          <Str Name="Custom2" Val="New" />
+        </Props>
+      </Item>
+      <Item ItemId=";Manifest_ExcludeContainsInvalidCharacters" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Exclude path '{0}' contains invalid characters.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Il percorso di esclusione '{0}' contiene caratteri non validi.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="mori" DateTime="2012-02-10T17:26:08Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";Manifest_IdMaxLengthExceeded" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Id must not exceed 100 characters.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[L'Id non deve contenere più di 100 caratteri.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="spoto" DateTime="2015-10-21T10:10:29Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";Manifest_InvalidMinClientVersion" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The 'minClientVersion' attribute in the package manifest has invalid value. It must be a valid version string.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Valore dell'attributo 'minClientVersion' nel manifesto di pacchetto non valido. Deve essere una stringa di versione valida.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="spoto" DateTime="2013-05-07T16:49:09Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="minClientVersion"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";Manifest_InvalidPrereleaseDependency" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[A stable release of a package should not have on a prerelease dependency. Either modify the version spec of dependency "{0}" or update the version field.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Una versione stabile di un pacchetto non deve includere una dipendenza della versione preliminare. Modificare la specifica di versione della dipendenza "{0}" oppure aggiornare il campo versione.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="mori" DateTime="2012-02-10T17:26:08Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";Manifest_InvalidReference" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Invalid assembly reference '{0}'. Ensure that a file named '{0}' exists in the lib directory.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Riferimento all'assembly '{0}' non valido. Verificare che nella directory lib sia presente un file denominato '{0}'.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="mori" DateTime="2012-02-10T17:26:08Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="lib"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";Manifest_InvalidReferenceFile" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Assembly reference '{0}' contains invalid characters.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Il riferimento all'assembly '{0}' contiene caratteri non validi.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="mori" DateTime="2012-02-10T17:26:08Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";Manifest_InvalidSchemaNamespace" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Invalid schema namespace '{0}'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Spazio dei nomi dello schema '{0}' non valido.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="mori" DateTime="2012-02-10T17:26:08Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";Manifest_NotAvailable" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The manifest of this package has not been read. Call ReadManifest() before calling this method.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Il manifesto del pacchetto non è stato letto. Chiamare ReadManifest() prima del metodo corrente.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="nicolasp" DateTime="2012-06-01T19:05:08Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="ReadManifest()"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";Manifest_NotFound" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Could not find manifest file at '{0}'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Impossibile trovare il file manifesto in '{0}'.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="nicolasp" DateTime="2012-06-01T19:05:08Z" />
+      </Item>
+      <Item ItemId=";Manifest_ReferencesHasMixedElements" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[<references> element must not contain both <group> and <reference> child elements.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[L'elemento <references> non deve contenere entrambi gli elementi figlio <group> e <reference>.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="spoto" DateTime="2013-05-07T16:49:09Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="<references>"} {Locked="<group>"} {Locked="<reference>"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";Manifest_ReferencesIsEmpty" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The element package\metadata\references\group must contain at least one <reference> child element.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[L'elemento package\metadata\references\group deve contenere almeno un elemento figlio <reference>.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="spoto" DateTime="2013-05-07T16:49:09Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="package\metadata\references\group"} {Locked="<reference>"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";Manifest_RequireLicenseAcceptanceRequiresLicenseUrl" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Enabling license acceptance requires a license url.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[L'abilitazione dell'accettazione della licenza richiede un url licenza.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="spoto" DateTime="2013-05-08T09:26:54Z" />
+        <Props>
+          <Str Name="Custom1" Val="IIS_Razor_HO3" />
+          <Str Name="Custom2" Val="New" />
+        </Props>
+      </Item>
+      <Item ItemId=";Manifest_RequiredElementMissing" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The required element '{0}' is missing from the manifest.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Elemento '{0}' obbligatorio mancante nel manifesto.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="spoto" DateTime="2013-05-07T16:49:09Z" />
+      </Item>
+      <Item ItemId=";Manifest_RequiredMetadataMissing" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[{0} is required.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="Approved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[{0} è obbligatorio.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="v-canl" DateTime="2012-02-03T11:50:04Z" />
+        <Props>
+          <Str Name="Custom1" Val="IIS_Razor_HO3" />
+          <Str Name="Custom2" Val="New" />
+        </Props>
+      </Item>
+      <Item ItemId=";Manifest_SourceContainsInvalidCharacters" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Source path '{0}' contains invalid characters.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Il percorso di origine '{0}' contiene caratteri non validi.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="mori" DateTime="2012-02-10T17:26:08Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";Manifest_TargetContainsInvalidCharacters" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Target path '{0}' contains invalid characters.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Il percorso di destinazione '{0}' contiene caratteri non validi.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="mori" DateTime="2012-02-10T17:26:08Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";Manifest_UriCannotBeEmpty" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[{0} cannot be empty.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="Approved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[{0} non può essere vuoto.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="v-canl" DateTime="2012-02-03T11:50:04Z" />
+        <Props>
+          <Str Name="Custom1" Val="IIS_Razor_HO3" />
+          <Str Name="Custom2" Val="New" />
+        </Props>
+      </Item>
+      <Item ItemId=";MissingFrameworkName" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Framework name is missing.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Nome di framework mancante.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="mori" DateTime="2012-02-10T17:26:08Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";NewerVersionAlreadyReferenced" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Already referencing a newer version of '{0}'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" Confidence="100">
+            <Val><![CDATA[È già presente un riferimento a una versione più recente di '{0}'.]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Already referencing a newer version of '{0}']]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="julior" DateTime="2012-02-06T20:14:58Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+          <Str Name="Custom2" Val="New" />
+        </Props>
+      </Item>
+      <Item ItemId=";PackageAuthoring_FileNotFound" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[File not found: '{0}'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[File non trovato: '{0}'.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="julior" DateTime="2012-02-06T20:14:58Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";PackageDoesNotContainManifest" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Package does not contain a manifest.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="Approved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Il pacchetto non contiene un manifesto.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="v-canl" DateTime="2012-02-03T11:50:04Z" />
+        <Props>
+          <Str Name="Custom1" Val="IIS_Razor_HO1" />
+          <Str Name="Custom2" Val="New" />
+        </Props>
+      </Item>
+      <Item ItemId=";PackageHasDependent" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Unable to uninstall '{0}' because '{1}' depends on it.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[Non è possibile disinstallare '{0}' perché '{1}' è un elemento dipendente.]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Unable to uninstall '{0}' because '{1}' depends on it]]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="spoto" DateTime="2015-12-17T11:56:38Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+          <Str Name="Custom2" Val="New" />
+        </Props>
+      </Item>
+      <Item ItemId=";PackageHasDependents" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Unable to uninstall '{0}' because '{1}' depend on it.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[Non è possibile disinstallare '{0}' perché '{1}' sono elementi dipendenti.]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Unable to uninstall '{0}' because '{1}' depend on it]]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="spoto" DateTime="2015-12-17T11:55:55Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+          <Str Name="Custom2" Val="New" />
+        </Props>
+      </Item>
+      <Item ItemId=";PackageMinVersionNotSatisfied" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The '{0}' package requires NuGet client version '{1}' or above, but the current NuGet version is '{2}'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Il pacchetto '{0}' richiede la versione client NuGet '{1}' o successiva. La versione NuGet corrente è '{2}'.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="spoto" DateTime="2013-05-07T16:49:09Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="NuGet"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";PackageRestoreConsentCheckBoxText" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[&Allow NuGet to download missing packages]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[&Consenti a NuGet di scaricare i pacchetti mancanti]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="spoto" DateTime="2013-08-30T10:09:19Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="NuGet"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";PackageServerError" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Failed to process request. '{0}'. ]A;{1}.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Impossibile elaborare la richiesta. '{0}'. ]A;{1}.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="mori" DateTime="2012-02-10T17:26:08Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";PortableFrameworkProfileComponentIsEmpty" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The profile part of a portable target framework must not contain empty component.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[La parte del profilo di un framework di destinazione portabile non deve contenere un componente vuoto.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="spoto" DateTime="2013-01-08T12:40:17Z" />
+        <Props>
+          <Str Name="Custom5" Val="HO1" />
+        </Props>
+      </Item>
+      <Item ItemId=";PortableFrameworkProfileComponentIsPortable" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The profile part of a portable target framework must not contain a portable framework component.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[La parte del profilo di un framework di destinazione portabile non deve contenere un componente di framework portabile.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="spoto" DateTime="2013-01-08T12:41:33Z" />
+        <Props>
+          <Str Name="Custom5" Val="HO1" />
+        </Props>
+      </Item>
+      <Item ItemId=";PortableFrameworkProfileEmpty" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Portable target framework must not have an empty profile part.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Un framework di destinazione portabile non deve avere una parte del profilo vuota.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="spoto" DateTime="2013-01-08T12:40:40Z" />
+        <Props>
+          <Str Name="Custom5" Val="HO1" />
+        </Props>
+      </Item>
+      <Item ItemId=";PortableFrameworkProfileHasDash" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The profile part of a portable target framework must not contain the '-' character.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[La parte del profilo di un framework di destinazione portabile non deve contenere il carattere '-'.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="spoto" DateTime="2013-01-08T12:41:00Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="-"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom5" Val="HO1" />
+        </Props>
+      </Item>
+      <Item ItemId=";PortableFrameworkProfileHasSpace" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The profile part of a portable target framework must not contain empty space.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[La parte del profilo di un framework di destinazione portabile non deve contenere spazi vuoti.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="spoto" DateTime="2013-01-08T12:41:16Z" />
+        <Props>
+          <Str Name="Custom5" Val="HO1" />
+        </Props>
+      </Item>
+      <Item ItemId=";ProjectDoesNotHaveReference" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[{0} does not reference '{1}'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="Approved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[{0} non fa riferimento a '{1}'.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="v-canl" DateTime="2012-02-03T11:50:04Z" />
+        <Props>
+          <Str Name="Custom1" Val="IIS_Razor_HO1" />
+          <Str Name="Custom2" Val="New" />
+        </Props>
+      </Item>
+      <Item ItemId=";ReferenceFile_InvalidDevelopmentFlag" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Unable to parse developmentDependency value '{0}' from '{1}'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Impossibile analizzare il valore developmentDependency '{0}' da '{1}'.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="FedericoMu" DateTime="2013-07-12T19:44:10Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="developmentDependency"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";ReferenceFile_InvalidRequireReinstallationFlag" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Unable to parse requireReinstallation value '{0}' from '{1}'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Impossibile analizzare il valore '{0}' di requireReinstallation da '{1}'.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="spoto" DateTime="2013-07-29T16:12:27Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="requireReinstallation"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";ReferenceFile_InvalidVersion" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Unable to parse version value '{0}' from '{1}'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Impossibile analizzare il valore '{0}' della versione da '{1}'.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="mori" DateTime="2012-02-15T09:36:53Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";SemVerSpecialVersionTooLong" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The special version part cannot exceed 20 characters.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[La parte relativa alla versione speciale non può contenere più di 20 caratteri.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="mori" DateTime="2012-02-10T17:26:08Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";SettingsCredentials_UsingSavedCredentials" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Using credentials from config. UserName: {0}]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Verranno utilizzate le credenziali del file di configurazione. UserName: {0}]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="nicolasp" DateTime="2012-06-01T19:05:08Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="UserName"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";SupportedFrameworkIsNull" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[One of the supported framework is null.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Uno dei framework supportati è null.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="spoto" DateTime="2013-01-08T12:07:11Z" />
+        <Props>
+          <Str Name="Custom5" Val="HO1" />
+        </Props>
+      </Item>
+      <Item ItemId=";TokenHasNoValue" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The replacement token '{0}' has no value.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="Approved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Il token di sostituzione '{0}' non contiene un valore.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="v-canl" DateTime="2012-02-03T11:50:04Z" />
+        <Props>
+          <Str Name="Custom1" Val="IIS_Razor_HO1" />
+          <Str Name="Custom2" Val="New" />
+        </Props>
+      </Item>
+      <Item ItemId=";TypeMustBeASemanticVersion" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Type to compare must be an instance of SemanticVersion.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Il tipo da confrontare deve essere un'istanza di SemanticVersion.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="mori" DateTime="2012-02-10T17:26:08Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="SemanticVersion"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";UnableToFindCompatibleItems" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Could not install package '{0}'. You are trying to install this package into a project that targets '{1}', but the package does not contain any assembly references or content files that are compatible with that framework. For more information, contact the package author.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[Non è stato possibile installare il pacchetto '{0}'. Si sta tentando di eseguire l'installazione in un progetto destinato a '{1}', ma il pacchetto non contiene riferimenti ad assembly o file di dati compatibili con il framework. Per altre informazioni, contattare l'autore del pacchetto.]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Could not install package '{0}'. You are trying to install this package into a project that targets '{1}', but the package does not contain any {2} that are compatible with that framework. For more information, contact the package author.]]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="spoto" DateTime="2015-10-21T11:03:54Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";UnableToLocateDependency" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Unable to locate dependency '{0}'. It may have been uninstalled.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" Confidence="100">
+            <Val><![CDATA[Impossibile individuare la dipendenza '{0}'. Potrebbe essere stata disinstallata.]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Unable to locate dependency '{0}'. It may have been uninstalled]]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="julior" DateTime="2012-02-06T20:14:58Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+          <Str Name="Custom2" Val="New" />
+        </Props>
+      </Item>
+      <Item ItemId=";UnableToLocateWIF" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Connection to feed '{0}' requires the Windows Identity Foundation runtime to be installed. ]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[La connessione al feed '{0}' richiede che sia installato il runtime Windows Identity Foundation. ]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="nicolasp" DateTime="2012-06-01T19:05:08Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="Windows Identity Foundation"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";UnableToResolveDependency" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Unable to resolve dependency '{0}'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[Non è possibile risolvere la dipendenza '{0}'.]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Unable to resolve dependency '{0}']]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="spoto" DateTime="2015-10-21T10:38:43Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+          <Str Name="Custom2" Val="New" />
+        </Props>
+      </Item>
+      <Item ItemId=";UnableToResolveUri" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Unable to resolve '{0}'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Impossibile risolvere '{0}'.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="mori" DateTime="2012-02-10T17:26:08Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";UnknownPackage" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Unable to find package '{0}'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[Non è possibile trovare il pacchetto '{0}'.]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Unable to find package '{0}']]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="spoto" DateTime="2015-10-21T10:11:54Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+          <Str Name="Custom2" Val="New" />
+        </Props>
+      </Item>
+      <Item ItemId=";UnknownPackageSpecificVersion" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Unable to find version '{1}' of package '{0}'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Non è possibile trovare la versione '{1}' del pacchetto '{0}'.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="spoto" DateTime="2015-10-21T10:20:00Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";UnknownSchemaVersion" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Unknown schema version '{0}'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Versione dello schema '{0}' sconosciuta.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="mori" DateTime="2012-02-10T17:26:08Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";UnsupportedHashAlgorithm" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Hash algorithm '{0}' is unsupported. Supported algorithms include: SHA512 and SHA256.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Algoritmo hash '{0}' non supportato. Sono supportati i seguenti algoritmi: SHA512 e SHA256.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="mori" DateTime="2012-06-12T13:37:04Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="SHA512"} {Locked="SHA256"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";UserSettings_UnableToParseConfigFile" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Unable to parse config file '{0}'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[Non è possibile analizzare il file di configurazione '{0}'.]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Unable to parse config file.]]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="spoto" DateTime="2015-10-21T11:02:51Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";Warning_FileAlreadyExists" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA['{0}' already exists. Skipping...]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA['{0}' esiste già. Operazione ignorata...]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="mori" DateTime="2012-02-29T10:16:47Z" />
+        <Props>
+          <Str Name="Custom1" Val="IIS_Razor_HO1" />
+          <Str Name="Custom2" Val="New" />
+        </Props>
+      </Item>
+      <Item ItemId=";Warning_FileModified" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Skipping '{0}' because it was modified.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" Confidence="100">
+            <Val><![CDATA['{0}' verrà ignorato perché è stato modificato.]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Skipping '{0}' because it was modified]]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="julior" DateTime="2012-02-06T20:14:58Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+          <Str Name="Custom2" Val="New" />
+        </Props>
+      </Item>
+      <Item ItemId=";Warning_PackageSkippedBecauseItIsInUse" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA['{0}' skipped, because it is in use by '{1}'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" Confidence="100">
+            <Val><![CDATA['{0}' ignorato perché è utilizzato da '{1}'.]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA['{0}' skipped, because it is in use by '{1}']]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="julior" DateTime="2012-02-06T20:14:58Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+          <Str Name="Custom2" Val="Updated" />
+        </Props>
+      </Item>
+      <Item ItemId=";Warning_UninstallingPackageWillBreakDependents" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Uninstalling '{0}' might cause '{1}' to be broken.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" Confidence="100">
+            <Val><![CDATA[La disinstallazione di '{0}' potrebbe causare l'interruzione di '{1}'.]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Uninstalling '{0}' might cause '{1}' to be broken]]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="julior" DateTime="2012-02-06T20:14:58Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+          <Str Name="Custom2" Val="New" />
+        </Props>
+      </Item>
+      <Item ItemId=";XdtError" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[An error occurred while applying transformation to '{0}' in project '{1}':]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Errore durante l'applicazione della trasformazione '{0}' al progetto '{1}':]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="spoto" DateTime="2013-06-11T13:24:26Z" />
+      </Item>
+    </Item>
+  </Item>
+  <Item ItemId=";Version" ItemType="0" PsrId="211" Leaf="false">
+    <Disp Icon="Ver" Disp="true" LocTbl="false" Path=" \ ;Version \ 8 \ 0" />
+    <Modified By="v-hugeng" DateTime="2010-11-02T10:54:20Z" />
+    <Item ItemId=";AssemblyVersion" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text" DevLk="true">
+        <Val><![CDATA[2.10.1.766]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+      <Modified By="v-canl" DateTime="2012-02-03T11:50:04Z" />
+    </Item>
+    <Item ItemId=";Comments" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+      <Str Cat="Text">
+        <Val><![CDATA[NuGet.Core is the core framework assembly for NuGet that the rest of NuGet builds upon.]]></Val>
+        <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+          <Val><![CDATA[NuGet.Core è l'assembly framework principale per NuGet su cui sono basati gli altri componenti di NuGet.]]></Val>
+        </Tgt>
+        <Prev Cat="Text">
+          <Val><![CDATA[Core API for NuGet]]></Val>
+        </Prev>
+      </Str>
+      <Disp Icon="Str" />
+      <Modified By="mori" DateTime="2012-02-10T17:26:08Z" />
+      <Cmts>
+        <Cmt Name="LcxAdmin"><![CDATA[{Placeholder="NuGet"}]]></Cmt>
+      </Cmts>
+      <Props>
+        <Str Name="Custom1" Val="IIS_Razor_HO1" />
+        <Str Name="Custom2" Val="New" />
+      </Props>
+    </Item>
+    <Item ItemId=";CompanyName" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+      <Str Cat="Text" UsrLk="true">
+        <Val><![CDATA[Microsoft Corporation]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+      <Modified By="v-canl" DateTime="2012-02-03T11:50:04Z" />
+      <Cmts>
+        <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+      </Cmts>
+      <Props>
+        <Str Name="Custom1" Val="IIS_Razor_HO1" />
+        <Str Name="Custom2" Val="New" />
+      </Props>
+    </Item>
+    <Item ItemId=";FileDescription" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+      <Str Cat="Text" UsrLk="true">
+        <Val><![CDATA[NuGet.Core]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+      <Modified By="v-canl" DateTime="2012-02-03T11:50:04Z" />
+      <Cmts>
+        <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+      </Cmts>
+      <Props>
+        <Str Name="Custom1" Val="IIS_Razor_HO1" />
+        <Str Name="Custom2" Val="New" />
+      </Props>
+    </Item>
+    <Item ItemId=";FileVersion" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text" DevLk="true">
+        <Val><![CDATA[2.10.1.766]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+      <Modified By="v-canl" DateTime="2012-02-03T11:50:04Z" />
+    </Item>
+    <Item ItemId=";InternalName" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text" DevLk="true">
+        <Val><![CDATA[NuGet.Core.dll]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+      <Modified By="v-canl" DateTime="2012-02-03T11:50:04Z" />
+    </Item>
+    <Item ItemId=";LegalCopyright" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text">
+        <Val><![CDATA[© Microsoft Corporation. All rights reserved.]]></Val>
+        <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" Confidence="100">
+          <Val><![CDATA[© Microsoft Corporation. Tutti i diritti sono riservati.]]></Val>
+          <Props>
+            <Str Name="TranslationModifiedBy" Val="FEDERICA" />
+            <Date Name="TranslationModifiedDate" Val="2015-08-26T05:03:23.5492893Z" />
+          </Props>
+        </Tgt>
+        <Prev Cat="Text">
+          <Val><![CDATA[Copyright 2013 Microsoft. NuGet is made possible by the Outercurve Foundation's open source project.]]></Val>
+        </Prev>
+      </Str>
+      <Disp Icon="Str" />
+      <Modified By="spoto" DateTime="2015-10-21T09:24:04Z" />
+      <Props>
+        <Str Name="Custom1" Val="VSToolingOOB_HO3" />
+        <Str Name="Custom2" Val="Autotranslated" />
+        <Str Name="TranslationStatus" Val="In Sync" />
+        <Str Name="TranslationStatusPosition" Val="3 - ReadyForReview" />
+        <Str Name="VendorComment" Val="165_20150825_HO02_AppPlat_WebStack_Nuget_All_updated" />
+      </Props>
+    </Item>
+    <Item ItemId=";OriginalFilename" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text" DevLk="true">
+        <Val><![CDATA[NuGet.Core.dll]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+      <Modified By="v-canl" DateTime="2012-02-03T11:50:04Z" />
+    </Item>
+    <Item ItemId=";ProductName" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+      <Str Cat="Text" UsrLk="true">
+        <Val><![CDATA[NuGet]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+      <Modified By="v-canl" DateTime="2012-02-03T11:50:04Z" />
+      <Cmts>
+        <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+      </Cmts>
+      <Props>
+        <Str Name="Custom1" Val="IIS_Razor_HO1" />
+        <Str Name="Custom2" Val="New" />
+      </Props>
+    </Item>
+    <Item ItemId=";ProductVersion" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text" DevLk="true">
+        <Val><![CDATA[2.10.1]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+      <Modified By="v-canl" DateTime="2012-02-03T11:50:04Z" />
+    </Item>
+  </Item>
+  <Item ItemId=";XML" ItemType="0" PsrId="210" Leaf="true">
+    <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" />
+    <Modified By="v-hugeng" DateTime="2010-11-02T10:54:20Z" />
+  </Item>
+  <Item ItemId=";Version" ItemType="8" PsrId="211" Leaf="true">
+    <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" />
+    <Modified By="v-hugeng" DateTime="2010-11-02T10:54:20Z" />
+  </Item>
+</LCX>

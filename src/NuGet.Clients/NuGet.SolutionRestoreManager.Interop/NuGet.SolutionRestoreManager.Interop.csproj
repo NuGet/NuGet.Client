@@ -8,9 +8,16 @@
     <PackProject>true</PackProject>
   </PropertyGroup>
 
+  <ItemGroup>
+    <None Update="install.ps1">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
   <PropertyGroup>
     <NuspecFile>NuGet.SolutionRestoreManager.Interop.nuspec</NuspecFile>
     <NuspecProperties>version=$(Version);configuration=$(Configuration)</NuspecProperties>
+    <NuspecBasePath>$(OutputPath)</NuspecBasePath>
   </PropertyGroup>
 
   <Import Project="$(BuildCommonDirectory)common.targets" />

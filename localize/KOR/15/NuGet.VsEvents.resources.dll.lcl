@@ -1,0 +1,459 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<LCX SchemaVersion="6.0" Name="C:\BuildAgent\work\38c6c22cbc43fc2d\Tooling\bin\Release\NuGetTools\12\NuGet.VsEvents.dll" PsrId="211" FileType="1" SrcCul="en-US" TgtCul="ko-KR" xmlns="http://schemas.microsoft.com/locstudio/2006/6/lcx">
+  <Props>
+    <Str Name="CustomName1" Val="Custom 1" />
+    <Str Name="CustomName2" Val="Custom 2" />
+    <Str Name="CustomName3" Val="Custom 3" />
+    <Str Name="CustomName4" Val="Custom 4" />
+    <Str Name="CustomName5" Val="Custom 5" />
+    <Str Name="CustomName6" Val="IQA" />
+  </Props>
+  <OwnedComments>
+    <Cmt Name="Dev" />
+    <Cmt Name="LcxAdmin" />
+    <Cmt Name="Note" />
+    <Cmt Name="Rccx" />
+  </OwnedComments>
+  <Settings Name="@vsLocTools@\default.lss" Type="Lss" />
+  <Item ItemId=";Managed Resources" ItemType="0" PsrId="211" Leaf="true">
+    <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" />
+    <Modified By="kmkim" DateTime="2013-07-09T08:26:52Z" />
+  </Item>
+  <Item ItemId=";NuGet.VsEvents.Resources.resources" ItemType="0" PsrId="211" Leaf="false">
+    <Disp Icon="Str" Expand="true" Disp="true" LocTbl="false" Path=" \ ;Managed Resources \ 0 \ 0" />
+    <Modified By="kmkim" DateTime="2013-07-09T08:26:52Z" />
+    <Item ItemId=";Strings" ItemType="0" PsrId="211" Leaf="false">
+      <Disp Icon="Str" LocTbl="false" />
+      <Modified By="kmkim" DateTime="2013-07-09T08:26:52Z" />
+      <Item ItemId=";ErrorOccurredRestoringPackages" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Error occurred while restoring NuGet packages: {0}]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[NuGet 패키지 {0}을(를) 복원하는 동안 오류가 발생했습니다.]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Error occurred while restoring NuGet packages: {0}.]]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="user" DateTime="2013-12-31T00:43:41Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="NuGet"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom1" Val="GW_0711_HB" />
+        </Props>
+      </Item>
+      <Item ItemId=";NothingToRestore" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[All packages are already installed and there is nothing to restore.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[모든 패키지가 이미 설치되어 있으므로 복원할 패키지가 없습니다.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="user" DateTime="2013-07-27T09:09:39Z" />
+      </Item>
+      <Item ItemId=";PackageNotRestoredBecauseOfNoConsent" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[One or more NuGet packages need to be restored but couldn't be because consent has not been granted. To give consent, open the Visual Studio Options dialog, click on the Package Manager node and check 'Allow NuGet to download missing packages during build.' You can also give consent by setting the environment variable 'EnableNuGetPackageRestore' to 'true'. ]A;]A;Missing packages: {0}]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[하나 이상의 NuGet 패키지를 복원해야 하지만 동의하지 않아 복원할 수 없습니다. 동의하려면 [Visual Studio 옵션]5D; 대화 상자를 열고 [패키지 관리자]5D; 노드를 클릭한 후 [NuGet이 누락된 패키지를 빌드 시 다운로드하도록 허용]5D;을 선택합니다. 'EnableNuGetPackageRestore' 환경 변수를 'true'로 설정하여 동의할 수도 있습니다. ]A;]A;누락된 패키지: {0}]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Error: NuGet package {0} needs to be restored but couldn't be because consent has not been granted.]]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="user" DateTime="2013-07-27T09:09:39Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="NuGet"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom1" Val="GW_0711_HB" />
+        </Props>
+      </Item>
+      <Item ItemId=";PackageRestoreCanceled" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[NuGet package restore canceled.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[NuGet 패키지 복원을 취소했습니다.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="user" DateTime="2013-07-27T09:09:39Z" />
+      </Item>
+      <Item ItemId=";PackageRestoreFailedForProject" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[NuGet Package restore failed for project {0}: {1}.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[{0} 프로젝트에 대한 NuGet 패키지를 복원하지 못했습니다({1}).]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[NuGet Package restore failed for project {0}: {1}]]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="user" DateTime="2013-07-27T09:09:39Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="NuGet"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom1" Val="GW_0711_HB" />
+        </Props>
+      </Item>
+      <Item ItemId=";PackageRestoreFailedForSolution" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[NuGet Package restore failed for solution {0}: {1}.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[{0} 솔루션에 대한 NuGet 패키지를 복원하지 못했습니다({1}).]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[NuGet Package restore failed for solution {0}: {1}]]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="user" DateTime="2013-07-27T09:09:39Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="NuGet"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom1" Val="GW_0711_HB" />
+        </Props>
+      </Item>
+      <Item ItemId=";PackageRestoreFinished" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[NuGet package restore finished.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[NuGet 패키지 복원을 마쳤습니다.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="kmkim" DateTime="2013-07-11T09:29:59Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="NuGet"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom1" Val="GW_0711_HB" />
+        </Props>
+      </Item>
+      <Item ItemId=";PackageRestoreFinishedForProject" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[NuGet Package restored finished for project {0}.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[{0} 프로젝트에 대한 NuGet 패키지 복원을 마쳤습니다.]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[NuGet Package restored finished for project {0}]]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="user" DateTime="2013-07-27T09:09:39Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="NuGet"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom1" Val="GW_0711_HB" />
+        </Props>
+      </Item>
+      <Item ItemId=";PackageRestoreFinishedForSolution" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[NuGet Package restored finished for solution {0}.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[{0} 솔루션에 대한 NuGet 패키지 복원을 마쳤습니다.]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[NuGet Package restored finished for solution {0}]]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="user" DateTime="2013-07-27T09:09:39Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="NuGet"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom1" Val="GW_0711_HB" />
+        </Props>
+      </Item>
+      <Item ItemId=";PackageRestoreFinishedWithError" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[NuGet package restore failed.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[NuGet 패키지를 복원하지 못했습니다.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="user" DateTime="2013-08-15T21:52:01Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="NuGet"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";PackageRestoreOptOutMessage" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Restoring NuGet packages...]A;To prevent NuGet from restoring packages during build, open the Visual Studio Options dialog, click on the Package Manager node and uncheck 'Allow NuGet to download missing packages during build.']]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[NuGet 패키지를 복원하는 중...]A;빌드 시 NuGet이 패키지를 복원하지 않도록 하려면 [Visual Studio 옵션]5D; 대화 상자를 열고 [프로젝트 관리자]5D; 노드를 클릭한 후 [NuGet이 누락된 패키지를 빌드 시 다운로드하도록 허용]5D;을 선택 취소합니다.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="user" DateTime="2013-07-27T09:09:39Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="NuGet"} {Locked="Visual Studio"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";PackageRestoreStarted" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[NuGet package restore started.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[NuGet 패키지 복원을 시작했습니다.]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[NuGet package restore started]]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="user" DateTime="2013-07-27T09:09:39Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="NuGet"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom1" Val="GW_0711_HB" />
+        </Props>
+      </Item>
+      <Item ItemId=";PackageRestored" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[NuGet Package {0} is restored.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[NuGet 패키지 {0}이(가) 복원되었습니다.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="kmkim" DateTime="2013-07-11T09:29:59Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="NuGet"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom1" Val="GW_0711_HB" />
+        </Props>
+      </Item>
+      <Item ItemId=";ProjectUpgradeAndRetargetErrorMessage" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Some NuGet packages were installed using a target framework different from the current target framework and may need to be reinstalled. Visit http://docs.nuget.org/docs/workflows/reinstalling-packages for more information.  Packages affected: {0}]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[일부 NuGet 패키지가 현재 대상 프레임워크와 다른 대상 프레임워크를 사용하여 설치되었으므로 다시 설치해야 할 수 있습니다. 자세한 내용은 http://docs.nuget.org/docs/workflows/reinstalling-packages를 참조하십시오. 관련 패키지는 {0}입니다.]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Some NuGet packages were installed using a target framework different from the current target framework and may need to be reinstalled. For more information, visit http://docs.nuget.org/docs/workflows/reinstalling-packages.  Packages affected: {0}]]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="user" DateTime="2015-01-05T13:15:49Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="NuGet", "http://docs.nuget.org/docs/workflows/reinstalling-packages"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom1" Val="GW_0711_HB" />
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";RestoringPackage" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Restoring NuGet package {0}.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[NuGet 패키지 {0}을(를) 복원하고 있습니다.]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Restoring NuGet package {0}]]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="user" DateTime="2013-07-27T09:09:39Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="NuGet"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom1" Val="GW_0711_HB" />
+        </Props>
+      </Item>
+      <Item ItemId=";RestoringPackages" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Restoring NuGet packages...]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[NuGet 패키지를 복원하는 중...]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="kmkim" DateTime="2013-07-11T09:29:59Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="NuGet"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom1" Val="GW_0711_HB" />
+        </Props>
+      </Item>
+      <Item ItemId=";RestoringPackagesForProject" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Restoring NuGet packages for project {0}.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[{0} 프로젝트의 NuGet 패키지를 복원하고 있습니다.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="user" DateTime="2013-07-27T09:09:39Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="NuGet"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";RestoringPackagesForSolution" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Restoring NuGet packages for solution {0}.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[{0} 솔루션의 NuGet 패키지를 복원하고 있습니다.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="user" DateTime="2013-07-27T09:09:39Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="NuGet"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";RestoringPackagesListedInFile" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Restoring NuGet packages listed in file {0}.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[{0} 파일에 나열된 NuGet 패키지를 복원하고 있습니다.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="user" DateTime="2013-07-27T09:09:39Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="NuGet"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";SkippingInstalledPackage" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Skipping NuGet package {0} since it is already installed.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[NuGet 패키지 {0}이(가) 이미 설치되어 있으므로 이를 건너뜁니다.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="user" DateTime="2013-07-27T09:09:39Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="NuGet"}]]></Cmt>
+        </Cmts>
+      </Item>
+    </Item>
+  </Item>
+  <Item ItemId=";Version" ItemType="0" PsrId="211" Leaf="false">
+    <Disp Icon="Ver" Disp="true" LocTbl="false" Path=" \ ;Version \ 8 \ 0" />
+    <Modified By="kmkim" DateTime="2013-07-09T08:26:52Z" />
+    <Item ItemId=";AssemblyVersion" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text" DevLk="true">
+        <Val><![CDATA[3.0.51216.259]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+      <Modified By="kmkim" DateTime="2013-07-09T08:26:52Z" />
+    </Item>
+    <Item ItemId=";Comments" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text">
+        <Val><![CDATA[NuGet Visual Studio Events Package]]></Val>
+        <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+          <Val><![CDATA[NuGet Visual Studio 이벤트 패키지]]></Val>
+        </Tgt>
+      </Str>
+      <Disp Icon="Str" />
+      <Modified By="kmkim" DateTime="2013-07-11T09:29:59Z" />
+      <Props>
+        <Str Name="Custom1" Val="GW_0711_HB" />
+      </Props>
+    </Item>
+    <Item ItemId=";CompanyName" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text">
+        <Val><![CDATA[Microsoft Corporation]]></Val>
+        <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+          <Val><![CDATA[Microsoft Corporation]]></Val>
+        </Tgt>
+      </Str>
+      <Disp Icon="Str" />
+      <Modified By="kmkim" DateTime="2013-07-11T09:29:59Z" />
+      <Props>
+        <Str Name="Custom1" Val="GW_0711_HB" />
+      </Props>
+    </Item>
+    <Item ItemId=";FileDescription" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text">
+        <Val><![CDATA[NuGetVSEvents]]></Val>
+        <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+          <Val><![CDATA[NuGetVSEvents]]></Val>
+        </Tgt>
+      </Str>
+      <Disp Icon="Str" />
+      <Modified By="kmkim" DateTime="2013-07-11T09:29:59Z" />
+      <Props>
+        <Str Name="Custom1" Val="GW_0711_HB" />
+      </Props>
+    </Item>
+    <Item ItemId=";FileVersion" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text" DevLk="true">
+        <Val><![CDATA[3.0.51216.259]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+      <Modified By="kmkim" DateTime="2013-07-09T08:26:52Z" />
+    </Item>
+    <Item ItemId=";InternalName" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text" DevLk="true">
+        <Val><![CDATA[NuGet.VsEvents.dll]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+      <Modified By="kmkim" DateTime="2013-07-09T08:26:52Z" />
+    </Item>
+    <Item ItemId=";LegalCopyright" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text">
+        <Val><![CDATA[Copyright 2013 Microsoft. NuGet is made possible by the Outercurve Foundation's open source project.]]></Val>
+        <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+          <Val><![CDATA[Copyright 2013 Microsoft. NuGet은 Outercurve Foundation의 오픈 소스 프로젝트를 통해 사용할 수 있습니다.]]></Val>
+        </Tgt>
+        <Prev Cat="Text">
+          <Val><![CDATA[Copyright 2013 Microsoft. NuGet is made possible by the Microsoft Corporation's open source project.]]></Val>
+        </Prev>
+      </Str>
+      <Disp Icon="Str" />
+      <Modified By="user" DateTime="2013-12-31T00:43:41Z" />
+      <Props>
+        <Str Name="Custom1" Val="GW_0711_HB" />
+      </Props>
+    </Item>
+    <Item ItemId=";OriginalFilename" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text" DevLk="true">
+        <Val><![CDATA[NuGet.VsEvents.dll]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+      <Modified By="kmkim" DateTime="2013-07-09T08:26:52Z" />
+    </Item>
+    <Item ItemId=";ProductName" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text">
+        <Val><![CDATA[NuGet]]></Val>
+        <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+          <Val><![CDATA[NuGet]]></Val>
+        </Tgt>
+      </Str>
+      <Disp Icon="Str" />
+      <Modified By="kmkim" DateTime="2013-07-11T09:29:59Z" />
+      <Props>
+        <Str Name="Custom1" Val="GW_0711_HB" />
+      </Props>
+    </Item>
+    <Item ItemId=";ProductVersion" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text" DevLk="true">
+        <Val><![CDATA[3.0.0-preview]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+      <Modified By="kmkim" DateTime="2013-07-09T08:26:52Z" />
+    </Item>
+  </Item>
+  <Item ItemId=";Version" ItemType="8" PsrId="211" Leaf="true">
+    <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" />
+    <Modified By="kmkim" DateTime="2013-07-09T08:26:52Z" />
+  </Item>
+</LCX>

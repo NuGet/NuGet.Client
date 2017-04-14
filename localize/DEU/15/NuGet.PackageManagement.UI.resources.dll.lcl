@@ -1,0 +1,1809 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LCX SchemaVersion="6.0" Name="C:\BuildAgent\work\fea8ec2fb9b8541c\NuGet\bin\Release\NuGetTools\14\NuGet.PackageManagement.UI.dll" PsrId="211" FileType="1" SrcCul="en-US" TgtCul="de-DE" xmlns="http://schemas.microsoft.com/locstudio/2006/6/lcx">
+  <Props>
+    <Str Name="CustomName1" Val="Custom 1" />
+    <Str Name="CustomName2" Val="Custom 2" />
+    <Str Name="CustomName3" Val="Custom 3" />
+    <Str Name="CustomName4" Val="Custom 4" />
+    <Str Name="CustomName5" Val="Custom 5" />
+    <Str Name="CustomName6" Val="IQA" />
+  </Props>
+  <OwnedComments>
+    <Cmt Name="Dev" />
+    <Cmt Name="LcxAdmin" />
+    <Cmt Name="Note" />
+    <Cmt Name="Rccx" />
+  </OwnedComments>
+  <Settings Name="@vsLocTools@\default.lss" Type="Lss" />
+  <Item ItemId=";Managed Resources" ItemType="0" PsrId="211" Leaf="true">
+    <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" />
+  </Item>
+  <Item ItemId=";NuGet.PackageManagement.UI.Resources.resources" ItemType="0" PsrId="211" Leaf="false">
+    <Disp Icon="Str" Expand="true" Disp="true" LocTbl="false" Path=" \ ;Managed Resources \ 0 \ 0" />
+    <Item ItemId=";Strings" ItemType="0" PsrId="211" Leaf="false">
+      <Disp Icon="Str" LocTbl="false" />
+      <Item ItemId=";Action_Consolidate" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Consolidate]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[Konsolidieren]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Action_Downgrade" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Downgrade]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Herabstufen]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Action_Install" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Install]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[Installieren]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Action_Update" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Update]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Update]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";AggregateSourceName" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[All]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Alle]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";AskForRestoreMessage" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Some NuGet packages are missing from this solution. Click to restore from your online package sources.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[Einige NuGet-Pakete fehlen in dieser Projektmappe. Klicken Sie, um eine Wiederherstellung aus Ihren Onlinepaketquellen auszuführen.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";AskForUpdateMessage" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[A new version of NuGet Package Manager is available.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Eine neue Version des NuGet-Paket-Managers ist verfügbar.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Button_Cancel" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Cancel]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[Abbrechen]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Button_Dismiss" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Dismiss]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Schließen]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Button_IAccept" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[I Accept]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[Ich stimme zu]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Button_IDecline" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[I Decline]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[Ich stimme nicht zu]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Button_Install" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Install]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" Confidence="100">
+            <Val><![CDATA[Installieren]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Button_No" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[No]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[Nein]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Button_NoToAll" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[No to All]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[Nein für alle]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Button_OK" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[OK]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[OK]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Button_Preview" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Preview]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[Vorschau]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Button_RestartSearch" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Restart search]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Suche neu starten]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Button_ShowErrors" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Show errors in output]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Fehler in Ausgabe anzeigen]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Button_ShowMoreResults" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Show {0} more results]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Weitere {0} Ergebnisse anzeigen]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Button_Uninstall" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Uninstall]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" Confidence="100">
+            <Val><![CDATA[Deinstallieren]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Button_Update" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Update]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" Confidence="100">
+            <Val><![CDATA[Aktualisieren]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Button_Yes" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Yes]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[Ja]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Button_YesToAll" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Yes to All]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[Ja, alle]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";CheckBox_DefaultPackageFormat" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Allow format selection on first package install]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Formatauswahl bei der ersten Paketinstallation zulassen]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Make this package manager format the default and do not show this dialog again.]]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";CheckBox_SelectAllProjects" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Select All Projects]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Alle Projekte auswählen]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";CheckBox_SelectAllProjects_HelpText" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Select this checkbox to install the NuGet Package to all projects in the solution]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Aktivieren Sie dieses Kontrollkästchen, um das NuGet-Paket für alle Projekte in der Projektmappe zu installieren.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";CheckBox_SelectProject_HelpText" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Select this checkbox to install the NuGet Package to the project '{0}']]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Aktivieren Sie dieses Kontrollkästchen, um das NuGet-Paket für das Projekt "{0}" zu installieren.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Checkbox_ForceRemove" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Force uninstall, even if there are dependencies on it]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[Deinstallation auch dann erzwingen, wenn Abhängigkeiten vorhanden sind]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Checkbox_IncludePrerelease" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Include prerelease]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[Vorabversion einbeziehen]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Checkbox_ProjectSelection" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[{0} project(s)]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[{0} Projekt(e)]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Checkbox_RemoveDependencies" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Remove dependencies]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[Abhängigkeiten entfernen]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Checkbox_SelectAllPackages" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Select all packages]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Alle Pakete auswählen]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Checkbox_ShowPreviewWindow" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Show preview window]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[Vorschaufenster anzeigen]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";ColumnHeader_Project" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Project]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" Confidence="100">
+            <Val><![CDATA[Projekt]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";ColumnHeader_Version" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Version]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" Confidence="100">
+            <Val><![CDATA[Version]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";DependencyBehavior_Highest" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Highest]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[Höchste]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";DependencyBehavior_HighestMinor" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Highest Minor]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[Höchste kleinere]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";DependencyBehavior_HighestPatch" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Highest Patch]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[Höchster Patch]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";DependencyBehavior_IgnoreDependencies" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Ignore Dependencies]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[Abhängigkeiten ignorieren]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";DependencyBehavior_Lowest" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Lowest]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[Niedrigste]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";DoNotShowThisAgain" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Do not show this again]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" Confidence="100">
+            <Val><![CDATA[Diese Meldung nicht mehr anzeigen]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Error_NoActiveRepository" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[No repository is selected]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[Es ist kein Repository ausgewählt.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";FileConflictAction_IgnoreAll" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Ignore All]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[Alle ignorieren]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";FileConflictAction_OverwriteAll" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Overwrite All]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[Alle überschreiben]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";FileConflictAction_Prompt" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Prompt]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[Eingabeaufforderung]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";GroupBoxHeader_InstallOptions" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Install and Update Options]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[Installations- und Aktualisierungsoptionen]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";GroupBoxHeader_UninstallOptions" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Uninstall Options]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[Deinstallationsoptionen]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";IgnoreUpgrade" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Ignore for now]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[Vorerst ignorieren]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Label_Action" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Action:]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[Aktion:]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Label_Authors" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Author(s): ]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[Autor(en): ]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Author(s):]]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Label_Browse" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Browse]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" Confidence="100">
+            <Val><![CDATA[Durchsuchen]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Label_DatePublished" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Date published:]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[Veröffentlicht am:]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Label_Dependencies" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Dependencies]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[Abhängigkeiten]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Label_DependencyBehavior" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Dependency behavior:]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[Abhängigkeitsverhalten:]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Label_Description" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Description]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[Beschreibung]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Label_Downloads" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Downloads:]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Downloads:]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Label_FileConflictAction" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[File conflict action:]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[Dateikonfliktaktion:]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Label_Filter" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Filter:]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Filter:]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Label_Installed" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Installed]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" Confidence="100">
+            <Val><![CDATA[Installiert]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Label_InstalledColon" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Installed:]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[Installiert:]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Label_InstalledPackages" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Installing:]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Wird installiert:]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Label_InstalledVersionsCount" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Version(s) - {0}]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[Version(en) – {0}]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Label_LegalDisclaimer" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Legal Disclaimer]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[Haftungsausschluss]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Label_License" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[License:]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[Lizenz:]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Label_NuGetWindowCaption" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[NuGet: {0}]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[NuGet: {0}]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Label_Options" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Options]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" Confidence="100">
+            <Val><![CDATA[Optionen]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Label_Owners" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Owner(s):]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Besitzer:]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Label_PackageManager" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[NuGet Package Manager: {0}]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[NuGet-Paket-Manager: {0}]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Label_PackagePrerelease" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Prerelease]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[Vorabversion]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Label_ProjectUrl" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Project URL:]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[Projekt-URL:]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Label_Projects" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Select which projects to apply changes to:]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[Wählen Sie die Projekte aus, auf die Änderungen angewendet werden sollen:]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Label_Publishers" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Publisher(s):]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[Herausgeber:]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Label_ReportAbuse" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Report Abuse:]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[Missbrauch melden:]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Label_Repository" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Package source:]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[Paketquelle:]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Label_Solution" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Solution '{0}']]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[Projektmappe "{0}"]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Label_SolutionNuGetWindowCaption" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[NuGet - Solution]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[NuGet – Projektmappe]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Label_SolutionPackageManager" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Manage Packages for Solution]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[Pakete für Projektmappe verwalten]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Label_Tags" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Tags:]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Tags:]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Label_UninstalledPackages" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Uninstalling:]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Wird deinstalliert:]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Label_UpdatedPackages" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Updates:]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Updates:]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Label_Updates" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Updates]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" Confidence="100">
+            <Val><![CDATA[Aktualisierungen]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Label_UseInstead" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Incompatible: Use {0} instead]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Inkompatibel: stattdessen {0} verwenden]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Label_UseInsteadInSolutionPackageManager" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[[Incompatible: Use {0} instead]5D;]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[[Inkompatibel: stattdessen {0} verwenden]5D;]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Label_Version" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Version:]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Version:]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Link_LearnAboutInstallOptions" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Learn about Install Options]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[Weitere Informationen zu den Installationsoptionen]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Link_LearnAboutUninstallOptions" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Learn about Uninstall Options]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[Weitere Informationen zu den Deinstallationsoptionen]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Operation_TotalTime" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Time Elapsed: {0}]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Verstrichene Zeit: {0}]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";PackageRestoreCompleted" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Finished configuring this solution to restore NuGet packages on build.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[Die Konfiguration dieser Projektmappe zum Wiederherstellen von NuGet-Paketen beim Buildvorgang wurde fertiggestellt.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";PackageRestoreConfirmation" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Do you want to configure this solution to download and restore missing NuGet packages during build? A .nuget folder will be added to the root of the solution that contains files that enable package restore.]D;]A;]D;]A;Packages installed into Website projects will not be restored during build. Consider converting those into Web application projects if necessary.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[Möchten Sie diese Projektmappe so konfigurieren, dass fehlende NuGet-Pakete während des Buildvorgangs heruntergeladen und wiederhergestellt werden? Dem Stammverzeichnis der Projektmappe wird ein Ordner ".nuget" hinzugefügt, der Dateien enthält, die die Paketwiederherstellung ermöglichen.]D;]A;]D;]A;In Websiteprojekten installierte Pakete werden nicht während des Builds wiederhergestellt. Ziehen Sie in Erwägung, diese in Webanwendungsprojekte zu konvertieren, wenn erforderlich.]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Do you want to configure this solution to download and restore missing NuGet packages during build? A .nuget folder will be added to the root of the solution that contains files that enable package restore.]A;]A;Packages installed into Website projects will not be restored during build. Consider converting those into Web application projects if necessary.]]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";PackageRestoreDownloadPackageFailed" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Downloading package '{0}' failed.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[Fehler beim Herunterladen von Paket "{0}".]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";PackageRestoreErrorMessage" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[An error occurred while configuring the solution to restore NuGet packages on build]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[Fehler beim Konfigurieren der Projektmappe zum Wiederherstellen von NuGet-Paketen beim Buildvorgang.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";PackageRestoreErrorTryAgain" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[An error occurred while trying to restore packages:]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[Fehler beim Versuch, Pakete wiederherzustellen:]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";PackageRestoreProgressMessage" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Downloading missing packages...]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[Fehlende Pakete werden heruntergeladen...]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";PackageRestoreWaitMessage" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Configuring the solution to restore NuGet packages on build...]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[Die Projektmappe wird zum Wiederherstellen von NuGet-Paketen beim Buildvorgang konfiguriert...]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";RadioBtn_PackageRef" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[PackageReference in project file]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[PackageReference in Projektdatei]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";RadioBtn_PackagesConfig" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text" UsrLk="true">
+          <Val><![CDATA[Packages.config]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";RequestRestartToCompleteUninstallMultiplePackages" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Multiple packages failed to uninstall. Restart Visual Studio to finish the process.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Fehler beim Deinstallieren mehrerer Pakete. Starten Sie Visual Studio neu, um den Vorgang abzuschließen.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";RequestRestartToCompleteUninstallSinglePackage" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The package at '{0}' failed to uninstall. Restart Visual Studio to finish the process.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Fehler beim Deinstallieren des Pakets unter "{0}". Starten Sie Visual Studio neu, um den Vorgang abzuschließen.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";RestartButtonLabel" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Rest_art]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Neu st_arten]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";RestoreButtonLabel" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[_Restore]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[_Wiederherstellen]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";ShowDetails" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Show Details]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[Details anzeigen]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Text_ByAuthor" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[by {0}]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[durch {0}]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Text_Changes" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Visual Studio is about to make changes to this solution. Click OK to proceed with the changes listed below.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[Visual Studio ist im Begriff, Änderungen an dieser Projektmappe vorzunehmen. Klicken Sie auf "OK", um die unten aufgelisteten Änderungen auszuführen.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Text_DeprecatedFramework_DocumentLink" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[migration document]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Migrationsdokument]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Text_DeprecatedFramework_DocumentLink_After" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Text_DeprecatedFramework_DocumentLink_Before" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The NuGet operation failed due to one or more packages being incompatible with your project. The '{0}' ('{1}') project framework is deprecated. For more information about how to migrate your projects to a supported framework, please refer to the ]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Fehler beim NuGet-Vorgang, weil mindestens ein Paket mit Ihrem Projekt inkompatibel ist. Das Projektframework "{0}" ("{1}") ist veraltet. Weitere Informationen zum Migrieren Ihrer Projekte in ein unterstütztes Framework finden Sie hier: ]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Text_DeprecatedFramework_ProjectList" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The following project(s) target the deprecated framework:]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Die folgenden Projekte verwenden das veraltete Framework als Ziel:]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Text_Downloads" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[{0} downloads]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[{0} Downloads]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Text_ErrorDetails" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Error details]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[Fehlerdetails]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Text_ErrorOccurred" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Error occurred]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="Auto" Confidence="100">
+            <Val><![CDATA[Fehler]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Error occured:\n{0}]]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Text_InstalledVersion" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Installed version: {0}]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[Installierte Version: {0}]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Text_LegalDisclaimer" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Each package is licensed to you by its owner. NuGet is not responsible for, nor does it grant any licenses to, third-party packages.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[Die einzelnen Pakete werden vom jeweiligen Besitzer für Sie lizenziert. NuGet übernimmt keinerlei Verantwortung bezüglich Paketen von Drittanbietern oder gewährt Lizenzen für Pakete von Drittanbietern.]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Each package is licensed to you by its owner. Microsoft is not responsible for, nor does it grant any licenses to, third-party packages.]]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Text_LicenseAcceptance" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[License Acceptance]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[Zustimmung zur Lizenz]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Text_LicenseHeaderText" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The following package(s) require that you accept their license terms before installing.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[Die folgenden Pakete erfordern, dass Sie ihren Lizenzbedingungen zustimmen, bevor sie installiert werden können.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Text_LicenseText" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[By clicking "I Accept," you agree to the license terms for the package(s) listed above. If you do not agree to the license terms, click "I Decline."]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[Indem Sie auf "Ich stimme zu" klicken, stimmen Sie den Lizenzbedingungen für die oben aufgeführten Pakete zu. Klicken Sie auf "Ich stimme nicht zu", wenn Sie den Lizenzbedingungen nicht zustimmen.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Text_Loading" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Loading...]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[Wird geladen...]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Text_ManageSettings" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[You can manage these settings in ]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Sie können diese Einstellungen hier verwalten: ]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Text_MultipleVersionsInstalled" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[multiple versions installed]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[Es sind mehrere Versionen installiert.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Text_NoDependencies" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[No dependencies]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[Keine Abhängigkeiten]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Text_NoMorePackages" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[No more packages]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Keine weiteren Pakete.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Text_NoPackagesFound" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[No packages found]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Keine Pakete gefunden.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Text_NotAvailableInSource" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Not available in this source]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[In dieser Quelle nicht verfügbar.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Text_NotInstalled" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[not installed]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" Confidence="100">
+            <Val><![CDATA[nicht installiert]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Text_NuGetSettings" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[NuGet Settings]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[NuGet-Einstellungen]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Text_PackageFormatApply" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The package manager format will apply to the following projects in this Solution]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Das Paket-Manager-Format wird auf die folgenden Projekte in "Solution" angewendet:]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Text_PackageFormatSelection" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Select the NuGet package manager format for {0}]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Wählen Sie das NuGet-Paket-Manager-Format für "{0}" aus.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Text_PackageFormatSelection_Solution" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Select the NuGet package manager format for this Solution]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Wählen Sie das NuGet-Paket-Manager-Format für "Solution" aus.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Text_PackageRefSupport" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Projects with PackageReference are not supported in Visual Studio 2015 and earlier.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Projekte mit PackageReference werden in Visual Studio 2015 und früheren Versionen nicht unterstützt.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Text_PackageRefSupport_DocumentLink" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Learn more about package reference]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Weitere Informationen zu Paketverweisen]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Text_PackageSources" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Package sources:]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Paketquellen:]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Text_PackagesFound" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Packages found]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Pakete gefunden.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Text_Progress" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Progress]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[Status]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Text_Ready" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Ready]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Bereit]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Text_ReviewChanges" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Review Changes]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[Änderungen überprüfen]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Text_SearchBoxText" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Search ({0})]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Suchen ({0})]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Text_SearchCompleted" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Search completed]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Suche wurde abgeschlossen.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Text_SearchIncomplete" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Retrieving results from one or more sources]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Ergebnisse von mindestens einer Quelle werden abgerufen.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Text_SearchStopped" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Unable to retrieve results from one or more sources]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Ergebnisse von mindestens einer Quelle können nicht abgerufen werden.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Text_Searching" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Searching '{0}']]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA["{0}" wird durchsucht.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Text_ShowAll" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Show all]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Alle anzeigen]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Text_UserCanceled" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Operation canceled by user]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Vorgang wurde durch den Benutzer abgebrochen.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Text_ViewLicense" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[View License]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[Lizenz anzeigen]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Text_Working" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Working...]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[Wird ausgeführt...]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";ToolTip_BlockedVersion" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Following versions are unavailable due to additional constraints in the project or packages.config]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Die folgenden Versionen stehen aufgrund von zusätzlichen Einschränkungen in der Datei "packages.config" nicht zur Verfügung:]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Following versions are unavailable due to allowedVersions constraint in package.config]]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";ToolTip_InstallButton" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Install {0} version {1}.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[Installiert Version {1} von {0}.]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Install this package.]]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";ToolTip_InstalledVersion" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Installed version: {0}]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" Confidence="100">
+            <Val><![CDATA[Installierte Version: {0}]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";ToolTip_LatestVersion" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Latest version: {0}]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Aktuellste Version: {0}]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";ToolTip_PackageInstalled" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Latest stable version is installed]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" Confidence="100">
+            <Val><![CDATA[Die aktuellste stabile Version ist installiert.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";ToolTip_Refresh" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Refresh]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Aktualisieren]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";ToolTip_Settings" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Settings]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Einstellungen]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";ToolTip_UninstallButton" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Uninstall this package.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Deinstalliert dieses Paket.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";ToolTip_UpdateAvailable" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Update available]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[Ein Update ist verfügbar.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";ToolTip_UpdateButton" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Update {0} to version {1}.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[Aktualisiert {0} auf Version {1}.]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Update this package to version {0}.]]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Version_Blocked" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Blocked by package.config]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Durch "package.config" blockiert.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Version_Blocked_Generic" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Blocked by project]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Durch Projekt blockiert]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Version_Installed" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Installed]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[Installiert]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Version_LatestPrerelease" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Latest prerelease]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Aktuellste Vorabversion]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Version_LatestStable" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Latest stable]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[Aktuellste stabile Version]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Warning_ProjectJson" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[These options are not applicable to projects managing their dependencies through project.json.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Diese Optionen gelten nicht für Projekte, die ihre Abhängigkeiten über "project.json" verwalten.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";WindowTitle_DeprecatedFramework" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Deprecated Framework]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Veraltetes Framework]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";WindowTitle_Error" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Error]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[Fehler]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";WindowTitle_FileConflict" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[File Conflict]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[Dateikonflikt]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";WindowTitle_LicenseAcceptance" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[License Acceptance]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[Zustimmung zur Lizenz]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";WindowTitle_PackageFormatSelector" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Choose NuGet Package Manager Format]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[NuGet-Paket-Manager-Format auswählen]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";WindowTitle_Preview" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Preview]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[Vorschau]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";WindowTitle_Progress" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Progress]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[Status]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+    </Item>
+  </Item>
+  <Item ItemId=";NuGet.PackageManagement.UI.g.resources" ItemType="0" PsrId="211" Leaf="false">
+    <Disp Icon="Str" Expand="true" Disp="true" LocTbl="false" Path=" \ ;Managed Resources \ 0 \ 0" />
+    <Item ItemId=";Baml Resources" ItemType=";0" PsrId="223" Leaf="true">
+      <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" />
+    </Item>
+    <Item ItemId=";resources/resources.baml" ItemType="0" PsrId="223" Leaf="true">
+      <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" Path=" \ ;NuGet.PackageManagement.UI.g.resources \ 0 \ 0 \ ;Baml Resources \ ;0 \ 0" />
+    </Item>
+    <Item ItemId=";themes/generic.baml" ItemType="0" PsrId="223" Leaf="true">
+      <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" Path=" \ ;NuGet.PackageManagement.UI.g.resources \ 0 \ 0 \ ;Baml Resources \ ;0 \ 0" />
+    </Item>
+    <Item ItemId=";xamls/actionsandversions.baml" ItemType="0" PsrId="223" Leaf="true">
+      <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" Path=" \ ;NuGet.PackageManagement.UI.g.resources \ 0 \ 0 \ ;Baml Resources \ ;0 \ 0" />
+    </Item>
+    <Item ItemId=";xamls/authoranddownloadcount.baml" ItemType="0" PsrId="223" Leaf="true">
+      <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" Path=" \ ;NuGet.PackageManagement.UI.g.resources \ 0 \ 0 \ ;Baml Resources \ ;0 \ 0" />
+    </Item>
+    <Item ItemId=";xamls/deprecatedframeworkwindow.baml" ItemType="0" PsrId="223" Leaf="true">
+      <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" Path=" \ ;NuGet.PackageManagement.UI.g.resources \ 0 \ 0 \ ;Baml Resources \ ;0 \ 0" />
+    </Item>
+    <Item ItemId=";xamls/detailcontrol.baml" ItemType="0" PsrId="223" Leaf="true">
+      <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" Path=" \ ;NuGet.PackageManagement.UI.g.resources \ 0 \ 0 \ ;Baml Resources \ ;0 \ 0" />
+    </Item>
+    <Item ItemId=";xamls/fileconflictdialog.baml" ItemType="0" PsrId="223" Leaf="true">
+      <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" Path=" \ ;NuGet.PackageManagement.UI.g.resources \ 0 \ 0 \ ;Baml Resources \ ;0 \ 0" />
+    </Item>
+    <Item ItemId=";xamls/filterlabel.baml" ItemType="0" PsrId="223" Leaf="true">
+      <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" Path=" \ ;NuGet.PackageManagement.UI.g.resources \ 0 \ 0 \ ;Baml Resources \ ;0 \ 0" />
+    </Item>
+    <Item ItemId=";xamls/infinitescrolllist.baml" ItemType="0" PsrId="223" Leaf="true">
+      <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" Path=" \ ;NuGet.PackageManagement.UI.g.resources \ 0 \ 0 \ ;Baml Resources \ ;0 \ 0" />
+    </Item>
+    <Item ItemId=";xamls/installedindicator.baml" ItemType="0" PsrId="223" Leaf="true">
+      <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" Path=" \ ;NuGet.PackageManagement.UI.g.resources \ 0 \ 0 \ ;Baml Resources \ ;0 \ 0" />
+    </Item>
+    <Item ItemId=";xamls/installibutton.baml" ItemType="0" PsrId="223" Leaf="true">
+      <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" Path=" \ ;NuGet.PackageManagement.UI.g.resources \ 0 \ 0 \ ;Baml Resources \ ;0 \ 0" />
+    </Item>
+    <Item ItemId=";xamls/licenseacceptancewindow.baml" ItemType="0" PsrId="223" Leaf="true">
+      <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" Path=" \ ;NuGet.PackageManagement.UI.g.resources \ 0 \ 0 \ ;Baml Resources \ ;0 \ 0" />
+    </Item>
+    <Item ItemId=";xamls/loadingstatusbar.baml" ItemType="0" PsrId="223" Leaf="true">
+      <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" Path=" \ ;NuGet.PackageManagement.UI.g.resources \ 0 \ 0 \ ;Baml Resources \ ;0 \ 0" />
+    </Item>
+    <Item ItemId=";xamls/optionscontrol.baml" ItemType="0" PsrId="223" Leaf="true">
+      <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" Path=" \ ;NuGet.PackageManagement.UI.g.resources \ 0 \ 0 \ ;Baml Resources \ ;0 \ 0" />
+    </Item>
+    <Item ItemId=";xamls/packageitemcontrol.baml" ItemType="0" PsrId="223" Leaf="true">
+      <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" Path=" \ ;NuGet.PackageManagement.UI.g.resources \ 0 \ 0 \ ;Baml Resources \ ;0 \ 0" />
+    </Item>
+    <Item ItemId=";xamls/packagemanagementformatwindow.baml" ItemType="0" PsrId="223" Leaf="true">
+      <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" Path=" \ ;NuGet.PackageManagement.UI.g.resources \ 0 \ 0 \ ;Baml Resources \ ;0 \ 0" />
+    </Item>
+    <Item ItemId=";xamls/packagemanagercontrol.baml" ItemType="0" PsrId="223" Leaf="true">
+      <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" Path=" \ ;NuGet.PackageManagement.UI.g.resources \ 0 \ 0 \ ;Baml Resources \ ;0 \ 0" />
+    </Item>
+    <Item ItemId=";xamls/packagemanagerproviderslabel.baml" ItemType="0" PsrId="223" Leaf="true">
+      <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" Path=" \ ;NuGet.PackageManagement.UI.g.resources \ 0 \ 0 \ ;Baml Resources \ ;0 \ 0" />
+    </Item>
+    <Item ItemId=";xamls/packagemanagertoppanel.baml" ItemType="0" PsrId="223" Leaf="true">
+      <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" Path=" \ ;NuGet.PackageManagement.UI.g.resources \ 0 \ 0 \ ;Baml Resources \ ;0 \ 0" />
+    </Item>
+    <Item ItemId=";xamls/packagemetadatacontrol.baml" ItemType="0" PsrId="223" Leaf="true">
+      <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" Path=" \ ;NuGet.PackageManagement.UI.g.resources \ 0 \ 0 \ ;Baml Resources \ ;0 \ 0" />
+    </Item>
+    <Item ItemId=";xamls/packagerestorebar.baml" ItemType="0" PsrId="223" Leaf="true">
+      <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" Path=" \ ;NuGet.PackageManagement.UI.g.resources \ 0 \ 0 \ ;Baml Resources \ ;0 \ 0" />
+    </Item>
+    <Item ItemId=";xamls/previewwindow.baml" ItemType="0" PsrId="223" Leaf="true">
+      <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" Path=" \ ;NuGet.PackageManagement.UI.g.resources \ 0 \ 0 \ ;Baml Resources \ ;0 \ 0" />
+    </Item>
+    <Item ItemId=";xamls/productupdatebar.baml" ItemType="0" PsrId="223" Leaf="true">
+      <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" Path=" \ ;NuGet.PackageManagement.UI.g.resources \ 0 \ 0 \ ;Baml Resources \ ;0 \ 0" />
+    </Item>
+    <Item ItemId=";xamls/projectview.baml" ItemType="0" PsrId="223" Leaf="true">
+      <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" Path=" \ ;NuGet.PackageManagement.UI.g.resources \ 0 \ 0 \ ;Baml Resources \ ;0 \ 0" />
+    </Item>
+    <Item ItemId=";xamls/restartrequestbar.baml" ItemType="0" PsrId="223" Leaf="true">
+      <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" Path=" \ ;NuGet.PackageManagement.UI.g.resources \ 0 \ 0 \ ;Baml Resources \ ;0 \ 0" />
+    </Item>
+    <Item ItemId=";xamls/solutionview.baml" ItemType="0" PsrId="223" Leaf="false">
+      <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" Path=" \ ;NuGet.PackageManagement.UI.g.resources \ 0 \ 0 \ ;Baml Resources \ ;0 \ 0" />
+      <Item ItemId=";Alignment" ItemType=";0" PsrId="223" Leaf="true">
+        <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" />
+      </Item>
+      <Item ItemId=";FlowDirection Modifier" ItemType=";0" PsrId="223" Leaf="false">
+        <Disp Edtr="External" Icon="Dlg" Disp="true" LocTbl="false" />
+        <Item ItemId=";Border_1" ItemType=";Border" PsrId="223" Leaf="true">
+          <Str Cat="Dialog Item">
+            <Val><![CDATA[ ]]></Val>
+            <Tgt Cat="Dialog Item" Stat="Loc" Appr="PreApproved" Orig="New">
+              <Val><![CDATA[ ]]></Val>
+            </Tgt>
+          </Str>
+          <Bin>
+            <Val><![CDATA[AAA=]]></Val>
+          </Bin>
+          <Disp Icon="Dlg" />
+        </Item>
+        <Item ItemId=";Border_2" ItemType=";Border" PsrId="223" Leaf="true">
+          <Str Cat="Dialog Item">
+            <Val><![CDATA[ ]]></Val>
+            <Tgt Cat="Dialog Item" Stat="Loc" Appr="PreApproved" Orig="New">
+              <Val><![CDATA[ ]]></Val>
+            </Tgt>
+          </Str>
+          <Bin>
+            <Val><![CDATA[AAA=]]></Val>
+          </Bin>
+          <Disp Icon="Dlg" />
+        </Item>
+        <Item ItemId=";ContentPresenter_1" ItemType=";ContentPresenter" PsrId="223" Leaf="true">
+          <Str Cat="Dialog Item">
+            <Val><![CDATA[ ]]></Val>
+            <Tgt Cat="Dialog Item" Stat="Loc" Appr="PreApproved" Orig="New">
+              <Val><![CDATA[ ]]></Val>
+            </Tgt>
+          </Str>
+          <Bin>
+            <Val><![CDATA[AAA=]]></Val>
+          </Bin>
+          <Disp Icon="Dlg" />
+        </Item>
+        <Item ItemId=";Grid_1" ItemType=";Grid" PsrId="223" Leaf="true">
+          <Str Cat="Dialog Item">
+            <Val><![CDATA[ ]]></Val>
+            <Tgt Cat="Dialog Item" Stat="Loc" Appr="PreApproved" Orig="New">
+              <Val><![CDATA[ ]]></Val>
+            </Tgt>
+          </Str>
+          <Bin>
+            <Val><![CDATA[AAA=]]></Val>
+          </Bin>
+          <Disp Icon="Dlg" />
+        </Item>
+        <Item ItemId=";Rectangle_1" ItemType=";System.Windows.Shapes.Rectangle" PsrId="223" Leaf="true">
+          <Str Cat="Dialog Item">
+            <Val><![CDATA[ ]]></Val>
+            <Tgt Cat="Dialog Item" Stat="Loc" Appr="PreApproved" Orig="New">
+              <Val><![CDATA[ ]]></Val>
+            </Tgt>
+          </Str>
+          <Bin>
+            <Val><![CDATA[AAA=]]></Val>
+          </Bin>
+          <Disp Icon="Dlg" />
+        </Item>
+      </Item>
+      <Item ItemId=";Width" ItemType=";0" PsrId="223" Leaf="true">
+        <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" />
+      </Item>
+      <Item ItemId=";Rectangle_1" ItemType=";FrameworkElement.HorizontalAlignment" PsrId="223" Leaf="true">
+        <Str Cat="Unknown" DevLk="true" UsrLk="true">
+          <Val><![CDATA[Center]]></Val>
+        </Str>
+        <Disp Icon="Str" Path=" \ ;NuGet.PackageManagement.UI.g.resources \ 0 \ 0 \ ;xamls/solutionview.baml \ 0 \ 0 \ ;Alignment \ ;0 \ 0" />
+      </Item>
+      <Item ItemId=";Rectangle_1" ItemType=";FrameworkElement.Width" PsrId="223" Leaf="true">
+        <Str Cat="Unknown" DevLk="true" UsrLk="true">
+          <Val><![CDATA[1]]></Val>
+        </Str>
+        <Disp Icon="Str" Path=" \ ;NuGet.PackageManagement.UI.g.resources \ 0 \ 0 \ ;xamls/solutionview.baml \ 0 \ 0 \ ;Width \ ;0 \ 0" />
+      </Item>
+    </Item>
+    <Item ItemId=";xamls/sortablecolumnheader.baml" ItemType="0" PsrId="223" Leaf="true">
+      <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" Path=" \ ;NuGet.PackageManagement.UI.g.resources \ 0 \ 0 \ ;Baml Resources \ ;0 \ 0" />
+    </Item>
+    <Item ItemId=";xamls/spinner.baml" ItemType="0" PsrId="223" Leaf="true">
+      <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" Path=" \ ;NuGet.PackageManagement.UI.g.resources \ 0 \ 0 \ ;Baml Resources \ ;0 \ 0" />
+    </Item>
+    <Item ItemId=";xamls/uninstallbutton.baml" ItemType="0" PsrId="223" Leaf="true">
+      <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" Path=" \ ;NuGet.PackageManagement.UI.g.resources \ 0 \ 0 \ ;Baml Resources \ ;0 \ 0" />
+    </Item>
+    <Item ItemId=";xamls/updateavailableindicator.baml" ItemType="0" PsrId="223" Leaf="true">
+      <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" Path=" \ ;NuGet.PackageManagement.UI.g.resources \ 0 \ 0 \ ;Baml Resources \ ;0 \ 0" />
+    </Item>
+    <Item ItemId=";xamls/updatebutton.baml" ItemType="0" PsrId="223" Leaf="true">
+      <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" Path=" \ ;NuGet.PackageManagement.UI.g.resources \ 0 \ 0 \ ;Baml Resources \ ;0 \ 0" />
+    </Item>
+  </Item>
+  <Item ItemId=";Version" ItemType="0" PsrId="211" Leaf="false">
+    <Disp Icon="Ver" Disp="true" LocTbl="false" Path=" \ ;Version \ 8 \ 0" />
+    <Item ItemId=";AssemblyVersion" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text" DevLk="true" UsrLk="true">
+        <Val><![CDATA[4.3.0.2481]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+    </Item>
+    <Item ItemId=";Comments" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text">
+        <Val><![CDATA[NuGet's Package Management UI for Visual Studio]]></Val>
+        <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+          <Val><![CDATA[Paketverwaltungs-Benutzeroberfläche von NuGet für Visual Studio]]></Val>
+        </Tgt>
+      </Str>
+      <Disp Icon="Str" />
+    </Item>
+    <Item ItemId=";CompanyName" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text" UsrLk="true">
+        <Val><![CDATA[Microsoft Corporation]]></Val>
+        <Prev Cat="Text">
+          <Val><![CDATA[.NET Foundation]]></Val>
+        </Prev>
+      </Str>
+      <Disp Icon="Str" />
+    </Item>
+    <Item ItemId=";FileDescription" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text">
+        <Val><![CDATA[NuGet.PackageManagement.UI]]></Val>
+        <Tgt Cat="Text" Stat="Loc" Orig="Auto" Confidence="100">
+          <Val><![CDATA[NuGet.PackageManagement.UI]]></Val>
+        </Tgt>
+        <Prev Cat="Text">
+          <Val><![CDATA[NuGet's Package Management UI for Visual Studio]]></Val>
+        </Prev>
+      </Str>
+      <Disp Icon="Str" />
+    </Item>
+    <Item ItemId=";FileVersion" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text" DevLk="true" UsrLk="true">
+        <Val><![CDATA[4.3.0.2481]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+    </Item>
+    <Item ItemId=";InternalName" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text" DevLk="true" UsrLk="true">
+        <Val><![CDATA[NuGet.PackageManagement.UI.dll]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+    </Item>
+    <Item ItemId=";LegalCopyright" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text">
+        <Val><![CDATA[Microsoft Corporation. All rights reserved.]]></Val>
+        <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+          <Val><![CDATA[Microsoft Corporation. Alle Rechte vorbehalten.]]></Val>
+        </Tgt>
+        <Prev Cat="Text">
+          <Val><![CDATA[© .NET Foundation. All rights reserved.]]></Val>
+        </Prev>
+      </Str>
+      <Disp Icon="Str" />
+    </Item>
+    <Item ItemId=";OriginalFilename" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text" DevLk="true" UsrLk="true">
+        <Val><![CDATA[NuGet.PackageManagement.UI.dll]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+    </Item>
+    <Item ItemId=";ProductName" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text">
+        <Val><![CDATA[NuGet]]></Val>
+        <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+          <Val><![CDATA[NuGet]]></Val>
+        </Tgt>
+      </Str>
+      <Disp Icon="Str" />
+    </Item>
+    <Item ItemId=";ProductVersion" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text" DevLk="true" UsrLk="true">
+        <Val><![CDATA[4.3.0-preview1-2481]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+    </Item>
+  </Item>
+  <Item ItemId=";Version" ItemType="8" PsrId="211" Leaf="true">
+    <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" />
+  </Item>
+</LCX>

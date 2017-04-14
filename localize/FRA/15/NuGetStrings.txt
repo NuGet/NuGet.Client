@@ -1,0 +1,12 @@
+﻿Veuillez fournir les informations d’identification du proxy :
+
+Veuillez fournir les informations d’identification pour : {0}
+
+Mot de passe : 
+
+Nom d’utilisateur : 
+
+Tous les packages répertoriés dans {0} sont déjà installés.
+
+La fonctionnalité de restauration des packages est désactivée par défaut. Pour donner votre accord, ouvrez la boîte de dialogue Options de Visual Studio, cliquez sur le nœud Gestionnaire de package et activez l’option « Autoriser NuGet à télécharger les packages manquants lors de la génération ». Vous pouvez également donner votre accord en définissant la variable d’environnement « EnableNuGetPackageRestore » sur « true ».
+

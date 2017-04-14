@@ -1,0 +1,1038 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+
+<helpItems schema="maml">
+
+  <!-- Install-Package command -->
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10">
+
+    <command:details>
+      <command:name>
+        Install-Package
+      </command:name>
+      <maml:description>
+        <maml:para>Bir paket yükler.</maml:para>
+      </maml:description>
+      <command:verb>Install</command:verb>
+      <command:noun>Package</command:noun>
+      <dev:version></dev:version>
+    </command:details>
+
+    <maml:description>
+      <maml:para>Bir paketi ve bağımlılıklarını projeye yükler.</maml:para>
+    </maml:description>
+
+    <!-- Cmdlet syntax section-->
+    <command:syntax>
+      <command:syntaxItem>
+        <maml:name>Install-Package</maml:name>
+        <command:parameter required="true" position="1">
+          <maml:name>Id</maml:name>
+          <command:parameterValue required="true">string</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" position="named">
+          <maml:name>IgnoreDependencies</maml:name>
+        </command:parameter>
+        <command:parameter required="false" position="named">
+          <maml:name>ProjectName</maml:name>
+          <command:parameterValue required="true">string</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" position="2">
+          <maml:name>Version</maml:name>
+          <command:parameterValue required="true">string</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" position="3">
+          <maml:name>Source</maml:name>
+          <command:parameterValue required="true">string</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" position="named">
+          <maml:name>IncludePrerelease</maml:name>
+        </command:parameter>
+        <command:parameter required="false" position="named">
+          <maml:name>FileConflictAction</maml:name>
+        </command:parameter>
+        <command:parameter required="false" position="named">
+          <maml:name>DependencyVersion</maml:name>
+        </command:parameter>
+        <command:parameter required="false" position="named">
+          <maml:name>WhatIf</maml:name>
+        </command:parameter>
+      </command:syntaxItem>
+    </command:syntax>
+
+    <!-- Cmdlet parameter section  -->
+    <command:parameters>
+      <command:parameter required="true" position="1">
+        <maml:name>Id</maml:name>
+        <maml:description>
+          <maml:para>Yüklenecek paketin paket kimliğini belirtir.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true">
+          string
+        </command:parameterValue>
+        <dev:defaultValue></dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" position="named">
+        <maml:name>IgnoreDependencies</maml:name>
+        <maml:description>
+          <maml:para>Yalnızca bu paketi yükler, bağımlılıklarını yüklemez.</maml:para>
+        </maml:description>
+      </command:parameter>
+      <command:parameter required="false" position="named">
+        <maml:name>ProjectName</maml:name>
+        <maml:description>
+          <maml:para>Paketin yükleneceği projeyi belirtir. Atlanırsa, varsayılan proje seçilir.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true">
+          string
+        </command:parameterValue>
+      </command:parameter>
+      <command:parameter required="false" position="named">
+        <maml:name>Source</maml:name>
+        <maml:description>
+          <maml:para>Yüklenecek paketi içeren paket kaynağı için URL veya dizin yolunu belirtir. Yerel dosya sistemi yoluna ayarlandığında, Kaynak mutlak veya geçerli dizine göre olabilir. Atlanırsa, karşılık gelen paket URL'sini bulmak için seçili olan paket kaynağına bakar.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true">
+          string
+        </command:parameterValue>
+      </command:parameter>
+      <command:parameter required="false" position="named">
+        <maml:name>Version</maml:name>
+        <maml:description>
+          <maml:para>Yüklenecek paketin sürümünü belirtir. Atlanırsa, en son sürümü varsayılan olarak alır.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true">
+          string
+        </command:parameterValue>
+      </command:parameter>
+      <command:parameter required="false" position="named">
+        <maml:name>IncludePrerelease</maml:name>
+        <maml:description>
+          <maml:para>Bu komutun yayım öncesi paketleri kullanıp kullanmayacağını gösterir. Atlanırsa, yalnızca kararlı paketler kullanılır.</maml:para>
+        </maml:description>
+      </command:parameter>
+        <command:parameter required="false" position="named">
+            <maml:name>FileConflictAction</maml:name>
+            <maml:description>
+                <maml:para>Paketin içerik klasöründeki bir dosyanın projede zaten mevcut olması durumunda bu komutun ne yapması gerektiğini belirtir.</maml:para>
+            </maml:description>
+        </command:parameter>
+      <command:parameter required="false" position="named">
+        <maml:name>DependencyVersion</maml:name>
+        <maml:description>
+          <maml:para>Hangi bağımlılık paketi sürümünün yükleneceğini belirtir. Atlanırsa, varsayılan olarak gerekli en düşük sürüm seçilir.</maml:para>
+        </maml:description>
+      </command:parameter>
+      <command:parameter required="false" position="named">
+        <maml:name>WhatIf</maml:name>
+        <maml:description>
+          <maml:para>Komutu yürütmek yerine alınacak eylemleri ve komutun etkisini görüntüler.</maml:para>
+        </maml:description>
+      </command:parameter>
+    </command:parameters>
+
+    <!-- Examples section  -->
+    <command:examples>
+      <command:example>
+        <maml:title>----------  ÖRNEK 1  ----------</maml:title>
+        <dev:code>PM&gt; Install-Package Elmah</dev:code>
+        <dev:remarks>
+          <maml:para>
+            Açıklama ------------------------------------------------------------------ Elmah paketinin en son sürümünü geçerli paket kaynağından varsayılan projeye yükler.
+          </maml:para>
+          <maml:para></maml:para>
+          <maml:para></maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>----------  ÖRNEK 2  ----------</maml:title>
+        <dev:code>PM&gt; Install-Package Glimpse -Version 1.0.0 -Project MvcApplication1 </dev:code>
+        <dev:remarks>
+          <maml:para>
+            Açıklama ------------------------------------------------------------------ Glimpse'in 1.0.0 sürümünü MvcApplication1 adlı projeye yükler
+          </maml:para>
+          <maml:para></maml:para>
+          <maml:para></maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>----------  ÖRNEK 3  ----------</maml:title>
+        <dev:code>PM&gt; Install-Package Ninject.Mvc3 -IgnoreDependencies -Source c:\temp\packages </dev:code>
+        <dev:remarks>
+          <maml:para>
+            Açıklama ------------------------------------------------------------------ Ninject.Mvc3 paketini yükler, bağımlılıklarını yüklemez. Paketi bulmak için c:\temp\packages dizinine bakar.
+          </maml:para>
+          <maml:para></maml:para>
+          <maml:para></maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+
+    <!-- Link section  -->
+    <maml:relatedLinks>
+      <maml:navigationLink>
+        <maml:linkText>Çevrimiçi sürüm:</maml:linkText>
+        <maml:uri>http://docs.nuget.org/</maml:uri>
+      </maml:navigationLink>
+      <maml:navigationLink>
+        <maml:linkText>Install-Package</maml:linkText>
+        <maml:uri/>
+      </maml:navigationLink>
+    </maml:relatedLinks>
+  </command:command>
+
+  <!-- Get-Package command -->
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10">
+
+    <command:details>
+      <command:name>
+        Get-Package
+      </command:name>
+      <maml:description>
+        <maml:para>Yüklü paketler grubunu alır. Paket kaynağındaki kullanılabilir paketleri listelemek için -ListAvailable bayrağını kullanın.</maml:para>
+      </maml:description>
+      <command:verb>Get</command:verb>
+      <command:noun>Package</command:noun>
+      <dev:version></dev:version>
+    </command:details>
+
+    <maml:description>
+      <maml:para>Yüklü paketler grubunu alır. Paket kaynağındaki kullanılabilir paketleri listelemek için -ListAvailable bayrağını kullanın.</maml:para>
+    </maml:description>
+
+    <!-- Cmdlet syntax section-->
+    <command:syntax>
+      <command:syntaxItem>
+        <maml:name>Get-Package</maml:name>
+        <command:parameter required="true" position="named">
+          <maml:name>Source</maml:name>
+          <command:parameterValue required="true">string</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" position="named">
+          <maml:name>ListAvailable</maml:name>
+        </command:parameter>
+        <command:parameter required="false" position="named">
+          <maml:name>Updates</maml:name>
+        </command:parameter>
+        <command:parameter required="false" position="named">
+          <maml:name>ProjectName</maml:name>
+          <command:parameterValue required="true">string</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" position="named">
+          <maml:name>Filter</maml:name>
+          <command:parameterValue required="true">string</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" position="named">
+          <maml:name>First</maml:name>
+          <command:parameterValue required="true">int</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" position="named">
+          <maml:name>Skip</maml:name>
+          <command:parameterValue required="true">int</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" position="named">
+          <maml:name>AllVersions</maml:name>
+        </command:parameter>
+        <command:parameter required="false" position="named">
+          <maml:name>IncludePrerelease</maml:name>
+        </command:parameter>
+      </command:syntaxItem>
+    </command:syntax>
+
+    <!-- Cmdlet parameter section  -->
+    <command:parameters>
+      <command:parameter required="false" position="named">
+        <maml:name>Source</maml:name>
+        <maml:description>
+          <maml:para>Yüklenecek paketi içeren paket kaynağı için URL veya dizin yolunu belirtir. Yerel dosya sistemi yoluna ayarlandığında, Kaynak mutlak veya geçerli dizine göre olabilir. Atlanırsa, karşılık gelen paket URL'sini bulmak için seçili olan paket kaynağına bakar.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true">
+          string
+        </command:parameterValue>
+      </command:parameter>
+      <command:parameter required="false" position="named">
+        <maml:name>ListAvailable</maml:name>
+        <maml:description>
+          <maml:para>Kullanılabilir paketleri çevrimiçi paket kaynağından alır.</maml:para>
+        </maml:description>
+      </command:parameter>
+      <command:parameter required="false">
+        <maml:name>ProjectName</maml:name>
+        <maml:description>
+          <maml:para>Yüklü paketlerin alınacağı projeyi belirtir. Atlanırsa, komut tüm çözüm için yüklü projeleri döndürür.</maml:para>
+        </maml:description>
+      </command:parameter>
+      <command:parameter required="false" position="named">
+        <maml:name>Updates</maml:name>
+        <maml:description>
+          <maml:para>Paket kaynağından kullanılabilir güncelleştirmesi olan paketleri alır.</maml:para>
+        </maml:description>
+      </command:parameter>
+      <command:parameter required="false" position="named">
+        <maml:name>Filter</maml:name>
+        <maml:description>
+          <maml:para>Döndürülen paketlerin listesini daraltmak için kullanılan filtre dizesini belirtir. Filtre; paket kimliği, açıklama ve etiketlerde aranır.</maml:para>
+        </maml:description>
+      </command:parameter>
+      <command:parameter required="false" position="named">
+        <maml:name>First</maml:name>
+        <maml:description>
+          <maml:para>Listenin başından sonra kaç paketin döndürüleceğini belirtir.</maml:para>
+        </maml:description>
+      </command:parameter>
+      <command:parameter required="false" position="named">
+        <maml:name>Skip</maml:name>
+        <maml:description>
+          <maml:para>Listenin başından sonra belirtilen sayıda paketi atlar (döndürmez).</maml:para>
+        </maml:description>
+      </command:parameter>
+      <command:parameter required="false" position="named">
+        <maml:name>AllVersions</maml:name>
+        <maml:description>
+          <maml:para>Paketin kullanılabilir tüm sürümlerini görüntüler. Varsayılan olarak her bir paketin en son sürümü listelenir. </maml:para>
+        </maml:description>
+      </command:parameter>
+      <command:parameter required="false" position="named">
+        <maml:name>IncludePrerelease</maml:name>
+        <maml:description>
+          <maml:para>Döndürülen sonuçlarda yayım öncesi paketlerin içerilip içerilmeyeceğini gösterir.</maml:para>
+        </maml:description>
+      </command:parameter>
+    </command:parameters>
+
+    <!-- Examples section  -->
+    <command:examples>
+      <command:example>
+        <maml:title>----------  ÖRNEK 1  ----------</maml:title>
+        <dev:code>PM&gt; Get-Package</dev:code>
+        <dev:remarks>
+          <maml:para>
+            Açıklama ------------------------------------------------------------------ Geçerli çözümde yüklü olan paketleri döndürür.
+          </maml:para>
+          <maml:para></maml:para>
+          <maml:para></maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>----------  ÖRNEK 2  ----------</maml:title>
+        <dev:code>PM&gt; Get-Package -ProjectName MyProject</dev:code>
+        <dev:remarks>
+          <maml:para>
+            Açıklama ------------------------------------------------------------------ "MyProject" projesinde yüklü olan paketleri döndürür.
+          </maml:para>
+          <maml:para></maml:para>
+          <maml:para></maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>----------  ÖRNEK 3  ----------</maml:title>
+        <dev:code>PM&gt; Get-Package -ListAvailable</dev:code>
+        <dev:remarks>
+          <maml:para>
+            Açıklama ------------------------------------------------------------------ Geçerli paket kaynağında çevrimiçi kullanılabilir paketlerin listesini döndürür.
+          </maml:para>
+          <maml:para></maml:para>
+          <maml:para></maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>----------  ÖRNEK 4  ----------</maml:title>
+        <dev:code>PM&gt; Get-Package -ListAvailable -Filter Ninject</dev:code>
+        <dev:remarks>
+          <maml:para>
+            Açıklama ------------------------------------------------------------------ Arama terimi olarak "Ninject"i kullanarak çevrimiçi kullanılabilir paketlerin listesini döndürür.
+          </maml:para>
+          <maml:para></maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>----------  ÖRNEK 5  ----------</maml:title>
+        <dev:code>PS&gt; Get-Package -Updates</dev:code>
+        <dev:remarks>
+          <maml:para>
+            Açıklama ------------------------------------------------------------------ Varsayılan projede yüklü, geçerli paket kaynağında kullanılabilir güncelleştirmeleri olan paketlerin listesini döndürür.
+          </maml:para>
+          <maml:para></maml:para>
+          <maml:para></maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+
+    <!-- Link section  -->
+    <maml:relatedLinks>
+      <maml:navigationLink>
+        <maml:linkText>Çevrimiçi sürüm:</maml:linkText>
+        <maml:uri>http://docs.nuget.org/</maml:uri>
+      </maml:navigationLink>
+      <maml:navigationLink>
+        <maml:linkText>Get-Package</maml:linkText>
+        <maml:uri/>
+      </maml:navigationLink>
+    </maml:relatedLinks>
+  </command:command>
+
+  <!-- Uninstall-Package command -->
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10">
+
+    <command:details>
+      <command:name>
+        Uninstall-Package
+      </command:name>
+      <maml:description>
+        <maml:para>Bir paketi kaldırır.</maml:para>
+      </maml:description>
+      <command:verb>Uninstall</command:verb>
+      <command:noun>Package</command:noun>
+      <dev:version></dev:version>
+    </command:details>
+
+    <maml:description>
+      <maml:para>Bir paketi kaldırır. Diğer paketler bu pakete bağlıysa, –Force seçeneği belirtilmediği sürece komut başarısız olur.</maml:para>
+    </maml:description>
+
+    <!-- Cmdlet syntax section-->
+    <command:syntax>
+      <command:syntaxItem>
+        <maml:name>Uninstall-Package</maml:name>
+        <command:parameter required="true" position="1">
+          <maml:name>Id</maml:name>
+          <command:parameterValue required="true">string</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" position="named">
+          <maml:name>RemoveDependencies</maml:name>
+        </command:parameter>
+        <command:parameter required="false" position="named">
+          <maml:name>ProjectName</maml:name>
+          <command:parameterValue required="true">string</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" position="named">
+          <maml:name>Force</maml:name>
+        </command:parameter>
+        <command:parameter required="false" position="named">
+          <maml:name>Version</maml:name>
+          <command:parameterValue required="true">string</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" position="named">
+          <maml:name>WhatIf</maml:name>
+        </command:parameter>
+      </command:syntaxItem>
+    </command:syntax>
+
+    <!-- Cmdlet parameter section  -->
+    <command:parameters>
+      <command:parameter required="true" position="1">
+        <maml:name>Id</maml:name>
+        <maml:description>
+          <maml:para>Kaldırılacak paketin paket kimliğini belirtir.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true">
+          string
+        </command:parameterValue>
+        <dev:defaultValue></dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" position="named">
+        <maml:name>RemoveDependencies</maml:name>
+        <maml:description>
+          <maml:para>Paketi ve kullanılmayan bağımlılıklarını kaldırır.</maml:para>
+        </maml:description>
+      </command:parameter>
+      <command:parameter required="false" position="named">
+        <maml:name>ProjectName</maml:name>
+        <maml:description>
+          <maml:para>Paketin kaldırılacağı projeyi belirtir. Atlanırsa, varsayılan proje seçilir.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true">
+          string
+        </command:parameterValue>
+      </command:parameter>
+      <command:parameter required="false" position="named">
+        <maml:name>Force</maml:name>
+        <maml:description>
+          <maml:para>Paketin kaldırılmasını, diğer bir paket bu pakete bağlı olsa bile zorlar.</maml:para>
+        </maml:description>
+      </command:parameter>
+      <command:parameter required="false" position="named">
+        <maml:name>Version</maml:name>
+        <maml:description>
+          <maml:para>Kaldırılacak paketin sürümü. Atlanırsa, en son sürümü varsayılan olarak alır.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true">
+          string
+        </command:parameterValue>
+      </command:parameter>
+      <command:parameter required="false" position="named">
+        <maml:name>WhatIf</maml:name>
+        <maml:description>
+          <maml:para>Komutu yürütmek yerine alınacak eylemleri ve komutun etkisini görüntüler.</maml:para>
+        </maml:description>
+      </command:parameter>
+    </command:parameters>
+
+    <command:examples>
+      <command:example>
+        <maml:title>----------  ÖRNEK 1  ----------</maml:title>
+        <dev:code>PM&gt; Uninstall-Package Elmah</dev:code>
+        <dev:remarks>
+          <maml:para>
+            Açıklama ------------------------------------------------------------------ Elmah paketini varsayılan projeden kaldırır.
+          </maml:para>
+          <maml:para></maml:para>
+          <maml:para></maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>----------  ÖRNEK 2  ----------</maml:title>
+        <dev:code>PM&gt; Uninstall-Package Elmah -RemoveDependencies</dev:code>
+        <dev:remarks>
+          <maml:para>
+            Açıklama ------------------------------------------------------------------ Elmah paketini ve bağımlılıklarını kaldırır. Herhangi bir bağımlılık kendisine bağlı olan başka bir pakete sahipse, atlanır.
+          </maml:para>
+          <maml:para></maml:para>
+          <maml:para></maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>----------  ÖRNEK 3  ----------</maml:title>
+        <dev:code>PM&gt; Uninstall-Package Elmah -Force</dev:code>
+        <dev:remarks>
+          <maml:para>
+            Açıklama ------------------------------------------------------------------ Elmah paketini, bağlı başka bir paket varsa bile kaldırır.
+          </maml:para>
+          <maml:para></maml:para>
+          <maml:para></maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+
+    <!-- Link section  -->
+    <maml:relatedLinks>
+      <maml:navigationLink>
+        <maml:linkText>Çevrimiçi sürüm:</maml:linkText>
+        <maml:uri>http://docs.nuget.org/</maml:uri>
+      </maml:navigationLink>
+      <maml:navigationLink>
+        <maml:linkText>Uninstall-Package</maml:linkText>
+        <maml:uri/>
+      </maml:navigationLink>
+    </maml:relatedLinks>
+  </command:command>
+
+  <!-- Update-Package command -->
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10">
+
+    <command:details>
+      <command:name>
+        Update-Package
+      </command:name>
+      <maml:description>
+        <maml:para>Bir paketi güncelleştirir.</maml:para>
+      </maml:description>
+      <command:verb>Update</command:verb>
+      <command:noun>Package</command:noun>
+      <dev:version></dev:version>
+    </command:details>
+
+    <maml:description>
+      <maml:para>Paketi ve bağımlılıklarını daha yeni bir sürüme güncelleştirir.</maml:para>
+    </maml:description>
+
+    <!-- Cmdlet syntax section-->
+    <command:syntax>
+      <command:syntaxItem>
+        <maml:name>Update-Package</maml:name>
+        <command:parameter required="true" position="1">
+          <maml:name>Id</maml:name>
+          <command:parameterValue required="true">string</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" position="named">
+          <maml:name>IgnoreDependencies</maml:name>
+        </command:parameter>
+        <command:parameter required="false" position="named">
+          <maml:name>ProjectName</maml:name>
+          <command:parameterValue required="true">string</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" position="named">
+          <maml:name>Version</maml:name>
+          <command:parameterValue required="true">string</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" position="named">
+          <maml:name>Safe</maml:name>
+        </command:parameter>
+        <command:parameter required="false" position="named">
+          <maml:name>Source</maml:name>
+          <command:parameterValue required="true">string</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" position="named">
+          <maml:name>IncludePrerelease</maml:name>
+        </command:parameter>
+        <command:parameter required="false" position="named">
+          <maml:name>Reinstall</maml:name>
+        </command:parameter>
+        <command:parameter required="false" position="named">
+          <maml:name>FileConflictAction</maml:name>
+        </command:parameter>
+        <command:parameter required="false" position="named">
+          <maml:name>WhatIf</maml:name>
+        </command:parameter>
+      </command:syntaxItem>
+    </command:syntax>
+
+    <!-- Cmdlet parameter section  -->
+    <command:parameters>
+      <command:parameter required="true" position="1">
+        <maml:name>Id</maml:name>
+        <maml:description>
+          <maml:para>Güncelleştirilecek paketin paket kimliğini belirtir. Atlanırsa, her paket güncelleştirilir.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true">
+          string
+        </command:parameterValue>
+        <dev:defaultValue></dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" position="named">
+        <maml:name>IgnoreDependencies</maml:name>
+        <maml:description>
+          <maml:para>Paketin tüm bağımlılıklarını en son sürüme güncelleştirir. Varsayılan olarak false değerini alır.</maml:para>
+        </maml:description>
+      </command:parameter>
+      <command:parameter required="false" position="named">
+        <maml:name>ProjectName</maml:name>
+        <maml:description>
+          <maml:para>Güncelleştirilecek projeyi içeren projeyi belirtir. Atlanırsa, paket yüklü paketi içeren her projede güncelleştirilir.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true">
+          string
+        </command:parameterValue>
+      </command:parameter>
+      <command:parameter required="false" position="named">
+        <maml:name>Safe</maml:name>
+        <maml:description>
+          <maml:para>Aynı Birincil ve İkincil sürüm bileşenine sahip daha yeni sürümlere yükseltmeleri kısıtlar. Örneğin, bir paketin 1.0.0 sürümü yüklüyse ve akışta 1.0.1, 1.0.2 ve 1.1 sürümleri varsa, -Safe bayrağı paketi 1.0.2 sürümüne yükseltir.</maml:para>
+        </maml:description>
+      </command:parameter>
+      <command:parameter required="false" position="named">
+        <maml:name>Source</maml:name>
+        <maml:description>
+          <maml:para>Güncelleştirilecek paketi içeren paket kaynağı için URL veya dizin yolunu belirtir. Yerel dosya sistemi yoluna ayarlandığında, Kaynak mutlak veya geçerli dizine göre olabilir. Atlanırsa, karşılık gelen paket URL'sini bulmak için seçili olan paket kaynağına bakar.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true">
+          string
+        </command:parameterValue>
+      </command:parameter>
+      <command:parameter required="false" position="named">
+        <maml:name>Version</maml:name>
+        <maml:description>
+          <maml:para>Paketin yükseltileceği sürümü belirtir. Atlanırsa, en son sürümü varsayılan olarak alır.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true">
+          string
+        </command:parameterValue>
+      </command:parameter>
+      <command:parameter required="false" position="named">
+        <maml:name>IncludePrerelease</maml:name>
+        <maml:description>
+          <maml:para>Güncelleştirmeler için arama yaparken yayım öncesi sürümlerin içerilip içerilmeyeceğini gösterir. Atlanırsa, yalnızca kararlı paketler kullanılır.</maml:para>
+        </maml:description>
+      </command:parameter>
+      <command:parameter required="false" position="named">
+        <maml:name>Reinstall</maml:name>
+        <maml:description>
+          <maml:para>Varolan sürümlere sahip paketleri yeniden yükler.</maml:para>
+        </maml:description>
+      </command:parameter>
+        <command:parameter required="false" position="named">
+            <maml:name>FileConflictAction</maml:name>
+            <maml:description>
+                <maml:para>Paketin içerik klasöründeki bir dosyanın projede zaten mevcut olması durumunda bu komutun ne yapması gerektiğini belirtir.</maml:para>
+            </maml:description>
+        </command:parameter>
+      <command:parameter required="false" position="named">
+        <maml:name>WhatIf</maml:name>
+        <maml:description>
+          <maml:para>Komutu yürütmek yerine alınacak eylemleri ve komutun etkisini görüntüler.</maml:para>
+        </maml:description>
+      </command:parameter>
+    </command:parameters>
+
+    <command:examples>
+      <command:example>
+        <maml:title>----------  ÖRNEK 1  ----------</maml:title>
+        <dev:code>PM&gt; Update-Package Elmah</dev:code>
+        <dev:remarks>
+          <maml:para>
+            Açıklama ------------------------------------------------------------------ Tüm projelerde yüklü olan Elmah paketlerini en son sürüme güncelleştirir.
+          </maml:para>
+          <maml:para></maml:para>
+          <maml:para></maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>----------  ÖRNEK 2  ----------</maml:title>
+        <dev:code>PM&gt; Update-Package Elmah -Version 1.1.0</dev:code>
+        <dev:remarks>
+          <maml:para>
+            Açıklama ------------------------------------------------------------------ Elmah paketini her projede belirli bir sürüme güncelleştirir.
+          </maml:para>
+          <maml:para></maml:para>
+          <maml:para></maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>----------  ÖRNEK 3  ----------</maml:title>
+        <dev:code>PM&gt; Update-Package</dev:code>
+        <dev:remarks>
+          <maml:para>
+            Açıklama ------------------------------------------------------------------ Her projede her paketi güncelleştirir.
+          </maml:para>
+          <maml:para></maml:para>
+          <maml:para></maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>----------  ÖRNEK 3  ----------</maml:title>
+        <dev:code>PM&gt; Update-Package -Safe -Project MvcApplication1</dev:code>
+        <dev:remarks>
+          <maml:para>
+            Açıklama ------------------------------------------------------------------ MvcApplication1 adlı projede her paketi en son "güvenli" sürüme güncelleştirir. Örneğin, bir paketin 1.0.0 sürümü yüklüyse ve akışta 1.0.1, 1.0.2 ve 1.1 sürümleri varsa, -Safe bayrağı paketi 1.0.2 sürümüne yükseltir.
+          </maml:para>
+          <maml:para></maml:para>
+          <maml:para></maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+
+    <!-- Link section  -->
+    <maml:relatedLinks>
+      <maml:navigationLink>
+        <maml:linkText>Çevrimiçi sürüm:</maml:linkText>
+        <maml:uri>http://docs.nuget.org/</maml:uri>
+      </maml:navigationLink>
+      <maml:navigationLink>
+        <maml:linkText>Update-Package</maml:linkText>
+        <maml:uri/>
+      </maml:navigationLink>
+    </maml:relatedLinks>
+  </command:command>
+
+  <!-- Add-BindingRedirect command -->
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10">
+
+    <command:details>
+      <command:name>
+        Add-BindingRedirect
+      </command:name>
+      <maml:description>
+        <maml:para>Yapılandırma dosyasına bağlama yeniden yönlendirmeleri ekler.</maml:para>
+      </maml:description>
+      <command:verb>Add</command:verb>
+      <command:noun>BindingRedirect</command:noun>
+      <dev:version></dev:version>
+    </command:details>
+
+    <maml:description>
+      <maml:para>
+        Bir proje için çıkış yolu içindeki tüm derlemeleri inceler ve uygulama (veya web) yapılandırma dosyasında gereken konumlara bağlama yeniden yönlendirmeleri ekler. NOT: NuGet 1.2'den itibaren, NuGet bir paketi yüklerken otomatik olarak bu komutu çalıştırır.
+      </maml:para>
+    </maml:description>
+
+    <!-- Cmdlet syntax section-->
+    <command:syntax>
+      <command:syntaxItem>
+        <maml:name>Add-BindingRedirect</maml:name>
+        <command:parameter required="true" position="1">
+          <maml:name>ProjectName</maml:name>
+          <command:parameterValue required="true">string</command:parameterValue>
+        </command:parameter>
+      </command:syntaxItem>
+    </command:syntax>
+
+    <!-- Cmdlet parameter section  -->
+    <command:parameters>
+      <command:parameter required="true" position="1">
+        <maml:name>ProjectName</maml:name>
+        <maml:description>
+          <maml:para>Analiz edilecek ve bağlama yeniden yönlendirmelerinin ekleneceği projeyi belirtir.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true">
+          string
+        </command:parameterValue>
+      </command:parameter>
+    </command:parameters>
+
+    <command:examples>
+      <command:example>
+        <maml:title>----------  ÖRNEK 1  ----------</maml:title>
+        <dev:code>PM&gt; Add-BindingRedirect MyProjectName</dev:code>
+        <dev:remarks>
+          <maml:para>
+            Açıklama ------------------------------------------------------------------ Bağlama yeniden yönlendirmelerini belirtilen projeye (MyProjectName) ekler.
+          </maml:para>
+          <maml:para></maml:para>
+          <maml:para></maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+
+    <!-- Link section  -->
+    <maml:relatedLinks>
+      <maml:navigationLink>
+        <maml:linkText>Çevrimiçi sürüm:</maml:linkText>
+        <maml:uri>http://docs.nuget.org/</maml:uri>
+      </maml:navigationLink>
+      <maml:navigationLink>
+        <maml:linkText>Add-BindingRedirect</maml:linkText>
+        <maml:uri/>
+      </maml:navigationLink>
+    </maml:relatedLinks>
+  </command:command>
+
+  <!-- Get-Project -->
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10">
+
+    <command:details>
+      <command:name>
+        Get-Project
+      </command:name>
+      <maml:description>
+        <maml:para>Belirtilen projeyi alır. Proje belirtilmezse, varsayılan projeyi döndürür.</maml:para>
+      </maml:description>
+      <command:verb>Get</command:verb>
+      <command:noun>Project</command:noun>
+      <dev:version></dev:version>
+    </command:details>
+
+    <maml:description>
+      <maml:para>Belirtilen proje için DTE'ye (Geliştirme Araçları Ortamı) başvuru döndürür. Proje belirtilmezse, Paket Yöneticisi Konsolu'nda seçilen varsayılan projeyi döndürür.</maml:para>
+    </maml:description>
+
+    <!-- Cmdlet syntax section-->
+    <command:syntax>
+      <command:syntaxItem>
+        <maml:name>Get-Project</maml:name>
+        <command:parameter required="false" position="1">
+          <maml:name>Name</maml:name>
+          <command:parameterValue required="true">string</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" position="named">
+          <maml:name>All</maml:name>
+        </command:parameter>
+      </command:syntaxItem>
+    </command:syntax>
+
+    <!-- Cmdlet parameter section  -->
+    <command:parameters>
+      <command:parameter required="false" position="1">
+        <maml:name>Name</maml:name>
+        <maml:description>
+          <maml:para>Döndürülecek projeyi belirtir. Atlanırsa, Paket Yönetici Konsolu'nda seçilen varsayılan proje döndürülür.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true">
+          string
+        </command:parameterValue>
+      </command:parameter>
+      <command:parameter required="false" position="named">
+        <maml:name>All</maml:name>
+        <maml:description>
+          <maml:para>Çözümdeki her projeyi döndürür.</maml:para>
+        </maml:description>
+      </command:parameter>
+    </command:parameters>
+
+    <command:examples>
+      <command:example>
+        <maml:title>----------  ÖRNEK 1  ----------</maml:title>
+        <dev:code>PM&gt; Get-Project</dev:code>
+        <dev:remarks>
+          <maml:para>
+            Açıklama ------------------------------------------------------------------ Varsayılan projeye başvuru döndürür.
+          </maml:para>
+          <maml:para></maml:para>
+          <maml:para></maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>----------  ÖRNEK 2  ----------</maml:title>
+        <dev:code>PM&gt; Get-Project MyProjectName</dev:code>
+        <dev:remarks>
+          <maml:para>
+            Açıklama ------------------------------------------------------------------ Belirtilen projeye (MyProjectName) başvuru döndürür.
+          </maml:para>
+          <maml:para></maml:para>
+          <maml:para></maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>----------  ÖRNEK 3  ----------</maml:title>
+        <dev:code>PM&gt; Get-Project -All</dev:code>
+        <dev:remarks>
+          <maml:para>
+            Açıklama ------------------------------------------------------------------ Çözümdeki her projeye başvuru döndürür.
+          </maml:para>
+          <maml:para></maml:para>
+          <maml:para></maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+
+    <!-- Link section  -->
+    <maml:relatedLinks>
+      <maml:navigationLink>
+        <maml:linkText>Çevrimiçi sürüm:</maml:linkText>
+        <maml:uri>http://docs.nuget.org/</maml:uri>
+      </maml:navigationLink>
+      <maml:navigationLink>
+        <maml:linkText>Get-Project</maml:linkText>
+        <maml:uri/>
+      </maml:navigationLink>
+    </maml:relatedLinks>
+  </command:command>
+
+  <!-- Open-PackagePage -->
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10">
+
+    <command:details>
+      <command:name>
+        Open-PackagePage
+      </command:name>
+      <maml:description>
+        <maml:para>
+          Belirtilen paketin ProjectUrl, LicenseUrl veya ReportAbuseUrl'sine giden bir tarayıcı açar.
+        </maml:para>
+      </maml:description>
+      <command:verb>Open</command:verb>
+      <command:noun>PackagePage</command:noun>
+      <dev:version></dev:version>
+    </command:details>
+
+    <maml:description>
+      <maml:para>
+        Belirtilen paketin ProjectUrl, LicenseUrl veya ReportAbuseUrl'sine giden bir tarayıcı açar.
+      </maml:para>
+    </maml:description>
+
+    <!-- Cmdlet syntax section-->
+    <command:syntax>
+      <command:syntaxItem>
+        <maml:name>Open-PackagePage</maml:name>
+        <command:parameter required="true" position="named">
+          <maml:name>Id</maml:name>
+          <command:parameterValue required="true">string</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" position="named">
+          <maml:name>Version</maml:name>
+        </command:parameter>
+        <command:parameter required="false" position="named">
+          <maml:name>Source</maml:name>
+        </command:parameter>
+        <command:parameter required="false" position="named">
+          <maml:name>License</maml:name>
+        </command:parameter>
+        <command:parameter required="false" position="named">
+          <maml:name>ReportAbuse</maml:name>
+        </command:parameter>
+        <command:parameter required="false" position="named">
+          <maml:name>PassThru</maml:name>
+        </command:parameter>
+      </command:syntaxItem>
+    </command:syntax>
+
+    <!-- Cmdlet parameter section  -->
+    <command:parameters>
+      <command:parameter required="false" position="named">
+        <maml:name>Id</maml:name>
+        <maml:description>
+          <maml:para>Aranacak paketin kimliğini belirtir.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true">string</command:parameterValue>
+      </command:parameter>
+      <command:parameter required="false" position="named">
+        <maml:name>Version</maml:name>
+        <maml:description>
+          <maml:para>Aranacak paketin sürümünü belirtir. Atlanırsa, en son sürümü varsayılan olarak alır.</maml:para>
+        </maml:description>
+      </command:parameter>
+      <command:parameter required="false" position="named">
+        <maml:name>Source</maml:name>
+        <maml:description>
+          <maml:para>Paket için aranacak deponun kaynağını belirtir. Atlanırsa, paket kaynağı açılır denetiminde seçilen kaynağı varsayılan olarak alır.</maml:para>
+        </maml:description>
+      </command:parameter>
+      <command:parameter required="false" position="named">
+        <maml:name>License</maml:name>
+        <maml:description>
+          <maml:para>Cmdlet'in belirtilen paketin LicenseUrl'sini açması gerektiğini gösterir. LicenseUrl ve ReportAbuseUrl'nin ikisi de ayarlanmazsa, cmdlet varsayılan olarak ProjectUrl'yi açar.</maml:para>
+        </maml:description>
+      </command:parameter>
+      <command:parameter required="false" position="named">
+        <maml:name>ReportAbuse</maml:name>
+        <maml:description>
+          <maml:para>Cmdlet'in belirtilen paketin ReportAbuseUrl'sini açması gerektiğini gösterir. LicenseUrl ve ReportAbuseUrl'nin ikisi de ayarlanmazsa, cmdlet varsayılan olarak ProjectUrl'yi açar.</maml:para>
+        </maml:description>
+      </command:parameter>
+      <command:parameter required="false" position="named">
+        <maml:name>PassThru</maml:name>
+        <maml:description>
+          <maml:para>Belirtilirse, cmdlet istenen URL'nin değerini döndürür.</maml:para>
+        </maml:description>
+      </command:parameter>
+    </command:parameters>
+
+    <command:examples>
+      <command:example>
+        <maml:title>----------  ÖRNEK 1  ----------</maml:title>
+        <dev:code>PM&gt; Open-PackagePage Ninject</dev:code>
+        <dev:remarks>
+          <maml:para>
+            Açıklama ------------------------------------------------------------------ Ninject paketinde belirtilen proje URL'sine giden bir tarayıcı açar.
+          </maml:para>
+          <maml:para></maml:para>
+          <maml:para></maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>----------  ÖRNEK 2  ----------</maml:title>
+        <dev:code>PM&gt; Open-PackagePage Ninject -License</dev:code>
+        <dev:remarks>
+          <maml:para>
+            Açıklama ------------------------------------------------------------------ Ninject paketinde belirtilen lisans URL'sine giden bir tarayıcı açar.
+          </maml:para>
+          <maml:para></maml:para>
+          <maml:para></maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>----------  ÖRNEK 3  ----------</maml:title>
+        <dev:code>PM&gt; Open-PackagePage Ninject -ReportAbuse</dev:code>
+        <dev:remarks>
+          <maml:para>
+            Açıklama ------------------------------------------------------------------ Belirtilen paket için kötüye kullanım bildirmek üzere kullanılan geçerli paket kaynağında URL'ye giden bir tarayıcı açar.
+          </maml:para>
+          <maml:para></maml:para>
+          <maml:para></maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>----------  ÖRNEK 4  ----------</maml:title>
+        <dev:code>PM&gt; $url = Open-PackagePage Ninject -License -WhatIf -PassThru</dev:code>
+        <dev:remarks>
+          <maml:para>
+            Açıklama ------------------------------------------------------------------ URL'yi bir tarayıcıda açmadan lisans URL'sini $url değişkenine atar.
+          </maml:para>
+          <maml:para></maml:para>
+          <maml:para></maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+
+    <!-- Link section  -->
+    <maml:relatedLinks>
+      <maml:navigationLink>
+        <maml:linkText>Çevrimiçi sürüm:</maml:linkText>
+        <maml:uri>http://docs.nuget.org/</maml:uri>
+      </maml:navigationLink>
+      <maml:navigationLink>
+        <maml:linkText>Open-PackagePage</maml:linkText>
+        <maml:uri/>
+      </maml:navigationLink>
+    </maml:relatedLinks>
+  </command:command>
+</helpItems>

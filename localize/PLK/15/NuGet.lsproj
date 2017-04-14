@@ -1,0 +1,25 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<LocProject SchemaVersion="6.0" Name="NuGet.lsproj" Desc="" xmlns="http://schemas.microsoft.com/locstudio/2006/6/LocProject">
+  <Files>
+    <File Name="F:\AAPT_OOB_LOC\LocData\custom\default.custom" Type="CustomColumns" />
+    <File Name="Microsoft.Web.XmlTransform.resources.dll.lcl" Type="Lcx" />
+    <File Name="NuGet.Client.resources.dll.lcl" Type="Lcx" />
+    <File Name="NuGet.Client.V3Shim.resources.dll.lcl" Type="Lcx" />
+    <File Name="14\NuGet.Client.VisualStudio.PowerShell.resources.dll.lcl" Type="Lcx" />
+    <File Name="NuGet.Client.VisualStudio.resources.dll.lcl" Type="Lcx" />
+    <File Name="NuGet.Client.VisualStudio.UI.resources.dll.lcl" Type="Lcx" />
+    <File Name="NuGet.Cmdlets.resources.dll.lcl" Type="Lcx" />
+    <File Name="NuGet.Console.resources.dll.lcl" Type="Lcx" />
+    <File Name="WebMatrix\NuGet.Core.resources.dll.lcl" Type="Lcx" />
+    <File Name="NuGet.Dialog14.resources.dll.lcl" Type="Lcx" />
+    <File Name="NuGet.DialogServices.resources.dll.lcl" Type="Lcx" />
+    <File Name="NuGet.Options.resources.dll.lcl" Type="Lcx" />
+    <File Name="NuGet.Tools.resources.dll.lcl" Type="Lcx" />
+    <File Name="NuGet.VisualStudio.resources.dll.lcl" Type="Lcx" />
+    <File Name="14\NuGet.VisualStudio.resources.dll.lcl" Type="Lcx" />
+    <File Name="NuGet.VisualStudioResources.resources.dll.lcl" Type="Lcx" />
+    <File Name="NuGet.VsEvents.resources.dll.lcl" Type="Lcx" />
+    <File Name="NuGetConsole.Host.PowerShell.resources.dll.lcl" Type="Lcx" />
+    <File Name="NuGetConsole.Host.PowerShellProvider.resources.dll.lcl" Type="Lcx" />
+  </Files>
+</LocProject>

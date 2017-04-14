@@ -1,0 +1,64 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<LCX SchemaVersion="6.0" Name="C:\BuildAgent\work\fea8ec2fb9b8541c\NuGet\ReferenceAssemblies\NuGet\extension.vsixlangpack" PsrId="210" FileType="1" SrcCul="en-US" TgtCul="ja-JP" xmlns="http://schemas.microsoft.com/locstudio/2006/6/lcx">
+  <Props>
+    <Str Name="CustomName1" Val="Custom 1" />
+    <Str Name="CustomName2" Val="Custom 2" />
+    <Str Name="CustomName3" Val="Custom 3" />
+    <Str Name="CustomName4" Val="Custom 4" />
+    <Str Name="CustomName5" Val="Custom 5" />
+    <Str Name="CustomName6" Val="IQA" />
+  </Props>
+  <OwnedComments>
+    <Cmt Name="Dev" />
+    <Cmt Name="DUIData" />
+    <Cmt Name="GoldMine" />
+    <Cmt Name="Goldmine8" />
+    <Cmt Name="LcxAdmin" />
+    <Cmt Name="Loc" />
+    <Cmt Name="ManifestData" />
+    <Cmt Name="Mnemonic" />
+    <Cmt Name="Note" />
+    <Cmt Name="Rccx" />
+    <Cmt Name="UIType" />
+    <Cmt Name="UTSData" />
+    <Cmt Name="UTSUI" />
+    <Cmt Name="zLocLevel" />
+  </OwnedComments>
+  <Settings Name="@vsLocTools@\default.lss" Type="Lss" />
+  <Item ItemId=";&lt;License&gt;" ItemType="0" PsrId="210" Leaf="false">
+    <Disp Icon="Str" Disp="true" LocTbl="false" />
+    <Item ItemId="0;d8e09482fdf359b5e23408bd7eb9a302" ItemType="42;XML:Text" PsrId="210" Leaf="true">
+      <Str Cat="AppData" UsrLk="true">
+        <Val><![CDATA[EULA.rtf]]></Val>
+        <Tgt Cat="AppData" Stat="Loc" Orig="New">
+          <Val><![CDATA[EULA.rtf]]></Val>
+        </Tgt>
+      </Str>
+      <Disp Icon="Str" />
+    </Item>
+  </Item>
+  <Item ItemId=";&lt;LocalizedDescription&gt;" ItemType="0" PsrId="210" Leaf="false">
+    <Disp Icon="Str" Disp="true" LocTbl="false" />
+    <Item ItemId="0;3545d4cb7ecc0bce0cb55061d67cfaa6" ItemType="42;XML:Text" PsrId="210" Leaf="true">
+      <Str Cat="AppData">
+        <Val><![CDATA[A collection of tools to automate the process of installing, upgrading, configuring, and removing packages from a VS Project.]]></Val>
+        <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+          <Val><![CDATA[VS プロジェクトに対するパッケージのインストール、アップグレード、構成、削除の処理を自動化するためのツールのコレクション。]]></Val>
+        </Tgt>
+      </Str>
+      <Disp Icon="Str" />
+    </Item>
+  </Item>
+  <Item ItemId=";&lt;LocalizedName&gt;" ItemType="0" PsrId="210" Leaf="false">
+    <Disp Icon="Str" Disp="true" LocTbl="false" />
+    <Item ItemId="0;44ccc32ef2fb12f9386c44174e6be5e2" ItemType="42;XML:Text" PsrId="210" Leaf="true">
+      <Str Cat="AppData">
+        <Val><![CDATA[NuGet Package Manager]]></Val>
+        <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+          <Val><![CDATA[NuGet パッケージ マネージャー]]></Val>
+        </Tgt>
+      </Str>
+      <Disp Icon="Str" />
+    </Item>
+  </Item>
+</LCX>

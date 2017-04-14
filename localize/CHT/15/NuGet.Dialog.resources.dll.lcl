@@ -1,0 +1,243 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<LCX SchemaVersion="6.0" Name="D:\DD\Dev10\OffCycle\AspNet\Plan9\Main\ReferenceAssemblies\NuGet\NuGet.Dialog.dll" PsrId="211" FileType="1" SrcCul="en-US" TgtCul="zh-TW" xmlns="http://schemas.microsoft.com/locstudio/2006/6/lcx">
+  <Props>
+    <Str Name="CustomName1" Val="Custom 1" />
+    <Str Name="CustomName2" Val="Custom 2" />
+    <Str Name="CustomName3" Val="Custom 3" />
+    <Str Name="CustomName4" Val="Custom 4" />
+    <Str Name="CustomName5" Val="Custom 5" />
+    <Str Name="CustomName6" Val="IQA" />
+    <Str Name="HobbitID" Val="aab329e3-ebc8-44f0-9d27-b7747e2eceeb" />
+  </Props>
+  <OwnedComments>
+    <Cmt Name="Dev" />
+    <Cmt Name="LcxAdmin" />
+    <Cmt Name="Note" />
+    <Cmt Name="Rccx" />
+  </OwnedComments>
+  <Settings Name="@vsLocTools@\default.lss" Type="Lss" />
+  <Item ItemId=";Managed Resources" ItemType="0" PsrId="211" Leaf="true">
+    <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" />
+    <Modified By="heelee" DateTime="2010-11-18T00:31:13Z" />
+  </Item>
+  <Item ItemId=";NuGet.Dialog.CommonResources.resources" ItemType="0" PsrId="211" Leaf="false">
+    <Disp Icon="Str" Expand="true" Disp="true" LocTbl="false" Path=" \ ;Managed Resources \ 0 \ 0" />
+    <Modified By="LucianoAP" DateTime="2012-02-22T18:49:30Z" />
+    <Item ItemId=";Strings" ItemType="0" PsrId="211" Leaf="false">
+      <Disp Icon="Str" LocTbl="false" />
+      <Modified By="LucianoAP" DateTime="2012-02-22T18:49:30Z" />
+      <Item ItemId=";Argument_Cannot_Be_Null_Or_Empty" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Value cannot be null or an empty string.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[值不可為 null 或空字串。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="LucianoAP" DateTime="2012-02-22T18:50:31Z" />
+      </Item>
+      <Item ItemId=";Argument_Must_Be_Between" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Value must be between {0} and {1}.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[值必須介於 {0} 到 {1} 之間。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="LucianoAP" DateTime="2012-02-22T18:50:31Z" />
+      </Item>
+      <Item ItemId=";Argument_Must_Be_Enum_Member" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Value must be a value from the "{0}" enumeration.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[值必須是來自 "{0}" 列舉的值。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="LucianoAP" DateTime="2012-02-22T18:50:31Z" />
+      </Item>
+      <Item ItemId=";Argument_Must_Be_GreaterThan" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Value must be greater than {0}.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[值必須大於 {0}。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="LucianoAP" DateTime="2012-02-22T18:50:31Z" />
+      </Item>
+      <Item ItemId=";Argument_Must_Be_GreaterThanOrEqualTo" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Value must be greater than or equal to {0}.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[值必須大於或等於 {0}。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="LucianoAP" DateTime="2012-02-22T18:50:31Z" />
+      </Item>
+      <Item ItemId=";Argument_Must_Be_LessThan" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Value must be less than {0}.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[值必須小於 {0}。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="LucianoAP" DateTime="2012-02-22T18:50:31Z" />
+      </Item>
+      <Item ItemId=";Argument_Must_Be_LessThanOrEqualTo" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Value must be less than or equal to {0}.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[值必須小於或等於 {0}。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="LucianoAP" DateTime="2012-02-22T18:50:31Z" />
+      </Item>
+      <Item ItemId=";Argument_Must_Be_Null_Or_Non_Empty" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Value cannot be an empty string. It must either be null or a non-empty string.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[值不可為空字串。值必須是 null 或非空字串。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="LucianoAP" DateTime="2012-02-22T18:50:31Z" />
+      </Item>
+    </Item>
+  </Item>
+  <Item ItemId=";NuGet.Dialog.g.resources" ItemType="0" PsrId="211" Leaf="false">
+    <Disp Icon="Str" Expand="true" Disp="true" LocTbl="false" Path=" \ ;Managed Resources \ 0 \ 0" />
+    <Modified By="heelee" DateTime="2010-11-18T00:31:13Z" />
+    <Item ItemId=";Baml Resources" ItemType=";0" PsrId="223" Leaf="true">
+      <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" />
+      <Modified By="heelee" DateTime="2010-11-18T00:31:13Z" />
+    </Item>
+    <Item ItemId=";commonstyles.baml" ItemType="0" PsrId="223" Leaf="true">
+      <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" Path=" \ ;NuGet.Dialog.g.resources \ 0 \ 0 \ ;Baml Resources \ ;0 \ 0" />
+      <Modified By="P033" DateTime="2013-07-09T04:16:20Z" />
+    </Item>
+    <Item ItemId=";onlineprovidertemplates.baml" ItemType="0" PsrId="223" Leaf="true">
+      <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" Path=" \ ;NuGet.Dialog.g.resources \ 0 \ 0 \ ;Baml Resources \ ;0 \ 0" />
+      <Modified By="LucianoAP" DateTime="2012-02-22T18:49:30Z" />
+    </Item>
+    <Item ItemId=";templatestyles.baml" ItemType="0" PsrId="223" Leaf="true">
+      <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" Path=" \ ;NuGet.Dialog.g.resources \ 0 \ 0 \ ;Baml Resources \ ;0 \ 0" />
+      <Modified By="LucianoAP" DateTime="2012-02-22T18:49:30Z" />
+    </Item>
+  </Item>
+  <Item ItemId=";Version" ItemType="0" PsrId="211" Leaf="false">
+    <Disp Icon="Ver" Disp="true" LocTbl="false" Path=" \ ;Version \ 8 \ 0" />
+    <Modified By="heelee" DateTime="2010-11-18T00:31:13Z" />
+    <Item ItemId=";AssemblyVersion" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text" DevLk="true">
+        <Val><![CDATA[2.7.40826.256]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+      <Modified By="v-canl" DateTime="2012-02-21T09:16:28Z" />
+    </Item>
+    <Item ItemId=";Comments" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+      <Str Cat="Text">
+        <Val><![CDATA[Manage NuGet Package dialog for Visual Studio versions greater than 2012.]]></Val>
+        <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+          <Val><![CDATA[Visual Studio 2012 版以上適用的 [管理 NuGet 套件]5D; 對話方塊。]]></Val>
+        </Tgt>
+        <Prev Cat="Text">
+          <Val><![CDATA[Manage NuGet Package dialog for Visual Studio versions different from 2010.]]></Val>
+        </Prev>
+      </Str>
+      <Disp Icon="Str" />
+      <Modified By="P033" DateTime="2013-06-13T02:46:39Z" />
+      <Cmts>
+        <Cmt Name="LcxAdmin"><![CDATA[{Placeholder="NuGet"}]]></Cmt>
+      </Cmts>
+      <Props>
+        <Str Name="Custom1" Val="MVC_HO1" />
+        <Str Name="Custom2" Val="New" />
+        <Str Name="Custom5" Val="QA" />
+        <Str Name="Custom6" Val="QA" />
+      </Props>
+    </Item>
+    <Item ItemId=";CompanyName" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+      <Str Cat="Text" UsrLk="true">
+        <Val><![CDATA[Microsoft Corporation]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+      <Modified By="v-canl" DateTime="2012-02-21T09:16:28Z" />
+      <Cmts>
+        <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+      </Cmts>
+    </Item>
+    <Item ItemId=";FileDescription" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+      <Str Cat="Text" UsrLk="true">
+        <Val><![CDATA[NuGet.Dialog]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+      <Modified By="v-canl" DateTime="2012-02-21T09:16:28Z" />
+      <Cmts>
+        <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+      </Cmts>
+    </Item>
+    <Item ItemId=";FileVersion" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text" DevLk="true">
+        <Val><![CDATA[2.7.40826.256]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+      <Modified By="v-canl" DateTime="2012-02-21T09:16:28Z" />
+    </Item>
+    <Item ItemId=";InternalName" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text" DevLk="true">
+        <Val><![CDATA[NuGet.Dialog.dll]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+      <Modified By="v-canl" DateTime="2012-02-21T09:16:28Z" />
+    </Item>
+    <Item ItemId=";LegalCopyright" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text">
+        <Val><![CDATA[Copyright 2013 Microsoft. NuGet is made possible by the Microsoft Corporation's open source project.]]></Val>
+        <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+          <Val><![CDATA[Copyright 2013 Microsoft. NuGet 由 Microsoft Corporation 的開放原始碼計劃所支援。]]></Val>
+        </Tgt>
+        <Prev Cat="Text">
+          <Val><![CDATA[Copyright 2013 Microsoft. NuGet is made possible by the Microsoft Corporation�s open source project.]]></Val>
+        </Prev>
+      </Str>
+      <Disp Icon="Str" />
+      <Modified By="Marian" DateTime="2013-07-28T03:13:16Z" />
+      <Props>
+        <Str Name="Custom1" Val="MVC_HO3c" />
+        <Str Name="Custom2" Val="Autotranslated" />
+      </Props>
+    </Item>
+    <Item ItemId=";OriginalFilename" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text" DevLk="true">
+        <Val><![CDATA[NuGet.Dialog.dll]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+      <Modified By="v-canl" DateTime="2012-02-21T09:16:28Z" />
+    </Item>
+    <Item ItemId=";ProductName" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+      <Str Cat="Text" UsrLk="true">
+        <Val><![CDATA[NuGet]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+      <Modified By="v-canl" DateTime="2012-02-21T09:16:28Z" />
+      <Cmts>
+        <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+      </Cmts>
+    </Item>
+    <Item ItemId=";ProductVersion" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text" DevLk="true">
+        <Val><![CDATA[2.7.0]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+      <Modified By="v-canl" DateTime="2012-02-21T09:16:28Z" />
+    </Item>
+  </Item>
+  <Item ItemId=";Version" ItemType="8" PsrId="211" Leaf="true">
+    <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" />
+    <Modified By="heelee" DateTime="2010-11-18T00:31:13Z" />
+  </Item>
+</LCX>

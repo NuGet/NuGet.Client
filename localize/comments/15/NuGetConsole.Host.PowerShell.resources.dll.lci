@@ -1,0 +1,117 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<LCX SchemaVersion="6.0" Name="C:\BuildAgent\work\c21523a748a3d719\NuGet\bin\Release\NuGetTools\15\NuGetConsole.Host.PowerShell.dll" PsrId="211" FileType="1" SrcCul="en-US" Desc="Commenting file created by LCXAdmin. For more information, please visit http://localizability/longhorn/LcxAdmin.asp" xmlns="http://schemas.microsoft.com/locstudio/2006/6/lcx">
+  <OwnedComments>
+    <Cmt Name="LcxAdmin" />
+  </OwnedComments>
+  <Item ItemId=";Managed Resources" ItemType="0" PsrId="211" Leaf="true">
+    <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" />
+  </Item>
+  <Item ItemId=";NuGet.CommonResources.resources" ItemType="0" PsrId="211" Leaf="false">
+    <Disp Icon="Str" Expand="true" Disp="true" LocTbl="false" Path=" \ ;Managed Resources \ 0 \ 0" />
+    <Item ItemId=";Strings" ItemType="0" PsrId="211" Leaf="false">
+      <Disp Icon="Str" LocTbl="false" />
+      <Item ItemId=";EnsureImportedMessage" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="NuGet"}]]></Cmt>
+        </Cmts>
+      </Item>
+    </Item>
+  </Item>
+  <Item ItemId=";NuGetConsole.Host.PowerShell.Resources.resources" ItemType="0" PsrId="211" Leaf="false">
+    <Disp Icon="Str" Expand="true" Disp="true" LocTbl="false" Path=" \ ;Managed Resources \ 0 \ 0" />
+    <Item ItemId=";Strings" ItemType="0" PsrId="211" Leaf="false">
+      <Disp Icon="Str" LocTbl="false" />
+      <Item ItemId=";Add_WrapperMembers" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[#]D;]A;# This private script adds $InterfaceType members to $psObject which invokes on $wrappedObject]D;]A;#]D;]A;Param(]D;]A;    $psObject,]D;]A;    $wrappedObject,]D;]A;    [Type]5D;$InterfaceType]D;]A;)]D;]A;]D;]A;function GetInvoker]D;]A;{]D;]A;    Param(]D;]A;        $Target,]D;]A;        $Method]D;]A;    )]D;]A;]D;]A;    if ($Method.IsGenericMethodDefinition) {]D;]A;        return {]D;]A;            $t = $Target]D;]A;            $m = $Method.MakeGenericMethod($args)]D;]A;            ]D;]A;            if (!$m.GetParameters()) {]D;]A;                return $m.Invoke($t, @())]D;]A;            }]D;]A;            ]D;]A;            $o = New-Object PSObject]D;]A;            Add-Member -InputObject $o -MemberType ScriptMethod -Name Invoke -Value {]D;]A;                    [NuGetConsole.Host.PowerShell.Implementation.PSTypeWrapper]5D;::InvokeMethod($t, $m, $args)]D;]A;                }.GetNewClosure()]D;]A;            return $o]D;]A;        }.GetNewClosure()]D;]A;    }]D;]A;    ]D;]A;    return {]D;]A;        [NuGetConsole.Host.PowerShell.Implementation.PSTypeWrapper]5D;::InvokeMethod($Target, $Method, $args)]D;]A;    }.GetNewClosure()]D;]A;}]D;]A;]D;]A;$InterfaceType.GetMembers() | %{]D;]A;    $m = $_]D;]A;    $getter = $null]D;]A;    $setter = $null]D;]A;    ]D;]A;    if ($m.MemberType -eq [System.Reflection.MemberTypes]5D;"Property") {]D;]A;    ]D;]A;        if ($m.CanRead) {]D;]A;            $getter = GetInvoker $wrappedObject $m.GetGetMethod()]D;]A;        }]D;]A;        if ($m.CanWrite) {]D;]A;            $setter = GetInvoker $wrappedObject $m.GetSetMethod()]D;]A;        }]D;]A;        ]D;]A;        $prop = New-Object Management.Automation.PSScriptProperty $m.Name, $getter, $setter]D;]A;        $psObject.PSObject.Properties.Add($prop)]D;]A;        ]D;]A;    } elseif (!$m.IsSpecialName -and]D;]A;            ($m.MemberType -eq [System.Reflection.MemberTypes]5D;"Method")) {]D;]A;    ]D;]A;        $invoker = GetInvoker $wrappedObject $m]D;]A;        $method = New-Object Management.Automation.PSScriptMethod $m.Name, $invoker]D;]A;        $psObject.PSObject.Methods.Add($method)]D;]A;    }]D;]A;}]D;]A;]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";Console_DisclaimerText" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Each package is licensed to you by its owner. NuGet is not responsible for, nor does it grant any licenses to, third-party packages. Some packages may include dependencies which are governed by additional licenses. Follow the package source (feed) URL to determine any dependencies.]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="NuGet"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";Console_HelpText" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Type 'get-help NuGet' to see all available NuGet commands.]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="get-help NuGet", "NuGet"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";Console_InitializeHostFails" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Failed to initialize the PowerShell host. If your PowerShell execution policy setting is set to AllSigned, open the Package Manager Console to initialize the host first.]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="PowerShell"} {Locked="AllSigned"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";PowerShellInitializationTimeoutError" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Timed out waiting for PowerShell initialization. Try restarting Visual Studio.]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="PowerShell", "Visual Studio"}]]></Cmt>
+        </Cmts>
+      </Item>
+    </Item>
+  </Item>
+  <Item ItemId=";Version" ItemType="0" PsrId="211" Leaf="false">
+    <Disp Icon="Ver" Disp="true" LocTbl="false" Path=" \ ;Version \ 8 \ 0" />
+    <Item ItemId=";Comments" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+      <Str Cat="Text">
+        <Val><![CDATA[PowerConsole PowerShell host implementation]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+      <Cmts>
+        <Cmt Name="LcxAdmin"><![CDATA[{Locked="PowerConsole", "PowerShell"}]]></Cmt>
+      </Cmts>
+    </Item>
+    <Item ItemId=";CompanyName" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+      <Str Cat="Text">
+        <Val><![CDATA[Microsoft Corporation]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+      <Cmts>
+        <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+      </Cmts>
+    </Item>
+    <Item ItemId=";FileDescription" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+      <Str Cat="Text">
+        <Val><![CDATA[PowerConsolePowerShellHost]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+      <Cmts>
+        <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+      </Cmts>
+    </Item>
+    <Item ItemId=";ProductName" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+      <Str Cat="Text">
+        <Val><![CDATA[NuGet]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+      <Cmts>
+        <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+      </Cmts>
+    </Item>
+  </Item>
+  <Item ItemId=";Version" ItemType="8" PsrId="211" Leaf="true">
+    <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" />
+  </Item>
+</LCX>

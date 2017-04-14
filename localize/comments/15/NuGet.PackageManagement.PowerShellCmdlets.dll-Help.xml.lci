@@ -1,0 +1,3039 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<LCX SchemaVersion="6.0" Name="C:\BuildAgent\work\c21523a748a3d719\NuGet\bin\Release\NuGetTools\15\Modules\NuGet\NuGet.PackageManagement.PowerShellCmdlets.dll-Help.xml" PsrId="22" FileType="1" SrcCul="en-US" Desc="Commenting file created by LCXAdmin. For more information, please visit http://localizability/longhorn/LcxAdmin.asp" xmlns="http://schemas.microsoft.com/locstudio/2006/6/lcx">
+  <OwnedComments>
+    <Cmt Name="LcxAdmin" />
+  </OwnedComments>
+  <Item ItemId=";XML Comments" ItemType="0" PsrId="22" Leaf="false">
+    <Disp Icon="Str" Disp="true" LocTbl="false" />
+    <Item ItemId="0;0936e41e150299b76f8d83f5a0aaf060" ItemType="55;Text" PsrId="22" InstFlg="true" Leaf="true">
+      <Str Cat="Text">
+        <Val><![CDATA[ Cmdlet syntax section]]></Val>
+      </Str>
+      <Disp Icon="Str" Order="7" />
+      <Cmts>
+        <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+      </Cmts>
+    </Item>
+    <Item ItemId="0;0e41b77f69f73e8c8ad8377626b8ebed" ItemType="55;Text" PsrId="22" InstFlg="true" Leaf="true">
+      <Str Cat="Text">
+        <Val><![CDATA[ Uninstall-Package command ]]></Val>
+      </Str>
+      <Disp Icon="Str" Order="183" />
+      <Cmts>
+        <Cmt Name="LcxAdmin"><![CDATA[{Locked="Uninstall-Package"}]]></Cmt>
+      </Cmts>
+    </Item>
+    <Item ItemId="0;1cac6073a2b20a668e2322c96b03b431" ItemType="55;Text" PsrId="22" InstFlg="true" Leaf="true">
+      <Str Cat="Text">
+        <Val><![CDATA[ Add-BindingRedirect command ]]></Val>
+      </Str>
+      <Disp Icon="Str" Order="357" />
+      <Cmts>
+        <Cmt Name="LcxAdmin"><![CDATA[{Locked="Add-BindingRedirect"}]]></Cmt>
+      </Cmts>
+    </Item>
+    <Item ItemId="0;310daf252548917ad85ed831afe9b2bd" ItemType="55;Text" PsrId="22" InstFlg="true" Leaf="true">
+      <Str Cat="Text">
+        <Val><![CDATA[ Get-Package command ]]></Val>
+      </Str>
+      <Disp Icon="Str" Order="118" />
+      <Cmts>
+        <Cmt Name="LcxAdmin"><![CDATA[{Locked="Get-Package"}]]></Cmt>
+      </Cmts>
+    </Item>
+    <Item ItemId="0;436f3be4a7e2422ec2fbf50c895e59b5" ItemType="55;Text" PsrId="22" InstFlg="true" Leaf="true">
+      <Str Cat="Text">
+        <Val><![CDATA[ Open-PackagePage ]]></Val>
+      </Str>
+      <Disp Icon="Str" Order="408" />
+      <Cmts>
+        <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+      </Cmts>
+    </Item>
+    <Item ItemId="0;6c3c4a88fb57739471b58c20fa562ef6" ItemType="55;Text" PsrId="22" InstFlg="true" Leaf="true">
+      <Str Cat="Text">
+        <Val><![CDATA[ Get-Project ]]></Val>
+      </Str>
+      <Disp Icon="Str" Order="378" />
+      <Cmts>
+        <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+      </Cmts>
+    </Item>
+    <Item ItemId="0;7584535d7f61417ee4f54d0c61c3dd58" ItemType="55;Text" PsrId="22" InstFlg="true" Leaf="true">
+      <Str Cat="Text">
+        <Val><![CDATA[ Link section  ]]></Val>
+      </Str>
+      <Disp Icon="Str" Order="61" />
+      <Cmts>
+        <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+      </Cmts>
+    </Item>
+    <Item ItemId="0;94b4bab0823615bde19a8e19d7fe35c9" ItemType="55;Text" PsrId="22" InstFlg="true" Leaf="true">
+      <Str Cat="Text">
+        <Val><![CDATA[ Install-Package command ]]></Val>
+      </Str>
+      <Disp Icon="Str" Order="1" />
+      <Cmts>
+        <Cmt Name="LcxAdmin"><![CDATA[{Locked="Install-Package"}]]></Cmt>
+      </Cmts>
+    </Item>
+    <Item ItemId="0;9af283cce4b8ad35b32a5bdb76dacdaf" ItemType="55;Text" PsrId="22" InstFlg="true" Leaf="true">
+      <Str Cat="Text">
+        <Val><![CDATA[ Sync-Package command ]]></Val>
+      </Str>
+      <Disp Icon="Str" Order="304" />
+      <Cmts>
+        <Cmt Name="LcxAdmin"><![CDATA[{Locked="Sync-Package"}]]></Cmt>
+      </Cmts>
+    </Item>
+    <Item ItemId="0;a8f66df83dceb0983fe8f744bd33b27d" ItemType="55;Text" PsrId="22" InstFlg="true" Leaf="true">
+      <Str Cat="Text">
+        <Val><![CDATA[ Cmdlet parameter section  ]]></Val>
+      </Str>
+      <Disp Icon="Str" Order="22" />
+      <Cmts>
+        <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+      </Cmts>
+    </Item>
+    <Item ItemId="0;b0588e2054a282e0a007615315b8cea2" ItemType="55;Text" PsrId="22" InstFlg="true" Leaf="true">
+      <Str Cat="Text">
+        <Val><![CDATA[ Update-Package command ]]></Val>
+      </Str>
+      <Disp Icon="Str" Order="229" />
+      <Cmts>
+        <Cmt Name="LcxAdmin"><![CDATA[{Locked="Update-Package"}]]></Cmt>
+      </Cmts>
+    </Item>
+    <Item ItemId="0;d33a95368b3eec1f7bad76b393bd689b" ItemType="55;Text" PsrId="22" InstFlg="true" Leaf="true">
+      <Str Cat="Text">
+        <Val><![CDATA[ Find-Package command ]]></Val>
+      </Str>
+      <Disp Icon="Str" Order="65" />
+      <Cmts>
+        <Cmt Name="LcxAdmin"><![CDATA[{Locked="Find-Package"}]]></Cmt>
+      </Cmts>
+    </Item>
+    <Item ItemId="1;0936e41e150299b76f8d83f5a0aaf060" ItemType="55;Text" PsrId="22" InstFlg="true" Leaf="true">
+      <Str Cat="Text">
+        <Val><![CDATA[ Cmdlet syntax section]]></Val>
+      </Str>
+      <Disp Icon="Str" Order="71" />
+      <Cmts>
+        <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+      </Cmts>
+    </Item>
+    <Item ItemId="1;45c90150b990f815f5c70623bb92b5f2" ItemType="55;Text" PsrId="22" InstFlg="true" Leaf="true">
+      <Str Cat="Text">
+        <Val><![CDATA[ Examples section  ]]></Val>
+      </Str>
+      <Disp Icon="Str" Order="104" />
+      <Cmts>
+        <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+      </Cmts>
+    </Item>
+    <Item ItemId="1;7584535d7f61417ee4f54d0c61c3dd58" ItemType="55;Text" PsrId="22" InstFlg="true" Leaf="true">
+      <Str Cat="Text">
+        <Val><![CDATA[ Link section  ]]></Val>
+      </Str>
+      <Disp Icon="Str" Order="114" />
+      <Cmts>
+        <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+      </Cmts>
+    </Item>
+    <Item ItemId="1;a8f66df83dceb0983fe8f744bd33b27d" ItemType="55;Text" PsrId="22" InstFlg="true" Leaf="true">
+      <Str Cat="Text">
+        <Val><![CDATA[ Cmdlet parameter section  ]]></Val>
+      </Str>
+      <Disp Icon="Str" Order="85" />
+      <Cmts>
+        <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+      </Cmts>
+    </Item>
+    <Item ItemId="2;0936e41e150299b76f8d83f5a0aaf060" ItemType="55;Text" PsrId="22" InstFlg="true" Leaf="true">
+      <Str Cat="Text">
+        <Val><![CDATA[ Cmdlet syntax section]]></Val>
+      </Str>
+      <Disp Icon="Str" Order="124" />
+      <Cmts>
+        <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+      </Cmts>
+    </Item>
+    <Item ItemId="2;7584535d7f61417ee4f54d0c61c3dd58" ItemType="55;Text" PsrId="22" InstFlg="true" Leaf="true">
+      <Str Cat="Text">
+        <Val><![CDATA[ Link section  ]]></Val>
+      </Str>
+      <Disp Icon="Str" Order="179" />
+      <Cmts>
+        <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+      </Cmts>
+    </Item>
+    <Item ItemId="2;a8f66df83dceb0983fe8f744bd33b27d" ItemType="55;Text" PsrId="22" InstFlg="true" Leaf="true">
+      <Str Cat="Text">
+        <Val><![CDATA[ Cmdlet parameter section  ]]></Val>
+      </Str>
+      <Disp Icon="Str" Order="141" />
+      <Cmts>
+        <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+      </Cmts>
+    </Item>
+    <Item ItemId="3;0936e41e150299b76f8d83f5a0aaf060" ItemType="55;Text" PsrId="22" InstFlg="true" Leaf="true">
+      <Str Cat="Text">
+        <Val><![CDATA[ Cmdlet syntax section]]></Val>
+      </Str>
+      <Disp Icon="Str" Order="189" />
+      <Cmts>
+        <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+      </Cmts>
+    </Item>
+    <Item ItemId="3;7584535d7f61417ee4f54d0c61c3dd58" ItemType="55;Text" PsrId="22" InstFlg="true" Leaf="true">
+      <Str Cat="Text">
+        <Val><![CDATA[ Link section  ]]></Val>
+      </Str>
+      <Disp Icon="Str" Order="225" />
+      <Cmts>
+        <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+      </Cmts>
+    </Item>
+    <Item ItemId="3;a8f66df83dceb0983fe8f744bd33b27d" ItemType="55;Text" PsrId="22" InstFlg="true" Leaf="true">
+      <Str Cat="Text">
+        <Val><![CDATA[ Cmdlet parameter section  ]]></Val>
+      </Str>
+      <Disp Icon="Str" Order="200" />
+      <Cmts>
+        <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+      </Cmts>
+    </Item>
+    <Item ItemId="4;0936e41e150299b76f8d83f5a0aaf060" ItemType="55;Text" PsrId="22" InstFlg="true" Leaf="true">
+      <Str Cat="Text">
+        <Val><![CDATA[ Cmdlet syntax section]]></Val>
+      </Str>
+      <Disp Icon="Str" Order="235" />
+      <Cmts>
+        <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+      </Cmts>
+    </Item>
+    <Item ItemId="4;7584535d7f61417ee4f54d0c61c3dd58" ItemType="55;Text" PsrId="22" InstFlg="true" Leaf="true">
+      <Str Cat="Text">
+        <Val><![CDATA[ Link section  ]]></Val>
+      </Str>
+      <Disp Icon="Str" Order="300" />
+      <Cmts>
+        <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+      </Cmts>
+    </Item>
+    <Item ItemId="4;a8f66df83dceb0983fe8f744bd33b27d" ItemType="55;Text" PsrId="22" InstFlg="true" Leaf="true">
+      <Str Cat="Text">
+        <Val><![CDATA[ Cmdlet parameter section  ]]></Val>
+      </Str>
+      <Disp Icon="Str" Order="254" />
+      <Cmts>
+        <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+      </Cmts>
+    </Item>
+    <Item ItemId="5;0936e41e150299b76f8d83f5a0aaf060" ItemType="55;Text" PsrId="22" InstFlg="true" Leaf="true">
+      <Str Cat="Text">
+        <Val><![CDATA[ Cmdlet syntax section]]></Val>
+      </Str>
+      <Disp Icon="Str" Order="363" />
+      <Cmts>
+        <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+      </Cmts>
+    </Item>
+    <Item ItemId="5;7584535d7f61417ee4f54d0c61c3dd58" ItemType="55;Text" PsrId="22" InstFlg="true" Leaf="true">
+      <Str Cat="Text">
+        <Val><![CDATA[ Link section  ]]></Val>
+      </Str>
+      <Disp Icon="Str" Order="353" />
+      <Cmts>
+        <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+      </Cmts>
+    </Item>
+    <Item ItemId="5;a8f66df83dceb0983fe8f744bd33b27d" ItemType="55;Text" PsrId="22" InstFlg="true" Leaf="true">
+      <Str Cat="Text">
+        <Val><![CDATA[ Cmdlet parameter section  ]]></Val>
+      </Str>
+      <Disp Icon="Str" Order="324" />
+      <Cmts>
+        <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+      </Cmts>
+    </Item>
+    <Item ItemId="6;0936e41e150299b76f8d83f5a0aaf060" ItemType="55;Text" PsrId="22" InstFlg="true" Leaf="true">
+      <Str Cat="Text">
+        <Val><![CDATA[ Cmdlet syntax section]]></Val>
+      </Str>
+      <Disp Icon="Str" Order="384" />
+      <Cmts>
+        <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+      </Cmts>
+    </Item>
+    <Item ItemId="6;7584535d7f61417ee4f54d0c61c3dd58" ItemType="55;Text" PsrId="22" InstFlg="true" Leaf="true">
+      <Str Cat="Text">
+        <Val><![CDATA[ Link section  ]]></Val>
+      </Str>
+      <Disp Icon="Str" Order="374" />
+      <Cmts>
+        <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+      </Cmts>
+    </Item>
+    <Item ItemId="6;a8f66df83dceb0983fe8f744bd33b27d" ItemType="55;Text" PsrId="22" InstFlg="true" Leaf="true">
+      <Str Cat="Text">
+        <Val><![CDATA[ Cmdlet parameter section  ]]></Val>
+      </Str>
+      <Disp Icon="Str" Order="367" />
+      <Cmts>
+        <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+      </Cmts>
+    </Item>
+  </Item>
+  <Item ItemId=";XML Content" ItemType="0" PsrId="22" Leaf="false">
+    <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" />
+    <Item ItemId=";XML Text" ItemType="0" PsrId="22" Leaf="false">
+      <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" />
+      <Item ItemId=";&lt;command:name&gt;" ItemType="0" PsrId="22" Leaf="false">
+        <Disp Icon="Str" Disp="true" LocTbl="false" />
+        <Item ItemId="0;3d9e38a5f0e6f1cc38244f6f5aef10a8" ItemType="52;XML:&lt;command:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Find-Package]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="66" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;5271fceb80ddfe096345572638c8d37d" ItemType="52;XML:&lt;command:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Update-Package]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="230" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;5fc4775b16c64f79f2fec5274a6f808c" ItemType="52;XML:&lt;command:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Sync-Package]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="305" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;631e7dfed347dcb77a4b64f892fb95f2" ItemType="52;XML:&lt;command:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Uninstall-Package]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="184" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;8abf1f442d9aeda80cf44efc31dbe7aa" ItemType="52;XML:&lt;command:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Get-Package]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="119" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;b40cd67eb4b5fa461bd07c3fcfb96dd4" ItemType="52;XML:&lt;command:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Add-BindingRedirect]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="358" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;b54e1434c17b1a5b4d51a6885fa9e876" ItemType="52;XML:&lt;command:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Open-PackagePage]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="409" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;e40203894217ab24d6019e5447b7ca09" ItemType="52;XML:&lt;command:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Get-Project]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="379" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;f7e6b66daefaefce37203efe463bcfda" ItemType="52;XML:&lt;command:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Install-Package]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="2" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+      </Item>
+      <Item ItemId=";&lt;command:noun&gt;" ItemType="0" PsrId="22" Leaf="false">
+        <Disp Icon="Str" Disp="true" LocTbl="false" />
+        <Item ItemId="0;2c8f355bc1273dd4c3d9919e41fdb0d5" ItemType="52;XML:&lt;command:noun&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Package]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="5" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;2cccf4c3d1c728f99f3e7bc6e4c150df" ItemType="52;XML:&lt;command:noun&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[BindingRedirect]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="361" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;7cda5c9fec5a91bb1cdeb30b56e19720" ItemType="52;XML:&lt;command:noun&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Project]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="382" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;8f626c8de34702843e5bb63178c44f53" ItemType="52;XML:&lt;command:noun&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[PackagePage]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="412" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="1;2c8f355bc1273dd4c3d9919e41fdb0d5" ItemType="52;XML:&lt;command:noun&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Package]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="69" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="2;2c8f355bc1273dd4c3d9919e41fdb0d5" ItemType="52;XML:&lt;command:noun&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Package]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="122" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="3;2c8f355bc1273dd4c3d9919e41fdb0d5" ItemType="52;XML:&lt;command:noun&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Package]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="187" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="4;2c8f355bc1273dd4c3d9919e41fdb0d5" ItemType="52;XML:&lt;command:noun&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Package]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="233" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="5;2c8f355bc1273dd4c3d9919e41fdb0d5" ItemType="52;XML:&lt;command:noun&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Package]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="308" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+      </Item>
+      <Item ItemId=";&lt;command:parametervalue&gt;" ItemType="0" PsrId="22" Leaf="false">
+        <Disp Icon="Str" Disp="true" LocTbl="false" />
+        <Item ItemId="0;aefd14780617790a7191cbc97d7a4206" ItemType="52;XML:&lt;command:parameterValue&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[string]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="10" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;edf87bb0e529badd6ea387551182046a" ItemType="52;XML:&lt;command:parameterValue&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[int]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="79" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="1;aefd14780617790a7191cbc97d7a4206" ItemType="52;XML:&lt;command:parameterValue&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[string]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="13" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="1;edf87bb0e529badd6ea387551182046a" ItemType="52;XML:&lt;command:parameterValue&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[int]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="81" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="2;aefd14780617790a7191cbc97d7a4206" ItemType="52;XML:&lt;command:parameterValue&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[string]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="15" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="2;edf87bb0e529badd6ea387551182046a" ItemType="52;XML:&lt;command:parameterValue&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[int]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="135" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="3;aefd14780617790a7191cbc97d7a4206" ItemType="52;XML:&lt;command:parameterValue&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[string]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="17" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="3;edf87bb0e529badd6ea387551182046a" ItemType="52;XML:&lt;command:parameterValue&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[int]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="137" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="4;aefd14780617790a7191cbc97d7a4206" ItemType="52;XML:&lt;command:parameterValue&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[string]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="25" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="5;aefd14780617790a7191cbc97d7a4206" ItemType="52;XML:&lt;command:parameterValue&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[string]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="30" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="6;aefd14780617790a7191cbc97d7a4206" ItemType="52;XML:&lt;command:parameterValue&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[string]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="33" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="7;aefd14780617790a7191cbc97d7a4206" ItemType="52;XML:&lt;command:parameterValue&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[string]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="36" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="8;aefd14780617790a7191cbc97d7a4206" ItemType="52;XML:&lt;command:parameterValue&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[string]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="74" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="9;aefd14780617790a7191cbc97d7a4206" ItemType="52;XML:&lt;command:parameterValue&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[string]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="76" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="10;aefd14780617790a7191cbc97d7a4206" ItemType="52;XML:&lt;command:parameterValue&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[string]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="88" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="11;aefd14780617790a7191cbc97d7a4206" ItemType="52;XML:&lt;command:parameterValue&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[string]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="91" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="12;aefd14780617790a7191cbc97d7a4206" ItemType="52;XML:&lt;command:parameterValue&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[string]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="127" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="13;aefd14780617790a7191cbc97d7a4206" ItemType="52;XML:&lt;command:parameterValue&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[string]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="131" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="14;aefd14780617790a7191cbc97d7a4206" ItemType="52;XML:&lt;command:parameterValue&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[string]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="133" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="15;aefd14780617790a7191cbc97d7a4206" ItemType="52;XML:&lt;command:parameterValue&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[string]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="144" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="16;aefd14780617790a7191cbc97d7a4206" ItemType="52;XML:&lt;command:parameterValue&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[string]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="192" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="17;aefd14780617790a7191cbc97d7a4206" ItemType="52;XML:&lt;command:parameterValue&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[string]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="195" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="18;aefd14780617790a7191cbc97d7a4206" ItemType="52;XML:&lt;command:parameterValue&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[string]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="198" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="19;aefd14780617790a7191cbc97d7a4206" ItemType="52;XML:&lt;command:parameterValue&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[string]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="203" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="20;aefd14780617790a7191cbc97d7a4206" ItemType="52;XML:&lt;command:parameterValue&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[string]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="208" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="21;aefd14780617790a7191cbc97d7a4206" ItemType="52;XML:&lt;command:parameterValue&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[string]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="213" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="22;aefd14780617790a7191cbc97d7a4206" ItemType="52;XML:&lt;command:parameterValue&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[string]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="238" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="23;aefd14780617790a7191cbc97d7a4206" ItemType="52;XML:&lt;command:parameterValue&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[string]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="241" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="24;aefd14780617790a7191cbc97d7a4206" ItemType="52;XML:&lt;command:parameterValue&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[string]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="243" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="25;aefd14780617790a7191cbc97d7a4206" ItemType="52;XML:&lt;command:parameterValue&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[string]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="246" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="26;aefd14780617790a7191cbc97d7a4206" ItemType="52;XML:&lt;command:parameterValue&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[string]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="257" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="27;aefd14780617790a7191cbc97d7a4206" ItemType="52;XML:&lt;command:parameterValue&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[string]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="262" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="28;aefd14780617790a7191cbc97d7a4206" ItemType="52;XML:&lt;command:parameterValue&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[string]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="267" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="29;aefd14780617790a7191cbc97d7a4206" ItemType="52;XML:&lt;command:parameterValue&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[string]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="270" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="30;aefd14780617790a7191cbc97d7a4206" ItemType="52;XML:&lt;command:parameterValue&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[string]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="312" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="31;aefd14780617790a7191cbc97d7a4206" ItemType="52;XML:&lt;command:parameterValue&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[string]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="315" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="32;aefd14780617790a7191cbc97d7a4206" ItemType="52;XML:&lt;command:parameterValue&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[string]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="317" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="33;aefd14780617790a7191cbc97d7a4206" ItemType="52;XML:&lt;command:parameterValue&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[string]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="319" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="34;aefd14780617790a7191cbc97d7a4206" ItemType="52;XML:&lt;command:parameterValue&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[string]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="327" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="35;aefd14780617790a7191cbc97d7a4206" ItemType="52;XML:&lt;command:parameterValue&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[string]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="332" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="36;aefd14780617790a7191cbc97d7a4206" ItemType="52;XML:&lt;command:parameterValue&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[string]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="335" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="37;aefd14780617790a7191cbc97d7a4206" ItemType="52;XML:&lt;command:parameterValue&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[string]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="338" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="38;aefd14780617790a7191cbc97d7a4206" ItemType="52;XML:&lt;command:parameterValue&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[string]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="366" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="39;aefd14780617790a7191cbc97d7a4206" ItemType="52;XML:&lt;command:parameterValue&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[string]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="370" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="40;aefd14780617790a7191cbc97d7a4206" ItemType="52;XML:&lt;command:parameterValue&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[string]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="387" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked="string"}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="41;aefd14780617790a7191cbc97d7a4206" ItemType="52;XML:&lt;command:parameterValue&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[string]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="392" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="42;aefd14780617790a7191cbc97d7a4206" ItemType="52;XML:&lt;command:parameterValue&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[string]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="417" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="43;aefd14780617790a7191cbc97d7a4206" ItemType="52;XML:&lt;command:parameterValue&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[string]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="426" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+      </Item>
+      <Item ItemId=";&lt;command:verb&gt;" ItemType="0" PsrId="22" Leaf="false">
+        <Disp Icon="Str" Disp="true" LocTbl="false" />
+        <Item ItemId="0;34014c1cb1570552dcddff4c119bdc89" ItemType="52;XML:&lt;command:verb&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Add]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="360" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;382144a6aea6a86396aab06b97525b0f" ItemType="52;XML:&lt;command:verb&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Get]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="121" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;3a44bce00b3834e69af6e343267c89cf" ItemType="52;XML:&lt;command:verb&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Update]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="232" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;4d412137ed3c8df2ec6d244c2b94dfd7" ItemType="52;XML:&lt;command:verb&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Open]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="411" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;71fcd68ab3f843387f45950051d3c9f0" ItemType="52;XML:&lt;command:verb&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Install]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="4" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;8448052362aebf5463d776585acd2b77" ItemType="52;XML:&lt;command:verb&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Find]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="68" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;ef7fe93958d49b3b82f3a612da462ea3" ItemType="52;XML:&lt;command:verb&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Uninstall]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="186" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="1;382144a6aea6a86396aab06b97525b0f" ItemType="52;XML:&lt;command:verb&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Get]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="381" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="1;ef7fe93958d49b3b82f3a612da462ea3" ItemType="52;XML:&lt;command:verb&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Uninstall]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="307" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+      </Item>
+      <Item ItemId=";&lt;dev:code&gt;" ItemType="0" PsrId="22" Leaf="false">
+        <Disp Icon="Str" Disp="true" LocTbl="false" />
+        <Item ItemId="0;00e1c89a32ba40dc950dbfa00d6c02db" ItemType="52;XML:&lt;dev:code&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[PM&gt; Install-package https://raw.githubusercontent.com/NuGet/json-ld.net/master/src/JsonLD/packages.config]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="56" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;09cf9c801ea3e6d826b0a1d4e150767e" ItemType="52;XML:&lt;dev:code&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[PM&gt; Find-Package Elmah -StartWith]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="112" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;17a621bec6189ad8b664054b221a0dab" ItemType="52;XML:&lt;dev:code&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[PM&gt; Update-Package Elmah]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="286" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;1825761bde30210de5a4956d71f2afd9" ItemType="52;XML:&lt;dev:code&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[PM&gt; Sync-Package Elmah]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="348" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;18b9503fe0e7601c9833db7a53fc68e0" ItemType="52;XML:&lt;dev:code&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[PM&gt; Add-BindingRedirect MyProjectName]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="372" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;1aa8c7906466969affbd8e9e3c05826d" ItemType="52;XML:&lt;dev:code&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[PM&gt; Sync-Package Elmah -ProjectName ClassLibrary1]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="351" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;1bad68b239b3aca231437330ed5624b0" ItemType="52;XML:&lt;dev:code&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[PM&gt; Update-Package -Safe -Project MvcApplication1]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="295" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;1f89dfd4a4f48be7156cc28b4a858a76" ItemType="52;XML:&lt;dev:code&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[PM&gt; Open-PackagePage Ninject -ReportAbuse]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="444" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;20277058b4d1baa46997c1d0a659a9e9" ItemType="52;XML:&lt;dev:code&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[PM&gt; Get-Package -ListAvailable -PageSize 30]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="171" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;2b6ce42eafde8ed195886524258f4e59" ItemType="52;XML:&lt;dev:code&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[PM&gt; Uninstall-Package Elmah -Force]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="223" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;2fcfa0b8767f5c1c408a987449f959bb" ItemType="52;XML:&lt;dev:code&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[PM&gt; Update-Package -ToHighestMinor -Project MvcApplication1]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="298" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked="PM&gt; Update-Package -ToHighestMinor -Project MvcApplication1"}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;3508fecbb78e3ec33ed4ab029554572f" ItemType="52;XML:&lt;dev:code&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[PM&gt; Install-Package Elmah]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="47" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;565b093c24ba5fa1e3532fd56be2f362" ItemType="52;XML:&lt;dev:code&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[PM&gt; Update-Package Elmah -Version 1.1.0]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="289" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;5b45bf820e963f9587ac5b60eca40c54" ItemType="52;XML:&lt;dev:code&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[PM&gt; Uninstall-Package Elmah]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="217" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;7d2d74cf85f9449be4cf0040d4da2a9a" ItemType="52;XML:&lt;dev:code&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[PM&gt; $url = Open-PackagePage Ninject -License -WhatIf -PassThru]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="447" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;7fa221abb817e48b7e75562bfce44200" ItemType="52;XML:&lt;dev:code&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[PM&gt; Find-Package Elmah]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="106" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;86e18e5821eea3d5375c323e58e193f7" ItemType="52;XML:&lt;dev:code&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[PM&gt; Uninstall-Package Elmah -RemoveDependencies]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="220" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;acf2b9ed15ec0fbe398766f1d497479f" ItemType="52;XML:&lt;dev:code&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[PM&gt; Install-Package Glimpse -Version 1.0.0 -Project MvcApplication1]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="50" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;b35f3c680edefb1e82ff1c510bdbc385" ItemType="52;XML:&lt;dev:code&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[PS&gt; Get-Package -Updates]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="177" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;b651c00e50f13172326a097d9f65a744" ItemType="52;XML:&lt;dev:code&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[PM&gt; Get-Project MyProjectName]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="399" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;befcede637e3caa403367c1e4ee33396" ItemType="52;XML:&lt;dev:code&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[PM&gt; Find-Package jquery -AllVersions -ExactMatch]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="109" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;bf0275e4667700e96a91f7c76ee5960c" ItemType="52;XML:&lt;dev:code&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[PM&gt; Get-Package -ListAvailable -Filter Ninject]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="174" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;bfee0dc1847b4243576086cfa97940bf" ItemType="52;XML:&lt;dev:code&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[PM&gt; Get-Project -All]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="402" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;d894fc2003f3054b2b6f3a849014d7bf" ItemType="52;XML:&lt;dev:code&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[PM&gt; Open-PackagePage Ninject -License]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="441" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;ed31e1dfff56d7127757c53cb1a5606a" ItemType="52;XML:&lt;dev:code&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[PM&gt; Get-Package]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="165" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;eeb89f77ae64dbf51001e06a7715eb31" ItemType="52;XML:&lt;dev:code&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[PM&gt; Get-Package -ProjectName MyProject]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="168" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;f18f33ca73baa0d871b9fffac008f72d" ItemType="52;XML:&lt;dev:code&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[PM&gt; Update-Package]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="292" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;fa2593be457b8a8af5e62b8e1c14bcb6" ItemType="52;XML:&lt;dev:code&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[PM&gt; Install-package c:\temp\packages\jQuery.1.10.2.nupkg]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="59" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;faef707a60d99996f8d716dd01b78cf6" ItemType="52;XML:&lt;dev:code&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[PM&gt; Open-PackagePage Ninject]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="438" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;feea59b91070d89f1d456ddb14965a40" ItemType="52;XML:&lt;dev:code&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[PM&gt; Install-Package Ninject.Mvc3 -IgnoreDependencies -Source c:\temp\packages]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="53" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="1;ed31e1dfff56d7127757c53cb1a5606a" ItemType="52;XML:&lt;dev:code&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[PM&gt; Get-Project]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="396" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+      </Item>
+      <Item ItemId=";&lt;maml:linktext&gt;" ItemType="0" PsrId="22" Leaf="false">
+        <Disp Icon="Str" Disp="true" LocTbl="false" />
+        <Item ItemId="0;3d9e38a5f0e6f1cc38244f6f5aef10a8" ItemType="52;XML:&lt;maml:linkText&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Find-Package]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="117" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;5271fceb80ddfe096345572638c8d37d" ItemType="52;XML:&lt;maml:linkText&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Update-Package]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="303" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;631e7dfed347dcb77a4b64f892fb95f2" ItemType="52;XML:&lt;maml:linkText&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Uninstall-Package]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="228" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;8abf1f442d9aeda80cf44efc31dbe7aa" ItemType="52;XML:&lt;maml:linkText&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Get-Package]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="182" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;b40cd67eb4b5fa461bd07c3fcfb96dd4" ItemType="52;XML:&lt;maml:linkText&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Add-BindingRedirect]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="377" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;b54e1434c17b1a5b4d51a6885fa9e876" ItemType="52;XML:&lt;maml:linkText&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Open-PackagePage]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="452" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;e40203894217ab24d6019e5447b7ca09" ItemType="52;XML:&lt;maml:linkText&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Get-Project]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="407" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;f7e6b66daefaefce37203efe463bcfda" ItemType="52;XML:&lt;maml:linkText&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Install-Package]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="64" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="1;631e7dfed347dcb77a4b64f892fb95f2" ItemType="52;XML:&lt;maml:linkText&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Uninstall-Package]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="356" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+      </Item>
+      <Item ItemId=";&lt;maml:name&gt;" ItemType="0" PsrId="22" Leaf="false">
+        <Disp Icon="Str" Disp="true" LocTbl="false" />
+        <Item ItemId="0;0f85edbb63957a06a835dce870a401f7" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Filter]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="132" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;1069ae7e27e7678c2874142fdcb86453" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Safe]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="244" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;1751c5163ad35d95a7bd2e34d67ba8ac" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Updates]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="129" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;1cfc93da97f9d796631e450ac257618c" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[License]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="420" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;24dc06a75b1122a448fdec71ba2206b8" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[WhatIf]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="21" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked="WhatIf"}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;287cf8fcd838a68a09952056eccf3c71" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[StartWith]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="84" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;2891a7e7015d9201d6a8439dbb53302c" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[ReportAbuse]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="421" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;3d9e38a5f0e6f1cc38244f6f5aef10a8" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Find-Package]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="72" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;3e88124f6af80e595ede072037acb956" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[DependencyVersion]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="20" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked="DependencyVersion"}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;44cf99b639acc2e30a376d062bdad088" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[FileConflictAction]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="19" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked="FileConflictAction"}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;490513f37fb283c1689208f6a8b856a0" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Reinstall]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="248" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;5271fceb80ddfe096345572638c8d37d" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Update-Package]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="236" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;5fc4775b16c64f79f2fec5274a6f808c" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Sync-Package]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="310" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;631e7dfed347dcb77a4b64f892fb95f2" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Uninstall-Package]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="190" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;6ad2fda195a7bfecee8ba36baf57a9d2" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Id]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="9" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;6e9ca42b81a4eb17ca6cc095c78ece19" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[AllVersions]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="77" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;7645fa6714baa300a18b947dabbd1f5c" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[IncludePrerelease]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="18" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;7804a3627483e12afb0dbad13223ff56" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[RemoveDependencies]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="193" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;798df8d37b38dfdec6cb28ccd845d636" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[All]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="388" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;7c554de5453113ef154b14e46a1ca1a0" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[ProjectName]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="12" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;88d8269dc1ebf89be98e9154daa8dd99" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Version]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="14" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;8abf1f442d9aeda80cf44efc31dbe7aa" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Get-Package]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="125" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;a0bb44441394e3c59ab05551b2fb7b59" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[ListAvailable]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="128" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;a6a4152c5ed869e94c3b40979bed3226" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[ExactMatch]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="83" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;acc71ce673abddc6417c3e9bea718b35" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Source]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="16" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;b3e330187037f80fc5e611a4849fb2d5" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[IgnoreDependencies]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="11" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;b40cd67eb4b5fa461bd07c3fcfb96dd4" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Add-BindingRedirect]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="364" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;b54e1434c17b1a5b4d51a6885fa9e876" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Open-PackagePage]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="415" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;b964bf6bcc5281453f89eda4625c2bfe" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Skip]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="80" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;bfbe673d557a1f7cf00c9ac671be8b16" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[ToHighestPatch]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="251" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked="ToHighestPatch"}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;d63ab1803e036c5b55401f98fee90142" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[First]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="78" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;d960c81c2b77c6f48101b155951031d3" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Name]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="386" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;dc76c9dda4c8ab15bd1797c6dbe1ad99" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[PassThru]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="422" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;e21d3b1ef6147a02fd65b6a926852b90" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Force]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="196" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;e40203894217ab24d6019e5447b7ca09" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Get-Project]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="385" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;f7e6b66daefaefce37203efe463bcfda" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Install-Package]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="8" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;fe34eabb0928663e1d0221618a450287" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[PageSize]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="140" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="1;0f85edbb63957a06a835dce870a401f7" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Filter]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="151" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="1;1069ae7e27e7678c2874142fdcb86453" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Safe]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="263" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="1;1751c5163ad35d95a7bd2e34d67ba8ac" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Updates]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="149" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="1;1cfc93da97f9d796631e450ac257618c" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[License]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="431" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="1;24dc06a75b1122a448fdec71ba2206b8" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[WhatIf]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="43" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="1;287cf8fcd838a68a09952056eccf3c71" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[StartWith]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="102" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="1;2891a7e7015d9201d6a8439dbb53302c" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[ReportAbuse]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="433" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="1;3e88124f6af80e595ede072037acb956" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[DependencyVersion]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="41" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="1;44cf99b639acc2e30a376d062bdad088" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[FileConflictAction]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="39" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="1;490513f37fb283c1689208f6a8b856a0" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Reinstall]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="273" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="1;6ad2fda195a7bfecee8ba36baf57a9d2" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Id]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="23" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="1;6e9ca42b81a4eb17ca6cc095c78ece19" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[AllVersions]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="92" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="1;7645fa6714baa300a18b947dabbd1f5c" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[IncludePrerelease]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="37" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="1;7804a3627483e12afb0dbad13223ff56" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[RemoveDependencies]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="204" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="1;798df8d37b38dfdec6cb28ccd845d636" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[All]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="393" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="1;7c554de5453113ef154b14e46a1ca1a0" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[ProjectName]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="28" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="1;88d8269dc1ebf89be98e9154daa8dd99" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Version]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="34" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="1;a0bb44441394e3c59ab05551b2fb7b59" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[ListAvailable]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="145" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="1;a6a4152c5ed869e94c3b40979bed3226" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[ExactMatch]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="100" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="1;acc71ce673abddc6417c3e9bea718b35" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Source]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="31" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="1;b3e330187037f80fc5e611a4849fb2d5" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[IgnoreDependencies]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="26" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="1;b964bf6bcc5281453f89eda4625c2bfe" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Skip]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="96" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="1;bfbe673d557a1f7cf00c9ac671be8b16" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[ToHighestMinor]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="252" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked="ToHighestMinor"}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="1;d63ab1803e036c5b55401f98fee90142" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[First]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="94" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="1;d960c81c2b77c6f48101b155951031d3" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Name]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="390" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="1;dc76c9dda4c8ab15bd1797c6dbe1ad99" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[PassThru]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="435" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="1;e21d3b1ef6147a02fd65b6a926852b90" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Force]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="209" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="1;fe34eabb0928663e1d0221618a450287" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[PageSize]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="161" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="2;24dc06a75b1122a448fdec71ba2206b8" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[WhatIf]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="199" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="2;3e88124f6af80e595ede072037acb956" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[DependencyVersion]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="250" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="2;44cf99b639acc2e30a376d062bdad088" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[FileConflictAction]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="249" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="2;6ad2fda195a7bfecee8ba36baf57a9d2" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Id]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="73" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="2;6e9ca42b81a4eb17ca6cc095c78ece19" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[AllVersions]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="138" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="2;7645fa6714baa300a18b947dabbd1f5c" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[IncludePrerelease]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="82" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="2;7c554de5453113ef154b14e46a1ca1a0" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[ProjectName]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="130" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="2;88d8269dc1ebf89be98e9154daa8dd99" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Version]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="197" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="2;acc71ce673abddc6417c3e9bea718b35" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Source]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="75" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="2;b3e330187037f80fc5e611a4849fb2d5" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[IgnoreDependencies]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="239" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="2;b964bf6bcc5281453f89eda4625c2bfe" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Skip]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="136" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="2;bfbe673d557a1f7cf00c9ac671be8b16" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[ToHighestMinor]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="279" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked="ToHighestMinor"}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="2;d63ab1803e036c5b55401f98fee90142" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[First]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="134" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="3;24dc06a75b1122a448fdec71ba2206b8" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[WhatIf]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="214" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="3;3e88124f6af80e595ede072037acb956" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[DependencyVersion]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="277" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="3;44cf99b639acc2e30a376d062bdad088" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[FileConflictAction]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="275" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="3;6ad2fda195a7bfecee8ba36baf57a9d2" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Id]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="86" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="3;6e9ca42b81a4eb17ca6cc095c78ece19" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[AllVersions]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="157" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="3;7645fa6714baa300a18b947dabbd1f5c" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[IncludePrerelease]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="98" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="3;7c554de5453113ef154b14e46a1ca1a0" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[ProjectName]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="147" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="3;88d8269dc1ebf89be98e9154daa8dd99" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Version]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="211" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="3;acc71ce673abddc6417c3e9bea718b35" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Source]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="89" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="3;b3e330187037f80fc5e611a4849fb2d5" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[IgnoreDependencies]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="258" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="3;b964bf6bcc5281453f89eda4625c2bfe" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Skip]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="155" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="3;bfbe673d557a1f7cf00c9ac671be8b16" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[ToHighestPatch]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="281" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked="ToHighestPatch"}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="3;d63ab1803e036c5b55401f98fee90142" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[First]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="153" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="4;24dc06a75b1122a448fdec71ba2206b8" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[WhatIf]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="253" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="4;3e88124f6af80e595ede072037acb956" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[DependencyVersion]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="322" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="4;44cf99b639acc2e30a376d062bdad088" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[FileConflictAction]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="321" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="4;6ad2fda195a7bfecee8ba36baf57a9d2" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Id]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="191" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="4;7645fa6714baa300a18b947dabbd1f5c" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[IncludePrerelease]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="139" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="4;7c554de5453113ef154b14e46a1ca1a0" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[ProjectName]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="194" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="4;88d8269dc1ebf89be98e9154daa8dd99" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Version]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="242" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="4;acc71ce673abddc6417c3e9bea718b35" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Source]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="126" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="4;b3e330187037f80fc5e611a4849fb2d5" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[IgnoreDependencies]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="313" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="5;24dc06a75b1122a448fdec71ba2206b8" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[WhatIf]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="283" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="5;3e88124f6af80e595ede072037acb956" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[DependencyVersion]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="343" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="5;44cf99b639acc2e30a376d062bdad088" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[FileConflictAction]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="341" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="5;6ad2fda195a7bfecee8ba36baf57a9d2" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Id]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="201" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="5;7645fa6714baa300a18b947dabbd1f5c" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[IncludePrerelease]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="159" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="5;7c554de5453113ef154b14e46a1ca1a0" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[ProjectName]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="206" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="5;88d8269dc1ebf89be98e9154daa8dd99" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Version]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="268" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="5;acc71ce673abddc6417c3e9bea718b35" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Source]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="142" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="5;b3e330187037f80fc5e611a4849fb2d5" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[IgnoreDependencies]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="328" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="6;24dc06a75b1122a448fdec71ba2206b8" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[WhatIf]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="323" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="6;6ad2fda195a7bfecee8ba36baf57a9d2" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Id]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="237" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="6;7645fa6714baa300a18b947dabbd1f5c" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[IncludePrerelease]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="247" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="6;7c554de5453113ef154b14e46a1ca1a0" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[ProjectName]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="240" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="6;88d8269dc1ebf89be98e9154daa8dd99" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Version]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="316" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="6;acc71ce673abddc6417c3e9bea718b35" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Source]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="245" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="7;24dc06a75b1122a448fdec71ba2206b8" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[WhatIf]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="345" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="7;6ad2fda195a7bfecee8ba36baf57a9d2" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Id]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="255" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="7;7645fa6714baa300a18b947dabbd1f5c" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[IncludePrerelease]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="271" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="7;7c554de5453113ef154b14e46a1ca1a0" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[ProjectName]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="260" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="7;88d8269dc1ebf89be98e9154daa8dd99" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Version]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="336" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="7;acc71ce673abddc6417c3e9bea718b35" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Source]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="265" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="8;6ad2fda195a7bfecee8ba36baf57a9d2" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Id]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="311" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="8;7645fa6714baa300a18b947dabbd1f5c" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[IncludePrerelease]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="320" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="8;7c554de5453113ef154b14e46a1ca1a0" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[ProjectName]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="314" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="8;88d8269dc1ebf89be98e9154daa8dd99" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Version]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="418" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="8;acc71ce673abddc6417c3e9bea718b35" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Source]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="318" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="9;6ad2fda195a7bfecee8ba36baf57a9d2" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Id]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="325" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="9;7645fa6714baa300a18b947dabbd1f5c" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[IncludePrerelease]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="339" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="9;7c554de5453113ef154b14e46a1ca1a0" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[ProjectName]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="330" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="9;88d8269dc1ebf89be98e9154daa8dd99" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Version]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="427" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="9;acc71ce673abddc6417c3e9bea718b35" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Source]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="333" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="10;6ad2fda195a7bfecee8ba36baf57a9d2" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Id]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="416" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="10;7c554de5453113ef154b14e46a1ca1a0" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[ProjectName]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="365" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="10;acc71ce673abddc6417c3e9bea718b35" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Source]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="419" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="11;6ad2fda195a7bfecee8ba36baf57a9d2" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Id]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="424" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="11;7c554de5453113ef154b14e46a1ca1a0" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[ProjectName]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="368" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="11;acc71ce673abddc6417c3e9bea718b35" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Source]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="429" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+      </Item>
+      <Item ItemId=";&lt;maml:para&gt;" ItemType="0" PsrId="22" Leaf="false">
+        <Disp Icon="Str" Disp="true" LocTbl="false" />
+        <Item ItemId="0;15f93576ad0760a63e11be8ff87455b3" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Description]A;            ------------------------------------------------------------------]A;            Installs version 1.0.0 of Glimpse into the project named MvcApplication1]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="51" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked="Glimpse"} {Locked="MvcApplication1"}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;1b6a3ae3c683a6ce70abaf4912701825" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Specifies the package ID of the package to install. Now it can also point to an online or local path to packages.config file or package's nupkg file.]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="24" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked="packages.config"}{StrContains=i"nupkg"}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;1b6b2c2e16b4faba16d7b3c4433ebb90" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Description]A;            ------------------------------------------------------------------]A;            Returns package with Ids starting with the word of 'Elmah'.]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="113" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked="Elmah"}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;233818ccd7aa59bac47426bb41fc79bc" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Description]A;            ------------------------------------------------------------------]A;            Opens a browser to the project URL specified in the Ninject package.]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="439" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked="URL"} {Locked="Ninject"}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;2ac95117c0ef0dc896b19ef4318b79ec" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Specifies a filter string used to narrow down the list of packages returned. The filter is searched for in the package Id, the description and tags.]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="152" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked="description","package Id"}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;2f79fd608d852eb0d7fd2150fd8c93b3" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Description]A;            ------------------------------------------------------------------]A;            Updates the Elmah package to a specific version in every project.]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="290" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked="Elmah"}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;378f9c3721ab006c59931130857c0dd0" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Description]A;            ------------------------------------------------------------------]A;            Returns packages with keyword Elmah from the package source.]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="107" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked="Elmah"}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;387e20b503f7d5fd30453b40ec273410" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Examines all assemblies within the output path for a project and adds binding redirects to the]A;        application (or web) configuration file where necessary. NOTE: As of NuGet 1.2, NuGet automatically]A;        runs this command when installing a package.]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="362" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked="NuGet"}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;41176e4055bb6d90897701b04100fa3e" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Description]A;            ------------------------------------------------------------------]A;            Installs the package, Ninject.Mvc3, but not its dependencies. It looks in the directory,]A;            c:\temp\packages to find the package.]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="54" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked="Ninject.Mvc3"} {Locked="c:\temp\packages"}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;419922ea7ad13f9517b52cf7907486ba" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Used with -ListAvailable. When specified, paging will be enabled to display the list of packages.]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="162" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked="-ListAvailable"}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;5063eb704ad0a4eb347dd697c069f54b" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Description]A;            ------------------------------------------------------------------]A;            Installs the package listed on the online packages.config, Newtonsoft.Json version 4.0.1 into the current project.]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="57" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked="packages.config", "Newtonsoft.Json"}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;5b7eec597137f2aa75b7a4b6625f2926" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Specifies to move to the highest patch version on update. This is the same as Safe. If omitted, this defaults to the highest compatible version.]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="282" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked="Safe"}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;5f874a81c3ade0e6a4ba94a3e870cce5" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Description]A;            ------------------------------------------------------------------]A;            Sync the version of Elmah package from the ClassLibrary1 project to the rest of projects in the solution.]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="352" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked="Elmah", "ClassLibrary1"}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;65516ef4f9bbed51fa7277fb413d2189" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Uninstalls a package. If other packages depend on this package, the command will fail unless the –Force option is specified.]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="188" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked="Force"}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;66632f4fa160cd55a4601bea7ca89b94" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Description]A;            ------------------------------------------------------------------]A;            Opens a browser to the URL at the current package source used to report abuse for the specified package.]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="445" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked="URL"}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;71456a158ae163d711d47e1d32620776" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Description]A;            ------------------------------------------------------------------]A;            Uninstalls the Elmah package even if another package depends on it.]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="224" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked="Elmah"}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;883fbba13f85c370652424dd784d3523" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Returns a reference to the DTE (Development Tools Environment) for the specified project. If none is specifed, returns the default project selected in the Package Manager Console.]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="383" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked="DTE"}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;8decaa2b769cc1e7013cb2ec7cec1353" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Description]A;            ------------------------------------------------------------------]A;            Returns a list of packages available online using "Ninject" as a search term.]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="175" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked="Ninject"}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;8df2afc35ba7ea3b6384bd8475e072de" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Indicates whether to return packages with the exact packageID (case-insensitive).]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="101" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked="packageID"}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;9a17b1db7435d15a5eb9be905d6f7749" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Description]A;            ------------------------------------------------------------------]A;            Installs the latest version of the Elmah package from the current]A;            package source into the default project.]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="48" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked="Elmah"}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;a5fdd57733f52490cfb31e6023d825fb" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Indicates the cmdlet should open the ReportAbuseUrl of the specified package. If neither LicenseUrl nor ReportAbuseUrl is set, the cmdlet will open the ProjectUrl by default.]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="434" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked="LicenseUrl", "ReportAbuseUrl", "ProjectUrl"}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;a99229777debd7cd6119660f7a196e4b" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Description]A;            ------------------------------------------------------------------]A;            Installs jquery 1.10.2 package, using the .nupkg file under local path of c:\temp\packages.]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="60" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked="jquery"} {Locked="c:\temp\packages"} {Locked=".nupkg"}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;b7580c0c70982e60828329abb128c370" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Description]A;            ------------------------------------------------------------------]A;            Returns packages installed in the "MyProject" project.]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="169" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked="MyProject"}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;b8e446ed6f8653b38fbdbeacd0c191be" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Open the browser pointing to ProjectUrl, LicenseUrl or ReportAbuseUrl of the specified package.]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="410" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked="ProjectUrl", "LicenseUrl", "ReportAbuseUrl"}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;be54c55fd61ab7e06f0199388b45fd8a" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Description]A;            ------------------------------------------------------------------]A;            Updates every package in the project, MvcApplication1, to the highest minor version but keeps the major version. For example,]A;            if version 1.0.0 of a package is installed, and versions 1.1.0, 1.2.0, and 2.0.0 are]A;            available in the feed, the -ToHighestMinor flag updates the package to 1.2.0.]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="299" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked="MvcApplication1", "ToHighestMinor"}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;c2ea79ce2139e112654592d9c785909c" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Specifies the URL or directory path for the package source containing the package to update. When set to a local file system path, Source can be either absolute or relative to the current directory. If omitted, looks in the currently selected package source to find the corresponding package URL.]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="266" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked="Source"}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;c61e54726d8b7a5bfb4f3bd0f666b1ff" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Description]A;            ------------------------------------------------------------------]A;            Adds binding redirects to the specified project, MyProjectName.]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="373" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked="MyProjectName"}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;c68a18f813fd39bdeba94f44a0fc353b" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Description]A;            ------------------------------------------------------------------]A;            Uninstalls the Elmah package as well as all its dependencies. If any dependency has another package that depends on it,]A;            it is skipped.]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="221" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked="Elmah"}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;c6f02f4e66c54a062d4146f738404ec9" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Gets the set of installed packages. Use the -Updates flag to list packages updates available from the package source.]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="120" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked="-Updates"}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;cab958ce3e50770def9780162c9e66df" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Description]A;            ------------------------------------------------------------------]A;            Returns jquery package with all versions available from the package source.]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="110" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked="jquery"}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;d26b5bb872c801c7bab3372a1787924b" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Description]A;            ------------------------------------------------------------------]A;            Sync the version of Elmah package from the default project to the rest of projects in the solution.]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="349" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked="Elmah"}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;d3f26deb7838f4e694ce4b067a92a576" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Indicates the cmdlet should open the LicenseUrl of the specified package. If neither LicenseUrl nor ReportAbuseUrl is set, the cmdlet will open the ProjectUrl by default.]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="432" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked="LicenseUrl", "ReportAbuseUrl", "ProjectUrl"}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;d7909861f5f4b900a523b17fa6ff3916" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Description]A;            ------------------------------------------------------------------]A;            Updates every package in the project, MvcApplication1, to the latest "safe" version. For example,]A;            if version 1.0.0 of a package is installed, and versions 1.0.1, 1.0.2, and 1.1 are]A;            available in the feed, the -Safe flag updates the package to 1.0.2.]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="296" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked="MvcApplication1", "-Safe"}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;deb193fb77d45e77c1997e2f241ec051" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Description]A;            ------------------------------------------------------------------]A;            Assigns the license URL to the variable, $url, without opening the URL in a browser.]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="448" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked="$url"}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;ee7fcb8b8f74ba08973ba02c9200ce89" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Constrains upgrades to newer versions with the same Major and Minor version component. For example, if version 1.0.0 of a package is installed, and versions 1.0.1, 1.0.2, and 1.1 are available in the feed, the -Safe flag updates the package to 1.0.2.]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="264" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked="Safe"}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="1;1b6b2c2e16b4faba16d7b3c4433ebb90" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Description]A;            ------------------------------------------------------------------]A;            Returns a reference to the specifed project, MyProjectName.]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="400" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked="MyProjectName"}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="1;233818ccd7aa59bac47426bb41fc79bc" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Description]A;            ------------------------------------------------------------------]A;            Opens a browser to the license URL specified in the Ninject package.]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="442" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked="URL"} {Locked="Ninject"}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="1;305a166353ff18a5ad5d833cad8839dd" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Specifies the URL or directory path for the package source containing the package to install. When set to a local file system path, Source can be either absolute or relative to the current directory. If omitted, looks in the currently selected package source to find the corresponding package URL.]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="90" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked="Source"}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="1;b7580c0c70982e60828329abb128c370" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Description]A;            ------------------------------------------------------------------]A;            Uninstalls the Elmah package from the default project.]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="218" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked="Elmah"}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="1;b8e446ed6f8653b38fbdbeacd0c191be" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Open the browser pointing to ProjectUrl, LicenseUrl or ReportAbuseUrl of the specified package.]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="413" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked="ProjectUrl", "LicenseUrl", "ReportAbuseUrl"}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="1;c6f02f4e66c54a062d4146f738404ec9" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Gets the set of installed packages. Use the -Updates flag to list packages updates available from the package source.]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="123" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked="Updates"}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="1;cab958ce3e50770def9780162c9e66df" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Description]A;            ------------------------------------------------------------------]A;            Updates the Elmah package installed in every project to the latest version.]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="287" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked="Elmah"}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="3;305a166353ff18a5ad5d833cad8839dd" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Specifies the URL or directory path for the package source containing the package to install. When set to a local file system path, Source can be either absolute or relative to the current directory. If omitted, looks in the currently selected package source to find the corresponding package URL.]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="334" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked="Source"}]]></Cmt>
+          </Cmts>
+        </Item>
+      </Item>
+      <Item ItemId=";&lt;maml:uri&gt;" ItemType="0" PsrId="22" Leaf="false">
+        <Disp Icon="Str" Disp="true" LocTbl="false" />
+        <Item ItemId="0;1c4b0b3b3924c9cbb38dc6761c42d701" ItemType="52;XML:&lt;maml:uri&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[http://docs.nuget.org/]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="63" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="1;1c4b0b3b3924c9cbb38dc6761c42d701" ItemType="52;XML:&lt;maml:uri&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[http://docs.nuget.org/]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="116" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="2;1c4b0b3b3924c9cbb38dc6761c42d701" ItemType="52;XML:&lt;maml:uri&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[http://docs.nuget.org/]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="181" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="3;1c4b0b3b3924c9cbb38dc6761c42d701" ItemType="52;XML:&lt;maml:uri&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[http://docs.nuget.org/]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="227" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="4;1c4b0b3b3924c9cbb38dc6761c42d701" ItemType="52;XML:&lt;maml:uri&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[http://docs.nuget.org/]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="302" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="5;1c4b0b3b3924c9cbb38dc6761c42d701" ItemType="52;XML:&lt;maml:uri&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[http://docs.nuget.org/]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="355" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="6;1c4b0b3b3924c9cbb38dc6761c42d701" ItemType="52;XML:&lt;maml:uri&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[http://docs.nuget.org/]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="376" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+      </Item>
+    </Item>
+  </Item>
+</LCX>

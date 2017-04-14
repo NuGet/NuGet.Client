@@ -1,0 +1,788 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<LCX SchemaVersion="6.0" Name="C:\BuildAgent\work\fea8ec2fb9b8541c\NuGet\bin\Release\NuGetTools\14\NuGet.Client.VisualStudio.PowerShell.dll" PsrId="211" FileType="1" SrcCul="en-US" TgtCul="cs-CZ" xmlns="http://schemas.microsoft.com/locstudio/2006/6/lcx">
+  <Props>
+    <Str Name="CustomName1" Val="Custom 1" />
+    <Str Name="CustomName2" Val="Custom 2" />
+    <Str Name="CustomName3" Val="Custom 3" />
+    <Str Name="CustomName4" Val="Custom 4" />
+    <Str Name="CustomName5" Val="Custom 5" />
+    <Str Name="CustomName6" Val="IQA" />
+  </Props>
+  <OwnedComments>
+    <Cmt Name="Dev" />
+    <Cmt Name="LcxAdmin" />
+    <Cmt Name="Note" />
+    <Cmt Name="Rccx" />
+  </OwnedComments>
+  <Settings Name="@vsLocTools@\default.lss" Type="Lss" />
+  <Item ItemId=";Managed Resources" ItemType="0" PsrId="211" Leaf="true">
+    <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" />
+    <Modified By="Hiero" DateTime="2014-12-23T10:27:37Z" />
+  </Item>
+  <Item ItemId=";NuGet.Client.VisualStudio.PowerShell.Resources.resources" ItemType="0" PsrId="211" Leaf="false">
+    <Disp Icon="Str" Expand="true" Disp="true" LocTbl="false" Path=" \ ;Managed Resources \ 0 \ 0" />
+    <Modified By="Hiero" DateTime="2014-12-23T10:27:37Z" />
+    <Item ItemId=";Strings" ItemType="0" PsrId="211" Leaf="false">
+      <Disp Icon="Str" LocTbl="false" />
+      <Modified By="Hiero" DateTime="2014-12-23T10:27:37Z" />
+      <Item ItemId=";Cmdlet_CommandObsolete" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The {0} Command has been deprecated. Type 'get-help NuGet' to see all available NuGet commands.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Příkaz {0} je zastaralý. Pokud chcete zobrazit všechny dostupné příkazy pro balíčky NuGet, zadejte příkaz get-help NuGet.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Hiero" DateTime="2015-01-05T11:59:58Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="get-help NuGet", "NuGet"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Cmdlet_CreatingPackage" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Creating package at {0}...]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[Vytváření balíčku na: {0}...]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Hiero" DateTime="2015-01-05T11:59:58Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Cmdlet_FailToParsePackages" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Fail to parse package identities from file {0} with exception: {1}]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Analýza identit balíčků ze souboru {0} se nepovedla s výjimkou: {1}]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Hiero" DateTime="2015-01-05T11:59:58Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Cmdlet_FailToParseVersion" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Fail to parse the input of Version parameter: {0} to a valid Semantic version. ]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Analýza vstupu parametru Version {0} na platnou sémantickou verzi se nepovedla. ]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Hiero" DateTime="2015-01-05T11:59:58Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="Version"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Cmdlet_FailToSetProject" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Failed to set {0} as the Default Project for PowerShell Console. ]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Nastavení {0} jako výchozího projektu pro konzolu PowerShell se nepovedlo. ]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Hiero" DateTime="2015-01-05T11:59:58Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Cmdlet_FallbackToCache" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The source at {0} is unreachable. Falling back to NuGet Local Cache at {1}]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[Zdroj {0} je nedostupný. Probíhá návrat k místní mezipaměti NuGet v {1}]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Hiero" DateTime="2015-01-05T11:59:58Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Cmdlet_FileConflictNoAllHelp" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Skip this file and all subsequent files]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Přeskočit tenhle soubor a všechny následné soubory]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Hiero" DateTime="2015-01-05T11:59:58Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Cmdlet_FileConflictNoHelp" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Skip this file]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Přeskočit tenhle soubor]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Hiero" DateTime="2015-01-05T11:59:58Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Cmdlet_FileConflictYesAllHelp" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Overwrite this file and all subsequent files]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Přepsat tenhle soubor a všechny následné soubory]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Hiero" DateTime="2015-01-05T11:59:58Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Cmdlet_FileConflictYesHelp" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Overwrite this file]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Přepsat tenhle soubor]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Hiero" DateTime="2015-01-05T11:59:58Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Cmdlet_FileExistsNoClobber" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Output file '{0}' exists and -NoClobber was specified.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Existuje soubor výstupu {0} a byl zadaný parametr -NoClobber.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Hiero" DateTime="2015-01-05T11:59:58Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="-NoClobber"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Cmdlet_InstallSuccessDisclaimerText" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[You are downloading {0} from {1}, the license agreement to which is available at {2}. Check the package for additional dependencies, which may come with their own license agreement(s). Your use of the package and dependencies constitutes your acceptance of their license agreements. If you do not accept the license agreement(s), then delete the relevant components from your device.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Stahujete balíček {0} z {1}. Licenční smlouva k tomuhle balíčku je k dispozici tady: {2}. Zkontrolujte, že balíček nemá další závislé součásti, které by mohly mít své vlastní licenční smlouvy. Použitím balíčku a jeho závislých součástí vyjadřujete souhlas s podmínkami licenčních smluv k těmhle balíčkům a součástem. Pokud s podmínkami licenčních smluv nesouhlasíte, odstraňte příslušné součásti ze svého zařízení.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Hiero" DateTime="2015-01-05T11:59:58Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Cmdlet_InvalidPSDrive" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The PSDrive '{0}' was not found.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Jednotka prostředí PowerShell (PSDrive) {0} se nenašla.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Hiero" DateTime="2015-01-05T11:59:58Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="PSDrive"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Cmdlet_InvalidPathSyntax" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The path '{0}' is invalid.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[Cesta {0} je neplatná.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Hiero" DateTime="2015-01-05T11:59:58Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Cmdlet_InvalidProjectManagerInstance" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The specified IProjectManager instance is not recognized.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Zadaná instance IProjectManager nebyla rozpoznaná.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Hiero" DateTime="2015-01-05T11:59:58Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="IProjectManager"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Cmdlet_InvalidProvider" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Only paths residing on a FileSystemProvider are supported.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Podporované jsou jen cesty na zprostředkovateli FileSystemProvider.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Hiero" DateTime="2015-01-05T11:59:58Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="FileSystemProvider"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Cmdlet_LocalCacheFailure" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The source at {0} is unreachable. There is no NuGet Local Cache found]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Zdroj {0} je nedostupný. Nenašla se žádná místní mezipaměť NuGet.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Hiero" DateTime="2015-01-05T11:59:58Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Cmdlet_No" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[&No]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[&Ne]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Hiero" DateTime="2015-01-05T11:59:58Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Cmdlet_NoActivePackageSource" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Unable to retrieve package list because no source was specified.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Nejde načíst seznam balíčků, protože nebyl zadaný žádný zdroj.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Hiero" DateTime="2015-01-05T11:59:58Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Cmdlet_NoAll" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[No to Al&l]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[Ne pro &všechny]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Hiero" DateTime="2015-01-05T11:59:58Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Cmdlet_NoCompatibleProjects" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[No compatible project(s) found in the active solution.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[V aktivním řešení se nenašly žádné kompatibilní projekty.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Hiero" DateTime="2015-01-05T11:59:58Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Cmdlet_NoPackageUpdates" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[No package updates are available from the current package source.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[V aktuálním zdroji balíčků nejsou k dispozici žádné aktualizace balíčků.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Hiero" DateTime="2015-01-05T11:59:58Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Cmdlet_NoPackagesInstalled" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[No packages installed.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Nejsou nainstalované žádné balíčky.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Hiero" DateTime="2015-01-05T11:59:58Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Cmdlet_NoSolution" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The current environment doesn't have a solution open.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Pro aktuální prostředí není otevřené žádné řešení.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Hiero" DateTime="2015-01-05T11:59:58Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Cmdlet_NothingToDo" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Nothing to do]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[Nedělat nic]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Hiero" DateTime="2015-01-05T11:59:58Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Cmdlet_NuspecFileNotFound" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Unable to locate a .nuspec file in the specified project.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[V zadaném projektu nejde najít soubor s příponou .nuspec.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Hiero" DateTime="2015-01-05T11:59:58Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Cmdlet_OpenPackagePageAction" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Open]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[Otevřít]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Hiero" DateTime="2015-01-05T11:59:58Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Cmdlet_PackageCreated" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Package file successfully created...]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Soubor balíčku se úspěšně vytvořil...]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Hiero" DateTime="2015-01-05T11:59:58Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Cmdlet_PackageIdAndVersionNotFound" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Package with the Id '{0}' and version '{1}' is not found in the specified source.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Balíček s ID {0} a verzí {1} se nenašel v zadaném zdroji.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Hiero" DateTime="2015-01-05T11:59:58Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Cmdlet_PackageIdNotFound" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Package with the Id '{0}' is not found in the specified source.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Balíček s ID {0} se nenašel v zadaném zdroji.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Hiero" DateTime="2015-01-05T11:59:58Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Cmdlet_PackageNotInstalled" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Package with the Id '{0}' is not installed to the current project.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Balíček s ID {0} není nainstalovaný do aktuálního projektu.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Hiero" DateTime="2015-01-05T11:59:58Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Cmdlet_PackageOperation" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[{0} {1}]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[{0} {1}]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Hiero" DateTime="2015-01-05T11:59:58Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Cmdlet_ProjectNotFound" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Project '{0}' is not found.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Projekt {0} se nenašel.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Hiero" DateTime="2015-01-05T11:59:58Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Cmdlet_ProjectSet" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The 'Default project' has been successfully set as '{0}'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Výchozí projekt byl úspěšně nastavený jako {0}.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Hiero" DateTime="2015-01-05T11:59:58Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Cmdlet_TooManySpecFiles" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[More than one .nuspec files were found.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Našel se víc než jeden soubor s příponou .nuspec.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Hiero" DateTime="2015-01-05T11:59:58Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Cmdlet_UrlMissing" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The package '{0}' does not provide the requested URL.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[Balíček {0} neposkytuje požadovanou adresu URL.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Hiero" DateTime="2015-01-05T11:59:58Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Cmdlet_WhatIfReinstallUnsupported" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Specifying both -Reinstall and -WhatIf is not supported for now.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Současné zadání -Reinstall a -WhatIf není podporované.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Hiero" DateTime="2015-01-05T11:59:58Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Cmdlet_Yes" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[&Yes]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[&Ano]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Hiero" DateTime="2015-01-05T11:59:58Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Cmdlet_YesAll" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Yes to &All]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[Ano pro vš&echny]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Hiero" DateTime="2015-01-05T11:59:58Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Log_NoActionsWhatIf" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[None]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Žádné]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Hiero" DateTime="2015-01-05T11:59:58Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Log_OperationWhatIf" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[WhatIf: {0}]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[WhatIf: {0}]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Hiero" DateTime="2015-01-05T11:59:58Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+    </Item>
+  </Item>
+  <Item ItemId=";NuGet.CommonResources.resources" ItemType="0" PsrId="211" Leaf="false">
+    <Disp Icon="Str" Expand="true" Disp="true" LocTbl="false" Path=" \ ;Managed Resources \ 0 \ 0" />
+    <Modified By="Hiero" DateTime="2014-12-23T10:27:37Z" />
+    <Item ItemId=";Strings" ItemType="0" PsrId="211" Leaf="false">
+      <Disp Icon="Str" LocTbl="false" />
+      <Modified By="Hiero" DateTime="2014-12-23T10:27:37Z" />
+      <Item ItemId=";Argument_Cannot_Be_Null_Or_Empty" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Value cannot be null or an empty string.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[Hodnota nesmí být null ani prázdný řetězec.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Hiero" DateTime="2015-01-05T11:59:58Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Argument_Must_Be_Between" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Value must be between {0} and {1}.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[Hodnota musí být v rozmezí od {0} do {1}.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Hiero" DateTime="2015-01-05T11:59:58Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Argument_Must_Be_Enum_Member" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Value must be a value from the "{0}" enumeration.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[Hodnota musí být z výčtu {0}.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Hiero" DateTime="2015-01-05T11:59:58Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Argument_Must_Be_GreaterThan" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Value must be greater than {0}.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[Hodnota musí být větší než {0}.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Hiero" DateTime="2015-01-05T11:59:58Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Argument_Must_Be_GreaterThanOrEqualTo" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Value must be greater than or equal to {0}.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Hodnota musí být větší nebo rovna {0}.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Hiero" DateTime="2015-01-05T11:59:58Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Argument_Must_Be_LessThan" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Value must be less than {0}.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[Hodnota musí být menší než {0}.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Hiero" DateTime="2015-01-05T11:59:58Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Argument_Must_Be_LessThanOrEqualTo" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Value must be less than or equal to {0}.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Copied" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[Hodnota musí být menší nebo rovna {0}.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Hiero" DateTime="2015-01-05T11:59:58Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Argument_Must_Be_Null_Or_Non_Empty" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Value cannot be an empty string. It must either be null or a non-empty string.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[Hodnota nemůže být prázdný řetězec. Musí být buď null, nebo neprázdný řetězec.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Hiero" DateTime="2015-01-05T11:59:58Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";EnsureImportedMessage" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[Tenhle projekt odkazuje na balíčky NuGet, které nejsou v tomhle počítači k dispozici. Když je chcete stáhnout, použijte funkci obnovení balíčků NuGet.  Další informace najdete na adrese http://go.microsoft.com/fwlink/?LinkID=322105. Chybějícím souborem je soubor {0}.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Hiero" DateTime="2015-01-05T11:59:58Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+    </Item>
+  </Item>
+  <Item ItemId=";Version" ItemType="0" PsrId="211" Leaf="false">
+    <Disp Icon="Ver" Disp="true" LocTbl="false" Path=" \ ;Version \ 8 \ 0" />
+    <Modified By="Hiero" DateTime="2014-12-23T10:27:37Z" />
+    <Item ItemId=";AssemblyVersion" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text" DevLk="true">
+        <Val><![CDATA[1.0.0.0]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+      <Modified By="Hiero" DateTime="2014-12-23T10:27:37Z" />
+    </Item>
+    <Item ItemId=";FileDescription" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text">
+        <Val><![CDATA[NuGet.Client.VisualStudio.PowerShell]]></Val>
+        <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+          <Val><![CDATA[NuGet.Client.VisualStudio.PowerShell]]></Val>
+        </Tgt>
+      </Str>
+      <Disp Icon="Str" />
+      <Modified By="Hiero" DateTime="2015-01-05T11:59:58Z" />
+      <Props>
+        <Str Name="Custom2" Val="LQA_141222" />
+      </Props>
+    </Item>
+    <Item ItemId=";FileVersion" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text" DevLk="true">
+        <Val><![CDATA[1.0.0.0]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+      <Modified By="Hiero" DateTime="2014-12-23T10:27:37Z" />
+    </Item>
+    <Item ItemId=";InternalName" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text" DevLk="true">
+        <Val><![CDATA[NuGet.Client.VisualStudio.PowerShell.dll]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+      <Modified By="Hiero" DateTime="2014-12-23T10:27:37Z" />
+    </Item>
+    <Item ItemId=";LegalCopyright" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text">
+        <Val><![CDATA[Copyright ©  2014]]></Val>
+        <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+          <Val><![CDATA[Copyright ©  2014]]></Val>
+        </Tgt>
+      </Str>
+      <Disp Icon="Str" />
+      <Modified By="Hiero" DateTime="2015-01-05T11:59:58Z" />
+      <Props>
+        <Str Name="Custom2" Val="LQA_141222" />
+      </Props>
+    </Item>
+    <Item ItemId=";OriginalFilename" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text" DevLk="true">
+        <Val><![CDATA[NuGet.Client.VisualStudio.PowerShell.dll]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+      <Modified By="Hiero" DateTime="2014-12-23T10:27:37Z" />
+    </Item>
+    <Item ItemId=";ProductName" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text">
+        <Val><![CDATA[NuGet.Client.VisualStudio.PowerShell]]></Val>
+        <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+          <Val><![CDATA[NuGet.Client.VisualStudio.PowerShell]]></Val>
+        </Tgt>
+      </Str>
+      <Disp Icon="Str" />
+      <Modified By="Hiero" DateTime="2015-01-05T11:59:58Z" />
+      <Props>
+        <Str Name="Custom2" Val="LQA_141222" />
+      </Props>
+    </Item>
+    <Item ItemId=";ProductVersion" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text" DevLk="true">
+        <Val><![CDATA[1.0.0.0]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+      <Modified By="Hiero" DateTime="2014-12-23T10:27:37Z" />
+    </Item>
+  </Item>
+  <Item ItemId=";Version" ItemType="8" PsrId="211" Leaf="true">
+    <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" />
+    <Modified By="Hiero" DateTime="2014-12-23T10:27:37Z" />
+  </Item>
+</LCX>

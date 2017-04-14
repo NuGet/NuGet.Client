@@ -1,0 +1,1260 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<LCX SchemaVersion="6.0" Name="C:\BuildAgent\work\fea8ec2fb9b8541c\NuGet\bin\Release\NuGetTools\14\NuGet.Client.VisualStudio.UI.dll" PsrId="211" FileType="1" SrcCul="en-US" TgtCul="es-ES" xmlns="http://schemas.microsoft.com/locstudio/2006/6/lcx">
+  <Props>
+    <Str Name="CustomName1" Val="Custom 1" />
+    <Str Name="CustomName2" Val="Custom 2" />
+    <Str Name="CustomName3" Val="Custom 3" />
+    <Str Name="CustomName4" Val="Custom 4" />
+    <Str Name="CustomName5" Val="Custom 5" />
+    <Str Name="CustomName6" Val="IQA" />
+  </Props>
+  <OwnedComments>
+    <Cmt Name="Dev" />
+    <Cmt Name="LcxAdmin" />
+    <Cmt Name="Note" />
+    <Cmt Name="Rccx" />
+  </OwnedComments>
+  <Settings Name="@vsLocTools@\default.lss" Type="Lss" />
+  <Item ItemId=";Managed Resources" ItemType="0" PsrId="211" Leaf="true">
+    <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" />
+    <Modified By="Vanessa" DateTime="2015-01-02T09:24:40Z" />
+  </Item>
+  <Item ItemId=";NuGet.Client.VisualStudio.UI.Resources.Resources.resources" ItemType="0" PsrId="211" Leaf="false">
+    <Disp Icon="Str" Expand="true" Disp="true" LocTbl="false" Path=" \ ;Managed Resources \ 0 \ 0" />
+    <Modified By="Vanessa" DateTime="2015-01-02T09:24:40Z" />
+    <Item ItemId=";Strings" ItemType="0" PsrId="211" Leaf="false">
+      <Disp Icon="Str" LocTbl="false" />
+      <Modified By="Vanessa" DateTime="2015-01-02T09:24:40Z" />
+      <Item ItemId=";Action_Consolidate" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Consolidate]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Consolidar]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Vanessa" DateTime="2015-01-04T18:35:38Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Action_Install" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Install]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Instalar]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Vanessa" DateTime="2015-01-04T18:35:38Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Action_Uninstall" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Uninstall]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Desinstalar]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Vanessa" DateTime="2015-01-04T18:35:38Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Action_Update" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Update]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[Actualizar]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Vanessa" DateTime="2015-01-04T18:35:38Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Button_Cancel" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Cancel]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[Cancelar]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Vanessa" DateTime="2015-01-04T18:35:38Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Button_IAccept" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[I Accept]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Acepto]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Vanessa" DateTime="2015-01-04T18:35:38Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Button_IDecline" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[I Decline]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[No acepto]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Vanessa" DateTime="2015-01-04T18:35:38Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Button_No" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[No]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[No]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Vanessa" DateTime="2015-01-04T18:35:38Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Button_NoToAll" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[No to All]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[No a todo]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Vanessa" DateTime="2015-01-04T18:35:38Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Button_OK" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[OK]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Aceptar]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Vanessa" DateTime="2015-01-04T18:44:40Z" />
+        <Notes>
+          <Note Name="Loc" Order="0"><![CDATA["Aceptar" is the common and correct translation for "OK"]]></Note>
+        </Notes>
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Button_Preview" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Preview]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Vista previa]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Vanessa" DateTime="2015-01-04T18:35:38Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Button_Retry" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Error occurred. Retry]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Se produjo un error. Volver a intentar]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Vanessa" DateTime="2015-01-04T18:35:38Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Button_Yes" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Yes]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[Sí]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Vanessa" DateTime="2015-01-04T18:35:38Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Button_YesToAll" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Yes to All]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[Sí a todo]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Vanessa" DateTime="2015-01-04T18:35:38Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Checkbox_ForceRemove" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Force uninstall, even if there are dependencies on it]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Forzar la desinstalación incluso si tiene dependencias]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Vanessa" DateTime="2015-01-04T18:35:38Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Checkbox_IncludePrerelease" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Include Prerelease]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[Incluir versión previa]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Vanessa" DateTime="2015-01-04T18:35:38Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Checkbox_RemoveDependencies" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Remove dependencies]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Quitar dependencias]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Vanessa" DateTime="2015-01-04T18:35:38Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Checkbox_ShowPreviewWindow" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Show preview window]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Mostrar ventana de vista previa]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Vanessa" DateTime="2015-01-04T18:35:38Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";DependencyBehavior_Highest" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Highest]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Máximo]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Vanessa" DateTime="2015-01-04T18:35:38Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";DependencyBehavior_HighestMinor" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Highest Minor]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Máximo menor]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Vanessa" DateTime="2015-01-04T18:35:38Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";DependencyBehavior_HighestPatch" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Highest Patch]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Revisión máxima]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Vanessa" DateTime="2015-01-04T18:35:39Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";DependencyBehavior_IgnoreDependencies" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Ignore Dependencies]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Ignorar dependencias]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Vanessa" DateTime="2015-01-04T18:35:39Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";DependencyBehavior_Lowest" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Lowest]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Mínimo]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Vanessa" DateTime="2015-01-04T18:35:39Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Error_NoActiveRepository" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[No repository is selected]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Ningún repositorio seleccionado]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Vanessa" DateTime="2015-01-04T18:35:39Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";FileConflictAction_IgnoreAll" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Ignore All]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Ignorar todo]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Vanessa" DateTime="2015-01-04T18:35:39Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";FileConflictAction_OverwriteAll" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Overwrite All]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Sobrescribir todo]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Vanessa" DateTime="2015-01-04T18:35:39Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";FileConflictAction_Prompt" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Prompt]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Preguntar]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Vanessa" DateTime="2015-01-04T18:35:39Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Filter_All" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[All]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Todos]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Vanessa" DateTime="2015-01-04T18:41:40Z" />
+        <Notes>
+          <Note Name="Loc" Order="0"><![CDATA[Gender difference. It refers to "Filters" which is masculine.]]></Note>
+        </Notes>
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Filter_Installed" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Installed]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Instalado]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Vanessa" DateTime="2015-01-04T18:35:39Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Filter_UpdateAvailable" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Update available]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Actualización disponible]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Vanessa" DateTime="2015-01-04T18:35:39Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Label_Action" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Action:]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Acción:]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Vanessa" DateTime="2015-01-04T18:35:39Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Label_Authors" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Author(s):]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Autor(es):]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Vanessa" DateTime="2015-01-04T18:35:39Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Label_DatePublished" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Date Published:]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Fecha de publicación:]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Vanessa" DateTime="2015-01-04T18:35:39Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Label_Dependencies" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Dependencies]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[Dependencias]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Vanessa" DateTime="2015-01-04T18:35:39Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Label_DependencyBehavior" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Dependency behavior:]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Comportamiento de dependencia:]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Vanessa" DateTime="2015-01-04T18:35:39Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Label_Description" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Description]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[Descripción]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Vanessa" DateTime="2015-01-04T18:35:39Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Label_Downloads" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Downloads:]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[Descargas:]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Vanessa" DateTime="2015-01-04T18:35:39Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Label_FileConflictAction" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[File conflict action:]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Acción de conflicto de archivos:]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Vanessa" DateTime="2015-01-04T18:35:39Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Label_Filter" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Filter:]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Filtro:]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Vanessa" DateTime="2015-01-04T18:35:39Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Label_InstallationOptions" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Options]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Opciones]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Vanessa" DateTime="2015-01-04T18:35:39Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Label_InstalledPackages" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Installing:]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Instalando:]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Vanessa" DateTime="2015-01-04T18:35:39Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Label_LegalDisclaimer" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Legal Disclaimer]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Renuncia legal]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Vanessa" DateTime="2015-01-04T18:35:39Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Label_License" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[License:]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[Licencia:]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Vanessa" DateTime="2015-01-04T18:35:39Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Label_NuGetWindowCaption" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[NuGet: {0}]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[NuGet: {0}]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Vanessa" DateTime="2015-01-04T18:35:39Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Label_PackageManager" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[NuGet Package Manager: {0}]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Administrador de paquetes NuGet: {0}]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Vanessa" DateTime="2015-01-04T18:35:39Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Label_PackagePrerelease" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Prerelease]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[Versión previa]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Vanessa" DateTime="2015-01-04T18:35:39Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Label_ProjectUrl" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Project URL:]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[URL del proyecto:]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Vanessa" DateTime="2015-01-04T18:35:39Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Label_Projects" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Select which projects to apply changes to:]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Seleccione a qué objetos se deben aplicar los cambios:]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Vanessa" DateTime="2015-01-04T18:35:39Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Label_Publishers" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Publisher(s):]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Publicador(es):]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Vanessa" DateTime="2015-01-04T18:35:39Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Label_Repository" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Package source:]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Origen del paquete:]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Vanessa" DateTime="2015-01-04T18:35:39Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Label_Search" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Search:]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Buscar:]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Vanessa" DateTime="2015-01-04T18:35:39Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Label_Solution" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Solution '{0}']]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[Solución '{0}']]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Vanessa" DateTime="2015-01-04T18:35:39Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Label_Tags" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Tags:]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[Etiquetas:]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Vanessa" DateTime="2015-01-04T18:35:39Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Label_UninstalledPackages" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Uninstalling:]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Desinstalando:]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Vanessa" DateTime="2015-01-04T18:35:39Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Label_UpdatedPackages" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Updates:]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[Actualizaciones:]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Vanessa" DateTime="2015-01-04T18:35:39Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Label_Version" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Version:]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[Versión:]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Vanessa" DateTime="2015-01-04T18:35:39Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Text_Changes" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Visual Studio is about to make changes to this solution. Click OK to proceed with the changes listed below.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Visual Studio va a realizar cambios en esta solución. Haga clic en Aceptar para continuar con los cambios que se indican a continuación.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Vanessa" DateTime="2015-01-04T18:35:39Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Text_ErrorDetails" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Error details]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Detalles del error]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Vanessa" DateTime="2015-01-04T18:35:39Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Text_ErrorOccurred" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Error occured:\n{0}]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Se produjo un error:\n{0}]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Vanessa" DateTime="2015-01-04T18:35:39Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Text_InstalledVersion" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Installed version: {0}]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Versión instalada: {0}]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Vanessa" DateTime="2015-01-04T18:35:39Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Text_LegalDisclaimer" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Each package is licensed to you by its owner. Microsoft is not responsible for, nor does it grant any licenses to, third-party packages.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[El propietario de cada paquete le proporciona su licencia. Microsoft no es responsable ni garantiza ninguna licencia de paquetes de terceros.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Vanessa" DateTime="2015-01-04T18:35:39Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Text_LicenseAcceptance" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[License Acceptance]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[Aceptación de licencia]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Vanessa" DateTime="2015-01-04T18:35:39Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Text_LicenseHeaderText" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The following package(s) require that you accept their license terms before installing.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Los siguientes paquetes requieren que acepte sus términos de licencia antes de instalarlos.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Vanessa" DateTime="2015-01-04T18:35:39Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Text_LicenseText" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[By clicking "I Accept," you agree to the license terms for the package(s) listed above. If you do not agree to the license terms, click "I Decline."]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[Al hacer clic en "Acepto", expresa su conformidad con los términos de licencia de los paquetes enumerados anteriormente. Si no está de acuerdo con los términos de licencia, haga clic en "No acepto".]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Vanessa" DateTime="2015-01-04T18:35:39Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Text_Loading" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Loading...]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Cargando...]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Vanessa" DateTime="2015-01-04T18:35:39Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Text_NoDependencies" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[No dependencies]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[No hay dependencias]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Vanessa" DateTime="2015-01-04T18:35:39Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Text_NoItemsFound" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[No items found]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[No se encontraron elementos]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Vanessa" DateTime="2015-01-04T18:35:39Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Text_NoMoreItems" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[No more items]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[No hay más elementos]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Vanessa" DateTime="2015-01-04T18:35:39Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Text_Progress" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Progress]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[Progreso]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Vanessa" DateTime="2015-01-04T18:35:39Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Text_Ready" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Ready]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Listo]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Vanessa" DateTime="2015-01-04T18:35:39Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Text_ReviewChanges" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Review Changes]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Revisar cambios]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Vanessa" DateTime="2015-01-04T18:35:39Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Text_Searching" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Searching '{0}']]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Buscando '{0}']]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Vanessa" DateTime="2015-01-04T18:35:39Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Text_Working" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Working...]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[En curso...]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Vanessa" DateTime="2015-01-04T18:35:39Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Tooltip_PackageInstalled" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Latest stable version is installed]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[La última versión estable está instalada]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Vanessa" DateTime="2015-01-04T18:35:39Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Tooltip_UpdateAvailable" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Update available]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[Actualización disponible]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Vanessa" DateTime="2015-01-04T18:35:39Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Version_Installed" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Installed]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[Instalado]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Vanessa" DateTime="2015-01-04T18:35:39Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Version_LatestStable" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Latest stable]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Última estable]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Vanessa" DateTime="2015-01-04T18:35:39Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";WindowTitle_Error" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Error]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Error]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Vanessa" DateTime="2015-01-04T18:35:39Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";WindowTitle_FileConflict" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[File Conflict]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Conflicto de archivos]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Vanessa" DateTime="2015-01-04T18:35:39Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";WindowTitle_LicenseAcceptance" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[License Acceptance]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[Aceptación de licencia]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Vanessa" DateTime="2015-01-04T18:35:39Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";WindowTitle_Preview" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Preview]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[Vista previa]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Vanessa" DateTime="2015-01-04T18:35:39Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";WindowTitle_Progress" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Progress]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Progreso]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Vanessa" DateTime="2015-01-04T18:35:39Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+    </Item>
+  </Item>
+  <Item ItemId=";NuGet.Client.VisualStudio.UI.g.resources" ItemType="0" PsrId="211" Leaf="false">
+    <Disp Icon="Str" Expand="true" Disp="true" LocTbl="false" Path=" \ ;Managed Resources \ 0 \ 0" />
+    <Modified By="Vanessa" DateTime="2015-01-02T09:24:40Z" />
+    <Item ItemId=";Baml Resources" ItemType=";0" PsrId="223" Leaf="true">
+      <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" />
+      <Modified By="Vanessa" DateTime="2015-01-02T09:24:40Z" />
+    </Item>
+    <Item ItemId=";xamls/actionsandversions.baml" ItemType="0" PsrId="223" Leaf="true">
+      <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" Path=" \ ;NuGet.Client.VisualStudio.UI.g.resources \ 0 \ 0 \ ;Baml Resources \ ;0 \ 0" />
+      <Modified By="Vanessa" DateTime="2015-01-02T09:24:40Z" />
+    </Item>
+    <Item ItemId=";xamls/busycontrol.baml" ItemType="0" PsrId="223" Leaf="true">
+      <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" Path=" \ ;NuGet.Client.VisualStudio.UI.g.resources \ 0 \ 0 \ ;Baml Resources \ ;0 \ 0" />
+      <Modified By="Vanessa" DateTime="2015-01-02T09:24:40Z" />
+    </Item>
+    <Item ItemId=";xamls/detailcontrol.baml" ItemType="0" PsrId="223" Leaf="true">
+      <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" Path=" \ ;NuGet.Client.VisualStudio.UI.g.resources \ 0 \ 0 \ ;Baml Resources \ ;0 \ 0" />
+      <Modified By="Vanessa" DateTime="2015-01-02T09:24:40Z" />
+    </Item>
+    <Item ItemId=";xamls/errorreportingdialog.baml" ItemType="0" PsrId="223" Leaf="true">
+      <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" Path=" \ ;NuGet.Client.VisualStudio.UI.g.resources \ 0 \ 0 \ ;Baml Resources \ ;0 \ 0" />
+      <Modified By="Vanessa" DateTime="2015-01-02T09:24:40Z" />
+    </Item>
+    <Item ItemId=";xamls/fileconflictdialog.baml" ItemType="0" PsrId="223" Leaf="true">
+      <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" Path=" \ ;NuGet.Client.VisualStudio.UI.g.resources \ 0 \ 0 \ ;Baml Resources \ ;0 \ 0" />
+      <Modified By="Vanessa" DateTime="2015-01-02T09:24:40Z" />
+    </Item>
+    <Item ItemId=";xamls/infinitescrolllist.baml" ItemType="0" PsrId="223" Leaf="true">
+      <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" Path=" \ ;NuGet.Client.VisualStudio.UI.g.resources \ 0 \ 0 \ ;Baml Resources \ ;0 \ 0" />
+      <Modified By="Vanessa" DateTime="2015-01-02T09:24:40Z" />
+    </Item>
+    <Item ItemId=";xamls/installedindicator.baml" ItemType="0" PsrId="223" Leaf="true">
+      <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" Path=" \ ;NuGet.Client.VisualStudio.UI.g.resources \ 0 \ 0 \ ;Baml Resources \ ;0 \ 0" />
+      <Modified By="Vanessa" DateTime="2015-01-02T09:24:40Z" />
+    </Item>
+    <Item ItemId=";xamls/licenseacceptancewindow.baml" ItemType="0" PsrId="223" Leaf="true">
+      <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" Path=" \ ;NuGet.Client.VisualStudio.UI.g.resources \ 0 \ 0 \ ;Baml Resources \ ;0 \ 0" />
+      <Modified By="Vanessa" DateTime="2015-01-02T09:24:40Z" />
+    </Item>
+    <Item ItemId=";xamls/optionscontrol.baml" ItemType="0" PsrId="223" Leaf="true">
+      <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" Path=" \ ;NuGet.Client.VisualStudio.UI.g.resources \ 0 \ 0 \ ;Baml Resources \ ;0 \ 0" />
+      <Modified By="Vanessa" DateTime="2015-01-02T09:24:40Z" />
+    </Item>
+    <Item ItemId=";xamls/packageitemcontrol.baml" ItemType="0" PsrId="223" Leaf="true">
+      <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" Path=" \ ;NuGet.Client.VisualStudio.UI.g.resources \ 0 \ 0 \ ;Baml Resources \ ;0 \ 0" />
+      <Modified By="Vanessa" DateTime="2015-01-02T09:24:40Z" />
+    </Item>
+    <Item ItemId=";xamls/packagemanagercontrol.baml" ItemType="0" PsrId="223" Leaf="true">
+      <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" Path=" \ ;NuGet.Client.VisualStudio.UI.g.resources \ 0 \ 0 \ ;Baml Resources \ ;0 \ 0" />
+      <Modified By="Vanessa" DateTime="2015-01-02T09:24:40Z" />
+    </Item>
+    <Item ItemId=";xamls/packagemetadatacontrol.baml" ItemType="0" PsrId="223" Leaf="true">
+      <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" Path=" \ ;NuGet.Client.VisualStudio.UI.g.resources \ 0 \ 0 \ ;Baml Resources \ ;0 \ 0" />
+      <Modified By="Vanessa" DateTime="2015-01-02T09:24:40Z" />
+    </Item>
+    <Item ItemId=";xamls/previewwindow.baml" ItemType="0" PsrId="223" Leaf="true">
+      <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" Path=" \ ;NuGet.Client.VisualStudio.UI.g.resources \ 0 \ 0 \ ;Baml Resources \ ;0 \ 0" />
+      <Modified By="Vanessa" DateTime="2015-01-02T09:24:40Z" />
+    </Item>
+    <Item ItemId=";xamls/progressdialog.baml" ItemType="0" PsrId="223" Leaf="true">
+      <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" Path=" \ ;NuGet.Client.VisualStudio.UI.g.resources \ 0 \ 0 \ ;Baml Resources \ ;0 \ 0" />
+      <Modified By="Vanessa" DateTime="2015-01-02T09:24:40Z" />
+    </Item>
+    <Item ItemId=";xamls/resources.baml" ItemType="0" PsrId="223" Leaf="true">
+      <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" Path=" \ ;NuGet.Client.VisualStudio.UI.g.resources \ 0 \ 0 \ ;Baml Resources \ ;0 \ 0" />
+      <Modified By="Vanessa" DateTime="2015-01-02T09:24:40Z" />
+    </Item>
+    <Item ItemId=";xamls/searchcontrol.baml" ItemType="0" PsrId="223" Leaf="true">
+      <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" Path=" \ ;NuGet.Client.VisualStudio.UI.g.resources \ 0 \ 0 \ ;Baml Resources \ ;0 \ 0" />
+      <Modified By="Vanessa" DateTime="2015-01-02T09:24:40Z" />
+    </Item>
+    <Item ItemId=";xamls/updateavailableindicator.baml" ItemType="0" PsrId="223" Leaf="true">
+      <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" Path=" \ ;NuGet.Client.VisualStudio.UI.g.resources \ 0 \ 0 \ ;Baml Resources \ ;0 \ 0" />
+      <Modified By="Vanessa" DateTime="2015-01-02T09:24:40Z" />
+    </Item>
+  </Item>
+  <Item ItemId=";Version" ItemType="0" PsrId="211" Leaf="false">
+    <Disp Icon="Ver" Disp="true" LocTbl="false" Path=" \ ;Version \ 8 \ 0" />
+    <Modified By="Vanessa" DateTime="2015-01-02T09:24:40Z" />
+    <Item ItemId=";AssemblyVersion" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text" DevLk="true">
+        <Val><![CDATA[1.0.0.0]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+      <Modified By="Vanessa" DateTime="2015-01-04T18:35:39Z" />
+    </Item>
+    <Item ItemId=";FileDescription" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text">
+        <Val><![CDATA[NuGet.Client.VisualStudio.UI]]></Val>
+        <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+          <Val><![CDATA[NuGet.Client.VisualStudio.UI]]></Val>
+        </Tgt>
+      </Str>
+      <Disp Icon="Str" />
+      <Modified By="Vanessa" DateTime="2015-01-04T18:35:39Z" />
+      <Props>
+        <Str Name="Custom2" Val="LQA_141222" />
+      </Props>
+    </Item>
+    <Item ItemId=";FileVersion" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text" DevLk="true">
+        <Val><![CDATA[1.0.0.0]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+      <Modified By="Vanessa" DateTime="2015-01-04T18:35:39Z" />
+    </Item>
+    <Item ItemId=";InternalName" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text" DevLk="true">
+        <Val><![CDATA[NuGet.Client.VisualStudio.UI.dll]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+      <Modified By="Vanessa" DateTime="2015-01-04T18:35:39Z" />
+    </Item>
+    <Item ItemId=";LegalCopyright" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text">
+        <Val><![CDATA[Copyright ©  2014]]></Val>
+        <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+          <Val><![CDATA[Copyright ©  2014]]></Val>
+        </Tgt>
+      </Str>
+      <Disp Icon="Str" />
+      <Modified By="Vanessa" DateTime="2015-01-04T18:35:39Z" />
+      <Props>
+        <Str Name="Custom2" Val="LQA_141222" />
+      </Props>
+    </Item>
+    <Item ItemId=";OriginalFilename" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text" DevLk="true">
+        <Val><![CDATA[NuGet.Client.VisualStudio.UI.dll]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+      <Modified By="Vanessa" DateTime="2015-01-04T18:35:39Z" />
+    </Item>
+    <Item ItemId=";ProductName" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text">
+        <Val><![CDATA[NuGet.Client.VisualStudio.UI]]></Val>
+        <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+          <Val><![CDATA[NuGet.Client.VisualStudio.UI]]></Val>
+        </Tgt>
+      </Str>
+      <Disp Icon="Str" />
+      <Modified By="Vanessa" DateTime="2015-01-04T18:35:39Z" />
+      <Props>
+        <Str Name="Custom2" Val="LQA_141222" />
+      </Props>
+    </Item>
+    <Item ItemId=";ProductVersion" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text" DevLk="true">
+        <Val><![CDATA[1.0.0.0]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+      <Modified By="Vanessa" DateTime="2015-01-04T18:35:39Z" />
+    </Item>
+  </Item>
+  <Item ItemId=";Version" ItemType="8" PsrId="211" Leaf="true">
+    <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" />
+    <Modified By="Vanessa" DateTime="2015-01-02T09:24:40Z" />
+  </Item>
+</LCX>

@@ -1,0 +1,788 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<LCX SchemaVersion="6.0" Name="C:\BuildAgent\work\fea8ec2fb9b8541c\NuGet\bin\Release\NuGetTools\14\NuGet.Client.VisualStudio.PowerShell.dll" PsrId="211" FileType="1" SrcCul="en-US" TgtCul="ko-KR" xmlns="http://schemas.microsoft.com/locstudio/2006/6/lcx">
+  <Props>
+    <Str Name="CustomName1" Val="Custom 1" />
+    <Str Name="CustomName2" Val="Custom 2" />
+    <Str Name="CustomName3" Val="Custom 3" />
+    <Str Name="CustomName4" Val="Custom 4" />
+    <Str Name="CustomName5" Val="Custom 5" />
+    <Str Name="CustomName6" Val="IQA" />
+  </Props>
+  <OwnedComments>
+    <Cmt Name="Dev" />
+    <Cmt Name="LcxAdmin" />
+    <Cmt Name="Note" />
+    <Cmt Name="Rccx" />
+  </OwnedComments>
+  <Settings Name="@vsLocTools@\default.lss" Type="Lss" />
+  <Item ItemId=";Managed Resources" ItemType="0" PsrId="211" Leaf="true">
+    <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" />
+    <Modified By="user" DateTime="2015-01-05T03:51:55Z" />
+  </Item>
+  <Item ItemId=";NuGet.Client.VisualStudio.PowerShell.Resources.resources" ItemType="0" PsrId="211" Leaf="false">
+    <Disp Icon="Str" Expand="true" Disp="true" LocTbl="false" Path=" \ ;Managed Resources \ 0 \ 0" />
+    <Modified By="user" DateTime="2015-01-05T03:51:55Z" />
+    <Item ItemId=";Strings" ItemType="0" PsrId="211" Leaf="false">
+      <Disp Icon="Str" LocTbl="false" />
+      <Modified By="user" DateTime="2015-01-05T03:51:55Z" />
+      <Item ItemId=";Cmdlet_CommandObsolete" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The {0} Command has been deprecated. Type 'get-help NuGet' to see all available NuGet commands.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[{0} 명령은 사용되지 않습니다. 사용 가능한 모든 NuGet 명령을 보려면 'get-help NuGet'을 입력하십시오.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="user" DateTime="2015-01-05T13:15:48Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="get-help NuGet", "NuGet"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Cmdlet_CreatingPackage" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Creating package at {0}...]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[{0}에 패키지를 만드는 중...]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="user" DateTime="2015-01-05T13:15:48Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Cmdlet_FailToParsePackages" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Fail to parse package identities from file {0} with exception: {1}]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[다음 예외로 인해 {0} 파일에서 패키지 ID를 구문 분석하지 못했습니다. {1}]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="user" DateTime="2015-01-05T13:15:48Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Cmdlet_FailToParseVersion" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Fail to parse the input of Version parameter: {0} to a valid Semantic version. ]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Version 매개 변수 {0}의 입력을 올바른 의미 체계의 버전으로 구문 분석하지 못했습니다. ]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="user" DateTime="2015-01-05T13:15:48Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="Version"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Cmdlet_FailToSetProject" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Failed to set {0} as the Default Project for PowerShell Console. ]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[{0}을(를) PowerShell 콘솔의 기본 프로젝트로 설정하지 못했습니다. ]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="user" DateTime="2015-01-05T13:15:48Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Cmdlet_FallbackToCache" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The source at {0} is unreachable. Falling back to NuGet Local Cache at {1}]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[{0}에 있는 소스에 연결할 수 없습니다. {1}에 있는 NuGet 로컬 캐시로 변경하고 있습니다.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="user" DateTime="2015-01-05T13:15:48Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Cmdlet_FileConflictNoAllHelp" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Skip this file and all subsequent files]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[이 파일 및 모든 후속 파일 건너뛰기]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="user" DateTime="2015-01-05T13:15:48Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Cmdlet_FileConflictNoHelp" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Skip this file]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[이 파일 건너뛰기]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="user" DateTime="2015-01-05T13:15:48Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Cmdlet_FileConflictYesAllHelp" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Overwrite this file and all subsequent files]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[이 파일 및 모든 후속 파일 덮어쓰기]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="user" DateTime="2015-01-05T13:15:48Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Cmdlet_FileConflictYesHelp" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Overwrite this file]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[이 파일 덮어쓰기]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="user" DateTime="2015-01-05T13:15:48Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Cmdlet_FileExistsNoClobber" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Output file '{0}' exists and -NoClobber was specified.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA['{0}' 출력 파일이 있으며 -NoClobber가 지정되어 있습니다.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="user" DateTime="2015-01-05T13:15:48Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="-NoClobber"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Cmdlet_InstallSuccessDisclaimerText" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[You are downloading {0} from {1}, the license agreement to which is available at {2}. Check the package for additional dependencies, which may come with their own license agreement(s). Your use of the package and dependencies constitutes your acceptance of their license agreements. If you do not accept the license agreement(s), then delete the relevant components from your device.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[{1}에서 {0}을(를) 다운로드하고 있습니다. 해당 사용권 계약은 {2}에서 사용할 수 있습니다. 패키지에서 자체 사용권 계약이 적용되는 추가 종속성이 있는지 확인하십시오. 패키지와 종속성 사용에 따라 사용권 계약에 대한 동의가 성립됩니다. 사용권 계약에 동의하지 않으면 장치에서 관련 구성 요소를 삭제하십시오.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="user" DateTime="2015-01-05T13:15:48Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Cmdlet_InvalidPSDrive" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The PSDrive '{0}' was not found.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[PSDrive '{0}'이(가) 없습니다.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="user" DateTime="2015-01-05T13:15:48Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="PSDrive"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Cmdlet_InvalidPathSyntax" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The path '{0}' is invalid.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA['{0}' 경로가 올바르지 않습니다.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="user" DateTime="2015-01-05T13:15:48Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Cmdlet_InvalidProjectManagerInstance" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The specified IProjectManager instance is not recognized.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[지정된 IProjectManager 인스턴스가 인식되지 않습니다.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="user" DateTime="2015-01-05T13:15:48Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="IProjectManager"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Cmdlet_InvalidProvider" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Only paths residing on a FileSystemProvider are supported.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[FileSystemProvider에 포함된 경로만 지원됩니다.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="user" DateTime="2015-01-05T13:15:48Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="FileSystemProvider"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Cmdlet_LocalCacheFailure" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The source at {0} is unreachable. There is no NuGet Local Cache found]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[{0}에 있는 소스에 연결할 수 없습니다. NuGet 로컬 캐시가 없습니다.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="user" DateTime="2015-01-05T13:15:48Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Cmdlet_No" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[&No]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[아니요(&N)]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="user" DateTime="2015-01-05T13:15:48Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Cmdlet_NoActivePackageSource" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Unable to retrieve package list because no source was specified.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[소스를 지정하지 않아 패키지 목록을 검색할 수 없습니다.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="user" DateTime="2015-01-05T13:15:48Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Cmdlet_NoAll" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[No to Al&l]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[모두 아니요(&L)]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="user" DateTime="2015-01-05T13:15:48Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Cmdlet_NoCompatibleProjects" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[No compatible project(s) found in the active solution.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[활성 솔루션에 호환되는 프로젝트가 없습니다.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="user" DateTime="2015-01-05T13:15:48Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Cmdlet_NoPackageUpdates" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[No package updates are available from the current package source.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[현재 패키지 소스에서 사용할 수 있는 패키지 업데이트가 없습니다.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="user" DateTime="2015-01-05T13:15:48Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Cmdlet_NoPackagesInstalled" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[No packages installed.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[설치된 패키지가 없습니다.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="user" DateTime="2015-01-05T13:15:48Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Cmdlet_NoSolution" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The current environment doesn't have a solution open.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[현재 환경에 열려 있는 솔루션이 없습니다.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="user" DateTime="2015-01-05T13:15:48Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Cmdlet_NothingToDo" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Nothing to do]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[수행할 작업이 없습니다.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="user" DateTime="2015-01-05T13:15:48Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Cmdlet_NuspecFileNotFound" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Unable to locate a .nuspec file in the specified project.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[지정된 프로젝트에서 .nuspec 파일을 찾을 수 없습니다.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="user" DateTime="2015-01-05T13:15:48Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Cmdlet_OpenPackagePageAction" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Open]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[열기]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="user" DateTime="2015-01-05T13:15:48Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Cmdlet_PackageCreated" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Package file successfully created...]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[패키지 파일을 만들었습니다.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="user" DateTime="2015-01-05T13:15:48Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Cmdlet_PackageIdAndVersionNotFound" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Package with the Id '{0}' and version '{1}' is not found in the specified source.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[지정된 소스에서 ID가 '{0}'이고 버전이 '{1}'인 패키지를 찾을 수 없습니다.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="user" DateTime="2015-01-05T13:15:48Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Cmdlet_PackageIdNotFound" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Package with the Id '{0}' is not found in the specified source.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[지정된 소스에서 ID가 '{0}'인 패키지를 찾을 수 없습니다.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="user" DateTime="2015-01-05T13:15:48Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Cmdlet_PackageNotInstalled" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Package with the Id '{0}' is not installed to the current project.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[ID가 '{0}'인 패키지는 현재 프로젝트에 설치되지 않습니다.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="user" DateTime="2015-01-05T13:15:48Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Cmdlet_PackageOperation" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[{0} {1}]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[{0} {1}]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="user" DateTime="2015-01-05T13:15:48Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Cmdlet_ProjectNotFound" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Project '{0}' is not found.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA['{0}' 프로젝트가 없습니다.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="user" DateTime="2015-01-05T13:15:48Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Cmdlet_ProjectSet" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The 'Default project' has been successfully set as '{0}'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA['기본 프로젝트'가 '{0}'(으)로 설정되었습니다.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="user" DateTime="2015-01-05T13:15:48Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Cmdlet_TooManySpecFiles" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[More than one .nuspec files were found.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[.nuspec 파일이 여러 개 있습니다.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="user" DateTime="2015-01-05T13:15:48Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Cmdlet_UrlMissing" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The package '{0}' does not provide the requested URL.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA['{0}' 패키지는 요청된 URL을 제공하지 않습니다.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="user" DateTime="2015-01-05T13:15:48Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Cmdlet_WhatIfReinstallUnsupported" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Specifying both -Reinstall and -WhatIf is not supported for now.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[지금은 -Reinstall 및 -WhatIf를 모두 지정할 수 없습니다.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="user" DateTime="2015-01-05T13:15:48Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Cmdlet_Yes" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[&Yes]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[예(&Y)]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="user" DateTime="2015-01-05T13:15:48Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Cmdlet_YesAll" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Yes to &All]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[모두 예(&A)]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="user" DateTime="2015-01-05T13:15:48Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Log_NoActionsWhatIf" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[None]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[없음]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="user" DateTime="2015-01-05T13:15:48Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Log_OperationWhatIf" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[WhatIf: {0}]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[WhatIf: {0}]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="user" DateTime="2015-01-05T13:15:48Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+    </Item>
+  </Item>
+  <Item ItemId=";NuGet.CommonResources.resources" ItemType="0" PsrId="211" Leaf="false">
+    <Disp Icon="Str" Expand="true" Disp="true" LocTbl="false" Path=" \ ;Managed Resources \ 0 \ 0" />
+    <Modified By="user" DateTime="2015-01-05T03:51:55Z" />
+    <Item ItemId=";Strings" ItemType="0" PsrId="211" Leaf="false">
+      <Disp Icon="Str" LocTbl="false" />
+      <Modified By="user" DateTime="2015-01-05T03:51:55Z" />
+      <Item ItemId=";Argument_Cannot_Be_Null_Or_Empty" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Value cannot be null or an empty string.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[값은 null이거나 빈 문자열일 수 없습니다.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="user" DateTime="2015-01-05T13:15:48Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Argument_Must_Be_Between" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Value must be between {0} and {1}.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[값은 {0}에서 {1} 사이여야 합니다.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="user" DateTime="2015-01-05T13:15:48Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Argument_Must_Be_Enum_Member" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Value must be a value from the "{0}" enumeration.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[값은 "{0}" 열거형의 값이어야 합니다.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="user" DateTime="2015-01-05T13:15:48Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Argument_Must_Be_GreaterThan" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Value must be greater than {0}.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[값은 {0}보다 커야 합니다.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="user" DateTime="2015-01-05T13:15:48Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Argument_Must_Be_GreaterThanOrEqualTo" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Value must be greater than or equal to {0}.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[값은 {0}보다 크거나 같아야 합니다.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="user" DateTime="2015-01-05T13:15:48Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Argument_Must_Be_LessThan" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Value must be less than {0}.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[값은 {0}보다 작아야 합니다.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="user" DateTime="2015-01-05T13:15:48Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Argument_Must_Be_LessThanOrEqualTo" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Value must be less than or equal to {0}.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[값은 {0}보다 작거나 같아야 합니다.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="user" DateTime="2015-01-05T13:15:48Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";Argument_Must_Be_Null_Or_Non_Empty" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Value cannot be an empty string. It must either be null or a non-empty string.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[값은 빈 문자열일 수 없습니다. null이거나 비어 있지 않은 문자열이어야 합니다.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="user" DateTime="2015-01-05T13:15:48Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";EnsureImportedMessage" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[이 프로젝트는 이 컴퓨터에 없는 NuGet 패키지를 참조합니다. 해당 패키지를 다운로드하려면 NuGet 패키지 복원을 사용하십시오. 자세한 내용은 http://go.microsoft.com/fwlink/?LinkID=322105를 참조하십시오. 누락된 파일은 {0}입니다.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="user" DateTime="2015-01-05T13:15:48Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+    </Item>
+  </Item>
+  <Item ItemId=";Version" ItemType="0" PsrId="211" Leaf="false">
+    <Disp Icon="Ver" Disp="true" LocTbl="false" Path=" \ ;Version \ 8 \ 0" />
+    <Modified By="user" DateTime="2015-01-05T03:51:55Z" />
+    <Item ItemId=";AssemblyVersion" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text" DevLk="true">
+        <Val><![CDATA[1.0.0.0]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+      <Modified By="user" DateTime="2015-01-05T03:51:55Z" />
+    </Item>
+    <Item ItemId=";FileDescription" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text">
+        <Val><![CDATA[NuGet.Client.VisualStudio.PowerShell]]></Val>
+        <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+          <Val><![CDATA[NuGet.Client.VisualStudio.PowerShell]]></Val>
+        </Tgt>
+      </Str>
+      <Disp Icon="Str" />
+      <Modified By="user" DateTime="2015-01-05T13:15:48Z" />
+      <Props>
+        <Str Name="Custom2" Val="LQA_141222" />
+      </Props>
+    </Item>
+    <Item ItemId=";FileVersion" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text" DevLk="true">
+        <Val><![CDATA[1.0.0.0]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+      <Modified By="user" DateTime="2015-01-05T03:51:55Z" />
+    </Item>
+    <Item ItemId=";InternalName" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text" DevLk="true">
+        <Val><![CDATA[NuGet.Client.VisualStudio.PowerShell.dll]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+      <Modified By="user" DateTime="2015-01-05T03:51:55Z" />
+    </Item>
+    <Item ItemId=";LegalCopyright" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text">
+        <Val><![CDATA[Copyright ©  2014]]></Val>
+        <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+          <Val><![CDATA[Copyright ©  2014]]></Val>
+        </Tgt>
+      </Str>
+      <Disp Icon="Str" />
+      <Modified By="user" DateTime="2015-01-05T13:15:48Z" />
+      <Props>
+        <Str Name="Custom2" Val="LQA_141222" />
+      </Props>
+    </Item>
+    <Item ItemId=";OriginalFilename" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text" DevLk="true">
+        <Val><![CDATA[NuGet.Client.VisualStudio.PowerShell.dll]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+      <Modified By="user" DateTime="2015-01-05T03:51:55Z" />
+    </Item>
+    <Item ItemId=";ProductName" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text">
+        <Val><![CDATA[NuGet.Client.VisualStudio.PowerShell]]></Val>
+        <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+          <Val><![CDATA[NuGet.Client.VisualStudio.PowerShell]]></Val>
+        </Tgt>
+      </Str>
+      <Disp Icon="Str" />
+      <Modified By="user" DateTime="2015-01-05T13:15:48Z" />
+      <Props>
+        <Str Name="Custom2" Val="LQA_141222" />
+      </Props>
+    </Item>
+    <Item ItemId=";ProductVersion" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text" DevLk="true">
+        <Val><![CDATA[1.0.0.0]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+      <Modified By="user" DateTime="2015-01-05T03:51:55Z" />
+    </Item>
+  </Item>
+  <Item ItemId=";Version" ItemType="8" PsrId="211" Leaf="true">
+    <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" />
+    <Modified By="user" DateTime="2015-01-05T03:51:55Z" />
+  </Item>
+</LCX>

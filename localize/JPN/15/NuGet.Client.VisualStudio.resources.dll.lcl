@@ -1,0 +1,190 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<LCX SchemaVersion="6.0" Name="C:\BuildAgent\work\fea8ec2fb9b8541c\NuGet\bin\Release\NuGetTools\14\NuGet.Client.VisualStudio.dll" PsrId="211" FileType="1" SrcCul="en-US" TgtCul="ja-JP" xmlns="http://schemas.microsoft.com/locstudio/2006/6/lcx">
+  <Props>
+    <Str Name="CustomName1" Val="Custom 1" />
+    <Str Name="CustomName2" Val="Custom 2" />
+    <Str Name="CustomName3" Val="Custom 3" />
+    <Str Name="CustomName4" Val="Custom 4" />
+    <Str Name="CustomName5" Val="Custom 5" />
+    <Str Name="CustomName6" Val="IQA" />
+  </Props>
+  <OwnedComments>
+    <Cmt Name="Dev" />
+    <Cmt Name="DUIData" />
+    <Cmt Name="GoldMine" />
+    <Cmt Name="Goldmine8" />
+    <Cmt Name="LcxAdmin" />
+    <Cmt Name="Loc" />
+    <Cmt Name="ManifestData" />
+    <Cmt Name="Mnemonic" />
+    <Cmt Name="Note" />
+    <Cmt Name="RCCX" />
+    <Cmt Name="UIType" />
+    <Cmt Name="UTSData" />
+    <Cmt Name="UTSUI" />
+    <Cmt Name="zLocLevel" />
+  </OwnedComments>
+  <Settings Name="@vsLocTools@\default.lss" Type="Lss" />
+  <Item ItemId=";Managed Resources" ItemType="0" PsrId="211" Leaf="true">
+    <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" />
+    <Modified By="Administrator99" DateTime="2014-12-25T02:17:41Z" />
+  </Item>
+  <Item ItemId=";NuGet.Client.VisualStudio.Strings.resources" ItemType="0" PsrId="211" Leaf="false">
+    <Disp Icon="Str" Expand="true" Disp="true" LocTbl="false" Path=" \ ;Managed Resources \ 0 \ 0" />
+    <Modified By="Administrator99" DateTime="2014-12-25T02:17:41Z" />
+    <Item ItemId=";Strings" ItemType="0" PsrId="211" Leaf="false">
+      <Disp Icon="Str" LocTbl="false" />
+      <Modified By="Administrator99" DateTime="2014-12-25T02:17:41Z" />
+      <Item ItemId=";Label_Solution" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Solution '{0}']]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[ソリューション '{0}']]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Administrator99" DateTime="2014-12-25T02:19:10Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";VsPackageManagerSession_CannotUseAggregateSource" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[You cannot use the aggregate source with the V2InteropSearcher.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[V2InteropSearcher では集計元を使用できません。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Administrator99" DateTime="2014-12-25T02:19:10Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="V2InteropSearcher"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";VsPackageManagerSession_UnknownSource" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Unknown Package Source: '{0}'. It is not present in the list of available sources.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[認識できないパッケージ ソース: '{0}'。使用可能なソースの一覧に存在しません。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Administrator99" DateTime="2014-12-25T02:19:10Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";VsSourceRepositoryManager_V3SourceName" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[preview.nuget.org]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[preview.nuget.org]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Administrator99" DateTime="2014-12-25T02:19:10Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+    </Item>
+  </Item>
+  <Item ItemId=";Version" ItemType="0" PsrId="211" Leaf="false">
+    <Disp Icon="Ver" Disp="true" LocTbl="false" Path=" \ ;Version \ 8 \ 0" />
+    <Modified By="Administrator99" DateTime="2014-12-25T02:17:41Z" />
+    <Item ItemId=";AssemblyVersion" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text" DevLk="true">
+        <Val><![CDATA[3.0.51216.259]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+      <Modified By="Administrator99" DateTime="2014-12-25T02:25:12Z" />
+    </Item>
+    <Item ItemId=";CompanyName" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text">
+        <Val><![CDATA[Microsoft Corporation]]></Val>
+        <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+          <Val><![CDATA[Microsoft Corporation]]></Val>
+        </Tgt>
+      </Str>
+      <Disp Icon="Str" />
+      <Modified By="Administrator99" DateTime="2014-12-25T02:19:10Z" />
+      <Props>
+        <Str Name="Custom2" Val="LQA_141222" />
+      </Props>
+    </Item>
+    <Item ItemId=";FileDescription" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text">
+        <Val><![CDATA[V3VisualStudio]]></Val>
+        <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+          <Val><![CDATA[V3VisualStudio]]></Val>
+        </Tgt>
+      </Str>
+      <Disp Icon="Str" />
+      <Modified By="Administrator99" DateTime="2014-12-25T02:19:10Z" />
+      <Props>
+        <Str Name="Custom2" Val="LQA_141222" />
+      </Props>
+    </Item>
+    <Item ItemId=";FileVersion" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text" DevLk="true">
+        <Val><![CDATA[3.0.51216.259]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+      <Modified By="Administrator99" DateTime="2014-12-25T02:25:12Z" />
+    </Item>
+    <Item ItemId=";InternalName" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text" DevLk="true">
+        <Val><![CDATA[NuGet.Client.VisualStudio.dll]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+      <Modified By="Administrator99" DateTime="2014-12-25T02:25:12Z" />
+    </Item>
+    <Item ItemId=";LegalCopyright" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text">
+        <Val><![CDATA[Copyright 2013 Microsoft. NuGet is made possible by the Outercurve Foundation's open source project.]]></Val>
+        <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+          <Val><![CDATA[Copyright 2013 Microsoft. NuGet は、Outercurve Foundation のオープン ソース プロジェクトによって実現しています。]]></Val>
+        </Tgt>
+      </Str>
+      <Disp Icon="Str" />
+      <Modified By="Administrator99" DateTime="2015-01-02T01:15:51Z" />
+      <Props>
+        <Str Name="Custom2" Val="LQA_141222" />
+      </Props>
+    </Item>
+    <Item ItemId=";OriginalFilename" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text" DevLk="true">
+        <Val><![CDATA[NuGet.Client.VisualStudio.dll]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+      <Modified By="Administrator99" DateTime="2014-12-25T02:25:12Z" />
+    </Item>
+    <Item ItemId=";ProductName" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text">
+        <Val><![CDATA[NuGet]]></Val>
+        <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+          <Val><![CDATA[NuGet]]></Val>
+        </Tgt>
+      </Str>
+      <Disp Icon="Str" />
+      <Modified By="Administrator99" DateTime="2014-12-25T02:19:10Z" />
+      <Props>
+        <Str Name="Custom2" Val="LQA_141222" />
+      </Props>
+    </Item>
+    <Item ItemId=";ProductVersion" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text" DevLk="true">
+        <Val><![CDATA[3.0.0-preview]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+      <Modified By="Administrator99" DateTime="2014-12-25T02:25:12Z" />
+    </Item>
+  </Item>
+  <Item ItemId=";Version" ItemType="8" PsrId="211" Leaf="true">
+    <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" />
+    <Modified By="Administrator99" DateTime="2014-12-25T02:17:41Z" />
+  </Item>
+</LCX>

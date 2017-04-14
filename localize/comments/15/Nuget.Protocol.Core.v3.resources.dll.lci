@@ -1,0 +1,195 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<LCX SchemaVersion="6.0" Name="C:\BuildAgent\work\c21523a748a3d719\NuGet\bin\Release\NuGetTools\15\NuGet.Protocol.Core.v3.dll" PsrId="211" FileType="1" SrcCul="en-US" Desc="Commenting file created by LCXAdmin. For more information, please visit http://localizability/longhorn/LcxAdmin.asp" xmlns="http://schemas.microsoft.com/locstudio/2006/6/lcx">
+  <OwnedComments>
+    <Cmt Name="LcxAdmin" />
+  </OwnedComments>
+  <Item ItemId=";Managed Resources" ItemType="0" PsrId="211" Leaf="true">
+    <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" />
+  </Item>
+  <Item ItemId=";NuGet.Protocol.Core.v3.Strings.resources" ItemType="0" PsrId="211" Leaf="false">
+    <Disp Icon="Str" Expand="true" Disp="true" LocTbl="false" Path=" \ ;Managed Resources \ 0 \ 0" />
+    <Item ItemId=";Strings" ItemType="0" PsrId="211" Leaf="false">
+      <Disp Icon="Str" LocTbl="false" />
+      <Item ItemId=";Http_CredentialsForForbidden" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The server responded with HTTP '403 Forbidden' when accessing the source '{0}'. This suggests that the server has authenticated your identity but has not permitted you to access the requested resource. Provide credentials that have permissions to view this resource.]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="403 Forbidden"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";Http_CredentialsForProxy" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The server responded with HTTP '407 Proxy Authentication Required' when accessing the proxy '{0}'. This suggests that the server needs credentials to authenticate your identity to use a proxy. Provide credentials to access this resource.]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="407 Proxy Authentication Required"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";Http_CredentialsForUnauthorized" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The server responded with HTTP '401 Unauthorized' when accessing the source '{0}'. This suggests that the server needs credentials to authenticate your identity. Provide credentials to access this resource.]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="401 Unauthorized"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";LiveFeed" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[the NuGet gallery]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="NuGet"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";Log_FailedToFetchV2Feed" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The V2 feed at '{0}' returned an unexpected status code '{1} {2}'.]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="V2"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";Log_FailedToGetNuspecStream" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Unable to load nuspec from package '{0}'.]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="nuspec"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";Log_InvalidNupkgFromUrl" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The nupkg at '{0}' is not valid.]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="nupkg"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";NoApiKeyFound" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[No API Key was provided and no API Key could be found for {0}. To save an API Key for a source use the 'setApiKey' command.]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="API"} {Locked="setApiKey"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";NuGetRepository_CannotCreateAggregateRepo" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Cannot create a NuGet Repository from the Aggregate Source]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="NuGet"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";NupkgPath_Invalid" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA['{0}' is not a valid nupkg file.]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="nupkg"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";NupkgPath_InvalidEx" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA['{0}' is not a valid nupkg file. Error: '{1}'.]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="nupkg"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";PackageServerEndpoint_NotSupported" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[ERROR: This version of nuget.exe does not support updating packages to package source '{0}'.]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="nuget.exe"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";Path_Invalid_NotFileNotUnc" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA['{0}' should be a local path or a UNC share path.]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="UNC"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";Protocol_FlatContainerIndexVersionsNotArray" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The 'versions' property at '{0}' must be an array.]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="versions"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";Protocol_IndexMissingResourcesNode" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Service index document is missing the 'resources' property.]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="resources"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";Protocol_InvalidJsonObject" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The content at '{0}' is not a valid JSON object.]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="JSON"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";Protocol_InvalidServiceIndex" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The source does not have the 'version' property at '{0}'.]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="version"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";Protocol_MissingVersion" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The source does not have the 'version' property.]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="version"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";UnableToParseFolderV3Version" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Unable to parse a valid version from a v3 folder: '{0}'.]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="v3"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";Warning_SymbolServerNotConfigured" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Found symbols package '{0}', but no API key was specified for the symbol server. To save an API Key, run 'NuGet.exe setApiKey [your API key from http://www.NuGet.org]5D;'.]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="API", "NuGet.exe", "setApiKey"}]]></Cmt>
+        </Cmts>
+      </Item>
+    </Item>
+  </Item>
+</LCX>

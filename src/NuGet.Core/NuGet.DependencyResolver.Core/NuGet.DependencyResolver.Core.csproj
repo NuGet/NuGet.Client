@@ -8,6 +8,7 @@
     <PackProject>true</PackProject>
     <Shipping>true</Shipping>
     <RootNamespace>NuGet.DependencyResolver</RootNamespace>
+    <IncludeInVSIX>true</IncludeInVSIX>
   </PropertyGroup>
 
   <ItemGroup>

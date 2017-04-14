@@ -1,0 +1,603 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<LCX SchemaVersion="6.0" Name="D:\dd\WebStackRuntime\Main\ReferenceAssemblies\NuGet\NuGet.Cmdlets.dll" PsrId="211" FileType="1" SrcCul="en-US" TgtCul="es-ES" xmlns="http://schemas.microsoft.com/locstudio/2006/6/lcx">
+  <Props>
+    <Str Name="CustomName1" Val="Custom 1" />
+    <Str Name="CustomName2" Val="Custom 2" />
+    <Str Name="CustomName3" Val="Custom 3" />
+    <Str Name="CustomName4" Val="Custom 4" />
+    <Str Name="CustomName5" Val="Custom 5" />
+    <Str Name="CustomName6" Val="IQA" />
+  </Props>
+  <OwnedComments>
+    <Cmt Name="Dev" />
+    <Cmt Name="LcxAdmin" />
+    <Cmt Name="Note" />
+    <Cmt Name="Rccx" />
+  </OwnedComments>
+  <Settings Name="@vsLocTools@\default.lss" Type="Lss" />
+  <Item ItemId=";Managed Resources" ItemType="0" PsrId="211" Leaf="true">
+    <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" />
+    <Modified By="LucianoAP" DateTime="2012-02-22T15:24:55Z" />
+  </Item>
+  <Item ItemId=";NuGet.CommonResources.resources" ItemType="0" PsrId="211" Leaf="false">
+    <Disp Icon="Str" Expand="true" Disp="true" LocTbl="false" Path=" \ ;Managed Resources \ 0 \ 0" />
+    <Modified By="federicomu" DateTime="2012-05-28T21:56:56Z" />
+    <Item ItemId=";Strings" ItemType="0" PsrId="211" Leaf="false">
+      <Disp Icon="Str" LocTbl="false" />
+      <Modified By="federicomu" DateTime="2012-05-28T21:56:56Z" />
+      <Item ItemId=";Argument_Cannot_Be_Null_Or_Empty" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Value cannot be null or an empty string.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[El valor no puede ser nulo ni una cadena vacía.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="federicomu" DateTime="2012-05-28T21:58:11Z" />
+      </Item>
+      <Item ItemId=";Argument_Must_Be_Between" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Value must be between {0} and {1}.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[El valor debe estar entre {0} y {1}.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="federicomu" DateTime="2012-05-28T21:58:11Z" />
+      </Item>
+      <Item ItemId=";Argument_Must_Be_Enum_Member" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Value must be a value from the "{0}" enumeration.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[El valor debe ser uno de los valores de la enumeración "{0}".]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="federicomu" DateTime="2012-05-28T21:58:11Z" />
+      </Item>
+      <Item ItemId=";Argument_Must_Be_GreaterThan" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Value must be greater than {0}.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[El valor debe ser mayor que {0}.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="federicomu" DateTime="2012-05-28T21:58:11Z" />
+      </Item>
+      <Item ItemId=";Argument_Must_Be_GreaterThanOrEqualTo" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Value must be greater than or equal to {0}.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[El valor debe ser mayor o igual que {0}.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="federicomu" DateTime="2012-05-28T21:58:11Z" />
+      </Item>
+      <Item ItemId=";Argument_Must_Be_LessThan" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Value must be less than {0}.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[El valor debe ser menor que {0}.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="federicomu" DateTime="2012-05-28T21:58:11Z" />
+      </Item>
+      <Item ItemId=";Argument_Must_Be_LessThanOrEqualTo" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Value must be less than or equal to {0}.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[El valor debe ser menor o igual que {0}.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="federicomu" DateTime="2012-05-28T21:58:11Z" />
+      </Item>
+      <Item ItemId=";Argument_Must_Be_Null_Or_Non_Empty" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Value cannot be an empty string. It must either be null or a non-empty string.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[El valor no puede ser una cadena vacía. Debe ser una cadena nula o que no esté vacía.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="federicomu" DateTime="2012-05-28T21:58:11Z" />
+      </Item>
+      <Item ItemId=";EnsureImportedMessage" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[Este proyecto hace referencia a los paquetes NuGet que faltan en este equipo. Use la restauración del paquete NuGet para descargarlos. Para obtener más información, consulte http://go.microsoft.com/fwlink/?LinkID=322105. El archivo que falta es {0}.]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[This project references NuGet package(s) that are missing on this computer. Enable NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.]]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Vanessa" DateTime="2015-01-02T15:36:26Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+    </Item>
+  </Item>
+  <Item ItemId=";NuGet.PowerShell.Commands.Resources.resources" ItemType="0" PsrId="211" Leaf="false">
+    <Disp Icon="Str" Expand="true" Disp="true" LocTbl="false" Path=" \ ;Managed Resources \ 0 \ 0" />
+    <Modified By="LucianoAP" DateTime="2012-02-22T15:24:55Z" />
+    <Item ItemId=";Strings" ItemType="0" PsrId="211" Leaf="false">
+      <Disp Icon="Str" LocTbl="false" />
+      <Modified By="LucianoAP" DateTime="2012-02-22T15:24:55Z" />
+      <Item ItemId=";Cmdlet_CreatingPackage" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Creating package at {0}...]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[Creando paquete en {0}...]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="federicomu" DateTime="2012-02-22T17:20:43Z" />
+      </Item>
+      <Item ItemId=";Cmdlet_FallbackToCache" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The source at {0} is unreachable. Falling back to NuGet Local Cache at {1}]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[El origen en {0} es inalcanzable. Retrocediendo a la memoria caché local de NuGet en {1}]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Cecilia" DateTime="2013-12-31T10:27:29Z" />
+      </Item>
+      <Item ItemId=";Cmdlet_FileConflictNoAllHelp" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Skip this file and all subsequent files]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Omitir este archivo y los siguientes]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Núria" DateTime="2013-05-09T08:38:09Z" />
+      </Item>
+      <Item ItemId=";Cmdlet_FileConflictNoHelp" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Skip this file]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Omitir este archivo]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Núria" DateTime="2013-05-09T08:38:09Z" />
+      </Item>
+      <Item ItemId=";Cmdlet_FileConflictYesAllHelp" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Overwrite this file and all subsequent files]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Sobrescribir este archivo y los siguientes]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Núria" DateTime="2013-05-09T08:38:09Z" />
+      </Item>
+      <Item ItemId=";Cmdlet_FileConflictYesHelp" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Overwrite this file]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Sobrescribir este archivo]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Núria" DateTime="2013-05-09T08:38:09Z" />
+      </Item>
+      <Item ItemId=";Cmdlet_FileExistsNoClobber" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Output file '{0}' exists and -NoClobber was specified.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[El archivo de salida '{0}' existe y se especificó -NoClobber.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="federicomu" DateTime="2012-02-22T17:20:43Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="-NoClobber"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";Cmdlet_InstallSuccessDisclaimerText" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[You are downloading {0} from {1}, the license agreement to which is available at {2}. Check the package for additional dependencies, which may come with their own license agreement(s). Your use of the package and dependencies constitutes your acceptance of their license agreements. If you do not accept the license agreement(s), then delete the relevant components from your device.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[Está descargando {0} de {1}, cuyo contrato de licencia está disponible en {2}. Compruebe si el paquete tiene dependencias adicionales, las cuales se pueden incluir con sus respectivos contratos de licencia. El uso del paquete y las dependencias implica la aceptación de sus contratos de licencia. Si no acepta los contratos de licencia, elimine los componentes correspondientes del dispositivo.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="federicomu" DateTime="2012-02-22T17:20:43Z" />
+      </Item>
+      <Item ItemId=";Cmdlet_InvalidPSDrive" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The PSDrive '{0}' was not found.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[No se encontró PSDrive '{0}'.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="federicomu" DateTime="2012-02-22T17:20:43Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="PSDrive"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";Cmdlet_InvalidPathSyntax" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The path '{0}' is invalid.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[La ruta de acceso '{0}' no es válida.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="federicomu" DateTime="2012-02-22T17:20:43Z" />
+      </Item>
+      <Item ItemId=";Cmdlet_InvalidProjectManagerInstance" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The specified IProjectManager instance is not recognized.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[No se reconoce la instancia IProjectManager especificada.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="nmontoliu" DateTime="2012-03-02T16:51:59Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="IProjectManager"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";Cmdlet_InvalidProvider" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Only paths residing on a FileSystemProvider are supported.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[Solamente se admiten las rutas que residan en FileSystemProvider.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="federicomu" DateTime="2012-02-22T17:20:43Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="FileSystemProvider"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";Cmdlet_LocalCacheFailure" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The source at {0} is unreachable. There is no NuGet Local Cache found]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[El origen en {0} es inalcanzable. No se encuentra ninguna memoria caché local de NuGet]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Cecilia" DateTime="2013-12-31T10:27:29Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="NuGet"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";Cmdlet_No" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[&No]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[&No]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Núria" DateTime="2013-05-09T08:38:09Z" />
+      </Item>
+      <Item ItemId=";Cmdlet_NoActivePackageSource" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Unable to retrieve package list because no source was specified.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[No se puede recuperar la lista de paquetes porque no se especificó un origen.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="federicomu" DateTime="2012-02-22T17:20:43Z" />
+      </Item>
+      <Item ItemId=";Cmdlet_NoAll" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[No to Al&l]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[No a &todo]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Núria" DateTime="2013-05-09T08:38:09Z" />
+      </Item>
+      <Item ItemId=";Cmdlet_NoCompatibleProjects" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[No compatible project(s) found in the active solution.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[No se encontraron proyectos compatibles en la solución activa.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="federicomu" DateTime="2012-02-22T17:20:43Z" />
+      </Item>
+      <Item ItemId=";Cmdlet_NoPackageUpdates" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[No package updates are available from the current package source.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[No hay actualizaciones de paquete disponibles en el origen del paquete actual.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="federicomu" DateTime="2012-02-22T17:20:43Z" />
+      </Item>
+      <Item ItemId=";Cmdlet_NoPackagesInstalled" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[No packages installed.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[No hay paquetes instalados.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="federicomu" DateTime="2012-02-22T17:20:43Z" />
+      </Item>
+      <Item ItemId=";Cmdlet_NoSolution" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The current environment doesn't have a solution open.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[El entorno actual no tiene una solución abierta.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="federicomu" DateTime="2012-02-22T17:20:43Z" />
+      </Item>
+      <Item ItemId=";Cmdlet_NothingToDo" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Nothing to do]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[No hay nada que hacer]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Cecilia" DateTime="2013-12-31T10:27:29Z" />
+      </Item>
+      <Item ItemId=";Cmdlet_NuspecFileNotFound" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Unable to locate a .nuspec file in the specified project.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[No se puede encontrar un archivo .nuspec en el proyecto especificado.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="federicomu" DateTime="2012-02-22T17:20:43Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked=".nuspec"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";Cmdlet_OpenPackagePageAction" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Open]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Abrir]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="nmontoliu" DateTime="2012-03-02T16:51:59Z" />
+      </Item>
+      <Item ItemId=";Cmdlet_PackageCreated" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Package file successfully created...]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[Archivo de paquete creado correctamente...]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="federicomu" DateTime="2012-02-22T17:20:43Z" />
+      </Item>
+      <Item ItemId=";Cmdlet_PackageIdAndVersionNotFound" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Package with the Id '{0}' and version '{1}' is not found in the specified source.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[No se encuentra el paquete con identificador '{0}' y versión '{1}' en el origen especificado.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Cecilia" DateTime="2012-04-06T06:17:33Z" />
+      </Item>
+      <Item ItemId=";Cmdlet_PackageIdNotFound" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Package with the Id '{0}' is not found in the specified source.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[No se encuentra el paquete con identificador '{0}' en el origen especificado.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Cecilia" DateTime="2012-04-06T06:17:33Z" />
+      </Item>
+      <Item ItemId=";Cmdlet_PackageOperation" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[{0} {1}]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[{0} {1}]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Noelia" DateTime="2013-12-30T16:40:30Z" />
+      </Item>
+      <Item ItemId=";Cmdlet_ProjectNotFound" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Project '{0}' is not found.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[No se encuentra el proyecto '{0}'.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="federicomu" DateTime="2012-02-22T17:20:43Z" />
+      </Item>
+      <Item ItemId=";Cmdlet_TooManySpecFiles" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[More than one .nuspec files were found.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[Se encontraron varios archivos .nuspec.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="federicomu" DateTime="2012-02-22T17:20:43Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked=".nuspec"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";Cmdlet_UrlMissing" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The package '{0}' does not provide the requested URL.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[El paquete '{0}' no proporciona la URL solicitada.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="nmontoliu" DateTime="2012-03-02T16:51:59Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="URL"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";Cmdlet_WhatIfReinstallUnsupported" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Specifying both -Reinstall and -WhatIf is not supported for now.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[De momento, no se admite la especificación de -Reinstall y -WhatIf.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Cecilia" DateTime="2013-12-31T10:27:29Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="-Reinstall", "-WhatIf"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";Cmdlet_Yes" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[&Yes]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[&Sí]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Núria" DateTime="2013-05-09T08:38:09Z" />
+      </Item>
+      <Item ItemId=";Cmdlet_YesAll" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Yes to &All]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Sí &a todo]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Núria" DateTime="2013-05-09T08:38:09Z" />
+      </Item>
+      <Item ItemId=";Log_OperationWhatIf" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[What if: {0}]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Qué ocurre sí: {0}]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Vanessa" DateTime="2015-01-04T18:35:39Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+    </Item>
+  </Item>
+  <Item ItemId=";Version" ItemType="0" PsrId="211" Leaf="false">
+    <Disp Icon="Ver" Disp="true" LocTbl="false" Path=" \ ;Version \ 8 \ 0" />
+    <Modified By="LucianoAP" DateTime="2012-02-22T15:24:55Z" />
+    <Item ItemId=";AssemblyVersion" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text" DevLk="true">
+        <Val><![CDATA[3.0.51216.259]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+      <Modified By="LucianoAP" DateTime="2012-02-22T15:24:55Z" />
+    </Item>
+    <Item ItemId=";Comments" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+      <Str Cat="Text">
+        <Val><![CDATA[This assembly contains NuGet PowerShell cmdlets.]]></Val>
+        <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+          <Val><![CDATA[Este ensamblado contiene cmdlets NuGet PowerShell.]]></Val>
+        </Tgt>
+      </Str>
+      <Disp Icon="Str" />
+      <Modified By="federicomu" DateTime="2012-02-22T17:20:43Z" />
+      <Cmts>
+        <Cmt Name="LcxAdmin"><![CDATA[{Placeholder="NuGet PowerShell"} Product names]]></Cmt>
+      </Cmts>
+    </Item>
+    <Item ItemId=";CompanyName" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text">
+        <Val><![CDATA[Microsoft Corporation]]></Val>
+        <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+          <Val><![CDATA[Microsoft Corporation]]></Val>
+        </Tgt>
+      </Str>
+      <Disp Icon="Str" />
+      <Modified By="federicomu" DateTime="2012-02-22T17:20:43Z" />
+    </Item>
+    <Item ItemId=";FileDescription" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text">
+        <Val><![CDATA[NuGet.Cmdlets]]></Val>
+        <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+          <Val><![CDATA[NuGet.Cmdlets]]></Val>
+        </Tgt>
+      </Str>
+      <Disp Icon="Str" />
+      <Modified By="federicomu" DateTime="2012-02-22T17:20:43Z" />
+    </Item>
+    <Item ItemId=";FileVersion" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text" DevLk="true">
+        <Val><![CDATA[3.0.51216.259]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+      <Modified By="LucianoAP" DateTime="2012-02-22T15:24:55Z" />
+    </Item>
+    <Item ItemId=";InternalName" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text" DevLk="true">
+        <Val><![CDATA[NuGet.Cmdlets.dll]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+      <Modified By="LucianoAP" DateTime="2012-02-22T15:24:55Z" />
+    </Item>
+    <Item ItemId=";LegalCopyright" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text">
+        <Val><![CDATA[Copyright 2013 Microsoft. NuGet is made possible by the Outercurve Foundation's open source project.]]></Val>
+        <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+          <Val><![CDATA[Copyright 2013 Microsoft. NuGet es posible gracias al proyecto de código abierto de Outercurve Foundation.]]></Val>
+        </Tgt>
+        <Prev Cat="Text">
+          <Val><![CDATA[Copyright 2013 Microsoft. NuGet is made possible by the Microsoft Corporation's open source project.]]></Val>
+        </Prev>
+      </Str>
+      <Disp Icon="Str" />
+      <Modified By="Noelia" DateTime="2013-12-30T16:40:30Z" />
+    </Item>
+    <Item ItemId=";OriginalFilename" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text" DevLk="true">
+        <Val><![CDATA[NuGet.Cmdlets.dll]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+      <Modified By="LucianoAP" DateTime="2012-02-22T15:24:55Z" />
+    </Item>
+    <Item ItemId=";ProductName" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text">
+        <Val><![CDATA[NuGet]]></Val>
+        <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+          <Val><![CDATA[NuGet]]></Val>
+        </Tgt>
+      </Str>
+      <Disp Icon="Str" />
+      <Modified By="federicomu" DateTime="2012-02-22T17:20:43Z" />
+    </Item>
+    <Item ItemId=";ProductVersion" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text" DevLk="true">
+        <Val><![CDATA[3.0.0-preview]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+      <Modified By="LucianoAP" DateTime="2012-02-22T15:24:55Z" />
+    </Item>
+  </Item>
+  <Item ItemId=";Version" ItemType="8" PsrId="211" Leaf="true">
+    <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" />
+    <Modified By="LucianoAP" DateTime="2012-02-22T15:24:55Z" />
+  </Item>
+</LCX>

@@ -1,0 +1,483 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<LCX SchemaVersion="6.0" Name="C:\BuildAgent\work\38c6c22cbc43fc2d\Tooling\bin\Release\NuGetTools\12\NuGet.VsEvents.dll" PsrId="211" FileType="1" SrcCul="en-US" TgtCul="zh-TW" xmlns="http://schemas.microsoft.com/locstudio/2006/6/lcx">
+  <Props>
+    <Str Name="CustomName1" Val="Custom 1" />
+    <Str Name="CustomName2" Val="Custom 2" />
+    <Str Name="CustomName3" Val="Custom 3" />
+    <Str Name="CustomName4" Val="Custom 4" />
+    <Str Name="CustomName5" Val="Custom 5" />
+    <Str Name="CustomName6" Val="IQA" />
+  </Props>
+  <OwnedComments>
+    <Cmt Name="Dev" />
+    <Cmt Name="LcxAdmin" />
+    <Cmt Name="Note" />
+    <Cmt Name="Rccx" />
+  </OwnedComments>
+  <Settings Name="@vsLocTools@\default.lss" Type="Lss" />
+  <Item ItemId=";Managed Resources" ItemType="0" PsrId="211" Leaf="true">
+    <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" />
+    <Modified By="P033" DateTime="2013-07-09T04:16:20Z" />
+  </Item>
+  <Item ItemId=";NuGet.VsEvents.Resources.resources" ItemType="0" PsrId="211" Leaf="false">
+    <Disp Icon="Str" Expand="true" Disp="true" LocTbl="false" Path=" \ ;Managed Resources \ 0 \ 0" />
+    <Modified By="P033" DateTime="2013-07-09T04:16:20Z" />
+    <Item ItemId=";Strings" ItemType="0" PsrId="211" Leaf="false">
+      <Disp Icon="Str" LocTbl="false" />
+      <Modified By="P033" DateTime="2013-07-09T04:16:20Z" />
+      <Item ItemId=";ErrorOccurredRestoringPackages" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Error occurred while restoring NuGet packages: {0}]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[還原 NuGet 套件時發生錯誤: {0}。]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Error occurred while restoring NuGet packages: {0}.]]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="P033" DateTime="2013-12-27T04:15:16Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="NuGet"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom1" Val="MVC_3_1_HO2" />
+        </Props>
+      </Item>
+      <Item ItemId=";NothingToRestore" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[All packages are already installed and there is nothing to restore.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[所有套件均已安裝且無需還原。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Marian" DateTime="2013-07-28T03:13:16Z" />
+        <Props>
+          <Str Name="Custom1" Val="MVC_HO3c" />
+        </Props>
+      </Item>
+      <Item ItemId=";PackageNotRestoredBecauseOfNoConsent" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[One or more NuGet packages need to be restored but couldn't be because consent has not been granted. To give consent, open the Visual Studio Options dialog, click on the Package Manager node and check 'Allow NuGet to download missing packages during build.' You can also give consent by setting the environment variable 'EnableNuGetPackageRestore' to 'true'. ]A;]A;Missing packages: {0}]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[一或多個 NuGet 套件需要還原，但因為並未同意而無法進行。若要同意，請開啟 Visual Studio 選項對話，按一下 [套件管理員]5D; 節點並勾選 [允許 NuGet 在建置時下載缺少的套件]5D;。您也可以設定環境變數 'EnableNuGetPackageRestore' 為 'true' 表示同意。]A;]A;缺少的套件: {0}]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Error: NuGet package {0} needs to be restored but couldn't be because consent has not been granted.]]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Marian" DateTime="2013-07-28T03:13:16Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="NuGet"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom1" Val="MVC_HO3c" />
+        </Props>
+      </Item>
+      <Item ItemId=";PackageRestoreCanceled" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[NuGet package restore canceled.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[NuGet 套件還原已取消。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Marian" DateTime="2013-07-28T03:13:16Z" />
+        <Props>
+          <Str Name="Custom1" Val="MVC_HO3c" />
+        </Props>
+      </Item>
+      <Item ItemId=";PackageRestoreFailedForProject" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[NuGet Package restore failed for project {0}: {1}.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[專案 {0} 的 NuGet 套件還原失敗: {1}。]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[NuGet Package restore failed for project {0}: {1}]]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Marian" DateTime="2013-07-28T03:13:16Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="NuGet"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom1" Val="MVC_HO3c" />
+        </Props>
+      </Item>
+      <Item ItemId=";PackageRestoreFailedForSolution" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[NuGet Package restore failed for solution {0}: {1}.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[解決方案 {0} 的 NuGet 套件還原失敗: {1}。]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[NuGet Package restore failed for solution {0}: {1}]]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Marian" DateTime="2013-07-28T03:13:16Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="NuGet"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom1" Val="MVC_HO3c" />
+        </Props>
+      </Item>
+      <Item ItemId=";PackageRestoreFinished" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[NuGet package restore finished.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[NuGet 套件還原已完成。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="P033" DateTime="2013-07-11T07:16:32Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="NuGet"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom1" Val="MVC_HO3" />
+        </Props>
+      </Item>
+      <Item ItemId=";PackageRestoreFinishedForProject" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[NuGet Package restored finished for project {0}.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[專案 {0} 的 NuGet 套件還原已完成。]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[NuGet Package restored finished for project {0}]]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Marian" DateTime="2013-07-28T03:13:16Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="NuGet"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom1" Val="MVC_HO3c" />
+        </Props>
+      </Item>
+      <Item ItemId=";PackageRestoreFinishedForSolution" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[NuGet Package restored finished for solution {0}.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[解決方案 {0} 的 NuGet 套件還原已完成。]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[NuGet Package restored finished for solution {0}]]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Marian" DateTime="2013-07-28T03:13:16Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="NuGet"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom1" Val="MVC_HO3c" />
+        </Props>
+      </Item>
+      <Item ItemId=";PackageRestoreFinishedWithError" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[NuGet package restore failed.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[NuGet 套件還原失敗。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="P033" DateTime="2013-08-15T06:43:34Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="NuGet"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom1" Val="MVC_HO4" />
+        </Props>
+      </Item>
+      <Item ItemId=";PackageRestoreOptOutMessage" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Restoring NuGet packages...]A;To prevent NuGet from restoring packages during build, open the Visual Studio Options dialog, click on the Package Manager node and uncheck 'Allow NuGet to download missing packages during build.']]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[正在還原 NuGet 套件...]A;若要防止 NuGet 在建置時還原套件，請開啟 Visual Studio 選項對話，按一下 [套件管理員]5D; 節點並取消勾選 [允許 NuGet 在建置期間下載缺少的套件]5D;。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Marian" DateTime="2013-07-28T03:13:16Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="NuGet"} {Locked="Visual Studio"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom1" Val="MVC_HO3c" />
+        </Props>
+      </Item>
+      <Item ItemId=";PackageRestoreStarted" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[NuGet package restore started.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[NuGet 套件還原已啟動。]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[NuGet package restore started]]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Marian" DateTime="2013-07-28T03:13:16Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="NuGet"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom1" Val="MVC_HO3c" />
+        </Props>
+      </Item>
+      <Item ItemId=";PackageRestored" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[NuGet Package {0} is restored.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[已還原 NuGet 套件 {0}。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="P033" DateTime="2013-07-11T07:16:32Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="NuGet"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom1" Val="MVC_HO3" />
+        </Props>
+      </Item>
+      <Item ItemId=";ProjectUpgradeAndRetargetErrorMessage" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Some NuGet packages were installed using a target framework different from the current target framework and may need to be reinstalled. Visit http://docs.nuget.org/docs/workflows/reinstalling-packages for more information.  Packages affected: {0}]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[有部分 NuGet 套件是使用與目前的目標架構不同的目標架構而安裝的，可能需要重新安裝。如需詳細資訊，請瀏覽 http://docs.nuget.org/docs/workflows/reinstalling-packages。受影響的套件: {0}]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Some NuGet packages were installed using a target framework different from the current target framework and may need to be reinstalled. For more information, visit http://docs.nuget.org/docs/workflows/reinstalling-packages.  Packages affected: {0}]]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="P033" DateTime="2014-12-25T07:03:11Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="NuGet", "http://docs.nuget.org/docs/workflows/reinstalling-packages"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom1" Val="11_WSR" />
+          <Str Name="Custom2" Val="LQA_141222" />
+        </Props>
+      </Item>
+      <Item ItemId=";RestoringPackage" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Restoring NuGet package {0}.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[還原 NuGet 套件 {0}。]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Restoring NuGet package {0}]]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Marian" DateTime="2013-07-28T03:13:16Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="NuGet"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom1" Val="MVC_HO3c" />
+        </Props>
+      </Item>
+      <Item ItemId=";RestoringPackages" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Restoring NuGet packages...]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[正在還原 NuGet 套件...]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="P033" DateTime="2013-07-11T07:16:32Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="NuGet"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom1" Val="MVC_HO3" />
+        </Props>
+      </Item>
+      <Item ItemId=";RestoringPackagesForProject" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Restoring NuGet packages for project {0}.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[正在還原專案 {0} 的 NuGet 套件。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Marian" DateTime="2013-07-28T03:13:16Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="NuGet"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom1" Val="MVC_HO3c" />
+        </Props>
+      </Item>
+      <Item ItemId=";RestoringPackagesForSolution" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Restoring NuGet packages for solution {0}.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[正在還原方案 {0} 的 NuGet 套件。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Marian" DateTime="2013-07-28T03:13:16Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="NuGet"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom1" Val="MVC_HO3c" />
+        </Props>
+      </Item>
+      <Item ItemId=";RestoringPackagesListedInFile" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Restoring NuGet packages listed in file {0}.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[正在還原列於檔案 {0} 的 NuGet 套件。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Marian" DateTime="2013-07-28T03:13:16Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="NuGet"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom1" Val="MVC_HO3c" />
+        </Props>
+      </Item>
+      <Item ItemId=";SkippingInstalledPackage" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Skipping NuGet package {0} since it is already installed.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[正在略過 NuGet 套件 {0} 因為已安裝。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Marian" DateTime="2013-07-28T03:13:16Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="NuGet"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom1" Val="MVC_HO3c" />
+        </Props>
+      </Item>
+    </Item>
+  </Item>
+  <Item ItemId=";Version" ItemType="0" PsrId="211" Leaf="false">
+    <Disp Icon="Ver" Disp="true" LocTbl="false" Path=" \ ;Version \ 8 \ 0" />
+    <Modified By="P033" DateTime="2013-07-09T04:16:20Z" />
+    <Item ItemId=";AssemblyVersion" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text" DevLk="true">
+        <Val><![CDATA[3.0.51216.259]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+      <Modified By="P033" DateTime="2013-07-09T04:16:20Z" />
+    </Item>
+    <Item ItemId=";Comments" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text">
+        <Val><![CDATA[NuGet Visual Studio Events Package]]></Val>
+        <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+          <Val><![CDATA[NuGet Visual Studio 事件套件]]></Val>
+        </Tgt>
+      </Str>
+      <Disp Icon="Str" />
+      <Modified By="P033" DateTime="2013-07-11T07:16:32Z" />
+      <Props>
+        <Str Name="Custom1" Val="MVC_HO3" />
+      </Props>
+    </Item>
+    <Item ItemId=";CompanyName" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text">
+        <Val><![CDATA[Microsoft Corporation]]></Val>
+        <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+          <Val><![CDATA[Microsoft Corporation]]></Val>
+        </Tgt>
+      </Str>
+      <Disp Icon="Str" />
+      <Modified By="P033" DateTime="2013-07-11T07:16:32Z" />
+      <Props>
+        <Str Name="Custom1" Val="MVC_HO3" />
+      </Props>
+    </Item>
+    <Item ItemId=";FileDescription" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text">
+        <Val><![CDATA[NuGetVSEvents]]></Val>
+        <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+          <Val><![CDATA[NuGetVSEvents]]></Val>
+        </Tgt>
+      </Str>
+      <Disp Icon="Str" />
+      <Modified By="P033" DateTime="2013-07-11T07:16:32Z" />
+      <Props>
+        <Str Name="Custom1" Val="MVC_HO3" />
+      </Props>
+    </Item>
+    <Item ItemId=";FileVersion" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text" DevLk="true">
+        <Val><![CDATA[3.0.51216.259]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+      <Modified By="P033" DateTime="2013-07-09T04:16:20Z" />
+    </Item>
+    <Item ItemId=";InternalName" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text" DevLk="true">
+        <Val><![CDATA[NuGet.VsEvents.dll]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+      <Modified By="P033" DateTime="2013-07-09T04:16:20Z" />
+    </Item>
+    <Item ItemId=";LegalCopyright" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text">
+        <Val><![CDATA[Copyright 2013 Microsoft. NuGet is made possible by the Outercurve Foundation's open source project.]]></Val>
+        <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+          <Val><![CDATA[Copyright 2013 Microsoft. NuGet 由 Outercurve Foundation 的開放原始碼計劃所支援。]]></Val>
+        </Tgt>
+        <Prev Cat="Text">
+          <Val><![CDATA[Copyright 2013 Microsoft. NuGet is made possible by the Microsoft Corporation's open source project.]]></Val>
+        </Prev>
+      </Str>
+      <Disp Icon="Str" />
+      <Modified By="P033" DateTime="2013-12-27T04:15:16Z" />
+      <Props>
+        <Str Name="Custom1" Val="MVC_3_1_HO2" />
+      </Props>
+    </Item>
+    <Item ItemId=";OriginalFilename" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text" DevLk="true">
+        <Val><![CDATA[NuGet.VsEvents.dll]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+      <Modified By="P033" DateTime="2013-07-09T04:16:20Z" />
+    </Item>
+    <Item ItemId=";ProductName" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text">
+        <Val><![CDATA[NuGet]]></Val>
+        <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+          <Val><![CDATA[NuGet]]></Val>
+        </Tgt>
+      </Str>
+      <Disp Icon="Str" />
+      <Modified By="P033" DateTime="2013-07-11T07:16:32Z" />
+      <Props>
+        <Str Name="Custom1" Val="MVC_HO3" />
+      </Props>
+    </Item>
+    <Item ItemId=";ProductVersion" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text" DevLk="true">
+        <Val><![CDATA[3.0.0-preview]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+      <Modified By="P033" DateTime="2013-07-09T04:16:20Z" />
+    </Item>
+  </Item>
+  <Item ItemId=";Version" ItemType="8" PsrId="211" Leaf="true">
+    <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" />
+    <Modified By="P033" DateTime="2013-07-09T04:16:20Z" />
+  </Item>
+</LCX>

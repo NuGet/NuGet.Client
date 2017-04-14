@@ -18,11 +18,13 @@
   <!-- All projects in the repository -->
   <ItemGroup> 
       <SolutionProjects Include="$(RepositoryRootDirectory)src\*\*\*.csproj" />
+      <SolutionProjectsWithoutVSIX Include="@(SolutionProjects)"
+                                Exclude="$(VSIXProject)" />
   </ItemGroup>
 
-  <Target Name="AfterBuild">
+  <Target Name="BatchSign">
     <MSBuild
-      Projects="@(SolutionProjects)"
+      Projects="@(SolutionProjectsWithoutVSIX)"
       Targets="GetSigningInputs">
 
       <Output
@@ -30,6 +32,23 @@
           ItemName="FilesToSign" />
     </MSBuild>
     <Message Text="Files to sign ----- @(FilesToSign)" Importance="High"/>
-  </Target>  
+  </Target>
+
+  <Target Name="BatchLocalize" Condition="'$(BuildRTM)' != 'true'">
+    <MSBuild
+      Projects="$(VsixProject)"
+      Targets="GetAssembliesInVsix">
+
+      <Output
+          TaskParameter="TargetOutputs"
+          ItemName="VsixAssemblies" />
+    </MSBuild>
+    <ItemGroup>
+      <FilesToLocalize Include="@(VsixAssemblies->Distinct())"/>
+    </ItemGroup>
+    <!-- Message Text="Files to localize : @(FilesToLocalize)" Importance="High"/ -->
+  </Target>
+
+  <Target Name="AfterBuild" DependsOnTargets="BatchSign"/>
   <Import Project="$(SolutionPackagesFolder)microbuild.core.0.2.0\build\MicroBuild.Core.targets" />
 </Project>

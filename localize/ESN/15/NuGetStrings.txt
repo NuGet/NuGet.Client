@@ -1,0 +1,12 @@
+﻿Proporcione las credenciales del proxy:
+
+Proporcione las credenciales para: {0}
+
+Contraseña: 
+
+Nombre de usuario: 
+
+Todos los paquetes que figuran en {0} ya están instados.
+
+De manera predeterminada, restauración de paquetes está deshabilitada. Para dar su consentimiento, abra el cuadro de diálogo Opciones de Visual Studio, haga clic en el nodo Administrador de paquetes y active la opción para permitir que NuGet descargue los paquetes faltantes durante la compilación. También puede dar su consentimiento al establecer la variable de entorno 'EnableNuGetPackageRestore' en 'true'.
+    

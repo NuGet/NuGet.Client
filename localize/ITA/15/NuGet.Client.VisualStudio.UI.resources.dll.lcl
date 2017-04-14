@@ -1,0 +1,1726 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<LCX SchemaVersion="6.0" Name="C:\BuildAgent\work\fea8ec2fb9b8541c\NuGet\bin\Release\NuGetTools\14\NuGet.Client.VisualStudio.UI.dll" PsrId="211" FileType="1" SrcCul="en-US" TgtCul="it-IT" xmlns="http://schemas.microsoft.com/locstudio/2006/6/lcx">
+  <OwnedComments>
+    <Cmt Name="Dev" />
+    <Cmt Name="LcxAdmin" />
+    <Cmt Name="Rccx" />
+  </OwnedComments>
+  <Settings Name="@vsLocTools@\default.lss" Type="Lss" />
+  <Item ItemId=";Managed Resources" ItemType="0" PsrId="211" Leaf="true">
+    <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" />
+  </Item>
+  <Item ItemId=";NuGet.Client.VisualStudio.UI.Resources.Resources.resources" ItemType="0" PsrId="211" Leaf="false">
+    <Disp Icon="Str" Expand="true" Disp="true" LocTbl="false" Path=" \ ;Managed Resources \ 0 \ 0" />
+    <Item ItemId=";Strings" ItemType="0" PsrId="211" Leaf="false">
+      <Disp Icon="Str" LocTbl="false" />
+      <Item ItemId=";Action_Consolidate" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Consolidate]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[Consolida]]></Val>
+            <Props>
+              <Str Name="TranslationModifiedBy" Val="FEDERICA" />
+              <Date Name="TranslationModifiedDate" Val="2015-01-06T15:14:59.4200255Z" />
+            </Props>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="FEDERICA" DateTime="2015-01-06T15:15:16.000005Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+          <Str Name="TranslationStatus" Val="In Sync" />
+          <Str Name="TranslationStatusPosition" Val="3 - ReadyForReview" />
+        </Props>
+      </Item>
+      <Item ItemId=";Action_Install" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Install]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[Installa]]></Val>
+            <Props>
+              <Str Name="TranslationModifiedBy" Val="FEDERICA" />
+              <Date Name="TranslationModifiedDate" Val="2015-01-06T15:14:59.4200255Z" />
+            </Props>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="FEDERICA" DateTime="2015-01-06T15:15:16.000005Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+          <Str Name="TranslationStatus" Val="In Sync" />
+          <Str Name="TranslationStatusPosition" Val="3 - ReadyForReview" />
+        </Props>
+      </Item>
+      <Item ItemId=";Action_Uninstall" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Uninstall]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[Disinstalla]]></Val>
+            <Props>
+              <Str Name="TranslationModifiedBy" Val="FEDERICA" />
+              <Date Name="TranslationModifiedDate" Val="2015-01-06T15:14:59.4210256Z" />
+            </Props>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="FEDERICA" DateTime="2015-01-06T15:15:16.000005Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+          <Str Name="TranslationStatus" Val="In Sync" />
+          <Str Name="TranslationStatusPosition" Val="3 - ReadyForReview" />
+        </Props>
+      </Item>
+      <Item ItemId=";Action_Update" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Update]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[Aggiorna]]></Val>
+            <Props>
+              <Str Name="TranslationModifiedBy" Val="FEDERICA" />
+              <Date Name="TranslationModifiedDate" Val="2015-01-06T15:14:59.4200255Z" />
+            </Props>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="FEDERICA" DateTime="2015-01-06T15:15:16.000005Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+          <Str Name="TranslationStatus" Val="In Sync" />
+          <Str Name="TranslationStatusPosition" Val="3 - ReadyForReview" />
+        </Props>
+      </Item>
+      <Item ItemId=";Button_Cancel" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Cancel]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[Annulla]]></Val>
+            <Props>
+              <Str Name="TranslationModifiedBy" Val="FEDERICA" />
+              <Date Name="TranslationModifiedDate" Val="2015-01-06T15:14:59.4200255Z" />
+            </Props>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="FEDERICA" DateTime="2015-01-06T15:15:16.000005Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+          <Str Name="TranslationStatus" Val="In Sync" />
+          <Str Name="TranslationStatusPosition" Val="3 - ReadyForReview" />
+        </Props>
+      </Item>
+      <Item ItemId=";Button_IAccept" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[I Accept]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[Accetto]]></Val>
+            <Props>
+              <Str Name="TranslationModifiedBy" Val="FEDERICA" />
+              <Date Name="TranslationModifiedDate" Val="2015-01-06T15:14:59.4190254Z" />
+            </Props>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="FEDERICA" DateTime="2015-01-06T15:15:16.000005Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+          <Str Name="TranslationStatus" Val="In Sync" />
+          <Str Name="TranslationStatusPosition" Val="3 - ReadyForReview" />
+        </Props>
+      </Item>
+      <Item ItemId=";Button_IDecline" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[I Decline]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[Rifiuto]]></Val>
+            <Props>
+              <Str Name="TranslationModifiedBy" Val="FEDERICA" />
+              <Date Name="TranslationModifiedDate" Val="2015-01-06T15:14:59.4190254Z" />
+            </Props>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="FEDERICA" DateTime="2015-01-06T15:15:16.000005Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+          <Str Name="TranslationStatus" Val="In Sync" />
+          <Str Name="TranslationStatusPosition" Val="3 - ReadyForReview" />
+        </Props>
+      </Item>
+      <Item ItemId=";Button_No" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[No]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[No]]></Val>
+            <Props>
+              <Str Name="TranslationModifiedBy" Val="FEDERICA" />
+              <Date Name="TranslationModifiedDate" Val="2015-01-06T15:14:59.4200255Z" />
+            </Props>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="FEDERICA" DateTime="2015-01-06T15:15:16.000005Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+          <Str Name="TranslationStatus" Val="In Sync" />
+          <Str Name="TranslationStatusPosition" Val="3 - ReadyForReview" />
+        </Props>
+      </Item>
+      <Item ItemId=";Button_NoToAll" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[No to All]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[No per tutti]]></Val>
+            <Props>
+              <Str Name="TranslationModifiedBy" Val="FEDERICA" />
+              <Date Name="TranslationModifiedDate" Val="2015-01-06T15:14:59.4200255Z" />
+            </Props>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="FEDERICA" DateTime="2015-01-06T15:15:16.000005Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+          <Str Name="TranslationStatus" Val="In Sync" />
+          <Str Name="TranslationStatusPosition" Val="3 - ReadyForReview" />
+        </Props>
+      </Item>
+      <Item ItemId=";Button_OK" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[OK]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[OK]]></Val>
+            <Props>
+              <Str Name="TranslationModifiedBy" Val="FEDERICA" />
+              <Date Name="TranslationModifiedDate" Val="2015-01-06T15:14:59.4220256Z" />
+            </Props>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="FEDERICA" DateTime="2015-01-06T15:15:16.000005Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+          <Str Name="TranslationStatus" Val="In Sync" />
+          <Str Name="TranslationStatusPosition" Val="3 - ReadyForReview" />
+        </Props>
+      </Item>
+      <Item ItemId=";Button_Preview" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Preview]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[Anteprima]]></Val>
+            <Props>
+              <Str Name="TranslationModifiedBy" Val="FEDERICA" />
+              <Date Name="TranslationModifiedDate" Val="2015-01-06T15:14:59.4210256Z" />
+            </Props>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="FEDERICA" DateTime="2015-01-06T15:15:16.000005Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+          <Str Name="TranslationStatus" Val="In Sync" />
+          <Str Name="TranslationStatusPosition" Val="3 - ReadyForReview" />
+        </Props>
+      </Item>
+      <Item ItemId=";Button_Retry" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Error occurred. Retry]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[Si è verificato un errore. Riprovare]]></Val>
+            <Props>
+              <Str Name="TranslationModifiedBy" Val="FEDERICA" />
+              <Date Name="TranslationModifiedDate" Val="2015-01-06T15:14:59.4220256Z" />
+            </Props>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="FEDERICA" DateTime="2015-01-06T15:15:16.000005Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+          <Str Name="TranslationStatus" Val="In Sync" />
+          <Str Name="TranslationStatusPosition" Val="3 - ReadyForReview" />
+        </Props>
+      </Item>
+      <Item ItemId=";Button_Yes" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Yes]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[Sì]]></Val>
+            <Props>
+              <Str Name="TranslationModifiedBy" Val="FEDERICA" />
+              <Date Name="TranslationModifiedDate" Val="2015-01-06T15:14:59.4220256Z" />
+            </Props>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="FEDERICA" DateTime="2015-01-06T15:15:16.000005Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+          <Str Name="TranslationStatus" Val="In Sync" />
+          <Str Name="TranslationStatusPosition" Val="3 - ReadyForReview" />
+        </Props>
+      </Item>
+      <Item ItemId=";Button_YesToAll" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Yes to All]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[Sì per tutti]]></Val>
+            <Props>
+              <Str Name="TranslationModifiedBy" Val="FEDERICA" />
+              <Date Name="TranslationModifiedDate" Val="2015-01-06T15:14:59.4210256Z" />
+            </Props>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="FEDERICA" DateTime="2015-01-06T15:15:16.000005Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+          <Str Name="TranslationStatus" Val="In Sync" />
+          <Str Name="TranslationStatusPosition" Val="3 - ReadyForReview" />
+        </Props>
+      </Item>
+      <Item ItemId=";Checkbox_ForceRemove" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Force uninstall, even if there are dependencies on it]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[Forza la disinstallazione, anche se sono presenti dipendenze]]></Val>
+            <Props>
+              <Str Name="TranslationModifiedBy" Val="FEDERICA" />
+              <Date Name="TranslationModifiedDate" Val="2015-01-06T15:14:59.4210256Z" />
+            </Props>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="FEDERICA" DateTime="2015-01-06T15:15:16.000005Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+          <Str Name="TranslationStatus" Val="In Sync" />
+          <Str Name="TranslationStatusPosition" Val="3 - ReadyForReview" />
+        </Props>
+      </Item>
+      <Item ItemId=";Checkbox_IncludePrerelease" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Include Prerelease]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[Includi versione preliminare]]></Val>
+            <Props>
+              <Str Name="TranslationModifiedBy" Val="FEDERICA" />
+              <Date Name="TranslationModifiedDate" Val="2015-01-06T15:14:59.4210256Z" />
+            </Props>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="FEDERICA" DateTime="2015-01-06T15:15:16.000005Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+          <Str Name="TranslationStatus" Val="In Sync" />
+          <Str Name="TranslationStatusPosition" Val="3 - ReadyForReview" />
+        </Props>
+      </Item>
+      <Item ItemId=";Checkbox_RemoveDependencies" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Remove dependencies]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[Rimuovi dipendenze]]></Val>
+            <Props>
+              <Str Name="TranslationModifiedBy" Val="FEDERICA" />
+              <Date Name="TranslationModifiedDate" Val="2015-01-06T15:14:59.4210256Z" />
+            </Props>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="FEDERICA" DateTime="2015-01-06T15:15:16.000005Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+          <Str Name="TranslationStatus" Val="In Sync" />
+          <Str Name="TranslationStatusPosition" Val="3 - ReadyForReview" />
+        </Props>
+      </Item>
+      <Item ItemId=";Checkbox_ShowPreviewWindow" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Show preview window]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[Mostra finestra di anteprima]]></Val>
+            <Props>
+              <Str Name="TranslationModifiedBy" Val="FEDERICA" />
+              <Date Name="TranslationModifiedDate" Val="2015-01-06T15:14:59.4210256Z" />
+            </Props>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="FEDERICA" DateTime="2015-01-06T15:15:16.000005Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+          <Str Name="TranslationStatus" Val="In Sync" />
+          <Str Name="TranslationStatusPosition" Val="3 - ReadyForReview" />
+        </Props>
+      </Item>
+      <Item ItemId=";DependencyBehavior_Highest" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Highest]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[Più elevata]]></Val>
+            <Props>
+              <Str Name="TranslationModifiedBy" Val="FEDERICA" />
+              <Date Name="TranslationModifiedDate" Val="2015-01-06T15:14:59.4180254Z" />
+            </Props>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="FEDERICA" DateTime="2015-01-06T15:15:16.000005Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+          <Str Name="TranslationStatus" Val="In Sync" />
+          <Str Name="TranslationStatusPosition" Val="3 - ReadyForReview" />
+        </Props>
+      </Item>
+      <Item ItemId=";DependencyBehavior_HighestMinor" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Highest Minor]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[Secondaria più elevata]]></Val>
+            <Props>
+              <Str Name="TranslationModifiedBy" Val="FEDERICA" />
+              <Date Name="TranslationModifiedDate" Val="2015-01-06T15:14:59.4170253Z" />
+            </Props>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="FEDERICA" DateTime="2015-01-06T15:15:16.000005Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+          <Str Name="TranslationStatus" Val="In Sync" />
+          <Str Name="TranslationStatusPosition" Val="3 - ReadyForReview" />
+        </Props>
+      </Item>
+      <Item ItemId=";DependencyBehavior_HighestPatch" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Highest Patch]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[Patch più elevata]]></Val>
+            <Props>
+              <Str Name="TranslationModifiedBy" Val="FEDERICA" />
+              <Date Name="TranslationModifiedDate" Val="2015-01-06T15:14:59.4180254Z" />
+            </Props>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="FEDERICA" DateTime="2015-01-06T15:15:16.000005Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+          <Str Name="TranslationStatus" Val="In Sync" />
+          <Str Name="TranslationStatusPosition" Val="3 - ReadyForReview" />
+        </Props>
+      </Item>
+      <Item ItemId=";DependencyBehavior_IgnoreDependencies" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Ignore Dependencies]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[Ignora dipendenze]]></Val>
+            <Props>
+              <Str Name="TranslationModifiedBy" Val="FEDERICA" />
+              <Date Name="TranslationModifiedDate" Val="2015-01-06T15:14:59.4180254Z" />
+            </Props>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="FEDERICA" DateTime="2015-01-06T15:15:16.000005Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+          <Str Name="TranslationStatus" Val="In Sync" />
+          <Str Name="TranslationStatusPosition" Val="3 - ReadyForReview" />
+        </Props>
+      </Item>
+      <Item ItemId=";DependencyBehavior_Lowest" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Lowest]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[Più bassa]]></Val>
+            <Props>
+              <Str Name="TranslationModifiedBy" Val="FEDERICA" />
+              <Date Name="TranslationModifiedDate" Val="2015-01-06T15:14:59.4170253Z" />
+            </Props>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="FEDERICA" DateTime="2015-01-06T15:15:16.000005Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+          <Str Name="TranslationStatus" Val="In Sync" />
+          <Str Name="TranslationStatusPosition" Val="3 - ReadyForReview" />
+        </Props>
+      </Item>
+      <Item ItemId=";Error_NoActiveRepository" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[No repository is selected]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[Il repository non è stato selezionato]]></Val>
+            <Props>
+              <Str Name="TranslationModifiedBy" Val="FEDERICA" />
+              <Date Name="TranslationModifiedDate" Val="2015-01-06T15:14:59.4170253Z" />
+            </Props>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="FEDERICA" DateTime="2015-01-06T15:15:16.000005Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+          <Str Name="TranslationStatus" Val="In Sync" />
+          <Str Name="TranslationStatusPosition" Val="3 - ReadyForReview" />
+        </Props>
+      </Item>
+      <Item ItemId=";FileConflictAction_IgnoreAll" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Ignore All]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[Ignora tutto]]></Val>
+            <Props>
+              <Str Name="TranslationModifiedBy" Val="FEDERICA" />
+              <Date Name="TranslationModifiedDate" Val="2015-01-06T15:14:59.4170253Z" />
+            </Props>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="FEDERICA" DateTime="2015-01-06T15:15:16.000005Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+          <Str Name="TranslationStatus" Val="In Sync" />
+          <Str Name="TranslationStatusPosition" Val="3 - ReadyForReview" />
+        </Props>
+      </Item>
+      <Item ItemId=";FileConflictAction_OverwriteAll" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Overwrite All]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[Sovrascrivi tutto]]></Val>
+            <Props>
+              <Str Name="TranslationModifiedBy" Val="FEDERICA" />
+              <Date Name="TranslationModifiedDate" Val="2015-01-06T15:14:59.4170253Z" />
+            </Props>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="FEDERICA" DateTime="2015-01-06T15:15:16.000005Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+          <Str Name="TranslationStatus" Val="In Sync" />
+          <Str Name="TranslationStatusPosition" Val="3 - ReadyForReview" />
+        </Props>
+      </Item>
+      <Item ItemId=";FileConflictAction_Prompt" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Prompt]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[Richiedi]]></Val>
+            <Props>
+              <Str Name="TranslationModifiedBy" Val="FEDERICA" />
+              <Date Name="TranslationModifiedDate" Val="2015-01-06T15:14:59.4170253Z" />
+            </Props>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="FEDERICA" DateTime="2015-01-06T15:15:16.000005Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+          <Str Name="TranslationStatus" Val="In Sync" />
+          <Str Name="TranslationStatusPosition" Val="3 - ReadyForReview" />
+        </Props>
+      </Item>
+      <Item ItemId=";Filter_All" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[All]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[Tutti]]></Val>
+            <Props>
+              <Str Name="TranslationModifiedBy" Val="FEDERICA" />
+              <Date Name="TranslationModifiedDate" Val="2015-01-06T15:14:59.4190254Z" />
+            </Props>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="FEDERICA" DateTime="2015-01-06T15:15:16.000005Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+          <Str Name="TranslationStatus" Val="In Sync" />
+          <Str Name="TranslationStatusPosition" Val="3 - ReadyForReview" />
+        </Props>
+      </Item>
+      <Item ItemId=";Filter_Installed" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Installed]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[Installato]]></Val>
+            <Props>
+              <Str Name="TranslationModifiedBy" Val="FEDERICA" />
+              <Date Name="TranslationModifiedDate" Val="2015-01-06T15:14:59.4190254Z" />
+            </Props>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="FEDERICA" DateTime="2015-01-06T15:15:16.000005Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+          <Str Name="TranslationStatus" Val="In Sync" />
+          <Str Name="TranslationStatusPosition" Val="3 - ReadyForReview" />
+        </Props>
+      </Item>
+      <Item ItemId=";Filter_UpdateAvailable" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Update available]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[Aggiornamento disponibile]]></Val>
+            <Props>
+              <Str Name="TranslationModifiedBy" Val="FEDERICA" />
+              <Date Name="TranslationModifiedDate" Val="2015-01-06T15:14:59.4190254Z" />
+            </Props>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="FEDERICA" DateTime="2015-01-06T15:15:16.000005Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+          <Str Name="TranslationStatus" Val="In Sync" />
+          <Str Name="TranslationStatusPosition" Val="3 - ReadyForReview" />
+        </Props>
+      </Item>
+      <Item ItemId=";Label_Action" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Action:]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[Azione:]]></Val>
+            <Props>
+              <Str Name="TranslationModifiedBy" Val="FEDERICA" />
+              <Date Name="TranslationModifiedDate" Val="2015-01-06T15:14:59.4190254Z" />
+            </Props>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="FEDERICA" DateTime="2015-01-06T15:15:16.000005Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+          <Str Name="TranslationStatus" Val="In Sync" />
+          <Str Name="TranslationStatusPosition" Val="3 - ReadyForReview" />
+        </Props>
+      </Item>
+      <Item ItemId=";Label_Authors" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Author(s):]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[Autore/i:]]></Val>
+            <Props>
+              <Str Name="TranslationModifiedBy" Val="FEDERICA" />
+              <Date Name="TranslationModifiedDate" Val="2015-01-06T15:14:59.4190254Z" />
+            </Props>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="FEDERICA" DateTime="2015-01-06T15:15:16.000005Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+          <Str Name="TranslationStatus" Val="In Sync" />
+          <Str Name="TranslationStatusPosition" Val="3 - ReadyForReview" />
+        </Props>
+      </Item>
+      <Item ItemId=";Label_DatePublished" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Date Published:]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[Data di pubblicazione:]]></Val>
+            <Props>
+              <Str Name="TranslationModifiedBy" Val="FEDERICA" />
+              <Date Name="TranslationModifiedDate" Val="2015-01-06T15:14:59.4180254Z" />
+            </Props>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="FEDERICA" DateTime="2015-01-06T15:15:16.000005Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+          <Str Name="TranslationStatus" Val="In Sync" />
+          <Str Name="TranslationStatusPosition" Val="3 - ReadyForReview" />
+        </Props>
+      </Item>
+      <Item ItemId=";Label_Dependencies" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Dependencies]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[Dipendenze]]></Val>
+            <Props>
+              <Str Name="TranslationModifiedBy" Val="FEDERICA" />
+              <Date Name="TranslationModifiedDate" Val="2015-01-06T15:14:59.4180254Z" />
+            </Props>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="FEDERICA" DateTime="2015-01-06T15:15:16.000005Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+          <Str Name="TranslationStatus" Val="In Sync" />
+          <Str Name="TranslationStatusPosition" Val="3 - ReadyForReview" />
+        </Props>
+      </Item>
+      <Item ItemId=";Label_DependencyBehavior" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Dependency behavior:]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[Comportamento dipendenza:]]></Val>
+            <Props>
+              <Str Name="TranslationModifiedBy" Val="FEDERICA" />
+              <Date Name="TranslationModifiedDate" Val="2015-01-06T15:14:59.4180254Z" />
+            </Props>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="FEDERICA" DateTime="2015-01-06T15:15:16.000005Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+          <Str Name="TranslationStatus" Val="In Sync" />
+          <Str Name="TranslationStatusPosition" Val="3 - ReadyForReview" />
+        </Props>
+      </Item>
+      <Item ItemId=";Label_Description" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Description]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[Descrizione]]></Val>
+            <Props>
+              <Str Name="TranslationModifiedBy" Val="FEDERICA" />
+              <Date Name="TranslationModifiedDate" Val="2015-01-06T15:14:59.4180254Z" />
+            </Props>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="FEDERICA" DateTime="2015-01-06T15:15:16.000005Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+          <Str Name="TranslationStatus" Val="In Sync" />
+          <Str Name="TranslationStatusPosition" Val="3 - ReadyForReview" />
+        </Props>
+      </Item>
+      <Item ItemId=";Label_Downloads" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Downloads:]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[Download:]]></Val>
+            <Props>
+              <Str Name="TranslationModifiedBy" Val="FEDERICA" />
+              <Date Name="TranslationModifiedDate" Val="2015-01-06T15:14:59.4240257Z" />
+            </Props>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="FEDERICA" DateTime="2015-01-06T15:15:16.000005Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+          <Str Name="TranslationStatus" Val="In Sync" />
+          <Str Name="TranslationStatusPosition" Val="3 - ReadyForReview" />
+        </Props>
+      </Item>
+      <Item ItemId=";Label_FileConflictAction" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[File conflict action:]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[Azione per file in conflitto:]]></Val>
+            <Props>
+              <Str Name="TranslationModifiedBy" Val="FEDERICA" />
+              <Date Name="TranslationModifiedDate" Val="2015-01-06T15:14:59.4240257Z" />
+            </Props>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="FEDERICA" DateTime="2015-01-06T15:15:16.000005Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+          <Str Name="TranslationStatus" Val="In Sync" />
+          <Str Name="TranslationStatusPosition" Val="3 - ReadyForReview" />
+        </Props>
+      </Item>
+      <Item ItemId=";Label_Filter" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Filter:]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[Filtro:]]></Val>
+            <Props>
+              <Str Name="TranslationModifiedBy" Val="FEDERICA" />
+              <Date Name="TranslationModifiedDate" Val="2015-01-06T15:14:59.4240257Z" />
+            </Props>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="FEDERICA" DateTime="2015-01-06T15:15:16.000005Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+          <Str Name="TranslationStatus" Val="In Sync" />
+          <Str Name="TranslationStatusPosition" Val="3 - ReadyForReview" />
+        </Props>
+      </Item>
+      <Item ItemId=";Label_InstallationOptions" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Options]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[Opzioni]]></Val>
+            <Props>
+              <Str Name="TranslationModifiedBy" Val="FEDERICA" />
+              <Date Name="TranslationModifiedDate" Val="2015-01-06T15:14:59.4240257Z" />
+            </Props>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="FEDERICA" DateTime="2015-01-06T15:15:16.000005Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+          <Str Name="TranslationStatus" Val="In Sync" />
+          <Str Name="TranslationStatusPosition" Val="3 - ReadyForReview" />
+        </Props>
+      </Item>
+      <Item ItemId=";Label_InstalledPackages" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Installing:]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[Installazione:]]></Val>
+            <Props>
+              <Str Name="TranslationModifiedBy" Val="FEDERICA" />
+              <Date Name="TranslationModifiedDate" Val="2015-01-06T15:14:59.4240257Z" />
+            </Props>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="FEDERICA" DateTime="2015-01-06T15:15:16.000005Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+          <Str Name="TranslationStatus" Val="In Sync" />
+          <Str Name="TranslationStatusPosition" Val="3 - ReadyForReview" />
+        </Props>
+      </Item>
+      <Item ItemId=";Label_LegalDisclaimer" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Legal Disclaimer]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[Dichiarazione di non responsabilità legale]]></Val>
+            <Props>
+              <Str Name="TranslationModifiedBy" Val="FEDERICA" />
+              <Date Name="TranslationModifiedDate" Val="2015-01-06T15:14:59.4240257Z" />
+            </Props>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="FEDERICA" DateTime="2015-01-06T15:15:16.000005Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+          <Str Name="TranslationStatus" Val="In Sync" />
+          <Str Name="TranslationStatusPosition" Val="3 - ReadyForReview" />
+        </Props>
+      </Item>
+      <Item ItemId=";Label_License" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[License:]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[Licenza:]]></Val>
+            <Props>
+              <Str Name="TranslationModifiedBy" Val="FEDERICA" />
+              <Date Name="TranslationModifiedDate" Val="2015-01-06T15:14:59.4240257Z" />
+            </Props>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="FEDERICA" DateTime="2015-01-06T15:15:16.000005Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+          <Str Name="TranslationStatus" Val="In Sync" />
+          <Str Name="TranslationStatusPosition" Val="3 - ReadyForReview" />
+        </Props>
+      </Item>
+      <Item ItemId=";Label_NuGetWindowCaption" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[NuGet: {0}]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[NuGet: {0}]]></Val>
+            <Props>
+              <Str Name="TranslationModifiedBy" Val="FEDERICA" />
+              <Date Name="TranslationModifiedDate" Val="2015-01-06T15:14:59.4240257Z" />
+            </Props>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="FEDERICA" DateTime="2015-01-06T15:15:16.000005Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+          <Str Name="TranslationStatus" Val="In Sync" />
+          <Str Name="TranslationStatusPosition" Val="3 - ReadyForReview" />
+        </Props>
+      </Item>
+      <Item ItemId=";Label_PackageManager" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[NuGet Package Manager: {0}]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[Gestione pacchetti NuGet: {0}]]></Val>
+            <Props>
+              <Str Name="TranslationModifiedBy" Val="FEDERICA" />
+              <Date Name="TranslationModifiedDate" Val="2015-01-06T15:14:59.4240257Z" />
+            </Props>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="FEDERICA" DateTime="2015-01-06T15:15:16.000005Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+          <Str Name="TranslationStatus" Val="In Sync" />
+          <Str Name="TranslationStatusPosition" Val="3 - ReadyForReview" />
+        </Props>
+      </Item>
+      <Item ItemId=";Label_PackagePrerelease" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Prerelease]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[Versione preliminare]]></Val>
+            <Props>
+              <Str Name="TranslationModifiedBy" Val="FEDERICA" />
+              <Date Name="TranslationModifiedDate" Val="2015-01-06T15:14:59.4240257Z" />
+            </Props>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="FEDERICA" DateTime="2015-01-06T15:15:16.000005Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+          <Str Name="TranslationStatus" Val="In Sync" />
+          <Str Name="TranslationStatusPosition" Val="3 - ReadyForReview" />
+        </Props>
+      </Item>
+      <Item ItemId=";Label_ProjectUrl" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Project URL:]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[URL del progetto:]]></Val>
+            <Props>
+              <Str Name="TranslationModifiedBy" Val="FEDERICA" />
+              <Date Name="TranslationModifiedDate" Val="2015-01-06T15:14:59.4240257Z" />
+            </Props>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="FEDERICA" DateTime="2015-01-06T15:15:16.000005Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+          <Str Name="TranslationStatus" Val="In Sync" />
+          <Str Name="TranslationStatusPosition" Val="3 - ReadyForReview" />
+        </Props>
+      </Item>
+      <Item ItemId=";Label_Projects" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Select which projects to apply changes to:]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[Selezionare i progetti a cui applicare le modifiche:]]></Val>
+            <Props>
+              <Str Name="TranslationModifiedBy" Val="FEDERICA" />
+              <Date Name="TranslationModifiedDate" Val="2015-01-06T15:14:59.4240257Z" />
+            </Props>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="FEDERICA" DateTime="2015-01-06T15:15:16.000005Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+          <Str Name="TranslationStatus" Val="In Sync" />
+          <Str Name="TranslationStatusPosition" Val="3 - ReadyForReview" />
+        </Props>
+      </Item>
+      <Item ItemId=";Label_Publishers" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Publisher(s):]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[Pubblicato/i da:]]></Val>
+            <Props>
+              <Str Name="TranslationModifiedBy" Val="FEDERICA" />
+              <Date Name="TranslationModifiedDate" Val="2015-01-06T15:14:59.4240257Z" />
+            </Props>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="FEDERICA" DateTime="2015-01-06T15:15:16.000005Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+          <Str Name="TranslationStatus" Val="In Sync" />
+          <Str Name="TranslationStatusPosition" Val="3 - ReadyForReview" />
+        </Props>
+      </Item>
+      <Item ItemId=";Label_Repository" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Package source:]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[Origine pacchetto:]]></Val>
+            <Props>
+              <Str Name="TranslationModifiedBy" Val="FEDERICA" />
+              <Date Name="TranslationModifiedDate" Val="2015-01-06T15:14:59.4250258Z" />
+            </Props>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="FEDERICA" DateTime="2015-01-06T15:15:16.000005Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+          <Str Name="TranslationStatus" Val="In Sync" />
+          <Str Name="TranslationStatusPosition" Val="3 - ReadyForReview" />
+        </Props>
+      </Item>
+      <Item ItemId=";Label_Search" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Search:]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[Ricerca:]]></Val>
+            <Props>
+              <Str Name="TranslationModifiedBy" Val="FEDERICA" />
+              <Date Name="TranslationModifiedDate" Val="2015-01-06T15:14:59.4250258Z" />
+            </Props>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="FEDERICA" DateTime="2015-01-06T15:15:16.000005Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+          <Str Name="TranslationStatus" Val="In Sync" />
+          <Str Name="TranslationStatusPosition" Val="3 - ReadyForReview" />
+        </Props>
+      </Item>
+      <Item ItemId=";Label_Solution" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Solution '{0}']]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[Soluzione '{0}']]></Val>
+            <Props>
+              <Str Name="TranslationModifiedBy" Val="FEDERICA" />
+              <Date Name="TranslationModifiedDate" Val="2015-01-06T15:14:59.4240257Z" />
+            </Props>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="FEDERICA" DateTime="2015-01-06T15:15:16.000005Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+          <Str Name="TranslationStatus" Val="In Sync" />
+          <Str Name="TranslationStatusPosition" Val="3 - ReadyForReview" />
+        </Props>
+      </Item>
+      <Item ItemId=";Label_Tags" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Tags:]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[Tag:]]></Val>
+            <Props>
+              <Str Name="TranslationModifiedBy" Val="FEDERICA" />
+              <Date Name="TranslationModifiedDate" Val="2015-01-06T15:14:59.4240257Z" />
+            </Props>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="FEDERICA" DateTime="2015-01-06T15:15:16.000005Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+          <Str Name="TranslationStatus" Val="In Sync" />
+          <Str Name="TranslationStatusPosition" Val="3 - ReadyForReview" />
+        </Props>
+      </Item>
+      <Item ItemId=";Label_UninstalledPackages" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Uninstalling:]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[Disinstallazione in corso...]]></Val>
+            <Props>
+              <Str Name="TranslationModifiedBy" Val="FEDERICA" />
+              <Date Name="TranslationModifiedDate" Val="2015-01-06T15:14:59.4240257Z" />
+            </Props>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="FEDERICA" DateTime="2015-01-06T15:15:16.000005Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+          <Str Name="TranslationStatus" Val="In Sync" />
+          <Str Name="TranslationStatusPosition" Val="3 - ReadyForReview" />
+        </Props>
+      </Item>
+      <Item ItemId=";Label_UpdatedPackages" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Updates:]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[Aggiornamenti:]]></Val>
+            <Props>
+              <Str Name="TranslationModifiedBy" Val="FEDERICA" />
+              <Date Name="TranslationModifiedDate" Val="2015-01-06T15:14:59.4240257Z" />
+            </Props>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="FEDERICA" DateTime="2015-01-06T15:15:16.000005Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+          <Str Name="TranslationStatus" Val="In Sync" />
+          <Str Name="TranslationStatusPosition" Val="3 - ReadyForReview" />
+        </Props>
+      </Item>
+      <Item ItemId=";Label_Version" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Version:]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[Versione:]]></Val>
+            <Props>
+              <Str Name="TranslationModifiedBy" Val="FEDERICA" />
+              <Date Name="TranslationModifiedDate" Val="2015-01-06T15:14:59.4240257Z" />
+            </Props>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="FEDERICA" DateTime="2015-01-06T15:15:16.000005Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+          <Str Name="TranslationStatus" Val="In Sync" />
+          <Str Name="TranslationStatusPosition" Val="3 - ReadyForReview" />
+        </Props>
+      </Item>
+      <Item ItemId=";Text_Changes" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Visual Studio is about to make changes to this solution. Click OK to proceed with the changes listed below.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[Visual Studio sta per apportare modifiche a questa soluzione. Fare clic su OK per procedere con le modifiche elencate.]]></Val>
+            <Props>
+              <Str Name="TranslationModifiedBy" Val="FEDERICA" />
+              <Date Name="TranslationModifiedDate" Val="2015-01-06T15:14:59.4230257Z" />
+            </Props>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="FEDERICA" DateTime="2015-01-06T15:15:16.000005Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+          <Str Name="TranslationStatus" Val="In Sync" />
+          <Str Name="TranslationStatusPosition" Val="3 - ReadyForReview" />
+        </Props>
+      </Item>
+      <Item ItemId=";Text_ErrorDetails" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Error details]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[Dettagli errore]]></Val>
+            <Props>
+              <Str Name="TranslationModifiedBy" Val="FEDERICA" />
+              <Date Name="TranslationModifiedDate" Val="2015-01-06T15:14:59.4230257Z" />
+            </Props>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="FEDERICA" DateTime="2015-01-06T15:15:16.000005Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+          <Str Name="TranslationStatus" Val="In Sync" />
+          <Str Name="TranslationStatusPosition" Val="3 - ReadyForReview" />
+        </Props>
+      </Item>
+      <Item ItemId=";Text_ErrorOccurred" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Error occured:\n{0}]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[Si è verificato un errore:\n{0}]]></Val>
+            <Props>
+              <Str Name="TranslationModifiedBy" Val="FEDERICA" />
+              <Date Name="TranslationModifiedDate" Val="2015-01-06T15:14:59.4230257Z" />
+            </Props>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="FEDERICA" DateTime="2015-01-06T15:15:16.000005Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+          <Str Name="TranslationStatus" Val="In Sync" />
+          <Str Name="TranslationStatusPosition" Val="3 - ReadyForReview" />
+        </Props>
+      </Item>
+      <Item ItemId=";Text_InstalledVersion" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Installed version: {0}]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[Versione installata: {0}]]></Val>
+            <Props>
+              <Str Name="TranslationModifiedBy" Val="FEDERICA" />
+              <Date Name="TranslationModifiedDate" Val="2015-01-06T15:14:59.4230257Z" />
+            </Props>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="FEDERICA" DateTime="2015-01-06T15:15:16.000005Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+          <Str Name="TranslationStatus" Val="In Sync" />
+          <Str Name="TranslationStatusPosition" Val="3 - ReadyForReview" />
+        </Props>
+      </Item>
+      <Item ItemId=";Text_LegalDisclaimer" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Each package is licensed to you by its owner. Microsoft is not responsible for, nor does it grant any licenses to, third-party packages.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[Ogni pacchetto è concesso in licenza all'utente dal relativo proprietario. Microsoft non è responsabile per pacchetti di terze parti, né concede alcuna licenza a pacchetti di terze parti.]]></Val>
+            <Props>
+              <Str Name="TranslationModifiedBy" Val="FEDERICA" />
+              <Date Name="TranslationModifiedDate" Val="2015-01-06T15:14:59.4230257Z" />
+            </Props>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="FEDERICA" DateTime="2015-01-06T15:15:16.000005Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+          <Str Name="TranslationStatus" Val="In Sync" />
+          <Str Name="TranslationStatusPosition" Val="3 - ReadyForReview" />
+        </Props>
+      </Item>
+      <Item ItemId=";Text_LicenseAcceptance" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[License Acceptance]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[Accettazione della licenza]]></Val>
+            <Props>
+              <Str Name="TranslationModifiedBy" Val="FEDERICA" />
+              <Date Name="TranslationModifiedDate" Val="2015-01-06T15:14:59.4220256Z" />
+            </Props>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="FEDERICA" DateTime="2015-01-06T15:15:16.000005Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+          <Str Name="TranslationStatus" Val="In Sync" />
+          <Str Name="TranslationStatusPosition" Val="3 - ReadyForReview" />
+        </Props>
+      </Item>
+      <Item ItemId=";Text_LicenseHeaderText" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The following package(s) require that you accept their license terms before installing.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[I pacchetti seguenti richiedono l'accettazione delle condizioni di licenza da parte dell'utente prima dell'installazione.]]></Val>
+            <Props>
+              <Str Name="TranslationModifiedBy" Val="FEDERICA" />
+              <Date Name="TranslationModifiedDate" Val="2015-01-06T15:14:59.4220256Z" />
+            </Props>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="FEDERICA" DateTime="2015-01-06T15:15:16.000005Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+          <Str Name="TranslationStatus" Val="In Sync" />
+          <Str Name="TranslationStatusPosition" Val="3 - ReadyForReview" />
+        </Props>
+      </Item>
+      <Item ItemId=";Text_LicenseText" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[By clicking "I Accept," you agree to the license terms for the package(s) listed above. If you do not agree to the license terms, click "I Decline."]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[Facendo clic su "Accetto" l'utente dichiara di accettare le condizioni di licenza dei pacchetti elencati sopra. Se non si intende accettare le condizioni di licenza, fare clic su "Non accetto".]]></Val>
+            <Props>
+              <Str Name="TranslationModifiedBy" Val="FEDERICA" />
+              <Date Name="TranslationModifiedDate" Val="2015-01-06T15:14:59.4220256Z" />
+            </Props>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="FEDERICA" DateTime="2015-01-06T15:15:16.000005Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+          <Str Name="TranslationStatus" Val="In Sync" />
+          <Str Name="TranslationStatusPosition" Val="3 - ReadyForReview" />
+        </Props>
+      </Item>
+      <Item ItemId=";Text_Loading" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Loading...]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[Caricamento in corso...]]></Val>
+            <Props>
+              <Str Name="TranslationModifiedBy" Val="FEDERICA" />
+              <Date Name="TranslationModifiedDate" Val="2015-01-06T15:14:59.4230257Z" />
+            </Props>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="FEDERICA" DateTime="2015-01-06T15:15:16.000005Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+          <Str Name="TranslationStatus" Val="In Sync" />
+          <Str Name="TranslationStatusPosition" Val="3 - ReadyForReview" />
+        </Props>
+      </Item>
+      <Item ItemId=";Text_NoDependencies" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[No dependencies]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[Nessuna dipendenza]]></Val>
+            <Props>
+              <Str Name="TranslationModifiedBy" Val="FEDERICA" />
+              <Date Name="TranslationModifiedDate" Val="2015-01-06T15:14:59.4230257Z" />
+            </Props>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="FEDERICA" DateTime="2015-01-06T15:15:16.000005Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+          <Str Name="TranslationStatus" Val="In Sync" />
+          <Str Name="TranslationStatusPosition" Val="3 - ReadyForReview" />
+        </Props>
+      </Item>
+      <Item ItemId=";Text_NoItemsFound" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[No items found]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[Non sono stati trovati elementi]]></Val>
+            <Props>
+              <Str Name="TranslationModifiedBy" Val="FEDERICA" />
+              <Date Name="TranslationModifiedDate" Val="2015-01-06T15:14:59.4240257Z" />
+            </Props>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="FEDERICA" DateTime="2015-01-06T15:15:16.000005Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+          <Str Name="TranslationStatus" Val="In Sync" />
+          <Str Name="TranslationStatusPosition" Val="3 - ReadyForReview" />
+        </Props>
+      </Item>
+      <Item ItemId=";Text_NoMoreItems" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[No more items]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[Non sono disponibili altri elementi]]></Val>
+            <Props>
+              <Str Name="TranslationModifiedBy" Val="FEDERICA" />
+              <Date Name="TranslationModifiedDate" Val="2015-01-06T15:14:59.4240257Z" />
+            </Props>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="FEDERICA" DateTime="2015-01-06T15:15:16.000005Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+          <Str Name="TranslationStatus" Val="In Sync" />
+          <Str Name="TranslationStatusPosition" Val="3 - ReadyForReview" />
+        </Props>
+      </Item>
+      <Item ItemId=";Text_Progress" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Progress]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[Avanzamento]]></Val>
+            <Props>
+              <Str Name="TranslationModifiedBy" Val="FEDERICA" />
+              <Date Name="TranslationModifiedDate" Val="2015-01-06T15:14:59.4240257Z" />
+            </Props>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="FEDERICA" DateTime="2015-01-06T15:15:16.000005Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+          <Str Name="TranslationStatus" Val="In Sync" />
+          <Str Name="TranslationStatusPosition" Val="3 - ReadyForReview" />
+        </Props>
+      </Item>
+      <Item ItemId=";Text_Ready" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Ready]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[Pronto]]></Val>
+            <Props>
+              <Str Name="TranslationModifiedBy" Val="FEDERICA" />
+              <Date Name="TranslationModifiedDate" Val="2015-01-06T15:14:59.4240257Z" />
+            </Props>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="FEDERICA" DateTime="2015-01-06T15:15:16.000005Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+          <Str Name="TranslationStatus" Val="In Sync" />
+          <Str Name="TranslationStatusPosition" Val="3 - ReadyForReview" />
+        </Props>
+      </Item>
+      <Item ItemId=";Text_ReviewChanges" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Review Changes]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[Revisione modifiche]]></Val>
+            <Props>
+              <Str Name="TranslationModifiedBy" Val="FEDERICA" />
+              <Date Name="TranslationModifiedDate" Val="2015-01-06T15:14:59.4240257Z" />
+            </Props>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="FEDERICA" DateTime="2015-01-06T15:15:16.000005Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+          <Str Name="TranslationStatus" Val="In Sync" />
+          <Str Name="TranslationStatusPosition" Val="3 - ReadyForReview" />
+        </Props>
+      </Item>
+      <Item ItemId=";Text_Searching" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Searching '{0}']]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[Ricerca di '{0}']]></Val>
+            <Props>
+              <Str Name="TranslationModifiedBy" Val="FEDERICA" />
+              <Date Name="TranslationModifiedDate" Val="2015-01-06T15:14:59.4240257Z" />
+            </Props>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="FEDERICA" DateTime="2015-01-06T15:15:16.000005Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+          <Str Name="TranslationStatus" Val="In Sync" />
+          <Str Name="TranslationStatusPosition" Val="3 - ReadyForReview" />
+        </Props>
+      </Item>
+      <Item ItemId=";Text_Working" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Working...]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[Operazione in corso...]]></Val>
+            <Props>
+              <Str Name="TranslationModifiedBy" Val="FEDERICA" />
+              <Date Name="TranslationModifiedDate" Val="2015-01-06T15:14:59.4240257Z" />
+            </Props>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="FEDERICA" DateTime="2015-01-06T15:15:16.000005Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+          <Str Name="TranslationStatus" Val="In Sync" />
+          <Str Name="TranslationStatusPosition" Val="3 - ReadyForReview" />
+        </Props>
+      </Item>
+      <Item ItemId=";Tooltip_PackageInstalled" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Latest stable version is installed]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[È installata la versione stabile più recente]]></Val>
+            <Props>
+              <Str Name="TranslationModifiedBy" Val="FEDERICA" />
+              <Date Name="TranslationModifiedDate" Val="2015-01-06T15:14:59.4240257Z" />
+            </Props>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="FEDERICA" DateTime="2015-01-06T15:15:16.000005Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+          <Str Name="TranslationStatus" Val="In Sync" />
+          <Str Name="TranslationStatusPosition" Val="3 - ReadyForReview" />
+        </Props>
+      </Item>
+      <Item ItemId=";Tooltip_UpdateAvailable" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Update available]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[Aggiornamento disponibile]]></Val>
+            <Props>
+              <Str Name="TranslationModifiedBy" Val="FEDERICA" />
+              <Date Name="TranslationModifiedDate" Val="2015-01-06T15:14:59.4240257Z" />
+            </Props>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="FEDERICA" DateTime="2015-01-06T15:15:16.000005Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+          <Str Name="TranslationStatus" Val="In Sync" />
+          <Str Name="TranslationStatusPosition" Val="3 - ReadyForReview" />
+        </Props>
+      </Item>
+      <Item ItemId=";Version_Installed" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Installed]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[Installato]]></Val>
+            <Props>
+              <Str Name="TranslationModifiedBy" Val="FEDERICA" />
+              <Date Name="TranslationModifiedDate" Val="2015-01-06T15:14:59.4240257Z" />
+            </Props>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="DiegoR" DateTime="2015-01-06T17:16:12Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+          <Str Name="TranslationStatus" Val="In Sync" />
+          <Str Name="TranslationStatusPosition" Val="3 - ReadyForReview" />
+        </Props>
+      </Item>
+      <Item ItemId=";Version_LatestStable" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Latest stable]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[Versione stabile più recente]]></Val>
+            <Props>
+              <Str Name="TranslationModifiedBy" Val="FEDERICA" />
+              <Date Name="TranslationModifiedDate" Val="2015-01-06T15:14:59.4250258Z" />
+            </Props>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="FEDERICA" DateTime="2015-01-06T15:15:16.000005Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+          <Str Name="TranslationStatus" Val="In Sync" />
+          <Str Name="TranslationStatusPosition" Val="3 - ReadyForReview" />
+        </Props>
+      </Item>
+      <Item ItemId=";WindowTitle_Error" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Error]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[Errore]]></Val>
+            <Props>
+              <Str Name="TranslationModifiedBy" Val="FEDERICA" />
+              <Date Name="TranslationModifiedDate" Val="2015-01-06T15:14:59.4250258Z" />
+            </Props>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="FEDERICA" DateTime="2015-01-06T15:15:16.000005Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+          <Str Name="TranslationStatus" Val="In Sync" />
+          <Str Name="TranslationStatusPosition" Val="3 - ReadyForReview" />
+        </Props>
+      </Item>
+      <Item ItemId=";WindowTitle_FileConflict" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[File Conflict]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[Conflitto di file]]></Val>
+            <Props>
+              <Str Name="TranslationModifiedBy" Val="FEDERICA" />
+              <Date Name="TranslationModifiedDate" Val="2015-01-06T15:14:59.4250258Z" />
+            </Props>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="FEDERICA" DateTime="2015-01-06T15:15:16.000005Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+          <Str Name="TranslationStatus" Val="In Sync" />
+          <Str Name="TranslationStatusPosition" Val="3 - ReadyForReview" />
+        </Props>
+      </Item>
+      <Item ItemId=";WindowTitle_LicenseAcceptance" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[License Acceptance]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[Accettazione della licenza]]></Val>
+            <Props>
+              <Str Name="TranslationModifiedBy" Val="FEDERICA" />
+              <Date Name="TranslationModifiedDate" Val="2015-01-06T15:14:59.4250258Z" />
+            </Props>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="FEDERICA" DateTime="2015-01-06T15:15:16.000005Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+          <Str Name="TranslationStatus" Val="In Sync" />
+          <Str Name="TranslationStatusPosition" Val="3 - ReadyForReview" />
+        </Props>
+      </Item>
+      <Item ItemId=";WindowTitle_Preview" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Preview]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[Anteprima]]></Val>
+            <Props>
+              <Str Name="TranslationModifiedBy" Val="FEDERICA" />
+              <Date Name="TranslationModifiedDate" Val="2015-01-06T15:14:59.4250258Z" />
+            </Props>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="FEDERICA" DateTime="2015-01-06T15:15:16.000005Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+          <Str Name="TranslationStatus" Val="In Sync" />
+          <Str Name="TranslationStatusPosition" Val="3 - ReadyForReview" />
+        </Props>
+      </Item>
+      <Item ItemId=";WindowTitle_Progress" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Progress]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[Avanzamento]]></Val>
+            <Props>
+              <Str Name="TranslationModifiedBy" Val="FEDERICA" />
+              <Date Name="TranslationModifiedDate" Val="2015-01-06T15:14:59.4250258Z" />
+            </Props>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="FEDERICA" DateTime="2015-01-06T15:15:16.000005Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+          <Str Name="TranslationStatus" Val="In Sync" />
+          <Str Name="TranslationStatusPosition" Val="3 - ReadyForReview" />
+        </Props>
+      </Item>
+    </Item>
+  </Item>
+  <Item ItemId=";NuGet.Client.VisualStudio.UI.g.resources" ItemType="0" PsrId="211" Leaf="false">
+    <Disp Icon="Str" Expand="true" Disp="true" LocTbl="false" Path=" \ ;Managed Resources \ 0 \ 0" />
+    <Item ItemId=";Baml Resources" ItemType=";0" PsrId="223" Leaf="true">
+      <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" />
+    </Item>
+    <Item ItemId=";xamls/actionsandversions.baml" ItemType="0" PsrId="223" Leaf="true">
+      <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" Path=" \ ;NuGet.Client.VisualStudio.UI.g.resources \ 0 \ 0 \ ;Baml Resources \ ;0 \ 0" />
+    </Item>
+    <Item ItemId=";xamls/busycontrol.baml" ItemType="0" PsrId="223" Leaf="true">
+      <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" Path=" \ ;NuGet.Client.VisualStudio.UI.g.resources \ 0 \ 0 \ ;Baml Resources \ ;0 \ 0" />
+    </Item>
+    <Item ItemId=";xamls/detailcontrol.baml" ItemType="0" PsrId="223" Leaf="true">
+      <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" Path=" \ ;NuGet.Client.VisualStudio.UI.g.resources \ 0 \ 0 \ ;Baml Resources \ ;0 \ 0" />
+    </Item>
+    <Item ItemId=";xamls/errorreportingdialog.baml" ItemType="0" PsrId="223" Leaf="true">
+      <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" Path=" \ ;NuGet.Client.VisualStudio.UI.g.resources \ 0 \ 0 \ ;Baml Resources \ ;0 \ 0" />
+    </Item>
+    <Item ItemId=";xamls/fileconflictdialog.baml" ItemType="0" PsrId="223" Leaf="true">
+      <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" Path=" \ ;NuGet.Client.VisualStudio.UI.g.resources \ 0 \ 0 \ ;Baml Resources \ ;0 \ 0" />
+    </Item>
+    <Item ItemId=";xamls/infinitescrolllist.baml" ItemType="0" PsrId="223" Leaf="true">
+      <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" Path=" \ ;NuGet.Client.VisualStudio.UI.g.resources \ 0 \ 0 \ ;Baml Resources \ ;0 \ 0" />
+    </Item>
+    <Item ItemId=";xamls/installedindicator.baml" ItemType="0" PsrId="223" Leaf="true">
+      <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" Path=" \ ;NuGet.Client.VisualStudio.UI.g.resources \ 0 \ 0 \ ;Baml Resources \ ;0 \ 0" />
+    </Item>
+    <Item ItemId=";xamls/licenseacceptancewindow.baml" ItemType="0" PsrId="223" Leaf="true">
+      <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" Path=" \ ;NuGet.Client.VisualStudio.UI.g.resources \ 0 \ 0 \ ;Baml Resources \ ;0 \ 0" />
+    </Item>
+    <Item ItemId=";xamls/optionscontrol.baml" ItemType="0" PsrId="223" Leaf="true">
+      <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" Path=" \ ;NuGet.Client.VisualStudio.UI.g.resources \ 0 \ 0 \ ;Baml Resources \ ;0 \ 0" />
+    </Item>
+    <Item ItemId=";xamls/packageitemcontrol.baml" ItemType="0" PsrId="223" Leaf="true">
+      <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" Path=" \ ;NuGet.Client.VisualStudio.UI.g.resources \ 0 \ 0 \ ;Baml Resources \ ;0 \ 0" />
+    </Item>
+    <Item ItemId=";xamls/packagemanagercontrol.baml" ItemType="0" PsrId="223" Leaf="true">
+      <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" Path=" \ ;NuGet.Client.VisualStudio.UI.g.resources \ 0 \ 0 \ ;Baml Resources \ ;0 \ 0" />
+    </Item>
+    <Item ItemId=";xamls/packagemetadatacontrol.baml" ItemType="0" PsrId="223" Leaf="true">
+      <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" Path=" \ ;NuGet.Client.VisualStudio.UI.g.resources \ 0 \ 0 \ ;Baml Resources \ ;0 \ 0" />
+    </Item>
+    <Item ItemId=";xamls/previewwindow.baml" ItemType="0" PsrId="223" Leaf="true">
+      <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" Path=" \ ;NuGet.Client.VisualStudio.UI.g.resources \ 0 \ 0 \ ;Baml Resources \ ;0 \ 0" />
+    </Item>
+    <Item ItemId=";xamls/progressdialog.baml" ItemType="0" PsrId="223" Leaf="true">
+      <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" Path=" \ ;NuGet.Client.VisualStudio.UI.g.resources \ 0 \ 0 \ ;Baml Resources \ ;0 \ 0" />
+    </Item>
+    <Item ItemId=";xamls/resources.baml" ItemType="0" PsrId="223" Leaf="true">
+      <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" Path=" \ ;NuGet.Client.VisualStudio.UI.g.resources \ 0 \ 0 \ ;Baml Resources \ ;0 \ 0" />
+    </Item>
+    <Item ItemId=";xamls/searchcontrol.baml" ItemType="0" PsrId="223" Leaf="true">
+      <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" Path=" \ ;NuGet.Client.VisualStudio.UI.g.resources \ 0 \ 0 \ ;Baml Resources \ ;0 \ 0" />
+    </Item>
+    <Item ItemId=";xamls/updateavailableindicator.baml" ItemType="0" PsrId="223" Leaf="true">
+      <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" Path=" \ ;NuGet.Client.VisualStudio.UI.g.resources \ 0 \ 0 \ ;Baml Resources \ ;0 \ 0" />
+    </Item>
+  </Item>
+  <Item ItemId=";Version" ItemType="0" PsrId="211" Leaf="false">
+    <Disp Icon="Ver" Disp="true" LocTbl="false" Path=" \ ;Version \ 8 \ 0" />
+    <Item ItemId=";AssemblyVersion" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text" DevLk="true">
+        <Val><![CDATA[1.0.0.0]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+    </Item>
+    <Item ItemId=";FileDescription" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text">
+        <Val><![CDATA[NuGet.Client.VisualStudio.UI]]></Val>
+        <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+          <Val><![CDATA[NuGet.Client.VisualStudio.UI]]></Val>
+          <Props>
+            <Str Name="TranslationModifiedBy" Val="FEDERICA" />
+            <Date Name="TranslationModifiedDate" Val="2015-01-06T15:14:59.4250258Z" />
+          </Props>
+        </Tgt>
+      </Str>
+      <Disp Icon="Str" />
+      <Modified By="FEDERICA" DateTime="2015-01-06T15:15:16.000005Z" />
+      <Props>
+        <Str Name="Custom2" Val="LQA_141222" />
+        <Str Name="TranslationStatus" Val="In Sync" />
+        <Str Name="TranslationStatusPosition" Val="3 - ReadyForReview" />
+      </Props>
+    </Item>
+    <Item ItemId=";FileVersion" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text" DevLk="true">
+        <Val><![CDATA[1.0.0.0]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+    </Item>
+    <Item ItemId=";InternalName" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text" DevLk="true">
+        <Val><![CDATA[NuGet.Client.VisualStudio.UI.dll]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+    </Item>
+    <Item ItemId=";LegalCopyright" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text">
+        <Val><![CDATA[Copyright ©  2014]]></Val>
+        <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+          <Val><![CDATA[Copyright © 2014]]></Val>
+          <Props>
+            <Str Name="TranslationModifiedBy" Val="FEDERICA" />
+            <Date Name="TranslationModifiedDate" Val="2015-01-06T15:14:59.4250258Z" />
+          </Props>
+        </Tgt>
+      </Str>
+      <Disp Icon="Str" />
+      <Modified By="FEDERICA" DateTime="2015-01-06T15:15:16.000005Z" />
+      <Props>
+        <Str Name="Custom2" Val="LQA_141222" />
+        <Str Name="TranslationStatus" Val="In Sync" />
+        <Str Name="TranslationStatusPosition" Val="3 - ReadyForReview" />
+      </Props>
+    </Item>
+    <Item ItemId=";OriginalFilename" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text" DevLk="true">
+        <Val><![CDATA[NuGet.Client.VisualStudio.UI.dll]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+    </Item>
+    <Item ItemId=";ProductName" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text">
+        <Val><![CDATA[NuGet.Client.VisualStudio.UI]]></Val>
+        <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+          <Val><![CDATA[NuGet.Client.VisualStudio.UI]]></Val>
+          <Props>
+            <Str Name="TranslationModifiedBy" Val="FEDERICA" />
+            <Date Name="TranslationModifiedDate" Val="2015-01-06T15:14:59.4250258Z" />
+          </Props>
+        </Tgt>
+      </Str>
+      <Disp Icon="Str" />
+      <Modified By="FEDERICA" DateTime="2015-01-06T15:15:16.000005Z" />
+      <Props>
+        <Str Name="Custom2" Val="LQA_141222" />
+        <Str Name="TranslationStatus" Val="In Sync" />
+        <Str Name="TranslationStatusPosition" Val="3 - ReadyForReview" />
+      </Props>
+    </Item>
+    <Item ItemId=";ProductVersion" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text" DevLk="true">
+        <Val><![CDATA[1.0.0.0]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+    </Item>
+  </Item>
+  <Item ItemId=";Version" ItemType="8" PsrId="211" Leaf="true">
+    <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" />
+  </Item>
+</LCX>

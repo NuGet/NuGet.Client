@@ -1,0 +1,12 @@
+﻿Lütfen proxy kimlik bilgilerini girin:
+
+Lütfen þuna yönelik proxy kimlik bilgilerini girin: {0}
+
+Parola: 
+
+Kullanýcý adý: 
+
+{0} öðesinde listelenen tüm paketler zaten yüklü.
+
+Paketi geri yükleme varsayýlan olarak devre dýþý. Ýzin vermek için Visual Studio Seçenekleri iletiþim kutusunu açýn, Package Manager  (Paket Yöneticisi) düðümünü týklatýn ve 'Allow NuGet to download missing packages during build' (NuGet'in derleme sýrasýnda eksik paketleri indirmesine izin ver) öðesini iþaretleyin. Ayrýca 'EnableNuGetPackageRestore' ortam deðiþkenini 'true' olarak ayarlayarak da izin verebilirsiniz.
+    

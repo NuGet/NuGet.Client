@@ -1,0 +1,333 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<LCX SchemaVersion="6.0" Name="C:\BuildAgent\work\c21523a748a3d719\NuGet\bin\Release\NuGetTools\15\NuGet.Tools.dll" PsrId="211" FileType="1" SrcCul="en-US" Desc="Commenting file created by LCXAdmin. For more information, please visit http://localizability/longhorn/LcxAdmin.asp" xmlns="http://schemas.microsoft.com/locstudio/2006/6/lcx">
+  <OwnedComments>
+    <Cmt Name="LcxAdmin" />
+  </OwnedComments>
+  <Item ItemId=";Managed Resources" ItemType="0" PsrId="211" Leaf="true">
+    <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" />
+  </Item>
+  <Item ItemId=";NuGetVSExtension.Resources.resources" ItemType="0" PsrId="211" Leaf="false">
+    <Disp Icon="Str" Expand="true" Disp="true" LocTbl="false" Path=" \ ;Managed Resources \ 0 \ 0" />
+    <Item ItemId=";Strings" ItemType="0" PsrId="211" Leaf="false">
+      <Disp Icon="Str" LocTbl="false" />
+      <Item ItemId=";AccountProvider_NoValidCrededentialsFound" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[No valid credentials found for VSO account.]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="VSO"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";BuildIntegratedPackageRestoreFailedForProject" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[NuGet Package restore failed for project {0} for '{1}'.]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="NuGet"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";CredentialProviderFailed_LegacyCredentialProvider" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The legacy NuGet credential provider failed to load.]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="NuGet"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";CredentialProviderFailed_VisualStudioAccountProvider" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The Visual Studio or VSTS account provider failed to load.]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="VSTS"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";DialogTitle" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[NuGet Package Manager]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="NuGet"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";ManagePackageLabel" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Manage &NuGet Packages...]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="NuGet"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";NoSupportedProjectsInSolution" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[No projects supported by NuGet in the solution.]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="NuGet"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";NuGetSearchProvider_CategoryShortcut" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[nuget]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";NuGetSearchProvider_Description" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Search NuGet packages]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="NuGet"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";NuGetSearchProvider_DisplayText" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[NuGet Packages]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="NuGet"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";NuGetStaticResult_DisplayText" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Search Online for NuGet Packages matching '{0}']]></Val>
+        </Str>
+        <Disp Icon="Str" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="NuGet"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";ProjectHasAnInvalidNuGetConfiguration" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[{0} nuget configuration is invalid.]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{StrContains=i"nuget"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";ProjectUpgradeAndRetargetErrorMessage" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Some NuGet packages were installed using a target framework different from the current target framework and may need to be reinstalled. Visit http://docs.nuget.org/docs/workflows/reinstalling-packages for more information.  Packages affected: {0}]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="NuGet"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";SolutionIsNotSaved" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Solution is not saved. Please save your solution before managing NuGet packages.]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="NuGet"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";SolutionIsNotSavedPromptReopen" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Solution is not saved. Please save your solution and re-open solution before managing NuGet packages.]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="NuGet"}]]></Cmt>
+        </Cmts>
+      </Item>
+    </Item>
+  </Item>
+  <Item ItemId=";VSPackage.resources" ItemType="0" PsrId="211" Leaf="false">
+    <Disp Icon="Str" Expand="true" Disp="true" LocTbl="false" Path=" \ ;Managed Resources \ 0 \ 0" />
+    <Item ItemId=";Menus.ctmenu" ItemType="0" PsrId="240" Leaf="false">
+      <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" />
+      <Item ItemId=";{25fd982b-8cae-4cbd-a440-e03ffccde106},256" ItemType="0" PsrId="240" Leaf="false">
+        <Disp Icon="Menu" Expand="true" Disp="true" LocTbl="false" />
+        <Item ItemId=";{25fd982b-8cae-4cbd-a440-e03ffccde106},256" ItemType=";Button" PsrId="240" InstFlg="true" Leaf="true">
+          <Str Cat="Button" IgnoreHK="true">
+            <Val><![CDATA[Manage &NuGet Packages...]]></Val>
+          </Str>
+          <Disp Icon="Str" Expand="true" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked="NuGet"}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId=";{25fd982b-8cae-4cbd-a440-e03ffccde106},256" ItemType=";CommandName" PsrId="240" InstFlg="true" Leaf="true">
+          <Str Cat="Button">
+            <Val><![CDATA[cmdidAddPackages]]></Val>
+          </Str>
+          <Disp Icon="Str" Expand="true" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+      </Item>
+      <Item ItemId=";{25fd982b-8cae-4cbd-a440-e03ffccde106},512" ItemType="0" PsrId="240" Leaf="false">
+        <Disp Icon="Menu" Expand="true" Disp="true" LocTbl="false" />
+        <Item ItemId=";{25fd982b-8cae-4cbd-a440-e03ffccde106},512" ItemType=";Button" PsrId="240" InstFlg="true" Leaf="true">
+          <Str Cat="Button" IgnoreHK="true">
+            <Val><![CDATA[Manage &NuGet Packages for Solution...]]></Val>
+          </Str>
+          <Disp Icon="Str" Expand="true" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked="NuGet"}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId=";{25fd982b-8cae-4cbd-a440-e03ffccde106},512" ItemType=";CommandName" PsrId="240" InstFlg="true" Leaf="true">
+          <Str Cat="Button">
+            <Val><![CDATA[cmdidAddPackagesForSolution]]></Val>
+          </Str>
+          <Disp Icon="Str" Expand="true" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+      </Item>
+      <Item ItemId=";{25fd982b-8cae-4cbd-a440-e03ffccde106},768" ItemType="0" PsrId="240" Leaf="false">
+        <Disp Icon="Menu" Expand="true" Disp="true" LocTbl="false" />
+        <Item ItemId=";{25fd982b-8cae-4cbd-a440-e03ffccde106},768" ItemType=";Button" PsrId="240" InstFlg="true" Leaf="true">
+          <Str Cat="Button" IgnoreHK="true">
+            <Val><![CDATA[Restore NuGet Packa&ges]]></Val>
+          </Str>
+          <Disp Icon="Str" Expand="true" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked="NuGet"}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId=";{25fd982b-8cae-4cbd-a440-e03ffccde106},768" ItemType=";CommandName" PsrId="240" InstFlg="true" Leaf="true">
+          <Str Cat="Button">
+            <Val><![CDATA[cmdRestorePackages]]></Val>
+          </Str>
+          <Disp Icon="Str" Expand="true" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked="cmdRestorePackages"}]]></Cmt>
+          </Cmts>
+        </Item>
+      </Item>
+      <Item ItemId=";{c0d88179-5d25-4982-bfe6-ec5fd59ac103},256" ItemType="0" PsrId="240" Leaf="false">
+        <Disp Icon="Menu" Expand="true" Disp="true" LocTbl="false" />
+        <Item ItemId=";{c0d88179-5d25-4982-bfe6-ec5fd59ac103},256" ItemType=";Menu" PsrId="240" InstFlg="true" Leaf="true">
+          <Str Cat="Menu Item" IgnoreHK="true">
+            <Val><![CDATA[NuGet Package Ma&nager]]></Val>
+          </Str>
+          <Disp Icon="Str" Expand="true" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked="NuGet"}]]></Cmt>
+          </Cmts>
+        </Item>
+      </Item>
+      <Item ItemId=";{c0d88179-5d25-4982-bfe6-ec5fd59ac103},768" ItemType="0" PsrId="240" Leaf="false">
+        <Disp Icon="Menu" Expand="true" Disp="true" LocTbl="false" />
+        <Item ItemId=";{c0d88179-5d25-4982-bfe6-ec5fd59ac103},768" ItemType=";CommandName" PsrId="240" InstFlg="true" Leaf="true">
+          <Str Cat="Button">
+            <Val><![CDATA[cmdidGeneralSettings]]></Val>
+          </Str>
+          <Disp Icon="Str" Expand="true" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+      </Item>
+    </Item>
+    <Item ItemId=";Strings" ItemType="0" PsrId="211" Leaf="false">
+      <Disp Icon="Str" LocTbl="false" />
+      <Item ItemId=";1" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[plk]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";110" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[NuGet Package Manager]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="NuGet"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";112" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[NuGet Package Manager in Visual Studio. For more information about NuGet, visit http://docs.nuget.org/.]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="NuGet", "Visual Studio"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";113" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[NuGet Package Manager]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="NuGet"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";2" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[plk]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="plk"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";3" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[plk]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";4" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[plk]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+        </Cmts>
+      </Item>
+    </Item>
+  </Item>
+  <Item ItemId=";Version" ItemType="0" PsrId="211" Leaf="false">
+    <Disp Icon="Ver" Disp="true" LocTbl="false" Path=" \ ;Version \ 8 \ 0" />
+    <Item ItemId=";CompanyName" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+      <Str Cat="Text">
+        <Val><![CDATA[Microsoft Corporation]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+      <Cmts>
+        <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+      </Cmts>
+    </Item>
+    <Item ItemId=";ProductName" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+      <Str Cat="Text">
+        <Val><![CDATA[NuGet]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+      <Cmts>
+        <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+      </Cmts>
+    </Item>
+  </Item>
+  <Item ItemId=";Version" ItemType="8" PsrId="211" Leaf="true">
+    <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" />
+  </Item>
+</LCX>

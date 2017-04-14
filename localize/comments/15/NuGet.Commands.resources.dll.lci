@@ -1,0 +1,408 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<LCX SchemaVersion="6.0" Name="C:\BuildAgent\work\c21523a748a3d719\NuGet\bin\Release\NuGetTools\15\NuGet.Commands.dll" PsrId="211" FileType="1" SrcCul="en-US" Desc="Commenting file created by LCXAdmin. For more information, please visit http://localizability/longhorn/LcxAdmin.asp" xmlns="http://schemas.microsoft.com/locstudio/2006/6/lcx">
+  <OwnedComments>
+    <Cmt Name="LcxAdmin" />
+  </OwnedComments>
+  <Item ItemId=";Managed Resources" ItemType="0" PsrId="211" Leaf="true">
+    <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" />
+  </Item>
+  <Item ItemId=";NuGet.Commands.Rules.AnalysisResources.resources" ItemType="0" PsrId="211" Leaf="false">
+    <Disp Icon="Str" Expand="true" Disp="true" LocTbl="false" Path=" \ ;Managed Resources \ 0 \ 0" />
+    <Item ItemId=";Strings" ItemType="0" PsrId="211" Leaf="false">
+      <Disp Icon="Str" LocTbl="false" />
+      <Item ItemId=";AssemblyOutsideLibDescription" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The assembly '{0}' is not inside the 'lib' folder and hence it won't be added as reference when the package is installed into a project.]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="lib"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";AssemblyOutsideLibSolution" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Move it into the 'lib' folder if it should be referenced.]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="lib"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";AssemblyOutsideLibTitle" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Assembly outside lib folder.]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="lib"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";AssemblyUnderLibDescription" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The assembly '{0}' is placed directly under 'lib' folder. It is recommended that assemblies be placed inside a framework-specific folder.]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="lib"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";DefaultSpecValueTitle" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Remove sample nuspec values.]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{StrContains=i"nuspec"}]A;]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";InvalidFrameworkDescription" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The folder '{0}' under 'lib' is not recognized as a valid framework name or a supported culture identifier.]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="lib"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";InvalidPrereleaseDependency_Solution" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Either modify the version spec of dependency "{0}" or update the version field in the nuspec.]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{StrContains=i"nuspec"}]A;]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";LegacyVersionDescription" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The package version '{0}' uses SemVer 2.0.0 or components of SemVer 1.0.0 that are not supported on legacy clients. This message can be ignored if the package is not intended for older clients.]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="SemVer"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";LegacyVersionSolution" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Change the package version to a SemVer 1.0.0 string. If the version contains a release label it must start with a letter.]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="SemVer"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";MisplacedInitScriptDescription" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The file '{0}' will be ignored by NuGet because it is not directly under 'tools' folder.]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="NuGet", "tools"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";MisplacedInitScriptSolution" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Place the file directly under 'tools' folder.]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="tools"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";MisplacedInitScriptTitle" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Init.ps1 script will be ignored.]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="Init.ps1"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";MisplacedTransformFileDescription" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The transform file '{0}' is outside the 'content' folder and hence will not be transformed during installation of this package.]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="content"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";MisplacedTransformFileSolution" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Move it into the 'content' folder.]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="content"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";MissingSummaryDescription" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The Description text is long but the Summary text is empty. This means the Description text will be truncated in the 'Manage NuGet Packages' dialog.]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="Description", "Summary", "NuGet"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";MissingSummarySolution" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Provide a brief summary of the package in the Summary field.]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="Summary"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";MissingSummaryTitle" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Consider providing Summary text.]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="Summary"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";ScriptOutsideToolsDescription" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The script file '{0}' is outside the 'tools' folder and hence will not be executed during installation of this package.]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="tools"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";ScriptOutsideToolsSolution" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Move it into the 'tools' folder.]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="tools"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";ScriptOutsideToolsTitle" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[PowerShell file outside tools folder.]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="tools"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";UnrecognizedScriptDescription" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The script file '{0}' is not recognized by NuGet and hence will not be executed during installation of this package.]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="NuGet"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";UnrecognizedScriptSolution" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Rename it to install.ps1, uninstall.ps1 or init.ps1 and place it directly under 'tools'.]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="install.ps1", "uninstall.ps1", "init.ps1", "tools"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";WinRTObsoleteDescription" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The file at '{0}' uses the obsolete 'WinRT' as the framework folder.]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="WinRT"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";WinRTObsoleteSolution" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Replace 'WinRT' or 'WinRT45' with 'NetCore45'.]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="WinRT", "WinRT45", "NetCore45"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";WinRTObsoleteTitle" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The framework name 'WinRT' is obsolete.]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="WinRT"}]]></Cmt>
+        </Cmts>
+      </Item>
+    </Item>
+  </Item>
+  <Item ItemId=";NuGet.Commands.Strings.resources" ItemType="0" PsrId="211" Leaf="false">
+    <Disp Icon="Str" Expand="true" Disp="true" LocTbl="false" Path=" \ ;Managed Resources \ 0 \ 0" />
+    <Item ItemId=";Strings" ItemType="0" PsrId="211" Leaf="false">
+      <Disp Icon="Str" LocTbl="false" />
+      <Item ItemId=";Error_InvalidCommandLineInputConfig" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Invalid input '{0}'. Valid file names are 'packages.config' or 'packages.*.config'.]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="packages.config", "packages.*.config"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";Error_InvalidCommandLineInputJson" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Invalid input '{0}'. Valid file names are 'project.json' or '*.project.json'.]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="project.json", "*.project.json"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";Error_InvalidTargetFramework" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Failed to build package because of an unsupported targetFramework value on '{0}'.]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="targetFramework"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";Error_UnableToLocateBuildOutput" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[No build found in {0}. Use the -Build option or build the project.]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="Build"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";Error_XPROJNotAllowed" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Invalid input '{0}'. XProj support has been removed. Support for XProj and standalone project.json files has been removed, to continue working with legacy projects use NuGet 3.5.x from https://nuget.org/downloads]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="XProj", "NuGet 3.5.x"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";InputFileNotSpecified" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Please specify a nuspec, project.json, or project file to use]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{StrContains=i"nuspec"}{Locked="project.json"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";LocalsCommand_Help" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[usage: NuGet locals <all | http-cache | global-packages | temp> [--clear | -c | --list | -l]5D;]A;For more information, visit http://docs.nuget.org/docs/reference/command-line-reference]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="NuGet locals <all | http-cache | global-packages | temp> [--clear | -c | --list | -l]5D;"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";LocalsCommand_InvalidLocalResourceName" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[An invalid local resource name was provided. Please provide one of the following values: http-cache, temp, global-packages, all.]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="http-cache", "temp", "global-packages", "all"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";Log_GeneratingMsBuildFile" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Generating MSBuild file {0}.]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="MSBuild"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";Log_LockFileMissingLibraryForTargetLibrary" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[{0} {1} is specified in the Lock File target for {2} but is not present in the top-level Libraries list.]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="Lock"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";Log_ScanningForRuntimeJson" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Scanning packages for runtime.json files...]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="runtime.json"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";Log_SkippingRuntimeWalk" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Skipping runtime dependency walk, no runtimes defined in project.json.]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="project.json"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";MSBuildWarning_MultiTarget" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Packages containing MSBuild targets and props files cannot be fully installed in projects targeting multiple frameworks. The MSBuild targets and props files have been ignored.]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="MSBuild"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";SpecValidationUAPSingleFramework" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[UAP projects must contain exactly one target framework.]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="UAP"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";UsingPackagesConfigForDependencies" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Found packages.config. Using packages listed as dependencies]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="packages.config"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";Warning_DuplicatePropertyKey" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA['{0}' key already exists in Properties collection. Overriding value.]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="Properties"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";Warning_MultiTarget" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Packages containing MSBuild targets and props files cannot be fully installed in projects targeting multiple frameworks. The MSBuild targets and props files have been ignored.]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="MSBuild"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";Warning_SemanticVersionSolution" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Update your nuspec file or use the AssemblyInformationalVersion assembly attribute to specify a semantic version as described at http://semver.org.]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{StrContains=i"nuspec"}{Locked="AssemblyInformationalVersion"}]]></Cmt>
+        </Cmts>
+      </Item>
+    </Item>
+  </Item>
+</LCX>

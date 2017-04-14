@@ -1,0 +1,12 @@
+﻿Forneça as credenciais do proxy:
+
+Forneça as credenciais para: {0}
+
+Senha: 
+
+Nome de Usuário: 
+
+Todos os pacotes listados em {0} já estão instalados.
+
+A restauração de pacotes está desabilitada por padrão. Para dar permissão, abra o diálogo Opções do Visual Studio, clique no nó do Gerenciador de Pacotes e marque 'Permitir que o NuGet baixe os pacotes ausentes durante a compilação'. Também é possível dar permissão configurando a variável de ambiente 'EnableNuGetPackageRestore' para 'true'.
+    

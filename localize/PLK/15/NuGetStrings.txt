@@ -1,0 +1,11 @@
+﻿Podaj poświadczenia serwera proxy:
+
+Podaj poświadczenia dla: {0}
+
+Hasło: 
+
+Nazwa użytkownika: 
+
+Wszystkie pakiety wymienione w {0} są już zainstalowane.
+
+Przywracanie pakietów jest domyślnie wyłączone. Aby wyrazić zgodę, otwórz okno dialogowe Opcje programu Visual Studio, kliknij węzeł Menedżer pakietów i zaznacz pozycję „Zezwalaj programowi NuGet na pobieranie brakujących pakietów podczas kompilowania”. Zgodę możesz także wyrazić, ustawiając zmienną środowiskową „EnableNuGetPackageRestore” na wartość „true”.

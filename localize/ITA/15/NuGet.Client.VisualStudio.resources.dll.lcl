@@ -1,0 +1,209 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<LCX SchemaVersion="6.0" Name="C:\BuildAgent\work\fea8ec2fb9b8541c\NuGet\bin\Release\NuGetTools\14\NuGet.Client.VisualStudio.dll" PsrId="211" FileType="1" SrcCul="en-US" TgtCul="it-IT" xmlns="http://schemas.microsoft.com/locstudio/2006/6/lcx">
+  <OwnedComments>
+    <Cmt Name="Dev" />
+    <Cmt Name="LcxAdmin" />
+    <Cmt Name="Rccx" />
+  </OwnedComments>
+  <Settings Name="@vsLocTools@\default.lss" Type="Lss" />
+  <Item ItemId=";Managed Resources" ItemType="0" PsrId="211" Leaf="true">
+    <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" />
+  </Item>
+  <Item ItemId=";NuGet.Client.VisualStudio.Strings.resources" ItemType="0" PsrId="211" Leaf="false">
+    <Disp Icon="Str" Expand="true" Disp="true" LocTbl="false" Path=" \ ;Managed Resources \ 0 \ 0" />
+    <Item ItemId=";Strings" ItemType="0" PsrId="211" Leaf="false">
+      <Disp Icon="Str" LocTbl="false" />
+      <Item ItemId=";Label_Solution" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Solution '{0}']]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[Soluzione '{0}']]></Val>
+            <Props>
+              <Str Name="TranslationModifiedBy" Val="FEDERICA" />
+              <Date Name="TranslationModifiedDate" Val="2015-01-06T15:14:59.3870236Z" />
+            </Props>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="FEDERICA" DateTime="2015-01-06T15:15:16.000005Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+          <Str Name="TranslationStatus" Val="In Sync" />
+          <Str Name="TranslationStatusPosition" Val="3 - ReadyForReview" />
+        </Props>
+      </Item>
+      <Item ItemId=";VsPackageManagerSession_CannotUseAggregateSource" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[You cannot use the aggregate source with the V2InteropSearcher.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[Non è possibile usare l'origine aggregata con V2InteropSearcher.]]></Val>
+            <Props>
+              <Str Name="TranslationModifiedBy" Val="FEDERICA" />
+              <Date Name="TranslationModifiedDate" Val="2015-01-06T15:14:59.3870236Z" />
+            </Props>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="FEDERICA" DateTime="2015-01-06T15:15:16.000005Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="V2InteropSearcher"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+          <Str Name="TranslationStatus" Val="In Sync" />
+          <Str Name="TranslationStatusPosition" Val="3 - ReadyForReview" />
+        </Props>
+      </Item>
+      <Item ItemId=";VsPackageManagerSession_UnknownSource" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Unknown Package Source: '{0}'. It is not present in the list of available sources.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[L'origine del pacchetto è sconosciuta: '{0}'. Non è presente nell'elenco delle origini disponibili.]]></Val>
+            <Props>
+              <Str Name="TranslationModifiedBy" Val="FEDERICA" />
+              <Date Name="TranslationModifiedDate" Val="2015-01-06T15:14:59.3880237Z" />
+            </Props>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="FEDERICA" DateTime="2015-01-06T15:15:16.000005Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+          <Str Name="TranslationStatus" Val="In Sync" />
+          <Str Name="TranslationStatusPosition" Val="3 - ReadyForReview" />
+        </Props>
+      </Item>
+      <Item ItemId=";VsSourceRepositoryManager_V3SourceName" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[preview.nuget.org]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[preview.nuget.org]]></Val>
+            <Props>
+              <Str Name="TranslationModifiedBy" Val="FEDERICA" />
+              <Date Name="TranslationModifiedDate" Val="2015-01-06T15:14:59.3870236Z" />
+            </Props>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="FEDERICA" DateTime="2015-01-06T15:15:16.000005Z" />
+        <Props>
+          <Str Name="Custom2" Val="LQA_141222" />
+          <Str Name="TranslationStatus" Val="In Sync" />
+          <Str Name="TranslationStatusPosition" Val="3 - ReadyForReview" />
+        </Props>
+      </Item>
+    </Item>
+  </Item>
+  <Item ItemId=";Version" ItemType="0" PsrId="211" Leaf="false">
+    <Disp Icon="Ver" Disp="true" LocTbl="false" Path=" \ ;Version \ 8 \ 0" />
+    <Item ItemId=";AssemblyVersion" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text" DevLk="true">
+        <Val><![CDATA[3.0.51216.259]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+    </Item>
+    <Item ItemId=";CompanyName" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text">
+        <Val><![CDATA[Microsoft Corporation]]></Val>
+        <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+          <Val><![CDATA[Microsoft Corporation]]></Val>
+          <Props>
+            <Str Name="TranslationModifiedBy" Val="FEDERICA" />
+            <Date Name="TranslationModifiedDate" Val="2015-01-06T15:14:59.3870236Z" />
+          </Props>
+        </Tgt>
+      </Str>
+      <Disp Icon="Str" />
+      <Modified By="FEDERICA" DateTime="2015-01-06T15:15:16.000005Z" />
+      <Props>
+        <Str Name="Custom2" Val="LQA_141222" />
+        <Str Name="TranslationStatus" Val="In Sync" />
+        <Str Name="TranslationStatusPosition" Val="3 - ReadyForReview" />
+      </Props>
+    </Item>
+    <Item ItemId=";FileDescription" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text">
+        <Val><![CDATA[V3VisualStudio]]></Val>
+        <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+          <Val><![CDATA[V3VisualStudio]]></Val>
+          <Props>
+            <Str Name="TranslationModifiedBy" Val="FEDERICA" />
+            <Date Name="TranslationModifiedDate" Val="2015-01-06T15:14:59.3870236Z" />
+          </Props>
+        </Tgt>
+      </Str>
+      <Disp Icon="Str" />
+      <Modified By="FEDERICA" DateTime="2015-01-06T15:15:16.000005Z" />
+      <Props>
+        <Str Name="Custom2" Val="LQA_141222" />
+        <Str Name="TranslationStatus" Val="In Sync" />
+        <Str Name="TranslationStatusPosition" Val="3 - ReadyForReview" />
+      </Props>
+    </Item>
+    <Item ItemId=";FileVersion" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text" DevLk="true">
+        <Val><![CDATA[3.0.51216.259]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+    </Item>
+    <Item ItemId=";InternalName" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text" DevLk="true">
+        <Val><![CDATA[NuGet.Client.VisualStudio.dll]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+    </Item>
+    <Item ItemId=";LegalCopyright" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text">
+        <Val><![CDATA[Copyright 2013 Microsoft. NuGet is made possible by the Outercurve Foundation's open source project.]]></Val>
+        <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+          <Val><![CDATA[Copyright 2013 Microsoft. NuGet è reso possibile dal progetto open source di Outercurve Foundation.]]></Val>
+          <Props>
+            <Str Name="TranslationModifiedBy" Val="FEDERICA" />
+            <Date Name="TranslationModifiedDate" Val="2015-01-06T15:14:59.3870236Z" />
+          </Props>
+        </Tgt>
+      </Str>
+      <Disp Icon="Str" />
+      <Modified By="FEDERICA" DateTime="2015-01-06T15:15:16.000005Z" />
+      <Props>
+        <Str Name="Custom2" Val="LQA_141222" />
+        <Str Name="TranslationStatus" Val="In Sync" />
+        <Str Name="TranslationStatusPosition" Val="3 - ReadyForReview" />
+      </Props>
+    </Item>
+    <Item ItemId=";OriginalFilename" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text" DevLk="true">
+        <Val><![CDATA[NuGet.Client.VisualStudio.dll]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+    </Item>
+    <Item ItemId=";ProductName" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text">
+        <Val><![CDATA[NuGet]]></Val>
+        <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+          <Val><![CDATA[NuGet]]></Val>
+          <Props>
+            <Str Name="TranslationModifiedBy" Val="FEDERICA" />
+            <Date Name="TranslationModifiedDate" Val="2015-01-06T15:14:59.3870236Z" />
+          </Props>
+        </Tgt>
+      </Str>
+      <Disp Icon="Str" />
+      <Modified By="FEDERICA" DateTime="2015-01-06T15:15:16.000005Z" />
+      <Props>
+        <Str Name="Custom2" Val="LQA_141222" />
+        <Str Name="TranslationStatus" Val="In Sync" />
+        <Str Name="TranslationStatusPosition" Val="3 - ReadyForReview" />
+      </Props>
+    </Item>
+    <Item ItemId=";ProductVersion" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text" DevLk="true">
+        <Val><![CDATA[3.0.0-preview]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+    </Item>
+  </Item>
+  <Item ItemId=";Version" ItemType="8" PsrId="211" Leaf="true">
+    <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" />
+  </Item>
+</LCX>

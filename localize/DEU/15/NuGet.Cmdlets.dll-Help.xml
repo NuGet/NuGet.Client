@@ -1,0 +1,1038 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+
+<helpItems schema="maml">
+
+  <!-- Install-Package command -->
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10">
+
+    <command:details>
+      <command:name>
+        Install-Package
+      </command:name>
+      <maml:description>
+        <maml:para>Installiert ein Paket.</maml:para>
+      </maml:description>
+      <command:verb>Install</command:verb>
+      <command:noun>Package</command:noun>
+      <dev:version></dev:version>
+    </command:details>
+
+    <maml:description>
+      <maml:para>Installiert ein Paket und seine Abhängigkeiten im Projekt.</maml:para>
+    </maml:description>
+
+    <!-- Cmdlet syntax section-->
+    <command:syntax>
+      <command:syntaxItem>
+        <maml:name>Install-Package</maml:name>
+        <command:parameter required="true" position="1">
+          <maml:name>Id</maml:name>
+          <command:parameterValue required="true">string</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" position="named">
+          <maml:name>IgnoreDependencies</maml:name>
+        </command:parameter>
+        <command:parameter required="false" position="named">
+          <maml:name>ProjectName</maml:name>
+          <command:parameterValue required="true">string</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" position="2">
+          <maml:name>Version</maml:name>
+          <command:parameterValue required="true">string</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" position="3">
+          <maml:name>Source</maml:name>
+          <command:parameterValue required="true">string</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" position="named">
+          <maml:name>IncludePrerelease</maml:name>
+        </command:parameter>
+        <command:parameter required="false" position="named">
+          <maml:name>FileConflictAction</maml:name>
+        </command:parameter>
+        <command:parameter required="false" position="named">
+          <maml:name>DependencyVersion</maml:name>
+        </command:parameter>
+        <command:parameter required="false" position="named">
+          <maml:name>WhatIf</maml:name>
+        </command:parameter>
+      </command:syntaxItem>
+    </command:syntax>
+
+    <!-- Cmdlet parameter section  -->
+    <command:parameters>
+      <command:parameter required="true" position="1">
+        <maml:name>Id</maml:name>
+        <maml:description>
+          <maml:para>Gibt die Paket-ID des zu installierenden Pakets an.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true">
+          string
+        </command:parameterValue>
+        <dev:defaultValue></dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" position="named">
+        <maml:name>IgnoreDependencies</maml:name>
+        <maml:description>
+          <maml:para>Installiert nur dieses Paket und nicht seine Abhängigkeiten.</maml:para>
+        </maml:description>
+      </command:parameter>
+      <command:parameter required="false" position="named">
+        <maml:name>ProjectName</maml:name>
+        <maml:description>
+          <maml:para>Gibt das Projekt an, in das das Paket installiert werden soll. Wenn dieser Parameter nicht angegeben wird, wird das Standardprojekt ausgewählt.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true">
+          string
+        </command:parameterValue>
+      </command:parameter>
+      <command:parameter required="false" position="named">
+        <maml:name>Source</maml:name>
+        <maml:description>
+          <maml:para>Gibt die URL oder den Verzeichnispfad für die Paketquelle an, die das zu installierende Paket enthält. Wenn diese Angabe auf einen lokalen Dateisystempfad festgelegt wird, kann die Quelle absolut oder relativ zum aktuellen Verzeichnis sein. Wenn dieser Parameter nicht angegeben wird, wird die aktuell ausgewählte Paketquelle durchsucht, um die entsprechende Paket-URL zu ermitteln.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true">
+          string
+        </command:parameterValue>
+      </command:parameter>
+      <command:parameter required="false" position="named">
+        <maml:name>Version</maml:name>
+        <maml:description>
+          <maml:para>Gibt die Version des zu installierenden Pakets an. Wenn dieser Parameter nicht angegeben wird, wird standardmäßig die aktuellste Version verwendet.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true">
+          string
+        </command:parameterValue>
+      </command:parameter>
+      <command:parameter required="false" position="named">
+        <maml:name>IncludePrerelease</maml:name>
+        <maml:description>
+          <maml:para>Gibt an, ob dieser Befehl Vorabversionen von Paketen berücksichtigt. Wenn dieser Parameter nicht angegeben wird, werden nur stabile Pakete berücksichtigt.</maml:para>
+        </maml:description>
+      </command:parameter>
+        <command:parameter required="false" position="named">
+            <maml:name>FileConflictAction</maml:name>
+            <maml:description>
+                <maml:para>Gibt an, was dieser Befehl tut, wenn eine Datei im Inhaltordner des Pakets schon im Projekt vorhanden ist.</maml:para>
+            </maml:description>
+        </command:parameter>
+      <command:parameter required="false" position="named">
+        <maml:name>DependencyVersion</maml:name>
+        <maml:description>
+          <maml:para>Gibt an, welche Version des Abhängigkeitspakets installiert werden soll. Wenn keine Angabe erfolgt, wird standardmäßig die niedrigste erforderliche Version installiert.</maml:para>
+        </maml:description>
+      </command:parameter>
+      <command:parameter required="false" position="named">
+        <maml:name>WhatIf</maml:name>
+        <maml:description>
+          <maml:para>Zeigt die Aktionen an, die ausgeführt würden, sowie die Auswirkungen des Befehls, anstatt den Befehl auszuführen.</maml:para>
+        </maml:description>
+      </command:parameter>
+    </command:parameters>
+
+    <!-- Examples section  -->
+    <command:examples>
+      <command:example>
+        <maml:title>----------  BEISPIEL 1  ----------</maml:title>
+        <dev:code>PM&gt; Install-Package Elmah</dev:code>
+        <dev:remarks>
+          <maml:para>
+            Beschreibung ------------------------------------------------------------------ Installiert die aktuelle Version des Elmah-Pakets aus der aktuellen Paketquelle in das Standardprojekt.
+          </maml:para>
+          <maml:para></maml:para>
+          <maml:para></maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>----------  BEISPIEL 2  ----------</maml:title>
+        <dev:code>PM&gt; Install-Package Glimpse -Version 1.0.0 -Project MvcApplication1 </dev:code>
+        <dev:remarks>
+          <maml:para>
+            Beschreibung ------------------------------------------------------------------ Installiert Version 1.0.0 von Glimpse in das Projekt namens "MvcApplication1".
+          </maml:para>
+          <maml:para></maml:para>
+          <maml:para></maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>----------  BEISPIEL 3  ----------</maml:title>
+        <dev:code>PM&gt; Install-Package Ninject.Mvc3 -IgnoreDependencies -Source c:\temp\packages </dev:code>
+        <dev:remarks>
+          <maml:para>
+            Beschreibung ------------------------------------------------------------------ Installiert nur das Paket Ninject.Mvc3, nicht jedoch seine Abhängigkeiten. Nach dem Paket wird im Verzeichnis "c:\temp\packages" gesucht.
+          </maml:para>
+          <maml:para></maml:para>
+          <maml:para></maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+
+    <!-- Link section  -->
+    <maml:relatedLinks>
+      <maml:navigationLink>
+        <maml:linkText>Onlineversion:</maml:linkText>
+        <maml:uri>http://docs.nuget.org/</maml:uri>
+      </maml:navigationLink>
+      <maml:navigationLink>
+        <maml:linkText>Install-Package</maml:linkText>
+        <maml:uri/>
+      </maml:navigationLink>
+    </maml:relatedLinks>
+  </command:command>
+
+  <!-- Get-Package command -->
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10">
+
+    <command:details>
+      <command:name>
+        Get-Package
+      </command:name>
+      <maml:description>
+        <maml:para>Ruft den Satz der installierten Pakete ab. Verwenden Sie das Kennzeichen "-ListAvailable", um die aus der Paketquelle verfügbaren Pakete aufzulisten.</maml:para>
+      </maml:description>
+      <command:verb>Get</command:verb>
+      <command:noun>Package</command:noun>
+      <dev:version></dev:version>
+    </command:details>
+
+    <maml:description>
+      <maml:para>Ruft den Satz der installierten Pakete ab. Verwenden Sie das Kennzeichen "-ListAvailable", um die aus der Paketquelle verfügbaren Pakete aufzulisten.</maml:para>
+    </maml:description>
+
+    <!-- Cmdlet syntax section-->
+    <command:syntax>
+      <command:syntaxItem>
+        <maml:name>Get-Package</maml:name>
+        <command:parameter required="true" position="named">
+          <maml:name>Source</maml:name>
+          <command:parameterValue required="true">string</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" position="named">
+          <maml:name>ListAvailable</maml:name>
+        </command:parameter>
+        <command:parameter required="false" position="named">
+          <maml:name>Updates</maml:name>
+        </command:parameter>
+        <command:parameter required="false" position="named">
+          <maml:name>ProjectName</maml:name>
+          <command:parameterValue required="true">string</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" position="named">
+          <maml:name>Filter</maml:name>
+          <command:parameterValue required="true">string</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" position="named">
+          <maml:name>First</maml:name>
+          <command:parameterValue required="true">int</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" position="named">
+          <maml:name>Skip</maml:name>
+          <command:parameterValue required="true">int</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" position="named">
+          <maml:name>AllVersions</maml:name>
+        </command:parameter>
+        <command:parameter required="false" position="named">
+          <maml:name>IncludePrerelease</maml:name>
+        </command:parameter>
+      </command:syntaxItem>
+    </command:syntax>
+
+    <!-- Cmdlet parameter section  -->
+    <command:parameters>
+      <command:parameter required="false" position="named">
+        <maml:name>Source</maml:name>
+        <maml:description>
+          <maml:para>Gibt die URL oder den Verzeichnispfad für die Paketquelle an, die das zu installierende Paket enthält. Wenn diese Angabe auf einen lokalen Dateisystempfad festgelegt wird, kann die Quelle absolut oder relativ zum aktuellen Verzeichnis sein. Wenn dieser Parameter nicht angegeben wird, wird die aktuell ausgewählte Paketquelle durchsucht, um die entsprechende Paket-URL zu ermitteln.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true">
+          string
+        </command:parameterValue>
+      </command:parameter>
+      <command:parameter required="false" position="named">
+        <maml:name>ListAvailable</maml:name>
+        <maml:description>
+          <maml:para>Ruft die aus der Onlinepaketquelle verfügbaren Pakete ab.</maml:para>
+        </maml:description>
+      </command:parameter>
+      <command:parameter required="false">
+        <maml:name>ProjectName</maml:name>
+        <maml:description>
+          <maml:para>Gibt das Projekt an, aus dem installierte Paket abgerufen werden sollen. Wenn dieser Parameter nicht angegeben wird, gibt der Befehl installierte Projekte für die gesamte Lösung zurück.</maml:para>
+        </maml:description>
+      </command:parameter>
+      <command:parameter required="false" position="named">
+        <maml:name>Updates</maml:name>
+        <maml:description>
+          <maml:para>Ruft Pakete ab, für die ein Update aus der Paketquelle verfügbar ist.</maml:para>
+        </maml:description>
+      </command:parameter>
+      <command:parameter required="false" position="named">
+        <maml:name>Filter</maml:name>
+        <maml:description>
+          <maml:para>Gibt eine Filterzeichenfolge an, die zum Eingrenzen der Liste der zurückgegebenen Pakete verwendet wird. Nach dem Filter wird in der Paket-ID, der Beschreibung und den Tags gesucht.</maml:para>
+        </maml:description>
+      </command:parameter>
+      <command:parameter required="false" position="named">
+        <maml:name>First</maml:name>
+        <maml:description>
+          <maml:para>Gibt die Anzahl der Pakete an, die vom Anfang der Liste zurückgegeben werden sollen.</maml:para>
+        </maml:description>
+      </command:parameter>
+      <command:parameter required="false" position="named">
+        <maml:name>Skip</maml:name>
+        <maml:description>
+          <maml:para>Überspringt (keine Rückgabe) die angegebene Anzahl von Paketen ab dem Anfang der Liste.</maml:para>
+        </maml:description>
+      </command:parameter>
+      <command:parameter required="false" position="named">
+        <maml:name>AllVersions</maml:name>
+        <maml:description>
+          <maml:para>Zeigt alle verfügbaren Versionen eines Pakets an. Standardmäßig wird die aktuelle Version jedes Pakets aufgelistet. </maml:para>
+        </maml:description>
+      </command:parameter>
+      <command:parameter required="false" position="named">
+        <maml:name>IncludePrerelease</maml:name>
+        <maml:description>
+          <maml:para>Gibt an, ob Vorabversionen von Paketen in die zurückgegebenen Ergebnisse eingeschlossen werden sollen.</maml:para>
+        </maml:description>
+      </command:parameter>
+    </command:parameters>
+
+    <!-- Examples section  -->
+    <command:examples>
+      <command:example>
+        <maml:title>----------  BEISPIEL 1  ----------</maml:title>
+        <dev:code>PM&gt; Get-Package</dev:code>
+        <dev:remarks>
+          <maml:para>
+            Beschreibung ------------------------------------------------------------------ Gibt die in der aktuellen Lösung installierten Pakete zurück.
+          </maml:para>
+          <maml:para></maml:para>
+          <maml:para></maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>----------  BEISPIEL 2  ----------</maml:title>
+        <dev:code>PM&gt; Get-Package -ProjectName MyProject</dev:code>
+        <dev:remarks>
+          <maml:para>
+            Beschreibung ------------------------------------------------------------------ Gibt die im Projekt "MyProject" installierten Pakete zurück.
+          </maml:para>
+          <maml:para></maml:para>
+          <maml:para></maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>----------  BEISPIEL 3  ----------</maml:title>
+        <dev:code>PM&gt; Get-Package -ListAvailable</dev:code>
+        <dev:remarks>
+          <maml:para>
+            Beschreibung ------------------------------------------------------------------ Gibt eine Liste der in der aktuellen Paketquelle online verfügbaren Pakete zurück.
+          </maml:para>
+          <maml:para></maml:para>
+          <maml:para></maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>----------  BEISPIEL 4  ----------</maml:title>
+        <dev:code>PM&gt; Get-Package -ListAvailable -Filter Ninject</dev:code>
+        <dev:remarks>
+          <maml:para>
+            Beschreibung ------------------------------------------------------------------ Gibt mithilfe von "Ninject" als Suchbegriff eine Liste der online verfügbaren Pakete zurück.
+          </maml:para>
+          <maml:para></maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>----------  BEISPIEL 5  ----------</maml:title>
+        <dev:code>PS&gt; Get-Package -Updates</dev:code>
+        <dev:remarks>
+          <maml:para>
+            Beschreibung ------------------------------------------------------------------ Gibt eine Liste der im Standardprojekt installierten Pakete zurück, für die Updates in der aktuellen Paketquelle verfügbar sind.
+          </maml:para>
+          <maml:para></maml:para>
+          <maml:para></maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+
+    <!-- Link section  -->
+    <maml:relatedLinks>
+      <maml:navigationLink>
+        <maml:linkText>Onlineversion:</maml:linkText>
+        <maml:uri>http://docs.nuget.org/</maml:uri>
+      </maml:navigationLink>
+      <maml:navigationLink>
+        <maml:linkText>Get-Package</maml:linkText>
+        <maml:uri/>
+      </maml:navigationLink>
+    </maml:relatedLinks>
+  </command:command>
+
+  <!-- Uninstall-Package command -->
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10">
+
+    <command:details>
+      <command:name>
+        Uninstall-Package
+      </command:name>
+      <maml:description>
+        <maml:para>Deinstalliert ein Paket.</maml:para>
+      </maml:description>
+      <command:verb>Uninstall</command:verb>
+      <command:noun>Package</command:noun>
+      <dev:version></dev:version>
+    </command:details>
+
+    <maml:description>
+      <maml:para>Deinstalliert ein Paket. Wenn andere Pakete von diesem Paket abhängen, tritt bei diesem Befehl nur dann kein Fehler auf, wenn die Option "-Force" angegeben wird.</maml:para>
+    </maml:description>
+
+    <!-- Cmdlet syntax section-->
+    <command:syntax>
+      <command:syntaxItem>
+        <maml:name>Uninstall-Package</maml:name>
+        <command:parameter required="true" position="1">
+          <maml:name>Id</maml:name>
+          <command:parameterValue required="true">string</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" position="named">
+          <maml:name>RemoveDependencies</maml:name>
+        </command:parameter>
+        <command:parameter required="false" position="named">
+          <maml:name>ProjectName</maml:name>
+          <command:parameterValue required="true">string</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" position="named">
+          <maml:name>Force</maml:name>
+        </command:parameter>
+        <command:parameter required="false" position="named">
+          <maml:name>Version</maml:name>
+          <command:parameterValue required="true">string</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" position="named">
+          <maml:name>WhatIf</maml:name>
+        </command:parameter>
+      </command:syntaxItem>
+    </command:syntax>
+
+    <!-- Cmdlet parameter section  -->
+    <command:parameters>
+      <command:parameter required="true" position="1">
+        <maml:name>Id</maml:name>
+        <maml:description>
+          <maml:para>Gibt die Paket-ID des zu deinstallierenden Pakets an.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true">
+          string
+        </command:parameterValue>
+        <dev:defaultValue></dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" position="named">
+        <maml:name>RemoveDependencies</maml:name>
+        <maml:description>
+          <maml:para>Deinstalliert das Paket und seine nicht verwendeten Abhängigkeiten.</maml:para>
+        </maml:description>
+      </command:parameter>
+      <command:parameter required="false" position="named">
+        <maml:name>ProjectName</maml:name>
+        <maml:description>
+          <maml:para>Gibt das Projekt an, aus dem das Paket deinstalliert werden soll. Wenn dieser Parameter nicht angegeben wird, wird das Standardprojekt ausgewählt.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true">
+          string
+        </command:parameterValue>
+      </command:parameter>
+      <command:parameter required="false" position="named">
+        <maml:name>Force</maml:name>
+        <maml:description>
+          <maml:para>Erzwingt eine Deinstallation des Pakets selbst dann, wenn ein anderes Paket von ihm abhängt.</maml:para>
+        </maml:description>
+      </command:parameter>
+      <command:parameter required="false" position="named">
+        <maml:name>Version</maml:name>
+        <maml:description>
+          <maml:para>Die Version des zu deinstallierenden Pakets. Wenn dieser Parameter nicht angegeben wird, wird standardmäßig die aktuellste Version verwendet.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true">
+          string
+        </command:parameterValue>
+      </command:parameter>
+      <command:parameter required="false" position="named">
+        <maml:name>WhatIf</maml:name>
+        <maml:description>
+          <maml:para>Zeigt die Aktionen an, die ausgeführt würden, sowie die Auswirkungen des Befehls, anstatt den Befehl auszuführen.</maml:para>
+        </maml:description>
+      </command:parameter>
+    </command:parameters>
+
+    <command:examples>
+      <command:example>
+        <maml:title>----------  BEISPIEL 1  ----------</maml:title>
+        <dev:code>PM&gt; Uninstall-Package Elmah</dev:code>
+        <dev:remarks>
+          <maml:para>
+            Beschreibung ------------------------------------------------------------------ Deinstalliert das Elmah-Paket aus dem Standardprojekt.
+          </maml:para>
+          <maml:para></maml:para>
+          <maml:para></maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>----------  BEISPIEL 2  ----------</maml:title>
+        <dev:code>PM&gt; Uninstall-Package Elmah -RemoveDependencies</dev:code>
+        <dev:remarks>
+          <maml:para>
+            Beschreibung ------------------------------------------------------------------ Deinstalliert das Elmah-Paket sowie seine Abhängigkeiten. Wenn eine Abhängigkeit ein weiteres Paket aufweist, das von ihr abhängig ist, wird sie übersprungen.
+          </maml:para>
+          <maml:para></maml:para>
+          <maml:para></maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>----------  BEISPIEL 3  ----------</maml:title>
+        <dev:code>PM&gt; Uninstall-Package Elmah -Force</dev:code>
+        <dev:remarks>
+          <maml:para>
+            Beschreibung ------------------------------------------------------------------ Deinstalliert das Elmah-Paket selbst dann, wenn ein anderes Paket von ihm abhängig ist.
+          </maml:para>
+          <maml:para></maml:para>
+          <maml:para></maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+
+    <!-- Link section  -->
+    <maml:relatedLinks>
+      <maml:navigationLink>
+        <maml:linkText>Onlineversion:</maml:linkText>
+        <maml:uri>http://docs.nuget.org/</maml:uri>
+      </maml:navigationLink>
+      <maml:navigationLink>
+        <maml:linkText>Uninstall-Package</maml:linkText>
+        <maml:uri/>
+      </maml:navigationLink>
+    </maml:relatedLinks>
+  </command:command>
+
+  <!-- Update-Package command -->
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10">
+
+    <command:details>
+      <command:name>
+        Update-Package
+      </command:name>
+      <maml:description>
+        <maml:para>Aktualisiert ein Paket.</maml:para>
+      </maml:description>
+      <command:verb>Update</command:verb>
+      <command:noun>Package</command:noun>
+      <dev:version></dev:version>
+    </command:details>
+
+    <maml:description>
+      <maml:para>Aktualisiert ein Paket und seine Abhängigkeiten auf eine neuere Version.</maml:para>
+    </maml:description>
+
+    <!-- Cmdlet syntax section-->
+    <command:syntax>
+      <command:syntaxItem>
+        <maml:name>Update-Package</maml:name>
+        <command:parameter required="true" position="1">
+          <maml:name>Id</maml:name>
+          <command:parameterValue required="true">string</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" position="named">
+          <maml:name>IgnoreDependencies</maml:name>
+        </command:parameter>
+        <command:parameter required="false" position="named">
+          <maml:name>ProjectName</maml:name>
+          <command:parameterValue required="true">string</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" position="named">
+          <maml:name>Version</maml:name>
+          <command:parameterValue required="true">string</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" position="named">
+          <maml:name>Safe</maml:name>
+        </command:parameter>
+        <command:parameter required="false" position="named">
+          <maml:name>Source</maml:name>
+          <command:parameterValue required="true">string</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" position="named">
+          <maml:name>IncludePrerelease</maml:name>
+        </command:parameter>
+        <command:parameter required="false" position="named">
+          <maml:name>Reinstall</maml:name>
+        </command:parameter>
+        <command:parameter required="false" position="named">
+          <maml:name>FileConflictAction</maml:name>
+        </command:parameter>
+        <command:parameter required="false" position="named">
+          <maml:name>WhatIf</maml:name>
+        </command:parameter>
+      </command:syntaxItem>
+    </command:syntax>
+
+    <!-- Cmdlet parameter section  -->
+    <command:parameters>
+      <command:parameter required="true" position="1">
+        <maml:name>Id</maml:name>
+        <maml:description>
+          <maml:para>Gibt die Paket-ID des zu aktualisierenden Pakets an. Wenn dieser Parameter nicht angegeben wird, wird jedes Paket aktualisiert.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true">
+          string
+        </command:parameterValue>
+        <dev:defaultValue></dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" position="named">
+        <maml:name>IgnoreDependencies</maml:name>
+        <maml:description>
+          <maml:para>Aktualisiert alle Abhängigkeiten des Pakets auf die aktuelle Version. Standardmäßig "False".</maml:para>
+        </maml:description>
+      </command:parameter>
+      <command:parameter required="false" position="named">
+        <maml:name>ProjectName</maml:name>
+        <maml:description>
+          <maml:para>Gibt das Projekt an, das das zu aktualisierende Projekt enthält. Wenn dieser Parameter nicht angegeben wird, wird das Paket in jedem Projekt aktualisiert, in dem das Paket installiert ist.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true">
+          string
+        </command:parameterValue>
+      </command:parameter>
+      <command:parameter required="false" position="named">
+        <maml:name>Safe</maml:name>
+        <maml:description>
+          <maml:para>Schränkt Upgrades auf neuere Versionen mit der gleichen Haupt- und Nebenversionskomponente ein. Wenn z. B. Version 1.0.0 eines Pakets installiert ist und die Versionen 1.0.1, 1.0.2 und 1.1 im Feed verfügbar sind, aktualisiert das Kennzeichen "-Safe" das Paket auf die Version 1.0.2.</maml:para>
+        </maml:description>
+      </command:parameter>
+      <command:parameter required="false" position="named">
+        <maml:name>Source</maml:name>
+        <maml:description>
+          <maml:para>Gibt die URL oder den Verzeichnispfad für die Paketquelle an, die das zu aktualisierende Paket enthält. Wenn diese Angabe auf einen lokalen Dateisystempfad festgelegt wird, kann die Quelle absolut oder relativ zum aktuellen Verzeichnis sein. Wenn dieser Parameter nicht angegeben wird, wird die aktuell ausgewählte Paketquelle durchsucht, um die entsprechende Paket-URL zu ermitteln.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true">
+          string
+        </command:parameterValue>
+      </command:parameter>
+      <command:parameter required="false" position="named">
+        <maml:name>Version</maml:name>
+        <maml:description>
+          <maml:para>Gibt die Version an, auf die das Paket aktualisiert werden soll. Wenn dieser Parameter nicht angegeben wird, wird standardmäßig die aktuellste Version verwendet.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true">
+          string
+        </command:parameterValue>
+      </command:parameter>
+      <command:parameter required="false" position="named">
+        <maml:name>IncludePrerelease</maml:name>
+        <maml:description>
+          <maml:para>Gibt an, ob beim Suchen nach Updates Vorabversionen berücksichtigt werden sollen. Wenn dieser Parameter nicht angegeben wird, werden nur stabile Pakete berücksichtigt.</maml:para>
+        </maml:description>
+      </command:parameter>
+      <command:parameter required="false" position="named">
+        <maml:name>Reinstall</maml:name>
+        <maml:description>
+          <maml:para>Installiert Pakete mit den vorhandenen Versionen erneut.</maml:para>
+        </maml:description>
+      </command:parameter>
+        <command:parameter required="false" position="named">
+            <maml:name>FileConflictAction</maml:name>
+            <maml:description>
+                <maml:para>Gibt an, was dieser Befehl tut, wenn eine Datei im Inhaltordner des Pakets schon im Projekt vorhanden ist.</maml:para>
+            </maml:description>
+        </command:parameter>
+      <command:parameter required="false" position="named">
+        <maml:name>WhatIf</maml:name>
+        <maml:description>
+          <maml:para>Zeigt die Aktionen an, die ausgeführt würden, sowie die Auswirkungen des Befehls, anstatt den Befehl auszuführen.</maml:para>
+        </maml:description>
+      </command:parameter>
+    </command:parameters>
+
+    <command:examples>
+      <command:example>
+        <maml:title>----------  BEISPIEL 1  ----------</maml:title>
+        <dev:code>PM&gt; Update-Package Elmah</dev:code>
+        <dev:remarks>
+          <maml:para>
+            Beschreibung ------------------------------------------------------------------ Aktualisiert das in jedem Projekt installierte Elmah-Paket auf die aktuelle Version.
+          </maml:para>
+          <maml:para></maml:para>
+          <maml:para></maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>----------  BEISPIEL 2  ----------</maml:title>
+        <dev:code>PM&gt; Update-Package Elmah -Version 1.1.0</dev:code>
+        <dev:remarks>
+          <maml:para>
+            Beschreibung ------------------------------------------------------------------ Aktualisiert das Elmah-Paket in jedem Projekt auf eine bestimmte Version.
+          </maml:para>
+          <maml:para></maml:para>
+          <maml:para></maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>----------  BEISPIEL 3  ----------</maml:title>
+        <dev:code>PM&gt; Update-Package</dev:code>
+        <dev:remarks>
+          <maml:para>
+            Beschreibung ------------------------------------------------------------------ Aktualisiert jedes Paket in jedem Projekt.
+          </maml:para>
+          <maml:para></maml:para>
+          <maml:para></maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>----------  BEISPIEL 3  ----------</maml:title>
+        <dev:code>PM&gt; Update-Package -Safe -Project MvcApplication1</dev:code>
+        <dev:remarks>
+          <maml:para>
+            Beschreibung ------------------------------------------------------------------ Aktualisiert jedes Paket im Projekt ("MvcApplication1") auf die aktuelle "sichere" Version. Wenn z. B. Version 1.0.0 eines Pakets installiert ist und die Versionen 1.0.1, 1.0.2 und 1.1 im Feed verfügbar sind, aktualisiert das Kennzeichen "-Safe" das Paket auf die Version 1.0.2.
+          </maml:para>
+          <maml:para></maml:para>
+          <maml:para></maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+
+    <!-- Link section  -->
+    <maml:relatedLinks>
+      <maml:navigationLink>
+        <maml:linkText>Onlineversion:</maml:linkText>
+        <maml:uri>http://docs.nuget.org/</maml:uri>
+      </maml:navigationLink>
+      <maml:navigationLink>
+        <maml:linkText>Update-Package</maml:linkText>
+        <maml:uri/>
+      </maml:navigationLink>
+    </maml:relatedLinks>
+  </command:command>
+
+  <!-- Add-BindingRedirect command -->
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10">
+
+    <command:details>
+      <command:name>
+        Add-BindingRedirect
+      </command:name>
+      <maml:description>
+        <maml:para>Fügt der Konfigurationsdatei Bindungsweiterleitungen hinzu.</maml:para>
+      </maml:description>
+      <command:verb>Add</command:verb>
+      <command:noun>BindingRedirect</command:noun>
+      <dev:version></dev:version>
+    </command:details>
+
+    <maml:description>
+      <maml:para>
+        Untersucht alle Assemblys im Ausgabepfad auf ein Projekt und fügt der Anwendungs- oder Webkonfigurationsdatei Bindungsweiterleitungen hinzu, wenn erforderlich. HINWEIS: Ab NuGet 1.2 führt NuGet diesen Befehl beim Installieren eines Pakets automatisch aus.
+      </maml:para>
+    </maml:description>
+
+    <!-- Cmdlet syntax section-->
+    <command:syntax>
+      <command:syntaxItem>
+        <maml:name>Add-BindingRedirect</maml:name>
+        <command:parameter required="true" position="1">
+          <maml:name>ProjectName</maml:name>
+          <command:parameterValue required="true">string</command:parameterValue>
+        </command:parameter>
+      </command:syntaxItem>
+    </command:syntax>
+
+    <!-- Cmdlet parameter section  -->
+    <command:parameters>
+      <command:parameter required="true" position="1">
+        <maml:name>ProjectName</maml:name>
+        <maml:description>
+          <maml:para>Gibt das Projekt an, das analysiert werden soll und dem Bindungsweiterleitungen hinzugefügt werden sollen.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true">
+          string
+        </command:parameterValue>
+      </command:parameter>
+    </command:parameters>
+
+    <command:examples>
+      <command:example>
+        <maml:title>----------  BEISPIEL 1  ----------</maml:title>
+        <dev:code>PM&gt; Add-BindingRedirect MyProjectName</dev:code>
+        <dev:remarks>
+          <maml:para>
+            Beschreibung ------------------------------------------------------------------ Fügt dem angegebenen Projekt ("MyProjectName") Bindungsweiterleitungen hinzu.
+          </maml:para>
+          <maml:para></maml:para>
+          <maml:para></maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+
+    <!-- Link section  -->
+    <maml:relatedLinks>
+      <maml:navigationLink>
+        <maml:linkText>Onlineversion:</maml:linkText>
+        <maml:uri>http://docs.nuget.org/</maml:uri>
+      </maml:navigationLink>
+      <maml:navigationLink>
+        <maml:linkText>Add-BindingRedirect</maml:linkText>
+        <maml:uri/>
+      </maml:navigationLink>
+    </maml:relatedLinks>
+  </command:command>
+
+  <!-- Get-Project -->
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10">
+
+    <command:details>
+      <command:name>
+        Get-Project
+      </command:name>
+      <maml:description>
+        <maml:para>Ruft das angegebene Projekt ab. Wenn keine Angabe erfolgt, wird das Standardprojekt zurückgegeben.</maml:para>
+      </maml:description>
+      <command:verb>Get</command:verb>
+      <command:noun>Project</command:noun>
+      <dev:version></dev:version>
+    </command:details>
+
+    <maml:description>
+      <maml:para>Gibt einen Verweis auf die DTE (Development Tools Environment) für das angegebene Projekt zurück. Wenn keine Angabe erfolgt, wird das Standardprojekt zurückgegeben, das in der Konsole des Paket-Managers ausgewählt ist.</maml:para>
+    </maml:description>
+
+    <!-- Cmdlet syntax section-->
+    <command:syntax>
+      <command:syntaxItem>
+        <maml:name>Get-Project</maml:name>
+        <command:parameter required="false" position="1">
+          <maml:name>Name</maml:name>
+          <command:parameterValue required="true">string</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" position="named">
+          <maml:name>All</maml:name>
+        </command:parameter>
+      </command:syntaxItem>
+    </command:syntax>
+
+    <!-- Cmdlet parameter section  -->
+    <command:parameters>
+      <command:parameter required="false" position="1">
+        <maml:name>Name</maml:name>
+        <maml:description>
+          <maml:para>Gibt das zurückzugebende Projekt an. Wenn dieser Parameter nicht angegeben wird, wird das Standardprojekt zurückgegeben, das in der Konsole des Paket-Managers ausgewählt ist.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true">
+          string
+        </command:parameterValue>
+      </command:parameter>
+      <command:parameter required="false" position="named">
+        <maml:name>All</maml:name>
+        <maml:description>
+          <maml:para>Gibt jedes Paket in der Lösung zurück.</maml:para>
+        </maml:description>
+      </command:parameter>
+    </command:parameters>
+
+    <command:examples>
+      <command:example>
+        <maml:title>----------  BEISPIEL 1  ----------</maml:title>
+        <dev:code>PM&gt; Get-Project</dev:code>
+        <dev:remarks>
+          <maml:para>
+            Beschreibung ------------------------------------------------------------------ Gibt einen Verweis auf das Standardprojekt zurück.
+          </maml:para>
+          <maml:para></maml:para>
+          <maml:para></maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>----------  BEISPIEL 2  ----------</maml:title>
+        <dev:code>PM&gt; Get-Project MyProjectName</dev:code>
+        <dev:remarks>
+          <maml:para>
+            Beschreibung ------------------------------------------------------------------ Gibt einen Verweis auf das angegebene Projekt ("MyProjectName") zurück.
+          </maml:para>
+          <maml:para></maml:para>
+          <maml:para></maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>----------  BEISPIEL 3  ----------</maml:title>
+        <dev:code>PM&gt; Get-Project -All</dev:code>
+        <dev:remarks>
+          <maml:para>
+            Beschreibung ------------------------------------------------------------------ Gibt einen Verweis auf jedes Projekt in der Lösung zurück.
+          </maml:para>
+          <maml:para></maml:para>
+          <maml:para></maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+
+    <!-- Link section  -->
+    <maml:relatedLinks>
+      <maml:navigationLink>
+        <maml:linkText>Onlineversion:</maml:linkText>
+        <maml:uri>http://docs.nuget.org/</maml:uri>
+      </maml:navigationLink>
+      <maml:navigationLink>
+        <maml:linkText>Get-Project</maml:linkText>
+        <maml:uri/>
+      </maml:navigationLink>
+    </maml:relatedLinks>
+  </command:command>
+
+  <!-- Open-PackagePage -->
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10">
+
+    <command:details>
+      <command:name>
+        Open-PackagePage
+      </command:name>
+      <maml:description>
+        <maml:para>
+          Öffnet den Browser mit den URLs "ProjectUrl", "LicenseUrl" oder "ReportAbuseUrl" des angegebenen Pakets.
+        </maml:para>
+      </maml:description>
+      <command:verb>Open</command:verb>
+      <command:noun>PackagePage</command:noun>
+      <dev:version></dev:version>
+    </command:details>
+
+    <maml:description>
+      <maml:para>
+        Öffnet den Browser mit den URLs "ProjectUrl", "LicenseUrl" oder "ReportAbuseUrl" des angegebenen Pakets.
+      </maml:para>
+    </maml:description>
+
+    <!-- Cmdlet syntax section-->
+    <command:syntax>
+      <command:syntaxItem>
+        <maml:name>Open-PackagePage</maml:name>
+        <command:parameter required="true" position="named">
+          <maml:name>Id</maml:name>
+          <command:parameterValue required="true">string</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" position="named">
+          <maml:name>Version</maml:name>
+        </command:parameter>
+        <command:parameter required="false" position="named">
+          <maml:name>Source</maml:name>
+        </command:parameter>
+        <command:parameter required="false" position="named">
+          <maml:name>License</maml:name>
+        </command:parameter>
+        <command:parameter required="false" position="named">
+          <maml:name>ReportAbuse</maml:name>
+        </command:parameter>
+        <command:parameter required="false" position="named">
+          <maml:name>PassThru</maml:name>
+        </command:parameter>
+      </command:syntaxItem>
+    </command:syntax>
+
+    <!-- Cmdlet parameter section  -->
+    <command:parameters>
+      <command:parameter required="false" position="named">
+        <maml:name>Id</maml:name>
+        <maml:description>
+          <maml:para>Gibt die ID des Pakets an, nach dem gesucht werden soll.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true">string</command:parameterValue>
+      </command:parameter>
+      <command:parameter required="false" position="named">
+        <maml:name>Version</maml:name>
+        <maml:description>
+          <maml:para>Gibt die Version des Pakets an, nach dem gesucht werden soll. Wenn dieser Parameter nicht angegeben wird, wird standardmäßig die aktuellste Version verwendet.</maml:para>
+        </maml:description>
+      </command:parameter>
+      <command:parameter required="false" position="named">
+        <maml:name>Source</maml:name>
+        <maml:description>
+          <maml:para>Gibt die Quelle des Repositorys an, in dem nach dem Paket gesucht werden soll. Wenn dieser Parameter nicht angegeben wird, wird standardmäßig die ausgewählte Quelle im Paketquellen-Dropdownsteuerelement verwendet.</maml:para>
+        </maml:description>
+      </command:parameter>
+      <command:parameter required="false" position="named">
+        <maml:name>License</maml:name>
+        <maml:description>
+          <maml:para>Gibt an, dass das Cmdlet die "LicenseUrl" des angegebenen Pakets öffnen soll. Wenn weder die "LicenseUrl" noch die "ReportAbuseUrl" festgelegt ist, öffnet das Cmdlet standardmäßig die "ProjectUrl".</maml:para>
+        </maml:description>
+      </command:parameter>
+      <command:parameter required="false" position="named">
+        <maml:name>ReportAbuse</maml:name>
+        <maml:description>
+          <maml:para>Gibt an, dass das Cmdlet die "ReportAbuseUrl" des angegebenen Pakets öffnen soll. Wenn weder die "LicenseUrl" noch die "ReportAbuseUrl" festgelegt ist, öffnet das Cmdlet standardmäßig die "ProjectUrl".</maml:para>
+        </maml:description>
+      </command:parameter>
+      <command:parameter required="false" position="named">
+        <maml:name>PassThru</maml:name>
+        <maml:description>
+          <maml:para>Wenn dieser Parameter angegeben wird, gibt das Cmdlet den Wert der angeforderten URL zurück</maml:para>
+        </maml:description>
+      </command:parameter>
+    </command:parameters>
+
+    <command:examples>
+      <command:example>
+        <maml:title>----------  BEISPIEL 1  ----------</maml:title>
+        <dev:code>PM&gt; Open-PackagePage Ninject</dev:code>
+        <dev:remarks>
+          <maml:para>
+            Beschreibung ------------------------------------------------------------------ Öffnet einen Browser mit der im Ninject-Paket angegebenen Projekt-URL.
+          </maml:para>
+          <maml:para></maml:para>
+          <maml:para></maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>----------  BEISPIEL 2  ----------</maml:title>
+        <dev:code>PM&gt; Open-PackagePage Ninject -License</dev:code>
+        <dev:remarks>
+          <maml:para>
+            Beschreibung ------------------------------------------------------------------ Öffnet einen Browser mit der im Ninject-Paket angegebenen Lizenz-URL.
+          </maml:para>
+          <maml:para></maml:para>
+          <maml:para></maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>----------  BEISPIEL 3  ----------</maml:title>
+        <dev:code>PM&gt; Open-PackagePage Ninject -ReportAbuse</dev:code>
+        <dev:remarks>
+          <maml:para>
+            Beschreibung ------------------------------------------------------------------ Öffnet einen Browser mit der URL in der aktuellen Paketquelle, die zum Angeben des Missbrauchs des angegebenen Pakets verwendet wird.
+          </maml:para>
+          <maml:para></maml:para>
+          <maml:para></maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>----------  BEISPIEL 4  ----------</maml:title>
+        <dev:code>PM&gt; $url = Open-PackagePage Ninject -License -WhatIf -PassThru</dev:code>
+        <dev:remarks>
+          <maml:para>
+            Beschreibung ------------------------------------------------------------------ Weist der Variablen ("$url") eine Lizenz-URL zu, ohne die URL in einem Browser zu öffnen.
+          </maml:para>
+          <maml:para></maml:para>
+          <maml:para></maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+
+    <!-- Link section  -->
+    <maml:relatedLinks>
+      <maml:navigationLink>
+        <maml:linkText>Onlineversion:</maml:linkText>
+        <maml:uri>http://docs.nuget.org/</maml:uri>
+      </maml:navigationLink>
+      <maml:navigationLink>
+        <maml:linkText>Open-PackagePage</maml:linkText>
+        <maml:uri/>
+      </maml:navigationLink>
+    </maml:relatedLinks>
+  </command:command>
+</helpItems>

@@ -1,0 +1,12 @@
+﻿Bitte stellen Sie Proxyanmeldeinformationen zur Verfügung:
+
+Bitte stellen Sie Anmeldeinformationen zur Verfügung für: {0}
+
+Kennwort: 
+
+Benutzername: 
+
+Alle in "{0}" aufgeführten Pakete sind bereits installiert.
+
+Die Paketwiederherstellung ist standardmäßig deaktiviert. Wenn Sie Ihre Zustimmung erteilen möchten, öffnen Sie das Dialogfeld "Optionen" von Visual Studio, klicken Sie auf den Knoten "Paket-Manager", und aktivieren Sie dann "NuGet das Herunterladen fehlender Pakete während des Builds erlauben". Sie können Ihre Zustimmung erteilen, indem Sie die Umgebungsvariable "EnableNuGetPackageRestore" auf "true" festlegen.
+    

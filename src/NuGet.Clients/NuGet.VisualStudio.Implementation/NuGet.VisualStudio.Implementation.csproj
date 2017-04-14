@@ -5,6 +5,7 @@
   <PropertyGroup>
     <TargetFramework>net46</TargetFramework>
     <Shipping>true</Shipping>
+    <IncludeInVSIX>true</IncludeInVSIX>
   </PropertyGroup>
 
   <PropertyGroup>

@@ -1,0 +1,2321 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<LCX SchemaVersion="6.0" Name="D:\DD\Dev10\OffCycle\AspNet\Plan9\Main\bin\Release\NuGet.Core.dll" PsrId="211" FileType="1" SrcCul="en-US" TgtCul="ru-RU" xmlns="http://schemas.microsoft.com/locstudio/2006/6/lcx">
+  <Props>
+    <Str Name="CustomName1" Val="Custom 1" />
+    <Str Name="CustomName2" Val="Custom 2" />
+    <Str Name="CustomName3" Val="Custom 3" />
+    <Str Name="CustomName4" Val="Custom 4" />
+    <Str Name="CustomName5" Val="Custom 5" />
+    <Str Name="CustomName6" Val="IQA" />
+    <Str Name="HobbitID" Val="310bb0fd-4f45-41cf-8a13-0b66811c095f" />
+  </Props>
+  <OwnedComments>
+    <Cmt Name="Dev" />
+    <Cmt Name="LcxAdmin" />
+    <Cmt Name="Note" />
+    <Cmt Name="Rccx" />
+  </OwnedComments>
+  <Settings Name="@vsLocTools@\default.lss" Type="Lss" />
+  <Item ItemId=";Managed Resources" ItemType="0" PsrId="211" Leaf="true">
+    <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" />
+    <Modified By="listenev" DateTime="2010-12-03T11:15:45Z" />
+  </Item>
+  <Item ItemId=";NuGet.Authoring.nuspec.xsd" ItemType="0" PsrId="210" Leaf="true">
+    <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" Path=" \ ;XML \ 0 \ 0" />
+    <Modified By="listenev" DateTime="2010-12-03T11:15:45Z" />
+  </Item>
+  <Item ItemId=";NuGet.CommonResources.resources" ItemType="0" PsrId="211" Leaf="false">
+    <Disp Icon="Str" Expand="true" Disp="true" LocTbl="false" Path=" \ ;Managed Resources \ 0 \ 0" />
+    <Modified By="nicolasp" DateTime="2012-05-28T19:46:41Z" />
+    <Item ItemId=";Strings" ItemType="0" PsrId="211" Leaf="false">
+      <Disp Icon="Str" LocTbl="false" />
+      <Modified By="nicolasp" DateTime="2012-05-28T19:46:41Z" />
+      <Item ItemId=";Argument_Cannot_Be_Null_Or_Empty" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Value cannot be null or an empty string.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[Значение не может быть NULL или пустой строкой.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="nicolasp" DateTime="2012-05-28T19:48:49Z" />
+      </Item>
+      <Item ItemId=";Argument_Must_Be_Between" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Value must be between {0} and {1}.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[Значение должно быть в диапазоне от {0} до {1}.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="nicolasp" DateTime="2012-05-28T19:48:49Z" />
+      </Item>
+      <Item ItemId=";Argument_Must_Be_Enum_Member" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Value must be a value from the "{0}" enumeration.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[Значение должно принадлежать перечислению "{0}".]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="nicolasp" DateTime="2012-05-28T19:48:49Z" />
+      </Item>
+      <Item ItemId=";Argument_Must_Be_GreaterThan" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Value must be greater than {0}.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[Значение должно быть больше {0}.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="nicolasp" DateTime="2012-05-28T19:48:49Z" />
+      </Item>
+      <Item ItemId=";Argument_Must_Be_GreaterThanOrEqualTo" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Value must be greater than or equal to {0}.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[Значение должно быть больше или равно {0}.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="nicolasp" DateTime="2012-05-28T19:48:49Z" />
+      </Item>
+      <Item ItemId=";Argument_Must_Be_LessThan" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Value must be less than {0}.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[Значение должно быть меньше {0}.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="nicolasp" DateTime="2012-05-28T19:48:49Z" />
+      </Item>
+      <Item ItemId=";Argument_Must_Be_LessThanOrEqualTo" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Value must be less than or equal to {0}.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[Значение должно быть меньше или равно {0}.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="nicolasp" DateTime="2012-05-28T19:48:49Z" />
+      </Item>
+      <Item ItemId=";Argument_Must_Be_Null_Or_Non_Empty" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Value cannot be an empty string. It must either be null or a non-empty string.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[Значение не может быть пустой строкой. Оно должно быть NULL или непустой строкой.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="nicolasp" DateTime="2012-05-28T19:48:49Z" />
+      </Item>
+      <Item ItemId=";EnsureImportedMessage" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[This project references NuGet package(s) that are missing on this computer. Enable NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Данный проект ссылается на пакеты NuGet, отсутствующие на этом компьютере. Включите восстановление пакетов NuGet, чтобы загрузить их. Дополнительные сведения см. по адресу: http://go.microsoft.com/fwlink/?LinkID=322105. Отсутствует следующий файл: {0}.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="SamV" DateTime="2013-12-31T10:27:50Z" />
+      </Item>
+    </Item>
+  </Item>
+  <Item ItemId=";NuGet.Resources.AnalysisResources.resources" ItemType="0" PsrId="211" Leaf="false">
+    <Disp Icon="Str" Expand="true" Disp="true" LocTbl="false" Path=" \ ;Managed Resources \ 0 \ 0" />
+    <Modified By="julior" DateTime="2012-02-06T16:27:36Z" />
+    <Item ItemId=";Strings" ItemType="0" PsrId="211" Leaf="false">
+      <Disp Icon="Str" LocTbl="false" />
+      <Modified By="julior" DateTime="2012-02-06T16:27:36Z" />
+      <Item ItemId=";AssemblyOutsideLibDescription" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The assembly '{0}' is not inside the 'lib' folder and hence it won't be added as reference when the package is installed into a project.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Сборка "{0}" находится вне папки "lib" и поэтому не будет добавлена в качестве ссылки при установке пакета в проект.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="a_konev" DateTime="2012-02-10T14:46:37Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="lib"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";AssemblyOutsideLibSolution" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Move it into the 'lib' folder if it should be referenced.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Если необходимо на нее сослаться, переместите ее в папку "lib".]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="a_konev" DateTime="2012-02-10T14:46:37Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="lib"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";AssemblyOutsideLibTitle" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Assembly outside lib folder.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Сборка находится вне папки "lib".]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="a_konev" DateTime="2012-02-10T14:46:37Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="lib"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";AssemblyUnderLibDescription" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The assembly '{0}' is placed directly under 'lib' folder. It is recommended that assemblies be placed inside a framework-specific folder.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Сборка "{0}" находится непосредственно в папке "lib". Рекомендуется помещать сборки в папки для отдельных платформ.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="a_konev" DateTime="2012-02-10T14:46:37Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="lib"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";AssemblyUnderLibSolution" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Move it into a framework-specific folder. If this assembly is targeted for multiple frameworks, ignore this warning.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Переместите ее в папку отдельной платформы. Если сборка предназначена для нескольких платформ, пропустите это предупреждение.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="a_konev" DateTime="2012-02-10T14:46:37Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";AssemblyUnderLibTitle" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Assembly not inside a framework folder.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Сборка находится вне папки платформы.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="a_konev" DateTime="2012-02-10T14:46:37Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";InvalidFrameworkDescription" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The folder '{0}' under 'lib' is not recognized as a valid framework name or a supported culture identifier.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[Имя папки "{0}" в папке "lib" не является допустимым именем платформы или поддерживаемым идентификатором языка и региональных параметров.]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[The folder '{0}' under 'lib' is not recognized as a valid framework name.]]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="nicolasp" DateTime="2012-06-01T19:05:08Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="lib"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";InvalidFrameworkSolution" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Rename it to a valid framework name.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Переименуйте ее, указав допустимое имя платформы.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="a_konev" DateTime="2012-02-10T14:46:37Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";InvalidFrameworkTitle" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Invalid framework folder.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Недопустимая папка платформы.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="a_konev" DateTime="2012-02-10T14:46:37Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";MisplacedInitScriptDescription" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The file '{0}' will be ignored by NuGet because it is not directly under 'tools' folder.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Файл "{0}" будет пропущен NuGet, так как он не расположен непосредственно в папке "tools".]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="SamV" DateTime="2013-01-08T18:40:51Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="NuGet", "tools"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom5" Val="HO1" />
+        </Props>
+      </Item>
+      <Item ItemId=";MisplacedInitScriptSolution" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Place the file directly under 'tools' folder.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Поместите файл непосредственно в папку "tools".]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="SamV" DateTime="2013-01-08T18:40:52Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="tools"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom5" Val="HO1" />
+        </Props>
+      </Item>
+      <Item ItemId=";MisplacedInitScriptTitle" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Init.ps1 script will be ignored.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Сценарий Init.ps1 будет пропущен.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="SamV" DateTime="2013-01-08T18:40:52Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="Init.ps1"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom5" Val="HO1" />
+        </Props>
+      </Item>
+      <Item ItemId=";MisplacedTransformFileDescription" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The transform file '{0}' is outside the 'content' folder and hence will not be transformed during installation of this package.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Файл преобразования "{0}" находится вне папки "content" и поэтому не будет преобразован при установке этого пакета.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="a_konev" DateTime="2012-02-10T14:46:37Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="content"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";MisplacedTransformFileSolution" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Move it into the 'content' folder.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Переместите его в папку "content".]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="a_konev" DateTime="2012-02-10T14:46:37Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="content"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";MisplacedTransformFileTitle" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Transform file outside content folder.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Файл преобразования находится вне папки "content".]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="a_konev" DateTime="2012-02-10T14:46:37Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="content"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";MissingSummaryDescription" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The Description text is long but the Summary text is empty. This means the Description text will be truncated in the 'Manage NuGet Packages' dialog.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Текст Description содержит длинный текст, но текст Summary пуст. Это значит, что текст Description в диалоговом окне "Управление пакетами NuGet" будет усечен.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="a_konev" DateTime="2012-06-14T11:15:02Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="Description"} {Locked="Summary"} {Locked="NuGet"} Description and Summary refer to XML elements]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";MissingSummarySolution" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Provide a brief summary of the package in the Summary field.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Введите краткое описание пакета в поле "Summary".]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="a_konev" DateTime="2012-06-14T11:13:15Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="Summary"} XML element name]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";MissingSummaryTitle" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Consider providing Summary text.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Постарайтесь указать текст Summary.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="a_konev" DateTime="2012-06-14T11:13:15Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="Summary"} XML element name]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";ScriptOutsideToolsDescription" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The script file '{0}' is outside the 'tools' folder and hence will not be executed during installation of this package.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Файл скрипта "{0}" отсутствует в папке "tools" и поэтому не будет выполнен при установке этого пакета.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="a_konev" DateTime="2012-04-09T12:05:59Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="tools"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";ScriptOutsideToolsSolution" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Move it into the 'tools' folder.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Переместите его в папку "tools".]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="a_konev" DateTime="2012-02-10T14:46:37Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="tools"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";ScriptOutsideToolsTitle" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[PowerShell file outside tools folder.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[Файл PowerShell находится вне папки "tools".]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[PowerScript file outside tools folder.]]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="SamV" DateTime="2013-12-31T10:31:11Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="PowerShell"} {Locked="tools"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";UnrecognizedScriptDescription" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The script file '{0}' is not recognized by NuGet and hence will not be executed during installation of this package.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Файл скрипта "{0}" не распознан NuGet и поэтому не будет выполнен при установке этого пакета.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="a_konev" DateTime="2012-04-09T12:05:59Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="NuGet"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";UnrecognizedScriptSolution" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Rename it to install.ps1, uninstall.ps1 or init.ps1 and place it directly under 'tools'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Переименуйте его в install.ps1, uninstall.ps1 или init.ps1 и поместите непосредственно в папку "tools".]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="a_konev" DateTime="2012-02-10T14:46:37Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="install.ps1, uninstall.ps1"} {Locked="init.ps1"} {Locked="tools"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";UnrecognizedScriptTitle" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Unrecognized PowerShell file.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[Файл PowerShell не распознан.]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Unrecognized PowerScript file.]]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="SamV" DateTime="2013-12-31T10:31:11Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="PowerShell"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";WinRTObsoleteDescription" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The file at '{0}' uses the obsolete 'WinRT' as the framework folder.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Для файла в "{0}" используется устаревшая папка платформы "WinRT".]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="SamV" DateTime="2013-01-08T18:40:52Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="WinRT"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom5" Val="HO1" />
+        </Props>
+      </Item>
+      <Item ItemId=";WinRTObsoleteSolution" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Replace 'WinRT' or 'WinRT45' with 'NetCore45'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Замените 'WinRT'", "'WinRT45'", "'NetCore45'.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="federicomu" DateTime="2013-01-08T19:38:23Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="'WinRT'", "'WinRT45'", "'NetCore45'"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom5" Val="HO1" />
+        </Props>
+      </Item>
+      <Item ItemId=";WinRTObsoleteTitle" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The framework name 'WinRT' is obsolete.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Имя платформы "WinRT" устарело.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="SamV" DateTime="2013-01-08T18:40:52Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="WinRT"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom5" Val="HO1" />
+        </Props>
+      </Item>
+    </Item>
+  </Item>
+  <Item ItemId=";NuGet.Resources.NuGetResources.resources" ItemType="0" PsrId="211" Leaf="false">
+    <Disp Icon="Str" Expand="true" Disp="true" LocTbl="false" Path=" \ ;Managed Resources \ 0 \ 0" />
+    <Modified By="listenev" DateTime="2010-12-03T11:15:45Z" />
+    <Item ItemId=";Strings" ItemType="0" PsrId="211" Leaf="false">
+      <Disp Icon="Str" LocTbl="false" />
+      <Modified By="listenev" DateTime="2010-12-03T11:15:45Z" />
+      <Item ItemId=";AdditonalConstraintsDefined" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA['{0}' has an additional constraint {1} defined in {2}.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Для "{0}" в {2} определено дополнительное ограничение {1}.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="a_konev" DateTime="2012-02-10T14:46:37Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";AggregateQueriesRequireOrder" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Aggregate queries require at least one OrderBy.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="Approved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[В статистическом запросе должно быть по крайней мере одно предложение OrderBy.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="v-canl" DateTime="2012-02-03T11:59:19Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Placeholder="OrderBy"} Linq term]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom1" Val="VSToolingOOB_HO3" />
+          <Str Name="Custom2" Val="New" />
+        </Props>
+      </Item>
+      <Item ItemId=";CannotCreateEmptyPackage" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Cannot create a package that has no dependencies nor content.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="Approved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Нельзя создать пакет, у которого нет ни зависимостей, ни содержимого.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="v-canl" DateTime="2012-02-03T11:59:19Z" />
+        <Props>
+          <Str Name="Custom1" Val="VSToolingOOB_HO3" />
+          <Str Name="Custom2" Val="New" />
+        </Props>
+      </Item>
+      <Item ItemId=";CircularDependencyDetected" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Circular dependency detected '{0}'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" Confidence="100">
+            <Val><![CDATA[Обнаружена циклическая зависимость "{0}".]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Circular dependency detected '{0}']]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="julior" DateTime="2012-02-06T20:18:52Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+          <Str Name="Custom2" Val="New" />
+        </Props>
+      </Item>
+      <Item ItemId=";ConflictErrorWithDependent" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Updating '{0}' to '{1}' failed. Unable to find a version of '{2}' that is compatible with '{1}'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[Не удалось обновить "{0}" до "{1}". Не удалось найти версию "{2}", совместимую с "{1}".]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Conflict occurred. '{0}' referenced but requested '{1}'. '{2}' depends on '{0}']]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="a_konev" DateTime="2012-02-10T08:12:55Z" />
+        <Props>
+          <Str Name="Custom1" Val="VSToolingOOB_HO1" />
+          <Str Name="Custom2" Val="New" />
+        </Props>
+      </Item>
+      <Item ItemId=";ConflictErrorWithDependents" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Updating '{0}' to '{1}' failed. Unable to find versions of '{2}' that are compatible with '{1}'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[Не удалось обновить "{0}" до "{1}". Не удалось найти версии "{2}", совместимые с "{1}".]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Conflict occurred. '{0}' referenced but requested '{1}'. '{2}' depend on '{0}']]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="a_konev" DateTime="2012-02-10T08:12:55Z" />
+        <Props>
+          <Str Name="Custom1" Val="VSToolingOOB_HO1" />
+          <Str Name="Custom2" Val="New" />
+        </Props>
+      </Item>
+      <Item ItemId=";Debug_AddedFile" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Added file '{0}'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" Confidence="100">
+            <Val><![CDATA[Добавлен файл "{0}".]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Added file '{0}']]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="julior" DateTime="2012-02-06T20:18:52Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+          <Str Name="Custom2" Val="New" />
+        </Props>
+      </Item>
+      <Item ItemId=";Debug_AddedFileToFolder" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Added file '{0}' to folder '{1}'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" Confidence="100">
+            <Val><![CDATA[Файл "{0}" добавлен в папку "{1}".]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Added file '{0}' to folder '{1}']]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="julior" DateTime="2012-02-06T20:18:52Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+          <Str Name="Custom2" Val="New" />
+        </Props>
+      </Item>
+      <Item ItemId=";Debug_LookingForUpdates" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Looking for updates for '{0}'...]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="Approved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Поиск обновлений для "{0}"...]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="v-canl" DateTime="2012-02-03T11:59:19Z" />
+        <Props>
+          <Str Name="Custom1" Val="VSToolingOOB_HO1" />
+          <Str Name="Custom2" Val="New" />
+        </Props>
+      </Item>
+      <Item ItemId=";Debug_RemovedFile" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Removed file '{0}'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" Confidence="100">
+            <Val><![CDATA[Файл "{0}" удален.]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Removed file '{0}']]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="julior" DateTime="2012-02-06T20:18:52Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+          <Str Name="Custom2" Val="New" />
+        </Props>
+      </Item>
+      <Item ItemId=";Debug_RemovedFileFromFolder" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Removed file '{0}' to folder '{1}'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[Файл "{0}" удален в папку "{1}".]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Removed file '{0}' to folder '{1}']]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="a_konev" DateTime="2012-02-10T08:12:55Z" />
+        <Props>
+          <Str Name="Custom1" Val="VSToolingOOB_HO1" />
+          <Str Name="Custom2" Val="New" />
+        </Props>
+      </Item>
+      <Item ItemId=";Debug_RemovedFolder" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Removed folder '{0}'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" Confidence="100">
+            <Val><![CDATA[Папка "{0}" удалена.]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Removed folder '{0}']]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="julior" DateTime="2012-02-06T20:18:52Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+          <Str Name="Custom2" Val="New" />
+        </Props>
+      </Item>
+      <Item ItemId=";Debug_TargetFrameworkInfo" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[>> {0} are being added from '{1}'{2}]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[>> {0} добавляется из "{1}" {2}]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="SamV" DateTime="2013-12-31T10:27:50Z" />
+      </Item>
+      <Item ItemId=";Debug_TargetFrameworkInfoPrefix" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[For adding package '{0}' to project '{1}' that targets '{2}',]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Чтобы добавить пакет "{0}" в проект "{1}", охватывающий "{2}",]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="SamV" DateTime="2013-12-31T10:27:50Z" />
+      </Item>
+      <Item ItemId=";Debug_TargetFrameworkInfo_AssemblyReferences" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Assembly references]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Ссылки на сборки]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="SamV" DateTime="2013-12-31T10:27:50Z" />
+      </Item>
+      <Item ItemId=";Debug_TargetFrameworkInfo_BuildFiles" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Build files]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Файлы сборки]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="SamV" DateTime="2013-12-31T10:27:50Z" />
+      </Item>
+      <Item ItemId=";Debug_TargetFrameworkInfo_ContentFiles" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Content files]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Файлы содержимого]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="SamV" DateTime="2013-12-31T10:27:50Z" />
+      </Item>
+      <Item ItemId=";Debug_TargetFrameworkInfo_NotFrameworkSpecific" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[ (not framework-specific)]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[ (без привязки к платформе)]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="SamV" DateTime="2013-12-31T10:27:50Z" />
+      </Item>
+      <Item ItemId=";Debug_TargetFrameworkInfo_PowershellScripts" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[>> PowerShell scripts are being executed from '{0}'{1}]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[>> Сценарии PowerShell выполняются в "{0}" {1}]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="SamV" DateTime="2013-12-31T10:27:50Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="PowerShell"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";DependencyHasInvalidVersion" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Dependency '{0}' has an invalid version.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="Approved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[У зависимости "{0}" недопустимая версия.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="v-canl" DateTime="2012-02-03T11:59:19Z" />
+        <Props>
+          <Str Name="Custom1" Val="VSToolingOOB_HO3" />
+          <Str Name="Custom2" Val="New" />
+        </Props>
+      </Item>
+      <Item ItemId=";DependencyOnlyCannotMixDependencies" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Child dependencies of dependency only packages cannot mix external and project packages.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" Confidence="100">
+            <Val><![CDATA[Дочерние зависимости, относящиеся к пакетам только зависимостей, не могут одновременно содержать внешние пакеты и пакеты проекта.]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Child dependencies of dependency only packages cannot mix external and project packages]]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="julior" DateTime="2012-02-06T20:18:52Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+          <Str Name="Custom2" Val="New" />
+        </Props>
+      </Item>
+      <Item ItemId=";DownloadProgressStatus" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Downloading {0} {1}...]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Идет загрузка: {0} {1}...]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="a_konev" DateTime="2012-02-10T14:46:38Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";DuplicateDependenciesDefined" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA['{0}' already has a dependency defined for '{1}'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="Approved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[У "{0}" уже есть зависимость, определенная для "{1}".]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="v-canl" DateTime="2012-02-03T11:59:19Z" />
+        <Props>
+          <Str Name="Custom1" Val="VSToolingOOB_HO3" />
+          <Str Name="Custom2" Val="New" />
+        </Props>
+      </Item>
+      <Item ItemId=";ErrorLoadingPackages" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[An error occurred while loading packages from '{0}': {1}]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[Ошибка при загрузке пакетов из "{0}": {1}]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[An error occurred while loading packages from'{0}': {1}]]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="SamV" DateTime="2013-12-31T10:31:21Z" />
+      </Item>
+      <Item ItemId=";ErrorReadingFile" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Error reading '{0}'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="Approved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Ошибка при чтении "{0}".]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="v-canl" DateTime="2012-02-03T11:59:19Z" />
+        <Props>
+          <Str Name="Custom1" Val="VSToolingOOB_HO3" />
+          <Str Name="Custom2" Val="New" />
+        </Props>
+      </Item>
+      <Item ItemId=";ErrorReadingPackage" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Unable to read package from path '{0}'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Не удалось считать пакет по пути "{0}".]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="SamV" DateTime="2013-01-08T18:44:52Z" />
+        <Props>
+          <Str Name="Custom5" Val="HO1" />
+        </Props>
+      </Item>
+      <Item ItemId=";Error_InvalidPackage" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Unable to load version '{0}' of package '{1}'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Не удалось загрузить версию "{0}" пакета "{1}".]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="e_bessonova" DateTime="2015-08-14T06:21:51Z" />
+      </Item>
+      <Item ItemId=";Error_NoWritableConfig" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[There are no writable config files.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Отсутствуют файлы конфигурации, доступные для записи.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="SamV" DateTime="2013-06-12T09:06:15Z" />
+      </Item>
+      <Item ItemId=";Error_PackageAlreadyExists" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Package '{0}' already exists.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Пакет "{0}" уже существует.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="SamV" DateTime="2013-12-31T10:27:50Z" />
+      </Item>
+      <Item ItemId=";Error_TooManyRedirections" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Too many automatic redirections were attempted.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Слишком много попыток автоматического перенаправления.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="e_bessonova" DateTime="2015-08-14T06:21:53Z" />
+      </Item>
+      <Item ItemId=";ExternalPackagesCannotDependOnProjectLevelPackages" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[External packages cannot depend on packages that target projects.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="Approved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Внешние пакеты не могут зависеть от пакетов для проектов.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="v-canl" DateTime="2012-02-03T11:59:19Z" />
+        <Props>
+          <Str Name="Custom1" Val="VSToolingOOB_HO1" />
+          <Str Name="Custom2" Val="New" />
+        </Props>
+      </Item>
+      <Item ItemId=";FileConflictMessage" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[File '{0}' already exists in project '{1}'. Do you want to overwrite it?]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[В проекте "{1}" уже существует файл "{0}". Перезаписать его?]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="SamV" DateTime="2013-05-08T11:00:18Z" />
+      </Item>
+      <Item ItemId=";FileDoesNotExit" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[File '{0}' does not exist.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[Файл "{0}" не существует.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="SamV" DateTime="2013-05-08T10:56:12Z" />
+      </Item>
+      <Item ItemId=";GetUpdatesParameterMismatch" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The 'packages' and 'versionConstraints' parameters must have the same number of elements.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[У параметров "packages" и "versionConstraints" должно быть одинаковое количество элементов.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="SamV" DateTime="2013-05-08T11:00:18Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="packages"} {Locked="versionConstraints"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";IncompatibleSchema" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The schema version of '{0}' is incompatible with version {1} of NuGet. Please upgrade NuGet to the latest version from http://go.microsoft.com/fwlink/?LinkId=213942.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Схема версии "{0}" несовместима с версией {1} в NuGet. Обновите NuGet до последней версии, расположенной по адресу http://go.microsoft.com/fwlink/?LinkId=213942.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="a_konev" DateTime="2012-02-10T14:46:38Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Placeholder="NuGet"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";Info_OverwriteExistingFile" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Overwrite existing file '{0}'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Перезапись существующего файла "{0}".]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="SamV" DateTime="2013-05-08T11:00:18Z" />
+      </Item>
+      <Item ItemId=";InvalidFeed" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Could not connect to the feed specified at '{0}'. Please verify that the package source (located in the Package Manager Settings) is valid and ensure your network connectivity.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Не удалось подключиться к каналу, указанному в "{0}". Убедитесь, что источник пакета (указан в параметрах диспетчера пакетов) допустим, и проверьте наличие сетевого подключения.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="a_konev" DateTime="2012-02-10T14:46:38Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";InvalidFrameworkNameFormat" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Invalid framework name format. Expected {framework}{version}-{profile}.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Недопустимый формат имени платформы. Ожидаемый формат: {framework}{version}-{profile}.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="a_konev" DateTime="2012-02-10T14:46:38Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";InvalidNullSettingsOperation" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA["{0}" cannot be called on a NullSettings. This may be caused on account of insufficient permissions to read or write to "%AppData%\NuGet\NuGet.config".]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA["{0}" невозможно вызывать для NullSettings. Возможно, причина этого в том, что у учетной записи недостаточно разрешений на чтение и запись в "%AppData%\NuGet\NuGet.config".]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA["{0}" cannot be called on a NullSettings.]]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="SamV" DateTime="2013-01-08T18:44:03Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="NullSettings", "%AppData%\NuGet\NuGet.config"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";InvalidPackageId" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The package ID '{0}' contains invalid characters. Examples of valid package IDs include 'MyPackage' and 'MyPackage.Sample'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Идентификатор пакета "{0}" содержит недопустимые символы. Примеры допустимых значений: 'MyPackage'", "'MyPackage.Sample'.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="federicomu" DateTime="2013-01-08T19:38:23Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="'MyPackage'", "'MyPackage.Sample'"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";InvalidVersionString" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA['{0}' is not a valid version string.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" Confidence="100">
+            <Val><![CDATA["{0}" не является допустимой строкой версии.]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA['{0}' is not a valid version string]]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="julior" DateTime="2012-02-06T20:18:52Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+          <Str Name="Custom2" Val="New" />
+        </Props>
+      </Item>
+      <Item ItemId=";Log_ApplyingConstraints" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Applying constraint '{0} {1}' defined in {2}.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Применяется ограничение "{0} {1}", определенное в {2}.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="a_konev" DateTime="2012-02-10T14:52:40Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";Log_AttemptingToRetrievePackageFromSource" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Attempting to resolve dependency '{0}'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[Идет попытка разрешить зависимость "{0}".]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA['{0}' not installed. Attempting to retrieve dependency from source...]]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="a_konev" DateTime="2012-02-10T08:12:55Z" />
+        <Props>
+          <Str Name="Custom1" Val="VSToolingOOB_HO1" />
+          <Str Name="Custom2" Val="New" />
+        </Props>
+      </Item>
+      <Item ItemId=";Log_BeginAddPackageReference" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Adding '{0}' to {1}.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Добавление "{0}" в {1}.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="SamV" DateTime="2013-05-08T11:00:18Z" />
+      </Item>
+      <Item ItemId=";Log_BeginInstallPackage" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Installing '{0}'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Установка "{0}".]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="SamV" DateTime="2013-05-08T11:00:18Z" />
+      </Item>
+      <Item ItemId=";Log_BeginRemovePackageReference" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Removing '{0}' from {1}.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Удаление "{0}" из {1}.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="SamV" DateTime="2013-05-08T11:00:18Z" />
+      </Item>
+      <Item ItemId=";Log_BeginUninstallPackage" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Uninstalling '{0}'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Удаление "{0}".]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="SamV" DateTime="2013-05-08T11:00:18Z" />
+      </Item>
+      <Item ItemId=";Log_InstallPackage" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Install '{0}']]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Установка "{0}"]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="e_bessonova" DateTime="2015-08-14T06:21:55Z" />
+      </Item>
+      <Item ItemId=";Log_InstallPackageIntoProject" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Add '{0}' to project {1}.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Добавление "{0}" в проект {1}.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="e_bessonova" DateTime="2015-08-14T06:21:57Z" />
+      </Item>
+      <Item ItemId=";Log_NoUpdatesAvailable" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[No updates available for '{0}'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" Confidence="100">
+            <Val><![CDATA[Нет обновлений для "{0}".]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[No updates available for '{0}']]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="julior" DateTime="2012-02-06T20:18:52Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+          <Str Name="Custom2" Val="New" />
+        </Props>
+      </Item>
+      <Item ItemId=";Log_NoUpdatesAvailableForProject" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[No updates available for '{0}' in project '{1}'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Для "{0}" в проекте "{1}" нет доступных обновлений.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="a_konev" DateTime="2012-02-10T14:52:40Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";Log_PackageAlreadyInstalled" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA['{0}' already installed.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" Confidence="100">
+            <Val><![CDATA["{0}" уже установлен.]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA['{0}' already installed]]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="julior" DateTime="2012-02-06T20:18:52Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+          <Str Name="Custom2" Val="New" />
+        </Props>
+      </Item>
+      <Item ItemId=";Log_PackageInstalledSuccessfully" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Successfully installed '{0}'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" Confidence="100">
+            <Val><![CDATA["{0}" успешно установлен.]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Successfully installed '{0}']]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="julior" DateTime="2012-02-06T20:18:52Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+          <Str Name="Custom2" Val="New" />
+        </Props>
+      </Item>
+      <Item ItemId=";Log_ProjectAlreadyReferencesPackage" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[{0} already has a reference to '{1}'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" Confidence="100">
+            <Val><![CDATA[В {0} уже есть ссылка на "{1}".]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[{0} already has a reference to '{1}']]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="julior" DateTime="2012-02-06T20:18:52Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+          <Str Name="Custom2" Val="New" />
+        </Props>
+      </Item>
+      <Item ItemId=";Log_SuccessfullyAddedPackageReference" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Successfully added '{0}' to {1}.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" Confidence="100">
+            <Val><![CDATA["{0}" успешно добавлена в {1}.]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Successfully added '{0}' to {1}]]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="julior" DateTime="2012-02-06T20:18:52Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+          <Str Name="Custom2" Val="New" />
+        </Props>
+      </Item>
+      <Item ItemId=";Log_SuccessfullyRemovedPackageReference" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Successfully removed '{0}' from {1}.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" Confidence="100">
+            <Val><![CDATA["{0}" успешно удалена из {1}.]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Successfully removed '{0}' from {1}]]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="julior" DateTime="2012-02-06T20:18:52Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+          <Str Name="Custom2" Val="New" />
+        </Props>
+      </Item>
+      <Item ItemId=";Log_SuccessfullyUninstalledPackage" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Successfully uninstalled '{0}'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" Confidence="100">
+            <Val><![CDATA["{0}" успешно удален.]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Successfully uninstalled '{0}']]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="julior" DateTime="2012-02-06T20:18:52Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+          <Str Name="Custom2" Val="New" />
+        </Props>
+      </Item>
+      <Item ItemId=";Log_UninstallPackage" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Uninstall '{0}'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Удаление "{0}"]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="e_bessonova" DateTime="2015-08-14T06:21:59Z" />
+      </Item>
+      <Item ItemId=";Log_UninstallPackageFromProject" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Remove '{0}' from project {1}.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Удаление "{0}" из проекта {1}.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="e_bessonova" DateTime="2015-08-14T06:22:00Z" />
+      </Item>
+      <Item ItemId=";Log_UpdatingPackages" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Updating '{0}' from version '{1}' to '{2}' in project '{3}'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Идет обновление "{0}" в проекте "{3}" с версии "{1}" до версии "{2}".]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="a_konev" DateTime="2012-02-10T14:52:40Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";Log_UpdatingPackagesWithoutOldVersion" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Updating '{0}' to version '{1}' in project '{2}'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Обновление "{0}" до версии "{1}" в проекте "{2}".]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="SamV" DateTime="2013-12-31T10:27:50Z" />
+      </Item>
+      <Item ItemId=";Manifest_AssemblyNameRequired" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Assembly name is required.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Имя сборки является обязательным.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="a_konev" DateTime="2012-02-10T14:46:38Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";Manifest_DependenciesHasMixedElements" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[<dependencies> element must not contain both <group> and <dependency> child elements.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Элемент <dependencies> не может одновременно содержать дочерние элементы <group> и <dependency>.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="a_konev" DateTime="2012-06-14T11:13:15Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="<dependencies>"} {Locked="<group>"} {Locked="<dependency>"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";Manifest_DependencyIdRequired" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Dependency Id is required.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="Approved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Требуется ИД зависимости.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="v-canl" DateTime="2012-02-03T11:59:19Z" />
+        <Props>
+          <Str Name="Custom1" Val="VSToolingOOB_HO3" />
+          <Str Name="Custom2" Val="New" />
+        </Props>
+      </Item>
+      <Item ItemId=";Manifest_ExcludeContainsInvalidCharacters" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Exclude path '{0}' contains invalid characters.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Путь исключения "{0}" содержит недопустимые символы.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="a_konev" DateTime="2012-02-10T14:52:40Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";Manifest_IdMaxLengthExceeded" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Id must not exceed 100 characters.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Длина идентификатора не должна превышать 100 символов.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="a_konev" DateTime="2012-02-10T14:46:38Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";Manifest_InvalidMinClientVersion" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The 'minClientVersion' attribute in the package manifest has invalid value. It must be a valid version string.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Недопустимое значение атрибута "minClientVersion" в манифесте пакета. Это должна быть допустимая строка версии.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="SamV" DateTime="2013-05-08T11:00:18Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="minClientVersion"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";Manifest_InvalidPrereleaseDependency" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[A stable release of a package should not have on a prerelease dependency. Either modify the version spec of dependency "{0}" or update the version field.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Стабильный выпуск пакета не должен иметь зависимостей от предварительных версий. Измените спецификацию версии зависимости "{0}" или измените поле версии.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="a_konev" DateTime="2012-02-15T10:08:36Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";Manifest_InvalidReference" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Invalid assembly reference '{0}'. Ensure that a file named '{0}' exists in the lib directory.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Недопустимая ссылка на сборку "{0}". Убедитесь, что в каталоге "lib" есть файл с именем "{0}".]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="a_konev" DateTime="2012-02-10T14:52:40Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="lib"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";Manifest_InvalidReferenceFile" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Assembly reference '{0}' contains invalid characters.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Ссылка на сборку "{0}" содержит недопустимые символы.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="a_konev" DateTime="2012-02-10T14:52:40Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";Manifest_InvalidSchemaNamespace" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Invalid schema namespace '{0}'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Недопустимое пространство имен схемы "{0}".]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="a_konev" DateTime="2012-02-10T14:52:40Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";Manifest_NotAvailable" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The manifest of this package has not been read. Call ReadManifest() before calling this method.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Манифест пакета не прочитан. Вызовите ReadManifest() перед этим методом.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="nicolasp" DateTime="2012-06-01T19:05:08Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="ReadManifest()"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";Manifest_NotFound" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Could not find manifest file at '{0}'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Не удалось найти файл манифеста в "{0}".]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="nicolasp" DateTime="2012-06-01T19:05:08Z" />
+      </Item>
+      <Item ItemId=";Manifest_ReferencesHasMixedElements" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[<references> element must not contain both <group> and <reference> child elements.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Элемент <references> не должен содержать оба дочерних элемента: <group> и <reference>.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="SamV" DateTime="2013-05-08T11:00:18Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="<references>"} {Locked="<group>"} {Locked="<reference>"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";Manifest_ReferencesIsEmpty" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The element package\metadata\references\group must contain at least one <reference> child element.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Элемент package\metadata\references\group должен содержать не меньше одного дочернего элемента <reference>.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="SamV" DateTime="2013-05-08T11:00:18Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="package\metadata\references\group"} {Locked="<reference>"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";Manifest_RequireLicenseAcceptanceRequiresLicenseUrl" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Enabling license acceptance requires a license url.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Для включения функции приема условий лицензионного соглашения требуется url-адрес лицензии.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="mihalyV" DateTime="2015-12-17T23:51:18Z" />
+        <Props>
+          <Str Name="Custom1" Val="VSToolingOOB_HO3" />
+          <Str Name="Custom2" Val="New" />
+        </Props>
+      </Item>
+      <Item ItemId=";Manifest_RequiredElementMissing" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The required element '{0}' is missing from the manifest.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[В манифесте отсутствует обязательный элемент "{0}".]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="SamV" DateTime="2013-05-08T11:00:18Z" />
+      </Item>
+      <Item ItemId=";Manifest_RequiredMetadataMissing" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[{0} is required.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="Approved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Требуется {0}.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="v-canl" DateTime="2012-02-03T11:59:19Z" />
+        <Props>
+          <Str Name="Custom1" Val="VSToolingOOB_HO3" />
+          <Str Name="Custom2" Val="New" />
+        </Props>
+      </Item>
+      <Item ItemId=";Manifest_SourceContainsInvalidCharacters" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Source path '{0}' contains invalid characters.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Исходный путь "{0}" содержит недопустимые символы.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="a_konev" DateTime="2012-02-10T14:52:40Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";Manifest_TargetContainsInvalidCharacters" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Target path '{0}' contains invalid characters.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Конечный путь "{0}" содержит недопустимые символы.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="a_konev" DateTime="2012-02-10T14:52:40Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";Manifest_UriCannotBeEmpty" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[{0} cannot be empty.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="Approved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[У {0} не может быть пустое значение.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="v-canl" DateTime="2012-02-03T11:59:19Z" />
+        <Props>
+          <Str Name="Custom1" Val="VSToolingOOB_HO3" />
+          <Str Name="Custom2" Val="New" />
+        </Props>
+      </Item>
+      <Item ItemId=";MissingFrameworkName" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Framework name is missing.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Отсутствует имя платформы.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="a_konev" DateTime="2012-02-10T14:46:38Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";NewerVersionAlreadyReferenced" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Already referencing a newer version of '{0}'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" Confidence="100">
+            <Val><![CDATA[Уже указана ссылка на более новую версию "{0}".]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Already referencing a newer version of '{0}']]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="julior" DateTime="2012-02-06T20:18:52Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+          <Str Name="Custom2" Val="New" />
+        </Props>
+      </Item>
+      <Item ItemId=";PackageAuthoring_FileNotFound" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[File not found: '{0}'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[Файл не найден: "{0}".]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="julior" DateTime="2012-02-06T20:18:52Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";PackageDoesNotContainManifest" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Package does not contain a manifest.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="Approved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Пакет не содержит манифест.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="v-canl" DateTime="2012-02-03T11:59:19Z" />
+        <Props>
+          <Str Name="Custom1" Val="VSToolingOOB_HO1" />
+          <Str Name="Custom2" Val="New" />
+        </Props>
+      </Item>
+      <Item ItemId=";PackageHasDependent" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Unable to uninstall '{0}' because '{1}' depends on it.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" Confidence="100">
+            <Val><![CDATA[Не удается удалить "{0}", так как "{1}" зависит от него.]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Unable to uninstall '{0}' because '{1}' depends on it]]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="julior" DateTime="2012-02-06T20:18:52Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+          <Str Name="Custom2" Val="New" />
+        </Props>
+      </Item>
+      <Item ItemId=";PackageHasDependents" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Unable to uninstall '{0}' because '{1}' depend on it.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" Confidence="100">
+            <Val><![CDATA[Не удается удалить "{0}", так как "{1}" зависит от него.]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Unable to uninstall '{0}' because '{1}' depend on it]]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="julior" DateTime="2012-02-06T20:18:52Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+          <Str Name="Custom2" Val="New" />
+        </Props>
+      </Item>
+      <Item ItemId=";PackageMinVersionNotSatisfied" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The '{0}' package requires NuGet client version '{1}' or above, but the current NuGet version is '{2}'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Для пакета "{0}" требуется клиент NuGet версии "{1}" или выше, однако текущая версия NuGet – "{2}".]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="SamV" DateTime="2013-05-08T11:00:18Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="NuGet"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";PackageRestoreConsentCheckBoxText" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[&Allow NuGet to download missing packages]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[&Разрешить NuGet загружать отсутствующие пакеты]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="SamV" DateTime="2013-08-13T13:58:20Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="NuGet"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";PackageServerError" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Failed to process request. '{0}'. ]A;{1}.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Не удалось обработать запрос. "{0}". ]A;{1}.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="a_konev" DateTime="2012-02-10T14:52:40Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";PortableFrameworkProfileComponentIsEmpty" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The profile part of a portable target framework must not contain empty component.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Часть профиля переносимой целевой платформы не должна содержать пустой компонент.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="SamV" DateTime="2013-01-08T18:44:52Z" />
+        <Props>
+          <Str Name="Custom5" Val="HO1" />
+        </Props>
+      </Item>
+      <Item ItemId=";PortableFrameworkProfileComponentIsPortable" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The profile part of a portable target framework must not contain a portable framework component.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Часть профиля переносимой целевой платформы не должна содержать переносимый компонент платформы.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="SamV" DateTime="2013-01-08T18:44:52Z" />
+        <Props>
+          <Str Name="Custom5" Val="HO1" />
+        </Props>
+      </Item>
+      <Item ItemId=";PortableFrameworkProfileEmpty" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Portable target framework must not have an empty profile part.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Часть профиля переносимой целевой платформы не должна пустой.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="SamV" DateTime="2013-01-08T18:44:52Z" />
+        <Props>
+          <Str Name="Custom5" Val="HO1" />
+        </Props>
+      </Item>
+      <Item ItemId=";PortableFrameworkProfileHasDash" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The profile part of a portable target framework must not contain the '-' character.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Часть профиля переносимой целевой платформы не должна содержать символ "-".]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="SamV" DateTime="2013-01-08T18:44:52Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="-"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom5" Val="HO1" />
+        </Props>
+      </Item>
+      <Item ItemId=";PortableFrameworkProfileHasSpace" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The profile part of a portable target framework must not contain empty space.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Часть профиля переносимой целевой платформы не должна содержать пустое место.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="SamV" DateTime="2013-01-08T18:44:52Z" />
+        <Props>
+          <Str Name="Custom5" Val="HO1" />
+        </Props>
+      </Item>
+      <Item ItemId=";ProjectDoesNotHaveReference" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[{0} does not reference '{1}'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="Approved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[В {0} не указана ссылка на "{1}".]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="v-canl" DateTime="2012-02-03T11:59:19Z" />
+        <Props>
+          <Str Name="Custom1" Val="VSToolingOOB_HO1" />
+          <Str Name="Custom2" Val="New" />
+        </Props>
+      </Item>
+      <Item ItemId=";ReferenceFile_InvalidDevelopmentFlag" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Unable to parse developmentDependency value '{0}' from '{1}'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Не удалось проанализировать значение "{0}" элемента developmentDependency из "{1}".]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="SamV" DateTime="2013-07-09T13:50:45Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="developmentDependency"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";ReferenceFile_InvalidRequireReinstallationFlag" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Unable to parse requireReinstallation value '{0}' from '{1}'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Не удалось выполнить синтаксический анализ значения requireReinstallation "{0}" из "{1}".]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="SamV" DateTime="2013-07-30T10:27:33Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="requireReinstallation"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";ReferenceFile_InvalidVersion" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Unable to parse version value '{0}' from '{1}'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Не удалось проанализировать значение версии "{0}" из "{1}".]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="a_konev" DateTime="2012-02-10T14:52:40Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";SemVerSpecialVersionTooLong" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The special version part cannot exceed 20 characters.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Длина специальной версии не может превышать 20 символов.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="a_konev" DateTime="2012-02-10T14:46:38Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";SettingsCredentials_UsingSavedCredentials" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Using credentials from config. UserName: {0}]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Используются учетные данные из конфигурации. UserName: {0}]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="nicolasp" DateTime="2012-06-01T19:05:08Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="UserName"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";SupportedFrameworkIsNull" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[One of the supported framework is null.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Одна из поддерживаемых платформ имеет значение Null.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="SamV" DateTime="2013-01-08T18:44:52Z" />
+        <Props>
+          <Str Name="Custom5" Val="HO1" />
+        </Props>
+      </Item>
+      <Item ItemId=";TokenHasNoValue" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The replacement token '{0}' has no value.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="Approved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[У маркера замены "{0}" нет значения.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="v-canl" DateTime="2012-02-03T11:59:19Z" />
+        <Props>
+          <Str Name="Custom1" Val="VSToolingOOB_HO1" />
+          <Str Name="Custom2" Val="New" />
+        </Props>
+      </Item>
+      <Item ItemId=";TypeMustBeASemanticVersion" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Type to compare must be an instance of SemanticVersion.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Тип для сравнения должен быть экземпляром SemanticVersion.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="a_konev" DateTime="2012-02-10T14:46:38Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="SemanticVersion"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";UnableToFindCompatibleItems" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Could not install package '{0}'. You are trying to install this package into a project that targets '{1}', but the package does not contain any assembly references or content files that are compatible with that framework. For more information, contact the package author.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[Не удалось установить пакет "{0}". Вы пытаетесь установить этот пакет в проект, требуемая версия платформы которого — "{1}", но в пакете нет ссылок на сборки или файлов содержимого, совместимых с этой платформой. Дополнительные сведения можно получить у автора пакета.]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Could not install package '{0}'. You are trying to install this package into a project that targets '{1}', but the package does not contain any {2} that are compatible with that framework. For more information, contact the package author.]]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="SamV" DateTime="2013-01-08T18:44:03Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";UnableToLocateDependency" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Unable to locate dependency '{0}'. It may have been uninstalled.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" Confidence="100">
+            <Val><![CDATA[Не удается найти зависимость "{0}". Возможно, она была удалена.]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Unable to locate dependency '{0}'. It may have been uninstalled]]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="julior" DateTime="2012-02-06T20:18:52Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+          <Str Name="Custom2" Val="New" />
+        </Props>
+      </Item>
+      <Item ItemId=";UnableToLocateWIF" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Connection to feed '{0}' requires the Windows Identity Foundation runtime to be installed. ]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Для подключения к веб-каналу "{0}" требуется установить среду выполнения Windows Identity Foundation. ]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="nicolasp" DateTime="2012-06-01T19:05:08Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="Windows Identity Foundation"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";UnableToResolveDependency" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Unable to resolve dependency '{0}'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" Confidence="100">
+            <Val><![CDATA[Не удается разрешить зависимость "{0}".]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Unable to resolve dependency '{0}']]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="julior" DateTime="2012-02-06T20:18:52Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+          <Str Name="Custom2" Val="New" />
+        </Props>
+      </Item>
+      <Item ItemId=";UnableToResolveUri" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Unable to resolve '{0}'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Не удалось разрешить "{0}".]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="a_konev" DateTime="2012-02-10T14:52:40Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";UnknownPackage" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Unable to find package '{0}'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" Confidence="100">
+            <Val><![CDATA[Не удается найти пакет "{0}".]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Unable to find package '{0}']]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="julior" DateTime="2012-02-06T20:18:52Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+          <Str Name="Custom2" Val="New" />
+        </Props>
+      </Item>
+      <Item ItemId=";UnknownPackageSpecificVersion" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Unable to find version '{1}' of package '{0}'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Не удалось найти версию "{1}" пакета "{0}".]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="a_konev" DateTime="2012-02-10T14:52:40Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";UnknownSchemaVersion" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Unknown schema version '{0}'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Неизвестная схема версии "{0}".]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="a_konev" DateTime="2012-02-10T14:52:40Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";UnsupportedHashAlgorithm" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Hash algorithm '{0}' is unsupported. Supported algorithms include: SHA512 and SHA256.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Хэш-алгоритм "{0}" не поддерживается. Поддерживаемые алгоритмы: SHA512 и SHA256.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="a_konev" DateTime="2012-06-14T11:13:15Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="SHA512"} {Locked="SHA256"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";UserSettings_UnableToParseConfigFile" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Unable to parse config file '{0}'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[Не удалось проанализировать файл конфигурации "{0}".]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Unable to parse config file.]]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="nicolasp" DateTime="2012-06-01T19:05:08Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";Warning_FileAlreadyExists" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA['{0}' already exists. Skipping...]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="Approved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA["{0}" уже существует. Пропуск...]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="v-canl" DateTime="2012-02-03T11:59:19Z" />
+        <Props>
+          <Str Name="Custom1" Val="VSToolingOOB_HO1" />
+          <Str Name="Custom2" Val="New" />
+        </Props>
+      </Item>
+      <Item ItemId=";Warning_FileModified" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Skipping '{0}' because it was modified.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" Confidence="100">
+            <Val><![CDATA["{0}" пропускается, так как он был изменен.]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Skipping '{0}' because it was modified]]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="julior" DateTime="2012-02-06T20:18:52Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+          <Str Name="Custom2" Val="New" />
+        </Props>
+      </Item>
+      <Item ItemId=";Warning_PackageSkippedBecauseItIsInUse" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA['{0}' skipped, because it is in use by '{1}'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA["{0}" пропущен, поскольку его использует "{1}".]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA['{0}' skipped, because it is in use by '{1}']]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="mihalyV" DateTime="2015-12-17T23:51:18Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+          <Str Name="Custom2" Val="Updated" />
+        </Props>
+      </Item>
+      <Item ItemId=";Warning_UninstallingPackageWillBreakDependents" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Uninstalling '{0}' might cause '{1}' to be broken.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" Confidence="100">
+            <Val><![CDATA[Удаление "{0}" может привести к повреждению "{1}".]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Uninstalling '{0}' might cause '{1}' to be broken]]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="julior" DateTime="2012-02-06T20:18:52Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+          <Str Name="Custom2" Val="New" />
+        </Props>
+      </Item>
+      <Item ItemId=";XdtError" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[An error occurred while applying transformation to '{0}' in project '{1}':]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[При применении преобразования к "{0}" в проекте "{1}" произошла ошибка:]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="SamV" DateTime="2013-06-12T09:06:15Z" />
+      </Item>
+    </Item>
+  </Item>
+  <Item ItemId=";Version" ItemType="0" PsrId="211" Leaf="false">
+    <Disp Icon="Ver" Disp="true" LocTbl="false" Path=" \ ;Version \ 8 \ 0" />
+    <Modified By="listenev" DateTime="2010-12-03T11:15:45Z" />
+    <Item ItemId=";AssemblyVersion" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text" DevLk="true">
+        <Val><![CDATA[2.10.1.766]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+      <Modified By="SamV" DateTime="2013-05-08T11:00:18Z" />
+    </Item>
+    <Item ItemId=";Comments" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+      <Str Cat="Text">
+        <Val><![CDATA[NuGet.Core is the core framework assembly for NuGet that the rest of NuGet builds upon.]]></Val>
+        <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+          <Val><![CDATA[NuGet.Core — это базовая сборка платформы NuGet, на которой строится вся остальная часть NuGet.]]></Val>
+        </Tgt>
+        <Prev Cat="Text">
+          <Val><![CDATA[Core API for NuGet]]></Val>
+        </Prev>
+      </Str>
+      <Disp Icon="Str" />
+      <Modified By="a_konev" DateTime="2012-02-10T08:12:55Z" />
+      <Cmts>
+        <Cmt Name="LcxAdmin"><![CDATA[{Placeholder="NuGet"}]]></Cmt>
+      </Cmts>
+      <Props>
+        <Str Name="Custom1" Val="VSToolingOOB_HO1" />
+        <Str Name="Custom2" Val="New" />
+      </Props>
+    </Item>
+    <Item ItemId=";CompanyName" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+      <Str Cat="Text" UsrLk="true">
+        <Val><![CDATA[Microsoft Corporation]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+      <Modified By="SamV" DateTime="2013-05-08T11:00:18Z" />
+      <Cmts>
+        <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+      </Cmts>
+      <Props>
+        <Str Name="Custom1" Val="VSToolingOOB_HO1" />
+        <Str Name="Custom2" Val="New" />
+      </Props>
+    </Item>
+    <Item ItemId=";FileDescription" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+      <Str Cat="Text" UsrLk="true">
+        <Val><![CDATA[NuGet.Core]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+      <Modified By="SamV" DateTime="2013-05-08T11:00:18Z" />
+      <Cmts>
+        <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+      </Cmts>
+      <Props>
+        <Str Name="Custom1" Val="VSToolingOOB_HO1" />
+        <Str Name="Custom2" Val="New" />
+      </Props>
+    </Item>
+    <Item ItemId=";FileVersion" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text" DevLk="true">
+        <Val><![CDATA[2.10.1.766]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+      <Modified By="SamV" DateTime="2013-05-08T11:00:18Z" />
+    </Item>
+    <Item ItemId=";InternalName" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text" DevLk="true">
+        <Val><![CDATA[NuGet.Core.dll]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+      <Modified By="SamV" DateTime="2013-05-08T11:00:18Z" />
+    </Item>
+    <Item ItemId=";LegalCopyright" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text">
+        <Val><![CDATA[© Microsoft Corporation. All rights reserved.]]></Val>
+        <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+          <Val><![CDATA[© Корпорация Майкрософт (Microsoft Corporation). Все права защищены.]]></Val>
+        </Tgt>
+        <Prev Cat="Text">
+          <Val><![CDATA[Copyright 2013 Microsoft. NuGet is made possible by the Outercurve Foundation's open source project.]]></Val>
+        </Prev>
+      </Str>
+      <Disp Icon="Str" />
+      <Modified By="MOV" DateTime="2015-10-21T08:48:17Z" />
+      <Props>
+        <Str Name="Custom1" Val="VSToolingOOB_HO3" />
+        <Str Name="Custom2" Val="Autotranslated" />
+      </Props>
+    </Item>
+    <Item ItemId=";OriginalFilename" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text" DevLk="true">
+        <Val><![CDATA[NuGet.Core.dll]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+      <Modified By="SamV" DateTime="2013-05-08T11:00:18Z" />
+    </Item>
+    <Item ItemId=";ProductName" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+      <Str Cat="Text" UsrLk="true">
+        <Val><![CDATA[NuGet]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+      <Modified By="SamV" DateTime="2013-05-08T11:00:18Z" />
+      <Cmts>
+        <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+      </Cmts>
+      <Props>
+        <Str Name="Custom1" Val="VSToolingOOB_HO1" />
+        <Str Name="Custom2" Val="New" />
+      </Props>
+    </Item>
+    <Item ItemId=";ProductVersion" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text" DevLk="true">
+        <Val><![CDATA[2.10.1]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+      <Modified By="SamV" DateTime="2013-05-08T11:00:18Z" />
+    </Item>
+  </Item>
+  <Item ItemId=";XML" ItemType="0" PsrId="210" Leaf="true">
+    <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" />
+    <Modified By="listenev" DateTime="2010-12-03T11:15:45Z" />
+  </Item>
+  <Item ItemId=";Version" ItemType="8" PsrId="211" Leaf="true">
+    <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" />
+    <Modified By="listenev" DateTime="2010-12-03T11:15:45Z" />
+  </Item>
+</LCX>

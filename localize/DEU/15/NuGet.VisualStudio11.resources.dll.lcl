@@ -1,0 +1,222 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<LCX SchemaVersion="6.0" Name="C:\BuildAgent\work\3722f9bbab723fba\Tooling\bin\Release\NuGetTools\NuGet.VisualStudio11.dll" PsrId="211" FileType="1" SrcCul="en-US" TgtCul="de-DE" xmlns="http://schemas.microsoft.com/locstudio/2006/6/lcx">
+  <Props>
+    <Str Name="CustomName1" Val="Custom 1" />
+    <Str Name="CustomName2" Val="Custom 2" />
+    <Str Name="CustomName3" Val="Custom 3" />
+    <Str Name="CustomName4" Val="Custom 4" />
+    <Str Name="CustomName5" Val="Custom 5" />
+    <Str Name="CustomName6" Val="IQA" />
+  </Props>
+  <OwnedComments>
+    <Cmt Name="Dev" />
+    <Cmt Name="LcxAdmin" />
+    <Cmt Name="Note" />
+    <Cmt Name="Rccx" />
+  </OwnedComments>
+  <Settings Name="@vsLocTools@\default.lss" Type="Lss" />
+  <Item ItemId=";Managed Resources" ItemType="0" PsrId="211" Leaf="true">
+    <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" />
+    <Modified By="v-geoye" DateTime="2013-01-05T05:26:52Z" />
+  </Item>
+  <Item ItemId=";NuGet.VisualStudio11.Resources.resources" ItemType="0" PsrId="211" Leaf="false">
+    <Disp Icon="Str" Expand="true" Disp="true" LocTbl="false" Path=" \ ;Managed Resources \ 0 \ 0" />
+    <Modified By="v-geoye" DateTime="2013-01-05T05:26:52Z" />
+    <Item ItemId=";Strings" ItemType="0" PsrId="211" Leaf="false">
+      <Disp Icon="Str" LocTbl="false" />
+      <Modified By="v-geoye" DateTime="2013-01-05T05:26:52Z" />
+      <Item ItemId=";NuGetSearchProvider_CategoryShortcut" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text" UsrLk="true">
+          <Val><![CDATA[nuget]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="IMC_MO" DateTime="2013-08-28T19:21:16Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";NuGetSearchProvider_Description" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Search NuGet packages]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[NuGet-Pakete suchen]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Monika Ostermeier" DateTime="2013-01-07T17:09:12Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[Locked={"NuGet"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom5" Val="HO1" />
+        </Props>
+      </Item>
+      <Item ItemId=";NuGetSearchProvider_DisplayText" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[NuGet Packages]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[NuGet-Pakete]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Monika Ostermeier" DateTime="2013-01-07T17:09:12Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="NuGet"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom5" Val="HO1" />
+        </Props>
+      </Item>
+      <Item ItemId=";NuGetSearchProvider_Name" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[NuGet Search]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[NuGet-Suche]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Monika Ostermeier" DateTime="2013-01-07T17:09:12Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="NuGet"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom5" Val="HO1" />
+        </Props>
+      </Item>
+      <Item ItemId=";NuGetStaticResult_DisplayText" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Search Online for NuGet Packages matching '{0}']]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Online nach NuGet-Paketen suchen, die mit "{0}" übereinstimmen]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="Monika Ostermeier" DateTime="2013-01-07T17:09:12Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="NuGet"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom5" Val="HO1" />
+        </Props>
+      </Item>
+    </Item>
+  </Item>
+  <Item ItemId=";NuGet.VisualStudio11.g.resources" ItemType="0" PsrId="211" Leaf="true">
+    <Disp Icon="Str" Expand="true" Disp="true" LocTbl="false" Path=" \ ;Managed Resources \ 0 \ 0" />
+    <Modified By="v-geoye" DateTime="2013-01-05T05:26:52Z" />
+  </Item>
+  <Item ItemId=";Version" ItemType="0" PsrId="211" Leaf="false">
+    <Disp Icon="Ver" Disp="true" LocTbl="false" Path=" \ ;Version \ 8 \ 0" />
+    <Modified By="v-geoye" DateTime="2013-01-05T05:26:52Z" />
+    <Item ItemId=";AssemblyVersion" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text" DevLk="true">
+        <Val><![CDATA[2.7.40826.256]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+      <Modified By="IMC_MO" DateTime="2013-08-28T19:21:16Z" />
+    </Item>
+    <Item ItemId=";Comments" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text">
+        <Val><![CDATA[This assembly contains VS 2012-specific features.]]></Val>
+        <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+          <Val><![CDATA[Diese Assembly enthält Funktionen, die für VS 2012 spezifisch sind.]]></Val>
+        </Tgt>
+      </Str>
+      <Disp Icon="Str" />
+      <Modified By="Monika Ostermeier" DateTime="2013-01-07T17:09:07Z" />
+      <Props>
+        <Str Name="Custom5" Val="HO1" />
+      </Props>
+    </Item>
+    <Item ItemId=";CompanyName" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text">
+        <Val><![CDATA[Microsoft Corporation]]></Val>
+        <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+          <Val><![CDATA[Microsoft Corporation]]></Val>
+        </Tgt>
+      </Str>
+      <Disp Icon="Str" />
+      <Modified By="Monika Ostermeier" DateTime="2013-01-07T17:09:12Z" />
+      <Props>
+        <Str Name="Custom5" Val="HO1" />
+      </Props>
+    </Item>
+    <Item ItemId=";FileDescription" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text">
+        <Val><![CDATA[VisualStudio2012]]></Val>
+        <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+          <Val><![CDATA[VisualStudio2012]]></Val>
+        </Tgt>
+        <Prev Cat="Text">
+          <Val><![CDATA[VS11Extensions]]></Val>
+        </Prev>
+      </Str>
+      <Disp Icon="Str" />
+      <Modified By="IMC_MO" DateTime="2013-05-08T11:28:02Z" />
+      <Props>
+        <Str Name="Custom5" Val="HO1" />
+      </Props>
+    </Item>
+    <Item ItemId=";FileVersion" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text" DevLk="true">
+        <Val><![CDATA[2.7.40826.256]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+      <Modified By="IMC_MO" DateTime="2013-08-28T19:21:16Z" />
+    </Item>
+    <Item ItemId=";InternalName" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text" DevLk="true">
+        <Val><![CDATA[NuGet.VisualStudio11.dll]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+      <Modified By="IMC_MO" DateTime="2013-08-28T19:21:16Z" />
+    </Item>
+    <Item ItemId=";LegalCopyright" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text">
+        <Val><![CDATA[Copyright 2013 Microsoft. NuGet is made possible by the Microsoft Corporation's open source project.]]></Val>
+        <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" Confidence="100">
+          <Val><![CDATA[© Microsoft Corporation. Alle Rechte vorbehalten. NuGet wird durch das Open Source-Projekt der Microsoft Corporation ermöglicht.]]></Val>
+        </Tgt>
+        <Prev Cat="Text">
+          <Val><![CDATA[Copyright 2013 Microsoft. NuGet is made possible by the Microsoft Corporation�s open source project.]]></Val>
+        </Prev>
+      </Str>
+      <Disp Icon="Str" />
+      <Modified By="IMC_MO" DateTime="2013-07-26T16:45:11Z" />
+      <Props>
+        <Str Name="Custom5" Val="HO1" />
+      </Props>
+    </Item>
+    <Item ItemId=";OriginalFilename" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text" DevLk="true">
+        <Val><![CDATA[NuGet.VisualStudio11.dll]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+      <Modified By="IMC_MO" DateTime="2013-08-28T19:21:16Z" />
+    </Item>
+    <Item ItemId=";ProductName" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text">
+        <Val><![CDATA[NuGet]]></Val>
+        <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+          <Val><![CDATA[NuGet]]></Val>
+        </Tgt>
+      </Str>
+      <Disp Icon="Str" />
+      <Modified By="Monika Ostermeier" DateTime="2013-01-07T17:09:12Z" />
+      <Props>
+        <Str Name="Custom5" Val="HO1" />
+      </Props>
+    </Item>
+    <Item ItemId=";ProductVersion" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text" DevLk="true">
+        <Val><![CDATA[2.7.0]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+      <Modified By="IMC_MO" DateTime="2013-08-28T19:21:16Z" />
+    </Item>
+  </Item>
+  <Item ItemId=";Version" ItemType="8" PsrId="211" Leaf="true">
+    <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" />
+    <Modified By="v-geoye" DateTime="2013-01-05T05:26:52Z" />
+  </Item>
+</LCX>

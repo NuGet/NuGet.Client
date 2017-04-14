@@ -1,0 +1,2463 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<LCX SchemaVersion="6.0" Name="D:\DD\Dev10\OffCycle\AspNet\Plan9\Main\bin\Release\NuGet.Core.dll" PsrId="211" FileType="1" SrcCul="en-US" TgtCul="zh-TW" xmlns="http://schemas.microsoft.com/locstudio/2006/6/lcx">
+  <Props>
+    <Str Name="CustomName1" Val="Custom 1" />
+    <Str Name="CustomName2" Val="Custom 2" />
+    <Str Name="CustomName3" Val="Custom 3" />
+    <Str Name="CustomName4" Val="Custom 4" />
+    <Str Name="CustomName5" Val="Custom 5" />
+    <Str Name="CustomName6" Val="IQA" />
+    <Str Name="HobbitID" Val="310bb0fd-4f45-41cf-8a13-0b66811c095f" />
+  </Props>
+  <OwnedComments>
+    <Cmt Name="Dev" />
+    <Cmt Name="LcxAdmin" />
+    <Cmt Name="Note" />
+    <Cmt Name="Rccx" />
+  </OwnedComments>
+  <Settings Name="@vsLocTools@\default.lss" Type="Lss" />
+  <Item ItemId=";Managed Resources" ItemType="0" PsrId="211" Leaf="true">
+    <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" />
+    <Modified By="v-hugeng" DateTime="2010-11-02T10:41:10Z" />
+  </Item>
+  <Item ItemId=";NuGet.Authoring.nuspec.xsd" ItemType="0" PsrId="210" Leaf="true">
+    <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" Path=" \ ;XML \ 0 \ 0" />
+    <Modified By="v-hugeng" DateTime="2010-11-02T10:41:10Z" />
+  </Item>
+  <Item ItemId=";NuGet.CommonResources.resources" ItemType="0" PsrId="211" Leaf="false">
+    <Disp Icon="Str" Expand="true" Disp="true" LocTbl="false" Path=" \ ;Managed Resources \ 0 \ 0" />
+    <Modified By="nicolasp" DateTime="2012-05-28T18:56:07Z" />
+    <Item ItemId=";Strings" ItemType="0" PsrId="211" Leaf="false">
+      <Disp Icon="Str" LocTbl="false" />
+      <Modified By="nicolasp" DateTime="2012-05-28T18:56:07Z" />
+      <Item ItemId=";Argument_Cannot_Be_Null_Or_Empty" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Value cannot be null or an empty string.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[值不可為 null 或空字串。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="nicolasp" DateTime="2012-05-28T18:59:00Z" />
+      </Item>
+      <Item ItemId=";Argument_Must_Be_Between" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Value must be between {0} and {1}.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[值必須介於 {0} 到 {1} 之間。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="nicolasp" DateTime="2012-05-28T18:59:00Z" />
+      </Item>
+      <Item ItemId=";Argument_Must_Be_Enum_Member" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Value must be a value from the "{0}" enumeration.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[值必須是來自 "{0}" 列舉的值。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="nicolasp" DateTime="2012-05-28T18:59:00Z" />
+      </Item>
+      <Item ItemId=";Argument_Must_Be_GreaterThan" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Value must be greater than {0}.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[值必須大於 {0}。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="nicolasp" DateTime="2012-05-28T18:59:00Z" />
+      </Item>
+      <Item ItemId=";Argument_Must_Be_GreaterThanOrEqualTo" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Value must be greater than or equal to {0}.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[值必須大於或等於 {0}。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="nicolasp" DateTime="2012-05-28T18:59:00Z" />
+      </Item>
+      <Item ItemId=";Argument_Must_Be_LessThan" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Value must be less than {0}.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[值必須小於 {0}。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="nicolasp" DateTime="2012-05-28T18:59:00Z" />
+      </Item>
+      <Item ItemId=";Argument_Must_Be_LessThanOrEqualTo" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Value must be less than or equal to {0}.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[值必須小於或等於 {0}。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="nicolasp" DateTime="2012-05-28T18:59:00Z" />
+      </Item>
+      <Item ItemId=";Argument_Must_Be_Null_Or_Non_Empty" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Value cannot be an empty string. It must either be null or a non-empty string.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[值不可為空字串。值必須是 null 或非空字串。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="nicolasp" DateTime="2012-05-28T18:59:00Z" />
+      </Item>
+      <Item ItemId=";EnsureImportedMessage" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[This project references NuGet package(s) that are missing on this computer. Enable NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[此專案參考這部電腦上所缺少的 NuGet 封裝。請啟用 NuGet 封裝還原，以下載該封裝。如需詳細資訊，請參閱 http://go.microsoft.com/fwlink/?LinkID=322105。缺少的檔案是 {0}。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="PC7" DateTime="2015-08-17T08:00:56Z" />
+        <Props>
+          <Str Name="Custom1" Val="MVC_3_1_HO2" />
+        </Props>
+      </Item>
+    </Item>
+  </Item>
+  <Item ItemId=";NuGet.Resources.AnalysisResources.resources" ItemType="0" PsrId="211" Leaf="false">
+    <Disp Icon="Str" Expand="true" Disp="true" LocTbl="false" Path=" \ ;Managed Resources \ 0 \ 0" />
+    <Modified By="julior" DateTime="2012-02-06T16:35:02Z" />
+    <Item ItemId=";Strings" ItemType="0" PsrId="211" Leaf="false">
+      <Disp Icon="Str" LocTbl="false" />
+      <Modified By="julior" DateTime="2012-02-06T16:35:02Z" />
+      <Item ItemId=";AssemblyOutsideLibDescription" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The assembly '{0}' is not inside the 'lib' folder and hence it won't be added as reference when the package is installed into a project.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[組件 '{0}' 不在 'lib' 資料夾內，因此套件安裝到專案時不會新增該組件做為參考。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="P033" DateTime="2012-02-10T08:03:29Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="lib"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";AssemblyOutsideLibSolution" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Move it into the 'lib' folder if it should be referenced.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[如果應該要參考該組件，請將它移至 'lib' 資料夾內。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="P033" DateTime="2012-02-10T08:03:29Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="lib"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";AssemblyOutsideLibTitle" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Assembly outside lib folder.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[組件在 lib 資料夾外。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="P033" DateTime="2012-02-10T08:03:29Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="lib"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";AssemblyUnderLibDescription" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The assembly '{0}' is placed directly under 'lib' folder. It is recommended that assemblies be placed inside a framework-specific folder.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[組件 '{0}' 直接位在 'lib' 資料夾下。建議將組件放在架構特定的資料夾內。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="P033" DateTime="2012-02-10T08:03:29Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="lib"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";AssemblyUnderLibSolution" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Move it into a framework-specific folder. If this assembly is targeted for multiple frameworks, ignore this warning.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[請將該組件移至架構特定的資料夾。如果此組件適用於多個架構，請忽略此警告。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="P033" DateTime="2012-02-10T08:03:29Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";AssemblyUnderLibTitle" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Assembly not inside a framework folder.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[組件不在架構資料夾內。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="P033" DateTime="2012-02-10T08:03:29Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";InvalidFrameworkDescription" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The folder '{0}' under 'lib' is not recognized as a valid framework name or a supported culture identifier.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA['lib' 下的資料夾 '{0}' 未被辨認為有效架構名稱或支援的文化特性識別碼。]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[The folder '{0}' under 'lib' is not recognized as a valid framework name.]]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="nicolasp" DateTime="2012-06-01T19:05:08Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="lib"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+          <Str Name="Custom4" Val="xxx" />
+        </Props>
+      </Item>
+      <Item ItemId=";InvalidFrameworkSolution" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Rename it to a valid framework name.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[請將它重新命名為有效的架構名稱。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="P033" DateTime="2012-02-10T08:03:29Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";InvalidFrameworkTitle" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Invalid framework folder.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[架構資料夾無效。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="P033" DateTime="2012-02-10T08:03:29Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";MisplacedInitScriptDescription" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The file '{0}' will be ignored by NuGet because it is not directly under 'tools' folder.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[NuGet 會忽略此檔案 '{0}'，因為該檔案並非直接位於 'tools' 資料夾之下。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="P033" DateTime="2013-01-08T03:51:55Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="NuGet", "tools"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom1" Val="MVC_NuGetHO1" />
+          <Str Name="Custom5" Val="HO1" />
+        </Props>
+      </Item>
+      <Item ItemId=";MisplacedInitScriptSolution" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Place the file directly under 'tools' folder.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[將檔案直接放在 'tools' 資料夾下。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="P033" DateTime="2013-01-08T03:51:55Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="tools"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom1" Val="MVC_NuGetHO1" />
+          <Str Name="Custom5" Val="HO1" />
+        </Props>
+      </Item>
+      <Item ItemId=";MisplacedInitScriptTitle" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Init.ps1 script will be ignored.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[會忽略 Init.ps1 指令碼。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="P033" DateTime="2013-01-08T03:51:55Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="Init.ps1"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom1" Val="MVC_NuGetHO1" />
+          <Str Name="Custom5" Val="HO1" />
+        </Props>
+      </Item>
+      <Item ItemId=";MisplacedTransformFileDescription" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The transform file '{0}' is outside the 'content' folder and hence will not be transformed during installation of this package.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[轉換檔案 '{0}' 在 'content' 資料夾外，因此不會在安裝此套件時受到轉換。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="P033" DateTime="2012-02-10T08:03:29Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="content"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";MisplacedTransformFileSolution" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Move it into the 'content' folder.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[請將該檔案移至 'content' 資料夾內。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="P033" DateTime="2012-02-10T08:03:29Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="content"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";MisplacedTransformFileTitle" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Transform file outside content folder.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[轉換檔案在 content 資料夾外。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="P033" DateTime="2012-02-10T08:03:29Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="content"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";MissingSummaryDescription" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The Description text is long but the Summary text is empty. This means the Description text will be truncated in the 'Manage NuGet Packages' dialog.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Description 文字很長，但是 Summary 文字空白。這表示 Description 文字將在 [管理 NuGet 套件]5D; 對話方塊中遭到截斷。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="P033" DateTime="2012-06-13T05:10:43Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="Description"} {Locked="Summary"} {Locked="NuGet"} Description and Summary refer to XML elements]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";MissingSummarySolution" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Provide a brief summary of the package in the Summary field.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[在 Summary 欄位中，提供套件的簡短摘要。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="P033" DateTime="2012-06-13T05:03:20Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="Summary"} XML element name]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";MissingSummaryTitle" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Consider providing Summary text.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[請考慮提供 Summary 文字。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="P033" DateTime="2012-06-13T05:03:31Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="Summary"} XML element name]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";ScriptOutsideToolsDescription" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The script file '{0}' is outside the 'tools' folder and hence will not be executed during installation of this package.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[指令檔 '{0}' 在 'tools' 資料夾外，因此安裝此套件時不會執行該檔案。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="P033" DateTime="2012-02-10T08:03:29Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="tools"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";ScriptOutsideToolsSolution" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Move it into the 'tools' folder.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[請將該檔案移至 'tools' 資料夾內。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="P033" DateTime="2012-02-10T08:03:29Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="tools"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";ScriptOutsideToolsTitle" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[PowerShell file outside tools folder.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[PowerShell 檔案在 tools 資料夾外。]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[PowerScript file outside tools folder.]]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="P033" DateTime="2013-12-27T04:15:16Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="PowerShell"} {Locked="tools"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom1" Val="MVC_3_1_HO2" />
+        </Props>
+      </Item>
+      <Item ItemId=";UnrecognizedScriptDescription" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The script file '{0}' is not recognized by NuGet and hence will not be executed during installation of this package.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[NuGet 無法辨識指令檔 '{0}'，因此安裝此套件時不會執行該檔案。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="P033" DateTime="2012-02-10T08:03:29Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="NuGet"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";UnrecognizedScriptSolution" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Rename it to install.ps1, uninstall.ps1 or init.ps1 and place it directly under 'tools'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[請將該指令檔重新命名為 install.ps1, uninstall.ps1 或 init.ps1，並且直接放在 'tools' 下。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="P033" DateTime="2012-06-13T05:04:27Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="install.ps1, uninstall.ps1"} {Locked="init.ps1"} {Locked="tools"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";UnrecognizedScriptTitle" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Unrecognized PowerShell file.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[無法辨識 PowerShell 檔案。]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Unrecognized PowerScript file.]]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="P033" DateTime="2013-12-27T04:15:16Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="PowerShell"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom1" Val="MVC_3_1_HO2" />
+        </Props>
+      </Item>
+      <Item ItemId=";WinRTObsoleteDescription" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The file at '{0}' uses the obsolete 'WinRT' as the framework folder.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[在 '{0}' 的檔案會使用過時的 'WinRT' 做為架構資料夾。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="P033" DateTime="2013-01-08T03:51:55Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="WinRT"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom1" Val="MVC_NuGetHO1" />
+          <Str Name="Custom5" Val="HO1" />
+        </Props>
+      </Item>
+      <Item ItemId=";WinRTObsoleteSolution" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Replace 'WinRT' or 'WinRT45' with 'NetCore45'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[將 'WinRT' 或 'WinRT45' 置換為 'NetCore45'。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="P033" DateTime="2013-01-08T03:51:55Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="'WinRT'", "'WinRT45'", "'NetCore45'"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom1" Val="MVC_NuGetHO1" />
+          <Str Name="Custom5" Val="HO1" />
+        </Props>
+      </Item>
+      <Item ItemId=";WinRTObsoleteTitle" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The framework name 'WinRT' is obsolete.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[架構名稱 'WinRT' 已過時。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="P033" DateTime="2013-01-08T03:51:55Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="WinRT"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom1" Val="MVC_NuGetHO1" />
+          <Str Name="Custom5" Val="HO1" />
+        </Props>
+      </Item>
+    </Item>
+  </Item>
+  <Item ItemId=";NuGet.Resources.NuGetResources.resources" ItemType="0" PsrId="211" Leaf="false">
+    <Disp Icon="Str" Expand="true" Disp="true" LocTbl="false" Path=" \ ;Managed Resources \ 0 \ 0" />
+    <Modified By="v-hugeng" DateTime="2010-11-02T10:41:10Z" />
+    <Item ItemId=";Strings" ItemType="0" PsrId="211" Leaf="false">
+      <Disp Icon="Str" LocTbl="false" />
+      <Modified By="v-hugeng" DateTime="2010-11-02T10:41:10Z" />
+      <Item ItemId=";AdditonalConstraintsDefined" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA['{0}' has an additional constraint {1} defined in {2}.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[{2} 中為 '{0}' 多定義了條件約束 {1}。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="P033" DateTime="2012-02-10T08:03:29Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";AggregateQueriesRequireOrder" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Aggregate queries require at least one OrderBy.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="Approved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[彙總查詢需要至少一個 OrderBy。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="v-canl" DateTime="2012-02-03T12:02:15Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Placeholder="OrderBy"} Linq term]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom1" Val="VSToolingOOB_Handoff3" />
+          <Str Name="Custom2" Val="New" />
+        </Props>
+      </Item>
+      <Item ItemId=";CannotCreateEmptyPackage" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Cannot create a package that has no dependencies nor content.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="Approved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[無法建立不具有相依性或內容的套件。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="v-canl" DateTime="2012-02-03T12:02:15Z" />
+        <Props>
+          <Str Name="Custom1" Val="VSToolingOOB_Handoff3" />
+          <Str Name="Custom2" Val="New" />
+        </Props>
+      </Item>
+      <Item ItemId=";CircularDependencyDetected" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Circular dependency detected '{0}'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" Confidence="100">
+            <Val><![CDATA[偵測到循環相依性 '{0}'。]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Circular dependency detected '{0}']]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="julior" DateTime="2012-02-06T20:22:45Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+          <Str Name="Custom2" Val="New" />
+        </Props>
+      </Item>
+      <Item ItemId=";ConflictErrorWithDependent" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Updating '{0}' to '{1}' failed. Unable to find a version of '{2}' that is compatible with '{1}'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[更新 '{0}' 至 '{1}' 失敗。找不到與 '{1}' 相容的 '{2}' 版本。]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Conflict occurred. '{0}' referenced but requested '{1}'. '{2}' depends on '{0}']]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="P033" DateTime="2012-02-10T08:03:29Z" />
+        <Props>
+          <Str Name="Custom1" Val="VSToolingOOB_HO1" />
+          <Str Name="Custom2" Val="New" />
+        </Props>
+      </Item>
+      <Item ItemId=";ConflictErrorWithDependents" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Updating '{0}' to '{1}' failed. Unable to find versions of '{2}' that are compatible with '{1}'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[更新 '{0}' 至 '{1}' 失敗。找不到與 '{1}' 相容的 '{2}' 版本。]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Conflict occurred. '{0}' referenced but requested '{1}'. '{2}' depend on '{0}']]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="P033" DateTime="2012-02-10T08:03:29Z" />
+        <Props>
+          <Str Name="Custom1" Val="VSToolingOOB_HO1" />
+          <Str Name="Custom2" Val="New" />
+        </Props>
+      </Item>
+      <Item ItemId=";Debug_AddedFile" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Added file '{0}'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" Confidence="100">
+            <Val><![CDATA[已加入檔案 '{0}'。]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Added file '{0}']]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="julior" DateTime="2012-02-06T20:22:45Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+          <Str Name="Custom2" Val="New" />
+        </Props>
+      </Item>
+      <Item ItemId=";Debug_AddedFileToFolder" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Added file '{0}' to folder '{1}'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[已將檔案 '{0}' 加入資料夾 '{1}' 中。]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Added file '{0}' to folder '{1}']]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="PC7" DateTime="2015-08-17T08:00:56Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+          <Str Name="Custom2" Val="New" />
+        </Props>
+      </Item>
+      <Item ItemId=";Debug_LookingForUpdates" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Looking for updates for '{0}'...]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="Approved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[正在尋找 '{0}' 的更新...]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="v-canl" DateTime="2012-02-03T12:02:15Z" />
+        <Props>
+          <Str Name="Custom1" Val="VSToolingOOB_HO1" />
+          <Str Name="Custom2" Val="New" />
+        </Props>
+      </Item>
+      <Item ItemId=";Debug_RemovedFile" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Removed file '{0}'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" Confidence="100">
+            <Val><![CDATA[已移除檔案 '{0}'。]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Removed file '{0}']]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="julior" DateTime="2012-02-06T20:22:45Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+          <Str Name="Custom2" Val="New" />
+        </Props>
+      </Item>
+      <Item ItemId=";Debug_RemovedFileFromFolder" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Removed file '{0}' to folder '{1}'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[已將檔案 '{0}' 移至資料夾 '{1}'。]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Removed file '{0}' to folder '{1}']]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="P033" DateTime="2012-02-10T08:03:29Z" />
+        <Props>
+          <Str Name="Custom1" Val="VSToolingOOB_HO1" />
+          <Str Name="Custom2" Val="New" />
+        </Props>
+      </Item>
+      <Item ItemId=";Debug_RemovedFolder" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Removed folder '{0}'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" Confidence="100">
+            <Val><![CDATA[已移除資料夾 '{0}'。]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Removed folder '{0}']]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="julior" DateTime="2012-02-06T20:22:45Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+          <Str Name="Custom2" Val="New" />
+        </Props>
+      </Item>
+      <Item ItemId=";Debug_TargetFrameworkInfo" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[>> {0} are being added from '{1}'{2}]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[>> 從 '{1}'{2} 新增 {0}]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="P033" DateTime="2013-12-27T04:15:16Z" />
+        <Props>
+          <Str Name="Custom1" Val="MVC_3_1_HO2" />
+        </Props>
+      </Item>
+      <Item ItemId=";Debug_TargetFrameworkInfoPrefix" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[For adding package '{0}' to project '{1}' that targets '{2}',]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[為了將套件 '{0}' 新增到目標為 '{2}' 的專案 '{1}'，]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="P033" DateTime="2013-12-27T04:15:16Z" />
+        <Props>
+          <Str Name="Custom1" Val="MVC_3_1_HO2" />
+        </Props>
+      </Item>
+      <Item ItemId=";Debug_TargetFrameworkInfo_AssemblyReferences" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Assembly references]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[組件參照]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="P033" DateTime="2013-12-27T04:15:16Z" />
+        <Props>
+          <Str Name="Custom1" Val="MVC_3_1_HO2" />
+        </Props>
+      </Item>
+      <Item ItemId=";Debug_TargetFrameworkInfo_BuildFiles" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Build files]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[建置檔案]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="P033" DateTime="2013-12-27T04:15:16Z" />
+        <Props>
+          <Str Name="Custom1" Val="MVC_3_1_HO2" />
+        </Props>
+      </Item>
+      <Item ItemId=";Debug_TargetFrameworkInfo_ContentFiles" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Content files]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[內容檔案]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="P033" DateTime="2013-12-27T04:15:16Z" />
+        <Props>
+          <Str Name="Custom1" Val="MVC_3_1_HO2" />
+        </Props>
+      </Item>
+      <Item ItemId=";Debug_TargetFrameworkInfo_NotFrameworkSpecific" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[ (not framework-specific)]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[ (並未指定架構)]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="P033" DateTime="2013-12-27T04:15:16Z" />
+        <Props>
+          <Str Name="Custom1" Val="MVC_3_1_HO2" />
+        </Props>
+      </Item>
+      <Item ItemId=";Debug_TargetFrameworkInfo_PowershellScripts" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[>> PowerShell scripts are being executed from '{0}'{1}]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[>> 從 '{0}'{1} 執行 PowerShell 指令碼]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="P033" DateTime="2013-12-27T04:15:16Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="PowerShell"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom1" Val="MVC_3_1_HO2" />
+        </Props>
+      </Item>
+      <Item ItemId=";DependencyHasInvalidVersion" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Dependency '{0}' has an invalid version.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="Approved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[相依性 '{0}' 的版本無效。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="v-canl" DateTime="2012-02-03T12:02:15Z" />
+        <Props>
+          <Str Name="Custom1" Val="VSToolingOOB_Handoff3" />
+          <Str Name="Custom2" Val="New" />
+        </Props>
+      </Item>
+      <Item ItemId=";DependencyOnlyCannotMixDependencies" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Child dependencies of dependency only packages cannot mix external and project packages.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" Confidence="100">
+            <Val><![CDATA[僅限相依性套件的子相依性無法混合外部和專案套件。]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Child dependencies of dependency only packages cannot mix external and project packages]]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="julior" DateTime="2012-02-06T20:22:45Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+          <Str Name="Custom2" Val="New" />
+        </Props>
+      </Item>
+      <Item ItemId=";DownloadProgressStatus" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Downloading {0} {1}...]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[正在下載 {0} {1}...]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="P033" DateTime="2012-02-10T08:03:29Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";DuplicateDependenciesDefined" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA['{0}' already has a dependency defined for '{1}'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="Approved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA['{0}' 已經具有為 '{1}' 定義的相依性。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="v-canl" DateTime="2012-02-03T12:02:15Z" />
+        <Props>
+          <Str Name="Custom1" Val="VSToolingOOB_Handoff3" />
+          <Str Name="Custom2" Val="New" />
+        </Props>
+      </Item>
+      <Item ItemId=";ErrorLoadingPackages" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[An error occurred while loading packages from '{0}': {1}]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[從 '{0}' 載入套件時發生錯誤: {1}]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[An error occurred while loading packages from'{0}': {1}]]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="P033" DateTime="2013-12-27T04:15:16Z" />
+        <Props>
+          <Str Name="Custom1" Val="MVC_3_1_HO2" />
+          <Str Name="Custom5" Val="QA" />
+          <Str Name="Custom6" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";ErrorReadingFile" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Error reading '{0}'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="Approved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[讀取 '{0}' 時發生錯誤。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="v-canl" DateTime="2012-02-03T12:02:15Z" />
+        <Props>
+          <Str Name="Custom1" Val="VSToolingOOB_Handoff3" />
+          <Str Name="Custom2" Val="New" />
+        </Props>
+      </Item>
+      <Item ItemId=";ErrorReadingPackage" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Unable to read package from path '{0}'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[無法從路徑 '{0}' 讀取封包。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="P033" DateTime="2013-01-08T03:51:55Z" />
+        <Props>
+          <Str Name="Custom1" Val="MVC_NuGetHO1" />
+          <Str Name="Custom5" Val="HO1" />
+        </Props>
+      </Item>
+      <Item ItemId=";Error_InvalidPackage" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Unable to load version '{0}' of package '{1}'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[無法載入 '{0}' 版的封裝 '{1}'。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Error_NoWritableConfig" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[There are no writable config files.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[沒有可寫入設定檔。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="P033" DateTime="2013-06-13T02:11:08Z" />
+        <Props>
+          <Str Name="Custom1" Val="MVC_HO2a" />
+        </Props>
+      </Item>
+      <Item ItemId=";Error_PackageAlreadyExists" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Package '{0}' already exists.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[套件 '{0}' 已存在。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="P033" DateTime="2013-12-27T04:15:16Z" />
+        <Props>
+          <Str Name="Custom1" Val="MVC_3_1_HO2" />
+        </Props>
+      </Item>
+      <Item ItemId=";Error_TooManyRedirections" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Too many automatic redirections were attempted.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[嘗試自動重新導向的次數太多。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";ExternalPackagesCannotDependOnProjectLevelPackages" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[External packages cannot depend on packages that target projects.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="Approved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[外部封裝不能相依於以專案為目標的封裝。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="v-canl" DateTime="2012-02-03T12:02:15Z" />
+        <Props>
+          <Str Name="Custom1" Val="VSToolingOOB_HO1" />
+          <Str Name="Custom2" Val="New" />
+        </Props>
+      </Item>
+      <Item ItemId=";FileConflictMessage" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[File '{0}' already exists in project '{1}'. Do you want to overwrite it?]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[檔案 '{0}' 已經存在專案 '{1}' 中。您要覆寫該檔案嗎?]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="FedericoMu" DateTime="2013-05-09T12:59:18Z" />
+        <Props>
+          <Str Name="Custom1" Val="MVC_HO1" />
+          <Str Name="Custom5" Val="QA" />
+          <Str Name="Custom6" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";FileDoesNotExit" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[File '{0}' does not exist.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[檔案 '{0}' 不存在。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="FedericoMu" DateTime="2013-05-09T12:59:18Z" />
+        <Props>
+          <Str Name="Custom1" Val="MVC_HO1" />
+          <Str Name="Custom5" Val="QA" />
+          <Str Name="Custom6" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";GetUpdatesParameterMismatch" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The 'packages' and 'versionConstraints' parameters must have the same number of elements.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA['packages' 和 'versionConstraints' 參數的元素個數必須相同。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="FedericoMu" DateTime="2013-05-09T12:59:18Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="packages"} {Locked="versionConstraints"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom1" Val="MVC_HO1" />
+          <Str Name="Custom5" Val="QA" />
+          <Str Name="Custom6" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";IncompatibleSchema" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The schema version of '{0}' is incompatible with version {1} of NuGet. Please upgrade NuGet to the latest version from http://go.microsoft.com/fwlink/?LinkId=213942.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA['{0}' 的結構描述版本與 NuGet 版本 {1} 不相容。請從 http://go.microsoft.com/fwlink/?LinkId=213942 將 NuGet 升級為最新版本。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="P033" DateTime="2012-02-10T08:03:29Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Placeholder="NuGet"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";Info_OverwriteExistingFile" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Overwrite existing file '{0}'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[覆寫現有的檔案 '{0}'。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="FedericoMu" DateTime="2013-05-09T12:59:18Z" />
+        <Props>
+          <Str Name="Custom1" Val="MVC_HO1" />
+          <Str Name="Custom5" Val="QA" />
+          <Str Name="Custom6" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";InvalidFeed" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Could not connect to the feed specified at '{0}'. Please verify that the package source (located in the Package Manager Settings) is valid and ensure your network connectivity.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[無法連線至所指定位於 '{0}' 的摘要。請確認套件來源 (位於 [套件管理員設定]5D; 中)，並確定您的網路連線沒問題。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="P033" DateTime="2012-02-10T08:03:29Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";InvalidFrameworkNameFormat" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Invalid framework name format. Expected {framework}{version}-{profile}.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[架構名稱格式無效，必須是 {framework}{version}-{profile}。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="P033" DateTime="2012-02-10T08:03:29Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";InvalidNullSettingsOperation" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA["{0}" cannot be called on a NullSettings. This may be caused on account of insufficient permissions to read or write to "%AppData%\NuGet\NuGet.config".]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[無法在 NullSettings 呼叫 "{0}"。可能是因為帳戶的讀取或寫入 "%AppData%\NuGet\NuGet.config" 的權限不足所導致的結果。]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA["{0}" cannot be called on a NullSettings.]]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="P033" DateTime="2013-01-08T03:51:55Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="NullSettings", "%AppData%\NuGet\NuGet.config"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom1" Val="MVC_NuGetHO1" />
+        </Props>
+      </Item>
+      <Item ItemId=";InvalidPackageId" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The package ID '{0}' contains invalid characters. Examples of valid package IDs include 'MyPackage' and 'MyPackage.Sample'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[套件 ID '{0}' 包含無效的字元。有效套件 ID 的範例包括 'MyPackage' 及 'MyPackage.Sample'。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="P033" DateTime="2012-02-10T08:03:29Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="'MyPackage'", "'MyPackage.Sample'"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";InvalidVersionString" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA['{0}' is not a valid version string.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" Confidence="100">
+            <Val><![CDATA['{0}' 不是有效的版本字串。]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA['{0}' is not a valid version string]]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="julior" DateTime="2012-02-06T20:22:45Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+          <Str Name="Custom2" Val="New" />
+        </Props>
+      </Item>
+      <Item ItemId=";Log_ApplyingConstraints" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Applying constraint '{0} {1}' defined in {2}.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[正在套用 {2} 中定義的條件約束 '{0} {1}'。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="P033" DateTime="2012-02-10T08:03:29Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";Log_AttemptingToRetrievePackageFromSource" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Attempting to resolve dependency '{0}'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[正在嘗試解析相依性 '{0}'。]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA['{0}' not installed. Attempting to retrieve dependency from source...]]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="P033" DateTime="2012-02-10T08:03:29Z" />
+        <Props>
+          <Str Name="Custom1" Val="VSToolingOOB_HO1" />
+          <Str Name="Custom2" Val="New" />
+        </Props>
+      </Item>
+      <Item ItemId=";Log_BeginAddPackageReference" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Adding '{0}' to {1}.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[正在將 '{0}' 加入 {1} 中。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="PC7" DateTime="2015-08-17T08:00:56Z" />
+        <Props>
+          <Str Name="Custom1" Val="MVC_HO1" />
+          <Str Name="Custom5" Val="QA" />
+          <Str Name="Custom6" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";Log_BeginInstallPackage" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Installing '{0}'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[正在安裝 '{0}'。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="FedericoMu" DateTime="2013-05-09T12:59:18Z" />
+        <Props>
+          <Str Name="Custom1" Val="MVC_HO1" />
+          <Str Name="Custom5" Val="QA" />
+          <Str Name="Custom6" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";Log_BeginRemovePackageReference" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Removing '{0}' from {1}.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[正在從 {1} 移除 '{0}'。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="FedericoMu" DateTime="2013-05-09T12:59:18Z" />
+        <Props>
+          <Str Name="Custom1" Val="MVC_HO1" />
+          <Str Name="Custom5" Val="QA" />
+          <Str Name="Custom6" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";Log_BeginUninstallPackage" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Uninstalling '{0}'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[正在解除安裝 '{0}'。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="FedericoMu" DateTime="2013-05-09T12:59:18Z" />
+        <Props>
+          <Str Name="Custom1" Val="MVC_HO1" />
+          <Str Name="Custom5" Val="QA" />
+          <Str Name="Custom6" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";Log_InstallPackage" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Install '{0}']]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[安裝 '{0}']]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Log_InstallPackageIntoProject" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Add '{0}' to project {1}.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[將 '{0}' 加入專案 {1} 中。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Log_NoUpdatesAvailable" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[No updates available for '{0}'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA['{0}' 目前沒有可用的更新。]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[No updates available for '{0}']]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="PC7" DateTime="2015-08-17T08:00:56Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+          <Str Name="Custom2" Val="New" />
+        </Props>
+      </Item>
+      <Item ItemId=";Log_NoUpdatesAvailableForProject" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[No updates available for '{0}' in project '{1}'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[專案 '{1}' 的 '{0}' 沒有任何可用的更新。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="P033" DateTime="2012-02-10T08:03:29Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";Log_PackageAlreadyInstalled" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA['{0}' already installed.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA['{0}' 已安裝。]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA['{0}' already installed]]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="PC7" DateTime="2015-08-17T08:00:56Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+          <Str Name="Custom2" Val="New" />
+        </Props>
+      </Item>
+      <Item ItemId=";Log_PackageInstalledSuccessfully" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Successfully installed '{0}'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" Confidence="100">
+            <Val><![CDATA[已經成功安裝 '{0}'。]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Successfully installed '{0}']]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="julior" DateTime="2012-02-06T20:22:45Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+          <Str Name="Custom2" Val="New" />
+        </Props>
+      </Item>
+      <Item ItemId=";Log_ProjectAlreadyReferencesPackage" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[{0} already has a reference to '{1}'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" Confidence="100">
+            <Val><![CDATA[{0} 已經有 '{1}' 的參考。]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[{0} already has a reference to '{1}']]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="julior" DateTime="2012-02-06T20:22:45Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+          <Str Name="Custom2" Val="New" />
+        </Props>
+      </Item>
+      <Item ItemId=";Log_SuccessfullyAddedPackageReference" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Successfully added '{0}' to {1}.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" Confidence="100">
+            <Val><![CDATA[已成功將 '{0}' 加入 {1}。]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Successfully added '{0}' to {1}]]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="julior" DateTime="2012-02-06T20:22:45Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+          <Str Name="Custom2" Val="New" />
+        </Props>
+      </Item>
+      <Item ItemId=";Log_SuccessfullyRemovedPackageReference" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Successfully removed '{0}' from {1}.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" Confidence="100">
+            <Val><![CDATA[已成功自 {1} 移除 '{0}'。]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Successfully removed '{0}' from {1}]]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="julior" DateTime="2012-02-06T20:22:45Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+          <Str Name="Custom2" Val="New" />
+        </Props>
+      </Item>
+      <Item ItemId=";Log_SuccessfullyUninstalledPackage" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Successfully uninstalled '{0}'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" Confidence="100">
+            <Val><![CDATA[已成功解除安裝 '{0}'。]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Successfully uninstalled '{0}']]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="julior" DateTime="2012-02-06T20:22:45Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+          <Str Name="Custom2" Val="New" />
+        </Props>
+      </Item>
+      <Item ItemId=";Log_UninstallPackage" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Uninstall '{0}'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[解除安裝 '{0}'。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Log_UninstallPackageFromProject" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Remove '{0}' from project {1}.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[從專案 {1} 中移除 '{0}'。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Log_UpdatingPackages" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Updating '{0}' from version '{1}' to '{2}' in project '{3}'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[正在將專案 '{3}' 中的 '{0}' 從版本 '{1}' 更新到 '{2}'。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="P033" DateTime="2012-02-10T08:03:29Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";Log_UpdatingPackagesWithoutOldVersion" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Updating '{0}' to version '{1}' in project '{2}'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[在專案 '{2}' 中更新 '{0}' 為版本 '{1}'。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="P033" DateTime="2013-12-27T04:15:16Z" />
+        <Props>
+          <Str Name="Custom1" Val="MVC_3_1_HO2" />
+        </Props>
+      </Item>
+      <Item ItemId=";Manifest_AssemblyNameRequired" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Assembly name is required.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[需要組件名稱。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="P033" DateTime="2012-02-10T08:03:29Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";Manifest_DependenciesHasMixedElements" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[<dependencies> element must not contain both <group> and <dependency> child elements.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[<dependencies> 元素不能包含 <group> 和 <dependency> 子元素。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="P033" DateTime="2012-06-13T04:58:23Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="<dependencies>"} {Locked="<group>"} {Locked="<dependency>"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom1" Val="tx1" />
+        </Props>
+      </Item>
+      <Item ItemId=";Manifest_DependencyIdRequired" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Dependency Id is required.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="Approved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[需要相依性 ID。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="v-canl" DateTime="2012-02-03T12:02:15Z" />
+        <Props>
+          <Str Name="Custom1" Val="VSToolingOOB_Handoff3" />
+          <Str Name="Custom2" Val="New" />
+        </Props>
+      </Item>
+      <Item ItemId=";Manifest_ExcludeContainsInvalidCharacters" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Exclude path '{0}' contains invalid characters.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[排除路徑 '{0}' 包含無效的字元。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="P033" DateTime="2012-02-10T08:03:29Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";Manifest_IdMaxLengthExceeded" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Id must not exceed 100 characters.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[ID 不可超過 100 個字元。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="P033" DateTime="2012-02-10T08:03:29Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";Manifest_InvalidMinClientVersion" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The 'minClientVersion' attribute in the package manifest has invalid value. It must be a valid version string.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[套件資訊清單中的 'minClientVersion' 屬性值無效。此值必須是有效的版本字串。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="FedericoMu" DateTime="2013-05-09T12:59:18Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="minClientVersion"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom1" Val="MVC_HO1" />
+          <Str Name="Custom5" Val="QA" />
+          <Str Name="Custom6" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";Manifest_InvalidPrereleaseDependency" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[A stable release of a package should not have on a prerelease dependency. Either modify the version spec of dependency "{0}" or update the version field.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[一個穩定的套件版本不應具有發行前版本相依性。請修改相依性 "{0}" 的版本規格，或更新版本欄位。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="P033" DateTime="2012-02-10T08:03:29Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";Manifest_InvalidReference" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Invalid assembly reference '{0}'. Ensure that a file named '{0}' exists in the lib directory.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[組件參考 '{0}' 無效。請確定 lib 目錄中存在名稱為 '{0}' 的檔案。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="P033" DateTime="2012-02-10T08:03:29Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="lib"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";Manifest_InvalidReferenceFile" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Assembly reference '{0}' contains invalid characters.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[組件參考 '{0}' 包含無效的字元。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="P033" DateTime="2012-02-10T08:03:29Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";Manifest_InvalidSchemaNamespace" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Invalid schema namespace '{0}'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[結構描述命名空間 '{0}' 無效。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="P033" DateTime="2012-02-10T08:03:29Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";Manifest_NotAvailable" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The manifest of this package has not been read. Call ReadManifest() before calling this method.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[尚未讀取此套件的資訊清單。請先呼叫 ReadManifest()，再呼叫此方法。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="nicolasp" DateTime="2012-06-01T19:05:08Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="ReadManifest()"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom4" Val="xxx" />
+        </Props>
+      </Item>
+      <Item ItemId=";Manifest_NotFound" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Could not find manifest file at '{0}'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[在 '{0}' 找不到資訊清單檔。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="nicolasp" DateTime="2012-06-01T19:05:08Z" />
+        <Props>
+          <Str Name="Custom4" Val="xxx" />
+        </Props>
+      </Item>
+      <Item ItemId=";Manifest_ReferencesHasMixedElements" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[<references> element must not contain both <group> and <reference> child elements.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[<references> 元素不得包含 <group> 和 <reference> 子元素。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="FedericoMu" DateTime="2013-05-09T12:59:18Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="<references>"} {Locked="<group>"} {Locked="<reference>"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom1" Val="MVC_HO1" />
+          <Str Name="Custom5" Val="QA" />
+          <Str Name="Custom6" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";Manifest_ReferencesIsEmpty" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The element package\metadata\references\group must contain at least one <reference> child element.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[元素 package\metadata\references\group 必須至少包含一個 <reference> 子元素。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="FedericoMu" DateTime="2013-05-09T12:59:18Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="package\metadata\references\group"} {Locked="<reference>"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom1" Val="MVC_HO1" />
+          <Str Name="Custom5" Val="QA" />
+          <Str Name="Custom6" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";Manifest_RequireLicenseAcceptanceRequiresLicenseUrl" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Enabling license acceptance requires a license url.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[啟用授權接受需要提供授權 url。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="FedericoMu" DateTime="2013-05-10T18:10:39Z" />
+        <Props>
+          <Str Name="Custom1" Val="VSToolingOOB_Handoff3" />
+          <Str Name="Custom2" Val="New" />
+        </Props>
+      </Item>
+      <Item ItemId=";Manifest_RequiredElementMissing" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The required element '{0}' is missing from the manifest.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[資訊清單中遺失必要元素 '{0}'。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="FedericoMu" DateTime="2013-05-09T12:59:18Z" />
+        <Props>
+          <Str Name="Custom1" Val="MVC_HO1" />
+          <Str Name="Custom5" Val="QA" />
+          <Str Name="Custom6" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";Manifest_RequiredMetadataMissing" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[{0} is required.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="Approved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[需要 {0}。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="v-canl" DateTime="2012-02-03T12:02:15Z" />
+        <Props>
+          <Str Name="Custom1" Val="VSToolingOOB_Handoff3" />
+          <Str Name="Custom2" Val="New" />
+        </Props>
+      </Item>
+      <Item ItemId=";Manifest_SourceContainsInvalidCharacters" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Source path '{0}' contains invalid characters.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[來源路徑 '{0}' 包含無效的字元。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="P033" DateTime="2012-02-10T08:03:29Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";Manifest_TargetContainsInvalidCharacters" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Target path '{0}' contains invalid characters.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[目標路徑 '{0}' 包含無效的字元。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="P033" DateTime="2012-02-10T08:03:29Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";Manifest_UriCannotBeEmpty" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[{0} cannot be empty.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="Approved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[{0} 不可為空白。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="v-canl" DateTime="2012-02-03T12:02:15Z" />
+        <Props>
+          <Str Name="Custom1" Val="VSToolingOOB_Handoff3" />
+          <Str Name="Custom2" Val="New" />
+        </Props>
+      </Item>
+      <Item ItemId=";MissingFrameworkName" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Framework name is missing.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[遺漏架構名稱。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="P033" DateTime="2012-02-10T08:03:29Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";NewerVersionAlreadyReferenced" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Already referencing a newer version of '{0}'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" Confidence="100">
+            <Val><![CDATA[已經參考 '{0}' 的較新版本。]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Already referencing a newer version of '{0}']]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="julior" DateTime="2012-02-06T20:22:45Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+          <Str Name="Custom2" Val="New" />
+        </Props>
+      </Item>
+      <Item ItemId=";PackageAuthoring_FileNotFound" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[File not found: '{0}'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[找不到檔案: '{0}'。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="julior" DateTime="2012-02-06T20:22:45Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";PackageDoesNotContainManifest" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Package does not contain a manifest.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="Approved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[封裝並不包含資訊清單。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="v-canl" DateTime="2012-02-03T12:02:15Z" />
+        <Props>
+          <Str Name="Custom1" Val="VSToolingOOB_HO1" />
+          <Str Name="Custom2" Val="New" />
+        </Props>
+      </Item>
+      <Item ItemId=";PackageHasDependent" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Unable to uninstall '{0}' because '{1}' depends on it.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" Confidence="100">
+            <Val><![CDATA[無法解除安裝 '{0}'，因為 '{1}' 相依於它。]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Unable to uninstall '{0}' because '{1}' depends on it]]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="julior" DateTime="2012-02-06T20:22:45Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+          <Str Name="Custom2" Val="New" />
+        </Props>
+      </Item>
+      <Item ItemId=";PackageHasDependents" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Unable to uninstall '{0}' because '{1}' depend on it.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" Confidence="100">
+            <Val><![CDATA[無法解除安裝 '{0}'，因為 '{1}' 相依於它。]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Unable to uninstall '{0}' because '{1}' depend on it]]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="julior" DateTime="2012-02-06T20:22:45Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+          <Str Name="Custom2" Val="New" />
+        </Props>
+      </Item>
+      <Item ItemId=";PackageMinVersionNotSatisfied" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The '{0}' package requires NuGet client version '{1}' or above, but the current NuGet version is '{2}'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA['{0}' 套件要求 NuGet 用戶端版本 '{1}' 或以上版本，但是目前的 NuGet 版本為 '{2}'。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="FedericoMu" DateTime="2013-05-09T12:59:18Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="NuGet"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom1" Val="MVC_HO1" />
+          <Str Name="Custom5" Val="QA" />
+          <Str Name="Custom6" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";PackageRestoreConsentCheckBoxText" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[&Allow NuGet to download missing packages]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[允許 NuGet 下載遺漏的套件(&A)]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="P033" DateTime="2013-08-15T06:43:34Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="NuGet"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom1" Val="MVC_HO4" />
+        </Props>
+      </Item>
+      <Item ItemId=";PackageServerError" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Failed to process request. '{0}'. ]A;{1}.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[無法處理要求。'{0}'。 ]A;{1}。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="P033" DateTime="2012-02-10T08:03:29Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";PortableFrameworkProfileComponentIsEmpty" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The profile part of a portable target framework must not contain empty component.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[可攜式目標架構的設定檔部分不能包含空的元件。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="P033" DateTime="2013-01-08T03:51:55Z" />
+        <Props>
+          <Str Name="Custom1" Val="MVC_NuGetHO1" />
+          <Str Name="Custom5" Val="HO1" />
+        </Props>
+      </Item>
+      <Item ItemId=";PortableFrameworkProfileComponentIsPortable" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The profile part of a portable target framework must not contain a portable framework component.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[可攜式目標架構的設定檔部分不能包含可攜式架構元件。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="P033" DateTime="2013-01-08T03:51:55Z" />
+        <Props>
+          <Str Name="Custom1" Val="MVC_NuGetHO1" />
+          <Str Name="Custom5" Val="HO1" />
+        </Props>
+      </Item>
+      <Item ItemId=";PortableFrameworkProfileEmpty" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Portable target framework must not have an empty profile part.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[可攜式目標架構不能有空的設定檔部分。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="P033" DateTime="2013-01-08T03:51:55Z" />
+        <Props>
+          <Str Name="Custom1" Val="MVC_NuGetHO1" />
+          <Str Name="Custom5" Val="HO1" />
+        </Props>
+      </Item>
+      <Item ItemId=";PortableFrameworkProfileHasDash" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The profile part of a portable target framework must not contain the '-' character.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[可攜式目標架構的設定檔部分不能包含 '-' 字元。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="P033" DateTime="2013-01-08T03:51:55Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="-"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom1" Val="MVC_NuGetHO1" />
+          <Str Name="Custom5" Val="HO1" />
+        </Props>
+      </Item>
+      <Item ItemId=";PortableFrameworkProfileHasSpace" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The profile part of a portable target framework must not contain empty space.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[可攜式目標架構的設定檔部分不能包含空的空間。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="P033" DateTime="2013-01-08T03:51:55Z" />
+        <Props>
+          <Str Name="Custom1" Val="MVC_NuGetHO1" />
+          <Str Name="Custom5" Val="HO1" />
+        </Props>
+      </Item>
+      <Item ItemId=";ProjectDoesNotHaveReference" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[{0} does not reference '{1}'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="Approved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[{0} 未參考 '{1}'。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="v-canl" DateTime="2012-02-03T12:02:15Z" />
+        <Props>
+          <Str Name="Custom1" Val="VSToolingOOB_HO1" />
+          <Str Name="Custom2" Val="New" />
+        </Props>
+      </Item>
+      <Item ItemId=";ReferenceFile_InvalidDevelopmentFlag" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Unable to parse developmentDependency value '{0}' from '{1}'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[無法從 '{1}' 剖析 developmentDependency 值 '{0}'。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="P033" DateTime="2013-07-11T07:16:32Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="developmentDependency"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom1" Val="MVC_HO3" />
+        </Props>
+      </Item>
+      <Item ItemId=";ReferenceFile_InvalidRequireReinstallationFlag" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Unable to parse requireReinstallation value '{0}' from '{1}'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[無法從 '{1}' 剖析 requireReinstallation 值 '{0}'。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="PC7" DateTime="2015-08-17T08:00:57Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="requireReinstallation"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom1" Val="MVC_HO3c" />
+        </Props>
+      </Item>
+      <Item ItemId=";ReferenceFile_InvalidVersion" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Unable to parse version value '{0}' from '{1}'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[無法剖析來自 '{1}' 的版本值 '{0}'。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="P033" DateTime="2012-02-10T08:03:29Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";SemVerSpecialVersionTooLong" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The special version part cannot exceed 20 characters.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[特別版本部分不可超過 20 個字元。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="P033" DateTime="2012-02-10T08:03:29Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";SettingsCredentials_UsingSavedCredentials" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Using credentials from config. UserName: {0}]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[正在使用組態中的認證。UserName: {0}]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="nicolasp" DateTime="2012-06-01T19:05:08Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="UserName"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom4" Val="xxx" />
+        </Props>
+      </Item>
+      <Item ItemId=";SupportedFrameworkIsNull" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[One of the supported framework is null.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[支援的架構之一為 Null。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="P033" DateTime="2013-01-08T03:51:55Z" />
+        <Props>
+          <Str Name="Custom1" Val="MVC_NuGetHO1" />
+          <Str Name="Custom5" Val="HO1" />
+        </Props>
+      </Item>
+      <Item ItemId=";TokenHasNoValue" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The replacement token '{0}' has no value.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="Approved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[取代的權杖 '{0}' 沒有值。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="v-canl" DateTime="2012-02-03T12:02:15Z" />
+        <Props>
+          <Str Name="Custom1" Val="VSToolingOOB_HO1" />
+          <Str Name="Custom2" Val="New" />
+        </Props>
+      </Item>
+      <Item ItemId=";TypeMustBeASemanticVersion" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Type to compare must be an instance of SemanticVersion.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[要比較的類型必須是 SemanticVersion 的執行個體。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="P033" DateTime="2012-02-15T02:25:25Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="SemanticVersion"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";UnableToFindCompatibleItems" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Could not install package '{0}'. You are trying to install this package into a project that targets '{1}', but the package does not contain any assembly references or content files that are compatible with that framework. For more information, contact the package author.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[無法安裝套件 '{0}'。您正嘗試將此套件安裝到以 '{1}' 為目標的專案，但該套件不包含任何與架構相容的組件參照或內容檔案。如需詳細資訊，請聯繫套件作者。]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Could not install package '{0}'. You are trying to install this package into a project that targets '{1}', but the package does not contain any {2} that are compatible with that framework. For more information, contact the package author.]]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="P033" DateTime="2013-01-08T03:51:55Z" />
+        <Props>
+          <Str Name="Custom1" Val="MVC_NuGetHO1" />
+        </Props>
+      </Item>
+      <Item ItemId=";UnableToLocateDependency" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Unable to locate dependency '{0}'. It may have been uninstalled.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" Confidence="100">
+            <Val><![CDATA[找不到相依性 '{0}'，可能已經解除安裝。]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Unable to locate dependency '{0}'. It may have been uninstalled]]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="julior" DateTime="2012-02-06T20:22:45Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+          <Str Name="Custom2" Val="New" />
+        </Props>
+      </Item>
+      <Item ItemId=";UnableToLocateWIF" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Connection to feed '{0}' requires the Windows Identity Foundation runtime to be installed. ]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[與摘要 '{0}' 的連線需要安裝 Windows Identity Foundation 執行階段。 ]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="nicolasp" DateTime="2012-06-01T19:05:08Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="Windows Identity Foundation"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom4" Val="xxx" />
+        </Props>
+      </Item>
+      <Item ItemId=";UnableToResolveDependency" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Unable to resolve dependency '{0}'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" Confidence="100">
+            <Val><![CDATA[無法解析相依性 '{0}'。]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Unable to resolve dependency '{0}']]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="julior" DateTime="2012-02-06T20:22:45Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+          <Str Name="Custom2" Val="New" />
+        </Props>
+      </Item>
+      <Item ItemId=";UnableToResolveUri" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Unable to resolve '{0}'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[無法解析 '{0}'。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="P033" DateTime="2012-02-10T08:03:29Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";UnknownPackage" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Unable to find package '{0}'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[找不到封裝 '{0}'。]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Unable to find package '{0}']]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="PC7" DateTime="2015-08-17T08:00:56Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+          <Str Name="Custom2" Val="New" />
+        </Props>
+      </Item>
+      <Item ItemId=";UnknownPackageSpecificVersion" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Unable to find version '{1}' of package '{0}'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[找不到 '{1}' 版的封裝 '{0}'。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="PC7" DateTime="2015-08-17T08:00:56Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";UnknownSchemaVersion" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Unknown schema version '{0}'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[未知的結構描述版本 '{0}'。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="P033" DateTime="2012-02-10T08:03:29Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";UnsupportedHashAlgorithm" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Hash algorithm '{0}' is unsupported. Supported algorithms include: SHA512 and SHA256.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[不支援雜湊演算法 '{0}'。支援的演算法包括: SHA512 和 SHA256。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="P033" DateTime="2012-06-13T04:58:23Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="SHA512"} {Locked="SHA256"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom1" Val="tx1" />
+        </Props>
+      </Item>
+      <Item ItemId=";UserSettings_UnableToParseConfigFile" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Unable to parse config file '{0}'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[無法剖析組態檔 '{0}'。]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Unable to parse config file.]]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="nicolasp" DateTime="2012-06-01T19:05:08Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+          <Str Name="Custom4" Val="xxx" />
+        </Props>
+      </Item>
+      <Item ItemId=";Warning_FileAlreadyExists" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA['{0}' already exists. Skipping...]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA['{0}' 已存在。略過中...]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="PC7" DateTime="2015-08-17T08:00:56Z" />
+        <Props>
+          <Str Name="Custom1" Val="VSToolingOOB_HO1" />
+          <Str Name="Custom2" Val="New" />
+        </Props>
+      </Item>
+      <Item ItemId=";Warning_FileModified" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Skipping '{0}' because it was modified.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" Confidence="100">
+            <Val><![CDATA[略過 '{0}'，因為它已遭到修改。]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Skipping '{0}' because it was modified]]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="julior" DateTime="2012-02-06T20:22:45Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+          <Str Name="Custom2" Val="New" />
+        </Props>
+      </Item>
+      <Item ItemId=";Warning_PackageSkippedBecauseItIsInUse" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA['{0}' skipped, because it is in use by '{1}'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" Confidence="100">
+            <Val><![CDATA[略過 '{0}'，因為它正由 '{1}' 使用中。]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA['{0}' skipped, because it is in use by '{1}']]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="julior" DateTime="2012-02-06T20:22:45Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+          <Str Name="Custom2" Val="Updated" />
+        </Props>
+      </Item>
+      <Item ItemId=";Warning_UninstallingPackageWillBreakDependents" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Uninstalling '{0}' might cause '{1}' to be broken.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" Confidence="100">
+            <Val><![CDATA[解除安裝 '{0}' 可能導致 '{1}' 損毀。]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Uninstalling '{0}' might cause '{1}' to be broken]]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="julior" DateTime="2012-02-06T20:22:45Z" />
+        <Props>
+          <Str Name="Custom1" Val="QA" />
+          <Str Name="Custom2" Val="New" />
+        </Props>
+      </Item>
+      <Item ItemId=";XdtError" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[An error occurred while applying transformation to '{0}' in project '{1}':]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[將轉換套用至專案 '{1}' 中的 '{0}' 時發生錯誤:]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="P033" DateTime="2013-06-13T02:11:08Z" />
+        <Props>
+          <Str Name="Custom1" Val="MVC_HO2a" />
+        </Props>
+      </Item>
+    </Item>
+  </Item>
+  <Item ItemId=";Version" ItemType="0" PsrId="211" Leaf="false">
+    <Disp Icon="Ver" Disp="true" LocTbl="false" Path=" \ ;Version \ 8 \ 0" />
+    <Modified By="v-hugeng" DateTime="2010-11-02T10:41:10Z" />
+    <Item ItemId=";AssemblyVersion" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text" DevLk="true">
+        <Val><![CDATA[2.10.1.766]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+      <Modified By="v-canl" DateTime="2012-02-03T12:02:15Z" />
+    </Item>
+    <Item ItemId=";Comments" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+      <Str Cat="Text">
+        <Val><![CDATA[NuGet.Core is the core framework assembly for NuGet that the rest of NuGet builds upon.]]></Val>
+        <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+          <Val><![CDATA[NuGet.Core 是 NuGet 其餘部分所建基於的 NuGet 核心架構組件。]]></Val>
+        </Tgt>
+        <Prev Cat="Text">
+          <Val><![CDATA[Core API for NuGet]]></Val>
+        </Prev>
+      </Str>
+      <Disp Icon="Str" />
+      <Modified By="P033" DateTime="2012-02-10T08:03:29Z" />
+      <Cmts>
+        <Cmt Name="LcxAdmin"><![CDATA[{Placeholder="NuGet"}]]></Cmt>
+      </Cmts>
+      <Props>
+        <Str Name="Custom1" Val="VSToolingOOB_HO1" />
+        <Str Name="Custom2" Val="New" />
+      </Props>
+    </Item>
+    <Item ItemId=";CompanyName" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+      <Str Cat="Text" UsrLk="true">
+        <Val><![CDATA[Microsoft Corporation]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+      <Modified By="v-canl" DateTime="2012-02-03T12:02:15Z" />
+      <Cmts>
+        <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+      </Cmts>
+      <Props>
+        <Str Name="Custom1" Val="VSToolingOOB_HO1" />
+        <Str Name="Custom2" Val="New" />
+      </Props>
+    </Item>
+    <Item ItemId=";FileDescription" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+      <Str Cat="Text" UsrLk="true">
+        <Val><![CDATA[NuGet.Core]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+      <Modified By="v-canl" DateTime="2012-02-03T12:02:15Z" />
+      <Cmts>
+        <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+      </Cmts>
+      <Props>
+        <Str Name="Custom1" Val="VSToolingOOB_HO1" />
+        <Str Name="Custom2" Val="New" />
+      </Props>
+    </Item>
+    <Item ItemId=";FileVersion" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text" DevLk="true">
+        <Val><![CDATA[2.10.1.766]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+      <Modified By="v-canl" DateTime="2012-02-03T12:02:15Z" />
+    </Item>
+    <Item ItemId=";InternalName" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text" DevLk="true">
+        <Val><![CDATA[NuGet.Core.dll]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+      <Modified By="v-canl" DateTime="2012-02-03T12:02:15Z" />
+    </Item>
+    <Item ItemId=";LegalCopyright" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text">
+        <Val><![CDATA[© Microsoft Corporation. All rights reserved.]]></Val>
+        <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+          <Val><![CDATA[© Microsoft Corporation. 著作權所有，並保留一切權利。]]></Val>
+        </Tgt>
+        <Prev Cat="Text">
+          <Val><![CDATA[Copyright 2013 Microsoft. NuGet is made possible by the Outercurve Foundation's open source project.]]></Val>
+        </Prev>
+      </Str>
+      <Disp Icon="Str" />
+      <Modified By="PC7" DateTime="2015-10-21T07:36:59Z" />
+      <Props>
+        <Str Name="Custom1" Val="MVC_3_1_HO2" />
+        <Str Name="Custom2" Val="Autotranslated" />
+      </Props>
+    </Item>
+    <Item ItemId=";OriginalFilename" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text" DevLk="true">
+        <Val><![CDATA[NuGet.Core.dll]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+      <Modified By="v-canl" DateTime="2012-02-03T12:02:15Z" />
+    </Item>
+    <Item ItemId=";ProductName" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+      <Str Cat="Text" UsrLk="true">
+        <Val><![CDATA[NuGet]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+      <Modified By="v-canl" DateTime="2012-02-03T12:02:15Z" />
+      <Cmts>
+        <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+      </Cmts>
+      <Props>
+        <Str Name="Custom1" Val="VSToolingOOB_HO1" />
+        <Str Name="Custom2" Val="New" />
+      </Props>
+    </Item>
+    <Item ItemId=";ProductVersion" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text" DevLk="true">
+        <Val><![CDATA[2.10.1]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+      <Modified By="v-canl" DateTime="2012-02-03T12:02:15Z" />
+    </Item>
+  </Item>
+  <Item ItemId=";XML" ItemType="0" PsrId="210" Leaf="true">
+    <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" />
+    <Modified By="v-hugeng" DateTime="2010-11-02T10:41:10Z" />
+  </Item>
+  <Item ItemId=";Version" ItemType="8" PsrId="211" Leaf="true">
+    <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" />
+    <Modified By="v-hugeng" DateTime="2010-11-02T10:41:10Z" />
+  </Item>
+</LCX>

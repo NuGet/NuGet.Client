@@ -1,0 +1,105 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<LCX SchemaVersion="6.0" Name="C:\BuildAgent\work\c21523a748a3d719\NuGet\bin\Release\NuGetTools\15\NuGet.Options.dll" PsrId="211" FileType="1" SrcCul="en-US" Desc="Commenting file created by LCXAdmin. For more information, please visit http://localizability/longhorn/LcxAdmin.asp" xmlns="http://schemas.microsoft.com/locstudio/2006/6/lcx">
+  <OwnedComments>
+    <Cmt Name="LcxAdmin" />
+  </OwnedComments>
+  <Item ItemId=";Managed Resources" ItemType="0" PsrId="211" Leaf="true">
+    <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" />
+  </Item>
+  <Item ItemId=";NuGet.Options.GeneralOptionControl.resources" ItemType="0" PsrId="211" Leaf="false">
+    <Disp Icon="Dlg" Expand="true" Disp="true" LocTbl="false" Path=" \ ;Managed Resources \ 0 \ 0" />
+    <Item ItemId=";GeneralOptionControl" ItemType="4" PsrId="211" Leaf="false">
+      <Disp Edtr="External" Icon="Dlg" Disp="true" LocTbl="false" />
+      <Item ItemId=";defaultPackageManagementFormatItems.Items" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Combo Box">
+          <Val><![CDATA[Packages.config]]></Val>
+        </Str>
+        <Disp Icon="Dlg" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="Packages.config"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";defaultPackageManagementFormatItems.Items1" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Combo Box">
+          <Val><![CDATA[PackageReference]]></Val>
+        </Str>
+        <Disp Icon="Dlg" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="PackageReference"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";packageRestoreAutomaticCheckBox.Text" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Check Box">
+          <Val><![CDATA[Auto&matically check for missing packages during build in Visual Studio]]></Val>
+        </Str>
+        <Disp Icon="Dlg" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="Visual Studio"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";packageRestoreConsentCheckBox.Text" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Check Box">
+          <Val><![CDATA[&Allow NuGet to download missing packages]]></Val>
+        </Str>
+        <Disp Icon="Dlg" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="NuGet"}]]></Cmt>
+        </Cmts>
+      </Item>
+    </Item>
+  </Item>
+  <Item ItemId=";NuGet.Options.PackageSourcesOptionsControl.resources" ItemType="0" PsrId="211" Leaf="false">
+    <Disp Icon="Dlg" Expand="true" Disp="true" LocTbl="false" Path=" \ ;Managed Resources \ 0 \ 0" />
+    <Item ItemId=";PackageSourcesOptionsControl" ItemType="4" PsrId="211" Leaf="false">
+      <Disp Edtr="External" Icon="Dlg" Disp="true" LocTbl="false" />
+      <Item ItemId=";BrowseButton.Text" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Button">
+          <Val><![CDATA[...]]></Val>
+        </Str>
+        <Disp Icon="Dlg" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+        </Cmts>
+      </Item>
+    </Item>
+  </Item>
+  <Item ItemId=";NuGet.Options.Resources.resources" ItemType="0" PsrId="211" Leaf="false">
+    <Disp Icon="Str" Expand="true" Disp="true" LocTbl="false" Path=" \ ;Managed Resources \ 0 \ 0" />
+    <Item ItemId=";Strings" ItemType="0" PsrId="211" Leaf="false">
+      <Disp Icon="Str" LocTbl="false" />
+      <Item ItemId=";ShowError_ConfigInvalidOperation" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[NuGet.Config is malformed, Please check NuGet.Config]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="NuGet.Config"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";ShowError_ConfigUnauthorizedAccess" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Can not access NuGet.Config, Please check NuGet.Config]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="NuGet.Config"}]]></Cmt>
+        </Cmts>
+      </Item>
+    </Item>
+  </Item>
+  <Item ItemId=";Version" ItemType="0" PsrId="211" Leaf="false">
+    <Disp Icon="Ver" Disp="true" LocTbl="false" Path=" \ ;Version \ 8 \ 0" />
+    <Item ItemId=";Comments" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+      <Str Cat="Text">
+        <Val><![CDATA[Options page for NuGet package manager]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+      <Cmts>
+        <Cmt Name="LcxAdmin"><![CDATA[{Locked="NuGet"}]]></Cmt>
+      </Cmts>
+    </Item>
+  </Item>
+  <Item ItemId=";Version" ItemType="8" PsrId="211" Leaf="true">
+    <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" />
+  </Item>
+</LCX>

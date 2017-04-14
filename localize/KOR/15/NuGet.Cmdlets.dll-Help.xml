@@ -1,0 +1,1038 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+
+<helpItems schema="maml">
+
+  <!-- Install-Package command -->
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10">
+
+    <command:details>
+      <command:name>
+        Install-Package
+      </command:name>
+      <maml:description>
+        <maml:para>패키지를 설치합니다.</maml:para>
+      </maml:description>
+      <command:verb>Install</command:verb>
+      <command:noun>Package</command:noun>
+      <dev:version></dev:version>
+    </command:details>
+
+    <maml:description>
+      <maml:para>패키지와 해당 종속성을 프로젝트에 설치합니다.</maml:para>
+    </maml:description>
+
+    <!-- Cmdlet syntax section-->
+    <command:syntax>
+      <command:syntaxItem>
+        <maml:name>Install-Package</maml:name>
+        <command:parameter required="true" position="1">
+          <maml:name>Id</maml:name>
+          <command:parameterValue required="true">string</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" position="named">
+          <maml:name>IgnoreDependencies</maml:name>
+        </command:parameter>
+        <command:parameter required="false" position="named">
+          <maml:name>ProjectName</maml:name>
+          <command:parameterValue required="true">string</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" position="2">
+          <maml:name>Version</maml:name>
+          <command:parameterValue required="true">string</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" position="3">
+          <maml:name>Source</maml:name>
+          <command:parameterValue required="true">string</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" position="named">
+          <maml:name>IncludePrerelease</maml:name>
+        </command:parameter>
+        <command:parameter required="false" position="named">
+          <maml:name>FileConflictAction</maml:name>
+        </command:parameter>
+        <command:parameter required="false" position="named">
+          <maml:name>DependencyVersion</maml:name>
+        </command:parameter>
+        <command:parameter required="false" position="named">
+          <maml:name>WhatIf</maml:name>
+        </command:parameter>
+      </command:syntaxItem>
+    </command:syntax>
+
+    <!-- Cmdlet parameter section  -->
+    <command:parameters>
+      <command:parameter required="true" position="1">
+        <maml:name>Id</maml:name>
+        <maml:description>
+          <maml:para>설치할 패키지의 패키지 ID를 지정합니다.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true">
+          string
+        </command:parameterValue>
+        <dev:defaultValue></dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" position="named">
+        <maml:name>IgnoreDependencies</maml:name>
+        <maml:description>
+          <maml:para>이 패키지만 설치하며 해당 종속성은 설치하지 않습니다.</maml:para>
+        </maml:description>
+      </command:parameter>
+      <command:parameter required="false" position="named">
+        <maml:name>ProjectName</maml:name>
+        <maml:description>
+          <maml:para>패키지가 설치될 프로젝트를 지정합니다. 이 매개 변수가 생략되면 기본 프로젝트가 선택됩니다.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true">
+          string
+        </command:parameterValue>
+      </command:parameter>
+      <command:parameter required="false" position="named">
+        <maml:name>Source</maml:name>
+        <maml:description>
+          <maml:para>설치할 패키지가 포함되어 있는 패키지 소스의 URL 또는 디렉터리 경로를 지정합니다. 로컬 파일 시스템 경로로 설정하는 경우 소스는 현재 디렉터리에 대한 절대 또는 상대 경로일 수 있습니다. 이 매개 변수가 생략되면 현재 선택된 패키지 소스에서 해당 패키지 URL을 찾습니다.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true">
+          string
+        </command:parameterValue>
+      </command:parameter>
+      <command:parameter required="false" position="named">
+        <maml:name>Version</maml:name>
+        <maml:description>
+          <maml:para>설치할 패키지의 버전을 지정합니다. 이 매개 변수가 생략되면 기본적으로 최신 버전이 사용됩니다.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true">
+          string
+        </command:parameterValue>
+      </command:parameter>
+      <command:parameter required="false" position="named">
+        <maml:name>IncludePrerelease</maml:name>
+        <maml:description>
+          <maml:para>이 명령에 시험판 패키지가 적용될지를 나타냅니다. 이 매개 변수가 생략되면 정식 버전의 패키지만 적용됩니다.</maml:para>
+        </maml:description>
+      </command:parameter>
+        <command:parameter required="false" position="named">
+            <maml:name>FileConflictAction</maml:name>
+            <maml:description>
+                <maml:para>프로젝트에 패키지 콘텐츠 폴더의 파일이 이미 있는 경우 수행해야 하는 명령을 나타냅니다.</maml:para>
+            </maml:description>
+        </command:parameter>
+      <command:parameter required="false" position="named">
+        <maml:name>DependencyVersion</maml:name>
+        <maml:description>
+          <maml:para>설치할 종속성 패키지의 버전을 지정합니다. 이 매개 변수가 생략되면 기본적으로 필요한 최하위 버전이 사용됩니다.</maml:para>
+        </maml:description>
+      </command:parameter>
+      <command:parameter required="false" position="named">
+        <maml:name>WhatIf</maml:name>
+        <maml:description>
+          <maml:para>명령을 실행하는 대신 발생하는 동작 및 명령 실행의 결과를 표시합니다.</maml:para>
+        </maml:description>
+      </command:parameter>
+    </command:parameters>
+
+    <!-- Examples section  -->
+    <command:examples>
+      <command:example>
+        <maml:title>----------  예 1  ----------</maml:title>
+        <dev:code>PM&gt; Install-Package Elmah</dev:code>
+        <dev:remarks>
+          <maml:para>
+            설명 ------------------------------------------------------------------ 현재 패키지 소스에 있는 최신 버전의 Elmah 패키지를 기본 프로젝트에 설치합니다.
+          </maml:para>
+          <maml:para></maml:para>
+          <maml:para></maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>----------  예 2  ----------</maml:title>
+        <dev:code>PM&gt; Install-Package Glimpse -Version 1.0.0 -Project MvcApplication1 </dev:code>
+        <dev:remarks>
+          <maml:para>
+            설명 ------------------------------------------------------------------ Glimpse 버전 1.0.0을 MvcApplication1이라는 프로젝트에 설치합니다.
+          </maml:para>
+          <maml:para></maml:para>
+          <maml:para></maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>----------  예 3  ----------</maml:title>
+        <dev:code>PM&gt; Install-Package Ninject.Mvc3 -IgnoreDependencies -Source c:\temp\packages </dev:code>
+        <dev:remarks>
+          <maml:para>
+            설명 ------------------------------------------------------------------ 해당 종속성을 제외하고 Ninject.Mvc3 패키지를 설치합니다. 이 패키지는 c:\temp\packages 디렉터리에서 검색합니다.
+          </maml:para>
+          <maml:para></maml:para>
+          <maml:para></maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+
+    <!-- Link section  -->
+    <maml:relatedLinks>
+      <maml:navigationLink>
+        <maml:linkText>온라인 버전:</maml:linkText>
+        <maml:uri>http://docs.nuget.org/</maml:uri>
+      </maml:navigationLink>
+      <maml:navigationLink>
+        <maml:linkText>Install-Package</maml:linkText>
+        <maml:uri/>
+      </maml:navigationLink>
+    </maml:relatedLinks>
+  </command:command>
+
+  <!-- Get-Package command -->
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10">
+
+    <command:details>
+      <command:name>
+        Get-Package
+      </command:name>
+      <maml:description>
+        <maml:para>설치된 패키지 집합을 가져옵니다. -ListAvailable 플래그를 사용하면 패키지 소스에서 제공되는 패키지가 나열됩니다.</maml:para>
+      </maml:description>
+      <command:verb>Get</command:verb>
+      <command:noun>Package</command:noun>
+      <dev:version></dev:version>
+    </command:details>
+
+    <maml:description>
+      <maml:para>설치된 패키지 집합을 가져옵니다. -ListAvailable 플래그를 사용하면 패키지 소스에서 제공되는 패키지가 나열됩니다.</maml:para>
+    </maml:description>
+
+    <!-- Cmdlet syntax section-->
+    <command:syntax>
+      <command:syntaxItem>
+        <maml:name>Get-Package</maml:name>
+        <command:parameter required="true" position="named">
+          <maml:name>Source</maml:name>
+          <command:parameterValue required="true">string</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" position="named">
+          <maml:name>ListAvailable</maml:name>
+        </command:parameter>
+        <command:parameter required="false" position="named">
+          <maml:name>Updates</maml:name>
+        </command:parameter>
+        <command:parameter required="false" position="named">
+          <maml:name>ProjectName</maml:name>
+          <command:parameterValue required="true">string</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" position="named">
+          <maml:name>Filter</maml:name>
+          <command:parameterValue required="true">string</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" position="named">
+          <maml:name>First</maml:name>
+          <command:parameterValue required="true">int</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" position="named">
+          <maml:name>Skip</maml:name>
+          <command:parameterValue required="true">int</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" position="named">
+          <maml:name>AllVersions</maml:name>
+        </command:parameter>
+        <command:parameter required="false" position="named">
+          <maml:name>IncludePrerelease</maml:name>
+        </command:parameter>
+      </command:syntaxItem>
+    </command:syntax>
+
+    <!-- Cmdlet parameter section  -->
+    <command:parameters>
+      <command:parameter required="false" position="named">
+        <maml:name>Source</maml:name>
+        <maml:description>
+          <maml:para>설치할 패키지가 포함되어 있는 패키지 소스의 URL 또는 디렉터리 경로를 지정합니다. 로컬 파일 시스템 경로로 설정하는 경우 소스는 현재 디렉터리에 대한 절대 또는 상대 경로일 수 있습니다. 이 매개 변수가 생략되면 현재 선택된 패키지 소스에서 해당 패키지 URL을 찾습니다.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true">
+          string
+        </command:parameterValue>
+      </command:parameter>
+      <command:parameter required="false" position="named">
+        <maml:name>ListAvailable</maml:name>
+        <maml:description>
+          <maml:para>온라인 패키지 소스에서 제공되는 패키지를 가져옵니다.</maml:para>
+        </maml:description>
+      </command:parameter>
+      <command:parameter required="false">
+        <maml:name>ProjectName</maml:name>
+        <maml:description>
+          <maml:para>설치되어 있는 패키지를 가져올 프로젝트를 지정합니다. 이 매개 변수를 생략하고 명령을 실행하면 전체 솔루션에서 설치된 프로젝트가 반환됩니다.</maml:para>
+        </maml:description>
+      </command:parameter>
+      <command:parameter required="false" position="named">
+        <maml:name>Updates</maml:name>
+        <maml:description>
+          <maml:para>패키지 소스에서 제공되는 업데이트가 가능한 패키지를 가져옵니다.</maml:para>
+        </maml:description>
+      </command:parameter>
+      <command:parameter required="false" position="named">
+        <maml:name>Filter</maml:name>
+        <maml:description>
+          <maml:para>반환되는 패키지 목록의 범위를 좁히기 위한 필터 문자열을 지정합니다. 필터 검색은 패키지 ID, 설명 및 태그에서 사용됩니다.</maml:para>
+        </maml:description>
+      </command:parameter>
+      <command:parameter required="false" position="named">
+        <maml:name>First</maml:name>
+        <maml:description>
+          <maml:para>반환될 패키지 수를 지정합니다(목록의 첫 항목부터).</maml:para>
+        </maml:description>
+      </command:parameter>
+      <command:parameter required="false" position="named">
+        <maml:name>Skip</maml:name>
+        <maml:description>
+          <maml:para>지정된 패키지 수만큼 반환하지 않고 건너뜁니다(목록의 첫 항목부터).</maml:para>
+        </maml:description>
+      </command:parameter>
+      <command:parameter required="false" position="named">
+        <maml:name>AllVersions</maml:name>
+        <maml:description>
+          <maml:para>사용 가능한 모든 패키지 버전을 표시합니다. 각 패키지의 최신 버전은 기본적으로 나열됩니다. </maml:para>
+        </maml:description>
+      </command:parameter>
+      <command:parameter required="false" position="named">
+        <maml:name>IncludePrerelease</maml:name>
+        <maml:description>
+          <maml:para>반환되는 결과에 시험판 패키지를 포함시킬지 여부를 나타냅니다.</maml:para>
+        </maml:description>
+      </command:parameter>
+    </command:parameters>
+
+    <!-- Examples section  -->
+    <command:examples>
+      <command:example>
+        <maml:title>----------  예 1  ----------</maml:title>
+        <dev:code>PM&gt; Get-Package</dev:code>
+        <dev:remarks>
+          <maml:para>
+            설명 ------------------------------------------------------------------ 현재 솔루션에 설치된 패키지를 반환합니다.
+          </maml:para>
+          <maml:para></maml:para>
+          <maml:para></maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>----------  예 2  ----------</maml:title>
+        <dev:code>PM&gt; Get-Package -ProjectName MyProject</dev:code>
+        <dev:remarks>
+          <maml:para>
+            설명 ------------------------------------------------------------------ "MyProject" 프로젝트에 설치된 패키지를 반환합니다.
+          </maml:para>
+          <maml:para></maml:para>
+          <maml:para></maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>----------  예 3  ----------</maml:title>
+        <dev:code>PM&gt; Get-Package -ListAvailable</dev:code>
+        <dev:remarks>
+          <maml:para>
+            설명 ------------------------------------------------------------------ 현재 패키지 소스에서 온라인 버전으로 제공되는 패키지 목록을 반환합니다.
+          </maml:para>
+          <maml:para></maml:para>
+          <maml:para></maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>----------  예 4  ----------</maml:title>
+        <dev:code>PM&gt; Get-Package -ListAvailable -Filter Ninject</dev:code>
+        <dev:remarks>
+          <maml:para>
+            설명 ------------------------------------------------------------------ "Ninject"를 검색 단어로 사용하여 온라인 버전으로 제공되는 패키지 목록을 반환합니다.
+          </maml:para>
+          <maml:para></maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>----------  예 5  ----------</maml:title>
+        <dev:code>PS&gt; Get-Package -Updates</dev:code>
+        <dev:remarks>
+          <maml:para>
+            설명 ------------------------------------------------------------------ 기본 프로젝트에 설치되어 있으며 현재 패키지 소스에서 제공되는 업데이트가 가능한 패키지 목록을 반환합니다.
+          </maml:para>
+          <maml:para></maml:para>
+          <maml:para></maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+
+    <!-- Link section  -->
+    <maml:relatedLinks>
+      <maml:navigationLink>
+        <maml:linkText>온라인 버전:</maml:linkText>
+        <maml:uri>http://docs.nuget.org/</maml:uri>
+      </maml:navigationLink>
+      <maml:navigationLink>
+        <maml:linkText>Get-Package</maml:linkText>
+        <maml:uri/>
+      </maml:navigationLink>
+    </maml:relatedLinks>
+  </command:command>
+
+  <!-- Uninstall-Package command -->
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10">
+
+    <command:details>
+      <command:name>
+        Uninstall-Package
+      </command:name>
+      <maml:description>
+        <maml:para>패키지를 제거합니다.</maml:para>
+      </maml:description>
+      <command:verb>Uninstall</command:verb>
+      <command:noun>Package</command:noun>
+      <dev:version></dev:version>
+    </command:details>
+
+    <maml:description>
+      <maml:para>패키지를 제거합니다. 이 패키지에 다른 패키지가 종속된 경우 –Force 옵션을 지정하지 않으면 명령이 실패합니다.</maml:para>
+    </maml:description>
+
+    <!-- Cmdlet syntax section-->
+    <command:syntax>
+      <command:syntaxItem>
+        <maml:name>Uninstall-Package</maml:name>
+        <command:parameter required="true" position="1">
+          <maml:name>Id</maml:name>
+          <command:parameterValue required="true">string</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" position="named">
+          <maml:name>RemoveDependencies</maml:name>
+        </command:parameter>
+        <command:parameter required="false" position="named">
+          <maml:name>ProjectName</maml:name>
+          <command:parameterValue required="true">string</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" position="named">
+          <maml:name>Force</maml:name>
+        </command:parameter>
+        <command:parameter required="false" position="named">
+          <maml:name>Version</maml:name>
+          <command:parameterValue required="true">string</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" position="named">
+          <maml:name>WhatIf</maml:name>
+        </command:parameter>
+      </command:syntaxItem>
+    </command:syntax>
+
+    <!-- Cmdlet parameter section  -->
+    <command:parameters>
+      <command:parameter required="true" position="1">
+        <maml:name>Id</maml:name>
+        <maml:description>
+          <maml:para>제거할 패키지의 패키지 ID를 지정합니다.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true">
+          string
+        </command:parameterValue>
+        <dev:defaultValue></dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" position="named">
+        <maml:name>RemoveDependencies</maml:name>
+        <maml:description>
+          <maml:para>패키지 및 사용되지 않은 해당 종속성을 제거합니다.</maml:para>
+        </maml:description>
+      </command:parameter>
+      <command:parameter required="false" position="named">
+        <maml:name>ProjectName</maml:name>
+        <maml:description>
+          <maml:para>패키지가 제거될 프로젝트를 지정합니다. 이 매개 변수가 생략되면 기본 프로젝트가 선택됩니다.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true">
+          string
+        </command:parameterValue>
+      </command:parameter>
+      <command:parameter required="false" position="named">
+        <maml:name>Force</maml:name>
+        <maml:description>
+          <maml:para>다른 패키지가 종속되어 있더라도 패키지를 강제로 제거합니다.</maml:para>
+        </maml:description>
+      </command:parameter>
+      <command:parameter required="false" position="named">
+        <maml:name>Version</maml:name>
+        <maml:description>
+          <maml:para>제거할 패키지의 버전입니다. 이 매개 변수가 생략되면 기본적으로 최신 버전이 사용됩니다.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true">
+          string
+        </command:parameterValue>
+      </command:parameter>
+      <command:parameter required="false" position="named">
+        <maml:name>WhatIf</maml:name>
+        <maml:description>
+          <maml:para>명령을 실행하는 대신 발생하는 동작 및 명령 실행의 결과를 표시합니다.</maml:para>
+        </maml:description>
+      </command:parameter>
+    </command:parameters>
+
+    <command:examples>
+      <command:example>
+        <maml:title>----------  예 1  ----------</maml:title>
+        <dev:code>PM&gt; Uninstall-Package Elmah</dev:code>
+        <dev:remarks>
+          <maml:para>
+            설명 ------------------------------------------------------------------ 기본 프로젝트에서 Elmah 패키지를 제거합니다.
+          </maml:para>
+          <maml:para></maml:para>
+          <maml:para></maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>----------  예 2  ----------</maml:title>
+        <dev:code>PM&gt; Uninstall-Package Elmah -RemoveDependencies</dev:code>
+        <dev:remarks>
+          <maml:para>
+            설명 ------------------------------------------------------------------ Elmah 패키지를 비롯하여 모든 해당 종속성을 제거합니다. 종속성 중에서 다른 패키지가 종속된 경우가 있다면 그 종속성은 제거되지 않습니다.
+          </maml:para>
+          <maml:para></maml:para>
+          <maml:para></maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>----------  예 3  ----------</maml:title>
+        <dev:code>PM&gt; Uninstall-Package Elmah -Force</dev:code>
+        <dev:remarks>
+          <maml:para>
+            설명 ------------------------------------------------------------------ 다른 패키지가 종속되어 있더라도 Elmah 패키지를 제거합니다.
+          </maml:para>
+          <maml:para></maml:para>
+          <maml:para></maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+
+    <!-- Link section  -->
+    <maml:relatedLinks>
+      <maml:navigationLink>
+        <maml:linkText>온라인 버전:</maml:linkText>
+        <maml:uri>http://docs.nuget.org/</maml:uri>
+      </maml:navigationLink>
+      <maml:navigationLink>
+        <maml:linkText>Uninstall-Package</maml:linkText>
+        <maml:uri/>
+      </maml:navigationLink>
+    </maml:relatedLinks>
+  </command:command>
+
+  <!-- Update-Package command -->
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10">
+
+    <command:details>
+      <command:name>
+        Update-Package
+      </command:name>
+      <maml:description>
+        <maml:para>패키지를 업데이트합니다.</maml:para>
+      </maml:description>
+      <command:verb>Update</command:verb>
+      <command:noun>Package</command:noun>
+      <dev:version></dev:version>
+    </command:details>
+
+    <maml:description>
+      <maml:para>패키지와 해당 종속성을 새로운 버전으로 업데이트합니다.</maml:para>
+    </maml:description>
+
+    <!-- Cmdlet syntax section-->
+    <command:syntax>
+      <command:syntaxItem>
+        <maml:name>Update-Package</maml:name>
+        <command:parameter required="true" position="1">
+          <maml:name>Id</maml:name>
+          <command:parameterValue required="true">string</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" position="named">
+          <maml:name>IgnoreDependencies</maml:name>
+        </command:parameter>
+        <command:parameter required="false" position="named">
+          <maml:name>ProjectName</maml:name>
+          <command:parameterValue required="true">string</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" position="named">
+          <maml:name>Version</maml:name>
+          <command:parameterValue required="true">string</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" position="named">
+          <maml:name>Safe</maml:name>
+        </command:parameter>
+        <command:parameter required="false" position="named">
+          <maml:name>Source</maml:name>
+          <command:parameterValue required="true">string</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" position="named">
+          <maml:name>IncludePrerelease</maml:name>
+        </command:parameter>
+        <command:parameter required="false" position="named">
+          <maml:name>Reinstall</maml:name>
+        </command:parameter>
+        <command:parameter required="false" position="named">
+          <maml:name>FileConflictAction</maml:name>
+        </command:parameter>
+        <command:parameter required="false" position="named">
+          <maml:name>WhatIf</maml:name>
+        </command:parameter>
+      </command:syntaxItem>
+    </command:syntax>
+
+    <!-- Cmdlet parameter section  -->
+    <command:parameters>
+      <command:parameter required="true" position="1">
+        <maml:name>Id</maml:name>
+        <maml:description>
+          <maml:para>업데이트할 패키지의 패키지 ID를 지정합니다. 이 매개 변수가 생략되면 모든 패키지가 업데이트됩니다.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true">
+          string
+        </command:parameterValue>
+        <dev:defaultValue></dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" position="named">
+        <maml:name>IgnoreDependencies</maml:name>
+        <maml:description>
+          <maml:para>패키지의 모든 종속성을 최신 버전으로 업데이트합니다. 기본 설정은 False입니다.</maml:para>
+        </maml:description>
+      </command:parameter>
+      <command:parameter required="false" position="named">
+        <maml:name>ProjectName</maml:name>
+        <maml:description>
+          <maml:para>업데이트할 패키지가 포함된 프로젝트를 지정합니다. 이 매개 변수가 생략되면 패키지가 설치된 프로젝트마다 패키지가 업데이트됩니다.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true">
+          string
+        </command:parameterValue>
+      </command:parameter>
+      <command:parameter required="false" position="named">
+        <maml:name>Safe</maml:name>
+        <maml:description>
+          <maml:para>주 버전과 부 버전이 구성 요소가 같이 새로운 버전으로 업그레이드되도록 제한합니다. 예를 들어 패키지 버전 1.0.0이 설치되어 있으며 1.0.1, 1.0.2 및 1.1 버전이 피드에서 제공되는 경우 -Safe 플래그는 패키지를 1.0.2로 업데이트합니다.</maml:para>
+        </maml:description>
+      </command:parameter>
+      <command:parameter required="false" position="named">
+        <maml:name>Source</maml:name>
+        <maml:description>
+          <maml:para>업데이트할 패키지가 포함되어 있는 패키지 소스의 URL 또는 디렉터리 경로를 지정합니다. 로컬 파일 시스템 경로로 설정하는 경우 소스는 현재 디렉터리에 대한 절대 또는 상대 경로일 수 있습니다. 이 매개 변수가 생략되면 현재 선택된 패키지 소스에서 해당 패키지 URL을 찾습니다.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true">
+          string
+        </command:parameterValue>
+      </command:parameter>
+      <command:parameter required="false" position="named">
+        <maml:name>Version</maml:name>
+        <maml:description>
+          <maml:para>패키지가 업그레이드될 버전을 지정합니다. 이 매개 변수가 생략되면 기본적으로 최신 버전이 사용됩니다.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true">
+          string
+        </command:parameterValue>
+      </command:parameter>
+      <command:parameter required="false" position="named">
+        <maml:name>IncludePrerelease</maml:name>
+        <maml:description>
+          <maml:para>업데이트를 검색할 때 시험판을 포함시킬지 여부를 나타냅니다. 이 매개 변수가 생략되면 정식 버전의 패키지만 적용됩니다.</maml:para>
+        </maml:description>
+      </command:parameter>
+      <command:parameter required="false" position="named">
+        <maml:name>Reinstall</maml:name>
+        <maml:description>
+          <maml:para>기존 버전의 패키지를 다시 설치합니다.</maml:para>
+        </maml:description>
+      </command:parameter>
+        <command:parameter required="false" position="named">
+            <maml:name>FileConflictAction</maml:name>
+            <maml:description>
+                <maml:para>프로젝트에 패키지 콘텐츠 폴더의 파일이 이미 있는 경우 수행해야 하는 명령을 나타냅니다.</maml:para>
+            </maml:description>
+        </command:parameter>
+      <command:parameter required="false" position="named">
+        <maml:name>WhatIf</maml:name>
+        <maml:description>
+          <maml:para>명령을 실행하는 대신 발생하는 동작 및 명령 실행의 결과를 표시합니다.</maml:para>
+        </maml:description>
+      </command:parameter>
+    </command:parameters>
+
+    <command:examples>
+      <command:example>
+        <maml:title>----------  예 1  ----------</maml:title>
+        <dev:code>PM&gt; Update-Package Elmah</dev:code>
+        <dev:remarks>
+          <maml:para>
+            설명 ------------------------------------------------------------------ 모든 프로젝트에 설치된 Elmah 패키지를 최신 버전으로 업데이트합니다.
+          </maml:para>
+          <maml:para></maml:para>
+          <maml:para></maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>----------  예 2  ----------</maml:title>
+        <dev:code>PM&gt; Update-Package Elmah -Version 1.1.0</dev:code>
+        <dev:remarks>
+          <maml:para>
+            설명 ------------------------------------------------------------------ Elmah 패키지를 프로젝트마다 특정 버전으로 업데이트합니다.
+          </maml:para>
+          <maml:para></maml:para>
+          <maml:para></maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>----------  예 3  ----------</maml:title>
+        <dev:code>PM&gt; Update-Package</dev:code>
+        <dev:remarks>
+          <maml:para>
+            설명 ------------------------------------------------------------------ 모든 프로젝트의 모든 패키지를 업데이트합니다.
+          </maml:para>
+          <maml:para></maml:para>
+          <maml:para></maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>----------  예 3  ----------</maml:title>
+        <dev:code>PM&gt; Update-Package -Safe -Project MvcApplication1</dev:code>
+        <dev:remarks>
+          <maml:para>
+            설명 ------------------------------------------------------------------ MvcApplication1 프로젝트의 모든 패키지를 최신 "safe" 버전으로 업데이트합니다. 예를 들어 패키지 버전 1.0.0이 설치되어 있으며 1.0.1, 1.0.2 및 1.1 버전이 피드에서 제공되는 경우 -Safe 플래그는 패키지를 1.0.2로 업데이트합니다.
+          </maml:para>
+          <maml:para></maml:para>
+          <maml:para></maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+
+    <!-- Link section  -->
+    <maml:relatedLinks>
+      <maml:navigationLink>
+        <maml:linkText>온라인 버전:</maml:linkText>
+        <maml:uri>http://docs.nuget.org/</maml:uri>
+      </maml:navigationLink>
+      <maml:navigationLink>
+        <maml:linkText>Update-Package</maml:linkText>
+        <maml:uri/>
+      </maml:navigationLink>
+    </maml:relatedLinks>
+  </command:command>
+
+  <!-- Add-BindingRedirect command -->
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10">
+
+    <command:details>
+      <command:name>
+        Add-BindingRedirect
+      </command:name>
+      <maml:description>
+        <maml:para>바인딩 리디렉션을 구성 파일에 추가합니다.</maml:para>
+      </maml:description>
+      <command:verb>Add</command:verb>
+      <command:noun>BindingRedirect</command:noun>
+      <dev:version></dev:version>
+    </command:details>
+
+    <maml:description>
+      <maml:para>
+        프로젝트의 출력 경로 내의 모든 어셈블리를 검사하여 바인딩 리디렉션을 응용 프로그램(또는 웹) 구성 파일 내 원하는 위치에 추가합니다. 참고: NuGet 1.2 기준으로 NuGet은 패키지가 설치될 때 이 명령을 자동으로 실행합니다.
+      </maml:para>
+    </maml:description>
+
+    <!-- Cmdlet syntax section-->
+    <command:syntax>
+      <command:syntaxItem>
+        <maml:name>Add-BindingRedirect</maml:name>
+        <command:parameter required="true" position="1">
+          <maml:name>ProjectName</maml:name>
+          <command:parameterValue required="true">string</command:parameterValue>
+        </command:parameter>
+      </command:syntaxItem>
+    </command:syntax>
+
+    <!-- Cmdlet parameter section  -->
+    <command:parameters>
+      <command:parameter required="true" position="1">
+        <maml:name>ProjectName</maml:name>
+        <maml:description>
+          <maml:para>바인딩 리디렉션을 분석하여 추가할 프로젝트를 지정합니다.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true">
+          string
+        </command:parameterValue>
+      </command:parameter>
+    </command:parameters>
+
+    <command:examples>
+      <command:example>
+        <maml:title>----------  예 1  ----------</maml:title>
+        <dev:code>PM&gt; Add-BindingRedirect MyProjectName</dev:code>
+        <dev:remarks>
+          <maml:para>
+            설명 ------------------------------------------------------------------ 바인딩 리디렉션을 지정된 프로젝트인 MyProjectName에 추가합니다.
+          </maml:para>
+          <maml:para></maml:para>
+          <maml:para></maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+
+    <!-- Link section  -->
+    <maml:relatedLinks>
+      <maml:navigationLink>
+        <maml:linkText>온라인 버전:</maml:linkText>
+        <maml:uri>http://docs.nuget.org/</maml:uri>
+      </maml:navigationLink>
+      <maml:navigationLink>
+        <maml:linkText>Add-BindingRedirect</maml:linkText>
+        <maml:uri/>
+      </maml:navigationLink>
+    </maml:relatedLinks>
+  </command:command>
+
+  <!-- Get-Project -->
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10">
+
+    <command:details>
+      <command:name>
+        Get-Project
+      </command:name>
+      <maml:description>
+        <maml:para>지정된 프로젝트를 가져옵니다. 지정된 프로젝트가 없으면 기본 프로젝트가 반환됩니다.</maml:para>
+      </maml:description>
+      <command:verb>Get</command:verb>
+      <command:noun>Project</command:noun>
+      <dev:version></dev:version>
+    </command:details>
+
+    <maml:description>
+      <maml:para>지정된 프로젝트의 DTE(Development Tools Environment)에 대한 참조를 반환합니다. 지정된 프로젝트가 없으면 패키지 관리자 콘솔에서 선택된 기본 프로젝트가 반환됩니다.</maml:para>
+    </maml:description>
+
+    <!-- Cmdlet syntax section-->
+    <command:syntax>
+      <command:syntaxItem>
+        <maml:name>Get-Project</maml:name>
+        <command:parameter required="false" position="1">
+          <maml:name>Name</maml:name>
+          <command:parameterValue required="true">string</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" position="named">
+          <maml:name>All</maml:name>
+        </command:parameter>
+      </command:syntaxItem>
+    </command:syntax>
+
+    <!-- Cmdlet parameter section  -->
+    <command:parameters>
+      <command:parameter required="false" position="1">
+        <maml:name>Name</maml:name>
+        <maml:description>
+          <maml:para>반환할 프로젝트를 지정합니다. 이 매개 변수가 생략되면 패키지 관리자 콘솔에서 선택된 기본 프로젝트가 반환됩니다.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true">
+          string
+        </command:parameterValue>
+      </command:parameter>
+      <command:parameter required="false" position="named">
+        <maml:name>All</maml:name>
+        <maml:description>
+          <maml:para>솔루션의 모든 프로젝트를 반환합니다.</maml:para>
+        </maml:description>
+      </command:parameter>
+    </command:parameters>
+
+    <command:examples>
+      <command:example>
+        <maml:title>----------  예 1  ----------</maml:title>
+        <dev:code>PM&gt; Get-Project</dev:code>
+        <dev:remarks>
+          <maml:para>
+            설명 ------------------------------------------------------------------ 기본 프로젝트에 대한 참조를 반환합니다.
+          </maml:para>
+          <maml:para></maml:para>
+          <maml:para></maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>----------  예 2  ----------</maml:title>
+        <dev:code>PM&gt; Get-Project MyProjectName</dev:code>
+        <dev:remarks>
+          <maml:para>
+            설명 ------------------------------------------------------------------ 지정된 프로젝트인 MyProjectName에 대한 참조를 반환합니다.
+          </maml:para>
+          <maml:para></maml:para>
+          <maml:para></maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>----------  예 3  ----------</maml:title>
+        <dev:code>PM&gt; Get-Project -All</dev:code>
+        <dev:remarks>
+          <maml:para>
+            설명 ------------------------------------------------------------------ 솔루션의 모든 프로젝트에 대한 참조를 반환합니다.
+          </maml:para>
+          <maml:para></maml:para>
+          <maml:para></maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+
+    <!-- Link section  -->
+    <maml:relatedLinks>
+      <maml:navigationLink>
+        <maml:linkText>온라인 버전:</maml:linkText>
+        <maml:uri>http://docs.nuget.org/</maml:uri>
+      </maml:navigationLink>
+      <maml:navigationLink>
+        <maml:linkText>Get-Project</maml:linkText>
+        <maml:uri/>
+      </maml:navigationLink>
+    </maml:relatedLinks>
+  </command:command>
+
+  <!-- Open-PackagePage -->
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10">
+
+    <command:details>
+      <command:name>
+        Open-PackagePage
+      </command:name>
+      <maml:description>
+        <maml:para>
+          지정된 패키지의 ProjectUrl, LicenseUrl 또는 ReportAbuseUrl을 가리키는 브라우저를 엽니다.
+        </maml:para>
+      </maml:description>
+      <command:verb>Open</command:verb>
+      <command:noun>PackagePage</command:noun>
+      <dev:version></dev:version>
+    </command:details>
+
+    <maml:description>
+      <maml:para>
+        지정된 패키지의 ProjectUrl, LicenseUrl 또는 ReportAbuseUrl을 가리키는 브라우저를 엽니다.
+      </maml:para>
+    </maml:description>
+
+    <!-- Cmdlet syntax section-->
+    <command:syntax>
+      <command:syntaxItem>
+        <maml:name>Open-PackagePage</maml:name>
+        <command:parameter required="true" position="named">
+          <maml:name>Id</maml:name>
+          <command:parameterValue required="true">string</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" position="named">
+          <maml:name>Version</maml:name>
+        </command:parameter>
+        <command:parameter required="false" position="named">
+          <maml:name>Source</maml:name>
+        </command:parameter>
+        <command:parameter required="false" position="named">
+          <maml:name>License</maml:name>
+        </command:parameter>
+        <command:parameter required="false" position="named">
+          <maml:name>ReportAbuse</maml:name>
+        </command:parameter>
+        <command:parameter required="false" position="named">
+          <maml:name>PassThru</maml:name>
+        </command:parameter>
+      </command:syntaxItem>
+    </command:syntax>
+
+    <!-- Cmdlet parameter section  -->
+    <command:parameters>
+      <command:parameter required="false" position="named">
+        <maml:name>Id</maml:name>
+        <maml:description>
+          <maml:para>검색할 패키지의 ID를 지정합니다.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true">string</command:parameterValue>
+      </command:parameter>
+      <command:parameter required="false" position="named">
+        <maml:name>Version</maml:name>
+        <maml:description>
+          <maml:para>검색할 패키지의 버전을 지정합니다. 이 매개 변수가 생략되면 기본적으로 최신 버전이 사용됩니다.</maml:para>
+        </maml:description>
+      </command:parameter>
+      <command:parameter required="false" position="named">
+        <maml:name>Source</maml:name>
+        <maml:description>
+          <maml:para>패키지를 검색할 리포지토리의 소스를 지정합니다. 이 매개 변수가 생략되면 패키지 소스 드롭다운 컨트롤에서 선택된 소스가 기본적으로 사용됩니다.</maml:para>
+        </maml:description>
+      </command:parameter>
+      <command:parameter required="false" position="named">
+        <maml:name>License</maml:name>
+        <maml:description>
+          <maml:para>이 cmdlet을 실행하면 지정된 패키지의 LicenseUrl이 열립니다. LicenseUrl과 ReportAbuseUrl이 모두 설정되지 않은 경우에는 기본적으로 ProjectUrl이 열립니다.</maml:para>
+        </maml:description>
+      </command:parameter>
+      <command:parameter required="false" position="named">
+        <maml:name>ReportAbuse</maml:name>
+        <maml:description>
+          <maml:para>이 cmdlet을 실행하면 지정된 패키지의 ReportAbuseUrl이 열립니다. LicenseUrl과 ReportAbuseUrl이 모두 설정되지 않은 경우에는 기본적으로 ProjectUrl이 열립니다.</maml:para>
+        </maml:description>
+      </command:parameter>
+      <command:parameter required="false" position="named">
+        <maml:name>PassThru</maml:name>
+        <maml:description>
+          <maml:para>이 매개 변수가 지정하고 cmdlet을 실행하면 요청된 URL의 값이 반환됩니다.</maml:para>
+        </maml:description>
+      </command:parameter>
+    </command:parameters>
+
+    <command:examples>
+      <command:example>
+        <maml:title>----------  예 1  ----------</maml:title>
+        <dev:code>PM&gt; Open-PackagePage Ninject</dev:code>
+        <dev:remarks>
+          <maml:para>
+            설명 ------------------------------------------------------------------ Ninject 패키지에 지정된 프로젝트 URL에 대한 브라우저를 엽니다.
+          </maml:para>
+          <maml:para></maml:para>
+          <maml:para></maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>----------  예 2  ----------</maml:title>
+        <dev:code>PM&gt; Open-PackagePage Ninject -License</dev:code>
+        <dev:remarks>
+          <maml:para>
+            설명 ------------------------------------------------------------------ Ninject 패키지에 지정된 라이선스 URL에 대한 브라우저를 엽니다.
+          </maml:para>
+          <maml:para></maml:para>
+          <maml:para></maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>----------  예 3  ----------</maml:title>
+        <dev:code>PM&gt; Open-PackagePage Ninject -ReportAbuse</dev:code>
+        <dev:remarks>
+          <maml:para>
+            설명 ------------------------------------------------------------------ 현재 패키지 소스에 있으며, 지정된 패키지에 대한 악용을 신고하는 데 사용되는 URL에 대한 브라우저를 엽니다.
+          </maml:para>
+          <maml:para></maml:para>
+          <maml:para></maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>----------  예 4  ----------</maml:title>
+        <dev:code>PM&gt; $url = Open-PackagePage Ninject -License -WhatIf -PassThru</dev:code>
+        <dev:remarks>
+          <maml:para>
+            설명 ------------------------------------------------------------------ 라이선스 URL에 대한 브라우저를 열지 않고 라이선스 URL을 $url 변수에 할당합니다.
+          </maml:para>
+          <maml:para></maml:para>
+          <maml:para></maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+
+    <!-- Link section  -->
+    <maml:relatedLinks>
+      <maml:navigationLink>
+        <maml:linkText>온라인 버전:</maml:linkText>
+        <maml:uri>http://docs.nuget.org/</maml:uri>
+      </maml:navigationLink>
+      <maml:navigationLink>
+        <maml:linkText>Open-PackagePage</maml:linkText>
+        <maml:uri/>
+      </maml:navigationLink>
+    </maml:relatedLinks>
+  </command:command>
+</helpItems>

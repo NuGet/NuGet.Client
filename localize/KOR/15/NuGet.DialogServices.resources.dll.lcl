@@ -1,0 +1,1157 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<LCX SchemaVersion="6.0" Name="D:\dd\WebStackRuntime\Main\ReferenceAssemblies\NuGet\NuGet.DialogServices.dll" PsrId="211" FileType="1" SrcCul="en-US" TgtCul="ko-KR" xmlns="http://schemas.microsoft.com/locstudio/2006/6/lcx">
+  <Props>
+    <Str Name="CustomName1" Val="Custom 1" />
+    <Str Name="CustomName2" Val="Custom 2" />
+    <Str Name="CustomName3" Val="Custom 3" />
+    <Str Name="CustomName4" Val="Custom 4" />
+    <Str Name="CustomName5" Val="Custom 5" />
+    <Str Name="CustomName6" Val="IQA" />
+  </Props>
+  <OwnedComments>
+    <Cmt Name="Dev" />
+    <Cmt Name="LcxAdmin" />
+    <Cmt Name="Note" />
+    <Cmt Name="Rccx" />
+  </OwnedComments>
+  <Settings Name="@vsLocTools@\default.lss" Type="Lss" />
+  <Item ItemId=";Managed Resources" ItemType="0" PsrId="211" Leaf="true">
+    <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" />
+    <Modified By="LucianoAP" DateTime="2012-02-22T15:32:27Z" />
+  </Item>
+  <Item ItemId=";NuGet.Dialog.Resources.resources" ItemType="0" PsrId="211" Leaf="false">
+    <Disp Icon="Str" Expand="true" Disp="true" LocTbl="false" Path=" \ ;Managed Resources \ 0 \ 0" />
+    <Modified By="LucianoAP" DateTime="2012-02-22T15:32:27Z" />
+    <Item ItemId=";Strings" ItemType="0" PsrId="211" Leaf="false">
+      <Disp Icon="Str" LocTbl="false" />
+      <Modified By="LucianoAP" DateTime="2012-02-22T15:32:27Z" />
+      <Item ItemId=";Dialog_Cancel" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Cancel]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[취소]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="federicomu" DateTime="2012-02-22T17:36:35Z" />
+      </Item>
+      <Item ItemId=";Dialog_Close" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Close]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[닫기]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="kmkim" DateTime="2012-02-29T12:00:21Z" />
+        <Props>
+          <Str Name="Custom3" Val="GW_0229" />
+        </Props>
+      </Item>
+      <Item ItemId=";Dialog_CreatedByLabel" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Created by:]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[만든 사람:]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="federicomu" DateTime="2012-02-22T17:36:35Z" />
+      </Item>
+      <Item ItemId=";Dialog_CurrentVersionLabel" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Installed version:]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[설치된 버전:]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="kmkim" DateTime="2013-01-08T07:57:54Z" />
+        <Props>
+          <Str Name="Custom1" Val="GW_0108_HB" />
+          <Str Name="Custom5" Val="HO1" />
+        </Props>
+      </Item>
+      <Item ItemId=";Dialog_DependenciesLabel" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Dependencies:]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[종속성:]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="federicomu" DateTime="2012-02-22T17:36:35Z" />
+      </Item>
+      <Item ItemId=";Dialog_DescriptionLabel" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Description:]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[설명:]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="federicomu" DateTime="2012-02-22T17:36:36Z" />
+      </Item>
+      <Item ItemId=";Dialog_DownloadsLabel" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Downloads:]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[다운로드:]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="federicomu" DateTime="2012-02-22T17:36:36Z" />
+      </Item>
+      <Item ItemId=";Dialog_IdLabel" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Id:]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[ID:]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="kmkim" DateTime="2012-02-29T12:00:21Z" />
+        <Props>
+          <Str Name="Custom3" Val="GW_0229" />
+        </Props>
+      </Item>
+      <Item ItemId=";Dialog_InstallAndUninstallProgress" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Installing and uninstalling...]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[설치 및 제거 중...]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="kmkim" DateTime="2012-02-29T12:00:21Z" />
+        <Props>
+          <Str Name="Custom3" Val="GW_0229" />
+        </Props>
+      </Item>
+      <Item ItemId=";Dialog_InstallButton" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[_Install]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[설치(_I)]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="federicomu" DateTime="2012-02-22T17:36:36Z" />
+      </Item>
+      <Item ItemId=";Dialog_InstallProgress" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Installing...]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[설치하고 있습니다...]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="federicomu" DateTime="2012-02-22T17:36:36Z" />
+      </Item>
+      <Item ItemId=";Dialog_InstalledProvider" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Installed packages]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[설치된 패키지]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="federicomu" DateTime="2012-02-22T17:36:36Z" />
+      </Item>
+      <Item ItemId=";Dialog_InstalledProviderNoItem" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[No packages are installed in the current project.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[현재 프로젝트에 설치된 패키지가 없습니다.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="federicomu" DateTime="2012-02-22T17:36:36Z" />
+      </Item>
+      <Item ItemId=";Dialog_InstalledSolutionInstruction" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Install the package into the selected projects. Clear a selection to uninstall the package from that project.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[선택한 프로젝트에 패키지를 설치하십시오. 이 프로젝트에서 패키지를 제거하려면 선택을 지우십시오.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="kmkim" DateTime="2012-02-29T12:00:41Z" />
+        <Props>
+          <Str Name="Custom3" Val="GW_0229" />
+        </Props>
+      </Item>
+      <Item ItemId=";Dialog_LastPublishedLabel" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Last Published:]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[마지막 게시일:]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="kmkim" DateTime="2013-01-08T07:57:54Z" />
+        <Props>
+          <Str Name="Custom1" Val="GW_0108_HB" />
+          <Str Name="Custom5" Val="HO1" />
+        </Props>
+      </Item>
+      <Item ItemId=";Dialog_MessageBoxTitle" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Operation failed]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[작업이 실패했습니다.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="federicomu" DateTime="2012-02-22T17:36:36Z" />
+      </Item>
+      <Item ItemId=";Dialog_MoreInfo" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Project Information]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[프로젝트 정보]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="kmkim" DateTime="2012-02-29T12:00:21Z" />
+        <Props>
+          <Str Name="Custom3" Val="GW_0229" />
+        </Props>
+      </Item>
+      <Item ItemId=";Dialog_NoCompatibleProject" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA['{0}' could not be installed because it is not compatible with any project in the solution. The package targets the following frameworks: {1}]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA['{0}'은(는) 솔루션의 모든 프로젝트와 호환되지 않으므로 설치할 수 없습니다. 패키지 대상은 {1} 프레임워크입니다.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="kmkim" DateTime="2012-02-29T12:00:21Z" />
+        <Props>
+          <Str Name="Custom3" Val="GW_0229" />
+        </Props>
+      </Item>
+      <Item ItemId=";Dialog_NoCompatibleProjectNoFrameworkNames" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA['{0}' could not be installed because it is not compatible with any project in the solution.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA['{0}'은(는) 솔루션의 어떠한 프로젝트와도 호환되지 않기 때문에 설치할 수 없습니다.]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA['{0}' could not be installed because it is not compatible with any project in the solution. The package doesn't target any framework.]]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="FedericoMu" DateTime="2013-05-09T16:02:58Z" />
+        <Props>
+          <Str Name="Custom1" Val="GW_0509_HB" />
+          <Str Name="Custom5" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";Dialog_NoDependencyLabel" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[No Dependencies]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[종속성 없음]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="federicomu" DateTime="2012-02-22T17:36:36Z" />
+      </Item>
+      <Item ItemId=";Dialog_OK" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[OK]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[확인]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="user" DateTime="2015-01-05T13:15:48Z" />
+      </Item>
+      <Item ItemId=";Dialog_OnlineProvider" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Online]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[온라인]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="federicomu" DateTime="2012-02-22T17:36:36Z" />
+      </Item>
+      <Item ItemId=";Dialog_OnlineProviderNoItem" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[No packages found in the current package source.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[현재 패키지 소스에서 찾아지는 패키지가 없습니다.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="federicomu" DateTime="2012-02-22T17:36:36Z" />
+      </Item>
+      <Item ItemId=";Dialog_OnlineSolutionInstruction" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Install the package in the following projects:]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[다음 프로젝트에 패키지 설치:]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="kmkim" DateTime="2012-02-29T12:00:21Z" />
+        <Props>
+          <Str Name="Custom3" Val="GW_0229" />
+        </Props>
+      </Item>
+      <Item ItemId=";Dialog_OperationFailed" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Operation failed.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[작업이 실패했습니다.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="federicomu" DateTime="2012-02-22T17:36:36Z" />
+      </Item>
+      <Item ItemId=";Dialog_PackageDisclaimer" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Each item above may have sub-dependencies subject to additional license agreements.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[위 각 항목에는 추가 사용권 계약에 의해 관리되는 하위 종속성이 있을 수 있습니다.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="federicomu" DateTime="2012-02-22T17:36:36Z" />
+      </Item>
+      <Item ItemId=";Dialog_PackageInstalledTooltip" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[This package is already installed.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[이 패키지는 이미 설치되었습니다.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="federicomu" DateTime="2012-02-22T17:36:36Z" />
+      </Item>
+      <Item ItemId=";Dialog_PackagePrereleaseLabel" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Prerelease]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[시험판]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="nicolasp" DateTime="2012-06-01T19:05:08Z" />
+        <Props>
+          <Str Name="Custom1" Val="GW" />
+        </Props>
+      </Item>
+      <Item ItemId=";Dialog_PackageUpdatedTooltip" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[This package is already updated.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[이 패키지는 이미 업데이트되었습니다.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="federicomu" DateTime="2012-02-22T17:36:36Z" />
+      </Item>
+      <Item ItemId=";Dialog_ProjectListLabel" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Currently installed in projects:]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[프로젝트에 현재 설치된 패키지:]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="kmkim" DateTime="2012-02-29T12:00:21Z" />
+        <Props>
+          <Str Name="Custom3" Val="GW_0229" />
+        </Props>
+      </Item>
+      <Item ItemId=";Dialog_ProjectSelectorTitle" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Select Projects]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[프로젝트 선택]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="kmkim" DateTime="2012-02-29T12:00:21Z" />
+        <Props>
+          <Str Name="Custom3" Val="GW_0229" />
+        </Props>
+      </Item>
+      <Item ItemId=";Dialog_ReleaseNotesLabel" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Release notes:]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[릴리스 정보:]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="kmkim" DateTime="2012-02-29T12:00:21Z" />
+        <Props>
+          <Str Name="Custom3" Val="GW_0229" />
+        </Props>
+      </Item>
+      <Item ItemId=";Dialog_RemoveDependencyMessage" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Package '{0}' depends on the following packages. Do you want to uninstall them too?]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA['{0}' 패키지는 다음 패키지에 종속됩니다. 이 패키지도 제거하시겠습니까?]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="kmkim" DateTime="2012-02-29T12:00:41Z" />
+        <Props>
+          <Str Name="Custom3" Val="GW_0229" />
+        </Props>
+      </Item>
+      <Item ItemId=";Dialog_ReportAbuse" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Report Abuse]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[신고하기]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="federicomu" DateTime="2012-02-22T17:36:36Z" />
+      </Item>
+      <Item ItemId=";Dialog_RootNodeAll" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[All]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[모두]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="federicomu" DateTime="2012-02-22T17:36:36Z" />
+      </Item>
+      <Item ItemId=";Dialog_RootNodeSearch" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Search Results]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[검색 결과]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="federicomu" DateTime="2012-02-22T17:36:36Z" />
+      </Item>
+      <Item ItemId=";Dialog_Settings" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[_Settings]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[설정(_S)]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="federicomu" DateTime="2012-02-22T17:36:36Z" />
+      </Item>
+      <Item ItemId=";Dialog_SolutionInstalledProviderNoItem" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[No packages are installed in the current solution.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[현재 솔루션에 설치된 패키지가 없습니다.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="nicolasp" DateTime="2012-06-01T19:05:08Z" />
+        <Props>
+          <Str Name="Custom1" Val="GW" />
+        </Props>
+      </Item>
+      <Item ItemId=";Dialog_SolutionManageButton" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[_Manage]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[관리(_M)]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="kmkim" DateTime="2012-02-29T12:00:21Z" />
+        <Props>
+          <Str Name="Custom3" Val="GW_0229" />
+        </Props>
+      </Item>
+      <Item ItemId=";Dialog_SolutionNode" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Solution '{0}']]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA['{0}' 솔루션]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="kmkim" DateTime="2012-02-29T12:00:21Z" />
+        <Props>
+          <Str Name="Custom3" Val="GW_0229" />
+        </Props>
+      </Item>
+      <Item ItemId=";Dialog_SortAscending" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Ascending]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[오름차순]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="federicomu" DateTime="2012-02-22T17:36:36Z" />
+      </Item>
+      <Item ItemId=";Dialog_SortDescending" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Descending]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[내림차순]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="federicomu" DateTime="2012-02-22T17:36:36Z" />
+      </Item>
+      <Item ItemId=";Dialog_SortOption_MostDownloads" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Most Downloads]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[최다 다운로드]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="federicomu" DateTime="2012-02-22T17:36:36Z" />
+      </Item>
+      <Item ItemId=";Dialog_SortOption_Name" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Name]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[이름]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="federicomu" DateTime="2012-02-22T17:36:36Z" />
+      </Item>
+      <Item ItemId=";Dialog_SortOption_PublishedDate" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Published Date]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[게시된 날짜]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="kmkim" DateTime="2012-02-29T12:00:41Z" />
+        <Props>
+          <Str Name="Custom3" Val="GW_0229" />
+        </Props>
+      </Item>
+      <Item ItemId=";Dialog_SortOption_Relevance" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Relevance]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[연관성]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="kmkim" DateTime="2013-01-08T07:57:54Z" />
+        <Props>
+          <Str Name="Custom1" Val="GW_0108_HB" />
+          <Str Name="Custom5" Val="HO1" />
+        </Props>
+      </Item>
+      <Item ItemId=";Dialog_SummaryErrorMessage" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[NuGet failed to install or uninstall the selected package in the following project(s).]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[NuGet이 다음 프로젝트에서 선택된 패키지를 설치하거나 제거하지 못했습니다.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="kmkim" DateTime="2012-02-29T12:00:41Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Placeholder="NuGet"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom3" Val="GW_0229" />
+        </Props>
+      </Item>
+      <Item ItemId=";Dialog_SummaryWindowTitle" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Summary]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[요약]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="kmkim" DateTime="2012-02-29T12:00:21Z" />
+        <Props>
+          <Str Name="Custom3" Val="GW_0229" />
+        </Props>
+      </Item>
+      <Item ItemId=";Dialog_TagLabel" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Tags:]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[태그:]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="federicomu" DateTime="2012-02-22T17:36:36Z" />
+      </Item>
+      <Item ItemId=";Dialog_Title" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[{0} - Manage NuGet Packages]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[{0} - NuGet 패키지 관리]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="kmkim" DateTime="2012-02-29T12:00:21Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Placeholder="NuGet"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom3" Val="GW_0229" />
+        </Props>
+      </Item>
+      <Item ItemId=";Dialog_UninstallButton" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[_Uninstall]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[제거(_U)]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="federicomu" DateTime="2012-02-22T17:36:36Z" />
+      </Item>
+      <Item ItemId=";Dialog_UninstallProgress" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Uninstalling...]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[제거 중...]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="federicomu" DateTime="2012-02-22T17:36:36Z" />
+      </Item>
+      <Item ItemId=";Dialog_UpdateAllButton" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Update _All]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[모두 업데이트(_A)]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="FedericoMu" DateTime="2013-05-09T16:02:58Z" />
+        <Props>
+          <Str Name="Custom1" Val="GW_0509_HB" />
+          <Str Name="Custom5" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";Dialog_UpdateAllLabel" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[There are multiple updates available.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[사용 가능한 업데이트가 여러 개 있습니다.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="FedericoMu" DateTime="2013-05-09T16:02:58Z" />
+        <Props>
+          <Str Name="Custom1" Val="GW_0509_HB" />
+          <Str Name="Custom5" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";Dialog_UpdateAllProgress" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Update all packages...]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[모든 패키지 업데이트...]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="FedericoMu" DateTime="2013-05-09T16:02:58Z" />
+        <Props>
+          <Str Name="Custom1" Val="GW_0509_HB" />
+          <Str Name="Custom5" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";Dialog_UpdateButton" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[_Update]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[업데이트(_U)]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="federicomu" DateTime="2012-02-22T17:36:36Z" />
+      </Item>
+      <Item ItemId=";Dialog_UpdateProgress" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Updating...]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[업데이트 중...]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="federicomu" DateTime="2012-02-22T17:36:36Z" />
+      </Item>
+      <Item ItemId=";Dialog_UpdateProvider" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Updates]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[업데이트]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="federicomu" DateTime="2012-02-22T17:36:36Z" />
+      </Item>
+      <Item ItemId=";Dialog_UpdatesProviderNoItem" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[No package updates are available.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[패키지 업데이트를 사용할 수 없습니다.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="kmkim" DateTime="2012-02-29T12:00:41Z" />
+        <Props>
+          <Str Name="Custom3" Val="GW_0229" />
+        </Props>
+      </Item>
+      <Item ItemId=";Dialog_UpdatesSolutionInstruction" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Update the package in the following projects:]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[다음 프로젝트에서 패키지 업데이트:]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="kmkim" DateTime="2012-02-29T12:00:21Z" />
+        <Props>
+          <Str Name="Custom3" Val="GW_0229" />
+        </Props>
+      </Item>
+      <Item ItemId=";Dialog_UpgradeNuGet" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[_Upgrade NuGet]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[NuGet 업그레이드(_U)]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="FedericoMu" DateTime="2013-05-09T16:02:58Z" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="NuGet"}]]></Cmt>
+        </Cmts>
+        <Props>
+          <Str Name="Custom1" Val="GW_0509_HB" />
+          <Str Name="Custom5" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";Dialog_VersionLabel" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Version:]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[버전:]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="federicomu" DateTime="2012-02-22T17:36:36Z" />
+      </Item>
+      <Item ItemId=";ErrorStringFormat" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Error: {0}]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[오류: {0}]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="kmkim" DateTime="2012-02-29T12:00:21Z" />
+        <Props>
+          <Str Name="Custom3" Val="GW_0229" />
+        </Props>
+      </Item>
+      <Item ItemId=";Filter_IncludePrerelease" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Include Prerelease]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[시험판 포함]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="nicolasp" DateTime="2012-06-01T19:05:08Z" />
+        <Props>
+          <Str Name="Custom1" Val="GW" />
+        </Props>
+      </Item>
+      <Item ItemId=";Filter_StablePackages" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Stable Only]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[안정적인 항목만]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="nicolasp" DateTime="2012-06-01T19:05:08Z" />
+        <Props>
+          <Str Name="Custom1" Val="GW" />
+        </Props>
+      </Item>
+      <Item ItemId=";License_Accept" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[I _Accept]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[동의함(_A)]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="federicomu" DateTime="2012-02-22T17:36:36Z" />
+      </Item>
+      <Item ItemId=";License_AuthorFormatString" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[(Author: {0})]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[(만든 이: {0})]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="kmkim" DateTime="2012-02-29T12:00:21Z" />
+        <Props>
+          <Str Name="Custom3" Val="GW_0229" />
+        </Props>
+      </Item>
+      <Item ItemId=";License_Decline" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[I _Decline]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[동의 안 함(_D)]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="federicomu" DateTime="2012-02-22T17:36:36Z" />
+      </Item>
+      <Item ItemId=";License_DialogTitle" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[License Acceptance]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[라이선스 승인]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="federicomu" DateTime="2012-02-22T17:36:36Z" />
+      </Item>
+      <Item ItemId=";License_Header" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[License]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[라이선스]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="user" DateTime="2013-07-27T09:09:39Z" />
+      </Item>
+      <Item ItemId=";License_HeaderText" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The following package(s) require a click-to-accept license:]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[다음 패키지를 사용하려면 사용 약관에 클릭하여 동의해야 합니다.:]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="federicomu" DateTime="2012-02-22T17:36:36Z" />
+      </Item>
+      <Item ItemId=";License_LicenseText" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[By clicking "I Accept," you agree to the license terms for the package(s) listed above. If you do not agree to the license terms, click "I Decline."]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA["동의함"을 클릭하면 위에 나열된 패키지의 사용 약관에 동의하게 됩니다. 사용 약관에 동의하지 않는 경우 "동의 안 함"을 클릭하십시오.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="federicomu" DateTime="2012-02-22T17:36:36Z" />
+      </Item>
+      <Item ItemId=";License_ViewLicense" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[View License]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[라이선스 보기]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[View License Terms]]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="user" DateTime="2013-07-27T09:09:39Z" />
+      </Item>
+      <Item ItemId=";License_ViewLicenseReport" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Component report]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[구성 요소 보고서]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="user" DateTime="2013-07-27T09:09:39Z" />
+      </Item>
+      <Item ItemId=";NoAllLabel" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[No to A_ll]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[모두 아니요(_L)]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="FedericoMu" DateTime="2013-05-09T16:02:58Z" />
+        <Props>
+          <Str Name="Custom1" Val="GW_0509_HB" />
+          <Str Name="Custom5" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";NoFxDependencyGroup" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[(not framework specific)]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[(특정 프레임워크 아님)]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="kmkim" DateTime="2012-06-12T09:29:51Z" />
+        <Props>
+          <Str Name="Custom2" Val="GW_MVC_ko-KR_0612" />
+        </Props>
+      </Item>
+      <Item ItemId=";NoLabel" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[_No]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[아니요(_N)]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="FedericoMu" DateTime="2013-05-09T16:02:58Z" />
+        <Props>
+          <Str Name="Custom1" Val="GW_0509_HB" />
+          <Str Name="Custom5" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";PackageHasDependents" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Unable to uninstall '{0}' because '{1}' depend(s) on it.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA['{1}'이(가) 종속되어 있으므로 '{0}'을(를) 제거할 수 없습니다.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="kmkim" DateTime="2012-02-29T12:00:21Z" />
+        <Props>
+          <Str Name="Custom3" Val="GW_0229" />
+        </Props>
+      </Item>
+      <Item ItemId=";Visualizer_InstalledPackage" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Installed Package]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[설치된 패키지]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="nicolasp" DateTime="2012-06-01T19:05:08Z" />
+        <Props>
+          <Str Name="Custom1" Val="GW" />
+        </Props>
+      </Item>
+      <Item ItemId=";Visualizer_Package" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Package]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[패키지]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="nicolasp" DateTime="2012-05-28T20:17:42Z" />
+      </Item>
+      <Item ItemId=";Visualizer_PackageDependency" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Package Dependency]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[패키지 종속성]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="nicolasp" DateTime="2012-06-01T19:05:08Z" />
+        <Props>
+          <Str Name="Custom1" Val="GW" />
+        </Props>
+      </Item>
+      <Item ItemId=";Visualizer_Project" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Project]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[프로젝트]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="nicolasp" DateTime="2012-05-28T20:17:42Z" />
+      </Item>
+      <Item ItemId=";YesAllLabel" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Yes to _All]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[모두 예(_A)]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="FedericoMu" DateTime="2013-05-09T16:02:58Z" />
+        <Props>
+          <Str Name="Custom1" Val="GW_0509_HB" />
+          <Str Name="Custom5" Val="QA" />
+        </Props>
+      </Item>
+      <Item ItemId=";YesLabel" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[_Yes]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[예(_Y)]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+        <Modified By="FedericoMu" DateTime="2013-05-09T16:02:58Z" />
+        <Props>
+          <Str Name="Custom1" Val="GW_0509_HB" />
+          <Str Name="Custom5" Val="QA" />
+        </Props>
+      </Item>
+    </Item>
+  </Item>
+  <Item ItemId=";NuGet.DialogServices.g.resources" ItemType="0" PsrId="211" Leaf="false">
+    <Disp Icon="Str" Expand="true" Disp="true" LocTbl="false" Path=" \ ;Managed Resources \ 0 \ 0" />
+    <Modified By="LucianoAP" DateTime="2012-02-22T15:32:27Z" />
+    <Item ItemId=";Baml Resources" ItemType=";0" PsrId="223" Leaf="true">
+      <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" />
+      <Modified By="kmkim" DateTime="2013-07-09T08:26:51Z" />
+    </Item>
+    <Item ItemId=";packagemanagerui/fileconflictdialog.baml" ItemType="0" PsrId="223" Leaf="true">
+      <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" Path=" \ ;NuGet.DialogServices.g.resources \ 0 \ 0 \ ;Baml Resources \ ;0 \ 0" />
+      <Modified By="kmkim" DateTime="2013-07-09T08:26:51Z" />
+    </Item>
+    <Item ItemId=";packagemanagerui/licenseacceptancewindow.baml" ItemType="0" PsrId="223" Leaf="true">
+      <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" Path=" \ ;NuGet.DialogServices.g.resources \ 0 \ 0 \ ;Baml Resources \ ;0 \ 0" />
+      <Modified By="kmkim" DateTime="2013-07-09T08:26:51Z" />
+    </Item>
+    <Item ItemId=";packagemanagerui/progressdialog.baml" ItemType="0" PsrId="223" Leaf="true">
+      <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" Path=" \ ;NuGet.DialogServices.g.resources \ 0 \ 0 \ ;Baml Resources \ ;0 \ 0" />
+      <Modified By="kmkim" DateTime="2013-07-09T08:26:51Z" />
+    </Item>
+    <Item ItemId=";packagemanagerui/summarywindow.baml" ItemType="0" PsrId="223" Leaf="true">
+      <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" Path=" \ ;NuGet.DialogServices.g.resources \ 0 \ 0 \ ;Baml Resources \ ;0 \ 0" />
+      <Modified By="kmkim" DateTime="2013-07-09T08:26:51Z" />
+    </Item>
+    <Item ItemId=";packagemanagerui/updateallui.baml" ItemType="0" PsrId="223" Leaf="true">
+      <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" Path=" \ ;NuGet.DialogServices.g.resources \ 0 \ 0 \ ;Baml Resources \ ;0 \ 0" />
+      <Modified By="kmkim" DateTime="2013-07-09T08:26:51Z" />
+    </Item>
+    <Item ItemId=";solutionexplorer/solutionexplorer.baml" ItemType="0" PsrId="223" Leaf="true">
+      <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" Path=" \ ;NuGet.DialogServices.g.resources \ 0 \ 0 \ ;Baml Resources \ ;0 \ 0" />
+      <Modified By="kmkim" DateTime="2013-07-09T08:26:51Z" />
+    </Item>
+  </Item>
+  <Item ItemId=";Version" ItemType="0" PsrId="211" Leaf="false">
+    <Disp Icon="Ver" Disp="true" LocTbl="false" Path=" \ ;Version \ 8 \ 0" />
+    <Modified By="LucianoAP" DateTime="2012-02-22T15:32:27Z" />
+    <Item ItemId=";AssemblyVersion" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text" DevLk="true">
+        <Val><![CDATA[3.0.51216.259]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+      <Modified By="kmkim" DateTime="2012-06-13T06:57:49Z" />
+    </Item>
+    <Item ItemId=";Comments" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text">
+        <Val><![CDATA[Contains common service classes for NuGet.Dialog and NuGet.Dialog10]]></Val>
+        <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+          <Val><![CDATA[NuGet.Dialog 및 NuGet.Dialog10에 대한 공통 서비스 클래스를 포함합니다.]]></Val>
+        </Tgt>
+      </Str>
+      <Disp Icon="Str" />
+      <Modified By="kmkim" DateTime="2012-02-29T12:00:41Z" />
+      <Props>
+        <Str Name="Custom3" Val="GW_0229" />
+      </Props>
+    </Item>
+    <Item ItemId=";CompanyName" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text">
+        <Val><![CDATA[Microsoft Corporation]]></Val>
+        <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+          <Val><![CDATA[Microsoft Corporation]]></Val>
+        </Tgt>
+      </Str>
+      <Disp Icon="Str" />
+      <Modified By="federicomu" DateTime="2012-02-22T17:36:36Z" />
+    </Item>
+    <Item ItemId=";FileDescription" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text">
+        <Val><![CDATA[NuGet.DialogServices]]></Val>
+        <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+          <Val><![CDATA[NuGet.DialogServices]]></Val>
+        </Tgt>
+      </Str>
+      <Disp Icon="Str" />
+      <Modified By="kmkim" DateTime="2012-02-29T12:00:21Z" />
+      <Props>
+        <Str Name="Custom3" Val="GW_0229" />
+      </Props>
+    </Item>
+    <Item ItemId=";FileVersion" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text" DevLk="true">
+        <Val><![CDATA[3.0.51216.259]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+      <Modified By="kmkim" DateTime="2012-06-13T06:57:49Z" />
+    </Item>
+    <Item ItemId=";InternalName" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text" DevLk="true">
+        <Val><![CDATA[NuGet.DialogServices.dll]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+      <Modified By="kmkim" DateTime="2012-06-13T06:57:49Z" />
+    </Item>
+    <Item ItemId=";LegalCopyright" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text">
+        <Val><![CDATA[Copyright 2013 Microsoft. NuGet is made possible by the Outercurve Foundation's open source project.]]></Val>
+        <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+          <Val><![CDATA[Copyright 2013 Microsoft. NuGet은 Outercurve Foundation의 오픈 소스 프로젝트를 통해 사용할 수 있습니다.]]></Val>
+        </Tgt>
+        <Prev Cat="Text">
+          <Val><![CDATA[Copyright 2013 Microsoft. NuGet is made possible by the Microsoft Corporation's open source project.]]></Val>
+        </Prev>
+      </Str>
+      <Disp Icon="Str" />
+      <Modified By="user" DateTime="2013-12-31T00:43:41Z" />
+      <Props>
+        <Str Name="Custom1" Val="GW_0711_HB" />
+      </Props>
+    </Item>
+    <Item ItemId=";OriginalFilename" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text" DevLk="true">
+        <Val><![CDATA[NuGet.DialogServices.dll]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+      <Modified By="kmkim" DateTime="2012-06-13T06:57:49Z" />
+    </Item>
+    <Item ItemId=";ProductName" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text">
+        <Val><![CDATA[NuGet]]></Val>
+        <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+          <Val><![CDATA[NuGet]]></Val>
+        </Tgt>
+      </Str>
+      <Disp Icon="Str" />
+      <Modified By="federicomu" DateTime="2012-02-22T17:36:36Z" />
+    </Item>
+    <Item ItemId=";ProductVersion" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text" DevLk="true">
+        <Val><![CDATA[3.0.0-preview]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+      <Modified By="kmkim" DateTime="2012-06-13T06:57:49Z" />
+    </Item>
+  </Item>
+  <Item ItemId=";Version" ItemType="8" PsrId="211" Leaf="true">
+    <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" />
+    <Modified By="LucianoAP" DateTime="2012-02-22T15:32:27Z" />
+  </Item>
+</LCX>

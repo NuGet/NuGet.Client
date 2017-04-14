@@ -1,0 +1,42 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<LCX SchemaVersion="6.0" Name="C:\dd2\NuGetVisualStudio\Main\ReferenceAssemblies\NuGet\extension.vsixlangpack" PsrId="210" FileType="1" SrcCul="en-US" Desc="Commenting file created by LCXAdmin. For more information, please visit http://localizability/longhorn/LcxAdmin.asp" xmlns="http://schemas.microsoft.com/locstudio/2006/6/lcx">
+  <OwnedComments>
+    <Cmt Name="LcxAdmin" />
+  </OwnedComments>
+  <Item ItemId=";&lt;License&gt;" ItemType="0" PsrId="210" Leaf="false">
+    <Disp Icon="Str" Disp="true" LocTbl="false" />
+    <Item ItemId="0;d8e09482fdf359b5e23408bd7eb9a302" ItemType="42;XML:Text" PsrId="210" Leaf="true">
+      <Str Cat="AppData">
+        <Val><![CDATA[EULA.rtf]]></Val>
+      </Str>
+      <Disp Icon="Str" Order="5" />
+      <Cmts>
+        <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+      </Cmts>
+    </Item>
+  </Item>
+  <Item ItemId=";&lt;LocalizedDescription&gt;" ItemType="0" PsrId="210" Leaf="false">
+    <Disp Icon="Str" Disp="true" LocTbl="false" />
+    <Item ItemId="0;3545d4cb7ecc0bce0cb55061d67cfaa6" ItemType="42;XML:Text" PsrId="210" Leaf="true">
+      <Str Cat="AppData">
+        <Val><![CDATA[A collection of tools to automate the process of installing, upgrading, configuring, and removing packages from a VS Project.]]></Val>
+      </Str>
+      <Disp Icon="Str" Order="3" />
+      <Cmts>
+        <Cmt Name="LcxAdmin"><![CDATA[{Locked="VS"}]]></Cmt>
+      </Cmts>
+    </Item>
+  </Item>
+  <Item ItemId=";&lt;LocalizedName&gt;" ItemType="0" PsrId="210" Leaf="false">
+    <Disp Icon="Str" Disp="true" LocTbl="false" />
+    <Item ItemId="0;44ccc32ef2fb12f9386c44174e6be5e2" ItemType="42;XML:Text" PsrId="210" Leaf="true">
+      <Str Cat="AppData">
+        <Val><![CDATA[NuGet Package Manager]]></Val>
+      </Str>
+      <Disp Icon="Str" Order="1" />
+      <Cmts>
+        <Cmt Name="LcxAdmin"><![CDATA[{Locked="NuGet"}]]></Cmt>
+      </Cmts>
+    </Item>
+  </Item>
+</LCX>

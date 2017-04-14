@@ -1,0 +1,7 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<LocProject SchemaVersion="6.0" Name="vsixlangpack.lsproj" Desc="" xmlns="http://schemas.microsoft.com/locstudio/2006/6/LocProject">
+  <Files>
+    <File Name="F:\AAPT_OOB_LOC\LocData\custom\default.custom" Type="CustomColumns" />
+    <File Name="extension.vsixlangpack.lcl" Type="Lcx" />
+  </Files>
+</LocProject>

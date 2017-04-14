@@ -1,0 +1,3472 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<LCX SchemaVersion="6.0" Name="D:\dd\WebStackRuntime\Main\ReferenceAssemblies\NuGet\NuGet.Cmdlets.dll-Help.xml" PsrId="22" FileType="1" SrcCul="en-US" TgtCul="de-DE" xmlns="http://schemas.microsoft.com/locstudio/2006/6/lcx">
+  <Props>
+    <Str Name="CustomName1" Val="Custom 1" />
+    <Str Name="CustomName2" Val="Custom 2" />
+    <Str Name="CustomName3" Val="Custom 3" />
+    <Str Name="CustomName4" Val="Custom 4" />
+    <Str Name="CustomName5" Val="Custom 5" />
+    <Str Name="CustomName6" Val="IQA" />
+  </Props>
+  <OwnedComments>
+    <Cmt Name="Dev" />
+    <Cmt Name="LcxAdmin" />
+    <Cmt Name="Note" />
+    <Cmt Name="Rccx" />
+  </OwnedComments>
+  <Settings Name="@vsLocTools@\default.lss" Type="Lss" />
+  <Item ItemId=";XML Comments" ItemType="0" PsrId="22" Leaf="false">
+    <Disp Icon="Str" Disp="true" LocTbl="false" />
+    <Modified By="v-canl" DateTime="2012-02-21T12:01:10Z" />
+    <Item ItemId="0;0936e41e150299b76f8d83f5a0aaf060" ItemType="55;Text" PsrId="22" InstFlg="true" Leaf="true">
+      <Str Cat="Text" UsrLk="true">
+        <Val><![CDATA[ Cmdlet syntax section]]></Val>
+      </Str>
+      <Disp Icon="Str" Order="7" />
+      <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+      <Cmts>
+        <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+      </Cmts>
+    </Item>
+    <Item ItemId="0;0e41b77f69f73e8c8ad8377626b8ebed" ItemType="55;Text" PsrId="22" InstFlg="true" Leaf="true">
+      <Str Cat="Text" UsrLk="true">
+        <Val><![CDATA[ Uninstall-Package command ]]></Val>
+      </Str>
+      <Disp Icon="Str" Order="117" />
+      <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+      <Cmts>
+        <Cmt Name="LcxAdmin"><![CDATA[{Locked="Uninstall-Package"}]]></Cmt>
+      </Cmts>
+    </Item>
+    <Item ItemId="0;1cac6073a2b20a668e2322c96b03b431" ItemType="55;Text" PsrId="22" InstFlg="true" Leaf="true">
+      <Str Cat="Text" UsrLk="true">
+        <Val><![CDATA[ Add-BindingRedirect command ]]></Val>
+      </Str>
+      <Disp Icon="Str" Order="214" />
+      <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+      <Cmts>
+        <Cmt Name="LcxAdmin"><![CDATA[{Locked="Add-BindingRedirect"}]]></Cmt>
+      </Cmts>
+    </Item>
+    <Item ItemId="0;310daf252548917ad85ed831afe9b2bd" ItemType="55;Text" PsrId="22" InstFlg="true" Leaf="true">
+      <Str Cat="Text" UsrLk="true">
+        <Val><![CDATA[ Get-Package command ]]></Val>
+      </Str>
+      <Disp Icon="Str" Order="50" />
+      <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+      <Cmts>
+        <Cmt Name="LcxAdmin"><![CDATA[{Locked="Get-Package"}]]></Cmt>
+      </Cmts>
+    </Item>
+    <Item ItemId="0;436f3be4a7e2422ec2fbf50c895e59b5" ItemType="55;Text" PsrId="22" InstFlg="true" Leaf="true">
+      <Str Cat="Text" UsrLk="true">
+        <Val><![CDATA[ Open-PackagePage ]]></Val>
+      </Str>
+      <Disp Icon="Str" Order="265" />
+      <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+      <Cmts>
+        <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+      </Cmts>
+    </Item>
+    <Item ItemId="0;45c90150b990f815f5c70623bb92b5f2" ItemType="55;Text" PsrId="22" Leaf="true">
+      <Str Cat="Text">
+        <Val><![CDATA[ Examples section  ]]></Val>
+        <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+          <Val><![CDATA[ Abschnitt mit Beispielen  ]]></Val>
+        </Tgt>
+      </Str>
+      <Disp Icon="Str" Order="36" />
+      <Modified By="Manuel" DateTime="2012-03-08T14:51:46Z" />
+      <Props>
+        <Str Name="Custom5" Val="Blocked" />
+      </Props>
+    </Item>
+    <Item ItemId="0;6c3c4a88fb57739471b58c20fa562ef6" ItemType="55;Text" PsrId="22" InstFlg="true" Leaf="true">
+      <Str Cat="Text" UsrLk="true">
+        <Val><![CDATA[ Get-Project ]]></Val>
+      </Str>
+      <Disp Icon="Str" Order="235" />
+      <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+      <Cmts>
+        <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+      </Cmts>
+    </Item>
+    <Item ItemId="0;7584535d7f61417ee4f54d0c61c3dd58" ItemType="55;Text" PsrId="22" InstFlg="true" Leaf="true">
+      <Str Cat="Text" UsrLk="true">
+        <Val><![CDATA[ Link section  ]]></Val>
+      </Str>
+      <Disp Icon="Str" Order="46" />
+      <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+      <Cmts>
+        <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+      </Cmts>
+    </Item>
+    <Item ItemId="0;94b4bab0823615bde19a8e19d7fe35c9" ItemType="55;Text" PsrId="22" InstFlg="true" Leaf="true">
+      <Str Cat="Text" UsrLk="true">
+        <Val><![CDATA[ Install-Package command ]]></Val>
+      </Str>
+      <Disp Icon="Str" Order="1" />
+      <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+      <Cmts>
+        <Cmt Name="LcxAdmin"><![CDATA[{Locked="Install-Package"}]]></Cmt>
+      </Cmts>
+    </Item>
+    <Item ItemId="0;a8f66df83dceb0983fe8f744bd33b27d" ItemType="55;Text" PsrId="22" InstFlg="true" Leaf="true">
+      <Str Cat="Text" UsrLk="true">
+        <Val><![CDATA[ Cmdlet parameter section  ]]></Val>
+      </Str>
+      <Disp Icon="Str" Order="19" />
+      <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+      <Cmts>
+        <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+      </Cmts>
+    </Item>
+    <Item ItemId="0;b0588e2054a282e0a007615315b8cea2" ItemType="55;Text" PsrId="22" InstFlg="true" Leaf="true">
+      <Str Cat="Text" UsrLk="true">
+        <Val><![CDATA[ Update-Package command ]]></Val>
+      </Str>
+      <Disp Icon="Str" Order="160" />
+      <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+      <Cmts>
+        <Cmt Name="LcxAdmin"><![CDATA[{Locked="Update-Package"}]]></Cmt>
+      </Cmts>
+    </Item>
+    <Item ItemId="1;0936e41e150299b76f8d83f5a0aaf060" ItemType="55;Text" PsrId="22" InstFlg="true" Leaf="true">
+      <Str Cat="Text" UsrLk="true">
+        <Val><![CDATA[ Cmdlet syntax section]]></Val>
+      </Str>
+      <Disp Icon="Str" Order="56" />
+      <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+      <Cmts>
+        <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+      </Cmts>
+    </Item>
+    <Item ItemId="1;45c90150b990f815f5c70623bb92b5f2" ItemType="55;Text" PsrId="22" InstFlg="true" Leaf="true">
+      <Str Cat="Text" UsrLk="true">
+        <Val><![CDATA[ Examples section  ]]></Val>
+      </Str>
+      <Disp Icon="Str" Order="94" />
+      <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+      <Cmts>
+        <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+      </Cmts>
+    </Item>
+    <Item ItemId="1;7584535d7f61417ee4f54d0c61c3dd58" ItemType="55;Text" PsrId="22" InstFlg="true" Leaf="true">
+      <Str Cat="Text" UsrLk="true">
+        <Val><![CDATA[ Link section  ]]></Val>
+      </Str>
+      <Disp Icon="Str" Order="113" />
+      <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+      <Cmts>
+        <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+      </Cmts>
+    </Item>
+    <Item ItemId="1;a8f66df83dceb0983fe8f744bd33b27d" ItemType="55;Text" PsrId="22" InstFlg="true" Leaf="true">
+      <Str Cat="Text" UsrLk="true">
+        <Val><![CDATA[ Cmdlet parameter section  ]]></Val>
+      </Str>
+      <Disp Icon="Str" Order="72" />
+      <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+      <Cmts>
+        <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+      </Cmts>
+    </Item>
+    <Item ItemId="2;0936e41e150299b76f8d83f5a0aaf060" ItemType="55;Text" PsrId="22" InstFlg="true" Leaf="true">
+      <Str Cat="Text" UsrLk="true">
+        <Val><![CDATA[ Cmdlet syntax section]]></Val>
+      </Str>
+      <Disp Icon="Str" Order="123" />
+      <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+      <Cmts>
+        <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+      </Cmts>
+    </Item>
+    <Item ItemId="2;7584535d7f61417ee4f54d0c61c3dd58" ItemType="55;Text" PsrId="22" InstFlg="true" Leaf="true">
+      <Str Cat="Text" UsrLk="true">
+        <Val><![CDATA[ Link section  ]]></Val>
+      </Str>
+      <Disp Icon="Str" Order="156" />
+      <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+      <Cmts>
+        <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+      </Cmts>
+    </Item>
+    <Item ItemId="2;a8f66df83dceb0983fe8f744bd33b27d" ItemType="55;Text" PsrId="22" InstFlg="true" Leaf="true">
+      <Str Cat="Text" UsrLk="true">
+        <Val><![CDATA[ Cmdlet parameter section  ]]></Val>
+      </Str>
+      <Disp Icon="Str" Order="133" />
+      <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+      <Cmts>
+        <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+      </Cmts>
+    </Item>
+    <Item ItemId="3;0936e41e150299b76f8d83f5a0aaf060" ItemType="55;Text" PsrId="22" InstFlg="true" Leaf="true">
+      <Str Cat="Text" UsrLk="true">
+        <Val><![CDATA[ Cmdlet syntax section]]></Val>
+      </Str>
+      <Disp Icon="Str" Order="166" />
+      <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+      <Cmts>
+        <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+      </Cmts>
+    </Item>
+    <Item ItemId="3;7584535d7f61417ee4f54d0c61c3dd58" ItemType="55;Text" PsrId="22" InstFlg="true" Leaf="true">
+      <Str Cat="Text" UsrLk="true">
+        <Val><![CDATA[ Link section  ]]></Val>
+      </Str>
+      <Disp Icon="Str" Order="210" />
+      <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+      <Cmts>
+        <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+      </Cmts>
+    </Item>
+    <Item ItemId="3;a8f66df83dceb0983fe8f744bd33b27d" ItemType="55;Text" PsrId="22" InstFlg="true" Leaf="true">
+      <Str Cat="Text" UsrLk="true">
+        <Val><![CDATA[ Cmdlet parameter section  ]]></Val>
+      </Str>
+      <Disp Icon="Str" Order="179" />
+      <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+      <Cmts>
+        <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+      </Cmts>
+    </Item>
+    <Item ItemId="4;0936e41e150299b76f8d83f5a0aaf060" ItemType="55;Text" PsrId="22" InstFlg="true" Leaf="true">
+      <Str Cat="Text" UsrLk="true">
+        <Val><![CDATA[ Cmdlet syntax section]]></Val>
+      </Str>
+      <Disp Icon="Str" Order="220" />
+      <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+      <Cmts>
+        <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+      </Cmts>
+    </Item>
+    <Item ItemId="4;7584535d7f61417ee4f54d0c61c3dd58" ItemType="55;Text" PsrId="22" InstFlg="true" Leaf="true">
+      <Str Cat="Text" UsrLk="true">
+        <Val><![CDATA[ Link section  ]]></Val>
+      </Str>
+      <Disp Icon="Str" Order="231" />
+      <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+      <Cmts>
+        <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+      </Cmts>
+    </Item>
+    <Item ItemId="4;a8f66df83dceb0983fe8f744bd33b27d" ItemType="55;Text" PsrId="22" InstFlg="true" Leaf="true">
+      <Str Cat="Text" UsrLk="true">
+        <Val><![CDATA[ Cmdlet parameter section  ]]></Val>
+      </Str>
+      <Disp Icon="Str" Order="224" />
+      <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+      <Cmts>
+        <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+      </Cmts>
+    </Item>
+    <Item ItemId="5;0936e41e150299b76f8d83f5a0aaf060" ItemType="55;Text" PsrId="22" InstFlg="true" Leaf="true">
+      <Str Cat="Text" UsrLk="true">
+        <Val><![CDATA[ Cmdlet syntax section]]></Val>
+      </Str>
+      <Disp Icon="Str" Order="241" />
+      <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+      <Cmts>
+        <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+      </Cmts>
+    </Item>
+    <Item ItemId="5;7584535d7f61417ee4f54d0c61c3dd58" ItemType="55;Text" PsrId="22" InstFlg="true" Leaf="true">
+      <Str Cat="Text" UsrLk="true">
+        <Val><![CDATA[ Link section  ]]></Val>
+      </Str>
+      <Disp Icon="Str" Order="261" />
+      <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+      <Cmts>
+        <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+      </Cmts>
+    </Item>
+    <Item ItemId="5;a8f66df83dceb0983fe8f744bd33b27d" ItemType="55;Text" PsrId="22" InstFlg="true" Leaf="true">
+      <Str Cat="Text" UsrLk="true">
+        <Val><![CDATA[ Cmdlet parameter section  ]]></Val>
+      </Str>
+      <Disp Icon="Str" Order="246" />
+      <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+      <Cmts>
+        <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+      </Cmts>
+    </Item>
+    <Item ItemId="6;0936e41e150299b76f8d83f5a0aaf060" ItemType="55;Text" PsrId="22" InstFlg="true" Leaf="true">
+      <Str Cat="Text" UsrLk="true">
+        <Val><![CDATA[ Cmdlet syntax section]]></Val>
+      </Str>
+      <Disp Icon="Str" Order="271" />
+      <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+      <Cmts>
+        <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+      </Cmts>
+    </Item>
+    <Item ItemId="6;7584535d7f61417ee4f54d0c61c3dd58" ItemType="55;Text" PsrId="22" InstFlg="true" Leaf="true">
+      <Str Cat="Text" UsrLk="true">
+        <Val><![CDATA[ Link section  ]]></Val>
+      </Str>
+      <Disp Icon="Str" Order="306" />
+      <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+      <Cmts>
+        <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+      </Cmts>
+    </Item>
+    <Item ItemId="6;a8f66df83dceb0983fe8f744bd33b27d" ItemType="55;Text" PsrId="22" InstFlg="true" Leaf="true">
+      <Str Cat="Text" UsrLk="true">
+        <Val><![CDATA[ Cmdlet parameter section  ]]></Val>
+      </Str>
+      <Disp Icon="Str" Order="280" />
+      <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+      <Cmts>
+        <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+      </Cmts>
+    </Item>
+  </Item>
+  <Item ItemId=";XML Content" ItemType="0" PsrId="22" Leaf="false">
+    <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" />
+    <Modified By="v-canl" DateTime="2012-02-21T12:01:10Z" />
+    <Item ItemId=";XML Text" ItemType="0" PsrId="22" Leaf="false">
+      <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" />
+      <Modified By="v-canl" DateTime="2012-02-21T12:01:10Z" />
+      <Item ItemId=";&lt;command:name&gt;" ItemType="0" PsrId="22" Leaf="false">
+        <Disp Icon="Str" Disp="true" LocTbl="false" />
+        <Modified By="v-canl" DateTime="2012-02-21T12:01:10Z" />
+        <Item ItemId="0;5271fceb80ddfe096345572638c8d37d" ItemType="52;XML:&lt;command:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Update-Package]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="161" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;631e7dfed347dcb77a4b64f892fb95f2" ItemType="52;XML:&lt;command:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Uninstall-Package]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="118" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;8abf1f442d9aeda80cf44efc31dbe7aa" ItemType="52;XML:&lt;command:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Get-Package]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="51" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;b40cd67eb4b5fa461bd07c3fcfb96dd4" ItemType="52;XML:&lt;command:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Add-BindingRedirect]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="215" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;b54e1434c17b1a5b4d51a6885fa9e876" ItemType="52;XML:&lt;command:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Open-PackagePage]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="266" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;e40203894217ab24d6019e5447b7ca09" ItemType="52;XML:&lt;command:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Get-Project]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="236" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;f7e6b66daefaefce37203efe463bcfda" ItemType="52;XML:&lt;command:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Install-Package]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="2" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+      </Item>
+      <Item ItemId=";&lt;command:noun&gt;" ItemType="0" PsrId="22" Leaf="false">
+        <Disp Icon="Str" Disp="true" LocTbl="false" />
+        <Modified By="v-canl" DateTime="2012-02-21T12:01:10Z" />
+        <Item ItemId="0;2c8f355bc1273dd4c3d9919e41fdb0d5" ItemType="52;XML:&lt;command:noun&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Package]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="5" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;2cccf4c3d1c728f99f3e7bc6e4c150df" ItemType="52;XML:&lt;command:noun&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[BindingRedirect]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="218" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;7cda5c9fec5a91bb1cdeb30b56e19720" ItemType="52;XML:&lt;command:noun&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Project]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="239" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;8f626c8de34702843e5bb63178c44f53" ItemType="52;XML:&lt;command:noun&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[PackagePage]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="269" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="1;2c8f355bc1273dd4c3d9919e41fdb0d5" ItemType="52;XML:&lt;command:noun&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Package]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="54" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="2;2c8f355bc1273dd4c3d9919e41fdb0d5" ItemType="52;XML:&lt;command:noun&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Package]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="121" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="3;2c8f355bc1273dd4c3d9919e41fdb0d5" ItemType="52;XML:&lt;command:noun&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Package]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="164" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+      </Item>
+      <Item ItemId=";&lt;command:parametervalue&gt;" ItemType="0" PsrId="22" Leaf="false">
+        <Disp Icon="Str" Disp="true" LocTbl="false" />
+        <Modified By="v-canl" DateTime="2012-02-21T12:01:10Z" />
+        <Item ItemId="0;aefd14780617790a7191cbc97d7a4206" ItemType="52;XML:&lt;command:parameterValue&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[string]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="10" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;edf87bb0e529badd6ea387551182046a" ItemType="52;XML:&lt;command:parameterValue&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[int]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="67" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="1;aefd14780617790a7191cbc97d7a4206" ItemType="52;XML:&lt;command:parameterValue&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[string]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="13" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="1;edf87bb0e529badd6ea387551182046a" ItemType="52;XML:&lt;command:parameterValue&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[int]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="69" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="2;aefd14780617790a7191cbc97d7a4206" ItemType="52;XML:&lt;command:parameterValue&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[string]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="15" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="3;aefd14780617790a7191cbc97d7a4206" ItemType="52;XML:&lt;command:parameterValue&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[string]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="17" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="4;aefd14780617790a7191cbc97d7a4206" ItemType="52;XML:&lt;command:parameterValue&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[string]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="22" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="5;aefd14780617790a7191cbc97d7a4206" ItemType="52;XML:&lt;command:parameterValue&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[string]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="27" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="6;aefd14780617790a7191cbc97d7a4206" ItemType="52;XML:&lt;command:parameterValue&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[string]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="30" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="7;aefd14780617790a7191cbc97d7a4206" ItemType="52;XML:&lt;command:parameterValue&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[string]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="33" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="8;aefd14780617790a7191cbc97d7a4206" ItemType="52;XML:&lt;command:parameterValue&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[string]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="59" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="9;aefd14780617790a7191cbc97d7a4206" ItemType="52;XML:&lt;command:parameterValue&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[string]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="65" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="10;aefd14780617790a7191cbc97d7a4206" ItemType="52;XML:&lt;command:parameterValue&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[string]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="75" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="11;aefd14780617790a7191cbc97d7a4206" ItemType="52;XML:&lt;command:parameterValue&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[string]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="126" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="12;aefd14780617790a7191cbc97d7a4206" ItemType="52;XML:&lt;command:parameterValue&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[string]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="129" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="13;aefd14780617790a7191cbc97d7a4206" ItemType="52;XML:&lt;command:parameterValue&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[string]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="132" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="14;aefd14780617790a7191cbc97d7a4206" ItemType="52;XML:&lt;command:parameterValue&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[string]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="136" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="15;aefd14780617790a7191cbc97d7a4206" ItemType="52;XML:&lt;command:parameterValue&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[string]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="141" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="16;aefd14780617790a7191cbc97d7a4206" ItemType="52;XML:&lt;command:parameterValue&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[string]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="146" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="17;aefd14780617790a7191cbc97d7a4206" ItemType="52;XML:&lt;command:parameterValue&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[string]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="169" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="18;aefd14780617790a7191cbc97d7a4206" ItemType="52;XML:&lt;command:parameterValue&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[string]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="172" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="19;aefd14780617790a7191cbc97d7a4206" ItemType="52;XML:&lt;command:parameterValue&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[string]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="174" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="20;aefd14780617790a7191cbc97d7a4206" ItemType="52;XML:&lt;command:parameterValue&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[string]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="177" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="21;aefd14780617790a7191cbc97d7a4206" ItemType="52;XML:&lt;command:parameterValue&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[string]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="182" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="22;aefd14780617790a7191cbc97d7a4206" ItemType="52;XML:&lt;command:parameterValue&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[string]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="187" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="23;aefd14780617790a7191cbc97d7a4206" ItemType="52;XML:&lt;command:parameterValue&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[string]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="192" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="24;aefd14780617790a7191cbc97d7a4206" ItemType="52;XML:&lt;command:parameterValue&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[string]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="195" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="25;aefd14780617790a7191cbc97d7a4206" ItemType="52;XML:&lt;command:parameterValue&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[string]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="223" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="26;aefd14780617790a7191cbc97d7a4206" ItemType="52;XML:&lt;command:parameterValue&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[string]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="227" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="27;aefd14780617790a7191cbc97d7a4206" ItemType="52;XML:&lt;command:parameterValue&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[string]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="244" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="28;aefd14780617790a7191cbc97d7a4206" ItemType="52;XML:&lt;command:parameterValue&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[string]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="249" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="29;aefd14780617790a7191cbc97d7a4206" ItemType="52;XML:&lt;command:parameterValue&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[string]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="274" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="30;aefd14780617790a7191cbc97d7a4206" ItemType="52;XML:&lt;command:parameterValue&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[string]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="283" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+      </Item>
+      <Item ItemId=";&lt;command:verb&gt;" ItemType="0" PsrId="22" Leaf="false">
+        <Disp Icon="Str" Disp="true" LocTbl="false" />
+        <Modified By="v-canl" DateTime="2012-02-21T12:01:10Z" />
+        <Item ItemId="0;34014c1cb1570552dcddff4c119bdc89" ItemType="52;XML:&lt;command:verb&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Add]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="217" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;382144a6aea6a86396aab06b97525b0f" ItemType="52;XML:&lt;command:verb&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Get]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="53" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;3a44bce00b3834e69af6e343267c89cf" ItemType="52;XML:&lt;command:verb&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Update]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="163" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;4d412137ed3c8df2ec6d244c2b94dfd7" ItemType="52;XML:&lt;command:verb&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Open]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="268" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;71fcd68ab3f843387f45950051d3c9f0" ItemType="52;XML:&lt;command:verb&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Install]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="4" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;ef7fe93958d49b3b82f3a612da462ea3" ItemType="52;XML:&lt;command:verb&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Uninstall]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="120" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="1;382144a6aea6a86396aab06b97525b0f" ItemType="52;XML:&lt;command:verb&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Get]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="238" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+      </Item>
+      <Item ItemId=";&lt;dev:code&gt;" ItemType="0" PsrId="22" Leaf="false">
+        <Disp Icon="Str" Disp="true" LocTbl="false" />
+        <Modified By="v-canl" DateTime="2012-02-21T12:01:10Z" />
+        <Item ItemId="0;17a621bec6189ad8b664054b221a0dab" ItemType="52;XML:&lt;dev:code&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[PM&gt; Update-Package Elmah]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="199" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;18b9503fe0e7601c9833db7a53fc68e0" ItemType="52;XML:&lt;dev:code&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[PM&gt; Add-BindingRedirect MyProjectName]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="229" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;1bad68b239b3aca231437330ed5624b0" ItemType="52;XML:&lt;dev:code&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[PM&gt; Update-Package -Safe -Project MvcApplication1]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="208" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;1f89dfd4a4f48be7156cc28b4a858a76" ItemType="52;XML:&lt;dev:code&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[PM&gt; Open-PackagePage Ninject -ReportAbuse]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="301" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;2b6ce42eafde8ed195886524258f4e59" ItemType="52;XML:&lt;dev:code&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[PM&gt; Uninstall-Package Elmah -Force]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="154" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;3508fecbb78e3ec33ed4ab029554572f" ItemType="52;XML:&lt;dev:code&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[PM&gt; Install-Package Elmah]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="38" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;565b093c24ba5fa1e3532fd56be2f362" ItemType="52;XML:&lt;dev:code&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[PM&gt; Update-Package Elmah -Version 1.1.0]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="202" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;5b45bf820e963f9587ac5b60eca40c54" ItemType="52;XML:&lt;dev:code&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[PM&gt; Uninstall-Package Elmah]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="148" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;7d2d74cf85f9449be4cf0040d4da2a9a" ItemType="52;XML:&lt;dev:code&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[PM&gt; $url = Open-PackagePage Ninject -License -WhatIf -PassThru]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="304" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;86e18e5821eea3d5375c323e58e193f7" ItemType="52;XML:&lt;dev:code&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[PM&gt; Uninstall-Package Elmah -RemoveDependencies]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="151" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;acf2b9ed15ec0fbe398766f1d497479f" ItemType="52;XML:&lt;dev:code&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[PM&gt; Install-Package Glimpse -Version 1.0.0 -Project MvcApplication1]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="41" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;b35f3c680edefb1e82ff1c510bdbc385" ItemType="52;XML:&lt;dev:code&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[PS&gt; Get-Package -Updates]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="108" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;b651c00e50f13172326a097d9f65a744" ItemType="52;XML:&lt;dev:code&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[PM&gt; Get-Project MyProjectName]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="256" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;b720b47c775b001fca4216876d81ae8c" ItemType="52;XML:&lt;dev:code&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[PM&gt; Get-Package -ListAvailable]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="102" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;bf0275e4667700e96a91f7c76ee5960c" ItemType="52;XML:&lt;dev:code&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[PM&gt; Get-Package -ListAvailable -Filter Ninject]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="105" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;bfee0dc1847b4243576086cfa97940bf" ItemType="52;XML:&lt;dev:code&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[PM&gt; Get-Project -All]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="259" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;d3cf4d63708bf94a4fc85b79fff7f665" ItemType="52;XML:&lt;dev:code&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[PM&gt; Get-Package -Recent]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="111" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;d894fc2003f3054b2b6f3a849014d7bf" ItemType="52;XML:&lt;dev:code&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[PM&gt; Open-PackagePage Ninject -License]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="298" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;ed31e1dfff56d7127757c53cb1a5606a" ItemType="52;XML:&lt;dev:code&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[PM&gt; Get-Package]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="96" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;eeb89f77ae64dbf51001e06a7715eb31" ItemType="52;XML:&lt;dev:code&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[PM&gt; Get-Package -ProjectName MyProject]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="99" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;f18f33ca73baa0d871b9fffac008f72d" ItemType="52;XML:&lt;dev:code&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[PM&gt; Update-Package]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="205" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;faef707a60d99996f8d716dd01b78cf6" ItemType="52;XML:&lt;dev:code&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[PM&gt; Open-PackagePage Ninject]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="295" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;feea59b91070d89f1d456ddb14965a40" ItemType="52;XML:&lt;dev:code&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[PM&gt; Install-Package Ninject.Mvc3 -IgnoreDependencies -Source c:\temp\packages]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="44" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="1;ed31e1dfff56d7127757c53cb1a5606a" ItemType="52;XML:&lt;dev:code&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[PM&gt; Get-Project]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="253" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+      </Item>
+      <Item ItemId=";&lt;maml:linktext&gt;" ItemType="0" PsrId="22" Leaf="false">
+        <Disp Icon="Str" Disp="true" LocTbl="false" />
+        <Modified By="v-canl" DateTime="2012-02-21T12:01:10Z" />
+        <Item ItemId="0;5271fceb80ddfe096345572638c8d37d" ItemType="52;XML:&lt;maml:linkText&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Update-Package]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="213" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;5e571da3912bd851b35a622b8ce6a0d7" ItemType="52;XML:&lt;maml:linkText&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Online version:]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+              <Val><![CDATA[Onlineversion:]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" Order="47" />
+          <Modified By="federicomu" DateTime="2012-02-22T17:15:31Z" />
+        </Item>
+        <Item ItemId="0;631e7dfed347dcb77a4b64f892fb95f2" ItemType="52;XML:&lt;maml:linkText&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Uninstall-Package]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="159" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;8abf1f442d9aeda80cf44efc31dbe7aa" ItemType="52;XML:&lt;maml:linkText&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Get-Package]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="116" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;b40cd67eb4b5fa461bd07c3fcfb96dd4" ItemType="52;XML:&lt;maml:linkText&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Add-BindingRedirect]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="234" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;b54e1434c17b1a5b4d51a6885fa9e876" ItemType="52;XML:&lt;maml:linkText&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Open-PackagePage]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="309" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;e40203894217ab24d6019e5447b7ca09" ItemType="52;XML:&lt;maml:linkText&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Get-Project]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="264" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;f7e6b66daefaefce37203efe463bcfda" ItemType="52;XML:&lt;maml:linkText&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Install-Package]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="49" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="1;5e571da3912bd851b35a622b8ce6a0d7" ItemType="52;XML:&lt;maml:linkText&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Online version:]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+              <Val><![CDATA[Onlineversion:]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" Order="114" />
+          <Modified By="federicomu" DateTime="2012-02-22T17:15:31Z" />
+        </Item>
+        <Item ItemId="2;5e571da3912bd851b35a622b8ce6a0d7" ItemType="52;XML:&lt;maml:linkText&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Online version:]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+              <Val><![CDATA[Onlineversion:]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" Order="157" />
+          <Modified By="federicomu" DateTime="2012-02-22T17:15:31Z" />
+        </Item>
+        <Item ItemId="3;5e571da3912bd851b35a622b8ce6a0d7" ItemType="52;XML:&lt;maml:linkText&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Online version:]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+              <Val><![CDATA[Onlineversion:]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" Order="211" />
+          <Modified By="federicomu" DateTime="2012-02-22T17:15:31Z" />
+        </Item>
+        <Item ItemId="4;5e571da3912bd851b35a622b8ce6a0d7" ItemType="52;XML:&lt;maml:linkText&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Online version:]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+              <Val><![CDATA[Onlineversion:]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" Order="232" />
+          <Modified By="federicomu" DateTime="2012-02-22T17:15:31Z" />
+        </Item>
+        <Item ItemId="5;5e571da3912bd851b35a622b8ce6a0d7" ItemType="52;XML:&lt;maml:linkText&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Online version:]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+              <Val><![CDATA[Onlineversion:]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" Order="262" />
+          <Modified By="federicomu" DateTime="2012-02-22T17:15:31Z" />
+        </Item>
+        <Item ItemId="6;5e571da3912bd851b35a622b8ce6a0d7" ItemType="52;XML:&lt;maml:linkText&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Online version:]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+              <Val><![CDATA[Onlineversion:]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" Order="307" />
+          <Modified By="federicomu" DateTime="2012-02-22T17:15:31Z" />
+        </Item>
+      </Item>
+      <Item ItemId=";&lt;maml:name&gt;" ItemType="0" PsrId="22" Leaf="false">
+        <Disp Icon="Str" Disp="true" LocTbl="false" />
+        <Modified By="v-canl" DateTime="2012-02-21T12:01:10Z" />
+        <Item ItemId="0;0f85edbb63957a06a835dce870a401f7" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Filter]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="64" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;1069ae7e27e7678c2874142fdcb86453" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Safe]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="175" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;1751c5163ad35d95a7bd2e34d67ba8ac" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Updates]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="61" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;1cfc93da97f9d796631e450ac257618c" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[License]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="277" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;2891a7e7015d9201d6a8439dbb53302c" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[ReportAbuse]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="278" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;50592fab059e26eda66105e7ec1e2f84" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Recent]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="63" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;5271fceb80ddfe096345572638c8d37d" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Update-Package]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="167" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;631e7dfed347dcb77a4b64f892fb95f2" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Uninstall-Package]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="124" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;6ad2fda195a7bfecee8ba36baf57a9d2" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Id]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="9" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;6e9ca42b81a4eb17ca6cc095c78ece19" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[AllVersions]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="70" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;7645fa6714baa300a18b947dabbd1f5c" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[IncludePrerelease]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="18" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;7804a3627483e12afb0dbad13223ff56" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[RemoveDependencies]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="127" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;798df8d37b38dfdec6cb28ccd845d636" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[All]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="245" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;7c554de5453113ef154b14e46a1ca1a0" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[ProjectName]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="12" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;88d8269dc1ebf89be98e9154daa8dd99" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Version]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="14" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;8abf1f442d9aeda80cf44efc31dbe7aa" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Get-Package]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="57" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;a0bb44441394e3c59ab05551b2fb7b59" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[ListAvailable]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="60" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;acc71ce673abddc6417c3e9bea718b35" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Source]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="16" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;b3e330187037f80fc5e611a4849fb2d5" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[IgnoreDependencies]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="11" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;b40cd67eb4b5fa461bd07c3fcfb96dd4" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Add-BindingRedirect]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="221" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;b54e1434c17b1a5b4d51a6885fa9e876" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Open-PackagePage]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="272" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;b964bf6bcc5281453f89eda4625c2bfe" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Skip]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="68" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;d63ab1803e036c5b55401f98fee90142" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[First]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="66" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;d960c81c2b77c6f48101b155951031d3" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Name]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="243" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;dc76c9dda4c8ab15bd1797c6dbe1ad99" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[PassThru]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="279" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;e21d3b1ef6147a02fd65b6a926852b90" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Force]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="130" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;e40203894217ab24d6019e5447b7ca09" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Get-Project]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="242" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;f7e6b66daefaefce37203efe463bcfda" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Install-Package]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="8" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="1;0f85edbb63957a06a835dce870a401f7" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Filter]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="84" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="1;1069ae7e27e7678c2874142fdcb86453" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Safe]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="188" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="1;1751c5163ad35d95a7bd2e34d67ba8ac" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Updates]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="82" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="1;1cfc93da97f9d796631e450ac257618c" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[License]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="288" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="1;2891a7e7015d9201d6a8439dbb53302c" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[ReportAbuse]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="290" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="1;50592fab059e26eda66105e7ec1e2f84" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Recent]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="80" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="1;6ad2fda195a7bfecee8ba36baf57a9d2" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Id]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="20" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="1;6e9ca42b81a4eb17ca6cc095c78ece19" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[AllVersions]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="90" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="1;7645fa6714baa300a18b947dabbd1f5c" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[IncludePrerelease]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="34" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="1;7804a3627483e12afb0dbad13223ff56" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[RemoveDependencies]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="137" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="1;798df8d37b38dfdec6cb28ccd845d636" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[All]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="250" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="1;7c554de5453113ef154b14e46a1ca1a0" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[ProjectName]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="25" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="1;88d8269dc1ebf89be98e9154daa8dd99" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Version]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="31" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="1;a0bb44441394e3c59ab05551b2fb7b59" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[ListAvailable]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="76" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="1;acc71ce673abddc6417c3e9bea718b35" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Source]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="28" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="1;b3e330187037f80fc5e611a4849fb2d5" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[IgnoreDependencies]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="23" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="1;b964bf6bcc5281453f89eda4625c2bfe" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Skip]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="88" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="1;d63ab1803e036c5b55401f98fee90142" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[First]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="86" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="1;d960c81c2b77c6f48101b155951031d3" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Name]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="247" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="1;dc76c9dda4c8ab15bd1797c6dbe1ad99" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[PassThru]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="292" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="1;e21d3b1ef6147a02fd65b6a926852b90" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Force]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Erzwingen]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" Order="142" />
+          <Modified By="nicolasp" DateTime="2012-06-01T19:05:08Z" />
+        </Item>
+        <Item ItemId="2;6ad2fda195a7bfecee8ba36baf57a9d2" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Id]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="125" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="2;7645fa6714baa300a18b947dabbd1f5c" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[IncludePrerelease]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="71" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="2;7c554de5453113ef154b14e46a1ca1a0" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[ProjectName]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="62" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="2;88d8269dc1ebf89be98e9154daa8dd99" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Version]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="131" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="2;acc71ce673abddc6417c3e9bea718b35" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Source]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="58" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="2;b3e330187037f80fc5e611a4849fb2d5" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[IgnoreDependencies]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="170" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="3;6ad2fda195a7bfecee8ba36baf57a9d2" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Id]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="134" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="3;7645fa6714baa300a18b947dabbd1f5c" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[IncludePrerelease]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="92" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="3;7c554de5453113ef154b14e46a1ca1a0" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[ProjectName]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="78" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="3;88d8269dc1ebf89be98e9154daa8dd99" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Version]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="144" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="3;acc71ce673abddc6417c3e9bea718b35" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Source]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="73" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="3;b3e330187037f80fc5e611a4849fb2d5" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[IgnoreDependencies]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="183" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="4;6ad2fda195a7bfecee8ba36baf57a9d2" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Id]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="168" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="4;7645fa6714baa300a18b947dabbd1f5c" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[IncludePrerelease]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="178" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="4;7c554de5453113ef154b14e46a1ca1a0" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[ProjectName]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="128" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="4;88d8269dc1ebf89be98e9154daa8dd99" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Version]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="173" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="4;acc71ce673abddc6417c3e9bea718b35" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Source]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="176" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="5;6ad2fda195a7bfecee8ba36baf57a9d2" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Id]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="180" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="5;7645fa6714baa300a18b947dabbd1f5c" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[IncludePrerelease]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="196" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="5;7c554de5453113ef154b14e46a1ca1a0" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[ProjectName]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="139" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="5;88d8269dc1ebf89be98e9154daa8dd99" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Version]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="193" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="5;acc71ce673abddc6417c3e9bea718b35" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Source]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="190" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="6;6ad2fda195a7bfecee8ba36baf57a9d2" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Id]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="273" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="6;7c554de5453113ef154b14e46a1ca1a0" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[ProjectName]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="171" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="6;88d8269dc1ebf89be98e9154daa8dd99" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Version]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="275" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="6;acc71ce673abddc6417c3e9bea718b35" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Source]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="276" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="7;6ad2fda195a7bfecee8ba36baf57a9d2" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Id]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="281" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="7;7c554de5453113ef154b14e46a1ca1a0" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[ProjectName]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="185" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="7;88d8269dc1ebf89be98e9154daa8dd99" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Version]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="284" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="7;acc71ce673abddc6417c3e9bea718b35" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Source]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="286" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="8;7c554de5453113ef154b14e46a1ca1a0" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[ProjectName]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="222" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="9;7c554de5453113ef154b14e46a1ca1a0" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[ProjectName]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="225" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+      </Item>
+      <Item ItemId=";&lt;maml:para&gt;" ItemType="0" PsrId="22" Leaf="false">
+        <Disp Icon="Str" Disp="true" LocTbl="false" />
+        <Modified By="v-canl" DateTime="2012-02-21T12:01:10Z" />
+        <Item ItemId="0;0023c55510f1c9c67e4c6a00742ba5b5" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Specifies the source of the repository to search for package. If omitted, defaults to the selected source in the package source dropdown control.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Gibt die Quelle des Repositorys an, das nach dem Paket durchsucht werden soll. Ohne Angabe wird standardmäßig die im Dropdown-Steuerelement für Paketquellen ausgewählte Quelle verwendet.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" Order="287" />
+          <Modified By="Manuel" DateTime="2012-03-08T14:51:46Z" />
+          <Props>
+            <Str Name="Custom5" Val="Blocked" />
+          </Props>
+        </Item>
+        <Item ItemId="0;04590e73e2442c996d819dbc7e10c249" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Displays all available versions of a package. The latest version of each package is listed by default.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Zeigt alle verfügbaren Versionen eines Pakets an. standardmäßig wird die neuste Version jedes Pakets aufgelistet.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" Order="91" />
+          <Modified By="Manuel" DateTime="2012-03-08T14:51:46Z" />
+          <Props>
+            <Str Name="Custom5" Val="Blocked" />
+          </Props>
+        </Item>
+        <Item ItemId="0;0772b7e1569d76862c569bb659970608" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Description]A;------------------------------------------------------------------]A;Installs the package, Ninject.Mvc3, but not its dependencies. It looks in the directory, ]A;c:\temp\packages to find the package.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Beschreibung]A;------------------------------------------------------------------]A;Installiert das Paket "Ninject.Mvc3", aber ohne Abhängigkeiten. Das Paket wird im Verzeichnis ]A;"c:\temp\packages" gesucht.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" Order="45" />
+          <Modified By="Manuel" DateTime="2012-03-08T14:51:46Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Placeholder="Ninject.Mvc3"} {Placeholder="c:\temp\packages"}]]></Cmt>
+          </Cmts>
+          <Props>
+            <Str Name="Custom5" Val="Blocked" />
+          </Props>
+        </Item>
+        <Item ItemId="0;0aeaabc52f12d71b606c015bd4df3685" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Description]A;------------------------------------------------------------------]A;Opens a browser to the project URL specified in the Ninject package.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Beschreibung]A;------------------------------------------------------------------]A;Öffnet einen Browser mit der im Ninject-Paket angegebenen Projekt-URL.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" Order="296" />
+          <Modified By="Manuel" DateTime="2012-03-08T14:51:46Z" />
+          <Props>
+            <Str Name="Custom5" Val="Blocked" />
+          </Props>
+        </Item>
+        <Item ItemId="0;0c51ba533e175686fcaee1450e2a1759" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Forces an uninstall of the package even if another package depends on it.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Erzwingt selbst dann eine Deinstallation des Pakets, wenn ein anderes Paket von diesem abhängig ist.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" Order="143" />
+          <Modified By="nicolasp" DateTime="2012-06-01T19:05:08Z" />
+        </Item>
+        <Item ItemId="0;0e826dd9f9360db98caf67ed39d40653" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Gets the set of packages available from the package source. Defaults to only showing the list of installed packages. Use the -ListAvailable flag to list packages available from the package source.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Ruft den in der Paketquelle verfügbaren Paketsatz ab. Standardmäßig wird nur die Liste der installierten Pakete angezeigt. Verwenden Sie den Parameter -ListAvailable, um die in der Paketquelle verfügbaren Pakete aufzulisten.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" Order="55" />
+          <Modified By="Manuel" DateTime="2012-03-08T14:52:35Z" />
+          <Props>
+            <Str Name="Custom5" Val="Blocked" />
+          </Props>
+        </Item>
+        <Item ItemId="0;0ea45f8c8a75b7dd06021a5ede736620" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Returns every project in the solution.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+              <Val><![CDATA[Gibt jedes Projekt in der Projektmappe zurück.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" Order="251" />
+          <Modified By="federicomu" DateTime="2012-02-22T17:15:31Z" />
+        </Item>
+        <Item ItemId="0;0f83f86a5894fd2951c104204c5b719b" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Description]A;------------------------------------------------------------------]A;Uninstalls the Elmah package as well as all its dependencies. If any dependency has another package that depends on it, ]A;it is skipped.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Beschreibung]A;------------------------------------------------------------------]A;Deinstalliert das Elmah-Paket mit allen Abhängigkeiten. Besitzt eine der Abhängigkeiten ein von sich abhängiges weiteres Paket, ]A;wird sie übersprungen.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" Order="152" />
+          <Modified By="Manuel" DateTime="2012-03-08T14:51:46Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Placeholder="Elmah"}]]></Cmt>
+          </Cmts>
+          <Props>
+            <Str Name="Custom5" Val="Blocked" />
+          </Props>
+        </Item>
+        <Item ItemId="0;125efb8640dddb6f758612ec50249d3b" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Specifies the number of packages to return from the beginning of the list.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Gibt die Anzahl der Pakete an, die, beginnend am Anfang der Liste, zurückgegeben werden sollen.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" Order="87" />
+          <Modified By="Manuel" DateTime="2012-03-08T14:51:46Z" />
+          <Props>
+            <Str Name="Custom5" Val="Blocked" />
+          </Props>
+        </Item>
+        <Item ItemId="0;17baaeac6cc94d93d28b7cba7d19260e" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Installs a package.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+              <Val><![CDATA[Installiert ein Paket.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" Order="3" />
+          <Modified By="federicomu" DateTime="2012-02-22T17:15:31Z" />
+        </Item>
+        <Item ItemId="0;19479882837da5887be9b4e93718f0eb" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Indicates whether to include prereleases when searching for updates. If omitted, only stable packages are considered.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Zeigt an, ob Vorabversionen beim Suchen nach Aktualisierungen eingeschlossen werden sollen. Ohne Angabe werden nur stabile Pakete berücksichtigt.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" Order="197" />
+          <Modified By="Manuel" DateTime="2012-03-08T14:51:46Z" />
+          <Props>
+            <Str Name="Custom5" Val="Blocked" />
+          </Props>
+        </Item>
+        <Item ItemId="0;1b76eb7959f9a420810ae853743795e5" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Specifies the project to install the package into. If ommitted, the default project is chosen.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Gibt das Projekt an, in dem das Paket installiert werden soll. Ohne Angabe wird das Standardprojekt ausgewählt.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" Order="26" />
+          <Modified By="Manuel" DateTime="2012-03-08T14:51:46Z" />
+          <Props>
+            <Str Name="Custom5" Val="Blocked" />
+          </Props>
+        </Item>
+        <Item ItemId="0;1e1241846833421fcad0f726e7ce3990" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Description]A;------------------------------------------------------------------]A;Returns a list of recently installed packages.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Beschreibung]A;------------------------------------------------------------------]A;Gibt eine Liste von zuletzt installierten Paketen zurück.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" Order="112" />
+          <Modified By="Manuel" DateTime="2012-03-08T14:51:46Z" />
+          <Props>
+            <Str Name="Custom5" Val="Blocked" />
+          </Props>
+        </Item>
+        <Item ItemId="0;2ac95117c0ef0dc896b19ef4318b79ec" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Specifies a filter string used to narrow down the list of packages returned. The filter is searched for in the package Id, the description and tags.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Gibt eine Filterzeichenfolge an, mit der die zurückgegebene Liste der Pakete eingeschränkt wird. Nach dem Filter wird in der Paket-ID, der Beschreibung und den Tags gesucht.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" Order="85" />
+          <Modified By="Manuel" DateTime="2012-03-08T14:51:46Z" />
+          <Props>
+            <Str Name="Custom5" Val="Blocked" />
+          </Props>
+        </Item>
+        <Item ItemId="0;2dc114d477a6eef01c6e5e2b3cdc4088" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Description]A;------------------------------------------------------------------]A;Uninstalls the Elmah package even if another package depends on it.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Beschreibung]A;------------------------------------------------------------------]A;Deinstalliert das Elmah-Paket, auch wenn ein weiteres Paket davon abhängig ist.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" Order="155" />
+          <Modified By="Manuel" DateTime="2012-03-08T14:51:46Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Placeholder="Elmah"}]]></Cmt>
+          </Cmts>
+          <Props>
+            <Str Name="Custom5" Val="Blocked" />
+          </Props>
+        </Item>
+        <Item ItemId="0;305a166353ff18a5ad5d833cad8839dd" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Specifies the URL or directory path for the package source containing the package to install. When set to a local file system path, Source can be either absolute or relative to the current directory. If omitted, looks in the currently selected package source to find the corresponding package URL.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Gibt die URL oder den Verzeichnispfad für die Paketquelle an, die das zu installierende Paket enthält. Wenn ein lokaler Dateisystempfad festgelegt wird, kann die Quelle ein absoluter oder zum aktuellen Verzeichnis relativer Pfad sein. Wird kein Pfad angegeben, wird in der aktuell ausgewählten Paketquelle nach der entsprechenden Paket-URL gesucht.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" Order="29" />
+          <Modified By="Manuel" DateTime="2012-03-08T14:51:46Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Placeholder="URL"}]]></Cmt>
+          </Cmts>
+          <Props>
+            <Str Name="Custom5" Val="Blocked" />
+          </Props>
+        </Item>
+        <Item ItemId="0;3d5c0f1422ad620a889b74dbe01009c6" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Gets packages that have an update available from the package source.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Ruft Pakete ab, für die eine Aktualisierung in der Paketquelle verfügbar ist.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" Order="83" />
+          <Modified By="Manuel" DateTime="2012-03-08T14:51:46Z" />
+          <Props>
+            <Str Name="Custom5" Val="Blocked" />
+          </Props>
+        </Item>
+        <Item ItemId="0;43f4b12375f455d69dbcde8ffedb6bd1" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Updates a package.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+              <Val><![CDATA[Aktualisiert ein Paket.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" Order="162" />
+          <Modified By="federicomu" DateTime="2012-02-22T17:15:31Z" />
+        </Item>
+        <Item ItemId="0;44c8f1c75b1546c0749537d04ed55219" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[The version of the package to uninstall. If omitted, defaults to the latest version.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+              <Val><![CDATA[Die Version des zu deinstallierenden Pakets. Ohne Angabe wird die aktuelle Version verwendet.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" Order="145" />
+          <Modified By="federicomu" DateTime="2012-02-22T17:15:31Z" />
+        </Item>
+        <Item ItemId="0;46d5b7c9f75f020e2f5574fb9ae25428" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Uninstalls the package and its unused dependencies.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+              <Val><![CDATA[Deinstalliert das Paket und alle nicht verwendeten Abhängigkeiten.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" Order="138" />
+          <Modified By="federicomu" DateTime="2012-02-22T17:15:31Z" />
+        </Item>
+        <Item ItemId="0;4b1df925b8e4eaf1eb4ba3edd14a44b0" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Adds binding redirects to the config file.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+              <Val><![CDATA[Fügt der Konfigurationsdatei Umleitungen für Bindungen hinzu.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" Order="216" />
+          <Modified By="federicomu" DateTime="2012-02-22T17:15:31Z" />
+        </Item>
+        <Item ItemId="0;4b8f373802ba75ad241e21aa041d4eb6" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Gets the list of recently installed packages.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Ruft die Liste der zuletzt installierten Pakete ab.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" Order="81" />
+          <Modified By="Manuel" DateTime="2012-03-08T14:51:46Z" />
+          <Props>
+            <Str Name="Custom5" Val="Blocked" />
+          </Props>
+        </Item>
+        <Item ItemId="0;4c92a964fdfd12200f64f8b99cd45335" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Description]A;------------------------------------------------------------------]A;Opens a browser to the URL at the current package source used to report abuse for the specified package.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Beschreibung]A;------------------------------------------------------------------]A;Öffnet einen Browser mit der URL in der aktuellen Paketquelle, die zum Melden von Missbrauchsfällen für das angegebene Paket verwendet wird.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" Order="302" />
+          <Modified By="Manuel" DateTime="2012-03-08T14:55:01Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Placeholder="URL"}]]></Cmt>
+          </Cmts>
+          <Props>
+            <Str Name="Custom5" Val="Blocked" />
+          </Props>
+        </Item>
+        <Item ItemId="0;53264b71aaf67c6da5cc5a28efc0bc76" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Gets packages available from the online package source.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Ruft in der Onlinepaketquelle verfügbare Pakete ab.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" Order="77" />
+          <Modified By="Manuel" DateTime="2012-03-08T14:51:46Z" />
+          <Props>
+            <Str Name="Custom5" Val="Blocked" />
+          </Props>
+        </Item>
+        <Item ItemId="0;53887579a2560a4c08982db5c3d1e800" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[If specified, the cmdlet will return the value of the requested URL.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Wird diese Option angegeben, gibt das Cmdlet den Wert der angeforderten URL zurück.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" Order="293" />
+          <Modified By="Manuel" DateTime="2012-03-08T14:54:20Z" />
+          <Props>
+            <Str Name="Custom5" Val="Blocked" />
+          </Props>
+        </Item>
+        <Item ItemId="0;58d5db378400c9c466364264deb20143" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Description]A;------------------------------------------------------------------]A;Returns a reference to the specifed project, MyProjectName.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Beschreibung]A;------------------------------------------------------------------]A;Gibt einen Verweis auf das angegebene Projekt "MeinProjektName" zurück.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" Order="257" />
+          <Modified By="Manuel" DateTime="2012-03-08T14:51:46Z" />
+          <Props>
+            <Str Name="Custom5" Val="Blocked" />
+          </Props>
+        </Item>
+        <Item ItemId="0;5d1e2ebb869e23016abd0b8db6d16910" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Description]A;------------------------------------------------------------------]A;Returns a list of packages available online using "Ninject" as a search term.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Beschreibung]A;------------------------------------------------------------------]A;Gibt eine Liste der bei Verwendung des Suchbegriffs "Ninject" online verfügbaren Pakete zurück.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" Order="106" />
+          <Modified By="Manuel" DateTime="2012-03-08T14:51:46Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Placeholder="Ninject"}]]></Cmt>
+          </Cmts>
+          <Props>
+            <Str Name="Custom5" Val="Blocked" />
+          </Props>
+        </Item>
+        <Item ItemId="0;5db190a7ac0c1fc48079514adfdb4567" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Description]A;------------------------------------------------------------------]A;Updates every package in the project, MvcApplication1, to the latest "safe" version. For example,]A;For example, if version 1.0.0 of a package is installed, and versions 1.0.1, 1.0.2, and 1.1 are ]A;available in the feed, the -Safe flag updates the package to 1.0.2.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Beschreibung]A;------------------------------------------------------------------]A;Aktualisiert alle Pakete im Projekt "MvcApplication1" auf die neuste "sichere" Version. Wenn beispielsweise]A;Version 1.0.0 eines Pakets installiert ist und die Versionen 1.0.1, 1.0.2 und 1.1 ]A;im Feed verfügbar sind, wird das Paket durch den Parameter -Safe auf die Version 1.0.2 aktualisiert.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" Order="209" />
+          <Modified By="Manuel" DateTime="2012-03-08T14:52:59Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Placeholder="MvcApplication1"} {Placeholder="-Safe"}]]></Cmt>
+          </Cmts>
+          <Props>
+            <Str Name="Custom5" Val="Blocked" />
+          </Props>
+        </Item>
+        <Item ItemId="0;65516ef4f9bbed51fa7277fb413d2189" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Uninstalls a package. If other packages depend on this package, the command will fail unless the –Force option is specified.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Deinstalliert ein Paket. Wenn andere Pakete von diesem Paket abhängen, gibt der Befehl einen Fehler aus, es sei denn, die Option "–Force" wurde angegeben.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" Order="122" />
+          <Modified By="LucianoAP" DateTime="2012-03-13T20:55:40Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Placeholder="–Force"}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="0;6b24b4e81f42fac9456aa01386e0743a" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Specifies the version of the package to install. If omitted, defaults to the latest version.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+              <Val><![CDATA[Gibt die Version des zu installierenden Pakets an. Ohne Angabe wird die aktuelle Version verwendet.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" Order="32" />
+          <Modified By="federicomu" DateTime="2012-02-22T17:15:31Z" />
+        </Item>
+        <Item ItemId="0;6bbd2cccbe08fa0fb930ae65f69f2fd2" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Indicates whether this command will consider prerelease packages. If omitted, only stable packages are considered.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Zeigt an, ob dieser Befehl Vorabversionspakete berücksichtigt. Ohne Angabe werden nur stabile Pakete berücksichtigt.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" Order="35" />
+          <Modified By="Manuel" DateTime="2012-03-08T14:51:46Z" />
+          <Props>
+            <Str Name="Custom5" Val="Blocked" />
+          </Props>
+        </Item>
+        <Item ItemId="0;728f174d908e0de41ac74de28f6fcf0c" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Uninstalls a package.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Deinstalliert ein Paket.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" Order="119" />
+          <Modified By="nicolasp" DateTime="2012-06-26T21:43:41Z" />
+        </Item>
+        <Item ItemId="0;750883a056b6398628acc5d5d1554c97" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Gets the set of packages available from the package source. Use the -ListAvailable flag to list packages available from the package source.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Ruft den in der Paketquelle verfügbaren Paketsatz ab. Verwenden Sie den Parameter -ListAvailable, um die in der Paketquelle verfügbaren Pakete aufzulisten.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" Order="52" />
+          <Modified By="Manuel" DateTime="2012-03-08T14:52:24Z" />
+          <Props>
+            <Str Name="Custom5" Val="Blocked" />
+          </Props>
+        </Item>
+        <Item ItemId="0;7b59ca94bbe19e490e611f65cb7854fe" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Installs only this package and not its dependencies.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+              <Val><![CDATA[Installiert nur dieses Paket und nicht die Abhängigkeiten.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" Order="24" />
+          <Modified By="federicomu" DateTime="2012-02-22T17:15:31Z" />
+        </Item>
+        <Item ItemId="0;7e6825fe58c027455c24abeab184a793" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Specifies the Id of the package to search for.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Gibt die ID des zu suchenden Pakets an.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" Order="282" />
+          <Modified By="Manuel" DateTime="2012-03-08T14:51:46Z" />
+          <Props>
+            <Str Name="Custom5" Val="Blocked" />
+          </Props>
+        </Item>
+        <Item ItemId="0;7ff91bf93f5e92e537e5af5d047447b3" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Specifies the version that the package will be upgraded to. If omitted, defaults to the latest version.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+              <Val><![CDATA[Gibt die Version an, auf die das Paket aktualisiert wird. Ohne Angabe wird die aktuelle Version verwendet.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" Order="194" />
+          <Modified By="federicomu" DateTime="2012-02-22T17:15:31Z" />
+        </Item>
+        <Item ItemId="0;812997a3d67dfab3335ed569ad8fa9cc" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Description]A;------------------------------------------------------------------]A;Updates the Elmah package to a specific version in every project.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Beschreibung]A;------------------------------------------------------------------]A;Aktualisiert das Elmah-Projekt in jedem Projekt auf eine bestimmte Version.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" Order="203" />
+          <Modified By="Manuel" DateTime="2012-03-08T14:51:46Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Placeholder="Elmah"}]]></Cmt>
+          </Cmts>
+          <Props>
+            <Str Name="Custom5" Val="Blocked" />
+          </Props>
+        </Item>
+        <Item ItemId="0;8450eac9781f639193d4761ec1d6cd93" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Description]A;------------------------------------------------------------------]A;Returns packages installed in the "MyProject" project.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Beschreibung]A;------------------------------------------------------------------]A;Gibt im Projekt "MyProject" installierte Pakete zurück.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" Order="100" />
+          <Modified By="LucianoAP" DateTime="2012-03-13T20:55:40Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Placeholder="MyProject"}]]></Cmt>
+          </Cmts>
+          <Props>
+            <Str Name="Custom5" Val="Blocked" />
+          </Props>
+        </Item>
+        <Item ItemId="0;8698ccd4de649d97060c29f510f386da" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Indicates whether to include prerelease packages in the returned results.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Zeigt an, ob Vorabversionspakete in die zurückgegebenen Ergebnisse aufgenommen werden sollen.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" Order="93" />
+          <Modified By="Manuel" DateTime="2012-03-08T14:51:46Z" />
+          <Props>
+            <Str Name="Custom5" Val="Blocked" />
+          </Props>
+        </Item>
+        <Item ItemId="0;87424f37ac8215b823f6424130beb222" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Specifies the project to return. If ommitted, the default project selected in the Package Manager Console is returned.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Gibt das zurückzugebende Projekt an. Ohne Angabe wird das in der Paket-Manager-Konsole ausgewählte Standardprojekt zurückgegeben.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" Order="248" />
+          <Modified By="Manuel" DateTime="2012-03-08T14:51:46Z" />
+          <Props>
+            <Str Name="Custom5" Val="Blocked" />
+          </Props>
+        </Item>
+        <Item ItemId="0;883fbba13f85c370652424dd784d3523" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Returns a reference to the DTE (Development Tools Environment) for the specified project. If none is specifed, returns the default project selected in the Package Manager Console.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Gibt einen Verweis auf die Umgebung für Entwicklungstools (DTE, Development Tools Environment) für das angegebene Projekt zurück. Ohne Angabe wird das in der Paket-Manager-Konsole ausgewählte Standardprojekt zurückgegeben.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" Order="240" />
+          <Modified By="Manuel" DateTime="2012-03-08T14:51:46Z" />
+          <Props>
+            <Str Name="Custom5" Val="Blocked" />
+          </Props>
+        </Item>
+        <Item ItemId="0;89894b944be3ccbf2e12d0a4aa6357b4" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Description]A;------------------------------------------------------------------]A;Updates every package in every project.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Beschreibung]A;------------------------------------------------------------------]A;Aktualisiert alle Pakete in allen Projekten.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" Order="206" />
+          <Modified By="Manuel" DateTime="2012-03-08T14:51:46Z" />
+          <Props>
+            <Str Name="Custom5" Val="Blocked" />
+          </Props>
+        </Item>
+        <Item ItemId="0;8eddc19da5e6c02733f238cbacd0d396" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Description]A;------------------------------------------------------------------]A;Returns a reference to every project in the solution.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Beschreibung]A;------------------------------------------------------------------]A;Gibt einen Verweis auf alle Projekte in der Projektmappe zurück.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" Order="260" />
+          <Modified By="Manuel" DateTime="2012-03-08T14:51:46Z" />
+          <Props>
+            <Str Name="Custom5" Val="Blocked" />
+          </Props>
+        </Item>
+        <Item ItemId="0;8ee99fb7756c51ef776e25da6ddb4c14" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Description]A;------------------------------------------------------------------]A;Returns a list of packages installed in the default project that have updates available in the current package source.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Beschreibung]A;------------------------------------------------------------------]A;Gibt eine Liste der im Standardprojekt installierten Pakete zurück, für die in der aktuellen Paketquelle Aktualisierungen verfügbar sind.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" Order="109" />
+          <Modified By="Manuel" DateTime="2012-03-08T14:51:46Z" />
+          <Props>
+            <Str Name="Custom5" Val="Blocked" />
+          </Props>
+        </Item>
+        <Item ItemId="0;8fa2b8b49649f2e66636f5e1c10d3e4b" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Skips (does not return) the specified number of packages, counting from the beginning of the list.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Überspringt die angegebene Anzahl von Paketen (gibt sie nicht zurück), beginnend am Anfang der Liste.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" Order="89" />
+          <Modified By="Manuel" DateTime="2012-03-08T14:51:46Z" />
+          <Props>
+            <Str Name="Custom5" Val="Blocked" />
+          </Props>
+        </Item>
+        <Item ItemId="0;942ae792df6d43aa3ef3d4ce95a73635" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Specifies the project containing the project to update. If ommitted, the package is updated in every project with the package installed.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Gibt das Projekt an, das das zu aktualisierende Projekt enthält. Ohne Angabe wird das Paket in allen Paketen aktualisiert, die mit diesem Paket installiert sind.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" Order="186" />
+          <Modified By="Manuel" DateTime="2012-03-08T14:51:46Z" />
+          <Props>
+            <Str Name="Custom5" Val="Blocked" />
+          </Props>
+        </Item>
+        <Item ItemId="0;96135e520eaa5aed20b2fb35f2dd37ec" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Description]A;------------------------------------------------------------------]A;Adds binding redirects to the specified project, MyProjectName.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Beschreibung]A;------------------------------------------------------------------]A;Fügt dem angegebenen Projekt "MyProjectName" Umleitungen für Bindungen hinzu.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" Order="230" />
+          <Modified By="LucianoAP" DateTime="2012-03-13T20:55:40Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Placeholder="MyProjectName"}]]></Cmt>
+          </Cmts>
+          <Props>
+            <Str Name="Custom5" Val="Blocked" />
+          </Props>
+        </Item>
+        <Item ItemId="0;984f77df0e9f0511c0bf0baa27182863" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Specifies the project to uninstall the package from. If ommitted, the default project is chosen.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+              <Val><![CDATA[Gibt das Projekt an, aus dem das Paket deinstalliert werden soll. Ohne Angabe wird das Standardprojekt ausgewählt.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" Order="140" />
+          <Modified By="federicomu" DateTime="2012-02-22T17:15:31Z" />
+        </Item>
+        <Item ItemId="0;9b8dfc735e8492a33722a023058456dc" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Specifies the package ID of the package to update. If omitted, every package is updated.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Gibt die Paket-ID des zu aktualisierenden Pakets an. Ohne Angabe werden alle Pakete aktualisiert.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" Order="181" />
+          <Modified By="Manuel" DateTime="2012-03-08T14:51:46Z" />
+          <Props>
+            <Str Name="Custom5" Val="Blocked" />
+          </Props>
+        </Item>
+        <Item ItemId="0;9d6a57f00ffda31f89fd519878b50bcd" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Description]A;------------------------------------------------------------------]A;Installs version 1.0.0 of Glimpse into the project named MvcApplication1]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Beschreibung]A;------------------------------------------------------------------]A;Installiert Version 1.0.0 von Glimpse in das Projekt namens "MvcApplication1".]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" Order="42" />
+          <Modified By="Manuel" DateTime="2012-03-08T14:51:46Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Placeholder="Glimpse"} {Placeholder="MvcApplication1"}]]></Cmt>
+          </Cmts>
+          <Props>
+            <Str Name="Custom5" Val="Blocked" />
+          </Props>
+        </Item>
+        <Item ItemId="0;9e8381bd4fbe574dcd2c3944c1faf52f" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Description]A;------------------------------------------------------------------]A;Installs the latest version of the Elmah package from the current ]A;package source into the default project.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Beschreibung]A;------------------------------------------------------------------]A;Installiert die neuste Version des Elmah-Pakets von der aktuellen ]A;Paketquelle in das Standardprojekt.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" Order="39" />
+          <Modified By="Manuel" DateTime="2012-03-08T14:51:46Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Placeholder="Elmah"}]]></Cmt>
+          </Cmts>
+          <Props>
+            <Str Name="Custom5" Val="Blocked" />
+          </Props>
+        </Item>
+        <Item ItemId="0;a06a5f6ebe8bbadec9b23f3856b20ca9" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Description]A;------------------------------------------------------------------]A;Returns packages installed in the current solution.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Beschreibung]A;------------------------------------------------------------------]A;Gibt in der aktuellen Projektmappe installierte Pakete zurück.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" Order="97" />
+          <Modified By="Manuel" DateTime="2012-03-08T14:51:46Z" />
+          <Props>
+            <Str Name="Custom5" Val="Blocked" />
+          </Props>
+        </Item>
+        <Item ItemId="0;a5fdd57733f52490cfb31e6023d825fb" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Indicates the cmdlet should open the ReportAbuseUrl of the specified package. If neither LicenseUrl nor ReportAbuseUrl is set, the cmdlet will open the ProjectUrl by default.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Zeigt an, dass das Cmdlet die ReportAbuseUrl des angegebenen Pakets öffnen soll. Wenn weder die LicenseUrl noch die ReportAbuseUrl festgelegt ist, öffnet das Cmdlet standardmäßig die ProjectUrl.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" Order="291" />
+          <Modified By="Manuel" DateTime="2012-03-08T14:51:46Z" />
+          <Props>
+            <Str Name="Custom5" Val="Blocked" />
+          </Props>
+        </Item>
+        <Item ItemId="0;ae67501558fee077f49c9846158d9817" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Specifies the package ID of the package to uninstall.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+              <Val><![CDATA[Gibt die Paket-ID des zu deinstallierenden Pakets an.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" Order="135" />
+          <Modified By="federicomu" DateTime="2012-02-22T17:15:31Z" />
+        </Item>
+        <Item ItemId="0;b1b62abcd3bff6a9cf966a9e39c84211" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Description]A;------------------------------------------------------------------]A;Returns a list of packages available online in the current package source.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Beschreibung]A;------------------------------------------------------------------]A;Gibt eine Liste der online in der aktuellen Paketquelle verfügbaren Pakete zurück.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" Order="103" />
+          <Modified By="Manuel" DateTime="2012-03-08T14:51:46Z" />
+          <Props>
+            <Str Name="Custom5" Val="Blocked" />
+          </Props>
+        </Item>
+        <Item ItemId="0;b8a4435ba79993f5d3a4180f81ea0149" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Specifies the project to get installed packages from. If ommitted, the command will return installed projects for the entire solution.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Gibt das Projekt an, aus dem installierte Pakete abgerufen werden sollen. Ohne Angabe gibt der Befehl installierte Projekte für die gesamte Projektmappe zurück.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" Order="79" />
+          <Modified By="Manuel" DateTime="2012-03-08T14:51:46Z" />
+          <Props>
+            <Str Name="Custom5" Val="Blocked" />
+          </Props>
+        </Item>
+        <Item ItemId="0;b8e446ed6f8653b38fbdbeacd0c191be" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Open the browser pointing to ProjectUrl, LicenseUrl or ReportAbuseUrl of the specified package.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Öffnen Sie den Browser mit der ProjectUrl, LicenseUrl oder ReportAbuseUrl des angegebenen Pakets.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" Order="267" />
+          <Modified By="Manuel" DateTime="2012-03-08T14:54:02Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Placeholder="ProjectUrl"} {Placeholder="LicenseUrl"} {Placeholder="ReportAbuseUrl"}]]></Cmt>
+          </Cmts>
+          <Props>
+            <Str Name="Custom5" Val="Blocked" />
+          </Props>
+        </Item>
+        <Item ItemId="0;c281af8d122e7d5a100d240cfed2d802" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Gets the specified project. If none is specified, returns the default project.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Ruft das angegebene Projekt ab. Ohne Angabe wird das Standardprojekt zurückgegeben.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" Order="237" />
+          <Modified By="Manuel" DateTime="2012-03-08T14:51:46Z" />
+          <Props>
+            <Str Name="Custom5" Val="Blocked" />
+          </Props>
+        </Item>
+        <Item ItemId="0;c2ea79ce2139e112654592d9c785909c" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Specifies the URL or directory path for the package source containing the package to update. When set to a local file system path, Source can be either absolute or relative to the current directory. If omitted, looks in the currently selected package source to find the corresponding package URL.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Gibt die URL oder den Verzeichnispfad für die Paketquelle an, die das zu aktualisierende Paket enthält. Wenn ein lokaler Dateisystempfad festgelegt wird, kann "Source" ein absoluter oder ein zum aktuellen Verzeichnis relativer Pfad sein. Wird kein Pfad angegeben, wird in der aktuell ausgewählten Paketquelle nach der entsprechenden Paket-URL gesucht.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" Order="191" />
+          <Modified By="Manuel" DateTime="2012-03-08T14:56:08Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Placeholder="URL"} {Placeholder="Source"}]]></Cmt>
+          </Cmts>
+          <Props>
+            <Str Name="Custom5" Val="Blocked" />
+          </Props>
+        </Item>
+        <Item ItemId="0;c705c95f82e31f53bdd1665d58ccb1da" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Specifies the project to analyze and add binding redirects to.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+              <Val><![CDATA[Gibt das zu durchsuchende Projekt an, dem Umleitungen für Bindungen hinzugefügt werden sollen.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" Order="226" />
+          <Modified By="federicomu" DateTime="2012-02-22T17:15:31Z" />
+        </Item>
+        <Item ItemId="0;c777de6b6d7c026358da567c2d69e22b" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Updates a package and its dependencies to a newer version.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+              <Val><![CDATA[Aktualisiert ein Paket und dessen Abhängigkeiten auf eine neuere Version.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" Order="165" />
+          <Modified By="federicomu" DateTime="2012-02-22T17:15:31Z" />
+        </Item>
+        <Item ItemId="0;ca697d11e8d6336713b3a2d606e14408" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Description]A;------------------------------------------------------------------]A;Assigns the license URL to the variable, $url, without opening the URL in a browser.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Beschreibung]A;------------------------------------------------------------------]A;Weist der Variablen "$url" die Lizenz-URL zu, ohne die URL in einem Browser zu öffnen.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" Order="305" />
+          <Modified By="Manuel" DateTime="2012-03-08T14:51:46Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Placeholder="URL"} {Placeholder="$url"}]]></Cmt>
+          </Cmts>
+          <Props>
+            <Str Name="Custom5" Val="Blocked" />
+          </Props>
+        </Item>
+        <Item ItemId="0;d3f26deb7838f4e694ce4b067a92a576" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Indicates the cmdlet should open the LicenseUrl of the specified package. If neither LicenseUrl nor ReportAbuseUrl is set, the cmdlet will open the ProjectUrl by default.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Zeigt an, dass das cmdlet die LicenseUrl des angegebenen Pakets öffnen soll. Wenn weder die LicenseUrl noch die ReportAbuseUrl festgelegt ist, öffnet das cmdlet standardmäßig die ProjectUrl.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" Order="289" />
+          <Modified By="LucianoAP" DateTime="2012-03-13T20:55:40Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Placeholder="cmdlet"} {Placeholder="LicenseUrl"} {Placeholder="ProjectUrl"}]]></Cmt>
+          </Cmts>
+          <Props>
+            <Str Name="Custom5" Val="Blocked" />
+          </Props>
+        </Item>
+        <Item ItemId="0;d45be4ee353cfc8e6476d08c5cf53742" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Installs a package and its dependencies into the project.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+              <Val><![CDATA[Installiert ein Paket und dessen Abhängigkeiten im Projekt.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" Order="6" />
+          <Modified By="federicomu" DateTime="2012-02-22T17:15:31Z" />
+        </Item>
+        <Item ItemId="0;d6ccb676fa1c58ccf6483d6634d96293" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Specifies the version of the package to search for. If omitted, defaults to the latest version.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Gibt die Version des zu suchenden Pakets an. Ohne Angabe wird die neuste Version verwendet.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" Order="285" />
+          <Modified By="Manuel" DateTime="2012-03-08T14:51:46Z" />
+          <Props>
+            <Str Name="Custom5" Val="Blocked" />
+          </Props>
+        </Item>
+        <Item ItemId="0;e9d97211aaf277107d99c155ef915739" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Updates all of the package’s dependencies to the latest version. False by default.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+              <Val><![CDATA[Aktualisiert alle Abhängigkeiten des Pakets auf die neueste Version. Der Standardwert ist "False".]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" Order="184" />
+          <Modified By="federicomu" DateTime="2012-02-22T17:15:31Z" />
+        </Item>
+        <Item ItemId="0;eb6c9bcd41e8b53e79dfd64f3195562b" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Description]A;------------------------------------------------------------------]A;Updates the Elmah package installed in every project to the latest version.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Beschreibung]A;------------------------------------------------------------------]A;Aktualisiert das Elmah-Projekt in jedem Projekt, in dem es installiert ist, auf die neuste Version.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" Order="200" />
+          <Modified By="Manuel" DateTime="2012-03-08T14:51:46Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Placeholder="Elmah"}]]></Cmt>
+          </Cmts>
+          <Props>
+            <Str Name="Custom5" Val="Blocked" />
+          </Props>
+        </Item>
+        <Item ItemId="0;eb81281d7c0185c81ff58cc68af21f5f" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Examines all assemblies within the output path for a project and adds binding redirects to the ]A;application (or web) configuration file where necessary. NOTE: As of NuGet 1.2, NuGet automatically ]A;runs this command when installing a package.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Untersucht alle Assemblys im Ausgabepfad auf ein Projekt und fügt der Anwendungs- (oder Web-) ]A;konfigurationsdatei Umleitungen für Bindungen hinzu, wo dies erforderlich ist. HINWEIS: Seit NuGet 1.2 wird dieser Befehl automatisch ]A;von NuGet bei der Installation eines Pakets ausgeführt.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" Order="219" />
+          <Modified By="Manuel" DateTime="2012-03-08T14:51:46Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Placeholder="NuGet"}]]></Cmt>
+          </Cmts>
+          <Props>
+            <Str Name="Custom5" Val="Blocked" />
+          </Props>
+        </Item>
+        <Item ItemId="0;ee7fcb8b8f74ba08973ba02c9200ce89" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Constrains upgrades to newer versions with the same Major and Minor version component. For example, if version 1.0.0 of a package is installed, and versions 1.0.1, 1.0.2, and 1.1 are available in the feed, the -Safe flag updates the package to 1.0.2.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Beschränkt Upgrades auf neuere Versionen mit denselben Haupt- und Nebenversionskomponenten. Wenn beispielsweise Version 1.0.0 eines Pakets installiert ist und die Versionen 1.0.1, 1.0.2 und 1.1 im Feed verfügbar sind, wird das Paket durch den Parameter -Safe auf die Version 1.0.2 aktualisiert.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" Order="189" />
+          <Modified By="Manuel" DateTime="2012-03-08T14:52:49Z" />
+          <Props>
+            <Str Name="Custom5" Val="Blocked" />
+          </Props>
+        </Item>
+        <Item ItemId="0;f41c8ac11e2218b841d6106c79c59f2d" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Description]A;------------------------------------------------------------------]A;Returns a reference to the default project.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Beschreibung]A;------------------------------------------------------------------]A;Gibt einen Verweis auf das Standardprojekt zurück.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" Order="254" />
+          <Modified By="Manuel" DateTime="2012-03-08T14:51:46Z" />
+          <Props>
+            <Str Name="Custom5" Val="Blocked" />
+          </Props>
+        </Item>
+        <Item ItemId="0;f58207d9ef88a59d8329b1c270c40f5d" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Specifies the package ID of the package to install.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+              <Val><![CDATA[Gibt die Paket-ID des zu installierenden Pakets an.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" Order="21" />
+          <Modified By="federicomu" DateTime="2012-02-22T17:15:31Z" />
+        </Item>
+        <Item ItemId="1;0aeaabc52f12d71b606c015bd4df3685" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Description]A;------------------------------------------------------------------]A;Opens a browser to the license URL specified in the Ninject package.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Beschreibung]A;------------------------------------------------------------------]A;Öffnet einen Browser mit der im Ninject-Paket angegebenen Lizenz-URL.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" Order="299" />
+          <Modified By="Manuel" DateTime="2012-03-08T14:51:46Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Placeholder="URL"} {Placeholder="Ninject"}]]></Cmt>
+          </Cmts>
+          <Props>
+            <Str Name="Custom5" Val="Blocked" />
+          </Props>
+        </Item>
+        <Item ItemId="1;305a166353ff18a5ad5d833cad8839dd" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Specifies the URL or directory path for the package source containing the package to install. When set to a local file system path, Source can be either absolute or relative to the current directory. If omitted, looks in the currently selected package source to find the corresponding package URL.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Gibt die URL oder den Verzeichnispfad für die Paketquelle an, die das zu installierende Paket enthält. Wenn ein lokaler Dateisystempfad festgelegt wird, kann "Source" ein absoluter oder ein zum aktuellen Verzeichnis relativer Pfad sein. Wird kein Pfad angegeben, wird in der aktuell ausgewählten Paketquelle nach der entsprechenden Paket-URL gesucht.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" Order="74" />
+          <Modified By="Manuel" DateTime="2012-03-08T14:55:53Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Placeholder="URL"} {Placeholder="Source"}]]></Cmt>
+          </Cmts>
+          <Props>
+            <Str Name="Custom5" Val="Blocked" />
+          </Props>
+        </Item>
+        <Item ItemId="1;8450eac9781f639193d4761ec1d6cd93" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Description]A;------------------------------------------------------------------]A;Uninstalls the Elmah package from the default project.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Beschreibung]A;------------------------------------------------------------------]A;Deinstalliert das Elmah-Paket im Standardprojekt.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" Order="149" />
+          <Modified By="Manuel" DateTime="2012-03-08T14:51:46Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Placeholder="Elmah"}]]></Cmt>
+          </Cmts>
+          <Props>
+            <Str Name="Custom5" Val="Blocked" />
+          </Props>
+        </Item>
+        <Item ItemId="1;b8e446ed6f8653b38fbdbeacd0c191be" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Open the browser pointing to ProjectUrl, LicenseUrl or ReportAbuseUrl of the specified package.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Öffnen Sie den Browser mit der ProjectUrl, LicenseUrl oder ReportAbuseUrl des angegebenen Pakets.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" Order="270" />
+          <Modified By="Manuel" DateTime="2012-03-08T14:54:11Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Placeholder="ProjectUrl"} {Placeholder="LicenseUrl"} {Placeholder="ReportAbuseUrl"}]]></Cmt>
+          </Cmts>
+          <Props>
+            <Str Name="Custom5" Val="Blocked" />
+          </Props>
+        </Item>
+      </Item>
+      <Item ItemId=";&lt;maml:title&gt;" ItemType="0" PsrId="22" Leaf="false">
+        <Disp Icon="Str" Disp="true" LocTbl="false" />
+        <Modified By="v-canl" DateTime="2012-02-21T12:01:10Z" />
+        <Item ItemId="0;90d0d71b9ac8e131b4a3fdf5f821278a" ItemType="52;XML:&lt;maml:title&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[----------  EXAMPLE 1 ----------]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[----------  BEISPIEL 1  ----------]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" Order="228" />
+          <Modified By="Manuel" DateTime="2012-03-08T14:51:46Z" />
+          <Props>
+            <Str Name="Custom5" Val="Blocked" />
+          </Props>
+        </Item>
+        <Item ItemId="0;b8fe4d1f9de82c706467c0d08b590998" ItemType="52;XML:&lt;maml:title&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[----------  EXAMPLE 1  ----------]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[----------  BEISPIEL 1  ----------]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" Order="37" />
+          <Modified By="Manuel" DateTime="2012-03-08T14:51:46Z" />
+          <Props>
+            <Str Name="Custom5" Val="Blocked" />
+          </Props>
+        </Item>
+        <Item ItemId="1;90d0d71b9ac8e131b4a3fdf5f821278a" ItemType="52;XML:&lt;maml:title&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[----------  EXAMPLE 1 ----------]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[----------  BEISPIEL 1  ----------]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" Order="252" />
+          <Modified By="Manuel" DateTime="2012-03-08T14:51:46Z" />
+          <Props>
+            <Str Name="Custom5" Val="Blocked" />
+          </Props>
+        </Item>
+        <Item ItemId="1;b8fe4d1f9de82c706467c0d08b590998" ItemType="52;XML:&lt;maml:title&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[----------  EXAMPLE 2  ----------]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[----------  BEISPIEL 2  ----------]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" Order="40" />
+          <Modified By="Manuel" DateTime="2012-03-08T14:51:46Z" />
+          <Props>
+            <Str Name="Custom5" Val="Blocked" />
+          </Props>
+        </Item>
+        <Item ItemId="2;90d0d71b9ac8e131b4a3fdf5f821278a" ItemType="52;XML:&lt;maml:title&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[----------  EXAMPLE 2 ----------]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New">
+              <Val><![CDATA[----------  BEISPIEL 2 ----------]]></Val>
+            </Tgt>
+            <Prev Cat="AppData">
+              <Val><![CDATA[----------  EXAMPLE 1 ----------]]></Val>
+            </Prev>
+          </Str>
+          <Disp Icon="Str" Order="255" />
+          <Modified By="nicolasp" DateTime="2012-06-01T19:05:08Z" />
+        </Item>
+        <Item ItemId="2;b8fe4d1f9de82c706467c0d08b590998" ItemType="52;XML:&lt;maml:title&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[----------  EXAMPLE 3  ----------]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[----------  BEISPIEL 3  ----------]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" Order="43" />
+          <Modified By="Manuel" DateTime="2012-03-08T14:51:46Z" />
+          <Props>
+            <Str Name="Custom5" Val="Blocked" />
+          </Props>
+        </Item>
+        <Item ItemId="3;90d0d71b9ac8e131b4a3fdf5f821278a" ItemType="52;XML:&lt;maml:title&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[----------  EXAMPLE 3 ----------]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New">
+              <Val><![CDATA[----------  BEISPIEL 3 ----------]]></Val>
+            </Tgt>
+            <Prev Cat="AppData">
+              <Val><![CDATA[----------  EXAMPLE 2 ----------]]></Val>
+            </Prev>
+          </Str>
+          <Disp Icon="Str" Order="258" />
+          <Modified By="nicolasp" DateTime="2012-06-01T19:05:08Z" />
+        </Item>
+        <Item ItemId="3;b8fe4d1f9de82c706467c0d08b590998" ItemType="52;XML:&lt;maml:title&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[----------  EXAMPLE 1  ----------]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[----------  BEISPIEL 1  ----------]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" Order="95" />
+          <Modified By="Manuel" DateTime="2012-03-08T14:51:46Z" />
+          <Props>
+            <Str Name="Custom5" Val="Blocked" />
+          </Props>
+        </Item>
+        <Item ItemId="4;90d0d71b9ac8e131b4a3fdf5f821278a" ItemType="52;XML:&lt;maml:title&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[----------  EXAMPLE 1 ----------]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="Auto" Confidence="100">
+              <Val><![CDATA[----------  BEISPIEL 1  ----------]]></Val>
+            </Tgt>
+            <Prev Cat="AppData">
+              <Val><![CDATA[----------  EXAMPLE 3 ----------]]></Val>
+            </Prev>
+          </Str>
+          <Disp Icon="Str" Order="294" />
+          <Modified By="nicolasp" DateTime="2012-06-01T19:05:08Z" />
+        </Item>
+        <Item ItemId="4;b8fe4d1f9de82c706467c0d08b590998" ItemType="52;XML:&lt;maml:title&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[----------  EXAMPLE 2  ----------]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[----------  BEISPIEL 2  ----------]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" Order="98" />
+          <Modified By="Manuel" DateTime="2012-03-08T14:51:46Z" />
+          <Props>
+            <Str Name="Custom5" Val="Blocked" />
+          </Props>
+        </Item>
+        <Item ItemId="5;90d0d71b9ac8e131b4a3fdf5f821278a" ItemType="52;XML:&lt;maml:title&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[----------  EXAMPLE 2 ----------]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="Auto" Confidence="100">
+              <Val><![CDATA[----------  BEISPIEL 2 ----------]]></Val>
+            </Tgt>
+            <Prev Cat="AppData">
+              <Val><![CDATA[----------  EXAMPLE 1 ----------]]></Val>
+            </Prev>
+          </Str>
+          <Disp Icon="Str" Order="297" />
+          <Modified By="nicolasp" DateTime="2012-06-01T19:05:08Z" />
+        </Item>
+        <Item ItemId="5;b8fe4d1f9de82c706467c0d08b590998" ItemType="52;XML:&lt;maml:title&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[----------  EXAMPLE 3  ----------]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[----------  BEISPIEL 3  ----------]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" Order="101" />
+          <Modified By="Manuel" DateTime="2012-03-08T14:51:46Z" />
+          <Props>
+            <Str Name="Custom5" Val="Blocked" />
+          </Props>
+        </Item>
+        <Item ItemId="6;90d0d71b9ac8e131b4a3fdf5f821278a" ItemType="52;XML:&lt;maml:title&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[----------  EXAMPLE 3 ----------]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="Auto" Confidence="100">
+              <Val><![CDATA[----------  BEISPIEL 3 ----------]]></Val>
+            </Tgt>
+            <Prev Cat="AppData">
+              <Val><![CDATA[----------  EXAMPLE 2 ----------]]></Val>
+            </Prev>
+          </Str>
+          <Disp Icon="Str" Order="300" />
+          <Modified By="nicolasp" DateTime="2012-06-01T19:05:08Z" />
+        </Item>
+        <Item ItemId="6;b8fe4d1f9de82c706467c0d08b590998" ItemType="52;XML:&lt;maml:title&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[----------  EXAMPLE 4  ----------]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[----------  BEISPIEL 4  ----------]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" Order="104" />
+          <Modified By="Manuel" DateTime="2012-03-08T14:51:46Z" />
+          <Props>
+            <Str Name="Custom5" Val="Blocked" />
+          </Props>
+        </Item>
+        <Item ItemId="7;90d0d71b9ac8e131b4a3fdf5f821278a" ItemType="52;XML:&lt;maml:title&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[----------  EXAMPLE 4 ----------]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New">
+              <Val><![CDATA[----------  BEISPIEL 4 ----------]]></Val>
+            </Tgt>
+            <Prev Cat="AppData">
+              <Val><![CDATA[----------  EXAMPLE 3 ----------]]></Val>
+            </Prev>
+          </Str>
+          <Disp Icon="Str" Order="303" />
+          <Modified By="nicolasp" DateTime="2012-06-01T19:05:08Z" />
+        </Item>
+        <Item ItemId="7;b8fe4d1f9de82c706467c0d08b590998" ItemType="52;XML:&lt;maml:title&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[----------  EXAMPLE 5  ----------]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[----------  BEISPIEL 5  ----------]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" Order="107" />
+          <Modified By="Manuel" DateTime="2012-03-08T14:51:46Z" />
+          <Props>
+            <Str Name="Custom5" Val="Blocked" />
+          </Props>
+        </Item>
+        <Item ItemId="8;b8fe4d1f9de82c706467c0d08b590998" ItemType="52;XML:&lt;maml:title&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[----------  EXAMPLE 6  ----------]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[----------  BEISPIEL 6  ----------]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" Order="110" />
+          <Modified By="Manuel" DateTime="2012-03-08T14:51:46Z" />
+          <Props>
+            <Str Name="Custom5" Val="Blocked" />
+          </Props>
+        </Item>
+        <Item ItemId="9;b8fe4d1f9de82c706467c0d08b590998" ItemType="52;XML:&lt;maml:title&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[----------  EXAMPLE 1  ----------]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[----------  BEISPIEL 1  ----------]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" Order="147" />
+          <Modified By="Manuel" DateTime="2012-03-08T14:51:46Z" />
+          <Props>
+            <Str Name="Custom5" Val="Blocked" />
+          </Props>
+        </Item>
+        <Item ItemId="10;b8fe4d1f9de82c706467c0d08b590998" ItemType="52;XML:&lt;maml:title&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[----------  EXAMPLE 2  ----------]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[----------  BEISPIEL 2  ----------]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" Order="150" />
+          <Modified By="Manuel" DateTime="2012-03-08T14:51:46Z" />
+          <Props>
+            <Str Name="Custom5" Val="Blocked" />
+          </Props>
+        </Item>
+        <Item ItemId="11;b8fe4d1f9de82c706467c0d08b590998" ItemType="52;XML:&lt;maml:title&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[----------  EXAMPLE 3  ----------]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[----------  BEISPIEL 3  ----------]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" Order="153" />
+          <Modified By="Manuel" DateTime="2012-03-08T14:51:46Z" />
+          <Props>
+            <Str Name="Custom5" Val="Blocked" />
+          </Props>
+        </Item>
+        <Item ItemId="12;b8fe4d1f9de82c706467c0d08b590998" ItemType="52;XML:&lt;maml:title&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[----------  EXAMPLE 1  ----------]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[----------  BEISPIEL 1  ----------]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" Order="198" />
+          <Modified By="Manuel" DateTime="2012-03-08T14:51:46Z" />
+          <Props>
+            <Str Name="Custom5" Val="Blocked" />
+          </Props>
+        </Item>
+        <Item ItemId="13;b8fe4d1f9de82c706467c0d08b590998" ItemType="52;XML:&lt;maml:title&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[----------  EXAMPLE 2  ----------]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[----------  BEISPIEL 2  ----------]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" Order="201" />
+          <Modified By="Manuel" DateTime="2012-03-08T14:51:46Z" />
+          <Props>
+            <Str Name="Custom5" Val="Blocked" />
+          </Props>
+        </Item>
+        <Item ItemId="14;b8fe4d1f9de82c706467c0d08b590998" ItemType="52;XML:&lt;maml:title&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[----------  EXAMPLE 3  ----------]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[----------  BEISPIEL 3  ----------]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" Order="204" />
+          <Modified By="Manuel" DateTime="2012-03-08T14:51:46Z" />
+          <Props>
+            <Str Name="Custom5" Val="Blocked" />
+          </Props>
+        </Item>
+        <Item ItemId="15;b8fe4d1f9de82c706467c0d08b590998" ItemType="52;XML:&lt;maml:title&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[----------  EXAMPLE 3  ----------]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[----------  BEISPIEL 3  ----------]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" Order="207" />
+          <Modified By="Manuel" DateTime="2012-03-08T14:51:46Z" />
+          <Props>
+            <Str Name="Custom5" Val="Blocked" />
+          </Props>
+        </Item>
+      </Item>
+      <Item ItemId=";&lt;maml:uri&gt;" ItemType="0" PsrId="22" Leaf="false">
+        <Disp Icon="Str" Disp="true" LocTbl="false" />
+        <Modified By="v-canl" DateTime="2012-02-21T12:01:10Z" />
+        <Item ItemId="0;1c4b0b3b3924c9cbb38dc6761c42d701" ItemType="52;XML:&lt;maml:uri&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[http://docs.nuget.org/]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="48" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="1;1c4b0b3b3924c9cbb38dc6761c42d701" ItemType="52;XML:&lt;maml:uri&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[http://docs.nuget.org/]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="115" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="2;1c4b0b3b3924c9cbb38dc6761c42d701" ItemType="52;XML:&lt;maml:uri&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[http://docs.nuget.org/]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="158" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="3;1c4b0b3b3924c9cbb38dc6761c42d701" ItemType="52;XML:&lt;maml:uri&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[http://docs.nuget.org/]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="212" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="4;1c4b0b3b3924c9cbb38dc6761c42d701" ItemType="52;XML:&lt;maml:uri&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[http://docs.nuget.org/]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="233" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="5;1c4b0b3b3924c9cbb38dc6761c42d701" ItemType="52;XML:&lt;maml:uri&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[http://docs.nuget.org/]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="263" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+        <Item ItemId="6;1c4b0b3b3924c9cbb38dc6761c42d701" ItemType="52;XML:&lt;maml:uri&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[http://docs.nuget.org/]]></Val>
+          </Str>
+          <Disp Icon="Str" Order="308" />
+          <Modified By="v-canl" DateTime="2012-02-21T12:01:14Z" />
+          <Cmts>
+            <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+          </Cmts>
+        </Item>
+      </Item>
+    </Item>
+  </Item>
+</LCX>

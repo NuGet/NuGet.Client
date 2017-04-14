@@ -4,6 +4,7 @@
 
   <PropertyGroup>
     <Shipping>true</Shipping>
+    <IncludeInVSIX>true</IncludeInVSIX>
     <PackagesDirectory>$(UserProfile)\.nuget\packages</PackagesDirectory>
     <ResolveNuGetPackages>true</ResolveNuGetPackages>
     <SkipValidatePackageReferences>true</SkipValidatePackageReferences>

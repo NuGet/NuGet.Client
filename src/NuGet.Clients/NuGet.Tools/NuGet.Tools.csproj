@@ -5,6 +5,7 @@
   <Import Project="$(VSSDKRoot)\build\Microsoft.VSSDK.BuildTools.props" />
   <PropertyGroup>
     <Shipping>true</Shipping>
+    <IncludeInVSIX>true</IncludeInVSIX>
     <ProjectGuid>{D0F9864B-D782-4471-81A2-29555E5DC0D7}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>

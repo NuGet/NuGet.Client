@@ -1,0 +1,637 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LCX SchemaVersion="6.0" Name="C:\BuildAgent\work\fea8ec2fb9b8541c\NuGet\bin\Release\NuGetTools\14\NuGet.Tools.dll" PsrId="211" FileType="1" SrcCul="en-US" TgtCul="cs-CZ" xmlns="http://schemas.microsoft.com/locstudio/2006/6/lcx">
+  <Props>
+    <Str Name="CustomName1" Val="Custom 1" />
+    <Str Name="CustomName2" Val="Custom 2" />
+    <Str Name="CustomName3" Val="Custom 3" />
+    <Str Name="CustomName4" Val="Custom 4" />
+    <Str Name="CustomName5" Val="Custom 5" />
+    <Str Name="CustomName6" Val="IQA" />
+  </Props>
+  <OwnedComments>
+    <Cmt Name="Dev" />
+    <Cmt Name="DUIData" />
+    <Cmt Name="GoldMine" />
+    <Cmt Name="Goldmine8" />
+    <Cmt Name="LcxAdmin" />
+    <Cmt Name="Loc" />
+    <Cmt Name="ManifestData" />
+    <Cmt Name="Mnemonic" />
+    <Cmt Name="Note" />
+    <Cmt Name="Rccx" />
+    <Cmt Name="UIType" />
+    <Cmt Name="UTSData" />
+    <Cmt Name="UTSUI" />
+    <Cmt Name="zLocLevel" />
+  </OwnedComments>
+  <Settings Name="@vsLocTools@\default.lss" Type="Lss" />
+  <Item ItemId=";Managed Resources" ItemType="0" PsrId="211" Leaf="true">
+    <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" />
+  </Item>
+  <Item ItemId=";NuGetVSExtension.Resources.resources" ItemType="0" PsrId="211" Leaf="false">
+    <Disp Icon="Str" Expand="true" Disp="true" LocTbl="false" Path=" \ ;Managed Resources \ 0 \ 0" />
+    <Item ItemId=";Strings" ItemType="0" PsrId="211" Leaf="false">
+      <Disp Icon="Str" LocTbl="false" />
+      <Item ItemId=";AccountProvider_FailedToLoadAccountManager" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Could not get the account manager, unable to check the keychain.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Nelze načíst správce účtů. Nelze zkontrolovat řetězec klíčů.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";AccountProvider_FailedToLoadVSOAccountProvider" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Could not get the account provider, unable to check the keychain.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Nelze načíst poskytovatele účtů. Nelze zkontrolovat řetězec klíčů.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";AccountProvider_NoValidCrededentialsFound" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[No valid credentials found for VSO account.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Pro účet VSO se nenašly žádné platné přihlašovací údaje.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";AccountProvider_TriedToShowUIOnNonInteractive" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Unable to authenticate without prompting user.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Bez výzvy zobrazené uživateli nelze provést ověření.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";BuildIntegratedPackageRestoreFailedForProject" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[NuGet Package restore failed for project {0} for '{1}'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[Obnovení balíčku NuGet pro projekt {0} se nepovedlo pro {1}.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";CanNotCreateWindow" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Can not create tool window.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Nejde vytvořit okno nástroje.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";CredentialProviderFailed_DefaultCredentialsCredentialProvider" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The default credentials credential provider failed to load.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Nepovedlo se načíst poskytovatele přihlašovacích údajů pro výchozí přihlašovací údaje.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";CredentialProviderFailed_ImportedProvider" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Failed to load credential provider from assembly {0}.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Nepovedlo se načíst poskytovatele přihlašovacích údajů ze sestavení {0}.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";CredentialProviderFailed_LegacyCredentialProvider" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The legacy NuGet credential provider failed to load.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Nepovedlo se načíst starší verzi poskytovatele přihlašovacích údajů NuGet.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";CredentialProviderFailed_VisualStudioAccountProvider" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The Visual Studio or VSTS account provider failed to load.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Nepovedlo se načíst poskytovatele účtů sady Visual Studio nebo VSTS.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";CredentialProviderFailed_VisualStudioCredentialProvider" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The Visual Studio credential provider failed to load.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Nepovedlo se načíst poskytovatele přihlašovacích údajů sady Visual Studio.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";DTE_ProjectUnsupported" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The project '{0}' is unsupported]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Projekt {0} není podporovaný.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";DialogTitle" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[NuGet Package Manager]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Správce balíčků NuGet]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";ErrorDialogBoxTitle" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Operation failed]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Operace se nepovedla.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Finished" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[========== Finished ==========]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[========== Dokončeno ==========]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";ManagePackageForSolutionLabel" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Manage NuGet Packages for &Solution...]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[&Spravovat balíčky NuGet pro řešení...]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";ManagePackageLabel" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Manage &NuGet Packages...]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Spravovat balíčky &NuGet...]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";NoProjectSelected" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[No project is selected for this operation.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Pro tuhle operaci nebyl vybraný žádný projekt.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";NoSupportedProjectsInSolution" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[No projects supported by NuGet in the solution.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[V řešení nejsou žádné projekty podporované systémem NuGet.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";NuGetSearchProvider_CategoryShortcut" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text" UsrLk="true">
+          <Val><![CDATA[nuget]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";NuGetSearchProvider_Description" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Search NuGet packages]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Hledat balíčky NuGet]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";NuGetSearchProvider_DisplayText" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[NuGet Packages]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Balíčky NuGet]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";NuGetStaticResult_DisplayText" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Search Online for NuGet Packages matching '{0}']]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Online hledání balíčků NuGet odpovídajících řetězci {0}]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";ProjectHasAnInvalidNuGetConfiguration" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[{0} nuget configuration is invalid.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[Konfigurace {0} aplikace NuGet je neplatná.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";ProjectUpgradeAndRetargetErrorMessage" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Some NuGet packages were installed using a target framework different from the current target framework and may need to be reinstalled. Visit http://docs.nuget.org/docs/workflows/reinstalling-packages for more information.  Packages affected: {0}]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Některé balíčky NuGet jsou nainstalované s použitím jiné cílové verze rozhraní .NET Framework, než je aktuální verze, a pravděpodobně bude potřeba je přeinstalovat. Další informace najdete na webu http://docs.nuget.org/docs/workflows/reinstalling-packages.  Ovlivněné balíčky: {0}]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";ProviderException_MalformedResponse" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Credential provider gave an invalid response.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Poskytovatel pověření dal neplatnou odpověď.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";SolutionIsNotSaved" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Solution is not saved. Please save your solution before managing NuGet packages.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Řešení není uložené. Než začnete spravovat balíčky NuGet, řešení uložte.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";SolutionIsNotSavedPromptReopen" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Solution is not saved. Please save your solution and re-open solution before managing NuGet packages.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Řešení není uložené. Než začnete spravovat balíčky NuGet, řešení uložte a znova otevřete.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+    </Item>
+  </Item>
+  <Item ItemId=";VSPackage.resources" ItemType="0" PsrId="211" Leaf="false">
+    <Disp Icon="Str" Expand="true" Disp="true" LocTbl="false" Path=" \ ;Managed Resources \ 0 \ 0" />
+    <Item ItemId=";Menus.ctmenu" ItemType="0" PsrId="240" Leaf="false">
+      <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" />
+      <Item ItemId=";{1e8a55f6-c18d-407f-91c8-94b02ae1ced6},1024" ItemType="0" PsrId="240" Leaf="false">
+        <Disp Icon="Menu" Expand="true" Disp="true" LocTbl="false" />
+        <Item ItemId=";{1e8a55f6-c18d-407f-91c8-94b02ae1ced6},1024" ItemType=";Button" PsrId="240" Leaf="true">
+          <Str Cat="Combo Box" IgnoreHK="true">
+            <Val><![CDATA[Pac&kage source:]]></Val>
+            <Tgt Cat="Combo Box" IgnoreHK="true" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Zdroj &balíčku:]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" Expand="true" />
+        </Item>
+      </Item>
+      <Item ItemId=";{1e8a55f6-c18d-407f-91c8-94b02ae1ced6},1280" ItemType="0" PsrId="240" Leaf="false">
+        <Disp Icon="Menu" Expand="true" Disp="true" LocTbl="false" />
+        <Item ItemId=";{1e8a55f6-c18d-407f-91c8-94b02ae1ced6},1280" ItemType=";Button" PsrId="240" Leaf="true">
+          <Str Cat="Combo Box" IgnoreHK="true">
+            <Val><![CDATA[Default pro&ject:]]></Val>
+            <Tgt Cat="Combo Box" IgnoreHK="true" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Výchozí pro&jekt:]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" Expand="true" />
+        </Item>
+      </Item>
+      <Item ItemId=";{1e8a55f6-c18d-407f-91c8-94b02ae1ced6},1536" ItemType="0" PsrId="240" Leaf="false">
+        <Disp Icon="Menu" Expand="true" Disp="true" LocTbl="false" />
+        <Item ItemId=";{1e8a55f6-c18d-407f-91c8-94b02ae1ced6},1536" ItemType=";Button" PsrId="240" Leaf="true">
+          <Str Cat="Button" IgnoreHK="true">
+            <Val><![CDATA[&Stop command execution]]></Val>
+            <Tgt Cat="Button" IgnoreHK="true" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[&Zastavit provádění příkazu]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" Expand="true" />
+        </Item>
+      </Item>
+      <Item ItemId=";{1e8a55f6-c18d-407f-91c8-94b02ae1ced6},256" ItemType="0" PsrId="240" Leaf="false">
+        <Disp Icon="Menu" Expand="true" Disp="true" LocTbl="false" />
+        <Item ItemId=";{1e8a55f6-c18d-407f-91c8-94b02ae1ced6},256" ItemType=";Button" PsrId="240" Leaf="true">
+          <Str Cat="Button" IgnoreHK="true">
+            <Val><![CDATA[Package Manager C&onsole]]></Val>
+            <Tgt Cat="Button" IgnoreHK="true" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[K&onzola Správce balíčků]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" Expand="true" />
+        </Item>
+      </Item>
+      <Item ItemId=";{1e8a55f6-c18d-407f-91c8-94b02ae1ced6},4112" ItemType="0" PsrId="240" Leaf="false">
+        <Disp Icon="Menu" Expand="true" Disp="true" LocTbl="false" />
+        <Item ItemId=";{1e8a55f6-c18d-407f-91c8-94b02ae1ced6},4112" ItemType=";Menu" PsrId="240" Leaf="true">
+          <Str Cat="Menu Item">
+            <Val><![CDATA[Package Manager Console]]></Val>
+            <Tgt Cat="Menu Item" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Konzola Správce balíčků]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" Expand="true" />
+        </Item>
+      </Item>
+      <Item ItemId=";{1e8a55f6-c18d-407f-91c8-94b02ae1ced6},512" ItemType="0" PsrId="240" Leaf="false">
+        <Disp Icon="Menu" Expand="true" Disp="true" LocTbl="false" />
+        <Item ItemId=";{1e8a55f6-c18d-407f-91c8-94b02ae1ced6},512" ItemType=";Button" PsrId="240" Leaf="true">
+          <Str Cat="Button" IgnoreHK="true">
+            <Val><![CDATA[&Package Manager Settings]]></Val>
+            <Tgt Cat="Button" IgnoreHK="true" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+              <Val><![CDATA[N&astavení Správce balíčků]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" Expand="true" />
+        </Item>
+      </Item>
+      <Item ItemId=";{1e8a55f6-c18d-407f-91c8-94b02ae1ced6},768" ItemType="0" PsrId="240" Leaf="false">
+        <Disp Icon="Menu" Expand="true" Disp="true" LocTbl="false" />
+        <Item ItemId=";{1e8a55f6-c18d-407f-91c8-94b02ae1ced6},768" ItemType=";Button" PsrId="240" Leaf="true">
+          <Str Cat="Button" IgnoreHK="true">
+            <Val><![CDATA[&Clear Console]]></Val>
+            <Tgt Cat="Button" IgnoreHK="true" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[&Vymazat konzolu]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" Expand="true" />
+        </Item>
+      </Item>
+      <Item ItemId=";{25fd982b-8cae-4cbd-a440-e03ffccde106},256" ItemType="0" PsrId="240" Leaf="false">
+        <Disp Icon="Menu" Expand="true" Disp="true" LocTbl="false" />
+        <Item ItemId=";{25fd982b-8cae-4cbd-a440-e03ffccde106},256" ItemType=";Button" PsrId="240" InstFlg="true" Leaf="true">
+          <Str Cat="Button" IgnoreHK="true">
+            <Val><![CDATA[Manage &NuGet Packages...]]></Val>
+            <Tgt Cat="Button" IgnoreHK="true" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Spravovat balíčky &NuGet...]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" Expand="true" />
+        </Item>
+        <Item ItemId=";{25fd982b-8cae-4cbd-a440-e03ffccde106},256" ItemType=";CommandName" PsrId="240" InstFlg="true" Leaf="true">
+          <Str Cat="Button" UsrLk="true">
+            <Val><![CDATA[cmdidAddPackages]]></Val>
+          </Str>
+          <Disp Icon="Str" Expand="true" />
+        </Item>
+      </Item>
+      <Item ItemId=";{25fd982b-8cae-4cbd-a440-e03ffccde106},512" ItemType="0" PsrId="240" Leaf="false">
+        <Disp Icon="Menu" Expand="true" Disp="true" LocTbl="false" />
+        <Item ItemId=";{25fd982b-8cae-4cbd-a440-e03ffccde106},512" ItemType=";Button" PsrId="240" InstFlg="true" Leaf="true">
+          <Str Cat="Button" IgnoreHK="true">
+            <Val><![CDATA[Manage &NuGet Packages for Solution...]]></Val>
+            <Tgt Cat="Button" IgnoreHK="true" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Spravovat balíčky &NuGet pro řešení...]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" Expand="true" />
+        </Item>
+        <Item ItemId=";{25fd982b-8cae-4cbd-a440-e03ffccde106},512" ItemType=";CommandName" PsrId="240" InstFlg="true" Leaf="true">
+          <Str Cat="Button" UsrLk="true">
+            <Val><![CDATA[cmdidAddPackagesForSolution]]></Val>
+          </Str>
+          <Disp Icon="Str" Expand="true" />
+        </Item>
+      </Item>
+      <Item ItemId=";{25fd982b-8cae-4cbd-a440-e03ffccde106},768" ItemType="0" PsrId="240" Leaf="false">
+        <Disp Icon="Menu" Expand="true" Disp="true" LocTbl="false" />
+        <Item ItemId=";{25fd982b-8cae-4cbd-a440-e03ffccde106},768" ItemType=";Button" PsrId="240" InstFlg="true" Leaf="true">
+          <Str Cat="Button" IgnoreHK="true">
+            <Val><![CDATA[Restore NuGet Packa&ges]]></Val>
+            <Tgt Cat="Button" IgnoreHK="true" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Ob&novit balíčky NuGet]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" Expand="true" />
+        </Item>
+        <Item ItemId=";{25fd982b-8cae-4cbd-a440-e03ffccde106},768" ItemType=";CommandName" PsrId="240" InstFlg="true" Leaf="true">
+          <Str Cat="Button">
+            <Val><![CDATA[cmdRestorePackages]]></Val>
+            <Tgt Cat="Button" Stat="Loc" Appr="PreApproved" Orig="Auto" Confidence="100">
+              <Val><![CDATA[cmdRestorePackages]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" Expand="true" />
+        </Item>
+      </Item>
+      <Item ItemId=";{c0d88179-5d25-4982-bfe6-ec5fd59ac103},256" ItemType="0" PsrId="240" Leaf="false">
+        <Disp Icon="Menu" Expand="true" Disp="true" LocTbl="false" />
+        <Item ItemId=";{c0d88179-5d25-4982-bfe6-ec5fd59ac103},256" ItemType=";Menu" PsrId="240" InstFlg="true" Leaf="true">
+          <Str Cat="Menu Item" IgnoreHK="true">
+            <Val><![CDATA[NuGet Package Ma&nager]]></Val>
+            <Tgt Cat="Menu Item" IgnoreHK="true" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Správce balíčků &NuGet]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" Expand="true" />
+        </Item>
+      </Item>
+      <Item ItemId=";{c0d88179-5d25-4982-bfe6-ec5fd59ac103},768" ItemType="0" PsrId="240" Leaf="false">
+        <Disp Icon="Menu" Expand="true" Disp="true" LocTbl="false" />
+        <Item ItemId=";{c0d88179-5d25-4982-bfe6-ec5fd59ac103},768" ItemType=";Button" PsrId="240" Leaf="true">
+          <Str Cat="Button" IgnoreHK="true">
+            <Val><![CDATA[&Package Manager Settings]]></Val>
+            <Tgt Cat="Button" IgnoreHK="true" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[N&astavení Správce balíčků]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" Expand="true" />
+        </Item>
+        <Item ItemId=";{c0d88179-5d25-4982-bfe6-ec5fd59ac103},768" ItemType=";CommandName" PsrId="240" InstFlg="true" Leaf="true">
+          <Str Cat="Button" UsrLk="true">
+            <Val><![CDATA[cmdidGeneralSettings]]></Val>
+          </Str>
+          <Disp Icon="Str" Expand="true" />
+        </Item>
+      </Item>
+    </Item>
+    <Item ItemId=";Strings" ItemType="0" PsrId="211" Leaf="false">
+      <Disp Icon="Str" LocTbl="false" />
+      <Item ItemId=";1" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text" UsrLk="true">
+          <Val><![CDATA[plk]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";110" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[NuGet Package Manager]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[Správce balíčků NuGet]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";112" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[NuGet Package Manager in Visual Studio. For more information about NuGet, visit http://docs.nuget.org/.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Správce balíčků NuGet v sadě Visual Studio. Další informace o systému NuGet najdete na webu http://docs.nuget.org/.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";113" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[NuGet Package Manager]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Správce balíčků NuGet]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";114" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Package Sources]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Zdroje balíčků]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";115" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[General]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Obecné]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";2" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[plk]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[plk]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[]]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";200" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Package Manager Console]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Konzola Správce balíčků]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";3" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text" UsrLk="true">
+          <Val><![CDATA[plk]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";300" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[PackageManagerDocumentWindow]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[OknoDokumentuSprávceBalíčků]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";4" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text" UsrLk="true">
+          <Val><![CDATA[plk]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+    </Item>
+  </Item>
+  <Item ItemId=";Version" ItemType="0" PsrId="211" Leaf="false">
+    <Disp Icon="Ver" Disp="true" LocTbl="false" Path=" \ ;Version \ 8 \ 0" />
+    <Item ItemId=";AssemblyVersion" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text" DevLk="true" UsrLk="true">
+        <Val><![CDATA[4.3.0.2496]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+    </Item>
+    <Item ItemId=";Comments" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text">
+        <Val><![CDATA[Visual Studio Extensibility Package (vsix)]]></Val>
+        <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+          <Val><![CDATA[Balíček rozšiřitelnosti Visual Studia (vsix)]]></Val>
+        </Tgt>
+      </Str>
+      <Disp Icon="Str" />
+    </Item>
+    <Item ItemId=";CompanyName" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+      <Str Cat="Text" UsrLk="true">
+        <Val><![CDATA[Microsoft Corporation]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+    </Item>
+    <Item ItemId=";FileDescription" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text">
+        <Val><![CDATA[NuGet.Tools]]></Val>
+        <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+          <Val><![CDATA[NuGet.Tools]]></Val>
+        </Tgt>
+      </Str>
+      <Disp Icon="Str" />
+    </Item>
+    <Item ItemId=";FileVersion" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text" DevLk="true" UsrLk="true">
+        <Val><![CDATA[4.3.0.2496]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+    </Item>
+    <Item ItemId=";InternalName" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text" DevLk="true" UsrLk="true">
+        <Val><![CDATA[NuGet.Tools.dll]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+    </Item>
+    <Item ItemId=";LegalCopyright" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text">
+        <Val><![CDATA[Microsoft Corporation. All rights reserved.]]></Val>
+        <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+          <Val><![CDATA[Microsoft Corporation. Všechna práva vyhrazena.]]></Val>
+        </Tgt>
+        <Prev Cat="Text">
+          <Val><![CDATA[© .NET Foundation. All rights reserved.]]></Val>
+        </Prev>
+      </Str>
+      <Disp Icon="Str" />
+    </Item>
+    <Item ItemId=";OriginalFilename" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text" DevLk="true" UsrLk="true">
+        <Val><![CDATA[NuGet.Tools.dll]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+    </Item>
+    <Item ItemId=";ProductName" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+      <Str Cat="Text" UsrLk="true">
+        <Val><![CDATA[NuGet]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+    </Item>
+    <Item ItemId=";ProductVersion" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text" DevLk="true" UsrLk="true">
+        <Val><![CDATA[4.3.0-preview1-2496]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+    </Item>
+  </Item>
+  <Item ItemId=";Version" ItemType="8" PsrId="211" Leaf="true">
+    <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" />
+  </Item>
+</LCX>

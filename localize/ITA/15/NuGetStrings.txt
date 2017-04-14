@@ -1,0 +1,12 @@
+﻿Specificare le credenziali proxy:
+
+Specificare le credenziali per: {0}
+
+Password: 
+
+Nome utente: 
+
+Tutti i pacchetti elencati in {0} sono già installati.
+
+Il ripristino dei pacchetti è disabilitato per impostazione predefinita. Per abilitarlo, aprire la finestra di dialogo Opzioni di Visual Studio, fare clic sul nodo Gestione pacchetti e selezionare l'opzione che consente a NuGet di scaricare pacchetti mancanti durante la compilazione. È anche possibile abilitare il ripristino dei pacchetti impostando la variabile di ambiente 'EnableNuGetPackageRestore' su 'true'.
+    

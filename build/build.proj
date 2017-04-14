@@ -248,6 +248,7 @@
     <MSBuild Projects="$(VSIXProject)"
              Targets="Build"
              Properties="$(CommonMSBuildProperties);
+                         BuildProjectReferences=false;
                          VisualStudioVersion=15.0;" />
   </Target>
 

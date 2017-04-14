@@ -9,6 +9,7 @@
     <NetStandardImplicitPackageVersion Condition=" '$(TargetFramework)' == 'netstandard1.3' ">$(NetStandardPackageVersion)</NetStandardImplicitPackageVersion>
     <PackProject>true</PackProject>
     <Shipping>true</Shipping>
+    <IncludeInVSIX>true</IncludeInVSIX>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(TargetFramework)' == 'net40' ">

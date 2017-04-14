@@ -4,6 +4,7 @@
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Shipping>true</Shipping>
+    <IncludeInVSIX>true</IncludeInVSIX>
     <AutoUnifyAssemblyReferences>true</AutoUnifyAssemblyReferences>
     <RestoreNuGetPackages>true</RestoreNuGetPackages>
     <PackagesDir>$(UserProfile)\.nuget\packages</PackagesDir>

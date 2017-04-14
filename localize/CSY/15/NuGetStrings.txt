@@ -1,0 +1,12 @@
+﻿Zadejte proxy povìøení:
+
+Zadejte povìøení pro: {0}
+
+Heslo: 
+
+Uživatelské jméno: 
+
+Všechny balíèky, které uvádí {0}, jsou již nainstalované.
+
+Obnovení balíèku je ve výchozím nastavení zakázáno. Chcete-li udìlit souhlas, otevøete dialogové okno Možnosti produktu Visual Studio, kliknìte na uzel Správce balíèkù a zaškrtnìte možnost 'Povolit rozhraní NuGet stáhnout chybìjící balíèky bìhem sestavení'. Souhlas mùžete udìlit také nastavením promìnné prostøedí EnableNuGetPackageRestore na hodnotu true.
+    

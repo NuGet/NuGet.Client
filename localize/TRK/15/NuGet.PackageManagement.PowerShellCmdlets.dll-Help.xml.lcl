@@ -1,0 +1,3366 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<LCX SchemaVersion="6.0" Name="D:\dd\WebStackRuntime\Main\ReferenceAssemblies\NuGet\NuGet.Cmdlets.dll-Help.xml" PsrId="22" FileType="1" SrcCul="en-US" TgtCul="tr-TR" xmlns="http://schemas.microsoft.com/locstudio/2006/6/lcx">
+  <Props>
+    <Str Name="CustomName1" Val="Custom 1" />
+    <Str Name="CustomName2" Val="Custom 2" />
+    <Str Name="CustomName3" Val="Custom 3" />
+    <Str Name="CustomName4" Val="Custom 4" />
+    <Str Name="CustomName5" Val="Custom 5" />
+    <Str Name="CustomName6" Val="IQA" />
+  </Props>
+  <OwnedComments>
+    <Cmt Name="Dev" />
+    <Cmt Name="LcxAdmin" />
+    <Cmt Name="Note" />
+    <Cmt Name="Rccx" />
+  </OwnedComments>
+  <Settings Name="@vsLocTools@\default.lss" Type="Lss" />
+  <Item ItemId=";XML Comments" ItemType="0" PsrId="22" Leaf="false">
+    <Disp Icon="Str" Disp="true" LocTbl="false" />
+    <Item ItemId="0;0936e41e150299b76f8d83f5a0aaf060" ItemType="55;Text" PsrId="22" InstFlg="true" Leaf="true">
+      <Str Cat="Text" UsrLk="true">
+        <Val><![CDATA[ Cmdlet syntax section]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+    </Item>
+    <Item ItemId="0;0e41b77f69f73e8c8ad8377626b8ebed" ItemType="55;Text" PsrId="22" InstFlg="true" Leaf="true">
+      <Str Cat="Text">
+        <Val><![CDATA[ Uninstall-Package command ]]></Val>
+        <Tgt Cat="Text" Stat="Loc" Orig="New">
+          <Val><![CDATA[ Uninstall-Package komutu ]]></Val>
+        </Tgt>
+      </Str>
+      <Disp Icon="Str" />
+    </Item>
+    <Item ItemId="0;1cac6073a2b20a668e2322c96b03b431" ItemType="55;Text" PsrId="22" InstFlg="true" Leaf="true">
+      <Str Cat="Text">
+        <Val><![CDATA[ Add-BindingRedirect command ]]></Val>
+        <Tgt Cat="Text" Stat="Loc" Orig="New">
+          <Val><![CDATA[ Add-BindingRedirect komutu ]]></Val>
+        </Tgt>
+      </Str>
+      <Disp Icon="Str" />
+    </Item>
+    <Item ItemId="0;310daf252548917ad85ed831afe9b2bd" ItemType="55;Text" PsrId="22" InstFlg="true" Leaf="true">
+      <Str Cat="Text">
+        <Val><![CDATA[ Get-Package command ]]></Val>
+        <Tgt Cat="Text" Stat="Loc" Orig="New">
+          <Val><![CDATA[ Get-Package komutu ]]></Val>
+        </Tgt>
+      </Str>
+      <Disp Icon="Str" />
+    </Item>
+    <Item ItemId="0;436f3be4a7e2422ec2fbf50c895e59b5" ItemType="55;Text" PsrId="22" InstFlg="true" Leaf="true">
+      <Str Cat="Text" UsrLk="true">
+        <Val><![CDATA[ Open-PackagePage ]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+    </Item>
+    <Item ItemId="0;45c90150b990f815f5c70623bb92b5f2" ItemType="55;Text" PsrId="22" Leaf="true">
+      <Str Cat="Text">
+        <Val><![CDATA[ Examples section  ]]></Val>
+        <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+          <Val><![CDATA[ Örnekler bölümü  ]]></Val>
+        </Tgt>
+      </Str>
+      <Disp Icon="Str" />
+    </Item>
+    <Item ItemId="0;6c3c4a88fb57739471b58c20fa562ef6" ItemType="55;Text" PsrId="22" InstFlg="true" Leaf="true">
+      <Str Cat="Text" UsrLk="true">
+        <Val><![CDATA[ Get-Project ]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+    </Item>
+    <Item ItemId="0;7584535d7f61417ee4f54d0c61c3dd58" ItemType="55;Text" PsrId="22" InstFlg="true" Leaf="true">
+      <Str Cat="Text" UsrLk="true">
+        <Val><![CDATA[ Link section  ]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+    </Item>
+    <Item ItemId="0;94b4bab0823615bde19a8e19d7fe35c9" ItemType="55;Text" PsrId="22" InstFlg="true" Leaf="true">
+      <Str Cat="Text">
+        <Val><![CDATA[ Install-Package command ]]></Val>
+        <Tgt Cat="Text" Stat="Loc" Orig="New">
+          <Val><![CDATA[ Install-Package komutu ]]></Val>
+        </Tgt>
+      </Str>
+      <Disp Icon="Str" />
+    </Item>
+    <Item ItemId="0;9af283cce4b8ad35b32a5bdb76dacdaf" ItemType="55;Text" PsrId="22" InstFlg="true" Leaf="true">
+      <Str Cat="Text">
+        <Val><![CDATA[ Sync-Package command ]]></Val>
+        <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+          <Val><![CDATA[ Sync-Package komutu ]]></Val>
+        </Tgt>
+      </Str>
+      <Disp Icon="Str" />
+    </Item>
+    <Item ItemId="0;a8f66df83dceb0983fe8f744bd33b27d" ItemType="55;Text" PsrId="22" InstFlg="true" Leaf="true">
+      <Str Cat="Text" UsrLk="true">
+        <Val><![CDATA[ Cmdlet parameter section  ]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+    </Item>
+    <Item ItemId="0;b0588e2054a282e0a007615315b8cea2" ItemType="55;Text" PsrId="22" InstFlg="true" Leaf="true">
+      <Str Cat="Text">
+        <Val><![CDATA[ Update-Package command ]]></Val>
+        <Tgt Cat="Text" Stat="Loc" Orig="New">
+          <Val><![CDATA[ Update-Package komutu ]]></Val>
+        </Tgt>
+      </Str>
+      <Disp Icon="Str" />
+    </Item>
+    <Item ItemId="0;d33a95368b3eec1f7bad76b393bd689b" ItemType="55;Text" PsrId="22" InstFlg="true" Leaf="true">
+      <Str Cat="Text">
+        <Val><![CDATA[ Find-Package command ]]></Val>
+        <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+          <Val><![CDATA[ Find-Package komutu ]]></Val>
+        </Tgt>
+      </Str>
+      <Disp Icon="Str" />
+    </Item>
+    <Item ItemId="1;0936e41e150299b76f8d83f5a0aaf060" ItemType="55;Text" PsrId="22" InstFlg="true" Leaf="true">
+      <Str Cat="Text" UsrLk="true">
+        <Val><![CDATA[ Cmdlet syntax section]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+    </Item>
+    <Item ItemId="1;45c90150b990f815f5c70623bb92b5f2" ItemType="55;Text" PsrId="22" InstFlg="true" Leaf="true">
+      <Str Cat="Text" UsrLk="true">
+        <Val><![CDATA[ Examples section  ]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+    </Item>
+    <Item ItemId="1;7584535d7f61417ee4f54d0c61c3dd58" ItemType="55;Text" PsrId="22" InstFlg="true" Leaf="true">
+      <Str Cat="Text" UsrLk="true">
+        <Val><![CDATA[ Link section  ]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+    </Item>
+    <Item ItemId="1;a8f66df83dceb0983fe8f744bd33b27d" ItemType="55;Text" PsrId="22" InstFlg="true" Leaf="true">
+      <Str Cat="Text" UsrLk="true">
+        <Val><![CDATA[ Cmdlet parameter section  ]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+    </Item>
+    <Item ItemId="2;0936e41e150299b76f8d83f5a0aaf060" ItemType="55;Text" PsrId="22" InstFlg="true" Leaf="true">
+      <Str Cat="Text" UsrLk="true">
+        <Val><![CDATA[ Cmdlet syntax section]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+    </Item>
+    <Item ItemId="2;45c90150b990f815f5c70623bb92b5f2" ItemType="55;Text" PsrId="22" Leaf="true">
+      <Str Cat="Text">
+        <Val><![CDATA[ Examples section  ]]></Val>
+        <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+          <Val><![CDATA[ Örnekler bölümü  ]]></Val>
+        </Tgt>
+      </Str>
+      <Disp Icon="Str" />
+    </Item>
+    <Item ItemId="2;7584535d7f61417ee4f54d0c61c3dd58" ItemType="55;Text" PsrId="22" InstFlg="true" Leaf="true">
+      <Str Cat="Text" UsrLk="true">
+        <Val><![CDATA[ Link section  ]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+    </Item>
+    <Item ItemId="2;a8f66df83dceb0983fe8f744bd33b27d" ItemType="55;Text" PsrId="22" InstFlg="true" Leaf="true">
+      <Str Cat="Text" UsrLk="true">
+        <Val><![CDATA[ Cmdlet parameter section  ]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+    </Item>
+    <Item ItemId="3;0936e41e150299b76f8d83f5a0aaf060" ItemType="55;Text" PsrId="22" InstFlg="true" Leaf="true">
+      <Str Cat="Text" UsrLk="true">
+        <Val><![CDATA[ Cmdlet syntax section]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+    </Item>
+    <Item ItemId="3;7584535d7f61417ee4f54d0c61c3dd58" ItemType="55;Text" PsrId="22" InstFlg="true" Leaf="true">
+      <Str Cat="Text" UsrLk="true">
+        <Val><![CDATA[ Link section  ]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+    </Item>
+    <Item ItemId="3;a8f66df83dceb0983fe8f744bd33b27d" ItemType="55;Text" PsrId="22" InstFlg="true" Leaf="true">
+      <Str Cat="Text" UsrLk="true">
+        <Val><![CDATA[ Cmdlet parameter section  ]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+    </Item>
+    <Item ItemId="4;0936e41e150299b76f8d83f5a0aaf060" ItemType="55;Text" PsrId="22" InstFlg="true" Leaf="true">
+      <Str Cat="Text" UsrLk="true">
+        <Val><![CDATA[ Cmdlet syntax section]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+    </Item>
+    <Item ItemId="4;7584535d7f61417ee4f54d0c61c3dd58" ItemType="55;Text" PsrId="22" InstFlg="true" Leaf="true">
+      <Str Cat="Text" UsrLk="true">
+        <Val><![CDATA[ Link section  ]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+    </Item>
+    <Item ItemId="4;a8f66df83dceb0983fe8f744bd33b27d" ItemType="55;Text" PsrId="22" InstFlg="true" Leaf="true">
+      <Str Cat="Text" UsrLk="true">
+        <Val><![CDATA[ Cmdlet parameter section  ]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+    </Item>
+    <Item ItemId="5;0936e41e150299b76f8d83f5a0aaf060" ItemType="55;Text" PsrId="22" InstFlg="true" Leaf="true">
+      <Str Cat="Text" UsrLk="true">
+        <Val><![CDATA[ Cmdlet syntax section]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+    </Item>
+    <Item ItemId="5;7584535d7f61417ee4f54d0c61c3dd58" ItemType="55;Text" PsrId="22" InstFlg="true" Leaf="true">
+      <Str Cat="Text" UsrLk="true">
+        <Val><![CDATA[ Link section  ]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+    </Item>
+    <Item ItemId="5;a8f66df83dceb0983fe8f744bd33b27d" ItemType="55;Text" PsrId="22" InstFlg="true" Leaf="true">
+      <Str Cat="Text" UsrLk="true">
+        <Val><![CDATA[ Cmdlet parameter section  ]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+    </Item>
+    <Item ItemId="6;0936e41e150299b76f8d83f5a0aaf060" ItemType="55;Text" PsrId="22" InstFlg="true" Leaf="true">
+      <Str Cat="Text" UsrLk="true">
+        <Val><![CDATA[ Cmdlet syntax section]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+    </Item>
+    <Item ItemId="6;7584535d7f61417ee4f54d0c61c3dd58" ItemType="55;Text" PsrId="22" InstFlg="true" Leaf="true">
+      <Str Cat="Text" UsrLk="true">
+        <Val><![CDATA[ Link section  ]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+    </Item>
+    <Item ItemId="6;a8f66df83dceb0983fe8f744bd33b27d" ItemType="55;Text" PsrId="22" InstFlg="true" Leaf="true">
+      <Str Cat="Text" UsrLk="true">
+        <Val><![CDATA[ Cmdlet parameter section  ]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+    </Item>
+    <Item ItemId="7;0936e41e150299b76f8d83f5a0aaf060" ItemType="55;Text" PsrId="22" Leaf="true">
+      <Str Cat="Text">
+        <Val><![CDATA[ Cmdlet syntax section]]></Val>
+        <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+          <Val><![CDATA[ Cmdlet sözdizimi bölümü]]></Val>
+        </Tgt>
+      </Str>
+      <Disp Icon="Str" />
+    </Item>
+    <Item ItemId="7;7584535d7f61417ee4f54d0c61c3dd58" ItemType="55;Text" PsrId="22" Leaf="true">
+      <Str Cat="Text">
+        <Val><![CDATA[ Link section  ]]></Val>
+        <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+          <Val><![CDATA[ Bağlantı bölümü  ]]></Val>
+        </Tgt>
+      </Str>
+      <Disp Icon="Str" />
+    </Item>
+    <Item ItemId="7;a8f66df83dceb0983fe8f744bd33b27d" ItemType="55;Text" PsrId="22" Leaf="true">
+      <Str Cat="Text">
+        <Val><![CDATA[ Cmdlet parameter section  ]]></Val>
+        <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+          <Val><![CDATA[ Cmdlet parametresi bölümü  ]]></Val>
+        </Tgt>
+      </Str>
+      <Disp Icon="Str" />
+    </Item>
+    <Item ItemId="8;7584535d7f61417ee4f54d0c61c3dd58" ItemType="55;Text" PsrId="22" Leaf="true">
+      <Str Cat="Text">
+        <Val><![CDATA[ Link section  ]]></Val>
+        <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+          <Val><![CDATA[ Bağlantı bölümü  ]]></Val>
+        </Tgt>
+      </Str>
+      <Disp Icon="Str" />
+    </Item>
+    <Item ItemId="8;a8f66df83dceb0983fe8f744bd33b27d" ItemType="55;Text" PsrId="22" Leaf="true">
+      <Str Cat="Text">
+        <Val><![CDATA[ Cmdlet parameter section  ]]></Val>
+        <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+          <Val><![CDATA[ Cmdlet parametresi bölümü  ]]></Val>
+        </Tgt>
+      </Str>
+      <Disp Icon="Str" />
+    </Item>
+  </Item>
+  <Item ItemId=";XML Content" ItemType="0" PsrId="22" Leaf="false">
+    <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" />
+    <Item ItemId=";XML Text" ItemType="0" PsrId="22" Leaf="false">
+      <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" />
+      <Item ItemId=";&lt;command:name&gt;" ItemType="0" PsrId="22" Leaf="false">
+        <Disp Icon="Str" Disp="true" LocTbl="false" />
+        <Item ItemId="0;3d9e38a5f0e6f1cc38244f6f5aef10a8" ItemType="52;XML:&lt;command:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Find-Package]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;5271fceb80ddfe096345572638c8d37d" ItemType="52;XML:&lt;command:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Update-Package]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;5fc4775b16c64f79f2fec5274a6f808c" ItemType="52;XML:&lt;command:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Sync-Package]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;631e7dfed347dcb77a4b64f892fb95f2" ItemType="52;XML:&lt;command:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Uninstall-Package]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;8abf1f442d9aeda80cf44efc31dbe7aa" ItemType="52;XML:&lt;command:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Get-Package]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;b40cd67eb4b5fa461bd07c3fcfb96dd4" ItemType="52;XML:&lt;command:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Add-BindingRedirect]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;b54e1434c17b1a5b4d51a6885fa9e876" ItemType="52;XML:&lt;command:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Open-PackagePage]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;e40203894217ab24d6019e5447b7ca09" ItemType="52;XML:&lt;command:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Get-Project]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;f7e6b66daefaefce37203efe463bcfda" ItemType="52;XML:&lt;command:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Install-Package]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+      </Item>
+      <Item ItemId=";&lt;command:noun&gt;" ItemType="0" PsrId="22" Leaf="false">
+        <Disp Icon="Str" Disp="true" LocTbl="false" />
+        <Item ItemId="0;2c8f355bc1273dd4c3d9919e41fdb0d5" ItemType="52;XML:&lt;command:noun&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Package]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;2cccf4c3d1c728f99f3e7bc6e4c150df" ItemType="52;XML:&lt;command:noun&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[BindingRedirect]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;7cda5c9fec5a91bb1cdeb30b56e19720" ItemType="52;XML:&lt;command:noun&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Project]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;8f626c8de34702843e5bb63178c44f53" ItemType="52;XML:&lt;command:noun&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[PackagePage]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="1;2c8f355bc1273dd4c3d9919e41fdb0d5" ItemType="52;XML:&lt;command:noun&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Package]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="2;2c8f355bc1273dd4c3d9919e41fdb0d5" ItemType="52;XML:&lt;command:noun&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Package]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="3;2c8f355bc1273dd4c3d9919e41fdb0d5" ItemType="52;XML:&lt;command:noun&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Package]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="4;2c8f355bc1273dd4c3d9919e41fdb0d5" ItemType="52;XML:&lt;command:noun&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Package]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="5;2c8f355bc1273dd4c3d9919e41fdb0d5" ItemType="52;XML:&lt;command:noun&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Package]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+      </Item>
+      <Item ItemId=";&lt;command:parametervalue&gt;" ItemType="0" PsrId="22" Leaf="false">
+        <Disp Icon="Str" Disp="true" LocTbl="false" />
+        <Item ItemId="0;aefd14780617790a7191cbc97d7a4206" ItemType="52;XML:&lt;command:parameterValue&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[string]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;edf87bb0e529badd6ea387551182046a" ItemType="52;XML:&lt;command:parameterValue&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[int]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="1;aefd14780617790a7191cbc97d7a4206" ItemType="52;XML:&lt;command:parameterValue&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[string]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="1;edf87bb0e529badd6ea387551182046a" ItemType="52;XML:&lt;command:parameterValue&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[int]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="2;aefd14780617790a7191cbc97d7a4206" ItemType="52;XML:&lt;command:parameterValue&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[string]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="2;edf87bb0e529badd6ea387551182046a" ItemType="52;XML:&lt;command:parameterValue&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[int]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="3;aefd14780617790a7191cbc97d7a4206" ItemType="52;XML:&lt;command:parameterValue&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[string]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="3;edf87bb0e529badd6ea387551182046a" ItemType="52;XML:&lt;command:parameterValue&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[int]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="4;aefd14780617790a7191cbc97d7a4206" ItemType="52;XML:&lt;command:parameterValue&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[string]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="5;aefd14780617790a7191cbc97d7a4206" ItemType="52;XML:&lt;command:parameterValue&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[string]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="6;aefd14780617790a7191cbc97d7a4206" ItemType="52;XML:&lt;command:parameterValue&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[string]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="7;aefd14780617790a7191cbc97d7a4206" ItemType="52;XML:&lt;command:parameterValue&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[string]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="8;aefd14780617790a7191cbc97d7a4206" ItemType="52;XML:&lt;command:parameterValue&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[string]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="9;aefd14780617790a7191cbc97d7a4206" ItemType="52;XML:&lt;command:parameterValue&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[string]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="10;aefd14780617790a7191cbc97d7a4206" ItemType="52;XML:&lt;command:parameterValue&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[string]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="11;aefd14780617790a7191cbc97d7a4206" ItemType="52;XML:&lt;command:parameterValue&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[string]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="12;aefd14780617790a7191cbc97d7a4206" ItemType="52;XML:&lt;command:parameterValue&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[string]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="13;aefd14780617790a7191cbc97d7a4206" ItemType="52;XML:&lt;command:parameterValue&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[string]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="14;aefd14780617790a7191cbc97d7a4206" ItemType="52;XML:&lt;command:parameterValue&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[string]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="15;aefd14780617790a7191cbc97d7a4206" ItemType="52;XML:&lt;command:parameterValue&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[string]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="16;aefd14780617790a7191cbc97d7a4206" ItemType="52;XML:&lt;command:parameterValue&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[string]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="17;aefd14780617790a7191cbc97d7a4206" ItemType="52;XML:&lt;command:parameterValue&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[string]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="18;aefd14780617790a7191cbc97d7a4206" ItemType="52;XML:&lt;command:parameterValue&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[string]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="19;aefd14780617790a7191cbc97d7a4206" ItemType="52;XML:&lt;command:parameterValue&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[string]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="20;aefd14780617790a7191cbc97d7a4206" ItemType="52;XML:&lt;command:parameterValue&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[string]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="21;aefd14780617790a7191cbc97d7a4206" ItemType="52;XML:&lt;command:parameterValue&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[string]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="22;aefd14780617790a7191cbc97d7a4206" ItemType="52;XML:&lt;command:parameterValue&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[string]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="23;aefd14780617790a7191cbc97d7a4206" ItemType="52;XML:&lt;command:parameterValue&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[string]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="24;aefd14780617790a7191cbc97d7a4206" ItemType="52;XML:&lt;command:parameterValue&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[string]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="25;aefd14780617790a7191cbc97d7a4206" ItemType="52;XML:&lt;command:parameterValue&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[string]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="26;aefd14780617790a7191cbc97d7a4206" ItemType="52;XML:&lt;command:parameterValue&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[string]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="27;aefd14780617790a7191cbc97d7a4206" ItemType="52;XML:&lt;command:parameterValue&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[string]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="28;aefd14780617790a7191cbc97d7a4206" ItemType="52;XML:&lt;command:parameterValue&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[string]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="29;aefd14780617790a7191cbc97d7a4206" ItemType="52;XML:&lt;command:parameterValue&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[string]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="30;aefd14780617790a7191cbc97d7a4206" ItemType="52;XML:&lt;command:parameterValue&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[string]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="31;aefd14780617790a7191cbc97d7a4206" ItemType="52;XML:&lt;command:parameterValue&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[string]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="32;aefd14780617790a7191cbc97d7a4206" ItemType="52;XML:&lt;command:parameterValue&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[string]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="33;aefd14780617790a7191cbc97d7a4206" ItemType="52;XML:&lt;command:parameterValue&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[string]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="34;aefd14780617790a7191cbc97d7a4206" ItemType="52;XML:&lt;command:parameterValue&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[string]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="35;aefd14780617790a7191cbc97d7a4206" ItemType="52;XML:&lt;command:parameterValue&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[string]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="36;aefd14780617790a7191cbc97d7a4206" ItemType="52;XML:&lt;command:parameterValue&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[string]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="37;aefd14780617790a7191cbc97d7a4206" ItemType="52;XML:&lt;command:parameterValue&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[string]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="38;aefd14780617790a7191cbc97d7a4206" ItemType="52;XML:&lt;command:parameterValue&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[string]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="39;aefd14780617790a7191cbc97d7a4206" ItemType="52;XML:&lt;command:parameterValue&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[string]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="40;aefd14780617790a7191cbc97d7a4206" ItemType="52;XML:&lt;command:parameterValue&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[string]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[string]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="41;aefd14780617790a7191cbc97d7a4206" ItemType="52;XML:&lt;command:parameterValue&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[string]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="42;aefd14780617790a7191cbc97d7a4206" ItemType="52;XML:&lt;command:parameterValue&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[string]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="43;aefd14780617790a7191cbc97d7a4206" ItemType="52;XML:&lt;command:parameterValue&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[string]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+      </Item>
+      <Item ItemId=";&lt;command:verb&gt;" ItemType="0" PsrId="22" Leaf="false">
+        <Disp Icon="Str" Disp="true" LocTbl="false" />
+        <Item ItemId="0;34014c1cb1570552dcddff4c119bdc89" ItemType="52;XML:&lt;command:verb&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Add]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;382144a6aea6a86396aab06b97525b0f" ItemType="52;XML:&lt;command:verb&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Get]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;3a44bce00b3834e69af6e343267c89cf" ItemType="52;XML:&lt;command:verb&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Update]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;4d412137ed3c8df2ec6d244c2b94dfd7" ItemType="52;XML:&lt;command:verb&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Open]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;71fcd68ab3f843387f45950051d3c9f0" ItemType="52;XML:&lt;command:verb&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Install]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;8448052362aebf5463d776585acd2b77" ItemType="52;XML:&lt;command:verb&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Find]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;ef7fe93958d49b3b82f3a612da462ea3" ItemType="52;XML:&lt;command:verb&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Uninstall]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="1;382144a6aea6a86396aab06b97525b0f" ItemType="52;XML:&lt;command:verb&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Get]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="1;ef7fe93958d49b3b82f3a612da462ea3" ItemType="52;XML:&lt;command:verb&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Uninstall]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+      </Item>
+      <Item ItemId=";&lt;dev:code&gt;" ItemType="0" PsrId="22" Leaf="false">
+        <Disp Icon="Str" Disp="true" LocTbl="false" />
+        <Item ItemId="0;00e1c89a32ba40dc950dbfa00d6c02db" ItemType="52;XML:&lt;dev:code&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[PM&gt; Install-package https://raw.githubusercontent.com/NuGet/json-ld.net/master/src/JsonLD/packages.config]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;09cf9c801ea3e6d826b0a1d4e150767e" ItemType="52;XML:&lt;dev:code&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[PM&gt; Find-Package Elmah -StartWith]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;17a621bec6189ad8b664054b221a0dab" ItemType="52;XML:&lt;dev:code&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[PM&gt; Update-Package Elmah]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;1825761bde30210de5a4956d71f2afd9" ItemType="52;XML:&lt;dev:code&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[PM&gt; Sync-Package Elmah]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;18b9503fe0e7601c9833db7a53fc68e0" ItemType="52;XML:&lt;dev:code&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[PM&gt; Add-BindingRedirect MyProjectName]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;1aa8c7906466969affbd8e9e3c05826d" ItemType="52;XML:&lt;dev:code&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[PM&gt; Sync-Package Elmah -ProjectName ClassLibrary1]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;1bad68b239b3aca231437330ed5624b0" ItemType="52;XML:&lt;dev:code&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[PM&gt; Update-Package -Safe -Project MvcApplication1]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;1f89dfd4a4f48be7156cc28b4a858a76" ItemType="52;XML:&lt;dev:code&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[PM&gt; Open-PackagePage Ninject -ReportAbuse]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;20277058b4d1baa46997c1d0a659a9e9" ItemType="52;XML:&lt;dev:code&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[PM&gt; Get-Package -ListAvailable -PageSize 30]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;2b6ce42eafde8ed195886524258f4e59" ItemType="52;XML:&lt;dev:code&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[PM&gt; Uninstall-Package Elmah -Force]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;2fcfa0b8767f5c1c408a987449f959bb" ItemType="52;XML:&lt;dev:code&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[PM&gt; Update-Package -ToHighestMinor -Project MvcApplication1]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[PM&gt; Update-Package -ToHighestMinor -Project MvcApplication1]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;3508fecbb78e3ec33ed4ab029554572f" ItemType="52;XML:&lt;dev:code&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[PM&gt; Install-Package Elmah]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;565b093c24ba5fa1e3532fd56be2f362" ItemType="52;XML:&lt;dev:code&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[PM&gt; Update-Package Elmah -Version 1.1.0]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;5b45bf820e963f9587ac5b60eca40c54" ItemType="52;XML:&lt;dev:code&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[PM&gt; Uninstall-Package Elmah]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;7d2d74cf85f9449be4cf0040d4da2a9a" ItemType="52;XML:&lt;dev:code&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[PM&gt; $url = Open-PackagePage Ninject -License -WhatIf -PassThru]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;7fa221abb817e48b7e75562bfce44200" ItemType="52;XML:&lt;dev:code&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[PM&gt; Find-Package Elmah]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;86e18e5821eea3d5375c323e58e193f7" ItemType="52;XML:&lt;dev:code&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[PM&gt; Uninstall-Package Elmah -RemoveDependencies]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;acf2b9ed15ec0fbe398766f1d497479f" ItemType="52;XML:&lt;dev:code&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[PM&gt; Install-Package Glimpse -Version 1.0.0 -Project MvcApplication1]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;b35f3c680edefb1e82ff1c510bdbc385" ItemType="52;XML:&lt;dev:code&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[PS&gt; Get-Package -Updates]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;b651c00e50f13172326a097d9f65a744" ItemType="52;XML:&lt;dev:code&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[PM&gt; Get-Project MyProjectName]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;befcede637e3caa403367c1e4ee33396" ItemType="52;XML:&lt;dev:code&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[PM&gt; Find-Package jquery -AllVersions -ExactMatch]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;bf0275e4667700e96a91f7c76ee5960c" ItemType="52;XML:&lt;dev:code&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[PM&gt; Get-Package -ListAvailable -Filter Ninject]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;bfee0dc1847b4243576086cfa97940bf" ItemType="52;XML:&lt;dev:code&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[PM&gt; Get-Project -All]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;d894fc2003f3054b2b6f3a849014d7bf" ItemType="52;XML:&lt;dev:code&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[PM&gt; Open-PackagePage Ninject -License]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;ed31e1dfff56d7127757c53cb1a5606a" ItemType="52;XML:&lt;dev:code&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[PM&gt; Get-Package]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;eeb89f77ae64dbf51001e06a7715eb31" ItemType="52;XML:&lt;dev:code&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[PM&gt; Get-Package -ProjectName MyProject]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;f18f33ca73baa0d871b9fffac008f72d" ItemType="52;XML:&lt;dev:code&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[PM&gt; Update-Package]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;fa2593be457b8a8af5e62b8e1c14bcb6" ItemType="52;XML:&lt;dev:code&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[PM&gt; Install-package c:\temp\packages\jQuery.1.10.2.nupkg]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;faef707a60d99996f8d716dd01b78cf6" ItemType="52;XML:&lt;dev:code&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[PM&gt; Open-PackagePage Ninject]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;feea59b91070d89f1d456ddb14965a40" ItemType="52;XML:&lt;dev:code&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[PM&gt; Install-Package Ninject.Mvc3 -IgnoreDependencies -Source c:\temp\packages]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="1;ed31e1dfff56d7127757c53cb1a5606a" ItemType="52;XML:&lt;dev:code&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[PM&gt; Get-Project]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+      </Item>
+      <Item ItemId=";&lt;maml:linktext&gt;" ItemType="0" PsrId="22" Leaf="false">
+        <Disp Icon="Str" Disp="true" LocTbl="false" />
+        <Item ItemId="0;3d9e38a5f0e6f1cc38244f6f5aef10a8" ItemType="52;XML:&lt;maml:linkText&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Find-Package]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;5271fceb80ddfe096345572638c8d37d" ItemType="52;XML:&lt;maml:linkText&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Update-Package]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;5e571da3912bd851b35a622b8ce6a0d7" ItemType="52;XML:&lt;maml:linkText&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Online version:]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Çevrimiçi sürüm:]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;631e7dfed347dcb77a4b64f892fb95f2" ItemType="52;XML:&lt;maml:linkText&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Uninstall-Package]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;8abf1f442d9aeda80cf44efc31dbe7aa" ItemType="52;XML:&lt;maml:linkText&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Get-Package]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;b40cd67eb4b5fa461bd07c3fcfb96dd4" ItemType="52;XML:&lt;maml:linkText&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Add-BindingRedirect]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;b54e1434c17b1a5b4d51a6885fa9e876" ItemType="52;XML:&lt;maml:linkText&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Open-PackagePage]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;e40203894217ab24d6019e5447b7ca09" ItemType="52;XML:&lt;maml:linkText&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Get-Project]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;f7e6b66daefaefce37203efe463bcfda" ItemType="52;XML:&lt;maml:linkText&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Install-Package]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="1;5e571da3912bd851b35a622b8ce6a0d7" ItemType="52;XML:&lt;maml:linkText&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Online version:]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Çevrimiçi sürüm:]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="1;631e7dfed347dcb77a4b64f892fb95f2" ItemType="52;XML:&lt;maml:linkText&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Uninstall-Package]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="2;5e571da3912bd851b35a622b8ce6a0d7" ItemType="52;XML:&lt;maml:linkText&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Online version:]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Çevrimiçi sürüm:]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="3;5e571da3912bd851b35a622b8ce6a0d7" ItemType="52;XML:&lt;maml:linkText&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Online version:]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Çevrimiçi sürüm:]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="4;5e571da3912bd851b35a622b8ce6a0d7" ItemType="52;XML:&lt;maml:linkText&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Online version:]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Çevrimiçi sürüm:]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="5;5e571da3912bd851b35a622b8ce6a0d7" ItemType="52;XML:&lt;maml:linkText&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Online version:]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Çevrimiçi sürüm:]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="6;5e571da3912bd851b35a622b8ce6a0d7" ItemType="52;XML:&lt;maml:linkText&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Online version:]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Çevrimiçi sürüm:]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="7;5e571da3912bd851b35a622b8ce6a0d7" ItemType="52;XML:&lt;maml:linkText&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Online version:]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Çevrimiçi sürüm:]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="8;5e571da3912bd851b35a622b8ce6a0d7" ItemType="52;XML:&lt;maml:linkText&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Online version:]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Çevrimiçi sürüm:]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+      </Item>
+      <Item ItemId=";&lt;maml:name&gt;" ItemType="0" PsrId="22" Leaf="false">
+        <Disp Icon="Str" Disp="true" LocTbl="false" />
+        <Item ItemId="0;0f85edbb63957a06a835dce870a401f7" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Filter]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;1069ae7e27e7678c2874142fdcb86453" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Safe]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;1751c5163ad35d95a7bd2e34d67ba8ac" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Updates]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;1cfc93da97f9d796631e450ac257618c" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[License]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;24dc06a75b1122a448fdec71ba2206b8" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[WhatIf]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[WhatIf]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;287cf8fcd838a68a09952056eccf3c71" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[StartWith]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;2891a7e7015d9201d6a8439dbb53302c" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[ReportAbuse]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;3d9e38a5f0e6f1cc38244f6f5aef10a8" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Find-Package]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;3e88124f6af80e595ede072037acb956" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[DependencyVersion]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[DependencyVersion]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;44cf99b639acc2e30a376d062bdad088" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[FileConflictAction]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[FileConflictAction]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;490513f37fb283c1689208f6a8b856a0" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Reinstall]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;5271fceb80ddfe096345572638c8d37d" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Update-Package]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;5fc4775b16c64f79f2fec5274a6f808c" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Sync-Package]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;631e7dfed347dcb77a4b64f892fb95f2" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Uninstall-Package]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;6ad2fda195a7bfecee8ba36baf57a9d2" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Id]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;6e9ca42b81a4eb17ca6cc095c78ece19" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[AllVersions]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;7645fa6714baa300a18b947dabbd1f5c" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[IncludePrerelease]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;7804a3627483e12afb0dbad13223ff56" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[RemoveDependencies]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;798df8d37b38dfdec6cb28ccd845d636" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[All]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;7c554de5453113ef154b14e46a1ca1a0" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[ProjectName]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;88d8269dc1ebf89be98e9154daa8dd99" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Version]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;8abf1f442d9aeda80cf44efc31dbe7aa" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Get-Package]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;a0bb44441394e3c59ab05551b2fb7b59" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[ListAvailable]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;a6a4152c5ed869e94c3b40979bed3226" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[ExactMatch]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;acc71ce673abddc6417c3e9bea718b35" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Source]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;b3e330187037f80fc5e611a4849fb2d5" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[IgnoreDependencies]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;b40cd67eb4b5fa461bd07c3fcfb96dd4" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Add-BindingRedirect]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;b54e1434c17b1a5b4d51a6885fa9e876" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Open-PackagePage]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;b964bf6bcc5281453f89eda4625c2bfe" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Skip]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;bfbe673d557a1f7cf00c9ac671be8b16" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[ToHighestPatch]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[ToHighestPatch]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;d63ab1803e036c5b55401f98fee90142" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[First]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;d960c81c2b77c6f48101b155951031d3" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Name]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;dc76c9dda4c8ab15bd1797c6dbe1ad99" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[PassThru]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;e21d3b1ef6147a02fd65b6a926852b90" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Force]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;e40203894217ab24d6019e5447b7ca09" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Get-Project]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;f7e6b66daefaefce37203efe463bcfda" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Install-Package]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;fe34eabb0928663e1d0221618a450287" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[PageSize]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="1;0f85edbb63957a06a835dce870a401f7" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Filter]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="1;1069ae7e27e7678c2874142fdcb86453" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Safe]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="1;1751c5163ad35d95a7bd2e34d67ba8ac" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Updates]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="1;1cfc93da97f9d796631e450ac257618c" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[License]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="1;24dc06a75b1122a448fdec71ba2206b8" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[WhatIf]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="1;287cf8fcd838a68a09952056eccf3c71" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[StartWith]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="1;2891a7e7015d9201d6a8439dbb53302c" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[ReportAbuse]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="1;3e88124f6af80e595ede072037acb956" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[DependencyVersion]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="1;44cf99b639acc2e30a376d062bdad088" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[FileConflictAction]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="1;490513f37fb283c1689208f6a8b856a0" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Reinstall]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="1;6ad2fda195a7bfecee8ba36baf57a9d2" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Id]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="1;6e9ca42b81a4eb17ca6cc095c78ece19" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[AllVersions]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="1;7645fa6714baa300a18b947dabbd1f5c" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[IncludePrerelease]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="1;7804a3627483e12afb0dbad13223ff56" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[RemoveDependencies]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="1;798df8d37b38dfdec6cb28ccd845d636" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[All]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="1;7c554de5453113ef154b14e46a1ca1a0" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[ProjectName]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="1;88d8269dc1ebf89be98e9154daa8dd99" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Version]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="1;a0bb44441394e3c59ab05551b2fb7b59" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[ListAvailable]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="1;a6a4152c5ed869e94c3b40979bed3226" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[ExactMatch]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="1;acc71ce673abddc6417c3e9bea718b35" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Source]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="1;b3e330187037f80fc5e611a4849fb2d5" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[IgnoreDependencies]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="1;b964bf6bcc5281453f89eda4625c2bfe" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Skip]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="1;bfbe673d557a1f7cf00c9ac671be8b16" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[ToHighestMinor]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[ToHighestMinor]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="1;d63ab1803e036c5b55401f98fee90142" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[First]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="1;d960c81c2b77c6f48101b155951031d3" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Name]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="1;dc76c9dda4c8ab15bd1797c6dbe1ad99" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[PassThru]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="1;e21d3b1ef6147a02fd65b6a926852b90" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Force]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="1;fe34eabb0928663e1d0221618a450287" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[PageSize]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="2;24dc06a75b1122a448fdec71ba2206b8" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[WhatIf]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="2;3e88124f6af80e595ede072037acb956" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[DependencyVersion]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="2;44cf99b639acc2e30a376d062bdad088" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[FileConflictAction]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="2;6ad2fda195a7bfecee8ba36baf57a9d2" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Id]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="2;6e9ca42b81a4eb17ca6cc095c78ece19" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[AllVersions]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="2;7645fa6714baa300a18b947dabbd1f5c" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[IncludePrerelease]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="2;7c554de5453113ef154b14e46a1ca1a0" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[ProjectName]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="2;88d8269dc1ebf89be98e9154daa8dd99" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Version]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="2;acc71ce673abddc6417c3e9bea718b35" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Source]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="2;b3e330187037f80fc5e611a4849fb2d5" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[IgnoreDependencies]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="2;b964bf6bcc5281453f89eda4625c2bfe" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Skip]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="2;bfbe673d557a1f7cf00c9ac671be8b16" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[ToHighestMinor]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[ToHighestMinor]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="2;d63ab1803e036c5b55401f98fee90142" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[First]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="3;24dc06a75b1122a448fdec71ba2206b8" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[WhatIf]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="3;3e88124f6af80e595ede072037acb956" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[DependencyVersion]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="3;44cf99b639acc2e30a376d062bdad088" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[FileConflictAction]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="3;6ad2fda195a7bfecee8ba36baf57a9d2" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Id]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="3;6e9ca42b81a4eb17ca6cc095c78ece19" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[AllVersions]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="3;7645fa6714baa300a18b947dabbd1f5c" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[IncludePrerelease]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="3;7c554de5453113ef154b14e46a1ca1a0" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[ProjectName]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="3;88d8269dc1ebf89be98e9154daa8dd99" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Version]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="3;acc71ce673abddc6417c3e9bea718b35" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Source]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="3;b3e330187037f80fc5e611a4849fb2d5" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[IgnoreDependencies]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="3;b964bf6bcc5281453f89eda4625c2bfe" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Skip]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="3;bfbe673d557a1f7cf00c9ac671be8b16" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[ToHighestPatch]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[ToHighestPatch]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="3;d63ab1803e036c5b55401f98fee90142" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[First]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="4;24dc06a75b1122a448fdec71ba2206b8" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[WhatIf]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="4;3e88124f6af80e595ede072037acb956" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[DependencyVersion]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="4;44cf99b639acc2e30a376d062bdad088" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[FileConflictAction]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="4;6ad2fda195a7bfecee8ba36baf57a9d2" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Id]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="4;7645fa6714baa300a18b947dabbd1f5c" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[IncludePrerelease]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="4;7c554de5453113ef154b14e46a1ca1a0" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[ProjectName]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="4;88d8269dc1ebf89be98e9154daa8dd99" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Version]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="4;acc71ce673abddc6417c3e9bea718b35" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Source]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="4;b3e330187037f80fc5e611a4849fb2d5" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[IgnoreDependencies]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="5;24dc06a75b1122a448fdec71ba2206b8" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[WhatIf]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="5;3e88124f6af80e595ede072037acb956" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[DependencyVersion]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="5;44cf99b639acc2e30a376d062bdad088" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[FileConflictAction]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="5;6ad2fda195a7bfecee8ba36baf57a9d2" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Id]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="5;7645fa6714baa300a18b947dabbd1f5c" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[IncludePrerelease]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="5;7c554de5453113ef154b14e46a1ca1a0" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[ProjectName]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="5;88d8269dc1ebf89be98e9154daa8dd99" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Version]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="5;acc71ce673abddc6417c3e9bea718b35" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Source]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="5;b3e330187037f80fc5e611a4849fb2d5" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[IgnoreDependencies]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="6;24dc06a75b1122a448fdec71ba2206b8" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[WhatIf]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="6;6ad2fda195a7bfecee8ba36baf57a9d2" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Id]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="6;7645fa6714baa300a18b947dabbd1f5c" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[IncludePrerelease]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="6;7c554de5453113ef154b14e46a1ca1a0" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[ProjectName]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="6;88d8269dc1ebf89be98e9154daa8dd99" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Version]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="6;acc71ce673abddc6417c3e9bea718b35" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Source]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="7;24dc06a75b1122a448fdec71ba2206b8" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[WhatIf]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="7;6ad2fda195a7bfecee8ba36baf57a9d2" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Id]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="7;7645fa6714baa300a18b947dabbd1f5c" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[IncludePrerelease]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="7;7c554de5453113ef154b14e46a1ca1a0" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[ProjectName]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="7;88d8269dc1ebf89be98e9154daa8dd99" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Version]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="7;acc71ce673abddc6417c3e9bea718b35" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Source]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="8;6ad2fda195a7bfecee8ba36baf57a9d2" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Id]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="8;7645fa6714baa300a18b947dabbd1f5c" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[IncludePrerelease]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="8;7c554de5453113ef154b14e46a1ca1a0" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[ProjectName]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="8;88d8269dc1ebf89be98e9154daa8dd99" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Version]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="8;acc71ce673abddc6417c3e9bea718b35" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Source]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="9;6ad2fda195a7bfecee8ba36baf57a9d2" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Id]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="9;7645fa6714baa300a18b947dabbd1f5c" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[IncludePrerelease]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="9;7c554de5453113ef154b14e46a1ca1a0" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[ProjectName]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="9;88d8269dc1ebf89be98e9154daa8dd99" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Version]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="9;acc71ce673abddc6417c3e9bea718b35" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Source]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="10;6ad2fda195a7bfecee8ba36baf57a9d2" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Id]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="10;7c554de5453113ef154b14e46a1ca1a0" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[ProjectName]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="10;acc71ce673abddc6417c3e9bea718b35" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Source]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="11;6ad2fda195a7bfecee8ba36baf57a9d2" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Id]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="11;7c554de5453113ef154b14e46a1ca1a0" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[ProjectName]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="11;acc71ce673abddc6417c3e9bea718b35" ItemType="52;XML:&lt;maml:name&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[Source]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+      </Item>
+      <Item ItemId=";&lt;maml:para&gt;" ItemType="0" PsrId="22" Leaf="false">
+        <Disp Icon="Str" Disp="true" LocTbl="false" />
+        <Item ItemId="0;0023c55510f1c9c67e4c6a00742ba5b5" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Specifies the source of the repository to search for package. If omitted, defaults to the selected source in the package source dropdown control.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Paket için aratılan depo kaynağını belirtir. Atlanırsa, varsayılan olarak paket kaynağı açılır denetimindeki seçili kaynağı belirtir.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;04590e73e2442c996d819dbc7e10c249" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Displays all available versions of a package. The latest version of each package is listed by default.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Paketin tüm kullanılabilir sürümlerini görüntüler. Her bir paketin en son sürümü varsayılan olarak listelenir.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;0c51ba533e175686fcaee1450e2a1759" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Forces an uninstall of the package even if another package depends on it.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Başka bir paket bağımlı olsa da, paketi kaldırılmaya zorlar.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;0ea45f8c8a75b7dd06021a5ede736620" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Returns every project in the solution.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Çözümdeki tüm projeleri döndürür.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;125efb8640dddb6f758612ec50249d3b" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Specifies the number of packages to return from the beginning of the list.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Listenin başlangıcından döndürülecek paket sayısını belirtir.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;15f93576ad0760a63e11be8ff87455b3" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Description]A;            ------------------------------------------------------------------]A;            Installs version 1.0.0 of Glimpse into the project named MvcApplication1]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Açıklama]A;            ------------------------------------------------------------------]A;            MvcApplication1 adlı projeye Glimpse'in 1.0.0 sürümünü yükler]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;17baaeac6cc94d93d28b7cba7d19260e" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Installs a package.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Paket yükler.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;19479882837da5887be9b4e93718f0eb" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Indicates whether to include prereleases when searching for updates. If omitted, only stable packages are considered.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Güncelleştirmeler aranırken önsürümlerin dahil olup olmayacağını gösterir. Atlanırsa, yalnızca kalıcı paketler değerlendirilir.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;1b6a3ae3c683a6ce70abaf4912701825" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Specifies the package ID of the package to install. Now it can also point to an online or local path to packages.config file or package's nupkg file.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Yüklenecek paketin paket kimliğini belirtir. Ayrıca artık, packages.config dosyasına veya paketin nupkg dosyasına ait çevrimiçi ya da yerel bir yol da gösterebilir.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;1b6b2c2e16b4faba16d7b3c4433ebb90" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Description]A;            ------------------------------------------------------------------]A;            Returns package with Ids starting with the word of 'Elmah'.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Açıklama]A;            ------------------------------------------------------------------]A;            Kimlikleri 'Elmah' sözcüğüyle başlayan paketi döndürür.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;1b76eb7959f9a420810ae853743795e5" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Specifies the project to install the package into. If ommitted, the default project is chosen.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Paketin yükleneceği projeyi belirtir. Atlanırsa, varsayılan proje seçilir.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;233818ccd7aa59bac47426bb41fc79bc" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Description]A;            ------------------------------------------------------------------]A;            Opens a browser to the project URL specified in the Ninject package.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Açıklama]A;            ------------------------------------------------------------------]A;            Ninject paketinde belirtilen proje URL'sini bir tarayıcı penceresinde açar.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;2ac95117c0ef0dc896b19ef4318b79ec" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Specifies a filter string used to narrow down the list of packages returned. The filter is searched for in the package Id, the description and tags.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Döndürülen paket listesini daraltmak için kullanılan filtre dizesini belirtir. Filtre; package Id, description ve tags içinde aranır.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;2e2e27d0a8e374b8a9052257010ed5e6" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Description]A;            ------------------------------------------------------------------]A;            Returns a list of packages installed in the default project that have updates available in the current package source.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Açıklama]A;            ------------------------------------------------------------------]A;            Varsayılan projede yüklü olan ve geçerli paket kaynağında kullanılabilir güncelleştirmeleri bulunan paketlerin listesini döndürür.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;2f79fd608d852eb0d7fd2150fd8c93b3" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Description]A;            ------------------------------------------------------------------]A;            Updates the Elmah package to a specific version in every project.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Açıklama]A;            ------------------------------------------------------------------]A;            Tüm projelerde yüklü Elmah paketini belirli bir sürüme güncelleştirir.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;305a166353ff18a5ad5d833cad8839dd" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Specifies the URL or directory path for the package source containing the package to install. When set to a local file system path, Source can be either absolute or relative to the current directory. If omitted, looks in the currently selected package source to find the corresponding package URL.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Yüklenecek paketi içeren paket kaynağı için URL veya dizin yolunu belirtir. Yerel dosya sistem yolu olarak ayarlandığında, Kaynak mutlak veya geçerli dizine göre olabilir. Atlanırsa, ilgili paket URL'sini bulmak için seçili olan paket kaynağına bakar.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;378f9c3721ab006c59931130857c0dd0" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Description]A;            ------------------------------------------------------------------]A;            Returns packages with keyword Elmah from the package source.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Açıklama]A;            ------------------------------------------------------------------]A;            Paket kaynağında Elmah anahtar sözcüğünü içeren paketleri döndürür.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;387e20b503f7d5fd30453b40ec273410" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Examines all assemblies within the output path for a project and adds binding redirects to the]A;        application (or web) configuration file where necessary. NOTE: As of NuGet 1.2, NuGet automatically]A;        runs this command when installing a package.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Çıkış yolu içindeki tüm derlemelerde bir proje arar ve gerektiğinde bağlama yeniden yönlendirmelerini]A;        uygulama (veya web) yapılandırma dosyasına ekler. NOT: NuGet 1.2 sürümünden itibaren NuGet, bir paket yüklerken]A;        bu komutu otomatik olarak çalıştırmaktadır.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;39333744561d0aea92c63685fbf91b59" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Get the version of installed package from specified/default project and sync the version to the rest of projects in the solution.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Yüklü paketin sürümünü belirtilen/varsayılan projeden alın ve sürümü çözümdeki diğer projelerle eşitleyin.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;3d41ee2235c84f3fccfdd275b8353e8f" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Specifies the package ID of the package to find.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Bulunacak paketin paket kimliğini belirtir.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;3d5c0f1422ad620a889b74dbe01009c6" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Gets packages that have an update available from the package source.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Paket kaynağındaki güncelleştirmeye sahip paketleri alır.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;41176e4055bb6d90897701b04100fa3e" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Description]A;            ------------------------------------------------------------------]A;            Installs the package, Ninject.Mvc3, but not its dependencies. It looks in the directory,]A;            c:\temp\packages to find the package.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Açıklama]A;            ------------------------------------------------------------------]A;            Ninject.Mvc3 paketini yükler, ancak paketin bağımlılıklarını yüklemez. Paketi bulmak için]A;            c:\temp\packages dizinini arar.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;419922ea7ad13f9517b52cf7907486ba" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Used with -ListAvailable. When specified, paging will be enabled to display the list of packages.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[-ListAvailable ile birlikte kullanılır. Belirtildiğinde, paket listesini görüntülemek için sayfalama etkinleştirilir.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;43f4b12375f455d69dbcde8ffedb6bd1" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Updates a package.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Paketi güncelleştirir.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;44c8f1c75b1546c0749537d04ed55219" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[The version of the package to uninstall. If omitted, defaults to the latest version.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Kaldırılacak paketin sürümü. Atlanırsa, en son sürüm varsayılan olarak belirlenir.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;46d5b7c9f75f020e2f5574fb9ae25428" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Uninstalls the package and its unused dependencies.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Paketi ve kullanılmayan bağımlılıklarını kaldırır.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;47ecab6b8fd7bfed98aabc56d7f68616" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Indicates whether to return packages with packageId starting with the specified string.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Paketlerin belirtilen dize ile başlayan packageId ile döndürülüp döndürülmeyeceğini gösterir.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;4b1df925b8e4eaf1eb4ba3edd14a44b0" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Adds binding redirects to the config file.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Yapılandırma dosyasına bağlama yeniden yönlendirmelerini ekler.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;4eff68eaf42477861a87bbe26b08aa00" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Displays the actions that would be taken and the effect of the command, instead of executing the command.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Komutu yürütmek yerine gerçekleştirilecek eylemleri ve komutun etkisini görüntüler.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;5063eb704ad0a4eb347dd697c069f54b" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Description]A;            ------------------------------------------------------------------]A;            Installs the package listed on the online packages.config, Newtonsoft.Json version 4.0.1 into the current project.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Açıklama]A;            ------------------------------------------------------------------]A;            Çevrimiçi packages.config dosyasında listelenen paketin Newtonsoft.Json 4.0.1 sürümünü geçerli projeye yükler.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;507cdec656fea3b52ce51a1b9cd354f8" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Reinstall packages with the existing versions.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Paketleri var olan sürümleriyle yeniden yükleyin.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;53264b71aaf67c6da5cc5a28efc0bc76" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Gets packages available from the online package source.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Çevrimiçi paket kaynağındaki paketleri alır.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;53887579a2560a4c08982db5c3d1e800" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[If specified, the cmdlet will return the value of the requested URL.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Belirtilmişse, cmdlet istenen URL'nin değerini döndürür.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;5b7eec597137f2aa75b7a4b6625f2926" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Specifies to move to the highest patch version on update. This is the same as Safe. If omitted, this defaults to the highest compatible version.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Güncelleştirmede en yüksek düzeltme sürümüne geçileceğini belirler. Bu Safe ile aynıdır. Atlanırsa, varsayılan olarak en yüksek uyumlu sürüme yükseltilir.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;5f874a81c3ade0e6a4ba94a3e870cce5" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Description]A;            ------------------------------------------------------------------]A;            Sync the version of Elmah package from the ClassLibrary1 project to the rest of projects in the solution.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Açıklama]A;            ------------------------------------------------------------------]A;            ClassLibrary1 projesindeki Elmah paketinin sürümünü, çözümdeki projelerin geri kalanıyla eşitleyin.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;65516ef4f9bbed51fa7277fb413d2189" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Uninstalls a package. If other packages depend on this package, the command will fail unless the –Force option is specified.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Paketi kaldırır. Diğer paketler bu pakete bağlıysa, –Force seçeneği belirtilmediği takdirde komut başarısız olur.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;66632f4fa160cd55a4601bea7ca89b94" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Description]A;            ------------------------------------------------------------------]A;            Opens a browser to the URL at the current package source used to report abuse for the specified package.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Açıklama]A;            ------------------------------------------------------------------]A;            Geçerli paket kaynağında uygunsuz kullanım bildirmek için kullanılan URL'yi bir tarayıcı penceresinde açar.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;6b24b4e81f42fac9456aa01386e0743a" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Specifies the version of the package to install. If omitted, defaults to the latest version.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Yüklenecek paket sürümünü belirtir. Atlanırsa, en son sürüm varsayılan olarak belirlenir.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;6bbd2cccbe08fa0fb930ae65f69f2fd2" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Indicates whether this command will consider prerelease packages. If omitted, only stable packages are considered.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Bu komutun önsürüm paketlerini değerlendirip değerlendirmeyeceğini gösterir. Atlanırsa, yalnızca kalıcı paketler değerlendirilir.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;71456a158ae163d711d47e1d32620776" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Description]A;            ------------------------------------------------------------------]A;            Uninstalls the Elmah package even if another package depends on it.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Açıklama]A;            ------------------------------------------------------------------]A;            Elmah paketinin yüklemesini, pakete bağımlı başka bir paket olması durumunda da kaldırır.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;728f174d908e0de41ac74de28f6fcf0c" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Uninstalls a package.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New">
+              <Val><![CDATA[Paketi kaldırır.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;7b59ca94bbe19e490e611f65cb7854fe" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Installs only this package and not its dependencies.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Yalnızca bu paketi yükler ve bağımlılıklarını yüklemez.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;7e6825fe58c027455c24abeab184a793" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Specifies the Id of the package to search for.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Aranacak paketin kimliğini belirtir.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;7ff91bf93f5e92e537e5af5d047447b3" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Specifies the version that the package will be upgraded to. If omitted, defaults to the latest version.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Paketin yükseltileceği sürümü belirler. Atlanırsa, varsayılan olarak son sürüme yükseltilir.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;81d7136032c7625aba8ac5bfed18d06d" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Description]A;            ------------------------------------------------------------------]A;            Returns a list of packages available online in the current package source in the page size of 30.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Açıklama]A;            ------------------------------------------------------------------]A;            Geçerli paket kaynağında sayfa boyutu değeri 30 olan kullanılabilir çevrimiçi paketlerin listesini döndürür.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;864a9e3ff0003771be3540733de6fcda" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Indicates what this command should do if a file from the package's content folder already exists in the project.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Paketin içerik klasöründe bulunan bir dosyanın projede zaten var olması durumunda bu komutun ne yapması gerektiğini gösterir.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;8698ccd4de649d97060c29f510f386da" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Indicates whether to include prerelease packages in the returned results.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Döndürülen sonuçlarda önsürüm paketlerinin olup olmadığını belirtir.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;87424f37ac8215b823f6424130beb222" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Specifies the project to return. If ommitted, the default project selected in the Package Manager Console is returned.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Döndürülecek projeyi belirtir. Atlanırsa, Paket Yönetici Konsolu'nda seçili olan varsayılan projeyi döndürülür.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;883fbba13f85c370652424dd784d3523" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Returns a reference to the DTE (Development Tools Environment) for the specified project. If none is specifed, returns the default project selected in the Package Manager Console.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Belirtilen proje için DTE (Geliştirme Araçları Ortamı) referansı döndürür. Proje belirtilmemişse, Paket Yönetici Konsolu'nda seçili olan varsayılan projeyi döndürür.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;8decaa2b769cc1e7013cb2ec7cec1353" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Description]A;            ------------------------------------------------------------------]A;            Returns a list of packages available online using "Ninject" as a search term.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Açıklama]A;            ------------------------------------------------------------------]A;            "Ninject" terimiyle arama yaparak kullanılabilir paketlerin listesini döndürür.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;8df2afc35ba7ea3b6384bd8475e072de" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Indicates whether to return packages with the exact packageID (case-insensitive).]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Paketlerin tam olarak aynı packageID (büyük/küçük harfe duyarsız) ile döndürülüp döndürülmeyeceğini gösterir.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;8fa2b8b49649f2e66636f5e1c10d3e4b" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Skips (does not return) the specified number of packages, counting from the beginning of the list.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Listenin başlangıcından sayarak belirtilen sayıda paketi atlar (döndürmez).]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;9216e62b48533f03984b1c3449a5578f" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Description]A;            ------------------------------------------------------------------]A;            Returns packages installed in the current solution.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Açıklama]A;            ------------------------------------------------------------------]A;            Geçerli çözümde yüklü olan paketleri döndürür.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;942ae792df6d43aa3ef3d4ce95a73635" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Specifies the project containing the project to update. If ommitted, the package is updated in every project with the package installed.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Güncelleştirilecek projeyi içeren projeyi belirtir. Atlanırsa paket, yüklü paketi içeren her projede güncelleştirilir.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;984f77df0e9f0511c0bf0baa27182863" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Specifies the project to uninstall the package from. If ommitted, the default project is chosen.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Paketin kaldırılacağı projeyi belirtir. Atlanırsa, varsayılan proje seçilir.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;99999034f92ef1dda00ffad8bf573cb6" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Specifies which dependency package version to install. If omitted, this defaults to the lowest required version.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Yüklenecek bağımlılık paketi sürümünü belirtir. Atlanırsa, gereken en düşük sürümü varsayılan olarak ayarlar.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;9a17b1db7435d15a5eb9be905d6f7749" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Description]A;            ------------------------------------------------------------------]A;            Installs the latest version of the Elmah package from the current]A;            package source into the default project.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Açıklama]A;            ------------------------------------------------------------------]A;            En son Elmah sürümünü geçerli paket kaynağından]A;            varsayılan projeye yükler.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;9b8dfc735e8492a33722a023058456dc" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Specifies the package ID of the package to update. If omitted, every package is updated.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Güncelleştirilecek paketin paket kimliğini belirtir. Atlanırsa, tüm paketler güncelleştirilir.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;a3e33875bdde4d45da64c2e9945d00ce" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Gets all versions of packages available from the online package source.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Çevrimiçi paket kaynağında bulunan kullanılabilir paket sürümlerinin tümünü alır.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;a5fdd57733f52490cfb31e6023d825fb" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Indicates the cmdlet should open the ReportAbuseUrl of the specified package. If neither LicenseUrl nor ReportAbuseUrl is set, the cmdlet will open the ProjectUrl by default.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Cmdlet'in belirtilen paketin ReportAbuseUrl öğesini açması gerektiğini gösterir. LicenseUrl veya ReportAbuseUrl ayarlanmazsa cmdlet, ProjectUrl öğesini varsayılan olarak açar.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;a99229777debd7cd6119660f7a196e4b" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Description]A;            ------------------------------------------------------------------]A;            Installs jquery 1.10.2 package, using the .nupkg file under local path of c:\temp\packages.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Açıklama]A;            ------------------------------------------------------------------]A;            c:\temp\packages yerel yolu altındaki .nupkg dosyasını kullanarak jquery 1.10.2 paketini yükler.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;ae67501558fee077f49c9846158d9817" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Specifies the package ID of the package to uninstall.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Kaldırılacak paketin paket kimliğini belirtir.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;b7580c0c70982e60828329abb128c370" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Description]A;            ------------------------------------------------------------------]A;            Returns packages installed in the "MyProject" project.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Açıklama]A;            ------------------------------------------------------------------]A;            "MyProject" projesinde yüklü olan paketleri döndürür.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;b8a4435ba79993f5d3a4180f81ea0149" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Specifies the project to get installed packages from. If ommitted, the command will return installed projects for the entire solution.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Paketlerin yükleneceği projeyi belirtir. Atlanırsa, komut çözümün tamamı için yüklenen projeleri döndürür.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;b8e446ed6f8653b38fbdbeacd0c191be" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Open the browser pointing to ProjectUrl, LicenseUrl or ReportAbuseUrl of the specified package.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Belirtilen paketin ProjectUrl, LicenseUrl veya ReportAbuseUrl konumlarına giden tarayıcıyı açın.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;be54c55fd61ab7e06f0199388b45fd8a" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Description]A;            ------------------------------------------------------------------]A;            Updates every package in the project, MvcApplication1, to the highest minor version but keeps the major version. For example,]A;            if version 1.0.0 of a package is installed, and versions 1.1.0, 1.2.0, and 2.0.0 are]A;            available in the feed, the -ToHighestMinor flag updates the package to 1.2.0.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Açıklama]A;            ------------------------------------------------------------------]A;            MvcApplication1 projesindeki her paketi en yüksek ikincil sürüme güncelleştirir ancak ana sürümü korur. Örneğin,]A;            yüklenmiş bir paketin sürümü 1.0.0  ise ve sürüm 1.1.0, 1.2.0 ve 2.0.0]A;            akışta kullanılabilir olduğunda, -ToHighestMinor bayrağı, paketi 1.2.0 sürümüne güncelleştirir.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;beaae1523afebb9a9e2054f8d7571c57" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Specifies to move to the highest minor version on update. If omitted, this defaults to the highest compatible version.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Güncelleştirmede en yüksek ikincil sürüme geçileceğini belirler. Atlanırsa, varsayılan olarak en yüksek uyumlu sürüme yükseltilir.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;c281af8d122e7d5a100d240cfed2d802" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Gets the specified project. If none is specified, returns the default project.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Belirtilen projeyi alır. Proje belirtilmemişse, varsayılan projeyi döndürür.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;c2ea79ce2139e112654592d9c785909c" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Specifies the URL or directory path for the package source containing the package to update. When set to a local file system path, Source can be either absolute or relative to the current directory. If omitted, looks in the currently selected package source to find the corresponding package URL.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Güncelleştirilecek paketi içeren paket kaynağına yönelik URL'yi veya dizin yolunu belirtir. Yerel dosya sistem yolu olarak ayarlandığında, Source mutlak veya geçerli dizine göre olabilir. Atlanırsa, ilgili paket URL'sini bulmak için seçili olan paket kaynağına bakar.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;c61e54726d8b7a5bfb4f3bd0f666b1ff" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Description]A;            ------------------------------------------------------------------]A;            Adds binding redirects to the specified project, MyProjectName.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Açıklama]A;            ------------------------------------------------------------------]A;            Bağlama yeniden yönlendirmelerini belirtilen MyProjectName projesine ekler.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;c68a18f813fd39bdeba94f44a0fc353b" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Description]A;            ------------------------------------------------------------------]A;            Uninstalls the Elmah package as well as all its dependencies. If any dependency has another package that depends on it,]A;            it is skipped.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Açıklama]A;            ------------------------------------------------------------------]A;            Elmah paketinin yüklemesiyle birlikte paketin bağımlılıklarını da kaldırır. Bağımlılıklardan herhangi birine bağımlı başka bir paket varsa,]A;            bu bağımlılık atlanır.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;c6f02f4e66c54a062d4146f738404ec9" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Gets the set of installed packages. Use the -Updates flag to list packages updates available from the package source.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Yüklü paketler kümesini alır. Paket kaynağındaki kullanılabilir paket güncelleştirmelerini listelemek için -Updates bayrağını kullanın.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;c705c95f82e31f53bdd1665d58ccb1da" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Specifies the project to analyze and add binding redirects to.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Bağlama yeniden yönlendirmelerinin analiz edileceği ve ekleneceği projeyi belirtir.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;c777de6b6d7c026358da567c2d69e22b" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Updates a package and its dependencies to a newer version.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Paketi ve bağımlılıklarını daha yeni bir sürüm olarak güncelleştirir.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;cab958ce3e50770def9780162c9e66df" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Description]A;            ------------------------------------------------------------------]A;            Returns jquery package with all versions available from the package source.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Açıklama]A;            ------------------------------------------------------------------]A;            Paket kaynağındaki jquery paketinin tüm kullanılabilir sürümlerini döndürür.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;cecc3506e9abe8bba61a29cc938eb0e9" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Description]A;            ------------------------------------------------------------------]A;            Returns a reference to the default project.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Açıklama]A;            ------------------------------------------------------------------]A;            Bir başvuruyu varsayılan projeye döndürür.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;d26b5bb872c801c7bab3372a1787924b" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Description]A;            ------------------------------------------------------------------]A;            Sync the version of Elmah package from the default project to the rest of projects in the solution.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Açıklama]A;            ------------------------------------------------------------------]A;            Varsayılan projedeki Elmah paketinin sürümünü, çözümdeki projelerin geri kalanıyla eşitleyin.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;d3f26deb7838f4e694ce4b067a92a576" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Indicates the cmdlet should open the LicenseUrl of the specified package. If neither LicenseUrl nor ReportAbuseUrl is set, the cmdlet will open the ProjectUrl by default.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Cmdlet'in belirtilen paketin LicenseUrl öğesini açması gerektiğini gösterir. LicenseUrl veya ReportAbuseUrl ayarlanmazsa cmdlet, ProjectUrl öğesini varsayılan olarak açar.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;d45be4ee353cfc8e6476d08c5cf53742" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Installs a package and its dependencies into the project.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Paketi ve bağımlılıklarını projeye yükler.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;d6ccb676fa1c58ccf6483d6634d96293" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Specifies the version of the package to search for. If omitted, defaults to the latest version.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Aranacak paketin sürümünü belirtir. Atlanırsa, en son sürüm varsayılan olarak belirlenir.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;d7909861f5f4b900a523b17fa6ff3916" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Description]A;            ------------------------------------------------------------------]A;            Updates every package in the project, MvcApplication1, to the latest "safe" version. For example,]A;            if version 1.0.0 of a package is installed, and versions 1.0.1, 1.0.2, and 1.1 are]A;            available in the feed, the -Safe flag updates the package to 1.0.2.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Açıklama]A;            ------------------------------------------------------------------]A;            MvcApplication1 projesindeki tüm paketleri en son "safe" sürümüne güncelleştirir. Örneğin,]A;            bir paketin 1.0.0 sürümü yüklüyse ve akışta 1.0.1, 1.0.2, ve 1.1 sürümleri]A;            mevcutsa -Safe bayrağı, paketi 1.0.2 sürümüne güncelleştirir.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;d81763d52784e15868b50662d21a7b0a" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Description]A;            ------------------------------------------------------------------]A;            Updates every package in every project.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Açıklama]A;            ------------------------------------------------------------------]A;            Tüm projelerdeki tüm paketleri güncelleştirir.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;deb193fb77d45e77c1997e2f241ec051" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Description]A;            ------------------------------------------------------------------]A;            Assigns the license URL to the variable, $url, without opening the URL in a browser.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Açıklama]A;            ------------------------------------------------------------------]A;            URL'yi bir tarayıcıda açmadan lisans URL'sini $url değişkenine atar.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;e6ec2823b02b2569350ef5586faf3b5b" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Description]A;            ------------------------------------------------------------------]A;            Returns a reference to every project in the solution. The order of the projects returned is not deterministic.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Açıklama]A;            ------------------------------------------------------------------]A;            Çözümdeki her projeye ait bir başvuru döndürür. Döndürülen projelerin sırası belirleyici değildir.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;e9d97211aaf277107d99c155ef915739" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Updates all of the package’s dependencies to the latest version. False by default.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Paketin tüm bağımlılıklarını en son sürüm olarak güncelleştirir. Varsayılan olarak yanlış değerine ayarlandı.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;ee7fcb8b8f74ba08973ba02c9200ce89" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Constrains upgrades to newer versions with the same Major and Minor version component. For example, if version 1.0.0 of a package is installed, and versions 1.0.1, 1.0.2, and 1.1 are available in the feed, the -Safe flag updates the package to 1.0.2.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Yükseltmeleri aynı Birincil ve İkincil sürüm bileşenlerini içeren daha yeni sürümlerle sınırlar. Örneğin, paketin 1.0.0 sürümü yüklüyse ve akışta 1.0.1, 1.0.2, ve 1.1 sürümleri mevcutsa -Safe bayrağı, paketi 1.0.2 olarak güncelleştirir.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;f49c8e8c0cffec9865eec09e83dc3872" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Gets the set of remote packages with specified Id/keyword from the package source.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Belirtilen kimliğe/anahtar sözcüğe sahip uzak paket kümesini paket kaynağından alır.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;f58207d9ef88a59d8329b1c270c40f5d" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Specifies the package ID of the package to install.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Paketin yüklenecek paket kimliğini belirtir.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="1;125efb8640dddb6f758612ec50249d3b" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Specifies the number of packages to return from the beginning of the list.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Listenin başından başlayarak döndürülecek paket sayısını belirtir.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="1;1b6b2c2e16b4faba16d7b3c4433ebb90" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Description]A;            ------------------------------------------------------------------]A;            Returns a reference to the specifed project, MyProjectName.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Açıklama]A;            ------------------------------------------------------------------]A;            Bir başvuruyu belirtilen MyProjectName projesine döndürür.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="1;1b76eb7959f9a420810ae853743795e5" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Specifies the project to install the package into. If ommitted, the default project is chosen.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Paketin yükleneceği projeyi belirtir. Atlanırsa varsayılan proje seçilir.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="1;233818ccd7aa59bac47426bb41fc79bc" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Description]A;            ------------------------------------------------------------------]A;            Opens a browser to the license URL specified in the Ninject package.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Açıklama]A;            ------------------------------------------------------------------]A;            Ninject paketinde belirtilen lisans URL'sini bir tarayıcı penceresinde açar.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="1;305a166353ff18a5ad5d833cad8839dd" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Specifies the URL or directory path for the package source containing the package to install. When set to a local file system path, Source can be either absolute or relative to the current directory. If omitted, looks in the currently selected package source to find the corresponding package URL.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Yüklenecek paketi içeren paket kaynağı için URL veya dizin yolunu belirtir. Yerel dosya sistem yolu olarak ayarlandığında, Source mutlak veya geçerli dizine göre olabilir. Atlanırsa, ilgili paket URL'sini bulmak için seçili olan paket kaynağına bakar.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="1;39333744561d0aea92c63685fbf91b59" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Get the version of installed package from specified/default project and sync the version to the rest of projects in the solution.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Yüklü paketin sürümünü belirtilen/varsayılan projeden alın ve sürümü çözümdeki diğer projelerle eşitleyin.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="1;4eff68eaf42477861a87bbe26b08aa00" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Displays the actions that would be taken and the effect of the command, instead of executing the command.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Komutu yürütmek yerine gerçekleştirilecek eylemleri ve komutun etkisini görüntüler.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="1;6b24b4e81f42fac9456aa01386e0743a" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Specifies the version of the package to install. If omitted, defaults to the latest version.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Paketin yüklenecek sürümünü belirtir. Atlanırsa, en son sürüm varsayılan olarak ayarlanır.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="1;6bbd2cccbe08fa0fb930ae65f69f2fd2" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Indicates whether this command will consider prerelease packages. If omitted, only stable packages are considered.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Bu komutun ön sürüm paketlerini göz önüne alıp almayacağını gösterir. Atlanırsa, yalnızca kalıcı paketler göz önüne alınır.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="1;7b59ca94bbe19e490e611f65cb7854fe" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Installs only this package and not its dependencies.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Yalnızca bu paketi yükler; pakete ait bağımlılıkları yüklemez.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="1;864a9e3ff0003771be3540733de6fcda" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Indicates what this command should do if a file from the package's content folder already exists in the project.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Paketin içerik klasöründe bulunan bir dosyanın projede zaten var olması durumunda bu komutun ne yapması gerektiğini gösterir.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="1;8698ccd4de649d97060c29f510f386da" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Indicates whether to include prerelease packages in the returned results.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Döndürülen sonuçların ön sürüm paketlerini içerip içermeyeceğini gösterir.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="1;8fa2b8b49649f2e66636f5e1c10d3e4b" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Skips (does not return) the specified number of packages, counting from the beginning of the list.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Listenin başından başlayarak belirtilen sayıda paketi atlar (döndürmez).]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="1;99999034f92ef1dda00ffad8bf573cb6" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Specifies which dependency package version to install. If omitted, this defaults to the lowest required version.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Yüklenecek bağımlılık paketi sürümünü belirtir. Atlanırsa, gereken en düşük sürümü varsayılan olarak ayarlar.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="1;b7580c0c70982e60828329abb128c370" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Description]A;            ------------------------------------------------------------------]A;            Uninstalls the Elmah package from the default project.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Açıklama]A;            ------------------------------------------------------------------]A;            Geçerli projeden Elmah paketinin yüklemesini kaldırır.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="1;b8e446ed6f8653b38fbdbeacd0c191be" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Open the browser pointing to ProjectUrl, LicenseUrl or ReportAbuseUrl of the specified package.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Belirtilen paketin ProjectUrl, LicenseUrl veya ReportAbuseUrl konumlarına giden tarayıcıyı açın.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="1;c6f02f4e66c54a062d4146f738404ec9" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Gets the set of installed packages. Use the -Updates flag to list packages updates available from the package source.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Yüklü paketler kümesini alır. Paket kaynağındaki kullanılabilir paket güncelleştirmelerini listelemek için -Updates bayrağını kullanın.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="1;cab958ce3e50770def9780162c9e66df" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Description]A;            ------------------------------------------------------------------]A;            Updates the Elmah package installed in every project to the latest version.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Açıklama]A;            ------------------------------------------------------------------]A;            Tüm projelerde yüklü Elmah paketini en son sürüme güncelleştirir.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="1;f49c8e8c0cffec9865eec09e83dc3872" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Gets the set of remote packages with specified Id/keyword from the package source.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Belirtilen kimliğe/anahtar sözcüğe sahip uzak paket kümesini paket kaynağından alır.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="2;305a166353ff18a5ad5d833cad8839dd" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Specifies the URL or directory path for the package source containing the package to install. When set to a local file system path, Source can be either absolute or relative to the current directory. If omitted, looks in the currently selected package source to find the corresponding package URL.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Yüklenecek paketi içeren paket kaynağının URL'sini veya dizin yolunu belirtir. Yerel bir dosya sistemi yoluna ayarlandığında, Kaynak mutlak olabilir veya geçerli dizine göre değişebilir. Atlanırsa, karşılık gelen paket URL'sini bulmak için şu anda seçili olan paket kaynağını arar.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="2;4eff68eaf42477861a87bbe26b08aa00" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Displays the actions that would be taken and the effect of the command, instead of executing the command.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Komutu yürütmek yerine gerçekleştirilecek eylemleri ve komutun etkisini görüntüler.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="2;864a9e3ff0003771be3540733de6fcda" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Indicates what this command should do if a file from the package's content folder already exists in the project.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Paketin içerik klasöründe bulunan bir dosyanın projede zaten var olması durumunda bu komutun ne yapması gerektiğini gösterir.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="2;99999034f92ef1dda00ffad8bf573cb6" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Specifies which dependency package version to install. If omitted, this defaults to the lowest required version.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Yüklenecek bağımlılık paketi sürümünü belirtir. Atlanırsa, gereken en düşük sürümü varsayılan olarak ayarlar.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="3;305a166353ff18a5ad5d833cad8839dd" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Specifies the URL or directory path for the package source containing the package to install. When set to a local file system path, Source can be either absolute or relative to the current directory. If omitted, looks in the currently selected package source to find the corresponding package URL.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Yüklenecek paketi içeren paket kaynağının URL'sini veya dizin yolunu belirtir. Yerel bir dosya sistemi yoluna ayarlandığında, Source mutlak olabilir veya geçerli dizine göre değişebilir. Atlanırsa, karşılık gelen paket URL'sini bulmak için şu anda seçili olan paket kaynağını arar.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="3;4eff68eaf42477861a87bbe26b08aa00" ItemType="52;XML:&lt;maml:para&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[Displays the actions that would be taken and the effect of the command, instead of executing the command.]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[Komutu yürütmek yerine gerçekleştirilecek eylemleri ve komutun etkisini görüntüler.]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+      </Item>
+      <Item ItemId=";&lt;maml:title&gt;" ItemType="0" PsrId="22" Leaf="false">
+        <Disp Icon="Str" Disp="true" LocTbl="false" />
+        <Item ItemId="0;90d0d71b9ac8e131b4a3fdf5f821278a" ItemType="52;XML:&lt;maml:title&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[----------  EXAMPLE 1 ----------]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[----------  ÖRNEK 1 ----------]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="0;b8fe4d1f9de82c706467c0d08b590998" ItemType="52;XML:&lt;maml:title&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[----------  EXAMPLE 1  ----------]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[----------  ÖRNEK 1  ----------]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="1;90d0d71b9ac8e131b4a3fdf5f821278a" ItemType="52;XML:&lt;maml:title&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[----------  EXAMPLE 1 ----------]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[----------  ÖRNEK 1 ----------]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="1;b8fe4d1f9de82c706467c0d08b590998" ItemType="52;XML:&lt;maml:title&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[----------  EXAMPLE 2  ----------]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[----------  ÖRNEK 2  ----------]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="2;90d0d71b9ac8e131b4a3fdf5f821278a" ItemType="52;XML:&lt;maml:title&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[----------  EXAMPLE 2 ----------]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New">
+              <Val><![CDATA[----------  ÖRNEK 2 ----------]]></Val>
+            </Tgt>
+            <Prev Cat="AppData">
+              <Val><![CDATA[----------  EXAMPLE 1 ----------]]></Val>
+            </Prev>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="2;b8fe4d1f9de82c706467c0d08b590998" ItemType="52;XML:&lt;maml:title&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[----------  EXAMPLE 3  ----------]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[----------  ÖRNEK 3  ----------]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="3;90d0d71b9ac8e131b4a3fdf5f821278a" ItemType="52;XML:&lt;maml:title&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[----------  EXAMPLE 3 ----------]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New">
+              <Val><![CDATA[----------  ÖRNEK 3 ----------]]></Val>
+            </Tgt>
+            <Prev Cat="AppData">
+              <Val><![CDATA[----------  EXAMPLE 2 ----------]]></Val>
+            </Prev>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="3;b8fe4d1f9de82c706467c0d08b590998" ItemType="52;XML:&lt;maml:title&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[----------  EXAMPLE 4  ----------]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New">
+              <Val><![CDATA[----------  ÖRNEK 4  ----------]]></Val>
+            </Tgt>
+            <Prev Cat="AppData">
+              <Val><![CDATA[----------  EXAMPLE 1  ----------]]></Val>
+            </Prev>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="4;90d0d71b9ac8e131b4a3fdf5f821278a" ItemType="52;XML:&lt;maml:title&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[----------  EXAMPLE 1 ----------]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New">
+              <Val><![CDATA[----------  ÖRNEK 1 ----------]]></Val>
+            </Tgt>
+            <Prev Cat="AppData">
+              <Val><![CDATA[----------  EXAMPLE 3 ----------]]></Val>
+            </Prev>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="4;b8fe4d1f9de82c706467c0d08b590998" ItemType="52;XML:&lt;maml:title&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[----------  EXAMPLE 5  ----------]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New">
+              <Val><![CDATA[----------  ÖRNEK 5  ----------]]></Val>
+            </Tgt>
+            <Prev Cat="AppData">
+              <Val><![CDATA[----------  EXAMPLE 2  ----------]]></Val>
+            </Prev>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="5;90d0d71b9ac8e131b4a3fdf5f821278a" ItemType="52;XML:&lt;maml:title&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[----------  EXAMPLE 2 ----------]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New">
+              <Val><![CDATA[----------  ÖRNEK 2 ----------]]></Val>
+            </Tgt>
+            <Prev Cat="AppData">
+              <Val><![CDATA[----------  EXAMPLE 1 ----------]]></Val>
+            </Prev>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="5;b8fe4d1f9de82c706467c0d08b590998" ItemType="52;XML:&lt;maml:title&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[----------  EXAMPLE 1  ----------]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New">
+              <Val><![CDATA[----------  ÖRNEK 1  ----------]]></Val>
+            </Tgt>
+            <Prev Cat="AppData">
+              <Val><![CDATA[----------  EXAMPLE 3  ----------]]></Val>
+            </Prev>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="6;90d0d71b9ac8e131b4a3fdf5f821278a" ItemType="52;XML:&lt;maml:title&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[----------  EXAMPLE 3 ----------]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New">
+              <Val><![CDATA[----------  ÖRNEK 3 ----------]]></Val>
+            </Tgt>
+            <Prev Cat="AppData">
+              <Val><![CDATA[----------  EXAMPLE 2 ----------]]></Val>
+            </Prev>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="6;b8fe4d1f9de82c706467c0d08b590998" ItemType="52;XML:&lt;maml:title&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[----------  EXAMPLE 2  ----------]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New">
+              <Val><![CDATA[----------  ÖRNEK 2  ----------]]></Val>
+            </Tgt>
+            <Prev Cat="AppData">
+              <Val><![CDATA[----------  EXAMPLE 4  ----------]]></Val>
+            </Prev>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="7;90d0d71b9ac8e131b4a3fdf5f821278a" ItemType="52;XML:&lt;maml:title&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[----------  EXAMPLE 4 ----------]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New">
+              <Val><![CDATA[----------  ÖRNEK 4 ----------]]></Val>
+            </Tgt>
+            <Prev Cat="AppData">
+              <Val><![CDATA[----------  EXAMPLE 3 ----------]]></Val>
+            </Prev>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="7;b8fe4d1f9de82c706467c0d08b590998" ItemType="52;XML:&lt;maml:title&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[----------  EXAMPLE 3  ----------]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New">
+              <Val><![CDATA[----------  ÖRNEK 3  ----------]]></Val>
+            </Tgt>
+            <Prev Cat="AppData">
+              <Val><![CDATA[----------  EXAMPLE 5  ----------]]></Val>
+            </Prev>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="8;b8fe4d1f9de82c706467c0d08b590998" ItemType="52;XML:&lt;maml:title&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[----------  EXAMPLE 1  ----------]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New">
+              <Val><![CDATA[----------  ÖRNEK 1  ----------]]></Val>
+            </Tgt>
+            <Prev Cat="AppData">
+              <Val><![CDATA[----------  EXAMPLE 6  ----------]]></Val>
+            </Prev>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="9;b8fe4d1f9de82c706467c0d08b590998" ItemType="52;XML:&lt;maml:title&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[----------  EXAMPLE 2  ----------]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New">
+              <Val><![CDATA[----------  ÖRNEK 2  ----------]]></Val>
+            </Tgt>
+            <Prev Cat="AppData">
+              <Val><![CDATA[----------  EXAMPLE 1  ----------]]></Val>
+            </Prev>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="10;b8fe4d1f9de82c706467c0d08b590998" ItemType="52;XML:&lt;maml:title&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[----------  EXAMPLE 3  ----------]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New">
+              <Val><![CDATA[----------  ÖRNEK 3  ----------]]></Val>
+            </Tgt>
+            <Prev Cat="AppData">
+              <Val><![CDATA[----------  EXAMPLE 2  ----------]]></Val>
+            </Prev>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="11;b8fe4d1f9de82c706467c0d08b590998" ItemType="52;XML:&lt;maml:title&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[----------  EXAMPLE 4  ----------]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New">
+              <Val><![CDATA[----------  ÖRNEK 4  ----------]]></Val>
+            </Tgt>
+            <Prev Cat="AppData">
+              <Val><![CDATA[----------  EXAMPLE 3  ----------]]></Val>
+            </Prev>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="12;b8fe4d1f9de82c706467c0d08b590998" ItemType="52;XML:&lt;maml:title&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[----------  EXAMPLE 5  ----------]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New">
+              <Val><![CDATA[----------  ÖRNEK 5  ----------]]></Val>
+            </Tgt>
+            <Prev Cat="AppData">
+              <Val><![CDATA[----------  EXAMPLE 1  ----------]]></Val>
+            </Prev>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="13;b8fe4d1f9de82c706467c0d08b590998" ItemType="52;XML:&lt;maml:title&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[----------  EXAMPLE 1  ----------]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New">
+              <Val><![CDATA[----------  ÖRNEK 1  ----------]]></Val>
+            </Tgt>
+            <Prev Cat="AppData">
+              <Val><![CDATA[----------  EXAMPLE 2  ----------]]></Val>
+            </Prev>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="14;b8fe4d1f9de82c706467c0d08b590998" ItemType="52;XML:&lt;maml:title&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[----------  EXAMPLE 2  ----------]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New">
+              <Val><![CDATA[----------  ÖRNEK 2  ----------]]></Val>
+            </Tgt>
+            <Prev Cat="AppData">
+              <Val><![CDATA[----------  EXAMPLE 3  ----------]]></Val>
+            </Prev>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="15;b8fe4d1f9de82c706467c0d08b590998" ItemType="52;XML:&lt;maml:title&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[----------  EXAMPLE 3  ----------]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[----------  ÖRNEK 3  ----------]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="16;b8fe4d1f9de82c706467c0d08b590998" ItemType="52;XML:&lt;maml:title&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[----------  EXAMPLE 1  ----------]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[----------  ÖRNEK 1  ----------]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="17;b8fe4d1f9de82c706467c0d08b590998" ItemType="52;XML:&lt;maml:title&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[----------  EXAMPLE 2  ----------]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[----------  ÖRNEK 2  ----------]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="18;b8fe4d1f9de82c706467c0d08b590998" ItemType="52;XML:&lt;maml:title&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[----------  EXAMPLE 3  ----------]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[----------  ÖRNEK 3  ----------]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="19;b8fe4d1f9de82c706467c0d08b590998" ItemType="52;XML:&lt;maml:title&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[----------  EXAMPLE 4  ----------]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New">
+              <Val><![CDATA[----------  ÖRNEK 4  ----------]]></Val>
+            </Tgt>
+            <Prev Cat="AppData">
+              <Val><![CDATA[----------  EXAMPLE 3  ----------]]></Val>
+            </Prev>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="20;b8fe4d1f9de82c706467c0d08b590998" ItemType="52;XML:&lt;maml:title&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[----------  EXAMPLE 5  ----------]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New">
+              <Val><![CDATA[----------  ÖRNEK 5  ----------]]></Val>
+            </Tgt>
+            <Prev Cat="AppData">
+              <Val><![CDATA[----------  EXAMPLE 1  ----------]]></Val>
+            </Prev>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="21;b8fe4d1f9de82c706467c0d08b590998" ItemType="52;XML:&lt;maml:title&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[----------  EXAMPLE 1  ----------]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New">
+              <Val><![CDATA[----------  ÖRNEK 1  ----------]]></Val>
+            </Tgt>
+            <Prev Cat="AppData">
+              <Val><![CDATA[----------  EXAMPLE 2  ----------]]></Val>
+            </Prev>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="22;b8fe4d1f9de82c706467c0d08b590998" ItemType="52;XML:&lt;maml:title&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[----------  EXAMPLE 2  ----------]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New">
+              <Val><![CDATA[----------  ÖRNEK 2  ----------]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+      </Item>
+      <Item ItemId=";&lt;maml:uri&gt;" ItemType="0" PsrId="22" Leaf="false">
+        <Disp Icon="Str" Disp="true" LocTbl="false" />
+        <Item ItemId="0;1c4b0b3b3924c9cbb38dc6761c42d701" ItemType="52;XML:&lt;maml:uri&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[http://docs.nuget.org/]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="1;1c4b0b3b3924c9cbb38dc6761c42d701" ItemType="52;XML:&lt;maml:uri&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[http://docs.nuget.org/]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="2;1c4b0b3b3924c9cbb38dc6761c42d701" ItemType="52;XML:&lt;maml:uri&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[http://docs.nuget.org/]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="3;1c4b0b3b3924c9cbb38dc6761c42d701" ItemType="52;XML:&lt;maml:uri&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[http://docs.nuget.org/]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="4;1c4b0b3b3924c9cbb38dc6761c42d701" ItemType="52;XML:&lt;maml:uri&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[http://docs.nuget.org/]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="5;1c4b0b3b3924c9cbb38dc6761c42d701" ItemType="52;XML:&lt;maml:uri&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[http://docs.nuget.org/]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="6;1c4b0b3b3924c9cbb38dc6761c42d701" ItemType="52;XML:&lt;maml:uri&gt;" PsrId="22" InstFlg="true" Leaf="true">
+          <Str Cat="AppData" UsrLk="true">
+            <Val><![CDATA[http://docs.nuget.org/]]></Val>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="7;1c4b0b3b3924c9cbb38dc6761c42d701" ItemType="52;XML:&lt;maml:uri&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[http://docs.nuget.org/]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[http://docs.nuget.org/]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+        <Item ItemId="8;1c4b0b3b3924c9cbb38dc6761c42d701" ItemType="52;XML:&lt;maml:uri&gt;" PsrId="22" Leaf="true">
+          <Str Cat="AppData">
+            <Val><![CDATA[http://docs.nuget.org/]]></Val>
+            <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+              <Val><![CDATA[http://docs.nuget.org/]]></Val>
+            </Tgt>
+          </Str>
+          <Disp Icon="Str" />
+        </Item>
+      </Item>
+    </Item>
+  </Item>
+</LCX>
