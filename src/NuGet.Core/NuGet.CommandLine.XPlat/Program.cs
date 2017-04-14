@@ -141,7 +141,7 @@ namespace NuGet.CommandLine.XPlat
             // Register commands
             if (app.Name == DotnetPackageAppName)
             {
-                ListPackageReferenceCommand.Register(app, () => log, () => new AddPackageReferenceCommandRunner());
+                AddPackageReferenceCommand.Register(app, () => log, () => new AddPackageReferenceCommandRunner());
                 RemovePackageReferenceCommand.Register(app, () => log, () => new RemovePackageReferenceCommandRunner());
                 ListPackageReferenceCommand.Register(app, () => log, () => new ListPackageReferenceCommandRunner());
             }
