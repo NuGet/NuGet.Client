@@ -146,6 +146,42 @@ namespace NuGet.XPlat.FuncTest
         }
 
         [Theory]
+        [InlineData("1.0.0")]
+        [InlineData("*")]
+        [InlineData("1.*")]
+        [InlineData("1.0.*")]
+        public async void AddPkg_UnconditionalAddWithDotnetCliTool_Success(string userInputVersion)
+        {
+            // Arrange
+
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                var projectA = XPlatTestUtils.CreateProject(projectName, pathContext, "net46");
+                var packageX = XPlatTestUtils.CreatePackage();
+
+                // Generate Package
+                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX);
+
+                var packageArgs = XPlatTestUtils.GetPackageReferenceArgs(packageX.Id, userInputVersion, projectA);
+                var commandRunner = new AddPackageReferenceCommandRunner();
+
+                // Act
+                var result = commandRunner.ExecuteCommand(packageArgs, MsBuild).Result;
+                var projectXmlRoot = XPlatTestUtils.LoadCSProj(projectA.ProjectPath).Root;
+                var itemGroup = XPlatTestUtils.GetItemGroupForAllFrameworks(projectXmlRoot);
+
+                // Assert
+                Assert.Equal(0, result);
+                Assert.NotNull(itemGroup);
+                Assert.True(XPlatTestUtils.ValidateReference(itemGroup, packageX.Id, userInputVersion));
+            }
+        }
+
+
+        [Theory]
         [InlineData("net46", "net46; netcoreapp1.0", "1.*")]
         [InlineData("net46; netcoreapp1.0", "net46; netcoreapp1.0", "1.*")]
         [InlineData("net46; netcoreapp1.0", "net46; netcoreapp1.0", "1.*")]

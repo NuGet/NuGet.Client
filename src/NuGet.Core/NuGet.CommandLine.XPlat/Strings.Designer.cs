@@ -305,11 +305,29 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Multiple matching package specs found when attempting to add package &apos;{0}&apos; to project &apos;{1}&apos;. Number of matching package specs found are  &apos;{2}&apos;..
+        /// </summary>
+        internal static string Error_MultipleMatchingSpecs {
+            get {
+                return ResourceManager.GetString("Error_MultipleMatchingSpecs", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to None or invalid DgSpec was passed to NuGet add package command..
         /// </summary>
         internal static string Error_NoDgSpec {
             get {
                 return ResourceManager.GetString("Error_NoDgSpec", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No matching package specs found when attempting to add package &apos;{0}&apos; to project &apos;{1}&apos;..
+        /// </summary>
+        internal static string Error_NoMatchingSpecs {
+            get {
+                return ResourceManager.GetString("Error_NoMatchingSpecs", resourceCulture);
             }
         }
         
