@@ -179,16 +179,16 @@
     Build for VS14
     ============================================================
   -->
-  <Target Name="BuildVS14" Condition=" '$(IsXPlat)' != 'true' " AfterTargets="BuildVS14NoVSIX;BuildVS14VSIX">
+  <Target Name="BuildVS14" Condition=" '$(IsXPlat)' != 'true' " >
     <Message Text="Building for VS14" Importance="high" />
   </Target>
 
   <!--
     ============================================================
-    Build for VS15
+    Build for VS15 
     ============================================================
   -->
-  <Target Name="BuildVS15" Condition=" '$(IsXPlat)' != 'true' " AfterTargets="BuildVS15NoVSIX;BuildVS15VSIX">
+  <Target Name="BuildVS15"  Condition=" '$(IsXPlat)' != 'true' " >
     <Message Text="Building for VS15" Importance="high" />
   </Target>
 
@@ -197,7 +197,7 @@
     Build for VS14
     ============================================================
   -->
-  <Target Name="BuildVS14NoVSIX" Condition=" '$(IsXPlat)' != 'true' ">
+  <Target Name="BuildVS14NoVSIX" AfterTargets="BuildVS14" Condition=" '$(IsXPlat)' != 'true' ">
     <Message Text="Building for VS14" Importance="high" />
     <MSBuild Projects="@(SolutionProjectsWithoutVSIX)"
              Targets="Build"
@@ -210,7 +210,7 @@
     Build for VS15
     ============================================================
   -->
-  <Target Name="BuildVS15NoVSIX" Condition=" '$(IsXPlat)' != 'true' ">
+  <Target Name="BuildVS15NoVSIX" AfterTargets="BuildVS15" Condition=" '$(IsXPlat)' != 'true' ">
     <Message Text="Building for VS15" Importance="high" />
 
     <MSBuild Projects="@(SolutionProjectsWithoutVSIX)"
@@ -224,7 +224,7 @@
     Build the VS14 VSIX
     ============================================================
   -->
-  <Target Name="BuildVS14VSIX" Condition=" '$(IsXPlat)' != 'true' ">
+  <Target Name="BuildVS14VSIX" AfterTargets= "BuildVS14" Condition=" '$(IsXPlat)' != 'true' ">
     <Message Text="Building the VSIX for VS14" Importance="high" />
 
     <MSBuild Projects="$(VSIXProject)"
@@ -238,7 +238,7 @@
     Build the VS15 VSIX
     ============================================================
   -->
-  <Target Name="BuildVS15VSIX" Condition=" '$(IsXPlat)' != 'true' ">
+  <Target Name="BuildVS15VSIX" AfterTargets= "BuildVS15" Condition=" '$(IsXPlat)' != 'true' ">
     <Message Text="Building the VSIX for VS15" Importance="high" />
 
     <MSBuild Projects="$(VSIXProject)"
