@@ -442,9 +442,16 @@ namespace NuGet.Test.Utility
                             props.Add("PrivateAssets", package.PrivateAssets);
                         }
 
+                        var referenceType = "PackageReference";
+
+                        if(package.PackageType == PackageType.DotnetCliTool)
+                        {
+                            referenceType = "DotNetCliToolReference";
+                        }
+
                         ProjectFileUtils.AddItem(
                             xml,
-                            "PackageReference",
+                            referenceType,
                             package.Id,
                             referenceFramework,
                             props,
