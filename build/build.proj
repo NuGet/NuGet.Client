@@ -35,11 +35,6 @@
     <CoreFuncTestProjects Include="$(RepositoryRootDirectory)test\NuGet.Core.FuncTests\*\*.csproj" />
   </ItemGroup>
 
-  <!-- The project that builds the VSIX -->
-  <PropertyGroup>
-    <VSIXProject>$(RepositoryRootDirectory)src\NuGet.Clients\NuGet.VisualStudio.Client\NuGet.VisualStudio.Client.csproj</VSIXProject>
-  </PropertyGroup>
-
   <!-- All projects in the repository -->
   <ItemGroup Condition=" '$(IsXPlat)' != 'true' ">
     <SolutionProjects Include="$(RepositoryRootDirectory)test\*\*\*.csproj"
@@ -184,9 +179,8 @@
     Build for VS14
     ============================================================
   -->
-  <Target Name="BuildVS14" Condition=" '$(IsXPlat)' != 'true' ">
+  <Target Name="BuildVS14" Condition=" '$(IsXPlat)' != 'true' " AfterTargets="BuildVS14NoVSIX;BuildVS14VSIX">
     <Message Text="Building for VS14" Importance="high" />
-    <CallTarget Targets="BuildVS14NoVSIX;BuildVS14VSIX"/>
   </Target>
 
   <!--
@@ -194,9 +188,8 @@
     Build for VS15
     ============================================================
   -->
-  <Target Name="BuildVS15" Condition=" '$(IsXPlat)' != 'true' ">
+  <Target Name="BuildVS15" Condition=" '$(IsXPlat)' != 'true' " AfterTargets="BuildVS15NoVSIX;BuildVS15VSIX">
     <Message Text="Building for VS15" Importance="high" />
-    <CallTarget Targets="BuildVS15NoVSIX;BuildVS15VSIX"/>
   </Target>
 
     <!--
