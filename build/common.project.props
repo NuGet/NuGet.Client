@@ -196,4 +196,9 @@
     <CodeAnalysisRuleSet Condition="'$(CodeAnalysisRuleSet)' == ''">$(BuildCommonDirectory)NuGet.Tests.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
 
+  <!-- The project that builds the VSIX -->
+  <PropertyGroup>
+    <VSIXProject>$(RepositoryRootDirectory)src\NuGet.Clients\NuGet.VisualStudio.Client\NuGet.VisualStudio.Client.csproj</VSIXProject>
+  </PropertyGroup>
+
 </Project>

@@ -42,6 +42,8 @@
                       Condition=" '$(ExcludeTestProjects)' != 'true' " />
 
     <SolutionProjects Include="$(RepositoryRootDirectory)src\*\*\*.csproj" />
+    <SolutionProjectsWithoutVSIX Include="@(SolutionProjects)"
+                                Exclude="$(VSIXProject)" />
   </ItemGroup>
 
   <!-- All projects in the repository that support cross platform builds -->
@@ -177,10 +179,27 @@
     Build for VS14
     ============================================================
   -->
-  <Target Name="BuildVS14" Condition=" '$(IsXPlat)' != 'true' ">
+  <Target Name="BuildVS14" Condition=" '$(IsXPlat)' != 'true' " >
     <Message Text="Building for VS14" Importance="high" />
+  </Target>
 
-    <MSBuild Projects="@(SolutionProjects)"
+  <!--
+    ============================================================
+    Build for VS15 
+    ============================================================
+  -->
+  <Target Name="BuildVS15"  Condition=" '$(IsXPlat)' != 'true' " >
+    <Message Text="Building for VS15" Importance="high" />
+  </Target>
+
+    <!--
+    ============================================================
+    Build for VS14
+    ============================================================
+  -->
+  <Target Name="BuildVS14NoVSIX" AfterTargets="BuildVS14" Condition=" '$(IsXPlat)' != 'true' ">
+    <Message Text="Building for VS14" Importance="high" />
+    <MSBuild Projects="@(SolutionProjectsWithoutVSIX)"
              Targets="Build"
              Properties="$(CommonMSBuildProperties);
                          VisualStudioVersion=14.0;" />
@@ -191,10 +210,42 @@
     Build for VS15
     ============================================================
   -->
-  <Target Name="BuildVS15" Condition=" '$(IsXPlat)' != 'true' ">
+  <Target Name="BuildVS15NoVSIX" AfterTargets="BuildVS15" Condition=" '$(IsXPlat)' != 'true' ">
     <Message Text="Building for VS15" Importance="high" />
 
-    <MSBuild Projects="@(SolutionProjects)"
+    <MSBuild Projects="@(SolutionProjectsWithoutVSIX)"
+             Targets="Build"
+             Properties="$(CommonMSBuildProperties);
+                         VisualStudioVersion=15.0;" />
+  </Target>
+
+  <!--
+    ============================================================
+    Build the VS14 VSIX
+    This target always needs to be below BuildVS14NoVSIX so that
+    BuildVS14 runs the NoVSIX targets before this one.
+    ============================================================
+  -->
+  <Target Name="BuildVS14VSIX" AfterTargets= "BuildVS14" Condition=" '$(IsXPlat)' != 'true' ">
+    <Message Text="Building the VSIX for VS14" Importance="high" />
+
+    <MSBuild Projects="$(VSIXProject)"
+             Targets="Build"
+             Properties="$(CommonMSBuildProperties);
+                         VisualStudioVersion=14.0;" />
+  </Target>
+
+  <!--
+    ============================================================
+    Build the VS15 VSIX
+    This target always needs to be below BuildVS15NoVSIX so that
+    BuildVS15 runs the NoVSIX targets before this one.
+    ============================================================
+  -->
+  <Target Name="BuildVS15VSIX" AfterTargets= "BuildVS15" Condition=" '$(IsXPlat)' != 'true' ">
+    <Message Text="Building the VSIX for VS15" Importance="high" />
+
+    <MSBuild Projects="$(VSIXProject)"
              Targets="Build"
              Properties="$(CommonMSBuildProperties);
                          VisualStudioVersion=15.0;" />
