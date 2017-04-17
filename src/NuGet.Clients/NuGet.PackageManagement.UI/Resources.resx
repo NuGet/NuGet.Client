@@ -609,4 +609,61 @@ Packages installed into Website projects will not be restored during build. Cons
     <value>Select this checkbox to install the NuGet Package to all projects in the solution</value>
     <comment>Help text for the checkbox to be narrated by UI Automation Tree</comment>
   </data>
+  <data name="BrowseFolderDialogDescription" xml:space="preserve">
+    <value>Select a Package Source Folder</value>
+  </data>
+  <data name="BrowseFolderDialogSelectButton" xml:space="preserve">
+    <value>Select</value>
+  </data>
+  <data name="ErrorDialogBoxTitle" xml:space="preserve">
+    <value>Operation failed</value>
+  </data>
+  <data name="ShowError_ConfigInvalidOperation" xml:space="preserve">
+    <value>NuGet.Config is malformed, Please check NuGet.Config</value>
+  </data>
+  <data name="ShowError_ConfigUnauthorizedAccess" xml:space="preserve">
+    <value>Can not access NuGet.Config, Please check NuGet.Config</value>
+  </data>
+  <data name="ShowInfo_ClearPackageCache" xml:space="preserve">
+    <value>All packages have been cleared from the cache.</value>
+  </data>
+  <data name="ShowMessage_LocalsCommandFailure" xml:space="preserve">
+    <value>NuGet cache(s) clear failed at {0}. 
+Error: {1}
+Please see https://aka.ms/troubleshoot_nuget_cache for more help.</value>
+    <comment>{0} :error message;
+{1}: date and time
+</comment>
+  </data>
+  <data name="ShowMessage_LocalsCommandSuccess" xml:space="preserve">
+    <value>NuGet cache(s) cleared at {0}</value>
+    <comment>{0} for date and time string</comment>
+  </data>
+  <data name="ShowMessage_LocalsCommandWorking" xml:space="preserve">
+    <value>Clearing all NuGet cache(s). </value>
+  </data>
+  <data name="ShowWarning_InvalidSource" xml:space="preserve">
+    <value>The source specified is invalid. Please provide a valid source.</value>
+  </data>
+  <data name="ShowWarning_NameAndSourceRequired" xml:space="preserve">
+    <value>The name and source specified cannot be empty. Please provide a valid name and source.</value>
+  </data>
+  <data name="ShowWarning_NameRequired" xml:space="preserve">
+    <value>The name specified cannot be empty. Please provide a valid name.</value>
+  </data>
+  <data name="ShowWarning_OfficialSourceName" xml:space="preserve">
+    <value>The specified source's name is an official package source name, but there is already an official package source. Please provide a different name.</value>
+  </data>
+  <data name="ShowWarning_SourceRequried" xml:space="preserve">
+    <value>The source specified cannot be empty. Please provide a valid source.</value>
+  </data>
+  <data name="ShowWarning_Title" xml:space="preserve">
+    <value>Package Manager Options</value>
+  </data>
+  <data name="ShowWarning_UniqueName" xml:space="preserve">
+    <value>The name specified has already been added to the list of available package sources. Please provide a unique name.</value>
+  </data>
+  <data name="ShowWarning_UniqueSource" xml:space="preserve">
+    <value>The source specified has already been added to the list of available package sources. Please provide a unique source.</value>
+  </data>
 </root>

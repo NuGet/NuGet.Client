@@ -1,6 +1,5 @@
 ﻿{
   "dependencies": {
-    "EnvDTE": "8.0.1",
     "Microsoft.VisualStudio.TextManager.Interop": "7.10.6070",
     "Microsoft.VisualStudio.TextManager.Interop.10.0": "10.0.30319"
   },

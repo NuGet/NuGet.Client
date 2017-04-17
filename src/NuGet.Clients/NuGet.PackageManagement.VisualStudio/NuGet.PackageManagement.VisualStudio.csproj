@@ -16,52 +16,49 @@
     <SkipValidatePackageReferences>true</SkipValidatePackageReferences>
     <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
   </PropertyGroup>
-  <Choose>
-    <When Condition="'$(VisualStudioVersion)' == '14.0'">
-      <ItemGroup>
-        <Reference Include="Microsoft.VisualStudio.VCProjectEngine, Version=14.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-          <EmbedInteropTypes>True</EmbedInteropTypes>
-        </Reference>
-        <Reference Include="Microsoft.VisualStudio.ProjectSystem.Interop">
-          <HintPath>$(EnlistmentRoot)\packages\Microsoft.VisualStudio.ProjectSystem.14.1.127-pre\lib\net451\Microsoft.VisualStudio.ProjectSystem.Interop.dll</HintPath>
-          <EmbedInteropTypes>True</EmbedInteropTypes>
-        </Reference>
-      </ItemGroup>
-    </When>
-    <When Condition="'$(VisualStudioVersion)' == '15.0'">
-      <ItemGroup>
-        <Reference Include="Microsoft.VisualStudio.VCProjectEngine, Version=15.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-          <EmbedInteropTypes>True</EmbedInteropTypes>
-        </Reference>
-        <Reference Include="Microsoft.VisualStudio.Composition">
-          <HintPath>$(EnlistmentRoot)\packages\Microsoft.VisualStudio.Composition.15.0.30-pre\lib\net45\Microsoft.VisualStudio.Composition.dll</HintPath>
-        </Reference>
-        <Reference Include="Microsoft.VisualStudio.ProjectSystem">
-          <HintPath>$(EnlistmentRoot)\packages\Microsoft.VisualStudio.ProjectSystem.15.0.582-pre-g76aab6d79c\lib\net46\Microsoft.VisualStudio.ProjectSystem.dll</HintPath>
-        </Reference>
-        <Reference Include="Microsoft.VisualStudio.ProjectSystem.Interop">
-          <HintPath>$(EnlistmentRoot)\packages\Microsoft.VisualStudio.ProjectSystem.15.0.582-pre-g76aab6d79c\lib\net46\Microsoft.VisualStudio.ProjectSystem.Interop.dll</HintPath>
-          <EmbedInteropTypes>True</EmbedInteropTypes>
-        </Reference>
-        <Reference Include="VSLangProj140, Version=14.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-          <HintPath>$(MSBuildToolsPath)\..\..\..\Common7\IDE\PublicAssemblies\VSLangProj140.dll</HintPath>
-          <SpecificVersion>False</SpecificVersion>
-          <EmbedInteropTypes>True</EmbedInteropTypes>
-        </Reference>
-        <Reference Include="VSLangProj150">
-          <HintPath>$(EnlistmentRoot)\packages\VSLangProj150.1.0.0\lib\net46\VSLangProj150.dll</HintPath>
-          <EmbedInteropTypes>True</EmbedInteropTypes>
-        </Reference>
-        <Reference Include="Microsoft.VisualStudio.Shell.Interop.15.0.DesignTime">
-          <HintPath>$(EnlistmentRoot)\packages\Microsoft.VisualStudio.Shell.Interop.15.0.DesignTime.15.0.0\lib\\Microsoft.VisualStudio.Shell.Interop.15.0.DesignTime.dll</HintPath>
-          <EmbedInteropTypes>True</EmbedInteropTypes>
-        </Reference>
-      </ItemGroup>
-    </When>
-  </Choose>
+
+  <ItemGroup Condition="'$(VisualStudioVersion)' == '14.0'">
+    <Reference Include="Microsoft.VisualStudio.VCProjectEngine, Version=14.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+    </Reference>
+    <Reference Include="Microsoft.VisualStudio.ProjectSystem.Interop">
+      <HintPath>$(SolutionPackagesFolder)Microsoft.VisualStudio.ProjectSystem.14.1.127-pre\lib\net451\Microsoft.VisualStudio.ProjectSystem.Interop.dll</HintPath>
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(VisualStudioVersion)' == '15.0'">
+    <Reference Include="Microsoft.VisualStudio.VCProjectEngine, Version=15.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+    </Reference>
+    <Reference Include="Microsoft.VisualStudio.Composition">
+      <HintPath>$(SolutionPackagesFolder)Microsoft.VisualStudio.Composition.15.0.30-pre\lib\net45\Microsoft.VisualStudio.Composition.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.VisualStudio.ProjectSystem">
+      <HintPath>$(SolutionPackagesFolder)Microsoft.VisualStudio.ProjectSystem.15.0.582-pre-g76aab6d79c\lib\net46\Microsoft.VisualStudio.ProjectSystem.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.VisualStudio.ProjectSystem.Interop">
+      <HintPath>$(SolutionPackagesFolder)Microsoft.VisualStudio.ProjectSystem.15.0.582-pre-g76aab6d79c\lib\net46\Microsoft.VisualStudio.ProjectSystem.Interop.dll</HintPath>
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+    </Reference>
+    <Reference Include="VSLangProj140">
+      <HintPath>$(SolutionPackagesFolder)VSLangProj140.14.0.25029\lib\net20\VSLangProj140.dll</HintPath>
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+    </Reference>
+    <Reference Include="VSLangProj150">
+      <HintPath>$(SolutionPackagesFolder)VSLangProj150.1.0.0\lib\net46\VSLangProj150.dll</HintPath>
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+    </Reference>
+    <Reference Include="Microsoft.VisualStudio.Shell.Interop.15.0.DesignTime">
+      <HintPath>$(SolutionPackagesFolder)Microsoft.VisualStudio.Shell.Interop.15.0.DesignTime.15.0.26201\lib\Microsoft.VisualStudio.Shell.Interop.15.0.DesignTime.dll</HintPath>
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+    </Reference>
+  </ItemGroup>
+
   <ItemGroup>
     <Reference Include="Microsoft.Build.Utilities.v4.0" />
-    <Reference Include="Microsoft.VisualStudio.Shell.Interop.14.0.DesignTime, Version=14.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+    <Reference Include="Microsoft.VisualStudio.Shell.Interop.14.0.DesignTime">
+      <HintPath>$(SolutionPackagesFolder)Microsoft.VisualStudio.Shell.Interop.14.0.DesignTime.14.3.25407\lib\Microsoft.VisualStudio.Shell.Interop.14.0.DesignTime.dll</HintPath>
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </Reference>
     <Reference Include="System" />
@@ -71,42 +68,27 @@
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Xml.Linq" />
-    <Reference Include="VSLangProj, Version=7.0.3300.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-      <EmbedInteropTypes>True</EmbedInteropTypes>
-    </Reference>
-    <Reference Include="VSLangProj110, Version=11.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <EmbedInteropTypes>True</EmbedInteropTypes>
-    </Reference>
-    <Reference Include="VSLangProj2, Version=7.0.5000.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-      <EmbedInteropTypes>True</EmbedInteropTypes>
-    </Reference>
-    <Reference Include="VSLangProj80, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-      <EmbedInteropTypes>True</EmbedInteropTypes>
-    </Reference>
     <Reference Include="VsWebSite.Interop, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </Reference>
     <Reference Include="WindowsBase" />
     <Reference Include="System.Management.Automation, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL" />
   </ItemGroup>
-  <Choose>
-    <When Condition="'$(VisualStudioVersion)' == '14.0'">
-      <ItemGroup>
-        <Reference Include="Microsoft.Build">
-          <HintPath>$(MSBuildToolsPath)\Microsoft.Build.dll</HintPath>
-          <Private>False</Private>
-        </Reference>
-      </ItemGroup>
-    </When>
-    <When Condition="'$(VisualStudioVersion)' == '15.0'">
-      <ItemGroup>
-        <Reference Include="Microsoft.Build">
-          <HintPath>$(EnlistmentRoot)\packages\Microsoft.Build.15.1.262-preview5\lib\net46\Microsoft.Build.dll</HintPath>
-          <Private>False</Private>
-        </Reference>
-      </ItemGroup>
-    </When>
-  </Choose>
+
+  <ItemGroup Condition="'$(VisualStudioVersion)' == '14.0'">
+    <Reference Include="Microsoft.Build">
+      <HintPath>$(MSBuildToolsPath)\Microsoft.Build.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(VisualStudioVersion)' == '15.0'">
+    <Reference Include="Microsoft.Build">
+      <HintPath>$(SolutionPackagesFolder)Microsoft.Build.15.1.262-preview5\lib\net46\Microsoft.Build.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+  </ItemGroup>
+
   <ItemGroup Condition="'$(VisualStudioVersion)' == '15.0'">
     <Compile Include="EnvDTEProjectAdapter.cs" />
     <Compile Include="IEnvDTEProjectAdapter.cs" />
@@ -244,6 +226,7 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\NuGet.Core\NuGet.Indexing\NuGet.Indexing.csproj" />
     <ProjectReference Include="..\NuGet.Credentials\NuGet.Credentials.csproj">
       <Project>{32a23995-14c7-483b-98c3-0ae4185373ea}</Project>
       <Name>NuGet.Credentials</Name>
@@ -256,12 +239,58 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\NuGet.Core\NuGet.Commands\NuGet.Commands.csproj">
+      <Project>{567e8582-0e73-4a34-a7d3-ed9486415523}</Project>
+      <Name>NuGet.Commands</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\NuGet.Core\NuGet.Common\NuGet.Common.csproj">
+      <Project>{98bee375-a5a0-4fc2-9b7a-25db41c8045d}</Project>
+      <Name>NuGet.Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\NuGet.Core\NuGet.Configuration\NuGet.Configuration.csproj">
+      <Project>{e3ef26e1-80a7-4573-b3a4-1d4b0042616e}</Project>
+      <Name>NuGet.Configuration</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\NuGet.Core\NuGet.Frameworks\NuGet.Frameworks.csproj">
+      <Project>{9a9a9f26-597a-4fa6-a4f1-415063484d9c}</Project>
+      <Name>NuGet.Frameworks</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\NuGet.Core\NuGet.LibraryModel\NuGet.LibraryModel.csproj">
+      <Project>{13883e8e-7de1-4edd-8e4a-c5357ba8cd81}</Project>
+      <Name>NuGet.LibraryModel</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\NuGet.Core\NuGet.PackageManagement\NuGet.PackageManagement.csproj">
+      <Project>{394aeb96-493c-4839-a5ac-8d93cd2fad40}</Project>
+      <Name>NuGet.PackageManagement</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\NuGet.Core\NuGet.Packaging.Core\NuGet.Packaging.Core.csproj">
+      <Project>{d65583e4-8084-466a-ba4b-55a797ea047b}</Project>
+      <Name>NuGet.Packaging.Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\NuGet.Core\NuGet.Packaging\NuGet.Packaging.csproj">
+      <Project>{bd6bbc90-60be-4e7d-8458-91e9cda66abe}</Project>
+      <Name>NuGet.Packaging</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\NuGet.Core\NuGet.ProjectModel\NuGet.ProjectModel.csproj">
+      <Project>{f013e43f-b6d5-4f59-acf0-eecec2c794f5}</Project>
+      <Name>NuGet.ProjectModel</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\NuGet.Core\NuGet.Protocol\NuGet.Protocol.csproj">
+      <Project>{020f4c88-3a5c-4b89-9868-089e867cc223}</Project>
+      <Name>NuGet.Protocol</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\NuGet.Core\NuGet.Versioning\NuGet.Versioning.csproj">
+      <Project>{24e62ab7-64e4-4975-9417-883559d1bc19}</Project>
+      <Name>NuGet.Versioning</Name>
+    </ProjectReference>
+  </ItemGroup>
+
+  <ItemGroup>
     <Compile Include="$(SharedDirectory)\HashCodeCombiner.cs">
       <Link>HashCodeCombiner.cs</Link>
     </Compile>
   </ItemGroup>
 
   <Import Project="$(BuildCommonDirectory)common.targets" />
-  <Import Project="$(BuildCommonDirectory)legacy.imports.targets" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

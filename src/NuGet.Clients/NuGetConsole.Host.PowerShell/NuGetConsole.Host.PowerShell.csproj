@@ -32,17 +32,9 @@
     <Reference Include="System.Core" />
     <Reference Include="System.IO.Compression" />
     <Reference Include="System.Management.Automation, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL" />
-    <Reference Include="System.Net.Http" />
-    <Reference Include="System.Net.Http.WebRequest" />
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\Console\Utils\CommonExtensionMethods.cs">
-      <Link>Utils\CommonExtensionMethods.cs</Link>
-    </Compile>
-    <Compile Include="..\Console\Utils\UtilityMethods.cs">
-      <Link>Utils\UtilityMethods.cs</Link>
-    </Compile>
     <Compile Include="AsyncPowerShellHost.cs" />
     <Compile Include="Command.cs" />
     <Compile Include="CommandParser.cs" />
@@ -102,8 +94,17 @@
     <None Include="Scripts\NuGet.Format.ps1xml" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\NuGet.VisualStudio.Common\NuGet.VisualStudio.Common.csproj" />
-    <ProjectReference Include="..\Console\NuGet.Console.csproj" />
+    <ProjectReference Include="..\..\NuGet.Core\NuGet.Common\NuGet.Common.csproj" />
+    <ProjectReference Include="..\..\NuGet.Core\NuGet.Configuration\NuGet.Configuration.csproj" />
+    <ProjectReference Include="..\..\NuGet.Core\NuGet.Frameworks\NuGet.Frameworks.csproj" />
+    <ProjectReference Include="..\..\NuGet.Core\NuGet.PackageManagement\NuGet.PackageManagement.csproj" />
+    <ProjectReference Include="..\..\NuGet.Core\NuGet.Packaging.Core\NuGet.Packaging.Core.csproj" />
+    <ProjectReference Include="..\..\NuGet.Core\NuGet.Packaging\NuGet.Packaging.csproj" />
+    <ProjectReference Include="..\..\NuGet.Core\NuGet.Protocol\NuGet.Protocol.csproj" />
+    <ProjectReference Include="..\..\NuGet.Core\NuGet.Resolver\NuGet.Resolver.csproj" />
+    <ProjectReference Include="..\..\NuGet.Core\NuGet.Versioning\NuGet.Versioning.csproj" />
+    <ProjectReference Include="..\NuGet.VisualStudio.Common\NuGet.VisualStudio.Common.csproj" />
+    <ProjectReference Include="..\NuGet.Console\NuGet.Console.csproj" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Scripts\about_NuGet.PackageManagement.PowerShellCmdlets.help.txt" />
@@ -111,6 +112,5 @@
   </ItemGroup>
 
   <Import Project="$(BuildCommonDirectory)common.targets" />
-  <Import Project="$(BuildCommonDirectory)legacy.imports.targets" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

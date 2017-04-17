@@ -1,7 +1,5 @@
 ﻿{
-  "dependencies": {
-    "EnvDTE": "8.0.1"
-  },
+  "dependencies": {},
   "frameworks": {
     "net46": {}
   },

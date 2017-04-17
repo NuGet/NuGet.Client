@@ -16,6 +16,7 @@ using System.Windows.Forms.VisualStyles;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.Common;
+using NuGet.PackageManagement.UI;
 using NuGet.Protocol.Core.Types;
 using NuGet.VisualStudio;
 
