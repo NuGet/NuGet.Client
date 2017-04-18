@@ -1,5 +1,64 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
     <xsd:element name="root" msdata:IsDataSet="true">
@@ -298,55 +357,81 @@ The "ms" should be localized to the abbreviation for milliseconds.</comment>
     <value>Failed to validate the file '{0}'.</value>
     <comment>{0} is the file path.</comment>
   </data>
-  <data name="ActionExecutor_RollingBack" xml:space="preserve">
-    <value>Install failed. Rolling back...</value>
-  </data>
-  <data name="ActionResolver_UnsupportedAction" xml:space="preserve">
-    <value>Unrecognized Package Action '{0}'.</value>
-  </data>
-  <data name="ActionResolver_UnsupportedDependencyBehavior" xml:space="preserve">
-    <value>Unsupported Dependency Behavior '{0}'.</value>
-  </data>
-  <data name="DownloadActionHandler_InvalidDownloadUrl" xml:space="preserve">
-    <value>The download URL for {0} '{1}' is invalid.</value>
-  </data>
-  <data name="DownloadActionHandler_NoDownloadUrl" xml:space="preserve">
-    <value>No download URL could be found for {0}.</value>
-  </data>
-  <data name="NuGetRepository_CannotCreateAggregateRepo" xml:space="preserve">
-    <value>Cannot create a NuGet Repository from the Aggregate Source</value>
-  </data>
-  <data name="NuGetServiceProvider_ServiceNotSupported" xml:space="preserve">
-    <value>The {0} service is not supported by this object.</value>
-  </data>
-  <data name="PackageActionDescriptionWrapper_UnrecognizedAction" xml:space="preserve">
-    <value>Unrecognized Package Action '{0}'.</value>
-  </data>
-  <data name="ProjectInstallationTarget_ProjectIsNotTargetted" xml:space="preserve">
-    <value>The project '{0}' is not one of the projects targetted by this object.</value>
-  </data>
-  <data name="Protocol_IndexMissingResourcesNode" xml:space="preserve">
-    <value>Service index document is missing the 'resources' property.</value>
-  </data>
-  <data name="Protocol_MissingRegistrationBase" xml:space="preserve">
-    <value>The source does not have a Registration Base Url defined!</value>
-  </data>
-  <data name="Protocol_MissingSearchService" xml:space="preserve">
-    <value>The source does not have a Search service!</value>
-  </data>
-  <data name="RequiredFeatureUnsupportedException_DefaultMessageWithFeature" xml:space="preserve">
-    <value>The '{0}' installation feature was required by a package but is not supported on the current host.</value>
-  </data>
-  <data name="RequiredFeatureUnsupportedException_DefaultMessageWithoutFeature" xml:space="preserve">
-    <value>The installation host does not support a feature required by this package.</value>
-  </data>
-  <data name="Protocol_Search_LocalSourceNotFound" xml:space="preserve">
-    <value>The path '{0}' for the selected source could not be resolved.</value>
-  </data>
   <data name="v2sourceDescription" xml:space="preserve">
     <value>API v2 (legacy)</value>
   </data>
   <data name="v3sourceDescription" xml:space="preserve">
     <value>API v3</value>
+  </data>
+  <data name="Plugin_ConnectionAlreadyStarted" xml:space="preserve">
+    <value>A connection has already been started.</value>
+  </data>
+  <data name="Plugin_Exception" xml:space="preserve">
+    <value>Plugin '{0}' failed with the exception:  {1}</value>
+    <comment>{0} is the plugin name
+{1} is the message from a caught exception</comment>
+  </data>
+  <data name="Plugin_HandshakeFailed" xml:space="preserve">
+    <value>The plugin handshake failed.</value>
+  </data>
+  <data name="Plugin_IllegalMessageWhileHandshaking" xml:space="preserve">
+    <value>An illegal message type was received during handshake.</value>
+  </data>
+  <data name="Plugin_ProtocolVersionNotSupportedOnError" xml:space="preserve">
+    <value>A protocol version is not supported on error.</value>
+  </data>
+  <data name="Plugin_ProtocolVersionOutOfRange" xml:space="preserve">
+    <value>'{0}' must be greater than or equal to '{1}'.</value>
+    <comment>{0} is a parameter name
+{1} is a parameter name</comment>
+  </data>
+  <data name="Plugin_RequestContextDoesNotExist" xml:space="preserve">
+    <value>Request context does not exist for request ID '{0}'.</value>
+    <comment>{0} is a request ID</comment>
+  </data>
+  <data name="Plugin_RequestHandlerDoesNotExist" xml:space="preserve">
+    <value>A request handler does not exist for the message method '{0}'.</value>
+    <comment>{0} is a message method</comment>
+  </data>
+  <data name="Plugin_TimeoutOutOfRange" xml:space="preserve">
+    <value>Timeout must be greater than TimeSpan.Zero and less than or equal to TimeSpan.FromMilliseconds(int.MaxValue).</value>
+    <comment>Do not localize:  TimeSpan.Zero, TimeSpan.FromMilliseconds(int.MaxValue)</comment>
+  </data>
+  <data name="Plugin_UnrecognizedEnumValue" xml:space="preserve">
+    <value>The enum value '{0}' is unrecognized.</value>
+    <comment>{0} is an undefined enum value</comment>
+  </data>
+  <data name="Plugin_UnrecognizedMessageType" xml:space="preserve">
+    <value>The message type '{0}' is unrecognized.</value>
+    <comment>{0} is a undefined message type enum value</comment>
+  </data>
+  <data name="Plugin_UnrecognizedOperationClaims" xml:space="preserve">
+    <value>The operation claims are unrecognized:  {0}.</value>
+    <comment>{0} is a comma-delimited list of unrecognized enum values.</comment>
+  </data>
+  <data name="Plugin_NotConnected" xml:space="preserve">
+    <value>A plugin is not connected.</value>
+  </data>
+  <data name="Plugin_FailedToQueryPluginOperationsClaims" xml:space="preserve">
+    <value>A failure occurred while attempting to query plugin operation claims for the plugin at '{0}'.  Exception:  {1}</value>
+    <comment>{0} is a file system path
+{1} is the message from a caught exception</comment>
+  </data>
+  <data name="Plugin_FileNotFound" xml:space="preserve">
+    <value>A plugin was not found at path '{0}'.</value>
+    <comment>{0} is a file system path</comment>
+  </data>
+  <data name="Plugin_InvalidEmbeddedSignature" xml:space="preserve">
+    <value>The plugin at '{0}' did not have a valid embedded signature.</value>
+    <comment>{0} is a file system path</comment>
+  </data>
+  <data name="Plugin_InitializationFailed" xml:space="preserve">
+    <value>Plugin initialization failed.</value>
+  </data>
+  <data name="Plugin_HandshakeRequestHandlerAlreadyExists" xml:space="preserve">
+    <value>A handshake request handler already exists.</value>
+  </data>
+  <data name="Plugin_IdleTimeoutMustBeGreaterThanOrEqualToInfiniteTimeSpan" xml:space="preserve">
+    <value>The idle timeout must be greater than or equal to System.Threading.Timeout.InfiniteTimeSpan.</value>
   </data>
 </root>

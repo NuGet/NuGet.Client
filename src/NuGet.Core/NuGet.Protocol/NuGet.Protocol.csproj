@@ -18,6 +18,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="System.Runtime.InteropServices" Version="4.3.0" />
+  </ItemGroup>
+
+  <ItemGroup>
 	<ProjectReference Include="..\NuGet.Packaging\NuGet.Packaging.csproj" />
 	<ProjectReference Include="..\NuGet.Configuration\NuGet.Configuration.csproj" />    
   </ItemGroup>

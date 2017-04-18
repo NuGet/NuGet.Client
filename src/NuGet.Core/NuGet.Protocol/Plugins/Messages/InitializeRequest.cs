@@ -1,0 +1,92 @@
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
+using System.Globalization;
+using Newtonsoft.Json;
+
+namespace NuGet.Protocol.Plugins
+{
+    /// <summary>
+    /// An initialization request to a plugin.
+    /// </summary>
+    public sealed class InitializeRequest
+    {
+        /// <summary>
+        /// Gets the requestor's NuGet client version.
+        /// </summary>
+        [JsonRequired]
+        public string ClientVersion { get; }
+
+        /// <summary>
+        /// Gets the requestor's current culture.
+        /// </summary>
+        [JsonRequired]
+        public string Culture { get; }
+
+        /// <summary>
+        /// Gets the default log verbosity level.
+        /// </summary>
+        [JsonRequired]
+        public Verbosity Verbosity { get; }
+
+        /// <summary>
+        /// Gets the default request timeout for all subsequent requests.
+        /// </summary>
+        [JsonRequired]
+        public TimeSpan RequestTimeout { get; }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="InitializeRequest" /> class.
+        /// </summary>
+        /// <param name="clientVersion">The requestor's NuGet client version.</param>
+        /// <param name="culture">The requestor's current culture.</param>
+        /// <param name="verbosity">The default log verbosity level.</param>
+        /// <param name="requestTimeout">The default request timeout.</param>
+        /// <exception cref="ArgumentException">Thrown if <paramref name="clientVersion" /> is either <c>null</c>
+        /// or an empty string.</exception>
+        /// <exception cref="ArgumentException">Thrown if <paramref name="culture" /> is either <c>null</c>
+        /// or an empty string.</exception>
+        /// <exception cref="ArgumentException">Thrown if <paramref name="verbosity" /> is an undefined
+        /// <see cref="Verbosity" /> value.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="requestTimeout" />
+        /// is either less than <see cref="ProtocolConstants.MinTimeout" /> or greater than
+        /// <see cref="ProtocolConstants.MaxTimeout" />.</exception>
+        [JsonConstructor]
+        public InitializeRequest(string clientVersion, string culture, Verbosity verbosity, TimeSpan requestTimeout)
+        {
+            if (string.IsNullOrEmpty(clientVersion))
+            {
+                throw new ArgumentException(Strings.ArgumentCannotBeNullOrEmpty, nameof(clientVersion));
+            }
+
+            if (string.IsNullOrEmpty(culture))
+            {
+                throw new ArgumentException(Strings.ArgumentCannotBeNullOrEmpty, nameof(culture));
+            }
+
+            if (!Enum.IsDefined(typeof(Verbosity), verbosity))
+            {
+                throw new ArgumentException(
+                    string.Format(
+                        CultureInfo.CurrentCulture,
+                        Strings.Plugin_UnrecognizedEnumValue,
+                        verbosity),
+                    nameof(verbosity));
+            }
+
+            if (!TimeoutUtilities.IsValid(requestTimeout))
+            {
+                throw new ArgumentOutOfRangeException(
+                    nameof(requestTimeout),
+                    requestTimeout,
+                    Strings.Plugin_TimeoutOutOfRange);
+            }
+
+            ClientVersion = clientVersion;
+            Culture = culture;
+            Verbosity = verbosity;
+            RequestTimeout = requestTimeout;
+        }
+    }
+}
