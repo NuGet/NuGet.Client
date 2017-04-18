@@ -3,62 +3,35 @@
 
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.Composition;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using EnvDTE80;
 using Microsoft.TeamFoundation.Client;
 using Microsoft.TeamFoundation.VersionControl.Client;
 using NuGet.Common;
-using NuGet.PackageManagement.VisualStudio;
 using NuGet.ProjectManagement;
+using Microsoft;
 
-namespace NuGet.TeamFoundationServer
+namespace NuGet.PackageManagement.VisualStudio
 {
-    [Export(typeof(ITFSSourceControlManagerProvider))]
-    internal sealed class TFSSourceControlManagerProvider : ITFSSourceControlManagerProvider
-    {
-        private readonly Configuration.ISettings _settings;
-
-        [ImportingConstructor]
-        public TFSSourceControlManagerProvider(Configuration.ISettings vsSettings)
-        {
-            if (vsSettings == null)
-            {
-                throw new ArgumentNullException(nameof(vsSettings));
-            }
-
-            _settings = vsSettings;
-        }
-
-        public SourceControlManager GetTFSSourceControlManager(SourceControlBindings sourceControlBindings)
-        {
-            if (_settings != null)
-            {
-                return new DefaultTFSSourceControlManager(_settings, sourceControlBindings);
-            }
-            return null;
-        }
-    }
-
     internal class DefaultTFSSourceControlManager : SourceControlManager
     {
-        public DefaultTFSSourceControlManager(Configuration.ISettings settings, SourceControlBindings sourceControlBindings)
+        private Workspace PrivateWorkspace { get; }
+
+        public DefaultTFSSourceControlManager(
+            Configuration.ISettings settings, 
+            SourceControlBindings sourceControlBindings)
             : base(settings)
         {
-            if (sourceControlBindings == null)
-            {
-                throw new ArgumentNullException(nameof(sourceControlBindings));
-            }
-            TfsTeamProjectCollection projectCollection = TfsTeamProjectCollectionFactory.GetTeamProjectCollection(new Uri(sourceControlBindings.ServerName));
+            Assumes.Present(settings);
+            Assumes.Present(sourceControlBindings);
+
+            var projectCollection = TfsTeamProjectCollectionFactory.GetTeamProjectCollection(
+                new Uri(sourceControlBindings.ServerName));
             var versionControl = projectCollection.GetService<VersionControlServer>();
             PrivateWorkspace = versionControl.TryGetWorkspace(sourceControlBindings.LocalBinding);
         }
 
-        private Workspace PrivateWorkspace { get; set; }
-
-        [SuppressMessage("Microsoft.Reliability", "CA2000")]
         public override Stream CreateFile(string fullPath, INuGetProjectContext nuGetProjectContext)
         {
             // See if there are any pending changes for this file
@@ -66,8 +39,8 @@ namespace NuGet.TeamFoundationServer
             var pendingDeletes = pendingChanges.Where(c => c.IsDelete).ToArray();
 
             // We would need to pend an edit if (a) the file is pending delete (b) is bound to source control and does not already have pending edits or adds
-            bool sourceControlBound = IsSourceControlBound(fullPath);
-            bool requiresEdit = pendingDeletes.Any() || (!pendingChanges.Any(c => c.IsEdit || c.IsAdd) && sourceControlBound);
+            var sourceControlBound = IsSourceControlBound(fullPath);
+            var requiresEdit = pendingDeletes.Any() || (!pendingChanges.Any(c => c.IsEdit || c.IsAdd) && sourceControlBound);
 
             // Undo all pending deletes
             if (pendingDeletes.Any())
@@ -94,7 +67,7 @@ namespace NuGet.TeamFoundationServer
 
         public override void PendAddFiles(IEnumerable<string> fullPaths, string root, INuGetProjectContext nuGetProjectContext)
         {
-            HashSet<string> filesToAdd = new HashSet<string>();
+            var filesToAdd = new HashSet<string>();
             foreach (var fullPath in fullPaths)
             {
                 // TODO: Should one also add the Directory under which the file is present since it is TFS?
@@ -102,7 +75,7 @@ namespace NuGet.TeamFoundationServer
                 filesToAdd.Add(fullPath);
 
                 var directoryName = Path.GetDirectoryName(fullPath);
-                if (!String.IsNullOrEmpty(directoryName))
+                if (!string.IsNullOrEmpty(directoryName))
                 {
                     filesToAdd.Add(directoryName);
                 }
@@ -119,7 +92,7 @@ namespace NuGet.TeamFoundationServer
         private void ProcessAddFiles(IEnumerable<string> fullPaths, string root)
         {
             if (!fullPaths.Any()
-                || String.IsNullOrEmpty(root))
+                || string.IsNullOrEmpty(root))
             {
                 // Short-circuit if nothing specified
                 return;
@@ -158,7 +131,7 @@ namespace NuGet.TeamFoundationServer
             // Undo exact file deletes
             var pendingFileDeletesToUndo = pendingDeletes.Where(delete =>
                 fullPaths.Any(f =>
-                    String.Equals(delete.LocalItem, PathUtility.ReplaceAltDirSeparatorWithDirSeparator(f), StringComparison.OrdinalIgnoreCase)))
+                    string.Equals(delete.LocalItem, PathUtility.ReplaceAltDirSeparatorWithDirSeparator(f), StringComparison.OrdinalIgnoreCase)))
                 .ToArray();
 
             if (pendingFileDeletesToUndo.Any())
@@ -178,7 +151,7 @@ namespace NuGet.TeamFoundationServer
             try
             {
                 var serverPath = PrivateWorkspace.TryGetServerItemForLocalItem(fullPath);
-                return !String.IsNullOrEmpty(serverPath) && PrivateWorkspace.VersionControlServer.ServerItemExists(serverPath, ItemType.File);
+                return !string.IsNullOrEmpty(serverPath) && PrivateWorkspace.VersionControlServer.ServerItemExists(serverPath, ItemType.File);
             }
             catch (Exception)
             {
@@ -188,35 +161,33 @@ namespace NuGet.TeamFoundationServer
 
         public override void PendDeleteFiles(IEnumerable<string> fullPaths, string root, INuGetProjectContext nuGetProjectContext)
         {
-            HashSet<string> filesToPendDelete = new HashSet<string>();
-            foreach (var fullPath in fullPaths)
+            var filesToPendDelete = fullPaths
+                .Where(fullPath => File.Exists(fullPath) && IsSourceControlBound(fullPath))
+                .Distinct()
+                .ToList();
+
+            if (filesToPendDelete.Count == 0)
             {
-                if (File.Exists(fullPath) && IsSourceControlBound(fullPath))
-                {
-                    filesToPendDelete.Add(fullPath);
-                }
+                // no source control bound files were found
+                return;
             }
 
             // If the root is null or empty, simply try and pend delete on the fullpaths
-            if (!String.IsNullOrEmpty(root))
+            if (!string.IsNullOrEmpty(root))
             {
                 // undo pending changes
-                var pendingChanges = PrivateWorkspace.GetPendingChanges(
-                    root, RecursionType.Full).ToArray();
+                var pendingChanges = PrivateWorkspace.GetPendingChanges(root, RecursionType.Full);
 
-                if (pendingChanges.Any())
+                if (pendingChanges.Length != 0)
                 {
                     PrivateWorkspace.Undo(pendingChanges);
                 }
 
-                foreach (var pendingChange in pendingChanges)
+                foreach (var pendingChange in pendingChanges.Where(pc => pc.IsAdd))
                 {
-                    if (pendingChange.IsAdd)
-                    {
-                        // If a file was marked for add, it does not have to marked for delete
-                        // Since, all the pending changes on the file are undone, no action needed here
-                        filesToPendDelete.Remove(pendingChange.LocalItem);
-                    }
+                    // If a file was marked for add, it does not have to marked for delete
+                    // Since, all the pending changes on the file are undone, no action needed here
+                    filesToPendDelete.Remove(pendingChange.LocalItem);
                 }
             }
             else
@@ -228,18 +199,15 @@ namespace NuGet.TeamFoundationServer
                     PrivateWorkspace.Undo(filePendingChanges);
                 }
 
-                foreach (var pendingChange in filePendingChanges)
+                foreach (var pendingChange in filePendingChanges.Where(pc => pc.IsAdd))
                 {
-                    if (pendingChange.IsAdd)
-                    {
-                        // If a file was marked for add, it does not have to marked for delete
-                        // Since, all the pending changes on the file are undone, no action needed here
-                        filesToPendDelete.Remove(pendingChange.LocalItem);
-                    }
+                    // If a file was marked for add, it does not have to marked for delete
+                    // Since, all the pending changes on the file are undone, no action needed here
+                    filesToPendDelete.Remove(pendingChange.LocalItem);
                 }
             }
 
-            if (filesToPendDelete.Any())
+            if (filesToPendDelete.Count != 0)
             {
                 PrivateWorkspace.PendDelete(filesToPendDelete.ToArray(), RecursionType.None);
             }

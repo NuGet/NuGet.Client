@@ -162,47 +162,6 @@ namespace NuGet.PackageManagement.VisualStudio
             return null;
         }
 
-        /// <summary>
-        /// Load the specified assembly using the information from the executing assembly.
-        /// If the executing assembly is strongly signed, use Assembly.Load(); Otherwise,
-        /// use Assembly.LoadFrom()
-        /// </summary>
-        /// <param name="assemblyName">The name of the assembly to be loaded.</param>
-        /// <returns>The loaded Assembly instance.</returns>
-        [SuppressMessage("Microsoft.Reliability", "CA2001")]
-        internal static Assembly LoadAssemblySmart(string assemblyName)
-        {
-            Assembly executingAssembly = Assembly.GetExecutingAssembly();
-
-            AssemblyName executingAssemblyName = executingAssembly.GetName();
-            if (HasStrongName(executingAssemblyName))
-            {
-                // construct the Full Name of the assembly using the same version/culture/public key token
-                // of the executing assembly.
-                string assemblyFullName = String.Format(
-                    CultureInfo.InvariantCulture,
-                    "{0}, Version={1}, Culture=neutral, PublicKeyToken={2}",
-                    assemblyName,
-                    executingAssemblyName.Version,
-                    ConvertToHexString(executingAssemblyName.GetPublicKeyToken()));
-
-                return Assembly.Load(assemblyFullName);
-            }
-            var assemblyDirectory = Path.GetDirectoryName(executingAssembly.Location);
-            return Assembly.LoadFrom(Path.Combine(assemblyDirectory, assemblyName + ".dll"));
-        }
-
-        private static bool HasStrongName(AssemblyName assembly)
-        {
-            byte[] publicKeyToken = assembly.GetPublicKeyToken();
-            return publicKeyToken != null && publicKeyToken.Length > 0;
-        }
-
-        private static string ConvertToHexString(byte[] data)
-        {
-            return new SoapHexBinary(data).ToString();
-        }
-
         private static void QueueUnloadAndForget(AppDomain domain)
         {
             Task.Run(() =>
