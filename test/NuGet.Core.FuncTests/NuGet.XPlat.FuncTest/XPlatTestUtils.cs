@@ -307,9 +307,13 @@ namespace NuGet.XPlat.FuncTest
         public static XElement GetItemGroupForAllFrameworks(XElement root, PackageType packageType = null)
         {
             var itemGroups = root.Descendants("ItemGroup");
-
+            var referenceType = GetReferenceType(packageType);
+            foreach(var i in itemGroups)
+            {
+                var x = i.Descendants(referenceType);
+            }
             return itemGroups
-                    .Where(i => i.Descendants(GetReferenceType(packageType)).Count() > 0 &&
+                    .Where(i => i.Descendants(referenceType).Count() > 0 &&
                                 i.FirstAttribute == null)
                      .First();
         }

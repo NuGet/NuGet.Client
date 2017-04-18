@@ -50,16 +50,20 @@ namespace NuGet.CommandLine.XPlat
             var matchingPackageSpecs = dgSpec
                 .Projects
                 .Where(p => p.RestoreMetadata.ProjectStyle == ProjectStyle.PackageReference && 
-                PathUtility.GetStringComparerBasedOnOS().Equals(Path.GetFullPath(p.RestoreMetadata.ProjectPath), projectFullPath));
+                PathUtility.GetStringComparerBasedOnOS().Equals(Path.GetFullPath(p.RestoreMetadata.ProjectPath), projectFullPath))
+                .ToArray();
 
             // This ensures that the DG specs generated in previous steps contain exactly 1 project with the same path as the project requesting add package.
+            // Throw otherwise since we cannot proceed further.
             if (!matchingPackageSpecs.Any())
             {
-                throw new Exception(Strings.Error_NoMatchingSpecs);
+                packageReferenceArgs.Logger.LogDebug(Strings.Error_NoMatchingSpecs);
+                throw new Exception(Strings.Error_NoProjectFound);
             }
             else if (matchingPackageSpecs.Count() > 1)
             {
-                throw new Exception(Strings.Error_MultipleMatchingSpecs);
+                packageReferenceArgs.Logger.LogDebug(Strings.Error_MultipleMatchingSpecs);
+                throw new Exception(Strings.Error_MultipleProjectsFound);
             }
 
             var originalPackageSpec = matchingPackageSpecs.FirstOrDefault();

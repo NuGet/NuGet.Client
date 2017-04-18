@@ -467,4 +467,14 @@ For more information, visit http://docs.nuget.org/docs/reference/command-line-re
     <comment>{0} - Package ID
 {1} - Project path</comment>
   </data>
+  <data name="Error_MultipleProjectsFound" xml:space="preserve">
+    <value>Error while adding package '{0}' to project '{1}'. dotnet add package command supports adding package to one project at a time. But multiple projects were found at the project path '{1}'.</value>
+    <comment>{0} - Package Id
+{1} - Project path</comment>
+  </data>
+  <data name="Error_NoProjectFound" xml:space="preserve">
+    <value>Error while adding package '{0}' to project '{1}'. dotnet add package command supports adding package to one project at a time. But no project was found at the project path '{0}'.</value>
+    <comment>{0} - Package Id
+{1} - Project path</comment>
+  </data>
 </root>

@@ -173,7 +173,11 @@ namespace NuGet.XPlat.FuncTest
                     PackageSaveMode.Defaultv3,
                     packageY);
 
-                var projectA = XPlatTestUtils.CreateProject(projectName, pathContext, packageDotnetCliToolX, "net46");
+                var projectA = XPlatTestUtils.CreateProject(projectName, pathContext, "net46");
+
+                projectA.DotnetCLIToolReferences.Add(packageDotnetCliToolX);
+
+                projectA.Save();
 
                 // Verify that the package reference exists before removing.
                 var projectXmlRoot = XPlatTestUtils.LoadCSProj(projectA.ProjectPath).Root;
@@ -246,7 +250,7 @@ namespace NuGet.XPlat.FuncTest
         [InlineData("net46; netcoreapp1.0", "net46; netcoreapp1.0", "1.*")]
         [InlineData("net46", "net46; netcoreapp1.0", "1.*")]
         [InlineData("netcoreapp1.0", "net46; netcoreapp1.0", "1.*")]
-        public async void AddPkg_UnconditionalAddWithDotnetCliToolReferenceAndNoRestore_Success(string packageFrameworks,
+        public async void AddPkg_UnconditionalAddWithDotnetCliToolAndNoRestore_Success(string packageFrameworks,
             string projectFrameworks,
             string userInputVersion)
         {
@@ -270,7 +274,11 @@ namespace NuGet.XPlat.FuncTest
                     PackageSaveMode.Defaultv3,
                     packageY);
 
-                var projectA = XPlatTestUtils.CreateProject(projectName, pathContext, packageDotnetCliToolX, "net46");
+                var projectA = XPlatTestUtils.CreateProject(projectName, pathContext, "net46");
+
+                projectA.DotnetCLIToolReferences.Add(packageDotnetCliToolX);
+
+                projectA.Save();
 
                 // Verify that the package reference exists before removing.
                 var projectXmlRoot = XPlatTestUtils.LoadCSProj(projectA.ProjectPath).Root;

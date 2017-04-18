@@ -314,6 +314,15 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Error while adding package &apos;{0}&apos; to project &apos;{1}&apos;. dotnet add package command supports adding package to one project at a time. But multiple projects were found at the project path &apos;{1}&apos;..
+        /// </summary>
+        internal static string Error_MultipleProjectsFound {
+            get {
+                return ResourceManager.GetString("Error_MultipleProjectsFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to None or invalid DgSpec was passed to NuGet add package command..
         /// </summary>
         internal static string Error_NoDgSpec {
@@ -328,6 +337,15 @@ namespace NuGet.CommandLine.XPlat {
         internal static string Error_NoMatchingSpecs {
             get {
                 return ResourceManager.GetString("Error_NoMatchingSpecs", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Error while adding package &apos;{0}&apos; to project &apos;{1}&apos;. dotnet add package command supports adding package to one project at a time. But no project was found at the project path &apos;{0}&apos;..
+        /// </summary>
+        internal static string Error_NoProjectFound {
+            get {
+                return ResourceManager.GetString("Error_NoProjectFound", resourceCulture);
             }
         }
         
