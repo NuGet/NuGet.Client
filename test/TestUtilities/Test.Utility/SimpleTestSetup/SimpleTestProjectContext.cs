@@ -256,13 +256,7 @@ namespace NuGet.Test.Utility
         /// <summary>
         /// Project references from all TFMs
         /// </summary>
-        public List<SimpleTestProjectContext> AllProjectReferences
-        {
-            get
-            {
-                return Frameworks.SelectMany(f => f.ProjectReferences).Distinct().ToList();
-            }
-        }
+        public List<SimpleTestProjectContext> AllProjectReferences => Frameworks.SelectMany(f => f.ProjectReferences).Distinct().ToList();
 
         public void Save()
         {
@@ -444,7 +438,7 @@ namespace NuGet.Test.Utility
 
                         ProjectFileUtils.AddItem(
                             xml,
-                            "PackageReferences",
+                            "PackageReference",
                             package.Id,
                             referenceFramework,
                             props,

@@ -138,7 +138,6 @@ namespace NuGet.XPlat.FuncTest
         public async void RemovePkg_ConditionalRemove_Success(string packageframework)
         {
             // Arrange
-
             using (var pathContext = new SimpleTestPathContext())
             {
                 // Generate Package
