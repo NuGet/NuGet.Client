@@ -7,6 +7,7 @@
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <PackProject>true</PackProject>
     <Shipping>true</Shipping>
+    <IncludeInVsix>true</IncludeInVsix>
   </PropertyGroup>
 
   <ItemGroup>

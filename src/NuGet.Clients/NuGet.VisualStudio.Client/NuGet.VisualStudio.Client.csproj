@@ -102,73 +102,61 @@
     <ProjectReference Include="..\..\NuGet.Core\NuGet.Build.Tasks\NuGet.Build.Tasks.csproj">
       <Project>{e09441b8-8d74-4a96-8431-480e2065f844}</Project>
       <Name>NuGet.Build.Tasks</Name>
-      <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup</IncludeOutputGroupsInVSIX>
     </ProjectReference>
     <ProjectReference Include="..\..\NuGet.Core\NuGet.Common\NuGet.Common.csproj">
       <Project>{98bee375-a5a0-4fc2-9b7a-25db41c8045d}</Project>
       <Name>NuGet.Common</Name>
-      <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup</IncludeOutputGroupsInVSIX>
     </ProjectReference>
     <ProjectReference Include="..\..\NuGet.Core\NuGet.Configuration\NuGet.Configuration.csproj">
       <Project>{e3ef26e1-80a7-4573-b3a4-1d4b0042616e}</Project>
       <Name>NuGet.Configuration</Name>
-      <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup</IncludeOutputGroupsInVSIX>
     </ProjectReference>
     <ProjectReference Include="..\..\NuGet.Core\NuGet.DependencyResolver.Core\NuGet.DependencyResolver.Core.csproj">
       <Project>{cf8e1753-ee98-410f-bb4b-6624b19c6b64}</Project>
       <Name>NuGet.DependencyResolver.Core</Name>
-      <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup</IncludeOutputGroupsInVSIX>
     </ProjectReference>
     <ProjectReference Include="..\..\NuGet.Core\NuGet.Frameworks\NuGet.Frameworks.csproj">
       <Project>{9a9a9f26-597a-4fa6-a4f1-415063484d9c}</Project>
       <Name>NuGet.Frameworks</Name>
-      <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup</IncludeOutputGroupsInVSIX>
     </ProjectReference>
     <ProjectReference Include="..\..\NuGet.Core\NuGet.LibraryModel\NuGet.LibraryModel.csproj">
       <Project>{13883e8e-7de1-4edd-8e4a-c5357ba8cd81}</Project>
       <Name>NuGet.LibraryModel</Name>
-      <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup</IncludeOutputGroupsInVSIX>
     </ProjectReference>
     <ProjectReference Include="..\..\NuGet.Core\NuGet.PackageManagement\NuGet.PackageManagement.csproj">
       <Project>{394aeb96-493c-4839-a5ac-8d93cd2fad40}</Project>
       <Name>NuGet.PackageManagement</Name>
-      <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup;BuiltProjectOutputGroupDependencies;GetCopyToOutputDirectoryItems;SatelliteDllsProjectOutputGroup</IncludeOutputGroupsInVSIX>
+      <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup%3bBuiltProjectOutputGroupDependencies%3bGetCopyToOutputDirectoryItems%3bSatelliteDllsProjectOutputGroup%3b</IncludeOutputGroupsInVSIX>
       <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup%3b</IncludeOutputGroupsInVSIXLocalOnly>
     </ProjectReference>
     <ProjectReference Include="..\..\NuGet.Core\NuGet.Packaging.Core\NuGet.Packaging.Core.csproj">
       <Project>{d65583e4-8084-466a-ba4b-55a797ea047b}</Project>
       <Name>NuGet.Packaging.Core</Name>
-      <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup</IncludeOutputGroupsInVSIX>
     </ProjectReference>
     <ProjectReference Include="..\..\NuGet.Core\NuGet.Packaging\NuGet.Packaging.csproj">
       <Project>{bd6bbc90-60be-4e7d-8458-91e9cda66abe}</Project>
       <Name>NuGet.Packaging</Name>
-      <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup</IncludeOutputGroupsInVSIX>
     </ProjectReference>
     <ProjectReference Include="..\..\NuGet.Core\NuGet.ProjectModel\NuGet.ProjectModel.csproj">
       <Project>{f013e43f-b6d5-4f59-acf0-eecec2c794f5}</Project>
       <Name>NuGet.ProjectModel</Name>
-      <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup</IncludeOutputGroupsInVSIX>
     </ProjectReference>
     <ProjectReference Include="..\..\NuGet.Core\NuGet.Protocol\NuGet.Protocol.csproj">
       <Project>{020f4c88-3a5c-4b89-9868-089e867cc223}</Project>
       <Name>NuGet.Protocol</Name>
-      <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup</IncludeOutputGroupsInVSIX>
     </ProjectReference>
     <ProjectReference Include="..\..\NuGet.Core\NuGet.Resolver\NuGet.Resolver.csproj">
       <Project>{51aa27a9-b8b4-458f-9211-e6889b441573}</Project>
       <Name>NuGet.Resolver</Name>
-      <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup</IncludeOutputGroupsInVSIX>
     </ProjectReference>
     <ProjectReference Include="..\..\NuGet.Core\NuGet.Versioning\NuGet.Versioning.csproj">
       <Project>{24e62ab7-64e4-4975-9417-883559d1bc19}</Project>
       <Name>NuGet.Versioning</Name>
-      <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup</IncludeOutputGroupsInVSIX>
     </ProjectReference>
     <ProjectReference Include="..\NuGet.Tools\NuGet.Tools.csproj">
       <Project>{D0F9864B-D782-4471-81A2-29555E5DC0D7}</Project>
       <Name>NuGet.Tools</Name>
-      <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup;PkgdefProjectOutputGroup;GetCopyToOutputDirectoryItems</IncludeOutputGroupsInVSIX>
+      <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup%3bPkgdefProjectOutputGroup%3bGetCopyToOutputDirectoryItems</IncludeOutputGroupsInVSIX>
       <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup</IncludeOutputGroupsInVSIXLocalOnly>
     </ProjectReference>
     <ProjectReference Include="..\..\NuGet.Core\NuGet.Indexing\NuGet.Indexing.csproj">
@@ -192,7 +180,7 @@
     <ProjectReference Include="..\NuGet.SolutionRestoreManager\NuGet.SolutionRestoreManager.csproj">
       <Project>{06662133-1292-4918-90f3-36c930c0b16f}</Project>
       <Name>NuGet.SolutionRestoreManager</Name>
-      <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup;PkgdefProjectOutputGroup</IncludeOutputGroupsInVSIX>
+      <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup%3bPkgdefProjectOutputGroup</IncludeOutputGroupsInVSIX>
       <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup</IncludeOutputGroupsInVSIXLocalOnly>
     </ProjectReference>
     <ProjectReference Include="..\NuGet.VisualStudio.Implementation\NuGet.VisualStudio.Implementation.csproj">
@@ -246,7 +234,7 @@
     <ProjectReference Include="..\NuGetConsole.Host.PowerShell\NuGetConsole.Host.PowerShell.csproj">
       <Project>{5a79eef3-51c0-4a14-8d37-50ef38ad835d}</Project>
       <Name>NuGetConsole.Host.PowerShell</Name>
-      <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup;BuiltProjectOutputGroupDependencies;GetCopyToOutputDirectoryItems;SatelliteDllsProjectOutputGroup</IncludeOutputGroupsInVSIX>
+      <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup%3bBuiltProjectOutputGroupDependencies%3bGetCopyToOutputDirectoryItems%3bSatelliteDllsProjectOutputGroup%3b</IncludeOutputGroupsInVSIX>
       <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup</IncludeOutputGroupsInVSIXLocalOnly>
     </ProjectReference>
   </ItemGroup>
@@ -387,5 +375,7 @@
   </Target>
   <Target Name="GetAssembliesInVsix" DependsOnTargets="GetVsixSourceItems" Returns="@(AllVsixAssemblies->'%(FinalOutputPath)')">
     <Message Text="%(VSIXSourceItem.Identity)" Condition="'%(VSIXSourceItem.Extension)' == '.dll'" Importance="High"/>
+  </Target>
+  <Target Name="GetAssembliesInVsix" DependsOnTargets="GetVsixSourceItems" Returns="@(VSIXSourceItem->'%(FinalOutputPath)')">
   </Target>
 </Project>

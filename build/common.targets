@@ -36,13 +36,6 @@
     <DocumentationFile Condition=" '$(DocumentationFile)' == '' AND '$(GenerateDocumentationFile)' == 'true' AND '$(IsNetCoreProject)' != 'true' ">$(OutputPath)\$(AssemblyName).xml</DocumentationFile>
   </PropertyGroup>
 
-  <!-- These are needed because currently a VSIX project cannot reference a net core project that multi targets -->
-  <Target Name="BuiltProjectOutputGroupDependencies" Condition=" '$(IsNetCoreProject)' == 'true' " />
-  <Target Name="BuiltProjectOutputGroup" Condition=" '$(IsNetCoreProject)' == 'true' " />
-  <Target Name="GetCopyToOutputDirectoryItems" Condition=" '$(IsNetCoreProject)' == 'true' " />
-  <Target Name="SatelliteDllsProjectOutputGroup" Condition=" '$(IsNetCoreProject)' == 'true' " />
-  <Target Name="DebugSymbolsProjectOutputGroup" Condition=" '$(IsNetCoreProject)' == 'true' " />
-
   <!-- Test Projects -->
   <ImportGroup Condition=" '$(TestProject)' == 'true' ">
     <Import Project="test.targets" />
@@ -107,12 +100,31 @@
     <MSBuild
       Projects="$(MSBuildProjectFullPath)"
       Targets="$(SignTargetsForRealSigning)"
-      Properties="TargetFramework=%(_Tfm.Identity);">
+      Properties="TargetFramework=%(_Tfm.Identity);
+                  BuildProjectReferences=false;">
 
       <Output
           TaskParameter="TargetOutputs"
           ItemName="DllsToSign" />
     </MSBuild>
+    <MsBuild Condition="'$(IncludeInVsix)' == 'true' AND '$(BuildRTM)' != 'true'"
+      Projects="$(MSBuildProjectFullPath)"
+      Targets="_GetLocalizedDllsForSigning"
+      Properties="IsVsixBuild=true;
+                  BuildProjectReferences=false;">
+      <Output
+        TaskParameter="TargetOutputs"
+        ItemName="DllsToSign"/>
+    </MsBuild>
+  </Target>
+
+  <Target Name="_GetLocalizedDllsForSigning" Returns="@(LocalizedDllsToSign)">
+    <ItemGroup>
+      <LocalizedDllsToSign Include="$(OutputPath)**\$(AssemblyName).resources.dll">
+        <StrongName>$(StrongNameCert)</StrongName>
+        <Authenticode>Microsoft</Authenticode>
+      </LocalizedDllsToSign>
+    </ItemGroup>
   </Target>
 
   <Target Name="GetBuildOutputWithSigningMetadata" DependsOnTargets="BuiltProjectOutputGroup" Returns="@(DllsToSignWithMetadata)">
@@ -131,14 +143,11 @@
     ============================================================
   -->
   <Target Name="GetLocalizationInputs" Returns="@(DllsToLocalize)" Condition=" '$(IncludeInVSIX)' == 'true' ">
-  <ItemGroup>
-    <_Tfm Condition="'$(TargetFramework)' == ''" Include="$(TargetFrameworks.Split(';'))"/>
-    <_Tfm Condition="'$(TargetFramework)' != ''" Include="$(TargetFramework)"/>
-  </ItemGroup>
     <MSBuild
       Projects="$(MSBuildProjectFullPath)"
       Targets="$(LocTargets)"
-      Properties="TargetFramework=%(_Tfm.Identity);">
+      Properties="IsVsixBuild=true;
+                  BuildProjectReferences=false;">
 
       <Output
           TaskParameter="TargetOutputs"

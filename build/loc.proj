@@ -22,18 +22,29 @@
                                 Exclude="$(VSIXProject)" />
   </ItemGroup>
 
-  <Target Name="BatchSign">
+  <Target Name="BatchLocalize" Condition="'$(BuildRTM)' != 'true'">
     <MSBuild
       Projects="@(SolutionProjectsWithoutVSIX)"
-      Targets="GetSigningInputs">
+      Properties="IsVsixBuild=true;
+                  BuildProjectReferences=false;"
+      Targets="GetLocalizationInputs">
 
       <Output
           TaskParameter="TargetOutputs"
-          ItemName="FilesToSign" />
+          ItemName="FilesToLocalize" />
     </MSBuild>
-    <Message Text="Files to sign: @(FilesToSign, '%0a')" Importance="High"/>
+    <Message Text="Files to localize : @(FilesToLocalize, '%0a')" Importance="High"/>
   </Target>
 
-  <Target Name="AfterBuild" DependsOnTargets="BatchSign"/>
+  <Target Name="MoveLocalizedFilesToProjectSpecificArtifacts" AfterTargets="Localize" Condition="'$(BuildRTM)' != 'true'">
+    <ItemGroup>
+      <_MoveLocalizedFiles Include="@(LocalizedUserFiles)">
+        <DestinationDir>$(ArtifactsDirectory)$([MSBuild]::MakeRelative($(ArtifactsDirectory)localize\%(LocalizedUserFiles.lang), %(LocalizedUserFiles.RootDir)%(LocalizedUserFiles.Directory)))%(LocalizedUserFiles.Culture)\%(LocalizedUserFiles.Filename)%(LocalizedUserFiles.Extension)</DestinationDir>
+      </_MoveLocalizedFiles>
+    </ItemGroup>
+    <Move SourceFiles="@(_MoveLocalizedFiles->'%(Identity)')" DestinationFiles="@(_MoveLocalizedFiles->'%(DestinationDir)')"/>
+  </Target>
+
+  <Target Name="AfterBuild" DependsOnTargets="BatchLocalize"/>
   <Import Project="$(SolutionPackagesFolder)microbuild.core.0.2.0\build\MicroBuild.Core.targets" />
 </Project>

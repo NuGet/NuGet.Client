@@ -2,7 +2,8 @@
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.props" />
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard1.3;net45</TargetFrameworks>
+    <TargetFrameworks Condition="'$(IsVsixBuild)' != 'true'">netstandard1.3;net45</TargetFrameworks>
+    <TargetFramework Condition="'$(IsVsixBuild)' == 'true'">net45</TargetFramework>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <NetStandardImplicitPackageVersion Condition=" '$(TargetFramework)' == 'netstandard1.3' ">$(NetStandardPackageVersion)</NetStandardImplicitPackageVersion>
     <PackProject>true</PackProject>
