@@ -92,15 +92,11 @@
     be signed from each project
     ============================================================
   -->
-  <Target Name="GetSigningInputs" Returns="@(DllsToSign)" Condition=" '$(Shipping)' == 'true' ">
-  <ItemGroup>
-    <_Tfm Condition="'$(TargetFramework)' == ''" Include="$(TargetFrameworks.Split(';'))"/>
-    <_Tfm Condition="'$(TargetFramework)' != ''" Include="$(TargetFramework)"/>
-  </ItemGroup>
+  <Target Name="GetSigningInputs" DependsOnTargets="GetTargetFrameworkSet" Returns="@(DllsToSign)" Condition=" '$(Shipping)' == 'true' ">
     <MSBuild
       Projects="$(MSBuildProjectFullPath)"
       Targets="$(SignTargetsForRealSigning)"
-      Properties="TargetFramework=%(_Tfm.Identity);
+      Properties="TargetFramework=%(ProjectTargetFrameworkEntries.Identity);
                   BuildProjectReferences=false;">
 
       <Output
@@ -161,6 +157,21 @@
         <TranslationFile>$(LocalizationRootDirectory)\{Lang}\15\%(Filename).resources.dll.lcl</TranslationFile>    <!--Required: translation file-->
 	      <LciCommentFile>$(LocalizationRootDirectory)\comments\15\%(Filename).resources.dll.lci</LciCommentFile>
       </DllsToLocalizeWithMetadata>
+    </ItemGroup>
+  </Target>
+
+  <!--
+    ============================================================
+    GetLocalizedFilesForVsix - gathers the list of localized DLLs 
+    from each project
+    ============================================================
+  -->
+  <Target Name="GetLocalizedFilesForVsix" DependsOnTargets="$(GetLocalizedFilesForVsixDependsOn)" Returns="@(LocalizedFilesForVsix)" Condition=" '$(IncludeInVsix)' == 'true' ">
+    <ItemGroup>
+      <_AllResourceDlls Include="$(OutputPath)**\$(AssemblyName).resources.dll"/>
+      <LocalizedFilesForVsix Include="@(_AllResourceDlls)">
+        <TargetPath>$([MSBuild]::MakeRelative($(OutputPath), %(_AllResourceDlls.Identity)))</TargetPath>
+      </LocalizedFilesForVsix>
     </ItemGroup>
   </Target>
 

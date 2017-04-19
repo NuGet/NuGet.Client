@@ -11,8 +11,7 @@
       BuildNumber=$(BuildNumber);
       BuildRTM=$(BuildRTM);
     </CommonMSBuildProperties>
-    <OutDir>$(ArtifactsDirectory)</OutDir>
-    <IntermediateOutputPath>$(ArtifactsDirectory)</IntermediateOutputPath>
+    <OutDir>$(RepositoryRootDirectory)</OutDir>
   </PropertyGroup>
   
   <!-- All projects in the repository -->
@@ -23,6 +22,14 @@
   </ItemGroup>
 
   <Target Name="BatchSign">
+    <ItemGroup>
+      <FilesToSign Include="$(SolutionPackagesFolder)Lucene.Net.3.0.3\lib\NET40\Lucene.Net.dll">
+        <Authenticode>3PartySHA2</Authenticode>
+      </FilesToSign>
+      <FilesToSign Include="$(SolutionPackagesFolder)Newtonsoft.Json.9.0.1\lib\net45\Newtonsoft.Json.dll">
+        <Authenticode>3PartySHA2</Authenticode>
+      </FilesToSign>
+    </ItemGroup>
     <MSBuild
       Projects="@(SolutionProjectsWithoutVSIX)"
       Targets="GetSigningInputs">

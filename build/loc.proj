@@ -22,6 +22,21 @@
                                 Exclude="$(VSIXProject)" />
   </ItemGroup>
 
+  <Target Name="LocalizeNonProjectFiles"  Condition="'$(BuildRTM)' != 'true'">
+    <PropertyGroup>
+      <DirectoryToCreate>$(ArtifactsDirectory)Microsoft.Web.Xdt.2.1.1\lib\net40</DirectoryToCreate>
+    </PropertyGroup>
+    <ItemGroup>
+      <NonProjectFilesToMove Include="$(SolutionPackagesFolder)Microsoft.Web.Xdt.2.1.1\lib\net40\Microsoft.Web.XmlTransform.dll">
+        <DestinationDir>$(ArtifactsDirectory)Microsoft.Web.Xdt.2.1.1\lib\net40\Microsoft.Web.XmlTransform.dll</DestinationDir>
+      </NonProjectFilesToMove>
+    </ItemGroup>
+    <Copy SourceFiles="@(NonProjectFilesToMove)" DestinationFiles="@(NonProjectFilesToMove->'%(DestinationDir)')"/>
+    <ItemGroup>
+      <FilesToLocalize Include="@(NonProjectFilesToMove->'%(DestinationDir)')"/>
+    </ItemGroup>
+  </Target>
+
   <Target Name="BatchLocalize" Condition="'$(BuildRTM)' != 'true'">
     <MSBuild
       Projects="@(SolutionProjectsWithoutVSIX)"
@@ -45,6 +60,6 @@
     <Move SourceFiles="@(_MoveLocalizedFiles->'%(Identity)')" DestinationFiles="@(_MoveLocalizedFiles->'%(DestinationDir)')"/>
   </Target>
 
-  <Target Name="AfterBuild" DependsOnTargets="BatchLocalize"/>
+  <Target Name="AfterBuild" DependsOnTargets="LocalizeNonProjectFiles;BatchLocalize"/>
   <Import Project="$(SolutionPackagesFolder)microbuild.core.0.2.0\build\MicroBuild.Core.targets" />
 </Project>
