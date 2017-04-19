@@ -43,6 +43,7 @@ namespace NuGet.Test.Utility
         public List<KeyValuePair<string, byte[]>> Files { get; set; } = new List<KeyValuePair<string, byte[]>>();
         public XDocument Nuspec { get; set; }
         public List<PackageType> PackageTypes { get; set; } = new List<PackageType>();
+        public PackageType PackageType { get; set; }
 
         /// <summary>
         /// runtime.json
@@ -51,13 +52,7 @@ namespace NuGet.Test.Utility
 
         public bool IsSymbolPackage { get; set; }
 
-        public PackageIdentity Identity
-        {
-            get
-            {
-                return new PackageIdentity(Id, NuGetVersion.Parse(Version));
-            }
-        }
+        public PackageIdentity Identity => new PackageIdentity(Id, NuGetVersion.Parse(Version));
 
         /// <summary>
         /// Add a file to the zip. Ex: lib/net45/a.dll

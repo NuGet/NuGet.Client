@@ -256,13 +256,7 @@ namespace NuGet.Test.Utility
         /// <summary>
         /// Project references from all TFMs
         /// </summary>
-        public List<SimpleTestProjectContext> AllProjectReferences
-        {
-            get
-            {
-                return Frameworks.SelectMany(f => f.ProjectReferences).Distinct().ToList();
-            }
-        }
+        public List<SimpleTestProjectContext> AllProjectReferences => Frameworks.SelectMany(f => f.ProjectReferences).Distinct().ToList();
 
         public void Save()
         {
@@ -467,9 +461,11 @@ namespace NuGet.Test.Utility
                             }
                         }
 
-                        var props = new Dictionary<string, string>();
-                        props.Add("Name", project.ProjectName);
-                        props.Add("Project", project.ProjectGuid.ToString());
+                        var props = new Dictionary<string, string>
+                        {
+                            { "Name", project.ProjectName },
+                            { "Project", project.ProjectGuid.ToString() }
+                        };
 
                         if (!string.IsNullOrEmpty(project.ExcludeAssets))
                         {
@@ -500,15 +496,24 @@ namespace NuGet.Test.Utility
                 foreach (var tool in DotnetCLIToolReferences)
                 {
                     var props = new Dictionary<string, string>();
-                    props.Add("Version", tool.Version.ToString());
+                    var attributes = new Dictionary<string, string>();
+
+                    if (ToolingVersion15)
+                    {
+                        attributes.Add("Version", tool.Version.ToString());
+                    }
+                    else
+                    {
+                        props.Add("Version", tool.Version.ToString());
+                    }
 
                     ProjectFileUtils.AddItem(
                         xml,
-                        "DotnetCLIToolReference",
+                        "DotNetCliToolReference",
                         $"{tool.Id}",
                         NuGetFramework.AnyFramework,
                         props,
-                        new Dictionary<string, string>());
+                        attributes);
                 }
             }
             else
@@ -516,9 +521,11 @@ namespace NuGet.Test.Utility
                 // Add all project references directly
                 foreach (var project in Frameworks.SelectMany(f => f.ProjectReferences).Distinct())
                 {
-                    var props = new Dictionary<string, string>();
-                    props.Add("Name", project.ProjectName);
-                    props.Add("Project", project.ProjectGuid.ToString());
+                    var props = new Dictionary<string, string>
+                    {
+                        { "Name", project.ProjectName },
+                        { "Project", project.ProjectGuid.ToString() }
+                    };
 
                     if (!string.IsNullOrEmpty(project.ExcludeAssets))
                     {

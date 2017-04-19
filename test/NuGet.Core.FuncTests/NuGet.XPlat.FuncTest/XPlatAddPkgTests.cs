@@ -10,6 +10,7 @@ using Moq;
 using NuGet.CommandLine.XPlat;
 using NuGet.Commands;
 using NuGet.Packaging;
+using NuGet.Packaging.Core;
 using NuGet.Test.Utility;
 using Xunit;
 
@@ -146,6 +147,62 @@ namespace NuGet.XPlat.FuncTest
         }
 
         [Theory]
+        [InlineData("1.0.0")]
+        [InlineData("*")]
+        [InlineData("1.*")]
+        [InlineData("1.0.*")]
+        public async void AddPkg_UnconditionalAddWithDotnetCliTool_Success(string userInputVersion)
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Generate DotNetCliToolReference Package
+                var packageDotnetCliToolX = XPlatTestUtils.CreatePackage(packageId: "PackageDotnetCliToolX", 
+                    packageType: PackageType.DotnetCliTool);
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageDotnetCliToolX);
+
+                // Generate test package
+                var packageY = XPlatTestUtils.CreatePackage(packageId:"PackageY");
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageY);
+
+                var projectA = XPlatTestUtils.CreateProject(projectName, pathContext, "net46");
+
+                projectA.DotnetCLIToolReferences.Add(packageDotnetCliToolX);
+
+                projectA.Save();
+
+                // Verify that the package reference exists before removing.
+                var projectXmlRoot = XPlatTestUtils.LoadCSProj(projectA.ProjectPath).Root;
+                var itemGroup = XPlatTestUtils.GetItemGroupForAllFrameworks(projectXmlRoot, packageType: PackageType.DotnetCliTool);
+
+                Assert.NotNull(itemGroup);
+                Assert.True(XPlatTestUtils.ValidateReference(itemGroup, packageDotnetCliToolX.Id, "1.0.0", PackageType.DotnetCliTool));
+
+                var packageArgs = XPlatTestUtils.GetPackageReferenceArgs(packageY.Id, userInputVersion, projectA, noRestore: false);
+                var commandRunner = new AddPackageReferenceCommandRunner();
+
+                // Act
+                var result = commandRunner.ExecuteCommand(packageArgs, MsBuild).Result;
+                projectXmlRoot = XPlatTestUtils.LoadCSProj(projectA.ProjectPath).Root;
+                itemGroup = XPlatTestUtils.GetItemGroupForAllFrameworks(projectXmlRoot);
+
+                // Assert
+                Assert.Equal(0, result);
+                Assert.NotNull(itemGroup);
+                Assert.True(XPlatTestUtils.ValidateReference(itemGroup, packageY.Id, userInputVersion));
+            }
+        }
+
+
+        [Theory]
         [InlineData("net46", "net46; netcoreapp1.0", "1.*")]
         [InlineData("net46; netcoreapp1.0", "net46; netcoreapp1.0", "1.*")]
         [InlineData("net46; netcoreapp1.0", "net46; netcoreapp1.0", "1.*")]
@@ -184,6 +241,64 @@ namespace NuGet.XPlat.FuncTest
                 Assert.Equal(0, result);
                 Assert.NotNull(itemGroup);
                 Assert.True(XPlatTestUtils.ValidateReference(itemGroup, packageX.Id, userInputVersion));
+            }
+        }
+
+        [Theory]
+        [InlineData("net46", "net46; netcoreapp1.0", "1.*")]
+        [InlineData("net46; netcoreapp1.0", "net46; netcoreapp1.0", "1.*")]
+        [InlineData("net46; netcoreapp1.0", "net46; netcoreapp1.0", "1.*")]
+        [InlineData("net46", "net46; netcoreapp1.0", "1.*")]
+        [InlineData("netcoreapp1.0", "net46; netcoreapp1.0", "1.*")]
+        public async void AddPkg_UnconditionalAddWithDotnetCliToolAndNoRestore_Success(string packageFrameworks,
+            string projectFrameworks,
+            string userInputVersion)
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Generate DotNetCliToolReference Package
+                var packageDotnetCliToolX = XPlatTestUtils.CreatePackage(packageId: "PackageDotnetCliToolX",
+                    packageType: PackageType.DotnetCliTool);
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageDotnetCliToolX);
+
+                // Generate test package
+                var packageY = XPlatTestUtils.CreatePackage(packageId: "PackageY");
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageY);
+
+                var projectA = XPlatTestUtils.CreateProject(projectName, pathContext, "net46");
+
+                projectA.DotnetCLIToolReferences.Add(packageDotnetCliToolX);
+
+                projectA.Save();
+
+                // Verify that the package reference exists before removing.
+                var projectXmlRoot = XPlatTestUtils.LoadCSProj(projectA.ProjectPath).Root;
+                var itemGroup = XPlatTestUtils.GetItemGroupForAllFrameworks(projectXmlRoot, packageType: PackageType.DotnetCliTool);
+
+                Assert.NotNull(itemGroup);
+                Assert.True(XPlatTestUtils.ValidateReference(itemGroup, packageDotnetCliToolX.Id, "1.0.0", PackageType.DotnetCliTool));
+
+                var packageArgs = XPlatTestUtils.GetPackageReferenceArgs(packageY.Id, userInputVersion, projectA, noRestore: true);
+                var commandRunner = new AddPackageReferenceCommandRunner();
+
+                // Act
+                var result = commandRunner.ExecuteCommand(packageArgs, MsBuild).Result;
+                projectXmlRoot = XPlatTestUtils.LoadCSProj(projectA.ProjectPath).Root;
+                itemGroup = XPlatTestUtils.GetItemGroupForAllFrameworks(projectXmlRoot);
+
+                // Assert
+                Assert.Equal(0, result);
+                Assert.NotNull(itemGroup);
+                Assert.True(XPlatTestUtils.ValidateReference(itemGroup, packageY.Id, userInputVersion));
             }
         }
 
