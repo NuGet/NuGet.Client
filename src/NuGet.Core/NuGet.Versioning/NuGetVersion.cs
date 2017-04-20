@@ -195,5 +195,10 @@ namespace NuGet.Versioning
         {
             get { return (_releaseLabels != null && _releaseLabels.Length > 1) || HasMetadata; }
         }
+
+        /// <summary>
+        /// Returns the original, non-normalized version string.
+        /// </summary>
+        public string OriginalVersion => _originalString;
     }
 }
