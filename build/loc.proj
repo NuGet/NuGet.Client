@@ -23,17 +23,24 @@
   </ItemGroup>
 
   <Target Name="LocalizeNonProjectFiles"  Condition="'$(BuildRTM)' != 'true'">
-    <PropertyGroup>
-      <DirectoryToCreate>$(ArtifactsDirectory)Microsoft.Web.Xdt.2.1.1\lib\net40</DirectoryToCreate>
-    </PropertyGroup>
     <ItemGroup>
       <NonProjectFilesToMove Include="$(SolutionPackagesFolder)Microsoft.Web.Xdt.2.1.1\lib\net40\Microsoft.Web.XmlTransform.dll">
         <DestinationDir>$(ArtifactsDirectory)Microsoft.Web.Xdt.2.1.1\lib\net40\Microsoft.Web.XmlTransform.dll</DestinationDir>
       </NonProjectFilesToMove>
+      <NonProjectFilesToMove Include="$(NuGetClientsSrcDirectory)NuGet.VisualStudio.Client\extension.vsixlangpack">
+        <DestinationDir>$(ArtifactsDirectory)vsixlangpack\extension.vsixlangpack</DestinationDir>
+      </NonProjectFilesToMove>
     </ItemGroup>
     <Copy SourceFiles="@(NonProjectFilesToMove)" DestinationFiles="@(NonProjectFilesToMove->'%(DestinationDir)')"/>
     <ItemGroup>
-      <FilesToLocalize Include="@(NonProjectFilesToMove->'%(DestinationDir)')"/>
+      <FilesToLocalize Include="@(NonProjectFilesToMove->'%(DestinationDir)')">
+        <TranslationFile Condition="'%(Extension)' == '.dll'">$(LocalizationRootDirectory)\{Lang}\15\%(Filename).resources.dll.lcl</TranslationFile>    <!--Required: translation file-->
+	      <LciCommentFile Condition="'%(Extension)' == '.dll'">$(LocalizationRootDirectory)\comments\15\%(Filename).resources.dll.lci</LciCommentFile>
+        <TranslationFile Condition="'%(Extension)' != '.dll'">$(LocalizationRootDirectory)\{Lang}\15\%(Filename)%(Extension).lcl</TranslationFile>    <!--Required: translation file-->
+	      <LciCommentFile Condition="'%(Extension)' != '.dll'">$(LocalizationRootDirectory)\comments\15\%(Filename)%(Extension).lci</LciCommentFile>
+        <Parser Condition="'%(Extension)' == '.vsixlangpack'">210</Parser>
+        <SettingsFile Condition="'%(Extension)' == '.vsixlangpack'">$(LSBuildRoot)\locxml_teamarch.lss</SettingsFile>
+      </FilesToLocalize>
     </ItemGroup>
   </Target>
 
