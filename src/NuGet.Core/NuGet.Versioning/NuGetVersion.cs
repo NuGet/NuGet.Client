@@ -199,9 +199,6 @@ namespace NuGet.Versioning
         /// <summary>
         /// Returns the original, non-normalized version string.
         /// </summary>
-        public string OriginalVersion
-        {
-            get { return _originalString; }
-        }
+        public string OriginalVersion => _originalString;
     }
 }
