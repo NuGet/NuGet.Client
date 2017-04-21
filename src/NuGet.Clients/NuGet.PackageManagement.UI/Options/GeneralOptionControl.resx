@@ -474,6 +474,9 @@
   <data name="tableLayoutPanel1.LayoutSettings" type="System.Windows.Forms.TableLayoutSettings, System.Windows.Forms">
     <value>&lt;?xml version="1.0" encoding="utf-16"?&gt;&lt;TableLayoutSettings&gt;&lt;Controls&gt;&lt;Control Name="defaultPackageManagementFormatItems" Row="0" RowSpan="1" Column="1" ColumnSpan="1" /&gt;&lt;Control Name="defaultPackageManagementFormatLabel" Row="0" RowSpan="1" Column="0" ColumnSpan="1" /&gt;&lt;/Controls&gt;&lt;Columns Styles="AutoSize,0,Percent,100" /&gt;&lt;Rows Styles="Percent,100" /&gt;&lt;/TableLayoutSettings&gt;</value>
   </data>
+  <data name="defaultPackageManagementFormatItems.AccessibleName" xml:space="preserve">
+    <value>Default Package Management Format</value>
+  </data>
   <data name="defaultPackageManagementFormatItems.Items" xml:space="preserve">
     <value>Packages.config</value>
   </data>
