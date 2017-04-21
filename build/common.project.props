@@ -91,6 +91,11 @@
     <CodeAnalysisRuleSet Condition="'$(CodeAnalysisRuleSet)' == ''">$(BuildCommonDirectory)NuGet.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <VsixPublishDestination>$(ArtifactRoot)$(VsixOutputDirName)\</VsixPublishDestination>
+    <VsixPublishDestination Condition="'$(IsInsertable)' == 'true'">$(ArtifactRoot)$(VsixOutputDirName)\Insertable\</VsixPublishDestination>
+  </PropertyGroup>
+
   <PropertyGroup Condition=" '$(BuildRTM)' == 'true' ">
     <VsixOutputDirName>$(VsixOutputDirName)-RTM</VsixOutputDirName>
   </PropertyGroup>

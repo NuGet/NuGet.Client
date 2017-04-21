@@ -12,6 +12,8 @@
       BuildRTM=$(BuildRTM);
     </CommonMSBuildProperties>
     <OutDir>$(RepositoryRootDirectory)</OutDir>
+    <SignTargetsDependOn>BatchSign</SignTargetsDependOn>
+    <SignTargetsDependOn Condition="'$(SignVsix)' == 'true'">GetOutputVsix</SignTargetsDependOn>
   </PropertyGroup>
   
   <!-- All projects in the repository -->
@@ -41,6 +43,14 @@
     <Message Text="Files to sign: @(FilesToSign, '%0a')" Importance="High"/>
   </Target>
 
-  <Target Name="AfterBuild" DependsOnTargets="BatchSign"/>
+  <Target Name="GetOutputVsix">
+    <ItemGroup>
+      <FilesToSign Include="$(VsixPublishDestination)**\NuGet.Tools.vsix">
+        <Authenticode>100040160</Authenticode>
+      </FilesToSign>
+    </ItemGroup>
+  </Target>
+
+  <Target Name="AfterBuild" DependsOnTargets="$(SignTargetsDependOn)"/>
   <Import Project="$(SolutionPackagesFolder)microbuild.core.0.2.0\build\MicroBuild.Core.targets" />
 </Project>
