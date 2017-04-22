@@ -14,13 +14,6 @@
     <OutDir>$(ArtifactsDirectory)</OutDir>
     <IntermediateOutputPath>$(ArtifactsDirectory)</IntermediateOutputPath>
   </PropertyGroup>
-  
-  <!-- All projects in the repository -->
-  <ItemGroup> 
-      <SolutionProjects Include="$(RepositoryRootDirectory)src\*\*\*.csproj" />
-      <SolutionProjectsWithoutVSIX Include="@(SolutionProjects)"
-                                Exclude="$(VSIXProject)" />
-  </ItemGroup>
 
   <Target Name="LocalizeNonProjectFiles"  Condition="'$(BuildRTM)' != 'true'">
     <ItemGroup>
@@ -66,6 +59,18 @@
     </ItemGroup>
     <Move SourceFiles="@(_MoveLocalizedFiles->'%(Identity)')" DestinationFiles="@(_MoveLocalizedFiles->'%(DestinationDir)')"/>
     <Delete Files="$(ArtifactsDirectory)vsixlangpack\extension.vsixlangpack"/>
+  </Target>
+
+  <Target Name="MoveEulasToArtifacts" AfterTargets="Localize" Condition="'$(BuildRTM)' != 'true'">
+    <ItemGroup>
+      <!-- SupportedCultures is defined in MicroBuild.Plugins.Localization.targets which is installed as a plugin
+      in VSTS MicroBuild -->
+      <EulaFiles Include="$(NuGetBuildLocalizationRepository)eulas\%(SupportedCultures.Identity)\eula.rtf"
+          Condition="Exists('$(NuGetBuildLocalizationRepository)eulas\%(SupportedCultures.Identity)\eula.rtf')">
+          <DestinationDir>$(ArtifactsDirectory)eulas\%(SupportedCultures.FNCulture)\eula.rtf</DestinationDir>
+      </EulaFiles>
+    </ItemGroup>
+    <Copy SourceFiles="@(EulaFiles->'%(Identity)')" DestinationFiles="@(EulaFiles->'%(DestinationDir)')"/>
   </Target>
 
   <Target Name="AfterBuild" DependsOnTargets="LocalizeNonProjectFiles;BatchLocalize"/>

@@ -352,7 +352,6 @@
       <AllVsixAssemblies Include="@(VSIXSourceItem->'%(FileName)%(Extension)')" Condition=" '%(Extension)' == '.dll' ">
         <SourceFile>%(VSIXSourceItem.Identity)</SourceFile>
       </AllVsixAssemblies>
-      <ScriptFiles Include="$(OutputPath)Scripts\*"/>
     </ItemGroup>
     <ItemGroup>
       <SuppressPackaging Include="@(AllVsixAssemblies)" Exclude="@(IncludeVsixFilesList)" />
@@ -360,7 +359,6 @@
       <NotListedDependencies Include="@(SuppressPackaging)" Exclude="@(IgnoreVsixFilesList)" />
       <MissingIgnoredAssemblies Include="@(IgnoreVsixFilesList)" Exclude="@(AllVsixAssemblies)" />
       <VSIXSourceItem Remove="@(SuppressPackaging->'%(SourceFile)')" />
-      <VSIXSourceItem Remove="@(ScriptFiles)" />
     </ItemGroup>
     <Message Text="Suppressed file '%(SuppressPackaging.SourceFile)'" Condition=" '@(SuppressPackaging)' != '' " />
     <Message Text="Included file '%(VSIXSourceItem.Identity)'" Condition=" '@(VSIXSourceItem)' != '' " />
@@ -372,11 +370,6 @@
   
   <!--The IsCIBuild property is passed on the VSTS CI-->
   <Target Name="GetLocalizedDlls" AfterTargets="GetVsixSourceItems" Condition="'$(IsCIBuild)' =='true'">
-    <ItemGroup> 
-      <SolutionProjects Include="$(RepositoryRootDirectory)src\*\*\*.csproj" />
-      <SolutionProjectsWithoutVSIX Include="@(SolutionProjects)"
-                                Exclude="$(VSIXProject)" />
-    </ItemGroup>
     <MSBuild Projects="@(SolutionProjectsWithoutVSIX)"
       Targets="GetLocalizedFilesForVsix"
       Properties="IsVsixBuild=true;
@@ -389,6 +382,7 @@
       <VSIXSourceItem Include="@(LocalizedFilesForVsix)"/>
       <_LocalizedFiles Include="$(ArtifactsDirectory)Microsoft.Web.Xdt.2.1.1\lib\net40\**\Microsoft.Web.XmlTransform.resources.dll"/>
       <_LocalizedFiles Include="$(ArtifactsDirectory)vsixlangpack\**\extension.vsixlangpack"/>
+      <_LocalizedFiles Include="$(ArtifactsDirectory)eulas\**\eula.rtf"/>
       <_VsixLocFiles Include="@(_LocalizedFiles)">
         <TargetPath>%(_LocalizedFiles.RecursiveDir)%(_LocalizedFiles.Filename)%(_LocalizedFiles.Extension)</TargetPath>
       </_VsixLocFiles>

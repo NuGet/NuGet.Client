@@ -15,13 +15,6 @@
     <SignTargetsDependOn>BatchSign</SignTargetsDependOn>
     <SignTargetsDependOn Condition="'$(SignVsix)' == 'true'">GetOutputVsix</SignTargetsDependOn>
   </PropertyGroup>
-  
-  <!-- All projects in the repository -->
-  <ItemGroup> 
-      <SolutionProjects Include="$(RepositoryRootDirectory)src\*\*\*.csproj" />
-      <SolutionProjectsWithoutVSIX Include="@(SolutionProjects)"
-                                Exclude="$(VSIXProject)" />
-  </ItemGroup>
 
   <Target Name="BatchSign">
     <ItemGroup>
