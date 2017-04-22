@@ -382,15 +382,15 @@ function global:Run-Test {
         # Deleting tests
         rm function:\Test*
 
-        # Set focus back to powershell
-        [API.Test.VSHelper]::FocusStoredPSWindow()
-
         Write-TestResults $testRunId $results.Values $testRunOutputPath $testLogFile $LaunchResultsOnFailure
 
         try
         {
             # Clear out the setting when the tests are done running
             [Microsoft.Build.Evaluation.ProjectCollection]::GlobalProjectCollection.SetGlobalProperty("UseVSHostingProcess", "")
+
+            # Set focus back to powershell
+            [API.Test.VSHelper]::FocusStoredPSWindow()
         }
         catch {}
     }

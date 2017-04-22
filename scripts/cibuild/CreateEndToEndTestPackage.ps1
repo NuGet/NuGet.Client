@@ -61,6 +61,10 @@ try {
     Write-Verbose "Copying test extension from '$TestExtension' to '$WorkingDirectory'"
     Copy-Item $TestExtension $WorkingDirectory
 
+    $GeneratePackagesUtil = Join-Path $NuGetRoot "artifacts\GenerateTestPackages\${ToolsetVersion}.0\bin\${Configuration}\net46"
+    Write-Verbose "Copying utility binaries from `"$GeneratePackagesUtil`" to `"$WorkingDirectory`""
+    & robocopy $GeneratePackagesUtil $WorkingDirectory *.exe *.dll $opts
+
     $ScriptsDirectory = Join-Path $WorkingDirectory scripts
     New-Item -ItemType Directory -Force -Path $ScriptsDirectory | Out-Null
 

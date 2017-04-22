@@ -12,40 +12,39 @@
     Assert-NotNull $installerServices
     Assert-NotNull $installerEvents
 }
-## Skipping the Test below, because current E2E machines (Win2016 Server) do not allow creating new UWP projects.
 
-# function Test-MigrateVanilaUwpProjectJsonToPackageReference {
-#     param(
-#         $context
-#     )
+function Test-MigrateVanilaUwpProjectJsonToPackageReference {
+    param(
+        $context
+    )
 
-#     # Arrange
-#     $p = New-UwpClassLibrary UwpClassLibrary1
-#     $cm = Get-VsComponentModel
-#     $projectDir = Get-ProjectDir $p
-#     $result = [API.Test.InternalAPITestHook]::MigrateJsonProject($p.FullName) 
-    
-#     # Assert
+    # Arrange
+    $p = New-UwpClassLibrary UwpClassLibrary1
+    $cm = Get-VsComponentModel
+    $projectDir = Get-ProjectDir $p
+    $result = [API.Test.InternalAPITestHook]::MigrateJsonProject($p.FullName)
 
-#     # Check if runtimes were migrated correctly
-#     $expectRuntimeIds = 'win10-arm;win10-arm-aot;win10-x86;win10-x86-aot;win10-x64;win10-x64-aot'
-#     Assert-True($result.IsSuccess)
-#     $actualRuntimes = Get-MsBuildPropertyValue $p 'RuntimeIdentifiers'
-#     Assert-AreEqual $expectRuntimeIds $actualRuntimes
-    
-#     # Check if project.json file was deleted
-#     Assert-True !(Test-Path (Join-Path $projectDir project.json))
-    
-#     # Check if backup was created
-#     Assert-True (Test-Path (Join-Path $projectDir (Join-Path Backup project.json)))
-#     Assert-True (Test-Path (Join-Path $projectDir (Join-Path Backup UwpClassLibrary1.csproj)))
+    # Assert
 
-#     # Check if package reference was added correctly
-#     $packageRefs = @(Get-MsBuildItems $p 'PackageReference')
-#     Assert-AreEqual 1 $packageRefs.Count
-#     Assert-AreEqual $packageRefs[0].GetMetadataValue("Identity") 'Microsoft.NETCore.UniversalWindowsPlatform'
-#     Assert-AreEqual $packageRefs[0].GetMetadataValue("Version") '5.2.2'
-# }
+    # Check if runtimes were migrated correctly
+    $expectRuntimeIds = 'win10-arm;win10-arm-aot;win10-x86;win10-x86-aot;win10-x64;win10-x64-aot'
+    Assert-True($result.IsSuccess)
+    $actualRuntimes = Get-MsBuildPropertyValue $p 'RuntimeIdentifiers'
+    Assert-AreEqual $expectRuntimeIds $actualRuntimes
+
+    # Check if project.json file was deleted
+    Assert-True !(Test-Path (Join-Path $projectDir project.json))
+
+    # Check if backup was created
+    Assert-True (Test-Path (Join-Path $projectDir (Join-Path Backup project.json)))
+    Assert-True (Test-Path (Join-Path $projectDir (Join-Path Backup UwpClassLibrary1.csproj)))
+
+    # Check if package reference was added correctly
+    $packageRefs = @(Get-MsBuildItems $p 'PackageReference')
+    Assert-AreEqual 1 $packageRefs.Count
+    Assert-AreEqual $packageRefs[0].GetMetadataValue("Identity") 'Microsoft.NETCore.UniversalWindowsPlatform'
+    Assert-AreEqual $packageRefs[0].GetMetadataValue("Version") '5.2.2'
+}
 
 function Test-VsPackageInstallerServices {
     param(
@@ -56,7 +55,7 @@ function Test-VsPackageInstallerServices {
     $p = New-WebApplication
     $cm = Get-VsComponentModel
     $installerServices = $cm.GetService([NuGet.VisualStudio.IVsPackageInstallerServices])
-    
+
     # Act
     $p | Install-Package jquery -Version 1.5 -Source $context.RepositoryPath
     $packages = @($installerServices.GetInstalledPackages())
@@ -80,7 +79,7 @@ function Test-GetInstalledPackagesMultipleProjectsSameVersion {
 
     $cm = Get-VsComponentModel
     $installerServices = $cm.GetService([NuGet.VisualStudio.IVsPackageInstallerServices])
-    
+
     # Act
     $packages = @($installerServices.GetInstalledPackages())
 
@@ -102,7 +101,7 @@ function Test-GetInstalledPackagesMultipleProjectsDifferentVersion {
 
     $cm = Get-VsComponentModel
     $installerServices = $cm.GetService([NuGet.VisualStudio.IVsPackageInstallerServices])
-    
+
     # Act
     $packages = @($installerServices.GetInstalledPackages())
 
@@ -121,7 +120,7 @@ function Test-GetInstalledPackagesMVCTemplate
 
     # Arrange
     $p = New-MvcWebSite
-    
+
     $cm = Get-VsComponentModel
     $installerServices = $cm.GetService([NuGet.VisualStudio.IVsPackageInstallerServices])
 
@@ -195,7 +194,7 @@ function Test-GetInstalledPackagesMVCTemplate
 }
 #>
 
-# Disable the test in NuGet V3, as the underlying threading has changed. 
+# Disable the test in NuGet V3, as the underlying threading has changed.
 # Now VsPackageInstallerEvent and PackageManager is doing work using the worker thread, which does not have a PowerShell runspace associated with it.
 # And runspace cannot be shared by the threads.
 function VsPackageInstallerEvents {
@@ -208,7 +207,7 @@ function VsPackageInstallerEvents {
         $p = New-WebApplication
         $cm = Get-VsComponentModel
         $installerEvents = $cm.GetService([NuGet.VisualStudio.IVsPackageInstallerEvents])
-    
+
         $global:installing = 0
         $global:installed = 0
         $global:uninstalling = 0
@@ -242,7 +241,7 @@ function VsPackageInstallerEvents {
         $p | Install-Package jquery -Version 1.5 -Source $context.RepositoryPath
         $p | Uninstall-Package jquery
 
-        
+
         # Assert
         Assert-AreEqual 1 $global:installing
         Assert-AreEqual 1 $global:installed
@@ -270,7 +269,7 @@ function Test-InstallLatestStablePackageAPI
     $p = New-ClassLibrary
 
     # Act
-    [API.Test.InternalAPITestHook]::InstallLatestPackageApi("TestPackage.ListedStable", $false) 
+    [API.Test.InternalAPITestHook]::InstallLatestPackageApi("TestPackage.ListedStable", $false)
 
     # Assert
     Assert-Package $p TestPackage.ListedStable 2.0.6
@@ -288,7 +287,7 @@ function Test-InstallLatestStablePackageAPIForOnlyPrerelease
     Assert-NoPackage $p TestPackage.AlwaysPrerelease
 }
 
-function Test-InstallLatestPrereleasePackageAPI 
+function Test-InstallLatestPrereleasePackageAPI
 {
     param($context)
 
@@ -296,13 +295,13 @@ function Test-InstallLatestPrereleasePackageAPI
     $p = New-ClassLibrary
 
     # Act
-    [API.Test.InternalAPITestHook]::InstallLatestPackageApi("TestPackage.AlwaysPrerelease", $true) 
+    [API.Test.InternalAPITestHook]::InstallLatestPackageApi("TestPackage.AlwaysPrerelease", $true)
 
     # Assert
     Assert-Package $p TestPackage.AlwaysPrerelease 5.0.0-beta
 }
 
-function Test-InstallPackageAPI 
+function Test-InstallPackageAPI
 {
     param($context)
 
@@ -310,7 +309,7 @@ function Test-InstallPackageAPI
     $p = New-ClassLibrary
 
     # Act
-    [API.Test.InternalAPITestHook]::InstallPackageApi("owin","1.0.0") 
+    [API.Test.InternalAPITestHook]::InstallPackageApi("owin","1.0.0")
 
     # Assert
     Assert-Package $p owin 1.0.0
@@ -324,7 +323,7 @@ function Test-InstallPackageAPIEmptyVersion
     $p = New-ClassLibrary
 
     # Act
-    [API.Test.InternalAPITestHook]::InstallPackageApi("owin","") 
+    [API.Test.InternalAPITestHook]::InstallPackageApi("owin","")
 
     # Assert
     Assert-Package $p owin 1.0.0
@@ -338,7 +337,7 @@ function Test-InstallPackageAPIAllSource
     $p = New-ClassLibrary
 
     # Act
-    [API.Test.InternalAPITestHook]::InstallPackageApi("All", "owin", "1.0.0", $false) 
+    [API.Test.InternalAPITestHook]::InstallPackageApi("All", "owin", "1.0.0", $false)
 
     # Assert
     Assert-Package $p owin 1.0.0
@@ -426,7 +425,7 @@ function Test-UninstallPackageAPINoForce
     Assert-Throws { [API.Test.InternalAPITestHook]::UninstallPackageApi("owin","true") } "Exception calling `"UninstallPackageApi`" with `"2`" argument(s): `"Unable to uninstall 'Owin.1.0.0' because 'Microsoft.Owin.3.0.0' depends on it.`""
 }
 
-function Test-GetSourceAPI 
+function Test-GetSourceAPI
 {
     # Arrange
     $cm = Get-VsComponentModel
@@ -446,7 +445,7 @@ function Test-CompareSemanticVersions
     $service = $cm.GetService([NuGet.VisualStudio.IVsSemanticVersionComparer])
     $versionA = "3.1.0-beta-001"
     $versionB = "2.9.0.0"
-    
+
     # Act
     $actual = $service.Compare($versionA, $versionB)
 
@@ -460,7 +459,7 @@ function Test-ParseFrameworkName
     $cm = Get-VsComponentModel
     $service = $cm.GetService([NuGet.VisualStudio.IVsFrameworkParser])
     $framework = "net45"
-    
+
     # Act
     $actual = $service.ParseFrameworkName($framework)
 
@@ -474,7 +473,7 @@ function Test-GetShortFolderName
     $cm = Get-VsComponentModel
     $service = $cm.GetService([NuGet.VisualStudio.IVsFrameworkParser])
     $framework = [System.Runtime.Versioning.FrameworkName](".NETStandard,Version=v1.3")
-    
+
     # Act
     $actual = $service.GetShortFrameworkName($framework)
 
@@ -494,7 +493,7 @@ function Test-GetNearest
         [System.Runtime.Versioning.FrameworkName](".NETFramework,Version=v4.5"),
         [System.Runtime.Versioning.FrameworkName](".NETFramework,Version=v4.5.2")
     )
-    
+
     # Act
     $actual = $service.GetNearest($target, $frameworks)
 
@@ -502,7 +501,7 @@ function Test-GetNearest
     Assert-AreEqual ".NETFramework,Version=v4.5" $actual.ToString()
 }
 
-function Test-GetNetStandardVersions 
+function Test-GetNetStandardVersions
 {
     # Arrange
     $cm = Get-VsComponentModel
@@ -546,7 +545,7 @@ function Test-RestorePackageAPI
     # Arrange
     $p = New-ClassLibrary
     $p | Install-Package JQuery
-    
+
     # delete the packages folder
     $packagesDir = Get-PackagesDir
     Remove-Item -Recurse -Force $packagesDir
@@ -579,8 +578,8 @@ function Test-InstallPackageAPIInstalledPackage
     $p = New-ClassLibrary
 
     # Act
-    [API.Test.InternalAPITestHook]::InstallPackageApi("owin","1.0.0") 
-    [API.Test.InternalAPITestHook]::InstallPackageApi("owin","1.0.0") 
+    [API.Test.InternalAPITestHook]::InstallPackageApi("owin","1.0.0")
+    [API.Test.InternalAPITestHook]::InstallPackageApi("owin","1.0.0")
 
     # Assert
     Assert-Package $p owin 1.0.0
@@ -594,8 +593,8 @@ function Test-InstallPackageAPIInstalledLowerVersionPackage
     $p = New-ClassLibrary
 
     # Act
-    [API.Test.InternalAPITestHook]::InstallPackageApi("microsoft.owin","2.0.0") 
-    [API.Test.InternalAPITestHook]::InstallPackageApi("microsoft.owin","3.0.0") 
+    [API.Test.InternalAPITestHook]::InstallPackageApi("microsoft.owin","2.0.0")
+    [API.Test.InternalAPITestHook]::InstallPackageApi("microsoft.owin","3.0.0")
 
     # Assert
     Assert-Package $p microsoft.owin 3.0.0
@@ -610,8 +609,8 @@ function Test-InstallPackageAPIInstalledHigherVersionPackage
     $p = New-ClassLibrary
 
     # Act
-    [API.Test.InternalAPITestHook]::InstallPackageApi("microsoft.owin","3.0.0") 
-    [API.Test.InternalAPITestHook]::InstallPackageApi("microsoft.owin","2.0.0") 
+    [API.Test.InternalAPITestHook]::InstallPackageApi("microsoft.owin","3.0.0")
+    [API.Test.InternalAPITestHook]::InstallPackageApi("microsoft.owin","2.0.0")
 
     # Assert
     Assert-Package $p microsoft.owin 2.0.0
@@ -631,7 +630,7 @@ function Test-UninstallPackageAPIPackageNotExist
     Assert-Throws {[API.Test.InternalAPITestHook]::UninstallPackageApi("owin","true") } "Exception calling `"UninstallPackageApi`" with `"2`" argument(s): `"Package 'owin' to be uninstalled could not be found in project '$projectName'`""
 }
 
-function Test-RestorePackageAPINoPackage 
+function Test-RestorePackageAPINoPackage
 {
     param($context)
 
@@ -645,7 +644,7 @@ function Test-RestorePackageAPINoPackage
     Assert-False (Join-Path (Get-ProjectDir $p) packages.config)
 }
 
-function Test-InstallPackageAPIBindingRedirect 
+function Test-InstallPackageAPIBindingRedirect
 {
     param($context)
 
@@ -653,7 +652,7 @@ function Test-InstallPackageAPIBindingRedirect
     $p = New-ClassLibrary
 
     # Act
-    [API.Test.InternalAPITestHook]::InstallPackageApi("TestBindingRedirectA","1.0.0") 
+    [API.Test.InternalAPITestHook]::InstallPackageApi("TestBindingRedirectA","1.0.0")
 
     # Assert
     Assert-BindingRedirect $p app.config B '0.0.0.0-2.0.0.0' '2.0.0.0'
@@ -667,12 +666,12 @@ function Test-ExecuteInitPS1OnClassLibrary
     $global:PackageInitPS1Var = 0
     $p = New-ClassLibrary
 
-    Install-Package PackageInitPS1 -Project $p.Name -Source $context.RepositoryPath
+    Install-Package PackageInitPS1 -Project $p.Name -Source $context.RepositoryRoot
 
     Assert-True ($global:PackageInitPS1Var -eq 1)
 
     # Act
-    $result = [API.Test.InternalAPITestHook]::ExecuteInitScript("PackageInitPS1","1.0.0")
+    $result = [API.Test.InternalAPITestHook]::ExecuteInitScript("PackageInitPS1","1.0.2")
 
     Assert-True $result
 
@@ -687,12 +686,12 @@ function Test-ExecuteInitPS1OnUAP
     $global:PackageInitPS1Var = 0
     $p = New-BuildIntegratedProj UAPApp
 
-    Install-Package PackageInitPS1 -Project $p.Name -Source $context.RepositoryPath
+    Install-Package PackageInitPS1 -Project $p.Name -Source $context.RepositoryRoot
 
     Assert-True ($global:PackageInitPS1Var -eq 1)
 
     # Act
-    $result = [API.Test.InternalAPITestHook]::ExecuteInitScript("PackageInitPS1","1.0.0")
+    $result = [API.Test.InternalAPITestHook]::ExecuteInitScript("PackageInitPS1","1.0.2")
 
     Assert-True $result
 
@@ -712,19 +711,19 @@ function ExecuteInitPS1OnAspNetCore
     $global:PackageInitPS1Var = 0
     $p = New-DNXClassLibrary
 
-    Install-Package PackageInitPS1 -Project $p.Name -Source $context.RepositoryPath
+    Install-Package PackageInitPS1 -Project $p.Name -Source $context.RepositoryRoot
 
     Assert-True ($global:PackageInitPS1Var -eq 0)
 
     # Act
-    $result = [API.Test.InternalAPITestHook]::ExecuteInitScript("PackageInitPS1","1.0.0")
+    $result = [API.Test.InternalAPITestHook]::ExecuteInitScript("PackageInitPS1","1.0.2")
 
     Assert-True $result
 
     Assert-True ($global:PackageInitPS1Var -eq 1)
 }
 
-function Test-BatchEventsApi 
+function Test-BatchEventsApi
 {
     param($context)
 
@@ -732,7 +731,7 @@ function Test-BatchEventsApi
     $p = New-ClassLibrary
 
     # Act
-    $result = [API.Test.InternalAPITestHook]::BatchEventsApi("owin","1.0.0") 
+    $result = [API.Test.InternalAPITestHook]::BatchEventsApi("owin","1.0.0")
 
     # Assert
     Assert-True $result
@@ -745,9 +744,9 @@ function Test-ExecuteInitScriptsPerSolution
     # Arrange
     $global:PackageInitPS1Var = 0
     $p = New-ClassLibrary
-    
-    Install-Package PackageInitPS1 -Project $p.Name -Source $context.RepositoryPath
-    
+
+    Install-Package PackageInitPS1 -Project $p.Name -Source $context.RepositoryRoot
+
     Assert-True ($global:PackageInitPS1Var -eq 1)
 
     $solutionFile1 = Get-SolutionFullName
@@ -777,9 +776,9 @@ function Test-ExecuteInitScriptsOnlyOnce
     # Arrange
     $global:PackageInitPS1Var = 0
     $p = New-ClassLibrary
-    
-    Install-Package PackageInitPS1 -Project $p.Name -Source $context.RepositoryPath
-    
+
+    Install-Package PackageInitPS1 -Project $p.Name -Source $context.RepositoryRoot
+
     Assert-True ($global:PackageInitPS1Var -eq 1)
 
     # Act
@@ -855,7 +854,7 @@ function Test-CreateVsPathContextUsesAssetsFileIfAvailable {
 	$p = New-BuildIntegratedProj UAPApp
 
     Install-Package NuGet.Versioning -ProjectName $p.Name -version 1.0.7
-	
+
 	$solutionFile = Get-SolutionFullName
 	$solutionDir = Split-Path $solutionFile -Parent
 
@@ -878,7 +877,7 @@ function Test-CreateVsPathContextUsesAssetsFileIfAvailable {
 	Open-Solution $solutionFile
 
 	$p = Get-Project
-	
+
 	# Act
 	$context = [API.Test.InternalAPITestHook]::GetVsPathContext($p.UniqueName)
 
