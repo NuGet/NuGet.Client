@@ -417,7 +417,7 @@ function Test-NetCoreWebAppExecuteInitScriptsOnlyOnce
     $p = New-NetCoreWebApp10 WebApp
 
     # Act & Assert
-    Install-Package PackageInitPS1 -Project $p.Name -Source $context.RepositoryPath
+    Install-Package PackageInitPS1 -Project $p.Name -Source $context.RepositoryRoot
     Build-Solution
     Assert-True ($global:PackageInitPS1Var -eq 1)
 
