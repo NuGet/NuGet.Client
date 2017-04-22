@@ -667,12 +667,12 @@ function Test-ExecuteInitPS1OnClassLibrary
     $global:PackageInitPS1Var = 0
     $p = New-ClassLibrary
 
-    Install-Package PackageInitPS1 -Project $p.Name -Source $context.RepositoryPath
+    Install-Package PackageInitPS1 -Project $p.Name -Source $context.RepositoryRoot
 
     Assert-True ($global:PackageInitPS1Var -eq 1)
 
     # Act
-    $result = [API.Test.InternalAPITestHook]::ExecuteInitScript("PackageInitPS1","1.0.0")
+    $result = [API.Test.InternalAPITestHook]::ExecuteInitScript("PackageInitPS1","1.0.2")
 
     Assert-True $result
 
@@ -687,12 +687,12 @@ function Test-ExecuteInitPS1OnUAP
     $global:PackageInitPS1Var = 0
     $p = New-BuildIntegratedProj UAPApp
 
-    Install-Package PackageInitPS1 -Project $p.Name -Source $context.RepositoryPath
+    Install-Package PackageInitPS1 -Project $p.Name -Source $context.RepositoryRoot
 
     Assert-True ($global:PackageInitPS1Var -eq 1)
 
     # Act
-    $result = [API.Test.InternalAPITestHook]::ExecuteInitScript("PackageInitPS1","1.0.0")
+    $result = [API.Test.InternalAPITestHook]::ExecuteInitScript("PackageInitPS1","1.0.2")
 
     Assert-True $result
 
@@ -712,12 +712,12 @@ function ExecuteInitPS1OnAspNetCore
     $global:PackageInitPS1Var = 0
     $p = New-DNXClassLibrary
 
-    Install-Package PackageInitPS1 -Project $p.Name -Source $context.RepositoryPath
+    Install-Package PackageInitPS1 -Project $p.Name -Source $context.RepositoryRoot
 
     Assert-True ($global:PackageInitPS1Var -eq 0)
 
     # Act
-    $result = [API.Test.InternalAPITestHook]::ExecuteInitScript("PackageInitPS1","1.0.0")
+    $result = [API.Test.InternalAPITestHook]::ExecuteInitScript("PackageInitPS1","1.0.2")
 
     Assert-True $result
 
@@ -746,7 +746,7 @@ function Test-ExecuteInitScriptsPerSolution
     $global:PackageInitPS1Var = 0
     $p = New-ClassLibrary
 
-    Install-Package PackageInitPS1 -Project $p.Name -Source $context.RepositoryPath
+    Install-Package PackageInitPS1 -Project $p.Name -Source $context.RepositoryRoot
 
     Assert-True ($global:PackageInitPS1Var -eq 1)
 
@@ -778,7 +778,7 @@ function Test-ExecuteInitScriptsOnlyOnce
     $global:PackageInitPS1Var = 0
     $p = New-ClassLibrary
 
-    Install-Package PackageInitPS1 -Project $p.Name -Source $context.RepositoryPath
+    Install-Package PackageInitPS1 -Project $p.Name -Source $context.RepositoryRoot
 
     Assert-True ($global:PackageInitPS1Var -eq 1)
 
