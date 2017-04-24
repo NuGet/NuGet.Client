@@ -1,4 +1,4 @@
-﻿namespace NuGet.Options
+namespace NuGet.Options
 {
     partial class GeneralOptionControl
     {
@@ -87,6 +87,8 @@
             this.localsCommandStatusText.BackColor = System.Drawing.SystemColors.Control;
             this.localsCommandStatusText.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.localsCommandStatusText.Name = "localsCommandStatusText";
+            this.localsCommandStatusText.ReadOnly = true;
+            this.localsCommandStatusText.AccessibleRole = System.Windows.Forms.AccessibleRole.Text;
             this.localsCommandStatusText.ContentsResized += new System.Windows.Forms.ContentsResizedEventHandler(this.localsCommandStatusText_ContentChanged);
             this.localsCommandStatusText.LinkClicked += new System.Windows.Forms.LinkClickedEventHandler(this.localsCommandStatusText_LinkClicked);
             // 
