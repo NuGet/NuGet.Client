@@ -9,6 +9,7 @@ using Newtonsoft.Json.Linq;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Protocol.Core.Types;
+using NuGet.Test.Utility;
 using Xunit;
 
 namespace NuGet.Protocol.Plugins.Tests
@@ -116,7 +117,7 @@ namespace NuGet.Protocol.Plugins.Tests
             }
         }
 
-        [Fact]
+        [PlatformFact(Platform.Windows)]
         public async Task TryCreate_ReturnsPluginResource()
         {
             var serviceIndex = new ServiceIndexResourceV3(JObject.Parse("{}"), DateTime.UtcNow);

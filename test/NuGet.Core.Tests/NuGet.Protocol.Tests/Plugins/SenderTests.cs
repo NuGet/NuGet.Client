@@ -172,7 +172,7 @@ namespace NuGet.Protocol.Plugins.Tests
 
                 var actualResult = writer.ToString();
 
-                Assert.Equal("{\"RequestId\":\"a\",\"Type\":\"Request\",\"Method\":\"None\"}\r\n", actualResult);
+                Assert.Equal($"{{\"RequestId\":\"a\",\"Type\":\"Request\",\"Method\":\"None\"}}{Environment.NewLine}", actualResult);
             }
         }
 

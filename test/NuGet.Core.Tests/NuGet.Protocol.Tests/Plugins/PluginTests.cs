@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO;
 using System.Threading;
 using Moq;
 using Xunit;
@@ -73,7 +74,7 @@ namespace NuGet.Protocol.Plugins.Tests
         [Fact]
         public void Constructor_InitializesProperties()
         {
-            var filePath = @"C:\a\b\c.d";
+            var filePath = Path.Combine(".", "a", "b", "c.d");
             var connection = Mock.Of<IConnection>();
             var process = Mock.Of<IPluginProcess>();
             var isOwnProcess = false;
