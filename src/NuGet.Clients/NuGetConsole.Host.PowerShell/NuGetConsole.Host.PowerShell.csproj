@@ -4,6 +4,7 @@
 
   <PropertyGroup>
     <Shipping>true</Shipping>
+    <IncludeInVSIX>true</IncludeInVSIX>
     <PackagesDirectory>$(UserProfile)\.nuget\packages</PackagesDirectory>
     <ResolveNuGetPackages>true</ResolveNuGetPackages>
     <SkipValidatePackageReferences>true</SkipValidatePackageReferences>
@@ -107,10 +108,48 @@
     <ProjectReference Include="..\NuGet.Console\NuGet.Console.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Scripts\about_NuGet.PackageManagement.PowerShellCmdlets.help.txt" />
-    <None Include="Scripts\NuGet.PackageManagement.PowerShellCmdlets.dll-Help.xml" />
+    <None Include="Scripts\about_NuGet.PackageManagement.PowerShellCmdlets.help.txt"/>
+    <!-- We copy this xml file to output directory so CI can pick it for localization from artifacts directory
+    However, we condition it to only be copied when building the project itself and not the vsix to prevent VSIX 
+    from including this file -->
+    <None Include="Scripts\NuGet.PackageManagement.PowerShellCmdlets.dll-Help.xml">
+      <CopyToOutputDirectory Condition="$(IsVsixBuild) != 'true'">PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
   <Import Project="$(BuildCommonDirectory)common.targets" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+
+  <PropertyGroup>
+    <SignTargetsForRealSigning>$(SignTargetsForRealSigning);GetScriptsForSigning</SignTargetsForRealSigning>
+    <LocTargets>$(LocTargets);GetPowerShellCmdletsHelpFile</LocTargets>
+    <GetLocalizedFilesForVsixDependsOn>GetLocalizedPowerShellCmdletHelpFile</GetLocalizedFilesForVsixDependsOn>
+  </PropertyGroup>
+
+  <Target Name="GetScriptsForSigning" Returns="@(ScriptsToSign)">
+    <ItemGroup>
+      <ScriptsToSign Include="$(MSBuildProjectDirectory)\Scripts\*.ps*">
+        <Authenticode>402</Authenticode>
+      </ScriptsToSign>
+    </ItemGroup>
+  </Target>
+
+  <Target Name="GetPowerShellCmdletsHelpFile" Returns="@(PowerShellCmdletsHelpFiles)">
+    <ItemGroup>
+      <PowerShellCmdletsHelpFiles Include="$(OutputPath)Scripts\NuGet.PackageManagement.PowerShellCmdlets.dll-Help.xml">
+        <TranslationFile>$(LocalizationRootDirectory)\{Lang}\15\%(Filename)%(Extension).lcl</TranslationFile>    <!--Required: translation file-->
+	      <LciCommentFile>$(LocalizationRootDirectory)\comments\15\%(Filename)%(Extension).lci</LciCommentFile>
+      </PowerShellCmdletsHelpFiles>
+    </ItemGroup>
+  </Target>
+
+  <Target Name="GetLocalizedPowerShellCmdletHelpFile">
+    <ItemGroup>
+      <_AllLocalizedXmlFiles Include="$(OutputPath)Scripts\**\NuGet.PackageManagement.PowerShellCmdlets.dll-Help.xml" />
+      <LocalizedFilesForVsix Include="@(_AllLocalizedXmlFiles)">
+        <TargetPath>Modules\NuGet\$([MSBuild]::MakeRelative($(OutputPath)Scripts, %(_AllLocalizedXmlFiles.Identity)))</TargetPath>
+      </LocalizedFilesForVsix>
+    </ItemGroup>
+  </Target>
+
 </Project>

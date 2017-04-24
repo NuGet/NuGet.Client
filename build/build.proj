@@ -12,46 +12,6 @@
     </CommonMSBuildProperties>
   </PropertyGroup>
 
-  <!-- Find all test projects  -->
-  <ItemGroup Condition=" '$(IsXPlat)' != 'true' ">
-    <CoreUnitTestProjects Include="$(RepositoryRootDirectory)test\NuGet.Core.Tests\*\*.csproj"
-                          Exclude="$(RepositoryRootDirectory)test\NuGet.Core.Tests\NuGet.PackageManagement.Test\*.csproj"/>
-    <VSUnitTestProjects Include="$(RepositoryRootDirectory)test\NuGet.Clients.Tests\*\*.csproj"
-                        Exclude="$(RepositoryRootDirectory)test\NuGet.Clients.Tests\NuGet.CommandLine.Test\*.csproj" />
-    <CoreFuncTestProjects Include="$(RepositoryRootDirectory)test\NuGet.Core.FuncTests\*\*.csproj;
-                                   $(RepositoryRootDirectory)test\NuGet.Clients.Tests\NuGet.CommandLine.Test\*.csproj;
-                                   $(RepositoryRootDirectory)test\NuGet.Core.Tests\NuGet.PackageManagement.Test\*.csproj;
-                                   $(RepositoryRootDirectory)test\NuGet.Clients.FuncTests\*\*.csproj" />
-  </ItemGroup>
-
-  <!-- start with only nuget.versioning for xplat -->
-  <ItemGroup Condition=" '$(IsXPlat)' == 'true' ">
-    <CoreUnitTestProjects Include="$(RepositoryRootDirectory)test\NuGet.Core.Tests\*\*.csproj"
-                          Exclude="$(RepositoryRootDirectory)test\NuGet.Core.Tests\*PackageManagement*\*.csproj;
-                                   $(RepositoryRootDirectory)test\NuGet.Core.Tests\*ProjectManagement*\*.csproj;
-                                   $(RepositoryRootDirectory)test\NuGet.Core.Tests\*VisualStudio*\*.csproj;
-                                   $(RepositoryRootDirectory)test\NuGet.Core.Tests\*.Utility\*.csproj;
-                                   $(RepositoryRootDirectory)test\NuGet.Core.Tests\NuGet.Indexing.Test\*.csproj" />
-    <CoreFuncTestProjects Include="$(RepositoryRootDirectory)test\NuGet.Core.FuncTests\*\*.csproj" />
-  </ItemGroup>
-
-  <!-- All projects in the repository -->
-  <ItemGroup Condition=" '$(IsXPlat)' != 'true' ">
-    <SolutionProjects Include="$(RepositoryRootDirectory)test\*\*\*.csproj"
-                      Exclude="$(RepositoryRootDirectory)test\EndToEnd\*\*.csproj"
-                      Condition=" '$(ExcludeTestProjects)' != 'true' " />
-
-    <SolutionProjects Include="$(RepositoryRootDirectory)src\*\*\*.csproj" />
-    <SolutionProjectsWithoutVSIX Include="@(SolutionProjects)"
-                                Exclude="$(VSIXProject)" />
-  </ItemGroup>
-
-  <!-- All projects in the repository that support cross platform builds -->
-  <ItemGroup Condition=" '$(IsXPlat)' == 'true' ">
-    <SolutionProjects Include="@(CoreUnitTestProjects)" />
-    <SolutionProjects Include="@(CoreFuncTestProjects)" />
-  </ItemGroup>
-
   <!--
     ============================================================
     Run core functional tests (non-VS specific)
@@ -242,12 +202,14 @@
     BuildVS15 runs the NoVSIX targets before this one.
     ============================================================
   -->
-  <Target Name="BuildVS15VSIX" AfterTargets= "BuildVS15" Condition=" '$(IsXPlat)' != 'true' ">
+  <Target Name="BuildVS15VSIX" AfterTargets= "BuildVS15" Condition=" '$(IsXPlat)' != 'true' AND '$(BuildRTM)' != 'true'">
     <Message Text="Building the VSIX for VS15" Importance="high" />
 
     <MSBuild Projects="$(VSIXProject)"
              Targets="Build"
              Properties="$(CommonMSBuildProperties);
+                         BuildProjectReferences=false;
+                         IsVsixBuild=true;
                          VisualStudioVersion=15.0;" />
   </Target>
 

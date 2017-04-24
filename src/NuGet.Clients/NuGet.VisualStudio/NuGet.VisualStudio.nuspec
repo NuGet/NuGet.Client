@@ -12,8 +12,8 @@
     <copyright>© Microsoft Corporation. All rights reserved.</copyright>
   </metadata>
   <files>
-     <file src="..\..\..\artifacts\NuGet.VisualStudio\15.0\bin\$configuration$\net46\NuGet.VisualStudio.dll" target="lib\net46\NuGet.VisualStudio.dll" />
-     <file src="..\..\..\artifacts\NuGet.VisualStudio\15.0\bin\$configuration$\net46\NuGet.VisualStudio.xml" target="lib\net46\NuGet.VisualStudio.xml" />
-     <file src="install.ps1" target="tools\install.ps1" />
+     <file src="net46\NuGet.VisualStudio.dll" target="lib\net46\NuGet.VisualStudio.dll" />
+     <file src="net46\NuGet.VisualStudio.xml" target="lib\net46\NuGet.VisualStudio.xml" />
+     <file src="net46\install.ps1" target="tools\install.ps1" />
   </files>
 </package>

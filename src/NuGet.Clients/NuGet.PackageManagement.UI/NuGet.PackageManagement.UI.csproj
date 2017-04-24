@@ -4,10 +4,12 @@
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Shipping>true</Shipping>
+    <IncludeInVSIX>true</IncludeInVSIX>
     <AutoUnifyAssemblyReferences>true</AutoUnifyAssemblyReferences>
     <RestoreNuGetPackages>true</RestoreNuGetPackages>
     <PackagesDir>$(UserProfile)\.nuget\packages</PackagesDir>
     <AssemblyOriginatorKeyFile>$(MS_PFX_PATH)</AssemblyOriginatorKeyFile>
+    <StrongNameCert>MsSharedLib72</StrongNameCert>
   </PropertyGroup>
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -381,7 +383,6 @@
     <Resource Include="Resources\packageicon.png" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="PackageManagement.UI.nuspec" />
     <None Include="project.json" />
   </ItemGroup>
   <ItemGroup>

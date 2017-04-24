@@ -24,19 +24,17 @@
   <ImportGroup Condition=" '$(SkipSigning)' != 'true' ">
     <Import Project="sign.targets" />
   </ImportGroup>
-
+  <PropertyGroup Condition="'$(Shipping)' == 'true'">
+    <SignTargetsForRealSigning>GetBuildOutputWithSigningMetadata</SignTargetsForRealSigning>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(IncludeInVSIX)' == 'true'">
+    <LocTargets>GetBuildOutputWithLocMetadata</LocTargets>
+  </PropertyGroup>
   <!-- Write out .XML files for projects that will be packed. -->
   <PropertyGroup Condition=" '$(PackProject)' == 'true' ">
     <GenerateDocumentationFile Condition=" '$(GenerateDocumentationFile)' == '' ">true</GenerateDocumentationFile>
     <DocumentationFile Condition=" '$(DocumentationFile)' == '' AND '$(GenerateDocumentationFile)' == 'true' AND '$(IsNetCoreProject)' != 'true' ">$(OutputPath)\$(AssemblyName).xml</DocumentationFile>
   </PropertyGroup>
-
-  <!-- These are needed because currently a VSIX project cannot reference a net core project that multi targets -->
-  <Target Name="BuiltProjectOutputGroupDependencies" Condition=" '$(IsNetCoreProject)' == 'true' " />
-  <Target Name="BuiltProjectOutputGroup" Condition=" '$(IsNetCoreProject)' == 'true' " />
-  <Target Name="GetCopyToOutputDirectoryItems" Condition=" '$(IsNetCoreProject)' == 'true' " />
-  <Target Name="SatelliteDllsProjectOutputGroup" Condition=" '$(IsNetCoreProject)' == 'true' " />
-  <Target Name="DebugSymbolsProjectOutputGroup" Condition=" '$(IsNetCoreProject)' == 'true' " />
 
   <!-- Test Projects -->
   <ImportGroup Condition=" '$(TestProject)' == 'true' ">
@@ -54,6 +52,15 @@
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath> 
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
   </PropertyGroup>
+
+  <!-- These are needed because currently a VSIX project cannot reference a net core project that multi targets.
+  This is a hack for building VS14 VSIX. It's because all these targets are available in the inner build, while the VSIX project 
+  is non netcore, and isn't aware of inner/outer builds. -->
+  <Target Name="BuiltProjectOutputGroupDependencies" Condition=" '$(IsNetCoreProject)' == 'true' AND '$(VisualStudioVersion)' == '14.0' " />
+  <Target Name="BuiltProjectOutputGroup" Condition=" '$(IsNetCoreProject)' == 'true' AND '$(VisualStudioVersion)' == '14.0'" />
+  <Target Name="GetCopyToOutputDirectoryItems" Condition=" '$(IsNetCoreProject)' == 'true' AND '$(VisualStudioVersion)' == '14.0'" />
+  <Target Name="SatelliteDllsProjectOutputGroup" Condition=" '$(IsNetCoreProject)' == 'true' AND '$(VisualStudioVersion)' == '14.0'" />
+  <Target Name="DebugSymbolsProjectOutputGroup" Condition=" '$(IsNetCoreProject)' == 'true' AND '$(VisualStudioVersion)' == '14.0'" />
 
   <!--
     ============================================================
@@ -86,6 +93,95 @@
                   IncludeSymbols=true;
                   NoBuild=true;">
     </MSBuild>
+  </Target>
+
+  <!--
+    ============================================================
+    GetSigningInputs - gets the list of DLLs that need to
+    be signed from each project
+    ============================================================
+  -->
+  <Target Name="GetSigningInputs" DependsOnTargets="GetTargetFrameworkSet" Returns="@(DllsToSign)" Condition=" '$(Shipping)' == 'true' ">
+    <MSBuild
+      Projects="$(MSBuildProjectFullPath)"
+      Targets="$(SignTargetsForRealSigning)"
+      Properties="TargetFramework=%(ProjectTargetFrameworkEntries.Identity);
+                  BuildProjectReferences=false;">
+
+      <Output
+          TaskParameter="TargetOutputs"
+          ItemName="DllsToSign" />
+    </MSBuild>
+    <MsBuild Condition="'$(IncludeInVsix)' == 'true' AND '$(BuildRTM)' != 'true'"
+      Projects="$(MSBuildProjectFullPath)"
+      Targets="_GetLocalizedDllsForSigning"
+      Properties="IsVsixBuild=true;
+                  BuildProjectReferences=false;">
+      <Output
+        TaskParameter="TargetOutputs"
+        ItemName="DllsToSign"/>
+    </MsBuild>
+  </Target>
+
+  <Target Name="_GetLocalizedDllsForSigning" Returns="@(LocalizedDllsToSign)">
+    <ItemGroup>
+      <LocalizedDllsToSign Include="$(OutputPath)**\$(AssemblyName).resources.dll">
+        <StrongName>$(StrongNameCert)</StrongName>
+        <Authenticode>Microsoft</Authenticode>
+      </LocalizedDllsToSign>
+    </ItemGroup>
+  </Target>
+
+  <Target Name="GetBuildOutputWithSigningMetadata" DependsOnTargets="BuiltProjectOutputGroup" Returns="@(DllsToSignWithMetadata)">
+    <ItemGroup>
+      <DllsToSignWithMetadata Include="@(BuiltProjectOutputGroupOutput->'%(FinalOutputPath)')" Condition="'%(Extension)' != '.json'" KeepDuplicates="false">
+        <StrongName>$(StrongNameCert)</StrongName>
+        <Authenticode>Microsoft</Authenticode>
+      </DllsToSignWithMetadata>
+    </ItemGroup>
+  </Target>
+
+  <!--
+    ============================================================
+    GatherLocalizationInputs - gathers the list of DLLs that need to
+    be localized from each project
+    ============================================================
+  -->
+  <Target Name="GetLocalizationInputs" Returns="@(DllsToLocalize)" Condition=" '$(IncludeInVSIX)' == 'true' ">
+    <MSBuild
+      Projects="$(MSBuildProjectFullPath)"
+      Targets="$(LocTargets)"
+      Properties="IsVsixBuild=true;
+                  BuildProjectReferences=false;">
+
+      <Output
+          TaskParameter="TargetOutputs"
+          ItemName="DllsToLocalize" />
+    </MSBuild>
+  </Target>
+
+  <Target Name="GetBuildOutputWithLocMetadata" DependsOnTargets="BuiltProjectOutputGroup" Returns="@(DllsToLocalizeWithMetadata)">
+    <ItemGroup>
+      <DllsToLocalizeWithMetadata Include="@(BuiltProjectOutputGroupOutput->'%(FinalOutputPath)')" Condition="'%(Extension)' == '.dll'" KeepDuplicates="false">
+        <TranslationFile>$(LocalizationRootDirectory)\{Lang}\15\%(Filename).resources.dll.lcl</TranslationFile>    <!--Required: translation file-->
+	      <LciCommentFile>$(LocalizationRootDirectory)\comments\15\%(Filename).resources.dll.lci</LciCommentFile>
+      </DllsToLocalizeWithMetadata>
+    </ItemGroup>
+  </Target>
+
+  <!--
+    ============================================================
+    GetLocalizedFilesForVsix - gathers the list of localized DLLs 
+    from each project
+    ============================================================
+  -->
+  <Target Name="GetLocalizedFilesForVsix" DependsOnTargets="$(GetLocalizedFilesForVsixDependsOn)" Returns="@(LocalizedFilesForVsix)" Condition=" '$(IncludeInVsix)' == 'true' ">
+    <ItemGroup>
+      <_AllResourceDlls Include="$(OutputPath)**\$(AssemblyName).resources.dll"/>
+      <LocalizedFilesForVsix Include="@(_AllResourceDlls)">
+        <TargetPath>$([MSBuild]::MakeRelative($(OutputPath), %(_AllResourceDlls.Identity)))</TargetPath>
+      </LocalizedFilesForVsix>
+    </ItemGroup>
   </Target>
 
   <!--

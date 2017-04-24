@@ -6,6 +6,7 @@
     <TargetFramework>net46</TargetFramework>
     <Shipping>true</Shipping>
     <PackProject>true</PackProject>
+    <IncludeInVSIX>true</IncludeInVSIX>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -23,9 +24,16 @@
     <PackageReference Include="VSSDK.TemplateWizardInterface" Version="12.0.4" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="install.ps1">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
   <PropertyGroup>
     <NuspecFile>NuGet.VisualStudio.nuspec</NuspecFile>
     <NuspecProperties>version=$(Version);configuration=$(Configuration)</NuspecProperties>
+    <NuspecBasePath>$(OutputPath)</NuspecBasePath>
   </PropertyGroup>
 
   <!--

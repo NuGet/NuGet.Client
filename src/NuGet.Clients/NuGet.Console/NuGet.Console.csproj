@@ -4,9 +4,7 @@
 
   <PropertyGroup>
     <Shipping>true</Shipping>
-  </PropertyGroup>
-
-    <PropertyGroup>
+    <IncludeInVSIX>true</IncludeInVSIX>
     <OutputType>Library</OutputType>
     <RootNamespace>NuGetConsole</RootNamespace>
     <AssemblyName>NuGet.Console</AssemblyName>
