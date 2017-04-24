@@ -17,6 +17,11 @@ namespace NuGet.Protocol.Plugins
         public static readonly SemanticVersion CurrentVersion = new SemanticVersion(major: 1, minor: 0, patch: 0);
 
         /// <summary>
+        /// The default handshake timeout.
+        /// </summary>
+        public static readonly TimeSpan HandshakeTimeout = TimeSpan.FromSeconds(5);
+
+        /// <summary>
         /// The maximum timeout value.
         /// </summary>
         /// <remarks>This is set by CancellationTokenSource's constructor.</remarks>
@@ -26,5 +31,10 @@ namespace NuGet.Protocol.Plugins
         /// The minimum timeout value.
         /// </summary>
         public static readonly TimeSpan MinTimeout = TimeSpan.FromTicks(1);
+
+        /// <summary>
+        /// The default request timeout.
+        /// </summary>
+        public static readonly TimeSpan RequestTimeout = TimeSpan.FromSeconds(5);
     }
 }

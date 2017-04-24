@@ -118,8 +118,8 @@ namespace NuGet.Protocol.Plugins
             return new ConnectionOptions(
                 protocolVersion: ProtocolConstants.CurrentVersion,
                 minimumProtocolVersion: ProtocolConstants.CurrentVersion,
-                handshakeTimeout: TimeSpan.FromSeconds(10),
-                requestTimeout: TimeSpan.FromSeconds(10));
+                handshakeTimeout: ProtocolConstants.HandshakeTimeout,
+                requestTimeout: ProtocolConstants.RequestTimeout);
         }
     }
 }
