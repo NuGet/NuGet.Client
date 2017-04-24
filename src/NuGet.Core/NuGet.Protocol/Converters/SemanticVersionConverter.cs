@@ -40,7 +40,9 @@ namespace NuGet.Protocol
         /// <param name="serializer">A serializer.</param>
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
         {
-            serializer.Serialize(writer, value.ToString());
+            var semanticVersion = (SemanticVersion)value;
+
+            serializer.Serialize(writer, semanticVersion.ToString());
         }
     }
 }
