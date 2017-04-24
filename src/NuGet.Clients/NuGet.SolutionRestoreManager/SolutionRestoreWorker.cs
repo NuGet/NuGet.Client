@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -61,6 +61,8 @@ namespace NuGet.SolutionRestoreManager
         public Task<bool> CurrentRestoreOperation => _activeRestoreTask;
 
         public bool IsBusy => !_activeRestoreTask.IsCompleted;
+
+        public JoinableTaskFactory JoinableTaskFactory => _joinableFactory;
 
         [ImportingConstructor]
         public SolutionRestoreWorker(
@@ -283,27 +285,22 @@ namespace NuGet.SolutionRestoreManager
             }
         }
 
-        public bool Restore(SolutionRestoreRequest request)
+        public async Task<bool> RestoreAsync(SolutionRestoreRequest request, CancellationToken token)
         {
-            return _joinableFactory.Run(
-                async () =>
+            using (_joinableCollection.Join())
+            {
+                // Initialize if not already done.
+                await InitializeAsync();
+
+                using (var restoreOperation = new BackgroundRestoreOperation())
                 {
-                    using (_joinableCollection.Join())
-                    {
-                        // Initialize if not already done.
-                        await InitializeAsync();
+                    await PromoteTaskToActiveAsync(restoreOperation, token);
 
-                        using (var restoreOperation = new BackgroundRestoreOperation())
-                        {
-                            await PromoteTaskToActiveAsync(restoreOperation, _workerCts.Token);
+                    var result = await ProcessRestoreRequestAsync(restoreOperation, request, token);
 
-                            var result = await ProcessRestoreRequestAsync(restoreOperation, request, _workerCts.Token);
-
-                            return result;
-                        }
-                    }
-                },
-                JoinableTaskCreationOptions.LongRunning);
+                    return result;
+                }
+            }
         }
 
         public void CleanCache()
@@ -412,7 +409,7 @@ namespace NuGet.SolutionRestoreManager
         {
             var pendingTask = restoreOperation.Task;
 
-            int attempt = 0;
+            var attempt = 0;
             for (var retry = true;
                 retry && !token.IsCancellationRequested && attempt != PromoteAttemptsLimit;
                 attempt++)

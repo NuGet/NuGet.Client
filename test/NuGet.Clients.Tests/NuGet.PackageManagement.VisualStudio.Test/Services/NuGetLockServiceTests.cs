@@ -72,7 +72,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         {
             _cts.Cancel();
 
-            await Assert.ThrowsAsync<SemaphoreFullException>(async () => await _lockService.ExecuteNuGetOperationAsync(() =>
+            await Assert.ThrowsAsync<TaskCanceledException>(async () => await _lockService.ExecuteNuGetOperationAsync(() =>
             {
                 return Task.FromResult(true);
             }, _cts.Token));

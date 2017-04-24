@@ -27,9 +27,10 @@ namespace NuGet.PackageManagement.VisualStudio
             if (_lockCount.Value == 0)
             {
                 _lockCount.Value++;
+                await _semaphore.WaitAsync(token);
+
                 try
                 {
-                    await _semaphore.WaitAsync(token);
                     return await action();
                 }
                 finally
