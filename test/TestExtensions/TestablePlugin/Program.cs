@@ -51,17 +51,19 @@ namespace NuGet.Test.TestExtensions.TestablePlugin
             using (var responses = new BlockingCollection<Response>())
             {
                 var responseReceiver = new ResponseReceiver(arguments.PortNumber, responses);
-                var testablePlugin = new TestablePlugin(responses);
 
-                var tasks = new[]
+                using (var testablePlugin = new TestablePlugin(responses))
                 {
-                    Task.Factory.StartNew(() => responseReceiver.StartListeningAsync(cancellationTokenSource.Token), TaskCreationOptions.LongRunning | TaskCreationOptions.DenyChildAttach),
-                    testablePlugin.StartAsync(cancellationTokenSource.Token)
-                };
+                    var tasks = new[]
+                    {
+                        Task.Factory.StartNew(() => responseReceiver.StartListeningAsync(cancellationTokenSource.Token), TaskCreationOptions.LongRunning | TaskCreationOptions.DenyChildAttach),
+                        testablePlugin.StartAsync(cancellationTokenSource.Token)
+                    };
 
-                Task.WaitAny(tasks);
+                    Task.WaitAny(tasks);
 
-                cancellationTokenSource.Cancel();
+                    cancellationTokenSource.Cancel();
+                }
             }
         }
 

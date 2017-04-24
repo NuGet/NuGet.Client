@@ -43,38 +43,22 @@ namespace NuGet.Protocol.FuncTest
         [PlatformFact(Platform.Windows)]
         public async Task CreateAsyncAndHandshake()
         {
-            using (var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromMinutes(10)))
-            using (var pluginFactory = new PluginFactory(PluginConstants.IdleTimeout))
-            using (var plugin = await pluginFactory.GetOrCreateAsync(
-                _pluginFile.FullName,
-                _pluginArguments,
-                new RequestHandlers(),
-                CreateConnectionOptions(),
-                cancellationTokenSource.Token))
-            using (var responseSender = new ResponseSender(_portNumber))
+            using (var test = await PluginTest.CreateAsync())
             {
-                Assert.Equal(PluginProtocolConstants.CurrentVersion, plugin.Connection.ProtocolVersion);
+                Assert.Equal(PluginProtocolConstants.CurrentVersion, test.Plugin.Connection.ProtocolVersion);
             }
         }
 
         [PlatformFact(Platform.Windows)]
         public async Task Initialize()
         {
-            using (var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromMinutes(10)))
-            using (var pluginFactory = new PluginFactory(PluginConstants.IdleTimeout))
-            using (var plugin = await pluginFactory.GetOrCreateAsync(
-                _pluginFile.FullName,
-                _pluginArguments,
-                new RequestHandlers(),
-                CreateConnectionOptions(),
-                cancellationTokenSource.Token))
-            using (var responseSender = new ResponseSender(_portNumber))
+            using (var test = await PluginTest.CreateAsync())
             {
-                Assert.Equal(PluginProtocolConstants.CurrentVersion, plugin.Connection.ProtocolVersion);
+                Assert.Equal(PluginProtocolConstants.CurrentVersion, test.Plugin.Connection.ProtocolVersion);
 
                 // Send canned response
-                var responseSenderTask = Task.Run(() => responseSender.StartSendingAsync(cancellationTokenSource.Token));
-                await responseSender.SendAsync(
+                var responseSenderTask = Task.Run(() => test.ResponseSender.StartSendingAsync(test.CancellationToken));
+                await test.ResponseSender.SendAsync(
                     MessageType.Response,
                     MessageMethod.Initialize,
                     new InitializeResponse(MessageResponseCode.Success));
@@ -83,8 +67,8 @@ namespace NuGet.Protocol.FuncTest
                 var culture = CultureInfo.CurrentCulture.Name;
                 var payload = new InitializeRequest(clientVersion, culture, Verbosity.Normal, TimeSpan.FromSeconds(30));
 
-                var response = await plugin.Connection.SendRequestAndReceiveResponseAsync<InitializeRequest, InitializeResponse>(
-                    MessageMethod.Initialize, payload, cancellationTokenSource.Token);
+                var response = await test.Plugin.Connection.SendRequestAndReceiveResponseAsync<InitializeRequest, InitializeResponse>(
+                    MessageMethod.Initialize, payload, test.CancellationToken);
 
                 Assert.NotNull(response);
                 Assert.Equal(MessageResponseCode.Success, response.ResponseCode);
@@ -94,21 +78,13 @@ namespace NuGet.Protocol.FuncTest
         [PlatformFact(Platform.Windows)]
         public async Task GetOperationClaims()
         {
-            using (var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromMinutes(10)))
-            using (var pluginFactory = new PluginFactory(PluginConstants.IdleTimeout))
-            using (var plugin = await pluginFactory.GetOrCreateAsync(
-                _pluginFile.FullName,
-                _pluginArguments,
-                new RequestHandlers(),
-                CreateConnectionOptions(),
-                cancellationTokenSource.Token))
-            using (var responseSender = new ResponseSender(_portNumber))
+            using (var test = await PluginTest.CreateAsync())
             {
-                Assert.Equal(PluginProtocolConstants.CurrentVersion, plugin.Connection.ProtocolVersion);
+                Assert.Equal(PluginProtocolConstants.CurrentVersion, test.Plugin.Connection.ProtocolVersion);
 
                 // Send canned response
-                var responseSenderTask = Task.Run(() => responseSender.StartSendingAsync(cancellationTokenSource.Token));
-                await responseSender.SendAsync(
+                var responseSenderTask = Task.Run(() => test.ResponseSender.StartSendingAsync(test.CancellationToken));
+                await test.ResponseSender.SendAsync(
                     MessageType.Response,
                     MessageMethod.GetOperationClaims,
                     new GetOperationClaimsResponse(new OperationClaim[] { OperationClaim.DownloadPackage }));
@@ -116,8 +92,8 @@ namespace NuGet.Protocol.FuncTest
                 var serviceIndex = JObject.Parse("{}");
                 var payload = new GetOperationClaimsRequest(packageSourceRepository: "a", serviceIndex: serviceIndex);
 
-                var response = await plugin.Connection.SendRequestAndReceiveResponseAsync<GetOperationClaimsRequest, GetOperationClaimsResponse>(
-                    MessageMethod.Initialize, payload, cancellationTokenSource.Token);
+                var response = await test.Plugin.Connection.SendRequestAndReceiveResponseAsync<GetOperationClaimsRequest, GetOperationClaimsResponse>(
+                    MessageMethod.GetOperationClaims, payload, test.CancellationToken);
 
                 Assert.NotNull(response);
                 Assert.Equal(1, response.Claims.Count);
@@ -125,13 +101,85 @@ namespace NuGet.Protocol.FuncTest
             }
         }
 
-        private static ConnectionOptions CreateConnectionOptions()
+        [PlatformFact(Platform.Windows)]
+        public async Task RequestTimesOutAsync()
         {
-            return new ConnectionOptions(
-                PluginProtocolConstants.CurrentVersion,
-                PluginProtocolConstants.CurrentVersion,
-                PluginProtocolConstants.MaxTimeout,
-                PluginProtocolConstants.MaxTimeout);
+            using (var test = await PluginTest.CreateAsync())
+            {
+                Assert.Equal(PluginProtocolConstants.CurrentVersion, test.Plugin.Connection.ProtocolVersion);
+
+                // Send canned response
+                var serviceIndex = JObject.Parse("{}");
+                var payload = new GetOperationClaimsRequest(packageSourceRepository: "a", serviceIndex: serviceIndex);
+
+                var stopwatch = Stopwatch.StartNew();
+
+                await Assert.ThrowsAsync<TaskCanceledException>(
+                    () => test.Plugin.Connection.SendRequestAndReceiveResponseAsync<GetOperationClaimsRequest, GetOperationClaimsResponse>(
+                        MessageMethod.Initialize, payload, test.CancellationToken));
+
+                var low = test.Plugin.Connection.Options.RequestTimeout;
+                var high = TimeSpan.FromSeconds(low.TotalSeconds * 2);
+
+                Assert.InRange(stopwatch.Elapsed, low, high);
+            }
+        }
+
+        private sealed class PluginTest : IDisposable
+        {
+            private readonly CancellationTokenSource _cancellationTokenSource;
+            private bool _isDisposed;
+            private readonly PluginFactory _pluginFactory;
+
+            internal CancellationToken CancellationToken => _cancellationTokenSource.Token;
+            internal IPlugin Plugin { get; }
+            internal ResponseSender ResponseSender { get; }
+
+            private PluginTest(PluginFactory pluginFactory,
+                IPlugin plugin,
+                ResponseSender responseSender,
+                CancellationTokenSource cancellationTokenSource)
+            {
+                Plugin = plugin;
+                _pluginFactory = pluginFactory;
+                ResponseSender = responseSender;
+                _cancellationTokenSource = cancellationTokenSource;
+            }
+
+            public void Dispose()
+            {
+                if (!_isDisposed)
+                {
+                    using (_cancellationTokenSource)
+                    {
+                        _cancellationTokenSource.Cancel();
+
+                        ResponseSender.Dispose();
+                        Plugin.Dispose();
+                        _pluginFactory.Dispose();
+                    }
+
+                    GC.SuppressFinalize(this);
+
+                    _isDisposed = true;
+                }
+            }
+
+            internal static async Task<PluginTest> CreateAsync()
+            {
+                var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromMinutes(10));
+                var pluginFactory = new PluginFactory(PluginConstants.IdleTimeout);
+                var options = ConnectionOptions.CreateDefault();
+                var plugin = await pluginFactory.GetOrCreateAsync(
+                    _pluginFile.FullName,
+                    _pluginArguments,
+                    new RequestHandlers(),
+                    options,
+                    cancellationTokenSource.Token);
+                var responseSender = new ResponseSender(_portNumber);
+
+                return new PluginTest(pluginFactory, plugin, responseSender, cancellationTokenSource);
+            }
         }
     }
 }
