@@ -28,7 +28,7 @@ namespace NuGet.Versioning
         /// Creates a NuGetVersion from an existing NuGetVersion
         /// </summary>
         public NuGetVersion(NuGetVersion version)
-            : this(version.Version, version.ReleaseLabels, version.Metadata, version.ToString())
+            : this(version.Version, version.ReleaseLabels, version.Metadata, version.OriginalVersion)
         {
         }
 
