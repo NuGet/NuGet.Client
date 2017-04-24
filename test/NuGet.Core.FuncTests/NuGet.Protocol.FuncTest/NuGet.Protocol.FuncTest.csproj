@@ -29,7 +29,7 @@
   </ItemGroup>
 
   <PropertyGroup>
-    <PostBuildEvent>
+    <PostBuildEvent Condition="'$(OS)' == 'Windows_NT'">
       xcopy /diye $(ArtifactsDirectory)TestablePlugin\$(VisualStudioVersion)\bin\$(Configuration)\$(TargetFramework)\win7-x64\*  $(MSBuildProjectDirectory)\bin\$(Configuration)\$(TargetFramework)\win7-x64\TestablePlugin\
     </PostBuildEvent>
   </PropertyGroup>
