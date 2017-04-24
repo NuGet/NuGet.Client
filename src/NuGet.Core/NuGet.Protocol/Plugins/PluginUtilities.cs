@@ -7,14 +7,15 @@ using System.Threading;
 
 namespace NuGet.Protocol.Plugins
 {
-    internal static class PluginUtilities
+    // This is temporary and will be removed in time.
+    public static class PluginUtilities
     {
         internal static bool IsDebuggingPlugin()
         {
             return !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("NUGET_PLUGIN_DEBUG"));
         }
 
-        internal static void WaitForAttachIfPluginDebuggingIsEnabled()
+        public static void WaitForAttachIfPluginDebuggingIsEnabled()
         {
             if (IsDebuggingPlugin())
             {

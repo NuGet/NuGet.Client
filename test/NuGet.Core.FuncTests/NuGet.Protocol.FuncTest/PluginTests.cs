@@ -37,10 +37,7 @@ namespace NuGet.Protocol.FuncTest
         {
             logger.WriteLine($"Plugin file path:  {_pluginFile.FullName}");
 
-            if (IsPluginDebuggingEnabled())
-            {
-                WaitForDebuggerAttach();
-            }
+            PluginUtilities.WaitForAttachIfPluginDebuggingIsEnabled();
         }
 
         [PlatformFact(Platform.Windows)]
@@ -135,21 +132,6 @@ namespace NuGet.Protocol.FuncTest
                 PluginProtocolConstants.CurrentVersion,
                 PluginProtocolConstants.MaxTimeout,
                 PluginProtocolConstants.MaxTimeout);
-        }
-
-        private static bool IsPluginDebuggingEnabled()
-        {
-            return !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("NUGET_PLUGIN_DEBUG"));
-        }
-
-        private static void WaitForDebuggerAttach()
-        {
-            while (!Debugger.IsAttached)
-            {
-                Thread.Sleep(1000);
-            }
-
-            Debugger.Break();
         }
     }
 }
