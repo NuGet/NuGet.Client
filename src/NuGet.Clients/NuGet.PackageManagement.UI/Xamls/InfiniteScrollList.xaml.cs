@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -9,6 +9,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Automation.Peers;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
@@ -23,6 +24,25 @@ using Resx = NuGet.PackageManagement.UI;
 
 namespace NuGet.PackageManagement.UI
 {
+    public class InfiniteScrollListListBox : ListBox
+    {
+        protected override AutomationPeer OnCreateAutomationPeer()
+        {
+            return new InfiniteScrollListListBoxAutomationPeer(this);
+        }
+    }
+
+    public class InfiniteScrollListListBoxAutomationPeer : ListBoxAutomationPeer
+    {
+        public InfiniteScrollListListBoxAutomationPeer(ListBox owner) : base(owner) { }
+
+        protected override List<AutomationPeer> GetChildrenCore()
+        {
+            // Don't return the LoadingStatusIndicator as an AutomationPeer, otherwise narrator will report it as an item in the list of packages, even when not visible
+            return base.GetChildrenCore()?.Where(lbiap => !(((ListBoxItemAutomationPeer)lbiap).Item is LoadingStatusIndicator)).ToList() ?? new List<AutomationPeer>();
+        }
+    }
+
     /// <summary>
     /// Interaction logic for InfiniteScrollList.xaml
     /// </summary>
