@@ -4,15 +4,13 @@
 using System;
 using System.ComponentModel.Composition;
 using System.ComponentModel.Design;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
+using Microsoft;
 using Microsoft.VisualStudio;
-using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.PackageManagement;
-using NuGet.PackageManagement.VisualStudio;
 using NuGet.VisualStudio;
 using Task = System.Threading.Tasks.Task;
 
@@ -28,81 +26,57 @@ namespace NuGet.SolutionRestoreManager
         private const int CommandId = PkgCmdIDList.cmdidRestorePackages;
         private static readonly Guid CommandSet = GuidList.guidNuGetDialogCmdSet;
 
-        private Lazy<INuGetUILogger> _logger;
-        private Lazy<ISolutionRestoreWorker> _solutionRestoreWorker;
-        private Lazy<ISolutionManager> _solutionManager;
-        private Lazy<IConsoleStatus> _consoleStatus;
+        [Import]
+        private Lazy<ISolutionManager> SolutionManager { get; set; }
 
-        private INuGetUILogger Logger => _logger.Value;
-        private ISolutionRestoreWorker SolutionRestoreWorker => _solutionRestoreWorker.Value;
-        private ISolutionManager SolutionManager => _solutionManager.Value;
-        private IConsoleStatus ConsoleStatus => _consoleStatus.Value;
+        [Import]
+        private Lazy<ISolutionRestoreWorker> SolutionRestoreWorker { get; set; }
 
-        private readonly IVsMonitorSelection _vsMonitorSelection;
+        [Import]
+        private Lazy<IConsoleStatus> ConsoleStatus { get; set; }
+
+        private IVsMonitorSelection _vsMonitorSelection;
         private uint _solutionNotBuildingAndNotDebuggingContextCookie;
 
         private Task _restoreTask = Task.CompletedTask;
 
-        [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD010", Justification = "NuGet/Home#4833 Baseline")]
-        private SolutionRestoreCommand(
-            IMenuCommandService commandService,
-            IVsMonitorSelection vsMonitorSelection,
-            IComponentModel componentModel)
+        private SolutionRestoreCommand()
         {
-            if (componentModel == null)
-            {
-                throw new ArgumentNullException(nameof(componentModel));
-            }
-
-            var menuCommandId = new CommandID(CommandSet, CommandId);
-            var menuItem = new OleMenuCommand(
-                OnRestorePackages, null, BeforeQueryStatusForPackageRestore, menuCommandId);
-
-            // call AddCommand through explicitly moving to UI thread since this is now being
-            // initiliazed as part of AsynPackage
-            ThreadHelper.JoinableTaskFactory.Run(async () =>
-            {
-                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                commandService?.AddCommand(menuItem);
-            });
-
-            _vsMonitorSelection = vsMonitorSelection;
-
-            // get the solution not building and not debugging cookie
-            var guid = VSConstants.UICONTEXT.SolutionExistsAndNotBuildingAndNotDebugging_guid;
-            _vsMonitorSelection.GetCmdUIContextCookie(ref guid, out _solutionNotBuildingAndNotDebuggingContextCookie);
-
-            _logger = new Lazy<INuGetUILogger>(
-                () => componentModel.GetService<INuGetUILogger>());
-
-            _solutionRestoreWorker = new Lazy<ISolutionRestoreWorker>(
-                () => componentModel.GetService<ISolutionRestoreWorker>());
-
-            _solutionManager = new Lazy<ISolutionManager>(
-                () => componentModel.GetService<ISolutionManager>());
-
-            _consoleStatus = new Lazy<IConsoleStatus>(
-                () => componentModel.GetService<IConsoleStatus>());
         }
 
         /// <summary>
         /// Initializes the singleton instance of the command.
         /// </summary>
-        /// <param name="package">Owner package, not null.</param>
-        [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD010", Justification = "NuGet/Home#4833 Baseline")]
-        public static async Task InitializeAsync(AsyncPackage package)
+        /// <param name="serviceProvider">Owner package, not null.</param>
+        public static async Task InitializeAsync(Microsoft.VisualStudio.Shell.IAsyncServiceProvider serviceProvider)
         {
-            if (package == null)
-            {
-                throw new ArgumentNullException(nameof(package));
-            }
+            Assumes.Present(serviceProvider);
 
-            var commandService = await package.GetServiceAsync(typeof(IMenuCommandService)) as IMenuCommandService;
-            var vsMonitorSelection = await package.GetServiceAsync(typeof(IVsMonitorSelection)) as IVsMonitorSelection;
-            var componentModel = await package.GetComponentModelAsync();
+            _instance = new SolutionRestoreCommand();
 
-            _instance = new SolutionRestoreCommand(commandService, vsMonitorSelection, componentModel);
+            var componentModel = await serviceProvider.GetComponentModelAsync();
             componentModel.DefaultCompositionService.SatisfyImportsOnce(_instance);
+
+            await _instance.SubscribeAsync(serviceProvider);
+        }
+
+        private async Task SubscribeAsync(Microsoft.VisualStudio.Shell.IAsyncServiceProvider serviceProvider)
+        {
+            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+            var commandService = await serviceProvider.GetServiceAsync<IMenuCommandService>();
+
+            var menuCommandId = new CommandID(CommandSet, CommandId);
+            var menuItem = new OleMenuCommand(
+                OnRestorePackages, null, BeforeQueryStatusForPackageRestore, menuCommandId);
+
+            commandService.AddCommand(menuItem);
+
+            _vsMonitorSelection = await serviceProvider.GetServiceAsync(typeof(IVsMonitorSelection)) as IVsMonitorSelection;
+
+            // get the solution not building and not debugging cookie
+            var guid = VSConstants.UICONTEXT.SolutionExistsAndNotBuildingAndNotDebugging_guid;
+            _vsMonitorSelection.GetCmdUIContextCookie(ref guid, out _solutionNotBuildingAndNotDebuggingContextCookie);
         }
 
         /// <summary>
@@ -117,14 +91,14 @@ namespace NuGet.SolutionRestoreManager
             if (_restoreTask.IsCompleted)
             {
                 _restoreTask = NuGetUIThreadHelper.JoinableTaskFactory
-                    .RunAsync(() => SolutionRestoreWorker.ScheduleRestoreAsync(
+                    .RunAsync(() => SolutionRestoreWorker.Value.ScheduleRestoreAsync(
                         SolutionRestoreRequest.ByMenu(),
                         CancellationToken.None))
                     .Task;
             }
         }
 
-        private void BeforeQueryStatusForPackageRestore(object sender, EventArgs args)
+        public void BeforeQueryStatusForPackageRestore(object sender, EventArgs args)
         {
             NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
             {
@@ -138,22 +112,23 @@ namespace NuGet.SolutionRestoreManager
                 // - if the solution exists and not debugging and not building AND
                 // - if the solution is DPL enabled or there are NuGetProjects. This means that there loaded, supported projects
                 // Checking for DPL more is a temporary code until we've the capability to get nuget projects
-                // even in DPL mode. See https://github.com/NuGet/Home/issues/3711
+                // even in DPL mode. See NuGet/Home#3711.
                 command.Enabled =
                     _restoreTask.IsCompleted &&
-                    !ConsoleStatus.IsBusy &&
-                    !SolutionRestoreWorker.IsBusy &&
+                    !ConsoleStatus.Value.IsBusy &&
+                    !SolutionRestoreWorker.Value.IsBusy &&
                     IsSolutionExistsAndNotDebuggingAndNotBuilding() &&
                     (
-                        SolutionManager.IsSolutionDPLEnabled ||
-                        Enumerable.Any(SolutionManager.GetNuGetProjects())
+                        SolutionManager.Value.IsSolutionDPLEnabled ||
+                        Enumerable.Any(SolutionManager.Value.GetNuGetProjects())
                     );
             });
         }
 
-        [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD010", Justification = "NuGet/Home#4833 Baseline")]
         private bool IsSolutionExistsAndNotDebuggingAndNotBuilding()
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             int pfActive;
             var result = _vsMonitorSelection.IsCmdUIContextActive(_solutionNotBuildingAndNotDebuggingContextCookie, out pfActive);
             return (result == VSConstants.S_OK && pfActive > 0);

@@ -26,11 +26,27 @@
     </PackageReference>
   </ItemGroup>
 
+  <Choose>
+    <When Condition="$(VisualStudioVersion)=='14.0'">
+      <ItemGroup Condition=" '$(TargetFramework)' == 'net46' ">
+        <PackageReference Include="Microsoft.VisualStudio.Shell.14.0" Version="14.2.25123" />
+      </ItemGroup>
+    </When>
+    <When Condition="$(VisualStudioVersion)=='15.0'">
+      <ItemGroup Condition=" '$(TargetFramework)' == 'net46' ">
+        <PackageReference Include="Microsoft.VisualStudio.Shell.15.0" Version="15.0.26201">
+          <PrivateAssets>All</PrivateAssets>
+        </PackageReference>
+      </ItemGroup>
+    </When>
+  </Choose>
+
   <ItemGroup Condition=" '$(TargetFramework)' == 'net46' ">
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.IO.Compression" />
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Net" />
+    <Reference Include="WindowsBase" />
   </ItemGroup>
 
   <ItemGroup>
@@ -46,6 +62,7 @@
   <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.6' ">
     <Compile Remove="PackageManagement\*.cs" />
     <Compile Remove="ProjectManagement\*.cs" />
+    <Compile Remove="Threading\*.cs" />
   </ItemGroup>
 
   <Import Project="$(BuildCommonDirectory)common.targets" />
