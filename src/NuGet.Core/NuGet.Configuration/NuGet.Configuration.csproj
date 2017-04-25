@@ -3,15 +3,20 @@
 
   <PropertyGroup>
     <Description>NuGet's client configuration settings implementation.</Description>
-    <TargetFrameworks Condition="'$(IsVsixBuild)' != 'true'">netstandard1.3;net45</TargetFrameworks>
-    <TargetFramework Condition="'$(IsVsixBuild)' == 'true'">net45</TargetFramework>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <TargetFrameworks>netstandard1.3;net45</TargetFrameworks>
+    <TargetFramework />
     <NetStandardImplicitPackageVersion Condition=" '$(TargetFramework)' == 'netstandard1.3' ">$(NetStandardPackageVersion)</NetStandardImplicitPackageVersion>
     <PackProject>true</PackProject>
     <Shipping>true</Shipping>
     <IncludeInVSIX>true</IncludeInVSIX>
   </PropertyGroup>
-
+  
+  <PropertyGroup Condition=" '$(IsVsixBuild)' == 'true' ">
+    <TargetFrameworks />
+    <TargetFramework>net45</TargetFramework>
+  </PropertyGroup>
+  
   <ItemGroup>
     <ProjectReference Include="..\NuGet.Common\NuGet.Common.csproj" />
   </ItemGroup>
@@ -42,5 +47,5 @@
     </EmbeddedResource>
   </ItemGroup>
 
-  <Import Project="$(BuildCommonDirectory)common.targets"/>
+  <Import Project="$(BuildCommonDirectory)common.targets" />
 </Project>
