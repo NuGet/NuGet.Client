@@ -1,8 +1,11 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+﻿using System;
+using System.Threading.Tasks;
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
+using NuGet.Common;
 
 namespace NuGet.Build
 {
@@ -16,6 +19,26 @@ namespace NuGet.Build
         public MSBuildLogger(TaskLoggingHelper taskLogging)
         {
             _taskLogging = taskLogging;
+        }
+
+        public void Log(LogLevel level, string data)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Log(ILogMessage message)
+        {
+            throw new NotImplementedException();
+        }
+
+        public System.Threading.Tasks.Task LogAsync(LogLevel level, string data)
+        {
+            throw new NotImplementedException();
+        }
+
+        public System.Threading.Tasks.Task LogAsync(ILogMessage message)
+        {
+            throw new NotImplementedException();
         }
 
         public void LogDebug(string data)

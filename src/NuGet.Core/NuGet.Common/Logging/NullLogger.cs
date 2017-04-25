@@ -29,7 +29,7 @@ namespace NuGet.Common
 
         public override Task LogAsync(ILogMessage message) { return Task.FromResult(0); }
 
-        public override void LogAsync(LogLevel level, string data) { return Task.FromResult(0); }
+        public override Task LogAsync(LogLevel level, string data) { return Task.FromResult(0); }
 
     }
 }

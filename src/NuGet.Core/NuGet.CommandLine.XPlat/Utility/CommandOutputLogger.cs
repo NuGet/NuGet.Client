@@ -4,6 +4,7 @@
 using System;
 using System.IO;
 using System.Text;
+using System.Threading.Tasks;
 using NuGet.Common;
 
 namespace NuGet.CommandLine.XPlat
@@ -132,6 +133,26 @@ namespace NuGet.CommandLine.XPlat
             }
 
             return builder.ToString();
+        }
+
+        public void Log(LogLevel level, string data)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task LogAsync(LogLevel level, string data)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Log(ILogMessage message)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task LogAsync(ILogMessage message)
+        {
+            throw new NotImplementedException();
         }
     }
 }

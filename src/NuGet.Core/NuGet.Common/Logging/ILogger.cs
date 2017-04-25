@@ -29,7 +29,7 @@ namespace NuGet.Common
 
         void Log(LogLevel level, string data);
 
-        void LogAsync(LogLevel level, string data);
+        Task LogAsync(LogLevel level, string data);
 
         void Log(ILogMessage message);
 

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Threading.Tasks;
 using NuGet.Common;
 
 namespace NuGet.ProjectManagement
@@ -61,6 +62,26 @@ namespace NuGet.ProjectManagement
         public void LogErrorSummary(string data)
         {
             ProjectLogger.Log(MessageLevel.Debug, data);
+        }
+
+        public void Log(LogLevel level, string data)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task LogAsync(LogLevel level, string data)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Log(ILogMessage message)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task LogAsync(ILogMessage message)
+        {
+            throw new NotImplementedException();
         }
     }
 }

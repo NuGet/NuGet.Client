@@ -3,6 +3,8 @@
 
 using System;
 using System.Collections.Concurrent;
+using System.Threading.Tasks;
+using NuGet.Common;
 using Xunit.Abstractions;
 
 namespace NuGet.Test.Utility
@@ -111,6 +113,26 @@ namespace NuGet.Test.Utility
         public string ShowMessages()
         {
             return string.Join(Environment.NewLine, Messages);
+        }
+
+        public void Log(LogLevel level, string data)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task LogAsync(LogLevel level, string data)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Log(ILogMessage message)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task LogAsync(ILogMessage message)
+        {
+            throw new NotImplementedException();
         }
     }
 }

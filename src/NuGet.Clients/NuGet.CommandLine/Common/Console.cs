@@ -3,6 +3,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Security;
+using System.Threading.Tasks;
 using NuGet.Common;
 
 namespace NuGet.CommandLine
@@ -416,6 +417,26 @@ namespace NuGet.CommandLine
         public void LogErrorSummary(string data)
         {
             WriteError(data);
+        }
+
+        public void Log(LogLevel level, string data)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task LogAsync(LogLevel level, string data)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Log(ILogMessage message)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task LogAsync(ILogMessage message)
+        {
+            throw new NotImplementedException();
         }
     }
 }

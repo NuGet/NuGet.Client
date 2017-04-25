@@ -1,7 +1,9 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.ComponentModel.Composition;
+using System.Threading.Tasks;
 using Microsoft.VisualStudio.Shell;
 using NuGet.Common;
 
@@ -30,5 +32,25 @@ namespace NuGet.PackageManagement.VisualStudio
         public void LogInformationSummary(string data) => LogInformation(data);
         
         public void LogErrorSummary(string data) => LogError(data);
+
+        public void Log(LogLevel level, string data)
+        {
+            throw new NotImplementedException();
+        }
+
+        public System.Threading.Tasks.Task LogAsync(LogLevel level, string data)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Log(ILogMessage message)
+        {
+            throw new NotImplementedException();
+        }
+
+        public System.Threading.Tasks.Task LogAsync(ILogMessage message)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

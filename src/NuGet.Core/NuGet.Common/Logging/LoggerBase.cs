@@ -13,7 +13,7 @@ namespace NuGet.Common
 
         public abstract Task LogAsync(ILogMessage message);
 
-        public abstract void LogAsync(LogLevel level, string data);
+        public abstract Task LogAsync(LogLevel level, string data);
 
         public void LogDebug(string data)
         {

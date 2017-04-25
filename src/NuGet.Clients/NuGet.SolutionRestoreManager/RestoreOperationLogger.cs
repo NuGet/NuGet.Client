@@ -468,6 +468,26 @@ namespace NuGet.SolutionRestoreManager
             _externalCts?.Dispose();
         }
 
+        public void Log(LogLevel level, string data)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task LogAsync(LogLevel level, string data)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Log(ILogMessage message)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task LogAsync(ILogMessage message)
+        {
+            throw new NotImplementedException();
+        }
+
         private class WaitDialogProgress : RestoreOperationProgressUI
         {
             private readonly ThreadedWaitDialogHelper.Session _session;
