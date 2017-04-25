@@ -2,8 +2,8 @@
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.props" />
 
   <PropertyGroup>
-    <TargetFrameworks Condition="'$(IsVsixBuild)' != 'true'">netstandard1.0;net45</TargetFrameworks>
-    <TargetFramework Condition="'$(IsVsixBuild)' == 'true'">net45</TargetFramework>
+    <TargetFrameworks>netstandard1.0;net45</TargetFrameworks>
+    <TargetFramework />
     <Description>NuGet's implementation of Semantic Versioning.</Description>
     <PackageTags>semver;semantic versioning</PackageTags>
     <NetStandardImplicitPackageVersion Condition=" '$(TargetFramework)' == 'netstandard1.0' ">$(NetStandardPackageVersion)</NetStandardImplicitPackageVersion>
@@ -12,6 +12,11 @@
     <IncludeInVSIX>true</IncludeInVSIX>
   </PropertyGroup>
   
+  <PropertyGroup Condition=" '$(IsVsixBuild)' == 'true' ">
+    <TargetFrameworks />
+    <TargetFramework>net45</TargetFramework>
+  </PropertyGroup>
+
   <ItemGroup>
     <Compile Update="Resources.Designer.cs">
       <DesignTime>True</DesignTime>

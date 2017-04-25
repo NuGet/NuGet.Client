@@ -3,8 +3,8 @@
 
   <PropertyGroup>
     <Description>NuGet's implementation for reading nupkg package and nuspec package specification files.</Description>
-    <TargetFrameworks Condition="'$(IsVsixBuild)' != 'true'">netstandard1.3;net45</TargetFrameworks>
-    <TargetFramework Condition="'$(IsVsixBuild)' == 'true'">net45</TargetFramework>
+    <TargetFrameworks>netstandard1.3;net45</TargetFrameworks>
+    <TargetFramework />
     <NoWarn>$(NoWarn);CS1591;CS1574;CS1573;CS1572</NoWarn>
     <NetStandardImplicitPackageVersion Condition=" '$(TargetFramework)' == 'netstandard1.3' ">$(NetStandardPackageVersion)</NetStandardImplicitPackageVersion>
     <PackProject>true</PackProject>
@@ -12,6 +12,11 @@
     <IncludeInVSIX>true</IncludeInVSIX>
   </PropertyGroup>
 
+  <PropertyGroup Condition=" '$(IsVsixBuild)' == 'true' ">
+    <TargetFrameworks />
+    <TargetFramework>net45</TargetFramework>
+  </PropertyGroup>
+  
   <ItemGroup>
     <ProjectReference Include="..\NuGet.Common\NuGet.Common.csproj" />
     <ProjectReference Include="..\NuGet.Packaging.Core\NuGet.Packaging.Core.csproj" />
