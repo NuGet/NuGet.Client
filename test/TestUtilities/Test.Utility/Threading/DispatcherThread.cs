@@ -134,12 +134,17 @@ namespace Test.Utility.Threading
             if (!_isClosed)
             {
                 _dispatcher.InvokeShutdown();
-                _dispatcher = null;
 
-                _thread.Abort();
+                try
+                {
+                    _thread.Abort();
+                }
+                finally
+                {
+                    _isClosed = true;
+                }
             }
-
-            _isClosed = true;
+ 
         }
 
         public void Dispose()
