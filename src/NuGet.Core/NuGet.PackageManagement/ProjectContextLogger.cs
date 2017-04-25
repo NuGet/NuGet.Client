@@ -61,22 +61,12 @@ namespace NuGet.PackageManagement
             LogDebug(data);
         }
 
-        public void Log(LogLevel level, string data)
+        public override void Log(ILogMessage message)
         {
             throw new NotImplementedException();
         }
 
-        public Task LogAsync(LogLevel level, string data)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void Log(ILogMessage message)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task LogAsync(ILogMessage message)
+        public override Task LogAsync(ILogMessage message)
         {
             throw new NotImplementedException();
         }

@@ -24,12 +24,12 @@ namespace NuGet.Common
 
         public virtual void Log(LogLevel level, string data)
         {
-
+            Log(new RestoreLogMessage(level, NuGetLogCode.Undefined, data, string.Empty, string.Empty));
         }
 
         public virtual Task LogAsync(LogLevel level, string data)
         {
-
+            return LogAsync(new RestoreLogMessage(level, NuGetLogCode.Undefined, data, string.Empty, string.Empty));
         }
 
         public void LogDebug(string data)
