@@ -3,6 +3,7 @@
 
 using System;
 using System.Reflection;
+using System.Security.Permissions;
 using System.Threading;
 using System.Windows.Threading;
 
@@ -127,19 +128,15 @@ namespace Test.Utility.Threading
             return _dispatcher.BeginInvoke(DispatcherPriority.Normal, action);
         }
 
+        [SecurityPermission(SecurityAction.Demand, ControlThread = true)]
         internal void Close()
         {
             if (!_isClosed)
             {
                 _dispatcher.InvokeShutdown();
                 _dispatcher = null;
-                try
-                {
-                    _thread.Abort();
-                }
-                catch (ThreadAbortException)
-                {
-                }
+
+                _thread.Abort();
             }
 
             _isClosed = true;
@@ -147,6 +144,7 @@ namespace Test.Utility.Threading
 
         public void Dispose()
         {
+            Close();
         }
     }
 }
