@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.ProjectModel;
 
-namespace NuGet.Commands.RestoreCommand.RequestFactory
+namespace NuGet.Commands
 {
     class NoOpRestoreResult : RestoreResult
     {
