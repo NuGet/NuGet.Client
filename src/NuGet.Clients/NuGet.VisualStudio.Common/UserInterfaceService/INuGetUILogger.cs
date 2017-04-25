@@ -9,8 +9,6 @@ namespace NuGet.PackageManagement.VisualStudio
     {
         void Log(ProjectManagement.MessageLevel level, string message, params object[] args);
 
-        Task LogAsync(ProjectManagement.MessageLevel level, string message, params object[] args);
-
         void ReportError(string message);
 
         void Start();

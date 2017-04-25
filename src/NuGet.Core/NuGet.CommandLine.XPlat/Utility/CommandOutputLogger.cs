@@ -12,7 +12,7 @@ namespace NuGet.CommandLine.XPlat
     /// <summary>
     /// Logger to print formatted command output.
     /// </summary>
-    public class CommandOutputLogger : ILogger
+    public class CommandOutputLogger : LegacyLoggerAdapter, ILogger
     {
         private static readonly bool _useConsoleColor = true;
         private LogLevel _logLevel;
@@ -28,36 +28,36 @@ namespace NuGet.CommandLine.XPlat
             set { _logLevel = value; }
         }
 
-        public void LogDebug(string data)
+        public override void LogDebug(string data)
         {
             LogInternal(LogLevel.Debug, data);
         }
 
-        public void LogError(string data)
+        public override void LogError(string data)
         {
             LogInternal(LogLevel.Error, data);
         }
-        public void LogInformation(string data)
+        public override void LogInformation(string data)
         {
             LogInternal(LogLevel.Information, data);
         }
 
-        public void LogMinimal(string data)
+        public override void LogMinimal(string data)
         {
             LogInternal(LogLevel.Minimal, data);
         }
 
-        public void LogVerbose(string data)
+        public override void LogVerbose(string data)
         {
             LogInternal(LogLevel.Verbose, data);
         }
 
-        public void LogWarning(string data)
+        public override void LogWarning(string data)
         {
             LogInternal(LogLevel.Warning, data);
         }
 
-        public void LogInformationSummary(string data)
+        public override void LogInformationSummary(string data)
         {
             if (_logLevel <= LogLevel.Information)
             {
@@ -65,7 +65,7 @@ namespace NuGet.CommandLine.XPlat
             }
         }
 
-        public void LogErrorSummary(string data)
+        public override void LogErrorSummary(string data)
         {
             Console.Error.WriteLine(data);
         }
@@ -133,26 +133,6 @@ namespace NuGet.CommandLine.XPlat
             }
 
             return builder.ToString();
-        }
-
-        public void Log(LogLevel level, string data)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task LogAsync(LogLevel level, string data)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void Log(ILogMessage message)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task LogAsync(ILogMessage message)
-        {
-            throw new NotImplementedException();
         }
     }
 }

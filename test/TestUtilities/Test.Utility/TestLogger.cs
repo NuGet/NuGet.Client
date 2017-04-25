@@ -9,7 +9,7 @@ using Xunit.Abstractions;
 
 namespace NuGet.Test.Utility
 {
-    public class TestLogger : Common.ILogger
+    public class TestLogger : LegacyLoggerAdapter, ILogger
     {
         private readonly ITestOutputHelper _output;
 
@@ -35,14 +35,14 @@ namespace NuGet.Test.Utility
 
         public int Warnings { get; set; }
 
-        public void LogDebug(string data)
+        public override void LogDebug(string data)
         {
             Messages.Enqueue(data);
             DebugMessages.Enqueue(data);
             DumpMessage("DEBUG", data);
         }
 
-        public void LogError(string data)
+        public override void LogError(string data)
         {
             Errors++;
             Messages.Enqueue(data);
@@ -50,40 +50,40 @@ namespace NuGet.Test.Utility
             DumpMessage("ERROR", data);
         }
 
-        public void LogInformation(string data)
+        public override void LogInformation(string data)
         {
             Messages.Enqueue(data);
             DumpMessage("INFO ", data);
         }
 
-        public void LogMinimal(string data)
+        public override void LogMinimal(string data)
         {
             Messages.Enqueue(data);
             MinimalMessages.Enqueue(data);
             DumpMessage("LOG  ", data);
         }
 
-        public void LogVerbose(string data)
+        public override void LogVerbose(string data)
         {
             Messages.Enqueue(data);
             VerboseMessages.Enqueue(data);
             DumpMessage("TRACE", data);
         }
 
-        public void LogWarning(string data)
+        public override void LogWarning(string data)
         {
             Warnings++;
             Messages.Enqueue(data);
             DumpMessage("WARN ", data);
         }
 
-        public void LogInformationSummary(string data)
+        public override void LogInformationSummary(string data)
         {
             Messages.Enqueue(data);
             DumpMessage("ISMRY", data);
         }
 
-        public void LogErrorSummary(string data)
+        public override void LogErrorSummary(string data)
         {
             Messages.Enqueue(data);
             DumpMessage("ESMRY", data);
@@ -113,26 +113,6 @@ namespace NuGet.Test.Utility
         public string ShowMessages()
         {
             return string.Join(Environment.NewLine, Messages);
-        }
-
-        public void Log(LogLevel level, string data)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task LogAsync(LogLevel level, string data)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void Log(ILogMessage message)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task LogAsync(ILogMessage message)
-        {
-            throw new NotImplementedException();
         }
     }
 }
