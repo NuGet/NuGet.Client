@@ -1,6 +1,9 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+
+using System.Threading.Tasks;
+
 namespace NuGet.Common
 {
     /// <summary>
@@ -23,5 +26,13 @@ namespace NuGet.Common
         void LogInformationSummary(string data);
         
         void LogErrorSummary(string data);
+
+        void Log(LogLevel level, string data);
+
+        void LogAsync(LogLevel level, string data);
+
+        void Log(ILogMessage message);
+
+        Task LogAsync(ILogMessage message);
     }
 }
