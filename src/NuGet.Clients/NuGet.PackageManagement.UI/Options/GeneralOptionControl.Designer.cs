@@ -36,14 +36,12 @@ namespace NuGet.Options
             this.BindingRedirectsHeader = new System.Windows.Forms.Label();
             this.localsCommandButton = new System.Windows.Forms.Button();
             this.localsCommandStatusText = new System.Windows.Forms.RichTextBox();
-#if !VS14
             this.PackageManagementHeader = new System.Windows.Forms.Label();
             this.defaultPackageManagementFormatLabel = new System.Windows.Forms.Label();
             this.showPackageManagementChooser = new System.Windows.Forms.CheckBox();
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
             this.defaultPackageManagementFormatItems = new System.Windows.Forms.ComboBox();
             this.tableLayoutPanel1.SuspendLayout();
-#endif
             this.SuspendLayout();
             // 
             // skipBindingRedirects
@@ -83,20 +81,14 @@ namespace NuGet.Options
             // 
             // localsCommandStatusText
             // 
+            this.localsCommandStatusText.AccessibleRole = System.Windows.Forms.AccessibleRole.Text;
             resources.ApplyResources(this.localsCommandStatusText, "localsCommandStatusText");
             this.localsCommandStatusText.BackColor = System.Drawing.SystemColors.Control;
             this.localsCommandStatusText.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.localsCommandStatusText.Name = "localsCommandStatusText";
             this.localsCommandStatusText.ReadOnly = true;
-            this.localsCommandStatusText.AccessibleRole = System.Windows.Forms.AccessibleRole.Text;
             this.localsCommandStatusText.ContentsResized += new System.Windows.Forms.ContentsResizedEventHandler(this.localsCommandStatusText_ContentChanged);
             this.localsCommandStatusText.LinkClicked += new System.Windows.Forms.LinkClickedEventHandler(this.localsCommandStatusText_LinkClicked);
-            // 
-            // GeneralOptionControl
-            // 
-            resources.ApplyResources(this, "$this");
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-#if !VS14
             // 
             // PackageManagementHeader
             // 
@@ -123,35 +115,34 @@ namespace NuGet.Options
             // 
             // defaultPackageManagementFormatItems
             // 
+            resources.ApplyResources(this.defaultPackageManagementFormatItems, "defaultPackageManagementFormatItems");
             this.defaultPackageManagementFormatItems.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.defaultPackageManagementFormatItems.FormattingEnabled = true;
             this.defaultPackageManagementFormatItems.Items.AddRange(new object[] {
             resources.GetString("defaultPackageManagementFormatItems.Items"),
             resources.GetString("defaultPackageManagementFormatItems.Items1")});
-            resources.ApplyResources(this.defaultPackageManagementFormatItems, "defaultPackageManagementFormatItems");
             this.defaultPackageManagementFormatItems.Name = "defaultPackageManagementFormatItems";
-
-            this.Size = new System.Drawing.Size(463, 365);
-            this.skipBindingRedirects.Location = new System.Drawing.Point(19, 118);
-            this.BindingRedirectsHeader.Location = new System.Drawing.Point(2, 92);
-            this.localsCommandButton.Location = new System.Drawing.Point(5, 247);
-            this.localsCommandStatusText.Location = new System.Drawing.Point(5, 276);
-            this.Controls.Add(this.tableLayoutPanel1);
-            this.Controls.Add(this.showPackageManagementChooser);
+            // 
+            // GeneralOptionControl
+            // 
+            resources.ApplyResources(this, "$this");
+            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.Controls.Add(this.PackageManagementHeader);
-            this.tableLayoutPanel1.ResumeLayout(false);
-            this.tableLayoutPanel1.PerformLayout();
-#endif
             this.Controls.Add(this.BindingRedirectsHeader);
-            this.Controls.Add(this.skipBindingRedirects);
             this.Controls.Add(this.PackageRestoreHeader);
             this.Controls.Add(this.packageRestoreConsentCheckBox);
             this.Controls.Add(this.packageRestoreAutomaticCheckBox);
+            this.Controls.Add(this.skipBindingRedirects);
+            this.Controls.Add(this.tableLayoutPanel1);
+            this.Controls.Add(this.showPackageManagementChooser);
             this.Controls.Add(this.localsCommandButton);
             this.Controls.Add(this.localsCommandStatusText);
             this.Name = "GeneralOptionControl";
+            this.tableLayoutPanel1.ResumeLayout(false);
+            this.tableLayoutPanel1.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
+
         }
 
         #endregion

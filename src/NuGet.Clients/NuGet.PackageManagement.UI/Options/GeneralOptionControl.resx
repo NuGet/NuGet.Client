@@ -123,13 +123,13 @@
   </data>
   <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
   <data name="skipBindingRedirects.Location" type="System.Drawing.Point, System.Drawing">
-    <value>19, 138</value>
+    <value>19, 118</value>
   </data>
   <data name="skipBindingRedirects.Size" type="System.Drawing.Size, System.Drawing">
     <value>169, 17</value>
   </data>
   <data name="skipBindingRedirects.TabIndex" type="System.Int32, mscorlib">
-    <value>1</value>
+    <value>4</value>
   </data>
   <data name="skipBindingRedirects.Text" xml:space="preserve">
     <value>Skip applying &amp;binding redirects</value>
@@ -144,7 +144,7 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;skipBindingRedirects.ZOrder" xml:space="preserve">
-    <value>1</value>
+    <value>5</value>
   </data>
   <data name="PackageRestoreHeader.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -163,7 +163,7 @@
     <value>105, 13</value>
   </data>
   <data name="PackageRestoreHeader.TabIndex" type="System.Int32, mscorlib">
-    <value>12</value>
+    <value>0</value>
   </data>
   <data name="PackageRestoreHeader.Text" xml:space="preserve">
     <value>Package Restore</value>
@@ -193,7 +193,7 @@
     <value>233, 17</value>
   </data>
   <data name="packageRestoreConsentCheckBox.TabIndex" type="System.Int32, mscorlib">
-    <value>14</value>
+    <value>1</value>
   </data>
   <data name="packageRestoreConsentCheckBox.Text" xml:space="preserve">
     <value>&amp;Allow NuGet to download missing packages</value>
@@ -223,7 +223,7 @@
     <value>355, 34</value>
   </data>
   <data name="packageRestoreAutomaticCheckBox.TabIndex" type="System.Int32, mscorlib">
-    <value>15</value>
+    <value>2</value>
   </data>
   <data name="packageRestoreAutomaticCheckBox.Text" xml:space="preserve">
     <value>Auto&amp;matically check for missing packages during build in Visual Studio</value>
@@ -250,7 +250,7 @@
     <value>NoControl</value>
   </data>
   <data name="BindingRedirectsHeader.Location" type="System.Drawing.Point, System.Drawing">
-    <value>2, 112</value>
+    <value>2, 92</value>
   </data>
   <data name="BindingRedirectsHeader.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>2, 0, 2, 0</value>
@@ -259,7 +259,7 @@
     <value>107, 13</value>
   </data>
   <data name="BindingRedirectsHeader.TabIndex" type="System.Int32, mscorlib">
-    <value>16</value>
+    <value>3</value>
   </data>
   <data name="BindingRedirectsHeader.Text" xml:space="preserve">
     <value>Binding Redirects</value>
@@ -274,19 +274,19 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;BindingRedirectsHeader.ZOrder" xml:space="preserve">
-    <value>0</value>
+    <value>1</value>
   </data>
   <data name="localsCommandButton.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
   <data name="localsCommandButton.Location" type="System.Drawing.Point, System.Drawing">
-    <value>5, 194</value>
+    <value>5, 247</value>
   </data>
   <data name="localsCommandButton.Size" type="System.Drawing.Size, System.Drawing">
     <value>134, 23</value>
   </data>
   <data name="localsCommandButton.TabIndex" type="System.Int32, mscorlib">
-    <value>17</value>
+    <value>7</value>
   </data>
   <data name="localsCommandButton.Text" xml:space="preserve">
     <value>Clear All NuGet Cache(s)</value>
@@ -301,19 +301,19 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;localsCommandButton.ZOrder" xml:space="preserve">
-    <value>9</value>
+    <value>8</value>
   </data>
   <data name="localsCommandStatusText.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
   <data name="localsCommandStatusText.Location" type="System.Drawing.Point, System.Drawing">
-    <value>5, 220</value>
+    <value>5, 276</value>
   </data>
   <data name="localsCommandStatusText.Size" type="System.Drawing.Size, System.Drawing">
     <value>432, 62</value>
   </data>
   <data name="localsCommandStatusText.TabIndex" type="System.Int32, mscorlib">
-    <value>18</value>
+    <value>8</value>
   </data>
   <data name="localsCommandStatusText.Text" xml:space="preserve">
     <value>http://example.com/help/locals</value>
@@ -331,7 +331,7 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;localsCommandStatusText.ZOrder" xml:space="preserve">
-    <value>10</value>
+    <value>9</value>
   </data>
   <data name="PackageManagementHeader.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -352,7 +352,7 @@
     <value>133, 13</value>
   </data>
   <data name="PackageManagementHeader.TabIndex" type="System.Int32, mscorlib">
-    <value>19</value>
+    <value>5</value>
   </data>
   <data name="PackageManagementHeader.Text" xml:space="preserve">
     <value>Package Management</value>
@@ -367,19 +367,28 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;PackageManagementHeader.ZOrder" xml:space="preserve">
-    <value>5</value>
+    <value>0</value>
   </data>
   <data name="defaultPackageManagementFormatLabel.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
+  <data name="defaultPackageManagementFormatLabel.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
+    <value>Left</value>
+  </data>
+  <data name="defaultPackageManagementFormatLabel.Location" type="System.Drawing.Point, System.Drawing">
+    <value>3, 0</value>
+  </data>
   <data name="defaultPackageManagementFormatLabel.Size" type="System.Drawing.Size, System.Drawing">
-    <value>185, 21</value>
+    <value>185, 27</value>
   </data>
   <data name="defaultPackageManagementFormatLabel.TabIndex" type="System.Int32, mscorlib">
-    <value>21</value>
+    <value>0</value>
   </data>
   <data name="defaultPackageManagementFormatLabel.Text" xml:space="preserve">
     <value>&amp;Default package management format:</value>
+  </data>
+  <data name="defaultPackageManagementFormatLabel.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
+    <value>MiddleLeft</value>
   </data>
   <data name="&gt;&gt;defaultPackageManagementFormatLabel.Name" xml:space="preserve">
     <value>defaultPackageManagementFormatLabel</value>
@@ -391,13 +400,7 @@
     <value>tableLayoutPanel1</value>
   </data>
   <data name="&gt;&gt;defaultPackageManagementFormatLabel.ZOrder" xml:space="preserve">
-    <value>6</value>
-  </data>
-  <data name="defaultPackageManagementFormatLabel.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
-    <value>MiddleLeft</value>
-  </data>
-  <data name="defaultPackageManagementFormatLabel.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
-    <value>Left</value>
+    <value>1</value>
   </data>
   <data name="showPackageManagementChooser.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -406,10 +409,10 @@
     <value>19, 206</value>
   </data>
   <data name="showPackageManagementChooser.Size" type="System.Drawing.Size, System.Drawing">
-    <value>315, 17</value>
+    <value>236, 17</value>
   </data>
   <data name="showPackageManagementChooser.TabIndex" type="System.Int32, mscorlib">
-    <value>22</value>
+    <value>6</value>
   </data>
   <data name="showPackageManagementChooser.Text" xml:space="preserve">
     <value>Allow &amp;format selection on first package install</value>
@@ -426,14 +429,32 @@
   <data name="&gt;&gt;showPackageManagementChooser.ZOrder" xml:space="preserve">
     <value>7</value>
   </data>
-  <data name="tableLayoutPanel1.ColumnCount" type="System.Int32, mscorlib">
-    <value>2</value>
-  </data>
   <data name="tableLayoutPanel1.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
   <data name="tableLayoutPanel1.AutoSizeMode" type="System.Windows.Forms.AutoSizeMode, System.Windows.Forms">
     <value>GrowAndShrink</value>
+  </data>
+  <data name="tableLayoutPanel1.ColumnCount" type="System.Int32, mscorlib">
+    <value>2</value>
+  </data>
+  <data name="defaultPackageManagementFormatItems.AccessibleName" xml:space="preserve">
+    <value>Default Package Management Format</value>
+  </data>
+  <data name="defaultPackageManagementFormatItems.Items" xml:space="preserve">
+    <value>Packages.config</value>
+  </data>
+  <data name="defaultPackageManagementFormatItems.Items1" xml:space="preserve">
+    <value>PackageReference</value>
+  </data>
+  <data name="defaultPackageManagementFormatItems.Location" type="System.Drawing.Point, System.Drawing">
+    <value>194, 3</value>
+  </data>
+  <data name="defaultPackageManagementFormatItems.Size" type="System.Drawing.Size, System.Drawing">
+    <value>121, 21</value>
+  </data>
+  <data name="defaultPackageManagementFormatItems.TabIndex" type="System.Int32, mscorlib">
+    <value>1</value>
   </data>
   <data name="&gt;&gt;defaultPackageManagementFormatItems.Name" xml:space="preserve">
     <value>defaultPackageManagementFormatItems</value>
@@ -445,7 +466,7 @@
     <value>tableLayoutPanel1</value>
   </data>
   <data name="&gt;&gt;defaultPackageManagementFormatItems.ZOrder" xml:space="preserve">
-    <value>8</value>
+    <value>0</value>
   </data>
   <data name="tableLayoutPanel1.Location" type="System.Drawing.Point, System.Drawing">
     <value>15, 172</value>
@@ -454,10 +475,10 @@
     <value>1</value>
   </data>
   <data name="tableLayoutPanel1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>309, 21</value>
+    <value>318, 27</value>
   </data>
   <data name="tableLayoutPanel1.TabIndex" type="System.Int32, mscorlib">
-    <value>24</value>
+    <value>0</value>
   </data>
   <data name="&gt;&gt;tableLayoutPanel1.Name" xml:space="preserve">
     <value>tableLayoutPanel1</value>
@@ -469,25 +490,10 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;tableLayoutPanel1.ZOrder" xml:space="preserve">
-    <value>0</value>
+    <value>6</value>
   </data>
   <data name="tableLayoutPanel1.LayoutSettings" type="System.Windows.Forms.TableLayoutSettings, System.Windows.Forms">
-    <value>&lt;?xml version="1.0" encoding="utf-16"?&gt;&lt;TableLayoutSettings&gt;&lt;Controls&gt;&lt;Control Name="defaultPackageManagementFormatItems" Row="0" RowSpan="1" Column="1" ColumnSpan="1" /&gt;&lt;Control Name="defaultPackageManagementFormatLabel" Row="0" RowSpan="1" Column="0" ColumnSpan="1" /&gt;&lt;/Controls&gt;&lt;Columns Styles="AutoSize,0,Percent,100" /&gt;&lt;Rows Styles="Percent,100" /&gt;&lt;/TableLayoutSettings&gt;</value>
-  </data>
-  <data name="defaultPackageManagementFormatItems.AccessibleName" xml:space="preserve">
-    <value>Default Package Management Format</value>
-  </data>
-  <data name="defaultPackageManagementFormatItems.Items" xml:space="preserve">
-    <value>Packages.config</value>
-  </data>
-  <data name="defaultPackageManagementFormatItems.Items1" xml:space="preserve">
-    <value>PackageReference</value>
-  </data>
-  <data name="defaultPackageManagementFormatItems.Size" type="System.Drawing.Size, System.Drawing">
-    <value>121, 21</value>
-  </data>
-  <data name="defaultPackageManagementFormatItems.TabIndex" type="System.Int32, mscorlib">
-    <value>23</value>
+    <value>&lt;?xml version="1.0" encoding="utf-16"?&gt;&lt;TableLayoutSettings&gt;&lt;Controls&gt;&lt;Control Name="defaultPackageManagementFormatItems" Row="0" RowSpan="1" Column="1" ColumnSpan="1" /&gt;&lt;Control Name="defaultPackageManagementFormatLabel" Row="0" RowSpan="1" Column="0" ColumnSpan="1" /&gt;&lt;/Controls&gt;&lt;Columns Styles="AutoSize,0,Percent,100" /&gt;&lt;Rows Styles="Percent,100,Absolute,20" /&gt;&lt;/TableLayoutSettings&gt;</value>
   </data>
   <metadata name="$this.Localizable" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
     <value>True</value>
@@ -499,7 +505,7 @@
     <value>2, 2, 2, 2</value>
   </data>
   <data name="$this.Size" type="System.Drawing.Size, System.Drawing">
-    <value>463, 285</value>
+    <value>463, 365</value>
   </data>
   <data name="&gt;&gt;$this.Name" xml:space="preserve">
     <value>GeneralOptionControl</value>
