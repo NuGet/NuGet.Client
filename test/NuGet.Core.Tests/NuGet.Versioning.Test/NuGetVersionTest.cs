@@ -246,7 +246,7 @@ namespace NuGet.Versioning.Test
         [InlineData("1.0.0-b")]
         [InlineData("3.0.1.2")]
         [InlineData("2.1.4.3-pre-1")]
-        public void ToStringReturnsOriginalValue(string version)
+        public void ToStringReturnsOriginalValueForNonSemVer2(string version)
         {
             // Act
             var semVer = NuGetVersion.Parse(version);
@@ -286,6 +286,20 @@ namespace NuGet.Versioning.Test
 
             // Assert
             Assert.Equal(expected, semVer.ToString());
+        }
+
+        [Theory]
+        [InlineData("01.42.0")]
+        [InlineData("01.0")]
+        [InlineData("01.42.0-alpha")]
+        [InlineData("01.42.0-alpha.1")]
+        [InlineData("01.42.0-alpha+metadata")]
+        [InlineData("01.42.0+metadata")]
+        public void NuGetVersionKeepsOriginalVersionString(string originalVersion)
+        {
+            var version = new NuGetVersion(originalVersion);
+
+            Assert.Equal(originalVersion, version.OriginalVersion);
         }
 
         [Theory]
