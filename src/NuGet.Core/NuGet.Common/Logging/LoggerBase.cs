@@ -24,12 +24,20 @@ namespace NuGet.Common
 
         public virtual void Log(LogLevel level, string data)
         {
-            Log(new RestoreLogMessage(level, NuGetLogCode.Undefined, data, string.Empty, string.Empty));
+            if (DisplayMessage(level))
+            {
+                Log(new RestoreLogMessage(level, NuGetLogCode.Undefined, data, string.Empty, string.Empty));
+            }
         }
 
         public virtual Task LogAsync(LogLevel level, string data)
         {
-            return LogAsync(new RestoreLogMessage(level, NuGetLogCode.Undefined, data, string.Empty, string.Empty));
+            if (DisplayMessage(level))
+            {
+                return LogAsync(new RestoreLogMessage(level, NuGetLogCode.Undefined, data, string.Empty, string.Empty));
+            }
+
+            return Task.FromResult(true);
         }
 
         public void LogDebug(string data)
@@ -71,6 +79,14 @@ namespace NuGet.Common
         public void LogWarning(string data)
         {
             Log(LogLevel.Warning, data);
+        }
+
+        /// <summary>
+        /// True if the message meets the verbosity level.
+        /// </summary>
+        protected virtual bool DisplayMessage(LogLevel messageLevel)
+        {
+            return (messageLevel >= VerbosityLevel);
         }
     }
 }
