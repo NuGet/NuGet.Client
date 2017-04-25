@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
@@ -26,6 +26,14 @@ namespace NuGet.Commands
         /// </summary>
         LockFile PreviousLockFile { get; }
 
+        /// <summary>
+        ///  Cache File. The previous cache file for this project
+        /// </summary>
+        CacheFile CacheFile { get; }
+        /// <summary>
+        /// Cache File path. The file path where the cache is written out
+        /// </summary>
+        string CacheFilePath { get; }
         /// <summary>
         /// Props and targets files to be written to disk.
         /// </summary>

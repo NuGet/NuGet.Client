@@ -74,12 +74,19 @@ namespace NuGet.Commands
             {
                 var closure = dgFile.GetClosure(projectNameToRestore);
 
+                var projectDependencyGraphSpec = new DependencyGraphSpec();
+                foreach (var spec in closure)
+                {
+                    projectDependencyGraphSpec.AddProject(spec.Clone()); //TODO - Is cloning the best idea here? Does it change?
+                }
+                projectDependencyGraphSpec.AddRestore(projectNameToRestore);
+
                 var externalClosure = new HashSet<ExternalProjectReference>(closure.Select(GetExternalProject));
 
                 var rootProject = externalClosure.Single(p =>
                     StringComparer.Ordinal.Equals(projectNameToRestore, p.UniqueName));
 
-                var request = Create(rootProject, externalClosure, restoreContext, settingsOverride: _providerSettingsOverride);
+                var request = Create(rootProject, externalClosure, restoreContext, settingsOverride: _providerSettingsOverride, projectDgSpec: projectDependencyGraphSpec);
 
                 if (request.Request.ProjectStyle == ProjectStyle.DotnetCliTool)
                 {
@@ -128,8 +135,9 @@ namespace NuGet.Commands
         private RestoreSummaryRequest Create(
             ExternalProjectReference project,
             HashSet<ExternalProjectReference> projectReferenceClosure,
-            RestoreArgs restoreContext,
-            ISettings settingsOverride)
+            RestoreArgs restoreArgs,
+            ISettings settingsOverride,
+            DependencyGraphSpec projectDgSpec)
         {
             // Get settings relative to the input file
             var rootPath = Path.GetDirectoryName(project.PackageSpec.FilePath);
@@ -138,28 +146,30 @@ namespace NuGet.Commands
 
             if (settings == null)
             {
-                settings = restoreContext.GetSettings(rootPath);
+                settings = restoreArgs.GetSettings(rootPath);
             }
 
-            var globalPath = restoreContext.GetEffectiveGlobalPackagesFolder(rootPath, settings);
-            var fallbackPaths = restoreContext.GetEffectiveFallbackPackageFolders(settings);
+            var globalPath = restoreArgs.GetEffectiveGlobalPackagesFolder(rootPath, settings);
+            var fallbackPaths = restoreArgs.GetEffectiveFallbackPackageFolders(settings);
 
-            var sources = restoreContext.GetEffectiveSources(settings);
+            var sources = restoreArgs.GetEffectiveSources(settings);
 
             var sharedCache = _providerCache.GetOrCreate(
                 globalPath,
                 fallbackPaths,
                 sources,
-                restoreContext.CacheContext,
-                restoreContext.Log);
+                restoreArgs.CacheContext,
+                restoreArgs.Log);
 
             // Create request
             var request = new RestoreRequest(
                 project.PackageSpec,
                 sharedCache,
-                restoreContext.CacheContext,
-                restoreContext.Log);
+                restoreArgs.CacheContext,
+                restoreArgs.Log);
 
+            request.dependencyGraphSpec = projectDgSpec;
+            request.AllowNoOp = true; //TODO NK 
             // Set properties from the restore metadata
             request.ProjectStyle = project.PackageSpec?.RestoreMetadata?.ProjectStyle ?? ProjectStyle.Unknown;
             request.RestoreOutputPath = project.PackageSpec?.RestoreMetadata?.OutputPath ?? rootPath;
@@ -168,7 +178,7 @@ namespace NuGet.Commands
             request.IsLowercasePackagesDirectory = !restoreLegacyPackagesDirectory;
 
             // Standard properties
-            restoreContext.ApplyStandardProperties(request);
+            restoreArgs.ApplyStandardProperties(request);
 
             // Add project references
             request.ExternalProjects = projectReferenceClosure.ToList();

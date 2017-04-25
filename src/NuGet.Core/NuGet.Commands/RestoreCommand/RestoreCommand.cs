@@ -28,6 +28,7 @@ namespace NuGet.Commands
         private readonly RestoreRequest _request;
 
         private bool _success = true;
+        private bool _noOp = false;
 
         private readonly Dictionary<NuGetFramework, RuntimeGraph> _runtimeGraphCache = new Dictionary<NuGetFramework, RuntimeGraph>();
         private readonly ConcurrentDictionary<PackageIdentity, RuntimeGraph> _runtimeGraphCacheByPackage
@@ -66,8 +67,29 @@ namespace NuGet.Commands
             var localRepositories = new List<NuGetv3LocalRepository>();
             localRepositories.Add(_request.DependencyProviders.GlobalPackages);
             localRepositories.AddRange(_request.DependencyProviders.FallbackPackageFolders);
-
             var contextForProject = CreateRemoteWalkContext(_request);
+
+            //No Op logic
+            var cacheFile = EvaluateCacheFile();
+
+            if (_noOp)
+            {
+                restoreTime.Stop();
+
+                // Create result
+                return new RestoreResult(
+                    _success,
+                    null, // graphs,
+                    null, // checkResults,
+                    null, // msbuildOutputFiles,
+                    _request.ExistingLockFile,
+                    _request.ExistingLockFile,
+                    _request.ExistingLockFile.Path,
+                    cacheFile,
+                    _request.Project.RestoreMetadata.CacheFilePath,
+                    _request.ProjectStyle,
+                    restoreTime.Elapsed);
+            }
 
             // Restore
             var graphs = await ExecuteRestoreAsync(
@@ -139,7 +161,7 @@ namespace NuGet.Commands
             restoreTime.Stop();
 
             // Create result
-            return new RestoreResult(
+            return new NoOpRestoreResult(
                 _success,
                 graphs,
                 checkResults,
@@ -147,8 +169,37 @@ namespace NuGet.Commands
                 assetsFile,
                 _request.ExistingLockFile,
                 assetsFilePath,
+                cacheFile,
+                _request.Project.RestoreMetadata.CacheFilePath,
                 _request.ProjectStyle,
                 restoreTime.Elapsed);
+        }
+
+        private CacheFile EvaluateCacheFile()
+        {
+            CacheFile cacheFile;
+            var newDgSpecHash = _request.dependencyGraphSpec.GetHash();
+
+            if (_request.AllowNoOp && File.Exists(_request.Project.RestoreMetadata.CacheFilePath))
+            {
+                cacheFile = CacheFileFormat.Read(_request.Project.RestoreMetadata.CacheFilePath, _logger);
+
+                if (cacheFile.IsValid && StringComparer.OrdinalIgnoreCase.Equals(cacheFile.DgSpecHash, newDgSpecHash))
+                {
+                    _logger.LogVerbose("The dependency graph spec has not changed. No further actions are required for restoring.");
+                    _success = true;
+                }
+                else
+                {
+                    cacheFile.DgSpecHash = newDgSpecHash;
+                    _logger.LogVerbose("The dependency graph spec has changed.");
+                }
+            }
+            else
+            {
+                cacheFile = new CacheFile { DgSpecHash = newDgSpecHash };
+            }
+            return cacheFile;
         }
 
         private string GetAssetsFilePath(LockFile lockFile)

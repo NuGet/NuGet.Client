@@ -55,6 +55,15 @@ namespace NuGet.Commands
         /// </summary>
         public TimeSpan ElapsedTime { get; }
 
+        /// <summary>
+        ///  Cache File. The previous cache file for this project
+        /// </summary>
+        public CacheFile CacheFile { get; } 
+        /// <summary>
+        /// Cache File path. The file path where the cache is written out
+        /// </summary>
+        public string CacheFilePath { get;  }
+
         public RestoreResult(
             bool success,
             IEnumerable<RestoreTargetGraph> restoreGraphs,
@@ -63,6 +72,8 @@ namespace NuGet.Commands
             LockFile lockFile,
             LockFile previousLockFile,
             string lockFilePath,
+            CacheFile cacheFile,
+            string cacheFilePath,
             ProjectStyle projectStyle,
             TimeSpan elapsedTime)
         {
@@ -73,6 +84,8 @@ namespace NuGet.Commands
             LockFile = lockFile;
             LockFilePath = lockFilePath;
             PreviousLockFile = previousLockFile;
+            CacheFile = cacheFile;
+            CacheFilePath = cacheFilePath;
             ProjectStyle = projectStyle;
             ElapsedTime = elapsedTime;
         }
@@ -107,19 +120,7 @@ namespace NuGet.Commands
         /// </summary>
         /// <remarks>If <see cref="PreviousLockFile"/> and <see cref="LockFile"/> are identical
         ///  the file will not be written to disk.</remarks>
-        public async Task CommitAsync(ILogger log, CancellationToken token)
-        {
-            await CommitAsync(log, forceWrite: false, token: token);
-        }
-
-        /// <summary>
-        /// Commits the lock file contained in <see cref="LockFile"/> and the MSBuild targets/props to
-        /// the local file system.
-        /// </summary>
-        /// <remarks>If <see cref="PreviousLockFile"/> and <see cref="LockFile"/> are identical
-        ///  the file will not be written to disk.</remarks>
-        /// <param name="forceWrite">Write out the lock file even if no changes exist.</param>
-        public async Task CommitAsync(ILogger log, bool forceWrite, CancellationToken token)
+        public virtual async Task CommitAsync(ILogger log, CancellationToken token)
         {
             // Write the lock file
             var lockFileFormat = new LockFileFormat();
@@ -127,20 +128,20 @@ namespace NuGet.Commands
             var isTool = ProjectStyle == ProjectStyle.DotnetCliTool;
 
             // Commit the assets file to disk.
-            await CommitAsync(
+            await CommitAssetsFileAsync(
                 lockFileFormat,
                 result: this,
                 log: log,
-                forceWrite: forceWrite,
                 toolCommit: isTool,
                 token: token);
+            await CommitCacheFileAsync(
+                log: log);
         }
 
-        private static async Task CommitAsync(
+        private async Task CommitAssetsFileAsync(
             LockFileFormat lockFileFormat,
             IRestoreResult result,
             ILogger log,
-            bool forceWrite,
             bool toolCommit,
             CancellationToken token)
         {
@@ -148,14 +149,13 @@ namespace NuGet.Commands
             // Visual Studio typically watches the assets file for changes
             // and begins a reload when that file changes.
             var buildFilesToWrite = result.MSBuildOutputFiles
-                    .Where(e => forceWrite || BuildAssetsUtils.HasChanges(e.Content, e.Path, log));
+                    .Where(e => BuildAssetsUtils.HasChanges(e.Content, e.Path, log));
 
             BuildAssetsUtils.WriteFiles(buildFilesToWrite, log);
 
             // Avoid writing out the lock file if it is the same to avoid triggering an intellisense
             // update on a restore with no actual changes.
-            if (forceWrite
-                || result.PreviousLockFile == null
+            if (result.PreviousLockFile == null
                 || !result.PreviousLockFile.Equals(result.LockFile))
             {
                 if (toolCommit)
@@ -189,6 +189,14 @@ namespace NuGet.Commands
                     log.LogMinimal($"Lock file has not changed. Skipping lock file write. Path: {result.LockFilePath}");
                 }
             }
+        }
+
+        protected async Task CommitCacheFileAsync(ILogger log)
+        {
+            log.LogDebug($"Writing cache file to disk. Path: {CacheFilePath}");
+            await FileUtility.ReplaceWithLock(
+               outPath => CacheFileFormat.Write(CacheFilePath, CacheFile),
+                        CacheFilePath);
         }
     }
 }

@@ -50,6 +50,9 @@ namespace NuGet.ProjectModel
         /// </summary>
         public string PackagesPath { get; set; }
 
+        public string CacheFilePath {
+            get { return OutputPath + "project.nuget.json"; }  }
+
         /// <summary>
         /// Fallback folders.
         /// </summary>
