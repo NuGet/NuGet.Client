@@ -8,7 +8,7 @@ using NuGet.ProjectManagement;
 
 namespace NuGet.PackageManagement
 {
-    public class ProjectContextLogger : ILogger
+    public class ProjectContextLogger : LoggerBase
     {
         private readonly INuGetProjectContext _projectContext;
 

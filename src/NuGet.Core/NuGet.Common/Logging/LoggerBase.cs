@@ -7,13 +7,30 @@ namespace NuGet.Common
 {
     public abstract class LoggerBase : ILogger
     {
-        public abstract void Log(ILogMessage message);
+        public LogLevel VerbosityLevel { get; private set; } = LogLevel.Debug;
 
-        public abstract void Log(LogLevel level, string data);
+        public LoggerBase()
+        {
+        }
+
+        public LoggerBase(LogLevel verbosityLevel)
+        {
+            VerbosityLevel = verbosityLevel;
+        }
+
+        public abstract void Log(ILogMessage message);
 
         public abstract Task LogAsync(ILogMessage message);
 
-        public abstract Task LogAsync(LogLevel level, string data);
+        public virtual void Log(LogLevel level, string data)
+        {
+
+        }
+
+        public virtual Task LogAsync(LogLevel level, string data)
+        {
+
+        }
 
         public void LogDebug(string data)
         {
