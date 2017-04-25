@@ -3,8 +3,7 @@
 
   <PropertyGroup>
     <TargetFrameworks>netstandard1.0;net45</TargetFrameworks>
-    <TargetFrameworks Condition="'$(IsVsixBuild)' == 'true'"></TargetFrameworks>
-    <TargetFramework Condition="'$(IsVsixBuild)' == 'true'">net45</TargetFramework>
+    <TargetFramework />
     <Description>NuGet's implementation of Semantic Versioning.</Description>
     <PackageTags>semver;semantic versioning</PackageTags>
     <NetStandardImplicitPackageVersion Condition=" '$(TargetFramework)' == 'netstandard1.0' ">$(NetStandardPackageVersion)</NetStandardImplicitPackageVersion>
@@ -13,6 +12,11 @@
     <IncludeInVSIX>true</IncludeInVSIX>
   </PropertyGroup>
   
+  <PropertyGroup Condition=" '$(IsVsixBuild)' == 'true' ">
+    <TargetFrameworks />
+    <TargetFramework>net45</TargetFramework>
+  </PropertyGroup>
+
   <ItemGroup>
     <Compile Update="Resources.Designer.cs">
       <DesignTime>True</DesignTime>
