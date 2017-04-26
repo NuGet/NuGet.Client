@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Threading.Tasks;
 using NuGet.Common;
 
 namespace NuGet.ProjectManagement
@@ -9,7 +10,7 @@ namespace NuGet.ProjectManagement
     /// <summary>
     /// ILogger -> INuGetProjectContext
     /// </summary>
-    public class LoggerAdapter : ILogger
+    public class LoggerAdapter : LegacyLoggerAdapter, ILogger
     {
         public INuGetProjectContext ProjectLogger { get; }
 
@@ -23,42 +24,42 @@ namespace NuGet.ProjectManagement
             ProjectLogger = projectLogger;
         }
 
-        public void LogDebug(string data)
+        public override void LogDebug(string data)
         {
             ProjectLogger.Log(MessageLevel.Debug, data);
         }
 
-        public void LogError(string data)
+        public override void LogError(string data)
         {
             ProjectLogger.Log(MessageLevel.Error, data);
         }
 
-        public void LogInformation(string data)
+        public override void LogInformation(string data)
         {
             ProjectLogger.Log(MessageLevel.Debug, data);
         }
 
-        public void LogMinimal(string data)
+        public override void LogMinimal(string data)
         {
             ProjectLogger.Log(MessageLevel.Info, data);
         }
 
-        public void LogVerbose(string data)
+        public override void LogVerbose(string data)
         {
             ProjectLogger.Log(MessageLevel.Debug, data);
         }
 
-        public void LogWarning(string data)
+        public override void LogWarning(string data)
         {
             ProjectLogger.Log(MessageLevel.Warning, data);
         }
 
-        public void LogInformationSummary(string data)
+        public override void LogInformationSummary(string data)
         {
             ProjectLogger.Log(MessageLevel.Debug, data);
         }
 
-        public void LogErrorSummary(string data)
+        public override void LogErrorSummary(string data)
         {
             ProjectLogger.Log(MessageLevel.Debug, data);
         }
