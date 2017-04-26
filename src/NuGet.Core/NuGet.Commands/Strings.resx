@@ -511,10 +511,10 @@ For more information, visit http://docs.nuget.org/docs/reference/command-line-re
     <value>Clearing NuGet Temp cache: {0}</value>
     <comment>{0} : Temp cache path</comment>
   </data>
-  <data name="Log_RestoreNoOpFailure" xml:space="preserve">
+  <data name="Log_RestoreNoOpDGChanged" xml:space="preserve">
     <value>The dependency graph spec for '{0}' has changed. Continuing restore.</value>
   </data>
-  <data name="Log_RestoreNoOpSuccess" xml:space="preserve">
+  <data name="Log_RestoreNoOpFinish" xml:space="preserve">
     <value>The dependency graph spec for '{0}'has not changed. No further actions are required to complete the restore.</value>
   </data>
 </root>
