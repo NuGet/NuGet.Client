@@ -9,7 +9,7 @@ using System.Windows.Threading;
 
 namespace Test.Utility.Threading
 {
-    internal class DispatcherThread : IDisposable
+    public class DispatcherThread : IDisposable
     {
         private readonly Thread _thread;
         private Dispatcher _dispatcher;
@@ -19,7 +19,7 @@ namespace Test.Utility.Threading
         private bool _isInvoking;
         private bool _isClosed;
 
-        internal DispatcherThread()
+        public DispatcherThread()
         {
             using (var resetEvent = new AutoResetEvent(initialState: false))
             {
@@ -55,9 +55,9 @@ namespace Test.Utility.Threading
             Close();
         }
 
-        internal Thread Thread => _thread;
+        public Thread Thread => _thread;
 
-        internal SynchronizationContext SyncContext
+        public SynchronizationContext SyncContext
         {
             get
             {
@@ -90,7 +90,7 @@ namespace Test.Utility.Threading
             }
         }
 
-        internal void Invoke(Action action)
+        public void Invoke(Action action)
         {
             if (_isClosed)
             {
@@ -118,7 +118,7 @@ namespace Test.Utility.Threading
             }
         }
 
-        internal DispatcherOperation BeginInvoke(Action action)
+        public DispatcherOperation BeginInvoke(Action action)
         {
             if (_isClosed)
             {
@@ -129,11 +129,12 @@ namespace Test.Utility.Threading
         }
 
         [SecurityPermission(SecurityAction.Demand, ControlThread = true)]
-        internal void Close()
+        public void Close()
         {
             if (!_isClosed)
             {
-                _dispatcher.InvokeShutdown();
+                _dispatcher?.InvokeShutdown();
+                _dispatcher = null;
 
                 try
                 {
