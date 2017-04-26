@@ -186,14 +186,14 @@ namespace NuGet.Commands
 
                 if (cacheFile.IsValid && StringComparer.OrdinalIgnoreCase.Equals(cacheFile.DgSpecHash, newDgSpecHash))
                 {
-                    _logger.LogVerbose("The dependency graph spec has not changed. No further actions are required for restoring.");
+                    _logger.LogVerbose(string.Format(CultureInfo.CurrentCulture, Strings.Log_RestoreNoOpSuccess, _request.Project.Name));
                     _success = true;
                     _noOp = true;
                 }
                 else
                 {
                     cacheFile.DgSpecHash = newDgSpecHash;
-                    _logger.LogVerbose("The dependency graph spec has changed.");
+                    _logger.LogVerbose(string.Format(CultureInfo.CurrentCulture, Strings.Log_RestoreNoOpFailure, _request.Project.Name));
                 }
             }
             else
