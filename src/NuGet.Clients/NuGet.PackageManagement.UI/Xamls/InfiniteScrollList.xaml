@@ -332,7 +332,7 @@
         Style="{StaticResource FadeAnimationStyle}"
         Visibility="Hidden"/>
     </Grid>
-    <nuget:InfiniteScrollListListBox
+    <nuget:InfiniteScrollListBox
       d:DataContext="{d:DesignData Source=/Design/PackageItemListViewSampleData.xaml,IsDesignTimeCreatable=True}"
       x:Name="_list"
       DockPanel.Dock="Bottom"
@@ -372,6 +372,6 @@
           </Border>
         </ControlTemplate>
       </ListBox.Template>
-    </nuget:InfiniteScrollListListBox>
+    </nuget:InfiniteScrollListBox>
   </DockPanel>
 </UserControl>
