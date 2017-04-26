@@ -21,7 +21,7 @@ namespace NuGet.SolutionRestoreManager
     /// </summary>
     [Export]
     [PartCreationPolicy(CreationPolicy.NonShared)]
-    internal sealed class RestoreOperationLogger : ILogger, IDisposable
+    internal sealed class RestoreOperationLogger : LegacyLoggerAdapter, ILogger, IDisposable
     {
         private readonly IServiceProvider _serviceProvider;
         private readonly IOutputConsoleProvider _outputConsoleProvider;
@@ -135,43 +135,43 @@ namespace NuGet.SolutionRestoreManager
             return Task.FromResult(true);
         }
 
-        public void LogDebug(string data)
+        public override void LogDebug(string data)
         {
             LogToVS(VerbosityLevel.Diagnostic, data);
         }
 
-        public void LogVerbose(string data)
+        public override void LogVerbose(string data)
         {
             LogToVS(VerbosityLevel.Detailed, data);
         }
 
-        public void LogInformation(string data)
+        public override void LogInformation(string data)
         {
             LogToVS(VerbosityLevel.Normal, data);
         }
 
-        public void LogMinimal(string data)
+        public override void LogMinimal(string data)
         {
             LogInformation(data);
         }
 
-        public void LogWarning(string data)
+        public override void LogWarning(string data)
         {
             LogToVS(VerbosityLevel.Minimal, data);
         }
 
-        public void LogError(string data)
+        public override void LogError(string data)
         {
             LogToVS(VerbosityLevel.Quiet, data);
         }
 
-        public void LogInformationSummary(string data)
+        public override void LogInformationSummary(string data)
         {
             // Treat Summary as Debug
             LogDebug(data);
         }
 
-        public void LogErrorSummary(string data)
+        public override void LogErrorSummary(string data)
         {
             // Treat Summary as Debug
             LogDebug(data);

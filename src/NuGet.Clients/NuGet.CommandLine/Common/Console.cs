@@ -3,11 +3,12 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Security;
+using System.Threading.Tasks;
 using NuGet.Common;
 
 namespace NuGet.CommandLine
 {
-    public class Console : IConsole
+    public class Console : LegacyLoggerAdapter, IConsole
     {
         /// <summary>
         /// All operations writing to Out should be wrapped in a lock to 
@@ -369,7 +370,7 @@ namespace NuGet.CommandLine
             }
         }
 
-        public void LogDebug(string data)
+        public override void LogDebug(string data)
         {
             if (Verbosity == Verbosity.Detailed)
             {
@@ -377,7 +378,7 @@ namespace NuGet.CommandLine
             }
         }
 
-        public void LogVerbose(string data)
+        public override void LogVerbose(string data)
         {
             if (Verbosity == Verbosity.Detailed)
             {
@@ -385,7 +386,7 @@ namespace NuGet.CommandLine
             }
         }
 
-        public void LogInformation(string data)
+        public override void LogInformation(string data)
         {
             if (Verbosity == Verbosity.Normal || Verbosity == Verbosity.Detailed)
             {
@@ -393,27 +394,27 @@ namespace NuGet.CommandLine
             }
         }
 
-        public void LogMinimal(string data)
+        public override void LogMinimal(string data)
         {
             LogInformation(data);
         }
 
-        public void LogWarning(string data)
+        public override void LogWarning(string data)
         {
             WriteWarning(data);
         }
 
-        public void LogError(string data)
+        public override void LogError(string data)
         {
             WriteLine(ConsoleColor.Red, data);
         }
 
-        public void LogInformationSummary(string data)
+        public override void LogInformationSummary(string data)
         {
             LogInformation(data);
         }
 
-        public void LogErrorSummary(string data)
+        public override void LogErrorSummary(string data)
         {
             WriteError(data);
         }

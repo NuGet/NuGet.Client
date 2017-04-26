@@ -1,12 +1,14 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.ProjectManagement;
 
 namespace NuGet.PackageManagement
 {
-    public class ProjectContextLogger : ILogger
+    public class ProjectContextLogger : LoggerBase
     {
         private readonly INuGetProjectContext _projectContext;
 
@@ -15,48 +17,44 @@ namespace NuGet.PackageManagement
             _projectContext = projectContext;
         }
 
-        public void LogDebug(string data)
+        public override void Log(ILogMessage message)
         {
-            _projectContext.Log(MessageLevel.Debug, data);
+            if (DisplayMessage(message.Level))
+            {
+                var messageLevel = LogLevelToMessageLevel(message.Level);
+
+                _projectContext.Log(messageLevel, message.FormatMessage());
+            }
         }
 
-        public void LogVerbose(string data)
+        public override async Task LogAsync(ILogMessage message)
         {
-            // Treat Verbose as Debug
-            LogDebug(data);
+            if (DisplayMessage(message.Level))
+            {
+                var messageLevel = LogLevelToMessageLevel(message.Level);
+                var text = await message.FormatMessageAsync();
+
+                _projectContext.Log(messageLevel, text);
+            }
         }
 
-        public void LogError(string data)
+        private static MessageLevel LogLevelToMessageLevel(LogLevel level)
         {
-            _projectContext.Log(MessageLevel.Error, data);
-        }
+            switch (level)
+            {
+                case LogLevel.Error:
+                    return MessageLevel.Error;
 
-        public void LogInformation(string data)
-        {
-            _projectContext.Log(MessageLevel.Info, data);
-        }
+                case LogLevel.Warning:
+                    return MessageLevel.Warning;
 
-        public void LogMinimal(string data)
-        {
-            // Treat Minimal as Information
-            LogInformation(data);
-        }
+                case LogLevel.Information:
+                case LogLevel.Minimal:
+                    return MessageLevel.Info;
 
-        public void LogWarning(string data)
-        {
-            _projectContext.Log(MessageLevel.Warning, data);
-        }
-
-        public void LogInformationSummary(string data)
-        {
-            // Treat Summary as Debug
-            LogDebug(data);
-        }
-
-        public void LogErrorSummary(string data)
-        {
-            // Treat Summary as Debug
-            LogDebug(data);
+                default:
+                    return MessageLevel.Debug;
+            }
         }
     }
 }
