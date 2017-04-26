@@ -1024,7 +1024,7 @@ namespace NuGet.Commands.FuncTest
 
                 command = new RestoreCommand(request);
                 result = await command.ExecuteAsync();
-                await result.CommitAsync(logger, true, CancellationToken.None);
+                await result.CommitAsync(logger, CancellationToken.None);
 
                 var output = File.ReadAllText(lockFilePath);
 

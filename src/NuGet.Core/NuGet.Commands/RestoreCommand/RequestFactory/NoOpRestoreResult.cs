@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
+using NuGet.LibraryModel;
 using NuGet.ProjectModel;
 
 namespace NuGet.Commands
@@ -20,6 +21,11 @@ namespace NuGet.Commands
         //We override this method because in the case of a no op we don't need to update anything
         public override async Task CommitAsync(ILogger log, CancellationToken token)
         {
+        }
+        //We override this method because in the case of a no op we don't have any new libraries installed
+        public override ISet<LibraryIdentity> GetAllInstalled()
+        {
+            return new HashSet<LibraryIdentity>();
         }
     }
 }

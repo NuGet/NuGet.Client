@@ -9,7 +9,7 @@ namespace NuGet.ProjectModel
     {
         public string DgSpecHash { get; set; }
 
-        public bool IsValid { get { return DgSpecHash==null ? DgSpecHash.Length == 128 : false; } }
+        public bool IsValid { get { return DgSpecHash != null;  } }
 
 
         public bool Equals(CacheFile other)

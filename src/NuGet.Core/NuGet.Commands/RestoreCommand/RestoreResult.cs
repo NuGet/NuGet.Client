@@ -97,7 +97,7 @@ namespace NuGet.Commands
         /// This requires quite a bit of iterating over the graph so the result should be cached
         /// </remarks>
         /// <returns>A set of libraries that were installed by this operation</returns>
-        public ISet<LibraryIdentity> GetAllInstalled()
+        public virtual ISet<LibraryIdentity> GetAllInstalled()
         {
             return new HashSet<LibraryIdentity>(RestoreGraphs.Where(g => !g.InConflict).SelectMany(g => g.Install).Distinct().Select(m => m.Library));
         }
@@ -195,7 +195,7 @@ namespace NuGet.Commands
         {
             log.LogDebug($"Writing cache file to disk. Path: {CacheFilePath}");
             await FileUtility.ReplaceWithLock(
-               outPath => CacheFileFormat.Write(CacheFilePath, CacheFile),
+               outPath => CacheFileFormat.Write(outPath, CacheFile),
                         CacheFilePath);
         }
     }

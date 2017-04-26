@@ -77,7 +77,7 @@ namespace NuGet.Commands
                 restoreTime.Stop();
 
                 // Create result
-                return new RestoreResult(
+                return new NoOpRestoreResult(
                     _success,
                     null, // graphs,
                     null, // checkResults,
@@ -161,7 +161,7 @@ namespace NuGet.Commands
             restoreTime.Stop();
 
             // Create result
-            return new NoOpRestoreResult(
+            return new RestoreResult(
                 _success,
                 graphs,
                 checkResults,
@@ -188,6 +188,7 @@ namespace NuGet.Commands
                 {
                     _logger.LogVerbose("The dependency graph spec has not changed. No further actions are required for restoring.");
                     _success = true;
+                    _noOp = true;
                 }
                 else
                 {

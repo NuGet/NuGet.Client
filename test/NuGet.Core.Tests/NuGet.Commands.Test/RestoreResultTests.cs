@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -31,6 +31,8 @@ namespace NuGet.Commands.Test
                     previousLockFile: null, // different lock file
                     lockFilePath: path,
                     msbuildFiles: Enumerable.Empty<MSBuildOutputFile>(),
+                    cacheFile: new CacheFile(),
+                    cacheFilePath: path + ".cache",
                     projectStyle: ProjectStyle.Unknown,
                     elapsedTime: TimeSpan.MinValue);
 
@@ -62,6 +64,8 @@ namespace NuGet.Commands.Test
                     previousLockFile: new LockFile(), // same lock file
                     lockFilePath: path,
                     msbuildFiles: Enumerable.Empty<MSBuildOutputFile>(),
+                    cacheFile: new CacheFile(),
+                    cacheFilePath:  path + ".cache",
                     projectStyle: ProjectStyle.Unknown,
                     elapsedTime: TimeSpan.MinValue);
 
