@@ -10,10 +10,18 @@ namespace NuGet.ProjectModel
 {
     public class CacheFile : IEquatable<CacheFile>
     {
-        public string DgSpecHash { get; set; }
+        private static int LATEST_VERSION = 1;
+        public string DgSpecHash { get;}
 
-        public bool IsValid { get { return DgSpecHash != null;  } }
+        public int Version { get; set; }
 
+        public bool IsValid { get { return Version == LATEST_VERSION && DgSpecHash != null;  } }
+
+        public CacheFile(string dgSpecHash)
+        {
+            DgSpecHash = dgSpecHash;
+            Version = LATEST_VERSION;
+        }
 
         public bool Equals(CacheFile other)
         {
@@ -27,7 +35,7 @@ namespace NuGet.ProjectModel
                 return true;
             }
 
-            return StringComparer.Ordinal.Equals(DgSpecHash, other.DgSpecHash);
+            return Version == other.Version && StringComparer.Ordinal.Equals(DgSpecHash, other.DgSpecHash);
         }
 
         public override bool Equals(object obj)
@@ -39,6 +47,7 @@ namespace NuGet.ProjectModel
         {
             var combiner = new HashCodeCombiner();
             combiner.AddObject(DgSpecHash);
+            combiner.AddObject(Version);
             return combiner.CombinedHash;
         }
 

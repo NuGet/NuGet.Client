@@ -15,13 +15,14 @@ namespace NuGet.ProjectModel
     public class CacheFileFormat
     {
         private const string DGSpecHashProperty = "dgSpecHash";
+        private const string Version = "version";
 
-        public static CacheFile Read(string filePath)
+        public static CacheFile Load(string filePath)
         {
-            return Read(filePath, NullLogger.Instance);
+            return Load(filePath, NullLogger.Instance);
         }
 
-        public static CacheFile Read(string filePath, ILogger log)
+        public static CacheFile Load(string filePath, ILogger log)
         {
             using (var stream = File.OpenRead(filePath))
             {
@@ -62,7 +63,7 @@ namespace NuGet.ProjectModel
                     path, ex.Message));
 
                 // Parsing error, the cache file is invalid. 
-                return new CacheFile();
+                return new CacheFile(null);
             }
         }
 
@@ -91,26 +92,24 @@ namespace NuGet.ProjectModel
             using (var jsonWriter = new JsonTextWriter(textWriter))
             {
                 jsonWriter.Formatting = Formatting.Indented;
-                var json = WriteCacheFile(cacheFile);
+                var json = GetCacheFile(cacheFile);
                 json.WriteTo(jsonWriter);
             }
         }
 
         private static CacheFile ReadCacheFile(JObject cursor)
         {
-            var cacheFile = new CacheFile();
-            cacheFile.DgSpecHash = ReadString(cursor[DGSpecHashProperty]);
+            var version = ReadInt(cursor[Version]);
+            var hash = ReadString(cursor[DGSpecHashProperty]);
+            var cacheFile = new CacheFile(hash);
+            cacheFile.Version = version;
             return cacheFile;
         }
 
-        private static JToken WriteString(string item)
-        {
-            return item != null ? new JValue(item) : JValue.CreateNull();
-        }
-
-        private static JObject WriteCacheFile(CacheFile cacheFile)
+        private static JObject GetCacheFile(CacheFile cacheFile)
         {
             var json = new JObject();
+            json[Version] = WriteInt(cacheFile.Version);
             json[DGSpecHashProperty] = WriteString(cacheFile.DgSpecHash);
             return json;
         }
@@ -118,6 +117,21 @@ namespace NuGet.ProjectModel
         private static string ReadString(JToken json)
         {
             return json.Value<string>();
+        }
+
+        private static JToken WriteString(string item)
+        {
+            return item != null ? new JValue(item) : JValue.CreateNull();
+        }
+
+        private static int ReadInt(JToken json)
+        {
+            return json.Value<int>();
+        }
+
+        private static JToken WriteInt(int item)
+        {
+            return new JValue(item);
         }
     }
 }
