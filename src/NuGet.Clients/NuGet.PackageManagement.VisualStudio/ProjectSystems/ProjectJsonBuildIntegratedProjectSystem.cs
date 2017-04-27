@@ -36,17 +36,20 @@ namespace NuGet.PackageManagement.VisualStudio
             var projectId = VsHierarchyUtility.GetProjectId(envDTEProject);
             InternalMetadata.Add(NuGetProjectMetadataKeys.ProjectId, projectId);
 
-            // Override the JSON TFM value from the csproj
-            var platfromMinVersion = VsHierarchyUtility.GetMSBuildProperty(VsHierarchyUtility.ToVsHierarchy(envDTEProject), EnvDTEProjectInfoUtility.TargetPlatformMinVersion);
-
-            // Found the TPMinV in csproj, replace the json target framework value with this one.
-            if (platfromMinVersion != null)
+            // Override the JSON TFM value from the csproj for UAP framework
+            if (InternalMetadata.TryGetValue(NuGetProjectMetadataKeys.TargetFramework, out object targetFramework))
             {
-                if (InternalMetadata.ContainsKey(NuGetProjectMetadataKeys.TargetFramework))
+                var jsonTargetFramework = targetFramework as NuGetFramework;
+                if (IsUAPFramework(jsonTargetFramework))
                 {
-                    var jsonTargetFramework = InternalMetadata[NuGetProjectMetadataKeys.TargetFramework] as NuGetFramework;
-                    var newTargetFramework = new NuGetFramework(jsonTargetFramework.Framework, new Version(platfromMinVersion));
-                    InternalMetadata[NuGetProjectMetadataKeys.TargetFramework] = newTargetFramework;
+                    var platfromMinVersion = VsHierarchyUtility.GetMSBuildProperty(VsHierarchyUtility.ToVsHierarchy(envDTEProject), EnvDTEProjectInfoUtility.TargetPlatformMinVersion);
+
+                    if (platfromMinVersion != null)
+                    {
+                        // Found the TPMinV in csproj, store this as a new target framework to be replaced in project.json
+                        var newTargetFramework = new NuGetFramework(jsonTargetFramework.Framework, new Version(platfromMinVersion));
+                        InternalMetadata[NuGetProjectMetadataKeys.TargetFramework] = newTargetFramework;
+                    }
                 }
             }
 
