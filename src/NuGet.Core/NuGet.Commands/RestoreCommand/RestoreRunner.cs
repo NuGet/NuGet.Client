@@ -250,6 +250,7 @@ namespace NuGet.Commands
 
             // Run the restore
             var request = summaryRequest.Request;
+            var collectoreLogger = summaryRequest.CollectorLogger;
 
             // Read the existing lock file, this is needed to support IsLocked=true
             // This is done on the thread and not as part of creating the request due to
@@ -259,7 +260,7 @@ namespace NuGet.Commands
                 request.ExistingLockFile = LockFileUtilities.GetLockFile(request.LockFilePath, log);
             }
 
-            var command = new RestoreCommand(request);
+            var command = new RestoreCommand(summaryRequest);
             var result = await command.ExecuteAsync(token);
 
             return new RestoreResultPair(summaryRequest, result);

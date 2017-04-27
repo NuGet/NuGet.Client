@@ -53,6 +53,26 @@ namespace NuGet.Commands
             _request = request;
         }
 
+        public RestoreCommand(RestoreSummaryRequest summaryRequest)
+        {
+            if (summaryRequest == null)
+            {
+                throw new ArgumentNullException(nameof(summaryRequest));
+            }
+
+            _request = summaryRequest.Request ?? throw new ArgumentNullException(nameof(summaryRequest.Request));
+
+
+            // Validate the lock file version requested
+            if (_request.LockFileVersion < 1 || _request.LockFileVersion > LockFileFormat.Version)
+            {
+                Debug.Fail($"Lock file version {_request.LockFileVersion} is not supported.");
+                throw new ArgumentOutOfRangeException(nameof(_request.LockFileVersion));
+            }
+
+            _logger = summaryRequest.CollectorLogger;
+        }
+
         public Task<RestoreResult> ExecuteAsync()
         {
             return ExecuteAsync(CancellationToken.None);
@@ -132,6 +152,15 @@ namespace NuGet.Commands
 
             // Revert to the original case if needed
             await FixCaseForLegacyReaders(graphs, assetsFile, token);
+
+            if(_logger is CollectorLogger)
+            {
+                var logs = (_logger as CollectorLogger).Errors
+                    .Select(l => l as IAssetsLogMessage)
+                    .ToList();
+
+                assetsFile.LogMessages = logs;
+            }
 
             restoreTime.Stop();
 
@@ -389,7 +418,9 @@ namespace NuGet.Commands
                 _request.ExistingLockFile,
                 _runtimeGraphCache,
                 _runtimeGraphCacheByPackage);
+
             var projectRestoreCommand = new ProjectRestoreCommand(projectRestoreRequest);
+
             var result = await projectRestoreCommand.TryRestore(
                 projectRange,
                 projectFrameworkRuntimePairs,
@@ -468,6 +499,7 @@ namespace NuGet.Commands
                     }
                 }
             }
+
 
             return allGraphs;
         }

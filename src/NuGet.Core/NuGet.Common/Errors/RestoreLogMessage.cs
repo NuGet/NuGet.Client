@@ -22,10 +22,15 @@ namespace NuGet.Common
             Code = errorCode;
             Message = errorString;
             ProjectPath = projectPath;
-            TargetGraphs = new List<string>
+            Time = DateTimeOffset.Now;
+
+            if (!string.IsNullOrEmpty(targetGraph))
             {
-                targetGraph
-            };
+                TargetGraphs = new List<string>
+                {
+                    targetGraph
+                };
+            }
         }
 
         public bool Equals(RestoreLogMessage other)
@@ -55,25 +60,18 @@ namespace NuGet.Common
         {
             var errorDictionary = new Dictionary<string, object>
             {
-                [LogMessageProperties.LOG_CODE_PROPERTY] = Code,
-                [LogMessageProperties.LOG_LEVEL_PROPERTY] = Level  //TODO write an adapter for converting into msbuild style levels
+                [LogMessageProperties.LOG_CODE_PROPERTY] = Enum.GetName(typeof(NuGetLogCode), Code),
+                [LogMessageProperties.LOG_LEVEL_PROPERTY] = Enum.GetName(typeof(LogLevel), Level)
             };
 
             if(Message != null)
             {
                 errorDictionary[LogMessageProperties.MESSAGE_PROPERTY] = Message;
             }
-            if(ProjectPath != null)
-            {
-                errorDictionary[LogMessageProperties.PROJECT_PATH_PROPERTY] = ProjectPath;
-            }
-            if(TargetGraphs != null && TargetGraphs.Any())
+
+            if(TargetGraphs != null && TargetGraphs.Any() && TargetGraphs.All(l => !string.IsNullOrEmpty(l)))
             {
                 errorDictionary[LogMessageProperties.TARGET_GRAPH_PROPERTY] = TargetGraphs;
-            }
-            if(Time != null)
-            {
-                errorDictionary[LogMessageProperties.TIME_PROPERTY] = Time;
             }
 
             return errorDictionary;
@@ -89,7 +87,7 @@ namespace NuGet.Common
         {
             var errorString = new StringBuilder();
 
-            errorString.Append($"{nameof(Code)}:{Message}");
+            errorString.Append($"{Enum.GetName(typeof(NuGetLogCode), Code)}:{Message}");
 
             return errorString.ToString();
         }
