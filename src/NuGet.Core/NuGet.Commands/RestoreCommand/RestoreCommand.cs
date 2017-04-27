@@ -79,9 +79,6 @@ namespace NuGet.Commands
                 // Create result
                 return new NoOpRestoreResult(
                     _success,
-                    null, // graphs,
-                    null, // checkResults,
-                    null, // msbuildOutputFiles,
                     _request.ExistingLockFile,
                     _request.ExistingLockFile,
                     _request.ExistingLockFile.Path,
@@ -182,7 +179,7 @@ namespace NuGet.Commands
 
             if (_request.AllowNoOp && File.Exists(_request.Project.RestoreMetadata.CacheFilePath))
             {
-                cacheFile = CacheFileFormat.Read(_request.Project.RestoreMetadata.CacheFilePath, _logger);
+                cacheFile = CacheFileFormat.Load(_request.Project.RestoreMetadata.CacheFilePath, _logger);
 
                 if (cacheFile.IsValid && StringComparer.Ordinal.Equals(cacheFile.DgSpecHash, newDgSpecHash))
                 {
@@ -192,13 +189,14 @@ namespace NuGet.Commands
                 }
                 else
                 {
-                    cacheFile.DgSpecHash = newDgSpecHash;
+                    cacheFile = new CacheFile(newDgSpecHash);
                     _logger.LogVerbose(string.Format(CultureInfo.CurrentCulture, Strings.Log_RestoreNoOpDGChanged, _request.Project.Name));
                 }
             }
             else
             {
-                cacheFile = new CacheFile { DgSpecHash = newDgSpecHash };
+                cacheFile = new CacheFile(newDgSpecHash);
+
             }
             return cacheFile;
         }

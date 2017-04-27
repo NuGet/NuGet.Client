@@ -58,8 +58,8 @@ namespace NuGet.ProjectModel
             }
             catch (Exception ex)
             {
-                log.LogError(string.Format(CultureInfo.CurrentCulture,
-                    "error reading a cache file {1} : {2}",
+                log.LogWarning(string.Format(CultureInfo.CurrentCulture,
+                    Strings.Log_ProblemReadingCacheFile,
                     path, ex.Message));
 
                 // Parsing error, the cache file is invalid. 

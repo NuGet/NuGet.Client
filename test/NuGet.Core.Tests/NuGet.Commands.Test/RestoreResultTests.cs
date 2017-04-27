@@ -31,7 +31,7 @@ namespace NuGet.Commands.Test
                     previousLockFile: null, // different lock file
                     lockFilePath: path,
                     msbuildFiles: Enumerable.Empty<MSBuildOutputFile>(),
-                    cacheFile: new CacheFile(),
+                    cacheFile: new CacheFile(null),
                     cacheFilePath: path + ".cache",
                     projectStyle: ProjectStyle.Unknown,
                     elapsedTime: TimeSpan.MinValue);
@@ -64,7 +64,7 @@ namespace NuGet.Commands.Test
                     previousLockFile: new LockFile(), // same lock file
                     lockFilePath: path,
                     msbuildFiles: Enumerable.Empty<MSBuildOutputFile>(),
-                    cacheFile: new CacheFile(),
+                    cacheFile: new CacheFile(null),
                     cacheFilePath:  path + ".cache",
                     projectStyle: ProjectStyle.Unknown,
                     elapsedTime: TimeSpan.MinValue);

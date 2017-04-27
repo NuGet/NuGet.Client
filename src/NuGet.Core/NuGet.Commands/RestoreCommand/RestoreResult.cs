@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -135,7 +136,8 @@ namespace NuGet.Commands
                 toolCommit: isTool,
                 token: token);
             await CommitCacheFileAsync(
-                log: log);
+                log: log,
+                toolCommit : isTool);
         }
 
         private async Task CommitAssetsFileAsync(
@@ -162,7 +164,11 @@ namespace NuGet.Commands
                 {
                     if (result.LockFilePath != null && result.LockFile != null)
                     {
-                        log.LogDebug($"Writing tool lock file to disk. Path: {result.LockFilePath}");
+                        
+
+                        log.LogDebug(string.Format(CultureInfo.CurrentCulture,
+                        Strings.Log_ToolWritingLockFile,
+                        result.LockFilePath));
 
                         await FileUtility.ReplaceWithLock(
                             (outputPath) => lockFileFormat.Write(outputPath, result.LockFile),
@@ -171,7 +177,9 @@ namespace NuGet.Commands
                 }
                 else
                 {
-                    log.LogMinimal($"Writing lock file to disk. Path: {result.LockFilePath}");
+                    log.LogMinimal(string.Format(CultureInfo.CurrentCulture,
+                        Strings.Log_WritingLockFile,
+                        result.LockFilePath));
 
                     FileUtility.Replace(
                         (outputPath) => lockFileFormat.Write(outputPath, result.LockFile),
@@ -182,11 +190,15 @@ namespace NuGet.Commands
             {
                 if (toolCommit)
                 {
-                    log.LogDebug($"Tool lock file has not changed. Skipping lock file write. Path: {result.LockFilePath}");
+                    log.LogDebug(string.Format(CultureInfo.CurrentCulture,
+                        Strings.Log_ToolSkippingLockFile,
+                        result.LockFilePath));
                 }
                 else
                 {
-                    log.LogMinimal($"Lock file has not changed. Skipping lock file write. Path: {result.LockFilePath}");
+                    log.LogMinimal(string.Format(CultureInfo.CurrentCulture,
+                        Strings.Log_SkippingLockFile,
+                        result.LockFilePath));
                 }
             }
         }
@@ -194,11 +206,15 @@ namespace NuGet.Commands
         protected async Task CommitCacheFileAsync(ILogger log, bool toolCommit)
         {
             if (toolCommit) { 
-                log.LogDebug($"Writing cache file to disk. Path: {CacheFilePath}");
+                log.LogDebug(string.Format(CultureInfo.CurrentCulture,
+                        Strings.Log_ToolWritingCacheFile,
+                        CacheFilePath));
             } 
             else
             {
-                log.LogMinimal($"Writing cache file to disk. Path: {CacheFilePath}");
+                log.LogMinimal(string.Format(CultureInfo.CurrentCulture,
+                        Strings.Log_WritingCacheFile,
+                        CacheFilePath));
             }
 
             await FileUtility.ReplaceWithLock(

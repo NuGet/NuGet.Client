@@ -15,6 +15,8 @@ namespace NuGet.ProjectModel
 
         public int Version { get; set; }
 
+        public bool Success { get; set; }
+
         public bool IsValid { get { return Version == LATEST_VERSION && DgSpecHash != null;  } }
 
         public CacheFile(string dgSpecHash)

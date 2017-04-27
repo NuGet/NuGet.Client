@@ -3,6 +3,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
@@ -21,19 +23,28 @@ namespace NuGet.Commands
         }
 
         //We override this method because in the case of a no op we don't need to update anything
+        [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "CS1998", Justification = "This is intended.")]
         public override async Task CommitAsync(ILogger log, CancellationToken token)
         {
             var isTool = ProjectStyle == ProjectStyle.DotnetCliTool;
 
             if (isTool)
             {
-                log.LogDebug($"Tool lock file has not changed. Skipping lock file write. Path: {LockFilePath}");
-                log.LogDebug($"No-Op restore. The cache will not be updated."); //TODO - NK Do we need a resource here? 
+                log.LogDebug(string.Format(CultureInfo.CurrentCulture,
+                        Strings.Log_ToolSkippingLockFile,
+                        LockFilePath));
+                log.LogDebug(string.Format(CultureInfo.CurrentCulture,
+                        Strings.Log_SkippingCacheFile,
+                        CacheFile));
             }
             else
             {
-                log.LogMinimal($"Lock file has not changed. Skipping lock file write. Path: {LockFilePath}");
-                log.LogMinimal($"No-Op restore. The cache will not be updated.");
+                log.LogMinimal(string.Format(CultureInfo.CurrentCulture,
+                                        Strings.Log_SkippingLockFile,
+                                        LockFilePath));
+                log.LogVerbose(string.Format(CultureInfo.CurrentCulture,
+                        Strings.Log_SkippingCacheFile,
+                        CacheFile));
             }
         }
 

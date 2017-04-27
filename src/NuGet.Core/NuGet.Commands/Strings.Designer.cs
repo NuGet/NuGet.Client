@@ -837,11 +837,57 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to No-Op restore. The cache will not be updated. Path: {0}.
+        /// </summary>
+        internal static string Log_SkippingCacheFile {
+            get {
+                return ResourceManager.GetString("Log_SkippingCacheFile", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Lock file has not changed. Skipping lock file write. Path:
+        ///Lock file has not changed. Skipping lock file write. Path:.
+        /// </summary>
+        internal static string Log_SkippingLockFile {
+            get {
+                return ResourceManager.GetString("Log_SkippingLockFile", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Skipping runtime dependency walk, no runtimes defined in project.json..
         /// </summary>
         internal static string Log_SkippingRuntimeWalk {
             get {
                 return ResourceManager.GetString("Log_SkippingRuntimeWalk", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Tool lock file has not changed. Skipping lock file write. Path: {0}.
+        /// </summary>
+        internal static string Log_ToolSkippingLockFile {
+            get {
+                return ResourceManager.GetString("Log_ToolSkippingLockFile", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Writing tool cache file to disk. Path: {0}.
+        /// </summary>
+        internal static string Log_ToolWritingCacheFile {
+            get {
+                return ResourceManager.GetString("Log_ToolWritingCacheFile", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Writing tool lock file to disk. Path: {0}.
+        /// </summary>
+        internal static string Log_ToolWritingLockFile {
+            get {
+                return ResourceManager.GetString("Log_ToolWritingLockFile", resourceCulture);
             }
         }
         
@@ -887,6 +933,24 @@ namespace NuGet.Commands {
         internal static string Log_VersionConflict {
             get {
                 return ResourceManager.GetString("Log_VersionConflict", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Writing cache file to disk. Path: {0}.
+        /// </summary>
+        internal static string Log_WritingCacheFile {
+            get {
+                return ResourceManager.GetString("Log_WritingCacheFile", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Writing lock file to disk. Path: {0}.
+        /// </summary>
+        internal static string Log_WritingLockFile {
+            get {
+                return ResourceManager.GetString("Log_WritingLockFile", resourceCulture);
             }
         }
         
