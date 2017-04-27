@@ -374,8 +374,6 @@ namespace NuGet.Protocol.Plugins.Tests
 
         private sealed class ConnectAsyncTest : IDisposable
         {
-            private readonly CancellationTokenSource _remoteCancellationTokenSource;
-            private readonly CancellationTokenSource _localCancellationTokenSource;
             private readonly CancellationTokenSource _combinedCancellationTokenSource;
             private readonly SimulatedIpc _simulatedIpc;
             private readonly Sender _remoteSender;
@@ -392,10 +390,7 @@ namespace NuGet.Protocol.Plugins.Tests
 
             internal ConnectAsyncTest(ConnectionOptions localToRemoteOptions, ConnectionOptions remoteToLocalOptions)
             {
-                _remoteCancellationTokenSource = new CancellationTokenSource();
-                _localCancellationTokenSource = new CancellationTokenSource();
-                _combinedCancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(
-                    _remoteCancellationTokenSource.Token, _localCancellationTokenSource.Token);
+                _combinedCancellationTokenSource = new CancellationTokenSource();
                 _simulatedIpc = SimulatedIpc.Create(_combinedCancellationTokenSource.Token);
                 _remoteSender = new Sender(_simulatedIpc.RemoteStandardOutputForRemote);
                 _remoteReceiver = new StandardInputReceiver(_simulatedIpc.RemoteStandardInputForRemote);
@@ -415,20 +410,16 @@ namespace NuGet.Protocol.Plugins.Tests
                     return;
                 }
 
-                _combinedCancellationTokenSource.Cancel();
+                using (_combinedCancellationTokenSource)
+                {
+                    _combinedCancellationTokenSource.Cancel();
 
-                _simulatedIpc.Dispose();
-                LocalToRemoteConnection.Dispose();
-                RemoteToLocalConnection.Dispose();
-                _remoteSender.Dispose();
-                _remoteReceiver.Dispose();
-                _remoteDispatcher.Dispose();
-                _localSender.Dispose();
-                _localReceiver.Dispose();
-                _localDispatcher.Dispose();
-                _combinedCancellationTokenSource.Dispose();
-                _remoteCancellationTokenSource.Dispose();
-                _localCancellationTokenSource.Dispose();
+                    LocalToRemoteConnection.Dispose();
+                    RemoteToLocalConnection.Dispose();
+                    _simulatedIpc.Dispose();
+
+                    // Other IDisposable fields should be disposed by the connections.
+                }
 
                 GC.SuppressFinalize(this);
 
