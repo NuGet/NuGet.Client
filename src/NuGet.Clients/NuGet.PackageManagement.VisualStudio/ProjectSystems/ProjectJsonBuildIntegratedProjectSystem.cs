@@ -36,13 +36,8 @@ namespace NuGet.PackageManagement.VisualStudio
             var projectId = VsHierarchyUtility.GetProjectId(envDTEProject);
             InternalMetadata.Add(NuGetProjectMetadataKeys.ProjectId, projectId);
 
-            // Override the JSON TFM value from the DTE here.
-            var platfromVersion = EnvDTEProjectInfoUtility.GetTargetPlatformVersion(envDTEProject);
-            var platfromMinVersion = EnvDTEProjectInfoUtility.GetTargetPlatformMinVersion(envDTEProject);
-            if (platfromMinVersion == null)
-            {
-                platfromMinVersion = VsHierarchyUtility.GetMSBuildProperty(VsHierarchyUtility.ToVsHierarchy(envDTEProject), "TargetPlatformMinVersion");
-            }
+            // Override the JSON TFM value from the csproj
+            var platfromMinVersion = VsHierarchyUtility.GetMSBuildProperty(VsHierarchyUtility.ToVsHierarchy(envDTEProject), EnvDTEProjectInfoUtility.TargetPlatformMinVersion);
 
             // Found the TPFmV in csproj, replace the json target framework value with this one.
             if (platfromMinVersion != null)

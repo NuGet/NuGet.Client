@@ -74,7 +74,7 @@ namespace NuGet.ProjectManagement.Projects
             }
 
             JObject projectJson;
-            IEnumerable<NuGetFramework> targetFrameworks = Enumerable.Empty<NuGetFramework>();
+            var targetFrameworks = Enumerable.Empty<NuGetFramework>();
 
             try
             {
@@ -261,22 +261,12 @@ namespace NuGet.ProjectManagement.Projects
 
         private void UpdateFramework(JObject json)
         {
-            var frameworks = JsonConfigUtility.GetFrameworks(json);
-            if (InternalMetadata.TryGetValue(NuGetProjectMetadataKeys.TargetFramework, out object outFramework))
+            if (InternalMetadata.TryGetValue(NuGetProjectMetadataKeys.TargetFramework, out object targetFramework))
             {
-                var targetFramework = outFramework as NuGetFramework;
-                // Can move the check and update to utilities.
-                if (!HasFrameWork(frameworks, targetFramework))
-                {
-                    JsonConfigUtility.ClearFrameworks(json);
-                    JsonConfigUtility.AddFramework(json, targetFramework);
-                }
+                // project.json can have only one framework
+                JsonConfigUtility.ClearFrameworks(json);
+                JsonConfigUtility.AddFramework(json, targetFramework as NuGetFramework);
             }
-        }
-
-        private bool HasFrameWork(IEnumerable<NuGetFramework> list, NuGetFramework framework)
-        {
-            return list.Any(item => item.Framework == framework.Framework && item.Version == framework.Version);
         }
 
         /// <summary>

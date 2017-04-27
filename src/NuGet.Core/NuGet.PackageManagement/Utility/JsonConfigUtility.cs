@@ -161,6 +161,12 @@ namespace NuGet.ProjectManagement
         /// </summary>
         public static void AddFramework(JObject json, NuGetFramework framework)
         {
+            var frameworks = GetFrameworks(json);
+            if (HasFramework(frameworks, framework))
+            {
+                return;
+            }
+
             JObject frameworkSet = null;
 
             JToken node = null;
@@ -188,8 +194,7 @@ namespace NuGet.ProjectManagement
         /// </summary>
         public static void ClearFrameworks(JObject json)
         {
-            JObject frameworkSet = frameworkSet = new JObject();
-            json["frameworks"] = frameworkSet;
+            json["frameworks"] = new JObject();
         }
 
         /// <summary>
@@ -207,6 +212,13 @@ namespace NuGet.ProjectManagement
             }
 
             return sortedParent;
+        }
+
+        private static bool HasFramework(IEnumerable<NuGetFramework> list, NuGetFramework framework)
+        {
+            return list.Any(item => 
+                item.Framework == framework.Framework 
+                && item.Version == framework.Version);
         }
 
         private static string GetChildKey(JToken token)
