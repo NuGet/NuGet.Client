@@ -8,10 +8,10 @@ using System.Threading.Tasks;
 
 namespace NuGet.Common
 {
-    public class CollectorLogger : ICollectorLogger
+    public class CollectorLogger : LoggerBase, ICollectorLogger
     {
         private readonly ILogger _innerLogger;
-        private readonly ConcurrentQueue<string> _errors;
+        private readonly ConcurrentQueue<ILogMessage> _errors;
 
         /// <summary>
         /// Initializes an instance of the <see cref="CollectorLogger"/>, while still
@@ -66,27 +66,34 @@ namespace NuGet.Common
             _innerLogger.LogMinimal(data);
         }
 
-        public void LogWarning(string data)
+        public override void Log(ILogMessage message)
         {
-            _innerLogger.LogWarning(data);
+            _errors.Enqueue(message);
+            _innerLogger.Log(message);
         }
 
-        public void LogError(string data)
-        {
-            _errors.Enqueue(data);
-            _innerLogger.LogError(data);
+        public override Task LogAsync(ILogMessage message)
+        {            
+            _errors.Enqueue(message);
+            return _innerLogger.LogAsync(message);
         }
 
-        public void LogInformationSummary(string data)
+        public override void Log(LogLevel level, string data)
         {
-            _innerLogger.LogInformationSummary(data);
+            //TODO clean this
+            var message = new RestoreLogMessage(level, NuGetLogCode.Undefined, data, string.Empty, string.Empty);
+            _errors.Enqueue(message);
+            _innerLogger.Log(level, data);
         }
 
-        public void LogErrorSummary(string data)
+        public override Task LogAsync(LogLevel level, string data)
         {
-            _innerLogger.LogErrorSummary(data);
+            //TODO clean this
+            var message = new RestoreLogMessage(level, NuGetLogCode.Undefined, data, string.Empty, string.Empty);
+            _errors.Enqueue(message);
+            return _innerLogger.LogAsync(level, data);
         }
 
-        public IEnumerable<string> Errors => _errors.ToArray();
+        public IEnumerable<ILogMessage> Errors => _errors.ToArray();
     }
 }
