@@ -87,7 +87,7 @@ namespace NuGet.Protocol.Plugins.Tests
                 reader.Setup(x => x.GetEnvironmentVariable(It.Is<string>(value => value == _environmentVariable)))
                     .Returns(pluginsPath);
 
-                PluginResourceProvider.EnvironmentVariableReader = reader.Object;
+                PluginResourceProvider.Reinitialize(reader.Object);
 
                 var result = await _provider.TryCreate(sourceRepository, CancellationToken.None);
 
@@ -108,7 +108,7 @@ namespace NuGet.Protocol.Plugins.Tests
                 reader.Setup(x => x.GetEnvironmentVariable(It.Is<string>(value => value == _environmentVariable)))
                     .Returns("a");
 
-                PluginResourceProvider.EnvironmentVariableReader = reader.Object;
+                PluginResourceProvider.Reinitialize(reader.Object);
 
                 var result = await _provider.TryCreate(sourceRepository, CancellationToken.None);
 
@@ -130,7 +130,7 @@ namespace NuGet.Protocol.Plugins.Tests
                 reader.Setup(x => x.GetEnvironmentVariable(It.Is<string>(value => value == _environmentVariable)))
                     .Returns("a");
 
-                PluginResourceProvider.EnvironmentVariableReader = reader.Object;
+                PluginResourceProvider.Reinitialize(reader.Object);
 
                 var result = await _provider.TryCreate(sourceRepository, CancellationToken.None);
 
@@ -168,7 +168,7 @@ namespace NuGet.Protocol.Plugins.Tests
 
             public void Dispose()
             {
-                PluginResourceProvider.EnvironmentVariableReader = _originalReader;
+                PluginResourceProvider.Reinitialize(_originalReader);
             }
         }
     }

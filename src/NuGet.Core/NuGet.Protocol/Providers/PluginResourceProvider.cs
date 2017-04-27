@@ -21,17 +21,16 @@ namespace NuGet.Protocol.Core.Types
         private const string _environmentVariable = "NUGET_PLUGIN_PATHS";
 
         private static Lazy<PluginDiscoverer> _discoverer;
+        private static IEnvironmentVariableReader _environmentVariableReader;
         private static PluginFactory _pluginFactory;
         private static ConcurrentDictionary<string, Task<IReadOnlyList<OperationClaim>>> _pluginOperationClaims;
+        private static string _rawPluginPaths;
 
-        public static IEnvironmentVariableReader EnvironmentVariableReader { get; set; }
+        public static IEnvironmentVariableReader EnvironmentVariableReader { get; private set; }
 
         static PluginResourceProvider()
         {
-            EnvironmentVariableReader = new EnvironmentVariableWrapper();
-            _discoverer = new Lazy<PluginDiscoverer>(InitializeDiscoverer);
-            _pluginFactory = new PluginFactory(PluginConstants.IdleTimeout);
-            _pluginOperationClaims = new ConcurrentDictionary<string, Task<IReadOnlyList<OperationClaim>>>(StringComparer.OrdinalIgnoreCase);
+            Reinitialize(new EnvironmentVariableWrapper());
         }
 
         public PluginResourceProvider()
@@ -75,6 +74,20 @@ namespace NuGet.Protocol.Core.Types
             }
 
             return new Tuple<bool, INuGetResource>(resource != null, resource);
+        }
+
+        /// <summary>
+        /// Reinitializes static state.
+        /// </summary>
+        /// <remarks>This is non-private only to facilitate unit testing.</remarks>
+        /// <param name="reader">An environment variable reader.</param>
+        public static void Reinitialize(IEnvironmentVariableReader reader)
+        {
+            EnvironmentVariableReader = reader;
+            _rawPluginPaths = reader?.GetEnvironmentVariable(_environmentVariable);
+            _discoverer = new Lazy<PluginDiscoverer>(InitializeDiscoverer);
+            _pluginFactory = new PluginFactory(PluginConstants.IdleTimeout);
+            _pluginOperationClaims = new ConcurrentDictionary<string, Task<IReadOnlyList<OperationClaim>>>(StringComparer.OrdinalIgnoreCase);
         }
 
         private async Task<IEnumerable<PluginCreationResult>> GetPluginsForPackageSourceAsync(
@@ -163,17 +176,12 @@ namespace NuGet.Protocol.Core.Types
         {
             var verifier = EmbeddedSignatureVerifier.Create();
 
-            return new PluginDiscoverer(GetEnvironmentVariable(), verifier);
-        }
-
-        private static string GetEnvironmentVariable()
-        {
-            return EnvironmentVariableReader?.GetEnvironmentVariable(_environmentVariable);
+            return new PluginDiscoverer(_rawPluginPaths, verifier);
         }
 
         private static bool IsPluginPossiblyAvailable()
         {
-            return !string.IsNullOrEmpty(GetEnvironmentVariable());
+            return !string.IsNullOrEmpty(_rawPluginPaths);
         }
     }
 }

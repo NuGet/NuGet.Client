@@ -15,6 +15,7 @@ namespace NuGet.Protocol.Plugins
     {
         private readonly TaskCompletionSource<object> _closeEvent;
         private bool _isDisposed;
+        private bool _isDisposing;
         private readonly IReceiver _receiver;
         private readonly ISender _sender;
 
@@ -97,16 +98,19 @@ namespace NuGet.Protocol.Plugins
         /// </summary>
         public void Dispose()
         {
-            if (_isDisposed)
+            if (_isDisposed || _isDisposing)
             {
                 return;
             }
+
+            _isDisposing = true;
 
             Task.Run(() => CloseAsync());
 
             GC.SuppressFinalize(this);
 
             _isDisposed = true;
+            _isDisposing = false;
         }
 
         /// <summary>
