@@ -263,7 +263,7 @@ namespace NuGet.ProjectManagement.Projects
         {
             if (InternalMetadata.TryGetValue(NuGetProjectMetadataKeys.TargetFramework, out object targetFramework))
             {
-                // project.json can have only one framework
+                // UWP projects can have only one target framework
                 JsonConfigUtility.ClearFrameworks(json);
                 JsonConfigUtility.AddFramework(json, targetFramework as NuGetFramework);
             }

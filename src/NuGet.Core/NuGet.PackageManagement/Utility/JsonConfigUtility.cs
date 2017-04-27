@@ -180,7 +180,7 @@ namespace NuGet.ProjectManagement
                 frameworkSet = new JObject();
             }
 
-            var frameworkProperty = new JProperty(framework.Framework.ToLower() + framework.Version.ToString(), new JObject());
+            var frameworkProperty = new JProperty(framework.GetShortFolderName(), new JObject());
             frameworkSet.Add(frameworkProperty);
 
             // order frameworks to reduce merge conflicts
@@ -216,9 +216,10 @@ namespace NuGet.ProjectManagement
 
         private static bool HasFramework(IEnumerable<NuGetFramework> list, NuGetFramework framework)
         {
-            return list.Any(item => 
-                item.Framework == framework.Framework 
-                && item.Version == framework.Version);
+            return list.Any(
+                item =>
+                    string.Equals(item.Framework, framework.Framework, StringComparison.OrdinalIgnoreCase) 
+                    && item.Version == framework.Version);
         }
 
         private static string GetChildKey(JToken token)
