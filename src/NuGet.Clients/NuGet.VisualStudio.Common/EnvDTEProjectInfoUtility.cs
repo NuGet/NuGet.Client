@@ -365,6 +365,40 @@ namespace NuGet.VisualStudio
             return frameworkStrings.FirstOrDefault();
         }
 
+        /// <summary>
+        /// Determine the project's target platform version based on the project properties.
+        /// </summary>
+        public static string GetTargetPlatformVersion(EnvDTE.Project envDTEProject)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            if (envDTEProject == null)
+            {
+                return null;
+            }
+
+            var platformVersion = GetPropertyValue<string>(envDTEProject, "TargetPlatformVersion");
+
+            return platformVersion;
+        }
+
+        /// <summary>
+        /// Determine the project's target platform minimum version based on the project properties.
+        /// </summary>
+        public static string GetTargetPlatformMinVersion(EnvDTE.Project envDTEProject)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            if (envDTEProject == null)
+            {
+                return null;
+            }
+
+            var platformMinVersion = GetPropertyValue<string>(envDTEProject, "TargetPlatformMinVersion");
+
+            return platformMinVersion;
+        }
+
         // TODO: Return null for library projects
         public static string GetConfigurationFile(EnvDTE.Project envDTEProject)
         {

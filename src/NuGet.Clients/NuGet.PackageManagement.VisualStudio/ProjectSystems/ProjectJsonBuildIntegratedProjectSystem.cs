@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using NuGet.Frameworks;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
@@ -34,6 +35,26 @@ namespace NuGet.PackageManagement.VisualStudio
             // set project id
             var projectId = VsHierarchyUtility.GetProjectId(envDTEProject);
             InternalMetadata.Add(NuGetProjectMetadataKeys.ProjectId, projectId);
+
+            // Override the JSON TFM value from the DTE here.
+            var platfromVersion = EnvDTEProjectInfoUtility.GetTargetPlatformVersion(envDTEProject);
+            var platfromMinVersion = EnvDTEProjectInfoUtility.GetTargetPlatformMinVersion(envDTEProject);
+            if (platfromMinVersion == null)
+            {
+                platfromMinVersion = VsHierarchyUtility.GetMSBuildProperty(VsHierarchyUtility.ToVsHierarchy(envDTEProject), "TargetPlatformMinVersion");
+            }
+
+            // Found the TPFmV in csproj, replace the json target framework value with this one.
+            if (platfromMinVersion != null)
+            {
+                NuGetFramework newTargetFramework = null;
+                if (InternalMetadata.ContainsKey(NuGetProjectMetadataKeys.TargetFramework))
+                {
+                    var jsonTargetFramework = InternalMetadata[NuGetProjectMetadataKeys.TargetFramework] as NuGetFramework;
+                    newTargetFramework = new NuGetFramework(jsonTargetFramework.Framework, new Version(platfromMinVersion));
+                    InternalMetadata[NuGetProjectMetadataKeys.TargetFramework] = newTargetFramework;
+                }
+            }
 
             InternalMetadata.Add(NuGetProjectMetadataKeys.UniqueName, uniqueName);
         }

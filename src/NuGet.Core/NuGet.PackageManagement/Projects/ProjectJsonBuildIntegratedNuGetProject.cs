@@ -252,9 +252,29 @@ namespace NuGet.ProjectManagement.Projects
 
             JsonConfigUtility.AddDependency(json, dependency);
 
+            UpdateFramework(json);
+
             await SaveJsonAsync(json);
 
             return true;
+        }
+
+        private void UpdateFramework(JObject json)
+        {
+            var frameworks = JsonConfigUtility.GetFrameworks(json);
+            if (InternalMetadata.TryGetValue(NuGetProjectMetadataKeys.TargetFramework, out object outFramework))
+            {
+                var targetFramework = outFramework as NuGetFramework;
+                if (!HasFrameWork(frameworks, targetFramework))
+                {
+                    JsonConfigUtility.AddFramework(json, targetFramework);
+                }
+            }
+        }
+
+        private bool HasFrameWork(IEnumerable<NuGetFramework> list, NuGetFramework framework)
+        {
+            return list.Any(item => item.Framework == framework.Framework && item.Version == framework.Version);
         }
 
         /// <summary>
@@ -268,6 +288,8 @@ namespace NuGet.ProjectManagement.Projects
 
             JsonConfigUtility.RemoveDependency(json, packageId);
 
+            UpdateFramework(json);
+
             await SaveJsonAsync(json);
 
             return true;
@@ -277,6 +299,7 @@ namespace NuGet.ProjectManagement.Projects
         {
             return await RemoveDependencyAsync(packageIdentity.Id, nuGetProjectContext, token);
         }
+
         private JObject GetJson()
         {
             try
