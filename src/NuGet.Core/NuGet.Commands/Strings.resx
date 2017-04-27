@@ -518,8 +518,7 @@ For more information, visit http://docs.nuget.org/docs/reference/command-line-re
     <value>The restore inputs for '{0}' have not changed. No further actions are required to complete the restore.</value>
   </data>
   <data name="Log_SkippingLockFile" xml:space="preserve">
-    <value>Lock file has not changed. Skipping lock file write. Path:
-Lock file has not changed. Skipping lock file write. Path:</value>
+    <value>Lock file has not changed. Skipping lock file write. Path: {0}</value>
   </data>
   <data name="Log_ToolSkippingLockFile" xml:space="preserve">
     <value>Tool lock file has not changed. Skipping lock file write. Path: {0}</value>

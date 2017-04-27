@@ -846,8 +846,7 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Lock file has not changed. Skipping lock file write. Path:
-        ///Lock file has not changed. Skipping lock file write. Path:.
+        ///   Looks up a localized string similar to Lock file has not changed. Skipping lock file write. Path: {0}.
         /// </summary>
         internal static string Log_SkippingLockFile {
             get {
