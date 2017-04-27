@@ -149,7 +149,8 @@ namespace NuGet.Commands
                 settings = restoreArgs.GetSettings(rootPath);
             }
 
-            var globalPath = restoreArgs.GetEffectiveGlobalPackagesFolder(rootPath, settings);
+            var globalPath = project.PackageSpec.RestoreMetadata.
+                //restoreArgs.GetEffectiveGlobalPackagesFolder(rootPath, settings);
             var fallbackPaths = restoreArgs.GetEffectiveFallbackPackageFolders(settings);
 
             var sources = restoreArgs.GetEffectiveSources(settings);

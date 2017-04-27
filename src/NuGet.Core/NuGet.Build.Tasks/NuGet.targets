@@ -77,6 +77,8 @@ Copyright (c) .NET Foundation. All rights reserved.
   <UsingTask TaskName="NuGet.Build.Tasks.GetRestoreDotnetCliToolsTask" AssemblyFile="$(RestoreTaskAssemblyFile)" />
   <UsingTask TaskName="NuGet.Build.Tasks.GetRestoreProjectFrameworks" AssemblyFile="$(RestoreTaskAssemblyFile)" />
   <UsingTask TaskName="NuGet.Build.Tasks.GetRestoreSolutionProjectsTask" AssemblyFile="$(RestoreTaskAssemblyFile)" />
+  <UsingTask TaskName="NuGet.Build.Tasks.GetRestoreSettingsTask" AssemblyFile="$(RestoreTaskAssemblyFile)" />
+
 
   <!--
     ============================================================
@@ -463,6 +465,25 @@ Copyright (c) .NET Foundation. All rights reserved.
     <PropertyGroup Condition=" '$(RestoreProjectStyle)' == 'PackageReference' AND '$(_RestoreSkipContentFileWrite)' == '' ">
       <_RestoreSkipContentFileWrite Condition=" '$(TargetFrameworks)' == '' AND '$(TargetFramework)' == '' ">true</_RestoreSkipContentFileWrite>
     </PropertyGroup>
+   
+    <GetRestoreSettingsTask Condition=" '$(RestoreProjectStyle)' == 'PackageReference' OR '$(RestoreProjectStyle)' == 'ProjectJson' "
+     ProjectUniqueName="$(MSBuildProjectFullPath)"
+     RestoreSources="$(RestoreSources)"
+     RestorePackagesPath="$(RestorePackagesPath)"
+     RestoreFallbackFolders="$(RestoreFallbackFolders)"
+     RestoreConfigFile="$(RestoreConfigFile)"
+     >
+      <Output
+        TaskParameter="OutputSources"
+        PropertyName="_OutputSources" />
+      <Output
+        TaskParameter="OutputPackagesPath"
+        PropertyName="_OutputPackagesPath" />
+      <Output
+        TaskParameter="OutputFallbackFolders"
+        PropertyName="_OutputFallbackFolders" />
+    </GetRestoreSettingsTask>
+
 
     <!-- Write properties for the top level entry point -->
     <ItemGroup Condition=" '$(RestoreProjectStyle)' == 'PackageReference' ">
@@ -472,9 +493,9 @@ Copyright (c) .NET Foundation. All rights reserved.
         <ProjectUniqueName>$(MSBuildProjectFullPath)</ProjectUniqueName>
         <ProjectPath>$(MSBuildProjectFullPath)</ProjectPath>
         <ProjectName>$(_RestoreProjectName)</ProjectName>
-        <Sources>$(RestoreSources)</Sources>
-        <FallbackFolders>$(RestoreFallbackFolders)</FallbackFolders>
-        <PackagesPath>$(RestorePackagesPath)</PackagesPath>
+        <Sources>$(_OutputSources)</Sources>
+        <FallbackFolders>$(_OutputFallbackFolders)</FallbackFolders>
+        <PackagesPath>$(_OutputPackagesPath)</PackagesPath>
         <ProjectStyle>$(RestoreProjectStyle)</ProjectStyle>
         <OutputPath>$(RestoreOutputAbsolutePath)</OutputPath>
         <TargetFrameworks>@(_RestoreTargetFrameworksOutputFiltered)</TargetFrameworks>
@@ -494,10 +515,9 @@ Copyright (c) .NET Foundation. All rights reserved.
         <ProjectUniqueName>$(MSBuildProjectFullPath)</ProjectUniqueName>
         <ProjectPath>$(MSBuildProjectFullPath)</ProjectPath>
         <ProjectName>$(_RestoreProjectName)</ProjectName>
-        <Sources>$(RestoreSources)</Sources>
-        <FallbackFolders>$(RestoreFallbackFolders)</FallbackFolders>
-        <PackagesPath>$(RestorePackagesPath)</PackagesPath>
-        <FallbackFolders>$(RestoreFallbackFolders)</FallbackFolders>
+        <Sources>$(_OutputSources)</Sources>
+        <FallbackFolders>$(_OutputFallbackFolders)</FallbackFolders>
+        <PackagesPath>$(_OutputPackagesPath)</PackagesPath>
         <ProjectJsonPath>$(_CurrentProjectJsonPath)</ProjectJsonPath>
         <ProjectStyle>$(RestoreProjectStyle)</ProjectStyle>
       </_RestoreGraphEntry>
