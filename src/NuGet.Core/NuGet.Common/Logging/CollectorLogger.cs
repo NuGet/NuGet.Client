@@ -25,14 +25,14 @@ namespace NuGet.Common
 
         public override void Log(ILogMessage message)
         {
-            _innerLogger.Log(message);
             _errors.Enqueue(message);
+            _innerLogger.Log(message);
         }
 
-        public async override Task LogAsync(ILogMessage message)
+        public override Task LogAsync(ILogMessage message)
         {
-            _innerLogger.Log(message);
             _errors.Enqueue(message);
+            return _innerLogger.LogAsync(message);
         }
 
         public new void LogDebug(string data)

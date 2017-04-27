@@ -63,8 +63,11 @@ namespace NuGet.Commands
             var restoreTime = Stopwatch.StartNew();
 
             // Local package folders (non-sources)
-            var localRepositories = new List<NuGetv3LocalRepository>();
-            localRepositories.Add(_request.DependencyProviders.GlobalPackages);
+            var localRepositories = new List<NuGetv3LocalRepository>
+            {
+                _request.DependencyProviders.GlobalPackages
+            };
+
             localRepositories.AddRange(_request.DependencyProviders.FallbackPackageFolders);
 
             var contextForProject = CreateRemoteWalkContext(_request);
@@ -84,10 +87,7 @@ namespace NuGet.Commands
                 localRepositories,
                 contextForProject);
 
-            if (!ValidateRestoreGraphs(graphs, _logger))
-            {
-                _success = false;
-            }
+            _success = ValidateRestoreGraphs(graphs, _logger);
 
             // Check package compatibility
             var checkResults = VerifyCompatibility(
@@ -99,10 +99,7 @@ namespace NuGet.Commands
                 _request.ValidateRuntimeAssets,
                 _logger);
 
-            if (checkResults.Any(r => !r.Success))
-            {
-                _success = false;
-            }
+            _success = checkResults.All(r => r.Success);
 
             // Determine the lock file output path
             var assetsFilePath = GetAssetsFilePath(assetsFile);

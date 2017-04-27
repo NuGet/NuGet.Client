@@ -49,9 +49,9 @@ namespace NuGet.Common.Test
 
             // Assert
             Assert.Empty(errorsStart);
-            Assert.Equal(new[] { "ErrorA" }, errorsA);
-            Assert.Equal(new[] { "ErrorA", "ErrorB", "ErrorC" }, errorsAbc);
-            Assert.Equal(new[] { "ErrorA", "ErrorB", "ErrorC" }, errordEnd);
+            Assert.Equal(new[] { "ErrorA" }, errorsA.Select(e => e.FormatMessage()));
+            Assert.Equal(new[] { "ErrorA", "ErrorB", "ErrorC" }, errorsA.Select(e => e.FormatMessage()));
+            Assert.Equal(new[] { "ErrorA", "ErrorB", "ErrorC" }, errorsA.Select(e => e.FormatMessage()));
         }
 
         [Fact]

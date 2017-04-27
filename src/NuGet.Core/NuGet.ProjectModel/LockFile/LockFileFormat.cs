@@ -326,11 +326,12 @@ namespace NuGet.ProjectModel
             return logMessageArray;
         }
 
-        private static IAssetsLogMessage ReadLogMessages(string property, JToken json)
+        private static IEnumerable<IAssetsLogMessage> ReadLogMessages(string property, JToken json)
         {
             //TODO
+            var logMessages = new List<IAssetsLogMessage>();
 
-            return null;
+            return logMessages;
         }
 
         private static LockFileTargetLibrary ReadTargetLibrary(string property, JToken json)
