@@ -58,6 +58,10 @@
     <NoWarn>$(NoWarn);1762</NoWarn>
     <!-- Code Analysis is OFF by default -->
     <RunCodeAnalysis Condition=" '$(RunCodeAnalysis)' == ''">false</RunCodeAnalysis>
+    <!--This property ensures that if you build the exact sources twice, 
+    you get exactly the same output, so the .pdb from the second build will match the .dll
+     from the first build!-->
+    <Deterministic>true</Deterministic>
   </PropertyGroup>
 
   <!-- DEBUG specific configuration settings -->
