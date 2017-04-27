@@ -157,7 +157,7 @@ namespace NuGet.ProjectManagement
         }
 
         /// <summary>
-        /// Retrieve the NuGetFrameworks under frameworks
+        /// Add the specified framework to JSON object
         /// </summary>
         public static void AddFramework(JObject json, NuGetFramework framework)
         {
@@ -174,12 +174,21 @@ namespace NuGet.ProjectManagement
                 frameworkSet = new JObject();
             }
 
-            var frameworkProperty = new JProperty(framework.ToString());
+            var frameworkProperty = new JProperty(framework.Framework.ToLower() + framework.Version.ToString(), new JObject());
             frameworkSet.Add(frameworkProperty);
 
             // order dependencies to reduce merge conflicts
             frameworkSet = SortProperties(frameworkSet);
 
+            json["frameworks"] = frameworkSet;
+        }
+
+        /// <summary>
+        ///  Clear all frameworks from the Json object
+        /// </summary>
+        public static void ClearFrameworks(JObject json)
+        {
+            JObject frameworkSet = frameworkSet = new JObject();
             json["frameworks"] = frameworkSet;
         }
 

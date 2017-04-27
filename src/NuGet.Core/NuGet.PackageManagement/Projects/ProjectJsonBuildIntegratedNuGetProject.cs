@@ -265,8 +265,10 @@ namespace NuGet.ProjectManagement.Projects
             if (InternalMetadata.TryGetValue(NuGetProjectMetadataKeys.TargetFramework, out object outFramework))
             {
                 var targetFramework = outFramework as NuGetFramework;
+                // Can move the check and update to utilities.
                 if (!HasFrameWork(frameworks, targetFramework))
                 {
+                    JsonConfigUtility.ClearFrameworks(json);
                     JsonConfigUtility.AddFramework(json, targetFramework);
                 }
             }
