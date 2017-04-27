@@ -161,6 +161,50 @@ namespace NuGet.Protocol.Plugins.Tests
         }
 
         [Fact]
+        public async Task MessageReceived_HandlesNullAndEmptyString()
+        {
+            var json = "{\"RequestId\":\"a\",\"Type\":\"Response\",\"Method\":\"None\"}";
+            var requestId = "a";
+            var type = MessageType.Response;
+            var method = MessageMethod.None;
+            var process = new Mock<IPluginProcess>();
+
+            process.Setup(x => x.BeginReadLine())
+                .Callback(() =>
+                {
+                    // We can't directly verify handling of null and empty string except by
+                    // passing a valid line after them and ensuring it gets processed correctly.
+                    process.Raise(x => x.LineRead += null, new LineReadEventArgs(null));
+                    process.Raise(x => x.LineRead += null, new LineReadEventArgs(""));
+                    process.Raise(x => x.LineRead += null, new LineReadEventArgs(json));
+                });
+
+            using (var receivedEvent = new ManualResetEventSlim(initialState: false))
+            using (var receiver = new StandardOutputReceiver(process.Object))
+            {
+                MessageEventArgs args = null;
+
+                receiver.MessageReceived += (object sender, MessageEventArgs e) =>
+                {
+                    args = e;
+
+                    receivedEvent.Set();
+                };
+
+                await receiver.ConnectAsync(CancellationToken.None);
+
+                receivedEvent.Wait();
+
+                Assert.NotNull(args);
+                Assert.NotNull(args.Message);
+                Assert.Equal(requestId, args.Message.RequestId);
+                Assert.Equal(type, args.Message.Type);
+                Assert.Equal(method, args.Message.Method);
+                Assert.Null(args.Message.Payload);
+            }
+        }
+
+        [Fact]
         public async Task Faulted_RaisedForParseError()
         {
             var invalidJson = "text";

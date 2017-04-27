@@ -10,28 +10,70 @@ namespace NuGet.Protocol.Plugins.Tests
 {
     public class MessageUtilitiesTests
     {
-        [Fact]
-        public void Create_ThrowsForNullOrEmptyRequestId()
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        public void Create_RequestIdTypeMethod_ThrowsForNullOrEmptyRequestId(string requestId)
         {
             var exception = Assert.Throws<ArgumentException>(
-                () => MessageUtilities.Create<Payload>(
-                    requestId: null,
-                    type: MessageType.Request,
-                    method: MessageMethod.Handshake));
+                () => MessageUtilities.Create(requestId, MessageType.Request, MessageMethod.Handshake));
+
+            Assert.Equal("requestId", exception.ParamName);
+        }
+
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        public void Create_RequestIdTypeMethodPayload_ThrowsForNullOrEmptyRequestId(string requestId)
+        {
+            var payload = new Payload("a", 3, true, D.F);
+            var exception = Assert.Throws<ArgumentException>(
+                () => MessageUtilities.Create(requestId, MessageType.Request, MessageMethod.Handshake, payload));
 
             Assert.Equal("requestId", exception.ParamName);
         }
 
         [Fact]
-        public void Create_SupportsNullPayload()
+        public void Create_RequestIdTypeMethodPayload_ThrowsForNullPayload()
         {
-            var message = MessageUtilities.Create<Payload>(
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => MessageUtilities.Create<Payload>(
+                    requestId: "a",
+                    type: MessageType.Request,
+                    method: MessageMethod.Handshake,
+                    payload: null));
+
+            Assert.Equal("payload", exception.ParamName);
+        }
+
+        [Fact]
+        public void Create_RequestIdTypeMethod_InitializesProperties()
+        {
+            var message = MessageUtilities.Create(
                 requestId: "a",
                 type: MessageType.Request,
                 method: MessageMethod.Handshake);
 
-            Assert.NotNull(message);
+            Assert.Equal("a", message.RequestId);
+            Assert.Equal(MessageType.Request, message.Type);
+            Assert.Equal(MessageMethod.Handshake, message.Method);
             Assert.Null(message.Payload);
+        }
+
+        [Fact]
+        public void Create_RequestIdTypeMethodPayload_InitializesProperties()
+        {
+            var payload = new Payload("a", 3, true, D.F);
+            var message = MessageUtilities.Create(
+                requestId: "a",
+                type: MessageType.Request,
+                method: MessageMethod.Handshake,
+                payload: payload);
+
+            Assert.Equal("a", message.RequestId);
+            Assert.Equal(MessageType.Request, message.Type);
+            Assert.Equal(MessageMethod.Handshake, message.Method);
+            Assert.NotNull(message.Payload);
         }
 
         [Fact]

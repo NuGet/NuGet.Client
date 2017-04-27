@@ -27,11 +27,12 @@ namespace NuGet.Protocol.Plugins.Tests
         }
 
         [Fact]
-        public void DiscoverAsync_AcceptsNullEmbeddedSignatureVerifier()
+        public void DiscoverAsync_ThrowsForNullVerifier()
         {
-            using (var discoverer = new PluginDiscoverer(rawPluginPaths: "", verifier: null))
-            {
-            }
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => new PluginDiscoverer(rawPluginPaths: "", verifier: null));
+
+            Assert.Equal("verifier", exception.ParamName);
         }
 
         [Fact]
@@ -47,7 +48,7 @@ namespace NuGet.Protocol.Plugins.Tests
         }
 
         [Fact]
-        public async Task DiscoverAsync_ThrowsPlatformNotSupportedIfEmbeddedSignatureVerifierIsBothRequiredAndNull()
+        public async Task DiscoverAsync_ThrowsPlatformNotSupportedIfEmbeddedSignatureVerifierIsRequired()
         {
             using (var testDirectory = TestDirectory.Create())
             {
@@ -55,7 +56,7 @@ namespace NuGet.Protocol.Plugins.Tests
 
                 File.WriteAllText(pluginPath, string.Empty);
 
-                using (var discoverer = new PluginDiscoverer(pluginPath, verifier: null))
+                using (var discoverer = new PluginDiscoverer(pluginPath, new FallbackEmbeddedSignatureVerifier()))
                 {
                     await Assert.ThrowsAsync<PlatformNotSupportedException>(
                         () => discoverer.DiscoverAsync(CancellationToken.None));
@@ -64,9 +65,11 @@ namespace NuGet.Protocol.Plugins.Tests
         }
 
         [Fact]
-        public async Task DiscoverAsync_DoesNotThrowIfNoValidFilePathsAndNullEmbeddedSignatureVerifier()
+        public async Task DiscoverAsync_DoesNotThrowIfNoValidFilePathsAndFallbackEmbeddedSignatureVerifier()
         {
-            using (var discoverer = new PluginDiscoverer(rawPluginPaths: "", verifier: null))
+            using (var discoverer = new PluginDiscoverer(
+                rawPluginPaths: "",
+                verifier: new FallbackEmbeddedSignatureVerifier()))
             {
                 var pluginFiles = await discoverer.DiscoverAsync(CancellationToken.None);
 

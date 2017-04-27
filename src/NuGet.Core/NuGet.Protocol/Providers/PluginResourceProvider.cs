@@ -101,7 +101,8 @@ namespace NuGet.Protocol.Core.Types
                         ConnectionOptions.CreateDefault(),
                         cancellationToken);
 
-                    var operationClaims = await _pluginOperationClaims.GetOrAdd(result.PluginFile.Path,
+                    var operationClaims = await _pluginOperationClaims.GetOrAdd(
+                        result.PluginFile.Path,
                         filePath => GetPluginOperationClaimsAsync(
                             plugin,
                             packageSourceRepository,
@@ -160,7 +161,7 @@ namespace NuGet.Protocol.Core.Types
 
         private static PluginDiscoverer InitializeDiscoverer()
         {
-            var verifier = EmbeddedSignatureVerifier.CreateOrNull();
+            var verifier = EmbeddedSignatureVerifier.Create();
 
             return new PluginDiscoverer(GetEnvironmentVariable(), verifier);
         }

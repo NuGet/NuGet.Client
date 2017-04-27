@@ -102,7 +102,7 @@ namespace NuGet.Protocol.Plugins
                 return;
             }
 
-            CloseAsync().GetAwaiter().GetResult();
+            Task.Run(() => CloseAsync());
 
             GC.SuppressFinalize(this);
 
@@ -140,10 +140,21 @@ namespace NuGet.Protocol.Plugins
 
                 _state = (int)ConnectionState.Handshaking;
 
-                ProtocolVersion = await symmetricHandshake.HandshakeAsync(cancellationToken);
+                try
+                {
+                    ProtocolVersion = await symmetricHandshake.HandshakeAsync(cancellationToken);
+                }
+                catch (Exception)
+                {
+                    _state = (int)ConnectionState.FailedToHandshake;
+
+                    throw;
+                }
 
                 if (ProtocolVersion == null)
                 {
+                    _state = (int)ConnectionState.FailedToHandshake;
+
                     throw new ProtocolException(Strings.Plugin_HandshakeFailed);
                 }
 

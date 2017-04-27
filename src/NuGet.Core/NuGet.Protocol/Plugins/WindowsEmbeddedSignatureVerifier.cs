@@ -4,7 +4,7 @@
 using System;
 using System.Runtime.InteropServices;
 
-namespace NuGet.Protocol
+namespace NuGet.Protocol.Plugins
 {
     /// <summary>
     /// Windows Authenticode signature verifier.
@@ -21,6 +21,8 @@ namespace NuGet.Protocol
         /// </summary>
         /// <param name="filePath">The path of a file to be checked.</param>
         /// <returns><c>true</c> if the file has a valid signature; otherwise, <c>false</c>.</returns>
+        /// <exception cref="ArgumentException">Thrown if <paramref name="filePath" />
+        /// is either <c>null</c> or an empty string.</exception>
         public override bool IsValid(string filePath)
         {
             if (string.IsNullOrEmpty(filePath))

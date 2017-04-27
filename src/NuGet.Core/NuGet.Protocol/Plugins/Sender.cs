@@ -59,18 +59,23 @@ namespace NuGet.Protocol.Plugins
                 _cancellationTokenSource.Cancel();
             }
 
-            if (_sendThread != null)
-            {
-                // Wait for the thread to exit.
-                _sendThread.GetAwaiter().GetResult();
-            }
+            // Don't block on send thread exit.
+            // The above actions will interrupt the send thread's blocking wait and cause it to exit immediately.
 
+            // Cancel any outstanding work the send thread may have had.
             foreach (var messageContext in _sendQueue)
             {
                 messageContext.CompletionSource.TrySetCanceled();
             }
 
-            _sendQueue.Dispose();
+            try
+            {
+                _sendQueue.Dispose();
+            }
+            catch (Exception)
+            {
+            }
+
             _textWriter.Dispose();
 
             GC.SuppressFinalize(this);
@@ -112,7 +117,10 @@ namespace NuGet.Protocol.Plugins
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            _sendThread = Task.Factory.StartNew(SendAsync, cancellationToken,
+            _sendThread = Task.Factory.StartNew(
+                SendAsync,
+                _cancellationTokenSource.Token,
+                cancellationToken,
                 TaskCreationOptions.LongRunning | TaskCreationOptions.DenyChildAttach,
                 TaskScheduler.Default);
 
@@ -149,15 +157,17 @@ namespace NuGet.Protocol.Plugins
             await messageContext.CompletionSource.Task;
         }
 
-        private Task SendAsync()
+        private Task SendAsync(object state)
         {
             try
             {
+                var cancellationToken = (CancellationToken)state;
+
                 using (var jsonWriter = new JsonTextWriter(_textWriter))
                 {
                     jsonWriter.CloseOutput = false;
 
-                    foreach (var messageContext in _sendQueue.GetConsumingEnumerable(_cancellationTokenSource.Token))
+                    foreach (var messageContext in _sendQueue.GetConsumingEnumerable(cancellationToken))
                     {
                         try
                         {

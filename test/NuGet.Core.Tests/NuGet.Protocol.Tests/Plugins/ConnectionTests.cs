@@ -92,22 +92,6 @@ namespace NuGet.Protocol.Plugins.Tests
         }
 
         [Fact]
-        public async Task Dispose_ClosesConnection()
-        {
-            using (var test = new ConnectAsyncTest(ConnectionOptions.CreateDefault(), ConnectionOptions.CreateDefault()))
-            {
-                await Task.WhenAll(
-                    test.RemoteToLocalConnection.ConnectAsync(test.CancellationToken),
-                    test.LocalToRemoteConnection.ConnectAsync(test.CancellationToken));
-
-                test.Dispose();
-
-                Assert.Equal(ConnectionState.Closed, test.RemoteToLocalConnection.State);
-                Assert.Equal(ConnectionState.Closed, test.LocalToRemoteConnection.State);
-            }
-        }
-
-        [Fact]
         public void Dispose_IsIdempotent()
         {
             using (var test = new ConnectionTest())
@@ -201,7 +185,9 @@ namespace NuGet.Protocol.Plugins.Tests
                 Assert.NotNull(tasks[1].Exception);
 
                 Assert.Null(test.RemoteToLocalConnection.ProtocolVersion);
+                Assert.Equal(ConnectionState.FailedToHandshake, test.RemoteToLocalConnection.State);
                 Assert.Null(test.LocalToRemoteConnection.ProtocolVersion);
+                Assert.Equal(ConnectionState.FailedToHandshake, test.LocalToRemoteConnection.State);
             }
         }
 
@@ -226,6 +212,24 @@ namespace NuGet.Protocol.Plugins.Tests
                     () => test.LocalToRemoteConnection.ConnectAsync(test.CancellationToken));
 
                 Assert.Null(test.LocalToRemoteConnection.ProtocolVersion);
+                Assert.Equal(ConnectionState.FailedToHandshake, test.LocalToRemoteConnection.State);
+            }
+        }
+
+        [Fact]
+        public async Task CloseAsync_ClosesConnection()
+        {
+            using (var test = new ConnectAsyncTest(ConnectionOptions.CreateDefault(), ConnectionOptions.CreateDefault()))
+            {
+                await Task.WhenAll(
+                    test.RemoteToLocalConnection.ConnectAsync(test.CancellationToken),
+                    test.LocalToRemoteConnection.ConnectAsync(test.CancellationToken));
+
+                Assert.Equal(ConnectionState.Connected, test.LocalToRemoteConnection.State);
+
+                await test.LocalToRemoteConnection.CloseAsync();
+
+                Assert.Equal(ConnectionState.Closed, test.LocalToRemoteConnection.State);
             }
         }
 

@@ -118,11 +118,14 @@ namespace NuGet.Protocol.Plugins
                     json = e.Line;
                 }
 
-                var message = JsonSerializationUtilities.Deserialize<Message>(json);
-
-                if (message != null)
+                if (!string.IsNullOrEmpty(json))
                 {
-                    FireMessageReceivedEventAndForget(message);
+                    var message = JsonSerializationUtilities.Deserialize<Message>(json);
+
+                    if (message != null)
+                    {
+                        FireMessageReceivedEventAndForget(message);
+                    }
                 }
             }
             catch (Exception ex)
@@ -133,11 +136,14 @@ namespace NuGet.Protocol.Plugins
 
         private static string RemoveUtf8Bom(string data)
         {
-            var bytes = Encoding.UTF8.GetBytes(data);
-
-            if (bytes.Length >= 3 && bytes[0] == 0xEF && bytes[1] == 0xBB && bytes[2] == 0xBF)
+            if (!string.IsNullOrEmpty(data))
             {
-                return Encoding.UTF8.GetString(bytes, index: 3, count: bytes.Length - 3);
+                var bytes = Encoding.UTF8.GetBytes(data);
+
+                if (bytes.Length >= 3 && bytes[0] == 0xEF && bytes[1] == 0xBB && bytes[2] == 0xBF)
+                {
+                    return Encoding.UTF8.GetString(bytes, index: 3, count: bytes.Length - 3);
+                }
             }
 
             return data;

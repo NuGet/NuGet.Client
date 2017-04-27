@@ -28,8 +28,14 @@ namespace NuGet.Protocol.Plugins
         /// </summary>
         /// <param name="rawPluginPaths">The raw semicolon-delimited list of supposed plugin file paths.</param>
         /// <param name="verifier">An embedded signature verifier.</param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="verifier" /> is <c>null</c>.</exception>
         public PluginDiscoverer(string rawPluginPaths, EmbeddedSignatureVerifier verifier)
         {
+            if (verifier == null)
+            {
+                throw new ArgumentNullException(nameof(verifier));
+            }
+
             _rawPluginPaths = rawPluginPaths;
             _verifier = verifier;
             _semaphore = new SemaphoreSlim(initialCount: 1, maxCount: 1);
@@ -128,11 +134,6 @@ namespace NuGet.Protocol.Plugins
             cancellationToken.ThrowIfCancellationRequested();
 
             var filePaths = GetPluginFilePaths();
-
-            if (filePaths.Any() && _verifier == null)
-            {
-                throw new PlatformNotSupportedException();
-            }
 
             var files = new List<PluginFile>();
 
