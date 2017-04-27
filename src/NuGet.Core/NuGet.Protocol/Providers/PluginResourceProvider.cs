@@ -21,7 +21,6 @@ namespace NuGet.Protocol.Core.Types
         private const string _environmentVariable = "NUGET_PLUGIN_PATHS";
 
         private static Lazy<PluginDiscoverer> _discoverer;
-        private static IEnvironmentVariableReader _environmentVariableReader;
         private static PluginFactory _pluginFactory;
         private static ConcurrentDictionary<string, Task<IReadOnlyList<OperationClaim>>> _pluginOperationClaims;
         private static string _rawPluginPaths;
