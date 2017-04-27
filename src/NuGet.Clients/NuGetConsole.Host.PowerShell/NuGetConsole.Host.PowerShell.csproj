@@ -136,9 +136,10 @@
 
   <Target Name="GetPowerShellCmdletsHelpFile" Returns="@(PowerShellCmdletsHelpFiles)">
     <ItemGroup>
-      <PowerShellCmdletsHelpFiles Include="$(OutputPath)Scripts\NuGet.PackageManagement.PowerShellCmdlets.dll-Help.xml">
-        <TranslationFile>$(LocalizationRootDirectory)\{Lang}\15\%(Filename)%(Extension).lcl</TranslationFile>    <!--Required: translation file-->
-	      <LciCommentFile>$(LocalizationRootDirectory)\comments\15\%(Filename)%(Extension).lci</LciCommentFile>
+      <_PowerShellCmdletsHelpFiles Include="$(OutputPath)Scripts\NuGet.PackageManagement.PowerShellCmdlets.dll-Help.xml"/>
+      <PowerShellCmdletsHelpFiles Include="@(_PowerShellCmdletsHelpFiles)">
+        <TranslationFile>$(LocalizationRootDirectory)\{Lang}\15\%(_PowerShellCmdletsHelpFiles.Filename)%(_PowerShellCmdletsHelpFiles.Extension).lcl</TranslationFile>    <!--Required: translation file-->
+	      <LciCommentFile>$(LocalizationRootDirectory)\comments\15\%(_PowerShellCmdletsHelpFiles.Filename)%(_PowerShellCmdletsHelpFiles.Extension).lci</LciCommentFile>
       </PowerShellCmdletsHelpFiles>
     </ItemGroup>
   </Target>
