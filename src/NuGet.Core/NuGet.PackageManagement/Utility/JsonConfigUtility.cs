@@ -183,14 +183,14 @@ namespace NuGet.ProjectManagement
             var frameworkProperty = new JProperty(framework.Framework.ToLower() + framework.Version.ToString(), new JObject());
             frameworkSet.Add(frameworkProperty);
 
-            // order dependencies to reduce merge conflicts
+            // order frameworks to reduce merge conflicts
             frameworkSet = SortProperties(frameworkSet);
 
             json["frameworks"] = frameworkSet;
         }
 
         /// <summary>
-        ///  Clear all frameworks from the Json object
+        ///  Clear all frameworks from the JSON object
         /// </summary>
         public static void ClearFrameworks(JObject json)
         {
