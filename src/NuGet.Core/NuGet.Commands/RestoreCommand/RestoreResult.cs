@@ -191,9 +191,16 @@ namespace NuGet.Commands
             }
         }
 
-        protected async Task CommitCacheFileAsync(ILogger log)
+        protected async Task CommitCacheFileAsync(ILogger log, bool toolCommit)
         {
-            log.LogDebug($"Writing cache file to disk. Path: {CacheFilePath}");
+            if (toolCommit) { 
+                log.LogDebug($"Writing cache file to disk. Path: {CacheFilePath}");
+            } 
+            else
+            {
+                log.LogMinimal($"Writing cache file to disk. Path: {CacheFilePath}");
+            }
+
             await FileUtility.ReplaceWithLock(
                outPath => CacheFileFormat.Write(outPath, CacheFile),
                         CacheFilePath);

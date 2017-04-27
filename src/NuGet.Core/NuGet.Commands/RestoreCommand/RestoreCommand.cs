@@ -178,13 +178,13 @@ namespace NuGet.Commands
         private CacheFile EvaluateCacheFile()
         {
             CacheFile cacheFile;
-            var newDgSpecHash = _request.dependencyGraphSpec.GetHash();
+            var newDgSpecHash = _request.DependencyGraphSpec.GetHash();
 
             if (_request.AllowNoOp && File.Exists(_request.Project.RestoreMetadata.CacheFilePath))
             {
                 cacheFile = CacheFileFormat.Read(_request.Project.RestoreMetadata.CacheFilePath, _logger);
 
-                if (cacheFile.IsValid && StringComparer.OrdinalIgnoreCase.Equals(cacheFile.DgSpecHash, newDgSpecHash))
+                if (cacheFile.IsValid && StringComparer.Ordinal.Equals(cacheFile.DgSpecHash, newDgSpecHash))
                 {
                     _logger.LogVerbose(string.Format(CultureInfo.CurrentCulture, Strings.Log_RestoreNoOpFinish, _request.Project.Name));
                     _success = true;

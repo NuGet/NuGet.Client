@@ -765,7 +765,7 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The dependency graph spec for &apos;{0}&apos; has changed. Continuing restore..
+        ///   Looks up a localized string similar to The restore inputs for &apos;{0}&apos; have changed. Continuing restore..
         /// </summary>
         internal static string Log_RestoreNoOpDGChanged {
             get {
@@ -774,7 +774,7 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The dependency graph spec for &apos;{0}&apos;has not changed. No further actions are required to complete the restore..
+        ///   Looks up a localized string similar to The restore inputs for &apos;{0}&apos; have not changed. No further actions are required to complete the restore..
         /// </summary>
         internal static string Log_RestoreNoOpFinish {
             get {

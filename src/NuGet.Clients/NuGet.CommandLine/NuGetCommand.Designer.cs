@@ -2337,6 +2337,15 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to NuGet restore no-ops when the inputs to restore have not changed. This option skips the no op optimization..
+        /// </summary>
+        internal static string ForceRestoreCommand {
+            get {
+                return ResourceManager.GetString("ForceRestoreCommand", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Print detailed help for all available commands..
         /// </summary>
         internal static string HelpCommandAll {

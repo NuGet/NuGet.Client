@@ -113,6 +113,23 @@ namespace NuGet.ProjectModel
 
             return SortPackagesByDependencyOrder(closure);
         }
+        /// <summary>
+        /// Retrieve a DependencyGraphSpec with the project closure.
+        /// </summary>
+        /// <param name="projectUniqueName"></param>
+        /// <returns></returns>
+        public DependencyGraphSpec WithProjectClosure(string projectUniqueName)
+        {
+
+            var projectDependencyGraphSpec = new DependencyGraphSpec();
+            projectDependencyGraphSpec.AddRestore(projectUniqueName);
+            foreach (var spec in GetClosure(projectUniqueName))
+            { 
+                projectDependencyGraphSpec.AddProject(spec.Clone());
+            }
+            
+            return projectDependencyGraphSpec;
+        }
 
         private IReadOnlyList<PackageSpec> GetClosureWithoutSorting(string rootUniqueName)
         {

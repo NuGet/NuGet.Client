@@ -62,7 +62,7 @@ namespace NuGet.Commands
             RestoreOutputPath = Path.GetDirectoryName(Project.FilePath);
         }
 
-        public DependencyGraphSpec dependencyGraphSpec { get; set; }
+        public DependencyGraphSpec DependencyGraphSpec { get; set; }
 
         public bool AllowNoOp { get; set; }
 
