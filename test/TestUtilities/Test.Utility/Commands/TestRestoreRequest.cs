@@ -108,8 +108,7 @@ namespace NuGet.Commands.Test
                     log: log),
                 cacheContext,
                 log)
-        {
-            DependencyGraphSpec = new DependencyGraphSpec();
+        { 
         }
     }
 }
