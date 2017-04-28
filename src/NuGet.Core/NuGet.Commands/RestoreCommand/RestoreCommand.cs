@@ -74,18 +74,21 @@ namespace NuGet.Commands
 
             if (_noOp)
             {
-                restoreTime.Stop();
+                if (VerifyAssetsAndMSBuildFilesPresent(contextForProject.IsMsBuildBased))
+                {
+                    restoreTime.Stop();
 
-                // Create result
-                return new NoOpRestoreResult(
-                    _success,
-                    _request.ExistingLockFile,
-                    _request.ExistingLockFile,
-                    _request.ExistingLockFile.Path,
-                    cacheFile,
-                    _request.Project.RestoreMetadata.CacheFilePath,
-                    _request.ProjectStyle,
-                    restoreTime.Elapsed);
+                    // Create result
+                    return new NoOpRestoreResult(
+                        _success,
+                        _request.ExistingLockFile,
+                        _request.ExistingLockFile,
+                        _request.ExistingLockFile.Path,
+                        cacheFile,
+                        _request.Project.RestoreMetadata.CacheFilePath,
+                        _request.ProjectStyle,
+                        restoreTime.Elapsed);
+                }
             }
 
             // Restore
@@ -172,6 +175,22 @@ namespace NuGet.Commands
                 cacheFilePath,
                 _request.ProjectStyle,
                 restoreTime.Elapsed);
+        }
+
+        private bool VerifyAssetsAndMSBuildFilesPresent(bool checkForMSBuildFiles)
+        {
+            if (File.Exists(_request.ExistingLockFile.Path))
+            {   
+                if (checkForMSBuildFiles && 
+                    (_request.ProjectStyle == ProjectStyle.PackageReference ||
+                    _request.ProjectStyle == ProjectStyle.Standalone))
+                {
+                    if (File.Exists(BuildAssetsUtils.GetMSbuildFilePath(_request.Project, _request, "targets")) && 
+                        File.Exists(BuildAssetsUtils.GetMSbuildFilePath(_request.Project, _request, "props")))
+                        return true;
+                }
+            }
+            return false;
         }
 
         private CacheFile EvaluateCacheFile()
