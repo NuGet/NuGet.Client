@@ -67,6 +67,7 @@ namespace NuGet.Commands
             var localRepositories = new List<NuGetv3LocalRepository>();
             localRepositories.Add(_request.DependencyProviders.GlobalPackages);
             localRepositories.AddRange(_request.DependencyProviders.FallbackPackageFolders);
+            
             var contextForProject = CreateRemoteWalkContext(_request);
             CacheFile cacheFile = null;
             if (NoOpRestoreUtilities.IsNoOpSupported(_request)) {

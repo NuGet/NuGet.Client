@@ -108,7 +108,7 @@ namespace NuGet.Commands.Test
                     log: log),
                 cacheContext,
                 log)
-        { 
+        {
         }
     }
 }
