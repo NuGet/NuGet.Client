@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -369,7 +370,6 @@ namespace NuGet.Commands.Test
                 packageA.AddFile("ref/netstandard1.3/a.dll");
 
                 SimpleTestPackageUtility.CreatePackages(packageSource.FullName, packageA);
-
                 // Act
                 var command = new RestoreCommand(request);
                 var result = await command.ExecuteAsync();
@@ -384,6 +384,18 @@ namespace NuGet.Commands.Test
                 // Verify no compatibility issues
                 Assert.True(result.CompatibilityCheckResults.All(check => check.Success));
             }
+        }
+
+        public static void WaitForDebugger()
+        {
+            Console.WriteLine("Waiting for debugger to attach.");
+            Console.WriteLine($"Process ID: {Process.GetCurrentProcess().Id}");
+
+            while (!Debugger.IsAttached)
+            {
+                System.Threading.Thread.Sleep(100);
+            }
+            Debugger.Break();
         }
 
         [Fact]

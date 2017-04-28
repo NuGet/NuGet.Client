@@ -126,6 +126,8 @@ namespace NuGet.Commands
             // Determine the lock file output path
             var assetsFilePath = GetAssetsFilePath(assetsFile);
 
+            var cacheFilePath = GetCacheFilePath(cacheFile,assetsFile);
+
             // Tool restores are unique since the output path is not known until after restore
             if (_request.LockFilePath == null
                 && _request.ProjectStyle == ProjectStyle.DotnetCliTool)
@@ -167,7 +169,7 @@ namespace NuGet.Commands
                 _request.ExistingLockFile,
                 assetsFilePath,
                 cacheFile,
-                _request.Project.RestoreMetadata.CacheFilePath,
+                _request.Project.RestoreMetadata?.CacheFilePath,
                 _request.ProjectStyle,
                 restoreTime.Elapsed);
         }
@@ -199,6 +201,42 @@ namespace NuGet.Commands
 
             }
             return cacheFile;
+        }
+
+        private string GetCacheFilePath(CacheFile cacheFile, LockFile lockFile)
+        {
+            var projectLockFilePath = _request.Project.RestoreMetadata?.CacheFilePath;
+
+            if (string.IsNullOrEmpty(projectLockFilePath))
+            {
+                if (_request.ProjectStyle == ProjectStyle.PackageReference
+                    || _request.ProjectStyle == ProjectStyle.Standalone)
+                {
+                    projectLockFilePath = Path.Combine(_request.RestoreOutputPath, LockFileFormat.AssetsFileName);
+                }
+                else if (_request.ProjectStyle == ProjectStyle.DotnetCliTool)
+                {
+                    var toolName = ToolRestoreUtility.GetToolIdOrNullFromSpec(_request.Project);
+                    var lockFileLibrary = ToolRestoreUtility.GetToolTargetLibrary(lockFile, toolName);
+
+                    if (lockFileLibrary != null)
+                    {
+                        var version = lockFileLibrary.Version;
+
+                        var toolPathResolver = new ToolPathResolver(_request.PackagesDirectory);
+                        projectLockFilePath = toolPathResolver.GetLockFilePath(
+                            toolName,
+                            version,
+                            lockFile.Targets.First().TargetFramework);
+                    }
+                }
+                else
+                {
+                    projectLockFilePath = Path.Combine(_request.Project.BaseDirectory, "project.nuget.json");
+                }
+            }
+
+            return Path.GetFullPath(projectLockFilePath);
         }
 
         private string GetAssetsFilePath(LockFile lockFile)

@@ -109,6 +109,7 @@ namespace NuGet.Commands.Test
                 cacheContext,
                 log)
         {
+            DependencyGraphSpec = new DependencyGraphSpec();
         }
     }
 }
