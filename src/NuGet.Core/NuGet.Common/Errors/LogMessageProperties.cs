@@ -4,7 +4,7 @@ using System.Text;
 
 namespace NuGet.Common
 {
-    class LogMessageProperties
+    public class LogMessageProperties
     {
 
         public const string LOG_LEVEL_PROPERTY = "level";

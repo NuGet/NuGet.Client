@@ -183,7 +183,8 @@ namespace NuGet.ProjectModel
                 Targets = ReadObject(cursor[TargetsProperty] as JObject, ReadTarget),
                 ProjectFileDependencyGroups = ReadObject(cursor[ProjectFileDependencyGroupsProperty] as JObject, ReadProjectFileDependencyGroup),
                 PackageFolders = ReadObject(cursor[PackageFoldersProperty] as JObject, ReadFileItem),
-                PackageSpec = ReadPackageSpec(cursor[PackageSpecProperty] as JObject)
+                PackageSpec = ReadPackageSpec(cursor[PackageSpecProperty] as JObject),
+                LogMessages = ReadArray(cursor[LogsProperty] as JArray, ReadLogMessage)
             };
             return lockFile;
         }
@@ -309,11 +310,23 @@ namespace NuGet.ProjectModel
             return JObject.FromObject(messageDictionary);
         }
 
-        private static IAssetsLogMessage ReadLogMessage(string property, JToken json)
+        private static IAssetsLogMessage ReadLogMessage(JToken json)
         {
-            //TODO
+            if (json == null)
+            {
+                return null;
+            }
+            else
+            {
+                IAssetsLogMessage logMessage = null;
 
-            return null;
+                var level = json[LogMessageProperties.LOG_LEVEL_PROPERTY];
+                var code = json[LogMessageProperties.LOG_LEVEL_PROPERTY];
+                var message = json[LogMessageProperties.MESSAGE_PROPERTY];
+                var targetGraphs = ReadArray(json[LogMessageProperties.TARGET_GRAPH_PROPERTY] as JArray, ReadString);
+
+                return logMessage;
+            }
         }
 
         private static JArray WriteLogMessages(IEnumerable<IAssetsLogMessage> logMessages)
@@ -324,14 +337,6 @@ namespace NuGet.ProjectModel
                 logMessageArray.Add(WriteLogMessage(logMessage));
             }
             return logMessageArray;
-        }
-
-        private static IEnumerable<IAssetsLogMessage> ReadLogMessages(string property, JToken json)
-        {
-            //TODO
-            var logMessages = new List<IAssetsLogMessage>();
-
-            return logMessages;
         }
 
         private static LockFileTargetLibrary ReadTargetLibrary(string property, JToken json)
@@ -563,7 +568,11 @@ namespace NuGet.ProjectModel
             var items = new List<TItem>();
             foreach (var child in json)
             {
-                items.Add(readItem(child));
+                var item = readItem(child);
+                if(item != null)
+                {
+                    items.Add(item);
+                }
             }
             return items;
         }
