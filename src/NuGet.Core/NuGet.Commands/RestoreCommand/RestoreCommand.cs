@@ -68,26 +68,27 @@ namespace NuGet.Commands
             localRepositories.Add(_request.DependencyProviders.GlobalPackages);
             localRepositories.AddRange(_request.DependencyProviders.FallbackPackageFolders);
             var contextForProject = CreateRemoteWalkContext(_request);
-
+            CacheFile cacheFile = null;
+            if (_request.DependencyGraphSpec != null) { // If the dependencyGraph is not set, we keep the old behavior 
             //No Op logic
-            var cacheFile = EvaluateCacheFile();
-
-            if (_noOp)
-            {
-                if (VerifyAssetsAndMSBuildFilesPresent(contextForProject.IsMsBuildBased))
+            cacheFile = EvaluateCacheFile();
+                if (_noOp)
                 {
-                    restoreTime.Stop();
+                    if (VerifyAssetsAndMSBuildFilesPresent(contextForProject.IsMsBuildBased))
+                    {
+                        restoreTime.Stop();
 
-                    // Create result
-                    return new NoOpRestoreResult(
-                        _success,
-                        _request.ExistingLockFile,
-                        _request.ExistingLockFile,
-                        _request.ExistingLockFile.Path,
-                        cacheFile,
-                        _request.Project.RestoreMetadata.CacheFilePath,
-                        _request.ProjectStyle,
-                        restoreTime.Elapsed);
+                        // Create result
+                        return new NoOpRestoreResult(
+                            _success,
+                            _request.ExistingLockFile,
+                            _request.ExistingLockFile,
+                            _request.ExistingLockFile.Path,
+                            cacheFile,
+                            _request.Project.RestoreMetadata.CacheFilePath,
+                            _request.ProjectStyle,
+                            restoreTime.Elapsed);
+                    }
                 }
             }
 
@@ -128,7 +129,8 @@ namespace NuGet.Commands
 
             // Determine the lock file output path
             var assetsFilePath = GetAssetsFilePath(assetsFile);
-            var cacheFilePath = GetCacheFilePath(cacheFile,assetsFile);
+            // Determine the cache file output path
+            var cacheFilePath = GetCacheFilePath(assetsFile);
 
             // Tool restores are unique since the output path is not known until after restore
             if (_request.LockFilePath == null
@@ -158,10 +160,11 @@ namespace NuGet.Commands
 
             // Revert to the original case if needed
             await FixCaseForLegacyReaders(graphs, assetsFile, token);
-
+            if (cacheFile != null)
+            {
+                cacheFile.Success = _success;
+            }
             restoreTime.Stop();
-            cacheFile.Success = _success;
-
             // Create result
             return new RestoreResult(
                 _success,
@@ -222,7 +225,7 @@ namespace NuGet.Commands
             return cacheFile;
         }
 
-        private string GetCacheFilePath(CacheFile cacheFile, LockFile lockFile)
+        private string GetCacheFilePath(LockFile lockFile)
         {
             var projectCacheFilePath = _request.Project.RestoreMetadata?.CacheFilePath;
 

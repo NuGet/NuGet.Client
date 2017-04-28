@@ -203,23 +203,25 @@ namespace NuGet.Commands
             }
         }
 
-        protected async Task CommitCacheFileAsync(ILogger log, bool toolCommit)
+        private async Task CommitCacheFileAsync(ILogger log, bool toolCommit)
         {
-            if (toolCommit) { 
-                log.LogDebug(string.Format(CultureInfo.CurrentCulture,
-                        Strings.Log_ToolWritingCacheFile,
-                        CacheFilePath));
-            } 
-            else
-            {
-                log.LogMinimal(string.Format(CultureInfo.CurrentCulture,
-                        Strings.Log_WritingCacheFile,
-                        CacheFilePath));
-            }
+            if (CacheFile != null && CacheFilePath != null) { // This is done to preserve the old behavior
+                if (toolCommit) { 
+                    log.LogDebug(string.Format(CultureInfo.CurrentCulture,
+                            Strings.Log_ToolWritingCacheFile,
+                            CacheFilePath));
+                } 
+                else
+                {
+                    log.LogMinimal(string.Format(CultureInfo.CurrentCulture,
+                            Strings.Log_WritingCacheFile,
+                            CacheFilePath));
+                }
 
-            await FileUtility.ReplaceWithLock(
-               outPath => CacheFileFormat.Write(outPath, CacheFile),
-                        CacheFilePath);
+                await FileUtility.ReplaceWithLock(
+                   outPath => CacheFileFormat.Write(outPath, CacheFile),
+                            CacheFilePath);
+            }
         }
     }
 }
