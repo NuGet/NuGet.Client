@@ -11,17 +11,16 @@ namespace NuGet.Common
         public LogLevel Level { get; set; }
         public NuGetLogCode Code { get; set; }
         public string Message { get; set; }
-        public string ProjectPath { get; set; }
         public IReadOnlyList<string> TargetGraphs { get; set; }
         public DateTimeOffset Time { get; set; }
+        public string ProjectPath { get; set; }
 
         public RestoreLogMessage(LogLevel logLevel, NuGetLogCode errorCode, 
-            string errorString, string projectPath, string targetGraph)
+            string errorString, string targetGraph)
         {
             Level = logLevel;
             Code = errorCode;
             Message = errorString;
-            ProjectPath = projectPath;
             Time = DateTimeOffset.Now;
 
             if (!string.IsNullOrEmpty(targetGraph))
@@ -33,27 +32,10 @@ namespace NuGet.Common
             }
         }
 
-        public bool Equals(RestoreLogMessage other)
+        public RestoreLogMessage(LogLevel logLevel, NuGetLogCode errorCode, string errorString)
+            : this (logLevel, errorCode, errorString, string.Empty)
         {
-            if(other == null)
-            {
-                return false;
-            }
-            else if(ReferenceEquals(this, other))
-            {
-                return true;
-            }
-            else if(Level == other.Level 
-                && ProjectPath.Equals(other.ProjectPath) 
-                && Level == other.Level
-                && TargetGraphs.SequenceEqual(other.TargetGraphs))
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
+
         }
 
         public IDictionary<string, object> ToDictionary()

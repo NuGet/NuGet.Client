@@ -26,7 +26,7 @@ namespace NuGet.Common
         {
             if (DisplayMessage(level))
             {
-                Log(new RestoreLogMessage(level, NuGetLogCode.Undefined, data, string.Empty, string.Empty));
+                Log(new RestoreLogMessage(level, NuGetLogCode.Undefined, data));
             }
         }
 
@@ -34,7 +34,7 @@ namespace NuGet.Common
         {
             if (DisplayMessage(level))
             {
-                return LogAsync(new RestoreLogMessage(level, NuGetLogCode.Undefined, data, string.Empty, string.Empty));
+                return LogAsync(new RestoreLogMessage(level, NuGetLogCode.Undefined, data));
             }
 
             return Task.FromResult(true);

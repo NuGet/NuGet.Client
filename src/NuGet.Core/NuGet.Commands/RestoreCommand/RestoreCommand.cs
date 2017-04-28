@@ -86,7 +86,7 @@ namespace NuGet.Commands
                 localRepositories,
                 contextForProject);
 
-            _success = ValidateRestoreGraphs(graphs, _logger);
+            _success &= ValidateRestoreGraphs(graphs, _logger);
 
             // Check package compatibility
             var checkResults = VerifyCompatibility(
@@ -98,7 +98,7 @@ namespace NuGet.Commands
                 _request.ValidateRuntimeAssets,
                 _logger);
 
-            _success = checkResults.All(r => r.Success);
+            _success &= checkResults.All(r => r.Success);
 
             // Determine the lock file output path
             var assetsFilePath = GetAssetsFilePath(assetsFile);
@@ -132,14 +132,12 @@ namespace NuGet.Commands
             // Revert to the original case if needed
             await FixCaseForLegacyReaders(graphs, assetsFile, token);
 
-            if(_logger is CollectorLogger)
-            {
-                var logs = (_logger as CollectorLogger).Errors
-                    .Select(l => l as IAssetsLogMessage)
-                    .ToList();
+            // Write the logs into the assets file
+            var logs = (_logger as CollectorLogger).Errors
+                .Select(l => l as IAssetsLogMessage)
+                .ToList();
 
-                assetsFile.LogMessages = logs;
-            }
+            assetsFile.LogMessages = logs;
 
             restoreTime.Stop();
 
