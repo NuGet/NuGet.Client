@@ -114,10 +114,10 @@ namespace ProjectManagement.Test
             // Arrange
             var json = BasicConfig;
 
-            // Act
             var frameworks = JsonConfigUtility.GetFrameworks(json);
             Assert.Equal(1, frameworks.Count());
 
+            // Act
             JsonConfigUtility.AddFramework(json, new NuGet.Frameworks.NuGetFramework("uap", new Version("10.0.0")));
             frameworks = JsonConfigUtility.GetFrameworks(json);
 
@@ -131,7 +131,6 @@ namespace ProjectManagement.Test
             // Arrange
             var json = BasicConfig;
 
-            // Act
             var frameworks = JsonConfigUtility.GetFrameworks(json);
             Assert.Equal(1, frameworks.Count());
 
@@ -139,6 +138,7 @@ namespace ProjectManagement.Test
             frameworks = JsonConfigUtility.GetFrameworks(json);
             Assert.Equal(2, frameworks.Count());
 
+            // Act
             JsonConfigUtility.AddFramework(json, new NuGet.Frameworks.NuGetFramework("uap", new Version("10.0.0")));
             frameworks = JsonConfigUtility.GetFrameworks(json);
             Assert.Equal(2, frameworks.Count());
@@ -150,10 +150,10 @@ namespace ProjectManagement.Test
             // Arrange
             var json = BasicConfig;
 
-            // Act
             var frameworks = JsonConfigUtility.GetFrameworks(json);
             Assert.Equal("netcore50", frameworks.Single().GetShortFolderName());
 
+            // Act
             JsonConfigUtility.ClearFrameworks(json);
             frameworks = JsonConfigUtility.GetFrameworks(json);
 

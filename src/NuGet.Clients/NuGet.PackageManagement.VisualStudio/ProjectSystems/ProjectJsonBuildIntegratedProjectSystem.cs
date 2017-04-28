@@ -44,7 +44,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 {
                     var platfromMinVersion = VsHierarchyUtility.GetMSBuildProperty(VsHierarchyUtility.ToVsHierarchy(envDTEProject), EnvDTEProjectInfoUtility.TargetPlatformMinVersion);
 
-                    if (platfromMinVersion != null)
+                    if (!string.IsNullOrEmpty(platfromMinVersion))
                     {
                         // Found the TPMinV in csproj, store this as a new target framework to be replaced in project.json
                         var newTargetFramework = new NuGetFramework(jsonTargetFramework.Framework, new Version(platfromMinVersion));

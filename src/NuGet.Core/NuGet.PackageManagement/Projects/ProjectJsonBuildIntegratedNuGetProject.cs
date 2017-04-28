@@ -330,13 +330,16 @@ namespace NuGet.ProjectManagement.Projects
         private void UpdateFramework(JObject json)
         {
             var frameworks = JsonConfigUtility.GetFrameworks(json);
-            if (frameworks.Count() == 1
-                && IsUAPFramework(frameworks.First())
-                && InternalMetadata.TryGetValue(NuGetProjectMetadataKeys.TargetFramework, out object newTargetFramework))
+            if (InternalMetadata.TryGetValue(NuGetProjectMetadataKeys.TargetFramework, out object newTargetFramework))
             {
-                // project.json can have only one target framework
-                JsonConfigUtility.ClearFrameworks(json);
-                JsonConfigUtility.AddFramework(json, newTargetFramework as NuGetFramework);
+                if (IsUAPFramework(newTargetFramework as NuGetFramework) 
+                    && frameworks.Count() == 1
+                    && IsUAPFramework(frameworks.First()))
+                {
+                    // project.json can have only one target framework
+                    JsonConfigUtility.ClearFrameworks(json);
+                    JsonConfigUtility.AddFramework(json, newTargetFramework as NuGetFramework);
+                }
             }
         }
     }
