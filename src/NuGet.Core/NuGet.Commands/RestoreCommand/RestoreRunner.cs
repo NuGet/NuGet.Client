@@ -259,7 +259,7 @@ namespace NuGet.Commands
                 request.ExistingLockFile = LockFileUtilities.GetLockFile(request.LockFilePath, log);
             }
 
-            var command = new RestoreCommand(request, summaryRequest.CollectorLogger);
+            var command = new RestoreCommand(request);
             var result = await command.ExecuteAsync(token);
 
             return new RestoreResultPair(summaryRequest, result);

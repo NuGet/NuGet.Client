@@ -35,7 +35,7 @@ namespace NuGet.Commands
         private readonly Dictionary<RestoreTargetGraph, Dictionary<string, LibraryIncludeFlags>> _includeFlagGraphs
             = new Dictionary<RestoreTargetGraph, Dictionary<string, LibraryIncludeFlags>>();
 
-        public RestoreCommand(RestoreRequest request, ICollectorLogger collectorLogger = null)
+        public RestoreCommand(RestoreRequest request)
         {
             _request = request ?? throw new ArgumentNullException(nameof(request));
 
@@ -46,7 +46,9 @@ namespace NuGet.Commands
                 throw new ArgumentOutOfRangeException(nameof(_request.LockFileVersion));
             }
 
-            _logger = collectorLogger ?? _request.Log;
+            var collectorLogger = new CollectorLogger(_request.Log);
+            _logger = collectorLogger;
+            _request.Log = collectorLogger;
 
         }
 
