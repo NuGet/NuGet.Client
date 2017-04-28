@@ -38,6 +38,12 @@ namespace NuGet.Common
 
         }
 
+        public RestoreLogMessage(LogLevel logLevel, string errorString)
+            : this(logLevel, NuGetLogCode.NU1000, errorString, string.Empty)
+        {
+
+        }
+
         public IDictionary<string, object> ToDictionary()
         {
             var errorDictionary = new Dictionary<string, object>
@@ -69,7 +75,7 @@ namespace NuGet.Common
         {
             var errorString = new StringBuilder();
 
-            errorString.Append($"{Enum.GetName(typeof(NuGetLogCode), Code)}:{Message}");
+            errorString.Append($"{Enum.GetName(typeof(NuGetLogCode), Code)}: {Message}");
 
             return errorString.ToString();
         }

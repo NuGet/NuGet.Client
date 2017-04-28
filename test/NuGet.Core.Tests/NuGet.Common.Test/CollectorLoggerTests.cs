@@ -49,13 +49,13 @@ namespace NuGet.Common.Test
 
             // Assert
             Assert.Empty(errorsStart);
-            Assert.Equal(new[] { "ErrorA" }, errorsA.Select(e => e.FormatMessage()));
-            Assert.Equal(new[] { "ErrorA", "ErrorB", "ErrorC" }, errorsA.Select(e => e.FormatMessage()));
-            Assert.Equal(new[] { "ErrorA", "ErrorB", "ErrorC" }, errorsA.Select(e => e.FormatMessage()));
+            Assert.Equal(new[] { "NU1000: ErrorA" }, errorsA.Select(e => e.FormatMessage()));
+            Assert.Equal(new[] { "NU1000: ErrorA", "NU1000: ErrorB", "NU1000: ErrorC" }, errorsA.Select(e => e.FormatMessage()));
+            Assert.Equal(new[] { "NU1000: ErrorA", "NU1000: ErrorB", "NU1000: ErrorC" }, errorsA.Select(e => e.FormatMessage()));
         }
 
         [Fact]
-        public void CollectorLogger_DoesNotCollectNonError()
+        public void CollectorLogger_DoesNotCollectNonErrorAndNonWarnings()
         {
             // Arrange
             var innerLogger = new Mock<ILogger>();
@@ -65,7 +65,6 @@ namespace NuGet.Common.Test
             collector.LogDebug("Debug");
             collector.LogVerbose("Verbose");
             collector.LogInformation("Information");
-            collector.LogWarning("Warning");
             var errors = collector.Errors.ToArray();
 
             // Assert
