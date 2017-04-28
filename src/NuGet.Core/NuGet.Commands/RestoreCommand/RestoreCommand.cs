@@ -35,33 +35,9 @@ namespace NuGet.Commands
         private readonly Dictionary<RestoreTargetGraph, Dictionary<string, LibraryIncludeFlags>> _includeFlagGraphs
             = new Dictionary<RestoreTargetGraph, Dictionary<string, LibraryIncludeFlags>>();
 
-        public RestoreCommand(RestoreRequest request)
+        public RestoreCommand(RestoreRequest request, ICollectorLogger collectorLogger = null)
         {
-            if (request == null)
-            {
-                throw new ArgumentNullException(nameof(request));
-            }
-
-            // Validate the lock file version requested
-            if (request.LockFileVersion < 1 || request.LockFileVersion > LockFileFormat.Version)
-            {
-                Debug.Fail($"Lock file version {_request.LockFileVersion} is not supported.");
-                throw new ArgumentOutOfRangeException(nameof(_request.LockFileVersion));
-            }
-
-            _logger = request.Log;
-            _request = request;
-        }
-
-        public RestoreCommand(RestoreSummaryRequest summaryRequest)
-        {
-            if (summaryRequest == null)
-            {
-                throw new ArgumentNullException(nameof(summaryRequest));
-            }
-
-            _request = summaryRequest.Request ?? throw new ArgumentNullException(nameof(summaryRequest.Request));
-
+            _request = request ?? throw new ArgumentNullException(nameof(request));
 
             // Validate the lock file version requested
             if (_request.LockFileVersion < 1 || _request.LockFileVersion > LockFileFormat.Version)
@@ -70,7 +46,8 @@ namespace NuGet.Commands
                 throw new ArgumentOutOfRangeException(nameof(_request.LockFileVersion));
             }
 
-            _logger = summaryRequest.CollectorLogger;
+            _logger = collectorLogger ?? _request.Log;
+
         }
 
         public Task<RestoreResult> ExecuteAsync()

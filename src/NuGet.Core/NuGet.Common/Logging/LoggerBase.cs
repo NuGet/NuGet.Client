@@ -52,7 +52,6 @@ namespace NuGet.Common
 
         public void LogErrorSummary(string data)
         {
-            //TODO remove summaries
             Log(LogLevel.Error, data);
         }
 

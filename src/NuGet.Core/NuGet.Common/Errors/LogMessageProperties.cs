@@ -7,12 +7,12 @@ namespace NuGet.Common
     public class LogMessageProperties
     {
 
-        public const string LOG_LEVEL_PROPERTY = "level";
+        public const string LEVEL = "level";
 
-        public const string LOG_CODE_PROPERTY = "code";
+        public const string CODE = "code";
 
-        public const string MESSAGE_PROPERTY = "message";
+        public const string MESSAGE = "message";
 
-        public const string TARGET_GRAPH_PROPERTY = "targetGraph";
+        public const string TARGET_GRAPH = "targetGraph";
     }
 }

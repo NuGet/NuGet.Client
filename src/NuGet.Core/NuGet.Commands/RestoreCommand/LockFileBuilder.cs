@@ -71,7 +71,7 @@ namespace NuGet.Commands
                 if (library.Type == LibraryType.Project || library.Type == LibraryType.ExternalProject)
                 {
                     // Project
-                    var localMatch = item.Data.Match as LocalMatch;
+                    var localMatch = (LocalMatch)item.Data.Match;
 
                     var projectLib = new LockFileLibrary()
                     {

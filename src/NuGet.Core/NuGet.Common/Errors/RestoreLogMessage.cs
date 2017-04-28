@@ -60,18 +60,18 @@ namespace NuGet.Common
         {
             var errorDictionary = new Dictionary<string, object>
             {
-                [LogMessageProperties.LOG_CODE_PROPERTY] = Enum.GetName(typeof(NuGetLogCode), Code),
-                [LogMessageProperties.LOG_LEVEL_PROPERTY] = Enum.GetName(typeof(LogLevel), Level)
+                [LogMessageProperties.CODE] = Enum.GetName(typeof(NuGetLogCode), Code),
+                [LogMessageProperties.LEVEL] = Enum.GetName(typeof(LogLevel), Level)
             };
 
             if(Message != null)
             {
-                errorDictionary[LogMessageProperties.MESSAGE_PROPERTY] = Message;
+                errorDictionary[LogMessageProperties.MESSAGE] = Message;
             }
 
             if(TargetGraphs != null && TargetGraphs.Any() && TargetGraphs.All(l => !string.IsNullOrEmpty(l)))
             {
-                errorDictionary[LogMessageProperties.TARGET_GRAPH_PROPERTY] = TargetGraphs;
+                errorDictionary[LogMessageProperties.TARGET_GRAPH] = TargetGraphs;
             }
 
             return errorDictionary;

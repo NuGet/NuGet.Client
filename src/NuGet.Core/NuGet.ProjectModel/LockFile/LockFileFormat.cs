@@ -320,10 +320,10 @@ namespace NuGet.ProjectModel
             {
                 IAssetsLogMessage logMessage = null;
 
-                var level = json[LogMessageProperties.LOG_LEVEL_PROPERTY];
-                var code = json[LogMessageProperties.LOG_LEVEL_PROPERTY];
-                var message = json[LogMessageProperties.MESSAGE_PROPERTY];
-                var targetGraphs = ReadArray(json[LogMessageProperties.TARGET_GRAPH_PROPERTY] as JArray, ReadString);
+                var level = json[LogMessageProperties.LEVEL];
+                var code = json[LogMessageProperties.LEVEL];
+                var message = json[LogMessageProperties.MESSAGE];
+                var targetGraphs = ReadArray(json[LogMessageProperties.TARGET_GRAPH] as JArray, ReadString);
 
                 return logMessage;
             }

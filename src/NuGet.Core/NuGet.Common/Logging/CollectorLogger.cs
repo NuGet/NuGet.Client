@@ -35,26 +35,6 @@ namespace NuGet.Common
             return _innerLogger.LogAsync(message);
         }
 
-        public new void LogDebug(string data)
-        {
-            _innerLogger.LogDebug(data);
-        }
-
-        public new void LogVerbose(string data)
-        {
-            _innerLogger.LogVerbose(data);
-        }
-
-        public new void LogInformation(string data)
-        {
-            _innerLogger.LogInformation(data);
-        }
-
-        public new void LogMinimal(string data)
-        {
-            _innerLogger.LogMinimal(data);
-        }
-
         public IEnumerable<ILogMessage> Errors => _errors.ToArray();
     }
 }
