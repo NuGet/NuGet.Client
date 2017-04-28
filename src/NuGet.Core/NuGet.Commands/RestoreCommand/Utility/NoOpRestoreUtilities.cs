@@ -14,7 +14,7 @@ namespace NuGet.Commands
 
         internal static bool IsNoOpSupported(RestoreRequest request)
         {
-            return request.DependencyGraphSpec != null && request.ProjectStyle != ProjectStyle.DotnetCliTool
+            return request.DependencyGraphSpec != null && request.ProjectStyle != ProjectStyle.DotnetCliTool;
         }
 
         internal static string GetCacheFilePath(RestoreRequest request)
