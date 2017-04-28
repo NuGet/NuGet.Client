@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Threading;
+using Test.Utility.Threading;
 using Xunit;
 using Task = System.Threading.Tasks.Task;
 
@@ -16,7 +17,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         private readonly NuGetLockService _lockService;
         private readonly CancellationTokenSource _cts = new CancellationTokenSource();
 
-        private static DispatchThread DispatchThread { get; }
+        private static DispatcherThread DispatcherThread { get; }
         private static JoinableTaskContextNode JoinableTaskContext { get; }
         private static JoinableTaskFactory JoinableTaskFactory => JoinableTaskContext.Factory;
 
@@ -26,9 +27,9 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             // each unit test executes on a new thread, we create our own
             // persistent thread that acts like a UI thread. This will be invoked just
             // once for the module.
-            DispatchThread = new DispatchThread();
+            DispatcherThread = new DispatcherThread();
 
-            DispatchThread.Invoke(() =>
+            DispatcherThread.Invoke(() =>
             {
                 // Internally this calls ThreadHelper.SetUIThread(), which
                 // causes ThreadHelper to remember this thread for the
@@ -37,7 +38,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             });
 
             JoinableTaskContext = new JoinableTaskContextNode(
-                new JoinableTaskContext(DispatchThread.Thread, DispatchThread.SyncContext));
+                new JoinableTaskContext(DispatcherThread.Thread, DispatcherThread.SyncContext));
         }
 
         public NuGetLockServiceTests()

@@ -20,6 +20,7 @@
     <DeployExtension>false</DeployExtension>
     <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
     <AssemblyName>NuGet.VisualStudio.Client</AssemblyName>
+    <TargetVsixContainerName>NuGet.Tools.vsix</TargetVsixContainerName>
     <VSSDKTargetPlatformRegRootSuffix>Exp</VSSDKTargetPlatformRegRootSuffix>
     <MinimumVisualStudioVersion>15.0</MinimumVisualStudioVersion>
     <FileUpgradeFlags />
