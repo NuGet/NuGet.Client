@@ -332,9 +332,7 @@ namespace NuGet.ProjectManagement.Projects
             var frameworks = JsonConfigUtility.GetFrameworks(json);
             if (InternalMetadata.TryGetValue(NuGetProjectMetadataKeys.TargetFramework, out object newTargetFramework))
             {
-                if (IsUAPFramework(newTargetFramework as NuGetFramework) 
-                    && frameworks.Count() == 1
-                    && IsUAPFramework(frameworks.First()))
+                if (IsUAPFramework(newTargetFramework as NuGetFramework) && frameworks.Count() == 1)
                 {
                     // project.json can have only one target framework
                     JsonConfigUtility.ClearFrameworks(json);
