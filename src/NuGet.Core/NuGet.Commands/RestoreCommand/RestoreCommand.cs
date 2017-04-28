@@ -125,7 +125,6 @@ namespace NuGet.Commands
 
             // Determine the lock file output path
             var assetsFilePath = GetAssetsFilePath(assetsFile);
-
             var cacheFilePath = GetCacheFilePath(cacheFile,assetsFile);
 
             // Tool restores are unique since the output path is not known until after restore
@@ -158,6 +157,7 @@ namespace NuGet.Commands
             await FixCaseForLegacyReaders(graphs, assetsFile, token);
 
             restoreTime.Stop();
+            cacheFile.Success = _success;
 
             // Create result
             return new RestoreResult(
@@ -169,7 +169,7 @@ namespace NuGet.Commands
                 _request.ExistingLockFile,
                 assetsFilePath,
                 cacheFile,
-                _request.Project.RestoreMetadata?.CacheFilePath,
+                cacheFilePath,
                 _request.ProjectStyle,
                 restoreTime.Elapsed);
         }
@@ -205,38 +205,25 @@ namespace NuGet.Commands
 
         private string GetCacheFilePath(CacheFile cacheFile, LockFile lockFile)
         {
-            var projectLockFilePath = _request.Project.RestoreMetadata?.CacheFilePath;
+            var projectCacheFilePath = _request.Project.RestoreMetadata?.CacheFilePath;
 
-            if (string.IsNullOrEmpty(projectLockFilePath))
+            if (string.IsNullOrEmpty(projectCacheFilePath))
             {
                 if (_request.ProjectStyle == ProjectStyle.PackageReference
-                    || _request.ProjectStyle == ProjectStyle.Standalone)
+                    || _request.ProjectStyle == ProjectStyle.Standalone 
+                    || _request.ProjectStyle == ProjectStyle.ProjectJson)
                 {
-                    projectLockFilePath = Path.Combine(_request.RestoreOutputPath, LockFileFormat.AssetsFileName);
+                    projectCacheFilePath = CacheFilePathUtilities.GetCacheFilePath(_request);
                 }
                 else if (_request.ProjectStyle == ProjectStyle.DotnetCliTool)
                 {
-                    var toolName = ToolRestoreUtility.GetToolIdOrNullFromSpec(_request.Project);
-                    var lockFileLibrary = ToolRestoreUtility.GetToolTargetLibrary(lockFile, toolName);
 
-                    if (lockFileLibrary != null)
-                    {
-                        var version = lockFileLibrary.Version;
-
-                        var toolPathResolver = new ToolPathResolver(_request.PackagesDirectory);
-                        projectLockFilePath = toolPathResolver.GetLockFilePath(
-                            toolName,
-                            version,
-                            lockFile.Targets.First().TargetFramework);
-                    }
+                   projectCacheFilePath = CacheFilePathUtilities.GetToolCacheFilePath(_request, lockFile);
                 }
-                else
-                {
-                    projectLockFilePath = Path.Combine(_request.Project.BaseDirectory, "project.nuget.json");
-                }
+                
             }
 
-            return Path.GetFullPath(projectLockFilePath);
+            return Path.GetFullPath(projectCacheFilePath);
         }
 
         private string GetAssetsFilePath(LockFile lockFile)

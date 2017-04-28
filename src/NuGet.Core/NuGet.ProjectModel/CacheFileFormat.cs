@@ -14,8 +14,9 @@ namespace NuGet.ProjectModel
 {
     public class CacheFileFormat
     {
+        private const string VersionProperty = "version";
         private const string DGSpecHashProperty = "dgSpecHash";
-        private const string Version = "version";
+        private const string SuccessProperty = "success";
 
         public static CacheFile Load(string filePath)
         {
@@ -99,18 +100,21 @@ namespace NuGet.ProjectModel
 
         private static CacheFile ReadCacheFile(JObject cursor)
         {
-            var version = ReadInt(cursor[Version]);
+            var version = ReadInt(cursor[VersionProperty]);
             var hash = ReadString(cursor[DGSpecHashProperty]);
+            var success = ReadBool(cursor[SuccessProperty]);
             var cacheFile = new CacheFile(hash);
             cacheFile.Version = version;
+            cacheFile.Success = success;
             return cacheFile;
         }
 
         private static JObject GetCacheFile(CacheFile cacheFile)
         {
             var json = new JObject();
-            json[Version] = WriteInt(cacheFile.Version);
+            json[VersionProperty] = WriteInt(cacheFile.Version);
             json[DGSpecHashProperty] = WriteString(cacheFile.DgSpecHash);
+            json[SuccessProperty] = WriteBool(cacheFile.Success);
             return json;
         }
 
@@ -130,6 +134,16 @@ namespace NuGet.ProjectModel
         }
 
         private static JToken WriteInt(int item)
+        {
+            return new JValue(item);
+        }
+
+        private static bool ReadBool(JToken json)
+        {
+            return json.Value<bool>();
+        }
+
+        private static JToken WriteBool(bool item)
         {
             return new JValue(item);
         }
