@@ -182,7 +182,7 @@ namespace NuGet.Commands
                 request.LockFilePath = ProjectJsonPathUtilities.GetLockFilePath(request.Project.FilePath);
             }
             // Sets the default for PackRef/PJ/Standalone
-            request.Project.RestoreMetadata.CacheFilePath = CacheFilePathUtilities.GetCacheFilePath(request);
+            request.Project.RestoreMetadata.CacheFilePath = NoOpRestoreUtilities.GetCacheFilePath(request);
 
             request.MaxDegreeOfConcurrency =
                 DisableParallel ? 1 : RestoreRequest.DefaultDegreeOfConcurrency;

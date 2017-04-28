@@ -9,8 +9,13 @@ using NuGet.ProjectModel;
 
 namespace NuGet.Commands
 {
-    class CacheFilePathUtilities
+    class NoOpRestoreUtilities
     {
+
+        internal static bool IsNoOpSupported(RestoreRequest request)
+        {
+            return request.DependencyGraphSpec != null && _request.ProjectStyle != ProjectStyle.DotnetCliTool
+        }
 
         internal static string GetCacheFilePath(RestoreRequest request)
         {
@@ -47,6 +52,37 @@ namespace NuGet.Commands
                 }
             }
             return null;
+        }
+        /// <summary>
+        /// Evaluate the location of the cache file path, based on ProjectStyle.
+        /// The lockFile is used to evaluate the cache path for tools
+        /// </summary>
+        /// <param name="lockFile"></param>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        internal static string GetCacheFilePath(LockFile lockFile, RestoreRequest request)
+        {
+            var projectCacheFilePath = request.Project.RestoreMetadata?.CacheFilePath;
+
+            if (string.IsNullOrEmpty(projectCacheFilePath))
+            {
+                if (request.ProjectStyle == ProjectStyle.PackageReference
+                    || request.ProjectStyle == ProjectStyle.Standalone)
+                {
+                    projectCacheFilePath = GetCacheFilePath(request);
+                }
+                else if(request.ProjectStyle == ProjectStyle.ProjectJson)
+                {
+                    projectCacheFilePath = GetCacheFilePath(request);
+                }
+                else if (request.ProjectStyle == ProjectStyle.DotnetCliTool)
+                {
+
+                    projectCacheFilePath = GetToolCacheFilePath(request, lockFile);
+                }
+
+            }
+            return projectCacheFilePath ?? Path.GetFullPath(projectCacheFilePath);
         }
     }
 }

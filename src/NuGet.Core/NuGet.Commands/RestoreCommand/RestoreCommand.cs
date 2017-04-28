@@ -69,9 +69,8 @@ namespace NuGet.Commands
             localRepositories.AddRange(_request.DependencyProviders.FallbackPackageFolders);
             var contextForProject = CreateRemoteWalkContext(_request);
             CacheFile cacheFile = null;
-            if (_request.DependencyGraphSpec != null) { // If the dependencyGraph is not set, we keep the old behavior 
-            //No Op logic
-            cacheFile = EvaluateCacheFile();
+            if (NoOpRestoreUtilities.IsNoOpSupported(_request)) {
+                cacheFile = EvaluateCacheFile();
                 if (_noOp)
                 {
                     if (VerifyAssetsAndMSBuildFilesPresent(contextForProject.IsMsBuildBased))
@@ -130,7 +129,7 @@ namespace NuGet.Commands
             // Determine the lock file output path
             var assetsFilePath = GetAssetsFilePath(assetsFile);
             // Determine the cache file output path
-            var cacheFilePath = GetCacheFilePath(assetsFile);
+            var cacheFilePath = NoOpRestoreUtilities.GetCacheFilePath(assetsFile, _request);
 
             // Tool restores are unique since the output path is not known until after restore
             if (_request.LockFilePath == null
@@ -160,10 +159,12 @@ namespace NuGet.Commands
 
             // Revert to the original case if needed
             await FixCaseForLegacyReaders(graphs, assetsFile, token);
+
             if (cacheFile != null)
             {
                 cacheFile.Success = _success;
             }
+
             restoreTime.Stop();
             // Create result
             return new RestoreResult(
@@ -225,28 +226,7 @@ namespace NuGet.Commands
             return cacheFile;
         }
 
-        private string GetCacheFilePath(LockFile lockFile)
-        {
-            var projectCacheFilePath = _request.Project.RestoreMetadata?.CacheFilePath;
-
-            if (string.IsNullOrEmpty(projectCacheFilePath))
-            {
-                if (_request.ProjectStyle == ProjectStyle.PackageReference
-                    || _request.ProjectStyle == ProjectStyle.Standalone 
-                    || _request.ProjectStyle == ProjectStyle.ProjectJson)
-                {
-                    projectCacheFilePath = CacheFilePathUtilities.GetCacheFilePath(_request);
-                }
-                else if (_request.ProjectStyle == ProjectStyle.DotnetCliTool)
-                {
-
-                   projectCacheFilePath = CacheFilePathUtilities.GetToolCacheFilePath(_request, lockFile);
-                }
-                
-            }
-
-            return Path.GetFullPath(projectCacheFilePath);
-        }
+        
 
         private string GetAssetsFilePath(LockFile lockFile)
         {
