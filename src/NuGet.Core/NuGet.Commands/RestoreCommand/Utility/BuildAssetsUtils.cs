@@ -375,7 +375,7 @@ namespace NuGet.Commands
             {
                 // Project.json style projects
                 var dir = Path.GetDirectoryName(project.FilePath);
-                path = Path.Combine(dir, $"{project.Name}.nuget.g.{extension}");
+                path = Path.Combine(dir, $"{project.Name}.nuget.{extension}");
             }
             return path;
         }
