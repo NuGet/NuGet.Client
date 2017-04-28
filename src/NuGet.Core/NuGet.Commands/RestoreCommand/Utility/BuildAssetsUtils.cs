@@ -365,17 +365,17 @@ namespace NuGet.Commands
         {
             string path;
 
-            var projFileName = Path.GetFileName(request.Project.RestoreMetadata.ProjectPath);
             if (request.ProjectStyle == ProjectStyle.PackageReference)
             {
                 // PackageReference style projects
+                var projFileName = Path.GetFileName(request.Project.RestoreMetadata.ProjectPath);
                 path = Path.Combine(request.RestoreOutputPath, $"{projFileName}.nuget.g.{extension}");
             }
             else
             {
                 // Project.json style projects
                 var dir = Path.GetDirectoryName(project.FilePath);
-                path = Path.Combine(dir, $"{projFileName}.nuget.g.{extension}");
+                path = Path.Combine(dir, $"{project.Name}.nuget.g.{extension}");
             }
             return path;
         }
