@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="NuGet.PackageManagement.UI.SolutionView"
+<UserControl x:Class="NuGet.PackageManagement.UI.SolutionView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -326,21 +326,13 @@
         ItemsSource="{Binding Path=Versions}"
         SelectedItem="{Binding Path=SelectedVersion}">
         
-          <ComboBox.ItemContainerStyle>
-            <Style TargetType="{x:Type ComboBoxItem}">
-                <Style.Triggers>
-                    <DataTrigger 
-                        Binding="{Binding Converter={StaticResource NotNullToBooleanConverter}}"
-                        Value="True" >
-                        <Setter 
-                            Property="ToolTipService.ShowOnDisabled"
-                            Value="True" />
-                        <Setter 
-                            Property="ToolTip" 
-                            Value="{Binding Converter={StaticResource TooltipConverter}}" />
-                        <Setter
-                            Property="IsEnabled"
-                            Value="{Binding IsValidVersion}" />
+        <ComboBox.ItemContainerStyle>
+          <Style TargetType="{x:Type ComboBoxItem}" BasedOn="{StaticResource ComboBoxItemStyle}">
+            <Style.Triggers>
+                    <DataTrigger Binding="{Binding Converter={StaticResource NotNullToBooleanConverter}}" Value="True" >
+                        <Setter Property="ToolTipService.ShowOnDisabled" Value="True" />
+                        <Setter Property="ToolTip" Value="{Binding Converter={StaticResource TooltipConverter}}" />
+                        <Setter Property="IsEnabled" Value="{Binding IsValidVersion}" />
                     </DataTrigger>
                 </Style.Triggers>
             </Style>
