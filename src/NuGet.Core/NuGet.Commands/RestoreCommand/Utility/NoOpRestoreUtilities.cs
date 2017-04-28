@@ -82,7 +82,7 @@ namespace NuGet.Commands
                 }
 
             }
-            return projectCacheFilePath ?? Path.GetFullPath(projectCacheFilePath);
+            return projectCacheFilePath != null ? Path.GetFullPath(projectCacheFilePath) : null;
         }
     }
 }
