@@ -87,13 +87,6 @@ namespace NuGet.DependencyResolver
             };
 
             Debug.Assert(node.Item != null, "FindLibraryCached should return an unresolved item instead of null");
-            if (node.Key.VersionRange != null &&
-                node.Key.VersionRange.IsFloating)
-            {
-                var cacheKey = new LibraryRangeCacheKey(node.Key, framework);
-
-                _context.FindLibraryEntryCache.TryAdd(cacheKey, Task.FromResult(node.Item));
-            }
 
             var tasks = new List<Task<GraphNode<RemoteResolveResult>>>();
 
