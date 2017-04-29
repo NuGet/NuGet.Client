@@ -23,6 +23,18 @@ namespace NuGet.Common
             _errors = new ConcurrentQueue<ILogMessage>();
         }
 
+        /// <summary>
+        /// Initializes an instance of the <see cref="CollectorLogger"/>, while still
+        /// delegating all log messages to the <param name="innerLogger" />
+        /// based on the <param name="verbosity" />
+        /// </summary>
+        public CollectorLogger(ILogger innerLogger, LogLevel verbosity)
+            : base(verbosity)
+        {
+            _innerLogger = innerLogger;
+            _errors = new ConcurrentQueue<ILogMessage>();
+        }
+
         public override void Log(ILogMessage message)
         {
             if (CollectMessage(message.Level))

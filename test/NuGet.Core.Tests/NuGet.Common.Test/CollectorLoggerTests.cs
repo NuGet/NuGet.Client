@@ -14,7 +14,7 @@ namespace NuGet.Common.Test
         {
             // Arrange
             var innerLogger = new Mock<ILogger>();
-            var collector = new CollectorLogger(innerLogger.Object);
+            var collector = new CollectorLogger(innerLogger.Object, LogLevel.Debug);
 
             // Act
             collector.LogDebug("Debug");
@@ -25,6 +25,28 @@ namespace NuGet.Common.Test
 
             // Assert
             innerLogger.Verify(x => x.LogDebug("Debug"), Times.Once);
+            innerLogger.Verify(x => x.LogVerbose("Verbose"), Times.Once);
+            innerLogger.Verify(x => x.LogInformation("Information"), Times.Once);
+            innerLogger.Verify(x => x.LogWarning("Warning"), Times.Once);
+            innerLogger.Verify(x => x.LogError("Error"), Times.Once);
+        }
+
+        [Fact]
+        public void CollectorLogger_PassesToInnerLoggerWithDefaultVerbosity()
+        {
+            // Arrange
+            var innerLogger = new Mock<ILogger>();
+            var collector = new CollectorLogger(innerLogger.Object);
+
+            // Act
+            collector.LogDebug("Debug");
+            collector.LogVerbose("Verbose");
+            collector.LogInformation("Information");
+            collector.LogWarning("Warning");
+            collector.LogError("Error");
+
+            // Assert
+            innerLogger.Verify(x => x.LogDebug("Debug"), Times.Never);
             innerLogger.Verify(x => x.LogVerbose("Verbose"), Times.Once);
             innerLogger.Verify(x => x.LogInformation("Information"), Times.Once);
             innerLogger.Verify(x => x.LogWarning("Warning"), Times.Once);
@@ -50,8 +72,8 @@ namespace NuGet.Common.Test
             // Assert
             Assert.Empty(errorsStart);
             Assert.Equal(new[] { "NU1000: ErrorA" }, errorsA.Select(e => e.FormatMessage()));
-            Assert.Equal(new[] { "NU1000: ErrorA", "NU1000: ErrorB", "NU1000: ErrorC" }, errorsA.Select(e => e.FormatMessage()));
-            Assert.Equal(new[] { "NU1000: ErrorA", "NU1000: ErrorB", "NU1000: ErrorC" }, errorsA.Select(e => e.FormatMessage()));
+            Assert.Equal(new[] { "NU1000: ErrorA", "NU1000: ErrorB", "NU1000: ErrorC" }, errorsAbc.Select(e => e.FormatMessage()));
+            Assert.Equal(new[] { "NU1000: ErrorA", "NU1000: ErrorB", "NU1000: ErrorC" }, errordEnd.Select(e => e.FormatMessage()));
         }
 
         [Fact]

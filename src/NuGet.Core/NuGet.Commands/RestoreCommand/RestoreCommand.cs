@@ -86,7 +86,10 @@ namespace NuGet.Commands
                 localRepositories,
                 contextForProject);
 
-            _success &= ValidateRestoreGraphs(graphs, _logger);
+            if (!ValidateRestoreGraphs(graphs, _logger))
+            {
+                _success = false;
+            }
 
             // Check package compatibility
             var checkResults = VerifyCompatibility(
@@ -98,7 +101,11 @@ namespace NuGet.Commands
                 _request.ValidateRuntimeAssets,
                 _logger);
 
-            _success &= checkResults.All(r => r.Success);
+            if (checkResults.Any(r => !r.Success))
+            {
+                _success = false;
+            }
+
 
             // Determine the lock file output path
             var assetsFilePath = GetAssetsFilePath(assetsFile);
