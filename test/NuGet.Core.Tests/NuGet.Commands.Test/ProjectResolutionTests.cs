@@ -200,7 +200,9 @@ namespace NuGet.Commands.Test
                 Assert.NotNull(project2Lib);
                 Assert.Equal("Project project2 is not compatible with net45 (.NETFramework,Version=v4.5). Project project2 supports: net46 (.NETFramework,Version=v4.6)", issue.Format());
                 Assert.Equal(2, logger.ErrorMessages.Count());
-                Assert.Equal("One or more projects are incompatible with .NETFramework,Version=v4.5.", logger.ErrorMessages.Last());
+
+                //TODO change NU1000 to a meaningful code once Justin starts throwing correct errors
+                Assert.Equal("NU1000: One or more projects are incompatible with .NETFramework,Version=v4.5.", logger.ErrorMessages.Last());
 
                 // Incompatible projects are marked as Unsupported
                 Assert.Equal(NuGetFramework.UnsupportedFramework.DotNetFrameworkName, project2Lib.Framework);
@@ -294,7 +296,9 @@ namespace NuGet.Commands.Test
                 Assert.NotNull(project2Lib);
                 Assert.Equal("Project project2 is not compatible with net45 (.NETFramework,Version=v4.5). Project project2 supports:\n  - net46 (.NETFramework,Version=v4.6)\n  - win81 (Windows,Version=v8.1)".Replace("\n", Environment.NewLine), issue.Format());
                 Assert.Equal(2, logger.ErrorMessages.Count());
-                Assert.Equal("One or more projects are incompatible with .NETFramework,Version=v4.5.", logger.ErrorMessages.Last());
+
+                //TODO change NU1000 to a meaningful code once Justin starts throwing correct errors
+                Assert.Equal("NU1000: One or more projects are incompatible with .NETFramework,Version=v4.5.", logger.ErrorMessages.Last());
             }
         }
 
@@ -382,7 +386,9 @@ namespace NuGet.Commands.Test
                 Assert.Equal(0, result.GetAllUnresolved().Count);
                 Assert.Equal("Project project2 is not compatible with net45 (.NETFramework,Version=v4.5). Project project2 supports: net46 (.NETFramework,Version=v4.6)", issue.Format());
                 Assert.Equal(2, logger.ErrorMessages.Count());
-                Assert.Equal("One or more projects are incompatible with .NETFramework,Version=v4.5.", logger.ErrorMessages.Last());
+
+                //TODO change NU1000 to a meaningful code once Justin starts throwing correct errors
+                Assert.Equal("NU1000: One or more projects are incompatible with .NETFramework,Version=v4.5.", logger.ErrorMessages.Last());
             }
         }
 

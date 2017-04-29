@@ -164,7 +164,7 @@ namespace NuGet.ProjectModel.Test
         [Fact]
         public void LockFileFormat_ReadsLockFileWithNoTools()
         {
-            string lockFileContent = @"{
+            var lockFileContent = @"{
   ""version"": 1,
   ""targets"": {
     "".NETPlatform,Version=v5.0"": {
@@ -243,7 +243,7 @@ namespace NuGet.ProjectModel.Test
         public void LockFileFormat_WritesLockFile()
         {
             // Arrange
-            string lockFileContent = @"{
+            var lockFileContent = @"{
   ""version"": 2,
   ""targets"": {
     "".NETPlatform,Version=v5.0"": {
@@ -321,7 +321,7 @@ namespace NuGet.ProjectModel.Test
         public void LockFileFormat_WritesPackageSpec()
         {
             // Arrange
-            string lockFileContent = @"{
+            var lockFileContent = @"{
   ""version"": 2,
   ""targets"": {},
   ""libraries"": {},
@@ -356,7 +356,7 @@ namespace NuGet.ProjectModel.Test
         public void LockFileFormat_ReadsPackageSpec()
         {
             // Arrange
-            string lockFileContent = @"{
+            var lockFileContent = @"{
   ""version"": 2,
   ""targets"": {},
   ""libraries"": {},
@@ -395,10 +395,11 @@ namespace NuGet.ProjectModel.Test
     }
   }
 }";
-            var lockFile = new LockFile();
-            lockFile.Version = 2;
+            var lockFile = new LockFile()
+            {
+                Version = 2,
 
-            lockFile.PackageSpec = new PackageSpec(new[]
+                PackageSpec = new PackageSpec(new[]
             {
                 new TargetFrameworkInformation
                 {
@@ -427,19 +428,20 @@ namespace NuGet.ProjectModel.Test
                     }
                 }
             })
-            {
-                Version = new NuGetVersion("1.0.0"),
-                RestoreMetadata = new ProjectRestoreMetadata
                 {
-                    ProjectUniqueName = @"X:\ProjectPath\ProjectPath.csproj",
-                    ProjectName = "ProjectPath",
-                    ProjectPath = @"X:\ProjectPath\ProjectPath.csproj",
-                    OutputPath = @"X:\ProjectPath\obj\",
-                    ProjectStyle = ProjectStyle.PackageReference,
-                    OriginalTargetFrameworks = new[] { "netcoreapp1.0" },
-                    TargetFrameworks = new List<ProjectRestoreMetadataFrameworkInfo>
+                    Version = new NuGetVersion("1.0.0"),
+                    RestoreMetadata = new ProjectRestoreMetadata
+                    {
+                        ProjectUniqueName = @"X:\ProjectPath\ProjectPath.csproj",
+                        ProjectName = "ProjectPath",
+                        ProjectPath = @"X:\ProjectPath\ProjectPath.csproj",
+                        OutputPath = @"X:\ProjectPath\obj\",
+                        ProjectStyle = ProjectStyle.PackageReference,
+                        OriginalTargetFrameworks = new[] { "netcoreapp1.0" },
+                        TargetFrameworks = new List<ProjectRestoreMetadataFrameworkInfo>
                     {
                         new ProjectRestoreMetadataFrameworkInfo(NuGetFramework.Parse("netcoreapp1.0"))
+                    }
                     }
                 }
             };

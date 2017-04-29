@@ -37,20 +37,19 @@ namespace NuGet.Commands
 
         public RestoreCommand(RestoreRequest request)
         {
-            if (request == null)
-            {
-                throw new ArgumentNullException(nameof(request));
-            }
+            _request = request ?? throw new ArgumentNullException(nameof(request));
 
             // Validate the lock file version requested
-            if (request.LockFileVersion < 1 || request.LockFileVersion > LockFileFormat.Version)
+            if (_request.LockFileVersion < 1 || _request.LockFileVersion > LockFileFormat.Version)
             {
                 Debug.Fail($"Lock file version {_request.LockFileVersion} is not supported.");
                 throw new ArgumentOutOfRangeException(nameof(_request.LockFileVersion));
             }
 
-            _logger = request.Log;
-            _request = request;
+            var collectorLogger = new CollectorLogger(_request.Log);
+            _logger = collectorLogger;
+            _request.Log = collectorLogger;
+
         }
 
         public Task<RestoreResult> ExecuteAsync()
@@ -63,8 +62,11 @@ namespace NuGet.Commands
             var restoreTime = Stopwatch.StartNew();
 
             // Local package folders (non-sources)
-            var localRepositories = new List<NuGetv3LocalRepository>();
-            localRepositories.Add(_request.DependencyProviders.GlobalPackages);
+            var localRepositories = new List<NuGetv3LocalRepository>
+            {
+                _request.DependencyProviders.GlobalPackages
+            };
+
             localRepositories.AddRange(_request.DependencyProviders.FallbackPackageFolders);
 
             var contextForProject = CreateRemoteWalkContext(_request);
@@ -104,6 +106,7 @@ namespace NuGet.Commands
                 _success = false;
             }
 
+
             // Determine the lock file output path
             var assetsFilePath = GetAssetsFilePath(assetsFile);
 
@@ -135,6 +138,13 @@ namespace NuGet.Commands
 
             // Revert to the original case if needed
             await FixCaseForLegacyReaders(graphs, assetsFile, token);
+
+            // Write the logs into the assets file
+            var logs = (_logger as CollectorLogger).Errors
+                .Select(l => l as IAssetsLogMessage)
+                .ToList();
+
+            assetsFile.LogMessages = logs;
 
             restoreTime.Stop();
 
@@ -392,7 +402,9 @@ namespace NuGet.Commands
                 _request.ExistingLockFile,
                 _runtimeGraphCache,
                 _runtimeGraphCacheByPackage);
+
             var projectRestoreCommand = new ProjectRestoreCommand(projectRestoreRequest);
+
             var result = await projectRestoreCommand.TryRestore(
                 projectRange,
                 projectFrameworkRuntimePairs,
@@ -471,6 +483,7 @@ namespace NuGet.Commands
                     }
                 }
             }
+
 
             return allGraphs;
         }

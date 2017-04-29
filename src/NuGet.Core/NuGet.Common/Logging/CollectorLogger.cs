@@ -8,10 +8,10 @@ using System.Threading.Tasks;
 
 namespace NuGet.Common
 {
-    public class CollectorLogger : ICollectorLogger
+    public class CollectorLogger : LoggerBase, ICollectorLogger
     {
         private readonly ILogger _innerLogger;
-        private readonly ConcurrentQueue<string> _errors;
+        private readonly ConcurrentQueue<ILogMessage> _errors;
 
         /// <summary>
         /// Initializes an instance of the <see cref="CollectorLogger"/>, while still
@@ -20,73 +20,41 @@ namespace NuGet.Common
         public CollectorLogger(ILogger innerLogger)
         {
             _innerLogger = innerLogger;
-            _errors = new ConcurrentQueue<string>();
+            _errors = new ConcurrentQueue<ILogMessage>();
         }
 
-        public void Log(LogLevel level, string data)
+        /// <summary>
+        /// Initializes an instance of the <see cref="CollectorLogger"/>, while still
+        /// delegating all log messages to the <param name="innerLogger" />
+        /// based on the <param name="verbosity" />
+        /// </summary>
+        public CollectorLogger(ILogger innerLogger, LogLevel verbosity)
+            : base(verbosity)
         {
-            throw new NotImplementedException();
+            _innerLogger = innerLogger;
+            _errors = new ConcurrentQueue<ILogMessage>();
         }
 
-        public Task LogAsync(LogLevel level, string data)
+        public override void Log(ILogMessage message)
         {
-            throw new NotImplementedException();
+            if (CollectMessage(message.Level))
+            {
+                _errors.Enqueue(message);
+            }
+
+            _innerLogger.Log(message);
         }
 
-        public void Log(ILogMessage message)
+        public override Task LogAsync(ILogMessage message)
         {
-            _innerLogger.LogError(message.FormatMessage());
-            _errors.Enqueue(message.FormatMessage());
+            if (CollectMessage(message.Level))
+            {
+                _errors.Enqueue(message);
+            }
+
+            return _innerLogger.LogAsync(message);
         }
 
-        public async Task LogAsync(ILogMessage message)
-        {
-            var messageString = await message.FormatMessageAsync();
-            _innerLogger.LogError(messageString);
-            _errors.Enqueue(message.FormatMessage());
-        }
-
-        public void LogDebug(string data)
-        {
-            _innerLogger.LogDebug(data);
-        }
-
-        public void LogVerbose(string data)
-        {
-            _innerLogger.LogVerbose(data);
-        }
-
-        public void LogInformation(string data)
-        {
-            _innerLogger.LogInformation(data);
-        }
-
-        public void LogMinimal(string data)
-        {
-            _innerLogger.LogMinimal(data);
-        }
-
-        public void LogWarning(string data)
-        {
-            _innerLogger.LogWarning(data);
-        }
-
-        public void LogError(string data)
-        {
-            _errors.Enqueue(data);
-            _innerLogger.LogError(data);
-        }
-
-        public void LogInformationSummary(string data)
-        {
-            _innerLogger.LogInformationSummary(data);
-        }
-
-        public void LogErrorSummary(string data)
-        {
-            _innerLogger.LogErrorSummary(data);
-        }
-
-        public IEnumerable<string> Errors => _errors.ToArray();
+        public IEnumerable<ILogMessage> Errors => _errors.ToArray();
     }
 }

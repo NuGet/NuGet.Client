@@ -26,7 +26,7 @@ namespace NuGet.Common
         {
             if (DisplayMessage(level))
             {
-                Log(new RestoreLogMessage(level, NuGetLogCode.Undefined, data, string.Empty, string.Empty));
+                Log(new RestoreLogMessage(level, data));
             }
         }
 
@@ -34,7 +34,7 @@ namespace NuGet.Common
         {
             if (DisplayMessage(level))
             {
-                return LogAsync(new RestoreLogMessage(level, NuGetLogCode.Undefined, data, string.Empty, string.Empty));
+                return LogAsync(new RestoreLogMessage(level, data));
             }
 
             return Task.FromResult(true);
@@ -52,7 +52,6 @@ namespace NuGet.Common
 
         public void LogErrorSummary(string data)
         {
-            //TODO remove summaries
             Log(LogLevel.Error, data);
         }
 
@@ -88,5 +87,14 @@ namespace NuGet.Common
         {
             return (messageLevel >= VerbosityLevel);
         }
+
+        /// <summary>
+        /// True if the message meets the verbosity level.
+        /// </summary>
+        protected virtual bool CollectMessage(LogLevel messageLevel)
+        {
+            return (messageLevel >= LogLevel.Warning);
+        }
+
     }
 }
