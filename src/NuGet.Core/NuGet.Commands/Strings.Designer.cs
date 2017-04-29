@@ -567,6 +567,15 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The expected assets file for {0} at location {1} does not exist, no-op is not possible. Continuing restore..
+        /// </summary>
+        internal static string Log_LockFileNotOnDisk {
+            get {
+                return ResourceManager.GetString("Log_LockFileNotOnDisk", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The lock file is out-of-date relative to the project file. Regenerating the lock file and re-locking..
         /// </summary>
         internal static string Log_LockFileOutOfDate {
@@ -720,6 +729,15 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The props file for {0} at location {1} does not exist, no-op is not possible. Continuing restore..
+        /// </summary>
+        internal static string Log_PropsFileNotOnDisk {
+            get {
+                return ResourceManager.GetString("Log_PropsFileNotOnDisk", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Reading project file {0}..
         /// </summary>
         internal static string Log_ReadingProject {
@@ -860,6 +878,15 @@ namespace NuGet.Commands {
         internal static string Log_SkippingRuntimeWalk {
             get {
                 return ResourceManager.GetString("Log_SkippingRuntimeWalk", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The targets file for {0} at location {1} does not exist, no-op is not possible. Continuing restore..
+        /// </summary>
+        internal static string Log_TargetsFileNotOnDisk {
+            get {
+                return ResourceManager.GetString("Log_TargetsFileNotOnDisk", resourceCulture);
             }
         }
         

@@ -135,6 +135,8 @@ namespace NuGet.Commands
                 log: log,
                 toolCommit: isTool,
                 token: token);
+            
+            //Commit the cache file to disk
             await CommitCacheFileAsync(
                 log: log,
                 toolCommit : isTool);
@@ -206,6 +208,7 @@ namespace NuGet.Commands
         private async Task CommitCacheFileAsync(ILogger log, bool toolCommit)
         {
             if (CacheFile != null && CacheFilePath != null) { // This is done to preserve the old behavior
+
                 if (toolCommit) { 
                     log.LogDebug(string.Format(CultureInfo.CurrentCulture,
                             Strings.Log_ToolWritingCacheFile,

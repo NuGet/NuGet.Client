@@ -11,6 +11,7 @@ namespace NuGet.ProjectModel
     public class CacheFile : IEquatable<CacheFile>
     {
         private static int LATEST_VERSION = 1;
+
         public string DgSpecHash { get;}
 
         public int Version { get; set; }

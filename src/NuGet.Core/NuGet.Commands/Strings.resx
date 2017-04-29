@@ -538,4 +538,13 @@ For more information, visit http://docs.nuget.org/docs/reference/command-line-re
   <data name="Log_SkippingCacheFile" xml:space="preserve">
     <value>No-Op restore. The cache will not be updated. Path: {0}</value>
   </data>
+  <data name="Log_LockFileNotOnDisk" xml:space="preserve">
+    <value>The expected assets file for {0} at location {1} does not exist, no-op is not possible. Continuing restore.</value>
+  </data>
+  <data name="Log_PropsFileNotOnDisk" xml:space="preserve">
+    <value>The props file for {0} at location {1} does not exist, no-op is not possible. Continuing restore.</value>
+  </data>
+  <data name="Log_TargetsFileNotOnDisk" xml:space="preserve">
+    <value>The targets file for {0} at location {1} does not exist, no-op is not possible. Continuing restore.</value>
+  </data>
 </root>

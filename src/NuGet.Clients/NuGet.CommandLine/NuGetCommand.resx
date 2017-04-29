@@ -5337,6 +5337,6 @@ nuget locals global-packages -list</value>
     <value>Restore all referenced projects for UWP and NETCore projects. This does not include packages.config projects.</value>
   </data>
   <data name="ForceRestoreCommand" xml:space="preserve">
-    <value>NuGet restore no-ops when the inputs to restore have not changed. This option skips the no op optimization.</value>
+    <value>NuGet restore does not perform a full restore when the inputs have not changed. This option skips the that optimization.</value>
   </data>
 </root>

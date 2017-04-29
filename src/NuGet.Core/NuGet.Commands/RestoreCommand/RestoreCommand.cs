@@ -71,10 +71,12 @@ namespace NuGet.Commands
             var contextForProject = CreateRemoteWalkContext(_request);
             CacheFile cacheFile = null;
             if (NoOpRestoreUtilities.IsNoOpSupported(_request)) {
-                cacheFile = EvaluateCacheFile();
-                if (_noOp)
+                var cacheFileAndStatus = EvaluateCacheFile();
+                cacheFile = cacheFileAndStatus.Key;
+                if (cacheFileAndStatus.Value)
                 {
-                    if (VerifyAssetsAndMSBuildFilesPresent(contextForProject.IsMsBuildBased))
+
+                    if(VerifyAssetsAndMSBuildFilesArePresent(_request,contextForProject.IsMsBuildBased))
                     {
                         restoreTime.Stop();
 
@@ -182,23 +184,7 @@ namespace NuGet.Commands
                 restoreTime.Elapsed);
         }
 
-        private bool VerifyAssetsAndMSBuildFilesPresent(bool checkForMSBuildFiles)
-        {
-            if (File.Exists(_request.ExistingLockFile.Path))
-            {   
-                if (checkForMSBuildFiles && 
-                    (_request.ProjectStyle == ProjectStyle.PackageReference ||
-                    _request.ProjectStyle == ProjectStyle.Standalone))
-                {
-                    if (File.Exists(BuildAssetsUtils.GetMSbuildFilePath(_request.Project, _request, "targets")) && 
-                        File.Exists(BuildAssetsUtils.GetMSbuildFilePath(_request.Project, _request, "props")))
-                        return true;
-                }
-            }
-            return false;
-        }
-
-        private CacheFile EvaluateCacheFile()
+        private KeyValuePair<CacheFile,bool> EvaluateCacheFile()
         {
             CacheFile cacheFile;
             var newDgSpecHash = _request.DependencyGraphSpec.GetHash();
@@ -224,10 +210,37 @@ namespace NuGet.Commands
                 cacheFile = new CacheFile(newDgSpecHash);
 
             }
-            return cacheFile;
+            return new KeyValuePair<CacheFile,bool>(cacheFile, _noOp) ;
         }
 
-        
+        private bool VerifyAssetsAndMSBuildFilesArePresent(RestoreRequest request, bool checkForMSBuildFiles)
+        {
+
+            if (!File.Exists(request.ExistingLockFile.Path)) {
+                _logger.LogVerbose(string.Format(CultureInfo.CurrentCulture, Strings.Log_LockFileNotOnDisk, _request.Project.Name, request.ExistingLockFile.Path));
+                return false;
+            }
+
+            if (checkForMSBuildFiles && (request.ProjectStyle == ProjectStyle.PackageReference || request.ProjectStyle == ProjectStyle.Standalone))
+            {
+                string targetsFilePath = BuildAssetsUtils.GetMSbuildFilePath(request.Project, request, "targets");
+                if (!File.Exists(targetsFilePath))
+                {
+                    _logger.LogVerbose(string.Format(CultureInfo.CurrentCulture, Strings.Log_TargetsFileNotOnDisk, _request.Project.Name, targetsFilePath));
+                    return false;
+                }
+                string propsFilePath = BuildAssetsUtils.GetMSbuildFilePath(request.Project, request, "props");
+                if (!File.Exists(propsFilePath))
+                {
+                    _logger.LogVerbose(string.Format(CultureInfo.CurrentCulture, Strings.Log_PropsFileNotOnDisk, _request.Project.Name, propsFilePath));
+                    return false;
+                }
+            }
+            return true;
+        }
+
+
+
 
         private string GetAssetsFilePath(LockFile lockFile)
         {
