@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -50,6 +50,7 @@ namespace NuGet.ProjectModel
         private const string ProjectFileToolGroupsProperty = "projectFileToolGroups";
         private const string PackageFoldersProperty = "packageFolders";
         private const string PackageSpecProperty = "project";
+        private const string LogsProperty = "logs";
 
         // Legacy property names
         private const string RuntimeAssembliesProperty = "runtimeAssemblies";
@@ -175,24 +176,28 @@ namespace NuGet.ProjectModel
 
         private static LockFile ReadLockFile(JObject cursor)
         {
-            var lockFile = new LockFile();
-            lockFile.Version = ReadInt(cursor, VersionProperty, defaultValue: int.MinValue);
-            lockFile.Libraries = ReadObject(cursor[LibrariesProperty] as JObject, ReadLibrary);
-            lockFile.Targets = ReadObject(cursor[TargetsProperty] as JObject, ReadTarget);
-            lockFile.ProjectFileDependencyGroups = ReadObject(cursor[ProjectFileDependencyGroupsProperty] as JObject, ReadProjectFileDependencyGroup);
-            lockFile.PackageFolders = ReadObject(cursor[PackageFoldersProperty] as JObject, ReadFileItem);
-            lockFile.PackageSpec = ReadPackageSpec(cursor[PackageSpecProperty] as JObject);
+            var lockFile = new LockFile()
+            {
+                Version = ReadInt(cursor, VersionProperty, defaultValue: int.MinValue),
+                Libraries = ReadObject(cursor[LibrariesProperty] as JObject, ReadLibrary),
+                Targets = ReadObject(cursor[TargetsProperty] as JObject, ReadTarget),
+                ProjectFileDependencyGroups = ReadObject(cursor[ProjectFileDependencyGroupsProperty] as JObject, ReadProjectFileDependencyGroup),
+                PackageFolders = ReadObject(cursor[PackageFoldersProperty] as JObject, ReadFileItem),
+                PackageSpec = ReadPackageSpec(cursor[PackageSpecProperty] as JObject),
+                LogMessages = ReadArray(cursor[LogsProperty] as JArray, ReadLogMessage)
+            };
             return lockFile;
         }
 
         private static JObject WriteLockFile(LockFile lockFile)
         {
-            var json = new JObject();
-            json[VersionProperty] = new JValue(lockFile.Version);
-            json[TargetsProperty] = WriteObject(lockFile.Targets, WriteTarget);
-            json[LibrariesProperty] = WriteObject(lockFile.Libraries, WriteLibrary);
-            json[ProjectFileDependencyGroupsProperty] = WriteObject(lockFile.ProjectFileDependencyGroups, WriteProjectFileDependencyGroup);
-            
+            var json = new JObject
+            {
+                [VersionProperty] = new JValue(lockFile.Version),
+                [TargetsProperty] = WriteObject(lockFile.Targets, WriteTarget),
+                [LibrariesProperty] = WriteObject(lockFile.Libraries, WriteLibrary),
+                [ProjectFileDependencyGroupsProperty] = WriteObject(lockFile.ProjectFileDependencyGroups, WriteProjectFileDependencyGroup)
+            };
             if (lockFile.PackageFolders?.Any() == true)
             {
                 json[PackageFoldersProperty] = WriteObject(lockFile.PackageFolders, WriteFileItem);
@@ -206,6 +211,14 @@ namespace NuGet.ProjectModel
                     PackageSpecWriter.Write(lockFile.PackageSpec, writer);
                     var packageSpec = writer.GetJObject();
                     json[PackageSpecProperty] = packageSpec;
+                }
+            }
+
+            if(lockFile.Version >= 3)
+            {
+                if(lockFile.LogMessages != null)
+                {
+                    json[LogsProperty] = WriteLogMessages(lockFile.LogMessages);
                 }
             }
 
@@ -289,6 +302,41 @@ namespace NuGet.ProjectModel
             target.Libraries = ReadObject(json as JObject, ReadTargetLibrary);
 
             return target;
+        }
+
+        private static JObject WriteLogMessage(IAssetsLogMessage logMessage)
+        {
+            var messageDictionary = logMessage.ToDictionary();
+            return JObject.FromObject(messageDictionary);
+        }
+
+        private static IAssetsLogMessage ReadLogMessage(JToken json)
+        {
+            if (json == null)
+            {
+                return null;
+            }
+            else
+            {
+                IAssetsLogMessage logMessage = null;
+
+                var level = json[LogMessageProperties.LEVEL];
+                var code = json[LogMessageProperties.LEVEL];
+                var message = json[LogMessageProperties.MESSAGE];
+                var targetGraphs = ReadArray(json[LogMessageProperties.TARGET_GRAPH] as JArray, ReadString);
+
+                return logMessage;
+            }
+        }
+
+        private static JArray WriteLogMessages(IEnumerable<IAssetsLogMessage> logMessages)
+        {
+            var logMessageArray = new JArray();
+            foreach(var logMessage in logMessages)
+            {
+                logMessageArray.Add(WriteLogMessage(logMessage));
+            }
+            return logMessageArray;
         }
 
         private static LockFileTargetLibrary ReadTargetLibrary(string property, JToken json)
@@ -496,11 +544,11 @@ namespace NuGet.ProjectModel
                 item.Path,
                 new JObject(item.Properties.OrderBy(prop => prop.Key, StringComparer.Ordinal).Select(x =>
                 {
-                    if (Boolean.TrueString.Equals(x.Value, StringComparison.OrdinalIgnoreCase))
+                    if (bool.TrueString.Equals(x.Value, StringComparison.OrdinalIgnoreCase))
                     {
                         return new JProperty(x.Key, true);
                     }
-                    else if (Boolean.FalseString.Equals(x.Value, StringComparison.OrdinalIgnoreCase))
+                    else if (bool.FalseString.Equals(x.Value, StringComparison.OrdinalIgnoreCase))
                     {
                         return new JProperty(x.Key, false);
                     }
@@ -520,7 +568,11 @@ namespace NuGet.ProjectModel
             var items = new List<TItem>();
             foreach (var child in json)
             {
-                items.Add(readItem(child));
+                var item = readItem(child);
+                if(item != null)
+                {
+                    items.Add(item);
+                }
             }
             return items;
         }

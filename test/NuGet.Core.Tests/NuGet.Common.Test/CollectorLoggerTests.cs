@@ -1,6 +1,8 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+using System.Diagnostics;
 using System.Linq;
 using Moq;
 using Xunit;
@@ -12,9 +14,10 @@ namespace NuGet.Common.Test
         [Fact]
         public void CollectorLogger_PassesToInnerLogger()
         {
+
             // Arrange
             var innerLogger = new Mock<ILogger>();
-            var collector = new CollectorLogger(innerLogger.Object);
+            var collector = new CollectorLogger(innerLogger.Object, LogLevel.Debug);
 
             // Act
             collector.LogDebug("Debug");
@@ -24,11 +27,55 @@ namespace NuGet.Common.Test
             collector.LogError("Error");
 
             // Assert
-            innerLogger.Verify(x => x.LogDebug("Debug"), Times.Once);
-            innerLogger.Verify(x => x.LogVerbose("Verbose"), Times.Once);
-            innerLogger.Verify(x => x.LogInformation("Information"), Times.Once);
-            innerLogger.Verify(x => x.LogWarning("Warning"), Times.Once);
-            innerLogger.Verify(x => x.LogError("Error"), Times.Once);
+            VerifyInnerLoggerCalls(innerLogger, LogLevel.Debug, "Debug", Times.Once());
+            VerifyInnerLoggerCalls(innerLogger, LogLevel.Verbose, "Verbose", Times.Once());
+            VerifyInnerLoggerCalls(innerLogger, LogLevel.Information, "Information", Times.Once());
+            VerifyInnerLoggerCalls(innerLogger, LogLevel.Warning, "Warning", Times.Once());
+            VerifyInnerLoggerCalls(innerLogger, LogLevel.Error, "Error", Times.Once());
+        }
+
+        [Fact]
+        public void CollectorLogger_PassesToInnerLoggerWithLessVerbosity()
+        {
+            // Arrange
+            var innerLogger = new Mock<ILogger>();
+            var collector = new CollectorLogger(innerLogger.Object, LogLevel.Verbose);
+
+            // Act
+            collector.LogDebug("Debug");
+            collector.LogVerbose("Verbose");
+            collector.LogInformation("Information");
+            collector.LogWarning("Warning");
+            collector.LogError("Error");
+
+            // Assert
+            VerifyInnerLoggerCalls(innerLogger, LogLevel.Debug, "Debug", Times.Never());
+            VerifyInnerLoggerCalls(innerLogger, LogLevel.Verbose, "Verbose", Times.Once());
+            VerifyInnerLoggerCalls(innerLogger, LogLevel.Information, "Information", Times.Once());
+            VerifyInnerLoggerCalls(innerLogger, LogLevel.Warning, "Warning", Times.Once());
+            VerifyInnerLoggerCalls(innerLogger, LogLevel.Error, "Error", Times.Once());
+        }
+
+        [Fact]
+        public void CollectorLogger_PassesToInnerLoggerWithLeastVerbosity()
+        {
+            // Arrange
+            var innerLogger = new Mock<ILogger>();
+            var collector = new CollectorLogger(innerLogger.Object, LogLevel.Error);
+
+            // Act
+            collector.LogDebug("Debug");
+            collector.LogVerbose("Verbose");
+            collector.LogInformation("Information");
+            collector.LogWarning("Warning");
+            collector.LogError("Error");
+
+            // Assert
+            VerifyInnerLoggerCalls(innerLogger, LogLevel.Debug, "Debug", Times.Never());
+            VerifyInnerLoggerCalls(innerLogger, LogLevel.Verbose, "Verbose", Times.Never());
+            VerifyInnerLoggerCalls(innerLogger, LogLevel.Information, "Information", Times.Never());
+            VerifyInnerLoggerCalls(innerLogger, LogLevel.Warning, "Warning", Times.Never());
+            VerifyInnerLoggerCalls(innerLogger, LogLevel.Error, "Error", Times.Once());
         }
 
         [Fact]
@@ -49,13 +96,13 @@ namespace NuGet.Common.Test
 
             // Assert
             Assert.Empty(errorsStart);
-            Assert.Equal(new[] { "ErrorA" }, errorsA);
-            Assert.Equal(new[] { "ErrorA", "ErrorB", "ErrorC" }, errorsAbc);
-            Assert.Equal(new[] { "ErrorA", "ErrorB", "ErrorC" }, errordEnd);
+            Assert.Equal(new[] { "NU1000: ErrorA" }, errorsA.Select(e => e.FormatMessage()));
+            Assert.Equal(new[] { "NU1000: ErrorA", "NU1000: ErrorB", "NU1000: ErrorC" }, errorsAbc.Select(e => e.FormatMessage()));
+            Assert.Equal(new[] { "NU1000: ErrorA", "NU1000: ErrorB", "NU1000: ErrorC" }, errordEnd.Select(e => e.FormatMessage()));
         }
 
         [Fact]
-        public void CollectorLogger_DoesNotCollectNonError()
+        public void CollectorLogger_DoesNotCollectNonErrorAndNonWarnings()
         {
             // Arrange
             var innerLogger = new Mock<ILogger>();
@@ -65,11 +112,18 @@ namespace NuGet.Common.Test
             collector.LogDebug("Debug");
             collector.LogVerbose("Verbose");
             collector.LogInformation("Information");
-            collector.LogWarning("Warning");
             var errors = collector.Errors.ToArray();
 
             // Assert
             Assert.Empty(errors);
+        }
+
+        private void VerifyInnerLoggerCalls(Mock<ILogger> innerLogger, LogLevel messageLevel, string message, Times times)
+        {
+            innerLogger.Verify(x => x.Log(It.Is<RestoreLogMessage>(l => l.Code == NuGetLogCode.NU1000 && 
+            l.Level == messageLevel && 
+            l.Message == message)), 
+            times);
         }
     }
 }
