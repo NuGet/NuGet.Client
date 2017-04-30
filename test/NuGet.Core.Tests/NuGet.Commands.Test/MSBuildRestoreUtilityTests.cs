@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.ProjectModel;
@@ -17,6 +16,98 @@ namespace NuGet.Commands.Test
 {
     public class MSBuildRestoreUtilityTests
     {
+        [Fact]
+        public void MSBuildRestoreUtility_GetPackageSpec_VerifyInvalidProjectReferencesAreIgnored()
+        {
+            using (var workingDir = TestDirectory.Create())
+            {
+                // Arrange
+                var project1Root = Path.Combine(workingDir, "a");
+                var project1Path = Path.Combine(project1Root, "a.csproj");
+                var outputPath1 = Path.Combine(project1Root, "obj");
+                var fallbackFolder = Path.Combine(project1Root, "fallback");
+                var packagesFolder = Path.Combine(project1Root, "packages");
+                var project2Root = Path.Combine(workingDir, "b");
+                var project2Path = Path.Combine(project2Root, "b.csproj");
+                var project3Root = Path.Combine(workingDir, "c");
+                var project3Path = Path.Combine(project3Root, "c.csproj");
+                var outputPath3 = Path.Combine(project3Root, "obj");
+
+                var items = new List<IDictionary<string, string>>();
+
+                items.Add(new Dictionary<string, string>()
+                {
+                    { "Type", "ProjectSpec" },
+                    { "Version", "2.0.0-rc.2+a.b.c" },
+                    { "ProjectName", "a" },
+                    { "ProjectStyle", "PackageReference" },
+                    { "OutputPath", outputPath1 },
+                    { "ProjectUniqueName", "482C20DE-DFF9-4BD0-B90A-BD3201AA351A" },
+                    { "ProjectPath", project1Path },
+                    { "TargetFrameworks", "net46;netstandard16" },
+                    { "Sources", "https://nuget.org/a/index.json;https://nuget.org/b/index.json" },
+                    { "FallbackFolders", fallbackFolder },
+                    { "PackagesPath", packagesFolder },
+                    { "CrossTargeting", "true" },
+                    { "RestoreLegacyPackagesDirectory", "true" }
+                });
+
+                items.Add(new Dictionary<string, string>()
+                {
+                    { "Type", "ProjectSpec" },
+                    { "Version", "2.0.0-rc.2+a.b.c" },
+                    { "ProjectName", "c" },
+                    { "ProjectStyle", "PackageReference" },
+                    { "OutputPath", outputPath3 },
+                    { "ProjectUniqueName", "C82C20DE-DFF9-4BD0-B90A-BD3201AA351A" },
+                    { "ProjectPath", project3Path },
+                    { "TargetFrameworks", "net46;netstandard16" },
+                    { "Sources", "https://nuget.org/a/index.json;https://nuget.org/b/index.json" },
+                    { "FallbackFolders", fallbackFolder },
+                    { "PackagesPath", packagesFolder },
+                    { "CrossTargeting", "true" },
+                    { "RestoreLegacyPackagesDirectory", "true" }
+                });
+
+                // A -> B
+                items.Add(new Dictionary<string, string>()
+                {
+                    { "Type", "ProjectReference" },
+                    { "ProjectUniqueName", "482C20DE-DFF9-4BD0-B90A-BD3201AA351A" },
+                    { "ProjectReferenceUniqueName", "AA2C20DE-DFF9-4BD0-B90A-BD3201AA351A" },
+                    { "ProjectPath", project2Path },
+                    { "TargetFrameworks", "net46;netstandard1.6" },
+                    { "CrossTargeting", "true" },
+                });
+
+                // A -> C
+                items.Add(new Dictionary<string, string>()
+                {
+                    { "Type", "ProjectReference" },
+                    { "ProjectUniqueName", "482C20DE-DFF9-4BD0-B90A-BD3201AA351A" },
+                    { "ProjectReferenceUniqueName", "C82C20DE-DFF9-4BD0-B90A-BD3201AA351A" },
+                    { "ProjectPath", project3Path },
+                    { "TargetFrameworks", "net46;netstandard1.6" },
+                    { "CrossTargeting", "true" },
+                });
+
+                var wrappedItems = items.Select(CreateItems).ToList();
+
+                // Act
+                var dgSpec = MSBuildRestoreUtility.GetDependencySpec(wrappedItems);
+                var projectReferences = dgSpec.Projects.Select(e => e.RestoreMetadata)
+                    .SelectMany(e => e.TargetFrameworks)
+                    .SelectMany(e => e.ProjectReferences)
+                    .Select(e => e.ProjectPath)
+                    .Distinct()
+                    .ToList();
+
+                // Assert
+                Assert.Equal(1, projectReferences.Count);
+                Assert.Equal(project3Path, projectReferences[0]);
+            }
+        }
+
         [Fact]
         public void MSBuildRestoreUtility_GetPackageSpecVersion_UAP()
         {

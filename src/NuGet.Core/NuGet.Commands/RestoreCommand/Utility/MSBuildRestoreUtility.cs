@@ -77,6 +77,9 @@ namespace NuGet.Commands
                 graphSpec.AddProject(spec);
             }
 
+            // Remove references to projects that could not be read by restore.
+            RemoveMissingProjects(graphSpec);
+
             // Add valid projects to restore section
             foreach (var projectUniqueName in restoreSpecs.Intersect(validForRestore))
             {
@@ -240,6 +243,34 @@ namespace NuGet.Commands
             }
 
             return result;
+        }
+
+        /// <summary>
+        /// Remove missing project dependencies. These are typically caused by
+        /// non-NuGet projects which are missing the targets needed to walk them.
+        /// Visual Studio ignores these projects so from the command line we should
+        /// also. Build will fail with the appropriate errors for missing projects
+        /// restore should not warn or message for this.
+        /// </summary>
+        public static void RemoveMissingProjects(DependencyGraphSpec graphSpec)
+        {
+            var existingProjects = new HashSet<string>(
+                graphSpec.Projects.Select(e => e.RestoreMetadata.ProjectPath),
+                PathUtility.GetStringComparerBasedOnOS());
+
+            foreach (var project in graphSpec.Projects)
+            {
+                foreach (var framework in project.RestoreMetadata.TargetFrameworks)
+                {
+                    foreach (var projectReference in framework.ProjectReferences.ToArray())
+                    {
+                        if (!existingProjects.Contains(projectReference.ProjectPath))
+                        {
+                            framework.ProjectReferences.Remove(projectReference);
+                        }
+                    }
+                }
+            }
         }
 
         private static void AddPackageTargetFallbacks(PackageSpec spec, IEnumerable<IMSBuildItem> items)
