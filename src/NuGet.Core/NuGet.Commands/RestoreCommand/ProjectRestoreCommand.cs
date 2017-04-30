@@ -15,10 +15,8 @@ using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
-using NuGet.ProjectModel;
 using NuGet.Repositories;
 using NuGet.RuntimeModel;
-using NuGet.Versioning;
 
 namespace NuGet.Commands
 {
@@ -121,6 +119,10 @@ namespace NuGet.Commands
                 userPackageFolder.ClearCacheForIds(allInstalledPackages.Select(package => package.Name));
             }
 
+            // Warn for all dependencies that do not have exact matches or
+            // versions that have been bumped up unexpectedly.
+            await UnexpectedDependencyMessages.LogAsync(graphs, _request.Project, _logger);
+
             var success = ResolutionSucceeded(graphs);
 
             return Tuple.Create(success, graphs, allRuntimes);
@@ -150,31 +152,21 @@ namespace NuGet.Commands
             CancellationToken token)
         {
             var name = FrameworkRuntimePair.GetName(framework, runtimeIdentifier);
-            var graphs = new List<GraphNode<RemoteResolveResult>>();
-
-            graphs.Add(await walker.WalkAsync(
+            var graphs = new List<GraphNode<RemoteResolveResult>>
+            {
+                await walker.WalkAsync(
                 projectRange,
                 framework,
                 runtimeIdentifier,
                 runtimeGraph,
-                recursive: true));
+                recursive: true)
+            };
 
             // Resolve conflicts
-            _logger.LogVerbose(string.Format(CultureInfo.CurrentCulture, Strings.Log_ResolvingConflicts, name));
+            await _logger.LogAsync(LogLevel.Verbose, string.Format(CultureInfo.CurrentCulture, Strings.Log_ResolvingConflicts, name));
 
             // Flatten and create the RestoreTargetGraph to hold the packages
-            var result = RestoreTargetGraph.Create(runtimeGraph, graphs, context, _logger, framework, runtimeIdentifier);
-
-            // Check if the dependencies got bumped up
-            CheckDependencies(result, _request.Project.Dependencies);
-
-            var fxInfo = _request.Project.GetTargetFramework(framework);
-            if (fxInfo != null)
-            {
-                CheckDependencies(result, fxInfo.Dependencies);
-            }
-
-            return result;
+            return RestoreTargetGraph.Create(runtimeGraph, graphs, context, _logger, framework, runtimeIdentifier);
         }
 
         private bool ResolutionSucceeded(IEnumerable<RestoreTargetGraph> graphs)
@@ -272,30 +264,6 @@ namespace NuGet.Commands
                     token),
                 versionFolderPathContext,
                 token);
-        }
-
-        private void CheckDependencies(RestoreTargetGraph result, IEnumerable<LibraryDependency> dependencies)
-        {
-            foreach (var dependency in dependencies)
-            {
-                // Ignore floating or version-less (project) dependencies
-                // Avoid warnings for non-packages
-                if (dependency.LibraryRange.TypeConstraintAllows(LibraryDependencyTarget.Package)
-                    && dependency.LibraryRange.VersionRange != null && !dependency.LibraryRange.VersionRange.IsFloating)
-                {
-                    var match = result.Flattened.FirstOrDefault(g => g.Key.Name.Equals(dependency.LibraryRange.Name));
-                    if (match != null
-                        && LibraryType.Package == match.Key.Type
-                        && match.Key.Version > dependency.LibraryRange.VersionRange.MinVersion)
-                    {
-                        _logger.LogWarning(string.Format(CultureInfo.CurrentCulture, Strings.Log_DependencyBumpedUp,
-                            dependency.LibraryRange.Name,
-                            dependency.LibraryRange.VersionRange.PrettyPrint(),
-                            match.Key.Name,
-                            match.Key.Version));
-                    }
-                }
-            }
         }
 
         private Task<RestoreTargetGraph[]> WalkRuntimeDependenciesAsync(LibraryRange projectRange,

@@ -15,6 +15,11 @@ namespace NuGet.Common
         public DateTimeOffset Time { get; set; }
         public string ProjectPath { get; set; }
 
+        /// <summary>
+        /// Project or Package Id
+        /// </summary>
+        public string Id { get; set; }
+
         public RestoreLogMessage(LogLevel logLevel, NuGetLogCode errorCode, 
             string errorString, string targetGraph)
         {
@@ -83,6 +88,23 @@ namespace NuGet.Common
         public Task<string> FormatMessageAsync()
         {
             return Task.FromResult(FormatMessage());
+        }
+
+        /// <summary>
+        /// Create a log message for a target graph library.
+        /// </summary>
+        public static RestoreLogMessage CreateWarning(
+            NuGetLogCode code,
+            string id,
+            string message,
+            params string[] targetGraphs)
+        {
+            return new RestoreLogMessage(LogLevel.Warning, message)
+            {
+                Code = code,
+                Id = id,
+                TargetGraphs = targetGraphs.ToList()
+            };
         }
     }
 }

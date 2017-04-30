@@ -1089,6 +1089,24 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to {0} depends on {1} but {2} was not found. An approximate best match of {3} was resolved..
+        /// </summary>
+        internal static string Warning_MinVersionDoesNotExist {
+            get {
+                return ResourceManager.GetString("Warning_MinVersionDoesNotExist", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} does not provide an inclusive lower bound for dependency {1}. An approximate best match of {2} was resolved..
+        /// </summary>
+        internal static string Warning_MinVersionNonInclusive {
+            get {
+                return ResourceManager.GetString("Warning_MinVersionNonInclusive", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Packages containing MSBuild targets and props files cannot be fully installed in projects targeting multiple frameworks. The MSBuild targets and props files have been ignored..
         /// </summary>
         internal static string Warning_MultiTarget {
@@ -1130,6 +1148,15 @@ namespace NuGet.Commands {
         internal static string Warning_PackageCommandPackageIssueSummary {
             get {
                 return ResourceManager.GetString("Warning_PackageCommandPackageIssueSummary", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Project dependency {0} does not contain an inclusive lower bound. Include a lower bound in the dependency version to ensure consistent restore results..
+        /// </summary>
+        internal static string Warning_ProjectDependencyMissingLowerBound {
+            get {
+                return ResourceManager.GetString("Warning_ProjectDependencyMissingLowerBound", resourceCulture);
             }
         }
         
