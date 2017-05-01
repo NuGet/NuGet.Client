@@ -567,6 +567,15 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The expected assets file for {0} at location {1} does not exist, no-op is not possible. Continuing restore..
+        /// </summary>
+        internal static string Log_LockFileNotOnDisk {
+            get {
+                return ResourceManager.GetString("Log_LockFileNotOnDisk", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The lock file is out-of-date relative to the project file. Regenerating the lock file and re-locking..
         /// </summary>
         internal static string Log_LockFileOutOfDate {
@@ -720,6 +729,15 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The props file for {0} at location {1} does not exist, no-op is not possible. Continuing restore..
+        /// </summary>
+        internal static string Log_PropsFileNotOnDisk {
+            get {
+                return ResourceManager.GetString("Log_PropsFileNotOnDisk", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Reading project file {0}..
         /// </summary>
         internal static string Log_ReadingProject {
@@ -765,7 +783,7 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The dependency graph spec for &apos;{0}&apos; has changed. Continuing restore..
+        ///   Looks up a localized string similar to The restore inputs for &apos;{0}&apos; have changed. Continuing restore..
         /// </summary>
         internal static string Log_RestoreNoOpDGChanged {
             get {
@@ -774,7 +792,7 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The dependency graph spec for &apos;{0}&apos;has not changed. No further actions are required to complete the restore..
+        ///   Looks up a localized string similar to The restore inputs for &apos;{0}&apos; have not changed. No further actions are required to complete the restore..
         /// </summary>
         internal static string Log_RestoreNoOpFinish {
             get {
@@ -837,11 +855,65 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to No-Op restore. The cache will not be updated. Path: {0}.
+        /// </summary>
+        internal static string Log_SkippingCacheFile {
+            get {
+                return ResourceManager.GetString("Log_SkippingCacheFile", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Lock file has not changed. Skipping lock file write. Path: {0}.
+        /// </summary>
+        internal static string Log_SkippingLockFile {
+            get {
+                return ResourceManager.GetString("Log_SkippingLockFile", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Skipping runtime dependency walk, no runtimes defined in project.json..
         /// </summary>
         internal static string Log_SkippingRuntimeWalk {
             get {
                 return ResourceManager.GetString("Log_SkippingRuntimeWalk", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The targets file for {0} at location {1} does not exist, no-op is not possible. Continuing restore..
+        /// </summary>
+        internal static string Log_TargetsFileNotOnDisk {
+            get {
+                return ResourceManager.GetString("Log_TargetsFileNotOnDisk", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Tool lock file has not changed. Skipping lock file write. Path: {0}.
+        /// </summary>
+        internal static string Log_ToolSkippingLockFile {
+            get {
+                return ResourceManager.GetString("Log_ToolSkippingLockFile", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Writing tool cache file to disk. Path: {0}.
+        /// </summary>
+        internal static string Log_ToolWritingCacheFile {
+            get {
+                return ResourceManager.GetString("Log_ToolWritingCacheFile", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Writing tool lock file to disk. Path: {0}.
+        /// </summary>
+        internal static string Log_ToolWritingLockFile {
+            get {
+                return ResourceManager.GetString("Log_ToolWritingLockFile", resourceCulture);
             }
         }
         
@@ -887,6 +959,24 @@ namespace NuGet.Commands {
         internal static string Log_VersionConflict {
             get {
                 return ResourceManager.GetString("Log_VersionConflict", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Writing cache file to disk. Path: {0}.
+        /// </summary>
+        internal static string Log_WritingCacheFile {
+            get {
+                return ResourceManager.GetString("Log_WritingCacheFile", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Writing lock file to disk. Path: {0}.
+        /// </summary>
+        internal static string Log_WritingLockFile {
+            get {
+                return ResourceManager.GetString("Log_WritingLockFile", resourceCulture);
             }
         }
         

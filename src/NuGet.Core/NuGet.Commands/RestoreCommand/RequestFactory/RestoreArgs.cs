@@ -182,6 +182,10 @@ namespace NuGet.Commands
                 request.LockFilePath = ProjectJsonPathUtilities.GetLockFilePath(request.Project.FilePath);
             }
 
+            if (request.Project.RestoreMetadata != null) {
+                request.Project.RestoreMetadata.CacheFilePath = NoOpRestoreUtilities.GetCacheFilePath(request);
+            }
+
             request.MaxDegreeOfConcurrency =
                 DisableParallel ? 1 : RestoreRequest.DefaultDegreeOfConcurrency;
 

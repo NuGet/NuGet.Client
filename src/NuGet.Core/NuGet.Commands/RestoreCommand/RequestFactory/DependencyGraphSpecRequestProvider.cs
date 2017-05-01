@@ -74,12 +74,7 @@ namespace NuGet.Commands
             {
                 var closure = dgFile.GetClosure(projectNameToRestore);
 
-                var projectDependencyGraphSpec = new DependencyGraphSpec();
-                foreach (var spec in closure)
-                {
-                    projectDependencyGraphSpec.AddProject(spec.Clone()); //TODO - Is cloning the best idea here? Does it change?
-                }
-                projectDependencyGraphSpec.AddRestore(projectNameToRestore);
+                var projectDependencyGraphSpec = dgFile.WithProjectClosure(projectNameToRestore);
 
                 var externalClosure = new HashSet<ExternalProjectReference>(closure.Select(GetExternalProject));
 
@@ -169,8 +164,8 @@ namespace NuGet.Commands
                 restoreArgs.CacheContext,
                 restoreArgs.Log);
 
-            request.dependencyGraphSpec = projectDgSpec;
-            request.AllowNoOp = true; //TODO NK 
+            request.DependencyGraphSpec = projectDgSpec;
+            request.AllowNoOp = restoreArgs.AllowNoOp;
             // Set properties from the restore metadata
             request.ProjectStyle = project.PackageSpec?.RestoreMetadata?.ProjectStyle ?? ProjectStyle.Unknown;
             request.RestoreOutputPath = project.PackageSpec?.RestoreMetadata?.OutputPath ?? rootPath;

@@ -30,10 +30,12 @@ namespace NuGet.Commands
         ///  Cache File. The previous cache file for this project
         /// </summary>
         CacheFile CacheFile { get; }
+
         /// <summary>
         /// Cache File path. The file path where the cache is written out
         /// </summary>
         string CacheFilePath { get; }
+
         /// <summary>
         /// Props and targets files to be written to disk.
         /// </summary>

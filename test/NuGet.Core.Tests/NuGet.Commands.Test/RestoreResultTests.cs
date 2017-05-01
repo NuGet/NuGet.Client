@@ -31,8 +31,8 @@ namespace NuGet.Commands.Test
                     previousLockFile: null, // different lock file
                     lockFilePath: path,
                     msbuildFiles: Enumerable.Empty<MSBuildOutputFile>(),
-                    cacheFile: new CacheFile(),
-                    cacheFilePath: path + ".cache",
+                    cacheFile: null,
+                    cacheFilePath: null,
                     projectStyle: ProjectStyle.Unknown,
                     elapsedTime: TimeSpan.MinValue);
 
@@ -64,8 +64,8 @@ namespace NuGet.Commands.Test
                     previousLockFile: new LockFile(), // same lock file
                     lockFilePath: path,
                     msbuildFiles: Enumerable.Empty<MSBuildOutputFile>(),
-                    cacheFile: new CacheFile(),
-                    cacheFilePath:  path + ".cache",
+                    cacheFile: null,
+                    cacheFilePath: null,
                     projectStyle: ProjectStyle.Unknown,
                     elapsedTime: TimeSpan.MinValue);
 
@@ -78,6 +78,45 @@ namespace NuGet.Commands.Test
                     logger.MinimalMessages);
                 Assert.False(File.Exists(path), $"The lock file should not have been written: {path}");
                 Assert.Equal(1, logger.Messages.Count);
+            }
+        }
+
+        [Fact]
+        public async Task RestoreResult_WritesCommitToMinimalAssetsAndCache()
+        {
+            // Arrange
+            using (var td = TestDirectory.Create())
+            {
+                var path = Path.Combine(td, "project.lock.json");
+                var cachePath = Path.Combine(td, "project.csproj.nuget.cache");
+                var logger = new TestLogger();
+                var result = new RestoreResult(
+                    success: true,
+                    restoreGraphs: null,
+                    compatibilityCheckResults: null,
+                    lockFile: new LockFile(),
+                    previousLockFile: null, // different lock file
+                    lockFilePath: path,
+                    msbuildFiles: Enumerable.Empty<MSBuildOutputFile>(),
+                    cacheFile: new CacheFile("NotSoRandomString"),
+                    cacheFilePath: cachePath,
+                    projectStyle: ProjectStyle.Unknown,
+                    elapsedTime: TimeSpan.MinValue);
+
+                // Act
+                await result.CommitAsync(logger, CancellationToken.None);
+
+                // Assert
+                Assert.Contains(
+                    $"Writing lock file to disk. Path: {path}",
+                    logger.MinimalMessages);
+                Assert.Contains(
+                    $"Writing cache file to disk. Path: {cachePath}",
+                    logger.MinimalMessages);
+
+                Assert.True(File.Exists(path), $"The lock file should have been written: {path}");
+                Assert.True(File.Exists(cachePath), $"The cache file should have been written: {cachePath}");
+                Assert.Equal(2, logger.Messages.Count);
             }
         }
     }

@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Text;
 using NuGet.Shared;
@@ -7,10 +10,21 @@ namespace NuGet.ProjectModel
 {
     public class CacheFile : IEquatable<CacheFile>
     {
-        public string DgSpecHash { get; set; }
+        private static int LATEST_VERSION = 1;
 
-        public bool IsValid { get { return DgSpecHash != null;  } }
+        public string DgSpecHash { get;}
 
+        public int Version { get; set; }
+
+        public bool Success { get; set; }
+
+        public bool IsValid { get { return Version == LATEST_VERSION && Success && DgSpecHash != null;  } }
+
+        public CacheFile(string dgSpecHash)
+        {
+            DgSpecHash = dgSpecHash;
+            Version = LATEST_VERSION;
+        }
 
         public bool Equals(CacheFile other)
         {
@@ -24,7 +38,7 @@ namespace NuGet.ProjectModel
                 return true;
             }
 
-            return StringComparer.Ordinal.Equals(DgSpecHash, other.DgSpecHash);
+            return Version == other.Version && StringComparer.Ordinal.Equals(DgSpecHash, other.DgSpecHash);
         }
 
         public override bool Equals(object obj)
@@ -36,6 +50,7 @@ namespace NuGet.ProjectModel
         {
             var combiner = new HashCodeCombiner();
             combiner.AddObject(DgSpecHash);
+            combiner.AddObject(Version);
             return combiner.CombinedHash;
         }
 

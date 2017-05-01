@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -11,14 +14,16 @@ namespace NuGet.ProjectModel
 {
     public class CacheFileFormat
     {
+        private const string VersionProperty = "version";
         private const string DGSpecHashProperty = "dgSpecHash";
+        private const string SuccessProperty = "success";
 
-        public static CacheFile Read(string filePath)
+        public static CacheFile Load(string filePath)
         {
-            return Read(filePath, NullLogger.Instance);
+            return Load(filePath, NullLogger.Instance);
         }
 
-        public static CacheFile Read(string filePath, ILogger log)
+        public static CacheFile Load(string filePath, ILogger log)
         {
             using (var stream = File.OpenRead(filePath))
             {
@@ -54,12 +59,12 @@ namespace NuGet.ProjectModel
             }
             catch (Exception ex)
             {
-                log.LogError(string.Format(CultureInfo.CurrentCulture,
-                    "error reading a cache file {1} : {2}",
+                log.LogWarning(string.Format(CultureInfo.CurrentCulture,
+                    Strings.Log_ProblemReadingCacheFile,
                     path, ex.Message));
 
                 // Parsing error, the cache file is invalid. 
-                return new CacheFile();
+                return new CacheFile(null);
             }
         }
 
@@ -88,16 +93,34 @@ namespace NuGet.ProjectModel
             using (var jsonWriter = new JsonTextWriter(textWriter))
             {
                 jsonWriter.Formatting = Formatting.Indented;
-                var json = WriteCacheFile(cacheFile);
+                var json = GetCacheFile(cacheFile);
                 json.WriteTo(jsonWriter);
             }
         }
 
         private static CacheFile ReadCacheFile(JObject cursor)
         {
-            var cacheFile = new CacheFile();
-            cacheFile.DgSpecHash = ReadString(cursor[DGSpecHashProperty]);
+            var version = ReadInt(cursor[VersionProperty]);
+            var hash = ReadString(cursor[DGSpecHashProperty]);
+            var success = ReadBool(cursor[SuccessProperty]);
+            var cacheFile = new CacheFile(hash);
+            cacheFile.Version = version;
+            cacheFile.Success = success;
             return cacheFile;
+        }
+
+        private static JObject GetCacheFile(CacheFile cacheFile)
+        {
+            var json = new JObject();
+            json[VersionProperty] = WriteInt(cacheFile.Version);
+            json[DGSpecHashProperty] = WriteString(cacheFile.DgSpecHash);
+            json[SuccessProperty] = WriteBool(cacheFile.Success);
+            return json;
+        }
+
+        private static string ReadString(JToken json)
+        {
+            return json.Value<string>();
         }
 
         private static JToken WriteString(string item)
@@ -105,16 +128,24 @@ namespace NuGet.ProjectModel
             return item != null ? new JValue(item) : JValue.CreateNull();
         }
 
-        private static JObject WriteCacheFile(CacheFile cacheFile)
+        private static int ReadInt(JToken json)
         {
-            var json = new JObject();
-            json[DGSpecHashProperty] = WriteString(cacheFile.DgSpecHash);
-            return json;
+            return json.Value<int>();
         }
 
-        private static string ReadString(JToken json)
+        private static JToken WriteInt(int item)
         {
-            return json.Value<string>();
+            return new JValue(item);
+        }
+
+        private static bool ReadBool(JToken json)
+        {
+            return json.Value<bool>();
+        }
+
+        private static JToken WriteBool(bool item)
+        {
+            return new JValue(item);
         }
     }
 }
