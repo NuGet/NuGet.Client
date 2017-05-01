@@ -20,7 +20,7 @@ namespace NuGet.Protocol.Plugins
     {
         private bool _isDisposed;
         private readonly TimeSpan _pluginIdleTimeout;
-        private readonly ConcurrentDictionary<string, Task<IPlugin>> _plugins;
+        private readonly ConcurrentDictionary<string, Lazy<Task<IPlugin>>> _plugins;
 
         /// <summary>
         /// Instantiates a new <see cref="PluginFactory" /> class.
@@ -39,7 +39,7 @@ namespace NuGet.Protocol.Plugins
             }
 
             _pluginIdleTimeout = pluginIdleTimeout;
-            _plugins = new ConcurrentDictionary<string, Task<IPlugin>>();
+            _plugins = new ConcurrentDictionary<string, Lazy<Task<IPlugin>>>();
         }
 
         public void Dispose()
@@ -51,9 +51,13 @@ namespace NuGet.Protocol.Plugins
 
             foreach (var entry in _plugins)
             {
-                if (entry.Value.Status == TaskStatus.RanToCompletion && !entry.Value.IsFaulted)
+                var lazyTask = entry.Value;
+
+                if (lazyTask.IsValueCreated && lazyTask.Value.Status == TaskStatus.RanToCompletion)
                 {
-                    entry.Value.Result?.Dispose();
+                    var plugin = lazyTask.Value.Result;
+
+                    plugin.Dispose();
                 }
             }
 
@@ -119,14 +123,21 @@ namespace NuGet.Protocol.Plugins
 
             sessionCancellationToken.ThrowIfCancellationRequested();
 
-            var plugin = await _plugins.GetOrAdd(filePath,
-                (path) => CreatePluginAsync(filePath, arguments, requestHandlers, options, sessionCancellationToken));
+            var lazyTask = _plugins.GetOrAdd(filePath,
+                (path) => new Lazy<Task<IPlugin>>(() => CreatePluginAsync(filePath, arguments, requestHandlers, options, sessionCancellationToken)));
+
+            await lazyTask.Value;
 
             // Manage plugin lifetime by its idleness.  Thus, don't allow callers to prematurely dispose of a plugin.
-            return new NoOpDisposePlugin(plugin);
+            return new NoOpDisposePlugin(lazyTask.Value.Result);
         }
 
-        private async Task<IPlugin> CreatePluginAsync(string filePath, IEnumerable<string> arguments, IRequestHandlers requestHandlers, ConnectionOptions options, CancellationToken sessionCancellationToken)
+        private async Task<IPlugin> CreatePluginAsync(
+            string filePath,
+            IEnumerable<string> arguments,
+            IRequestHandlers requestHandlers,
+            ConnectionOptions options,
+            CancellationToken sessionCancellationToken)
         {
             var startInfo = new ProcessStartInfo(filePath)
             {
@@ -244,13 +255,13 @@ namespace NuGet.Protocol.Plugins
         {
             UnregisterEventHandlers(plugin as Plugin);
 
-            Task<IPlugin> pluginTask;
+            Lazy<Task<IPlugin>> lazyTask;
 
-            if (_plugins.TryRemove(plugin.FilePath, out pluginTask))
+            if (_plugins.TryRemove(plugin.FilePath, out lazyTask))
             {
-                if (pluginTask.Status == TaskStatus.RanToCompletion && !pluginTask.IsFaulted)
+                if (lazyTask.IsValueCreated && lazyTask.Value.Status == TaskStatus.RanToCompletion)
                 {
-                    pluginTask.Result?.Dispose();
+                    lazyTask.Value.Result.Dispose();
                 }
             }
             else

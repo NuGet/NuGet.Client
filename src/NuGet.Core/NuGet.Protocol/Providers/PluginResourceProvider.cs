@@ -22,7 +22,7 @@ namespace NuGet.Protocol.Core.Types
 
         private static Lazy<PluginDiscoverer> _discoverer;
         private static PluginFactory _pluginFactory;
-        private static ConcurrentDictionary<string, Task<IReadOnlyList<OperationClaim>>> _pluginOperationClaims;
+        private static ConcurrentDictionary<string, Lazy<Task<IReadOnlyList<OperationClaim>>>> _pluginOperationClaims;
         private static string _rawPluginPaths;
 
         public static IEnvironmentVariableReader EnvironmentVariableReader { get; private set; }
@@ -86,7 +86,8 @@ namespace NuGet.Protocol.Core.Types
             _rawPluginPaths = reader?.GetEnvironmentVariable(_environmentVariable);
             _discoverer = new Lazy<PluginDiscoverer>(InitializeDiscoverer);
             _pluginFactory = new PluginFactory(PluginConstants.IdleTimeout);
-            _pluginOperationClaims = new ConcurrentDictionary<string, Task<IReadOnlyList<OperationClaim>>>(StringComparer.OrdinalIgnoreCase);
+            _pluginOperationClaims = new ConcurrentDictionary<string, Lazy<Task<IReadOnlyList<OperationClaim>>>>(
+                StringComparer.OrdinalIgnoreCase);
         }
 
         private async Task<IEnumerable<PluginCreationResult>> GetPluginsForPackageSourceAsync(
@@ -113,15 +114,17 @@ namespace NuGet.Protocol.Core.Types
                         ConnectionOptions.CreateDefault(),
                         cancellationToken);
 
-                    var operationClaims = await _pluginOperationClaims.GetOrAdd(
+                    var lazyOperationClaims = _pluginOperationClaims.GetOrAdd(
                         result.PluginFile.Path,
-                        filePath => GetPluginOperationClaimsAsync(
+                        filePath => new Lazy<Task<IReadOnlyList<OperationClaim>>>(() => GetPluginOperationClaimsAsync(
                             plugin,
                             packageSourceRepository,
                             serviceIndexJson,
-                            cancellationToken));
+                            cancellationToken)));
 
-                    pluginCreationResult = new PluginCreationResult(plugin, operationClaims);
+                    await lazyOperationClaims.Value;
+
+                    pluginCreationResult = new PluginCreationResult(plugin, lazyOperationClaims.Value.Result);
                 }
                 else
                 {
