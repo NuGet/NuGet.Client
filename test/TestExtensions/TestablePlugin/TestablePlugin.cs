@@ -48,7 +48,7 @@ namespace NuGet.Test.TestExtensions.TestablePlugin
                 throw new NotSupportedException();
             }
 
-            await Task.Delay(TimeSpan.FromMilliseconds(-1), cancellationToken);
+            await Task.Delay(Timeout.InfiniteTimeSpan, cancellationToken);
         }
 
         private IRequestHandlers CreateRequestHandlers()

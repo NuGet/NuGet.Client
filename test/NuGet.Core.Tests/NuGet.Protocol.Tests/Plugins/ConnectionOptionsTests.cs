@@ -173,7 +173,7 @@ namespace NuGet.Protocol.Plugins.Tests
         {
             var options = ConnectionOptions.CreateDefault();
 
-            Assert.Equal(ProtocolConstants.RequestTimeout, options.HandshakeTimeout);
+            Assert.Equal(ProtocolConstants.RequestTimeout, options.RequestTimeout);
         }
 
         [Fact]
