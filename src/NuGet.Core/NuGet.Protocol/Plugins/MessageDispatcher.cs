@@ -62,10 +62,7 @@ namespace NuGet.Protocol.Plugins
                 return;
             }
 
-            if (_connection != null)
-            {
-                _connection.MessageReceived -= OnMessageReceived;
-            }
+            SetConnection(connection: null);
 
             GC.SuppressFinalize(this);
 

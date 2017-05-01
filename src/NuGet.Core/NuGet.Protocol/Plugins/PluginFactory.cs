@@ -157,9 +157,7 @@ namespace NuGet.Protocol.Plugins
             {
                 await connection.ConnectAsync(sessionCancellationToken);
 
-                plugin.Exited += OnPluginExited;
-                plugin.Faulted += OnPluginFaulted;
-                plugin.Idle += OnPluginIdle;
+                RegisterEventHandlers(plugin);
             }
             catch (ProtocolException ex)
             {
@@ -244,6 +242,8 @@ namespace NuGet.Protocol.Plugins
 
         private void DisposePlugin(IPlugin plugin)
         {
+            UnregisterEventHandlers(plugin as Plugin);
+
             Task<IPlugin> pluginTask;
 
             if (_plugins.TryRemove(plugin.FilePath, out pluginTask))
@@ -272,6 +272,23 @@ namespace NuGet.Protocol.Plugins
         private void OnPluginIdle(object sender, PluginEventArgs e)
         {
             DisposePlugin(e.Plugin);
+        }
+
+        private void RegisterEventHandlers(Plugin plugin)
+        {
+            plugin.Exited += OnPluginExited;
+            plugin.Faulted += OnPluginFaulted;
+            plugin.Idle += OnPluginIdle;
+        }
+
+        private void UnregisterEventHandlers(Plugin plugin)
+        {
+            if (plugin != null)
+            {
+                plugin.Exited -= OnPluginExited;
+                plugin.Faulted -= OnPluginFaulted;
+                plugin.Idle -= OnPluginIdle;
+            }
         }
     }
 }

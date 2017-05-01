@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Concurrent;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -19,10 +18,9 @@ namespace NuGet.Protocol.Plugins
     /// </remarks>
     public sealed class Sender : ISender
     {
-        private readonly CancellationTokenSource _cancellationTokenSource;
+        private bool _isConnected;
         private bool _isDisposed;
-        private readonly BlockingCollection<MessageContext> _sendQueue;
-        private Task<Task> _sendThread;
+        private readonly object _sendLock;
         private readonly TextWriter _textWriter;
 
         /// <summary>
@@ -38,8 +36,7 @@ namespace NuGet.Protocol.Plugins
             }
 
             _textWriter = writer;
-            _sendQueue = new BlockingCollection<MessageContext>();
-            _cancellationTokenSource = new CancellationTokenSource();
+            _sendLock = new object();
         }
 
         /// <summary>
@@ -50,30 +47,6 @@ namespace NuGet.Protocol.Plugins
             if (_isDisposed)
             {
                 return;
-            }
-
-            _sendQueue.CompleteAdding();
-
-            using (_cancellationTokenSource)
-            {
-                _cancellationTokenSource.Cancel();
-            }
-
-            // Don't block on send thread exit.
-            // The above actions will interrupt the send thread's blocking wait and cause it to exit immediately.
-
-            // Cancel any outstanding work the send thread may have had.
-            foreach (var messageContext in _sendQueue)
-            {
-                messageContext.CompletionSource.TrySetCanceled();
-            }
-
-            try
-            {
-                _sendQueue.Dispose();
-            }
-            catch (Exception)
-            {
             }
 
             _textWriter.Dispose();
@@ -110,19 +83,14 @@ namespace NuGet.Protocol.Plugins
         {
             ThrowIfDisposed();
 
-            if (_sendThread != null)
+            if (_isConnected)
             {
                 throw new InvalidOperationException(Strings.Plugin_ConnectionAlreadyStarted);
             }
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            _sendThread = Task.Factory.StartNew(
-                SendAsync,
-                _cancellationTokenSource.Token,
-                cancellationToken,
-                TaskCreationOptions.LongRunning | TaskCreationOptions.DenyChildAttach,
-                TaskScheduler.Default);
+            _isConnected = true;
 
             return Task.FromResult(0);
         }
@@ -137,7 +105,7 @@ namespace NuGet.Protocol.Plugins
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="message" /> is <c>null</c>.</exception>
         /// <exception cref="OperationCanceledException">Thrown if <paramref name="cancellationToken" />
         /// is cancelled.</exception>
-        public async Task SendAsync(Message message, CancellationToken cancellationToken)
+        public Task SendAsync(Message message, CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
 
@@ -148,47 +116,19 @@ namespace NuGet.Protocol.Plugins
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            var messageContext = new MessageContext(message);
-
-            cancellationToken.Register(() => messageContext.CompletionSource.TrySetCanceled());
-
-            _sendQueue.Add(messageContext);
-
-            await messageContext.CompletionSource.Task;
-        }
-
-        private Task SendAsync(object state)
-        {
-            try
+            lock(_sendLock)
             {
-                var cancellationToken = (CancellationToken)state;
-
                 using (var jsonWriter = new JsonTextWriter(_textWriter))
                 {
                     jsonWriter.CloseOutput = false;
 
-                    foreach (var messageContext in _sendQueue.GetConsumingEnumerable(cancellationToken))
-                    {
-                        try
-                        {
-                            JsonSerializationUtilities.Serialize(jsonWriter, messageContext.Message);
+                    JsonSerializationUtilities.Serialize(jsonWriter, message);
 
-                            // We need to terminate JSON objects with a delimiter (i.e.:  a single
-                            // newline sequence) to signal to the receiver when to stop reading.
-                            _textWriter.WriteLine();
-                            _textWriter.Flush();
-
-                            messageContext.CompletionSource.TrySetResult(true);
-                        }
-                        catch (Exception ex)
-                        {
-                            messageContext.CompletionSource.TrySetException(ex);
-                        }
-                    }
+                    // We need to terminate JSON objects with a delimiter (i.e.:  a single
+                    // newline sequence) to signal to the receiver when to stop reading.
+                    _textWriter.WriteLine();
+                    _textWriter.Flush();
                 }
-            }
-            catch (Exception)
-            {
             }
 
             return Task.FromResult(0);
@@ -199,18 +139,6 @@ namespace NuGet.Protocol.Plugins
             if (_isDisposed)
             {
                 throw new ObjectDisposedException(nameof(Sender));
-            }
-        }
-
-        private sealed class MessageContext
-        {
-            internal TaskCompletionSource<bool> CompletionSource { get; }
-            internal Message Message { get; }
-
-            internal MessageContext(Message message)
-            {
-                Message = message;
-                CompletionSource = new TaskCompletionSource<bool>();
             }
         }
     }

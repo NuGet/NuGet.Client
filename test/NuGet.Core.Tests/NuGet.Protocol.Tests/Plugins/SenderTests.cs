@@ -121,17 +121,6 @@ namespace NuGet.Protocol.Plugins.Tests
         }
 
         [Fact]
-        public async Task SendAsync_BlocksIfNotConnected()
-        {
-            using (var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(1)))
-            using (var sender = new Sender(TextWriter.Null))
-            {
-                await Assert.ThrowsAsync<TaskCanceledException>(
-                    () => sender.SendAsync(_message, cancellationTokenSource.Token));
-            }
-        }
-
-        [Fact]
         public async Task SendAsync_ThrowsIfCancelled()
         {
             using (var sender = new Sender(TextWriter.Null))

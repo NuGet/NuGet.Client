@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Diagnostics;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -51,6 +50,8 @@ namespace NuGet.Protocol.Plugins
             _process.LineRead -= OnLineRead;
 
             _process.CancelRead();
+
+            _isConnected = false;
 
             // The process instance is shared with other classes and will be disposed elsewhere.
 
@@ -102,6 +103,8 @@ namespace NuGet.Protocol.Plugins
 
         private void OnLineRead(object sender, LineReadEventArgs e)
         {
+            Message message = null;
+
             // Top-level exception handler for a worker pool thread.
             try
             {
@@ -120,17 +123,17 @@ namespace NuGet.Protocol.Plugins
 
                 if (!string.IsNullOrEmpty(json))
                 {
-                    var message = JsonSerializationUtilities.Deserialize<Message>(json);
+                    message = JsonSerializationUtilities.Deserialize<Message>(json);
 
                     if (message != null)
                     {
-                        FireMessageReceivedEventAndForget(message);
+                        FireMessageReceivedEvent(message);
                     }
                 }
             }
             catch (Exception ex)
             {
-                FireFaultEventAndForget(ex);
+                FireFaultEvent(ex, message);
             }
         }
 

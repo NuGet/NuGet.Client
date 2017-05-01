@@ -113,6 +113,8 @@ namespace NuGet.Protocol.Plugins
 
         private void Receive(object state)
         {
+            Message message = null;
+
             try
             {
                 var cancellationToken = (CancellationToken)state;
@@ -123,21 +125,21 @@ namespace NuGet.Protocol.Plugins
                 // in a read call we can't respond to cancellation requests.
                 while ((line = _reader.ReadLine()) != null)
                 {
+                    message = null;
+
                     cancellationToken.ThrowIfCancellationRequested();
 
-                    var message = JsonSerializationUtilities.Deserialize<Message>(line);
+                    message = JsonSerializationUtilities.Deserialize<Message>(line);
 
-                    if (message == null)
+                    if (message != null)
                     {
-                        continue;
+                        FireMessageReceivedEvent(message);
                     }
-
-                    FireMessageReceivedEventAndForget(message);
                 }
             }
             catch (Exception ex)
             {
-                FireFaultEventAndForget(ex);
+                FireFaultEvent(ex, message);
             }
         }
     }

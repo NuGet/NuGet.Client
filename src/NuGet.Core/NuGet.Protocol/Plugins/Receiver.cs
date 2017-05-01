@@ -49,49 +49,18 @@ namespace NuGet.Protocol.Plugins
         /// </summary>
         public abstract void Dispose();
 
-        protected void FireFaultEventAndForget(Exception ex)
+        protected void FireFaultEvent(Exception exception, Message message)
         {
-            var faulted = Faulted;
+            var ex = new ProtocolException(Strings.Plugin_ProtocolException, exception);
+            var eventArgs = message == null
+                ? new ProtocolErrorEventArgs(ex) : new ProtocolErrorEventArgs(ex, message);
 
-            if (faulted != null)
-            {
-                Task.Run(() =>
-                {
-                    // Top-level exception handler for the thread.
-                    try
-                    {
-                        var exception = new ProtocolException("protocol error", ex);
-                        var eventArgs = new ProtocolErrorEventArgs(exception);
-
-                        faulted(this, eventArgs);
-                    }
-                    catch (Exception)
-                    {
-                    }
-                });
-            }
+            Faulted?.Invoke(this, eventArgs);
         }
 
-        protected void FireMessageReceivedEventAndForget(Message message)
+        protected void FireMessageReceivedEvent(Message message)
         {
-            var messageReceived = MessageReceived;
-            var faulted = Faulted;
-
-            if (messageReceived != null)
-            {
-                Task.Run(() =>
-                {
-                    // Top-level exception handler for the thread.
-                    try
-                    {
-                        messageReceived(this, new MessageEventArgs(message));
-                    }
-                    catch (Exception ex)
-                    {
-                        faulted?.Invoke(this, new ProtocolErrorEventArgs(ex, message));
-                    }
-                });
-            }
+            MessageReceived?.Invoke(this, new MessageEventArgs(message));
         }
 
         protected void ThrowIfDisposed()

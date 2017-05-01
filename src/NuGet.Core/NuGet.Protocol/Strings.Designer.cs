@@ -620,6 +620,15 @@ namespace NuGet.Protocol {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to A plugin protocol exception occurred..
+        /// </summary>
+        internal static string Plugin_ProtocolException {
+            get {
+                return ResourceManager.GetString("Plugin_ProtocolException", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to A protocol version is not supported on error..
         /// </summary>
         internal static string Plugin_ProtocolVersionNotSupportedOnError {
