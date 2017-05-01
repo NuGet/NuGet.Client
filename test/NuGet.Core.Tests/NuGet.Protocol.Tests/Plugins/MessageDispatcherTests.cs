@@ -135,20 +135,10 @@ namespace NuGet.Protocol.Plugins.Tests
         {
             using (var dispatcher = new MessageDispatcher(new RequestHandlers(), _idGenerator))
             using (var connection = new ConnectionMock())
-            using (var messageReceivedEvent = new ManualResetEventSlim(initialState: false))
             {
                 dispatcher.SetConnection(connection);
 
                 var request = new Message(_idGenerator.Id, MessageType.Request, _method);
-
-                Message message = null;
-
-                connection.MessageReceived += (object sender, MessageEventArgs e) =>
-                {
-                    message = e.Message;
-
-                    messageReceivedEvent.Set();
-                };
 
                 await Assert.ThrowsAsync<ProtocolException>(
                     () => dispatcher.DispatchCancelAsync(request, CancellationToken.None));
@@ -160,7 +150,7 @@ namespace NuGet.Protocol.Plugins.Tests
         {
             using (var dispatcher = new MessageDispatcher(new RequestHandlers(), _idGenerator))
             using (var connection = new ConnectionMock())
-            using (var messageReceivedEvent = new ManualResetEventSlim(initialState: false))
+            using (var messageSentEvent = new ManualResetEventSlim(initialState: false))
             {
                 dispatcher.SetConnection(connection);
 
@@ -173,11 +163,11 @@ namespace NuGet.Protocol.Plugins.Tests
 
                 Message message = null;
 
-                connection.MessageReceived += (object sender, MessageEventArgs e) =>
+                connection.MessageSent += (object sender, MessageEventArgs e) =>
                 {
                     message = e.Message;
 
-                    messageReceivedEvent.Set();
+                    messageSentEvent.Set();
                 };
 
                 await dispatcher.DispatchCancelAsync(request, CancellationToken.None);
@@ -207,7 +197,7 @@ namespace NuGet.Protocol.Plugins.Tests
         {
             using (var dispatcher = new MessageDispatcher(new RequestHandlers(), _idGenerator))
             using (var connection = new ConnectionMock())
-            using (var messageReceivedEvent = new ManualResetEventSlim(initialState: false))
+            using (var messageSentEvent = new ManualResetEventSlim(initialState: false))
             {
                 dispatcher.SetConnection(connection);
 
@@ -215,11 +205,11 @@ namespace NuGet.Protocol.Plugins.Tests
 
                 Message message = null;
 
-                connection.MessageReceived += (object sender, MessageEventArgs e) =>
+                connection.MessageSent += (object sender, MessageEventArgs e) =>
                 {
                     message = e.Message;
 
-                    messageReceivedEvent.Set();
+                    messageSentEvent.Set();
                 };
 
                 await dispatcher.DispatchFaultAsync(
@@ -240,7 +230,7 @@ namespace NuGet.Protocol.Plugins.Tests
         {
             using (var dispatcher = new MessageDispatcher(new RequestHandlers(), _idGenerator))
             using (var connection = new ConnectionMock())
-            using (var messageReceivedEvent = new ManualResetEventSlim(initialState: false))
+            using (var messageSentEvent = new ManualResetEventSlim(initialState: false))
             {
                 dispatcher.SetConnection(connection);
 
@@ -259,11 +249,11 @@ namespace NuGet.Protocol.Plugins.Tests
 
                 Message message = null;
 
-                connection.MessageReceived += (object sender, MessageEventArgs e) =>
+                connection.MessageSent += (object sender, MessageEventArgs e) =>
                 {
                     message = e.Message;
 
-                    messageReceivedEvent.Set();
+                    messageSentEvent.Set();
                 };
 
                 await dispatcher.DispatchFaultAsync(request, fault, CancellationToken.None);
@@ -296,22 +286,12 @@ namespace NuGet.Protocol.Plugins.Tests
         {
             using (var dispatcher = new MessageDispatcher(new RequestHandlers(), _idGenerator))
             using (var connection = new ConnectionMock())
-            using (var messageReceivedEvent = new ManualResetEventSlim(initialState: false))
             {
                 dispatcher.SetConnection(connection);
 
                 var payload = JObject.FromObject(new Request());
                 var request = new Message(_idGenerator.Id, MessageType.Request, _method, payload);
                 var progress = new Progress(percentage: 0.5);
-
-                Message message = null;
-
-                connection.MessageReceived += (object sender, MessageEventArgs e) =>
-                {
-                    message = e.Message;
-
-                    messageReceivedEvent.Set();
-                };
 
                 await Assert.ThrowsAsync<ProtocolException>(
                     () => dispatcher.DispatchProgressAsync(request, progress, CancellationToken.None));
@@ -323,7 +303,7 @@ namespace NuGet.Protocol.Plugins.Tests
         {
             using (var dispatcher = new MessageDispatcher(new RequestHandlers(), _idGenerator))
             using (var connection = new ConnectionMock())
-            using (var messageReceivedEvent = new ManualResetEventSlim(initialState: false))
+            using (var messageSentEvent = new ManualResetEventSlim(initialState: false))
             {
                 dispatcher.SetConnection(connection);
 
@@ -342,11 +322,11 @@ namespace NuGet.Protocol.Plugins.Tests
 
                 Message message = null;
 
-                connection.MessageReceived += (object sender, MessageEventArgs e) =>
+                connection.MessageSent += (object sender, MessageEventArgs e) =>
                 {
                     message = e.Message;
 
-                    messageReceivedEvent.Set();
+                    messageSentEvent.Set();
                 };
 
                 await dispatcher.DispatchProgressAsync(request, progress, CancellationToken.None);
@@ -393,9 +373,9 @@ namespace NuGet.Protocol.Plugins.Tests
                     new Request(),
                     cancellationToken: CancellationToken.None);
 
-                var responseTask = connection.SendAsync(response, CancellationToken.None);
+                connection.SimulateResponse(response);
 
-                await Task.WhenAll(requestTask, responseTask);
+                await requestTask;
 
                 Assert.IsType<Response>(requestTask.Result);
             }
@@ -428,17 +408,17 @@ namespace NuGet.Protocol.Plugins.Tests
                 var requestTask = dispatcher.DispatchRequestAsync<Request, Response>(
                     _method,
                     new Request(),
-                    cancellationToken: CancellationToken.None);
+                    CancellationToken.None);
 
-                var request = new Message(
+                var response = new Message(
                     _idGenerator.Id,
-                    MessageType.Request,
+                    MessageType.Response,
                     _method,
-                    JObject.FromObject(new Request()));
+                    JObject.FromObject(new Response()));
 
-                var responseTask = dispatcher.DispatchResponseAsync(request, new Response(), CancellationToken.None);
+                connection.SimulateResponse(response);
 
-                await Task.WhenAll(requestTask, responseTask);
+                await requestTask;
 
                 Assert.IsType<Response>(requestTask.Result);
             }
@@ -472,6 +452,7 @@ namespace NuGet.Protocol.Plugins.Tests
             public event EventHandler<ProtocolErrorEventArgs> Faulted;
 #pragma warning restore 67
             public event EventHandler<MessageEventArgs> MessageReceived;
+            public event EventHandler<MessageEventArgs> MessageSent;
 
             public ConnectionMock()
             {
@@ -500,7 +481,7 @@ namespace NuGet.Protocol.Plugins.Tests
                 switch (message.Type)
                 {
                     case MessageType.Fault:
-                        MessageReceived?.Invoke(this, new MessageEventArgs(message));
+                        MessageSent?.Invoke(this, new MessageEventArgs(message));
                         break;
 
                     case MessageType.Request:
@@ -511,7 +492,7 @@ namespace NuGet.Protocol.Plugins.Tests
                     case MessageType.Progress:
                     case MessageType.Response:
                         _event.Wait();
-                        MessageReceived?.Invoke(this, new MessageEventArgs(message));
+                        MessageSent?.Invoke(this, new MessageEventArgs(message));
                         break;
                 }
 
@@ -523,6 +504,11 @@ namespace NuGet.Protocol.Plugins.Tests
                 where TInbound : class
             {
                 throw new NotImplementedException();
+            }
+
+            internal void SimulateResponse(Message response)
+            {
+                MessageReceived?.Invoke(this, new MessageEventArgs(response));
             }
         }
 
