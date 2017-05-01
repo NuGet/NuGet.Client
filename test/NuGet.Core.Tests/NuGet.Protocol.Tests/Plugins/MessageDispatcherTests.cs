@@ -458,16 +458,12 @@ namespace NuGet.Protocol.Plugins.Tests
             {
                 _event = new ManualResetEventSlim(initialState: false);
 
-                Options = new ConnectionOptions(
-                    ProtocolConstants.CurrentVersion,
-                    ProtocolConstants.CurrentVersion,
-                    TimeSpan.FromSeconds(10),
-                    TimeSpan.FromSeconds(10));
+                Options = ConnectionOptions.CreateDefault();
             }
 
             public void Dispose()
             {
-                if (_isDisposed)
+                if (!_isDisposed)
                 {
                     _event.Dispose();
                     GC.SuppressFinalize(this);
