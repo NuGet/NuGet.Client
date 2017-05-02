@@ -318,12 +318,16 @@ namespace NuGet.ProjectModel
             }
             else
             {
-                IAssetsLogMessage logMessage = null;
+                RestoreLogMessage logMessage = null;
 
-                var level = json[LogMessageProperties.LEVEL];
-                var code = json[LogMessageProperties.LEVEL];
-                var message = json[LogMessageProperties.MESSAGE];
-                var targetGraphs = ReadArray(json[LogMessageProperties.TARGET_GRAPH] as JArray, ReadString);
+                var levelJson = json[LogMessageProperties.LEVEL];
+                var codeJson = json[LogMessageProperties.CODE];
+                var warningLevelJson = json[LogMessageProperties.WARNING_LEVEL];
+                var filePathJson = json[LogMessageProperties.FILE_PATH];
+                var lineNumberJson = json[LogMessageProperties.LINE_NUMBER];
+                var columnNumberJson = json[LogMessageProperties.COLUMN_NUMBER];
+                var messageJson = json[LogMessageProperties.MESSAGE];
+                var targetGraphsJson = ReadArray(json[LogMessageProperties.TARGET_GRAPH] as JArray, ReadString);
 
                 return logMessage;
             }
