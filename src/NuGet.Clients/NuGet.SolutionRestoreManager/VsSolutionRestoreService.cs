@@ -17,6 +17,7 @@ using NuGet.Packaging;
 using NuGet.ProjectModel;
 using NuGet.RuntimeModel;
 using NuGet.Versioning;
+using static NuGet.Frameworks.FrameworkConstants;
 
 namespace NuGet.SolutionRestoreManager
 {
@@ -39,6 +40,8 @@ namespace NuGet.SolutionRestoreManager
         private const string RuntimeIdentifier = "RuntimeIdentifier";
         private const string RuntimeIdentifiers = "RuntimeIdentifiers";
         private const string RuntimeSupports = "RuntimeSupports";
+
+        private static readonly Version Version20 = new Version(2, 0, 0, 0);
 
         private readonly IProjectSystemCache _projectSystemCache;
         private readonly ISolutionRestoreWorker _restoreWorker;
@@ -155,10 +158,22 @@ namespace NuGet.SolutionRestoreManager
 
             if (projectRestoreInfo.ToolReferences != null)
             {
+                // Infer tool's TFM version from the current project TFM
+                var projectTfms = projectRestoreInfo
+                    .TargetFrameworks
+                    .Cast<IVsTargetFrameworkInfo>()
+                    .Select(tfi => NuGetFramework.Parse(tfi.TargetFrameworkMoniker))
+                    .ToList();
+
+                var isNetCore20 = projectTfms
+                    .Where(tfm => tfm.Framework == FrameworkIdentifiers.NetCoreApp || tfm.Framework == FrameworkIdentifiers.NetStandard)
+                    .Any(tfm => tfm.Version >= Version20);
+                var toolFramework = isNetCore20 ? CommonFrameworks.NetCoreApp20 : CommonFrameworks.NetCoreApp10;
+
                 projectRestoreInfo
                     .ToolReferences
                     .Cast<IVsReferenceItem>()
-                    .Select(r => ToToolPackageSpec(projectNames, r))
+                    .Select(r => ToToolPackageSpec(projectNames, r, toolFramework))
                     .ToList()
                     .ForEach(ts =>
                     {
@@ -170,9 +185,9 @@ namespace NuGet.SolutionRestoreManager
             return dgSpec;
         }
 
-        private static PackageSpec ToToolPackageSpec(ProjectNames projectNames, IVsReferenceItem item)
+        private static PackageSpec ToToolPackageSpec(ProjectNames projectNames, IVsReferenceItem item, NuGetFramework toolFramework)
         {
-            return ToolRestoreUtility.GetSpec(projectNames.FullName, item.Name, GetVersionRange(item), LockFile.ToolFramework);
+            return ToolRestoreUtility.GetSpec(projectNames.FullName, item.Name, GetVersionRange(item), toolFramework);
         }
 
         private static PackageSpec ToPackageSpec(ProjectNames projectNames, IVsProjectRestoreInfo projectRestoreInfo)

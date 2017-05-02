@@ -16,6 +16,7 @@ using NuGet.ProjectModel;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
 using Xunit;
+using static NuGet.Frameworks.FrameworkConstants;
 
 namespace NuGet.SolutionRestoreManager.Test
 {
@@ -123,7 +124,7 @@ namespace NuGet.SolutionRestoreManager.Test
         }
 
         [Fact]
-        public async Task NominateProjectAsync_ProjectWithTools()
+        public async Task NominateProjectAsync_WithCliTool()
         {
             const string toolProjectJson = @"{
     ""frameworks"": {
@@ -152,6 +153,13 @@ namespace NuGet.SolutionRestoreManager.Test
             Assert.Equal(projectFullPath, actualMetadata.ProjectPath);
             Assert.Equal(ProjectStyle.DotnetCliTool, actualMetadata.ProjectStyle);
             Assert.Null(actualMetadata.OutputPath);
+
+            var actualToolFramework = actualToolSpec
+                .TargetFrameworks
+                .Single()
+                .FrameworkName;
+            Assert.Equal(CommonFrameworks.NetCoreApp10, actualToolFramework);
+
             var actualToolLibrary = actualToolSpec
                 .TargetFrameworks
                 .Single()
@@ -159,6 +167,39 @@ namespace NuGet.SolutionRestoreManager.Test
                 .Single();
             Assert.Equal("Foo.Test.Tools", actualToolLibrary.Name);
             Assert.Equal("2.0.0", actualToolLibrary.LibraryRange.VersionRange.OriginalString);
+        }
+
+        [Fact]
+        public async Task NominateProjectAsync_WithCliTool20_InfersToolFramework()
+        {
+            const string toolProjectJson = @"{
+    ""frameworks"": {
+        ""net46"": { },
+        ""netcoreapp2.0"": { }
+    }
+}";
+            var cps = NewCpsProject(toolProjectJson);
+            var pri = cps.Builder.WithTool("Foo.Test.Tools", "2.0.0").Build();
+            var projectFullPath = cps.ProjectFullPath;
+
+            // Act
+            var actualRestoreSpec = await CaptureNominateResultAsync(projectFullPath, pri);
+
+            // Assert
+            SpecValidationUtility.ValidateDependencySpec(actualRestoreSpec);
+
+            var actualProjectSpec = actualRestoreSpec.GetProjectSpec(projectFullPath);
+            Assert.NotNull(actualProjectSpec);
+
+            var actualToolSpec = actualRestoreSpec
+                .Projects
+                .Where(p => !object.ReferenceEquals(p, actualProjectSpec))
+                .Single();
+            var actualToolFramework = actualToolSpec
+                .TargetFrameworks
+                .Single()
+                .FrameworkName;
+            Assert.Equal(CommonFrameworks.NetCoreApp20, actualToolFramework);
         }
 
         [Theory]
