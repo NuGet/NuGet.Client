@@ -22,7 +22,7 @@ namespace NuGet.Common
         /// <summary>
         /// Project or Package ReferenceId
         /// </summary>
-        public string ReferenceId { get; set; }
+        public string LibraryId { get; set; }
 
         public RestoreLogMessage(LogLevel logLevel, NuGetLogCode errorCode, 
             string errorString, string targetGraph)
@@ -60,7 +60,7 @@ namespace NuGet.Common
                 [LogMessageProperties.LEVEL] = Enum.GetName(typeof(LogLevel), Level)
             };
 
-            if(Level == LogLevel.Warning)
+            if (Level == LogLevel.Warning)
             {
                 errorDictionary[LogMessageProperties.WARNING_LEVEL] = WarningLevel;
             }
@@ -85,7 +85,7 @@ namespace NuGet.Common
                 errorDictionary[LogMessageProperties.MESSAGE] = Message;
             }
 
-            if(TargetGraphs != null && TargetGraphs.Any() && TargetGraphs.All(l => !string.IsNullOrEmpty(l)))
+            if (TargetGraphs != null && TargetGraphs.Any() && TargetGraphs.All(l => !string.IsNullOrEmpty(l)))
             {
                 errorDictionary[LogMessageProperties.TARGET_GRAPH] = TargetGraphs;
             }
@@ -122,14 +122,14 @@ namespace NuGet.Common
         /// </summary>
         public static RestoreLogMessage CreateWarning(
             NuGetLogCode code,
-            string referenceId,
+            string libraryId,
             string message,
             params string[] targetGraphs)
         {
             return new RestoreLogMessage(LogLevel.Warning, message)
             {
                 Code = code,
-                ReferenceId = referenceId,
+                LibraryId = libraryId,
                 TargetGraphs = targetGraphs.ToList()
             };
         }

@@ -10,18 +10,14 @@ namespace NuGet.Common
     /// 
     /// We do not have a level 0 as that has no logical meaning of having a warning with level 0.
     /// 
-    /// Severe - This should be used to throw warnings that just short of being an error.
-    ///          Can be ignored if the project warn level is 0.
+    /// Severe - This should be used to throw warnings that are just short of being an error.
     /// 
     /// Important - Lower level than severe. 
-    ///             Can be ignored if the project warn level is 1 or 0.
     /// 
     /// Minimal - Lower level than important. 
-    ///           Can be ignored if the project warn level is 0, 1 or 2.
     /// 
     /// Default - Lowest level of warnings. 
-    ///           Can be ignored if the project warn level is 0, 1, 2 or 3. 
-    ///           Further default NuGet logging will ignore these warnings.
+    ///           Default NuGet logging will ignore these warnings.
     /// </summary>
     public enum WarningLevel
     {
