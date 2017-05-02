@@ -13,7 +13,7 @@ using NuGet.ProjectModel;
 
 namespace NuGet.Commands
 {
-    class NoOpRestoreResult : RestoreResult
+    public class NoOpRestoreResult : RestoreResult
     {
         public NoOpRestoreResult(bool success, LockFile lockFile, LockFile previousLockFile, string lockFilePath, CacheFile cacheFile, string cacheFilePath, ProjectStyle projectStyle, TimeSpan elapsedTime) :
             base(success : success, restoreGraphs : null, compatibilityCheckResults : null , 
