@@ -340,6 +340,7 @@ namespace NuGet.SolutionRestoreManager
                 tfi.ProjectReferences.AddRange(
                     targetFrameworkInfo.ProjectReferences
                         .Cast<IVsReferenceItem>()
+                        .Where(IsReferenceOutputAssemblyTrueOrEmpty)
                         .Select(item => ToProjectRestoreReference(item, projectDirectory)));
             }
 
@@ -451,6 +452,17 @@ namespace NuGet.SolutionRestoreManager
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// True if ReferenceOutputAssembly is true or empty.
+        /// All other values will be false.
+        /// </summary>
+        private static bool IsReferenceOutputAssemblyTrueOrEmpty(IVsReferenceItem item)
+        {
+            var value = GetPropertyValueOrNull(item, "ReferenceOutputAssembly");
+
+            return MSBuildStringUtility.IsTrueOrEmpty(value);
         }
     }
 }

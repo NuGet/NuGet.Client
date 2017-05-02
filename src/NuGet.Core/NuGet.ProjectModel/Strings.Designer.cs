@@ -125,6 +125,15 @@ namespace NuGet.ProjectModel {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Problem reading the cache file {0} : {1}.
+        /// </summary>
+        internal static string Log_ProblemReadingCacheFile {
+            get {
+                return ResourceManager.GetString("Log_ProblemReadingCacheFile", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Unable to resolve tool &apos;&apos;..
         /// </summary>
         internal static string MissingToolName {

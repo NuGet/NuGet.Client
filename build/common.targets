@@ -26,6 +26,7 @@
   </ImportGroup>
   <PropertyGroup Condition="'$(Shipping)' == 'true'">
     <SignTargetsForRealSigning>GetBuildOutputWithSigningMetadata</SignTargetsForRealSigning>
+    <SymbolTargetsToGetPdbs>GetDebugSymbolsProjectOutput</SymbolTargetsToGetPdbs>
   </PropertyGroup>
   <PropertyGroup Condition="'$(IncludeInVSIX)' == 'true'">
     <LocTargets>GetBuildOutputWithLocMetadata</LocTargets>
@@ -97,6 +98,25 @@
 
   <!--
     ============================================================
+    GetSymbolsToIndex - gets the list of DLLs,EXEs and PDBs that 
+    need to be indexed on the symbol server
+    ============================================================
+  -->
+  <Target Name="GetSymbolsToIndex" DependsOnTargets="GetTargetFrameworkSet" Returns="@(SymbolFilesToIndex)" Condition=" '$(Shipping)' == 'true' ">
+    <MSBuild
+      Projects="$(MSBuildProjectFullPath)"
+      Targets="$(SignTargetsForRealSigning);$(SymbolTargetsToGetPdbs)"
+      Properties="TargetFramework=%(ProjectTargetFrameworkEntries.Identity);
+                  BuildProjectReferences=false;">
+
+      <Output
+          TaskParameter="TargetOutputs"
+          ItemName="SymbolFilesToIndex" />
+    </MSBuild>
+  </Target>
+  
+  <!--
+    ============================================================
     GetSigningInputs - gets the list of DLLs that need to
     be signed from each project
     ============================================================
@@ -138,6 +158,12 @@
         <StrongName>$(StrongNameCert)</StrongName>
         <Authenticode>Microsoft</Authenticode>
       </DllsToSignWithMetadata>
+    </ItemGroup>
+  </Target>
+
+  <Target Name="GetDebugSymbolsProjectOutput" DependsOnTargets="DebugSymbolsProjectOutputGroup" Returns="@(PdbsToIndex)">
+    <ItemGroup>
+      <PdbsToIndex Include="@(DebugSymbolsProjectOutputGroupOutput->'%(FinalOutputPath)')"/>
     </ItemGroup>
   </Target>
 

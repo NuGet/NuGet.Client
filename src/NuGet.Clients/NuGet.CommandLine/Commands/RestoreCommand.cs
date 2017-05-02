@@ -47,6 +47,9 @@ namespace NuGet.CommandLine
         [Option(typeof(NuGetCommand), "RestoreCommandRecursive")]
         public bool Recursive { get; set; }
 
+        [Option(typeof(NuGetCommand), "ForceRestoreCommand")]
+        public bool Force { get; set; }
+
         [ImportingConstructor]
         public RestoreCommand()
         {
@@ -117,6 +120,7 @@ namespace NuGet.CommandLine
                     // Add restore args to the restore context
                     restoreContext.CacheContext = cacheContext;
                     restoreContext.DisableParallel = DisableParallelProcessing;
+                    restoreContext.AllowNoOp = !Force; // if force, no-op is not allowed
                     restoreContext.ConfigFile = ConfigFile;
                     restoreContext.MachineWideSettings = MachineWideSettings;
                     restoreContext.Sources = Source.ToList();
