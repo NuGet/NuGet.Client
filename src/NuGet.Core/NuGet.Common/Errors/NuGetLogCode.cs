@@ -26,6 +26,8 @@ namespace NuGet.Common
         NU1001, // Actual errors start here
         NU1002,
 
+        NU1500 = 1500,
+
         /// <summary>
         /// Dependency bumped up
         /// </summary>

@@ -16,8 +16,8 @@ namespace NuGet.Common
         public string ProjectPath { get; set; }
         public WarningLevel WarningLevel { get; set; }
         public string FilePath { get; set; }
-        public int LineNumber { get; set; } = -1
-        public int ColumnNumber { get; set; } = -1
+        public int LineNumber { get; set; } = -1;
+        public int ColumnNumber { get; set; } = -1;
 
         /// <summary>
         /// Project or Package ReferenceId
