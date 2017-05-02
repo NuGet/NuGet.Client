@@ -89,7 +89,7 @@ namespace NuGet.Common
         }
 
         /// <summary>
-        /// True if the message meets the verbosity level.
+        /// True if the message is an error or warning.
         /// </summary>
         protected virtual bool CollectMessage(LogLevel messageLevel)
         {
