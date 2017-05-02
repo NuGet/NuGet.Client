@@ -16,7 +16,7 @@ namespace NuGet.Commands.Test
     public class RestoreResultTests
     {
         [Fact]
-        public async Task RestoreResult_WritesCommitToMinimal()
+        public async Task RestoreResult_WritesCommitToInformation()
         {
             // Arrange
             using (var td = TestDirectory.Create())
@@ -42,14 +42,14 @@ namespace NuGet.Commands.Test
                 // Assert
                 Assert.Contains(
                     $"Writing lock file to disk. Path: {path}",
-                    logger.MinimalMessages);
+                    logger.Messages);
                 Assert.True(File.Exists(path), $"The lock file should have been written: {path}");
                 Assert.Equal(1, logger.Messages.Count);
             }
         }
 
         [Fact]
-        public async Task RestoreResult_WritesSkipCommitToMinimal()
+        public async Task RestoreResult_WritesSkipCommitToInformation()
         {
             // Arrange
             using (var td = TestDirectory.Create())
@@ -74,8 +74,8 @@ namespace NuGet.Commands.Test
 
                 // Assert
                 Assert.Contains(
-                    $"Lock file has not changed. Skipping lock file write. Path: {path}",
-                    logger.MinimalMessages);
+                    $"Assets file has not changed. Skipping assets file writing. Path: {path}",
+                    logger.Messages);
                 Assert.False(File.Exists(path), $"The lock file should not have been written: {path}");
                 Assert.Equal(1, logger.Messages.Count);
             }
@@ -109,10 +109,10 @@ namespace NuGet.Commands.Test
                 // Assert
                 Assert.Contains(
                     $"Writing lock file to disk. Path: {path}",
-                    logger.MinimalMessages);
+                    logger.Messages);
                 Assert.Contains(
                     $"Writing cache file to disk. Path: {cachePath}",
-                    logger.MinimalMessages);
+                    logger.VerboseMessages);
 
                 Assert.True(File.Exists(path), $"The lock file should have been written: {path}");
                 Assert.True(File.Exists(cachePath), $"The cache file should have been written: {cachePath}");
