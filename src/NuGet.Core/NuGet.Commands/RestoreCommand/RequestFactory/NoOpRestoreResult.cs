@@ -33,7 +33,7 @@ namespace NuGet.Commands
                 log.LogInformation(string.Format(CultureInfo.CurrentCulture,
                         Strings.Log_ToolSkippingAssetsFile,
                         LockFilePath));
-                log.LogInformation(string.Format(CultureInfo.CurrentCulture,
+                log.LogVerbose(string.Format(CultureInfo.CurrentCulture,
                         Strings.Log_SkippingCacheFile,
                         CacheFilePath));
             }

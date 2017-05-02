@@ -165,9 +165,7 @@ namespace NuGet.Commands
                 if (toolCommit)
                 {
                     if (result.LockFilePath != null && result.LockFile != null)
-                    {
-                        
-
+                    {   
                         log.LogInformation(string.Format(CultureInfo.CurrentCulture,
                         Strings.Log_ToolWritingLockFile,
                         result.LockFilePath));

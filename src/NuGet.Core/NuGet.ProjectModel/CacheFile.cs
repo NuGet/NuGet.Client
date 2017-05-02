@@ -38,7 +38,7 @@ namespace NuGet.ProjectModel
                 return true;
             }
 
-            return Version == other.Version && Success == other.Success &&StringComparer.Ordinal.Equals(DgSpecHash, other.DgSpecHash);
+            return Version == other.Version && Success == other.Success && StringComparer.Ordinal.Equals(DgSpecHash, other.DgSpecHash);
         }
 
         public override bool Equals(object obj)
