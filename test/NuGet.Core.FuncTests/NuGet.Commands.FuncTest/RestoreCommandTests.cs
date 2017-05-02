@@ -741,7 +741,7 @@ namespace NuGet.Commands.FuncTest
                 var lockFileFormat = new LockFileFormat();
                 var command = new RestoreCommand(request);
                 var framework = new FallbackFramework(NuGetFramework.Parse("dotnet"), new List<NuGetFramework> { NuGetFramework.Parse("portable-net452+win81") });
-                var warning = "NU1000: Package 'Newtonsoft.Json 7.0.1' was restored using '.NETPortable,Version=v0.0,Profile=net452+win81' instead the project target framework '.NETPlatform,Version=v5.0'. This may cause compatibility problems.";
+                var warning = "NU1500: Package 'Newtonsoft.Json 7.0.1' was restored using '.NETPortable,Version=v0.0,Profile=net452+win81' instead the project target framework '.NETPlatform,Version=v5.0'. This may cause compatibility problems.";
 
                 // Act
                 var result = await command.ExecuteAsync();
