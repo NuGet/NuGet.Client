@@ -28,6 +28,7 @@ namespace NuGet.Commands
         private readonly RestoreRequest _request;
 
         private bool _success = true;
+        private bool _noOp = false;
 
         private readonly Dictionary<NuGetFramework, RuntimeGraph> _runtimeGraphCache = new Dictionary<NuGetFramework, RuntimeGraph>();
         private readonly ConcurrentDictionary<PackageIdentity, RuntimeGraph> _runtimeGraphCacheByPackage
@@ -66,8 +67,32 @@ namespace NuGet.Commands
             var localRepositories = new List<NuGetv3LocalRepository>();
             localRepositories.Add(_request.DependencyProviders.GlobalPackages);
             localRepositories.AddRange(_request.DependencyProviders.FallbackPackageFolders);
-
+            
             var contextForProject = CreateRemoteWalkContext(_request);
+            CacheFile cacheFile = null;
+            if (NoOpRestoreUtilities.IsNoOpSupported(_request)) {
+                var cacheFileAndStatus = EvaluateCacheFile();
+                cacheFile = cacheFileAndStatus.Key;
+                if (cacheFileAndStatus.Value)
+                {
+
+                    if(VerifyAssetsAndMSBuildFilesArePresent(_request))
+                    {
+                        restoreTime.Stop();
+
+                        // Create result
+                        return new NoOpRestoreResult(
+                            _success,
+                            _request.ExistingLockFile,
+                            _request.ExistingLockFile,
+                            _request.ExistingLockFile.Path,
+                            cacheFile,
+                            _request.Project.RestoreMetadata.CacheFilePath,
+                            _request.ProjectStyle,
+                            restoreTime.Elapsed);
+                    }
+                }
+            }
 
             // Restore
             var graphs = await ExecuteRestoreAsync(
@@ -106,6 +131,8 @@ namespace NuGet.Commands
 
             // Determine the lock file output path
             var assetsFilePath = GetAssetsFilePath(assetsFile);
+            // Determine the cache file output path
+            var cacheFilePath = NoOpRestoreUtilities.GetCacheFilePath(assetsFile, _request);
 
             // Tool restores are unique since the output path is not known until after restore
             if (_request.LockFilePath == null
@@ -136,8 +163,12 @@ namespace NuGet.Commands
             // Revert to the original case if needed
             await FixCaseForLegacyReaders(graphs, assetsFile, token);
 
-            restoreTime.Stop();
+            if (cacheFile != null)
+            {
+                cacheFile.Success = _success;
+            }
 
+            restoreTime.Stop();
             // Create result
             return new RestoreResult(
                 _success,
@@ -147,9 +178,69 @@ namespace NuGet.Commands
                 assetsFile,
                 _request.ExistingLockFile,
                 assetsFilePath,
+                cacheFile,
+                cacheFilePath,
                 _request.ProjectStyle,
                 restoreTime.Elapsed);
         }
+
+        private KeyValuePair<CacheFile,bool> EvaluateCacheFile()
+        {
+            CacheFile cacheFile;
+            var newDgSpecHash = _request.DependencyGraphSpec.GetHash();
+
+            if (_request.AllowNoOp && File.Exists(_request.Project.RestoreMetadata.CacheFilePath))
+            {
+                cacheFile = CacheFileFormat.Load(_request.Project.RestoreMetadata.CacheFilePath, _logger);
+
+                if (cacheFile.IsValid && StringComparer.Ordinal.Equals(cacheFile.DgSpecHash, newDgSpecHash))
+                {
+                    _logger.LogVerbose(string.Format(CultureInfo.CurrentCulture, Strings.Log_RestoreNoOpFinish, _request.Project.Name));
+                    _success = true;
+                    _noOp = true;
+                }
+                else
+                {
+                    cacheFile = new CacheFile(newDgSpecHash);
+                    _logger.LogVerbose(string.Format(CultureInfo.CurrentCulture, Strings.Log_RestoreNoOpDGChanged, _request.Project.Name));
+                }
+            }
+            else
+            {
+                cacheFile = new CacheFile(newDgSpecHash);
+
+            }
+            return new KeyValuePair<CacheFile,bool>(cacheFile, _noOp) ;
+        }
+
+        private bool VerifyAssetsAndMSBuildFilesArePresent(RestoreRequest request)
+        {
+
+            if (!File.Exists(request.ExistingLockFile?.Path)) {
+                _logger.LogVerbose(string.Format(CultureInfo.CurrentCulture, Strings.Log_AssetsFileNotOnDisk, _request.Project.Name));
+                return false;
+            }
+
+            if (request.ProjectStyle == ProjectStyle.PackageReference || request.ProjectStyle == ProjectStyle.Standalone)
+            {
+                var targetsFilePath = BuildAssetsUtils.GetMSBuildFilePath(request.Project, request, "targets");
+                if (!File.Exists(targetsFilePath))
+                {
+                    _logger.LogVerbose(string.Format(CultureInfo.CurrentCulture, Strings.Log_TargetsFileNotOnDisk, _request.Project.Name, targetsFilePath));
+                    return false;
+                }
+                var propsFilePath = BuildAssetsUtils.GetMSBuildFilePath(request.Project, request, "props");
+                if (!File.Exists(propsFilePath))
+                {
+                    _logger.LogVerbose(string.Format(CultureInfo.CurrentCulture, Strings.Log_PropsFileNotOnDisk, _request.Project.Name, propsFilePath));
+                    return false;
+                }
+            }
+            return true;
+        }
+
+
+
 
         private string GetAssetsFilePath(LockFile lockFile)
         {

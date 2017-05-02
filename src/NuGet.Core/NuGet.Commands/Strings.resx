@@ -1,17 +1,17 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
-  <!--
-    Microsoft ResX Schema
-
+  <!-- 
+    Microsoft ResX Schema 
+    
     Version 2.0
-
-    The primary goals of this format is to allow a simple XML format
-    that is mostly human readable. The generation and parsing of the
-    various data types are done through the TypeConverter classes
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
     associated with the data types.
-
+    
     Example:
-
+    
     ... ado.net/XML headers & schema ...
     <resheader name="resmimetype">text/microsoft-resx</resheader>
     <resheader name="version">2.0</resheader>
@@ -26,36 +26,36 @@
         <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
         <comment>This is a comment</comment>
     </data>
-
-    There are any number of "resheader" rows that contain simple
+                
+    There are any number of "resheader" rows that contain simple 
     name/value pairs.
-
-    Each data row contains a name, and value. The row also contains a
-    type or mimetype. Type corresponds to a .NET class that support
-    text/value conversion through the TypeConverter architecture.
-    Classes that don't support this are serialized and stored with the
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
     mimetype set.
-
-    The mimetype is used for serialized objects, and tells the
-    ResXResourceReader how to depersist the object. This is currently not
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
     extensible. For a given mimetype the value must be set accordingly:
-
-    Note - application/x-microsoft.net.object.binary.base64 is the format
-    that the ResXResourceWriter will generate, however the reader can
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
     read any of the formats listed below.
-
+    
     mimetype: application/x-microsoft.net.object.binary.base64
-    value   : The object must be serialized with
+    value   : The object must be serialized with 
             : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
             : and then encoded with base64 encoding.
-
+    
     mimetype: application/x-microsoft.net.object.soap.base64
-    value   : The object must be serialized with
+    value   : The object must be serialized with 
             : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
             : and then encoded with base64 encoding.
 
     mimetype: application/x-microsoft.net.object.bytearray.base64
-    value   : The object must be serialized into a byte array
+    value   : The object must be serialized into a byte array 
             : using a System.ComponentModel.TypeConverter
             : and then encoded with base64 encoding.
     -->
@@ -510,5 +510,41 @@ For more information, visit http://docs.nuget.org/docs/reference/command-line-re
   <data name="LocalsCommand_ClearingNuGetTempCache" xml:space="preserve">
     <value>Clearing NuGet Temp cache: {0}</value>
     <comment>{0} : Temp cache path</comment>
+  </data>
+  <data name="Log_RestoreNoOpDGChanged" xml:space="preserve">
+    <value>The restore inputs for '{0}' have changed. Continuing restore.</value>
+  </data>
+  <data name="Log_RestoreNoOpFinish" xml:space="preserve">
+    <value>The restore inputs for '{0}' have not changed. No further actions are required to complete the restore.</value>
+  </data>
+  <data name="Log_SkippingAssetsFile" xml:space="preserve">
+    <value>Assets file has not changed. Skipping assets file writing. Path: {0}</value>
+  </data>
+  <data name="Log_ToolSkippingAssetsFile" xml:space="preserve">
+    <value>Tool assets file has not changed. Skipping assets file write. Path: {0}</value>
+  </data>
+  <data name="Log_ToolWritingCacheFile" xml:space="preserve">
+    <value>Writing tool cache file to disk. Path: {0}</value>
+  </data>
+  <data name="Log_ToolWritingLockFile" xml:space="preserve">
+    <value>Writing tool lock file to disk. Path: {0}</value>
+  </data>
+  <data name="Log_WritingCacheFile" xml:space="preserve">
+    <value>Writing cache file to disk. Path: {0}</value>
+  </data>
+  <data name="Log_WritingLockFile" xml:space="preserve">
+    <value>Writing lock file to disk. Path: {0}</value>
+  </data>
+  <data name="Log_SkippingCacheFile" xml:space="preserve">
+    <value>No-Op restore. The cache will not be updated. Path: {0}</value>
+  </data>
+  <data name="Log_AssetsFileNotOnDisk" xml:space="preserve">
+    <value>The expected assets file for {0} does not exist, no-op is not possible. Continuing restore.</value>
+  </data>
+  <data name="Log_PropsFileNotOnDisk" xml:space="preserve">
+    <value>The props file for {0} at location {1} does not exist, no-op is not possible. Continuing restore.</value>
+  </data>
+  <data name="Log_TargetsFileNotOnDisk" xml:space="preserve">
+    <value>The targets file for {0} at location {1} does not exist, no-op is not possible. Continuing restore.</value>
   </data>
 </root>

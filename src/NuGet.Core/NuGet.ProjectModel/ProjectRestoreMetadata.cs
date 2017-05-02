@@ -51,6 +51,11 @@ namespace NuGet.ProjectModel
         public string PackagesPath { get; set; }
 
         /// <summary>
+        /// Cache file path
+        /// </summary>
+        public string CacheFilePath { get; set; }
+
+        /// <summary>
         /// Fallback folders.
         /// </summary>
         public IList<string> FallbackFolders { get; set; } = new List<string>();

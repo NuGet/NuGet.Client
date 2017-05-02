@@ -27,6 +27,8 @@ namespace NuGet.Commands
 
         public bool DisableParallel { get; set; }
 
+        public bool AllowNoOp {get; set;}
+
         public HashSet<string> Runtimes { get; set; } = new HashSet<string>(StringComparer.Ordinal);
 
         public HashSet<string> FallbackRuntimes { get; set; } = new HashSet<string>(StringComparer.Ordinal);
@@ -180,6 +182,10 @@ namespace NuGet.Commands
                 request.LockFilePath = ProjectJsonPathUtilities.GetLockFilePath(request.Project.FilePath);
             }
 
+            if (request.Project.RestoreMetadata != null) {
+                request.Project.RestoreMetadata.CacheFilePath = NoOpRestoreUtilities.GetCacheFilePath(request);
+            }
+
             request.MaxDegreeOfConcurrency =
                 DisableParallel ? 1 : RestoreRequest.DefaultDegreeOfConcurrency;
 
@@ -213,6 +219,8 @@ namespace NuGet.Commands
             {
                 request.ValidateRuntimeAssets = ValidateRuntimeAssets.Value;
             }
+
+            request.AllowNoOp = AllowNoOp;
         }
     }
 }

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -23,6 +24,7 @@ namespace NuGet.PackageManagement.Test
         [Fact]
         public async Task DependencyGraphRestoreUtility_NoopIsRestoreRequiredAsyncTest()
         {
+            Debugger.Launch();
             // Arrange
             var projectName = "testproj";
             var logger = new TestLogger();
@@ -81,7 +83,7 @@ namespace NuGet.PackageManagement.Test
                 Assert.Equal(false, result);
                 Assert.Equal(0, logger.Errors);
                 Assert.Equal(0, logger.Warnings);
-                Assert.Equal(3, logger.MinimalMessages.Count);
+                Assert.Equal(2, logger.MinimalMessages.Count);
             }
         }
 

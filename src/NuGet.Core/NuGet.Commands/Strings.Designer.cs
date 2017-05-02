@@ -378,6 +378,15 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The expected assets file for {0} does not exist, no-op is not possible. Continuing restore..
+        /// </summary>
+        internal static string Log_AssetsFileNotOnDisk {
+            get {
+                return ResourceManager.GetString("Log_AssetsFileNotOnDisk", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Checking compatibility of packages on {0}..
         /// </summary>
         internal static string Log_CheckingCompatibility {
@@ -720,6 +729,15 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The props file for {0} at location {1} does not exist, no-op is not possible. Continuing restore..
+        /// </summary>
+        internal static string Log_PropsFileNotOnDisk {
+            get {
+                return ResourceManager.GetString("Log_PropsFileNotOnDisk", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Reading project file {0}..
         /// </summary>
         internal static string Log_ReadingProject {
@@ -761,6 +779,24 @@ namespace NuGet.Commands {
         internal static string Log_RestoreFailed {
             get {
                 return ResourceManager.GetString("Log_RestoreFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The restore inputs for &apos;{0}&apos; have changed. Continuing restore..
+        /// </summary>
+        internal static string Log_RestoreNoOpDGChanged {
+            get {
+                return ResourceManager.GetString("Log_RestoreNoOpDGChanged", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The restore inputs for &apos;{0}&apos; have not changed. No further actions are required to complete the restore..
+        /// </summary>
+        internal static string Log_RestoreNoOpFinish {
+            get {
+                return ResourceManager.GetString("Log_RestoreNoOpFinish", resourceCulture);
             }
         }
         
@@ -819,11 +855,65 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Assets file has not changed. Skipping assets file writing. Path: {0}.
+        /// </summary>
+        internal static string Log_SkippingAssetsFile {
+            get {
+                return ResourceManager.GetString("Log_SkippingAssetsFile", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No-Op restore. The cache will not be updated. Path: {0}.
+        /// </summary>
+        internal static string Log_SkippingCacheFile {
+            get {
+                return ResourceManager.GetString("Log_SkippingCacheFile", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Skipping runtime dependency walk, no runtimes defined in project.json..
         /// </summary>
         internal static string Log_SkippingRuntimeWalk {
             get {
                 return ResourceManager.GetString("Log_SkippingRuntimeWalk", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The targets file for {0} at location {1} does not exist, no-op is not possible. Continuing restore..
+        /// </summary>
+        internal static string Log_TargetsFileNotOnDisk {
+            get {
+                return ResourceManager.GetString("Log_TargetsFileNotOnDisk", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Tool assets file has not changed. Skipping assets file write. Path: {0}.
+        /// </summary>
+        internal static string Log_ToolSkippingAssetsFile {
+            get {
+                return ResourceManager.GetString("Log_ToolSkippingAssetsFile", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Writing tool cache file to disk. Path: {0}.
+        /// </summary>
+        internal static string Log_ToolWritingCacheFile {
+            get {
+                return ResourceManager.GetString("Log_ToolWritingCacheFile", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Writing tool lock file to disk. Path: {0}.
+        /// </summary>
+        internal static string Log_ToolWritingLockFile {
+            get {
+                return ResourceManager.GetString("Log_ToolWritingLockFile", resourceCulture);
             }
         }
         
@@ -869,6 +959,24 @@ namespace NuGet.Commands {
         internal static string Log_VersionConflict {
             get {
                 return ResourceManager.GetString("Log_VersionConflict", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Writing cache file to disk. Path: {0}.
+        /// </summary>
+        internal static string Log_WritingCacheFile {
+            get {
+                return ResourceManager.GetString("Log_WritingCacheFile", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Writing lock file to disk. Path: {0}.
+        /// </summary>
+        internal static string Log_WritingLockFile {
+            get {
+                return ResourceManager.GetString("Log_WritingLockFile", resourceCulture);
             }
         }
         

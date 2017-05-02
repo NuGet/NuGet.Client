@@ -2337,6 +2337,15 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Forces all dependencies to be resolved even if the last restore was successful. This is equivalent to deleting project.assets.json. (Does not apply to packages.config).
+        /// </summary>
+        internal static string ForceRestoreCommand {
+            get {
+                return ResourceManager.GetString("ForceRestoreCommand", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Print detailed help for all available commands..
         /// </summary>
         internal static string HelpCommandAll {
