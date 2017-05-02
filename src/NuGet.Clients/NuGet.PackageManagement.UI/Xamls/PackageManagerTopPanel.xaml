@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="NuGet.PackageManagement.UI.PackageManagerTopPanel"
+<UserControl x:Class="NuGet.PackageManagement.UI.PackageManagerTopPanel"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -153,6 +153,11 @@
               Text="{Binding}" />
           </ToolTip>
         </ComboBox.ToolTip>
+        <ComboBox.ItemContainerStyle>
+          <Style>
+            <Setter Property="AutomationProperties.Name" Value="{Binding SourceName}"/>
+          </Style>
+        </ComboBox.ItemContainerStyle>
       </ComboBox>
 
       <Button

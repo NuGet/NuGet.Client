@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -156,6 +156,7 @@ namespace NuGet.Options
 
         private void updateLocalsCommandStatusText(string statusText, bool visibility)
         {
+            localsCommandStatusText.AccessibleName = statusText;
             localsCommandStatusText.Visible = visibility;
             localsCommandStatusText.Text = statusText;
             localsCommandStatusText.Refresh();

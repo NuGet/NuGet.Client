@@ -18,13 +18,16 @@ namespace NuGet.ProjectManagement
     /// </summary>
     public static class JsonConfigUtility
     {
+        private const string DEPENDENCIES_TAG = "dependencies";
+        private const string FRAMEWORKS_TAG = "frameworks";
+
         /// <summary>
         /// Read dependencies from a project.json file
         /// </summary>
         public static IEnumerable<PackageDependency> GetDependencies(JObject json)
         {
             JToken node = null;
-            if (json.TryGetValue("dependencies", out node))
+            if (json.TryGetValue(DEPENDENCIES_TAG, out node))
             {
                 foreach (var dependency in node)
                 {
@@ -94,7 +97,7 @@ namespace NuGet.ProjectManagement
             JObject dependencySet = null;
 
             JToken node = null;
-            if (json.TryGetValue("dependencies", out node))
+            if (json.TryGetValue(DEPENDENCIES_TAG, out node))
             {
                 dependencySet = node as JObject;
             }
@@ -110,7 +113,7 @@ namespace NuGet.ProjectManagement
             // order dependencies to reduce merge conflicts
             dependencySet = SortProperties(dependencySet);
 
-            json["dependencies"] = dependencySet;
+            json[DEPENDENCIES_TAG] = dependencySet;
         }
 
         /// <summary>
@@ -119,7 +122,7 @@ namespace NuGet.ProjectManagement
         public static void RemoveDependency(JObject json, string packageId)
         {
             JToken node = null;
-            if (json.TryGetValue("dependencies", out node))
+            if (json.TryGetValue(DEPENDENCIES_TAG, out node))
             {
                 foreach (var dependency in node.ToArray())
                 {
@@ -140,7 +143,7 @@ namespace NuGet.ProjectManagement
             var results = new List<NuGetFramework>();
 
             JToken node = null;
-            if (json.TryGetValue("frameworks", out node))
+            if (json.TryGetValue(FRAMEWORKS_TAG, out node))
             {
                 foreach (var frameworkNode in node.ToArray())
                 {
@@ -154,6 +157,47 @@ namespace NuGet.ProjectManagement
             }
 
             return results;
+        }
+
+        /// <summary>
+        /// Add the specified framework to JSON object
+        /// </summary>
+        public static void AddFramework(JObject json, NuGetFramework framework)
+        {
+            var frameworksList = GetFrameworks(json);
+            if (HasFramework(frameworksList, framework))
+            {
+                return;
+            }
+
+            JObject frameworkSet = null;
+
+            JToken node = null;
+            if (json.TryGetValue(FRAMEWORKS_TAG, out node))
+            {
+                frameworkSet = node as JObject;
+            }
+
+            if (frameworkSet == null)
+            {
+                frameworkSet = new JObject();
+            }
+
+            var frameworkProperty = new JProperty(framework.GetShortFolderName(), new JObject());
+            frameworkSet.Add(frameworkProperty);
+
+            // order frameworks to reduce merge conflicts
+            frameworkSet = SortProperties(frameworkSet);
+
+            json[FRAMEWORKS_TAG] = frameworkSet;
+        }
+
+        /// <summary>
+        ///  Clear all frameworks from the JSON object
+        /// </summary>
+        public static void ClearFrameworks(JObject json)
+        {
+            json[FRAMEWORKS_TAG] = new JObject();
         }
 
         /// <summary>
@@ -171,6 +215,11 @@ namespace NuGet.ProjectManagement
             }
 
             return sortedParent;
+        }
+
+        private static bool HasFramework(IEnumerable<NuGetFramework> list, NuGetFramework framework)
+        {
+            return list.Contains(framework);
         }
 
         private static string GetChildKey(JToken token)

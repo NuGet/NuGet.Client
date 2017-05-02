@@ -9,7 +9,6 @@
   <!-- Common -->
   <PropertyGroup>
     <RepositoryRootDirectory>$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\</RepositoryRootDirectory>
-    <LocalizationRootDirectory>$(NuGetBuildLocalizationRepository)localize</LocalizationRootDirectory>
     <BuildCommonDirectory>$(RepositoryRootDirectory)build\</BuildCommonDirectory>
     <SolutionFile>$(RepositoryRootDirectory)$(RepositoryName).sln</SolutionFile>
     <ArtifactsDirectory>$(RepositoryRootDirectory)artifacts\</ArtifactsDirectory>
@@ -31,6 +30,7 @@
     <ArtifactRoot>$(ArtifactsDirectory)</ArtifactRoot>
     <TestUtilitiesDirectory>$(RepositoryRootDirectory)test\TestUtilities\</TestUtilitiesDirectory>
     <NuGetBuildLocalizationRepository>$(RepositoryRootDirectory)submodules\NuGet.Build.Localization\</NuGetBuildLocalizationRepository>
+    <LocalizationRootDirectory>$(NuGetBuildLocalizationRepository)localize</LocalizationRootDirectory>
   </PropertyGroup>
 
   <!-- Defaults -->
@@ -58,6 +58,10 @@
     <NoWarn>$(NoWarn);1762</NoWarn>
     <!-- Code Analysis is OFF by default -->
     <RunCodeAnalysis Condition=" '$(RunCodeAnalysis)' == ''">false</RunCodeAnalysis>
+    <!--This property ensures that if you build the exact sources twice, 
+    you get exactly the same output, so the .pdb from the second build will match the .dll
+     from the first build!-->
+    <Deterministic>true</Deterministic>
   </PropertyGroup>
 
   <!-- DEBUG specific configuration settings -->
