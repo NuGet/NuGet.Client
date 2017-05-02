@@ -14,11 +14,15 @@ namespace NuGet.Common
         public IReadOnlyList<string> TargetGraphs { get; set; }
         public DateTimeOffset Time { get; set; }
         public string ProjectPath { get; set; }
+        public WarningLevel WarningLevel { get; set; }
+        public string FilePath { get; set; }
+        public int LineNumber { get; set; } = -1
+        public int ColumnNumber { get; set; } = -1
 
         /// <summary>
-        /// Project or Package Id
+        /// Project or Package ReferenceId
         /// </summary>
-        public string Id { get; set; }
+        public string ReferenceId { get; set; }
 
         public RestoreLogMessage(LogLevel logLevel, NuGetLogCode errorCode, 
             string errorString, string targetGraph)
@@ -38,15 +42,14 @@ namespace NuGet.Common
         }
 
         public RestoreLogMessage(LogLevel logLevel, NuGetLogCode errorCode, string errorString)
-            : this (logLevel, errorCode, errorString, string.Empty)
+            : this(logLevel, errorCode, errorString, string.Empty)
         {
 
         }
 
         public RestoreLogMessage(LogLevel logLevel, string errorString)
-            : this(logLevel, NuGetLogCode.NU1000, errorString, string.Empty)
-        {
-
+            : this(logLevel, LogLevel.Error == logLevel ? NuGetLogCode.NU1000 : NuGetLogCode.NU1500, errorString, string.Empty)
+        { 
         }
 
         public IDictionary<string, object> ToDictionary()
@@ -57,7 +60,27 @@ namespace NuGet.Common
                 [LogMessageProperties.LEVEL] = Enum.GetName(typeof(LogLevel), Level)
             };
 
-            if(Message != null)
+            if(Level == LogLevel.Warning)
+            {
+                errorDictionary[LogMessageProperties.WARNING_LEVEL] = WarningLevel;
+            }
+
+            if (FilePath != null)
+            {
+                errorDictionary[LogMessageProperties.FILE_PATH] = FilePath;
+            }
+
+            if (LineNumber >= 0)
+            {
+                errorDictionary[LogMessageProperties.LINE_NUMBER] = LineNumber;
+            }
+
+            if (ColumnNumber >= 0)
+            {
+                errorDictionary[LogMessageProperties.COLUMN_NUMBER] = ColumnNumber;
+            }
+
+            if (Message != null)
             {
                 errorDictionary[LogMessageProperties.MESSAGE] = Message;
             }
@@ -78,11 +101,15 @@ namespace NuGet.Common
 
         public string FormatMessage()
         {
-            var errorString = new StringBuilder();
-
-            errorString.Append($"{Enum.GetName(typeof(NuGetLogCode), Code)}: {Message}");
-
-            return errorString.ToString();
+            // Only errors and warnings need codes. informational do not need codes.
+            if(Level >= LogLevel.Warning)
+            {
+                return $"{Enum.GetName(typeof(NuGetLogCode), Code)}: {Message}";
+            }
+            else
+            {
+                return Message;
+            }
         }
 
         public Task<string> FormatMessageAsync()
@@ -95,14 +122,14 @@ namespace NuGet.Common
         /// </summary>
         public static RestoreLogMessage CreateWarning(
             NuGetLogCode code,
-            string id,
+            string referenceId,
             string message,
             params string[] targetGraphs)
         {
             return new RestoreLogMessage(LogLevel.Warning, message)
             {
                 Code = code,
-                Id = id,
+                ReferenceId = referenceId,
                 TargetGraphs = targetGraphs.ToList()
             };
         }
