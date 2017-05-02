@@ -59,11 +59,11 @@ namespace NuGet.Commands
         /// <summary>
         ///  Cache File. The previous cache file for this project
         /// </summary>
-        public CacheFile CacheFile { get; } 
+        private CacheFile CacheFile { get; }
         /// <summary>
         /// Cache File path. The file path where the cache is written out
         /// </summary>
-        public string CacheFilePath { get;  }
+        protected string CacheFilePath { get;  }
 
         public RestoreResult(
             bool success,
@@ -165,10 +165,8 @@ namespace NuGet.Commands
                 if (toolCommit)
                 {
                     if (result.LockFilePath != null && result.LockFile != null)
-                    {
-                        
-
-                        log.LogDebug(string.Format(CultureInfo.CurrentCulture,
+                    {   
+                        log.LogInformation(string.Format(CultureInfo.CurrentCulture,
                         Strings.Log_ToolWritingLockFile,
                         result.LockFilePath));
 
@@ -179,7 +177,7 @@ namespace NuGet.Commands
                 }
                 else
                 {
-                    log.LogMinimal(string.Format(CultureInfo.CurrentCulture,
+                    log.LogInformation(string.Format(CultureInfo.CurrentCulture,
                         Strings.Log_WritingLockFile,
                         result.LockFilePath));
 
@@ -192,14 +190,14 @@ namespace NuGet.Commands
             {
                 if (toolCommit)
                 {
-                    log.LogDebug(string.Format(CultureInfo.CurrentCulture,
-                        Strings.Log_ToolSkippingLockFile,
+                    log.LogInformation(string.Format(CultureInfo.CurrentCulture,
+                        Strings.Log_ToolSkippingAssetsFile,
                         result.LockFilePath));
                 }
                 else
                 {
-                    log.LogMinimal(string.Format(CultureInfo.CurrentCulture,
-                        Strings.Log_SkippingLockFile,
+                    log.LogInformation(string.Format(CultureInfo.CurrentCulture,
+                        Strings.Log_SkippingAssetsFile,
                         result.LockFilePath));
                 }
             }
@@ -210,13 +208,13 @@ namespace NuGet.Commands
             if (CacheFile != null && CacheFilePath != null) { // This is done to preserve the old behavior
 
                 if (toolCommit) { 
-                    log.LogDebug(string.Format(CultureInfo.CurrentCulture,
+                    log.LogVerbose(string.Format(CultureInfo.CurrentCulture,
                             Strings.Log_ToolWritingCacheFile,
                             CacheFilePath));
                 } 
                 else
                 {
-                    log.LogMinimal(string.Format(CultureInfo.CurrentCulture,
+                    log.LogVerbose(string.Format(CultureInfo.CurrentCulture,
                             Strings.Log_WritingCacheFile,
                             CacheFilePath));
                 }

@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -1279,6 +1280,81 @@ namespace NuGet.Packaging.Test
                     Assert.InRange(outputTime, testStartTime.AddMinutes(-1), testEndTime.AddMinutes(1));
                 }
             }
+        }
+
+        [Fact]
+        public async Task PackageExtractor_SetsFilePermissions()
+        {
+            if (RuntimeEnvironmentHelper.IsWindows)
+            {
+                return;
+            }
+            // Arrange
+            using (TestDirectory root = TestDirectory.Create())
+            {
+                var resolver = new PackagePathResolver(root);
+                var identity = new PackageIdentity("A", new NuGetVersion("2.0.3"));
+                var packageFileInfo = await TestPackagesCore.GeneratePackageAsync(
+                        root,
+                        identity.Id,
+                        identity.Version.ToString(),
+                        DateTimeOffset.UtcNow.LocalDateTime, "lib/net45/A.dll");
+
+                using (FileStream packageStream = File.OpenRead(packageFileInfo.FullName))
+                {
+                    var packageExtractionContext = new PackageExtractionContext(NullLogger.Instance)
+                    {
+                        PackageSaveMode = PackageSaveMode.Nuspec | PackageSaveMode.Files
+                    };
+
+                    // Act
+                    PackageExtractor.ExtractPackage(
+                        packageStream,
+                        resolver,
+                        packageExtractionContext,
+                        CancellationToken.None);
+
+                    var installPath = resolver.GetInstallPath(identity);
+                    string outputDll = Path.Combine(installPath, "lib", "net45", "A.dll");
+
+                    // Assert
+                    Assert.Equal("766", StatPermissions(outputDll));
+                }
+            }
+        }
+
+        private string StatPermissions(string path)
+        {
+            string permissions;
+
+            ProcessStartInfo startInfo = new ProcessStartInfo
+            {
+                CreateNoWindow = true,
+                RedirectStandardOutput = true,
+                RedirectStandardInput = true,
+                UseShellExecute = false,
+                FileName = "stat"
+            };
+            if (RuntimeEnvironmentHelper.IsLinux)
+            {
+                startInfo.Arguments = "-c %a " + path;
+            }
+            else
+            {
+                startInfo.Arguments = "-f %A " + path;
+            }
+
+            using (Process process = new Process())
+            {
+                process.StartInfo = startInfo;
+
+                process.Start();
+                permissions = process.StandardOutput.ReadLine();
+
+                process.WaitForExit();
+            }
+
+            return permissions;
         }
     }
 }

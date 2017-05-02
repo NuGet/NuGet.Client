@@ -2337,7 +2337,7 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to NuGet restore does not perform a full restore when the inputs have not changed. This option skips the that optimization..
+        ///   Looks up a localized string similar to Forces all dependencies to be resolved even if the last restore was successful. This is equivalent to deleting project.assets.json. (Does not apply to packages.config).
         /// </summary>
         internal static string ForceRestoreCommand {
             get {

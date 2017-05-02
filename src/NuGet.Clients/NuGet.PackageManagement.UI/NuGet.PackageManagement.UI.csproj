@@ -90,6 +90,8 @@
     <Compile Include="Xamls\DeprecatedFrameworkWindow.xaml.cs">
       <DependentUpon>DeprecatedFrameworkWindow.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Xamls\InfiniteScrollListBox.cs" />
+    <Compile Include="Xamls\InfiniteScrollListBoxAutomationPeer.cs" />
     <Compile Include="Xamls\PackageManagementFormatWindow.xaml.cs">
       <DependentUpon>PackageManagementFormatWindow.xaml</DependentUpon>
     </Compile>

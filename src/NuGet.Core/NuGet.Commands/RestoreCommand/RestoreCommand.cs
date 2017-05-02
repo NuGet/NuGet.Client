@@ -76,7 +76,7 @@ namespace NuGet.Commands
                 if (cacheFileAndStatus.Value)
                 {
 
-                    if(VerifyAssetsAndMSBuildFilesArePresent(_request,contextForProject.IsMsBuildBased))
+                    if(VerifyAssetsAndMSBuildFilesArePresent(_request))
                     {
                         restoreTime.Stop();
 
@@ -213,23 +213,23 @@ namespace NuGet.Commands
             return new KeyValuePair<CacheFile,bool>(cacheFile, _noOp) ;
         }
 
-        private bool VerifyAssetsAndMSBuildFilesArePresent(RestoreRequest request, bool checkForMSBuildFiles)
+        private bool VerifyAssetsAndMSBuildFilesArePresent(RestoreRequest request)
         {
 
-            if (!File.Exists(request.ExistingLockFile.Path)) {
-                _logger.LogVerbose(string.Format(CultureInfo.CurrentCulture, Strings.Log_LockFileNotOnDisk, _request.Project.Name, request.ExistingLockFile.Path));
+            if (!File.Exists(request.ExistingLockFile?.Path)) {
+                _logger.LogVerbose(string.Format(CultureInfo.CurrentCulture, Strings.Log_AssetsFileNotOnDisk, _request.Project.Name));
                 return false;
             }
 
-            if (checkForMSBuildFiles && (request.ProjectStyle == ProjectStyle.PackageReference || request.ProjectStyle == ProjectStyle.Standalone))
+            if (request.ProjectStyle == ProjectStyle.PackageReference || request.ProjectStyle == ProjectStyle.Standalone)
             {
-                string targetsFilePath = BuildAssetsUtils.GetMSbuildFilePath(request.Project, request, "targets");
+                var targetsFilePath = BuildAssetsUtils.GetMSBuildFilePath(request.Project, request, "targets");
                 if (!File.Exists(targetsFilePath))
                 {
                     _logger.LogVerbose(string.Format(CultureInfo.CurrentCulture, Strings.Log_TargetsFileNotOnDisk, _request.Project.Name, targetsFilePath));
                     return false;
                 }
-                string propsFilePath = BuildAssetsUtils.GetMSbuildFilePath(request.Project, request, "props");
+                var propsFilePath = BuildAssetsUtils.GetMSBuildFilePath(request.Project, request, "props");
                 if (!File.Exists(propsFilePath))
                 {
                     _logger.LogVerbose(string.Format(CultureInfo.CurrentCulture, Strings.Log_PropsFileNotOnDisk, _request.Project.Name, propsFilePath));

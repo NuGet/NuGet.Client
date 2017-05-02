@@ -31,7 +31,7 @@ namespace NuGet.ProjectModel
             }
         }
 
-        private static CacheFile Read(Stream stream, ILogger log, string path)
+        public static CacheFile Read(Stream stream, ILogger log, string path)
         {
             using (var textReader = new StreamReader(stream))
             {

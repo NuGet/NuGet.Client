@@ -378,6 +378,15 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The expected assets file for {0} does not exist, no-op is not possible. Continuing restore..
+        /// </summary>
+        internal static string Log_AssetsFileNotOnDisk {
+            get {
+                return ResourceManager.GetString("Log_AssetsFileNotOnDisk", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Checking compatibility of packages on {0}..
         /// </summary>
         internal static string Log_CheckingCompatibility {
@@ -563,15 +572,6 @@ namespace NuGet.Commands {
         internal static string Log_LockFileMissingLibraryForTargetLibrary {
             get {
                 return ResourceManager.GetString("Log_LockFileMissingLibraryForTargetLibrary", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The expected assets file for {0} at location {1} does not exist, no-op is not possible. Continuing restore..
-        /// </summary>
-        internal static string Log_LockFileNotOnDisk {
-            get {
-                return ResourceManager.GetString("Log_LockFileNotOnDisk", resourceCulture);
             }
         }
         
@@ -855,20 +855,20 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Assets file has not changed. Skipping assets file writing. Path: {0}.
+        /// </summary>
+        internal static string Log_SkippingAssetsFile {
+            get {
+                return ResourceManager.GetString("Log_SkippingAssetsFile", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to No-Op restore. The cache will not be updated. Path: {0}.
         /// </summary>
         internal static string Log_SkippingCacheFile {
             get {
                 return ResourceManager.GetString("Log_SkippingCacheFile", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Lock file has not changed. Skipping lock file write. Path: {0}.
-        /// </summary>
-        internal static string Log_SkippingLockFile {
-            get {
-                return ResourceManager.GetString("Log_SkippingLockFile", resourceCulture);
             }
         }
         
@@ -891,11 +891,11 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Tool lock file has not changed. Skipping lock file write. Path: {0}.
+        ///   Looks up a localized string similar to Tool assets file has not changed. Skipping assets file write. Path: {0}.
         /// </summary>
-        internal static string Log_ToolSkippingLockFile {
+        internal static string Log_ToolSkippingAssetsFile {
             get {
-                return ResourceManager.GetString("Log_ToolSkippingLockFile", resourceCulture);
+                return ResourceManager.GetString("Log_ToolSkippingAssetsFile", resourceCulture);
             }
         }
         

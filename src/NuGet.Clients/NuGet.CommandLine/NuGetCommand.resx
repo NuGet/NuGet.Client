@@ -5337,6 +5337,6 @@ nuget locals global-packages -list</value>
     <value>Restore all referenced projects for UWP and NETCore projects. This does not include packages.config projects.</value>
   </data>
   <data name="ForceRestoreCommand" xml:space="preserve">
-    <value>NuGet restore does not perform a full restore when the inputs have not changed. This option skips the that optimization.</value>
+    <value>Forces all dependencies to be resolved even if the last restore was successful. This is equivalent to deleting project.assets.json. (Does not apply to packages.config)</value>
   </data>
 </root>

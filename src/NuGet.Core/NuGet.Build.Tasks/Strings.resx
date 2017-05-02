@@ -123,4 +123,7 @@
   <data name="NoProjectsToRestore" xml:space="preserve">
     <value>Nothing to do. None of the projects specified contain packages to restore.</value>
   </data>
+  <data name="RestoreCanceled" xml:space="preserve">
+    <value>Restore canceled!</value>
+  </data>
 </root>

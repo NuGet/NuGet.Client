@@ -9,7 +9,7 @@ using NuGet.ProjectModel;
 
 namespace NuGet.Commands
 {
-    class NoOpRestoreUtilities
+    internal class NoOpRestoreUtilities
     {
 
         internal static bool IsNoOpSupported(RestoreRequest request)
@@ -35,7 +35,8 @@ namespace NuGet.Commands
         internal static string GetToolCacheFilePath(RestoreRequest request, LockFile lockFile)
         {
 
-            if(request.ProjectStyle != ProjectStyle.DotnetCliTool) { 
+            if (request.ProjectStyle != ProjectStyle.DotnetCliTool)
+            {
                 var toolName = ToolRestoreUtility.GetToolIdOrNullFromSpec(request.Project);
                 var lockFileLibrary = ToolRestoreUtility.GetToolTargetLibrary(lockFile, toolName);
 
@@ -57,9 +58,6 @@ namespace NuGet.Commands
         /// Evaluate the location of the cache file path, based on ProjectStyle.
         /// The lockFile is used to evaluate the cache path for tools
         /// </summary>
-        /// <param name="lockFile"></param>
-        /// <param name="request"></param>
-        /// <returns></returns>
         internal static string GetCacheFilePath(LockFile lockFile, RestoreRequest request)
         {
             var projectCacheFilePath = request.Project.RestoreMetadata?.CacheFilePath;
@@ -71,7 +69,7 @@ namespace NuGet.Commands
                 {
                     projectCacheFilePath = GetCacheFilePath(request);
                 }
-                else if(request.ProjectStyle == ProjectStyle.ProjectJson)
+                else if (request.ProjectStyle == ProjectStyle.ProjectJson)
                 {
                     projectCacheFilePath = GetCacheFilePath(request);
                 }

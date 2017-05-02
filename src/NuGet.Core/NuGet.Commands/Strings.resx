@@ -517,11 +517,11 @@ For more information, visit http://docs.nuget.org/docs/reference/command-line-re
   <data name="Log_RestoreNoOpFinish" xml:space="preserve">
     <value>The restore inputs for '{0}' have not changed. No further actions are required to complete the restore.</value>
   </data>
-  <data name="Log_SkippingLockFile" xml:space="preserve">
-    <value>Lock file has not changed. Skipping lock file write. Path: {0}</value>
+  <data name="Log_SkippingAssetsFile" xml:space="preserve">
+    <value>Assets file has not changed. Skipping assets file writing. Path: {0}</value>
   </data>
-  <data name="Log_ToolSkippingLockFile" xml:space="preserve">
-    <value>Tool lock file has not changed. Skipping lock file write. Path: {0}</value>
+  <data name="Log_ToolSkippingAssetsFile" xml:space="preserve">
+    <value>Tool assets file has not changed. Skipping assets file write. Path: {0}</value>
   </data>
   <data name="Log_ToolWritingCacheFile" xml:space="preserve">
     <value>Writing tool cache file to disk. Path: {0}</value>
@@ -538,8 +538,8 @@ For more information, visit http://docs.nuget.org/docs/reference/command-line-re
   <data name="Log_SkippingCacheFile" xml:space="preserve">
     <value>No-Op restore. The cache will not be updated. Path: {0}</value>
   </data>
-  <data name="Log_LockFileNotOnDisk" xml:space="preserve">
-    <value>The expected assets file for {0} at location {1} does not exist, no-op is not possible. Continuing restore.</value>
+  <data name="Log_AssetsFileNotOnDisk" xml:space="preserve">
+    <value>The expected assets file for {0} does not exist, no-op is not possible. Continuing restore.</value>
   </data>
   <data name="Log_PropsFileNotOnDisk" xml:space="preserve">
     <value>The props file for {0} at location {1} does not exist, no-op is not possible. Continuing restore.</value>

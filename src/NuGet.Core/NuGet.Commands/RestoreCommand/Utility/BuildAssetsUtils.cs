@@ -361,7 +361,7 @@ namespace NuGet.Commands
             return result;
         }
 
-        public static string GetMSbuildFilePath(PackageSpec project, RestoreRequest request, string extension)
+        public static string GetMSBuildFilePath(PackageSpec project, RestoreRequest request, string extension)
         {
             string path;
 
@@ -391,8 +391,8 @@ namespace NuGet.Commands
             ILogger log)
         {
             // Generate file names
-            var targetsPath = GetMSbuildFilePath(project,request,"targets");
-            var propsPath = GetMSbuildFilePath(project, request, "props");
+            var targetsPath = GetMSBuildFilePath(project,request,"targets");
+            var propsPath = GetMSBuildFilePath(project, request, "props");
 
             // Targets files contain a macro for the repository root. If only the user package folder was used
             // allow a replacement. If fallback folders were used the macro cannot be applied.
