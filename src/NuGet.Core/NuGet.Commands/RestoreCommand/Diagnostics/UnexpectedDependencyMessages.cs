@@ -30,14 +30,14 @@ namespace NuGet.Commands
             // 1. Detect project dependency authoring issues in the current project.
             //    The user can fix these themselves.
             var projectMissingLowerBounds = GetProjectDependenciesMissingLowerBounds(project);
-            ignoreIds.UnionWith(projectMissingLowerBounds.Select(e => e.Id));
+            ignoreIds.UnionWith(projectMissingLowerBounds.Select(e => e.LibraryId));
             await logger.LogMessagesAsync(projectMissingLowerBounds);
 
             // 2. Detect dependency and source issues across the entire graph 
             //    where the minimum version was not matched exactly.
             //    Ignore packages already logged by #1
             var missingMinimums = GetMissingLowerBounds(graphList, ignoreIds);
-            ignoreIds.UnionWith(missingMinimums.Select(e => e.Id));
+            ignoreIds.UnionWith(missingMinimums.Select(e => e.LibraryId));
             await logger.LogMessagesAsync(missingMinimums);
 
             // 3. Detect top level dependencies that have a version different from the specified version.
@@ -163,7 +163,7 @@ namespace NuGet.Commands
                    .OrderBy(e => e.Name, StringComparer.OrdinalIgnoreCase)
                    .Select(e => RestoreLogMessage.CreateWarning(
                        code: NuGetLogCode.NU2504,
-                       id: e.Name,
+                       libraryId: e.Name,
                        message: string.Format(CultureInfo.CurrentCulture, Strings.Warning_ProjectDependencyMissingLowerBound,
                                               DiagnosticUtility.FormatDependency(e.Name, e.LibraryRange.VersionRange))));
         }

@@ -13,6 +13,12 @@ namespace NuGet.Common
         LogLevel Level { get; set; }
 
         /// <summary>
+        /// Level to indicate the warning level for the message.
+        /// This is relevant only if the Level == LogLevel.Warning.
+        /// </summary>
+        WarningLevel WarningLevel { get; set; }
+
+        /// <summary>
         /// Indicates the error code.
         /// </summary>
         NuGetLogCode Code { get; set; }
@@ -28,6 +34,21 @@ namespace NuGet.Common
         string ProjectPath { get; set; }
 
         /// <summary>
+        /// Indicates the file for which the error was thrown.
+        /// </summary>
+        string FilePath { get; set; }
+
+        /// <summary>
+        /// Indicates the line for which the error was thrown.
+        /// </summary>
+        int LineNumber { get; set; }
+
+        /// <summary>
+        /// Indicates the line for which the error was thrown.
+        /// </summary>
+        int ColumnNumber { get; set; }
+
+        /// <summary>
         /// Indicates the date time at which the error occurred.
         /// </summary>
         DateTimeOffset Time { get; set; }
@@ -36,14 +57,12 @@ namespace NuGet.Common
         /// Converts the ILogMessage into a string that can be logged as-is into a Console.
         /// </summary>
         /// <returns>The string representation of the ILogMessage.</returns>
-        //TODO consider passing verbosity
         string FormatMessage();
 
         /// <summary>
         /// Converts the ILogMessage into a string that can be logged as-is into a Console.
         /// </summary>
         /// <returns>The string representation of the ILogMessage.</returns>
-        //TODO consider passing verbosity
         Task<string> FormatMessageAsync();
     }
 }

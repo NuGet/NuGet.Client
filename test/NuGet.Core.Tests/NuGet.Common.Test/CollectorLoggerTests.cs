@@ -120,7 +120,8 @@ namespace NuGet.Common.Test
 
         private void VerifyInnerLoggerCalls(Mock<ILogger> innerLogger, LogLevel messageLevel, string message, Times times)
         {
-            innerLogger.Verify(x => x.Log(It.Is<RestoreLogMessage>(l => l.Code == NuGetLogCode.NU1000 && 
+            var expectedCode = messageLevel == LogLevel.Error ? NuGetLogCode.NU1000 : NuGetLogCode.NU1500;
+            innerLogger.Verify(x => x.Log(It.Is<RestoreLogMessage>(l => l.Code == expectedCode && 
             l.Level == messageLevel && 
             l.Message == message)), 
             times);
