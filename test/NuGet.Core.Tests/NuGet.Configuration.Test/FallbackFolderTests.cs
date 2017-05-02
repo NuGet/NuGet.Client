@@ -180,16 +180,16 @@ namespace NuGet.Configuration.Test
                     machineWideSettings: machineWideSettings);
 
                 // Act
-                var paths = SettingsUtility.GetFallbackPackageFolders(settings).ToArray();
+                var actual = SettingsUtility
+                    .GetFallbackPackageFolders(settings)
+                    .Select(GetFileName);
+
+                var expected = new[] { "a", "b", "c", "d", "x", "y" };
 
                 // Assert
-                Assert.Equal(6, paths.Length);
-                Assert.Equal("a", GetFileName(paths[0]));
-                Assert.Equal("b", GetFileName(paths[1]));
-                Assert.Equal("c", GetFileName(paths[2]));
-                Assert.Equal("d", GetFileName(paths[3]));
-                Assert.Equal("x", GetFileName(paths[4]));
-                Assert.Equal("y", GetFileName(paths[5]));
+                // Ignore any extra folders on the machine
+                var actualFiltered = Enumerable.Intersect(actual, expected);
+                Assert.Equal(expected, actualFiltered);
             }
         }
 
