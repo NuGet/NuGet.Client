@@ -30,21 +30,21 @@ namespace NuGet.Commands
 
             if (isTool)
             {
-                log.LogDebug(string.Format(CultureInfo.CurrentCulture,
-                        Strings.Log_ToolSkippingLockFile,
+                log.LogInformation(string.Format(CultureInfo.CurrentCulture,
+                        Strings.Log_ToolSkippingAssetsFile,
                         LockFilePath));
-                log.LogDebug(string.Format(CultureInfo.CurrentCulture,
+                log.LogInformation(string.Format(CultureInfo.CurrentCulture,
                         Strings.Log_SkippingCacheFile,
-                        CacheFile));
+                        CacheFilePath));
             }
             else
             {
-                log.LogMinimal(string.Format(CultureInfo.CurrentCulture,
-                                        Strings.Log_SkippingLockFile,
+                log.LogInformation(string.Format(CultureInfo.CurrentCulture,
+                                        Strings.Log_SkippingAssetsFile,
                                         LockFilePath));
                 log.LogVerbose(string.Format(CultureInfo.CurrentCulture,
                         Strings.Log_SkippingCacheFile,
-                        CacheFile));
+                        CacheFilePath));
             }
         }
 
