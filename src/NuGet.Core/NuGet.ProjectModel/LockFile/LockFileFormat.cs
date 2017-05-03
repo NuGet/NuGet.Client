@@ -329,12 +329,22 @@ namespace NuGet.ProjectModel
 
             if (logMessage.StartLineNumber >= 0)
             {
-                logJObject[LogMessageProperties.LINE_NUMBER] = logMessage.StartLineNumber;
+                logJObject[LogMessageProperties.START_LINE_NUMBER] = logMessage.StartLineNumber;
             }
 
             if (logMessage.StartColumnNumber >= 0)
             {
-                logJObject[LogMessageProperties.COLUMN_NUMBER] = logMessage.StartColumnNumber;
+                logJObject[LogMessageProperties.START_COLUMN_NUMBER] = logMessage.StartColumnNumber;
+            }
+
+            if (logMessage.EndLineNumber >= 0)
+            {
+                logJObject[LogMessageProperties.END_LINE_NUMBER] = logMessage.EndLineNumber;
+            }
+
+            if (logMessage.EndColumnNumber >= 0)
+            {
+                logJObject[LogMessageProperties.END_LINE_NUMBER] = logMessage.EndColumnNumber;
             }
 
             if (logMessage.Message != null)
@@ -368,8 +378,10 @@ namespace NuGet.ProjectModel
                 var codeJson = json[LogMessageProperties.CODE];
                 var warningLevelJson = json[LogMessageProperties.WARNING_LEVEL];
                 var filePathJson = json[LogMessageProperties.FILE_PATH];
-                var lineNumberJson = json[LogMessageProperties.LINE_NUMBER];
-                var columnNumberJson = json[LogMessageProperties.COLUMN_NUMBER];
+                var startLineNumberJson = json[LogMessageProperties.START_LINE_NUMBER];
+                var startColumnNumberJson = json[LogMessageProperties.START_COLUMN_NUMBER];
+                var endLineNumberJson = json[LogMessageProperties.END_LINE_NUMBER];
+                var endColumnNumberJson = json[LogMessageProperties.END_COLUMN_NUMBER];
                 var messageJson = json[LogMessageProperties.MESSAGE];
 
                 var isValid = true;
@@ -395,14 +407,24 @@ namespace NuGet.ProjectModel
                         assetsLogMessage.FilePath = filePathJson.Value<string>();
                     }
 
-                    if (lineNumberJson != null)
+                    if (startLineNumberJson != null)
                     {
-                        assetsLogMessage.StartLineNumber = lineNumberJson.Value<int>();
+                        assetsLogMessage.StartLineNumber = startLineNumberJson.Value<int>();
                     }
 
-                    if (columnNumberJson != null)
+                    if (startColumnNumberJson != null)
                     {
-                        assetsLogMessage.StartColumnNumber = columnNumberJson.Value<int>();
+                        assetsLogMessage.StartColumnNumber = startColumnNumberJson.Value<int>();
+                    }
+
+                    if (endLineNumberJson != null)
+                    {
+                        assetsLogMessage.StartLineNumber = endLineNumberJson.Value<int>();
+                    }
+
+                    if (endColumnNumberJson != null)
+                    {
+                        assetsLogMessage.StartColumnNumber = endColumnNumberJson.Value<int>();
                     }
 
                     if (messageJson != null)

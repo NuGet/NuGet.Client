@@ -19,8 +19,12 @@ namespace NuGet.Common
 
         public const string FILE_PATH = "filePath";
 
-        public const string LINE_NUMBER = "lineNumber";
+        public const string START_LINE_NUMBER = "startLineNumber";
 
-        public const string COLUMN_NUMBER = "columnNumber";
+        public const string START_COLUMN_NUMBER = "startColumnNumber";
+
+        public const string END_LINE_NUMBER = "endLineNumber";
+
+        public const string END_COLUMN_NUMBER = "endColumnNumber";
     }
 }

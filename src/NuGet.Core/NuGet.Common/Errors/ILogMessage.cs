@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace NuGet.Common
@@ -19,7 +17,7 @@ namespace NuGet.Common
         WarningLevel WarningLevel { get; set; }
 
         /// <summary>
-        /// Indicates the error code.
+        /// Indicates the NuGet error code.
         /// </summary>
         NuGetLogCode Code { get; set; }
 

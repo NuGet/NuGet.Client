@@ -3,8 +3,10 @@
 
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using NuGet.Common;
 
+[assembly: InternalsVisibleTo("NuGet.ProjectModel.Test")]
 namespace NuGet.ProjectModel
 {
     public class AssetsLogMessage : IAssetsLogMessage
@@ -17,12 +19,12 @@ namespace NuGet.ProjectModel
         public string ProjectPath { get; internal set; }
         public WarningLevel WarningLevel { get; internal set; }
         public string FilePath { get; internal set; }
-        public int StartLineNumber { get; internal set; }
-        public int StartColumnNumber { get; internal set; }
-        public int EndLineNumber { get; internal set; }
-        public int EndColumnNumber { get; internal set; }
         public string LibraryId { get; internal set; }
         public IReadOnlyList<string> TargetGraphs { get; internal set; }
+        public int StartLineNumber { get; internal set; } = -1;
+        public int StartColumnNumber { get; internal set; } = -1;
+        public int EndLineNumber { get; internal set; } = -1;
+        public int EndColumnNumber { get; internal set; } = -1;
 
         public AssetsLogMessage(LogLevel logLevel, NuGetLogCode errorCode,
             string errorString, string targetGraph)

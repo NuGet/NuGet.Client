@@ -1,9 +1,12 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Newtonsoft.Json.Linq;
+using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.Versioning;
@@ -459,6 +462,333 @@ namespace NuGet.ProjectModel.Test
 
             // Assert
             Assert.Equal(expected.ToString(), output.ToString());
+        }
+
+
+        [Fact]
+        public void LockFileFormat_WritesMinimalErrorMessages()
+        {
+
+            // Arrange
+            var lockFileContent = @"{
+  ""version"": 3,
+  ""targets"": {
+    "".NETPlatform,Version=v5.0"": {
+      ""System.Runtime/4.0.20-beta-22927"": {
+        ""type"": ""package"",
+        ""dependencies"": {
+          ""Frob"": ""4.0.20""
+        },
+        ""compile"": {
+          ""ref/dotnet/System.Runtime.dll"": {}
+        }
+      }
+    }
+  },
+  ""libraries"": {
+    ""System.Runtime/4.0.20-beta-22927"": {
+      ""sha512"": ""sup3rs3cur3"",
+      ""type"": ""package"",
+      ""files"": [
+        ""System.Runtime.nuspec""
+      ]
+    }
+  },
+  ""projectFileDependencyGroups"": {
+    """": [
+      ""System.Runtime [4.0.10-beta-*, )""
+    ],
+    "".NETPlatform,Version=v5.0"": []
+  },
+  ""logs"": [
+    {
+      ""code"": ""NU1000"",
+      ""level"": ""Error"",
+      ""message"": ""test log message""
+    }
+  ]
+}";
+            var lockFile = new LockFile()
+            {
+                Version = 3
+            };
+
+            var target = new LockFileTarget()
+            {
+                TargetFramework = FrameworkConstants.CommonFrameworks.DotNet
+            };
+
+            var targetLib = new LockFileTargetLibrary()
+            {
+                Name = "System.Runtime",
+                Version = NuGetVersion.Parse("4.0.20-beta-22927"),
+                Type = LibraryType.Package
+            };
+
+            targetLib.Dependencies.Add(new Packaging.Core.PackageDependency("Frob",
+                new VersionRange(NuGetVersion.Parse("4.0.20"))));
+            targetLib.CompileTimeAssemblies.Add(new LockFileItem("ref/dotnet/System.Runtime.dll"));
+            target.Libraries.Add(targetLib);
+            lockFile.Targets.Add(target);
+
+            var lib = new LockFileLibrary()
+            {
+                Name = "System.Runtime",
+                Version = NuGetVersion.Parse("4.0.20-beta-22927"),
+                Type = LibraryType.Package,
+                Sha512 = "sup3rs3cur3"
+            };
+            lib.Files.Add("System.Runtime.nuspec");
+            lockFile.Libraries.Add(lib);
+
+            lockFile.ProjectFileDependencyGroups.Add(
+                new ProjectFileDependencyGroup("", new string[] { "System.Runtime [4.0.10-beta-*, )" }));
+            lockFile.ProjectFileDependencyGroups.Add(
+                new ProjectFileDependencyGroup(FrameworkConstants.CommonFrameworks.DotNet.DotNetFrameworkName, new string[0]));
+
+            lockFile.LogMessages = new List<IAssetsLogMessage>
+            {
+                new AssetsLogMessage(LogLevel.Error, NuGetLogCode.NU1000, "test log message")
+            };
+
+            // Act
+            var lockFileFormat = new LockFileFormat();
+            var output = JObject.Parse(lockFileFormat.Render(lockFile));
+            var expected = JObject.Parse(lockFileContent);
+
+            // Assert
+            Assert.Equal(expected.ToString(), output.ToString());
+        }
+
+        [Fact]
+        public void LockFileFormat_WritesMultipleErrorMessages()
+        {
+
+            // Arrange
+            var lockFileContent = @"{
+  ""version"": 3,
+  ""targets"": {
+    "".NETPlatform,Version=v5.0"": {
+      ""System.Runtime/4.0.20-beta-22927"": {
+        ""type"": ""package"",
+        ""dependencies"": {
+          ""Frob"": ""4.0.20""
+        },
+        ""compile"": {
+          ""ref/dotnet/System.Runtime.dll"": {}
+        }
+      }
+    }
+  },
+  ""libraries"": {
+    ""System.Runtime/4.0.20-beta-22927"": {
+      ""sha512"": ""sup3rs3cur3"",
+      ""type"": ""package"",
+      ""files"": [
+        ""System.Runtime.nuspec""
+      ]
+    }
+  },
+  ""projectFileDependencyGroups"": {
+    """": [
+      ""System.Runtime [4.0.10-beta-*, )""
+    ],
+    "".NETPlatform,Version=v5.0"": []
+  },
+  ""logs"": [
+    {
+      ""code"": ""NU1000"",
+      ""level"": ""Error"",
+      ""message"": ""test log message""
+    }
+  ]
+}";
+            var lockFile = new LockFile()
+            {
+                Version = 3
+            };
+
+            var target = new LockFileTarget()
+            {
+                TargetFramework = FrameworkConstants.CommonFrameworks.DotNet
+            };
+
+            var targetLib = new LockFileTargetLibrary()
+            {
+                Name = "System.Runtime",
+                Version = NuGetVersion.Parse("4.0.20-beta-22927"),
+                Type = LibraryType.Package
+            };
+
+            targetLib.Dependencies.Add(new Packaging.Core.PackageDependency("Frob",
+                new VersionRange(NuGetVersion.Parse("4.0.20"))));
+            targetLib.CompileTimeAssemblies.Add(new LockFileItem("ref/dotnet/System.Runtime.dll"));
+            target.Libraries.Add(targetLib);
+            lockFile.Targets.Add(target);
+
+            var lib = new LockFileLibrary()
+            {
+                Name = "System.Runtime",
+                Version = NuGetVersion.Parse("4.0.20-beta-22927"),
+                Type = LibraryType.Package,
+                Sha512 = "sup3rs3cur3"
+            };
+            lib.Files.Add("System.Runtime.nuspec");
+            lockFile.Libraries.Add(lib);
+
+            lockFile.ProjectFileDependencyGroups.Add(
+                new ProjectFileDependencyGroup("", new string[] { "System.Runtime [4.0.10-beta-*, )" }));
+            lockFile.ProjectFileDependencyGroups.Add(
+                new ProjectFileDependencyGroup(FrameworkConstants.CommonFrameworks.DotNet.DotNetFrameworkName, new string[0]));
+
+            lockFile.LogMessages = new List<IAssetsLogMessage>
+            {
+                new AssetsLogMessage(LogLevel.Error, NuGetLogCode.NU1000, "test log message"),
+                new AssetsLogMessage(LogLevel.Warning, NuGetLogCode.NU1000, "test log message")
+                {
+                    WarningLevel = WarningLevel.Severe
+                },
+                new AssetsLogMessage(LogLevel.Warning, NuGetLogCode.NU1000, "test log message")
+                {
+                    WarningLevel = WarningLevel.Severe
+                },
+                new AssetsLogMessage(LogLevel.Error, NuGetLogCode.NU1000, "test log message")
+            };
+
+            // Act
+            var lockFileFormat = new LockFileFormat();
+            var output = JObject.Parse(lockFileFormat.Render(lockFile));
+            var expected = JObject.Parse(lockFileContent);
+
+            // Assert
+            Assert.Equal(expected.ToString(), output.ToString());
+        }
+
+
+        [Fact]
+        public void LockFileFormat_WritesFullErrorMessages()
+        {
+
+            // Arrange
+            var lockFileContent = @"{
+  ""version"": 3,
+  ""targets"": {
+    "".NETPlatform,Version=v5.0"": {
+      ""System.Runtime/4.0.20-beta-22927"": {
+        ""type"": ""package"",
+        ""dependencies"": {
+          ""Frob"": ""4.0.20""
+        },
+        ""compile"": {
+          ""ref/dotnet/System.Runtime.dll"": {}
+        }
+      }
+    }
+  },
+  ""libraries"": {
+    ""System.Runtime/4.0.20-beta-22927"": {
+      ""sha512"": ""sup3rs3cur3"",
+      ""type"": ""package"",
+      ""files"": [
+        ""System.Runtime.nuspec""
+      ]
+    }
+  },
+  ""projectFileDependencyGroups"": {
+    """": [
+      ""System.Runtime [4.0.10-beta-*, )""
+    ],
+    "".NETPlatform,Version=v5.0"": []
+  },
+  ""logs"": [
+    {
+      ""code"": ""NU1000"",
+      ""level"": ""Error"",
+      ""filePath"": ""kung\\fu\\fighting.targets"",
+      ""startLineNumber"": 11,
+      ""startColumnNumber"": 2,
+      ""endLineNumber"": 10,
+      ""message"": ""test log message"",
+      ""targetGraph"": [
+        ""net46"",
+        ""netcoreapp1.0"",
+        ""netstandard1.6""
+      ]
+    }
+  ]
+}";
+            var lockFile = new LockFile()
+            {
+                Version = 3
+            };
+
+            var target = new LockFileTarget()
+            {
+                TargetFramework = FrameworkConstants.CommonFrameworks.DotNet
+            };
+
+            var targetLib = new LockFileTargetLibrary()
+            {
+                Name = "System.Runtime",
+                Version = NuGetVersion.Parse("4.0.20-beta-22927"),
+                Type = LibraryType.Package
+            };
+
+            targetLib.Dependencies.Add(new Packaging.Core.PackageDependency("Frob",
+                new VersionRange(NuGetVersion.Parse("4.0.20"))));
+            targetLib.CompileTimeAssemblies.Add(new LockFileItem("ref/dotnet/System.Runtime.dll"));
+            target.Libraries.Add(targetLib);
+            lockFile.Targets.Add(target);
+
+            var lib = new LockFileLibrary()
+            {
+                Name = "System.Runtime",
+                Version = NuGetVersion.Parse("4.0.20-beta-22927"),
+                Type = LibraryType.Package,
+                Sha512 = "sup3rs3cur3"
+            };
+            lib.Files.Add("System.Runtime.nuspec");
+            lockFile.Libraries.Add(lib);
+
+            lockFile.ProjectFileDependencyGroups.Add(
+                new ProjectFileDependencyGroup("", new string[] { "System.Runtime [4.0.10-beta-*, )" }));
+            lockFile.ProjectFileDependencyGroups.Add(
+                new ProjectFileDependencyGroup(FrameworkConstants.CommonFrameworks.DotNet.DotNetFrameworkName, new string[0]));
+
+            lockFile.LogMessages = new List<IAssetsLogMessage>
+            {
+                new AssetsLogMessage(LogLevel.Error, NuGetLogCode.NU1000, "test log message")
+                {
+                    FilePath = @"kung\fu\fighting.targets",
+                    ProjectPath = @"kung\fu\fighting.csproj",
+                    TargetGraphs = new List<string>{ "net46", "netcoreapp1.0", "netstandard1.6" },
+                    Time = DateTimeOffset.UtcNow,
+                    StartLineNumber = 11,
+                    StartColumnNumber = 2,
+                    EndLineNumber = 11,
+                    EndColumnNumber = 10
+                }
+            };
+
+            // Act
+            var lockFileFormat = new LockFileFormat();
+            var output = JObject.Parse(lockFileFormat.Render(lockFile));
+            var expected = JObject.Parse(lockFileContent);
+
+            // Assert
+            Assert.Equal(expected.ToString(), output.ToString());
+        }
+
+        public static void WaitForDebugger()
+        {
+            Console.WriteLine("Waiting for debugger to attach.");
+            Console.WriteLine($"Process ID: {Process.GetCurrentProcess().Id}");
+
+            while (!Debugger.IsAttached)
+            {
+                System.Threading.Thread.Sleep(100);
+            }
+            Debugger.Break();
         }
     }
 }
