@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -144,14 +144,9 @@ namespace NuGet.Commands
             {
                 settings = restoreArgs.GetSettings(rootPath);
             }
-
-            // Here we are already overwriting the global path and the fallback path.
-            // we should not be doing this. I should get it from the DG file
+            // All of these are set when the DG Spec is created!
             var fallbackPaths = new ReadOnlyCollection<string>(project.PackageSpec.RestoreMetadata.FallbackFolders);
-            var globalPath = project.PackageSpec.RestoreMetadata.PackagesPath; // TODO NK - Is this true?
-           // var globalPath = restoreArgs.GetEffectiveGlobalPackagesFolder(rootPath, settings);
-//            var fallbackPaths = restoreArgs.GetEffectiveFallbackPackageFolders(settings);
-
+            var globalPath = project.PackageSpec.RestoreMetadata.PackagesPath;
 
             var sources = restoreArgs.GetEffectiveSources(settings);
 
