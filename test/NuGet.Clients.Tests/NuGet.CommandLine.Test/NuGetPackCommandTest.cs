@@ -2717,8 +2717,8 @@ namespace Proj1
             }
         }
 
-        // Test that NuGet packages of the project are added as dependencies 
-        // even if there is already an indirect depenency, provided that the 
+        // Test that NuGet packages of the project are added as dependencies
+        // even if there is already an indirect depenency, provided that the
         // project requires a higher version number than the indirect dependency.
         [Theory]
         [InlineData("packages.config")]
@@ -2739,7 +2739,7 @@ namespace Proj1
                 Util.CreateFile(
                     proj1Directory,
                     "proj1.csproj",
-@"<Project ToolsVersion='4.0' DefaultTargets='Build' 
+@"<Project ToolsVersion='4.0' DefaultTargets='Build'
     xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
   <PropertyGroup>
     <OutputType>Library</OutputType>
@@ -2758,7 +2758,7 @@ namespace Proj1
                     proj1Directory,
                     "proj1_file1.cs",
 @"using System;
- 
+
 namespace Proj1
 {
     public class Class1
@@ -2813,7 +2813,7 @@ namespace Proj1
                     "test.sln",
                     "# test solution");
 
-                // Act                 
+                // Act
                 var r = CommandRunner.Run(
                     nugetexe,
                     proj1Directory,
@@ -2826,7 +2826,7 @@ namespace Proj1
                 Assert.Equal(1, package.DependencySets.Count());
                 var dependencySet = package.DependencySets.First();
 
-                // Verify that testPackage2 is added as dependency in addition to testPackage1. 
+                // Verify that testPackage2 is added as dependency in addition to testPackage1.
                 // testPackage3 and testPackage4 are not added because they are already referenced by testPackage1 with the correct version range.
                 Assert.Equal(4, dependencySet.Dependencies.Count);
                 var dependency1 = dependencySet.Dependencies.Single(d => d.Id == "testPackage1");
@@ -2844,8 +2844,8 @@ namespace Proj1
             }
         }
 
-        // Test that NuGet packages of the project are added as dependencies 
-        // even if there is already an indirect depenency, provided that the 
+        // Test that NuGet packages of the project are added as dependencies
+        // even if there is already an indirect depenency, provided that the
         // project requires a higher version number than the indirect dependency.
         [Theory]
         [InlineData("packages.config")]
@@ -2866,7 +2866,7 @@ namespace Proj1
                 Util.CreateFile(
                     proj1Directory,
                     "proj1.csproj",
-@"<Project ToolsVersion='4.0' DefaultTargets='Build' 
+@"<Project ToolsVersion='4.0' DefaultTargets='Build'
     xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
   <PropertyGroup>
     <OutputType>Library</OutputType>
@@ -2885,7 +2885,7 @@ namespace Proj1
                     proj1Directory,
                     "proj1_file1.cs",
 @"using System;
- 
+
 namespace Proj1
 {
     public class Class1
@@ -2931,7 +2931,7 @@ namespace Proj1
                     "test.sln",
                     "# test solution");
 
-                // Act                 
+                // Act
                 var r = CommandRunner.Run(
                     nugetexe,
                     proj1Directory,
@@ -2944,7 +2944,7 @@ namespace Proj1
                 Assert.Equal(1, package.DependencySets.Count());
                 var dependencySet = package.DependencySets.First();
 
-                // Verify that testPackage1 is added as dependency in addition to testPackage3. 
+                // Verify that testPackage1 is added as dependency in addition to testPackage3.
                 // testPackage2 is not added because it is already referenced by testPackage3 with the correct version range.
                 Assert.Equal(2, dependencySet.Dependencies.Count);
                 var dependency1 = dependencySet.Dependencies.Single(d => d.Id == "testPackage1");
@@ -4111,7 +4111,7 @@ stuff \n &lt;&lt;
                 var r = CommandRunner.Run(
                     nugetexe,
                     workingDirectory,
-                    "pack packageA.nuspec",
+                    "pack packageA.nuspec -verbosity detailed",
                     waitForExit: true);
                 Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
 
@@ -4671,7 +4671,7 @@ stuff \n <<".Replace("\r\n", "\n");
             }
         }
 
-        [Fact]
+        [Fact(Skip = "This command relies on an older version of dotnet.exe, project.json is no longer supported for NETCore. Fix this feature and test!")]
         public void PackCommand_BuildBareMinimumProjectJson()
         {
             var nugetexe = Util.GetNuGetExePath();
@@ -4719,7 +4719,7 @@ stuff \n <<".Replace("\r\n", "\n");
             }
         }
 
-        [Fact]
+        [Fact(Skip = "This command relies on an older version of dotnet.exe, project.json is no longer supported for NETCore. Fix this feature and test!")]
         public void PackCommand_BuildProjectJson()
         {
             var nugetexe = Util.GetNuGetExePath();
@@ -4782,7 +4782,8 @@ stuff \n <<".Replace("\r\n", "\n");
             }
         }
 
-        [SkipMono]
+        //[SkipMono]
+        [Fact(Skip = "This command relies on an older version of dotnet.exe, project.json is no longer supported for NETCore. Fix this feature and test!")]
         public void PackCommand_BuildProjectJsonWithFullBasePath()
         {
             var nugetexe = Util.GetNuGetExePath();
@@ -4846,7 +4847,8 @@ stuff \n <<".Replace("\r\n", "\n");
             }
         }
 
-        [SkipMono]
+        //[SkipMono]
+        [Fact(Skip = "This command relies on an older version of dotnet.exe, project.json is no longer supported for NETCore. Fix this feature and test!")]
         public void PackCommand_BuildProjectJsonWithRelativeBasePath()
         {
             var nugetexe = Util.GetNuGetExePath();
