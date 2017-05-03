@@ -243,8 +243,21 @@ namespace NuGet.Commands
 
                             if (!targetLibrary.Equals(targetLibraryWithoutFallback))
                             {
-                                var libraryName = $"{library.Name} {library.Version}";
-                                _logger.LogWarning(string.Format(CultureInfo.CurrentCulture, Strings.Log_ImportsFallbackWarning, libraryName, String.Join(", ", fallbackFramework.Fallback), nonFallbackFramework));
+                                var libraryName = DiagnosticUtility.FormatIdentity(library);
+
+                                var message = string.Format(CultureInfo.CurrentCulture,
+                                    Strings.Log_ImportsFallbackWarning,
+                                    libraryName,
+                                    string.Join(", ", fallbackFramework.Fallback),
+                                    nonFallbackFramework);
+
+                                var logMessage = RestoreLogMessage.CreateWarning(
+                                    NuGetLogCode.NU1000,
+                                    message,
+                                    library.Name,
+                                    targetGraph.Name);
+
+                                _logger.Log(logMessage);
 
                                 // only log the warning once per library
                                 librariesWithWarnings.Add(library);

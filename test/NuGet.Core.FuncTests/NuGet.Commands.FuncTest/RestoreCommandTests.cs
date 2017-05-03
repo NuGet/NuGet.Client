@@ -1577,7 +1577,7 @@ namespace NuGet.Commands.FuncTest
 
                 Assert.Contains(expectedIssue, result.CompatibilityCheckResults.SelectMany(c => c.Issues).ToArray());
                 Assert.False(result.CompatibilityCheckResults.Any(c => c.Success));
-                Assert.Contains($"NU1000: {expectedIssue.Format()}", logger.Messages);
+                Assert.Contains(expectedIssue.Format(), logger.Messages);
 
                 Assert.Equal(9, logger.Errors);
                 Assert.Equal(2, installed.Count);
