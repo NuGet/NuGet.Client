@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -144,8 +145,13 @@ namespace NuGet.Commands
                 settings = restoreArgs.GetSettings(rootPath);
             }
 
-            var globalPath = restoreArgs.GetEffectiveGlobalPackagesFolder(rootPath, settings);
-            var fallbackPaths = restoreArgs.GetEffectiveFallbackPackageFolders(settings);
+            // Here we are already overwriting the global path and the fallback path.
+            // we should not be doing this. I should get it from the DG file
+            var fallbackPaths = new ReadOnlyCollection<string>(project.PackageSpec.RestoreMetadata.FallbackFolders);
+            var globalPath = project.PackageSpec.RestoreMetadata.PackagesPath; // TODO NK - Is this true?
+           // var globalPath = restoreArgs.GetEffectiveGlobalPackagesFolder(rootPath, settings);
+//            var fallbackPaths = restoreArgs.GetEffectiveFallbackPackageFolders(settings);
+
 
             var sources = restoreArgs.GetEffectiveSources(settings);
 

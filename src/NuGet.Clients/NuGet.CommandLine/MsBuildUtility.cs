@@ -71,7 +71,7 @@ namespace NuGet.CommandLine
             int timeOut,
             IConsole console,
             bool recursive)
-        {
+        { // OVERRIDING in EXE 
             string msbuildPath = GetMsbuild(msbuildDirectory);
 
             if (!File.Exists(msbuildPath))

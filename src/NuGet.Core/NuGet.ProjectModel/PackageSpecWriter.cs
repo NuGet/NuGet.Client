@@ -52,6 +52,7 @@ namespace NuGet.ProjectModel
             SetDictionaryValue(writer, "packInclude", packageSpec.PackInclude);
             SetPackOptions(writer, packageSpec);
             SetMSBuildMetadata(writer, packageSpec);
+            SetSources(writer, packageSpec);
             SetDictionaryValues(writer, "scripts", packageSpec.Scripts);
 
             if (packageSpec.Dependencies.Any())
@@ -94,6 +95,9 @@ namespace NuGet.ProjectModel
             }
         }
 
+        private static void SetSources(IObjectWriter writer, PackageSpec packageSpec) { 
+
+        }
         private static void SetMSBuildMetadata(IObjectWriter writer, PackageSpec packageSpec)
         {
             var msbuildMetadata = packageSpec.RestoreMetadata;
@@ -115,7 +119,7 @@ namespace NuGet.ProjectModel
             SetValue(writer, "projectName", msbuildMetadata.ProjectName);
             SetValue(writer, "projectPath", msbuildMetadata.ProjectPath);
             SetValue(writer, "projectJsonPath", msbuildMetadata.ProjectJsonPath);
-            SetValue(writer, "packagesPath", msbuildMetadata.PackagesPath);
+            SetValue(writer, "packagesPath", msbuildMetadata.PackagesPath); // SET the value
             SetValue(writer, "outputPath", msbuildMetadata.OutputPath);
 
             if (msbuildMetadata.ProjectStyle != ProjectStyle.Unknown)
