@@ -46,9 +46,9 @@ namespace NuGet.Build.Tasks
         {
             if (string.IsNullOrEmpty(RestoreConfigFile))
             {
-                    return Settings.LoadDefaultSettings(projectDirectory,
-                        configFileName: null,
-                        machineWideSettings: _machineWideSettings.Value);
+                return Settings.LoadDefaultSettings(projectDirectory,
+                    configFileName: null,
+                    machineWideSettings: _machineWideSettings.Value);
             }
             else
             {
@@ -62,15 +62,32 @@ namespace NuGet.Build.Tasks
 
         public override bool Execute()
         {
-            System.Diagnostics.Debugger.Launch();
-
+            // log inputs
+            var log = new MSBuildLogger(Log);
+            log.LogDebug($"(in) ProjectUniqueName '{ProjectUniqueName}'");
+            if (RestoreSources != null)
+            {
+                log.LogDebug($"(in) RestoreSources '{string.Join(";", RestoreSources.Select(p => p))}'");
+            }
+            if (RestorePackagesPath != null)
+            {
+                log.LogDebug($"(in) RestorePackagesPath '{RestorePackagesPath}'");
+            }
+            if (RestoreFallbackFolders != null)
+            {
+                log.LogDebug($"(in) RestoreFallbackFolders '{string.Join(";", RestoreFallbackFolders.Select(p => p))}'");
+            }
+            if (RestoreConfigFile != null)
+            {
+                log.LogDebug($"(in) RestoreConfigFile '{RestoreConfigFile}'");
+            }
             var settings = GetSettings(Path.GetDirectoryName(ProjectUniqueName));
 
-            // Log inputs
             if (string.IsNullOrEmpty(RestorePackagesPath))
             {
                 OutputPackagesPath = SettingsUtility.GetGlobalPackagesFolder(settings);
-            } else
+            }
+            else
             {
                 OutputPackagesPath = RestorePackagesPath;
             }
@@ -80,19 +97,24 @@ namespace NuGet.Build.Tasks
                 var packageSourceProvider = new PackageSourceProvider(settings);
                 var packageSourcesFromProvider = packageSourceProvider.LoadPackageSources();
                 OutputSources = packageSourcesFromProvider.Select(e => e.Source).ToArray();
-            } else
+            }
+            else
             {
                 OutputSources = RestoreSources;
             }
 
-            if(RestoreFallbackFolders == null)
+            if (RestoreFallbackFolders == null)
             {
                 OutputFallbackFolders = SettingsUtility.GetFallbackPackageFolders(settings).ToArray();
-            } else
+            }
+            else
             {
                 OutputFallbackFolders = RestoreFallbackFolders;
             }
 
+            log.LogDebug($"(out) OutputPackagesPath '{OutputPackagesPath}'");
+            log.LogDebug($"(out) OutputSources '{string.Join(";", OutputSources.Select(p => p))}'");
+            log.LogDebug($"(out) OutputFallbackFolders '{string.Join(";", OutputFallbackFolders.Select(p => p))}'");
 
             return true;
         }
