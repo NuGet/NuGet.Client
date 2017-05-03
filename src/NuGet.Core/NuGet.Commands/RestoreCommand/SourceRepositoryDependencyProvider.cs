@@ -174,7 +174,7 @@ namespace NuGet.Commands
             {
                 if (!_ignoreWarning)
                 {
-                    _logger.LogWarning(e.Message);
+                    await _logger.LogAsync(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1801, e.Message, match.Name));
                 }
             }
             finally
@@ -233,7 +233,7 @@ namespace NuGet.Commands
             {
                 if (!_ignoreWarning)
                 {
-                    _logger.LogWarning(e.Message);
+                    await _logger.LogAsync(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1801, e.Message, identity.Name));
                 }
             }
             finally
@@ -308,7 +308,7 @@ namespace NuGet.Commands
             {
                 if (!_ignoreWarning)
                 {
-                    _logger.LogWarning(e.Message);
+                    await _logger.LogAsync(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1801, e.Message, id));
                 }
                 return null;
             }

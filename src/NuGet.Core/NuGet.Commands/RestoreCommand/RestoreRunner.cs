@@ -197,10 +197,12 @@ namespace NuGet.Commands
                 {
                     // No need to throw here - the situation is harmless, and we want to report all possible
                     // inputs that don't resolve to a project.
-                    restoreContext.Log.LogWarning(string.Format(
+                    var message = string.Format(
                             CultureInfo.CurrentCulture,
                             Strings.Error_UnableToLocateRestoreTarget,
-                            Path.GetFullPath(input)));
+                            Path.GetFullPath(input));
+
+                    await restoreContext.Log.LogAsync(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1501, message));
                 }
                 foreach (var request in inputRequests)
                 {

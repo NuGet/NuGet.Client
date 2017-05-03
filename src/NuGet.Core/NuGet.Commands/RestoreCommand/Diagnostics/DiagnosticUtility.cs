@@ -52,5 +52,20 @@ namespace NuGet.Commands
 
             return $"{id} {range.MinVersion.ToNormalizedString()}";
         }
+
+        /// <summary>
+        /// Format a graph name with an optional RID.
+        /// </summary>
+        public static string FormatGraphName(RestoreTargetGraph graph)
+        {
+            if (string.IsNullOrEmpty(graph.RuntimeIdentifier))
+            {
+                return $"({graph.Framework.DotNetFrameworkName})";
+            }
+            else
+            {
+                return $"({graph.Framework.DotNetFrameworkName} RuntimeIdentifier: {graph.RuntimeIdentifier})";
+            }
+        }
     }
 }

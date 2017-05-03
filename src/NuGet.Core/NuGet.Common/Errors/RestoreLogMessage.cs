@@ -72,8 +72,8 @@ namespace NuGet.Common
         /// </summary>
         public static RestoreLogMessage CreateWarning(
             NuGetLogCode code,
-            string libraryId,
             string message,
+            string libraryId,
             params string[] targetGraphs)
         {
             return new RestoreLogMessage(LogLevel.Warning, message)
@@ -82,6 +82,38 @@ namespace NuGet.Common
                 LibraryId = libraryId,
                 TargetGraphs = targetGraphs.ToList()
             };
+        }
+
+        /// <summary>
+        /// Create a warning log message.
+        /// </summary>
+        public static RestoreLogMessage CreateWarning(
+            NuGetLogCode code,
+            string message)
+        {
+            return new RestoreLogMessage(LogLevel.Warning, code, message);
+        }
+
+        /// <summary>
+        /// Create an error log message.
+        /// </summary>
+        public static RestoreLogMessage CreateError(
+            NuGetLogCode code,
+            string message)
+        {
+            return new RestoreLogMessage(LogLevel.Error, code, message);
+        }
+
+        /// <summary>
+        /// Create an error log message for a target graph.
+        /// </summary>
+        public static RestoreLogMessage CreateError(
+            NuGetLogCode code,
+            string message,
+            string libraryId,
+            params string[] targetGraphs)
+        {
+            return new RestoreLogMessage(LogLevel.Error, code, message);
         }
     }
 }

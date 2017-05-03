@@ -741,7 +741,7 @@ namespace NuGet.Commands.FuncTest
                 var lockFileFormat = new LockFileFormat();
                 var command = new RestoreCommand(request);
                 var framework = new FallbackFramework(NuGetFramework.Parse("dotnet"), new List<NuGetFramework> { NuGetFramework.Parse("portable-net452+win81") });
-                var warning = "NU1500: Package 'Newtonsoft.Json 7.0.1' was restored using '.NETPortable,Version=v0.0,Profile=net452+win81' instead the project target framework '.NETPlatform,Version=v5.0'. This may cause compatibility problems.";
+                var warning = "Package 'Newtonsoft.Json 7.0.1' was restored using '.NETPortable,Version=v0.0,Profile=net452+win81' instead the project target framework '.NETPlatform,Version=v5.0'. This may cause compatibility problems.";
 
                 // Act
                 var result = await command.ExecuteAsync();
@@ -753,7 +753,7 @@ namespace NuGet.Commands.FuncTest
                 Assert.Equal(1, result.GetAllInstalled().Count);
                 Assert.Equal(0, logger.Errors);
                 Assert.Equal(1, logger.Warnings);
-                Assert.Equal(1, logger.Messages.Where(message => message.Equals(warning)).Count());
+                Assert.Equal(1, logger.Messages.Where(message => message.Contains(warning)).Count());
             }
         }
 
@@ -1577,9 +1577,9 @@ namespace NuGet.Commands.FuncTest
 
                 Assert.Contains(expectedIssue, result.CompatibilityCheckResults.SelectMany(c => c.Issues).ToArray());
                 Assert.False(result.CompatibilityCheckResults.Any(c => c.Success));
-                Assert.Contains($"NU1000: {expectedIssue.Format()}", logger.Messages);
+                Assert.True(logger.Messages.Any(e => e.Contains(expectedIssue.Format())));
 
-                Assert.Equal(9, logger.Errors);
+                Assert.Equal(6, logger.Errors);
                 Assert.Equal(2, installed.Count);
                 Assert.Equal(0, unresolved.Count);
                 Assert.Equal(0, runtimeAssemblies.Count);
