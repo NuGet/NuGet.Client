@@ -73,6 +73,7 @@ Function Update-VsixVersion {
 }
 
 $msbuildExe = 'C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\MSBuild\15.0\bin\msbuild.exe'
+
 if ($BuildRTM -eq 'true')
 {
     # Set the $(NupkgOutputDir) build variable in VSTS build
@@ -87,7 +88,21 @@ if ($BuildRTM -eq 'true')
     $json = (Get-Content $BuildInfoJsonFile -Raw) | ConvertFrom-Json
     $currentBuild = [System.Decimal]::Parse($json.BuildNumber)
     # Set the $(Revision) build variable in VSTS build
-    Write-Host "##vso[task.setvariable variable=Revision;]$currentBuild" 
+    Write-Host "##vso[task.setvariable variable=Revision;]$currentBuild"
+    Write-Host "##vso[build.updatebuildnumber]$currentBuild" 
+    $oldBuildOutputDirectory = Split-Path -Path $BuildInfoJsonFile
+    $branchDirectory = Split-Path -Path $oldBuildOutputDirectory
+    $newBuildOutputFolder =  Join-Path $branchDirectory $currentBuild
+    if(Test-Path $newBuildOutputFolder)
+    {
+        Move-Item -Path $BuildInfoJsonFile -Destination $newBuildOutputFolder
+        Remove-Item -Path $oldBuildOutputDirectory -Force
+    }
+    else
+    {
+        Rename-Item $oldBuildOutputDirectory $currentBuild
+    }
+    
 }
 else
 {
@@ -97,6 +112,7 @@ else
     Set-Content $BuildCounterFile $newBuildCounter
     # Set the $(Revision) build variable in VSTS build
     Write-Host "##vso[task.setvariable variable=Revision;]$newBuildCounter"
+    Write-Host "##vso[build.updatebuildnumber]$newBuildCounter"
     $jsonRepresentation = @{
         BuildNumber = $newBuildCounter
         CommitHash = $env:BUILD_SOURCEVERSION
