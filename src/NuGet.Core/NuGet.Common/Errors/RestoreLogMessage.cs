@@ -6,23 +6,21 @@ using System.Threading.Tasks;
 
 namespace NuGet.Common
 {
-    public class RestoreLogMessage : IAssetsLogMessage
+    public class RestoreLogMessage : IRestoreLogMessage
     {
         public LogLevel Level { get; set; }
         public NuGetLogCode Code { get; set; }
         public string Message { get; set; }
-        public IReadOnlyList<string> TargetGraphs { get; set; }
         public DateTimeOffset Time { get; set; }
         public string ProjectPath { get; set; }
         public WarningLevel WarningLevel { get; set; }
         public string FilePath { get; set; }
-        public int LineNumber { get; set; } = -1;
-        public int ColumnNumber { get; set; } = -1;
-
-        /// <summary>
-        /// Project or Package ReferenceId
-        /// </summary>
+        public int StartLineNumber { get; set; } = -1;
+        public int StartColumnNumber { get; set; } = -1;
+        public int EndLineNumber { get; set; } = -1;
+        public int EndColumnNumber { get; set; } = -1;
         public string LibraryId { get; set; }
+        public IReadOnlyList<string> TargetGraphs { get; set; }
 
         public RestoreLogMessage(LogLevel logLevel, NuGetLogCode errorCode, 
             string errorString, string targetGraph)
@@ -30,7 +28,7 @@ namespace NuGet.Common
             Level = logLevel;
             Code = errorCode;
             Message = errorString;
-            Time = DateTimeOffset.Now;
+            Time = DateTimeOffset.UtcNow;
 
             if (!string.IsNullOrEmpty(targetGraph))
             {
@@ -44,59 +42,11 @@ namespace NuGet.Common
         public RestoreLogMessage(LogLevel logLevel, NuGetLogCode errorCode, string errorString)
             : this(logLevel, errorCode, errorString, string.Empty)
         {
-
         }
 
         public RestoreLogMessage(LogLevel logLevel, string errorString)
             : this(logLevel, LogLevel.Error == logLevel ? NuGetLogCode.NU1000 : NuGetLogCode.NU1500, errorString, string.Empty)
-        { 
-        }
-
-        public IDictionary<string, object> ToDictionary()
         {
-            var errorDictionary = new Dictionary<string, object>
-            {
-                [LogMessageProperties.CODE] = Enum.GetName(typeof(NuGetLogCode), Code),
-                [LogMessageProperties.LEVEL] = Enum.GetName(typeof(LogLevel), Level)
-            };
-
-            if (Level == LogLevel.Warning)
-            {
-                errorDictionary[LogMessageProperties.WARNING_LEVEL] = WarningLevel;
-            }
-
-            if (FilePath != null)
-            {
-                errorDictionary[LogMessageProperties.FILE_PATH] = FilePath;
-            }
-
-            if (LineNumber >= 0)
-            {
-                errorDictionary[LogMessageProperties.LINE_NUMBER] = LineNumber;
-            }
-
-            if (ColumnNumber >= 0)
-            {
-                errorDictionary[LogMessageProperties.COLUMN_NUMBER] = ColumnNumber;
-            }
-
-            if (Message != null)
-            {
-                errorDictionary[LogMessageProperties.MESSAGE] = Message;
-            }
-
-            if (TargetGraphs != null && TargetGraphs.Any() && TargetGraphs.All(l => !string.IsNullOrEmpty(l)))
-            {
-                errorDictionary[LogMessageProperties.TARGET_GRAPH] = TargetGraphs;
-            }
-
-            return errorDictionary;
-        }
-
-
-        public Task<IDictionary<string, object>> ToDictionaryAsync()
-        {
-            return Task.FromResult(ToDictionary());
         }
 
         public string FormatMessage()
