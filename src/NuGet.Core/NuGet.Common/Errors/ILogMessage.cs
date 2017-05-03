@@ -34,21 +34,6 @@ namespace NuGet.Common
         string ProjectPath { get; set; }
 
         /// <summary>
-        /// Indicates the file for which the error was thrown.
-        /// </summary>
-        string FilePath { get; set; }
-
-        /// <summary>
-        /// Indicates the line for which the error was thrown.
-        /// </summary>
-        int LineNumber { get; set; }
-
-        /// <summary>
-        /// Indicates the line for which the error was thrown.
-        /// </summary>
-        int ColumnNumber { get; set; }
-
-        /// <summary>
         /// Indicates the date time at which the error occurred.
         /// </summary>
         DateTimeOffset Time { get; set; }

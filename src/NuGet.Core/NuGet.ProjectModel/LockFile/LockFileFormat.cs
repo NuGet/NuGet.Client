@@ -304,13 +304,12 @@ namespace NuGet.ProjectModel
             return target;
         }
 
-        private static JObject WriteLogMessage(IAssetsLogMessage logMessage)
+        private static JObject WriteLogMessage(AssetsLogMessage logMessage)
         {
-            var messageDictionary = logMessage.ToDictionary();
-            return JObject.FromObject(messageDictionary);
+            return logMessage.ToJObject();
         }
 
-        private static IAssetsLogMessage ReadLogMessage(JToken json)
+        private static AssetsLogMessage ReadLogMessage(JToken json)
         {
             if (json == null)
             {
@@ -318,22 +317,13 @@ namespace NuGet.ProjectModel
             }
             else
             {
-                RestoreLogMessage logMessage = null;
-
-                var levelJson = json[LogMessageProperties.LEVEL];
-                var codeJson = json[LogMessageProperties.CODE];
-                var warningLevelJson = json[LogMessageProperties.WARNING_LEVEL];
-                var filePathJson = json[LogMessageProperties.FILE_PATH];
-                var lineNumberJson = json[LogMessageProperties.LINE_NUMBER];
-                var columnNumberJson = json[LogMessageProperties.COLUMN_NUMBER];
-                var messageJson = json[LogMessageProperties.MESSAGE];
-                var targetGraphsJson = ReadArray(json[LogMessageProperties.TARGET_GRAPH] as JArray, ReadString);
+                AssetsLogMessage logMessage = null;
 
                 return logMessage;
             }
         }
 
-        private static JArray WriteLogMessages(IEnumerable<IAssetsLogMessage> logMessages)
+        private static JArray WriteLogMessages(IEnumerable<AssetsLogMessage> logMessages)
         {
             var logMessageArray = new JArray();
             foreach(var logMessage in logMessages)

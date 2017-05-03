@@ -25,7 +25,7 @@ namespace NuGet.ProjectModel
         public IList<LockFileLibrary> Libraries { get; set; } = new List<LockFileLibrary>();
         public IList<LockFileTarget> Targets { get; set; } = new List<LockFileTarget>();
         public IList<LockFileItem> PackageFolders { get; set; } = new List<LockFileItem>();
-        public IList<IAssetsLogMessage> LogMessages { get; set; } = new List<IAssetsLogMessage>();
+        public IList<AssetsLogMessage> LogMessages { get; set; } = new List<AssetsLogMessage>();
         public PackageSpec PackageSpec { get; set; }
 
         public bool IsValidForPackageSpec(PackageSpec spec)
