@@ -11,14 +11,16 @@ namespace NuGet.Common
         public LogLevel Level { get; set; }
         public NuGetLogCode Code { get; set; }
         public string Message { get; set; }
-        public IReadOnlyList<string> TargetGraphs { get; set; }
         public DateTimeOffset Time { get; set; }
         public string ProjectPath { get; set; }
         public WarningLevel WarningLevel { get; set; }
         public string FilePath { get; set; }
-        public int LineNumber { get; set; } = -1;
-        public int ColumnNumber { get; set; } = -1;
+        public int StartLineNumber { get; set; } = -1;
+        public int StartColumnNumber { get; set; } = -1;
+        public int EndLineNumber { get; set; } = -1;
+        public int EndColumnNumber { get; set; } = -1;
         public string LibraryId { get; set; }
+        public IReadOnlyList<string> TargetGraphs { get; set; }
 
         public RestoreLogMessage(LogLevel logLevel, NuGetLogCode errorCode, 
             string errorString, string targetGraph)
@@ -40,12 +42,11 @@ namespace NuGet.Common
         public RestoreLogMessage(LogLevel logLevel, NuGetLogCode errorCode, string errorString)
             : this(logLevel, errorCode, errorString, string.Empty)
         {
-
         }
 
         public RestoreLogMessage(LogLevel logLevel, string errorString)
             : this(logLevel, LogLevel.Error == logLevel ? NuGetLogCode.NU1000 : NuGetLogCode.NU1500, errorString, string.Empty)
-        { 
+        {
         }
 
         public string FormatMessage()

@@ -10,5 +10,10 @@ namespace NuGet.Common
         /// Project or Package Id
         /// </summary>
         string LibraryId { get; set; }
+
+        /// <summary>
+        /// List of TargetGraphs
+        /// </summary>
+        IReadOnlyList<string> TargetGraphs { get; set; }
     }
 }

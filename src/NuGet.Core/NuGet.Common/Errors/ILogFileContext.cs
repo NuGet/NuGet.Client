@@ -12,13 +12,23 @@ namespace NuGet.Common
         string FilePath { get; set; }
 
         /// <summary>
-        /// Indicates the line for which the error was thrown.
+        /// Indicates the starting line for which the error was thrown.
         /// </summary>
-        int LineNumber { get; set; }
+        int StartLineNumber { get; set; }
 
         /// <summary>
-        /// Indicates the column for which the error was thrown.
+        /// Indicates the starting column for which the error was thrown.
         /// </summary>
-        int ColumnNumber { get; set; }
+        int StartColumnNumber { get; set; }
+
+        /// <summary>
+        /// Indicates the ending line for which the error was thrown.
+        /// </summary>
+        int EndLineNumber { get; set; }
+
+        /// <summary>
+        /// Indicates the ending column for which the error was thrown.
+        /// </summary>
+        int EndColumnNumber { get; set; }
     }
 }
