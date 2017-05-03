@@ -304,21 +304,65 @@ namespace NuGet.ProjectModel
             return target;
         }
 
+        /// <summary>
+        /// Converts the <code>IAssetsLogMessage</code> object into a <code>JObject</code> that can be written into the assets file.
+        /// </summary>
+        /// <param name="logMessage"><code>IAssetsLogMessage</code> representing the log message.</param>
+        /// <returns><code>JObject</code> containg the json representation of the log message.</returns>
         private static JObject WriteLogMessage(IAssetsLogMessage logMessage)
         {
-            var messageDictionary = logMessage.ToDictionary();
-            return JObject.FromObject(messageDictionary);
+            var logJObject = new JObject()
+            {
+                [LogMessageProperties.CODE] = Enum.GetName(typeof(NuGetLogCode), logMessage.Code),
+                [LogMessageProperties.LEVEL] = Enum.GetName(typeof(LogLevel), logMessage.Level)
+            };
+
+            if (logMessage.Level == LogLevel.Warning)
+            {
+                logJObject[LogMessageProperties.WARNING_LEVEL] = logMessage.WarningLevel.ToString();
+            }
+
+            if (logMessage.FilePath != null)
+            {
+                logJObject[LogMessageProperties.FILE_PATH] = logMessage.FilePath;
+            }
+
+            if (logMessage.StartLineNumber >= 0)
+            {
+                logJObject[LogMessageProperties.LINE_NUMBER] = logMessage.StartLineNumber;
+            }
+
+            if (logMessage.StartColumnNumber >= 0)
+            {
+                logJObject[LogMessageProperties.COLUMN_NUMBER] = logMessage.StartColumnNumber;
+            }
+
+            if (logMessage.Message != null)
+            {
+                logJObject[LogMessageProperties.MESSAGE] = logMessage.Message;
+            }
+
+            if (logMessage.TargetGraphs != null && 
+                logMessage.TargetGraphs.Any() && 
+                logMessage.TargetGraphs.All(l => !string.IsNullOrEmpty(l)))
+            {
+                logJObject[LogMessageProperties.TARGET_GRAPH] = new JArray(logMessage.TargetGraphs);
+            }
+
+            return logJObject;
         }
 
-        private static IAssetsLogMessage ReadLogMessage(JToken json)
+        /// <summary>
+        /// Converts an <code>JObject</code> into an <code>IAssetsLogMessage</code>.
+        /// </summary>
+        /// <param name="json"><code>JObject</code> containg the json representation of the log message.</param>
+        /// <returns><code>IAssetsLogMessage</code> representing the log message.</returns>
+        private static IAssetsLogMessage ReadLogMessage(JObject json)
         {
-            if (json == null)
+            AssetsLogMessage assetsLogMessage = null;
+
+            if (json != null)
             {
-                return null;
-            }
-            else
-            {
-                RestoreLogMessage logMessage = null;
 
                 var levelJson = json[LogMessageProperties.LEVEL];
                 var codeJson = json[LogMessageProperties.CODE];
@@ -327,10 +371,53 @@ namespace NuGet.ProjectModel
                 var lineNumberJson = json[LogMessageProperties.LINE_NUMBER];
                 var columnNumberJson = json[LogMessageProperties.COLUMN_NUMBER];
                 var messageJson = json[LogMessageProperties.MESSAGE];
-                var targetGraphsJson = ReadArray(json[LogMessageProperties.TARGET_GRAPH] as JArray, ReadString);
 
-                return logMessage;
+                var isValid = true;
+
+                isValid &= Enum.TryParse(levelJson.Value<string>(), out LogLevel level);
+                isValid &= Enum.TryParse(codeJson.Value<string>(), out NuGetLogCode code);
+
+                if (isValid)
+                {
+                    assetsLogMessage = new AssetsLogMessage(level, code, messageJson.Value<string>())
+                    {
+                        TargetGraphs = (IReadOnlyList<string>)ReadArray(json[LogMessageProperties.TARGET_GRAPH] as JArray, ReadString)
+                    };
+
+                    if (level == LogLevel.Warning)
+                    {
+                        assetsLogMessage.WarningLevel = (WarningLevel)Enum.Parse(typeof(WarningLevel),
+                            warningLevelJson.Value<string>());
+                    }
+
+                    if (filePathJson != null)
+                    {
+                        assetsLogMessage.FilePath = filePathJson.Value<string>();
+                    }
+
+                    if (lineNumberJson != null)
+                    {
+                        assetsLogMessage.StartLineNumber = lineNumberJson.Value<int>();
+                    }
+
+                    if (columnNumberJson != null)
+                    {
+                        assetsLogMessage.StartColumnNumber = columnNumberJson.Value<int>();
+                    }
+
+                    if (messageJson != null)
+                    {
+                        assetsLogMessage.Message = messageJson.Value<string>();
+                    }
+                }
             }
+
+            return assetsLogMessage;
+        }
+
+        private static IAssetsLogMessage ReadLogMessage(JToken json)
+        {
+            return ReadLogMessage(json as JObject);          
         }
 
         private static JArray WriteLogMessages(IEnumerable<IAssetsLogMessage> logMessages)
