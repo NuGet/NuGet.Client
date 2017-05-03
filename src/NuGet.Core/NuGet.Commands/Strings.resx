@@ -182,7 +182,8 @@
     <value>Packages containing MSBuild targets and props files cannot be fully installed in projects targeting multiple frameworks. The MSBuild targets and props files have been ignored.</value>
   </data>
   <data name="Log_ResolverConflict" xml:space="preserve">
-    <value>Unable to satisfy conflicting requests for '{0}': {1}</value>
+    <value>Unable to satisfy conflicting requests for '{0}': {1} Framework: {2}</value>
+    <comment>0 - package id, 1 - comma delimited list of conflicts, 2 - framework</comment>
   </data>
   <data name="ResolverRequest_ToStringFormat" xml:space="preserve">
     <value>{0} (via {1})</value>

@@ -18,21 +18,78 @@ namespace NuGet.Common
     ///         
     ///     zw - 'zw' are the least two digit.
     ///         These could be used for different errors or warnings within the broad categories set by digits 'xy'.
-    /// </summary>
+    ///         
+    /// Groups:
+    /// 1000 - Restore
     /// 
+    /// Sub groups:
+    /// 1000/1500 Input
+    /// 1100/1600 Resolver
+    /// 1200/1700 Compat
+    /// 1300/1800 Feed
+    /// 1400/1900 Package
+    /// </summary>
     public enum NuGetLogCode
     {
         /// <summary>
         /// Undefined error
         /// </summary>
         NU1000 = 1000,
-        NU1001, // Actual errors start here
-        NU1002,
+
+        /// <summary>
+        /// Project has zero target frameworks.
+        /// </summary>
+        NU1001 = 1001,
+
+        /// <summary>
+        /// 
+        /// </summary>
+        NU1002 = 1002,
+
+        /// <summary>
+        /// Unable to resolve package
+        /// TODO split this up into the following errors.
+        /// </summary>
+        NU1101 = 1101,
+        NU1102 = 1102,
+        NU1103 = 1103,
+        NU1104 = 1104,
+        NU1105 = 1105,
+
+        /// <summary>
+        /// Resolver conflict
+        /// </summary>
+        NU1106 = 1106,
+
+        /// <summary>
+        /// Dependency project has an incompatible framework.
+        /// </summary>
+        NU1201 = 1201,
+
+        /// <summary>
+        /// Dependency package does not contain assets for the current framework.
+        /// </summary>
+        NU1202 = 1202,
+
+        /// <summary>
+        /// un-matched reference assemblies
+        /// </summary>
+        NU1203 = 1203,
 
         /// <summary>
         /// Undefined warning
         /// </summary>
         NU1500 = 1500,
+
+        /// <summary>
+        /// Missing restore target.
+        /// </summary>
+        NU1501 = 1501,
+
+        /// <summary>
+        /// Unknown compatibility profile
+        /// </summary>
+        NU1502 = 1502,
 
         /// <summary>
         /// Dependency bumped up
@@ -42,16 +99,41 @@ namespace NuGet.Common
         /// <summary>
         /// Non-exact match on dependency range due to non inclusive minimum bound.
         /// </summary>
-        NU1602,
+        NU1602 = 1602,
 
         /// <summary>
         /// Non-exact match on dependency range due to missing package version.
         /// </summary>
-        NU1603,
+        NU1603 = 1603,
 
         /// <summary>
         /// Project dependency does not include a lower bound.
         /// </summary>
-        NU1604
+        NU1604 = 1604,
+
+        /// <summary>
+        /// Package dependency downgraded.
+        /// </summary>
+        NU1605 = 1605,
+
+        /// <summary>
+        /// Circular dependency.
+        /// </summary>
+        NU1606 = 1606,
+
+        /// <summary>
+        /// Version conflict.
+        /// </summary>
+        NU1607 = 1607,
+
+        /// <summary>
+        /// Fallback framework used.
+        /// </summary>
+        NU1701 = 1701,
+
+        /// <summary>
+        /// Feed error converted to a warning when ignoreFailedSources is true.
+        /// </summary>
+        NU1801 = 1801,
     }
 }

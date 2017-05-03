@@ -255,18 +255,19 @@ namespace NuGet.Commands
             {
                 foreach (var cycle in g.AnalyzeResult.Cycles)
                 {
-                    logger.LogError(Strings.Log_CycleDetected + $" {Environment.NewLine}  {cycle.GetPath()}.");
+                    logger.Log(RestoreLogMessage.CreateError(NuGetLogCode.NU1606, Strings.Log_CycleDetected + $" {Environment.NewLine}  {cycle.GetPath()}."));
                     return false;
                 }
 
                 foreach (var versionConflict in g.AnalyzeResult.VersionConflicts)
                 {
-                    logger.LogError(
-                        string.Format(
+                    var message = string.Format(
                             CultureInfo.CurrentCulture,
                             Strings.Log_VersionConflict,
                             versionConflict.Selected.Key.Name)
-                        + $" {Environment.NewLine} {versionConflict.Selected.GetPath()} {Environment.NewLine} {versionConflict.Conflicting.GetPath()}.");
+                        + $" {Environment.NewLine} {versionConflict.Selected.GetPath()} {Environment.NewLine} {versionConflict.Conflicting.GetPath()}.";
+
+                    logger.Log(RestoreLogMessage.CreateError(NuGetLogCode.NU1607, message));
                     return false;
                 }
 
@@ -279,14 +280,15 @@ namespace NuGet.Commands
                     var fromVersion = downgraded.Key.VersionRange.MinVersion ?? new NuGetVersion(0, 0, 0);
                     var toVersion = downgradedBy.Key.VersionRange.MinVersion ?? new NuGetVersion(0, 0, 0);
 
-                    logger.LogWarning(
-                        string.Format(
+                    var message = string.Format(
                             CultureInfo.CurrentCulture,
                             Strings.Log_DowngradeWarning,
                             downgraded.Key.Name,
                             fromVersion,
                             toVersion)
-                        + $" {Environment.NewLine} {downgraded.GetPath()} {Environment.NewLine} {downgradedBy.GetPath()}");
+                        + $" {Environment.NewLine} {downgraded.GetPath()} {Environment.NewLine} {downgradedBy.GetPath()}";
+
+                    logger.Log(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1605, message, downgraded.Key.Name, g.Name));
                 }
             }
 
@@ -328,21 +330,11 @@ namespace NuGet.Commands
                         // Log a summary with compatibility error counts
                         if (projectCount > 0)
                         {
-                            logger.LogError(
-                                string.Format(CultureInfo.CurrentCulture,
-                                    Strings.Log_ProjectsIncompatible,
-                                    graph.Name));
-
                             logger.LogDebug($"Incompatible projects: {projectCount}");
                         }
 
                         if (packageCount > 0)
                         {
-                            logger.LogError(
-                                string.Format(CultureInfo.CurrentCulture,
-                                    Strings.Log_PackagesIncompatible,
-                                    graph.Name));
-
                             logger.LogDebug($"Incompatible packages: {packageCount}");
                         }
                     }
@@ -360,7 +352,9 @@ namespace NuGet.Commands
         {
             if (_request.Project.TargetFrameworks.Count == 0)
             {
-                _logger.LogError(string.Format(CultureInfo.CurrentCulture, Strings.Log_ProjectDoesNotSpecifyTargetFrameworks, _request.Project.Name, _request.Project.FilePath));
+                var message = string.Format(CultureInfo.CurrentCulture, Strings.Log_ProjectDoesNotSpecifyTargetFrameworks, _request.Project.Name, _request.Project.FilePath);
+                await _logger.LogAsync(RestoreLogMessage.CreateError(NuGetLogCode.NU1001, message));
+
                 _success = false;
                 return Enumerable.Empty<RestoreTargetGraph>();
             }
@@ -436,7 +430,9 @@ namespace NuGet.Commands
                 else if (!runtimes.Supports.TryGetValue(profile.Value.Name, out compatProfile))
                 {
                     // No definition of this profile found, so just continue to the next one
-                    _logger.LogWarning(string.Format(CultureInfo.CurrentCulture, Strings.Log_UnknownCompatibilityProfile, profile.Key));
+                    var message = string.Format(CultureInfo.CurrentCulture, Strings.Log_UnknownCompatibilityProfile, profile.Key);
+
+                    await _logger.LogAsync(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1502, message));
                     continue;
                 }
 

@@ -729,7 +729,7 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Unable to satisfy conflicting requests for &apos;{0}&apos;: {1}.
+        ///   Looks up a localized string similar to Unable to satisfy conflicting requests for &apos;{0}&apos;: {1} Framework: {2}.
         /// </summary>
         internal static string Log_ResolverConflict {
             get {

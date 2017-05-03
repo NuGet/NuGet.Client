@@ -177,38 +177,33 @@ namespace NuGet.Commands
                 if (graph.Conflicts.Any())
                 {
                     success = false;
-                    _logger.LogError(string.Format(CultureInfo.CurrentCulture, Strings.Log_FailedToResolveConflicts, graph.Name));
+
                     foreach (var conflict in graph.Conflicts)
                     {
-                        _logger.LogError(string.Format(CultureInfo.CurrentCulture, Strings.Log_ResolverConflict,
+                        var graphName = DiagnosticUtility.FormatGraphName(graph);
+
+                        var message = string.Format(CultureInfo.CurrentCulture, Strings.Log_ResolverConflict,
                             conflict.Name,
-                            string.Join(", ", conflict.Requests)));
+                            string.Join(", ", conflict.Requests),
+                            graphName);
+
+                        _logger.Log(RestoreLogMessage.CreateError(NuGetLogCode.NU1106, message));
                     }
                 }
-                if (graph.Unresolved.Any())
+
+                if (graph.Unresolved.Count > 0)
                 {
                     success = false;
                     foreach (var unresolved in graph.Unresolved)
                     {
-                        string packageDisplayName = null;
-                        var displayVersionRange = unresolved.VersionRange.ToNonSnapshotRange().PrettyPrint();
-
-                        // Projects may not have a version range
-                        if (string.IsNullOrEmpty(displayVersionRange))
-                        {
-                            packageDisplayName = unresolved.Name;
-                        }
-                        else
-                        {
-                            packageDisplayName = $"{unresolved.Name} {displayVersionRange}";
-                        }
+                        var packageDisplayName = DiagnosticUtility.FormatDependency(unresolved.Name, unresolved.VersionRange);
 
                         var message = string.Format(CultureInfo.CurrentCulture,
                             Strings.Log_UnresolvedDependency,
                             packageDisplayName,
                             graph.Name);
 
-                        _logger.LogError(message);
+                        _logger.Log(RestoreLogMessage.CreateError(NuGetLogCode.NU1101, message));
                     }
                 }
             }
@@ -244,7 +239,7 @@ namespace NuGet.Commands
             }
         }
 
-        private async Task InstallPackageAsync(RemoteMatch installItem, CancellationToken token)
+        private Task InstallPackageAsync(RemoteMatch installItem, CancellationToken token)
         {
             var packageIdentity = new PackageIdentity(installItem.Library.Name, installItem.Library.Version);
 
@@ -255,7 +250,7 @@ namespace NuGet.Commands
                 _request.PackageSaveMode,
                 _request.XmlDocFileSaveMode);
 
-            await PackageExtractor.InstallFromSourceAsync(
+            return PackageExtractor.InstallFromSourceAsync(
                 stream => installItem.Provider.CopyToAsync(
                     installItem.Library,
                     stream,
