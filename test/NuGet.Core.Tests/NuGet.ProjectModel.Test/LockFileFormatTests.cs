@@ -274,19 +274,23 @@ namespace NuGet.ProjectModel.Test
     "".NETPlatform,Version=v5.0"": []
   }
 }";
-            var lockFile = new LockFile();
-            lockFile.Version = 2;
+            var lockFile = new LockFile()
+            {
+                Version = 2
+            };
 
             var target = new LockFileTarget()
             {
                 TargetFramework = FrameworkConstants.CommonFrameworks.DotNet
             };
+
             var targetLib = new LockFileTargetLibrary()
             {
                 Name = "System.Runtime",
                 Version = NuGetVersion.Parse("4.0.20-beta-22927"),
                 Type = LibraryType.Package
             };
+
             targetLib.Dependencies.Add(new NuGet.Packaging.Core.PackageDependency("Frob",
                 new VersionRange(NuGetVersion.Parse("4.0.20"))));
             targetLib.CompileTimeAssemblies.Add(new LockFileItem("ref/dotnet/System.Runtime.dll"));
@@ -332,16 +336,18 @@ namespace NuGet.ProjectModel.Test
     }
   }
 }";
-            var lockFile = new LockFile();
-            lockFile.Version = 2;
-
-            lockFile.PackageSpec = new PackageSpec(new[]
+            var lockFile = new LockFile()
             {
-                new TargetFrameworkInformation
+                Version = 2,
+
+                PackageSpec = new PackageSpec(new[]
                 {
-                    FrameworkName = FrameworkConstants.CommonFrameworks.DotNet
-                }
-            });
+                    new TargetFrameworkInformation
+                    {
+                        FrameworkName = FrameworkConstants.CommonFrameworks.DotNet
+                    }
+                })
+            };
 
             // Act
             var lockFileFormat = new LockFileFormat();
@@ -400,34 +406,34 @@ namespace NuGet.ProjectModel.Test
                 Version = 2,
 
                 PackageSpec = new PackageSpec(new[]
-            {
-                new TargetFrameworkInformation
                 {
-                    FrameworkName = FrameworkConstants.CommonFrameworks.NetCoreApp10,
-                    Dependencies = new[]
+                    new TargetFrameworkInformation
                     {
-                        new LibraryDependency
+                        FrameworkName = FrameworkConstants.CommonFrameworks.NetCoreApp10,
+                        Dependencies = new[]
                         {
-                            LibraryRange = new LibraryRange(
-                                "Microsoft.NETCore.App",
-                                new VersionRange(
-                                    minVersion: new NuGetVersion("1.0.1"),
-                                    originalString: "1.0.1"),
-                                LibraryDependencyTarget.Package)
-                        },
-                        new LibraryDependency
-                        {
-                            LibraryRange = new LibraryRange(
-                                "Microsoft.NET.Sdk",
-                                new VersionRange(
-                                    minVersion: new NuGetVersion("1.0.0-alpha-20161104-2"),
-                                    originalString: "1.0.0-alpha-20161104-2"),
-                                LibraryDependencyTarget.Package),
-                            SuppressParent = LibraryIncludeFlags.All
+                            new LibraryDependency
+                            {
+                                LibraryRange = new LibraryRange(
+                                    "Microsoft.NETCore.App",
+                                    new VersionRange(
+                                        minVersion: new NuGetVersion("1.0.1"),
+                                        originalString: "1.0.1"),
+                                    LibraryDependencyTarget.Package)
+                            },
+                            new LibraryDependency
+                            {
+                                LibraryRange = new LibraryRange(
+                                    "Microsoft.NET.Sdk",
+                                    new VersionRange(
+                                        minVersion: new NuGetVersion("1.0.0-alpha-20161104-2"),
+                                        originalString: "1.0.0-alpha-20161104-2"),
+                                    LibraryDependencyTarget.Package),
+                                SuppressParent = LibraryIncludeFlags.All
+                            }
                         }
                     }
-                }
-            })
+                })
                 {
                     Version = new NuGetVersion("1.0.0"),
                     RestoreMetadata = new ProjectRestoreMetadata
@@ -439,9 +445,9 @@ namespace NuGet.ProjectModel.Test
                         ProjectStyle = ProjectStyle.PackageReference,
                         OriginalTargetFrameworks = new[] { "netcoreapp1.0" },
                         TargetFrameworks = new List<ProjectRestoreMetadataFrameworkInfo>
-                    {
-                        new ProjectRestoreMetadataFrameworkInfo(NuGetFramework.Parse("netcoreapp1.0"))
-                    }
+                        {
+                            new ProjectRestoreMetadataFrameworkInfo(NuGetFramework.Parse("netcoreapp1.0"))
+                        }
                     }
                 }
             };
