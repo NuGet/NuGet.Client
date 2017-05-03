@@ -28,7 +28,7 @@ namespace NuGet.Common
             Level = logLevel;
             Code = errorCode;
             Message = errorString;
-            Time = DateTimeOffset.Now;
+            Time = DateTimeOffset.UtcNow;
 
             if (!string.IsNullOrEmpty(targetGraph))
             {

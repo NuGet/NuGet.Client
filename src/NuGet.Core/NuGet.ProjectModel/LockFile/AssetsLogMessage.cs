@@ -3,13 +3,11 @@
 
 using System;
 using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
 using NuGet.Common;
 
 namespace NuGet.ProjectModel
 {
-    class AssetsLogMessage : IAssetsLogMessage
+    public class AssetsLogMessage : IAssetsLogMessage
     {
 
         public LogLevel Level { get; internal set; }
@@ -26,31 +24,13 @@ namespace NuGet.ProjectModel
         public string LibraryId { get; internal set; }
         public IReadOnlyList<string> TargetGraphs { get; internal set; }
 
-        public string FormatMessage()
-        {
-            // Only errors and warnings need codes. informational do not need codes.
-            if (Level >= LogLevel.Warning)
-            {
-                return $"{Enum.GetName(typeof(NuGetLogCode), Code)}: {Message}";
-            }
-            else
-            {
-                return Message;
-            }
-        }
-
-        public Task<string> FormatMessageAsync()
-        {
-            return Task.FromResult(FormatMessage());
-        }
-
         public AssetsLogMessage(LogLevel logLevel, NuGetLogCode errorCode,
             string errorString, string targetGraph)
         {
             Level = logLevel;
             Code = errorCode;
             Message = errorString;
-            Time = DateTimeOffset.Now;
+            Time = DateTimeOffset.UtcNow;
 
             if (!string.IsNullOrEmpty(targetGraph))
             {
@@ -66,9 +46,5 @@ namespace NuGet.ProjectModel
         {
         }
 
-        public AssetsLogMessage(LogLevel logLevel, string errorString)
-            : this(logLevel, LogLevel.Error == logLevel ? NuGetLogCode.NU1000 : NuGetLogCode.NU1500, errorString, string.Empty)
-        {
-        }
     }
 }

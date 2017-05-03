@@ -3,15 +3,11 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Newtonsoft.Json.Linq;
 using NuGet.Common;
 
 namespace NuGet.ProjectModel
 {
-     public interface IAssetsLogMessage
+    public interface IAssetsLogMessage
     {
         LogLevel Level { get; }
          NuGetLogCode Code { get; }
@@ -26,18 +22,6 @@ namespace NuGet.ProjectModel
          int EndColumnNumber { get; }
          string LibraryId { get; }
          IReadOnlyList<string> TargetGraphs { get; }
-
-        /// <summary>
-        /// Converts the ILogMessage into a string that can be logged as-is into a Console.
-        /// </summary>
-        /// <returns>The string representation of the ILogMessage.</returns>
-        string FormatMessage();
-
-        /// <summary>
-        /// Converts the ILogMessage into a string that can be logged as-is into a Console.
-        /// </summary>
-        /// <returns>The string representation of the ILogMessage.</returns>
-        Task<string> FormatMessageAsync();
 
     }
 }
