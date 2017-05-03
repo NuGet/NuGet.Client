@@ -103,10 +103,10 @@ namespace NuGet.Commands.Test
 
             await UnexpectedDependencyMessages.LogAsync(targetGraphs, project, testLogger);
 
-            testLogger.ShowMessages().Should().NotContain("NU2504");
-            testLogger.ShowMessages().Should().Contain("NU2501");
-            testLogger.ShowMessages().Should().NotContain("NU2502");
-            testLogger.ShowMessages().Should().NotContain("NU2503");
+            testLogger.ShowMessages().Should().NotContain("NU1604");
+            testLogger.ShowMessages().Should().Contain("NU1601");
+            testLogger.ShowMessages().Should().NotContain("NU1602");
+            testLogger.ShowMessages().Should().NotContain("NU1603");
         }
 
         [Fact]
@@ -137,10 +137,10 @@ namespace NuGet.Commands.Test
 
             await UnexpectedDependencyMessages.LogAsync(targetGraphs, project, testLogger);
 
-            testLogger.ShowMessages().Should().NotContain("NU2504");
-            testLogger.ShowMessages().Should().NotContain("NU2501");
-            testLogger.ShowMessages().Should().Contain("NU2502");
-            testLogger.ShowMessages().Should().NotContain("NU2503");
+            testLogger.ShowMessages().Should().NotContain("NU1604");
+            testLogger.ShowMessages().Should().NotContain("NU1601");
+            testLogger.ShowMessages().Should().Contain("NU1602");
+            testLogger.ShowMessages().Should().NotContain("NU1603");
         }
 
         [Fact]
@@ -171,10 +171,10 @@ namespace NuGet.Commands.Test
 
             await UnexpectedDependencyMessages.LogAsync(targetGraphs, project, testLogger);
 
-            testLogger.ShowMessages().Should().Contain("NU2504");
-            testLogger.ShowMessages().Should().NotContain("NU2501");
-            testLogger.ShowMessages().Should().NotContain("NU2502");
-            testLogger.ShowMessages().Should().NotContain("NU2503");
+            testLogger.ShowMessages().Should().Contain("NU1604");
+            testLogger.ShowMessages().Should().NotContain("NU1601");
+            testLogger.ShowMessages().Should().NotContain("NU1602");
+            testLogger.ShowMessages().Should().NotContain("NU1603");
         }
 
         [Fact]
@@ -268,7 +268,7 @@ namespace NuGet.Commands.Test
 
             var log = UnexpectedDependencyMessages.GetBumpedUpDependencies(targetGraphs, project, ignore).Single();
 
-            log.Code.Should().Be(NuGetLogCode.NU2501);
+            log.Code.Should().Be(NuGetLogCode.NU1601);
             log.TargetGraphs.ShouldBeEquivalentTo(new[] { "net46/win10" });
             log.Message.Should().Be("Dependency specified was x (>= 1.0.0) but ended up with X 2.0.0.");
         }
@@ -309,7 +309,7 @@ namespace NuGet.Commands.Test
             var log = UnexpectedDependencyMessages.GetMissingLowerBounds(targetGraphs, ignore).Single();
 
             log.TargetGraphs.ShouldBeEquivalentTo(new[] { "net46/win10" });
-            log.Code.Should().Be(NuGetLogCode.NU2502);
+            log.Code.Should().Be(NuGetLogCode.NU1602);
         }
 
         [Fact]
@@ -326,7 +326,7 @@ namespace NuGet.Commands.Test
 
             var logs = UnexpectedDependencyMessages.GetProjectDependenciesMissingLowerBounds(project);
 
-            logs.Select(e => e.Code).ShouldAllBeEquivalentTo(NuGetLogCode.NU2504);
+            logs.Select(e => e.Code).ShouldAllBeEquivalentTo(NuGetLogCode.NU1604);
             logs.Select(e => e.Level).ShouldAllBeEquivalentTo(LogLevel.Warning);
             logs.Select(e => e.Message)
                 .ShouldBeEquivalentTo(new[]
@@ -378,7 +378,7 @@ namespace NuGet.Commands.Test
 
             var log = UnexpectedDependencyMessages.GetProjectDependenciesMissingLowerBounds(project).Single();
 
-            log.Code.Should().Be(NuGetLogCode.NU2504);
+            log.Code.Should().Be(NuGetLogCode.NU1604);
             log.Message.Should().Be("Project dependency x does not contain an inclusive lower bound. Include a lower bound in the dependency version to ensure consistent restore results.");
         }
 
@@ -394,7 +394,7 @@ namespace NuGet.Commands.Test
 
             var log = UnexpectedDependencyMessages.GetProjectDependenciesMissingLowerBounds(project).Single();
 
-            log.Code.Should().Be(NuGetLogCode.NU2504);
+            log.Code.Should().Be(NuGetLogCode.NU1604);
             log.Message.Should().Be("Project dependency x (< 2.0.0) does not contain an inclusive lower bound. Include a lower bound in the dependency version to ensure consistent restore results.");
         }
 
@@ -410,7 +410,7 @@ namespace NuGet.Commands.Test
 
             var log = UnexpectedDependencyMessages.GetProjectDependenciesMissingLowerBounds(project).Single();
 
-            log.Code.Should().Be(NuGetLogCode.NU2504);
+            log.Code.Should().Be(NuGetLogCode.NU1604);
             log.Message.Should().Be("Project dependency x (> 1.0.0 && < 2.0.0) does not contain an inclusive lower bound. Include a lower bound in the dependency version to ensure consistent restore results.");
         }
 
@@ -464,7 +464,7 @@ namespace NuGet.Commands.Test
 
             var log = UnexpectedDependencyMessages.GetMissingLowerBoundMessage(dependency);
 
-            log.Code.Should().Be(NuGetLogCode.NU2502);
+            log.Code.Should().Be(NuGetLogCode.NU1602);
             log.Message.Should().Be("a 9.0.0 does not provide an inclusive lower bound for dependency b (> 1.0.0). An approximate best match of b 2.0.0 was resolved.");
         }
 
@@ -478,7 +478,7 @@ namespace NuGet.Commands.Test
 
             var log = UnexpectedDependencyMessages.GetMissingLowerBoundMessage(dependency);
 
-            log.Code.Should().Be(NuGetLogCode.NU2502);
+            log.Code.Should().Be(NuGetLogCode.NU1602);
             log.Message.Should().Be("a 9.0.0 does not provide an inclusive lower bound for dependency b (<= 5.0.0). An approximate best match of b 2.0.0 was resolved.");
         }
 
@@ -492,7 +492,7 @@ namespace NuGet.Commands.Test
 
             var log = UnexpectedDependencyMessages.GetMissingLowerBoundMessage(dependency);
 
-            log.Code.Should().Be(NuGetLogCode.NU2503);
+            log.Code.Should().Be(NuGetLogCode.NU1603);
             log.Message.Should().Be("a 9.0.0 depends on b (>= 1.0.0) but b 1.0.0 was not found. An approximate best match of b 2.0.0 was resolved.");
         }
 
