@@ -1,7 +1,6 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using NuGet.Common;
@@ -15,7 +14,6 @@ namespace NuGet.ProjectModel
         public LogLevel Level { get; internal set; }
         public NuGetLogCode Code { get; internal set; }
         public string Message { get; internal set; }
-        public DateTimeOffset Time { get; internal set; }
         public string ProjectPath { get; internal set; }
         public WarningLevel WarningLevel { get; internal set; }
         public string FilePath { get; internal set; }
@@ -32,7 +30,6 @@ namespace NuGet.ProjectModel
             Level = logLevel;
             Code = errorCode;
             Message = errorString;
-            Time = DateTimeOffset.UtcNow;
 
             if (!string.IsNullOrEmpty(targetGraph))
             {

@@ -216,7 +216,7 @@ namespace NuGet.ProjectModel
 
             if(lockFile.Version >= 3)
             {
-                if(lockFile.LogMessages != null)
+                if(lockFile.LogMessages != null && lockFile.LogMessages.Any())
                 {
                     json[LogsProperty] = WriteLogMessages(lockFile.LogMessages);
                 }
@@ -344,7 +344,7 @@ namespace NuGet.ProjectModel
 
             if (logMessage.EndColumnNumber >= 0)
             {
-                logJObject[LogMessageProperties.END_LINE_NUMBER] = logMessage.EndColumnNumber;
+                logJObject[LogMessageProperties.END_COLUMN_NUMBER] = logMessage.EndColumnNumber;
             }
 
             if (logMessage.Message != null)
@@ -352,11 +352,16 @@ namespace NuGet.ProjectModel
                 logJObject[LogMessageProperties.MESSAGE] = logMessage.Message;
             }
 
+            if (logMessage.LibraryId != null)
+            {
+                logJObject[LogMessageProperties.LIBRARY_ID] = logMessage.LibraryId;
+            }
+
             if (logMessage.TargetGraphs != null && 
                 logMessage.TargetGraphs.Any() && 
                 logMessage.TargetGraphs.All(l => !string.IsNullOrEmpty(l)))
             {
-                logJObject[LogMessageProperties.TARGET_GRAPH] = new JArray(logMessage.TargetGraphs);
+                logJObject[LogMessageProperties.TARGET_GRAPHS] = new JArray(logMessage.TargetGraphs);
             }
 
             return logJObject;
@@ -383,6 +388,7 @@ namespace NuGet.ProjectModel
                 var endLineNumberJson = json[LogMessageProperties.END_LINE_NUMBER];
                 var endColumnNumberJson = json[LogMessageProperties.END_COLUMN_NUMBER];
                 var messageJson = json[LogMessageProperties.MESSAGE];
+                var libraryIdJson = json[LogMessageProperties.LIBRARY_ID];
 
                 var isValid = true;
 
@@ -393,7 +399,7 @@ namespace NuGet.ProjectModel
                 {
                     assetsLogMessage = new AssetsLogMessage(level, code, messageJson.Value<string>())
                     {
-                        TargetGraphs = (IReadOnlyList<string>)ReadArray(json[LogMessageProperties.TARGET_GRAPH] as JArray, ReadString)
+                        TargetGraphs = (IReadOnlyList<string>)ReadArray(json[LogMessageProperties.TARGET_GRAPHS] as JArray, ReadString)
                     };
 
                     if (level == LogLevel.Warning)
@@ -419,17 +425,22 @@ namespace NuGet.ProjectModel
 
                     if (endLineNumberJson != null)
                     {
-                        assetsLogMessage.StartLineNumber = endLineNumberJson.Value<int>();
+                        assetsLogMessage.EndLineNumber = endLineNumberJson.Value<int>();
                     }
 
                     if (endColumnNumberJson != null)
                     {
-                        assetsLogMessage.StartColumnNumber = endColumnNumberJson.Value<int>();
+                        assetsLogMessage.EndColumnNumber = endColumnNumberJson.Value<int>();
                     }
 
                     if (messageJson != null)
                     {
                         assetsLogMessage.Message = messageJson.Value<string>();
+                    }
+
+                    if (libraryIdJson != null)
+                    {
+                        assetsLogMessage.LibraryId = libraryIdJson.Value<string>();
                     }
                 }
             }
