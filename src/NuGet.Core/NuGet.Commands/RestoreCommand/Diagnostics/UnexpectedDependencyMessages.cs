@@ -89,7 +89,7 @@ namespace NuGet.Commands
                     dependencyRange,
                     resolvedChild);
 
-                code = NuGetLogCode.NU2502;
+                code = NuGetLogCode.NU1602;
             }
             else
             {
@@ -100,7 +100,7 @@ namespace NuGet.Commands
                     missingChild,
                     resolvedChild);
 
-                code = NuGetLogCode.NU2503;
+                code = NuGetLogCode.NU1603;
             }
 
             return RestoreLogMessage.CreateWarning(code, dependency.Child.Name, message, targetGraphs);
@@ -144,7 +144,7 @@ namespace NuGet.Commands
                                 match.Key.Name,
                                 match.Key.Version);
 
-                            messages.Add(RestoreLogMessage.CreateWarning(NuGetLogCode.NU2501, match.Key.Name, message, graph.Name));
+                            messages.Add(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1601, match.Key.Name, message, graph.Name));
                         }
                     }
                 }
@@ -162,7 +162,7 @@ namespace NuGet.Commands
                    .Where(e => HasMissingLowerBound(e.LibraryRange.VersionRange))
                    .OrderBy(e => e.Name, StringComparer.OrdinalIgnoreCase)
                    .Select(e => RestoreLogMessage.CreateWarning(
-                       code: NuGetLogCode.NU2504,
+                       code: NuGetLogCode.NU1604,
                        libraryId: e.Name,
                        message: string.Format(CultureInfo.CurrentCulture, Strings.Warning_ProjectDependencyMissingLowerBound,
                                               DiagnosticUtility.FormatDependency(e.Name, e.LibraryRange.VersionRange))));
