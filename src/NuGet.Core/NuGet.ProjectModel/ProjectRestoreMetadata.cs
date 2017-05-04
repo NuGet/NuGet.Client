@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -61,6 +61,11 @@ namespace NuGet.ProjectModel
         public IList<string> FallbackFolders { get; set; } = new List<string>();
 
         /// <summary>
+        /// ConfigFilePaths used.
+        /// </summary>
+        public IList<string> ConfigFilePaths { get; set; } = new List<string>();
+
+        /// <summary>
         /// Framework specific metadata, this may be a subset of the project's frameworks.
         /// Operations to determine the nearest framework should be done against the project's frameworks, 
         /// and then matched directly to this section.
@@ -111,6 +116,7 @@ namespace NuGet.ProjectModel
             hashCode.AddObject(ProjectUniqueName);
             hashCode.AddSequence(Sources);
             hashCode.AddObject(PackagesPath);
+            hashCode.AddSequence(ConfigFilePaths);
             hashCode.AddSequence(FallbackFolders);
             hashCode.AddSequence(TargetFrameworks);
             hashCode.AddSequence(OriginalTargetFrameworks);
@@ -148,6 +154,7 @@ namespace NuGet.ProjectModel
                    ProjectUniqueName == other.ProjectUniqueName &&
                    EqualityUtility.SequenceEqualWithNullCheck(Sources, other.Sources) &&
                    PackagesPath == other.PackagesPath &&
+                   EqualityUtility.SequenceEqualWithNullCheck(ConfigFilePaths, other.ConfigFilePaths) &&
                    EqualityUtility.SequenceEqualWithNullCheck(FallbackFolders, other.FallbackFolders) &&
                    EqualityUtility.SequenceEqualWithNullCheck(TargetFrameworks, other.TargetFrameworks) &&
                    EqualityUtility.SequenceEqualWithNullCheck(OriginalTargetFrameworks, other.OriginalTargetFrameworks) &&

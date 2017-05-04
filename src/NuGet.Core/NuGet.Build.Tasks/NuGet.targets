@@ -1,4 +1,4 @@
-﻿<!--
+<!--
 ***********************************************************************************************
 NuGet.targets
 
@@ -482,6 +482,9 @@ Copyright (c) .NET Foundation. All rights reserved.
       <Output
         TaskParameter="OutputFallbackFolders"
         PropertyName="_OutputFallbackFolders" />
+      <Output
+        TaskParameter="ConfigFilePaths"
+        PropertyName="_ConfigFilePaths" />
     </GetRestoreSettingsTask>
 
 
@@ -505,6 +508,7 @@ Copyright (c) .NET Foundation. All rights reserved.
         <RestoreLegacyPackagesDirectory>$(RestoreLegacyPackagesDirectory)</RestoreLegacyPackagesDirectory>
         <ValidateRuntimeAssets>$(ValidateRuntimeIdentifierCompatibility)</ValidateRuntimeAssets>
         <SkipContentFileWrite>$(_RestoreSkipContentFileWrite)</SkipContentFileWrite>
+        <ConfigFilePaths>$(_ConfigFilePaths)</ConfigFilePaths>
       </_RestoreGraphEntry>
     </ItemGroup>
 

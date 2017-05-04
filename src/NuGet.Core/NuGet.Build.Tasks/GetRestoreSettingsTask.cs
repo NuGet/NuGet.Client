@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -39,6 +39,8 @@ namespace NuGet.Build.Tasks
         [Output]
         public string[] OutputFallbackFolders { get; set; }
 
+        [Output]
+        public string[] ConfigFilePaths { get; set; }
 
         private static Lazy<IMachineWideSettings> _machineWideSettings = new Lazy<IMachineWideSettings>(() => new XPlatMachineWideSetting());
 
@@ -112,9 +114,17 @@ namespace NuGet.Build.Tasks
                 OutputFallbackFolders = RestoreFallbackFolders;
             }
 
+            var configFilePaths = new List<string>();
+            foreach (var config in settings.Priority)
+            {
+                configFilePaths.Add(config.Root + config.FileName);
+            }
+            ConfigFilePaths = configFilePaths.ToArray();
+
             log.LogDebug($"(out) OutputPackagesPath '{OutputPackagesPath}'");
             log.LogDebug($"(out) OutputSources '{string.Join(";", OutputSources.Select(p => p))}'");
             log.LogDebug($"(out) OutputFallbackFolders '{string.Join(";", OutputFallbackFolders.Select(p => p))}'");
+            log.LogDebug($"(out) ConfigFilePaths '{string.Join(";", ConfigFilePaths.Select(p => p))}'");
 
             return true;
         }
