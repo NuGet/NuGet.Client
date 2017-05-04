@@ -5,6 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using NuGet.Packaging.Core;
 using NuGet.Versioning;
 
@@ -26,10 +28,10 @@ namespace NuGet.Packaging
         private const string ExcludeExtension = ".nupkg.sha512";
 
         public static bool IsAssembly(string path)
-        { 
-            return path.EndsWith(".dll", StringComparison.OrdinalIgnoreCase) || 
-                   path.EndsWith(".winmd", StringComparison.OrdinalIgnoreCase) || 
-                   path.EndsWith(".exe", StringComparison.OrdinalIgnoreCase); 
+        {
+            return path.EndsWith(".dll", StringComparison.OrdinalIgnoreCase) ||
+                   path.EndsWith(".winmd", StringComparison.OrdinalIgnoreCase) ||
+                   path.EndsWith(".exe", StringComparison.OrdinalIgnoreCase);
         }
 
         public static bool IsNuspec(string path)
@@ -77,7 +79,9 @@ namespace NuGet.Packaging
         /// of the format [.*].[Language]
         /// and it has at least one dependency with an id that maps to the runtime package .
         /// </summary>
-        public static bool IsSatellitePackage(IPackageCoreReader packageReader, out PackageIdentity runtimePackageIdentity, out string packageLanguage)
+        private static async Task<SatellitePackageInfo> GetSatellitePackageInfoAsync(
+            IAsyncPackageCoreReader packageReader,
+            CancellationToken cancellationToken)
         {
             // A satellite package has the following properties:
             //     1) A package suffix that matches the package's language, with a dot preceding it
@@ -85,24 +89,25 @@ namespace NuGet.Packaging
             //     3) The dependency can be found by Id in the repository (as its path is needed for installation)
             // Example: foo.ja-jp, with a dependency on foo
 
-            var nuspecReader = new NuspecReader(packageReader.GetNuspec());
+            var nuspec = await packageReader.GetNuspecAsync(cancellationToken);
+            var nuspecReader = new NuspecReader(nuspec);
             var packageId = nuspecReader.GetId();
-            packageLanguage = nuspecReader.GetLanguage();
-            string localruntimePackageId = null;
+            var packageLanguage = nuspecReader.GetLanguage();
+            string localRuntimePackageId = null;
+            PackageIdentity runtimePackageIdentity = null;
 
-            if (!String.IsNullOrEmpty(packageLanguage)
-                &&
-                packageId.EndsWith('.' + packageLanguage, StringComparison.OrdinalIgnoreCase))
+            if (!string.IsNullOrEmpty(packageLanguage)
+                && packageId.EndsWith('.' + packageLanguage, StringComparison.OrdinalIgnoreCase))
             {
                 // The satellite pack's Id is of the format <Core-Package-Id>.<Language>. Extract the core package id using this.
                 // Additionally satellite packages have a strict dependency on the core package
-                localruntimePackageId = packageId.Substring(0, packageId.Length - packageLanguage.Length - 1);
+                localRuntimePackageId = packageId.Substring(0, packageId.Length - packageLanguage.Length - 1);
 
                 foreach (var group in nuspecReader.GetDependencyGroups())
                 {
                     foreach (var dependencyPackage in group.Packages)
                     {
-                        if (dependencyPackage.Id.Equals(localruntimePackageId, StringComparison.OrdinalIgnoreCase)
+                        if (dependencyPackage.Id.Equals(localRuntimePackageId, StringComparison.OrdinalIgnoreCase)
                             && dependencyPackage.VersionRange != null
                             && dependencyPackage.VersionRange.MaxVersion == dependencyPackage.VersionRange.MinVersion
                             && dependencyPackage.VersionRange.IsMaxInclusive
@@ -110,58 +115,57 @@ namespace NuGet.Packaging
                         {
                             var runtimePackageVersion = new NuGetVersion(dependencyPackage.VersionRange.MinVersion.ToNormalizedString());
                             runtimePackageIdentity = new PackageIdentity(dependencyPackage.Id, runtimePackageVersion);
-                            return true;
                         }
                     }
                 }
             }
 
-            runtimePackageIdentity = null;
-            return false;
+            return new SatellitePackageInfo(runtimePackageIdentity != null, packageLanguage, runtimePackageIdentity);
         }
 
-        public static IEnumerable<string> GetSatelliteFiles(
+        public static async Task<Tuple<string, IEnumerable<string>>> GetSatelliteFilesAsync(
             PackageReaderBase packageReader,
             PackagePathResolver packagePathResolver,
-            out string runtimePackageDirectory)
+            CancellationToken cancellationToken)
         {
             var satelliteFileEntries = new List<string>();
-            runtimePackageDirectory = null;
+            string runtimePackageDirectory = null;
 
-            PackageIdentity runtimePackageIdentity = null;
-            string packageLanguage = null;
-            if (IsSatellitePackage(packageReader, out runtimePackageIdentity, out packageLanguage))
+            var result = await GetSatellitePackageInfoAsync(packageReader, cancellationToken);
+
+            if (result.IsSatellitePackage)
             {
                 // Now, we know that the package is a satellite package and that the runtime package is 'runtimePackageId'
                 // Check, if the runtimePackage is installed and get the folder to copy over files
 
-                var runtimePackageFilePath = packagePathResolver.GetInstalledPackageFilePath(runtimePackageIdentity);
+                var runtimePackageFilePath = packagePathResolver.GetInstalledPackageFilePath(result.RuntimePackageIdentity);
                 if (File.Exists(runtimePackageFilePath))
                 {
                     // Existence of the package file is the validation that the package exists
                     runtimePackageDirectory = Path.GetDirectoryName(runtimePackageFilePath);
-                    satelliteFileEntries.AddRange(packageReader.GetSatelliteFiles(packageLanguage));
+                    satelliteFileEntries.AddRange(await packageReader.GetSatelliteFilesAsync(result.PackageLanguage, cancellationToken));
                 }
             }
 
-            return satelliteFileEntries;
+            return new Tuple<string, IEnumerable<string>>(runtimePackageDirectory, satelliteFileEntries);
         }
 
         /// <summary>
         /// This returns all the installed package files (does not include satellite files)
         /// </summary>
-        public static IEnumerable<ZipFilePair> GetInstalledPackageFiles(
+        public static async Task<IEnumerable<ZipFilePair>> GetInstalledPackageFilesAsync(
             PackageArchiveReader packageReader,
             PackageIdentity packageIdentity,
             PackagePathResolver packagePathResolver,
-            PackageSaveMode packageSaveMode)
+            PackageSaveMode packageSaveMode,
+            CancellationToken cancellationToken)
         {
             var installedPackageFiles = Enumerable.Empty<ZipFilePair>();
 
             var packageDirectory = packagePathResolver.GetInstalledPath(packageIdentity);
             if (!string.IsNullOrEmpty(packageDirectory))
             {
-                var packageFiles = packageReader.GetPackageFiles(packageSaveMode);
+                var packageFiles = await packageReader.GetPackageFilesAsync(packageSaveMode, cancellationToken);
                 var entries = packageReader.EnumeratePackageEntries(packageFiles, packageDirectory);
                 installedPackageFiles = entries.Where(e => e.IsInstalled());
             }
@@ -169,14 +173,18 @@ namespace NuGet.Packaging
             return installedPackageFiles.ToList();
         }
 
-        public static Tuple<string, IEnumerable<ZipFilePair>> GetInstalledSatelliteFiles(
+        public static async Task<Tuple<string, IEnumerable<ZipFilePair>>> GetInstalledSatelliteFilesAsync(
             PackageArchiveReader packageReader,
             PackagePathResolver packagePathResolver,
-            PackageSaveMode packageSaveMode)
+            PackageSaveMode packageSaveMode,
+            CancellationToken cancellationToken)
         {
             var installedSatelliteFiles = Enumerable.Empty<ZipFilePair>();
-            string runtimePackageDirectory;
-            var satelliteFiles = GetSatelliteFiles(packageReader, packagePathResolver, out runtimePackageDirectory);
+
+            var result = await GetSatelliteFilesAsync(packageReader, packagePathResolver, cancellationToken);
+            var runtimePackageDirectory = result.Item1;
+            var satelliteFiles = result.Item2;
+
             if (satelliteFiles.Any())
             {
                 var satelliteFileEntries = packageReader.EnumeratePackageEntries(
@@ -186,6 +194,23 @@ namespace NuGet.Packaging
             }
 
             return new Tuple<string, IEnumerable<ZipFilePair>>(runtimePackageDirectory, installedSatelliteFiles.ToList());
+        }
+
+        private sealed class SatellitePackageInfo
+        {
+            public bool IsSatellitePackage { get; }
+            public string PackageLanguage { get; }
+            public PackageIdentity RuntimePackageIdentity { get; }
+
+            internal SatellitePackageInfo(
+                bool isSatellitePackage,
+                string packageLanguage,
+                PackageIdentity runtimePackageIdentity)
+            {
+                IsSatellitePackage = isSatellitePackage;
+                PackageLanguage = packageLanguage;
+                RuntimePackageIdentity = runtimePackageIdentity;
+            }
         }
     }
 }

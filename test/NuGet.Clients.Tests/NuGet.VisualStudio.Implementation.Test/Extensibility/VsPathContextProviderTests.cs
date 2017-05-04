@@ -174,7 +174,7 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
                 var userPackageFolder = Path.Combine(testDirectory.Path, "packagesA");
                 Directory.CreateDirectory(userPackageFolder);
 
-                SimpleTestPackageUtility.CreateFolderFeedPackagesConfig(
+                await SimpleTestPackageUtility.CreateFolderFeedPackagesConfigAsync(
                     userPackageFolder,
                     new PackageIdentity("Foo", NuGetVersion.Parse("1.0.1")));
 

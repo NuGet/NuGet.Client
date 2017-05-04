@@ -213,6 +213,107 @@ namespace NuGet.Test.Utility
             return file;
         }
 
+        public static TempFile GetPackageCoreReaderTestPackage()
+        {
+            var file = new TempFile();
+
+            using (var zip = new ZipArchive(File.Create(file), ZipArchiveMode.Create))
+            {
+                zip.AddEntry("lib/net45/a.dll", ZeroContent);
+                zip.AddEntry("lib/net45/b.dll", ZeroContent);
+
+                zip.AddEntry("Aa.nuspec", @"<?xml version=""1.0"" encoding=""utf-8""?>
+                            <package xmlns=""http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd"">
+                              <metadata minClientVersion=""1.2.3"">
+                                <id>Aa</id>
+                                <version>4.5.6</version>
+                                <authors>author</authors>
+                                <description>description</description>
+                                <packageTypes>
+                                  <packageType name=""Bb"" />
+                                  <packageType name=""Cc"" version=""7.8.9"" />
+                                </packageTypes>
+                              </metadata>
+                            </package>", Encoding.UTF8);
+            }
+
+            return file;
+        }
+
+        public static TempFile GetPackageCoreAndContentReaderMinimalTestPackage()
+        {
+            var file = new TempFile();
+
+            using (var zip = new ZipArchive(File.Create(file), ZipArchiveMode.Create))
+            {
+                zip.AddEntry("Aa.nuspec", @"<?xml version=""1.0"" encoding=""utf-8""?>
+                            <package xmlns=""http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd"">
+                              <metadata>
+                                <id>Aa</id>
+                                <version>1.2.3</version>
+                                <authors>author</authors>
+                                <description>description</description>
+                              </metadata>
+                            </package>", Encoding.UTF8);
+            }
+
+            return file;
+        }
+
+        public static TempFile GetPackageContentReaderTestPackage()
+        {
+            var file = new TempFile();
+
+            using (var zip = new ZipArchive(File.Create(file), ZipArchiveMode.Create))
+            {
+                zip.AddEntry("build/net45/a.dll", ZeroContent);
+                zip.AddEntry("build/net45/a.props", ZeroContent);
+                zip.AddEntry("build/net45/a.targets", ZeroContent);
+                zip.AddEntry("content/net45/b", ZeroContent);
+                zip.AddEntry("content/net45/c", ZeroContent);
+                zip.AddEntry("lib/net45/d", ZeroContent);
+                zip.AddEntry("lib/net45/e", ZeroContent);
+                zip.AddEntry("lib/net45/f.dll", ZeroContent);
+                zip.AddEntry("lib/net45/g.dll", ZeroContent);
+                zip.AddEntry("other/net45/h", ZeroContent);
+                zip.AddEntry("other/net45/i", ZeroContent);
+                zip.AddEntry("tools/net45/j", ZeroContent);
+                zip.AddEntry("tools/net45/k", ZeroContent);
+
+                zip.AddEntry("Aa.nuspec", @"<?xml version=""1.0"" encoding=""utf-8""?>
+                            <package xmlns=""http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd"">
+                              <metadata>
+                                <id>A</id>
+                                <version>1.2.3</version>
+                                <authors>Author1, author2</authors>
+                                <description>Sample description</description>
+                                <language>en-US</language>
+                                <projectUrl>http://www.nuget.org/</projectUrl>
+                                <licenseUrl>http://www.nuget.org/license</licenseUrl>
+                                <dependencies>
+                                  <group targetFramework=""net40"">
+                                    <dependency id=""l"" />
+                                    <dependency id=""m"" />
+                                  </group>
+                                  <group targetFramework=""net45"" />
+                                </dependencies>
+                                <frameworkAssemblies>
+                                  <frameworkAssembly assemblyName=""Z"" targetFramework=""net40"" />
+                                  <frameworkAssembly assemblyName=""Y"" targetFramework=""sl3"" />
+                                </frameworkAssemblies>
+                                <references>
+                                  <group targetFramework=""net45"">
+                                    <reference file=""f.dll"" />
+                                    <reference file=""g.dll"" />
+                                  </group>
+                                </references>
+                              </metadata>
+                            </package>", Encoding.UTF8);
+            }
+
+            return file;
+        }
+
         public static TempFile GetPackageWithPackageTypes()
         {
             var file = new TempFile();
@@ -232,6 +333,27 @@ namespace NuGet.Test.Utility
                                   <packageType name=""foo"" />
                                   <packageType name=""bar"" version=""2.0.0"" />
                                 </packageTypes>
+                              </metadata>
+                            </package>", Encoding.UTF8);
+            }
+
+            return file;
+        }
+
+        public static TempFile GetDevelopmentDependencyPackage()
+        {
+            var file = new TempFile();
+
+            using (var zip = new ZipArchive(File.Create(file), ZipArchiveMode.Create))
+            {
+                zip.AddEntry("A.nuspec", @"<?xml version=""1.0"" encoding=""utf-8""?>
+                            <package xmlns=""http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd"">
+                              <metadata>
+                                <id>A</id>
+                                <version>1.2.3</version>
+                                <authors>B</authors>
+                                <description>C</description>
+                                <developmentDependency>true</developmentDependency>
                               </metadata>
                             </package>", Encoding.UTF8);
             }
@@ -660,7 +782,7 @@ namespace NuGet.Test.Utility
                 packageVersion,
                 language,
                 DateTimeOffset.UtcNow.LocalDateTime,
-                Path.Combine("lib/net45", language, runtimePackageId + ".resources.dll"));
+                $"lib/net45/{language}/{runtimePackageId}.resources.dll");
         }
 
         public static async Task<FileInfo> GeneratePackageAsync(
@@ -795,11 +917,11 @@ namespace NuGet.Test.Utility
 
             public TempFile()
             {
-                string packagesFolder = Path.Combine(TestFileSystemUtility.NuGetTestFolder, "NuGetTestPackages");
+                var packagesFolder = Path.Combine(TestFileSystemUtility.NuGetTestFolder, "NuGetTestPackages");
 
                 Directory.CreateDirectory(packagesFolder);
 
-                int count = 0;
+                var count = 0;
                 do
                 {
                     _filePath = Path.Combine(packagesFolder, Path.GetRandomFileName() + ".nupkg");
