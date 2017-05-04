@@ -23,7 +23,7 @@ namespace NuGet.Commands
 
         public int InstallCount { get; }
 
-        public IList<ILogMessage> Errors { get; }
+        public IList<IRestoreLogMessage> Errors { get; }
 
         public RestoreSummary(bool success)
         {
@@ -32,7 +32,7 @@ namespace NuGet.Commands
             ConfigFiles = new List<string>().AsReadOnly();
             FeedsUsed = new List<string>().AsReadOnly();
             InstallCount = 0;
-            Errors = new List<ILogMessage>().AsReadOnly();
+            Errors = new List<IRestoreLogMessage>().AsReadOnly();
         }
 
         public RestoreSummary(
@@ -63,7 +63,7 @@ namespace NuGet.Commands
             IEnumerable<string> configFiles,
             IEnumerable<string> feedsUsed,
             int installCount,
-            IEnumerable<ILogMessage> errors)
+            IEnumerable<IRestoreLogMessage> errors)
         {
             Success = success;
             InputPath = inputPath;

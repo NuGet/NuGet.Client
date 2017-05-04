@@ -1,5 +1,5 @@
 ﻿{
-  "version": 2,
+  "version": 3,
   "targets": {
     "UAP,Version=v10.0": {
       "Microsoft.CSharp/4.0.0": {

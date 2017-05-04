@@ -19,7 +19,7 @@ namespace NuGet.ProjectModel
 {
     public class LockFileFormat
     {
-        public static readonly int Version = 2;
+        public static readonly int Version = 3;
         public static readonly string LockFileName = "project.lock.json";
         public static readonly string AssetsFileName = "project.assets.json";
 
@@ -216,7 +216,7 @@ namespace NuGet.ProjectModel
 
             if(lockFile.Version >= 3)
             {
-                if(lockFile.LogMessages != null)
+                if(lockFile.LogMessages.Count > 0)
                 {
                     json[LogsProperty] = WriteLogMessages(lockFile.LogMessages);
                 }
@@ -329,12 +329,22 @@ namespace NuGet.ProjectModel
 
             if (logMessage.StartLineNumber >= 0)
             {
-                logJObject[LogMessageProperties.LINE_NUMBER] = logMessage.StartLineNumber;
+                logJObject[LogMessageProperties.START_LINE_NUMBER] = logMessage.StartLineNumber;
             }
 
             if (logMessage.StartColumnNumber >= 0)
             {
-                logJObject[LogMessageProperties.COLUMN_NUMBER] = logMessage.StartColumnNumber;
+                logJObject[LogMessageProperties.START_COLUMN_NUMBER] = logMessage.StartColumnNumber;
+            }
+
+            if (logMessage.EndLineNumber >= 0)
+            {
+                logJObject[LogMessageProperties.END_LINE_NUMBER] = logMessage.EndLineNumber;
+            }
+
+            if (logMessage.EndColumnNumber >= 0)
+            {
+                logJObject[LogMessageProperties.END_COLUMN_NUMBER] = logMessage.EndColumnNumber;
             }
 
             if (logMessage.Message != null)
@@ -342,11 +352,16 @@ namespace NuGet.ProjectModel
                 logJObject[LogMessageProperties.MESSAGE] = logMessage.Message;
             }
 
+            if (logMessage.LibraryId != null)
+            {
+                logJObject[LogMessageProperties.LIBRARY_ID] = logMessage.LibraryId;
+            }
+
             if (logMessage.TargetGraphs != null && 
                 logMessage.TargetGraphs.Any() && 
                 logMessage.TargetGraphs.All(l => !string.IsNullOrEmpty(l)))
             {
-                logJObject[LogMessageProperties.TARGET_GRAPH] = new JArray(logMessage.TargetGraphs);
+                logJObject[LogMessageProperties.TARGET_GRAPHS] = new JArray(logMessage.TargetGraphs);
             }
 
             return logJObject;
@@ -368,9 +383,12 @@ namespace NuGet.ProjectModel
                 var codeJson = json[LogMessageProperties.CODE];
                 var warningLevelJson = json[LogMessageProperties.WARNING_LEVEL];
                 var filePathJson = json[LogMessageProperties.FILE_PATH];
-                var lineNumberJson = json[LogMessageProperties.LINE_NUMBER];
-                var columnNumberJson = json[LogMessageProperties.COLUMN_NUMBER];
+                var startLineNumberJson = json[LogMessageProperties.START_LINE_NUMBER];
+                var startColumnNumberJson = json[LogMessageProperties.START_COLUMN_NUMBER];
+                var endLineNumberJson = json[LogMessageProperties.END_LINE_NUMBER];
+                var endColumnNumberJson = json[LogMessageProperties.END_COLUMN_NUMBER];
                 var messageJson = json[LogMessageProperties.MESSAGE];
+                var libraryIdJson = json[LogMessageProperties.LIBRARY_ID];
 
                 var isValid = true;
 
@@ -381,7 +399,7 @@ namespace NuGet.ProjectModel
                 {
                     assetsLogMessage = new AssetsLogMessage(level, code, messageJson.Value<string>())
                     {
-                        TargetGraphs = (IReadOnlyList<string>)ReadArray(json[LogMessageProperties.TARGET_GRAPH] as JArray, ReadString)
+                        TargetGraphs = (IReadOnlyList<string>)ReadArray(json[LogMessageProperties.TARGET_GRAPHS] as JArray, ReadString)
                     };
 
                     if (level == LogLevel.Warning)
@@ -395,19 +413,34 @@ namespace NuGet.ProjectModel
                         assetsLogMessage.FilePath = filePathJson.Value<string>();
                     }
 
-                    if (lineNumberJson != null)
+                    if (startLineNumberJson != null)
                     {
-                        assetsLogMessage.StartLineNumber = lineNumberJson.Value<int>();
+                        assetsLogMessage.StartLineNumber = startLineNumberJson.Value<int>();
                     }
 
-                    if (columnNumberJson != null)
+                    if (startColumnNumberJson != null)
                     {
-                        assetsLogMessage.StartColumnNumber = columnNumberJson.Value<int>();
+                        assetsLogMessage.StartColumnNumber = startColumnNumberJson.Value<int>();
+                    }
+
+                    if (endLineNumberJson != null)
+                    {
+                        assetsLogMessage.EndLineNumber = endLineNumberJson.Value<int>();
+                    }
+
+                    if (endColumnNumberJson != null)
+                    {
+                        assetsLogMessage.EndColumnNumber = endColumnNumberJson.Value<int>();
                     }
 
                     if (messageJson != null)
                     {
                         assetsLogMessage.Message = messageJson.Value<string>();
+                    }
+
+                    if (libraryIdJson != null)
+                    {
+                        assetsLogMessage.LibraryId = libraryIdJson.Value<string>();
                     }
                 }
             }
