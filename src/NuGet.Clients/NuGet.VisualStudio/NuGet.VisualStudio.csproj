@@ -26,7 +26,7 @@
 
   <ItemGroup>
     <None Update="install.ps1">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory Condition=" '$(VisualStudioVersion)' == '15.0' ">PreserveNewest</CopyToOutputDirectory> <!-- TODO: Remove this when we stop building for VS14 -->
     </None>
   </ItemGroup>
 

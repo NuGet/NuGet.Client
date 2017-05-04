@@ -109,6 +109,59 @@ namespace ProjectManagement.Test
         }
 
         [Fact]
+        public void JsonConfigUtility_AddFramework()
+        {
+            // Arrange
+            var json = BasicConfig;
+
+            var frameworks = JsonConfigUtility.GetFrameworks(json);
+            Assert.Equal(1, frameworks.Count());
+
+            // Act
+            JsonConfigUtility.AddFramework(json, new NuGet.Frameworks.NuGetFramework("uap", new Version("10.0.0")));
+            frameworks = JsonConfigUtility.GetFrameworks(json);
+
+            //Assert
+            Assert.Equal(2, frameworks.Count());
+        }
+
+        [Fact]
+        public void JsonConfigUtility_AddFrameworkDoesNotAddDuplicate()
+        {
+            // Arrange
+            var json = BasicConfig;
+
+            var frameworks = JsonConfigUtility.GetFrameworks(json);
+            Assert.Equal(1, frameworks.Count());
+
+            JsonConfigUtility.AddFramework(json, new NuGet.Frameworks.NuGetFramework("uap", new Version("10.0.0")));
+            frameworks = JsonConfigUtility.GetFrameworks(json);
+            Assert.Equal(2, frameworks.Count());
+
+            // Act
+            JsonConfigUtility.AddFramework(json, new NuGet.Frameworks.NuGetFramework("uap", new Version("10.0.0")));
+            frameworks = JsonConfigUtility.GetFrameworks(json);
+            Assert.Equal(2, frameworks.Count());
+        }
+
+        [Fact]
+        public void JsonConfigUtility_ClearFrameworks()
+        {
+            // Arrange
+            var json = BasicConfig;
+
+            var frameworks = JsonConfigUtility.GetFrameworks(json);
+            Assert.Equal("netcore50", frameworks.Single().GetShortFolderName());
+
+            // Act
+            JsonConfigUtility.ClearFrameworks(json);
+            frameworks = JsonConfigUtility.GetFrameworks(json);
+
+            //Assert
+            Assert.Equal(0, frameworks.Count());
+        }
+
+        [Fact]
         public void JsonConfigUtility_AddDependencyToNewFile()
         {
             // Arrange

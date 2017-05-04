@@ -3049,7 +3049,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public void RestoreNetCore_NETCore_ProjectToProject_MissingProjectReference()
+        public void RestoreNetCore_NETCore_ProjectToProject_IgnoreMissingProjectReference()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -3078,7 +3078,8 @@ namespace NuGet.CommandLine.Test
                 File.Delete(projectB.ProjectPath);
 
                 // Act && Assert
-                var r = Util.RestoreSolution(pathContext, expectedExitCode: 1);
+                // Missing projects are ignored during restore. These issues are reported at build time.
+                var r = Util.RestoreSolution(pathContext, expectedExitCode: 0);
             }
         }
 

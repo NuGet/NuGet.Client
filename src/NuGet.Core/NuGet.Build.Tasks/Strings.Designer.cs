@@ -78,5 +78,14 @@ namespace NuGet.Build.Tasks {
                 return ResourceManager.GetString("NoProjectsToRestore", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Restore canceled!.
+        /// </summary>
+        internal static string RestoreCanceled {
+            get {
+                return ResourceManager.GetString("RestoreCanceled", resourceCulture);
+            }
+        }
     }
 }
