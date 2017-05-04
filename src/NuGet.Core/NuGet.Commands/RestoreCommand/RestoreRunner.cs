@@ -202,7 +202,7 @@ namespace NuGet.Commands
                             Strings.Error_UnableToLocateRestoreTarget,
                             Path.GetFullPath(input));
 
-                    await restoreContext.Log.LogAsync(new RestoreLogMessage(LogLevel.Warning, NuGetLogCode.NU1501, message));
+                    await restoreContext.Log.LogAsync(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1501, message));
                 }
                 foreach (var request in inputRequests)
                 {

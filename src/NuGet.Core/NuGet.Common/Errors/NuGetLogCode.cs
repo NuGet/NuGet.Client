@@ -99,17 +99,17 @@ namespace NuGet.Common
         /// <summary>
         /// Non-exact match on dependency range due to non inclusive minimum bound.
         /// </summary>
-        NU1602,
+        NU1602 = 1602,
 
         /// <summary>
         /// Non-exact match on dependency range due to missing package version.
         /// </summary>
-        NU1603,
+        NU1603 = 1603,
 
         /// <summary>
         /// Project dependency does not include a lower bound.
         /// </summary>
-        NU1604,
+        NU1604 = 1604,
 
         /// <summary>
         /// Package dependency downgraded.
@@ -129,11 +129,11 @@ namespace NuGet.Common
         /// <summary>
         /// Fallback framework used.
         /// </summary>
-        NU1701,
+        NU1701 = 1701,
 
         /// <summary>
         /// Feed error converted to a warning when ignoreFailedSources is true.
         /// </summary>
-        NU1801,
+        NU1801 = 1801,
     }
 }

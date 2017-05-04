@@ -353,7 +353,7 @@ namespace NuGet.Commands
             if (_request.Project.TargetFrameworks.Count == 0)
             {
                 var message = string.Format(CultureInfo.CurrentCulture, Strings.Log_ProjectDoesNotSpecifyTargetFrameworks, _request.Project.Name, _request.Project.FilePath);
-                await _logger.LogAsync(new RestoreLogMessage(LogLevel.Error, NuGetLogCode.NU1001, message));
+                await _logger.LogAsync(RestoreLogMessage.CreateError(NuGetLogCode.NU1001, message));
 
                 _success = false;
                 return Enumerable.Empty<RestoreTargetGraph>();

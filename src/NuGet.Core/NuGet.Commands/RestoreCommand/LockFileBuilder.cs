@@ -252,7 +252,7 @@ namespace NuGet.Commands
                                     nonFallbackFramework);
 
                                 var logMessage = RestoreLogMessage.CreateWarning(
-                                    NuGetLogCode.NU1000,
+                                    NuGetLogCode.NU1701,
                                     message,
                                     library.Name,
                                     targetGraph.Name);
