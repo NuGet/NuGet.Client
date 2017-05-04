@@ -143,6 +143,33 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Unable to find package {0}. No packages exist with this id in source(s): {1}.
+        /// </summary>
+        internal static string Error_NoPackageVersionsExist {
+            get {
+                return ResourceManager.GetString("Error_NoPackageVersionsExist", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unable to find package {0} with version {1}.
+        /// </summary>
+        internal static string Error_NoPackageVersionsExistInRange {
+            get {
+                return ResourceManager.GetString("Error_NoPackageVersionsExistInRange", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unable to find a stable package {0} with version {1}.
+        /// </summary>
+        internal static string Error_NoStablePackageVersionsExist {
+            get {
+                return ResourceManager.GetString("Error_NoStablePackageVersionsExist", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Failed to build package. Ensure &apos;{0}&apos; includes assembly files. For help on building symbols package, visit {1}..
         /// </summary>
         internal static string Error_PackageCommandNoFilesForLibPackage {
@@ -175,6 +202,24 @@ namespace NuGet.Commands {
         internal static string Error_ProcessingNuspecFile {
             get {
                 return ResourceManager.GetString("Error_ProcessingNuspecFile", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unable to find project &apos;{0}&apos;. Check that the project reference is valid and that the project file exists..
+        /// </summary>
+        internal static string Error_ProjectDoesNotExist {
+            get {
+                return ResourceManager.GetString("Error_ProjectDoesNotExist", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unable to find project information for &apos;{0}&apos;. The project file may be invalid or missing targets required for restore..
+        /// </summary>
+        internal static string Error_UnableToFindProjectInfo {
+            get {
+                return ResourceManager.GetString("Error_UnableToFindProjectInfo", resourceCulture);
             }
         }
         
@@ -238,6 +283,24 @@ namespace NuGet.Commands {
         internal static string FileNotAddedToPackage {
             get {
                 return ResourceManager.GetString("FileNotAddedToPackage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Found {0} version(s) in {1} [ Nearest version: {2} ].
+        /// </summary>
+        internal static string FoundVersionsInSource {
+            get {
+                return ResourceManager.GetString("FoundVersionsInSource", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Found {0} version(s) in {1}.
+        /// </summary>
+        internal static string FoundVersionsInSourceWithoutMatch {
+            get {
+                return ResourceManager.GetString("FoundVersionsInSourceWithoutMatch", resourceCulture);
             }
         }
         

@@ -31,19 +31,19 @@ namespace NuGet.Commands
             //    The user can fix these themselves.
             var projectMissingLowerBounds = GetProjectDependenciesMissingLowerBounds(project);
             ignoreIds.UnionWith(projectMissingLowerBounds.Select(e => e.LibraryId));
-            await logger.LogMessagesAsync(projectMissingLowerBounds);
+            await logger.LogMessagesAsync(DiagnosticUtility.MergeOnTargetGraph(projectMissingLowerBounds));
 
             // 2. Detect dependency and source issues across the entire graph 
             //    where the minimum version was not matched exactly.
             //    Ignore packages already logged by #1
             var missingMinimums = GetMissingLowerBounds(graphList, ignoreIds);
             ignoreIds.UnionWith(missingMinimums.Select(e => e.LibraryId));
-            await logger.LogMessagesAsync(missingMinimums);
+            await logger.LogMessagesAsync(DiagnosticUtility.MergeOnTargetGraph(missingMinimums));
 
             // 3. Detect top level dependencies that have a version different from the specified version.
             //    Ignore packages already logged in #1 and #2 since those errors are more specific.
             var bumpedUp = GetBumpedUpDependencies(graphList, project, ignoreIds);
-            await logger.LogMessagesAsync(bumpedUp);
+            await logger.LogMessagesAsync(DiagnosticUtility.MergeOnTargetGraph(bumpedUp));
         }
 
         /// <summary>

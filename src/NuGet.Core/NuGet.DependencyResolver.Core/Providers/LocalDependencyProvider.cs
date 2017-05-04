@@ -11,6 +11,7 @@ using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.Protocol.Core.Types;
+using NuGet.Versioning;
 
 namespace NuGet.DependencyResolver
 {
@@ -69,6 +70,15 @@ namespace NuGet.DependencyResolver
             CancellationToken cancellationToken)
         {
             throw new NotSupportedException();
+        }
+
+        public Task<IEnumerable<NuGetVersion>> GetAllVersionsAsync(
+            string id,
+            SourceCacheContext cacheContext,
+            ILogger logger,
+            CancellationToken token)
+        {
+            throw new NotImplementedException();
         }
     }
 }

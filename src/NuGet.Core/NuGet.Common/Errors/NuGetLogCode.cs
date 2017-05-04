@@ -47,13 +47,34 @@ namespace NuGet.Common
         NU1002 = 1002,
 
         /// <summary>
-        /// Unable to resolve package
-        /// TODO split this up into the following errors.
+        /// Unable to resolve package, generic message for unknown type constraints.
+        /// </summary>
+        NU1100 = 1100,
+        
+        /// <summary>
+        /// No versions of the package exist on any of the sources.
         /// </summary>
         NU1101 = 1101,
+
+        /// <summary>
+        /// Versions of the package exist, but none are in the range.
+        /// </summary>
         NU1102 = 1102,
+
+        /// <summary>
+        /// Range does not allow prerelease packages and only prerelease versions were found
+        /// within the range.
+        /// </summary>
         NU1103 = 1103,
+
+        /// <summary>
+        /// Project path does not exist on disk.
+        /// </summary>
         NU1104 = 1104,
+
+        /// <summary>
+        /// Project reference was not in the dg spec.
+        /// </summary>
         NU1105 = 1105,
 
         /// <summary>

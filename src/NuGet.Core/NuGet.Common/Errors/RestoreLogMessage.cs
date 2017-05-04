@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -32,13 +32,14 @@ namespace NuGet.Common
             Message = errorString;
             Time = DateTimeOffset.UtcNow;
 
+            var graphList = new List<string>();
+
             if (!string.IsNullOrEmpty(targetGraph))
             {
-                TargetGraphs = new List<string>
-                {
-                    targetGraph
-                };
+                graphList.Add(targetGraph);
             }
+
+            TargetGraphs = graphList;
         }
 
         public RestoreLogMessage(LogLevel logLevel, NuGetLogCode errorCode, string errorString)
