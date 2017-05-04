@@ -11,7 +11,7 @@ namespace NuGet.Common
     public class CollectorLogger : LoggerBase, ICollectorLogger
     {
         private readonly ILogger _innerLogger;
-        private readonly ConcurrentQueue<ILogMessage> _errors;
+        private readonly ConcurrentQueue<IRestoreLogMessage> _errors;
 
         /// <summary>
         /// Initializes an instance of the <see cref="CollectorLogger"/>, while still
@@ -20,7 +20,7 @@ namespace NuGet.Common
         public CollectorLogger(ILogger innerLogger)
         {
             _innerLogger = innerLogger;
-            _errors = new ConcurrentQueue<ILogMessage>();
+            _errors = new ConcurrentQueue<IRestoreLogMessage>();
         }
 
         /// <summary>
@@ -32,14 +32,14 @@ namespace NuGet.Common
             : base(verbosity)
         {
             _innerLogger = innerLogger;
-            _errors = new ConcurrentQueue<ILogMessage>();
+            _errors = new ConcurrentQueue<IRestoreLogMessage>();
         }
 
         public override void Log(ILogMessage message)
         {
             if (CollectMessage(message.Level))
             {
-                _errors.Enqueue(message);
+                _errors.Enqueue(message as RestoreLogMessage);
             }
 
             _innerLogger.Log(message);
@@ -49,12 +49,32 @@ namespace NuGet.Common
         {
             if (CollectMessage(message.Level))
             {
+                _errors.Enqueue(message as RestoreLogMessage);
+            }
+
+            return _innerLogger.LogAsync(message);
+        }
+
+        public void Log(IRestoreLogMessage message)
+        {
+            if (CollectMessage(message.Level))
+            {
+                _errors.Enqueue(message);
+            }
+
+            _innerLogger.Log(message);
+        }
+
+        public Task LogAsync(IRestoreLogMessage message)
+        {
+            if (CollectMessage(message.Level))
+            {
                 _errors.Enqueue(message);
             }
 
             return _innerLogger.LogAsync(message);
         }
 
-        public IEnumerable<ILogMessage> Errors => _errors.ToArray();
+        public IEnumerable<IRestoreLogMessage> Errors => _errors.ToArray();
     }
 }
