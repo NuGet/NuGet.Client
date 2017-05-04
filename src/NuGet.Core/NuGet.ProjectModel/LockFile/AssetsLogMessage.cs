@@ -22,7 +22,7 @@ namespace NuGet.ProjectModel
         public int EndLineNumber { get; set; } = -1;
         public int EndColumnNumber { get; set; } = -1;
 
-        public static IAssetsLogMessage CreateAssetsLogMessage(IRestoreLogMessage logMessage)
+        public static IAssetsLogMessage Create(IRestoreLogMessage logMessage)
         {
             return new AssetsLogMessage(logMessage.Level, logMessage.Code, logMessage.Message)
             {

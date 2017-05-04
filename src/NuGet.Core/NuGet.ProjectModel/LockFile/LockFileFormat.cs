@@ -216,7 +216,7 @@ namespace NuGet.ProjectModel
 
             if(lockFile.Version >= 3)
             {
-                if(lockFile.LogMessages != null && lockFile.LogMessages.Any())
+                if(lockFile.LogMessages.Count > 0)
                 {
                     json[LogsProperty] = WriteLogMessages(lockFile.LogMessages);
                 }

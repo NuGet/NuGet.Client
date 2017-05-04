@@ -141,7 +141,7 @@ namespace NuGet.Commands
 
             // Write the logs into the assets file
             var logs = (_logger as CollectorLogger).Errors
-                .Select(l => AssetsLogMessage.CreateAssetsLogMessage(l))
+                .Select(l => AssetsLogMessage.Create(l))
                 .ToList();
 
             assetsFile.LogMessages = logs;
