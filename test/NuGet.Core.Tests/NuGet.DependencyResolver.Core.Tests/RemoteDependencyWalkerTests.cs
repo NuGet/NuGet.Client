@@ -853,6 +853,11 @@ namespace NuGet.DependencyResolver.Tests
                 return Task.FromResult(packages.FindBestMatch(libraryRange.VersionRange, i => i?.Version));
             }
 
+            public Task<IEnumerable<NuGetVersion>> GetAllVersionsAsync(string id, SourceCacheContext cacheContext, ILogger logger, CancellationToken token)
+            {
+                throw new NotImplementedException();
+            }
+
             public Task<LibraryDependencyInfo> GetDependenciesAsync(
                 LibraryIdentity match,
                 NuGetFramework targetFramework,

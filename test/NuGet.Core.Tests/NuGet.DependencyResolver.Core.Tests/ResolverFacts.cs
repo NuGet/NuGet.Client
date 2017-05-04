@@ -153,6 +153,11 @@ namespace NuGet.DependencyResolver.Core.Tests
             {
                 return Task.FromResult(LibraryDependencyInfo.Create(match, targetFramework, Enumerable.Empty<LibraryDependency>()));
             }
+
+            public Task<IEnumerable<NuGetVersion>> GetAllVersionsAsync(string id, SourceCacheContext cacheContext, ILogger logger, CancellationToken token)
+            {
+                return Task.FromResult(_libraries.Select(e => e.Version));
+            }
         }
     }
 }
