@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -30,7 +30,7 @@ namespace NuGet.Common.Test
             Assert.Equal(-1, logMessage.EndColumnNumber);
             if (string.IsNullOrEmpty(targetGraph))
             {
-                Assert.Null(logMessage.TargetGraphs);
+                Assert.Equal(0, logMessage.TargetGraphs.Count);
             }
             else
             {
@@ -87,7 +87,7 @@ namespace NuGet.Common.Test
             Assert.Equal(-1, logMessage.EndLineNumber);
             Assert.Equal(-1, logMessage.StartColumnNumber);
             Assert.Equal(-1, logMessage.EndColumnNumber);
-            Assert.Null(logMessage.TargetGraphs);
+            Assert.Equal(0, logMessage.TargetGraphs.Count);
         }
 
         [Theory]
@@ -107,7 +107,7 @@ namespace NuGet.Common.Test
             Assert.Equal(-1, logMessage.EndLineNumber);
             Assert.Equal(-1, logMessage.StartColumnNumber);
             Assert.Equal(-1, logMessage.EndColumnNumber);
-            Assert.Null(logMessage.TargetGraphs);
+            Assert.Equal(0, logMessage.TargetGraphs.Count);
         }
 
 
@@ -127,7 +127,6 @@ namespace NuGet.Common.Test
             Assert.Equal(-1, logMessage.EndLineNumber);
             Assert.Equal(-1, logMessage.StartColumnNumber);
             Assert.Equal(-1, logMessage.EndColumnNumber);
-            Assert.NotNull(logMessage.TargetGraphs);
             targetGraphs.SequenceEqual(logMessage.TargetGraphs);
         }
 
@@ -147,7 +146,6 @@ namespace NuGet.Common.Test
             Assert.Equal(-1, logMessage.EndLineNumber);
             Assert.Equal(-1, logMessage.StartColumnNumber);
             Assert.Equal(-1, logMessage.EndColumnNumber);
-            Assert.NotNull(logMessage.TargetGraphs);
             targetGraphs.SequenceEqual(logMessage.TargetGraphs);
         }
 

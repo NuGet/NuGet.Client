@@ -1,7 +1,10 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Collections.Generic;
+using System.Linq;
 using FluentAssertions;
+using NuGet.Common;
 using NuGet.LibraryModel;
 using NuGet.Versioning;
 using Xunit;
@@ -84,6 +87,85 @@ namespace NuGet.Commands.Test
             var library = new LibraryIdentity("A", NuGetVersion.Parse("1.0+abc"), LibraryType.Package);
 
             DiagnosticUtility.FormatIdentity(library).Should().Be("A 1.0.0");
+        }
+
+        [Fact]
+        public void GivenNoMessagesVerifyNoMessagesReturned()
+        {
+            var messages = new List<RestoreLogMessage>();
+
+            DiagnosticUtility.MergeOnTargetGraph(messages).Count().Should().Be(0);
+        }
+
+        [Fact]
+        public void GivenASingleMessageVerifySameReturned()
+        {
+            var messages = new List<RestoreLogMessage>();
+            messages.Add(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1000, "test", "a", "abc"));
+
+            DiagnosticUtility.MergeOnTargetGraph(messages).ShouldBeEquivalentTo(messages);
+        }
+
+        [Fact]
+        public void GivenADuplicateMessagesVerifySingleMessageReturned()
+        {
+            var messages = new List<RestoreLogMessage>();
+            messages.Add(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1000, "test", "a", "abc"));
+            messages.Add(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1000, "test", "a", "abc"));
+
+            var outMessages = DiagnosticUtility.MergeOnTargetGraph(messages).ToList();
+
+            outMessages.Count.Should().Be(1);
+            outMessages.Single().TargetGraphs.ShouldAllBeEquivalentTo(new[] { "abc" });
+        }
+
+        [Fact]
+        public void GivenADuplicateMessagesVerifySingleMessageReturnedWithAllFramweworks()
+        {
+            var messages = new List<RestoreLogMessage>();
+            messages.Add(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1000, "test", "a", "abc"));
+            messages.Add(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1000, "test", "a", "xyz"));
+
+            var outMessages = DiagnosticUtility.MergeOnTargetGraph(messages).ToList();
+
+            outMessages.Count.Should().Be(1);
+            outMessages.Single().TargetGraphs.ShouldAllBeEquivalentTo(new[] { "abc", "xyz" });
+        }
+
+        [Fact]
+        public void GivenADuplicateMessagesVerifyMinimumSetOfFieldsDoesNotThrow()
+        {
+            var messages = new List<RestoreLogMessage>();
+            messages.Add(new RestoreLogMessage(LogLevel.Warning, "test"));
+            messages.Add(new RestoreLogMessage(LogLevel.Warning, "test"));
+
+            var outMessages = DiagnosticUtility.MergeOnTargetGraph(messages).ToList();
+
+            outMessages.Count.Should().Be(1);
+        }
+
+        [Fact]
+        public void GivenMessagesWithDifferentCodesVerifyNoMerges()
+        {
+            var messages = new List<RestoreLogMessage>();
+            messages.Add(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1001, "test", "a", "abc"));
+            messages.Add(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1000, "test", "a", "abc"));
+
+            var outMessages = DiagnosticUtility.MergeOnTargetGraph(messages).ToList();
+
+            outMessages.Count.Should().Be(2);
+        }
+
+        [Fact]
+        public void GivenMessagesWithDifferentTextVerifyNoMerges()
+        {
+            var messages = new List<RestoreLogMessage>();
+            messages.Add(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1000, "a", "a", "abc"));
+            messages.Add(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1000, "b", "a", "abc"));
+
+            var outMessages = DiagnosticUtility.MergeOnTargetGraph(messages).ToList();
+
+            outMessages.Count.Should().Be(2);
         }
     }
 }

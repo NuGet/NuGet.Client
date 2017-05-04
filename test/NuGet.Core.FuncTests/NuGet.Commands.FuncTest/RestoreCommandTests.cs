@@ -1452,7 +1452,7 @@ namespace NuGet.Commands.FuncTest
                 var runtimeAssembly = runtimeAssemblies.FirstOrDefault();
 
                 // Assert
-                Assert.Equal(3, logger.Warnings); // We'll get the warning for each runtime and for the runtime-less restore.
+                Assert.Equal(1, logger.Warnings); // Warnings are combined on message
                 Assert.Contains("NU1603: TestProject depends on Newtonsoft.Json (>= 7.0.0) but Newtonsoft.Json 7.0.0 was not found. An approximate best match of Newtonsoft.Json 7.0.1 was resolved.", logger.Messages);
             }
         }
@@ -1488,7 +1488,7 @@ namespace NuGet.Commands.FuncTest
                 var resultB = await commandB.ExecuteAsync();
 
                 // Assert
-                Assert.Equal(3, logger.Warnings); // We'll get the warning for each runtime and for the runtime-less restore.
+                Assert.Equal(1, logger.Warnings); // Warnings for all graphs are combined
                 Assert.Contains("NU1603: TestProject depends on Newtonsoft.Json (>= 7.0.0) but Newtonsoft.Json 7.0.0 was not found. An approximate best match of Newtonsoft.Json 7.0.1 was resolved.", logger.Messages);
             }
         }
@@ -1620,7 +1620,7 @@ namespace NuGet.Commands.FuncTest
                 // Assert
                 Assert.False(result.Success);
 
-                Assert.Equal(3, logger.Errors);
+                Assert.Equal(1, logger.Errors);
                 Assert.Empty(result.CompatibilityCheckResults);
                 Assert.DoesNotContain("compatible with", logger.Messages);
                 Assert.Equal(1, unresolved.Count);
