@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -301,7 +301,7 @@ namespace NuGet.Commands
                 summaryRequest.InputPath,
                 summaryRequest.Settings,
                 summaryRequest.Sources,
-                summaryRequest.CollectorLogger.Errors.Select(e => e as RestoreLogMessage));
+                summaryRequest.CollectorLogger.Errors.Select(e => e as RestoreLogMessage).Where(e => e.Level == LogLevel.Error));
         }
 
         private static async Task<RestoreSummary> CompleteTaskAsync(List<Task<RestoreSummary>> restoreTasks)
