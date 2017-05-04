@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -182,7 +182,35 @@ namespace NuGet.Build.Tasks.Pack
             }
 
             PopulateProjectAndPackageReferences(builder, assetsFile);
+            PopulateFrameworkAssemblyReferences(builder, request);
             return builder;
+        }
+
+        private void PopulateFrameworkAssemblyReferences(PackageBuilder builder, IPackTaskRequest<IMSBuildItem> request)
+        {
+            // First add all the assembly references which are not specific to a certain TFM.
+            var tfmSpecificRefs = new Dictionary<string, IList<string>>(StringComparer.OrdinalIgnoreCase);
+            // Then add the TFM specific framework assembly references, and ignore any which have already been added above.
+            foreach(var tfmRef in request.FrameworkAssemblyReferences)
+            {
+                var targetFramework = tfmRef.GetProperty("TargetFramework");
+
+                if (tfmSpecificRefs.ContainsKey(tfmRef.Identity))
+                {
+                    tfmSpecificRefs[tfmRef.Identity].Add(targetFramework);
+                }
+                else
+                {
+                    tfmSpecificRefs.Add(tfmRef.Identity, new List<string>() { targetFramework });
+                }                
+            }
+
+            builder.FrameworkReferences.AddRange(
+                tfmSpecificRefs.Select(
+                    t => new FrameworkAssemblyReference(
+                        t.Key, t.Value.Select(
+                            k => NuGetFramework.Parse(k))
+                            )));
         }
 
         public PackCommandRunner GetPackCommandRunner(
