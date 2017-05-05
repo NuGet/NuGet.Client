@@ -107,7 +107,7 @@
         Padding="0"
         ToolTip="{x:Static nuget:Resources.ToolTip_Refresh}"
         AutomationProperties.Name="{x:Static nuget:Resources.ToolTip_Refresh}"
-        Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}"
+        Style="{StaticResource ToolBarButtonStyle}"
         Command="{x:Static nuget:Commands.RestartSearchCommand}">
         <Image
           Source="{StaticResource BitmapImage_Refresh}"
@@ -167,7 +167,7 @@
         Padding="0"
         ToolTip="{x:Static nuget:Resources.ToolTip_Settings}"
         AutomationProperties.Name="{x:Static nuget:Resources.ToolTip_Settings}"
-        Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}"
+        Style="{StaticResource ToolBarButtonStyle}"
         Click="_settingsButton_Click">
         <Rectangle
           Width="{Binding FontSize,RelativeSource={RelativeSource AncestorType=UserControl},Converter={StaticResource Font122PercentSizeConverter}}"

@@ -306,7 +306,7 @@
         Visibility="{Binding InstalledVersion, Converter={StaticResource NullToVisibilityConverter}}"
         IsEnabled="{Binding CanUninstall}"
         Click="UninstallButton_Clicked"
-        Content="{x:Static local:Resources.Button_Uninstall}" />
+        Content="{x:Static local:Resources.Button_Uninstall}"/>
 
       <!-- Row 2 -->
       <TextBlock

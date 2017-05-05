@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="NuGet.PackageManagement.UI.FilterLabel"
+<UserControl x:Class="NuGet.PackageManagement.UI.FilterLabel"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -23,6 +23,7 @@
       Grid.Row="0"
       Click="ButtonClicked"
       AutomationProperties.AutomationId="{Binding ElementName=_labelText, Path=Text}"
+      FocusVisualStyle="{DynamicResource ControlsFocusVisualStyle}"
       AutomationProperties.Name="{Binding ElementName=_labelText, Path=Text}">
       <Button.Template>
         <ControlTemplate TargetType="{x:Type Button}">
