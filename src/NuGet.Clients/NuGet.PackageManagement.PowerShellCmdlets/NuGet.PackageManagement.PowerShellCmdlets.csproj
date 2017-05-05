@@ -5,6 +5,7 @@
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Shipping>true</Shipping>
+    <IncludeInVSIX>true</IncludeInVSIX>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <ProjectGuid>{26DC17AC-A390-4515-A2C0-07A0950036C5}</ProjectGuid>
     <OutputType>Library</OutputType>
@@ -68,7 +69,6 @@
     <Compile Include="Model\VersionType.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="PackageManagement.PowerShellCmdlets.nuspec" />
     <None Include="project.json" />
   </ItemGroup>
   <ItemGroup>

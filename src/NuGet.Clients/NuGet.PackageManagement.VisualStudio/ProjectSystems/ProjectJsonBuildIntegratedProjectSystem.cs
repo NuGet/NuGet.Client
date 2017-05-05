@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using NuGet.Frameworks;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
@@ -34,6 +35,23 @@ namespace NuGet.PackageManagement.VisualStudio
             // set project id
             var projectId = VsHierarchyUtility.GetProjectId(envDTEProject);
             InternalMetadata.Add(NuGetProjectMetadataKeys.ProjectId, projectId);
+
+            // Override the JSON TFM value from the csproj for UAP framework
+            if (InternalMetadata.TryGetValue(NuGetProjectMetadataKeys.TargetFramework, out object targetFramework))
+            {
+                var jsonTargetFramework = targetFramework as NuGetFramework;
+                if (IsUAPFramework(jsonTargetFramework))
+                {
+                    var platfromMinVersion = VsHierarchyUtility.GetMSBuildProperty(VsHierarchyUtility.ToVsHierarchy(envDTEProject), EnvDTEProjectInfoUtility.TargetPlatformMinVersion);
+
+                    if (!string.IsNullOrEmpty(platfromMinVersion))
+                    {
+                        // Found the TPMinV in csproj, store this as a new target framework to be replaced in project.json
+                        var newTargetFramework = new NuGetFramework(jsonTargetFramework.Framework, new Version(platfromMinVersion));
+                        InternalMetadata[NuGetProjectMetadataKeys.TargetFramework] = newTargetFramework;
+                    }
+                }
+            }
 
             InternalMetadata.Add(NuGetProjectMetadataKeys.UniqueName, uniqueName);
         }

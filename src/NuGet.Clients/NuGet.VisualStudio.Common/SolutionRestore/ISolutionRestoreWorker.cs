@@ -3,6 +3,7 @@
 
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.VisualStudio.Threading;
 
 namespace NuGet.VisualStudio
 {
@@ -20,6 +21,11 @@ namespace NuGet.VisualStudio
         /// Returns true when it's executing a restore operation.
         /// </summary>
         bool IsBusy { get; }
+
+        /// <summary>
+        /// Joinable task factory to syncronize with the worker.
+        /// </summary>
+        JoinableTaskFactory JoinableTaskFactory { get; }
 
         /// <summary>
         /// Schedules backgroud restore operation.

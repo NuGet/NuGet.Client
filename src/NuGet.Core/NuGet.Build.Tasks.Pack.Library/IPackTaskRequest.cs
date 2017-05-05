@@ -16,7 +16,6 @@ namespace NuGet.Build.Tasks.Pack
     public interface IPackTaskRequest<TItem>
     {
         string AssemblyName { get; }
-        TItem[] AssemblyReferences { get; }
         string[] Authors { get; }
         TItem[] BuildOutputInPackage { get; }
         string BuildOutputFolder { get; }
@@ -25,6 +24,7 @@ namespace NuGet.Build.Tasks.Pack
         string Copyright { get; }
         string Description { get; }
         bool DevelopmentDependency { get; }
+        TItem[] FrameworkAssemblyReferences { get; }
         string IconUrl { get; }
         bool IncludeBuildOutput { get; }
         bool IncludeSource { get; }

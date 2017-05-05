@@ -56,10 +56,15 @@ try {
     $TestSource = Join-Path $NuGetRoot test\EndToEnd -Resolve
     Write-Verbose "Copying all test files from '$TestSource' to '$WorkingDirectory'"
     & robocopy $TestSource $WorkingDirectory $opts
+    if($lastexitcode -gt 1) { exit 1 }
 
     $TestExtension = Join-Path $NuGetRoot "artifacts\API.Test\${ToolsetVersion}.0\bin\${Configuration}\net46\API.Test.dll" -Resolve
     Write-Verbose "Copying test extension from '$TestExtension' to '$WorkingDirectory'"
     Copy-Item $TestExtension $WorkingDirectory
+
+    $GeneratePackagesUtil = Join-Path $NuGetRoot "artifacts\GenerateTestPackages\${ToolsetVersion}.0\bin\${Configuration}\net46"
+    Write-Verbose "Copying utility binaries from `"$GeneratePackagesUtil`" to `"$WorkingDirectory`""
+    & robocopy $GeneratePackagesUtil $WorkingDirectory *.exe *.dll $opts
 
     $ScriptsDirectory = Join-Path $WorkingDirectory scripts
     New-Item -ItemType Directory -Force -Path $ScriptsDirectory | Out-Null
@@ -67,6 +72,7 @@ try {
     $ScriptsSource = Join-Path $NuGetRoot Scripts\e2etests -Resolve
     Write-Verbose "Copying test scripts from '$ScriptsSource' to '$ScriptsDirectory'"
     & robocopy $ScriptsSource $ScriptsDirectory "*.ps1" $opts
+    if($lastexitcode -gt 1) { exit 1 }
 
     if (-not (Test-Path $OutputDirectory)) {
         md $OutputDirectory | Out-Null
@@ -81,4 +87,5 @@ try {
 }
 finally {
     rm $workingDirectory -r -Force -WhatIf:$false
+    exit 0
 }

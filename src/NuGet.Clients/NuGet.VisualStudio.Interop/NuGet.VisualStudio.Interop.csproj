@@ -6,6 +6,7 @@
     <TargetFramework>net46</TargetFramework>
     <Shipping>true</Shipping>
     <Pack>true</Pack>
+    <IncludeInVsix>true</IncludeInVsix>
   </PropertyGroup>
   <PropertyGroup>
     <RootNamespace>NuGet.VisualStudio</RootNamespace>

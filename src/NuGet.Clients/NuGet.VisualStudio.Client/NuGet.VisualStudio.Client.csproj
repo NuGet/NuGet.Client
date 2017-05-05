@@ -20,6 +20,7 @@
     <DeployExtension>false</DeployExtension>
     <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
     <AssemblyName>NuGet.VisualStudio.Client</AssemblyName>
+    <TargetVsixContainerName>NuGet.Tools.vsix</TargetVsixContainerName>
     <VSSDKTargetPlatformRegRootSuffix>Exp</VSSDKTargetPlatformRegRootSuffix>
     <MinimumVisualStudioVersion>15.0</MinimumVisualStudioVersion>
     <FileUpgradeFlags />
@@ -245,6 +246,9 @@
           <CopyToOutputDirectory>Always</CopyToOutputDirectory>
           <IncludeInVSIX>true</IncludeInVSIX>
         </Content>
+        <Content Include="extension.vsixlangpack">
+          <IncludeInVSIX>false</IncludeInVSIX>
+        </Content>
       </ItemGroup>
     </When>
     <Otherwise>
@@ -288,53 +292,44 @@
   </ItemGroup>
   <Target Name="AfterBuild" DependsOnTargets="PublishVS14;PublishVS15;PublishVS15Insertable" />
   <Target Name="PublishVS14" Condition="'$(VisualStudioVersion)' == '14.0'">
-    <PropertyGroup>
-      <PublishDestination>$(ArtifactRoot)$(VsixOutputDirName)</PublishDestination>
-    </PropertyGroup>
     <Message Text="Publishing VS14 VSIX package files..." Importance="high" />
-    <Message Text="$(TargetVsixContainer) -&gt; $(PublishDestination)\NuGet.Tools.vsix" Importance="high" />
-    <Copy SourceFiles="$(TargetVsixContainer)" DestinationFiles="$(PublishDestination)\NuGet.Tools.vsix" OverwriteReadOnlyFiles="true" />
+    <Message Text="$(TargetVsixContainer) -&gt; $(VsixPublishDestination)NuGet.Tools.vsix" Importance="high" />
+    <Copy SourceFiles="$(TargetVsixContainer)" DestinationFiles="$(VsixPublishDestination)NuGet.Tools.vsix" OverwriteReadOnlyFiles="true" />
     <ItemGroup>
       <NuGetSymbolFiles Include="$(OutputPath)NuGet*.pdb" />
     </ItemGroup>
     <Message Text="Copying symbols file '%(NuGetSymbolFiles.Identity)'" Condition=" '@(NuGetSymbolFiles)' != '' " />
-    <Copy SourceFiles="@(NuGetSymbolFiles)" DestinationFolder="$(PublishDestination)\symbols" OverwriteReadOnlyFiles="true" />
+    <Copy SourceFiles="@(NuGetSymbolFiles)" DestinationFolder="$(VsixPublishDestination)symbols" OverwriteReadOnlyFiles="true" />
   </Target>
   <Target Name="PublishVS15" Condition="'$(IsInsertable)' != 'true' AND '$(VisualStudioVersion)' == '15.0'">
-    <PropertyGroup>
-      <PublishDestination>$(ArtifactRoot)$(VsixOutputDirName)</PublishDestination>
-    </PropertyGroup>
     <ItemGroup>
       <PackageManifest Include="$(OutputPath)Microsoft.VisualStudio.NuGet.Core.json" />
     </ItemGroup>
     <Message Text="Publishing VS15 VSIX package files..." Importance="high" />
-    <Message Text="$(TargetVsixContainer) -&gt; $(PublishDestination)\NuGet.Tools.vsix" Importance="high" />
-    <Copy SourceFiles="$(TargetVsixContainer)" DestinationFiles="$(PublishDestination)\NuGet.Tools.vsix" OverwriteReadOnlyFiles="true" />
-    <Message Text="@(PackageManifest) -&gt; $(PublishDestination)" Importance="high" />
-    <Copy SourceFiles="@(PackageManifest)" DestinationFolder="$(PublishDestination)" OverwriteReadOnlyFiles="true" />
+    <Message Text="$(TargetVsixContainer) -&gt; $(VsixPublishDestination)\NuGet.Tools.vsix" Importance="high" />
+    <Copy SourceFiles="$(TargetVsixContainer)" DestinationFiles="$(VsixPublishDestination)NuGet.Tools.vsix" OverwriteReadOnlyFiles="true" />
+    <Message Text="@(PackageManifest) -&gt; $(VsixPublishDestination)" Importance="high" />
+    <Copy SourceFiles="@(PackageManifest)" DestinationFolder="$(VsixPublishDestination)" OverwriteReadOnlyFiles="true" />
     <ItemGroup>
       <NuGetSymbolFiles Include="$(OutputPath)NuGet*.pdb" />
     </ItemGroup>
     <Message Text="Copying symbols file '%(NuGetSymbolFiles.Identity)'" Condition=" '@(NuGetSymbolFiles)' != '' " />
-    <Copy SourceFiles="@(NuGetSymbolFiles)" DestinationFolder="$(PublishDestination)\symbols" OverwriteReadOnlyFiles="true" />
+    <Copy SourceFiles="@(NuGetSymbolFiles)" DestinationFolder="$(VsixPublishDestination)symbols" OverwriteReadOnlyFiles="true" />
   </Target>
   <Target Name="PublishVS15Insertable" Condition="'$(IsInsertable)' == 'true' AND '$(VisualStudioVersion)' == '15.0'">
-    <PropertyGroup>
-      <PublishDestination>$(ArtifactRoot)$(VsixOutputDirName)</PublishDestination>
-    </PropertyGroup>
     <ItemGroup>
       <PackageManifest Include="$(OutputPath)Microsoft.VisualStudio.NuGet.Core.json" />
     </ItemGroup>
     <Message Text="Publishing VS15 Insertable VSIX package files..." Importance="high" />
-    <Message Text="$(TargetVsixContainer) -&gt; $(PublishDestination)\NuGet.Tools.vsix" Importance="high" />
-    <Copy SourceFiles="$(TargetVsixContainer)" DestinationFiles="$(PublishDestination)\Insertable\NuGet.Tools.vsix" OverwriteReadOnlyFiles="true" />
-    <Message Text="@(PackageManifest) -&gt; $(PublishDestination)" Importance="high" />
-    <Copy SourceFiles="@(PackageManifest)" DestinationFolder="$(PublishDestination)" OverwriteReadOnlyFiles="true" />
+    <Message Text="$(TargetVsixContainer) -&gt; $(VsixPublishDestination)NuGet.Tools.vsix" Importance="high" />
+    <Copy SourceFiles="$(TargetVsixContainer)" DestinationFiles="$(VsixPublishDestination)NuGet.Tools.vsix" OverwriteReadOnlyFiles="true" />
+    <Message Text="@(PackageManifest) -&gt; $(VsixPublishDestination)" Importance="high" />
+    <Copy SourceFiles="@(PackageManifest)" DestinationFolder="$(VsixPublishDestination)" OverwriteReadOnlyFiles="true" />
     <ItemGroup>
       <NuGetSymbolFiles Include="$(OutputPath)NuGet*.pdb" />
     </ItemGroup>
     <Message Text="Copying symbols file '%(NuGetSymbolFiles.Identity)'" Condition=" '@(NuGetSymbolFiles)' != '' " />
-    <Copy SourceFiles="@(NuGetSymbolFiles)" DestinationFolder="$(PublishDestination)\symbols" OverwriteReadOnlyFiles="true" />
+    <Copy SourceFiles="@(NuGetSymbolFiles)" DestinationFolder="$(VsixPublishDestination)symbols" OverwriteReadOnlyFiles="true" />
   </Target>
   <Target Name="ReadVsixIncludeListFromFile">
     <ReadLinesFromFile File="@(VsixIncludeFile)">
@@ -372,5 +367,27 @@
     <Error Text="Found @(NotListedDependencies-&gt;Count()) not listed file(s) '@(NotListedDependencies)'" Condition=" '@(NotListedDependencies)' != '' " File="@(VsixIncludeFile)" />
     <Warning Text="Missing @(MissingIgnoredAssemblies-&gt;Count()) ignored file(s) '@(MissingIgnoredAssemblies)'" Condition=" '@(MissingIgnoredAssemblies)' != '' " File="@(VsixIgnoreFile)" />
     <Message Text="Included @(VSIXSourceItem-&gt;Count()) file(s). Filtered @(SuppressPackaging-&gt;Count()) file(s)." Importance="high" />
+  </Target>
+  
+  <!--The IsCIBuild property is passed on the VSTS CI-->
+  <Target Name="GetLocalizedDlls" AfterTargets="GetVsixSourceItems" Condition="'$(IsCIBuild)' =='true'">
+    <MSBuild Projects="@(SolutionProjectsWithoutVSIX)"
+      Targets="GetLocalizedFilesForVsix"
+      Properties="IsVsixBuild=true;
+                BuildProjectReferences=false;">
+        <Output
+          TaskParameter="TargetOutputs"
+          ItemName="LocalizedFilesForVsix"/>
+    </MSBuild>
+    <ItemGroup>
+      <VSIXSourceItem Include="@(LocalizedFilesForVsix)"/>
+      <_LocalizedFiles Include="$(ArtifactsDirectory)Microsoft.Web.Xdt.2.1.1\lib\net40\**\Microsoft.Web.XmlTransform.resources.dll"/>
+      <_LocalizedFiles Include="$(ArtifactsDirectory)vsixlangpack\**\extension.vsixlangpack"/>
+      <_LocalizedFiles Include="$(ArtifactsDirectory)eulas\**\eula.rtf"/>
+      <_VsixLocFiles Include="@(_LocalizedFiles)">
+        <TargetPath>%(_LocalizedFiles.RecursiveDir)%(_LocalizedFiles.Filename)%(_LocalizedFiles.Extension)</TargetPath>
+      </_VsixLocFiles>
+      <VSIXSourceItem Include="@(_VsixLocFiles)"/>
+    </ItemGroup>
   </Target>
 </Project>

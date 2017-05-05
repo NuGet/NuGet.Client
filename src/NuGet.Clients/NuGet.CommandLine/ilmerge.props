@@ -38,7 +38,6 @@
     <MergeExclude Include="$(OutputPath)System.Xml.dll"/>
     <MergeExclude Include="$(OutputPath)System.Xml.Linq.dll"/>
     <MergeExclude Include="$(OutputPath)WindowsBase.dll"/>
-    
 
     <MergeAllowdup Include="CompatibilityListProvider"/>
     <MergeAllowdup Include="CompatibilityMappingComparer"/>

@@ -10,6 +10,7 @@ using System.Management.Automation;
 using System.Management.Automation.Runspaces;
 using System.Threading;
 using Microsoft.PowerShell;
+using Microsoft.VisualStudio.Shell;
 using NuGet;
 using PathUtility = NuGet.Common.PathUtility;
 
@@ -81,12 +82,16 @@ namespace NuGetConsole.Host.PowerShell.Implementation
 
         public Collection<PSObject> Invoke(string command, object[] inputs, bool outputResults)
         {
-            if (String.IsNullOrEmpty(command))
+            // Invoking a command on the pipeline thread blocks the caller.
+            // It will hang VS when a caller is on the UI thread.
+            ThreadHelper.ThrowIfOnUIThread();
+
+            if (string.IsNullOrEmpty(command))
             {
                 throw new ArgumentNullException("command");
             }
 
-            using (Pipeline pipeline = CreatePipeline(command, outputResults))
+            using (var pipeline = CreatePipeline(command, outputResults))
             {
                 return InvokeCore(pipeline, inputs);
             }

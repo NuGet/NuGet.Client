@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -1186,7 +1186,7 @@ namespace Dotnet.Integration.Test
                     // Validate the assets.
                     var libItems = nupkgReader.GetLibItems().ToList();
                     Assert.Equal(0, libItems.Count);
-                    libItems = nupkgReader.GetLibItems(buildOutputTargetFolder).ToList();
+                    libItems = nupkgReader.GetItems(buildOutputTargetFolder).ToList();
                     Assert.Equal(1, libItems.Count);
                     Assert.Equal(FrameworkConstants.CommonFrameworks.NetStandard14, libItems[0].TargetFramework);
                     Assert.Equal(new[] {$"{buildOutputTargetFolder}/netstandard1.4/ClassLibrary1.dll"},
@@ -1625,7 +1625,6 @@ namespace ClassLibrary
             // Arrange
             using (var testDirectory = TestDirectory.Create())
             {
-                //XPlatTestUtils.WaitForDebugger();
                 var projectName = "ClassLibrary1";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
                 
@@ -1680,6 +1679,79 @@ namespace ClassLibrary
                     {
                         Assert.Contains(path, items);
                     }
+                }
+            }
+        }
+
+        [PlatformTheory(Platform.Windows)]
+
+        [InlineData("PresentationFramework",                      true,                           "netstandard1.4;net461",                      "",                             "net461")]
+        [InlineData("PresentationFramework",                      false,                          "netstandard1.4;net461",                      "",                             "net461")]
+        [InlineData("System.IO",                                  true,                           "netstandard1.4;net46",                       "",                             "net46")]
+        [InlineData("System.IO",                                  true,                           "net46;net461",                               "net461",                       "net461")]
+        [InlineData("System.IO",                                  true,                           "net461",                                     "",                             "net461")]
+        public void PackCommand_PackProject_AddsReferenceAsFrameworkAssemblyReference(string referenceAssembly, bool pack,
+            string targetFrameworks, string conditionalFramework, string expectedTargetFramework)
+        {
+            // Arrange
+            using (var testDirectory = TestDirectory.Create())
+            {
+                var projectName = "ClassLibrary1";
+                var workingDirectory = Path.Combine(testDirectory, projectName);
+                
+                // Create the subdirectory structure for testing possible source paths for the content file
+                var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
+
+                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib");
+
+                using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
+                {
+                    var xml = XDocument.Load(stream);
+                    var frameworkProperty = "TargetFrameworks";
+                    if(targetFrameworks.Split(';').Count() == 1)
+                    {
+                        frameworkProperty = "TargetFramework";
+                    }
+                    ProjectFileUtils.SetTargetFrameworkForProject(xml, frameworkProperty, targetFrameworks);
+
+                    var attributes = new Dictionary<string, string>();
+
+                    var properties = new Dictionary<string, string>();
+                    if (!pack)
+                    {
+                        attributes["Pack"] = "false";
+                    }
+                    ProjectFileUtils.AddItem(
+                        xml,
+                        "Reference",
+                        referenceAssembly,
+                        conditionalFramework,
+                        properties,
+                        attributes);
+
+                    ProjectFileUtils.WriteXmlToFile(xml, stream);
+                }
+
+                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
+                var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
+                var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
+                // Act
+                msbuildFixture.PackProject(workingDirectory, projectName, $"-o {workingDirectory}");
+
+                // Assert
+                Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the expected place");
+                Assert.True(File.Exists(nuspecPath), "The intermediate nuspec file is not in the expected place");
+                //XPlatTestUtils.WaitForDebugger();
+                using (var nupkgReader = new PackageArchiveReader(nupkgPath))
+                {
+                    var expectedFrameworks = expectedTargetFramework.Split(';');
+                    var frameworkItems = nupkgReader.GetFrameworkItems();
+                    foreach(var framework in expectedFrameworks)
+                    {
+                        var nugetFramework = NuGetFramework.Parse(framework);
+                        var frameworkSpecificGroup = frameworkItems.Where(t => t.TargetFramework.Equals(nugetFramework)).First();
+                        Assert.True(frameworkSpecificGroup.Items.Contains(referenceAssembly) == pack);
+                    }                    
                 }
             }
         }

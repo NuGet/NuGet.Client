@@ -203,7 +203,7 @@ namespace NuGet.Build.Tasks.Pack.Test
             // Arrange
             var target = new PackTask
             {
-                AssemblyReferences = new[] { null, new Mock<ITaskItem>().Object },
+                FrameworkAssemblyReferences = new[] { null, new Mock<ITaskItem>().Object },
                 PackageFiles = new[] { null, new Mock<ITaskItem>().Object },
                 PackageFilesToExclude = new[] { null, new Mock<ITaskItem>().Object },
                 PackItem = new Mock<ITaskItem>().Object,
@@ -214,7 +214,7 @@ namespace NuGet.Build.Tasks.Pack.Test
             var actual = GetRequest(target);
 
             // Assert
-            Assert.Equal(1, actual.AssemblyReferences.OfType<MSBuildTaskItem>().Count());
+            Assert.Equal(1, actual.FrameworkAssemblyReferences.OfType<MSBuildTaskItem>().Count());
             Assert.Equal(1, actual.PackageFiles.OfType<MSBuildTaskItem>().Count());
             Assert.Equal(1, actual.PackageFilesToExclude.OfType<MSBuildTaskItem>().Count());
             Assert.NotNull(actual.PackItem);
@@ -227,7 +227,7 @@ namespace NuGet.Build.Tasks.Pack.Test
             // Arrange
             var target = new PackTask
             {
-                AssemblyReferences = null,
+                FrameworkAssemblyReferences = null,
                 Authors = null,
                 PackageFiles = null,
                 PackageFilesToExclude = null,
@@ -243,7 +243,7 @@ namespace NuGet.Build.Tasks.Pack.Test
             var actual = GetRequest(target);
 
             // Assert
-            Assert.Equal(0, actual.AssemblyReferences.Length);
+            Assert.Equal(0, actual.FrameworkAssemblyReferences.Length);
             Assert.Equal(0, actual.Authors.Length);
             Assert.Equal(0, actual.PackageFiles.Length);
             Assert.Equal(0, actual.PackageFilesToExclude.Length);
@@ -262,7 +262,7 @@ namespace NuGet.Build.Tasks.Pack.Test
             var target = new PackTask
             {
                 AssemblyName = "AssemblyName",
-                AssemblyReferences = new ITaskItem[0],
+                FrameworkAssemblyReferences = new ITaskItem[0],
                 Authors = new string[0],
                 BuildOutputFolder = "BuildOutputFolder",
                 ContentTargetFolders = new string[] { "ContentTargetFolders" } ,

@@ -1,4 +1,4 @@
-﻿<!--
+<!--
 ***********************************************************************************************
 NuGet.targets
 
@@ -34,6 +34,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <PackDependsOn>GenerateNuspec; $(PackDependsOn)</PackDependsOn>
     <IsInnerBuild Condition="'$(TargetFramework)' != '' AND '$(TargetFrameworks)' != ''">true</IsInnerBuild>
     <NoBuild Condition="'$(GeneratePackageOnBuild)' == 'true'">true</NoBuild>
+    <AddPriFileDependsOn Condition="'$(MicrosoftPortableCurrentVersionPropsHasBeenImported)' == 'true'">DeterminePortableBuildCapabilities</AddPriFileDependsOn>
   </PropertyGroup>
   <PropertyGroup Condition="'$(NoBuild)' == 'true' ">
     <GenerateNuspecDependsOn>$(GenerateNuspecDependsOn)</GenerateNuspecDependsOn>
@@ -168,7 +169,7 @@ Copyright (c) .NET Foundation. All rights reserved.
               NoPackageAnalysis="$(NoPackageAnalysis)"
               MinClientVersion="$(MinClientVersion)"
               Serviceable="$(Serviceable)"
-              AssemblyReferences="@(_References)"
+              FrameworkAssemblyReferences="@(_FrameworkAssemblyReferences)"
               ContinuePackingAfterGeneratingNuspec="$(ContinuePackingAfterGeneratingNuspec)"
               NuspecOutputPath="$(BaseIntermediateOutputPath)"
               IncludeBuildOutput="$(IncludeBuildOutput)"
@@ -238,6 +239,26 @@ Copyright (c) .NET Foundation. All rights reserved.
           TaskParameter="TargetOutputs"
           ItemName="_SourceFiles" />
     </MSBuild>
+
+    <MSBuild
+      Projects="$(MSBuildProjectFullPath)"
+      Targets="_GetFrameworkAssemblyReferences"
+      Properties="TargetFramework=%(_TargetFrameworks.Identity);
+                  BuildProjectReferences=false;">
+
+      <Output
+          TaskParameter="TargetOutputs"
+          ItemName="_FrameworkAssemblyReferences" />
+    </MSBuild>
+  </Target>
+
+  <Target Name ="_GetFrameworkAssemblyReferences" DependsOnTargets="ResolveReferences" Returns="@(TfmSpecificFrameworkAssemblyReferences)">
+    <ItemGroup>
+      <TfmSpecificFrameworkAssemblyReferences Include="@(ReferencePath->'%(OriginalItemSpec)')" 
+      Condition="'%(ReferencePath.Pack)' != 'false' AND '%(ReferencePath.ResolvedFrom)' == '{TargetFrameworkDirectory}'">
+        <TargetFramework>$(TargetFramework)</TargetFramework>
+      </TfmSpecificFrameworkAssemblyReferences>
+    </ItemGroup>
   </Target>
   
   <Target Name="_GetBuildOutputFilesWithTfm"
@@ -270,7 +291,8 @@ Copyright (c) .NET Foundation. All rights reserved.
     in their bin dir. This Pri file is not included in the BuiltProjectGroupOutput, and
     has to be added manually here.-->
   <Target Name="_AddPriFileToPackBuildOutput"
-          Returns="@(_PathToPriFile)">
+          Returns="@(_PathToPriFile)"
+          DependsOnTargets="$(AddPriFileDependsOn)">
     <ItemGroup Condition="'$(IncludeProjectPriFile)' == 'true'">
       <_PathToPriFile Include="$(ProjectPriFullPath)">
         <FinalOutputPath>$(ProjectPriFullPath)</FinalOutputPath>

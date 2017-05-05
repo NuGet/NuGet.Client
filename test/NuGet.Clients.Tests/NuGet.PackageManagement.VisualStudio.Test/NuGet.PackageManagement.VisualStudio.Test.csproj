@@ -26,7 +26,6 @@
     <Compile Include="LegacyCSProjPackageReferenceProjectTests.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="DispatchThread.cs" />
     <Compile Include="Feeds\MultiSourcePackageMetadataProviderTests.cs" />
     <Compile Include="Feeds\UpdatePackageFeedTests.cs" />
     <Compile Include="FrameworkAssemblyResolverTests.cs" />

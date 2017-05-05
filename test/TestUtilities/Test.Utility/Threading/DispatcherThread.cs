@@ -3,12 +3,13 @@
 
 using System;
 using System.Reflection;
+using System.Security.Permissions;
 using System.Threading;
 using System.Windows.Threading;
 
-namespace NuGet.PackageManagement.VisualStudio.Test
+namespace Test.Utility.Threading
 {
-    internal sealed class DispatchThread
+    public class DispatcherThread : IDisposable
     {
         private readonly Thread _thread;
         private Dispatcher _dispatcher;
@@ -18,7 +19,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         private bool _isInvoking;
         private bool _isClosed;
 
-        internal DispatchThread()
+        public DispatcherThread()
         {
             using (var resetEvent = new AutoResetEvent(initialState: false))
             {
@@ -54,9 +55,9 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             Close();
         }
 
-        internal Thread Thread => _thread;
+        public Thread Thread => _thread;
 
-        internal SynchronizationContext SyncContext
+        public SynchronizationContext SyncContext
         {
             get
             {
@@ -89,7 +90,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             }
         }
 
-        internal void Invoke(Action action)
+        public void Invoke(Action action)
         {
             if (_isClosed)
             {
@@ -117,7 +118,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             }
         }
 
-        internal DispatcherOperation BeginInvoke(Action action)
+        public DispatcherOperation BeginInvoke(Action action)
         {
             if (_isClosed)
             {
@@ -127,22 +128,29 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             return _dispatcher.BeginInvoke(DispatcherPriority.Normal, action);
         }
 
-        internal void Close()
+        [SecurityPermission(SecurityAction.Demand, ControlThread = true)]
+        public void Close()
         {
             if (!_isClosed)
             {
-                _dispatcher.InvokeShutdown();
+                _dispatcher?.InvokeShutdown();
                 _dispatcher = null;
+
                 try
                 {
                     _thread.Abort();
                 }
-                catch (ThreadAbortException)
+                finally
                 {
+                    _isClosed = true;
                 }
             }
+ 
+        }
 
-            _isClosed = true;
+        public void Dispose()
+        {
+            Close();
         }
     }
 }
