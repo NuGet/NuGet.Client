@@ -8,39 +8,366 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
+using NuGet.Frameworks;
 using NuGet.Packaging.Core;
 using NuGet.Test.Utility;
 using Xunit;
 
 namespace NuGet.Packaging.Test
 {
-    public class PackageFolderReaderTests
+    public class PackageArchiveReaderTests
     {
-        // verify a zip package reader, and folder package reader handle reference items the same
         [Fact]
-        public void PackageFolderReader_Basic()
+        public void GetReferenceItems_RespectsReferencesAccordingToDifferentFrameworks()
+        {
+            // Copy of the InstallPackageRespectReferencesAccordingToDifferentFrameworks functional test
+
+            // Arrange
+            using (var path = TestPackagesCore.GetNearestReferenceFilteringPackage())
+            using (var zip = TestPackagesCore.GetZip(path.File))
+            using (var reader = new PackageArchiveReader(zip))
+            {
+                // Act
+                var references = reader.GetReferenceItems();
+                var netResult = NuGetFrameworkUtility.GetNearest(references, NuGetFramework.Parse("net45"));
+                var slResult = NuGetFrameworkUtility.GetNearest(references, NuGetFramework.Parse("sl5"));
+
+                // Assert
+                Assert.Equal(2, netResult.Items.Count());
+                Assert.Equal(1, slResult.Items.Count());
+                Assert.Equal("lib/sl40/a.dll", slResult.Items.First());
+                Assert.Equal("lib/net40/one.dll", netResult.Items.First());
+                Assert.Equal("lib/net40/three.dll", netResult.Items.Skip(1).First());
+            }
+        }
+
+        [Fact]
+        public void GetReferenceItems_ReturnsLegacyFolders()
+        {
+            // Verify legacy folder names such as 40 and 35 parse to frameworks
+            using (var packageFile = TestPackagesCore.GetLegacyFolderPackage())
+            {
+                var zip = TestPackagesCore.GetZip(packageFile);
+
+                using (var reader = new PackageArchiveReader(zip))
+                {
+                    var groups = reader.GetReferenceItems().ToArray();
+
+                    Assert.Equal(4, groups.Count());
+
+                    Assert.Equal(NuGetFramework.AnyFramework, groups[0].TargetFramework);
+                    Assert.Equal("lib/a.dll", groups[0].Items.ToArray()[0]);
+
+                    Assert.Equal(NuGetFramework.Parse("net35"), groups[1].TargetFramework);
+                    Assert.Equal("lib/35/b.dll", groups[1].Items.ToArray()[0]);
+
+                    Assert.Equal(NuGetFramework.Parse("net4"), groups[2].TargetFramework);
+                    Assert.Equal("lib/40/test40.dll", groups[2].Items.ToArray()[0]);
+                    Assert.Equal("lib/40/x86/testx86.dll", groups[2].Items.ToArray()[1]);
+
+                    Assert.Equal(NuGetFramework.Parse("net45"), groups[3].TargetFramework);
+                    Assert.Equal("lib/45/a.dll", groups[3].Items.ToArray()[0]);
+                }
+            }
+        }
+
+        [Fact]
+        public void GetReferenceItems_ReturnsNestedReferenceItemsMixed()
+        {
+            using (var packageFile = TestPackagesCore.GetLibEmptyFolderPackage())
+            {
+                var zip = TestPackagesCore.GetZip(packageFile);
+
+                using (var reader = new PackageArchiveReader(zip))
+                {
+                    var groups = reader.GetReferenceItems().ToArray();
+
+                    Assert.Equal(3, groups.Count());
+
+                    Assert.Equal(NuGetFramework.AnyFramework, groups[0].TargetFramework);
+                    Assert.Equal(2, groups[0].Items.Count());
+                    Assert.Equal("lib/a.dll", groups[0].Items.ToArray()[0]);
+                    Assert.Equal("lib/x86/b.dll", groups[0].Items.ToArray()[1]);
+
+                    Assert.Equal(NuGetFramework.Parse("net40"), groups[1].TargetFramework);
+                    Assert.Equal(2, groups[1].Items.Count());
+                    Assert.Equal("lib/net40/test40.dll", groups[1].Items.ToArray()[0]);
+                    Assert.Equal("lib/net40/x86/testx86.dll", groups[1].Items.ToArray()[1]);
+
+                    Assert.Equal(NuGetFramework.Parse("net45"), groups[2].TargetFramework);
+                    Assert.Equal(0, groups[2].Items.Count());
+                }
+            }
+        }
+
+        // Verify empty target framework folders under lib are returned
+        [Fact]
+        public void GetReferenceItems_ReturnsEmptyLibFolder()
+        {
+            using (var packageFile = TestPackagesCore.GetLibEmptyFolderPackage())
+            {
+                var zip = TestPackagesCore.GetZip(packageFile);
+
+                using (var reader = new PackageArchiveReader(zip))
+                {
+                    var groups = reader.GetReferenceItems().ToArray();
+
+                    var emptyGroup = groups.Where(g => g.TargetFramework == NuGetFramework.ParseFolder("net45")).Single();
+
+                    Assert.Equal(0, emptyGroup.Items.Count());
+                }
+            }
+        }
+
+        [Fact]
+        public void GetReferenceItems_ReturnsNestedReferenceItems()
+        {
+            using (var packageFile = TestPackagesCore.GetLibSubFolderPackage())
+            {
+                var zip = TestPackagesCore.GetZip(packageFile);
+
+                using (var reader = new PackageArchiveReader(zip))
+                {
+                    var groups = reader.GetReferenceItems().ToArray();
+
+                    Assert.Equal(1, groups.Count());
+
+                    Assert.Equal(NuGetFramework.Parse("net40"), groups[0].TargetFramework);
+                    Assert.Equal(2, groups[0].Items.Count());
+                    Assert.Equal("lib/net40/test40.dll", groups[0].Items.ToArray()[0]);
+                    Assert.Equal("lib/net40/x86/testx86.dll", groups[0].Items.ToArray()[1]);
+                }
+            }
+        }
+
+        [Theory]
+        [InlineData("3.0.5-beta", "3.0.5-beta")]
+        [InlineData("2.5", "2.5.0")]
+        [InlineData("2.5-beta", "2.5.0-beta")]
+        public void GetMinClientVersion_ReturnsNormalizedString(string minClientVersion, string expected)
+        {
+            using (var packageFile = TestPackagesCore.GetLegacyTestPackageMinClient(minClientVersion))
+            {
+                var zip = TestPackagesCore.GetZip(packageFile);
+
+                using (var reader = new PackageArchiveReader(zip))
+                {
+                    var version = reader.GetMinClientVersion();
+
+                    Assert.Equal(expected, version.ToNormalizedString());
+                }
+            }
+        }
+
+        [Fact]
+        public void GetContentItems_ReturnsContentWithMixedFrameworks()
+        {
+            using (var packageFile = TestPackagesCore.GetLegacyContentPackageMixed())
+            {
+                var zip = TestPackagesCore.GetZip(packageFile);
+
+                using (var reader = new PackageArchiveReader(zip))
+                {
+                    var groups = reader.GetContentItems().ToArray();
+
+                    Assert.Equal(3, groups.Count());
+                }
+            }
+        }
+
+        [Fact]
+        public void GetContentItems_ReturnsContentWithFrameworks()
+        {
+            using (var packageFile = TestPackagesCore.GetLegacyContentPackageWithFrameworks())
+            {
+                var zip = TestPackagesCore.GetZip(packageFile);
+
+                using (var reader = new PackageArchiveReader(zip))
+                {
+                    var groups = reader.GetContentItems().ToArray();
+
+                    Assert.Equal(3, groups.Count());
+                }
+            }
+        }
+
+        [Fact]
+        public void GetContentItems_ReturnsContentWithNoFrameworks()
+        {
+            using (var packageFile = TestPackagesCore.GetLegacyContentPackage())
+            {
+                var zip = TestPackagesCore.GetZip(packageFile);
+
+                using (var reader = new PackageArchiveReader(zip))
+                {
+                    var groups = reader.GetContentItems().ToArray();
+
+                    Assert.Equal(1, groups.Count());
+
+                    Assert.Equal(NuGetFramework.AnyFramework, groups.Single().TargetFramework);
+
+                    Assert.Equal(3, groups.Single().Items.Count());
+                }
+            }
+        }
+
+        // get reference items without any nuspec entries
+        [Fact]
+        public void GetReferenceItems_ReturnsItemsWithNoNuspecEntries()
         {
             using (var packageFile = TestPackagesCore.GetLegacyTestPackage())
             {
-                using (var zip = new ZipArchive(File.OpenRead(packageFile)))
-                using (var zipReader = new PackageArchiveReader(zip))
+                var zip = TestPackagesCore.GetZip(packageFile);
+
+                using (var reader = new PackageArchiveReader(zip))
                 {
-                    var folder = Path.Combine(Path.GetDirectoryName(packageFile), Guid.NewGuid().ToString());
+                    var groups = reader.GetReferenceItems().ToArray();
 
-                    using (var zipFile = new ZipArchive(File.OpenRead(packageFile)))
-                    {
-                        zipFile.ExtractAll(folder);
+                    Assert.Equal(3, groups.Count());
 
-                        var folderReader = new PackageFolderReader(folder);
+                    Assert.Equal(4, groups.SelectMany(e => e.Items).Count());
+                }
+            }
+        }
 
-                        Assert.Equal(zipReader.GetIdentity(), folderReader.GetIdentity(), new PackageIdentityComparer());
+        // normal reference group filtering
+        [Fact]
+        public void GetReferenceItems_ReturnsReferencesWithGroups()
+        {
+            using (var packageFile = TestPackagesCore.GetLegacyTestPackageWithReferenceGroups())
+            {
+                var zip = TestPackagesCore.GetZip(packageFile);
 
-                        Assert.Equal(zipReader.GetLibItems().Count(), folderReader.GetLibItems().Count());
+                using (var reader = new PackageArchiveReader(zip))
+                {
+                    var groups = reader.GetReferenceItems().ToArray();
 
-                        Assert.Equal(zipReader.GetReferenceItems().Count(), folderReader.GetReferenceItems().Count());
+                    Assert.Equal(2, groups.Count());
 
-                        Assert.Equal(zipReader.GetReferenceItems().First().Items.First(), folderReader.GetReferenceItems().First().Items.First());
-                    }
+                    Assert.Equal(NuGetFramework.AnyFramework, groups[0].TargetFramework);
+                    Assert.Equal(1, groups[0].Items.Count());
+                    Assert.Equal("lib/test.dll", groups[0].Items.Single());
+
+                    Assert.Equal(NuGetFramework.Parse("net45"), groups[1].TargetFramework);
+                    Assert.Equal(1, groups[1].Items.Count());
+                    Assert.Equal("lib/net45/test45.dll", groups[1].Items.Single());
+                }
+            }
+        }
+
+        // v1.5 reference flat list applied to a 2.5+ nupkg with frameworks
+        [Fact]
+        public void GetReferenceItems_ReturnsReferencesWithoutGroups()
+        {
+            using (var packageFile = TestPackagesCore.GetLegacyTestPackageWithPre25References())
+            {
+                var zip = TestPackagesCore.GetZip(packageFile);
+
+                using (var reader = new PackageArchiveReader(zip))
+                {
+                    var groups = reader.GetReferenceItems().ToArray();
+
+                    Assert.Equal(3, groups.Count());
+
+                    Assert.Equal(NuGetFramework.AnyFramework, groups[0].TargetFramework);
+                    Assert.Equal(1, groups[0].Items.Count());
+                    Assert.Equal("lib/test.dll", groups[0].Items.Single());
+
+                    Assert.Equal(NuGetFramework.Parse("net40"), groups[1].TargetFramework);
+                    Assert.Equal(1, groups[1].Items.Count());
+                    Assert.Equal("lib/net40/test.dll", groups[1].Items.Single());
+
+                    Assert.Equal(NuGetFramework.Parse("net451"), groups[2].TargetFramework);
+                    Assert.Equal(1, groups[1].Items.Count());
+                    Assert.Equal("lib/net451/test.dll", groups[2].Items.Single());
+                }
+            }
+        }
+
+        [Fact]
+        public void GetSupportedFrameworks_ReturnsSupportedFrameworks()
+        {
+            using (var packageFile = TestPackagesCore.GetLegacyTestPackage())
+            {
+                var zip = TestPackagesCore.GetZip(packageFile);
+
+                using (var reader = new PackageArchiveReader(zip))
+                {
+                    var frameworks = reader.GetSupportedFrameworks().Select(f => f.DotNetFrameworkName).ToArray();
+
+                    Assert.Equal("Any,Version=v0.0", frameworks[0]);
+                    Assert.Equal(".NETFramework,Version=v4.0", frameworks[1]);
+                    Assert.Equal(".NETFramework,Version=v4.5", frameworks[2]);
+                    Assert.Equal(3, frameworks.Length);
+                }
+            }
+        }
+
+        [Fact]
+        public void IsServiceable_ReturnsTrueForServiceablePackage()
+        {
+            // Arrange
+            using (var packageFile = TestPackagesCore.GetServiceablePackage())
+            {
+                var zip = TestPackagesCore.GetZip(packageFile);
+
+                using (var reader = new PackageArchiveReader(zip))
+                {
+                    // Act
+                    var actual = reader.IsServiceable();
+
+                    // Assert
+                    Assert.True(actual);
+                }
+            }
+        }
+
+        [Fact]
+        public void GetPackageTypes_ReturnsMultiplePackageTypes()
+        {
+            // Arrange
+            using (var packageFile = TestPackagesCore.GetPackageWithPackageTypes())
+            {
+                var zip = TestPackagesCore.GetZip(packageFile);
+
+                using (var reader = new PackageArchiveReader(zip))
+                {
+                    // Act
+                    var actual = reader.GetPackageTypes();
+
+                    // Assert
+                    Assert.Equal(2, actual.Count);
+                    Assert.Equal("foo", actual[0].Name);
+                    Assert.Equal(new Version(0, 0), actual[0].Version);
+                    Assert.Equal("bar", actual[1].Name);
+                    Assert.Equal(new Version(2, 0, 0), actual[1].Version);
+                }
+            }
+        }
+
+        [Fact]
+        public void GetSupportedFrameworks_ThrowsForSupportedFrameworksForInvalidPortableFramework()
+        {
+            using (var packageFile = TestPackagesCore.GetLegacyTestPackageWithInvalidPortableFrameworkFolderName())
+            {
+                var zip = TestPackagesCore.GetZip(packageFile);
+
+                using (var reader = new PackageArchiveReader(zip))
+                {
+                    var ex = Assert.Throws<PackagingException>(
+                        () => reader.GetSupportedFrameworks());
+                    Assert.Equal(
+                        "The framework in the folder name of '" +
+                        "lib/portable-net+win+wpa+wp+sl+net-cf+netmf+MonoAndroid+MonoTouch+Xamarin.iOS/test.dll" +
+                        "' in package 'packageA.2.0.3' could not be parsed.",
+                        ex.Message);
+                    Assert.NotNull(ex.InnerException);
+                    Assert.IsType<ArgumentException>(ex.InnerException);
+                    Assert.Equal(
+                        "Invalid portable frameworks '" +
+                        "net+win+wpa+wp+sl+net-cf+netmf+MonoAndroid+MonoTouch+Xamarin.iOS" +
+                        "'. A hyphen may not be in any of the portable framework names.",
+                        ex.InnerException.Message);
                 }
             }
         }
@@ -302,7 +629,6 @@ namespace NuGet.Packaging.Test
         public void GetNuspec_ReturnsStream()
         {
             // Arrange
-            using (var workingDir = TestDirectory.Create())
             using (var stream = new MemoryStream())
             {
                 using (var zip = new ZipArchive(stream, ZipArchiveMode.Create, leaveOpen: true))
@@ -311,16 +637,16 @@ namespace NuGet.Packaging.Test
                     zip.AddEntry("package.nuspec", new byte[5]);
                 }
 
-                ExtractAll(stream, workingDir);
+                stream.Seek(0, SeekOrigin.Begin);
 
-                using (var folderReader = new PackageFolderReader(workingDir))
+                using (var reader = new PackageArchiveReader(stream))
                 {
                     // Act
-                    using (var nuspec = folderReader.GetNuspec())
+                    using (var nuspec = new BinaryReader(reader.GetNuspec()))
                     {
                         // Assert
                         Assert.NotNull(nuspec);
-                        Assert.Equal(5, nuspec.Length);
+                        Assert.Equal(5, nuspec.ReadBytes(4096).Length);
                     }
                 }
             }
@@ -330,7 +656,6 @@ namespace NuGet.Packaging.Test
         public void GetNuspec_ReturnsStreamForRootNuspec()
         {
             // Arrange
-            using (var workingDir = TestDirectory.Create())
             using (var stream = new MemoryStream())
             {
                 using (var zip = new ZipArchive(stream, ZipArchiveMode.Create, leaveOpen: true))
@@ -340,17 +665,13 @@ namespace NuGet.Packaging.Test
                     zip.AddEntry("content/package.nuspec", new byte[0]);
                 }
 
-                ExtractAll(stream, workingDir);
-
-                using (var folderReader = new PackageFolderReader(workingDir))
+                // Act
+                using (var reader = new PackageArchiveReader(stream))
+                using (var nuspec = new BinaryReader(reader.GetNuspec()))
                 {
-                    // Act
-                    using (var nuspec = folderReader.GetNuspec())
-                    {
-                        // Assert
-                        Assert.NotNull(nuspec);
-                        Assert.Equal(5, nuspec.Length);
-                    }
+                    // Assert
+                    Assert.NotNull(nuspec);
+                    Assert.Equal(5, nuspec.ReadBytes(4096).Length);
                 }
             }
         }
@@ -359,7 +680,6 @@ namespace NuGet.Packaging.Test
         public void GetNuspec_ThrowsForNoRootNuspec()
         {
             // Arrange
-            using (var workingDir = TestDirectory.Create())
             using (var stream = new MemoryStream())
             {
                 using (var zip = new ZipArchive(stream, ZipArchiveMode.Create, leaveOpen: true))
@@ -368,9 +688,7 @@ namespace NuGet.Packaging.Test
                     zip.AddEntry("content/package.nuspec", new byte[0]);
                 }
 
-                ExtractAll(stream, workingDir);
-
-                using (var reader = new PackageFolderReader(workingDir))
+                using (var reader = new PackageArchiveReader(stream))
                 {
                     // Act
                     var exception = Assert.Throws<PackagingException>(() => reader.GetNuspec());
@@ -385,19 +703,16 @@ namespace NuGet.Packaging.Test
         public void GetNuspec_ThrowsForMultipleRootNuspecs()
         {
             // Arrange
-            using (var workingDir = TestDirectory.Create())
             using (var stream = new MemoryStream())
             {
                 using (var zip = new ZipArchive(stream, ZipArchiveMode.Create, leaveOpen: true))
                 {
-                    zip.AddEntry("lib" + Path.DirectorySeparatorChar + "net45" + Path.DirectorySeparatorChar + "a.dll", new byte[0]);
+                    zip.AddEntry("lib/net45/a.dll", new byte[0]);
                     zip.AddEntry("package.NUSPEC", new byte[0]);
                     zip.AddEntry("package2.nuspec", new byte[0]);
                 }
 
-                ExtractAll(stream, workingDir);
-
-                using (var reader = new PackageFolderReader(workingDir))
+                using (var reader = new PackageArchiveReader(stream))
                 {
                     // Act
                     var exception = Assert.Throws<PackagingException>(() => reader.GetNuspec());
@@ -412,7 +727,6 @@ namespace NuGet.Packaging.Test
         public void GetNuspec_ThrowsForNoNuspec()
         {
             // Arrange
-            using (var workingDir = TestDirectory.Create())
             using (var stream = new MemoryStream())
             {
                 using (var zip = new ZipArchive(stream, ZipArchiveMode.Create, leaveOpen: true))
@@ -420,9 +734,7 @@ namespace NuGet.Packaging.Test
                     zip.AddEntry("lib/net45/a.dll", new byte[0]);
                 }
 
-                ExtractAll(stream, workingDir);
-
-                using (var reader = new PackageFolderReader(workingDir))
+                using (var reader = new PackageArchiveReader(stream))
                 {
                     // Act
                     var exception = Assert.Throws<PackagingException>(() => reader.GetNuspec());
@@ -437,7 +749,6 @@ namespace NuGet.Packaging.Test
         public void GetNuspec_ThrowsForNoNuspecWithCorrectExtension()
         {
             // Arrange
-            using (var workingDir = TestDirectory.Create())
             using (var stream = new MemoryStream())
             {
                 using (var zip = new ZipArchive(stream, ZipArchiveMode.Create, leaveOpen: true))
@@ -450,9 +761,7 @@ namespace NuGet.Packaging.Test
                     zip.AddEntry("blah.nuspecc", new byte[0]);
                 }
 
-                ExtractAll(stream, workingDir);
-
-                using (var reader = new PackageFolderReader(workingDir))
+                using (var reader = new PackageArchiveReader(stream))
                 {
                     // Act
                     var exception = Assert.Throws<PackagingException>(() => reader.GetNuspec());
@@ -467,7 +776,6 @@ namespace NuGet.Packaging.Test
         public void GetNuspec_SupportsEscapingInFileName()
         {
             // Arrange
-            using (var workingDir = TestDirectory.Create())
             using (var stream = new MemoryStream())
             {
                 using (var zip = new ZipArchive(stream, ZipArchiveMode.Create, leaveOpen: true))
@@ -476,17 +784,14 @@ namespace NuGet.Packaging.Test
                     zip.AddEntry("package%20.nuspec", new byte[5]);
                 }
 
-                ExtractAll(stream, workingDir);
-
-                using (var reader = new PackageFolderReader(workingDir))
+                using (var reader = new PackageArchiveReader(stream))
                 {
                     // Act
-                    using (var nuspec = reader.GetNuspec())
-                    {
-                        // Assert
-                        Assert.NotNull(nuspec);
-                        Assert.Equal(5, nuspec.Length);
-                    }
+                    var nuspec = new BinaryReader(reader.GetNuspec());
+
+                    // Assert
+                    Assert.NotNull(nuspec);
+                    Assert.Equal(5, nuspec.ReadBytes(4096).Length);
                 }
             }
         }
@@ -498,7 +803,7 @@ namespace NuGet.Packaging.Test
             {
                 var filePath = test.Reader.GetNuspecFile();
 
-                Assert.Equal(Path.Combine(test.RootDirectoryPath, "Aa.nuspec"), filePath);
+                Assert.Equal("Aa.nuspec", filePath);
             }
         }
 
@@ -509,7 +814,7 @@ namespace NuGet.Packaging.Test
             {
                 var filePath = await test.Reader.GetNuspecFileAsync(CancellationToken.None);
 
-                Assert.Equal(Path.Combine(test.RootDirectoryPath, "Aa.nuspec"), filePath);
+                Assert.Equal("Aa.nuspec", filePath);
             }
         }
 
@@ -1057,16 +1362,6 @@ namespace NuGet.Packaging.Test
             return targetPath;
         }
 
-        private static void ExtractAll(Stream stream, string directory)
-        {
-            stream.Seek(0, SeekOrigin.Begin);
-
-            using (var zipFile = new ZipArchive(stream, ZipArchiveMode.Read))
-            {
-                zipFile.ExtractAll(directory);
-            }
-        }
-
         // For testing the following implementations:
         //      IPackageCoreReader
         //      IAsyncPackageCoreReader
@@ -1074,32 +1369,23 @@ namespace NuGet.Packaging.Test
         //      IAsyncPackageContentReader
         private sealed class PackageReaderTest : IDisposable
         {
-            private readonly TestDirectory _directory;
             private bool _isDisposed;
+            private readonly TestPackagesCore.TempFile _tempFile;
 
-            internal PackageFolderReader Reader { get; }
-            internal string RootDirectoryPath { get; }
+            internal PackageArchiveReader Reader { get; }
 
-            private PackageReaderTest(PackageFolderReader reader, TestDirectory directory)
+            private PackageReaderTest(PackageArchiveReader reader, TestPackagesCore.TempFile tempFile)
             {
                 Reader = reader;
-                _directory = directory;
-                RootDirectoryPath = directory.Path;
+                _tempFile = tempFile;
             }
 
             internal static PackageReaderTest Create(TestPackagesCore.TempFile tempFile)
             {
-                var directory = TestDirectory.Create();
+                var zip = TestPackagesCore.GetZip(tempFile);
+                var reader = new PackageArchiveReader(zip);
 
-                using (tempFile)
-                using (var zipFile = new ZipArchive(File.OpenRead(tempFile)))
-                {
-                    zipFile.ExtractAll(directory.Path);
-                }
-
-                var reader = new PackageFolderReader(directory.Path);
-
-                return new PackageReaderTest(reader, directory);
+                return new PackageReaderTest(reader, tempFile);
             }
 
             public void Dispose()
@@ -1107,7 +1393,7 @@ namespace NuGet.Packaging.Test
                 if (!_isDisposed)
                 {
                     Reader.Dispose();
-                    _directory.Dispose();
+                    _tempFile.Dispose();
 
                     GC.SuppressFinalize(this);
 

@@ -1186,7 +1186,7 @@ namespace Dotnet.Integration.Test
                     // Validate the assets.
                     var libItems = nupkgReader.GetLibItems().ToList();
                     Assert.Equal(0, libItems.Count);
-                    libItems = nupkgReader.GetLibItems(buildOutputTargetFolder).ToList();
+                    libItems = nupkgReader.GetItems(buildOutputTargetFolder).ToList();
                     Assert.Equal(1, libItems.Count);
                     Assert.Equal(FrameworkConstants.CommonFrameworks.NetStandard14, libItems[0].TargetFramework);
                     Assert.Equal(new[] {$"{buildOutputTargetFolder}/netstandard1.4/ClassLibrary1.dll"},
