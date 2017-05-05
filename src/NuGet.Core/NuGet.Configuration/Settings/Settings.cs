@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -221,45 +221,77 @@ namespace NuGet.Configuration
                             .Where(f => f != null));
                 }
 
-                if (loadAppDataSettings)
-                {
-                    LoadUserSpecificSettings(validSettingFiles, root, configFileName, machineWideSettings, useTestingGlobalPath);
-                }
-
-                if (machineWideSettings != null && string.IsNullOrEmpty(configFileName))
-                {
-                    validSettingFiles.AddRange(
-                        machineWideSettings.Settings.Select(
-                            s => new Settings(s.Root, s.FileName, s.IsMachineWideSettings)));
-                }
-
-                if (validSettingFiles == null
-                    || !validSettingFiles.Any())
-                {
-                    // This means we've failed to load all config files and also failed to load or create the one in %AppData%
-                    // Work Item 1531: If the config file is malformed and the constructor throws, NuGet fails to load in VS.
-                    // Returning a null instance prevents us from silently failing and also from picking up the wrong config
-                    return NullSettings.Instance;
-                }
-
-                SetClearTagForSettings(validSettingFiles);
-
-                validSettingFiles[0]._priority = validSettingFiles.Count;
-
-                // if multiple setting files were loaded, chain them in a linked list
-                for (var i = 1; i < validSettingFiles.Count; ++i)
-                {
-                    validSettingFiles[i]._next = validSettingFiles[i - 1];
-                    validSettingFiles[i]._priority = validSettingFiles[i - 1]._priority - 1;
-                }
-
-                // return the linked list head. Typicall, it's either the config file in %ProgramData%\NuGet\Config,
-                // or the user specific config (%APPDATA%\NuGet\nuget.config) if there are no machine
-                // wide config files. The head file is the one we want to read first, while the user specific config
-                // is the one that we want to write to.
-                // TODO: add UI to allow specifying which one to write to
-                return validSettingFiles.Last();
+                return LoadSettingsForSpecificConfigs(root, configFileName, validSettingFiles, machineWideSettings, loadAppDataSettings, useTestingGlobalPath);
             }
+        }
+
+        public static ISettings LoadSettingsGivenConfigPaths(IList<string> configFilePaths)
+        {
+            var settings = new List<Settings>();
+            if(configFilePaths == null || configFilePaths.Count == 0)
+            {
+                throw new InvalidOperationException("Invalid operation. Not allowed to not load any configs");
+            }
+            foreach(var configPath in configFilePaths)
+            {
+                settings.Add(LoadSettings(configPath));
+            }
+
+            return LoadSettingsForSpecificConfigs(settings.First().Root, settings.First().FileName, settings, null, true, false);
+        }
+
+        private static Settings LoadSettings(string configPath)
+        {
+            var file = new FileInfo(configPath);
+            return new Settings(file.DirectoryName, file.Name);
+        }
+        // Used to reconstruct the settings from give config files
+        public static ISettings LoadSettingsForSpecificConfigs(
+            string root,
+            string configFileName,
+            List<Settings> validSettingFiles,
+            IMachineWideSettings machineWideSettings,
+            bool loadAppDataSettings,
+            bool useTestingGlobalPath)
+        {
+            if (loadAppDataSettings)
+            {
+                LoadUserSpecificSettings(validSettingFiles, root, configFileName, machineWideSettings, useTestingGlobalPath);
+            }
+
+            if (machineWideSettings != null && string.IsNullOrEmpty(configFileName))
+            {
+                validSettingFiles.AddRange(
+                    machineWideSettings.Settings.Select(
+                        s => new Settings(s.Root, s.FileName, s.IsMachineWideSettings)));
+            }
+
+            if (validSettingFiles == null
+                || !validSettingFiles.Any())
+            {
+                // This means we've failed to load all config files and also failed to load or create the one in %AppData%
+                // Work Item 1531: If the config file is malformed and the constructor throws, NuGet fails to load in VS.
+                // Returning a null instance prevents us from silently failing and also from picking up the wrong config
+                return NullSettings.Instance;
+            }
+
+            SetClearTagForSettings(validSettingFiles);
+
+            validSettingFiles[0]._priority = validSettingFiles.Count;
+
+            // if multiple setting files were loaded, chain them in a linked list
+            for (var i = 1; i < validSettingFiles.Count; ++i)
+            {
+                validSettingFiles[i]._next = validSettingFiles[i - 1];
+                validSettingFiles[i]._priority = validSettingFiles[i - 1]._priority - 1;
+            }
+
+            // return the linked list head. Typicall, it's either the config file in %ProgramData%\NuGet\Config,
+            // or the user specific config (%APPDATA%\NuGet\nuget.config) if there are no machine
+            // wide config files. The head file is the one we want to read first, while the user specific config
+            // is the one that we want to write to.
+            // TODO: add UI to allow specifying which one to write to
+            return validSettingFiles.Last();
         }
 
         private static void LoadUserSpecificSettings(

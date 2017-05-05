@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -49,8 +49,6 @@ namespace NuGet.Commands
         /// already built SourceRepository objects.
         /// </summary>
         public List<string> Sources { get; set; } = new List<string>();
-
-        public List<string> FallbackSources { get; set; } = new List<string>();
 
         public CachingSourceProvider CachingSourceProvider { get; set; }
 
@@ -145,7 +143,7 @@ namespace NuGet.Commands
             var useNugetConfigSources = (Sources.Count == 0);
 
             // Always use passed-in sources and fallback sources
-            foreach (var sourceUri in Enumerable.Concat(Sources, FallbackSources))
+            foreach (var sourceUri in Sources)
             {
                 sourceObjects[sourceUri] = new PackageSource(sourceUri);
             }

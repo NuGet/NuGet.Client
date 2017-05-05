@@ -23,7 +23,7 @@ namespace NuGet.Commands
         private readonly DependencyGraphSpec _dgFile;
         private readonly RestoreCommandProvidersCache _providerCache;
         private readonly Dictionary<string, PackageSpec> _projectJsonCache = new Dictionary<string, PackageSpec>(StringComparer.Ordinal);
-        private readonly ISettings _providerSettingsOverride;
+        private readonly ISettings _providerSettingsOverride; 
 
         public DependencyGraphSpecRequestProvider(
             RestoreCommandProvidersCache providerCache,
@@ -139,16 +139,25 @@ namespace NuGet.Commands
             var rootPath = Path.GetDirectoryName(project.PackageSpec.FilePath);
 
             var settings = settingsOverride;
-
-            if (settings == null)
-            {
-                settings = restoreArgs.GetSettings(rootPath);
-            }
+            // The settings should be set in the DG SPEC
+            //if (settings == null)
+            //{
+            //    settings = restoreArgs.GetSettings(rootPath);
+            //}
             // All of these are set when the DG Spec is created!
             var fallbackPaths = new ReadOnlyCollection<string>(project.PackageSpec.RestoreMetadata.FallbackFolders);
             var globalPath = project.PackageSpec.RestoreMetadata.PackagesPath;
 
+
+            // Verify the sources (get Sources)
+            if (settings == null)
+            {
+                restoreArgs.Log.LogInformation("I dont have any overriding settings. Using the dg spec provided ones");
+                // should I log debug here?
+                settings = Settings.LoadSettingsGivenConfigPaths(project.PackageSpec.RestoreMetadata.ConfigFilePaths);
+            }
             var sources = restoreArgs.GetEffectiveSources(settings);
+            
 
             var sharedCache = _providerCache.GetOrCreate(
                 globalPath,
