@@ -1,4 +1,4 @@
-﻿<UserControl
+<UserControl
   x:Class="NuGet.PackageManagement.UI.PackageItemControl"
   xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -278,6 +278,7 @@
                       CommandParameter="{Binding}"
                       Visibility="Hidden"
                       AutomationProperties.Name="{x:Static nuget:Resources.Button_Uninstall}"
+                      FocusVisualStyle="{DynamicResource ControlsFocusVisualStyle}"
                       ToolTip="{x:Static nuget:Resources.ToolTip_UninstallButton}">
                       <nuget:UninstallButton
                         Width="16"
@@ -293,6 +294,7 @@
                       Command="{x:Static nuget:Commands.InstallPackageCommand}"
                       CommandParameter="{Binding}"
                       AutomationProperties.Name="{x:Static nuget:Resources.Button_Install}"
+                      FocusVisualStyle="{DynamicResource ControlsFocusVisualStyle}"
                       Visibility="Hidden">
                       <Button.ToolTip>
                         <MultiBinding Converter="{StaticResource StringFormatConverter}">
@@ -335,6 +337,7 @@
                       Command="{x:Static nuget:Commands.InstallPackageCommand}"
                       CommandParameter="{Binding}"
                       AutomationProperties.Name="{x:Static nuget:Resources.Button_Update}"
+                      FocusVisualStyle="{DynamicResource ControlsFocusVisualStyle}"
                       Visibility="Hidden">
                       <Button.ToolTip>
                         <MultiBinding Converter="{StaticResource StringFormatConverter}">
