@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -115,7 +115,12 @@ namespace NuGet.Common
             string libraryId,
             params string[] targetGraphs)
         {
-            return new RestoreLogMessage(LogLevel.Error, code, message);
+            return new RestoreLogMessage(LogLevel.Error, message)
+            {
+                Code = code,
+                LibraryId = libraryId,
+                TargetGraphs = targetGraphs.ToList()
+            };
         }
     }
 }
