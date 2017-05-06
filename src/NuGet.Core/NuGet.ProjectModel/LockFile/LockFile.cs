@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -128,7 +128,8 @@ namespace NuGet.ProjectModel
                 && Libraries.OrderedEquals(other.Libraries, library => library.Name, StringComparer.OrdinalIgnoreCase)
                 && Targets.OrderedEquals(other.Targets, target => target.Name, StringComparer.Ordinal)
                 && PackageFolders.SequenceEqual(other.PackageFolders)
-                && EqualityUtility.EqualsWithNullCheck(PackageSpec, other.PackageSpec);
+                && EqualityUtility.EqualsWithNullCheck(PackageSpec, other.PackageSpec)
+                && LogMessages.OrderedEquals(other.LogMessages, m => m.Message, StringComparer.OrdinalIgnoreCase);
         }
 
         public override bool Equals(object obj)
@@ -158,6 +159,8 @@ namespace NuGet.ProjectModel
 
             combiner.AddObject(PackageSpec);
 
+            HashLogMessages(combiner, LogMessages);
+
             return combiner.CombinedHash;
         }
 
@@ -173,6 +176,15 @@ namespace NuGet.ProjectModel
         {
             foreach (var item in groups.OrderBy(
                 group => @group.FrameworkName, StringComparer.OrdinalIgnoreCase))
+            {
+                combiner.AddObject(item);
+            }
+        }
+
+        private static void HashLogMessages(HashCodeCombiner combiner, IList<IAssetsLogMessage> logMessages)
+        {
+            foreach (var item in logMessages.OrderBy(
+                logMessage => @logMessage.Message, StringComparer.OrdinalIgnoreCase))
             {
                 combiner.AddObject(item);
             }

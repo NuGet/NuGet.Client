@@ -1,8 +1,11 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using NuGet.Common;
+using NuGet.Shared;
 
 namespace NuGet.ProjectModel
 {
@@ -59,5 +62,37 @@ namespace NuGet.ProjectModel
         {
         }
 
+        public bool LogEquals(object obj) => Equals(obj as IAssetsLogMessage);
+
+        public bool LogEquals(IAssetsLogMessage other)
+        {
+            if (other == null)
+            {
+                return false;
+            }
+
+            if (ReferenceEquals(this, other))
+            {
+                return true;
+            }
+
+            if (Level == other.Level &&
+                Code == other.Code &&
+                WarningLevel == other.WarningLevel &&
+                StartLineNumber == other.StartLineNumber &&
+                EndLineNumber == other.EndColumnNumber &&
+                StartColumnNumber == other.StartColumnNumber &&
+                EndColumnNumber == other.EndColumnNumber &&
+                Message.Equals(other.Message, StringComparison.OrdinalIgnoreCase) &&
+                ProjectPath.Equals(other.Message, StringComparison.OrdinalIgnoreCase) &&
+                Message.Equals(other.Message, StringComparison.OrdinalIgnoreCase) &&
+                FilePath.Equals(other.FilePath, StringComparison.OrdinalIgnoreCase) &&
+                LibraryId.Equals(other.LibraryId, StringComparison.OrdinalIgnoreCase))
+            {
+                return TargetGraphs.OrderedEquals(other.TargetGraphs, t => t, StringComparer.OrdinalIgnoreCase);
+            }
+
+            return false;
+        }
     }
 }
