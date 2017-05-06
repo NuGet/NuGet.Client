@@ -62,8 +62,6 @@ namespace NuGet.ProjectModel
         {
         }
 
-        public bool LogEquals(object obj) => Equals(obj as IAssetsLogMessage);
-
         public bool LogEquals(IAssetsLogMessage other)
         {
             if (other == null)

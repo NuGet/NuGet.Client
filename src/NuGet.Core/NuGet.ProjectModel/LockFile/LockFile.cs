@@ -129,7 +129,38 @@ namespace NuGet.ProjectModel
                 && Targets.OrderedEquals(other.Targets, target => target.Name, StringComparer.Ordinal)
                 && PackageFolders.SequenceEqual(other.PackageFolders)
                 && EqualityUtility.EqualsWithNullCheck(PackageSpec, other.PackageSpec)
-                && LogMessages.OrderedEquals(other.LogMessages, m => m.Message, StringComparer.OrdinalIgnoreCase);
+                && LogsEqual(other.LogMessages);
+        }
+
+        private bool LogsEqual(IList<IAssetsLogMessage> otherLogMessages)
+        {
+            if(LogMessages == otherLogMessages)
+            {
+                return true;
+            }
+            if(LogMessages.Count != otherLogMessages.Count)
+            {
+                return false;
+            }
+
+
+            var equals = true;
+
+            var orderedLogMessages = LogMessages.OrderBy(m => m.Message, StringComparer.Ordinal).ToArray();
+            var orderedOtherLogMessages = otherLogMessages.OrderBy(m => m.Message, StringComparer.Ordinal).ToArray();
+            var length = orderedLogMessages.Length;
+
+            for(var i=0; i<length; i++)
+            {
+                equals &= orderedLogMessages[i].LogEquals(orderedOtherLogMessages[i]);
+
+                if (!equals)
+                {
+                    break;
+                }
+            }
+
+            return equals;               
         }
 
         public override bool Equals(object obj)
