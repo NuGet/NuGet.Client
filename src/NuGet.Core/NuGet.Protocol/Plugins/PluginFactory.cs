@@ -124,7 +124,8 @@ namespace NuGet.Protocol.Plugins
             sessionCancellationToken.ThrowIfCancellationRequested();
 
             var lazyTask = _plugins.GetOrAdd(filePath,
-                (path) => new Lazy<Task<IPlugin>>(() => CreatePluginAsync(filePath, arguments, requestHandlers, options, sessionCancellationToken)));
+                (path) => new Lazy<Task<IPlugin>>(
+                    () => CreatePluginAsync(filePath, arguments, requestHandlers, options, sessionCancellationToken)));
 
             await lazyTask.Value;
 
@@ -146,7 +147,7 @@ namespace NuGet.Protocol.Plugins
                 RedirectStandardError = false,
                 RedirectStandardInput = true,
                 RedirectStandardOutput = true,
-                StandardOutputEncoding = Encoding.UTF8
+                StandardOutputEncoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false)
             };
 
             var process = Process.Start(startInfo);
@@ -218,8 +219,9 @@ namespace NuGet.Protocol.Plugins
 
             sessionCancellationToken.ThrowIfCancellationRequested();
 
-            var standardInput = new StreamReader(Console.OpenStandardInput(), Encoding.UTF8);
-            var standardOutput = new StreamWriter(Console.OpenStandardOutput(), Encoding.UTF8);
+            var encoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
+            var standardInput = new StreamReader(Console.OpenStandardInput(), encoding);
+            var standardOutput = new StreamWriter(Console.OpenStandardOutput(), encoding);
             var sender = new Sender(standardOutput);
             var receiver = new StandardInputReceiver(standardInput);
             var messageDispatcher = new MessageDispatcher(requestHandlers, new RequestIdGenerator());

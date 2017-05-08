@@ -17,7 +17,6 @@ namespace NuGet.Protocol.Plugins
     /// </remarks>
     public sealed class StandardOutputReceiver : Receiver
     {
-        private bool _detectUtf8Bom;
         private bool _isConnected;
         private readonly IPluginProcess _process;
 
@@ -34,7 +33,6 @@ namespace NuGet.Protocol.Plugins
             }
 
             _process = process;
-            _detectUtf8Bom = true;
         }
 
         /// <summary>
@@ -108,22 +106,9 @@ namespace NuGet.Protocol.Plugins
             // Top-level exception handler for a worker pool thread.
             try
             {
-                string json;
-
-                if (_detectUtf8Bom)
+                if (!string.IsNullOrEmpty(e.Line))
                 {
-                    json = RemoveUtf8Bom(e.Line);
-
-                    _detectUtf8Bom = false;
-                }
-                else
-                {
-                    json = e.Line;
-                }
-
-                if (!string.IsNullOrEmpty(json))
-                {
-                    message = JsonSerializationUtilities.Deserialize<Message>(json);
+                    message = JsonSerializationUtilities.Deserialize<Message>(e.Line);
 
                     if (message != null)
                     {

@@ -2,8 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Moq;
@@ -92,48 +90,6 @@ namespace NuGet.Protocol.Plugins.Tests
 
             process.Setup(x => x.BeginReadLine())
                 .Callback(() => process.Raise(x => x.LineRead += null, new LineReadEventArgs(json)));
-
-            using (var receivedEvent = new ManualResetEventSlim(initialState: false))
-            using (var receiver = new StandardOutputReceiver(process.Object))
-            {
-                MessageEventArgs args = null;
-
-                receiver.MessageReceived += (object sender, MessageEventArgs e) =>
-                {
-                    args = e;
-
-                    receivedEvent.Set();
-                };
-
-                await receiver.ConnectAsync(CancellationToken.None);
-
-                receivedEvent.Wait();
-
-                Assert.NotNull(args);
-                Assert.NotNull(args.Message);
-                Assert.Equal(requestId, args.Message.RequestId);
-                Assert.Equal(type, args.Message.Type);
-                Assert.Equal(method, args.Message.Method);
-                Assert.Null(args.Message.Payload);
-            }
-        }
-
-        [Fact]
-        public async Task MessageReceived_RemovesUtf8Bom()
-        {
-            var json = "{\"RequestId\":\"a\",\"Type\":\"Response\",\"Method\":\"None\"}";
-            var bytes = Encoding.UTF8.GetBytes(json);
-
-            bytes = new byte[] {0xEF, 0xBB, 0xBF }.Concat(bytes).ToArray();
-            var jsonWithUtf8Bom = Encoding.UTF8.GetString(bytes);
-
-            var requestId = "a";
-            var type = MessageType.Response;
-            var method = MessageMethod.None;
-            var process = new Mock<IPluginProcess>();
-
-            process.Setup(x => x.BeginReadLine())
-                .Callback(() => process.Raise(x => x.LineRead += null, new LineReadEventArgs(jsonWithUtf8Bom)));
 
             using (var receivedEvent = new ManualResetEventSlim(initialState: false))
             using (var receiver = new StandardOutputReceiver(process.Object))

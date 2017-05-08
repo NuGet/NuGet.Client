@@ -26,7 +26,7 @@ namespace NuGet.Protocol
         /// <param name="objectType">The type of the object.</param>
         /// <param name="existingValue">The existing value of the object.</param>
         /// <param name="serializer">A serializer.</param>
-        /// <returns></returns>
+        /// <returns>A <see cref="SemanticVersion" /> object.</returns>
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
         {
             return reader.TokenType != JsonToken.Null ? SemanticVersion.Parse(serializer.Deserialize<string>(reader)) : null;
