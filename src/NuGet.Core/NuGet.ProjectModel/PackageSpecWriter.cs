@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -115,7 +115,7 @@ namespace NuGet.ProjectModel
             SetValue(writer, "projectName", msbuildMetadata.ProjectName);
             SetValue(writer, "projectPath", msbuildMetadata.ProjectPath);
             SetValue(writer, "projectJsonPath", msbuildMetadata.ProjectJsonPath);
-            SetValue(writer, "packagesPath", msbuildMetadata.PackagesPath); // restore metadata needs the packages path set
+            SetValue(writer, "packagesPath", msbuildMetadata.PackagesPath);
             SetValue(writer, "outputPath", msbuildMetadata.OutputPath);
 
             if (msbuildMetadata.ProjectStyle != ProjectStyle.Unknown)

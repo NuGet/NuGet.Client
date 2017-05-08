@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -10,6 +10,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using NuGet.Configuration;
 using NuGet.ProjectModel;
+using NuGet.Protocol.Core.Types;
 
 namespace NuGet.Commands
 {
@@ -23,7 +24,7 @@ namespace NuGet.Commands
         private readonly DependencyGraphSpec _dgFile;
         private readonly RestoreCommandProvidersCache _providerCache;
         private readonly Dictionary<string, PackageSpec> _projectJsonCache = new Dictionary<string, PackageSpec>(StringComparer.Ordinal);
-        private readonly ISettings _providerSettingsOverride; 
+        private readonly ISettings _providerSettingsOverride;
 
         public DependencyGraphSpecRequestProvider(
             RestoreCommandProvidersCache providerCache,
@@ -139,18 +140,15 @@ namespace NuGet.Commands
             // Get settings relative to the input file
             var rootPath = Path.GetDirectoryName(project.PackageSpec.FilePath);
             var settings = settingsOverride;
-            var fallbackPaths = new ReadOnlyCollection<string>(project.PackageSpec.RestoreMetadata.FallbackFolders);
-            var globalPath = project.PackageSpec.RestoreMetadata.PackagesPath;
+            var fallbackPaths =  GetFallBackPaths(restoreArgs, settings, project);
+            var globalPath = GetPackagesPath(restoreArgs, settings, rootPath, project);
 
-            // Verify the sources (get Sources)
             if (settings == null)
             {
-                restoreArgs.Log.LogDebug("No overriding settings provided for this project. Using the dg spec provided sources");
                 settings = Settings.LoadSettingsGivenConfigPaths(project.PackageSpec.RestoreMetadata.ConfigFilePaths);
             }
             var sources = restoreArgs.GetEffectiveSources(settings);
-            //TODO dunno if we need this
-            project.PackageSpec.RestoreMetadata.UpdateSources(sources);
+            UpdateSources(project.PackageSpec.RestoreMetadata, sources);
 
 
             var sharedCache = _providerCache.GetOrCreate(
@@ -192,6 +190,37 @@ namespace NuGet.Commands
             return summaryRequest;
         }
 
+        private IReadOnlyList<string> GetFallBackPaths(RestoreArgs restoreArgs, ISettings settings, ExternalProjectReference project)
+        {
+            if (settings == null)
+            {
+                return new ReadOnlyCollection<string>(project.PackageSpec.RestoreMetadata.FallbackFolders);
+            }
+            else
+            {
+                var fallBackPaths = restoreArgs.GetEffectiveFallbackPackageFolders(settings);
+                project.PackageSpec.RestoreMetadata.FallbackFolders = (IList<string>)fallBackPaths;
+                return fallBackPaths;
+            };
+        }
+
+        private string GetPackagesPath(RestoreArgs restoreArgs, ISettings settings, string rootPath, ExternalProjectReference project)
+        {
+            if (settings != null)
+            {
+                project.PackageSpec.RestoreMetadata.PackagesPath = restoreArgs.GetEffectiveGlobalPackagesFolder(rootPath, settings);
+            }
+            return project.PackageSpec.RestoreMetadata.PackagesPath;
+        }
+
+        private void UpdateSources(ProjectRestoreMetadata project, List<SourceRepository> sources)
+        {
+            project.Sources.Clear();
+            foreach (var source in sources)
+            {
+                project.Sources.Add(source.PackageSource);
+            }
+        }
         /// <summary>
         /// Return all references for a given project path.
         /// References is modified by this method.
