@@ -78,21 +78,26 @@ namespace NuGet.ProjectModel
                 Code == other.Code &&
                 WarningLevel == other.WarningLevel &&
                 StartLineNumber == other.StartLineNumber &&
-                EndLineNumber == other.EndColumnNumber &&
+                EndLineNumber == other.EndLineNumber &&
                 StartColumnNumber == other.StartColumnNumber &&
                 EndColumnNumber == other.EndColumnNumber &&
                 ((Message == null && other.Message == null) || 
-                    Message.Equals(other.Message, StringComparison.OrdinalIgnoreCase)) &&
+                    Message.Equals(other.Message, StringComparison.Ordinal)) &&
                 ((ProjectPath == null && other.ProjectPath == null) || 
-                    ProjectPath.Equals(other.Message, StringComparison.OrdinalIgnoreCase)) &&
+                    ProjectPath.Equals(other.ProjectPath, StringComparison.Ordinal)) &&
                 ((FilePath == null && other.FilePath == null) || 
-                    FilePath.Equals(other.FilePath, StringComparison.OrdinalIgnoreCase)) &&
+                    FilePath.Equals(other.FilePath, StringComparison.Ordinal)) &&
                 ((LibraryId == null && other.LibraryId == null) || 
-                    LibraryId.Equals(other.LibraryId, StringComparison.OrdinalIgnoreCase)))             
+                    LibraryId.Equals(other.LibraryId, StringComparison.Ordinal)))             
             {
-                if (TargetGraphs != null && other.TargetGraphs != null )
+
+                if (TargetGraphs != null && other.TargetGraphs != null)
                 {
                     return TargetGraphs.OrderBy(t => t).SequenceEqual(other.TargetGraphs.OrderBy(t => t), StringComparer.Ordinal);
+                }
+                else if (TargetGraphs == null && other.TargetGraphs == null)
+                {
+                    return true;
                 }
             }
 
