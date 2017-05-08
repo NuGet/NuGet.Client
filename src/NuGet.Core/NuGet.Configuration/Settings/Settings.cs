@@ -230,7 +230,7 @@ namespace NuGet.Configuration
             var settings = new List<Settings>();
             if(configFilePaths == null || configFilePaths.Count == 0)
             {
-                throw new InvalidOperationException("Invalid operation. Not allowed to not load any configs");
+                return NullSettings.Instance;
             }
             foreach(var configPath in configFilePaths)
             {
