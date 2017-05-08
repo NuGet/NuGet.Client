@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -146,8 +146,12 @@ namespace NuGet.ProjectModel
 
             var equals = true;
 
-            var orderedLogMessages = LogMessages.OrderBy(m => m.Message, StringComparer.Ordinal).ToArray();
-            var orderedOtherLogMessages = otherLogMessages.OrderBy(m => m.Message, StringComparer.Ordinal).ToArray();
+            var orderedLogMessages = LogMessages.OrderBy(m => m.Message, StringComparer.Ordinal)
+                .ToArray();
+
+            var orderedOtherLogMessages = otherLogMessages.OrderBy(m => m.Message, StringComparer.Ordinal)
+                .ToArray();
+
             var length = orderedLogMessages.Length;
 
             for(var i=0; i<length; i++)
@@ -156,6 +160,7 @@ namespace NuGet.ProjectModel
 
                 if (!equals)
                 {
+                    equals = false;
                     break;
                 }
             }

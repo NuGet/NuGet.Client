@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -81,13 +81,19 @@ namespace NuGet.ProjectModel
                 EndLineNumber == other.EndColumnNumber &&
                 StartColumnNumber == other.StartColumnNumber &&
                 EndColumnNumber == other.EndColumnNumber &&
-                Message.Equals(other.Message, StringComparison.OrdinalIgnoreCase) &&
-                ProjectPath.Equals(other.Message, StringComparison.OrdinalIgnoreCase) &&
-                Message.Equals(other.Message, StringComparison.OrdinalIgnoreCase) &&
-                FilePath.Equals(other.FilePath, StringComparison.OrdinalIgnoreCase) &&
-                LibraryId.Equals(other.LibraryId, StringComparison.OrdinalIgnoreCase))
+                ((Message == null && other.Message == null) || 
+                    Message.Equals(other.Message, StringComparison.OrdinalIgnoreCase)) &&
+                ((ProjectPath == null && other.ProjectPath == null) || 
+                    ProjectPath.Equals(other.Message, StringComparison.OrdinalIgnoreCase)) &&
+                ((FilePath == null && other.FilePath == null) || 
+                    FilePath.Equals(other.FilePath, StringComparison.OrdinalIgnoreCase)) &&
+                ((LibraryId == null && other.LibraryId == null) || 
+                    LibraryId.Equals(other.LibraryId, StringComparison.OrdinalIgnoreCase)))             
             {
-                return TargetGraphs.OrderedEquals(other.TargetGraphs, t => t, StringComparer.OrdinalIgnoreCase);
+                if (TargetGraphs != null && other.TargetGraphs != null )
+                {
+                    return TargetGraphs.OrderBy(t => t).SequenceEqual(other.TargetGraphs.OrderBy(t => t), StringComparer.Ordinal);
+                }
             }
 
             return false;
