@@ -62,6 +62,7 @@ namespace NuGet.Commands
             }
 
             // Write the dg file to disk of the NUGET_PERSIST_DG is set.
+            // TODO NK - Do we want to log the updated DG SPEC or not? 
             MSBuildRestoreUtility.PersistDGFileIfDebugging(dgFile, restoreContext.Log);
 
             // Validate the dg file input, this throws if errors are found.
@@ -137,27 +138,20 @@ namespace NuGet.Commands
         {
             // Get settings relative to the input file
             var rootPath = Path.GetDirectoryName(project.PackageSpec.FilePath);
-
             var settings = settingsOverride;
-            // The settings should be set in the DG SPEC
-            //if (settings == null)
-            //{
-            //    settings = restoreArgs.GetSettings(rootPath);
-            //}
-            // All of these are set when the DG Spec is created!
             var fallbackPaths = new ReadOnlyCollection<string>(project.PackageSpec.RestoreMetadata.FallbackFolders);
             var globalPath = project.PackageSpec.RestoreMetadata.PackagesPath;
-
 
             // Verify the sources (get Sources)
             if (settings == null)
             {
-                restoreArgs.Log.LogInformation("I dont have any overriding settings. Using the dg spec provided ones");
-                // should I log debug here?
+                restoreArgs.Log.LogDebug("No overriding settings provided for this project. Using the dg spec provided sources");
                 settings = Settings.LoadSettingsGivenConfigPaths(project.PackageSpec.RestoreMetadata.ConfigFilePaths);
             }
             var sources = restoreArgs.GetEffectiveSources(settings);
-            
+            //TODO dunno if we need this
+            project.PackageSpec.RestoreMetadata.UpdateSources(sources);
+
 
             var sharedCache = _providerCache.GetOrCreate(
                 globalPath,

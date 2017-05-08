@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using NuGet.Configuration;
+using NuGet.Protocol.Core.Types;
 using NuGet.Shared;
 
 namespace NuGet.ProjectModel
@@ -163,6 +164,15 @@ namespace NuGet.ProjectModel
                    ValidateRuntimeAssets == other.ValidateRuntimeAssets &&
                    SkipContentFileWrite == other.SkipContentFileWrite &&
                    EqualityUtility.SequenceEqualWithNullCheck(Files, other.Files);
+        }
+
+        public void UpdateSources(List<SourceRepository> sources)
+        {
+            Sources.Clear();
+            foreach (var source in sources)
+            {
+                Sources.Add(source.PackageSource); // Should we really do this? 
+            }
         }
     }
 }

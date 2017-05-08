@@ -105,7 +105,8 @@ Copyright (c) .NET Foundation. All rights reserved.
       RestoreConfigFile="$(RestoreConfigFile)"
       RestoreNoCache="$(RestoreNoCache)"
       RestoreIgnoreFailedSources="$(RestoreIgnoreFailedSources)"
-      RestoreRecursive="$(RestoreRecursive)" />
+      RestoreRecursive="$(RestoreRecursive)"
+      RestoreForce="$(RestoreForce)" />
   </Target>
 
   <!--
