@@ -10,7 +10,7 @@ namespace NuGet.Protocol.Plugins.Tests
     public class LogResponseTests
     {
         [Fact]
-        public void Constructor_ThrowsForUndefinedLogLevel()
+        public void Constructor_ThrowsForUndefinedResponseCode()
         {
             var exception = Assert.Throws<ArgumentException>(() => new LogResponse((MessageResponseCode)int.MaxValue));
 
