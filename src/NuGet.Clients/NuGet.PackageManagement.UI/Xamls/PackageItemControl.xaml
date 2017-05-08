@@ -278,7 +278,8 @@
                       CommandParameter="{Binding}"
                       Visibility="Hidden"
                       AutomationProperties.Name="{x:Static nuget:Resources.Button_Uninstall}"
-                      ToolTip="{x:Static nuget:Resources.ToolTip_UninstallButton}">
+                      ToolTip="{x:Static nuget:Resources.ToolTip_UninstallButton}"
+                      FocusVisualStyle="{DynamicResource ControlsFocusVisualStyle}">
                       <nuget:UninstallButton
                         Width="16"
                         Height="16" />
@@ -293,7 +294,8 @@
                       Command="{x:Static nuget:Commands.InstallPackageCommand}"
                       CommandParameter="{Binding}"
                       AutomationProperties.Name="{x:Static nuget:Resources.Button_Install}"
-                      Visibility="Hidden">
+                      Visibility="Hidden"
+                      FocusVisualStyle="{DynamicResource ControlsFocusVisualStyle}">
                       <Button.ToolTip>
                         <MultiBinding Converter="{StaticResource StringFormatConverter}">
                           <Binding Source="{x:Static nuget:Resources.ToolTip_InstallButton}" />
@@ -335,7 +337,8 @@
                       Command="{x:Static nuget:Commands.InstallPackageCommand}"
                       CommandParameter="{Binding}"
                       AutomationProperties.Name="{x:Static nuget:Resources.Button_Update}"
-                      Visibility="Hidden">
+                      Visibility="Hidden"
+                      FocusVisualStyle="{DynamicResource ControlsFocusVisualStyle}">
                       <Button.ToolTip>
                         <MultiBinding Converter="{StaticResource StringFormatConverter}">
                           <Binding Source="{x:Static nuget:Resources.ToolTip_UpdateButton}" />

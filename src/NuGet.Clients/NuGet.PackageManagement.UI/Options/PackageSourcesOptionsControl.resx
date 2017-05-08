@@ -368,6 +368,9 @@
   <data name="updateButton.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
+  <data name="updateButton.FlatStyle" type="System.Windows.Forms.FlatStyle, System.Windows.Forms"> 
+    <value>System</value> 
+  </data> 
   <data name="updateButton.AutoSizeMode" type="System.Windows.Forms.AutoSizeMode, System.Windows.Forms">
     <value>GrowAndShrink</value>
   </data>
@@ -416,6 +419,9 @@
   <data name="BrowseButton.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
     <value>NoControl</value>
   </data>
+  <data name="BrowseButton.FlatStyle" type="System.Windows.Forms.FlatStyle, System.Windows.Forms"> 
+    <value>System</value> 
+  </data> 
   <data name="BrowseButton.Location" type="System.Drawing.Point, System.Drawing">
     <value>378, 291</value>
   </data>
