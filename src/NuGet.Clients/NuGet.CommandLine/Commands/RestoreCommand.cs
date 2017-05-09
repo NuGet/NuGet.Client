@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
@@ -148,15 +148,9 @@ namespace NuGet.CommandLine
                         // Remove input list, everything has been loaded already
                         restoreContext.Inputs.Clear();
 
-                        // Create requests using settings based on the project directory if no solution was used.
-                        // If a solution was used read settings for the solution.
-                        // If null is used for settings they will be read per project.
-                        var settingsOverride = restoreInputs.RestoringWithSolutionFile ? Settings : null;
-
                         restoreContext.PreLoadedRequestProviders.Add(new DependencyGraphSpecRequestProvider(
                             providerCache,
-                            restoreInputs.ProjectReferenceLookup/*,
-                            TODO NK settingsOverride*/));
+                            restoreInputs.ProjectReferenceLookup));
                     }
                     else
                     {
@@ -476,7 +470,7 @@ namespace NuGet.CommandLine
 
                 try
                 {
-                    dgFileOutput = await GetDependencyGraphSpecAsync(projectsWithPotentialP2PReferences);
+                    dgFileOutput = await GetDependencyGraphSpecAsync(projectsWithPotentialP2PReferences, packageRestoreInputs.RestoringWithSolutionFile ? Settings : null);
                 }
                 catch (Exception ex)
                 {
@@ -584,8 +578,12 @@ namespace NuGet.CommandLine
         /// <summary>
         ///  Create a dg v2 file using msbuild.
         /// </summary>
-        private async Task<DependencyGraphSpec> GetDependencyGraphSpecAsync(string[] projectsWithPotentialP2PReferences)
+        private async Task<DependencyGraphSpec> GetDependencyGraphSpecAsync(string[] projectsWithPotentialP2PReferences, ISettings settingsToRestoreSolutionWith)
         {
+            // Create requests using settings based on the project directory if no solution was used.
+            // If a solution was used read settings for the solution.
+            // If null is used for settings they will be read per project.
+
             int scaleTimeout;
 
             if (Project2ProjectTimeOut > 0)
@@ -606,7 +604,8 @@ namespace NuGet.CommandLine
                 projectsWithPotentialP2PReferences,
                 scaleTimeout,
                 Console,
-                Recursive);
+                Recursive,
+                settingsToRestoreSolutionWith);
         }
 
         /// <summary>

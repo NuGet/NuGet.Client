@@ -13,6 +13,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.Setup.Configuration;
 using NuGet.Common;
+using NuGet.Configuration;
 using NuGet.ProjectModel;
 
 namespace NuGet.CommandLine
@@ -70,8 +71,9 @@ namespace NuGet.CommandLine
             string[] projectPaths,
             int timeOut,
             IConsole console,
-            bool recursive)
-        { // OVERRIDING in EXE 
+            bool recursive,
+            ISettings settings)
+        {
             string msbuildPath = GetMsbuild(msbuildDirectory);
 
             if (!File.Exists(msbuildPath))
@@ -125,6 +127,8 @@ namespace NuGet.CommandLine
                     argumentBuilder.Append($" {msbuildAdditionalArgs} ");
                 }
 
+
+
                 // Override the target under ImportsAfter with the current NuGet.targets version.
                 argumentBuilder.Append(" /p:NuGetRestoreTargets=");
                 AppendQuoted(argumentBuilder, entryPointTargetPath);
@@ -139,6 +143,26 @@ namespace NuGet.CommandLine
 
                 // Disallow the import of targets/props from packages
                 argumentBuilder.Append(" /p:ExcludeRestorePackageImports=true ");
+
+                //Append RestoreSource from Settings
+                if (settings != null) {
+                    //TODO NK - actaully append these things
+                    var outputPackagesPath = SettingsUtility.GetGlobalPackagesFolder(settings);
+
+                    var packageSourceProvider = new PackageSourceProvider(settings);
+                    var packageSourcesFromProvider = packageSourceProvider.LoadPackageSources();
+                    var restoreSources = packageSourcesFromProvider.Select(e => e.Source);
+
+                    var fallbackFolders = SettingsUtility.GetFallbackPackageFolders(settings);
+
+                    var configFilePaths = new List<string>();
+                    foreach (var config in settings.Priority)
+                    {
+                        configFilePaths.Add(Path.GetFullPath(Path.Combine(config.Root, config.FileName)));
+                    }
+
+                }
+
 
                 // Add all depenencies as top level restore projects if recursive is set
                 argumentBuilder.Append($" /p:RestoreRecursive={recursive} ");

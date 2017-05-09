@@ -55,10 +55,8 @@ namespace NuGet.Build.Tasks
             else
             {
                 var configFileFullPath = Path.GetFullPath(RestoreConfigFile);
-                var directory = Path.GetDirectoryName(configFileFullPath);
                 var configFileName = Path.GetFileName(configFileFullPath);
-                return Settings.LoadSpecificSettings(projectDirectory,
-                    configFileName: configFileName);
+                return Settings.LoadSpecificSettings(projectDirectory, configFileName: configFileName);
             }
         }
 
