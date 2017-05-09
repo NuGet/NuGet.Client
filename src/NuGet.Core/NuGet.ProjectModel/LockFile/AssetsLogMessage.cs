@@ -9,12 +9,12 @@ using NuGet.Shared;
 
 namespace NuGet.ProjectModel
 {
-    public class AssetsLogMessage : IAssetsLogMessage
+    public class AssetsLogMessage : IAssetsLogMessage, IEquatable<IAssetsLogMessage>
     {
 
-        public LogLevel Level { get; set; }
-        public NuGetLogCode Code { get; set; }
-        public string Message { get; set; }
+        public LogLevel Level { get; }
+        public NuGetLogCode Code { get; }
+        public string Message { get; }
         public string ProjectPath { get; set; }
         public WarningLevel WarningLevel { get; set; }
         public string FilePath { get; set; }
@@ -62,7 +62,7 @@ namespace NuGet.ProjectModel
         {
         }
 
-        public bool LogEquals(IAssetsLogMessage other)
+        public bool Equals(IAssetsLogMessage other)
         {
             if (other == null)
             {
@@ -102,6 +102,22 @@ namespace NuGet.ProjectModel
             }
 
             return false;
+        }
+
+        public override bool Equals(object other)
+        {
+            return Equals(other as IAssetsLogMessage);
+        }
+
+        public override int GetHashCode()
+        {
+            var combiner = new HashCodeCombiner();
+
+            combiner.AddStringIgnoreCase(Message);
+            combiner.AddInt32((int) Level);
+            combiner.AddInt32((int) Code);
+
+            return combiner.CombinedHash;
         }
     }
 }

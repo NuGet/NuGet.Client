@@ -156,7 +156,7 @@ namespace NuGet.ProjectModel
 
             for(var i=0; i<length; i++)
             {
-                equals &= orderedLogMessages[i].LogEquals(orderedOtherLogMessages[i]);
+                equals &= orderedLogMessages[i].Equals(orderedOtherLogMessages[i]);
 
                 if (!equals)
                 {

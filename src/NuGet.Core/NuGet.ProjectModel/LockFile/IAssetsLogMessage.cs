@@ -68,12 +68,5 @@ namespace NuGet.ProjectModel
         /// List of TargetGraphs
         /// </summary>
         IReadOnlyList<string> TargetGraphs { get; }
-
-        /// <summary>
-        /// Compares an IAssetsLogMessage to another IAssetsLogMessage using the properties in the object.
-        /// </summary>
-        /// <param name="other">other IAssetsLogMessage.</param>
-        /// <returns>bool indicating weather the two IAssetsLogMessage are equal or not.</returns>
-        bool LogEquals(IAssetsLogMessage other);
     }
 }
