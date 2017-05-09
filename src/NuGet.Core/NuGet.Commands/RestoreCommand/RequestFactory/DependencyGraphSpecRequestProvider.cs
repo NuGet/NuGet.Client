@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -24,23 +24,13 @@ namespace NuGet.Commands
         private readonly DependencyGraphSpec _dgFile;
         private readonly RestoreCommandProvidersCache _providerCache;
         private readonly Dictionary<string, PackageSpec> _projectJsonCache = new Dictionary<string, PackageSpec>(StringComparer.Ordinal);
-        private readonly ISettings _providerSettingsOverride;
 
         public DependencyGraphSpecRequestProvider(
             RestoreCommandProvidersCache providerCache,
             DependencyGraphSpec dgFile)
-            : this(providerCache, dgFile, settingsOverride: null)
-        {
-        }
-
-        public DependencyGraphSpecRequestProvider(
-            RestoreCommandProvidersCache providerCache,
-            DependencyGraphSpec dgFile,
-            ISettings settingsOverride)
         {
             _dgFile = dgFile;
             _providerCache = providerCache;
-            _providerSettingsOverride = settingsOverride;
         }
 
         public Task<IReadOnlyList<RestoreSummaryRequest>> CreateRequests(RestoreArgs restoreContext)
@@ -75,6 +65,7 @@ namespace NuGet.Commands
 
             foreach (var projectNameToRestore in dgFile.Restore)
             {
+                //TODO NK - Maybe this can be reworked somehow?
                 var closure = dgFile.GetClosure(projectNameToRestore);
 
                 var projectDependencyGraphSpec = dgFile.WithProjectClosure(projectNameToRestore);
@@ -84,7 +75,7 @@ namespace NuGet.Commands
                 var rootProject = externalClosure.Single(p =>
                     StringComparer.Ordinal.Equals(projectNameToRestore, p.UniqueName));
 
-                var request = Create(rootProject, externalClosure, restoreContext, settingsOverride: _providerSettingsOverride, projectDgSpec: projectDependencyGraphSpec);
+                var request = Create(rootProject, externalClosure, restoreContext, projectDgSpec: projectDependencyGraphSpec);
 
                 if (request.Request.ProjectStyle == ProjectStyle.DotnetCliTool)
                 {
@@ -134,12 +125,11 @@ namespace NuGet.Commands
             ExternalProjectReference project,
             HashSet<ExternalProjectReference> projectReferenceClosure,
             RestoreArgs restoreArgs,
-            ISettings settingsOverride,
             DependencyGraphSpec projectDgSpec)
         {
             // Get settings relative to the input file
             var rootPath = Path.GetDirectoryName(project.PackageSpec.FilePath);
-            var settings = settingsOverride;
+            ISettings settings = null;
             var fallbackPaths =  GetFallBackPaths(restoreArgs, settings, project);
             var globalPath = GetPackagesPath(restoreArgs, settings, rootPath, project);
 
@@ -184,7 +174,7 @@ namespace NuGet.Commands
             var summaryRequest = new RestoreSummaryRequest(
                 request,
                 project.MSBuildProjectPath,
-                settings,
+                settings, // TODO NK - We don't need to pass the settings down here. We just need the config files
                 sources);
 
             return summaryRequest;

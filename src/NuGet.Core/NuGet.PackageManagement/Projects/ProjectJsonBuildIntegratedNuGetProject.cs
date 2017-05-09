@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -204,7 +204,7 @@ namespace NuGet.ProjectManagement.Projects
                 }
                 var metadata = new ProjectRestoreMetadata();
                 packageSpec.RestoreMetadata = metadata;
-
+                // TODO NK - Here we need to add the sources/fallback folders etc.
                 metadata.ProjectStyle = ProjectStyle.ProjectJson;
                 metadata.ProjectPath = MSBuildProjectPath;
                 metadata.ProjectJsonPath = packageSpec.FilePath;

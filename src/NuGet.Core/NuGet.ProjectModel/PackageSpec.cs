@@ -198,5 +198,10 @@ namespace NuGet.ProjectModel
 
             return spec;
         }
+
+        public PackageSpec WithSettings(ISettings settings)
+        {
+            return null;
+        }
     }
 }

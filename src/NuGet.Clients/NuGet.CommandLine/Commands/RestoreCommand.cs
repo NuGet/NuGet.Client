@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
@@ -155,8 +155,8 @@ namespace NuGet.CommandLine
 
                         restoreContext.PreLoadedRequestProviders.Add(new DependencyGraphSpecRequestProvider(
                             providerCache,
-                            restoreInputs.ProjectReferenceLookup,
-                            settingsOverride));
+                            restoreInputs.ProjectReferenceLookup/*,
+                            TODO NK settingsOverride*/));
                     }
                     else
                     {
