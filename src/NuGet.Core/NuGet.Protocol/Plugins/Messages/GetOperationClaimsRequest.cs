@@ -13,7 +13,7 @@ namespace NuGet.Protocol.Plugins
     public sealed class GetOperationClaimsRequest
     {
         /// <summary>
-        /// Gets the package source location for the <see cref="ServiceIndex" />.
+        /// Gets the package source repository location for the <see cref="ServiceIndex" />.
         /// </summary>
         [JsonRequired]
         public string PackageSourceRepository { get; }

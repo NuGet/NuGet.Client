@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -43,6 +43,142 @@ namespace NuGet.Protocol.Plugins.Tests
             using (var dispatcher = new MessageDispatcher(new RequestHandlers(), _idGenerator))
             {
                 Assert.NotNull(dispatcher.RequestHandlers);
+            }
+        }
+
+        [Fact]
+        public async Task Close_DisposesAllActiveOutboundRequests()
+        {
+            using (var dispatcher = new MessageDispatcher(new RequestHandlers(), _idGenerator))
+            using (var sentEvent = new ManualResetEventSlim(initialState: false))
+            {
+                var connection = new Mock<IConnection>(MockBehavior.Strict);
+
+                connection.SetupGet(x => x.Options)
+                    .Returns(ConnectionOptions.CreateDefault());
+
+                connection.Setup(x => x.SendAsync(It.IsNotNull<Message>(), It.IsAny<CancellationToken>()))
+                    .Callback<Message, CancellationToken>(
+                        (message, cancellationToken) =>
+                        {
+                            sentEvent.Set();
+                        })
+                    .Returns(Task.FromResult(0));
+
+                dispatcher.SetConnection(connection.Object);
+
+                var outboundRequestTask = Task.Run(() => dispatcher.DispatchRequestAsync<HandshakeRequest, HandshakeResponse>(
+                    MessageMethod.Handshake,
+                    new HandshakeRequest(ProtocolConstants.CurrentVersion, ProtocolConstants.CurrentVersion),
+                    CancellationToken.None));
+
+                sentEvent.Wait();
+
+                dispatcher.Close();
+
+                await Assert.ThrowsAsync<TaskCanceledException>(() => outboundRequestTask);
+
+                connection.Verify(x => x.SendAsync(It.IsNotNull<Message>(), It.IsAny<CancellationToken>()), Times.Once);
+            }
+        }
+
+        [Fact]
+        public void Close_DisposesAllActiveInboundRequests()
+        {
+            using (var dispatcher = new MessageDispatcher(new RequestHandlers(), _idGenerator))
+            using (var handlingEvent = new ManualResetEventSlim(initialState: false))
+            using (var blockingEvent = new ManualResetEventSlim(initialState: false))
+            {
+                var requestHandler = new RequestHandler();
+
+                Assert.True(dispatcher.RequestHandlers.TryAdd(MessageMethod.Handshake, requestHandler));
+
+                var connection = new Mock<IConnection>(MockBehavior.Strict);
+                var payload = new HandshakeRequest(ProtocolConstants.CurrentVersion, ProtocolConstants.CurrentVersion);
+                var request = dispatcher.CreateMessage(MessageType.Request, MessageMethod.Handshake, payload);
+
+                dispatcher.SetConnection(connection.Object);
+
+                CancellationToken actualCancellationToken;
+
+                requestHandler.HandleResponseAsyncFunc = (conn, message, responseHandler, cancellationToken) =>
+                    {
+                        handlingEvent.Set();
+
+                        actualCancellationToken = cancellationToken;
+
+                        blockingEvent.Set();
+
+                        return Task.FromResult(0);
+                    };
+
+                connection.Raise(x => x.MessageReceived += null, new MessageEventArgs(request));
+
+                handlingEvent.Wait();
+
+                dispatcher.Close();
+
+                blockingEvent.Wait();
+
+                Assert.True(actualCancellationToken.IsCancellationRequested);
+            }
+        }
+
+        [Fact]
+        public void Close_IsIdempotent()
+        {
+            using (var dispatcher = new MessageDispatcher(new RequestHandlers(), _idGenerator))
+            {
+                dispatcher.Close();
+                dispatcher.Close();
+            }
+        }
+
+        [Fact]
+        public void CreateMessage_TypeMethod_ReturnsMessage()
+        {
+            using (var dispatcher = new MessageDispatcher(new RequestHandlers(), _idGenerator))
+            {
+                var message = dispatcher.CreateMessage(MessageType.Request, MessageMethod.Handshake);
+
+                Assert.Equal(_idGenerator.Id, message.RequestId);
+                Assert.Equal(MessageType.Request, message.Type);
+                Assert.Equal(MessageMethod.Handshake, message.Method);
+                Assert.Null(message.Payload);
+            }
+        }
+
+        [Fact]
+        public void CreateMessage_TypeMethodPayload_ThrowsForNullPayload()
+        {
+            using (var dispatcher = new MessageDispatcher(new RequestHandlers(), _idGenerator))
+            {
+                var exception = Assert.Throws<ArgumentNullException>(
+                    () => dispatcher.CreateMessage<HandshakeRequest>(
+                        MessageType.Request,
+                        MessageMethod.Handshake,
+                        payload: null));
+
+                Assert.Equal("payload", exception.ParamName);
+            }
+        }
+
+        [Fact]
+        public void CreateMessage_TypeMethodPayload_ReturnsMessage()
+        {
+            using (var dispatcher = new MessageDispatcher(new RequestHandlers(), _idGenerator))
+            {
+                var payload = new HandshakeRequest(ProtocolConstants.CurrentVersion, ProtocolConstants.CurrentVersion);
+                var message = dispatcher.CreateMessage(
+                    MessageType.Request,
+                    MessageMethod.Handshake,
+                    payload);
+
+                Assert.Equal(_idGenerator.Id, message.RequestId);
+                Assert.Equal(MessageType.Request, message.Type);
+                Assert.Equal(MessageMethod.Handshake, message.Method);
+                Assert.Equal("{\"ProtocolVersion\":\"1.0.0\",\"MinimumProtocolVersion\":\"1.0.0\"}",
+                    message.Payload.ToString(Formatting.None));
             }
         }
 
@@ -131,6 +267,30 @@ namespace NuGet.Protocol.Plugins.Tests
         }
 
         [Fact]
+        public async Task DispatchCancelAsync_ThrowsForNullRequest()
+        {
+            using (var dispatcher = new MessageDispatcher(new RequestHandlers(), _idGenerator))
+            {
+                var exception = await Assert.ThrowsAsync<ArgumentNullException>(
+                    () => dispatcher.DispatchCancelAsync(request: null, cancellationToken: CancellationToken.None));
+
+                Assert.Equal("request", exception.ParamName);
+            }
+        }
+
+        [Fact]
+        public async Task DispatchCancelAsync_ThrowsIfCancelled()
+        {
+            using (var dispatcher = new MessageDispatcher(new RequestHandlers(), _idGenerator))
+            {
+                await Assert.ThrowsAsync<OperationCanceledException>(
+                    () => dispatcher.DispatchCancelAsync(
+                        new Message(_idGenerator.Id, MessageType.Request, _method),
+                        new CancellationToken(canceled: true)));
+            }
+        }
+
+        [Fact]
         public async Task DispatchCancelAsync_ThrowsWithoutAssociatedRequestId()
         {
             using (var dispatcher = new MessageDispatcher(new RequestHandlers(), _idGenerator))
@@ -189,6 +349,34 @@ namespace NuGet.Protocol.Plugins.Tests
                     request: null,
                     fault: new Fault(message: "a"),
                     cancellationToken: CancellationToken.None);
+            }
+        }
+
+        [Fact]
+        public async Task DispatchFaultAsync_ThrowsForNullFault()
+        {
+            using (var dispatcher = new MessageDispatcher(new RequestHandlers(), _idGenerator))
+            {
+                var exception = await Assert.ThrowsAsync<ArgumentNullException>(
+                    () => dispatcher.DispatchFaultAsync(
+                        new Message(_idGenerator.Id, MessageType.Request, _method),
+                        fault: null,
+                        cancellationToken: CancellationToken.None));
+
+                Assert.Equal("fault", exception.ParamName);
+            }
+        }
+
+        [Fact]
+        public async Task DispatchFaultAsync_ThrowsIfCancelled()
+        {
+            using (var dispatcher = new MessageDispatcher(new RequestHandlers(), _idGenerator))
+            {
+                await Assert.ThrowsAsync<OperationCanceledException>(
+                    () => dispatcher.DispatchFaultAsync(
+                        new Message(_idGenerator.Id, MessageType.Request, _method),
+                        new Fault("test"),
+                        new CancellationToken(canceled: true)));
             }
         }
 
@@ -282,6 +470,49 @@ namespace NuGet.Protocol.Plugins.Tests
         }
 
         [Fact]
+        public async Task DispatchProgressAsync_ThrowsForNullRequest()
+        {
+            using (var dispatcher = new MessageDispatcher(new RequestHandlers(), _idGenerator))
+            {
+                var exception = await Assert.ThrowsAsync<ArgumentNullException>(
+                    () => dispatcher.DispatchProgressAsync(
+                        request: null,
+                        progress: new Progress(),
+                        cancellationToken: CancellationToken.None));
+
+                Assert.Equal("request", exception.ParamName);
+            }
+        }
+
+        [Fact]
+        public async Task DispatchProgressAsync_ThrowsForNullProgress()
+        {
+            using (var dispatcher = new MessageDispatcher(new RequestHandlers(), _idGenerator))
+            {
+                var exception = await Assert.ThrowsAsync<ArgumentNullException>(
+                    () => dispatcher.DispatchProgressAsync(
+                        new Message(_idGenerator.Id, MessageType.Request, _method),
+                        progress: null,
+                        cancellationToken: CancellationToken.None));
+
+                Assert.Equal("progress", exception.ParamName);
+            }
+        }
+
+        [Fact]
+        public async Task DispatchProgressAsync_ThrowsIfCancelled()
+        {
+            using (var dispatcher = new MessageDispatcher(new RequestHandlers(), _idGenerator))
+            {
+                await Assert.ThrowsAsync<OperationCanceledException>(
+                    () => dispatcher.DispatchProgressAsync(
+                        new Message(_idGenerator.Id, MessageType.Request, _method),
+                        new Progress(),
+                        new CancellationToken(canceled: true)));
+            }
+        }
+
+        [Fact]
         public async Task DispatchProgressAsync_ThrowsWithoutAssociatedRequestId()
         {
             using (var dispatcher = new MessageDispatcher(new RequestHandlers(), _idGenerator))
@@ -355,6 +586,21 @@ namespace NuGet.Protocol.Plugins.Tests
         }
 
         [Fact]
+        public async Task DispatchRequestAsync_ThrowsIfCancelled()
+        {
+            using (var dispatcher = new MessageDispatcher(new RequestHandlers(), _idGenerator))
+            {
+                var version = new SemanticVersion(major: 1, minor: 0, patch: 0);
+
+                await Assert.ThrowsAsync<OperationCanceledException>(
+                    () => dispatcher.DispatchRequestAsync<HandshakeRequest, HandshakeResponse>(
+                        MessageMethod.Handshake,
+                        new HandshakeRequest(version, version),
+                        new CancellationToken(canceled: true)));
+            }
+        }
+
+        [Fact]
         public async Task DispatchRequestAsync_ReturnsResponse()
         {
             using (var dispatcher = new MessageDispatcher(new RequestHandlers(), _idGenerator))
@@ -398,6 +644,53 @@ namespace NuGet.Protocol.Plugins.Tests
         }
 
         [Fact]
+        public async Task DispatchResponseAsync_ThrowsForNullRequest()
+        {
+            using (var dispatcher = new MessageDispatcher(new RequestHandlers(), _idGenerator))
+            {
+                var exception = await Assert.ThrowsAsync<ArgumentNullException>(
+                    () => dispatcher.DispatchResponseAsync(
+                        request: null,
+                        responsePayload: new HandshakeResponse(
+                            MessageResponseCode.Success,
+                            ProtocolConstants.CurrentVersion),
+                        cancellationToken: CancellationToken.None));
+
+                Assert.Equal("request", exception.ParamName);
+            }
+        }
+
+        [Fact]
+        public async Task DispatchResponseAsync_ThrowsForNullResponsePayload()
+        {
+            using (var dispatcher = new MessageDispatcher(new RequestHandlers(), _idGenerator))
+            {
+                var exception = await Assert.ThrowsAsync<ArgumentNullException>(
+                    () => dispatcher.DispatchResponseAsync<HandshakeResponse>(
+                        new Message(_idGenerator.Id, MessageType.Request, MessageMethod.Handshake),
+                        responsePayload: null,
+                        cancellationToken: CancellationToken.None));
+
+                Assert.Equal("responsePayload", exception.ParamName);
+            }
+        }
+
+        [Fact]
+        public async Task DispatchResponseAsync_ThrowsIfCancelled()
+        {
+            using (var dispatcher = new MessageDispatcher(new RequestHandlers(), _idGenerator))
+            {
+                await Assert.ThrowsAsync<OperationCanceledException>(
+                    () => dispatcher.DispatchResponseAsync(
+                        new Message(_idGenerator.Id, MessageType.Request, MessageMethod.Handshake),
+                        new HandshakeResponse(
+                            MessageResponseCode.Success,
+                            ProtocolConstants.CurrentVersion),
+                        new CancellationToken(canceled: true)));
+            }
+        }
+
+        [Fact]
         public async Task DispatchResponseAsync_ReturnsResponse()
         {
             using (var dispatcher = new MessageDispatcher(new RequestHandlers(), _idGenerator))
@@ -421,6 +714,26 @@ namespace NuGet.Protocol.Plugins.Tests
                 await requestTask;
 
                 Assert.IsType<Response>(requestTask.Result);
+            }
+        }
+
+        [Fact]
+        public void OnMessageReceived_ThrowsForInboundFault()
+        {
+            var connection = new Mock<IConnection>();
+
+            using (var dispatcher = new MessageDispatcher(new RequestHandlers(), _idGenerator))
+            {
+                dispatcher.SetConnection(connection.Object);
+
+                var fault = MessageUtilities.Create(
+                    _idGenerator.Id,
+                    MessageType.Fault,
+                    MessageMethod.GetOperationClaims,
+                    new Fault("test"));
+
+                Assert.Throws<ProtocolException>(
+                    () => connection.Raise(x => x.MessageReceived += null, new MessageEventArgs(fault)));
             }
         }
 
@@ -470,6 +783,10 @@ namespace NuGet.Protocol.Plugins.Tests
 
                     _isDisposed = true;
                 }
+            }
+
+            public void Close()
+            {
             }
 
             public Task SendAsync(Message message, CancellationToken cancellationToken)
@@ -547,6 +864,10 @@ namespace NuGet.Protocol.Plugins.Tests
             {
             }
 
+            public void Close()
+            {
+            }
+
             public Task SendAsync(Message message, CancellationToken cancellationToken)
             {
                 throw new NotImplementedException();
@@ -566,6 +887,39 @@ namespace NuGet.Protocol.Plugins.Tests
 
         private sealed class Response
         {
+        }
+
+        private sealed class RequestHandler : IRequestHandler
+        {
+            public CancellationToken CancellationToken { get; internal set; }
+
+            internal Func<IConnection, Message, IResponseHandler, CancellationToken, Task> HandleCancelAsyncFunc { get; set; }
+            internal Func<IConnection, Message, IResponseHandler, CancellationToken, Task> HandleResponseAsyncFunc { get; set; }
+
+            internal RequestHandler()
+            {
+                CancellationToken = CancellationToken.None;
+                HandleCancelAsyncFunc = (connection, request, responseHandler, cancellationToken) => throw new NotImplementedException();
+                HandleResponseAsyncFunc = (connection, request, responseHandler, cancellationToken) => throw new NotImplementedException();
+            }
+
+            public Task HandleCancelAsync(
+                IConnection connection,
+                Message request,
+                IResponseHandler responseHandler,
+                CancellationToken cancellationToken)
+            {
+                return HandleCancelAsyncFunc(connection, request, responseHandler, cancellationToken);
+            }
+
+            public Task HandleResponseAsync(
+                IConnection connection,
+                Message request,
+                IResponseHandler responseHandler,
+                CancellationToken cancellationToken)
+            {
+                return HandleResponseAsyncFunc(connection, request, responseHandler, cancellationToken);
+            }
         }
     }
 }

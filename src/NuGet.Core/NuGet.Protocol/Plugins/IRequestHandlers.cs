@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -10,6 +10,21 @@ namespace NuGet.Protocol.Plugins
     /// </summary>
     public interface IRequestHandlers
     {
+        /// <summary>
+        /// Atomically add or update a request handler for the specified message method.
+        /// </summary>
+        /// <param name="method">A message method.</param>
+        /// <param name="addHandlerFunc">An add request handler function.</param>
+        /// <param name="updateHandlerFunc">An update request handler function.</param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="addHandlerFunc" />
+        /// is <c>null</c>.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="updateHandlerFunc" />
+        /// is <c>null</c>.</exception>
+        void AddOrUpdate(
+            MessageMethod method,
+            Func<IRequestHandler> addHandlerFunc,
+            Func<IRequestHandler, IRequestHandler> updateHandlerFunc);
+
         /// <summary>
         /// Attempts to add a request handler for the specified message method.
         /// </summary>

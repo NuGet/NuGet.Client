@@ -1,8 +1,7 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -17,7 +16,7 @@ namespace NuGet.Protocol.Plugins
     /// </remarks>
     public sealed class StandardOutputReceiver : Receiver
     {
-        private bool _isConnected;
+        private bool _hasConnected;
         private readonly IPluginProcess _process;
 
         /// <summary>
@@ -45,11 +44,7 @@ namespace NuGet.Protocol.Plugins
                 return;
             }
 
-            _process.LineRead -= OnLineRead;
-
-            _process.CancelRead();
-
-            _isConnected = false;
+            Close();
 
             // The process instance is shared with other classes and will be disposed elsewhere.
 
@@ -59,44 +54,41 @@ namespace NuGet.Protocol.Plugins
         }
 
         /// <summary>
-        /// Asynchronously closes the connection.
+        /// Closes the connection.
         /// </summary>
-        /// <returns>A task that represents the asynchronous operation.</returns>
-        /// <exception cref="ObjectDisposedException">Thrown if this object is disposed.</exception>
-        public override Task CloseAsync()
+        /// <remarks>This does not call <see cref="IDisposable.Dispose" />.</remarks>
+        public override void Close()
         {
-            ThrowIfDisposed();
+            if (!IsClosed)
+            {
+                base.Close();
 
-            Dispose();
+                _process.LineRead -= OnLineRead;
 
-            return Task.FromResult(0);
+                _process.CancelRead();
+            }
         }
 
         /// <summary>
-        /// Asynchronously connects.
+        /// Connects.
         /// </summary>
-        /// <param name="cancellationToken">A cancellation token.</param>
-        /// <returns>A task that represents the asynchronous operation.</returns>
         /// <exception cref="ObjectDisposedException">Thrown if this object is disposed.</exception>
-        /// <exception cref="OperationCanceledException">Thrown if <paramref name="cancellationToken" />
-        /// is cancelled.</exception>
-        public override Task ConnectAsync(CancellationToken cancellationToken)
+        /// <exception cref="InvalidOperationException">Thrown if this object is closed.</exception>
+        /// <exception cref="InvalidOperationException">Thrown if this method has already been called.</exception>
+        public override void Connect()
         {
             ThrowIfDisposed();
+            ThrowIfClosed();
 
-            if (_isConnected)
+            if (_hasConnected)
             {
                 throw new InvalidOperationException(Strings.Plugin_ConnectionAlreadyStarted);
             }
 
-            cancellationToken.ThrowIfCancellationRequested();
-
             _process.LineRead += OnLineRead;
             _process.BeginReadLine();
 
-            _isConnected = true;
-
-            return Task.FromResult(0);
+            _hasConnected = true;
         }
 
         private void OnLineRead(object sender, LineReadEventArgs e)
@@ -106,7 +98,7 @@ namespace NuGet.Protocol.Plugins
             // Top-level exception handler for a worker pool thread.
             try
             {
-                if (!string.IsNullOrEmpty(e.Line))
+                if (!IsClosed && !string.IsNullOrEmpty(e.Line))
                 {
                     message = JsonSerializationUtilities.Deserialize<Message>(e.Line);
 
@@ -120,21 +112,6 @@ namespace NuGet.Protocol.Plugins
             {
                 FireFaultEvent(ex, message);
             }
-        }
-
-        private static string RemoveUtf8Bom(string data)
-        {
-            if (!string.IsNullOrEmpty(data))
-            {
-                var bytes = Encoding.UTF8.GetBytes(data);
-
-                if (bytes.Length >= 3 && bytes[0] == 0xEF && bytes[1] == 0xBB && bytes[2] == 0xBF)
-                {
-                    return Encoding.UTF8.GetString(bytes, index: 3, count: bytes.Length - 3);
-                }
-            }
-
-            return data;
         }
     }
 }

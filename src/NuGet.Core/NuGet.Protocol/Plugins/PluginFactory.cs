@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -42,6 +42,9 @@ namespace NuGet.Protocol.Plugins
             _plugins = new ConcurrentDictionary<string, Lazy<Task<IPlugin>>>();
         }
 
+        /// <summary>
+        /// Disposes of this instance.
+        /// </summary>
         public void Dispose()
         {
             if (_isDisposed)
@@ -80,11 +83,11 @@ namespace NuGet.Protocol.Plugins
         /// <exception cref="ArgumentException">Thrown if <paramref name="filePath" />
         /// is either <c>null</c> or empty.</exception>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="arguments" />
-        /// is either <c>null</c> or empty.</exception>
+        /// is <c>null</c>.</exception>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="requestHandlers" />
-        /// is either <c>null</c> or empty.</exception>
+        /// is <c>null</c>.</exception>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="options" />
-        /// is either <c>null</c> or empty.</exception>
+        /// is <c>null</c>.</exception>
         /// <exception cref="OperationCanceledException">Thrown if <paramref name="sessionCancellationToken" />
         /// is cancelled.</exception>
         /// <exception cref="ObjectDisposedException">Thrown if this object is disposed.</exception>
@@ -123,7 +126,8 @@ namespace NuGet.Protocol.Plugins
 
             sessionCancellationToken.ThrowIfCancellationRequested();
 
-            var lazyTask = _plugins.GetOrAdd(filePath,
+            var lazyTask = _plugins.GetOrAdd(
+                filePath,
                 (path) => new Lazy<Task<IPlugin>>(
                     () => CreatePluginAsync(filePath, arguments, requestHandlers, options, sessionCancellationToken)));
 
@@ -157,7 +161,6 @@ namespace NuGet.Protocol.Plugins
             var connection = new Connection(messageDispatcher, sender, receiver, options);
             var pluginProcess = new PluginProcess(process);
 
-            // Wire up the Fault handler before calling ConnectAsync(...).
             var plugin = new Plugin(
                 filePath,
                 connection,
@@ -167,9 +170,12 @@ namespace NuGet.Protocol.Plugins
 
             try
             {
+                // Wire up handlers before calling ConnectAsync(...).
+                RegisterEventHandlers(plugin);
+
                 await connection.ConnectAsync(sessionCancellationToken);
 
-                RegisterEventHandlers(plugin);
+                process.EnableRaisingEvents = true;
             }
             catch (ProtocolException ex)
             {
@@ -231,13 +237,16 @@ namespace NuGet.Protocol.Plugins
             var filePath = process.MainModule.FileName;
             var pluginProcess = new PluginProcess(process);
 
-            // Wire up event handlers before calling ConnectAsync(...).
+            // Wire up handlers before calling ConnectAsync(...).
             var plugin = new Plugin(
                 filePath,
                 connection,
                 pluginProcess,
                 isOwnProcess: true,
                 idleTimeout: Timeout.InfiniteTimeSpan);
+
+            requestHandlers.TryAdd(MessageMethod.Close, new CloseRequestHandler(plugin));
+            requestHandlers.TryAdd(MessageMethod.MonitorNuGetProcessExit, new MonitorNuGetProcessExitRequestHandler(plugin));
 
             try
             {
@@ -253,7 +262,7 @@ namespace NuGet.Protocol.Plugins
             return plugin;
         }
 
-        private void DisposePlugin(IPlugin plugin)
+        private void Dispose(IPlugin plugin)
         {
             UnregisterEventHandlers(plugin as Plugin);
 
@@ -263,7 +272,10 @@ namespace NuGet.Protocol.Plugins
             {
                 if (lazyTask.IsValueCreated && lazyTask.Value.Status == TaskStatus.RanToCompletion)
                 {
-                    lazyTask.Value.Result.Dispose();
+                    using (var pluginSingleton = lazyTask.Value.Result)
+                    {
+                        SendCloseRequest(pluginSingleton);
+                    }
                 }
             }
             else
@@ -274,17 +286,35 @@ namespace NuGet.Protocol.Plugins
 
         private void OnPluginFaulted(object sender, PluginEventArgs e)
         {
-            DisposePlugin(e.Plugin);
+            Dispose(e.Plugin);
         }
 
         private void OnPluginExited(object sender, PluginEventArgs e)
         {
-            DisposePlugin(e.Plugin);
+            Dispose(e.Plugin);
         }
 
         private void OnPluginIdle(object sender, PluginEventArgs e)
         {
-            DisposePlugin(e.Plugin);
+            Dispose(e.Plugin);
+        }
+
+        private void SendCloseRequest(IPlugin plugin)
+        {
+            var message = plugin.Connection.MessageDispatcher.CreateMessage(
+                MessageType.Request,
+                MessageMethod.Close);
+
+            using (var cancellationTokenSource = new CancellationTokenSource(PluginConstants.CloseTimeout))
+            {
+                try
+                {
+                    plugin.Connection.SendAsync(message, cancellationTokenSource.Token).Wait();
+                }
+                catch (Exception)
+                {
+                }
+            }
         }
 
         private void RegisterEventHandlers(Plugin plugin)

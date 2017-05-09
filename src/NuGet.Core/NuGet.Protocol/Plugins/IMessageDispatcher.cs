@@ -19,6 +19,31 @@ namespace NuGet.Protocol.Plugins
         IRequestHandlers RequestHandlers { get; }
 
         /// <summary>
+        /// Closes the dispatcher.
+        /// </summary>
+        /// <remarks>This does not call <see cref="IDisposable.Dispose" />.</remarks>
+        void Close();
+
+        /// <summary>
+        /// Creates a message.
+        /// </summary>
+        /// <param name="type">The message type.</param>
+        /// <param name="method">The message method.</param>
+        /// <returns>A message.</returns>
+        Message CreateMessage(MessageType type, MessageMethod method);
+
+        /// <summary>
+        /// Creates a message.
+        /// </summary>
+        /// <typeparam name="TPayload">The message payload.</typeparam>
+        /// <param name="type">The message type.</param>
+        /// <param name="method">The message method.</param>
+        /// <param name="payload">The message payload.</param>
+        /// <returns>A message.</returns>
+        Message CreateMessage<TPayload>(MessageType type, MessageMethod method, TPayload payload)
+            where TPayload : class;
+
+        /// <summary>
         /// Asynchronously dispatches a cancellation request for the specified request.
         /// </summary>
         /// <param name="request">The request.</param>

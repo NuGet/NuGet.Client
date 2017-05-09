@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -20,7 +20,6 @@ namespace NuGet.Protocol.Plugins.Tests
                 () => new InitializeRequest(
                     clientVersion,
                     culture: "a",
-                    verbosity: Verbosity.Normal,
                     requestTimeout: TimeSpan.MaxValue));
 
             Assert.Equal("clientVersion", exception.ParamName);
@@ -35,23 +34,9 @@ namespace NuGet.Protocol.Plugins.Tests
                 () => new InitializeRequest(
                     clientVersion: "1.0.0",
                     culture: culture,
-                    verbosity: Verbosity.Normal,
                     requestTimeout: TimeSpan.MaxValue));
 
             Assert.Equal("culture", exception.ParamName);
-        }
-
-        [Fact]
-        public void Constructor_ThrowsForUndefinedVerbosity()
-        {
-            var exception = Assert.Throws<ArgumentException>(
-                () => new InitializeRequest(
-                    clientVersion: "1.0.0",
-                    culture: "a",
-                    verbosity: (Verbosity)int.MaxValue,
-                    requestTimeout: TimeSpan.MaxValue));
-
-            Assert.Equal("verbosity", exception.ParamName);
         }
 
         [Fact]
@@ -61,7 +46,6 @@ namespace NuGet.Protocol.Plugins.Tests
                 () => new InitializeRequest(
                     clientVersion: "a",
                     culture: "b",
-                    verbosity: Verbosity.Normal,
                     requestTimeout: TimeSpan.Zero));
 
             Assert.Equal("requestTimeout", exception.ParamName);
@@ -75,7 +59,6 @@ namespace NuGet.Protocol.Plugins.Tests
                 () => new InitializeRequest(
                     clientVersion: "a",
                     culture: "b",
-                    verbosity: Verbosity.Normal,
                     requestTimeout: TimeSpan.FromSeconds(-1)));
 
             Assert.Equal("requestTimeout", exception.ParamName);
@@ -91,7 +74,6 @@ namespace NuGet.Protocol.Plugins.Tests
                 () => new InitializeRequest(
                     clientVersion: "a",
                     culture: "b",
-                    verbosity: Verbosity.Normal,
                     requestTimeout: TimeSpan.FromMilliseconds(milliseconds)));
 
             Assert.Equal("requestTimeout", exception.ParamName);
@@ -104,12 +86,10 @@ namespace NuGet.Protocol.Plugins.Tests
             var request = new InitializeRequest(
                 clientVersion: "a",
                 culture: "b",
-                verbosity: Verbosity.Detailed,
                 requestTimeout: _requestTimeout);
 
             Assert.Equal("a", request.ClientVersion);
             Assert.Equal("b", request.Culture);
-            Assert.Equal(Verbosity.Detailed, request.Verbosity);
             Assert.Equal(_requestTimeout, request.RequestTimeout);
         }
 
@@ -119,11 +99,10 @@ namespace NuGet.Protocol.Plugins.Tests
             var request = new InitializeRequest(
                 clientVersion: "a",
                 culture: "b",
-                verbosity: Verbosity.Detailed,
                 requestTimeout: _requestTimeout);
 
             var actualJson = TestUtilities.Serialize(request);
-            var expectedJson = "{\"ClientVersion\":\"a\",\"Culture\":\"b\",\"Verbosity\":\"Detailed\",\"RequestTimeout\":\"1.02:03:04.0050000\"}";
+            var expectedJson = "{\"ClientVersion\":\"a\",\"Culture\":\"b\",\"RequestTimeout\":\"1.02:03:04.0050000\"}";
 
             Assert.Equal(expectedJson, actualJson);
         }
@@ -131,24 +110,23 @@ namespace NuGet.Protocol.Plugins.Tests
         [Fact]
         public void JsonDeserialization_ReturnsCorrectObject()
         {
-            var json = "{\"ClientVersion\":\"a\",\"Culture\":\"b\",\"Verbosity\":\"Detailed\",\"RequestTimeout\":\"1.02:03:04.0050000\"}";
+            var json = "{\"ClientVersion\":\"a\",\"Culture\":\"b\",\"RequestTimeout\":\"1.02:03:04.0050000\"}";
 
             var request = JsonSerializationUtilities.Deserialize<InitializeRequest>(json);
 
             Assert.NotNull(request);
             Assert.Equal("a", request.ClientVersion);
             Assert.Equal("b", request.Culture);
-            Assert.Equal(Verbosity.Detailed, request.Verbosity);
             Assert.Equal(_requestTimeout, request.RequestTimeout);
         }
 
         [Theory]
-        [InlineData("{\"Culture\":\"b\",\"Verbosity\":\"Detailed\",\"RequestTimeout\":\"1.02:03:04.0050000\"}", "clientVersion")]
-        [InlineData("{\"ClientVersion\":null,\"Culture\":\"b\",\"Verbosity\":\"Detailed\",\"RequestTimeout\":\"1.02:03:04.0050000\"}", "clientVersion")]
-        [InlineData("{\"ClientVersion\":\"\",\"Culture\":\"b\",\"Verbosity\":\"Detailed\",\"RequestTimeout\":\"1.02:03:04.0050000\"}", "clientVersion")]
-        [InlineData("{\"ClientVersion\":\"a\",\"Verbosity\":\"Detailed\",\"RequestTimeout\":\"1.02:03:04.0050000\"}", "culture")]
-        [InlineData("{\"ClientVersion\":\"a\",\"Culture\":null,\"Verbosity\":\"Detailed\",\"RequestTimeout\":\"1.02:03:04.0050000\"}", "culture")]
-        [InlineData("{\"ClientVersion\":\"a\",\"Culture\":\"\",\"Verbosity\":\"Detailed\",\"RequestTimeout\":\"1.02:03:04.0050000\"}", "culture")]
+        [InlineData("{\"Culture\":\"b\",\"RequestTimeout\":\"1.02:03:04.0050000\"}", "clientVersion")]
+        [InlineData("{\"ClientVersion\":null,\"Culture\":\"b\",\"RequestTimeout\":\"1.02:03:04.0050000\"}", "clientVersion")]
+        [InlineData("{\"ClientVersion\":\"\",\"Culture\":\"b\",\"RequestTimeout\":\"1.02:03:04.0050000\"}", "clientVersion")]
+        [InlineData("{\"ClientVersion\":\"a\",\"RequestTimeout\":\"1.02:03:04.0050000\"}", "culture")]
+        [InlineData("{\"ClientVersion\":\"a\",\"Culture\":null,\"RequestTimeout\":\"1.02:03:04.0050000\"}", "culture")]
+        [InlineData("{\"ClientVersion\":\"a\",\"Culture\":\"\",\"RequestTimeout\":\"1.02:03:04.0050000\"}", "culture")]
         public void JsonDeserialization_ThrowsForNullOrEmptyStringProperties(string json, string parameterName)
         {
             var exception = Assert.Throws<ArgumentException>(
@@ -158,19 +136,8 @@ namespace NuGet.Protocol.Plugins.Tests
         }
 
         [Theory]
-        [InlineData("{\"ClientVersion\":\"a\",\"Culture\":\"b\",\"RequestTimeout\":\"1.02:03:04.0050000\"}")]
-        [InlineData("{\"ClientVersion\":\"a\",\"Culture\":\"b\",\"Verbosity\":null,\"RequestTimeout\":\"1.02:03:04.0050000\"}")]
-        [InlineData("{\"ClientVersion\":\"a\",\"Culture\":\"b\",\"Verbosity\":\"\",\"RequestTimeout\":\"1.02:03:04.0050000\"}")]
-        [InlineData("{\"ClientVersion\":\"a\",\"Culture\":\"b\",\"Verbosity\":\"abc\",\"RequestTimeout\":\"1.02:03:04.0050000\"}")]
-        public void JsonDeserialization_ThrowsForInvalidVerbosity(string json)
-        {
-            Assert.Throws<JsonSerializationException>(
-                () => JsonSerializationUtilities.Deserialize<InitializeRequest>(json));
-        }
-
-        [Theory]
-        [InlineData("{\"ClientVersion\":\"a\",\"Culture\":\"b\",\"Verbosity\":\"Detailed\",\"RequestTimeout\":null}")]
-        [InlineData("{\"ClientVersion\":\"a\",\"Culture\":\"b\",\"Verbosity\":\"Detailed\",\"RequestTimeout\":\"a\"}")]
+        [InlineData("{\"ClientVersion\":\"a\",\"Culture\":\"b\",\"RequestTimeout\":null}")]
+        [InlineData("{\"ClientVersion\":\"a\",\"Culture\":\"b\",\"RequestTimeout\":\"a\"}")]
         public void JsonDeserialization_ThrowsForInvalidRequestTimeout(string json)
         {
             Assert.Throws<JsonSerializationException>(
@@ -178,8 +145,8 @@ namespace NuGet.Protocol.Plugins.Tests
         }
 
         [Theory]
-        [InlineData("{\"ClientVersion\":\"a\",\"Culture\":\"b\",\"Verbosity\":\"Detailed\"}")]
-        [InlineData("{\"ClientVersion\":\"a\",\"Culture\":\"b\",\"Verbosity\":\"Detailed\",\"RequestTimeout\":\"-00:01:00\"}")]
+        [InlineData("{\"ClientVersion\":\"a\",\"Culture\":\"b\"}")]
+        [InlineData("{\"ClientVersion\":\"a\",\"Culture\":\"b\",\"RequestTimeout\":\"-00:01:00\"}")]
         public void JsonDeserialization_ThrowsForInvalidRequestTimeoutValue(string json)
         {
             var exception = Assert.Throws<ArgumentOutOfRangeException>(

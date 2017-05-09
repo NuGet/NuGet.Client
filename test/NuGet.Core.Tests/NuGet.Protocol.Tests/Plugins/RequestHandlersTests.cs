@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -16,6 +16,60 @@ namespace NuGet.Protocol.Plugins.Tests
         {
             _handler = Mock.Of<IRequestHandler>();
             _handlers = new RequestHandlers();
+        }
+
+        [Fact]
+        public void AddOrUpdate_ThrowsForNullAddHandlerFunc()
+        {
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => _handlers.AddOrUpdate(
+                    MessageMethod.Handshake,
+                    addHandlerFunc: null,
+                    updateHandlerFunc: oldHandler => oldHandler));
+
+            Assert.Equal("addHandlerFunc", exception.ParamName);
+        }
+
+        [Fact]
+        public void AddOrUpdate_ThrowsForNullUpdateHandlerFunc()
+        {
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => _handlers.AddOrUpdate(
+                    MessageMethod.Handshake,
+                    () => Mock.Of<IRequestHandler>(),
+                    updateHandlerFunc: null));
+
+            Assert.Equal("updateHandlerFunc", exception.ParamName);
+        }
+
+        [Fact]
+        public void AddOrUpdate_AddsIfDoesNotAlreadyExist()
+        {
+            var handler = Mock.Of<IRequestHandler>();
+
+            _handlers.AddOrUpdate(MessageMethod.Handshake, () => handler, oldHandler => handler);
+
+            IRequestHandler actualHandler;
+            var wasAdded = _handlers.TryGet(MessageMethod.Handshake, out actualHandler);
+
+            Assert.True(wasAdded);
+            Assert.Same(handler, actualHandler);
+        }
+
+        [Fact]
+        public void AddOrUpdate_UpdatesIfAlreadyExists()
+        {
+            var firstHandler = Mock.Of<IRequestHandler>();
+            var secondHandler = Mock.Of<IRequestHandler>();
+
+            _handlers.AddOrUpdate(MessageMethod.Handshake, () => firstHandler, h => firstHandler);
+            _handlers.AddOrUpdate(MessageMethod.Handshake, () => secondHandler, h => secondHandler);
+
+            IRequestHandler actualHandler;
+            var wasUpdated = _handlers.TryGet(MessageMethod.Handshake, out actualHandler);
+
+            Assert.True(wasUpdated);
+            Assert.Same(secondHandler, actualHandler);
         }
 
         [Fact]

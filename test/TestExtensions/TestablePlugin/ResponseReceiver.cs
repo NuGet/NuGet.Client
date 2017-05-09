@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Concurrent;
@@ -41,11 +41,6 @@ namespace NuGet.Test.TestExtensions.TestablePlugin
                     while ((text = streamReader.ReadLine()) != null)
                     {
                         cancellationToken.ThrowIfCancellationRequested();
-
-                        if (text == "quit")
-                        {
-                            break;
-                        }
 
                         var response = JsonSerializationUtilities.Deserialize<Response>(text);
 

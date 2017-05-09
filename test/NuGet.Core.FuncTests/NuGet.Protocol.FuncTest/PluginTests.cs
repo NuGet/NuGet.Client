@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -24,7 +24,7 @@ namespace NuGet.Protocol.FuncTest
         private static readonly FileInfo _pluginFile;
         private static readonly ushort _portNumber = 11000;
         private static readonly IEnumerable<string> _pluginArguments = PluginConstants.PluginArguments
-            .Concat(new[] { $"-PortNumber {_portNumber}" });
+            .Concat(new[] { $"-PortNumber {_portNumber} -TestRunnerProcessId {GetCurrentProcessId()}" });
 
         static PluginTests()
         {
@@ -36,12 +36,10 @@ namespace NuGet.Protocol.FuncTest
         public PluginTests(ITestOutputHelper logger)
         {
             logger.WriteLine($"Plugin file path:  {_pluginFile.FullName}");
-
-            PluginUtilities.WaitForAttachIfPluginDebuggingIsEnabled();
         }
 
         [PlatformFact(Platform.Windows)]
-        public async Task CreateAsyncAndHandshake()
+        public async Task GetOrCreateAsync_SuccessfullyHandshakes()
         {
             using (var test = await PluginTest.CreateAsync())
             {
@@ -50,7 +48,7 @@ namespace NuGet.Protocol.FuncTest
         }
 
         [PlatformFact(Platform.Windows)]
-        public async Task Initialize()
+        public async Task Initialize_Succeeds()
         {
             using (var test = await PluginTest.CreateAsync())
             {
@@ -65,10 +63,15 @@ namespace NuGet.Protocol.FuncTest
 
                 var clientVersion = MinClientVersionUtility.GetNuGetClientVersion().ToNormalizedString();
                 var culture = CultureInfo.CurrentCulture.Name;
-                var payload = new InitializeRequest(clientVersion, culture, Verbosity.Normal, TimeSpan.FromSeconds(30));
+                var payload = new InitializeRequest(
+                    clientVersion,
+                    culture,
+                    PluginConstants.RequestTimeout);
 
                 var response = await test.Plugin.Connection.SendRequestAndReceiveResponseAsync<InitializeRequest, InitializeResponse>(
-                    MessageMethod.Initialize, payload, test.CancellationToken);
+                    MessageMethod.Initialize,
+                    payload,
+                    test.CancellationToken);
 
                 Assert.NotNull(response);
                 Assert.Equal(MessageResponseCode.Success, response.ResponseCode);
@@ -76,7 +79,7 @@ namespace NuGet.Protocol.FuncTest
         }
 
         [PlatformFact(Platform.Windows)]
-        public async Task GetOperationClaims()
+        public async Task GetOperationClaims_ReturnsSupportedClaims()
         {
             using (var test = await PluginTest.CreateAsync())
             {
@@ -93,7 +96,9 @@ namespace NuGet.Protocol.FuncTest
                 var payload = new GetOperationClaimsRequest(packageSourceRepository: "a", serviceIndex: serviceIndex);
 
                 var response = await test.Plugin.Connection.SendRequestAndReceiveResponseAsync<GetOperationClaimsRequest, GetOperationClaimsResponse>(
-                    MessageMethod.GetOperationClaims, payload, test.CancellationToken);
+                    MessageMethod.GetOperationClaims,
+                    payload,
+                    test.CancellationToken);
 
                 Assert.NotNull(response);
                 Assert.Equal(1, response.Claims.Count);
@@ -102,7 +107,7 @@ namespace NuGet.Protocol.FuncTest
         }
 
         [PlatformFact(Platform.Windows)]
-        public async Task RequestTimesOutAsync()
+        public async Task SendRequestAndReceiveResponseAsync_TimesOut()
         {
             using (var test = await PluginTest.CreateAsync())
             {
@@ -116,12 +121,24 @@ namespace NuGet.Protocol.FuncTest
 
                 await Assert.ThrowsAsync<TaskCanceledException>(
                     () => test.Plugin.Connection.SendRequestAndReceiveResponseAsync<GetOperationClaimsRequest, GetOperationClaimsResponse>(
-                        MessageMethod.Initialize, payload, test.CancellationToken));
+                        MessageMethod.Initialize,
+                        payload,
+                        test.CancellationToken));
 
-                var low = test.Plugin.Connection.Options.RequestTimeout;
-                var high = TimeSpan.FromSeconds(low.TotalSeconds * 2);
+                var requestTimeout = test.Plugin.Connection.Options.RequestTimeout;
+
+                var low = requestTimeout.Add(TimeSpan.FromSeconds(-2));
+                var high = TimeSpan.FromSeconds(requestTimeout.TotalSeconds * 2);
 
                 Assert.InRange(stopwatch.Elapsed, low, high);
+            }
+        }
+
+        private static int GetCurrentProcessId()
+        {
+            using (var process = Process.GetCurrentProcess())
+            {
+                return process.Id;
             }
         }
 

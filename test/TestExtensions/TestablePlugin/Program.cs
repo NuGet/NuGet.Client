@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -21,10 +21,7 @@ namespace NuGet.Test.TestExtensions.TestablePlugin
             {
                 Console.OutputEncoding = Encoding.UTF8;
 
-                if (IsPluginDebuggingEnabled())
-                {
-                    WaitForDebuggerAttach();
-                }
+                DebugBreakIfPluginDebuggingIsEnabled();
 
                 Arguments parsedArgs;
 
@@ -50,36 +47,77 @@ namespace NuGet.Test.TestExtensions.TestablePlugin
             using (var cancellationTokenSource = new CancellationTokenSource())
             using (var responses = new BlockingCollection<Response>())
             {
-                var responseReceiver = new ResponseReceiver(arguments.PortNumber, responses);
+                Process process;
 
-                using (var testablePlugin = new TestablePlugin(responses))
+                if (!TryGetProcess(arguments.TestRunnerProcessId, out process))
                 {
-                    var tasks = new[]
+                    return;
+                }
+
+                using (process)
+                {
+                    process.Exited += (sender, args) =>
                     {
-                        Task.Factory.StartNew(() => responseReceiver.StartListeningAsync(cancellationTokenSource.Token), TaskCreationOptions.LongRunning | TaskCreationOptions.DenyChildAttach),
-                        testablePlugin.StartAsync(cancellationTokenSource.Token)
+                        try
+                        {
+                            cancellationTokenSource.Cancel();
+                        }
+                        catch (Exception)
+                        {
+                        }
                     };
 
-                    Task.WaitAny(tasks);
+                    process.EnableRaisingEvents = true;
 
-                    cancellationTokenSource.Cancel();
+                    var responseReceiver = new ResponseReceiver(arguments.PortNumber, responses);
+
+                    using (var testablePlugin = new TestablePlugin(responses))
+                    {
+                        var tasks = new[]
+                        {
+                            Task.Factory.StartNew(
+                                () => responseReceiver.StartListeningAsync(cancellationTokenSource.Token),
+                                TaskCreationOptions.LongRunning | TaskCreationOptions.DenyChildAttach),
+                            testablePlugin.StartAsync(cancellationTokenSource.Token)
+                        };
+
+                        Task.WaitAny(tasks);
+
+                        try
+                        {
+                            cancellationTokenSource.Cancel();
+                        }
+                        catch (Exception)
+                        {
+                        }
+                    }
                 }
             }
         }
 
-        private static bool IsPluginDebuggingEnabled()
+        private static void DebugBreakIfPluginDebuggingIsEnabled()
         {
-            return !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("NUGET_PLUGIN_DEBUG"));
+            if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("NUGET_PLUGIN_DEBUG")))
+            {
+                Debugger.Break();
+            }
         }
 
-        private static void WaitForDebuggerAttach()
+        private static bool TryGetProcess(int processId, out Process process)
         {
-            while (!Debugger.IsAttached)
+            try
             {
-                Thread.Sleep(1000);
+                process = Process.GetProcessById(processId);
+
+                return true;
+            }
+            catch (Exception)
+            {
             }
 
-            Debugger.Break();
+            process = null;
+
+            return false;
         }
     }
 }

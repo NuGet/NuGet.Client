@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -13,9 +13,7 @@ namespace NuGet.Protocol.Plugins
     /// </summary>
     public sealed class Connection : IConnection
     {
-        private readonly TaskCompletionSource<object> _closeEvent;
         private bool _isDisposed;
-        private bool _isDisposing;
         private readonly IReceiver _receiver;
         private readonly ISender _sender;
 
@@ -88,7 +86,6 @@ namespace NuGet.Protocol.Plugins
             _sender = sender;
             _receiver = receiver;
             Options = options;
-            _closeEvent = new TaskCompletionSource<object>();
 
             MessageDispatcher.SetConnection(this);
         }
@@ -98,19 +95,39 @@ namespace NuGet.Protocol.Plugins
         /// </summary>
         public void Dispose()
         {
-            if (_isDisposed || _isDisposing)
+            if (!_isDisposed)
             {
-                return;
+                Close();
+
+                _receiver.Dispose();
+                _sender.Dispose();
+                MessageDispatcher.Dispose();
+
+                GC.SuppressFinalize(this);
+
+                _isDisposed = true;
             }
+        }
 
-            _isDisposing = true;
+        /// <summary>
+        /// Closes the connection.
+        /// </summary>
+        /// <remarks>This does not call <see cref="IDisposable.Dispose" />.</remarks>
+        public void Close()
+        {
+            if (_state != (int)ConnectionState.Closed)
+            {
+                _state = (int)ConnectionState.Closing;
 
-            Task.Run(() => CloseAsync());
+                _receiver.MessageReceived -= OnMessageReceived;
+                _receiver.Faulted -= OnFaulted;
 
-            GC.SuppressFinalize(this);
+                _receiver.Close();
+                _sender.Close();
+                MessageDispatcher.Close();
 
-            _isDisposed = true;
-            _isDisposing = false;
+                _state = (int)ConnectionState.Closed;
+            }
         }
 
         /// <summary>
@@ -118,7 +135,8 @@ namespace NuGet.Protocol.Plugins
         /// </summary>
         /// <param name="cancellationToken">A cancellation token.</param>
         /// <returns>A task that represents the asynchronous operation.</returns>
-        /// <exception cref="OperationCanceledException">Thrown if <paramref name="cancellationToken" /> is cancelled.</exception>
+        /// <exception cref="OperationCanceledException">Thrown if <paramref name="cancellationToken" />
+        /// is cancelled.</exception>
         /// <exception cref="InvalidOperationException">Thrown if the method has been called already.</exception>
         public async Task ConnectAsync(CancellationToken cancellationToken)
         {
@@ -140,7 +158,8 @@ namespace NuGet.Protocol.Plugins
                 Options.ProtocolVersion,
                 Options.MinimumProtocolVersion))
             {
-                await Task.WhenAll(_receiver.ConnectAsync(cancellationToken), _sender.ConnectAsync(cancellationToken));
+                _sender.Connect();
+                _receiver.Connect();
 
                 _state = (int)ConnectionState.Handshaking;
 
@@ -167,62 +186,14 @@ namespace NuGet.Protocol.Plugins
         }
 
         /// <summary>
-        /// Asynchronously closes the connection.
-        /// </summary>
-        /// <returns>A task that represents the asynchronous operation.</returns>
-        public Task CloseAsync()
-        {
-            _receiver.MessageReceived -= OnMessageReceived;
-            _receiver.Faulted -= OnFaulted;
-
-            var currentState = _state;
-            Interlocked.MemoryBarrier();
-
-            if (currentState <= (int)ConnectionState.Closed)
-            {
-                return _closeEvent.Task;
-            }
-
-            var previous = Interlocked.CompareExchange(ref _state, (int)ConnectionState.Closing, currentState);
-            if (previous == currentState)
-            {
-                Task.WhenAll(_sender.CloseAsync(), _receiver.CloseAsync())
-                    .ContinueWith(
-                        task =>
-                        {
-                            _sender.Dispose();
-                            _receiver.Dispose();
-
-                            MessageDispatcher.Dispose();
-
-                            _state = (int)ConnectionState.Closed;
-
-                            if (task.IsCanceled)
-                            {
-                                _closeEvent.TrySetCanceled();
-                            }
-                            else if (task.IsFaulted)
-                            {
-                                _closeEvent.TrySetException(task.Exception);
-                            }
-                            else
-                            {
-                                _closeEvent.TrySetResult(null);
-                            }
-                        });
-            }
-
-            return _closeEvent.Task;
-        }
-
-        /// <summary>
         /// Asynchronously sends a message to the remote target.
         /// </summary>
         /// <param name="message">The message to be sent.</param>
         /// <param name="cancellationToken">A cancellation token.</param>
         /// <returns>A task that represents the asynchronous operation.</returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="message" /> is <c>null</c>.</exception>
-        /// <exception cref="OperationCanceledException">Thrown if <paramref name="cancellationToken" /> is cancelled.</exception>
+        /// <exception cref="OperationCanceledException">Thrown if <paramref name="cancellationToken" />
+        /// is cancelled.</exception>
         /// <exception cref="InvalidOperationException">Thrown if not connected.</exception>
         public async Task SendAsync(Message message, CancellationToken cancellationToken)
         {
@@ -232,6 +203,12 @@ namespace NuGet.Protocol.Plugins
             }
 
             cancellationToken.ThrowIfCancellationRequested();
+
+            if (State == ConnectionState.Closing ||
+                State == ConnectionState.Closed)
+            {
+                return;
+            }
 
             if (_state < (int)ConnectionState.Connecting)
             {
@@ -252,7 +229,9 @@ namespace NuGet.Protocol.Plugins
         /// <returns>A task that represents the asynchronous operation.
         /// The task result (<see cref="Task{TResult}.Result" />) returns a <typeparamref name="TInbound" />
         /// from the target.</returns>
-        /// <exception cref="OperationCanceledException">Thrown if <paramref name="cancellationToken" /> is cancelled.</exception>
+        /// <exception cref="OperationCanceledException">Thrown if <paramref name="cancellationToken" />
+        /// is cancelled.</exception>
+        /// <exception cref="InvalidOperationException">Thrown if not connected.</exception>
         public Task<TInbound> SendRequestAndReceiveResponseAsync<TOutbound, TInbound>(
             MessageMethod method,
             TOutbound payload,
@@ -260,6 +239,17 @@ namespace NuGet.Protocol.Plugins
             where TOutbound : class
             where TInbound : class
         {
+            if (State == ConnectionState.Closing ||
+                State == ConnectionState.Closed)
+            {
+                return Task.FromResult<TInbound>(null);
+            }
+
+            if (_state < (int)ConnectionState.Connecting)
+            {
+                throw new InvalidOperationException(Strings.Plugin_NotConnected);
+            }
+
             cancellationToken.ThrowIfCancellationRequested();
 
             return MessageDispatcher.DispatchRequestAsync<TOutbound, TInbound>(method, payload, cancellationToken);

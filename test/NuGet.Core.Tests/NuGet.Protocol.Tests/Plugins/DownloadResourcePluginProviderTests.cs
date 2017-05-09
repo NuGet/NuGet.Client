@@ -1,7 +1,8 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -17,11 +18,16 @@ namespace NuGet.Protocol.Plugins.Tests
     {
         private readonly DownloadResourcePluginProvider _provider;
 
-        private static readonly PluginResource _pluginResource = new PluginResource(Enumerable.Empty<PluginCreationResult>());
+        private static readonly PluginResource _pluginResource = new PluginResource(
+            Enumerable.Empty<PluginCreationResult>(),
+            new PackageSource("https://unit.test"),
+            Mock.Of<ICredentialService>());
 
         public DownloadResourcePluginProviderTests()
         {
             _provider = new DownloadResourcePluginProvider();
+
+            HttpHandlerResourceV3.CredentialService = Mock.Of<ICredentialService>();
         }
 
         [Fact]
@@ -62,7 +68,8 @@ namespace NuGet.Protocol.Plugins.Tests
         {
             var sourceRepository = CreateSourceRepository(
                 createPluginResource: true,
-                createServiceIndexResourceV3: true);
+                createServiceIndexResourceV3: true,
+                createHttpHandlerResource: true);
 
             await Assert.ThrowsAsync<OperationCanceledException>(
                 () => _provider.TryCreate(sourceRepository, new CancellationToken(canceled: true)));
@@ -73,7 +80,8 @@ namespace NuGet.Protocol.Plugins.Tests
         {
             var sourceRepository = CreateSourceRepository(
                 createPluginResource: false,
-                createServiceIndexResourceV3: true);
+                createServiceIndexResourceV3: true,
+                createHttpHandlerResource: true);
 
             var result = await _provider.TryCreate(sourceRepository, CancellationToken.None);
 
@@ -86,7 +94,8 @@ namespace NuGet.Protocol.Plugins.Tests
         {
             var sourceRepository = CreateSourceRepository(
                 createPluginResource: true,
-                createServiceIndexResourceV3: false);
+                createServiceIndexResourceV3: false,
+                createHttpHandlerResource: true);
 
             var result = await _provider.TryCreate(sourceRepository, CancellationToken.None);
 
@@ -95,11 +104,26 @@ namespace NuGet.Protocol.Plugins.Tests
         }
 
         [Fact]
-        public async Task TryCreate_ReturnsDownloadResourceV3Plugin()
+        public async Task TryCreate_ReturnsFalseIfNoHttpHandlerResource()
         {
             var sourceRepository = CreateSourceRepository(
                 createPluginResource: true,
-                createServiceIndexResourceV3: true);
+                createServiceIndexResourceV3: true,
+                createHttpHandlerResource: false);
+
+            var result = await _provider.TryCreate(sourceRepository, CancellationToken.None);
+
+            Assert.False(result.Item1);
+            Assert.Null(result.Item2);
+        }
+
+        [Fact]
+        public async Task TryCreate_ReturnsDownloadResourcePlugin()
+        {
+            var sourceRepository = CreateSourceRepository(
+                createPluginResource: true,
+                createServiceIndexResourceV3: true,
+                createHttpHandlerResource: true);
 
             var result = await _provider.TryCreate(sourceRepository, CancellationToken.None);
 
@@ -107,16 +131,44 @@ namespace NuGet.Protocol.Plugins.Tests
             Assert.IsType<DownloadResourcePlugin>(result.Item2);
         }
 
-        private static SourceRepository CreateSourceRepository(bool createPluginResource, bool createServiceIndexResourceV3)
+        private static SourceRepository CreateSourceRepository(
+            bool createPluginResource,
+            bool createServiceIndexResourceV3,
+            bool createHttpHandlerResource)
         {
-            var packageSource = new PackageSource(source: "");
+            var packageSource = new PackageSource(source: "https://unit.test");
             var providers = new INuGetResourceProvider[]
             {
                 CreatePluginResourceProvider(createPluginResource),
-                CreateServiceIndexResourceV3Provider(createServiceIndexResourceV3)
+                CreateServiceIndexResourceV3Provider(createServiceIndexResourceV3),
+                CreateMockHttpHandlerResource(createHttpHandlerResource)
             };
 
             return new SourceRepository(packageSource, providers);
+        }
+
+        private static HttpHandlerResourceV3Provider CreateMockHttpHandlerResource(bool createResource)
+        {
+            var provider = new Mock<HttpHandlerResourceV3Provider>();
+
+            provider.Setup(x => x.Name)
+                .Returns(nameof(HttpHandlerResourceV3Provider));
+            provider.Setup(x => x.ResourceType)
+                .Returns(typeof(HttpHandlerResource));
+
+            HttpHandlerResource resource = null;
+
+            if (createResource)
+            {
+                resource = Mock.Of<HttpHandlerResource>();
+            }
+
+            var tryCreateResult = new Tuple<bool, INuGetResource>(resource != null, resource);
+
+            provider.Setup(x => x.TryCreate(It.IsAny<SourceRepository>(), It.IsAny<CancellationToken>()))
+                .Returns(Task.FromResult(tryCreateResult));
+
+            return provider.Object;
         }
 
         private static PluginResourceProvider CreatePluginResourceProvider(bool createResource)
@@ -128,8 +180,29 @@ namespace NuGet.Protocol.Plugins.Tests
             provider.Setup(x => x.ResourceType)
                 .Returns(typeof(PluginResource));
 
-            var pluginResource = createResource
-                ? new PluginResource(Enumerable.Empty<PluginCreationResult>()) : null;
+            PluginResource pluginResource = null;
+
+            if (createResource)
+            {
+                var plugin = new Mock<IPlugin>();
+                var utilities = new Mock<IPluginMulticlientUtilities>();
+                var connection = new Mock<IConnection>();
+
+                plugin.Setup(x => x.Connection)
+                    .Returns(connection.Object);
+
+                var creationResult = new PluginCreationResult(
+                    plugin.Object,
+                    utilities.Object,
+                    new List<OperationClaim>() { OperationClaim.DownloadPackage });
+                var packageSource = new PackageSource(source: "https://unit.test");
+
+                pluginResource = new PluginResource(
+                    new[] { creationResult },
+                    packageSource,
+                    Mock.Of<ICredentialService>());
+            }
+
             var tryCreateResult = new Tuple<bool, INuGetResource>(pluginResource != null, pluginResource);
 
             provider.Setup(x => x.TryCreate(It.IsAny<SourceRepository>(), It.IsAny<CancellationToken>()))

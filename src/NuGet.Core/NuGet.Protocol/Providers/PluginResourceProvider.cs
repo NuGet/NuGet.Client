@@ -1,9 +1,10 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Threading;
@@ -15,28 +16,70 @@ using NuGet.Protocol.Plugins;
 
 namespace NuGet.Protocol.Core.Types
 {
-    // Unsealed for testing purposes.
-    public class PluginResourceProvider : ResourceProvider
+    /// <summary>
+    /// A plugin resource provider.
+    /// </summary>
+    /// <remarks>This is unsealed only to facilitate testing.</remarks>
+    public class PluginResourceProvider : ResourceProvider, IDisposable
     {
-        private const string _environmentVariable = "NUGET_PLUGIN_PATHS";
+        private const string _pluginPathsEnvironmentVariable = "NUGET_PLUGIN_PATHS";
+        private const string _pluginRequestTimeoutEnvironmentVariable = "NUGET_PLUGIN_REQUEST_TIMEOUT_IN_SECONDS";
 
-        private static Lazy<PluginDiscoverer> _discoverer;
-        private static PluginFactory _pluginFactory;
-        private static ConcurrentDictionary<string, Lazy<Task<IReadOnlyList<OperationClaim>>>> _pluginOperationClaims;
-        private static string _rawPluginPaths;
+        private Lazy<PluginDiscoverer> _discoverer;
+        private bool _isDisposed;
+        private PluginFactory _pluginFactory;
+        private ConcurrentDictionary<string, Lazy<Task<IReadOnlyList<OperationClaim>>>> _pluginOperationClaims;
+        private ConcurrentDictionary<string, Lazy<IPluginMulticlientUtilities>> _pluginUtilities;
+        private string _rawPluginPaths;
+        private TimeSpan _requestTimeout;
 
+        private static Lazy<int> _currentProcessId = new Lazy<int>(GetCurrentProcessId);
+
+        /// <summary>
+        /// Gets an environment variable reader.
+        /// </summary>
+        /// <remarks>This is non-private only to facilitate testing.</remarks>
         public static IEnvironmentVariableReader EnvironmentVariableReader { get; private set; }
 
-        static PluginResourceProvider()
+        /// <summary>
+        /// Initializes a new <see cref="PluginResourceProvider" /> class.
+        /// </summary>
+        public PluginResourceProvider()
+            : base(typeof(PluginResource), nameof(PluginResourceProvider))
         {
             Reinitialize(new EnvironmentVariableWrapper());
         }
 
-        public PluginResourceProvider()
-            : base(typeof(PluginResource), nameof(PluginResourceProvider))
+        /// <summary>
+        /// Disposes of this instance.
+        /// </summary>
+        public void Dispose()
         {
+            if (!_isDisposed)
+            {
+                if (_discoverer.IsValueCreated)
+                {
+                    _discoverer.Value.Dispose();
+                }
+
+                _pluginFactory.Dispose();
+
+                GC.SuppressFinalize(this);
+
+                _isDisposed = true;
+            }
         }
 
+        /// <summary>
+        /// Asynchronously attempts to create a resource for the specified source repository.
+        /// </summary>
+        /// <param name="source">A source repository.</param>
+        /// <param name="cancellationToken">A cancellation token.</param>
+        /// <returns>A task that represents the asynchronous operation.
+        /// The task result (<see cref="Task{TResult}.Result" />) returns a Tuple&lt;bool, INuGetResource&gt;</returns>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="source"/> is <c>null</c>.</exception>
+        /// <exception cref="OperationCanceledException">Thrown if <paramref name="cancellationToken"/>
+        /// is cancelled.</exception>
         public override async Task<Tuple<bool, INuGetResource>> TryCreate(
             SourceRepository source,
             CancellationToken cancellationToken)
@@ -51,7 +94,7 @@ namespace NuGet.Protocol.Core.Types
             PluginResource resource = null;
 
             // Fast path
-            if (IsPluginPossiblyAvailable())
+            if (source.PackageSource.IsHttp && IsPluginPossiblyAvailable())
             {
                 var serviceIndex = await source.GetResourceAsync<ServiceIndexResourceV3>(cancellationToken);
 
@@ -67,7 +110,10 @@ namespace NuGet.Protocol.Core.Types
 
                     if (pluginCreationResults.Any())
                     {
-                        resource = new PluginResource(pluginCreationResults);
+                        resource = new PluginResource(
+                            pluginCreationResults,
+                            source.PackageSource,
+                            HttpHandlerResourceV3.CredentialService);
                     }
                 }
             }
@@ -80,13 +126,25 @@ namespace NuGet.Protocol.Core.Types
         /// </summary>
         /// <remarks>This is non-private only to facilitate unit testing.</remarks>
         /// <param name="reader">An environment variable reader.</param>
-        public static void Reinitialize(IEnvironmentVariableReader reader)
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="reader" /> is <c>null</c>.</exception>
+        public void Reinitialize(IEnvironmentVariableReader reader)
         {
+            if (reader == null)
+            {
+                throw new ArgumentNullException(nameof(reader));
+            }
+
             EnvironmentVariableReader = reader;
-            _rawPluginPaths = reader?.GetEnvironmentVariable(_environmentVariable);
+            _rawPluginPaths = reader.GetEnvironmentVariable(_pluginPathsEnvironmentVariable);
+
+            var requestTimeoutInSeconds = reader.GetEnvironmentVariable(_pluginRequestTimeoutEnvironmentVariable);
+
+            _requestTimeout = GetRequestTimeout(requestTimeoutInSeconds);
             _discoverer = new Lazy<PluginDiscoverer>(InitializeDiscoverer);
             _pluginFactory = new PluginFactory(PluginConstants.IdleTimeout);
             _pluginOperationClaims = new ConcurrentDictionary<string, Lazy<Task<IReadOnlyList<OperationClaim>>>>(
+                StringComparer.OrdinalIgnoreCase);
+            _pluginUtilities = new ConcurrentDictionary<string, Lazy<IPluginMulticlientUtilities>>(
                 StringComparer.OrdinalIgnoreCase);
         }
 
@@ -103,15 +161,31 @@ namespace NuGet.Protocol.Core.Types
             {
                 PluginCreationResult pluginCreationResult = null;
 
-                var state = PluginUtilities.IsDebuggingPlugin() ? PluginFileState.Valid : result.PluginFile.State;
-
-                if (state == PluginFileState.Valid)
+                if (result.PluginFile.State == PluginFileState.Valid)
                 {
                     var plugin = await _pluginFactory.GetOrCreateAsync(
                         result.PluginFile.Path,
                         PluginConstants.PluginArguments,
                         new RequestHandlers(),
                         ConnectionOptions.CreateDefault(),
+                        cancellationToken);
+
+                    var utilities = _pluginUtilities.GetOrAdd(
+                        plugin.Id,
+                        path => new Lazy<IPluginMulticlientUtilities>(
+                            () => new PluginMulticlientUtilities()));
+
+                    await utilities.Value.DoOncePerPluginLifetimeAsync(
+                        MessageMethod.MonitorNuGetProcessExit.ToString(),
+                        () => plugin.Connection.SendRequestAndReceiveResponseAsync<MonitorNuGetProcessExitRequest, MonitorNuGetProcessExitResponse>(
+                            MessageMethod.MonitorNuGetProcessExit,
+                            new MonitorNuGetProcessExitRequest(_currentProcessId.Value),
+                            cancellationToken),
+                        cancellationToken);
+
+                    await utilities.Value.DoOncePerPluginLifetimeAsync(
+                        MessageMethod.Initialize.ToString(),
+                        () => InitializePluginAsync(plugin, _requestTimeout, cancellationToken),
                         cancellationToken);
 
                     var lazyOperationClaims = _pluginOperationClaims.GetOrAdd(
@@ -124,7 +198,7 @@ namespace NuGet.Protocol.Core.Types
 
                     await lazyOperationClaims.Value;
 
-                    pluginCreationResult = new PluginCreationResult(plugin, lazyOperationClaims.Value.Result);
+                    pluginCreationResult = new PluginCreationResult(plugin, utilities.Value, lazyOperationClaims.Value.Result);
                 }
                 else
                 {
@@ -143,8 +217,6 @@ namespace NuGet.Protocol.Core.Types
             JObject serviceIndex,
             CancellationToken cancellationToken)
         {
-            await InitializePluginAsync(plugin, cancellationToken);
-
             var payload = new GetOperationClaimsRequest(packageSourceRepository, serviceIndex);
 
             var response = await plugin.Connection.SendRequestAndReceiveResponseAsync<GetOperationClaimsRequest, GetOperationClaimsResponse>(
@@ -152,38 +224,79 @@ namespace NuGet.Protocol.Core.Types
                 payload,
                 cancellationToken);
 
+            if (response == null)
+            {
+                return new List<OperationClaim>();
+            }
+
             return response.Claims;
         }
 
-        private static async Task InitializePluginAsync(
-            IPlugin plugin,
-            CancellationToken cancellationToken)
-        {
-            var clientVersion = MinClientVersionUtility.GetNuGetClientVersion().ToNormalizedString();
-            var culture = CultureInfo.CurrentCulture.Name;
-            var payload = new InitializeRequest(clientVersion, culture, Verbosity.Detailed, TimeSpan.FromSeconds(30));
-
-            var response = await plugin.Connection.SendRequestAndReceiveResponseAsync<InitializeRequest, InitializeResponse>(
-                MessageMethod.Initialize,
-                payload,
-                cancellationToken);
-
-            if (response.ResponseCode != MessageResponseCode.Success)
-            {
-                throw new PluginException(Strings.Plugin_InitializationFailed);
-            }
-        }
-
-        private static PluginDiscoverer InitializeDiscoverer()
+        private PluginDiscoverer InitializeDiscoverer()
         {
             var verifier = EmbeddedSignatureVerifier.Create();
 
             return new PluginDiscoverer(_rawPluginPaths, verifier);
         }
 
-        private static bool IsPluginPossiblyAvailable()
+        private bool IsPluginPossiblyAvailable()
         {
             return !string.IsNullOrEmpty(_rawPluginPaths);
+        }
+
+        private static int GetCurrentProcessId()
+        {
+            using (var process = Process.GetCurrentProcess())
+            {
+                return process.Id;
+            }
+        }
+
+        private static TimeSpan GetRequestTimeout(string requestTimeoutInSeconds)
+        {
+            int seconds;
+            if (int.TryParse(requestTimeoutInSeconds, out seconds))
+            {
+                try
+                {
+                    var requestTimeout = TimeSpan.FromSeconds(seconds);
+
+                    if (TimeoutUtilities.IsValid(requestTimeout))
+                    {
+                        return requestTimeout;
+                    }
+                }
+                catch (Exception)
+                {
+                }
+            }
+
+            return PluginConstants.RequestTimeout;
+        }
+
+        private static async Task InitializePluginAsync(
+            IPlugin plugin,
+            TimeSpan requestTimeout,
+            CancellationToken cancellationToken)
+        {
+            var clientVersion = MinClientVersionUtility.GetNuGetClientVersion().ToNormalizedString();
+            var culture = CultureInfo.CurrentCulture.Name;
+            var payload = new InitializeRequest(
+                clientVersion,
+                culture,
+                requestTimeout);
+
+            var response = await plugin.Connection.SendRequestAndReceiveResponseAsync<InitializeRequest, InitializeResponse>(
+                MessageMethod.Initialize,
+                payload,
+                cancellationToken);
+
+            if (response != null && response.ResponseCode != MessageResponseCode.Success)
+            {
+                throw new PluginException(Strings.Plugin_InitializationFailed);
+            }
+
+            plugin.Connection.Options.SetRequestTimeout(requestTimeout);
         }
     }
 }

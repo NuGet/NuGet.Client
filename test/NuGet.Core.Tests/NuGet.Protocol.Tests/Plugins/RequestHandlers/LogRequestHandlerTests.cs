@@ -1,8 +1,7 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Moq;
@@ -13,20 +12,11 @@ namespace NuGet.Protocol.Plugins.Tests
 {
     public class LogRequestHandlerTests
     {
-        private readonly Mock<ILogger> _logger;
-        private readonly Mock<IResponseHandler> _responseHandler;
-
-        public LogRequestHandlerTests()
-        {
-            _logger = new Mock<ILogger>(MockBehavior.Strict);
-            _responseHandler = new Mock<IResponseHandler>(MockBehavior.Strict);
-        }
-
         [Fact]
         public void Constructor_ThrowsForNullLogger()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new LogRequestHandler(logger: null, logLevel: LogLevel.Debug));
+                () => new LogRequestHandler(logger: null));
 
             Assert.Equal("logger", exception.ParamName);
         }
@@ -34,44 +24,47 @@ namespace NuGet.Protocol.Plugins.Tests
         [Fact]
         public void CancellationToken_IsNone()
         {
-            var handler = new LogRequestHandler(_logger.Object, LogLevel.Debug);
+            var test = new LogRequestHandlerTest();
 
-            Assert.Equal(CancellationToken.None, handler.CancellationToken);
+            Assert.Equal(CancellationToken.None, test.Handler.CancellationToken);
         }
 
         [Fact]
         public async Task HandleCancelAsync_Throws()
         {
-            var handler = new LogRequestHandler(_logger.Object, LogLevel.Debug);
-            var request = new Message(
-                requestId: "a",
-                type: MessageType.Cancel,
-                method: MessageMethod.Log);
+            var test = new LogRequestHandlerTest();
 
             await Assert.ThrowsAsync<NotSupportedException>(
-                () => handler.HandleCancelAsync(request, CancellationToken.None));
+                () => test.Handler.HandleCancelAsync(
+                    Mock.Of<IConnection>(),
+                    test.Request,
+                    Mock.Of<IResponseHandler>(),
+                    CancellationToken.None));
         }
 
         [Fact]
-        public async Task HandleProgressAsync_Throws()
+        public async Task HandleResponseAsync_ThrowsForNullConnection()
         {
-            var handler = new LogRequestHandler(_logger.Object, LogLevel.Debug);
-            var request = new Message(
-                requestId: "a",
-                type: MessageType.Progress,
-                method: MessageMethod.Log);
+            var test = new LogRequestHandlerTest();
 
-            await Assert.ThrowsAsync<NotSupportedException>(
-                () => handler.HandleProgressAsync(request, CancellationToken.None));
+            var exception = await Assert.ThrowsAsync<ArgumentNullException>(
+                () => test.Handler.HandleResponseAsync(
+                    connection: null,
+                    request: test.Request,
+                    responseHandler: Mock.Of<IResponseHandler>(),
+                    cancellationToken: CancellationToken.None));
+
+            Assert.Equal("connection", exception.ParamName);
         }
 
         [Fact]
         public async Task HandleResponseAsync_ThrowsForNullRequest()
         {
-            var handler = new LogRequestHandler(_logger.Object, LogLevel.Debug);
+            var test = new LogRequestHandlerTest();
 
             var exception = await Assert.ThrowsAsync<ArgumentNullException>(
-                () => handler.HandleResponseAsync(
+                () => test.Handler.HandleResponseAsync(
+                    Mock.Of<IConnection>(),
                     request: null,
                     responseHandler: Mock.Of<IResponseHandler>(),
                     cancellationToken: CancellationToken.None));
@@ -82,15 +75,12 @@ namespace NuGet.Protocol.Plugins.Tests
         [Fact]
         public async Task HandleResponseAsync_ThrowsForNullResponseHandler()
         {
-            var handler = new LogRequestHandler(_logger.Object, LogLevel.Debug);
-            var request = new Message(
-                requestId: "a",
-                type: MessageType.Request,
-                method: MessageMethod.Log);
+            var test = new LogRequestHandlerTest();
 
             var exception = await Assert.ThrowsAsync<ArgumentNullException>(
-                () => handler.HandleResponseAsync(
-                    request,
+                () => test.Handler.HandleResponseAsync(
+                    Mock.Of<IConnection>(),
+                    test.Request,
                     responseHandler: null,
                     cancellationToken: CancellationToken.None));
 
@@ -100,15 +90,12 @@ namespace NuGet.Protocol.Plugins.Tests
         [Fact]
         public async Task HandleResponseAsync_ThrowsIfCancelled()
         {
-            var handler = new LogRequestHandler(_logger.Object, LogLevel.Debug);
-            var request = new Message(
-                requestId: "a",
-                type: MessageType.Request,
-                method: MessageMethod.Log);
+            var test = new LogRequestHandlerTest();
 
             await Assert.ThrowsAsync<OperationCanceledException>(
-                () => handler.HandleResponseAsync(
-                    request,
+                () => test.Handler.HandleResponseAsync(
+                    Mock.Of<IConnection>(),
+                    test.Request,
                     Mock.Of<IResponseHandler>(),
                     new CancellationToken(canceled: true)));
         }
@@ -120,7 +107,7 @@ namespace NuGet.Protocol.Plugins.Tests
                 LogLevel.Debug,
                 LogLevel.Debug,
                 MessageResponseCode.Success,
-                (message) => logger => logger.LogDebug(It.Is<string>(m => m == message)));
+                expectLog: true);
         }
 
         [Fact]
@@ -130,7 +117,7 @@ namespace NuGet.Protocol.Plugins.Tests
                 LogLevel.Verbose,
                 LogLevel.Verbose,
                 MessageResponseCode.Success,
-                (message) => logger => logger.LogVerbose(It.Is<string>(m => m == message)));
+                expectLog: true);
         }
 
         [Fact]
@@ -140,7 +127,7 @@ namespace NuGet.Protocol.Plugins.Tests
                 LogLevel.Information,
                 LogLevel.Information,
                 MessageResponseCode.Success,
-                (message) => logger => logger.LogInformation(It.Is<string>(m => m == message)));
+                expectLog: true);
         }
 
         [Fact]
@@ -150,7 +137,7 @@ namespace NuGet.Protocol.Plugins.Tests
                 LogLevel.Minimal,
                 LogLevel.Minimal,
                 MessageResponseCode.Success,
-                (message) => logger => logger.LogMinimal(It.Is<string>(m => m == message)));
+                expectLog: true);
         }
 
         [Fact]
@@ -160,7 +147,7 @@ namespace NuGet.Protocol.Plugins.Tests
                 LogLevel.Warning,
                 LogLevel.Warning,
                 MessageResponseCode.Success,
-                (message) => logger => logger.LogWarning(It.Is<string>(m => m == message)));
+                expectLog: true);
         }
 
         [Fact]
@@ -170,7 +157,7 @@ namespace NuGet.Protocol.Plugins.Tests
                 LogLevel.Error,
                 LogLevel.Error,
                 MessageResponseCode.Success,
-                (message) => logger => logger.LogError(It.Is<string>(m => m == message)));
+                expectLog: true);
         }
 
         [Theory]
@@ -187,16 +174,81 @@ namespace NuGet.Protocol.Plugins.Tests
                 handlerLogLevel,
                 requestedLogLevel,
                 MessageResponseCode.Error,
-                expressionFunc: null);
+                expectLog: false);
+        }
+
+        [Fact]
+        public void SetLogger_ThrowsForNullLogger()
+        {
+            var test = new LogRequestHandlerTest();
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => test.Handler.SetLogger(logger: null));
+
+            Assert.Equal("logger", exception.ParamName);
+        }
+
+        [Fact]
+        public async Task SetLogger_UpdatesLogger()
+        {
+            var test = new LogRequestHandlerTest();
+            var secondLogger = new Mock<ILogger>(MockBehavior.Strict);
+
+            test.Handler.SetLogger(secondLogger.Object);
+
+            var responseHandler = new Mock<IResponseHandler>(MockBehavior.Strict);
+
+            responseHandler.Setup(x => x.SendResponseAsync(
+                    It.IsNotNull<Message>(),
+                    It.IsNotNull<LogResponse>(),
+                    It.IsAny<CancellationToken>()))
+                .Returns(Task.FromResult(0));
+
+            await test.Handler.HandleResponseAsync(
+                Mock.Of<IConnection>(),
+                test.Request,
+                responseHandler.Object,
+                CancellationToken.None);
+
+            test.Logger.Verify();
+            responseHandler.Verify();
+            secondLogger.Verify();
+        }
+
+        [Fact]
+        public void GetLogLevel_ThrowsForNullLogger()
+        {
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => LogRequestHandler.GetLogLevel(logger: null));
+
+            Assert.Equal("logger", exception.ParamName);
+        }
+
+        [Theory]
+        [InlineData(LogLevel.Debug)]
+        [InlineData(LogLevel.Warning)]
+        public void GetLogLevel_ReturnsLoggerLogLevel(LogLevel expectedLogLevel)
+        {
+            var logger = new CollectorLogger(Mock.Of<ILogger>(), expectedLogLevel);
+            var actualLogLevel = LogRequestHandler.GetLogLevel(logger);
+
+            Assert.Equal(expectedLogLevel, actualLogLevel);
+        }
+
+        [Fact]
+        public void GetLogLevel_ReturnsInformationIfNotLoggerBase()
+        {
+            var logLevel = LogRequestHandler.GetLogLevel(Mock.Of<ILogger>());
+
+            Assert.Equal(LogLevel.Information, logLevel);
         }
 
         private async Task HandleResponseAsync(
             LogLevel handlerLogLevel,
             LogLevel requestLogLevel,
             MessageResponseCode responseCode,
-            Func<string, Expression<Action<ILogger>>> expressionFunc)
+            bool expectLog)
         {
-            var handler = new LogRequestHandler(_logger.Object, handlerLogLevel);
+            var test = new LogRequestHandlerTest(handlerLogLevel);
             var payload = new LogRequest(requestLogLevel, message: "a");
             var request = MessageUtilities.Create(
                 requestId: "b",
@@ -204,30 +256,44 @@ namespace NuGet.Protocol.Plugins.Tests
                 method: MessageMethod.Log,
                 payload: payload);
 
-            _responseHandler.Setup(x => x.SendResponseAsync(
+            var responseHandler = new Mock<IResponseHandler>(MockBehavior.Strict);
+
+            responseHandler.Setup(x => x.SendResponseAsync(
                     It.Is<Message>(message => message == request),
                     It.Is<LogResponse>(response => response.ResponseCode == responseCode),
                     It.IsAny<CancellationToken>()))
                 .Returns(Task.FromResult(0));
 
-            if (expressionFunc != null)
+            if (expectLog)
             {
-                var expression = expressionFunc(payload.Message);
-
-                _logger.Setup(expression);
+                test.Logger.Setup(
+                    x => x.Log(It.Is<ILogMessage>(m => m.Message == payload.Message && m.Level == requestLogLevel)));
             }
 
-            await handler.HandleResponseAsync(request, _responseHandler.Object, CancellationToken.None);
+            await test.Handler.HandleResponseAsync(
+                Mock.Of<IConnection>(),
+                request,
+                responseHandler.Object,
+                CancellationToken.None);
 
-            if (expressionFunc == null)
-            {
-                _logger.Verify();
-            }
-            else
-            {
-                var expression = expressionFunc(payload.Message);
+            test.Logger.Verify();
+        }
 
-                _logger.Verify(expression, Times.Once);
+        private sealed class LogRequestHandlerTest
+        {
+            internal LogRequestHandler Handler { get; }
+            internal Mock<ILogger> Logger { get; }
+            internal Message Request { get; }
+
+            internal LogRequestHandlerTest(LogLevel logLevel = LogLevel.Debug)
+            {
+                Logger = new Mock<ILogger>(MockBehavior.Strict);
+                Handler = new LogRequestHandler(new CollectorLogger(Logger.Object, logLevel));
+                Request = MessageUtilities.Create(
+                    requestId: "a",
+                    type: MessageType.Request,
+                    method: MessageMethod.Log,
+                    payload: new LogRequest(LogLevel.Debug, "b"));
             }
         }
     }

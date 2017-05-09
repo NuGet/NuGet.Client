@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -18,7 +18,8 @@ namespace NuGet.Protocol.Plugins
     /// </remarks>
     public sealed class Sender : ISender
     {
-        private bool _isConnected;
+        private bool _hasConnected;
+        private bool _isClosed;
         private bool _isDisposed;
         private readonly object _sendLock;
         private readonly TextWriter _textWriter;
@@ -49,6 +50,8 @@ namespace NuGet.Protocol.Plugins
                 return;
             }
 
+            Close();
+
             _textWriter.Dispose();
 
             GC.SuppressFinalize(this);
@@ -57,42 +60,35 @@ namespace NuGet.Protocol.Plugins
         }
 
         /// <summary>
-        /// Asynchronously closes the connection.
+        /// Closes the connection.
         /// </summary>
-        /// <returns>A task that represents the asynchronous operation.</returns>
-        /// <exception cref="ObjectDisposedException">Thrown if this object is disposed.</exception>
-        public Task CloseAsync()
+        /// <remarks>This does not call <see cref="IDisposable.Dispose" />.</remarks>
+        public void Close()
         {
-            ThrowIfDisposed();
-
-            Dispose();
-
-            return Task.FromResult(0);
+            _isClosed = true;
         }
 
         /// <summary>
-        /// Asynchronously connects.
+        /// Connects.
         /// </summary>
-        /// <param name="cancellationToken">A cancellation token.</param>
-        /// <returns>A task that represents the asynchronous operation.</returns>
         /// <exception cref="ObjectDisposedException">Thrown if this object is disposed.</exception>
+        /// <exception cref="InvalidOperationException">Thrown if this object is closed.</exception>
         /// <exception cref="InvalidOperationException">Thrown if this method has already been called.</exception>
-        /// <exception cref="OperationCanceledException">Thrown if <paramref name="cancellationToken" />
-        /// is cancelled.</exception>
-        public Task ConnectAsync(CancellationToken cancellationToken)
+        public void Connect()
         {
             ThrowIfDisposed();
 
-            if (_isConnected)
+            if (_isClosed)
+            {
+                throw new InvalidOperationException(Strings.Plugin_ConnectionIsClosed);
+            }
+
+            if (_hasConnected)
             {
                 throw new InvalidOperationException(Strings.Plugin_ConnectionAlreadyStarted);
             }
 
-            cancellationToken.ThrowIfCancellationRequested();
-
-            _isConnected = true;
-
-            return Task.FromResult(0);
+            _hasConnected = true;
         }
 
         /// <summary>
@@ -102,6 +98,7 @@ namespace NuGet.Protocol.Plugins
         /// <param name="cancellationToken">A cancellation token.</param>
         /// <returns>A task that represents the asynchronous operation.</returns>
         /// <exception cref="ObjectDisposedException">Thrown if this object is disposed.</exception>
+        /// <exception cref="InvalidOperationException">Thrown if <see cref="Connect" /> has not been called.</exception>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="message" /> is <c>null</c>.</exception>
         /// <exception cref="OperationCanceledException">Thrown if <paramref name="cancellationToken" />
         /// is cancelled.</exception>
@@ -116,18 +113,26 @@ namespace NuGet.Protocol.Plugins
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            lock(_sendLock)
+            if (!_hasConnected)
             {
-                using (var jsonWriter = new JsonTextWriter(_textWriter))
+                throw new InvalidOperationException(Strings.Plugin_NotConnected);
+            }
+
+            if (!_isClosed)
+            {
+                lock (_sendLock)
                 {
-                    jsonWriter.CloseOutput = false;
+                    using (var jsonWriter = new JsonTextWriter(_textWriter))
+                    {
+                        jsonWriter.CloseOutput = false;
 
-                    JsonSerializationUtilities.Serialize(jsonWriter, message);
+                        JsonSerializationUtilities.Serialize(jsonWriter, message);
 
-                    // We need to terminate JSON objects with a delimiter (i.e.:  a single
-                    // newline sequence) to signal to the receiver when to stop reading.
-                    _textWriter.WriteLine();
-                    _textWriter.Flush();
+                        // We need to terminate JSON objects with a delimiter (i.e.:  a single
+                        // newline sequence) to signal to the receiver when to stop reading.
+                        _textWriter.WriteLine();
+                        _textWriter.Flush();
+                    }
                 }
             }
 

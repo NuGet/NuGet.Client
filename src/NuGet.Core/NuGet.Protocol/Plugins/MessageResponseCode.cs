@@ -16,6 +16,11 @@ namespace NuGet.Protocol.Plugins
         /// <summary>
         /// The response is error.
         /// </summary>
-        Error
+        Error,
+
+        /// <summary>
+        /// The response is not found.
+        /// </summary>
+        NotFound
     }
 }

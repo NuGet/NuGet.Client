@@ -11,6 +11,16 @@ namespace NuGet.Protocol.Plugins
     public interface IPlugin : IDisposable
     {
         /// <summary>
+        /// Occurs before the plugin closes.
+        /// </summary>
+        event EventHandler BeforeClose;
+
+        /// <summary>
+        /// Occurs when the plugin has closed.
+        /// </summary>
+        event EventHandler Closed;
+
+        /// <summary>
         /// Gets the connection for the plugin.
         /// </summary>
         IConnection Connection { get; }
@@ -21,8 +31,19 @@ namespace NuGet.Protocol.Plugins
         string FilePath { get; }
 
         /// <summary>
+        /// Gets the unique identifier for the plugin.
+        /// </summary>
+        string Id { get; }
+
+        /// <summary>
         /// Gets the name of the plugin.
         /// </summary>
         string Name { get; }
+
+        /// <summary>
+        /// Closes the plugin.
+        /// </summary>
+        /// <remarks>This does not call <see cref="IDisposable.Dispose" />.</remarks>
+        void Close();
     }
 }

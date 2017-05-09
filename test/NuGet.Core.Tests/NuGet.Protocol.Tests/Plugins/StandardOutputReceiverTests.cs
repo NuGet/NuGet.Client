@@ -1,9 +1,8 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Threading;
-using System.Threading.Tasks;
 using Moq;
 using Xunit;
 
@@ -46,41 +45,41 @@ namespace NuGet.Protocol.Plugins.Tests
         }
 
         [Fact]
-        public async Task ConnectAsync_ThrowsIfDisposed()
+        public void Connect_ThrowsIfDisposed()
         {
             var receiver = new StandardOutputReceiver(Mock.Of<IPluginProcess>());
 
             receiver.Dispose();
 
-            var exception = await Assert.ThrowsAsync<ObjectDisposedException>(
-                () => receiver.ConnectAsync(CancellationToken.None));
+            var exception = Assert.Throws<ObjectDisposedException>(() => receiver.Connect());
 
             Assert.Equal(nameof(StandardOutputReceiver), exception.ObjectName);
         }
 
         [Fact]
-        public async Task ConnectAsync_ThrowsIfAlreadyConnected()
+        public void Connect_ThrowsIfClosed()
         {
             using (var receiver = new StandardOutputReceiver(Mock.Of<IPluginProcess>()))
             {
-                await receiver.ConnectAsync(CancellationToken.None);
+                receiver.Close();
 
-                await Assert.ThrowsAsync<InvalidOperationException>(() => receiver.ConnectAsync(CancellationToken.None));
+                Assert.Throws<InvalidOperationException>(() => receiver.Connect());
             }
         }
 
         [Fact]
-        public async Task ConnectAsync_ThrowsIfCancelled()
+        public void Connect_ThrowsIfAlreadyConnected()
         {
             using (var receiver = new StandardOutputReceiver(Mock.Of<IPluginProcess>()))
             {
-                await Assert.ThrowsAsync<OperationCanceledException>(
-                    () => receiver.ConnectAsync(new CancellationToken(canceled: true)));
+                receiver.Connect();
+
+                Assert.Throws<InvalidOperationException>(() => receiver.Connect());
             }
         }
 
         [Fact]
-        public async Task MessageReceived_RaisedForSingleMessage()
+        public void MessageReceived_RaisedForSingleMessage()
         {
             var json = "{\"RequestId\":\"a\",\"Type\":\"Response\",\"Method\":\"None\"}";
             var requestId = "a";
@@ -103,7 +102,7 @@ namespace NuGet.Protocol.Plugins.Tests
                     receivedEvent.Set();
                 };
 
-                await receiver.ConnectAsync(CancellationToken.None);
+                receiver.Connect();
 
                 receivedEvent.Wait();
 
@@ -117,7 +116,7 @@ namespace NuGet.Protocol.Plugins.Tests
         }
 
         [Fact]
-        public async Task MessageReceived_HandlesNullAndEmptyString()
+        public void MessageReceived_HandlesNullAndEmptyString()
         {
             var json = "{\"RequestId\":\"a\",\"Type\":\"Response\",\"Method\":\"None\"}";
             var requestId = "a";
@@ -147,7 +146,7 @@ namespace NuGet.Protocol.Plugins.Tests
                     receivedEvent.Set();
                 };
 
-                await receiver.ConnectAsync(CancellationToken.None);
+                receiver.Connect();
 
                 receivedEvent.Wait();
 
@@ -161,7 +160,7 @@ namespace NuGet.Protocol.Plugins.Tests
         }
 
         [Fact]
-        public async Task Faulted_RaisedForParseError()
+        public void Faulted_RaisedForParseError()
         {
             var invalidJson = "text";
             var process = new Mock<IPluginProcess>();
@@ -181,7 +180,7 @@ namespace NuGet.Protocol.Plugins.Tests
                     faultedEvent.Set();
                 };
 
-                await receiver.ConnectAsync(CancellationToken.None);
+                receiver.Connect();
 
                 faultedEvent.Wait();
 
@@ -195,7 +194,7 @@ namespace NuGet.Protocol.Plugins.Tests
         [Theory]
         [InlineData("1")]
         [InlineData("[]")]
-        public async Task Faulted_RaisedForDeserializationOfInvalidJson(string invalidJson)
+        public void Faulted_RaisedForDeserializationOfInvalidJson(string invalidJson)
         {
             var process = new Mock<IPluginProcess>();
 
@@ -214,7 +213,7 @@ namespace NuGet.Protocol.Plugins.Tests
                     faultedEvent.Set();
                 };
 
-                await receiver.ConnectAsync(CancellationToken.None);
+                receiver.Connect();
 
                 faultedEvent.Wait();
 
@@ -226,7 +225,7 @@ namespace NuGet.Protocol.Plugins.Tests
         }
 
         [Fact]
-        public async Task Faulted_RaisedForDeserializationError()
+        public void Faulted_RaisedForDeserializationError()
         {
             var json = "{\"RequestId\":\"a\",\"Type\":\"Response\",\"Method\":\"None\",\"Payload\":\"{\\\"d\\\":\\\"e\\\"}\"}\r\n";
 
@@ -247,7 +246,7 @@ namespace NuGet.Protocol.Plugins.Tests
                     faultedEvent.Set();
                 };
 
-                await receiver.ConnectAsync(CancellationToken.None);
+                receiver.Connect();
 
                 faultedEvent.Wait();
 
@@ -271,7 +270,7 @@ namespace NuGet.Protocol.Plugins.Tests
         [InlineData("{\"RequestId\":\"a\",\"Type\":\"Response\",\"Method\":null}\r\n")]
         [InlineData("{\"RequestId\":\"a\",\"Type\":\"Response\",\"Method\":\"\"}\r\n")]
         [InlineData("{\"RequestId\":\"a\",\"Type\":\"Response\",\"Method\":\"abc\"}\r\n")]
-        public async Task Faulted_RaisedForInvalidMessage(string json)
+        public void Faulted_RaisedForInvalidMessage(string json)
         {
             var process = new Mock<IPluginProcess>();
 
@@ -290,7 +289,7 @@ namespace NuGet.Protocol.Plugins.Tests
                     faultedEvent.Set();
                 };
 
-                await receiver.ConnectAsync(CancellationToken.None);
+                receiver.Connect();
 
                 faultedEvent.Wait();
 
@@ -300,43 +299,28 @@ namespace NuGet.Protocol.Plugins.Tests
         }
 
         [Fact]
-        public async Task CloseAsync_ThrowsIfDisposed()
-        {
-            var receiver = new StandardOutputReceiver(Mock.Of<IPluginProcess>());
-
-            receiver.Dispose();
-
-            var exception = await Assert.ThrowsAsync<ObjectDisposedException>(() => receiver.CloseAsync());
-
-            Assert.Equal(nameof(StandardOutputReceiver), exception.ObjectName);
-        }
-
-        [Fact]
-        public async Task CloseAsync_IsNotIdempotent()
+        public void Close_IsIdempotent()
         {
             using (var receiver = new StandardOutputReceiver(Mock.Of<IPluginProcess>()))
             {
-                await receiver.ConnectAsync(CancellationToken.None);
+                receiver.Connect();
 
-                await receiver.CloseAsync();
-
-                var exception = await Assert.ThrowsAsync<ObjectDisposedException>(() => receiver.CloseAsync());
-
-                Assert.Equal(nameof(StandardOutputReceiver), exception.ObjectName);
+                receiver.Close();
+                receiver.Close();
             }
         }
 
         [Fact]
-        public async Task CloseAsync_CanBeCalledWithoutConnectAsync()
+        public void Close_CanBeCalledWithoutConnectAsync()
         {
             using (var receiver = new StandardOutputReceiver(Mock.Of<IPluginProcess>()))
             {
-                await receiver.CloseAsync();
+                receiver.Close();
             }
         }
 
         [Fact]
-        public async Task CloseAsync_CancelsReading()
+        public void Close_CancelsReading()
         {
             var process = new Mock<IPluginProcess>(MockBehavior.Strict);
 
@@ -345,8 +329,8 @@ namespace NuGet.Protocol.Plugins.Tests
 
             using (var receiver = new StandardOutputReceiver(process.Object))
             {
-                await receiver.ConnectAsync(CancellationToken.None);
-                await receiver.CloseAsync();
+                receiver.Connect();
+                receiver.Close();
             }
 
             process.Verify(x => x.CancelRead(), Times.Once);

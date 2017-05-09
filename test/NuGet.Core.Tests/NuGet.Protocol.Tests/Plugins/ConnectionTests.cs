@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -98,6 +98,27 @@ namespace NuGet.Protocol.Plugins.Tests
             {
                 test.Connection.Dispose();
                 test.Connection.Dispose();
+            }
+        }
+
+        [Fact]
+        public void Dispose_ClosesConnection()
+        {
+            using (var test = new ConnectionTest())
+            {
+                Assert.Equal(ConnectionState.ReadyToConnect, test.Connection.State);
+
+                test.Connection.Dispose();
+
+                Assert.Equal(ConnectionState.Closed, test.Connection.State);
+            }
+        }
+
+        [Fact]
+        public void Dispose_DisposesDisposables()
+        {
+            using (var test = new MockConnectionTest())
+            {
             }
         }
 
@@ -217,7 +238,37 @@ namespace NuGet.Protocol.Plugins.Tests
         }
 
         [Fact]
-        public async Task CloseAsync_ClosesConnection()
+        public void Close_ClosesCloseables()
+        {
+            var dispatcher = new Mock<IMessageDispatcher>(MockBehavior.Strict);
+            var sender = new Mock<ISender>(MockBehavior.Strict);
+            var receiver = new Mock<IReceiver>(MockBehavior.Strict);
+
+            dispatcher.Setup(x => x.SetConnection(It.IsNotNull<IConnection>()));
+            dispatcher.Setup(x => x.Close());
+            sender.Setup(x => x.Close());
+            receiver.Setup(x => x.Close());
+
+            using (var connection = new Connection(
+                dispatcher.Object,
+                sender.Object,
+                receiver.Object,
+                ConnectionOptions.CreateDefault()))
+            {
+                connection.Close();
+
+                sender.Verify();
+                receiver.Verify();
+                dispatcher.Verify();
+
+                dispatcher.Setup(x => x.Dispose());
+                sender.Setup(x => x.Dispose());
+                receiver.Setup(x => x.Dispose());
+            }
+        }
+
+        [Fact]
+        public async Task Close_SetsStateToClosed()
         {
             using (var test = new ConnectAsyncTest(ConnectionOptions.CreateDefault(), ConnectionOptions.CreateDefault()))
             {
@@ -227,7 +278,7 @@ namespace NuGet.Protocol.Plugins.Tests
 
                 Assert.Equal(ConnectionState.Connected, test.LocalToRemoteConnection.State);
 
-                await test.LocalToRemoteConnection.CloseAsync();
+                test.LocalToRemoteConnection.Close();
 
                 Assert.Equal(ConnectionState.Closed, test.LocalToRemoteConnection.State);
             }
@@ -355,20 +406,75 @@ namespace NuGet.Protocol.Plugins.Tests
 
             using (var test = new ConnectionTest())
             {
-                await Assert.ThrowsAsync<InvalidOperationException>(() => test.Connection.SendAsync(message, CancellationToken.None));
+                await Assert.ThrowsAsync<InvalidOperationException>(
+                    () => test.Connection.SendAsync(message, CancellationToken.None));
+            }
+        }
+
+        [Fact]
+        public async Task SendAsync_NoOpsIfClosed()
+        {
+            using (var test = new MockConnectionTest())
+            {
+                var message = new Message(
+                    requestId: "a",
+                    type: MessageType.Request,
+                    method: MessageMethod.Initialize);
+
+                test.Connection.Close();
+
+                await test.Connection.SendAsync(message, CancellationToken.None);
+            }
+        }
+
+        [Fact]
+        public async Task SendRequestAndReceiveResponseAsync_ThrowsIfNotConnected()
+        {
+            using (var test = new ConnectionTest())
+            {
+                await Assert.ThrowsAsync<InvalidOperationException>(
+                    () => test.Connection.SendRequestAndReceiveResponseAsync<HandshakeRequest, HandshakeResponse>(
+                        MessageMethod.Handshake,
+                        new HandshakeRequest(ProtocolConstants.CurrentVersion, ProtocolConstants.CurrentVersion),
+                        CancellationToken.None));
             }
         }
 
         [Fact]
         public async Task SendRequestAndReceiveResponseAsync_ThrowsIfCancelled()
         {
-            using (var test = new ConnectionTest())
+            using (var test = new ConnectAsyncTest(ConnectionOptions.CreateDefault(), ConnectionOptions.CreateDefault()))
             {
+                await Task.WhenAll(
+                    test.RemoteToLocalConnection.ConnectAsync(test.CancellationToken),
+                    test.LocalToRemoteConnection.ConnectAsync(test.CancellationToken));
+
                 await Assert.ThrowsAsync<OperationCanceledException>(
-                    () => test.Connection.SendRequestAndReceiveResponseAsync<LogRequest, LogResponse>(
+                    () => test.LocalToRemoteConnection.SendRequestAndReceiveResponseAsync<LogRequest, LogResponse>(
                         MessageMethod.Log,
                         new LogRequest(LogLevel.Debug, "a"),
                         new CancellationToken(canceled: true)));
+            }
+        }
+
+        [Fact]
+        public async Task SendRequestAndReceiveResponseAsync_NoOpsIfClosed()
+        {
+            using (var test = new MockConnectionTest())
+            {
+                var message = new Message(
+                    requestId: "a",
+                    type: MessageType.Request,
+                    method: MessageMethod.Initialize);
+
+                test.Connection.Close();
+
+                var response = await test.Connection.SendRequestAndReceiveResponseAsync<HandshakeRequest, HandshakeResponse>(
+                    MessageMethod.Handshake,
+                    new HandshakeRequest(ProtocolConstants.CurrentVersion, ProtocolConstants.CurrentVersion),
+                    CancellationToken.None);
+
+                Assert.Null(response);
             }
         }
 
@@ -430,9 +536,6 @@ namespace NuGet.Protocol.Plugins.Tests
         private sealed class ConnectionTest : IDisposable
         {
             private readonly SimulatedIpc _simulatedIpc;
-            private readonly Sender _sender;
-            private readonly Receiver _receiver;
-            private readonly MessageDispatcher _dispatcher;
             private bool _isDisposed;
 
             internal Connection Connection { get; }
@@ -441,11 +544,11 @@ namespace NuGet.Protocol.Plugins.Tests
             {
                 var cancellationTokenSource = new CancellationTokenSource();
                 _simulatedIpc = SimulatedIpc.Create(cancellationTokenSource.Token);
-                _sender = new Sender(_simulatedIpc.RemoteStandardOutputForRemote);
-                _receiver = new StandardInputReceiver(_simulatedIpc.RemoteStandardInputForRemote);
-                _dispatcher = new MessageDispatcher(new RequestHandlers(), new RequestIdGenerator());
+                var sender = new Sender(_simulatedIpc.RemoteStandardOutputForRemote);
+                var receiver = new StandardInputReceiver(_simulatedIpc.RemoteStandardInputForRemote);
+                var dispatcher = new MessageDispatcher(new RequestHandlers(), new RequestIdGenerator());
                 var options = ConnectionOptions.CreateDefault();
-                Connection = new Connection(_dispatcher, _sender, _receiver, options);
+                Connection = new Connection(dispatcher, sender, receiver, options);
             }
 
             public void Dispose()
@@ -457,13 +560,48 @@ namespace NuGet.Protocol.Plugins.Tests
 
                 _simulatedIpc.Dispose();
                 Connection.Dispose();
-                _sender.Dispose();
-                _receiver.Dispose();
-                _dispatcher.Dispose();
 
                 GC.SuppressFinalize(this);
 
                 _isDisposed = true;
+            }
+        }
+
+        private sealed class MockConnectionTest : IDisposable
+        {
+            internal Connection Connection { get; }
+            internal Mock<IMessageDispatcher> Dispatcher { get; }
+            internal Mock<ISender> Sender { get; }
+            internal Mock<IReceiver> Receiver { get; }
+
+            internal MockConnectionTest()
+            {
+                Dispatcher = new Mock<IMessageDispatcher>(MockBehavior.Strict);
+                Sender = new Mock<ISender>(MockBehavior.Strict);
+                Receiver = new Mock<IReceiver>(MockBehavior.Strict);
+
+                Dispatcher.Setup(x => x.SetConnection(It.IsNotNull<IConnection>()));
+                Dispatcher.Setup(x => x.Close());
+                Dispatcher.Setup(x => x.Dispose());
+                Sender.Setup(x => x.Close());
+                Sender.Setup(x => x.Dispose());
+                Receiver.Setup(x => x.Close());
+                Receiver.Setup(x => x.Dispose());
+
+                Connection = new Connection(
+                    Dispatcher.Object,
+                    Sender.Object,
+                    Receiver.Object,
+                    ConnectionOptions.CreateDefault());
+            }
+
+            public void Dispose()
+            {
+                Connection.Dispose();
+
+                Dispatcher.Verify();
+                Sender.Verify();
+                Receiver.Verify();
             }
         }
 
@@ -479,17 +617,20 @@ namespace NuGet.Protocol.Plugins.Tests
                 _payload = payload;
             }
 
-            public Task HandleCancelAsync(Message request, CancellationToken cancellationToken)
+            public Task HandleCancelAsync(
+                IConnection connection,
+                Message request,
+                IResponseHandler responseHandler,
+                CancellationToken cancellationToken)
             {
                 throw new NotImplementedException();
             }
 
-            public Task HandleProgressAsync(Message request, CancellationToken cancellationToken)
-            {
-                throw new NotImplementedException();
-            }
-
-            public Task HandleResponseAsync(Message request, IResponseHandler responseHandler, CancellationToken cancellationToken)
+            public Task HandleResponseAsync(
+                IConnection connection,
+                Message request,
+                IResponseHandler responseHandler,
+                CancellationToken cancellationToken)
             {
                 return responseHandler.SendResponseAsync(request, _payload, cancellationToken);
             }

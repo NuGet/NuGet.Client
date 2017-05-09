@@ -401,9 +401,9 @@ The "ms" should be localized to the abbreviation for milliseconds.</comment>
     <value>The enum value '{0}' is unrecognized.</value>
     <comment>{0} is an undefined enum value</comment>
   </data>
-  <data name="Plugin_UnrecognizedMessageType" xml:space="preserve">
-    <value>The message type '{0}' is unrecognized.</value>
-    <comment>{0} is a undefined message type enum value</comment>
+  <data name="Plugin_InvalidMessageType" xml:space="preserve">
+    <value>The message type '{0}' is invalid at this time.</value>
+    <comment>{0} is a message type enum value</comment>
   </data>
   <data name="Plugin_UnrecognizedOperationClaims" xml:space="preserve">
     <value>The operation claims are unrecognized:  {0}.</value>
@@ -436,5 +436,29 @@ The "ms" should be localized to the abbreviation for milliseconds.</comment>
   </data>
   <data name="Plugin_ProtocolException" xml:space="preserve">
     <value>A plugin protocol exception occurred.</value>
+  </data>
+  <data name="Plugin_PackageDownloadFailed" xml:space="preserve">
+    <value>Plugin '{0}' failed to download package '{1}'.</value>
+    <comment>{0} is the plugin name
+{1} is the package identity</comment>
+  </data>
+  <data name="Plugin_ConnectionIsClosed" xml:space="preserve">
+    <value>The plugin connection is closed.</value>
+  </data>
+  <data name="Plugin_FailureQueryingPackageVersions" xml:space="preserve">
+    <value>A failure occurred while attempting to query package versions for package '{0}' using the plugin at '{1}'.</value>
+    <comment>{0} is a package ID
+{0} is a file system path</comment>
+  </data>
+  <data name="Plugin_InvalidPluginFilePath" xml:space="preserve">
+    <value>The plugin file path '{0}' is invalid.</value>
+    <comment>{0} is a file system path.</comment>
+  </data>
+  <data name="Plugin_FailedOperationForPackage" xml:space="preserve">
+    <value>Plugin '{0}' failed a {1} operation for package {2}.{3}.</value>
+    <comment>{0} is the plugin name
+{1} is a plugin operation name
+{2} is a package ID
+{3} is a package version</comment>
   </data>
 </root>

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -17,7 +17,7 @@ namespace NuGet.Protocol.Plugins.Tests
         }
 
         [Fact]
-        public void Constructor_InitializesProperty()
+        public void Constructor_InitializesMessageProperty()
         {
             var message = new Message(requestId: "a", type: MessageType.Request, method: MessageMethod.None);
             var args = new MessageEventArgs(message);

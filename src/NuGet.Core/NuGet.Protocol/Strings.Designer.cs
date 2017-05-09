@@ -20,7 +20,7 @@ namespace NuGet.Protocol {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "4.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "15.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class Strings {
@@ -530,6 +530,15 @@ namespace NuGet.Protocol {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The plugin connection is closed..
+        /// </summary>
+        internal static string Plugin_ConnectionIsClosed {
+            get {
+                return ResourceManager.GetString("Plugin_ConnectionIsClosed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Plugin &apos;{0}&apos; failed with the exception:  {1}.
         /// </summary>
         internal static string Plugin_Exception {
@@ -539,11 +548,29 @@ namespace NuGet.Protocol {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Plugin &apos;{0}&apos; failed a {1} operation for package {2}.{3}..
+        /// </summary>
+        internal static string Plugin_FailedOperationForPackage {
+            get {
+                return ResourceManager.GetString("Plugin_FailedOperationForPackage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to A failure occurred while attempting to query plugin operation claims for the plugin at &apos;{0}&apos;.  Exception:  {1}.
         /// </summary>
         internal static string Plugin_FailedToQueryPluginOperationsClaims {
             get {
                 return ResourceManager.GetString("Plugin_FailedToQueryPluginOperationsClaims", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to A failure occurred while attempting to query package versions for package &apos;{0}&apos; using the plugin at &apos;{1}&apos;..
+        /// </summary>
+        internal static string Plugin_FailureQueryingPackageVersions {
+            get {
+                return ResourceManager.GetString("Plugin_FailureQueryingPackageVersions", resourceCulture);
             }
         }
         
@@ -611,11 +638,38 @@ namespace NuGet.Protocol {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The message type &apos;{0}&apos; is invalid at this time..
+        /// </summary>
+        internal static string Plugin_InvalidMessageType {
+            get {
+                return ResourceManager.GetString("Plugin_InvalidMessageType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The plugin file path &apos;{0}&apos; is invalid..
+        /// </summary>
+        internal static string Plugin_InvalidPluginFilePath {
+            get {
+                return ResourceManager.GetString("Plugin_InvalidPluginFilePath", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to A plugin is not connected..
         /// </summary>
         internal static string Plugin_NotConnected {
             get {
                 return ResourceManager.GetString("Plugin_NotConnected", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Plugin &apos;{0}&apos; failed to download package &apos;{1}&apos;..
+        /// </summary>
+        internal static string Plugin_PackageDownloadFailed {
+            get {
+                return ResourceManager.GetString("Plugin_PackageDownloadFailed", resourceCulture);
             }
         }
         
@@ -679,15 +733,6 @@ namespace NuGet.Protocol {
         internal static string Plugin_UnrecognizedEnumValue {
             get {
                 return ResourceManager.GetString("Plugin_UnrecognizedEnumValue", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The message type &apos;{0}&apos; is unrecognized..
-        /// </summary>
-        internal static string Plugin_UnrecognizedMessageType {
-            get {
-                return ResourceManager.GetString("Plugin_UnrecognizedMessageType", resourceCulture);
             }
         }
         

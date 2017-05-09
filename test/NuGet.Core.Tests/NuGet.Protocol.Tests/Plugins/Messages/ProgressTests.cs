@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -24,30 +24,34 @@ namespace NuGet.Protocol.Plugins.Tests
         }
 
         [Theory]
+        [InlineData(null)]
         [InlineData(0D)]
         [InlineData(0.5)]
         [InlineData(1D)]
-        public void Constructor_InitializesProperty(double percentage)
+        public void Constructor_InitializesPercentageProperty(double? percentage)
         {
             var progress = new Progress(percentage);
 
             Assert.Equal(percentage, progress.Percentage);
         }
 
-        [Fact]
-        public void JsonSerialization_ReturnsCorrectJson()
+        [Theory]
+        [InlineData(null, "{}")]
+        [InlineData(0.5, "{\"Percentage\":0.5}")]
+        public void JsonSerialization_ReturnsCorrectJson(double? percentage, string expectedJson)
         {
-            var progress = new Progress(percentage: 0.5);
-            var json = TestUtilities.Serialize(progress);
+            var progress = new Progress(percentage);
+            var actualJson = TestUtilities.Serialize(progress);
 
-            Assert.Equal("{\"Percentage\":0.5}", json);
+            Assert.Equal(expectedJson, actualJson);
         }
 
         [Theory]
-        [InlineData("{\"Percentage\":0}", "a", 0D)]
-        [InlineData("{\"Percentage\":0.5}", "a", 0.5)]
-        [InlineData("{\"Percentage\":1}", "a", 1D)]
-        public void JsonDeserialization_ReturnsCorrectObject(string json, string requestId, double percentage)
+        [InlineData("{}", null)]
+        [InlineData("{\"Percentage\":0}", 0D)]
+        [InlineData("{\"Percentage\":0.5}", 0.5)]
+        [InlineData("{\"Percentage\":1}", 1D)]
+        public void JsonDeserialization_ReturnsCorrectObject(string json, double? percentage)
         {
             var progress = JsonSerializationUtilities.Deserialize<Progress>(json);
 

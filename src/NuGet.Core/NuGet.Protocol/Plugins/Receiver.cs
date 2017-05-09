@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -12,6 +12,11 @@ namespace NuGet.Protocol.Plugins
     /// </summary>
     public abstract class Receiver : IReceiver
     {
+        /// <summary>
+        /// Gets a flag indicating whether or not this instance is closed.
+        /// </summary>
+        protected bool IsClosed { get; private set; }
+
         /// <summary>
         /// Gets or sets a flag indicating whether or not this instance is disposed.
         /// </summary>
@@ -28,21 +33,21 @@ namespace NuGet.Protocol.Plugins
         public event EventHandler<MessageEventArgs> MessageReceived;
 
         /// <summary>
-        /// Asynchronously closes the connection.
+        /// Closes the connection.
         /// </summary>
-        /// <returns>A task that represents the asynchronous operation.</returns>
-        /// <exception cref="ObjectDisposedException">Thrown if this object is disposed.</exception>
-        public abstract Task CloseAsync();
+        /// <remarks>This does not call <see cref="IDisposable.Dispose" />.</remarks>
+        public virtual void Close()
+        {
+            IsClosed = true;
+        }
 
         /// <summary>
-        /// Asynchronously connects.
+        /// Connects.
         /// </summary>
-        /// <param name="cancellationToken">A cancellation token.</param>
-        /// <returns>A task that represents the asynchronous operation.</returns>
         /// <exception cref="ObjectDisposedException">Thrown if this object is disposed.</exception>
-        /// <exception cref="OperationCanceledException">Thrown if <paramref name="cancellationToken" />
-        /// is cancelled.</exception>
-        public abstract Task ConnectAsync(CancellationToken cancellationToken);
+        /// <exception cref="InvalidOperationException">Thrown if this object is closed.</exception>
+        /// <exception cref="InvalidOperationException">Thrown if this method has already been called.</exception>
+        public abstract void Connect();
 
         /// <summary>
         /// Disposes of this instance.
@@ -61,6 +66,14 @@ namespace NuGet.Protocol.Plugins
         protected void FireMessageReceivedEvent(Message message)
         {
             MessageReceived?.Invoke(this, new MessageEventArgs(message));
+        }
+
+        protected void ThrowIfClosed()
+        {
+            if (IsClosed)
+            {
+                throw new InvalidOperationException(Strings.Plugin_ConnectionIsClosed);
+            }
         }
 
         protected void ThrowIfDisposed()

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 namespace NuGet.Protocol.Plugins
@@ -17,6 +17,11 @@ namespace NuGet.Protocol.Plugins
         /// The file was not found.
         /// </summary>
         NotFound,
+
+        /// <summary>
+        /// The file path was invalid (e.g.:  not rooted).
+        /// </summary>
+        InvalidFilePath,
 
         /// <summary>
         /// The file exists but it has either no embedded signature or an invalid embedded signature.

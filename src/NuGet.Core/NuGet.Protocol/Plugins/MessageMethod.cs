@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 namespace NuGet.Protocol.Plugins
@@ -14,9 +14,44 @@ namespace NuGet.Protocol.Plugins
         None,
 
         /// <summary>
+        /// Close
+        /// </summary>
+        Close,
+
+        /// <summary>
+        /// Copy files in a package
+        /// </summary>
+        CopyFilesInPackage,
+
+        /// <summary>
+        /// Copy a .nupkg file
+        /// </summary>
+        CopyNupkgFile,
+
+        /// <summary>
+        /// Get credentials
+        /// </summary>
+        GetCredentials,
+
+        /// <summary>
+        /// Get files in a package
+        /// </summary>
+        GetFilesInPackage,
+
+        /// <summary>
         /// Get operation claims
         /// </summary>
         GetOperationClaims,
+
+        /// <summary>
+        /// Get package hash
+        /// </summary>
+        GetPackageHash,
+
+        /// <summary>
+        /// Get package versions
+        /// </summary>
+        GetPackageVersions,
 
         /// <summary>
         /// Handshake
@@ -31,6 +66,26 @@ namespace NuGet.Protocol.Plugins
         /// <summary>
         /// Log
         /// </summary>
-        Log
+        Log,
+
+        /// <summary>
+        /// Monitor NuGet process exit
+        /// </summary>
+        MonitorNuGetProcessExit,
+
+        /// <summary>
+        /// Prefetch a package
+        /// </summary>
+        PrefetchPackage,
+
+        /// <summary>
+        /// Set log level
+        /// </summary>
+        SetLogLevel,
+
+        /// <summary>
+        /// Set package source credentials
+        /// </summary>
+        SetPackageSourceCredentials,
     }
 }

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -39,13 +39,20 @@ namespace NuGet.Protocol.Plugins
         SemanticVersion ProtocolVersion { get; }
 
         /// <summary>
+        /// Closes the connection.
+        /// </summary>
+        /// <remarks>This does not call <see cref="IDisposable.Dispose" />.</remarks>
+        void Close();
+
+        /// <summary>
         /// Asynchronously sends a message to the remote target.
         /// </summary>
         /// <param name="message">The message to be sent.</param>
         /// <param name="cancellationToken">A cancellation token.</param>
         /// <returns>A task that represents the asynchronous operation.</returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="message" /> is <c>null</c>.</exception>
-        /// <exception cref="OperationCanceledException">Thrown if <paramref name="cancellationToken" /> is cancelled.</exception>
+        /// <exception cref="OperationCanceledException">Thrown if <paramref name="cancellationToken" />
+        /// is cancelled.</exception>
         /// <exception cref="InvalidOperationException">Thrown if not connected.</exception>
         Task SendAsync(Message message, CancellationToken cancellationToken);
 
@@ -60,7 +67,9 @@ namespace NuGet.Protocol.Plugins
         /// <returns>A task that represents the asynchronous operation.
         /// The task result (<see cref="Task{TResult}.Result" />) returns a <typeparamref name="TInbound" />
         /// from the target.</returns>
-        /// <exception cref="OperationCanceledException">Thrown if <paramref name="cancellationToken" /> is cancelled.</exception>
+        /// <exception cref="OperationCanceledException">Thrown if <paramref name="cancellationToken" />
+        /// is cancelled.</exception>
+        /// <exception cref="InvalidOperationException">Thrown if not connected.</exception>
         Task<TInbound> SendRequestAndReceiveResponseAsync<TOutbound, TInbound>(
             MessageMethod method,
             TOutbound payload,

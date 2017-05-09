@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -17,8 +17,8 @@ namespace NuGet.Protocol.Plugins
     /// </remarks>
     public sealed class StandardInputReceiver : Receiver
     {
-        private readonly CancellationTokenSource _receiveCancellationTokenSource;
         private readonly TextReader _reader;
+        private readonly CancellationTokenSource _receiveCancellationTokenSource;
         private Task _receiveThread;
 
         /// <summary>
@@ -47,18 +47,26 @@ namespace NuGet.Protocol.Plugins
                 return;
             }
 
-            using (_receiveCancellationTokenSource)
-            {
-                _receiveCancellationTokenSource.Cancel();
+            Close();
 
-                // Do not attempt to wait on completion of the receive thread task.
-                // In scenarios where standard input is backed by a non-blocking stream
-                // (e.g.:  a MemoryStream in unit tests) waiting on the receive thread task
-                // is fine.  However, when standard input is backed by a blocking stream,
-                // reading from standard input is a blocking call, and while the receive
-                // thread is in a read call it cannot respond to cancellation requests.
-                // We would likely hang if we attempted to wait on completion of the
-                // receive thread task.
+            try
+            {
+                using (_receiveCancellationTokenSource)
+                {
+                    _receiveCancellationTokenSource.Cancel();
+
+                    // Do not attempt to wait on completion of the receive thread task.
+                    // In scenarios where standard input is backed by a non-blocking stream
+                    // (e.g.:  a MemoryStream in unit tests) waiting on the receive thread task
+                    // is fine.  However, when standard input is backed by a blocking stream,
+                    // reading from standard input is a blocking call, and while the receive
+                    // thread is in a read call it cannot respond to cancellation requests.
+                    // We would likely hang if we attempted to wait on completion of the
+                    // receive thread task.
+                }
+            }
+            catch (Exception)
+            {
             }
 
             _reader.Dispose();
@@ -69,46 +77,27 @@ namespace NuGet.Protocol.Plugins
         }
 
         /// <summary>
-        /// Asynchronously closes the connection.
+        /// Connects.
         /// </summary>
-        /// <returns>A task that represents the asynchronous operation.</returns>
         /// <exception cref="ObjectDisposedException">Thrown if this object is disposed.</exception>
-        public override Task CloseAsync()
+        /// <exception cref="InvalidOperationException">Thrown if this object is closed.</exception>
+        /// <exception cref="InvalidOperationException">Thrown if this method has already been called.</exception>
+        public override void Connect()
         {
             ThrowIfDisposed();
-
-            Dispose();
-
-            return Task.FromResult(0);
-        }
-
-        /// <summary>
-        /// Asynchronously connects.
-        /// </summary>
-        /// <param name="cancellationToken">A cancellation token.</param>
-        /// <returns>A task that represents the asynchronous operation.</returns>
-        /// <exception cref="ObjectDisposedException">Thrown if this object is disposed.</exception>
-        /// <exception cref="OperationCanceledException">Thrown if <paramref name="cancellationToken" />
-        /// is cancelled.</exception>
-        public override Task ConnectAsync(CancellationToken cancellationToken)
-        {
-            ThrowIfDisposed();
+            ThrowIfClosed();
 
             if (_receiveThread != null)
             {
                 throw new InvalidOperationException(Strings.Plugin_ConnectionAlreadyStarted);
             }
 
-            cancellationToken.ThrowIfCancellationRequested();
-
             _receiveThread = Task.Factory.StartNew(
                 Receive,
                 _receiveCancellationTokenSource.Token,
-                cancellationToken,
+                _receiveCancellationTokenSource.Token,
                 TaskCreationOptions.LongRunning | TaskCreationOptions.DenyChildAttach,
                 TaskScheduler.Default);
-
-            return Task.FromResult(0);
         }
 
         private void Receive(object state)
@@ -123,7 +112,7 @@ namespace NuGet.Protocol.Plugins
 
                 // Reading from the standard input stream is a blocking call; while we're
                 // in a read call we can't respond to cancellation requests.
-                while ((line = _reader.ReadLine()) != null)
+                while (!IsClosed && (line = _reader.ReadLine()) != null)
                 {
                     message = null;
 

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -78,25 +78,54 @@ namespace NuGet.Protocol.Plugins.Tests
         }
 
         [Fact]
+        public async Task DiscoverAsync_PerformsDiscoveryOnlyOnce()
+        {
+            using (var testDirectory = TestDirectory.Create())
+            {
+                var pluginPath = Path.Combine(testDirectory.Path, "a");
+
+                File.WriteAllText(pluginPath, string.Empty);
+
+                var responses = new Dictionary<string, bool>()
+                {
+                    { pluginPath, true }
+                };
+                var verifierStub = new EmbeddedSignatureVerifierStub(responses);
+
+                using (var discoverer = new PluginDiscoverer(pluginPath, verifierStub))
+                {
+                    var results = (await discoverer.DiscoverAsync(CancellationToken.None)).ToArray();
+
+                    Assert.Equal(1, results.Length);
+                    Assert.Equal(1, verifierStub.IsValidCallCount);
+
+                    results = (await discoverer.DiscoverAsync(CancellationToken.None)).ToArray();
+
+                    Assert.Equal(1, results.Length);
+                    Assert.Equal(1, verifierStub.IsValidCallCount);
+                }
+            }
+        }
+
+        [Fact]
         public async Task DiscoverAsync_HandlesAllPluginFileStates()
         {
             using (var testDirectory = TestDirectory.Create())
             {
-                var pluginPaths = new[] { "b", "c" }
+                var pluginPaths = new[] { "a", "b", "c", "d" }
                     .Select(fileName => Path.Combine(testDirectory.Path, fileName))
                     .ToArray();
 
-                foreach (var pluginPath in pluginPaths)
-                {
-                    File.WriteAllText(pluginPath, string.Empty);
-                }
+                File.WriteAllText(pluginPaths[1], string.Empty);
+                File.WriteAllText(pluginPaths[2], string.Empty);
 
                 var responses = new Dictionary<string, bool>()
                 {
-                    { "a", false },
                     { pluginPaths[0], false },
-                    { pluginPaths[1], true },
-                    { "d", false },
+                    { pluginPaths[1], false },
+                    { pluginPaths[2], true },
+                    { pluginPaths[3], false },
+                    { "e", true }
                 };
                 var verifierStub = new EmbeddedSignatureVerifierStub(responses);
                 var rawPluginPaths = string.Join(";", responses.Keys);
@@ -105,24 +134,48 @@ namespace NuGet.Protocol.Plugins.Tests
                 {
                     var results = (await discoverer.DiscoverAsync(CancellationToken.None)).ToArray();
 
-                    Assert.Equal(4, results.Length);
+                    Assert.Equal(5, results.Length);
 
-                    Assert.Equal("a", results[0].PluginFile.Path);
+                    Assert.Equal(pluginPaths[0], results[0].PluginFile.Path);
                     Assert.Equal(PluginFileState.NotFound, results[0].PluginFile.State);
-                    Assert.Equal("A plugin was not found at path 'a'.", results[0].Message);
+                    Assert.Equal($"A plugin was not found at path '{pluginPaths[0]}'.", results[0].Message);
 
-                    Assert.Equal(pluginPaths[0], results[1].PluginFile.Path);
+                    Assert.Equal(pluginPaths[1], results[1].PluginFile.Path);
                     Assert.Equal(PluginFileState.InvalidEmbeddedSignature, results[1].PluginFile.State);
-                    Assert.Equal($"The plugin at '{pluginPaths[0]}' did not have a valid embedded signature.", results[1].Message);
+                    Assert.Equal($"The plugin at '{pluginPaths[1]}' did not have a valid embedded signature.", results[1].Message);
 
-                    Assert.Equal(pluginPaths[1], results[2].PluginFile.Path);
+                    Assert.Equal(pluginPaths[2], results[2].PluginFile.Path);
                     Assert.Equal(PluginFileState.Valid, results[2].PluginFile.State);
                     Assert.Null(results[2].Message);
 
-                    Assert.Equal("d", results[3].PluginFile.Path);
+                    Assert.Equal(pluginPaths[3], results[3].PluginFile.Path);
                     Assert.Equal(PluginFileState.NotFound, results[3].PluginFile.State);
-                    Assert.Equal("A plugin was not found at path 'd'.", results[3].Message);
+                    Assert.Equal($"A plugin was not found at path '{pluginPaths[3]}'.", results[3].Message);
+
+                    Assert.Equal("e", results[4].PluginFile.Path);
+                    Assert.Equal(PluginFileState.InvalidFilePath, results[4].PluginFile.State);
+                    Assert.Equal($"The plugin file path 'e' is invalid.", results[4].Message);
                 }
+            }
+        }
+
+        [Theory]
+        [InlineData("a")]
+        [InlineData(@"\a")]
+        [InlineData(@".\a")]
+        [InlineData(@"..\a")]
+        public async Task DiscoverAsync_DisallowsNonRootedFilePaths(string pluginPath)
+        {
+            var responses = new Dictionary<string, bool>() { { pluginPath, true } };
+            var verifierStub = new EmbeddedSignatureVerifierStub(responses);
+
+            using (var discoverer = new PluginDiscoverer(pluginPath, verifierStub))
+            {
+                var results = (await discoverer.DiscoverAsync(CancellationToken.None)).ToArray();
+
+                Assert.Equal(1, results.Length);
+                Assert.Equal(pluginPath, results[0].PluginFile.Path);
+                Assert.Equal(PluginFileState.InvalidFilePath, results[0].PluginFile.State);
             }
         }
 
@@ -161,6 +214,8 @@ namespace NuGet.Protocol.Plugins.Tests
         {
             private readonly Dictionary<string, bool> _responses;
 
+            internal int IsValidCallCount { get; private set; }
+
             public EmbeddedSignatureVerifierStub(Dictionary<string, bool> responses)
             {
                 _responses = responses;
@@ -168,6 +223,8 @@ namespace NuGet.Protocol.Plugins.Tests
 
             public override bool IsValid(string filePath)
             {
+                ++IsValidCallCount;
+
                 bool value;
 
                 Assert.True(_responses.TryGetValue(filePath, out value));

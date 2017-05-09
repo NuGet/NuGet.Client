@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -189,8 +189,9 @@ namespace NuGet.PackageManagement
         {
             // FileSystemPackagesConfig supports id.version formats, if the version is excluded use the normal v2 format
             var feedType = excludeVersion ? FeedType.FileSystemV2 : FeedType.FileSystemPackagesConfig;
+            var resolver = new PackagePathResolver(packagesFolderPath, !excludeVersion);
 
-            PackagesFolderNuGetProject = new FolderNuGetProject(packagesFolderPath, excludeVersion);
+            PackagesFolderNuGetProject = new FolderNuGetProject(packagesFolderPath, resolver);
             // Capturing it locally is important since it allows for the instance to cache packages for the lifetime
             // of the closure \ NuGetPackageManager.
             PackagesFolderSourceRepository = SourceRepositoryProvider.CreateRepository(

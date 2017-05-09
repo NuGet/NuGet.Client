@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -16,49 +16,49 @@ namespace NuGet.Protocol.Plugins.Tests
 {
     public class PluginResourceProviderTests
     {
-        private const string _environmentVariable = "NUGET_PLUGIN_PATHS";
-        private readonly PluginResourceProvider _provider;
-
-        public PluginResourceProviderTests()
-        {
-            _provider = new PluginResourceProvider();
-        }
-
-        [Fact]
-        public void EnvironmentVariableReader_IsEnvironmentVariableWrapper()
-        {
-            Assert.IsType<EnvironmentVariableWrapper>(PluginResourceProvider.EnvironmentVariableReader);
-        }
+        private const string _pluginPathsEnvironmentVariable = "NUGET_PLUGIN_PATHS";
+        private const string _pluginRequestTimeoutEnvironmentVariable = "NUGET_PLUGIN_REQUEST_TIMEOUT_IN_SECONDS";
+        private const string _sourceUri = "https://unit.test";
 
         [Fact]
         public void Before_IsEmpty()
         {
-            Assert.Empty(_provider.Before);
+            var provider = new PluginResourceProvider();
+
+            Assert.Empty(provider.Before);
         }
 
         [Fact]
         public void After_IsEmpty()
         {
-            Assert.Empty(_provider.After);
+            var provider = new PluginResourceProvider();
+
+            Assert.Empty(provider.After);
         }
 
         [Fact]
         public void Name_IsPluginResourceProvider()
         {
-            Assert.Equal(nameof(PluginResourceProvider), _provider.Name);
+            var provider = new PluginResourceProvider();
+
+            Assert.Equal(nameof(PluginResourceProvider), provider.Name);
         }
 
         [Fact]
         public void ResourceType_IsPluginResource()
         {
-            Assert.Equal(typeof(PluginResource), _provider.ResourceType);
+            var provider = new PluginResourceProvider();
+
+            Assert.Equal(typeof(PluginResource), provider.ResourceType);
         }
 
         [Fact]
         public async Task TryCreate_ThrowsForNullSource()
         {
+            var provider = new PluginResourceProvider();
+
             var exception = await Assert.ThrowsAsync<ArgumentNullException>(
-                () => _provider.TryCreate(source: null, cancellationToken: CancellationToken.None));
+                () => provider.TryCreate(source: null, cancellationToken: CancellationToken.None));
 
             Assert.Equal("source", exception.ParamName);
         }
@@ -66,10 +66,11 @@ namespace NuGet.Protocol.Plugins.Tests
         [Fact]
         public async Task TryCreate_ThrowsIfCancelled()
         {
-            var sourceRepository = CreateSourceRepository(serviceIndexResource: null);
+            var sourceRepository = CreateSourceRepository(serviceIndexResource: null, sourceUri: _sourceUri);
+            var provider = new PluginResourceProvider();
 
             await Assert.ThrowsAsync<OperationCanceledException>(
-                () => _provider.TryCreate(sourceRepository, new CancellationToken(canceled: true)));
+                () => provider.TryCreate(sourceRepository, new CancellationToken(canceled: true)));
         }
 
         [Theory]
@@ -77,71 +78,111 @@ namespace NuGet.Protocol.Plugins.Tests
         [InlineData("")]
         public async Task TryCreate_ReturnsFalseForNullOrEmptyEnvironmentVariable(string pluginsPath)
         {
-            var serviceIndex = new ServiceIndexResourceV3(JObject.Parse("{}"), DateTime.UtcNow);
-            var sourceRepository = CreateSourceRepository(serviceIndex);
+            var test = new PluginResourceProviderTest(
+                serviceIndexJson: "{}",
+                sourceUri: _sourceUri,
+                pluginsPath: pluginsPath);
 
-            using (new EnvironmentVariableReaderResetter())
-            {
-                var reader = new Mock<IEnvironmentVariableReader>(MockBehavior.Strict);
+            var result = await test.Provider.TryCreate(test.SourceRepository, CancellationToken.None);
 
-                reader.Setup(x => x.GetEnvironmentVariable(It.Is<string>(value => value == _environmentVariable)))
-                    .Returns(pluginsPath);
-
-                PluginResourceProvider.Reinitialize(reader.Object);
-
-                var result = await _provider.TryCreate(sourceRepository, CancellationToken.None);
-
-                Assert.False(result.Item1);
-                Assert.Null(result.Item2);
-            }
+            Assert.False(result.Item1);
+            Assert.Null(result.Item2);
         }
 
         [Fact]
         public async Task TryCreate_ReturnsFalseIfNoServiceIndexResourceV3()
         {
-            var sourceRepository = CreateSourceRepository(serviceIndexResource: null);
+            var test = new PluginResourceProviderTest(
+                serviceIndexJson: null,
+                sourceUri: _sourceUri);
 
-            using (new EnvironmentVariableReaderResetter())
-            {
-                var reader = new Mock<IEnvironmentVariableReader>(MockBehavior.Strict);
+            var result = await test.Provider.TryCreate(test.SourceRepository, CancellationToken.None);
 
-                reader.Setup(x => x.GetEnvironmentVariable(It.Is<string>(value => value == _environmentVariable)))
-                    .Returns("a");
+            Assert.False(result.Item1);
+            Assert.Null(result.Item2);
+        }
 
-                PluginResourceProvider.Reinitialize(reader.Object);
+        [Theory]
+        [InlineData("\\unit\test")]
+        [InlineData("file:///C:/unit/test")]
+        public async Task TryCreate_ReturnsFalseIfPackageSourceIsNotHttpOrHttps(string sourceUri)
+        {
+            var test = new PluginResourceProviderTest(
+                serviceIndexJson: "{}",
+                sourceUri: sourceUri);
 
-                var result = await _provider.TryCreate(sourceRepository, CancellationToken.None);
+            var result = await test.Provider.TryCreate(test.SourceRepository, CancellationToken.None);
 
-                Assert.False(result.Item1);
-                Assert.Null(result.Item2);
-            }
+            Assert.False(result.Item1);
+            Assert.Null(result.Item2);
         }
 
         [PlatformFact(Platform.Windows)]
         public async Task TryCreate_ReturnsPluginResource()
         {
-            var serviceIndex = new ServiceIndexResourceV3(JObject.Parse("{}"), DateTime.UtcNow);
-            var sourceRepository = CreateSourceRepository(serviceIndex);
+            var test = new PluginResourceProviderTest(
+                serviceIndexJson: "{}",
+                sourceUri: _sourceUri);
 
-            using (new EnvironmentVariableReaderResetter())
+            var result = await test.Provider.TryCreate(test.SourceRepository, CancellationToken.None);
+
+            Assert.True(result.Item1);
+            Assert.IsType<PluginResource>(result.Item2);
+        }
+
+        [Fact]
+        public void Reinitialize_ThrowsForNullReader()
+        {
+            var provider = new PluginResourceProvider();
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => provider.Reinitialize(reader: null));
+
+            Assert.Equal("reader", exception.ParamName);
+        }
+
+        [Fact]
+        public void Reinitialize_SetsNewReader()
+        {
+            var reader = Mock.Of<IEnvironmentVariableReader>();
+            var provider = new PluginResourceProvider();
+
+            provider.Reinitialize(reader);
+
+            Assert.Same(reader, PluginResourceProvider.EnvironmentVariableReader);
+        }
+
+        private sealed class PluginResourceProviderTest
+        {
+            internal PluginResourceProvider Provider { get; }
+            internal SourceRepository SourceRepository { get; }
+
+            internal PluginResourceProviderTest(string serviceIndexJson, string sourceUri, string pluginsPath = "a")
             {
+                var serviceIndex = string.IsNullOrEmpty(serviceIndexJson)
+                    ? null : new ServiceIndexResourceV3(JObject.Parse(serviceIndexJson), DateTime.UtcNow);
+
+                SourceRepository = CreateSourceRepository(serviceIndex, sourceUri);
+
                 var reader = new Mock<IEnvironmentVariableReader>(MockBehavior.Strict);
 
-                reader.Setup(x => x.GetEnvironmentVariable(It.Is<string>(value => value == _environmentVariable)))
-                    .Returns("a");
+                reader.Setup(x => x.GetEnvironmentVariable(
+                        It.Is<string>(value => value == _pluginPathsEnvironmentVariable)))
+                    .Returns(pluginsPath);
+                reader.Setup(x => x.GetEnvironmentVariable(
+                        It.Is<string>(value => value == _pluginRequestTimeoutEnvironmentVariable)))
+                    .Returns("b");
 
-                PluginResourceProvider.Reinitialize(reader.Object);
+                Provider = new PluginResourceProvider();
 
-                var result = await _provider.TryCreate(sourceRepository, CancellationToken.None);
-
-                Assert.True(result.Item1);
-                Assert.IsType<PluginResource>(result.Item2);
+                Provider.Reinitialize(reader.Object);
             }
         }
 
-        private static SourceRepository CreateSourceRepository(ServiceIndexResourceV3 serviceIndexResource)
+        private static SourceRepository CreateSourceRepository(
+            ServiceIndexResourceV3 serviceIndexResource,
+            string sourceUri)
         {
-            var packageSource = new PackageSource(source: "a");
+            var packageSource = new PackageSource(sourceUri);
             var provider = new Mock<ServiceIndexResourceV3Provider>();
 
             provider.Setup(x => x.Name)
@@ -155,21 +196,6 @@ namespace NuGet.Protocol.Plugins.Tests
                 .Returns(Task.FromResult(tryCreateResult));
 
             return new SourceRepository(packageSource, new[] { provider.Object });
-        }
-
-        private sealed class EnvironmentVariableReaderResetter : IDisposable
-        {
-            private readonly IEnvironmentVariableReader _originalReader;
-
-            internal EnvironmentVariableReaderResetter()
-            {
-                _originalReader = PluginResourceProvider.EnvironmentVariableReader;
-            }
-
-            public void Dispose()
-            {
-                PluginResourceProvider.Reinitialize(_originalReader);
-            }
         }
     }
 }

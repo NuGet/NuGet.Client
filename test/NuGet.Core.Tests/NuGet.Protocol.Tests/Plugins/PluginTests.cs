@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -76,15 +76,107 @@ namespace NuGet.Protocol.Plugins.Tests
         {
             var filePath = Path.Combine(".", "a", "b", "c.d");
             var connection = Mock.Of<IConnection>();
-            var process = Mock.Of<IPluginProcess>();
             var isOwnProcess = false;
             var idleTimeout = Timeout.InfiniteTimeSpan;
 
-            using (var plugin = new Plugin(filePath, connection, process, isOwnProcess, idleTimeout))
+            using (var plugin = new Plugin(filePath, connection, Mock.Of<IPluginProcess>(), isOwnProcess, idleTimeout))
             {
                 Assert.Same(connection, plugin.Connection);
                 Assert.Equal(filePath, plugin.FilePath);
                 Assert.Equal("c", plugin.Name);
+            }
+        }
+
+        [Fact]
+        public void Close_FiresBeforeCloseThenClosedEvents()
+        {
+            var filePath = Path.Combine(".", "a");
+            var connection = Mock.Of<IConnection>();
+            var isOwnProcess = false;
+            var idleTimeout = Timeout.InfiniteTimeSpan;
+
+            using (var plugin = new Plugin(filePath, connection, Mock.Of<IPluginProcess>(), isOwnProcess, idleTimeout))
+            {
+                var wasBeforeCloseFired = false;
+                var wasClosedFired = false;
+
+                plugin.BeforeClose += (sender, args) =>
+                {
+                    wasBeforeCloseFired = true;
+
+                    Assert.False(wasClosedFired);
+                };
+
+                plugin.Closed += (sender, args) => wasClosedFired = true;
+
+                plugin.Close();
+
+                Assert.True(wasBeforeCloseFired);
+                Assert.True(wasClosedFired);
+            }
+        }
+
+        [Fact]
+        public void Close_HandlesExceptionsInEventHandler()
+        {
+            var filePath = Path.Combine(".", "a");
+            var connection = Mock.Of<IConnection>();
+            var isOwnProcess = false;
+            var idleTimeout = Timeout.InfiniteTimeSpan;
+
+            using (var plugin = new Plugin(filePath, connection, Mock.Of<IPluginProcess>(), isOwnProcess, idleTimeout))
+            {
+                plugin.BeforeClose += (sender, args) => throw new Exception("thrown in event handler");
+                plugin.Closed += (sender, args) => throw new Exception("thrown in event handler");
+
+                plugin.Close();
+            }
+        }
+
+        [Fact]
+        public void Close_ClosesConnection()
+        {
+            var filePath = Path.Combine(".", "a");
+            var connection = new Mock<IConnection>(MockBehavior.Strict);
+            var isOwnProcess = false;
+            var idleTimeout = Timeout.InfiniteTimeSpan;
+
+            connection.Setup(x => x.Close());
+
+            using (var plugin = new Plugin(
+                filePath,
+                connection.Object,
+                Mock.Of<IPluginProcess>(),
+                isOwnProcess,
+                idleTimeout))
+            {
+                connection.Verify();
+
+                connection.Setup(x => x.Dispose());
+            }
+        }
+
+        [Fact]
+        public void Close_IsIdempotent()
+        {
+            var filePath = Path.Combine(".", "a");
+            var connection = Mock.Of<IConnection>();
+            var isOwnProcess = false;
+            var idleTimeout = Timeout.InfiniteTimeSpan;
+
+            using (var plugin = new Plugin(filePath, connection, Mock.Of<IPluginProcess>(), isOwnProcess, idleTimeout))
+            {
+                var beforeCloseEventCount = 0;
+                var closedEventCount = 0;
+
+                plugin.BeforeClose += (sender, args) => ++beforeCloseEventCount;
+                plugin.Closed += (sender, args) => ++closedEventCount;
+
+                plugin.Close();
+                plugin.Close();
+
+                Assert.Equal(1, beforeCloseEventCount);
+                Assert.Equal(1, closedEventCount);
             }
         }
 
@@ -95,6 +187,7 @@ namespace NuGet.Protocol.Plugins.Tests
             var process = new Mock<IPluginProcess>(MockBehavior.Strict);
 
             connection.Setup(x => x.Dispose());
+            connection.Setup(x => x.Close());
             process.Setup(x => x.Kill());
             process.Setup(x => x.Dispose());
 
@@ -108,8 +201,29 @@ namespace NuGet.Protocol.Plugins.Tests
             }
 
             connection.Verify(x => x.Dispose(), Times.Once);
+            connection.Verify(x => x.Close(), Times.Once);
             process.Verify(x => x.Kill(), Times.Once);
             process.Verify(x => x.Dispose(), Times.Once);
+        }
+
+        [Fact]
+        public void Dispose_CallsClose()
+        {
+            var filePath = Path.Combine(".", "a");
+            var connection = Mock.Of<IConnection>();
+            var isOwnProcess = false;
+            var idleTimeout = Timeout.InfiniteTimeSpan;
+            var wasBeforeCloseFired = false;
+            var wasClosedFired = false;
+
+            using (var plugin = new Plugin(filePath, connection, Mock.Of<IPluginProcess>(), isOwnProcess, idleTimeout))
+            {
+                plugin.BeforeClose += (sender, args) => wasBeforeCloseFired = true;
+                plugin.Closed += (sender, args) => wasClosedFired = true;
+            }
+
+            Assert.True(wasBeforeCloseFired);
+            Assert.True(wasClosedFired);
         }
 
         [Fact]

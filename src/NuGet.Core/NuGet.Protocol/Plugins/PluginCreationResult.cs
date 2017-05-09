@@ -27,17 +27,29 @@ namespace NuGet.Protocol.Plugins
         public IPlugin Plugin { get; }
 
         /// <summary>
+        /// Gets a plugin multiclient utilities.
+        /// </summary>
+        public IPluginMulticlientUtilities PluginMulticlientUtilities { get; }
+
+        /// <summary>
         /// Instantiates a new <see cref="PluginCreationResult" /> class.
         /// </summary>
         /// <param name="plugin">A plugin.</param>
+        /// <param name="utilities">A plugin multiclient utilities.</param>
         /// <param name="claims">The plugin's operation claims.</param>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="plugin" /> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="utilities" /> is <c>null</c>.</exception>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="claims" /> is <c>null</c>.</exception>
-        public PluginCreationResult(IPlugin plugin, IReadOnlyList<OperationClaim> claims)
+        public PluginCreationResult(IPlugin plugin, IPluginMulticlientUtilities utilities, IReadOnlyList<OperationClaim> claims)
         {
             if (plugin == null)
             {
                 throw new ArgumentNullException(nameof(plugin));
+            }
+
+            if (utilities == null)
+            {
+                throw new ArgumentNullException(nameof(utilities));
             }
 
             if (claims == null)
@@ -46,6 +58,7 @@ namespace NuGet.Protocol.Plugins
             }
 
             Plugin = plugin;
+            PluginMulticlientUtilities = utilities;
             Claims = claims;
         }
 

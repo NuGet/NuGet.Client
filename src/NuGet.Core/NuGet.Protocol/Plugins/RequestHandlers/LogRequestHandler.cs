@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -13,8 +13,8 @@ namespace NuGet.Protocol.Plugins
     /// </summary>
     public sealed class LogRequestHandler : IRequestHandler
     {
-        private readonly ILogger _logger;
-        private readonly LogLevel _logLevel;
+        private ILogger _logger;
+        private LogLevel _logLevel;
 
         /// <summary>
         /// Gets the <see cref="CancellationToken" /> for a request.
@@ -25,41 +25,32 @@ namespace NuGet.Protocol.Plugins
         /// Instantiates a new instance of the <see cref="LogRequestHandler" /> class.
         /// </summary>
         /// <param name="logger">A logger.</param>
-        /// <param name="logLevel">The default logging level.</param>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="logger" /> is <c>null</c>.</exception>
-        public LogRequestHandler(ILogger logger, LogLevel logLevel)
+        public LogRequestHandler(ILogger logger)
         {
             if (logger == null)
             {
                 throw new ArgumentNullException(nameof(logger));
             }
 
-            _logger = logger;
-            _logLevel = logLevel;
+            SetLogger(logger);
         }
 
         /// <summary>
         /// Asynchronously handles progress notifications for a request.
         /// </summary>
+        /// <param name="connection">The connection.</param>
         /// <param name="request">A request message.</param>
+        /// <param name="responseHandler">A response handler.</param>
         /// <param name="cancellationToken">A cancellation token.</param>
         /// <returns>A task that represents the asynchronous operation.</returns>
         /// <exception cref="NotSupportedException">Cancellation requests are not supported
         /// by this request handler.</exception>
-        public Task HandleCancelAsync(Message request, CancellationToken cancellationToken)
-        {
-            throw new NotSupportedException();
-        }
-
-        /// <summary>
-        /// Asynchronously handles progress notifications for a request.
-        /// </summary>
-        /// <param name="request">A request message.</param>
-        /// <param name="cancellationToken">A cancellation token.</param>
-        /// <returns>A task that represents the asynchronous operation.</returns>
-        /// <exception cref="NotSupportedException">Progress requests are not supported
-        /// by this request handler.</exception>
-        public Task HandleProgressAsync(Message request, CancellationToken cancellationToken)
+        public Task HandleCancelAsync(
+            IConnection connection,
+            Message request,
+            IResponseHandler responseHandler,
+            CancellationToken cancellationToken)
         {
             throw new NotSupportedException();
         }
@@ -67,17 +58,29 @@ namespace NuGet.Protocol.Plugins
         /// <summary>
         /// Asynchronously handles responding to a request.
         /// </summary>
+        /// <param name="connection">The connection.</param>
         /// <param name="request">A request message.</param>
         /// <param name="responseHandler">A response handler.</param>
         /// <param name="cancellationToken">A cancellation token.</param>
         /// <returns>A task that represents the asynchronous operation.</returns>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="connection" />
+        /// is <c>null</c>.</exception>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="request" /> is <c>null</c>.</exception>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="responseHandler" />
         /// is <c>null</c>.</exception>
         /// <exception cref="OperationCanceledException">Thrown if <paramref name="cancellationToken" />
         /// is cancelled.</exception>
-        public async Task HandleResponseAsync(Message request, IResponseHandler responseHandler, CancellationToken cancellationToken)
+        public async Task HandleResponseAsync(
+            IConnection connection,
+            Message request,
+            IResponseHandler responseHandler,
+            CancellationToken cancellationToken)
         {
+            if (connection == null)
+            {
+                throw new ArgumentNullException(nameof(connection));
+            }
+
             if (request == null)
             {
                 throw new ArgumentNullException(nameof(request));
@@ -107,6 +110,50 @@ namespace NuGet.Protocol.Plugins
             var response = new LogResponse(responseCode);
 
             await responseHandler.SendResponseAsync(request, response, cancellationToken);
+        }
+
+        /// <summary>
+        /// Sets the logger.
+        /// </summary>
+        /// <param name="logger">A logger.</param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="logger" /> is <c>null</c>.</exception>
+        public void SetLogger(ILogger logger)
+        {
+            if (logger == null)
+            {
+                throw new ArgumentNullException(nameof(logger));
+            }
+
+            if (ReferenceEquals(_logger, logger))
+            {
+                return;
+            }
+
+            _logger = logger;
+            _logLevel = GetLogLevel(logger);
+        }
+
+        /// <summary>
+        /// Gets the log level of a logger.
+        /// </summary>
+        /// <param name="logger">A logger.</param>
+        /// <returns>A log level.</returns>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="logger" /> is <c>null</c>.</exception>
+        public static LogLevel GetLogLevel(ILogger logger)
+        {
+            if (logger == null)
+            {
+                throw new ArgumentNullException(nameof(logger));
+            }
+
+            var loggerBase = logger as LoggerBase;
+
+            if (loggerBase != null)
+            {
+                return loggerBase.VerbosityLevel;
+            }
+
+            return LogLevel.Information;
         }
 
         private void Log(LogRequest request)

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
@@ -8,6 +8,7 @@ namespace NuGet.Test.TestExtensions.TestablePlugin
     internal sealed class Arguments
     {
         internal ushort PortNumber { get; private set; }
+        internal int TestRunnerProcessId { get; private set; }
 
         private Arguments() { }
 
@@ -16,6 +17,7 @@ namespace NuGet.Test.TestExtensions.TestablePlugin
             arguments = null;
 
             ushort portNumber = 0;
+            var testRunnerProcessId = 0;
             var isPlugin = false;
 
             for (var i = 0; i < args.Count; ++i)
@@ -30,7 +32,9 @@ namespace NuGet.Test.TestExtensions.TestablePlugin
                             return false;
                         }
 
-                        if (!ushort.TryParse(args[++i], out portNumber))
+                        ++i;
+
+                        if (!ushort.TryParse(args[i], out portNumber))
                         {
                             return false;
                         }
@@ -38,6 +42,20 @@ namespace NuGet.Test.TestExtensions.TestablePlugin
 
                     case "-plugin":
                         isPlugin = true;
+                        break;
+
+                    case "-testrunnerprocessid":
+                        if (i + 1 == args.Count)
+                        {
+                            return false;
+                        }
+
+                        ++i;
+
+                        if (!int.TryParse(args[i], out testRunnerProcessId))
+                        {
+                            return false;
+                        }
                         break;
 
                     default:
@@ -52,7 +70,8 @@ namespace NuGet.Test.TestExtensions.TestablePlugin
 
             arguments = new Arguments()
             {
-                PortNumber = portNumber
+                PortNumber = portNumber,
+                TestRunnerProcessId = testRunnerProcessId
             };
 
             return true;

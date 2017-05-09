@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -12,13 +12,23 @@ namespace NuGet.Protocol.Plugins
     /// </summary>
     public sealed class Plugin : IPlugin
     {
-        private readonly IConnection _connection;
+        private bool _isClosed;
         private readonly TimeSpan _idleTimeout;
         private readonly Timer _idleTimer;
         private readonly object _idleTimerLock;
         private bool _isDisposed;
         private readonly bool _isOwnProcess;
         private readonly IPluginProcess _process;
+
+        /// <summary>
+        /// Occurs before the plugin closes.
+        /// </summary>
+        public event EventHandler BeforeClose;
+
+        /// <summary>
+        /// Occurs when the plugin has closed.
+        /// </summary>
+        public event EventHandler Closed;
 
         /// <summary>
         /// Occurs when a plugin process has exited.
@@ -38,15 +48,17 @@ namespace NuGet.Protocol.Plugins
         /// <summary>
         /// Gets the connection for the plugin
         /// </summary>
-        public IConnection Connection
-        {
-            get { return _connection; }
-        }
+        public IConnection Connection { get; }
 
         /// <summary>
         /// Gets the file path for the plugin.
         /// </summary>
         public string FilePath { get; }
+
+        /// <summary>
+        /// Gets the unique identifier for the plugin.
+        /// </summary>
+        public string Id { get; }
 
         /// <summary>
         /// Gets the name of the plugin.
@@ -95,7 +107,8 @@ namespace NuGet.Protocol.Plugins
 
             Name = Path.GetFileNameWithoutExtension(filePath);
             FilePath = filePath;
-            _connection = connection;
+            Id = Guid.NewGuid().ToString("N");
+            Connection = connection;
             _process = process;
             _isOwnProcess = isOwnProcess;
             _idleTimerLock = new object();
@@ -106,8 +119,8 @@ namespace NuGet.Protocol.Plugins
                 _idleTimer = new Timer(OnIdleTimer, state: null, dueTime: idleTimeout, period: Timeout.InfiniteTimeSpan);
             }
 
-            _connection.Faulted += OnFaulted;
-            _connection.MessageReceived += OnMessageReceived;
+            Connection.Faulted += OnFaulted;
+            Connection.MessageReceived += OnMessageReceived;
 
             if (!isOwnProcess)
             {
@@ -125,10 +138,9 @@ namespace NuGet.Protocol.Plugins
                 return;
             }
 
-            _connection.Faulted -= OnFaulted;
-            _connection.MessageReceived -= OnMessageReceived;
+            Close();
 
-            _connection.Dispose();
+            Connection.Dispose();
 
             lock (_idleTimerLock)
             {
@@ -140,13 +152,55 @@ namespace NuGet.Protocol.Plugins
                 _process.Exited -= OnExited;
 
                 _process.Kill();
-
                 _process.Dispose();
             }
 
             GC.SuppressFinalize(this);
 
             _isDisposed = true;
+        }
+
+        /// <summary>
+        /// Closes the plugin.
+        /// </summary>
+        /// <remarks>This does not call <see cref="IDisposable.Dispose" />.</remarks>
+        public void Close()
+        {
+            if (!_isClosed)
+            {
+                Connection.Faulted -= OnFaulted;
+                Connection.MessageReceived -= OnMessageReceived;
+
+                FireBeforeClose();
+
+                Connection.Close();
+
+                FireClosed();
+
+                _isClosed = true;
+            }
+        }
+
+        private void FireBeforeClose()
+        {
+            try
+            {
+                BeforeClose?.Invoke(this, EventArgs.Empty);
+            }
+            catch (Exception)
+            {
+            }
+        }
+
+        private void FireClosed()
+        {
+            try
+            {
+                Closed?.Invoke(this, EventArgs.Empty);
+            }
+            catch (Exception)
+            {
+            }
         }
 
         private void OnExited(object sender, EventArgs e)

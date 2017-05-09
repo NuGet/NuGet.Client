@@ -1,10 +1,11 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Protocol.Core.Types;
+using NuGet.Protocol.Plugins;
 
 namespace NuGet.Protocol
 {
@@ -51,10 +52,26 @@ namespace NuGet.Protocol
             if (pluginResource != null)
             {
                 var serviceIndexResource = await source.GetResourceAsync<ServiceIndexResourceV3>(cancellationToken);
+                var httpHandlerResource = await source.GetResourceAsync<HttpHandlerResource>(cancellationToken);
 
-                if (serviceIndexResource != null)
+                if (serviceIndexResource != null && httpHandlerResource != null)
                 {
-                    resource = new DownloadResourcePlugin(pluginResource);
+                    var result = await pluginResource.GetPluginAsync(OperationClaim.DownloadPackage, cancellationToken);
+
+                    if (result != null)
+                    {
+                        var credentialsProvider = new PluginCredentialsProvider(
+                            result.Plugin,
+                            source.PackageSource,
+                            httpHandlerResource.ClientHandler?.Proxy,
+                            HttpHandlerResourceV3.CredentialService);
+
+                        resource = new DownloadResourcePlugin(
+                            result.Plugin,
+                            result.PluginMulticlientUtilities,
+                            source.PackageSource,
+                            credentialsProvider);
+                    }
                 }
             }
 

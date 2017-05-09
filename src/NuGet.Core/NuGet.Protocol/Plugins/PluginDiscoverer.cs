@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Common;
 
 namespace NuGet.Protocol.Plugins
 {
@@ -71,8 +72,6 @@ namespace NuGet.Protocol.Plugins
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            PluginUtilities.WaitForAttachIfPluginDebuggingIsEnabled();
-
             if (_results != null)
             {
                 return _results;
@@ -82,16 +81,20 @@ namespace NuGet.Protocol.Plugins
 
             try
             {
+                if (_results != null)
+                {
+                    return _results;
+                }
+
                 _pluginFiles = GetPluginFiles(cancellationToken);
                 var results = new List<PluginDiscoveryResult>();
 
                 for (var i = 0; i < _pluginFiles.Count; ++i)
                 {
                     var pluginFile = _pluginFiles[i];
-                    var state = PluginUtilities.IsDebuggingPlugin() ? PluginFileState.Valid : pluginFile.State;
                     string message = null;
 
-                    switch (state)
+                    switch (pluginFile.State)
                     {
                         case PluginFileState.Valid:
                             break;
@@ -100,6 +103,13 @@ namespace NuGet.Protocol.Plugins
                             message = string.Format(
                                 CultureInfo.CurrentCulture,
                                 Strings.Plugin_FileNotFound,
+                                pluginFile.Path);
+                            break;
+
+                        case PluginFileState.InvalidFilePath:
+                            message = string.Format(
+                                CultureInfo.CurrentCulture,
+                                Strings.Plugin_InvalidPluginFilePath,
                                 pluginFile.Path);
                             break;
 
@@ -141,16 +151,23 @@ namespace NuGet.Protocol.Plugins
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                if (File.Exists(filePath))
+                if (PathValidator.IsValidLocalPath(filePath) || PathValidator.IsValidUncPath(filePath))
                 {
-                    var isValid = _verifier.IsValid(filePath);
-                    var state = isValid ? PluginFileState.Valid : PluginFileState.InvalidEmbeddedSignature;
+                    if (File.Exists(filePath))
+                    {
+                        var isValid = _verifier.IsValid(filePath);
+                        var state = isValid ? PluginFileState.Valid : PluginFileState.InvalidEmbeddedSignature;
 
-                    files.Add(new PluginFile(filePath, state));
+                        files.Add(new PluginFile(filePath, state));
+                    }
+                    else
+                    {
+                        files.Add(new PluginFile(filePath, PluginFileState.NotFound));
+                    }
                 }
                 else
                 {
-                    files.Add(new PluginFile(filePath, PluginFileState.NotFound));
+                    files.Add(new PluginFile(filePath, PluginFileState.InvalidFilePath));
                 }
             }
 

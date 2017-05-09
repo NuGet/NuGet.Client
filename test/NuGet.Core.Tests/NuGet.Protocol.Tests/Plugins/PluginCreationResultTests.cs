@@ -14,16 +14,34 @@ namespace NuGet.Protocol.Plugins.Tests
         public void Constructor_PluginClaims_ThrowsForNullPlugin()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new PluginCreationResult(plugin: null, claims: new List<OperationClaim>()));
+                () => new PluginCreationResult(
+                    plugin: null,
+                    utilities: Mock.Of<IPluginMulticlientUtilities>(),
+                    claims: new List<OperationClaim>()));
 
             Assert.Equal("plugin", exception.ParamName);
+        }
+
+        [Fact]
+        public void Constructor_PluginClaims_ThrowsForNullPluginMulticlientUtilities()
+        {
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => new PluginCreationResult(
+                    Mock.Of<IPlugin>(),
+                    utilities: null,
+                    claims: new List<OperationClaim>()));
+
+            Assert.Equal("utilities", exception.ParamName);
         }
 
         [Fact]
         public void Constructor_PluginClaims_ThrowsForNullClaims()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new PluginCreationResult(Mock.Of<IPlugin>(), claims: null));
+                () => new PluginCreationResult(
+                    Mock.Of<IPlugin>(),
+                    Mock.Of<IPluginMulticlientUtilities>(),
+                    claims: null));
 
             Assert.Equal("claims", exception.ParamName);
         }
@@ -43,21 +61,24 @@ namespace NuGet.Protocol.Plugins.Tests
         public void Constructor_PluginClaims_InitializesProperties()
         {
             var plugin = Mock.Of<IPlugin>();
+            var utilities = Mock.Of<IPluginMulticlientUtilities>();
             var claims = new List<OperationClaim>();
 
-            var result = new PluginCreationResult(plugin, claims);
+            var result = new PluginCreationResult(plugin, utilities, claims);
 
             Assert.Same(plugin, result.Plugin);
+            Assert.Same(utilities, result.PluginMulticlientUtilities);
             Assert.Same(claims, result.Claims);
             Assert.Null(result.Message);
         }
 
         [Fact]
-        public void Constructor_Message_InitializesProperty()
+        public void Constructor_Message_InitializesProperties()
         {
             var result = new PluginCreationResult(message: "a");
 
             Assert.Null(result.Plugin);
+            Assert.Null(result.PluginMulticlientUtilities);
             Assert.Null(result.Claims);
             Assert.Equal("a", result.Message);
         }

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -59,37 +59,36 @@ namespace NuGet.Protocol.Plugins.Tests
         }
 
         [Fact]
-        public async Task ConnectAsync_ThrowsIfDisposed()
+        public void Connect_ThrowsIfDisposed()
         {
             var sender = new Sender(TextWriter.Null);
 
             sender.Dispose();
 
-            var exception = await Assert.ThrowsAsync<ObjectDisposedException>(
-                () => sender.ConnectAsync(CancellationToken.None));
+            var exception = Assert.Throws<ObjectDisposedException>(() => sender.Connect());
 
             Assert.Equal(nameof(Sender), exception.ObjectName);
         }
 
         [Fact]
-        public async Task ConnectAsync_ThrowsIfAlreadyConnected()
+        public void Connect_ThrowsIfClosed()
         {
             using (var sender = new Sender(TextWriter.Null))
             {
-                await sender.ConnectAsync(CancellationToken.None);
+                sender.Close();
 
-                await Assert.ThrowsAsync<InvalidOperationException>(
-                    () => sender.ConnectAsync(CancellationToken.None));
+                Assert.Throws<InvalidOperationException>(() => sender.Connect());
             }
         }
 
         [Fact]
-        public async Task ConnectAsync_ThrowsIfCancelled()
+        public void Connect_ThrowsIfAlreadyConnected()
         {
             using (var sender = new Sender(TextWriter.Null))
             {
-                await Assert.ThrowsAsync<OperationCanceledException>(
-                    () => sender.ConnectAsync(new CancellationToken(canceled: true)));
+                sender.Connect();
+
+                Assert.Throws<InvalidOperationException>(() => sender.Connect());
             }
         }
 
@@ -98,7 +97,7 @@ namespace NuGet.Protocol.Plugins.Tests
         {
             using (var sender = new Sender(TextWriter.Null))
             {
-                await sender.ConnectAsync(CancellationToken.None);
+                sender.Connect();
 
                 var exception = await Assert.ThrowsAsync<ArgumentNullException>(
                     () => sender.SendAsync(message: null, cancellationToken: CancellationToken.None));
@@ -125,7 +124,7 @@ namespace NuGet.Protocol.Plugins.Tests
         {
             using (var sender = new Sender(TextWriter.Null))
             {
-                await sender.ConnectAsync(CancellationToken.None);
+                sender.Connect();
 
                 await Assert.ThrowsAsync<OperationCanceledException>(
                     () => sender.SendAsync(_message, new CancellationToken(canceled: true)));
@@ -141,11 +140,38 @@ namespace NuGet.Protocol.Plugins.Tests
 
                 using (var sender = new Sender(writer))
                 {
-                    await sender.ConnectAsync(CancellationToken.None);
+                    sender.Connect();
 
                     await Assert.ThrowsAsync<ObjectDisposedException>(
                         () => sender.SendAsync(_message, CancellationToken.None));
                 }
+            }
+        }
+
+        [Fact]
+        public async Task SendAsync_ThrowsIfNotConnected()
+        {
+            using (var sender = new Sender(TextWriter.Null))
+            {
+                await Assert.ThrowsAsync<InvalidOperationException>(
+                    () => sender.SendAsync(_message, CancellationToken.None));
+            }
+        }
+
+        [Fact]
+        public async Task SendAsync_NoOpsIfClosed()
+        {
+            using (var writer = new StringWriter())
+            using (var sender = new Sender(writer))
+            {
+                sender.Connect();
+                sender.Close();
+
+                await sender.SendAsync(_message, CancellationToken.None);
+
+                var actualResult = writer.ToString();
+
+                Assert.Equal(string.Empty, actualResult);
             }
         }
 
@@ -155,7 +181,7 @@ namespace NuGet.Protocol.Plugins.Tests
             using (var writer = new StringWriter())
             using (var sender = new Sender(writer))
             {
-                await sender.ConnectAsync(CancellationToken.None);
+                sender.Connect();
 
                 await sender.SendAsync(_message, CancellationToken.None);
 
@@ -166,7 +192,7 @@ namespace NuGet.Protocol.Plugins.Tests
         }
 
         [Fact]
-        public async Task CloseAsync_ThrowsIfDisposed()
+        public void Close_DoesNotThrowIfDisposed()
         {
             using (var writer = new StringWriter())
             {
@@ -174,51 +200,46 @@ namespace NuGet.Protocol.Plugins.Tests
 
                 sender.Dispose();
 
-                var exception = await Assert.ThrowsAsync<ObjectDisposedException>(() => sender.CloseAsync());
-
-                Assert.Equal(nameof(Sender), exception.ObjectName);
+                sender.Close();
             }
         }
 
         [Fact]
-        public async Task CloseAsync_IsNotIdempotent()
+        public void Close_IsIdempotent()
         {
             using (var sender = new Sender(TextWriter.Null))
             {
-                await sender.ConnectAsync(CancellationToken.None);
+                sender.Connect();
 
-                await sender.CloseAsync();
-
-                var exception = await Assert.ThrowsAsync<ObjectDisposedException>(() => sender.CloseAsync());
-
-                Assert.Equal(nameof(Sender), exception.ObjectName);
+                sender.Close();
+                sender.Close();
             }
         }
 
         [Fact]
-        public async Task CloseAsync_CanBeCalledWithoutConnectAsync()
+        public void Close_CanBeCalledWithoutConnectAsync()
         {
             using (var sender = new Sender(TextWriter.Null))
             {
-                await sender.CloseAsync();
+                sender.Close();
             }
         }
 
         [Fact]
-        public async Task CloseAsync_ClosesUnderlyingStream()
+        public async Task Close_DoesNotCloseUnderlyingStream()
         {
             using (var stream = new MemoryStream())
             using (var writer = new StreamWriter(stream))
             using (var sender = new Sender(writer))
             {
-                await sender.ConnectAsync(CancellationToken.None);
+                sender.Connect();
                 await sender.SendAsync(_message, CancellationToken.None);
 
-                await sender.CloseAsync();
+                sender.Close();
 
-                Assert.False(stream.CanSeek);
-                Assert.False(stream.CanRead);
-                Assert.False(stream.CanWrite);
+                Assert.True(stream.CanSeek);
+                Assert.True(stream.CanRead);
+                Assert.True(stream.CanWrite);
             }
         }
     }

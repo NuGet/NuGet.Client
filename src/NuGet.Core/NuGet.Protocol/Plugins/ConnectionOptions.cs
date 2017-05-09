@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -39,6 +39,20 @@ namespace NuGet.Protocol.Plugins
         /// <param name="minimumProtocolVersion">The minimum plugin protocol version.</param>
         /// <param name="handshakeTimeout">The plugin handshake timeout.</param>
         /// <param name="requestTimeout">The plugin request timeout.</param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="protocolVersion" />
+        /// is <c>null</c>.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="minimumProtocolVersion" />
+        /// is <c>null</c>.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="protocolVersion" />
+        /// is <c>null</c>.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="protocolVersion" />
+        /// is less than <paramref name="minimumProtocolVersion" />.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="handshakeTimeout" />
+        /// is either less than <see cref="ProtocolConstants.MinTimeout" /> or greater than
+        /// <see cref="ProtocolConstants.MaxTimeout" />.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="requestTimeout" />
+        /// is either less than <see cref="ProtocolConstants.MinTimeout" /> or greater than
+        /// <see cref="ProtocolConstants.MaxTimeout" />.</exception>
         public ConnectionOptions(
             SemanticVersion protocolVersion,
             SemanticVersion minimumProtocolVersion,

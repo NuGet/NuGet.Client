@@ -1,10 +1,11 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Protocol.Core.Types;
+using NuGet.Protocol.Plugins;
 
 namespace NuGet.Protocol
 {
@@ -24,7 +25,7 @@ namespace NuGet.Protocol
         }
 
         /// <summary>
-        /// Attempts to create a resource for the specified source repository.
+        /// Asynchronously attempts to create a resource for the specified source repository.
         /// </summary>
         /// <param name="source">A source repository.</param>
         /// <param name="cancellationToken">A cancellation token.</param>
@@ -50,7 +51,28 @@ namespace NuGet.Protocol
 
             if (pluginResource != null)
             {
-                resource = new PluginFindPackageByIdResource(pluginResource);
+                var serviceIndexResource = await source.GetResourceAsync<ServiceIndexResourceV3>(cancellationToken);
+                var httpHandlerResource = await source.GetResourceAsync<HttpHandlerResource>(cancellationToken);
+
+                if (serviceIndexResource != null && httpHandlerResource != null)
+                {
+                    var result = await pluginResource.GetPluginAsync(OperationClaim.DownloadPackage, cancellationToken);
+
+                    if (result != null)
+                    {
+                        var credentialsProvider = new PluginCredentialsProvider(
+                            result.Plugin,
+                            source.PackageSource,
+                            httpHandlerResource.ClientHandler?.Proxy,
+                            HttpHandlerResourceV3.CredentialService);
+
+                        resource = new PluginFindPackageByIdResource(
+                            result.Plugin,
+                            result.PluginMulticlientUtilities,
+                            source.PackageSource,
+                            credentialsProvider);
+                    }
+                }
             }
 
             return new Tuple<bool, INuGetResource>(resource != null, resource);
