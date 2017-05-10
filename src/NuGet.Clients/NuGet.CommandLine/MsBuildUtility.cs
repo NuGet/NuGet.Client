@@ -147,26 +147,25 @@ namespace NuGet.CommandLine
                 // Projects to restore
                 var isMono = RuntimeEnvironmentHelper.IsMono && !RuntimeEnvironmentHelper.IsWindows;
 
-                //Append RestoreSource from Settings
+                //Append settings
                 if (settings != null) {
                     var outputPackagesPath = SettingsUtility.GetGlobalPackagesFolder(settings);
-                    outputPackagesPath = outputPackagesPath.TrimEnd(Path.AltDirectorySeparatorChar) + "\\" ;
                     argumentBuilder.Append(" /p:RestorePackagesPath=");
-                    AppendEnvironmentAwareQuote(argumentBuilder, outputPackagesPath,isMono);
+                    argumentBuilder.Append(Escape(outputPackagesPath));
 
-                    //var packageSourceProvider = new PackageSourceProvider(settings);
-                    //var packageSourcesFromProvider = packageSourceProvider.LoadPackageSources();
-                    //var restoreSources = packageSourcesFromProvider.Select(e => e.Source);
-                    //argumentBuilder.Append(" /p:RestoreSources=");
-                    //AppendEnvironmentAwareQuote(argumentBuilder, isMono ? string.Join("\\;", restoreSources.Select(p => p)) : string.Join(";", restoreSources.Select(p => p)), isMono);
+                    var packageSourceProvider = new PackageSourceProvider(settings);
+                    var packageSourcesFromProvider = packageSourceProvider.LoadPackageSources();
+                    var restoreSources = packageSourcesFromProvider.Select(e => e.Source);
+                    argumentBuilder.Append(" /p:RestoreSources=");
+                    argumentBuilder.Append(Escape(string.Join(";", restoreSources.Select(p => p))));
 
-                    //var fallbackFolders = SettingsUtility.GetFallbackPackageFolders(settings);
-                    //argumentBuilder.Append(" /p:RestoreFallbackFolders=");
-                    //AppendQuoted(argumentBuilder, string.Join(";", fallbackFolders.Select(p => p)));
+                    var fallbackFolders = SettingsUtility.GetFallbackPackageFolders(settings);
+                    argumentBuilder.Append(" /p:RestoreFallbackFolders=");
+                    argumentBuilder.Append(Escape(string.Join(";", fallbackFolders.Select(p => p))));
 
-                    //argumentBuilder.Append(" /p:RestoreConfigFile=");
-                    //var config = settings.Priority.First();
-                    //AppendQuoted(argumentBuilder, Path.Combine(config.Root, config.FileName));
+                    argumentBuilder.Append(" /p:RestoreConfigFile=");
+                    var config = settings.Priority.First();
+                    argumentBuilder.Append(Escape(Path.Combine(config.Root, config.FileName)));
                 }
 
 
