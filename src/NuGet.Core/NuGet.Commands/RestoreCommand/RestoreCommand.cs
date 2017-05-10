@@ -86,10 +86,7 @@ namespace NuGet.Commands
                 localRepositories,
                 contextForProject);
 
-            if (!ValidateRestoreGraphs(graphs, _logger))
-            {
-                _success = false;
-            }
+            _success &= await ValidateRestoreGraphsAsync(graphs, _logger);
 
             // Check package compatibility
             var checkResults = VerifyCompatibility(
@@ -249,17 +246,58 @@ namespace NuGet.Commands
             return lockFile;
         }
 
-        private static bool ValidateRestoreGraphs(IEnumerable<RestoreTargetGraph> graphs, ILogger logger)
+        /// <summary>
+        /// Check if the given graphs are valid and log errors/warnings.
+        /// If fatal errors are encountered the rest of the errors/warnings
+        /// are not logged. This is to avoid flooding the log with long 
+        /// dependency chains for every package.
+        /// </summary>
+        private static async Task<bool> ValidateRestoreGraphsAsync(IEnumerable<RestoreTargetGraph> graphs, ILogger logger)
         {
-            foreach (var g in graphs)
+            // Check for cycles
+            var success = await ValidateCyclesAsync(graphs, logger);
+
+            if (success)
             {
-                foreach (var cycle in g.AnalyzeResult.Cycles)
+                // Check for conflicts if no cycles existed
+                success = await ValidateConflictsAsync(graphs, logger);
+            }
+
+            if (success)
+            {
+                // Log downgrades if everything else was successful
+                await LogDowngradeWarningsAsync(graphs, logger);
+            }
+
+            return success;
+        }
+
+        /// <summary>
+        /// Logs an error and returns false if any cycles exist.
+        /// </summary>
+        private static async Task<bool> ValidateCyclesAsync(IEnumerable<RestoreTargetGraph> graphs, ILogger logger)
+        {
+            foreach (var graph in graphs)
+            {
+                foreach (var cycle in graph.AnalyzeResult.Cycles)
                 {
-                    logger.Log(RestoreLogMessage.CreateError(NuGetLogCode.NU1606, Strings.Log_CycleDetected + $" {Environment.NewLine}  {cycle.GetPath()}."));
+                    var text = Strings.Log_CycleDetected + $" {Environment.NewLine}  {cycle.GetPath()}.";
+                    await logger.LogAsync(RestoreLogMessage.CreateError(NuGetLogCode.NU1606, text, cycle.Key?.Name, graph.Name));
                     return false;
                 }
+            }
 
-                foreach (var versionConflict in g.AnalyzeResult.VersionConflicts)
+            return true;
+        }
+
+        /// <summary>
+        /// Logs an error and returns false if any conflicts exist.
+        /// </summary>
+        private static async Task<bool> ValidateConflictsAsync(IEnumerable<RestoreTargetGraph> graphs, ILogger logger)
+        {
+            foreach (var graph in graphs)
+            {
+                foreach (var versionConflict in graph.AnalyzeResult.VersionConflicts)
                 {
                     var message = string.Format(
                             CultureInfo.CurrentCulture,
@@ -267,42 +305,70 @@ namespace NuGet.Commands
                             versionConflict.Selected.Key.Name)
                         + $" {Environment.NewLine} {versionConflict.Selected.GetPath()} {Environment.NewLine} {versionConflict.Conflicting.GetPath()}.";
 
-                    logger.Log(RestoreLogMessage.CreateError(NuGetLogCode.NU1607, message));
+                    await logger.LogAsync(RestoreLogMessage.CreateError(NuGetLogCode.NU1607, message, versionConflict.Selected.Key.Name, graph.Name));
                     return false;
-                }
-
-                foreach (var downgrade in g.AnalyzeResult.Downgrades)
-                {
-                    var downgraded = downgrade.DowngradedFrom;
-                    var downgradedBy = downgrade.DowngradedTo;
-
-                    // Not all dependencies have a min version, if one does not exist use 0.0.0
-                    var fromVersion = downgraded.Key.VersionRange.MinVersion ?? new NuGetVersion(0, 0, 0);
-                    var toVersion = downgradedBy.Key.VersionRange.MinVersion ?? new NuGetVersion(0, 0, 0);
-
-                    var message = string.Format(
-                            CultureInfo.CurrentCulture,
-                            Strings.Log_DowngradeWarning,
-                            downgraded.Key.Name,
-                            fromVersion,
-                            toVersion)
-                        + $" {Environment.NewLine} {downgraded.GetPath()} {Environment.NewLine} {downgradedBy.GetPath()}";
-
-                    logger.Log(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1605, message, downgraded.Key.Name, g.Name));
                 }
             }
 
             return true;
         }
 
+        /// <summary>
+        /// Log downgrade warnings from the graphs.
+        /// </summary>
+        private static Task LogDowngradeWarningsAsync(IEnumerable<RestoreTargetGraph> graphs, ILogger logger)
+        {
+            var messages = new List<RestoreLogMessage>();
+
+            foreach (var graph in graphs)
+            {
+                if (graph.AnalyzeResult.Downgrades.Count > 0)
+                {
+                    // Find all dependencies in the flattened graph that are not packages.
+                    var ignoreIds = new HashSet<string>(
+                            graph.Flattened.Where(e => e.Key.Type != LibraryType.Package)
+                                       .Select(e => e.Key.Name),
+                        StringComparer.OrdinalIgnoreCase);
+
+                    foreach (var downgrade in graph.AnalyzeResult.Downgrades)
+                    {
+                        var downgraded = downgrade.DowngradedFrom;
+                        var downgradedBy = downgrade.DowngradedTo;
+
+                        // Filter out non-package dependencies
+                        if (!ignoreIds.Contains(downgraded.Key.Name))
+                        {
+                            // Not all dependencies have a min version, if one does not exist use 0.0.0
+                            var fromVersion = downgraded.Key.VersionRange.MinVersion ?? new NuGetVersion(0, 0, 0);
+                            var toVersion = downgradedBy.Key.VersionRange.MinVersion ?? new NuGetVersion(0, 0, 0);
+
+                            var message = string.Format(
+                                    CultureInfo.CurrentCulture,
+                                    Strings.Log_DowngradeWarning,
+                                    downgraded.Key.Name,
+                                    fromVersion,
+                                    toVersion)
+                                + $" {Environment.NewLine} {downgraded.GetPath()} {Environment.NewLine} {downgradedBy.GetPath()}";
+
+                            messages.Add(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1605, message, downgraded.Key.Name, graph.Name));
+                        }
+                    }
+                }
+            }
+
+            // Merge and log messages
+            var mergedMessages = DiagnosticUtility.MergeOnTargetGraph(messages);
+            return logger.LogMessagesAsync(mergedMessages);
+        }
+
         private static IList<CompatibilityCheckResult> VerifyCompatibility(
-            PackageSpec project,
-            Dictionary<RestoreTargetGraph, Dictionary<string, LibraryIncludeFlags>> includeFlagGraphs,
-            IReadOnlyList<NuGetv3LocalRepository> localRepositories,
-            LockFile lockFile,
-            IEnumerable<RestoreTargetGraph> graphs,
-            bool validateRuntimeAssets,
-            ILogger logger)
+                PackageSpec project,
+                Dictionary<RestoreTargetGraph, Dictionary<string, LibraryIncludeFlags>> includeFlagGraphs,
+                IReadOnlyList<NuGetv3LocalRepository> localRepositories,
+                LockFile lockFile,
+                IEnumerable<RestoreTargetGraph> graphs,
+                bool validateRuntimeAssets,
+                ILogger logger)
         {
             // Scan every graph for compatibility, as long as there were no unresolved packages
             var checkResults = new List<CompatibilityCheckResult>();
