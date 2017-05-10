@@ -115,7 +115,7 @@ namespace NuGet.Common
         /// <summary>
         /// Dependency bumped up
         /// </summary>
-        NU1601 = 2501,
+        NU1601 = 1601,
 
         /// <summary>
         /// Non-exact match on dependency range due to non inclusive minimum bound.
