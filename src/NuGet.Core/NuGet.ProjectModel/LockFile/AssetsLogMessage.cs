@@ -81,24 +81,12 @@ namespace NuGet.ProjectModel
                 EndLineNumber == other.EndLineNumber &&
                 StartColumnNumber == other.StartColumnNumber &&
                 EndColumnNumber == other.EndColumnNumber &&
-                ((Message == null && other.Message == null) || 
-                    Message.Equals(other.Message, StringComparison.Ordinal)) &&
-                ((ProjectPath == null && other.ProjectPath == null) || 
-                    ProjectPath.Equals(other.ProjectPath, StringComparison.Ordinal)) &&
-                ((FilePath == null && other.FilePath == null) || 
-                    FilePath.Equals(other.FilePath, StringComparison.Ordinal)) &&
-                ((LibraryId == null && other.LibraryId == null) || 
-                    LibraryId.Equals(other.LibraryId, StringComparison.Ordinal)))             
+                StringComparer.Ordinal.Equals(Message, other.Message) &&
+                StringComparer.Ordinal.Equals(ProjectPath, other.ProjectPath) &&
+                StringComparer.Ordinal.Equals(FilePath, other.FilePath) &&
+                StringComparer.Ordinal.Equals(LibraryId, other.LibraryId))
             {
-
-                if (TargetGraphs != null && other.TargetGraphs != null)
-                {
-                    return TargetGraphs.OrderBy(t => t).SequenceEqual(other.TargetGraphs.OrderBy(t => t), StringComparer.Ordinal);
-                }
-                else if (TargetGraphs == null && other.TargetGraphs == null)
-                {
-                    return true;
-                }
+                return TargetGraphs.SequenceEqualWithNullCheck(other.TargetGraphs);
             }
 
             return false;

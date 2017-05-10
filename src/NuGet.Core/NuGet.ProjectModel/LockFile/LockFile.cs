@@ -134,11 +134,11 @@ namespace NuGet.ProjectModel
 
         private bool LogsEqual(IList<IAssetsLogMessage> otherLogMessages)
         {
-            if(LogMessages == otherLogMessages)
+            if (ReferenceEquals(LogMessages, otherLogMessages))
             {
                 return true;
             }
-            if(LogMessages.Count != otherLogMessages.Count)
+            if (LogMessages.Count != otherLogMessages.Count)
             {
                 return false;
             }
@@ -146,21 +146,22 @@ namespace NuGet.ProjectModel
 
             var equals = true;
 
-            var orderedLogMessages = LogMessages.OrderBy(m => m.Message, StringComparer.Ordinal)
+            var orderedLogMessages = LogMessages
+                .OrderBy(m => m.Message, StringComparer.Ordinal)
                 .ToArray();
 
-            var orderedOtherLogMessages = otherLogMessages.OrderBy(m => m.Message, StringComparer.Ordinal)
+            var orderedOtherLogMessages = otherLogMessages
+                .OrderBy(m => m.Message, StringComparer.Ordinal)
                 .ToArray();
 
             var length = orderedLogMessages.Length;
 
-            for(var i=0; i<length; i++)
+            for (var i=0; i<length; i++)
             {
                 equals &= orderedLogMessages[i].Equals(orderedOtherLogMessages[i]);
 
                 if (!equals)
                 {
-                    equals = false;
                     break;
                 }
             }
@@ -220,7 +221,7 @@ namespace NuGet.ProjectModel
         private static void HashLogMessages(HashCodeCombiner combiner, IList<IAssetsLogMessage> logMessages)
         {
             foreach (var item in logMessages.OrderBy(
-                logMessage => @logMessage.Message, StringComparer.OrdinalIgnoreCase))
+                logMessage => @logMessage.Message, StringComparer.Ordinal))
             {
                 combiner.AddObject(item);
             }
