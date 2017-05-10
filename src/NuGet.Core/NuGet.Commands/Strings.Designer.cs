@@ -504,7 +504,7 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Detected package downgrade: {0} from {1} to {2}.
+        ///   Looks up a localized string similar to Detected package downgrade: {0} from {1} to {2}. Reference the package directly from the project to select a different version..
         /// </summary>
         internal static string Log_DowngradeWarning {
             get {
@@ -927,7 +927,7 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Version conflict detected for {0}..
+        ///   Looks up a localized string similar to Version conflict detected for {0}. Reference the package directly from the project to resolve this issue..
         /// </summary>
         internal static string Log_VersionConflict {
             get {
