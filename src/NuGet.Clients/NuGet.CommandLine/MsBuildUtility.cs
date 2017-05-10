@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -144,30 +144,29 @@ namespace NuGet.CommandLine
                 // Disallow the import of targets/props from packages
                 argumentBuilder.Append(" /p:ExcludeRestorePackageImports=true ");
 
+                // Projects to restore
+                var isMono = RuntimeEnvironmentHelper.IsMono && !RuntimeEnvironmentHelper.IsWindows;
+
                 //Append RestoreSource from Settings
-                if (settings == null) {
+                if (settings != null) {
                     var outputPackagesPath = SettingsUtility.GetGlobalPackagesFolder(settings);
+                    outputPackagesPath = outputPackagesPath.TrimEnd(Path.AltDirectorySeparatorChar) + "\\" ;
                     argumentBuilder.Append(" /p:RestorePackagesPath=");
-                    AppendQuoted(argumentBuilder, outputPackagesPath);
+                    AppendEnvironmentAwareQuote(argumentBuilder, outputPackagesPath,isMono);
 
-                    var packageSourceProvider = new PackageSourceProvider(settings);
-                    var packageSourcesFromProvider = packageSourceProvider.LoadPackageSources();
-                    var restoreSources = packageSourcesFromProvider.Select(e => e.Source);
-                    argumentBuilder.Append(" /p:RestoreSources=");
-                    AppendQuoted(argumentBuilder, string.Join(";", restoreSources.Select(p => p)));
+                    //var packageSourceProvider = new PackageSourceProvider(settings);
+                    //var packageSourcesFromProvider = packageSourceProvider.LoadPackageSources();
+                    //var restoreSources = packageSourcesFromProvider.Select(e => e.Source);
+                    //argumentBuilder.Append(" /p:RestoreSources=");
+                    //AppendEnvironmentAwareQuote(argumentBuilder, isMono ? string.Join("\\;", restoreSources.Select(p => p)) : string.Join(";", restoreSources.Select(p => p)), isMono);
 
-                    var fallbackFolders = SettingsUtility.GetFallbackPackageFolders(settings);
-                    argumentBuilder.Append(" /p:RestoreFallbackFolders=");
-                    AppendQuoted(argumentBuilder, string.Join(";", fallbackFolders.Select(p => p)));
+                    //var fallbackFolders = SettingsUtility.GetFallbackPackageFolders(settings);
+                    //argumentBuilder.Append(" /p:RestoreFallbackFolders=");
+                    //AppendQuoted(argumentBuilder, string.Join(";", fallbackFolders.Select(p => p)));
 
-                    //var configFilePaths = new List<string>();
-                    //foreach (var config in settings.Priority)
-                    //{
-                    //    configFilePaths.Add(Path.GetFullPath(Path.Combine(config.Root, config.FileName)));
-                    //}
-                    argumentBuilder.Append(" /p:RestoreConfigFile=");
-                    var config = settings.Priority.First();
-                    AppendQuoted(argumentBuilder, Path.Combine(config.Root, config.FileName));
+                    //argumentBuilder.Append(" /p:RestoreConfigFile=");
+                    //var config = settings.Priority.First();
+                    //AppendQuoted(argumentBuilder, Path.Combine(config.Root, config.FileName));
                 }
 
 
@@ -177,8 +176,6 @@ namespace NuGet.CommandLine
                 // Filter out unknown project types and avoid errors from projects that do not support CustomAfterTargets
                 argumentBuilder.Append($" /p:RestoreProjectFilterMode=exclusionlist /p:RestoreContinueOnError=WarnAndContinue ");
 
-                // Projects to restore
-                bool isMono = RuntimeEnvironmentHelper.IsMono && !RuntimeEnvironmentHelper.IsWindows;
 
                 // /p: foo = "bar;baz" doesn't work on bash.
                 // /p: foo = /"bar/;baz/" works.
@@ -259,7 +256,7 @@ namespace NuGet.CommandLine
                     if (process.ExitCode != 0)
                     {
                         await errorTask;
-                        throw new CommandLineException(errors.ToString());
+                        throw new CommandLineException(output.ToString() + " ERRORS " + errors.ToString());
                     }
                 }
 
@@ -736,6 +733,14 @@ namespace NuGet.CommandLine
                 .Append('"')
                 .Append(targetPath)
                 .Append('"');
+        }
+
+        private static void AppendEnvironmentAwareQuote(StringBuilder builder, string quotable, bool isMono)
+        {
+            builder
+               .Append(isMono ? "\\\"" : "\"")
+               .Append(quotable)
+               .Append(isMono ? "\\\"" : "\"");
         }
 
         private static void ExtractResource(string resourceName, string targetPath)
