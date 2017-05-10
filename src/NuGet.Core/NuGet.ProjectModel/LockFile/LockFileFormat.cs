@@ -433,11 +433,6 @@ namespace NuGet.ProjectModel
                         assetsLogMessage.EndColumnNumber = endColumnNumberJson.Value<int>();
                     }
 
-                    if (messageJson != null)
-                    {
-                        assetsLogMessage.Message = messageJson.Value<string>();
-                    }
-
                     if (libraryIdJson != null)
                     {
                         assetsLogMessage.LibraryId = libraryIdJson.Value<string>();

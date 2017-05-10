@@ -1,17 +1,20 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using NuGet.Common;
+using NuGet.Shared;
 
 namespace NuGet.ProjectModel
 {
-    public class AssetsLogMessage : IAssetsLogMessage
+    public class AssetsLogMessage : IAssetsLogMessage, IEquatable<IAssetsLogMessage>
     {
 
-        public LogLevel Level { get; set; }
-        public NuGetLogCode Code { get; set; }
-        public string Message { get; set; }
+        public LogLevel Level { get; }
+        public NuGetLogCode Code { get; }
+        public string Message { get; }
         public string ProjectPath { get; set; }
         public WarningLevel WarningLevel { get; set; }
         public string FilePath { get; set; }
@@ -59,5 +62,50 @@ namespace NuGet.ProjectModel
         {
         }
 
+        public bool Equals(IAssetsLogMessage other)
+        {
+            if (other == null)
+            {
+                return false;
+            }
+
+            if (ReferenceEquals(this, other))
+            {
+                return true;
+            }
+
+            if (Level == other.Level &&
+                Code == other.Code &&
+                WarningLevel == other.WarningLevel &&
+                StartLineNumber == other.StartLineNumber &&
+                EndLineNumber == other.EndLineNumber &&
+                StartColumnNumber == other.StartColumnNumber &&
+                EndColumnNumber == other.EndColumnNumber &&
+                StringComparer.Ordinal.Equals(Message, other.Message) &&
+                StringComparer.Ordinal.Equals(ProjectPath, other.ProjectPath) &&
+                StringComparer.Ordinal.Equals(FilePath, other.FilePath) &&
+                StringComparer.Ordinal.Equals(LibraryId, other.LibraryId))
+            {
+                return TargetGraphs.SequenceEqualWithNullCheck(other.TargetGraphs);
+            }
+
+            return false;
+        }
+
+        public override bool Equals(object other)
+        {
+            return Equals(other as IAssetsLogMessage);
+        }
+
+        public override int GetHashCode()
+        {
+            var combiner = new HashCodeCombiner();
+
+            combiner.AddStringIgnoreCase(Message);
+            combiner.AddInt32((int) Level);
+            combiner.AddInt32((int) Code);
+
+            return combiner.CombinedHash;
+        }
     }
 }
