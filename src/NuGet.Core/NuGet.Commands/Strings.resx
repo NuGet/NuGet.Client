@@ -204,10 +204,10 @@
     <value>Cycle detected:</value>
   </data>
   <data name="Log_DowngradeWarning" xml:space="preserve">
-    <value>Detected package downgrade: {0} from {1} to {2}</value>
+    <value>Detected package downgrade: {0} from {1} to {2}. Reference the package directly from the project to select a different version.</value>
   </data>
   <data name="Log_VersionConflict" xml:space="preserve">
-    <value>Version conflict detected for {0}.</value>
+    <value>Version conflict detected for {0}. Reference the package directly from the project to resolve this issue.</value>
   </data>
   <data name="Error_UnknownBuildAction" xml:space="preserve">
     <value>Package '{0}' specifies an invalid build action '{1}' for file '{2}'.</value>
