@@ -128,7 +128,45 @@ namespace NuGet.ProjectModel
                 && Libraries.OrderedEquals(other.Libraries, library => library.Name, StringComparer.OrdinalIgnoreCase)
                 && Targets.OrderedEquals(other.Targets, target => target.Name, StringComparer.Ordinal)
                 && PackageFolders.SequenceEqual(other.PackageFolders)
-                && EqualityUtility.EqualsWithNullCheck(PackageSpec, other.PackageSpec);
+                && EqualityUtility.EqualsWithNullCheck(PackageSpec, other.PackageSpec)
+                && LogsEqual(other.LogMessages);
+        }
+
+        private bool LogsEqual(IList<IAssetsLogMessage> otherLogMessages)
+        {
+            if (ReferenceEquals(LogMessages, otherLogMessages))
+            {
+                return true;
+            }
+            if (LogMessages.Count != otherLogMessages.Count)
+            {
+                return false;
+            }
+
+
+            var equals = true;
+
+            var orderedLogMessages = LogMessages
+                .OrderBy(m => m.Message, StringComparer.Ordinal)
+                .ToArray();
+
+            var orderedOtherLogMessages = otherLogMessages
+                .OrderBy(m => m.Message, StringComparer.Ordinal)
+                .ToArray();
+
+            var length = orderedLogMessages.Length;
+
+            for (var i=0; i<length; i++)
+            {
+                equals &= orderedLogMessages[i].Equals(orderedOtherLogMessages[i]);
+
+                if (!equals)
+                {
+                    break;
+                }
+            }
+
+            return equals;               
         }
 
         public override bool Equals(object obj)
@@ -158,6 +196,8 @@ namespace NuGet.ProjectModel
 
             combiner.AddObject(PackageSpec);
 
+            HashLogMessages(combiner, LogMessages);
+
             return combiner.CombinedHash;
         }
 
@@ -173,6 +213,15 @@ namespace NuGet.ProjectModel
         {
             foreach (var item in groups.OrderBy(
                 group => @group.FrameworkName, StringComparer.OrdinalIgnoreCase))
+            {
+                combiner.AddObject(item);
+            }
+        }
+
+        private static void HashLogMessages(HashCodeCombiner combiner, IList<IAssetsLogMessage> logMessages)
+        {
+            foreach (var item in logMessages.OrderBy(
+                logMessage => @logMessage.Message, StringComparer.Ordinal))
             {
                 combiner.AddObject(item);
             }
