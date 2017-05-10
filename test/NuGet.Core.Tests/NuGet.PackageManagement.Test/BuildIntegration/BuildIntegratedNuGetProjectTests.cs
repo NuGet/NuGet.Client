@@ -64,7 +64,7 @@ namespace NuGet.PackageManagement.Test
                 var solutionManager = new TestSolutionManager(false);
                 solutionManager.NuGetProjects.Add(project);
 
-                var restoreContext = new DependencyGraphCacheContext(testLogger);
+                var restoreContext = new DependencyGraphCacheContext(testLogger, NullSettings.Instance);
 
                 await DependencyGraphRestoreUtility.RestoreAsync(
                     solutionManager,
@@ -134,7 +134,7 @@ namespace NuGet.PackageManagement.Test
 
                 var testLogger = new TestLogger();
 
-                var restoreContext = new DependencyGraphCacheContext(testLogger);
+                var restoreContext = new DependencyGraphCacheContext(testLogger, NullSettings.Instance);
 
                 await DependencyGraphRestoreUtility.RestoreAsync(
                     solutionManager,
@@ -202,7 +202,7 @@ namespace NuGet.PackageManagement.Test
 
                 var testLogger = new TestLogger();
 
-                var restoreContext = new DependencyGraphCacheContext(testLogger);
+                var restoreContext = new DependencyGraphCacheContext(testLogger, NullSettings.Instance);
 
                 await DependencyGraphRestoreUtility.RestoreAsync(
                     solutionManager,
@@ -264,7 +264,7 @@ namespace NuGet.PackageManagement.Test
 
                 var testLogger = new TestLogger();
 
-                var restoreContext = new DependencyGraphCacheContext(testLogger);
+                var restoreContext = new DependencyGraphCacheContext(testLogger, NullSettings.Instance);
 
                 await DependencyGraphRestoreUtility.RestoreAsync(
                     solutionManager,
@@ -327,7 +327,7 @@ namespace NuGet.PackageManagement.Test
 
                 var testLogger = new TestLogger();
 
-                var restoreContext = new DependencyGraphCacheContext(testLogger);
+                var restoreContext = new DependencyGraphCacheContext(testLogger, NullSettings.Instance);
 
                 await DependencyGraphRestoreUtility.RestoreAsync(
                     solutionManager,

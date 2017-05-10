@@ -272,7 +272,7 @@ namespace NuGet.PackageManagement
                 // A new project has been added
                 return true;
             }
-
+            // TODO NK - logic to verify the packages
             // Read package folder locations, initializing them in order of priority
             var packageFolderPaths = new List<string>();
             packageFolderPaths.Add(pathContext.UserPackageFolder);
@@ -311,6 +311,7 @@ namespace NuGet.PackageManagement
             ISolutionManager solutionManager,
             DependencyGraphCacheContext context)
         {
+            //TODO NK URGENT- Add the things in the settings here
             var dgSpec = new DependencyGraphSpec();
 
             foreach (var packageSpec in context.DeferredPackageSpecs)

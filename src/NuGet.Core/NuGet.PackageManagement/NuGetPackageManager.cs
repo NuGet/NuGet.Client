@@ -1931,7 +1931,7 @@ namespace NuGet.PackageManagement
             if (buildIntegratedProjectsToUpdate.Count > 0)
             {
                 var logger = new ProjectContextLogger(nuGetProjectContext);
-                var referenceContext = new DependencyGraphCacheContext(logger);
+                var referenceContext = new DependencyGraphCacheContext(logger, Settings);
                 _buildIntegratedProjectsUpdateDict = new Dictionary<string, bool>(StringComparer.OrdinalIgnoreCase);
 
                 var projectUniqueNamesForBuildIntToUpdate
@@ -2320,7 +2320,7 @@ namespace NuGet.PackageManagement
             }
 
             var logger = new ProjectContextLogger(nuGetProjectContext);
-            var dependencyGraphContext = new DependencyGraphCacheContext(logger);
+            var dependencyGraphContext = new DependencyGraphCacheContext(logger, Settings );
 
             // Get Package Spec as json object
             var originalPackageSpec = await DependencyGraphRestoreUtility.GetProjectSpec(buildIntegratedProject, dependencyGraphContext);
@@ -2554,7 +2554,7 @@ namespace NuGet.PackageManagement
                 }
 
                 var logger = new ProjectContextLogger(nuGetProjectContext);
-                var referenceContext = new DependencyGraphCacheContext(logger);
+                var referenceContext = new DependencyGraphCacheContext(logger, Settings);
                 var pathContext = NuGetPathContext.Create(Settings);
                 var pathResolver = new FallbackPackagePathResolver(pathContext);
 

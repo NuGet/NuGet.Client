@@ -578,7 +578,7 @@ namespace NuGet.CommandLine
         /// <summary>
         ///  Create a dg v2 file using msbuild.
         /// </summary>
-        private async Task<DependencyGraphSpec> GetDependencyGraphSpecAsync(string[] projectsWithPotentialP2PReferences, ISettings settingsToRestoreSolutionWith)
+        private async Task<DependencyGraphSpec> GetDependencyGraphSpecAsync(string[] projectsWithPotentialP2PReferences, ISettings settings)
         {
             // Create requests using settings based on the project directory if no solution was used.
             // If a solution was used read settings for the solution.
@@ -605,7 +605,7 @@ namespace NuGet.CommandLine
                 scaleTimeout,
                 Console,
                 Recursive,
-                settingsToRestoreSolutionWith);
+                settings);
         }
 
         /// <summary>

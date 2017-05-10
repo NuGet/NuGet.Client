@@ -54,7 +54,7 @@ namespace NuGet.Test
 
                 var testLogger = new TestLogger();
 
-                var restoreContext = new DependencyGraphCacheContext(testLogger);
+                var restoreContext = new DependencyGraphCacheContext(testLogger, NullSettings.Instance);
 
                 // Act
                 await DependencyGraphRestoreUtility.RestoreAsync(
@@ -103,7 +103,7 @@ namespace NuGet.Test
 
                 var testLogger = new TestLogger();
 
-                var restoreContext = new DependencyGraphCacheContext(testLogger);
+                var restoreContext = new DependencyGraphCacheContext(testLogger, NullSettings.Instance);
 
                 // Act
                 await DependencyGraphRestoreUtility.RestoreAsync(
@@ -170,7 +170,7 @@ namespace NuGet.Test
 
                 var testLogger = new TestLogger();
 
-                var restoreContext = new DependencyGraphCacheContext(testLogger);
+                var restoreContext = new DependencyGraphCacheContext(testLogger, NullSettings.Instance);
 
                 // Act
                 await DependencyGraphRestoreUtility.RestoreAsync(
@@ -257,7 +257,7 @@ namespace NuGet.Test
 
                 var testLogger = new TestLogger();
 
-                var restoreContext = new DependencyGraphCacheContext(testLogger);
+                var restoreContext = new DependencyGraphCacheContext(testLogger, NullSettings.Instance);
                 restoreContext.DeferredPackageSpecs.Add(packageSpec);
 
                 // Act
@@ -322,7 +322,7 @@ namespace NuGet.Test
 
                 var testLogger = new TestLogger();
 
-                var restoreContext = new DependencyGraphCacheContext(testLogger);
+                var restoreContext = new DependencyGraphCacheContext(testLogger, NullSettings.Instance);
                 restoreContext.DeferredPackageSpecs.Add(packageSpec);
 
                 var pathContext = NuGetPathContext.Create(NullSettings.Instance);

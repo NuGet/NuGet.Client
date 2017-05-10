@@ -43,7 +43,7 @@ namespace NuGet.PackageManagement.Test
                     new TestNuGetProjectContext());
                 var project = new ProjectJsonBuildIntegratedNuGetProject(projectConfig.FullName, msbuildProjectPath.FullName, msBuildNuGetProjectSystem);
 
-                var restoreContext = new DependencyGraphCacheContext(logger);
+                var restoreContext = new DependencyGraphCacheContext(logger, NullSettings.Instance);
 
                 var projects = new List<IDependencyGraphProject>() { project };
 
@@ -68,7 +68,7 @@ namespace NuGet.PackageManagement.Test
 
                 var oldHash = restoreContext.SolutionSpecHash;
 
-                var newContext = new DependencyGraphCacheContext(logger);
+                var newContext = new DependencyGraphCacheContext(logger, NullSettings.Instance);
 
                 // Act
                 var result = await DependencyGraphRestoreUtility.IsRestoreRequiredAsync(
@@ -111,7 +111,7 @@ namespace NuGet.PackageManagement.Test
 
                 var effectiveGlobalPackagesFolder = SettingsUtility.GetGlobalPackagesFolder(NullSettings.Instance);
 
-                var restoreContext = new DependencyGraphCacheContext(logger);
+                var restoreContext = new DependencyGraphCacheContext(logger, NullSettings.Instance);
 
                 var projects = new List<IDependencyGraphProject>() { project };
 

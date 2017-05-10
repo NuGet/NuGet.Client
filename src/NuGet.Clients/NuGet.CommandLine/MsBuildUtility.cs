@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -145,22 +145,29 @@ namespace NuGet.CommandLine
                 argumentBuilder.Append(" /p:ExcludeRestorePackageImports=true ");
 
                 //Append RestoreSource from Settings
-                if (settings != null) {
-                    //TODO NK - actaully append these things
+                if (settings == null) {
                     var outputPackagesPath = SettingsUtility.GetGlobalPackagesFolder(settings);
+                    argumentBuilder.Append(" /p:RestorePackagesPath=");
+                    AppendQuoted(argumentBuilder, outputPackagesPath);
 
                     var packageSourceProvider = new PackageSourceProvider(settings);
                     var packageSourcesFromProvider = packageSourceProvider.LoadPackageSources();
                     var restoreSources = packageSourcesFromProvider.Select(e => e.Source);
+                    argumentBuilder.Append(" /p:RestoreSources=");
+                    AppendQuoted(argumentBuilder, string.Join(";", restoreSources.Select(p => p)));
 
                     var fallbackFolders = SettingsUtility.GetFallbackPackageFolders(settings);
+                    argumentBuilder.Append(" /p:RestoreFallbackFolders=");
+                    AppendQuoted(argumentBuilder, string.Join(";", fallbackFolders.Select(p => p)));
 
-                    var configFilePaths = new List<string>();
-                    foreach (var config in settings.Priority)
-                    {
-                        configFilePaths.Add(Path.GetFullPath(Path.Combine(config.Root, config.FileName)));
-                    }
-
+                    //var configFilePaths = new List<string>();
+                    //foreach (var config in settings.Priority)
+                    //{
+                    //    configFilePaths.Add(Path.GetFullPath(Path.Combine(config.Root, config.FileName)));
+                    //}
+                    argumentBuilder.Append(" /p:RestoreConfigFile=");
+                    var config = settings.Priority.First();
+                    AppendQuoted(argumentBuilder, Path.Combine(config.Root, config.FileName));
                 }
 
 

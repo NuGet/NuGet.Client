@@ -204,7 +204,7 @@ namespace NuGet.ProjectManagement.Projects
                 }
                 var metadata = new ProjectRestoreMetadata();
                 packageSpec.RestoreMetadata = metadata;
-                // TODO NK - Here we need to add the sources/fallback folders etc.
+
                 metadata.ProjectStyle = ProjectStyle.ProjectJson;
                 metadata.ProjectPath = MSBuildProjectPath;
                 metadata.ProjectJsonPath = packageSpec.FilePath;

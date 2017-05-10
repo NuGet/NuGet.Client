@@ -8,6 +8,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
+using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.Packaging.Core;
@@ -39,7 +40,7 @@ namespace ProjectManagement.Test
                 var projectFilePath = Path.Combine(randomProjectFolderPath, $"{msBuildNuGetProjectSystem.ProjectName}.csproj");
                 var buildIntegratedProject = new ProjectJsonBuildIntegratedNuGetProject(projectJsonPath, projectFilePath, msBuildNuGetProjectSystem);
 
-                var referenceContext = new DependencyGraphCacheContext(new TestLogger());
+                var referenceContext = new DependencyGraphCacheContext(new TestLogger(), NullSettings.Instance);
 
                 // Act
                 var actual = (await buildIntegratedProject.GetPackageSpecsAsync(referenceContext)).SingleOrDefault();
