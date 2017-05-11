@@ -2,13 +2,15 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
+using EnvDTE;
 using Microsoft.VisualStudio;
-using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.Shell.Interop;
+using NuGet.Packaging.Core;
 using NuGet.VisualStudio;
 
 namespace NuGet.PackageManagement.VisualStudio
@@ -18,14 +20,13 @@ namespace NuGet.PackageManagement.VisualStudio
         private uint _cookie;
         private IVsSolution2 _vsSolution2;
         private ISolutionManager _solutionManager;
-        private Lazy<ISolutionRestoreWorker> _solutionRestoreWorker;
 
         /// <summary>
         /// Constructs and Registers ("Advises") for Project retargeting events if the IVsSolutionEvents service is available
         /// Otherwise, it simply exits
         /// </summary>
         [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD010", Justification = "NuGet/Home#4833 Baseline")]
-        public ProjectUpgradeHandler(IServiceProvider serviceProvider, ISolutionManager solutionManager, IComponentModel componentModel)
+        public ProjectUpgradeHandler(IServiceProvider serviceProvider, ISolutionManager solutionManager)
         {
             if (serviceProvider == null)
             {
@@ -37,10 +38,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 throw new ArgumentNullException(nameof(solutionManager));
             }
 
-            var vsSolution2 = serviceProvider.GetService(typeof(SVsSolution)) as IVsSolution2;
-            _solutionRestoreWorker = new Lazy<ISolutionRestoreWorker>(
-                () => componentModel.GetService<ISolutionRestoreWorker>());
-
+            IVsSolution2 vsSolution2 = serviceProvider.GetService(typeof(SVsSolution)) as IVsSolution2;
             if (vsSolution2 != null)
             {
                 _vsSolution2 = vsSolution2;
@@ -65,17 +63,17 @@ namespace NuGet.PackageManagement.VisualStudio
 
                 Debug.Assert(pHierarchy != null);
 
-                var upgradedProject = VsHierarchyUtility.GetProjectFromHierarchy(pHierarchy);
+                Project upgradedProject = VsHierarchyUtility.GetProjectFromHierarchy(pHierarchy);
                 var upgradedNuGetProject = EnvDTEProjectUtility.GetNuGetProject(upgradedProject, _solutionManager);
 
                 if (ProjectRetargetingUtility.IsProjectRetargetable(upgradedNuGetProject))
                 {
-                    var packagesToBeReinstalled = await ProjectRetargetingUtility.GetPackagesToBeReinstalled(upgradedNuGetProject);
+                    IList<PackageIdentity> packagesToBeReinstalled = await ProjectRetargetingUtility.GetPackagesToBeReinstalled(upgradedNuGetProject);
 
                     if (packagesToBeReinstalled.Any())
                     {
                         pLogger.LogMessage((int)__VSUL_ERRORLEVEL.VSUL_ERROR, upgradedProject.Name, upgradedProject.Name,
-                            string.Format(CultureInfo.CurrentCulture, Strings.ProjectUpgradeAndRetargetErrorMessage, string.Join(", ", packagesToBeReinstalled.Select(p => p.Id))));
+                            String.Format(CultureInfo.CurrentCulture, Strings.ProjectUpgradeAndRetargetErrorMessage, String.Join(", ", packagesToBeReinstalled.Select(p => p.Id))));
                     }
                 }
             });
@@ -92,9 +90,6 @@ namespace NuGet.PackageManagement.VisualStudio
 
         int IVsSolutionEvents.OnAfterLoadProject(IVsHierarchy pStubHierarchy, IVsHierarchy pRealHierarchy)
         {
-            // Run restore for LegacyCSProj and ProjectJsonBuildIntegratedProjectSystem
-            // System.Threading.Tasks.Task.Run(() => _solutionRestoreWorker.Value.ScheduleRestoreAsync(SolutionRestoreRequest.ByMenu(), CancellationToken.None));
-
             return VSConstants.S_OK;
         }
 
