@@ -156,5 +156,10 @@ namespace NuGet.Common
         /// Feed error converted to a warning when ignoreFailedSources is true.
         /// </summary>
         NU1801 = 1801,
+
+        /// <summary>
+        /// Package MinClientVersion did not match.
+        /// </summary>
+        NU1901 = 1901,
     }
 }
