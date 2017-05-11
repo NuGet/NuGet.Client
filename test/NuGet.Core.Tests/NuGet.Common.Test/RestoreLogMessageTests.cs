@@ -148,23 +148,5 @@ namespace NuGet.Common.Test
             Assert.Equal(-1, logMessage.EndColumnNumber);
             targetGraphs.SequenceEqual(logMessage.TargetGraphs);
         }
-
-        [Theory]
-        [InlineData(LogLevel.Error, "NU1000: Error string", "Error string")]
-        [InlineData(LogLevel.Warning, "NU1500: Warning string", "Warning string")]
-        [InlineData(LogLevel.Debug, "Debug string", "Debug string")]
-        [InlineData(LogLevel.Verbose, "Verbose string", "Verbose string")]
-        [InlineData(LogLevel.Information, "Information string", "Information string")]
-        public void RestoreLogMessage_TestFormatMessage(LogLevel level, string expectedMessage, string message)
-        {
-            // Arrange
-            var logMessage = new RestoreLogMessage(level, message);
-
-            // Act
-            var actualMessage = logMessage.FormatMessage();
-
-            // Assert
-            Assert.Equal(expectedMessage, actualMessage);
-        }
     }
 }

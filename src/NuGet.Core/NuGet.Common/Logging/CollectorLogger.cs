@@ -39,7 +39,7 @@ namespace NuGet.Common
         {
             if (CollectMessage(message.Level))
             {
-                _errors.Enqueue(message as RestoreLogMessage);
+                _errors.Enqueue(new RestoreLogMessage(message.Level, message.Code, message.Message));
             }
 
             _innerLogger.Log(message);
@@ -49,7 +49,7 @@ namespace NuGet.Common
         {
             if (CollectMessage(message.Level))
             {
-                _errors.Enqueue(message as RestoreLogMessage);
+                _errors.Enqueue(new RestoreLogMessage(message.Level, message.Code, message.Message));
             }
 
             return _innerLogger.LogAsync(message);

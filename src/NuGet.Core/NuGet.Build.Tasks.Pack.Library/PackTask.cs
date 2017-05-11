@@ -104,7 +104,7 @@ namespace NuGet.Build.Tasks.Pack
             }
             catch (Exception ex)
             {
-                ExceptionUtilities.HandleException(ex, Logger);
+                ExceptionUtilities.LogException(ex, Logger);
                 return false;
             }
             

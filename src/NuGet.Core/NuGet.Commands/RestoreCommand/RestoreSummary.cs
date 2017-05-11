@@ -92,7 +92,7 @@ namespace NuGet.Commands
                 logger.LogErrorSummary(string.Format(CultureInfo.CurrentCulture, Strings.Log_ErrorSummary, restoreSummary.InputPath));
                 foreach (var error in restoreSummary.Errors)
                 {
-                    foreach (var line in IndentLines(error.FormatMessage()))
+                    foreach (var line in IndentLines(error.Message))
                     {
                         logger.LogErrorSummary(line);
                     }

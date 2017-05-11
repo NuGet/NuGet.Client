@@ -1,8 +1,7 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Threading.Tasks;
 
 namespace NuGet.Common
 {
@@ -38,17 +37,5 @@ namespace NuGet.Common
         /// Indicates the date time at which the error occurred.
         /// </summary>
         DateTimeOffset Time { get; set; }
-
-        /// <summary>
-        /// Converts the ILogMessage into a string that can be logged as-is into a Console.
-        /// </summary>
-        /// <returns>The string representation of the ILogMessage.</returns>
-        string FormatMessage();
-
-        /// <summary>
-        /// Converts the ILogMessage into a string that can be logged as-is into a Console.
-        /// </summary>
-        /// <returns>The string representation of the ILogMessage.</returns>
-        Task<string> FormatMessageAsync();
     }
 }

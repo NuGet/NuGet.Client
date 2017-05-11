@@ -89,5 +89,40 @@ namespace NuGet.CommandLine.Test
                 Assert.Contains("Detected package downgrade: i from 9.0.0 to 1.0.0", output, StringComparison.OrdinalIgnoreCase);
             }
         }
+
+        [Fact]
+        public void GivenAPackageWithAHigherMinClientVersionVerifyErrorCodeDisplayed()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                    "a",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("NETStandard1.5"));
+
+                var packageB = new SimpleTestPackageContext("b", "1.0.0")
+                {
+                    MinClientVersion = "99.0.0"
+                };
+
+                SimpleTestPackageUtility.CreatePackages(pathContext.PackageSource, packageB);
+
+                projectA.AddPackageToAllFrameworks(packageB);
+
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+
+                // Act
+                var r = Util.Restore(pathContext, projectA.ProjectPath, expectedExitCode: 1);
+                var output = r.Item2 + " " + r.Item3;
+
+                // Assert
+                Assert.Contains("NU1901", output, StringComparison.OrdinalIgnoreCase);
+            }
+        }
     }
 }

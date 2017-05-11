@@ -7,7 +7,7 @@ namespace NuGet.Common
 {
     public abstract class LoggerBase : ILogger
     {
-        public LogLevel VerbosityLevel { get; private set; } = LogLevel.Debug;
+        public LogLevel VerbosityLevel { get; set; } = LogLevel.Debug;
 
         public LoggerBase()
         {
@@ -26,7 +26,7 @@ namespace NuGet.Common
         {
             if (DisplayMessage(level))
             {
-                Log(new RestoreLogMessage(level, data));
+                Log(new LogMessage(level, data));
             }
         }
 
@@ -34,7 +34,7 @@ namespace NuGet.Common
         {
             if (DisplayMessage(level))
             {
-                return LogAsync(new RestoreLogMessage(level, data));
+                return LogAsync(new LogMessage(level, data));
             }
 
             return Task.FromResult(true);

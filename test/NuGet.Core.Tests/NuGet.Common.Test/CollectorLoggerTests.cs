@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -143,9 +143,9 @@ namespace NuGet.Common.Test
 
             // Assert
             Assert.Empty(errorsStart);
-            Assert.Equal(new[] { "NU1000: ErrorA" }, errorsA.Select(e => e.FormatMessage()));
-            Assert.Equal(new[] { "NU1000: ErrorA", "NU1000: ErrorB", "NU1000: ErrorC" }, errorsAbc.Select(e => e.FormatMessage()));
-            Assert.Equal(new[] { "NU1000: ErrorA", "NU1000: ErrorB", "NU1000: ErrorC" }, errordEnd.Select(e => e.FormatMessage()));
+            Assert.Equal(new[] { "ErrorA" }, errorsA.Select(e => e.Message));
+            Assert.Equal(new[] { "ErrorA", "ErrorB", "ErrorC" }, errorsAbc.Select(e => e.Message));
+            Assert.Equal(new[] { "ErrorA", "ErrorB", "ErrorC" }, errordEnd.Select(e => e.Message));
         }
 
         [Fact]
@@ -166,9 +166,9 @@ namespace NuGet.Common.Test
 
             // Assert
             Assert.Empty(warningsStart);
-            Assert.Equal(new[] { "NU1500: WarningA" }, warningA.Select(e => e.FormatMessage()));
-            Assert.Equal(new[] { "NU1500: WarningA", "NU1500: WarningB", "NU1500: WarningC" }, warningAbc.Select(e => e.FormatMessage()));
-            Assert.Equal(new[] { "NU1500: WarningA", "NU1500: WarningB", "NU1500: WarningC" }, warningsEnd.Select(e => e.FormatMessage()));
+            Assert.Equal(new[] { "WarningA" }, warningA.Select(e => e.Message));
+            Assert.Equal(new[] { "WarningA", "WarningB", "WarningC" }, warningAbc.Select(e => e.Message));
+            Assert.Equal(new[] { "WarningA", "WarningB", "WarningC" }, warningsEnd.Select(e => e.Message));
         }
 
         [Fact]
@@ -191,9 +191,9 @@ namespace NuGet.Common.Test
 
             // Assert
             Assert.Empty(warningsStart);
-            Assert.Equal(new[] { "NU1500: WarningA" }, warningA.Select(e => e.FormatMessage()));
-            Assert.Equal(new[] { "NU1500: WarningA", "NU1500: WarningB", "NU1500: WarningC" }, warningAbc.Select(e => e.FormatMessage()));
-            Assert.Equal(new[] { "NU1500: WarningA", "NU1500: WarningB", "NU1500: WarningC" }, warningsEnd.Select(e => e.FormatMessage()));
+            Assert.Equal(new[] { "WarningA" }, warningA.Select(e => e.Message));
+            Assert.Equal(new[] { "WarningA", "WarningB", "WarningC" }, warningAbc.Select(e => e.Message));
+            Assert.Equal(new[] { "WarningA", "WarningB", "WarningC" }, warningsEnd.Select(e => e.Message));
         }
 
         [Fact]
@@ -215,8 +215,7 @@ namespace NuGet.Common.Test
 
         private void VerifyInnerLoggerCalls(Mock<ILogger> innerLogger, LogLevel messageLevel, string message, Times times)
         {
-            var expectedCode = messageLevel == LogLevel.Error ? NuGetLogCode.NU1000 : NuGetLogCode.NU1500;
-            innerLogger.Verify(x => x.Log(It.Is<RestoreLogMessage>(l => l.Code == expectedCode && 
+            innerLogger.Verify(x => x.Log(It.Is<ILogMessage>(l => 
             l.Level == messageLevel && 
             l.Message == message)), 
             times);

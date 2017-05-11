@@ -23,19 +23,20 @@ namespace NuGet.PackageManagement
             {
                 var messageLevel = LogLevelToMessageLevel(message.Level);
 
-                _projectContext.Log(messageLevel, message.FormatMessage());
+                _projectContext.Log(messageLevel, message.Message);
             }
         }
 
-        public override async Task LogAsync(ILogMessage message)
+        public override Task LogAsync(ILogMessage message)
         {
             if (DisplayMessage(message.Level))
             {
                 var messageLevel = LogLevelToMessageLevel(message.Level);
-                var text = await message.FormatMessageAsync();
 
-                _projectContext.Log(messageLevel, text);
+                _projectContext.Log(messageLevel, message.Message);
             }
+
+            return Task.FromResult(0);
         }
 
         private static MessageLevel LogLevelToMessageLevel(LogLevel level)

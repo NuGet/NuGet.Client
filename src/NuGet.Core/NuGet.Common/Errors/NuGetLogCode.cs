@@ -32,6 +32,11 @@ namespace NuGet.Common
     public enum NuGetLogCode
     {
         /// <summary>
+        /// Do not display the code.
+        /// </summary>
+        Undefined = 0,
+
+        /// <summary>
         /// Undefined error
         /// </summary>
         NU1000 = 1000,
@@ -156,5 +161,10 @@ namespace NuGet.Common
         /// Feed error converted to a warning when ignoreFailedSources is true.
         /// </summary>
         NU1801 = 1801,
+
+        /// <summary>
+        /// Package MinClientVersion did not match.
+        /// </summary>
+        NU1901 = 1901,
     }
 }

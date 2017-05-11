@@ -63,14 +63,12 @@ namespace NuGet.Common
 
         public void Log(ILogMessage message)
         {
-            Log(message.Level, message.FormatMessage());
+            Log(message.Level, message.Message);
         }
 
         public async Task LogAsync(ILogMessage message)
         {
-            var data = await message.FormatMessageAsync();
-
-            await LogAsync(message.Level, data);
+            await LogAsync(message.Level, message.Message);
         }
 
         public abstract void LogDebug(string data);

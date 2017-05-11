@@ -8,7 +8,7 @@ using NuGet.Common;
 
 namespace NuGet.CommandLine
 {
-    public class Console : LegacyLoggerAdapter, IConsole
+    public class Console : LoggerBase, IConsole
     {
         /// <summary>
         /// All operations writing to Out should be wrapped in a lock to 
@@ -82,9 +82,20 @@ namespace NuGet.CommandLine
             }
         }
 
+        private Verbosity _verbosity;
+
         public Verbosity Verbosity
         {
-            get; set; 
+            get
+            {
+                return _verbosity;
+            }
+
+            set
+            {
+                _verbosity = value;
+                VerbosityLevel = GetVerbosityLevel(_verbosity);
+            }
         }
 
         public bool IsNonInteractive
@@ -370,53 +381,76 @@ namespace NuGet.CommandLine
             }
         }
 
-        public override void LogDebug(string data)
+        public override void Log(ILogMessage message)
         {
-            if (Verbosity == Verbosity.Detailed)
+            if (message.Level == LogLevel.Debug)
             {
-                WriteColor(Out, ConsoleColor.Gray, data);
+                WriteColor(Out, ConsoleColor.Gray, message.Message);
+            }
+            else if (message.Level == LogLevel.Warning)
+            {
+                if (message.Code >= NuGetLogCode.NU1000)
+                {
+                    WriteWarning(FormatWithCode(message));
+                }
+                else
+                {
+                    // Write warnings without codes otherwise.
+                    WriteWarning(message.Message);
+                }
+            }
+            else if (message.Level == LogLevel.Error)
+            {
+                if (message is RestoreLogMessage)
+                {
+                    WriteLine(ConsoleColor.Red, message.Message);
+                }
+                else
+                {
+                    // Write out codes for messages that have codes.
+                    if (message.Code >= NuGetLogCode.NU1000)
+                    {
+                        WriteError(FormatWithCode(message));
+                    }
+                    else
+                    {
+                        // Write errors without codes otherwise.
+                        WriteError(message.Message);
+                    }
+                }
+            }
+            else
+            {
+                // Verbose, Information
+                WriteLine(message.Message);
             }
         }
 
-        public override void LogVerbose(string data)
+        public override Task LogAsync(ILogMessage message)
         {
-            if (Verbosity == Verbosity.Detailed)
+            Log(message);
+
+            return Task.FromResult(0);
+        }
+
+        private static string FormatWithCode(ILogMessage message)
+        {
+            return $"{Enum.GetName(typeof(NuGetLogCode), message.Code)}: {message.Message}";
+        }
+
+        private static LogLevel GetVerbosityLevel(Verbosity level)
+        {
+            switch (level)
             {
-                WriteLine(data);
+                case Verbosity.Detailed:
+                    return LogLevel.Debug;
+                case Verbosity.Normal:
+                    return LogLevel.Information;
+                case Verbosity.Quiet:
+                    return LogLevel.Warning;
             }
-        }
 
-        public override void LogInformation(string data)
-        {
-            if (Verbosity == Verbosity.Normal || Verbosity == Verbosity.Detailed)
-            {
-                WriteLine(data);
-            }
-        }
-
-        public override void LogMinimal(string data)
-        {
-            LogInformation(data);
-        }
-
-        public override void LogWarning(string data)
-        {
-            WriteWarning(data);
-        }
-
-        public override void LogError(string data)
-        {
-            WriteLine(ConsoleColor.Red, data);
-        }
-
-        public override void LogInformationSummary(string data)
-        {
-            LogInformation(data);
-        }
-
-        public override void LogErrorSummary(string data)
-        {
-            WriteError(data);
+            return LogLevel.Information;
         }
     }
 }
