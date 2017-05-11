@@ -32,6 +32,11 @@ namespace NuGet.Common
     public enum NuGetLogCode
     {
         /// <summary>
+        /// Do not display the code.
+        /// </summary>
+        Undefined = 0,
+
+        /// <summary>
         /// Undefined error
         /// </summary>
         NU1000 = 1000,

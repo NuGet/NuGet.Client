@@ -32,15 +32,7 @@ namespace NuGet.Common
 
         public string FormatMessage()
         {
-            // Only errors and warnings need codes. informational do not need codes.
-            if (Level >= LogLevel.Warning)
-            {
-                return $"{Enum.GetName(typeof(NuGetLogCode), Code)}: {Message}";
-            }
-            else
-            {
-                return Message;
-            }
+            return Message;
         }
 
         public Task<string> FormatMessageAsync()
