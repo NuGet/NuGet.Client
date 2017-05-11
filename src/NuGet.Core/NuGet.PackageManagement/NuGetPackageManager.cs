@@ -425,7 +425,6 @@ namespace NuGet.PackageManagement
                 nuGetProjectContext, primarySources, secondarySources, token);
 
             SetDirectInstall(packageIdentity, nuGetProjectContext);
-
             // Step-2 : Execute all the nuGetProjectActions
             await ExecuteNuGetProjectActionsAsync(
                 nuGetProject,
@@ -2047,10 +2046,23 @@ namespace NuGet.PackageManagement
             {
                 // Set the original packages config if it exists
                 var msbuildProject = nuGetProject as MSBuildNuGetProject;
+                var mightNeedHelperNetstandardPackage = false;
+                var needsNetstandard20Assets = false;
+                NuGetFramework projectTargetFramework = null;
                 if (msbuildProject != null)
                 {
                     nuGetProjectContext.OriginalPackagesConfig =
                         msbuildProject.PackagesConfigNuGetProject?.GetPackagesConfig();
+                    projectTargetFramework = msbuildProject.PackagesConfigNuGetProject?.TargetFramework;
+                    if(projectTargetFramework != null)
+                    {
+                        // This boolean is used to narrow down the condition to determine whether package 
+                        // "NETStandard.Library.NetFramework" needs to be installed to this project to make
+                        // NETStandard2.0 compatible with net461/net462/net47.
+                        mightNeedHelperNetstandardPackage = projectTargetFramework == FrameworkConstants.CommonFrameworks.Net461
+                            || projectTargetFramework == FrameworkConstants.CommonFrameworks.Net462
+                            || projectTargetFramework == FrameworkConstants.CommonFrameworks.Net47;
+                    }
                 }
 
                 var executedNuGetProjectActions = new Stack<NuGetProjectAction>();
@@ -2080,6 +2092,15 @@ namespace NuGet.PackageManagement
 
                     if (hasInstalls)
                     {
+                        // If the install actions include the compatibility package itself, then we mark the boolean as false
+                        // to avoid running into a recursive loop (since installing the compatibility package does need netstandard2.0 assets).
+                        if(actionsList.Where(action => action.NuGetProjectActionType == NuGetProjectActionType.Install)
+                            .Where(t => string.Equals(t.PackageIdentity.Id, "NETStandard.Library.NETFramework", StringComparison.OrdinalIgnoreCase))
+                            .Any())
+                        {
+                            mightNeedHelperNetstandardPackage = false;
+                        }
+
                         // Make this independently cancelable.
                         downloadTokenSource = CancellationTokenSource.CreateLinkedTokenSource(token);
 
@@ -2119,6 +2140,13 @@ namespace NuGet.PackageManagement
                                 nuGetProjectAction.PackageIdentity,
                                 packageWithDirectoriesToBeDeleted,
                                 nuGetProjectContext, token);
+
+                            // uninstall
+                            nuGetProjectContext.Log(
+                                ProjectManagement.MessageLevel.Info,
+                                Strings.SuccessfullyUninstalled,
+                                nuGetProjectAction.PackageIdentity,
+                                nuGetProject.GetMetadata<string>(NuGetProjectMetadataKeys.Name));
                         }
                         else
                         {
@@ -2127,9 +2155,21 @@ namespace NuGet.PackageManagement
                             var preFetchResult = downloadTasks[nuGetProjectAction.PackageIdentity];
                             using (var downloadPackageResult = await preFetchResult.GetResultAsync())
                             {
+
                                 // use the version exactly as specified in the nuspec file
                                 var packageIdentity = downloadPackageResult.PackageReader.GetIdentity();
-
+                                if(!needsNetstandard20Assets && mightNeedHelperNetstandardPackage && projectTargetFramework != null)
+                                {
+                                    // we look at target frameworks supported by the package and determine if the nearest framework is netstandard2.0,
+                                    // then we do need to install the compatibility package. We only do it once for the whole list of actions -
+                                    // hence the !needsNetstandard20Assets condition.
+                                    var frameworkReducer = new FrameworkReducer();
+                                    var nearestFramework = frameworkReducer.GetNearest(projectTargetFramework, downloadPackageResult.PackageReader.GetSupportedFrameworks());
+                                    if(nearestFramework == FrameworkConstants.CommonFrameworks.NetStandard20)
+                                    {
+                                        needsNetstandard20Assets = true;
+                                    }
+                                }
                                 await ExecuteInstallAsync(
                                     nuGetProject,
                                     packageIdentity,
@@ -2137,30 +2177,24 @@ namespace NuGet.PackageManagement
                                     packageWithDirectoriesToBeDeleted,
                                     nuGetProjectContext,
                                     token);
-                            }
-                        }
 
-                        if (nuGetProjectAction.NuGetProjectActionType == NuGetProjectActionType.Install)
-                        {
-                            var identityString = string.Format(CultureInfo.InvariantCulture, "{0} {1}",
+                                var identityString = string.Format(CultureInfo.InvariantCulture, "{0} {1}",
                                 nuGetProjectAction.PackageIdentity.Id,
                                 nuGetProjectAction.PackageIdentity.Version.ToNormalizedString());
 
-                            nuGetProjectContext.Log(
-                                ProjectManagement.MessageLevel.Info,
-                                Strings.SuccessfullyInstalled,
-                                identityString,
-                                nuGetProject.GetMetadata<string>(NuGetProjectMetadataKeys.Name));
+                                nuGetProjectContext.Log(
+                                    ProjectManagement.MessageLevel.Info,
+                                    Strings.SuccessfullyInstalled,
+                                    identityString,
+                                    nuGetProject.GetMetadata<string>(NuGetProjectMetadataKeys.Name));
+                            }
                         }
-                        else
-                        {
-                            // uninstall
-                            nuGetProjectContext.Log(
-                                ProjectManagement.MessageLevel.Info,
-                                Strings.SuccessfullyUninstalled,
-                                nuGetProjectAction.PackageIdentity,
-                                nuGetProject.GetMetadata<string>(NuGetProjectMetadataKeys.Name));
-                        }
+                    }
+
+                    if(needsNetstandard20Assets)
+                    {
+                        // Install the compatibility package
+                        await InstallNetStandard20CompatibilityPackage(nuGetProject, nuGetProjectContext, token);
                     }
 
                     // Post process
@@ -2261,6 +2295,72 @@ namespace NuGet.PackageManagement
                 exceptionInfo.Throw();
             }
 
+        }
+
+        private async Task InstallNetStandard20CompatibilityPackage(NuGetProject nuGetProject, 
+            INuGetProjectContext nuGetProjectContext, 
+            CancellationToken token)
+        {
+            try
+            {
+                nuGetProjectContext.Log(
+                        ProjectManagement.MessageLevel.Info,
+                        Strings.InstallingNetstandard20CompatibilityPackage);
+
+                var resolutionContext = new ResolutionContext(DependencyBehavior.Lowest,
+                includePrelease: false,
+                includeUnlisted: false,
+                versionConstraints: VersionConstraints.None);
+
+                var primarySources = SourceRepositoryProvider.GetRepositories()
+                    .Where(e => e.PackageSource.IsEnabled);
+
+                var log = new LoggerAdapter(nuGetProjectContext);
+
+                // First check for latest stable version of the package.
+                var resolvedPackage = await GetLatestVersionAsync("NETStandard.Library.NETFramework",
+                    nuGetProject,
+                    resolutionContext,
+                    primarySources,
+                    log,
+                    token);
+
+                if (resolvedPackage == null || resolvedPackage.LatestVersion == null)
+                {
+                    // If no stable version of the package could be found, then look for latest pre-release.
+                    resolutionContext = new ResolutionContext(DependencyBehavior.Lowest,
+                        includePrelease: true,
+                        includeUnlisted: false,
+                        versionConstraints: VersionConstraints.None);
+
+                    resolvedPackage = await GetLatestVersionAsync("NETStandard.Library.NETFramework",
+                        nuGetProject,
+                        resolutionContext,
+                        primarySources,
+                        log,
+                        token);
+
+                    if (resolvedPackage == null || resolvedPackage.LatestVersion == null)
+                    {
+                        throw new InvalidOperationException(string.Format(Strings.NoLatestVersionFound, "NETStandard.Library.NETFramework"));
+                    }
+
+                }
+
+                await InstallPackageAsync(nuGetProject,
+                    new PackageIdentity("NETStandard.Library.NETFramework", resolvedPackage.LatestVersion),
+                    resolutionContext,
+                    nuGetProjectContext,
+                    primarySources,
+                    Enumerable.Empty<SourceRepository>(),
+                    token);
+            }
+            catch (InvalidOperationException e) when (e.InnerException.GetType() == typeof(PackageAlreadyInstalledException))
+            {
+                nuGetProjectContext.Log(
+                        ProjectManagement.MessageLevel.Info,
+                        Strings.Netstandard20CompatibilityPackageAlreadyInstalled);
+            }
         }
 
         /// <summary>

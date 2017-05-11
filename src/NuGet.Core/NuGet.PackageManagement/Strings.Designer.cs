@@ -10,8 +10,8 @@
 
 namespace NuGet.PackageManagement {
     using System;
-    using System.Reflection;
-
+    
+    
     /// <summary>
     ///   A strongly-typed resource class, for looking up localized strings, etc.
     /// </summary>
@@ -39,7 +39,7 @@ namespace NuGet.PackageManagement {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("NuGet.PackageManagement.Strings", typeof(Strings).GetTypeInfo().Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("NuGet.PackageManagement.Strings", typeof(Strings).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -457,6 +457,15 @@ namespace NuGet.PackageManagement {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Installing &quot;NETStandard.Library.NETFramework&quot; for compatibilty between NETStandard 2.0 and current project&apos;s target framework..
+        /// </summary>
+        internal static string InstallingNetstandard20CompatibilityPackage {
+            get {
+                return ResourceManager.GetString("InstallingNetstandard20CompatibilityPackage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Installing package &apos;{0}&apos; to project.
         /// </summary>
         internal static string InstallingPackage {
@@ -498,6 +507,15 @@ namespace NuGet.PackageManagement {
         internal static string MultiplePackageTypesNotSupported {
             get {
                 return ResourceManager.GetString("MultiplePackageTypesNotSupported", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Compatibility package &quot;NETStandard.Library.NETFramework&quot; is already installed and no updates available..
+        /// </summary>
+        internal static string Netstandard20CompatibilityPackageAlreadyInstalled {
+            get {
+                return ResourceManager.GetString("Netstandard20CompatibilityPackageAlreadyInstalled", resourceCulture);
             }
         }
         
