@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -196,9 +196,9 @@ namespace NuGet.Commands
 
         private string GetPackagesPath(RestoreArgs restoreArgs, ISettings settings, string rootPath, ExternalProjectReference project)
         {
-            if (settings != null)
+            if (restoreArgs.GlobalPackagesFolder != null)
             {
-                project.PackageSpec.RestoreMetadata.PackagesPath = restoreArgs.GetEffectiveGlobalPackagesFolder(rootPath, settings);
+                project.PackageSpec.RestoreMetadata.PackagesPath = restoreArgs.GlobalPackagesFolder;
             }
             return project.PackageSpec.RestoreMetadata.PackagesPath;
         }

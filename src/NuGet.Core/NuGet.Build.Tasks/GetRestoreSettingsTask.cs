@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -57,7 +57,9 @@ namespace NuGet.Build.Tasks
             {
                 var configFileFullPath = Path.GetFullPath(RestoreConfigFile);
                 var configFileName = Path.GetFileName(configFileFullPath);
-                return Settings.LoadSpecificSettings(projectDirectory, configFileName: configFileName);
+                var configDirPath = Path.GetDirectoryName(RestoreConfigFile);
+                //TODO - ADd a switch to use machine wide settings
+                return Settings.LoadSpecificSettings(configDirPath, configFileName: configFileName);
             }
         }
 

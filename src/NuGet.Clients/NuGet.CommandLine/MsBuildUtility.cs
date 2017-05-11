@@ -148,24 +148,26 @@ namespace NuGet.CommandLine
                 var isMono = RuntimeEnvironmentHelper.IsMono && !RuntimeEnvironmentHelper.IsWindows;
 
                 //Append settings
-                if (settings != null) {
+                if (settings != null)
+                {
                     var outputPackagesPath = SettingsUtility.GetGlobalPackagesFolder(settings);
                     argumentBuilder.Append(" /p:RestorePackagesPath=");
-                    argumentBuilder.Append(Escape(outputPackagesPath));
-
+                    argumentBuilder.Append(EscapeQuoted(PathUtility.RemoveDirectorySeparator(outputPackagesPath)));
+                    
                     var packageSourceProvider = new PackageSourceProvider(settings);
                     var packageSourcesFromProvider = packageSourceProvider.LoadPackageSources();
                     var restoreSources = packageSourcesFromProvider.Select(e => e.Source);
                     argumentBuilder.Append(" /p:RestoreSources=");
-                    argumentBuilder.Append(Escape(string.Join(";", restoreSources.Select(p => p))));
-
+                    argumentBuilder.Append(EscapeQuoted(string.Join(";", restoreSources.Select(p => PathUtility.RemoveDirectorySeparator(p)))));
+                    
                     var fallbackFolders = SettingsUtility.GetFallbackPackageFolders(settings);
                     argumentBuilder.Append(" /p:RestoreFallbackFolders=");
-                    argumentBuilder.Append(Escape(string.Join(";", fallbackFolders.Select(p => p))));
-
+                    argumentBuilder.Append(EscapeQuoted(string.Join(";",fallbackFolders.Select(p => PathUtility.RemoveDirectorySeparator(p)))));
+                    
                     argumentBuilder.Append(" /p:RestoreConfigFile=");
                     var config = settings.Priority.First();
-                    argumentBuilder.Append(Escape(Path.Combine(config.Root, config.FileName)));
+                    argumentBuilder.Append(EscapeQuoted(PathUtility.RemoveDirectorySeparator(Path.Combine(config.Root, config.FileName))));
+                    
                 }
 
 
@@ -230,7 +232,7 @@ namespace NuGet.CommandLine
                     var output = new StringBuilder();
                     var excluded = new string[] { "msb4011", entryPointTargetPath };
                     var errorTask = ConsumeStreamReaderAsync(process.StandardError, errors, filter: null);
-                    var outputTask = ConsumeStreamReaderAsync(process.StandardOutput, output, filter: (line) => IsIgnoredOutput(line, excluded));
+                    var outputTask = ConsumeStreamReaderAsync(process.StandardOutput, output, filter: null /*(line) => IsIgnoredOutput(line, excluded)*/);
                     var finished = process.WaitForExit(timeOut);
                     if (!finished)
                     {
@@ -250,8 +252,13 @@ namespace NuGet.CommandLine
                             LocalizedResourceManager.GetString(nameof(NuGetResources.Error_MsBuildTimedOut)));
                     }
 
-                    await outputTask;
+                    if (!string.IsNullOrEmpty(msbuildVerbosity))
+                    {
+                        console.LogDebug(output.ToString());
+                    }
 
+                    await outputTask;
+                    
                     if (process.ExitCode != 0)
                     {
                         await errorTask;
@@ -305,7 +312,7 @@ namespace NuGet.CommandLine
             try
             {
                 var assembly = Assembly.Load(
-                    "Microsoft.Build.Engine, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a");
+                    "Microsoft.Build.Engine, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f1d50a3a");
                 var solutionParserType = assembly.GetType("Mono.XBuild.CommandLine.SolutionParser");
                 if (solutionParserType == null)
                 {
@@ -736,10 +743,11 @@ namespace NuGet.CommandLine
 
         private static void AppendEnvironmentAwareQuote(StringBuilder builder, string quotable, bool isMono)
         {
+            var quote = isMono ? "\\\"" : "\"";
             builder
-               .Append(isMono ? "\\\"" : "\"")
+               .Append(quote)
                .Append(quotable)
-               .Append(isMono ? "\\\"" : "\"");
+               .Append(quote);
         }
 
         private static void ExtractResource(string resourceName, string targetPath)
@@ -827,6 +835,18 @@ namespace NuGet.CommandLine
                 RegexOptions.Singleline);
 
             return escaped;
+        }
+
+        public static string EscapeQuoted(string argument)
+        {
+            if (argument == string.Empty)
+            {
+                return "\"\"";
+            }
+            var escaped = Regex.Replace(argument, @"(\\*)" + "\"", @"$1$1\" + "\"");
+            escaped = "\"" + Regex.Replace(escaped, @"(\\+)$", @"$1$1") + "\"";
+            return escaped;
+
         }
 
         private static string GetMsbuild(string msbuildDirectory)

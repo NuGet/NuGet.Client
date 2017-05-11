@@ -88,6 +88,15 @@ namespace NuGet.Common
             return path + trailingCharacter;
         }
 
+        public static string RemoveDirectorySeparator(string path)
+        {
+            if (HasTrailingDirectorySeparator(path))
+            {
+                return path.Substring(0, path.Length - 1);
+            }
+            return path;
+        }
+        
         public static bool IsChildOfDirectory(string dir, string candidate)
         {
             if (dir == null)
