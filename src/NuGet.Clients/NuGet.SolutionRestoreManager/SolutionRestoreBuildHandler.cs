@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft;
 using Microsoft.VisualStudio;
+using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Threading;
 using NuGet.Configuration;
@@ -33,13 +34,10 @@ namespace NuGet.SolutionRestoreManager
         private const uint REBUILD_FLAG = (uint)VSSOLNBUILDUPDATEFLAGS.SBF_OPERATION_FORCE_UPDATE + (uint)VSSOLNBUILDUPDATEFLAGS.SBF_OPERATION_BUILD;
         private const uint VSCOOKIE_NIL = 0;
 
-        [Import]
         private Lazy<INuGetLockService> LockService { get; set; }
 
-        [Import]
         private Lazy<ISettings> Settings { get; set; }
 
-        [Import]
         private Lazy<ISolutionRestoreWorker> SolutionRestoreWorker { get; set; }
 
         /// <summary>
@@ -107,10 +105,18 @@ namespace NuGet.SolutionRestoreManager
             Assumes.Present(serviceProvider);
 
             var instance = new SolutionRestoreBuildHandler();
-
             var componentModel = await serviceProvider.GetComponentModelAsync();
             componentModel.DefaultCompositionService.SatisfyImportsOnce(instance);
 
+            instance.LockService = new Lazy<INuGetLockService>(
+                () => componentModel.GetService<INuGetLockService>());
+
+            instance.SolutionRestoreWorker = new Lazy<ISolutionRestoreWorker>(
+                () => componentModel.GetService<ISolutionRestoreWorker>());
+
+            instance.Settings = new Lazy<ISettings>(
+                () => componentModel.GetService<ISettings>());
+                        
             await instance.SubscribeAsync(serviceProvider);
 
             return instance;
