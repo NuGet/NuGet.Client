@@ -49,7 +49,7 @@ namespace NuGet.Common
             // Log the stack as an error if ShowStack is set.
             var stackLevel = (logStackAsError || ExceptionLogger.Instance.ShowStack) ? LogLevel.Error : LogLevel.Verbose;
 
-            logger.Log(LogMessage.Create(stackLevel, unwrappedException.StackTrace.ToString()));
+            logger.Log(LogMessage.Create(stackLevel, unwrappedException.ToString()));
         }
 
         public static string DisplayMessage(Exception exception, bool indent)

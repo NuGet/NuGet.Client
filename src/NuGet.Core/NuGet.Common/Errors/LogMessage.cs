@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Threading.Tasks;
 
 namespace NuGet.Common
 {
@@ -30,19 +29,9 @@ namespace NuGet.Common
             Message = message;
         }
 
-        public string FormatMessage()
-        {
-            return Message;
-        }
-
-        public Task<string> FormatMessageAsync()
-        {
-            return Task.FromResult(FormatMessage());
-        }
-
         public override string ToString()
         {
-            return FormatMessage();
+            return Message;
         }
 
         public static LogMessage CreateError(NuGetLogCode code, string message)

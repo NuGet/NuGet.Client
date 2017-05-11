@@ -103,10 +103,10 @@ namespace NuGet.Commands.Test
 
             await UnexpectedDependencyMessages.LogAsync(targetGraphs, project, testLogger);
 
-            testLogger.ShowMessages().Should().NotContain("NU1604");
-            testLogger.ShowMessages().Should().Contain("NU1601");
-            testLogger.ShowMessages().Should().NotContain("NU1602");
-            testLogger.ShowMessages().Should().NotContain("NU1603");
+            testLogger.LogMessages.Select(e => e.Code).Should().NotContain(NuGetLogCode.NU1604);
+            testLogger.LogMessages.Select(e => e.Code).Should().Contain(NuGetLogCode.NU1601);
+            testLogger.LogMessages.Select(e => e.Code).Should().NotContain(NuGetLogCode.NU1602);
+            testLogger.LogMessages.Select(e => e.Code).Should().NotContain(NuGetLogCode.NU1603);
         }
 
         [Fact]
@@ -137,10 +137,10 @@ namespace NuGet.Commands.Test
 
             await UnexpectedDependencyMessages.LogAsync(targetGraphs, project, testLogger);
 
-            testLogger.ShowMessages().Should().NotContain("NU1604");
-            testLogger.ShowMessages().Should().NotContain("NU1601");
-            testLogger.ShowMessages().Should().Contain("NU1602");
-            testLogger.ShowMessages().Should().NotContain("NU1603");
+            testLogger.LogMessages.Select(e => e.Code).Should().NotContain(NuGetLogCode.NU1604);
+            testLogger.LogMessages.Select(e => e.Code).Should().NotContain(NuGetLogCode.NU1601);
+            testLogger.LogMessages.Select(e => e.Code).Should().Contain(NuGetLogCode.NU1602);
+            testLogger.LogMessages.Select(e => e.Code).Should().NotContain(NuGetLogCode.NU1603);
         }
 
         [Fact]
@@ -171,10 +171,10 @@ namespace NuGet.Commands.Test
 
             await UnexpectedDependencyMessages.LogAsync(targetGraphs, project, testLogger);
 
-            testLogger.ShowMessages().Should().Contain("NU1604");
-            testLogger.ShowMessages().Should().NotContain("NU1601");
-            testLogger.ShowMessages().Should().NotContain("NU1602");
-            testLogger.ShowMessages().Should().NotContain("NU1603");
+            testLogger.LogMessages.Select(e => e.Code).Should().Contain(NuGetLogCode.NU1604);
+            testLogger.LogMessages.Select(e => e.Code).Should().NotContain(NuGetLogCode.NU1601);
+            testLogger.LogMessages.Select(e => e.Code).Should().NotContain(NuGetLogCode.NU1602);
+            testLogger.LogMessages.Select(e => e.Code).Should().NotContain(NuGetLogCode.NU1603);
         }
 
         [Fact]
