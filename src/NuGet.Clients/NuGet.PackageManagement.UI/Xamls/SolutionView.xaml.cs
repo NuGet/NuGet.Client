@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -128,7 +128,7 @@ namespace NuGet.PackageManagement.UI
                 sortInfo.SortDirection = null;
             }
         }
-
+        
         private void SortByColumn(GridViewColumnHeader sortColumn)
         {
             var sortInfo = sortColumn.Content as SortableColumnHeader;
@@ -137,6 +137,11 @@ namespace NuGet.PackageManagement.UI
                 return;
             }
 
+            SortByColumn(sortInfo);
+        }
+
+        private void SortByColumn(SortableColumnHeader sortInfo)
+        {
             _projectList.Items.SortDescriptions.Clear();
 
             // add new sort description
@@ -163,13 +168,12 @@ namespace NuGet.PackageManagement.UI
             // clear sort direction of other columns
             foreach (var column in _sortableColumns)
             {
-                if (column == sortColumn)
+                if (column.Content == sortInfo)
                 {
                     continue;
                 }
 
-                sortInfo = (SortableColumnHeader)column.Content;
-                sortInfo.SortDirection = null;
+                ((SortableColumnHeader)column.Content).SortDirection = null;
             }
         }
 
@@ -214,13 +218,25 @@ namespace NuGet.PackageManagement.UI
             _projectList.SizeChanged -= ListView_SizeChanged;
         }
 
-        private void ProjectList_PreviewKeyUp(object sender, System.Windows.Input.KeyEventArgs e)
+        private void ProjectList_PreviewKeyUp(object sender, KeyEventArgs e)
         {
-            // toggle the selection state when user presses the space bar
+            // toggle the selection state when user presses the space bar when focus is on the ListViewItem
             var packageInstallationInfo = _projectList.SelectedItem as PackageInstallationInfo;
-            if (packageInstallationInfo != null && e.Key == Key.Space)
+            if (packageInstallationInfo != null
+                && e.Key == Key.Space
+                && ((ListViewItem)(_projectList.ItemContainerGenerator.ContainerFromItem(_projectList.SelectedItem))).IsFocused)
             {
                 packageInstallationInfo.IsSelected = !packageInstallationInfo.IsSelected;
+                e.Handled = true;
+            }
+        }
+
+        private void SortableColumnHeader_PreviewKeyUp(object sender, KeyEventArgs e)
+        {
+            var sortableColumnHeader = sender as SortableColumnHeader;
+            if(sortableColumnHeader != null && (e.Key == Key.Space || e.Key == Key.Enter))
+            {
+                SortByColumn(sortableColumnHeader);
                 e.Handled = true;
             }
         }
