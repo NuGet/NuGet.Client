@@ -1453,7 +1453,7 @@ namespace NuGet.Commands.FuncTest
 
                 // Assert
                 Assert.Equal(1, logger.Warnings); // Warnings are combined on message
-                Assert.Contains("NU1603: TestProject depends on Newtonsoft.Json (>= 7.0.0) but Newtonsoft.Json 7.0.0 was not found. An approximate best match of Newtonsoft.Json 7.0.1 was resolved.", logger.Messages);
+                Assert.Contains("TestProject depends on Newtonsoft.Json (>= 7.0.0) but Newtonsoft.Json 7.0.0 was not found. An approximate best match of Newtonsoft.Json 7.0.1 was resolved.", logger.Messages);
             }
         }
 
@@ -1489,7 +1489,7 @@ namespace NuGet.Commands.FuncTest
 
                 // Assert
                 Assert.Equal(1, logger.Warnings); // Warnings for all graphs are combined
-                Assert.Contains("NU1603: TestProject depends on Newtonsoft.Json (>= 7.0.0) but Newtonsoft.Json 7.0.0 was not found. An approximate best match of Newtonsoft.Json 7.0.1 was resolved.", logger.Messages);
+                Assert.Contains("TestProject depends on Newtonsoft.Json (>= 7.0.0) but Newtonsoft.Json 7.0.0 was not found. An approximate best match of Newtonsoft.Json 7.0.1 was resolved.", logger.Messages);
             }
         }
 

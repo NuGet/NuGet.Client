@@ -1210,8 +1210,8 @@ namespace NuGet.CommandLine.Test
 
                     // Assert
                     Assert.Equal(1, r1.Item1);
-                    Assert.Contains("401 (Unauthorized)", r1.Item3);
-                    Assert.Contains($"Credential plugin {pluginPath} handles this request, but is unable to provide credentials. Testing abort.", r1.Item2);
+                    Assert.Contains("401 (Unauthorized)", r1.Item2 + " " + r1.Item3);
+                    Assert.Contains($"Credential plugin {pluginPath} handles this request, but is unable to provide credentials. Testing abort.", r1.Item2 + " " + r1.Item3);
 
                     // No requests hit server, since abort during credential acquisition
                     // and no fallback to console provider
