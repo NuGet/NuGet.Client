@@ -186,7 +186,7 @@
           <GridViewColumn>
             <GridViewColumn.Header>
               <GridViewColumnHeader
-                HorizontalContentAlignment="Left">
+                HorizontalContentAlignment="Left" TabIndex="2147483644">
                 <CheckBox
                   KeyboardNavigation.TabIndex="0"
                   FocusVisualStyle="{DynamicResource ListViewItemFocusVisual}"
@@ -218,7 +218,7 @@
               <GridViewColumnHeader
                 x:Name="_projectColumnHeader"
                 HorizontalContentAlignment="Left"
-                Click="ColumnHeader_Clicked">
+                Click="ColumnHeader_Clicked" TabIndex="2147483645">
                 <local:SortableColumnHeader
                   KeyboardNavigation.TabIndex="1"
                   HeaderText="{x:Static local:Resources.ColumnHeader_Project}"
@@ -250,7 +250,7 @@
               <GridViewColumnHeader
                 x:Name="_versionColumnHeader"
                 Click="ColumnHeader_Clicked"
-                HorizontalContentAlignment="Left">
+                HorizontalContentAlignment="Left" TabIndex="2147483646">
                 <local:SortableColumnHeader
                   KeyboardNavigation.TabIndex="2"
                   HeaderText="{x:Static local:Resources.ColumnHeader_Version}"
