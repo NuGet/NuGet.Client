@@ -28,7 +28,7 @@
     <SignTargetsForRealSigning>GetBuildOutputWithSigningMetadata</SignTargetsForRealSigning>
     <SymbolTargetsToGetPdbs>GetDebugSymbolsProjectOutput</SymbolTargetsToGetPdbs>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(IncludeInVSIX)' == 'true'">
+  <PropertyGroup Condition="'$(Shipping)' == 'true'">
     <LocTargets>GetBuildOutputWithLocMetadata</LocTargets>
   </PropertyGroup>
   <!-- Write out .XML files for projects that will be packed. -->
@@ -132,11 +132,10 @@
           TaskParameter="TargetOutputs"
           ItemName="DllsToSign" />
     </MSBuild>
-    <MsBuild Condition="'$(IncludeInVsix)' == 'true' AND '$(BuildRTM)' != 'true'"
+    <MsBuild Condition="'$(BuildRTM)' != 'true'"
       Projects="$(MSBuildProjectFullPath)"
       Targets="_GetLocalizedDllsForSigning"
-      Properties="IsVsixBuild=true;
-                  BuildProjectReferences=false;">
+      Properties="BuildProjectReferences=false;">
       <Output
         TaskParameter="TargetOutputs"
         ItemName="DllsToSign"/>
@@ -173,11 +172,11 @@
     be localized from each project
     ============================================================
   -->
-  <Target Name="GetLocalizationInputs" Returns="@(DllsToLocalize)" Condition=" '$(IncludeInVSIX)' == 'true' ">
+  <Target Name="GetLocalizationInputs" DependsOnTargets="GetTargetFrameworkSet" Returns="@(DllsToLocalize)" Condition="'$(Shipping)' == 'true'">
     <MSBuild
       Projects="$(MSBuildProjectFullPath)"
       Targets="$(LocTargets)"
-      Properties="IsVsixBuild=true;
+      Properties="TargetFramework=%(ProjectTargetFrameworkEntries.Identity);
                   BuildProjectReferences=false;">
 
       <Output
@@ -188,7 +187,7 @@
 
   <Target Name="GetBuildOutputWithLocMetadata" DependsOnTargets="BuiltProjectOutputGroup" Returns="@(DllsToLocalizeWithMetadata)">
     <ItemGroup>
-      <DllsToLocalizeWithMetadata Include="@(BuiltProjectOutputGroupOutput->'%(FinalOutputPath)')" Condition="'%(Extension)' == '.dll'" KeepDuplicates="false">
+      <DllsToLocalizeWithMetadata Include="@(BuiltProjectOutputGroupOutput->'%(FinalOutputPath)')" Condition="'%(Extension)' == '.dll' OR '%(Filename)' == 'NuGet.CommandLine.XPlat'" KeepDuplicates="false">
         <TranslationFile>$(LocalizationRootDirectory)\{Lang}\15\%(Filename).resources.dll.lcl</TranslationFile>    <!--Required: translation file-->
 	      <LciCommentFile>$(LocalizationRootDirectory)\comments\15\%(Filename).resources.dll.lci</LciCommentFile>
       </DllsToLocalizeWithMetadata>
