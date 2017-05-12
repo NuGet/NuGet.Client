@@ -90,10 +90,10 @@ namespace NuGet.Common
 
         public static string RemoveDirectorySeparator(string path)
         {
-            if (HasTrailingDirectorySeparator(path))
-            {
-                return path.Substring(0, path.Length - 1);
-            }
+            //if (HasTrailingDirectorySeparator(path))
+            //{
+            //    return path.Substring(0, path.Length - 1);
+            //}
             return path;
         }
         

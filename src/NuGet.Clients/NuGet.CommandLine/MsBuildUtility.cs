@@ -72,7 +72,9 @@ namespace NuGet.CommandLine
             int timeOut,
             IConsole console,
             bool recursive,
-            ISettings settings)
+            string solutionDirectory,
+            string restoreConfigFile,
+            string restoreDirectory)
         {
             string msbuildPath = GetMsbuild(msbuildDirectory);
 
@@ -147,29 +149,22 @@ namespace NuGet.CommandLine
                 // Projects to restore
                 var isMono = RuntimeEnvironmentHelper.IsMono && !RuntimeEnvironmentHelper.IsWindows;
 
-                //Append settings
-                if (settings != null)
+                if (!string.IsNullOrEmpty(solutionDirectory))
                 {
-                    var outputPackagesPath = SettingsUtility.GetGlobalPackagesFolder(settings);
-                    argumentBuilder.Append(" /p:RestorePackagesPath=");
-                    argumentBuilder.Append(EscapeQuoted(PathUtility.RemoveDirectorySeparator(outputPackagesPath)));
-                    
-                    var packageSourceProvider = new PackageSourceProvider(settings);
-                    var packageSourcesFromProvider = packageSourceProvider.LoadPackageSources();
-                    var restoreSources = packageSourcesFromProvider.Select(e => e.Source);
-                    argumentBuilder.Append(" /p:RestoreSources=");
-                    argumentBuilder.Append(EscapeQuoted(string.Join(";", restoreSources.Select(p => PathUtility.RemoveDirectorySeparator(p)))));
-                    
-                    var fallbackFolders = SettingsUtility.GetFallbackPackageFolders(settings);
-                    argumentBuilder.Append(" /p:RestoreFallbackFolders=");
-                    argumentBuilder.Append(EscapeQuoted(string.Join(";",fallbackFolders.Select(p => PathUtility.RemoveDirectorySeparator(p)))));
-                    
-                    argumentBuilder.Append(" /p:RestoreConfigFile=");
-                    var config = settings.Priority.First();
-                    argumentBuilder.Append(EscapeQuoted(PathUtility.RemoveDirectorySeparator(Path.Combine(config.Root, config.FileName))));
-                    
-                }
+                    argumentBuilder.Append(" /p:RestoreSolutionDirectory=");
+                    argumentBuilder.Append(EscapeQuoted(PathUtility.RemoveDirectorySeparator(solutionDirectory)));
 
+                }
+                if (!string.IsNullOrEmpty(restoreConfigFile))
+                {
+                    argumentBuilder.Append(" /p:RestoreConfigFile=");
+                    argumentBuilder.Append(EscapeQuoted(PathUtility.RemoveDirectorySeparator(restoreConfigFile)));
+
+                }
+                if (!string.IsNullOrEmpty(restoreDirectory)) {
+                    argumentBuilder.Append(" /p:RestoreDirectory=");
+                    argumentBuilder.Append(EscapeQuoted(PathUtility.RemoveDirectorySeparator(restoreDirectory)));
+                }
 
                 // Add all depenencies as top level restore projects if recursive is set
                 argumentBuilder.Append($" /p:RestoreRecursive={recursive} ");

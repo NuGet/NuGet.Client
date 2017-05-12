@@ -53,8 +53,7 @@ namespace NuGet.Commands
             }
 
             // Write the dg file to disk of the NUGET_PERSIST_DG is set.
-            // TODO NK - Do we want to log the updated DG SPEC or not? 
-            MSBuildRestoreUtility.PersistDGFileIfDebugging(dgFile, restoreContext.Log);
+            MSBuildRestoreUtility.PersistDGFileIfDebugging(dgFile, restoreContext.Log); //TODO NK - Not complete DgSpec/Sources get updated
 
             // Validate the dg file input, this throws if errors are found.
             SpecValidationUtility.ValidateDependencySpec(dgFile);
@@ -65,7 +64,6 @@ namespace NuGet.Commands
 
             foreach (var projectNameToRestore in dgFile.Restore)
             {
-                //TODO NK - Maybe this can be reworked somehow?
                 var closure = dgFile.GetClosure(projectNameToRestore);
 
                 var projectDependencyGraphSpec = dgFile.WithProjectClosure(projectNameToRestore);
@@ -127,19 +125,12 @@ namespace NuGet.Commands
             RestoreArgs restoreArgs,
             DependencyGraphSpec projectDgSpec)
         {
-            // Get settings relative to the input file
-            var rootPath = Path.GetDirectoryName(project.PackageSpec.FilePath);
-            ISettings settings = null;
-            var fallbackPaths =  GetFallBackPaths(restoreArgs, settings, project);
-            var globalPath = GetPackagesPath(restoreArgs, settings, rootPath, project);
-
-            if (settings == null)
-            {
-                settings = Settings.LoadSettingsGivenConfigPaths(project.PackageSpec.RestoreMetadata.ConfigFilePaths);
-            }
+            //fallback paths, global packages path and sources need to all be passed in the dg spec
+            var fallbackPaths = new ReadOnlyCollection<string>(project.PackageSpec.RestoreMetadata.FallbackFolders);
+            var globalPath = GetPackagesPath(restoreArgs, project);
+            var settings = Settings.LoadSettingsGivenConfigPaths(project.PackageSpec.RestoreMetadata.ConfigFilePaths);
             var sources = restoreArgs.GetEffectiveSources(settings);
             UpdateSources(project.PackageSpec.RestoreMetadata, sources);
-
 
             var sharedCache = _providerCache.GetOrCreate(
                 globalPath,
@@ -154,6 +145,8 @@ namespace NuGet.Commands
                 sharedCache,
                 restoreArgs.CacheContext,
                 restoreArgs.Log);
+
+            var rootPath = Path.GetDirectoryName(project.PackageSpec.FilePath);
 
             request.DependencyGraphSpec = projectDgSpec;
             request.AllowNoOp = restoreArgs.AllowNoOp;
@@ -180,21 +173,7 @@ namespace NuGet.Commands
             return summaryRequest;
         }
 
-        private IReadOnlyList<string> GetFallBackPaths(RestoreArgs restoreArgs, ISettings settings, ExternalProjectReference project)
-        {
-            if (settings == null)
-            {
-                return new ReadOnlyCollection<string>(project.PackageSpec.RestoreMetadata.FallbackFolders);
-            }
-            else
-            {
-                var fallBackPaths = restoreArgs.GetEffectiveFallbackPackageFolders(settings);
-                project.PackageSpec.RestoreMetadata.FallbackFolders = (IList<string>)fallBackPaths;
-                return fallBackPaths;
-            };
-        }
-
-        private string GetPackagesPath(RestoreArgs restoreArgs, ISettings settings, string rootPath, ExternalProjectReference project)
+        private string GetPackagesPath(RestoreArgs restoreArgs, ExternalProjectReference project)
         {
             if (restoreArgs.GlobalPackagesFolder != null)
             {

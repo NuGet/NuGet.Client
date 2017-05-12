@@ -1,4 +1,4 @@
-<!--
+﻿<!--
 ***********************************************************************************************
 NuGet.targets
 
@@ -473,6 +473,8 @@ Copyright (c) .NET Foundation. All rights reserved.
      RestorePackagesPath="$(RestorePackagesPath)"
      RestoreFallbackFolders="$(RestoreFallbackFolders)"
      RestoreConfigFile="$(RestoreConfigFile)"
+     RestoreSolutionDirectory="$(RestoreSolutionDirectory)"
+     RestoreDirectory="$(RestoreDirectory)"
      >
       <Output
         TaskParameter="OutputSources"

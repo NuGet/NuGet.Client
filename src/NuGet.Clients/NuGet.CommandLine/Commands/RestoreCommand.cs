@@ -222,14 +222,22 @@ namespace NuGet.CommandLine
 
             return _sourceProvider;
         }
+        private bool IsSolutionRestore(PackageRestoreInputs packageRestoreInputs)
+        {
+            return !string.IsNullOrEmpty(SolutionDirectory) || packageRestoreInputs.RestoringWithSolutionFile;
+        }
+        private string GetSolutionDirectory(PackageRestoreInputs packageRestoreInputs)
+        {
+            return packageRestoreInputs.RestoringWithSolutionFile ?
+                    packageRestoreInputs.DirectoryOfSolutionFile :
+                    SolutionDirectory;
+        }
 
         private void ReadSettings(PackageRestoreInputs packageRestoreInputs)
         {
-            if (!string.IsNullOrEmpty(SolutionDirectory) || packageRestoreInputs.RestoringWithSolutionFile)
+            if (IsSolutionRestore(packageRestoreInputs))
             {
-                var solutionDirectory = packageRestoreInputs.RestoringWithSolutionFile ?
-                    packageRestoreInputs.DirectoryOfSolutionFile :
-                    SolutionDirectory;
+                var solutionDirectory = GetSolutionDirectory(packageRestoreInputs);
 
                 // Read the solution-level settings
                 var solutionSettingsFile = Path.Combine(
@@ -470,7 +478,10 @@ namespace NuGet.CommandLine
 
                 try
                 {
-                    dgFileOutput = await GetDependencyGraphSpecAsync(projectsWithPotentialP2PReferences, packageRestoreInputs.RestoringWithSolutionFile ? Settings : null);
+                    dgFileOutput = await GetDependencyGraphSpecAsync(projectsWithPotentialP2PReferences,
+                        GetSolutionDirectory(packageRestoreInputs),
+                        ConfigFile,
+                        CurrentDirectory);
                 }
                 catch (Exception ex)
                 {
@@ -578,7 +589,7 @@ namespace NuGet.CommandLine
         /// <summary>
         ///  Create a dg v2 file using msbuild.
         /// </summary>
-        private async Task<DependencyGraphSpec> GetDependencyGraphSpecAsync(string[] projectsWithPotentialP2PReferences, ISettings settings)
+        private async Task<DependencyGraphSpec> GetDependencyGraphSpecAsync(string[] projectsWithPotentialP2PReferences, string solutionDirectory, string configFile, string restoreDirectory)
         {
             // Create requests using settings based on the project directory if no solution was used.
             // If a solution was used read settings for the solution.
@@ -605,7 +616,9 @@ namespace NuGet.CommandLine
                 scaleTimeout,
                 Console,
                 Recursive,
-                settings);
+                solutionDirectory,
+                configFile,
+                restoreDirectory);
         }
 
         /// <summary>

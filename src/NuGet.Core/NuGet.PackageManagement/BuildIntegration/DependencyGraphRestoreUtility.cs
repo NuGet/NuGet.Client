@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -272,7 +272,6 @@ namespace NuGet.PackageManagement
                 // A new project has been added
                 return true;
             }
-            // TODO NK - logic to verify the packages
             // Read package folder locations, initializing them in order of priority
             var packageFolderPaths = new List<string>();
             packageFolderPaths.Add(pathContext.UserPackageFolder);
@@ -361,7 +360,7 @@ namespace NuGet.PackageManagement
             DependencyGraphSpec dgFile,
             string userPackagesPath)
         {
-            var dgProvider = new DependencyGraphSpecRequestProvider(providerCache, dgFile); //TODO NK - settings removed
+            var dgProvider = new DependencyGraphSpecRequestProvider(providerCache, dgFile);
 
             var restoreContext = new RestoreArgs()
             {
