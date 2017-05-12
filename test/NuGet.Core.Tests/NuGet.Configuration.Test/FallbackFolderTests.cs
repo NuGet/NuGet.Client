@@ -181,29 +181,15 @@ namespace NuGet.Configuration.Test
                     machineWideSettings: machineWideSettings);
 
                 // Act
-                var paths = SettingsUtility.GetFallbackPackageFolders(settings).ToArray();
+                var actual = SettingsUtility
+                    .GetFallbackPackageFolders(settings)
+                    .Select(GetFileName);
 
-                var expected = new HashSet<string>(StringComparer.Ordinal)
-                {
-                    "a",
-                    "b",
-                    "c",
-                    "d",
-                    "x",
-                    "y"
-                };
+                var expected = new[] { "a", "b", "c", "d", "x", "y" };
 
                 // Ignore any extra folders on the machine
-                var pathsFiltered = paths.Where(s => expected.Contains(GetFileName(s))).ToArray();
-
-                // Assert
-                Assert.Equal(6, pathsFiltered.Length);
-                Assert.Equal("a", GetFileName(pathsFiltered[0]));
-                Assert.Equal("b", GetFileName(pathsFiltered[1]));
-                Assert.Equal("c", GetFileName(pathsFiltered[2]));
-                Assert.Equal("d", GetFileName(pathsFiltered[3]));
-                Assert.Equal("x", GetFileName(pathsFiltered[4]));
-                Assert.Equal("y", GetFileName(pathsFiltered[5]));
+                var actualFiltered = Enumerable.Intersect(actual, expected);
+                Assert.Equal(expected, actualFiltered);
             }
         }
 

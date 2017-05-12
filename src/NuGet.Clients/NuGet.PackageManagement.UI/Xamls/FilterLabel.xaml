@@ -23,7 +23,8 @@
       Grid.Row="0"
       Click="ButtonClicked"
       AutomationProperties.AutomationId="{Binding ElementName=_labelText, Path=Text}"
-      AutomationProperties.Name="{Binding ElementName=_labelText, Path=Text}">
+      AutomationProperties.Name="{Binding ElementName=_labelText, Path=Text}"
+      FocusVisualStyle="{DynamicResource ControlsFocusVisualStyle}">
       <Button.Template>
         <ControlTemplate TargetType="{x:Type Button}">
           <ContentPresenter />

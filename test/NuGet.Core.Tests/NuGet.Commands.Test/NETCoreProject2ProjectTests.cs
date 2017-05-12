@@ -467,7 +467,7 @@ namespace NuGet.Commands.Test
 
                 // Assert
                 Assert.False(success, "Failed: " + string.Join(Environment.NewLine, logger.Messages));
-                Assert.Contains("Unable to resolve", string.Join(Environment.NewLine, logger.Messages));
+                Assert.Contains("Unable to find project", string.Join(Environment.NewLine, logger.Messages));
                 Assert.Contains(projects[1].ProjectPath, string.Join(Environment.NewLine, logger.Messages));
             }
         }

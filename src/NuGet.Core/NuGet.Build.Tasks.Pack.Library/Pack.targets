@@ -1,4 +1,4 @@
-﻿<!--
+<!--
 ***********************************************************************************************
 NuGet.targets
 
@@ -17,7 +17,6 @@ Copyright (c) .NET Foundation. All rights reserved.
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
   </PropertyGroup>
   <UsingTask TaskName="NuGet.Build.Tasks.Pack.PackTask" AssemblyFile="$(NugetTaskAssemblyFile)" />
-  <UsingTask TaskName="NuGet.Build.Tasks.Pack.PackNuspecTask" AssemblyFile="$(NugetTaskAssemblyFile)" />
 
   <PropertyGroup>
     <PackageId Condition=" '$(PackageId)' == '' ">$(AssemblyName)</PackageId>
@@ -35,6 +34,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <IsInnerBuild Condition="'$(TargetFramework)' != '' AND '$(TargetFrameworks)' != ''">true</IsInnerBuild>
     <NoBuild Condition="'$(GeneratePackageOnBuild)' == 'true'">true</NoBuild>
     <AddPriFileDependsOn Condition="'$(MicrosoftPortableCurrentVersionPropsHasBeenImported)' == 'true'">DeterminePortableBuildCapabilities</AddPriFileDependsOn>
+    <ImportNuGetBuildTasksPackTargetsFromSdk Condition="'$(ImportNuGetBuildTasksPackTargetsFromSdk)' == ''">false</ImportNuGetBuildTasksPackTargetsFromSdk>
   </PropertyGroup>
   <PropertyGroup Condition="'$(NoBuild)' == 'true' ">
     <GenerateNuspecDependsOn>$(GenerateNuspecDependsOn)</GenerateNuspecDependsOn>
@@ -169,7 +169,7 @@ Copyright (c) .NET Foundation. All rights reserved.
               NoPackageAnalysis="$(NoPackageAnalysis)"
               MinClientVersion="$(MinClientVersion)"
               Serviceable="$(Serviceable)"
-              AssemblyReferences="@(_References)"
+              FrameworkAssemblyReferences="@(_FrameworkAssemblyReferences)"
               ContinuePackingAfterGeneratingNuspec="$(ContinuePackingAfterGeneratingNuspec)"
               NuspecOutputPath="$(BaseIntermediateOutputPath)"
               IncludeBuildOutput="$(IncludeBuildOutput)"
@@ -239,6 +239,26 @@ Copyright (c) .NET Foundation. All rights reserved.
           TaskParameter="TargetOutputs"
           ItemName="_SourceFiles" />
     </MSBuild>
+
+    <MSBuild
+      Projects="$(MSBuildProjectFullPath)"
+      Targets="_GetFrameworkAssemblyReferences"
+      Properties="TargetFramework=%(_TargetFrameworks.Identity);
+                  BuildProjectReferences=false;">
+
+      <Output
+          TaskParameter="TargetOutputs"
+          ItemName="_FrameworkAssemblyReferences" />
+    </MSBuild>
+  </Target>
+
+  <Target Name ="_GetFrameworkAssemblyReferences" DependsOnTargets="ResolveReferences" Returns="@(TfmSpecificFrameworkAssemblyReferences)">
+    <ItemGroup>
+      <TfmSpecificFrameworkAssemblyReferences Include="@(ReferencePath->'%(OriginalItemSpec)')" 
+      Condition="'%(ReferencePath.Pack)' != 'false' AND '%(ReferencePath.ResolvedFrom)' == '{TargetFrameworkDirectory}'">
+        <TargetFramework>$(TargetFramework)</TargetFramework>
+      </TfmSpecificFrameworkAssemblyReferences>
+    </ItemGroup>
   </Target>
   
   <Target Name="_GetBuildOutputFilesWithTfm"

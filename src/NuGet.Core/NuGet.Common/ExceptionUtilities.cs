@@ -14,20 +14,42 @@ namespace NuGet.Common
     /// </summary>
     public static class ExceptionUtilities
     {
-        public static void HandleException(Exception ex, ILogger logger)
+        /// <summary>
+        /// Log an exception to an ILogger.
+        /// This will log using NU1000 if the exception does not contain a code.
+        /// </summary>
+        public static void LogException(Exception ex, ILogger logger)
         {
+            LogException(ex, logger, logStackAsError: false);
+        }
+
+        /// <summary>
+        /// Log an exception to an ILogger.
+        /// This will log using NU1000 if the exception does not contain a code.
+        /// </summary>
+        public static void LogException(Exception ex, ILogger logger, bool logStackAsError)
+        {
+            // Unwrap aggregate exceptions.
+            var unwrappedException = Unwrap(ex);
+
             // Log the error
-            if (ExceptionLogger.Instance.ShowStack)
+            var logExceptionMessage = unwrappedException as ILogMessageException;
+            if (logExceptionMessage != null)
             {
-                logger.LogError(ex.ToString());
+                // Log the log message itself.
+                var logMessage = logExceptionMessage.AsLogMessage();
+                logger.Log(logMessage);
             }
             else
             {
-                logger.LogError(ExceptionUtilities.DisplayMessage(ex));
+                // Create a string from the exception.
+                logger.Log(new LogMessage(LogLevel.Error, DisplayMessage(unwrappedException)));
             }
 
-            // Log the stack trace as verbose output.
-            logger.LogVerbose(ex.ToString());
+            // Log the stack as an error if ShowStack is set.
+            var stackLevel = (logStackAsError || ExceptionLogger.Instance.ShowStack) ? LogLevel.Error : LogLevel.Verbose;
+
+            logger.Log(LogMessage.Create(stackLevel, unwrappedException.ToString()));
         }
 
         public static string DisplayMessage(Exception exception, bool indent)

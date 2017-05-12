@@ -5,6 +5,7 @@ using System;
 using System.ComponentModel.Composition;
 using System.Globalization;
 using Microsoft.VisualStudio.Shell;
+using NuGet.Common;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.ProjectManagement;
 using NuGet.VisualStudio;

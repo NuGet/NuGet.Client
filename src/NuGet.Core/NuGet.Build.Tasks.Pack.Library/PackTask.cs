@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -47,7 +47,7 @@ namespace NuGet.Build.Tasks.Pack
         public string NuspecFile { get; set; }
         public string MinClientVersion { get; set; }
         public bool Serviceable { get; set; }
-        public ITaskItem[] AssemblyReferences { get; set; }
+        public ITaskItem[] FrameworkAssemblyReferences { get; set; }
         public bool ContinuePackingAfterGeneratingNuspec { get; set; }
         public string NuspecOutputPath { get; set; }
         public bool IncludeBuildOutput { get; set; }
@@ -104,7 +104,7 @@ namespace NuGet.Build.Tasks.Pack
             }
             catch (Exception ex)
             {
-                ExceptionUtilities.HandleException(ex, Logger);
+                ExceptionUtilities.LogException(ex, Logger);
                 return false;
             }
             
@@ -120,7 +120,6 @@ namespace NuGet.Build.Tasks.Pack
             return new PackTaskRequest
             {
                 AssemblyName = MSBuildStringUtility.TrimAndGetNullForEmpty(AssemblyName),
-                AssemblyReferences = MSBuildUtility.WrapMSBuildItem(AssemblyReferences),
                 Authors = MSBuildStringUtility.TrimAndExcludeNullOrEmpty(Authors),
                 BuildOutputInPackage = MSBuildUtility.WrapMSBuildItem(BuildOutputInPackage),
                 BuildOutputFolder = MSBuildStringUtility.TrimAndGetNullForEmpty(BuildOutputFolder),
@@ -129,6 +128,7 @@ namespace NuGet.Build.Tasks.Pack
                 Copyright = MSBuildStringUtility.TrimAndGetNullForEmpty(Copyright),
                 Description = MSBuildStringUtility.TrimAndGetNullForEmpty(Description),
                 DevelopmentDependency = DevelopmentDependency,
+                FrameworkAssemblyReferences = MSBuildUtility.WrapMSBuildItem(FrameworkAssemblyReferences),
                 IconUrl = MSBuildStringUtility.TrimAndGetNullForEmpty(IconUrl),
                 IncludeBuildOutput = IncludeBuildOutput,
                 IncludeSource = IncludeSource,
@@ -160,7 +160,7 @@ namespace NuGet.Build.Tasks.Pack
                 Tags = MSBuildStringUtility.TrimAndExcludeNullOrEmpty(Tags),
                 TargetFrameworks = MSBuildStringUtility.TrimAndExcludeNullOrEmpty(TargetFrameworks),
                 TargetPathsToSymbols = MSBuildUtility.WrapMSBuildItem(TargetPathsToSymbols),
-                Title = MSBuildStringUtility.TrimAndGetNullForEmpty(Title),
+                Title = MSBuildStringUtility.TrimAndGetNullForEmpty(Title)
             };
         }
     }

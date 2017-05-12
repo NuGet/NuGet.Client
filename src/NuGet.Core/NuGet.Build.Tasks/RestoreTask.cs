@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Build.Framework;
 using Newtonsoft.Json;
@@ -20,8 +21,10 @@ namespace NuGet.Build.Tasks
     /// <summary>
     /// .NET Core compatible restore task for PackageReference and UWP project.json projects.
     /// </summary>
-    public class RestoreTask : Microsoft.Build.Utilities.Task
+    public class RestoreTask : Microsoft.Build.Utilities.Task, ICancelableTask, IDisposable
     {
+        private readonly CancellationTokenSource _cts = new CancellationTokenSource();
+
         /// <summary>
         /// DG file entries
         /// </summary>
@@ -87,9 +90,15 @@ namespace NuGet.Build.Tasks
             {
                 return ExecuteAsync(log).Result;
             }
+            catch (AggregateException ex) when (_cts.Token.IsCancellationRequested && ex.InnerException is TaskCanceledException)
+            {
+                // Canceled by user
+                log.LogError(Strings.RestoreCanceled);
+                return false;
+            }
             catch (Exception e)
             {
-                ExceptionUtilities.HandleException(e, log);
+                ExceptionUtilities.LogException(e, log);
                 return false;
             }
         }
@@ -163,7 +172,9 @@ namespace NuGet.Build.Tasks
                     HttpSourceResourceProvider.Throttle = SemaphoreSlimThrottle.CreateBinarySemaphore();
                 }
 
-                var restoreSummaries = await RestoreRunner.Run(restoreContext);
+                _cts.Token.ThrowIfCancellationRequested();
+
+                var restoreSummaries = await RestoreRunner.RunAsync(restoreContext, _cts.Token);
 
                 // Summary
                 RestoreSummary.Log(log, restoreSummaries);
@@ -195,6 +206,16 @@ namespace NuGet.Build.Tasks
             // OS description is set by default on Desktop
             UserAgent.SetUserAgentString(new UserAgentStringBuilder(agent));
 #endif
+        }
+
+        public void Cancel()
+        {
+            _cts.Cancel();
+        }
+
+        public void Dispose()
+        {
+            _cts.Dispose();
         }
     }
 }

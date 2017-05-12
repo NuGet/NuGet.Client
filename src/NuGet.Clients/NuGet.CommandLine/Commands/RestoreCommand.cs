@@ -377,7 +377,7 @@ namespace NuGet.CommandLine
                     Settings.Priority.Select(x => Path.Combine(x.Root, x.FileName)),
                     packageSources.Select(x => x.Source),
                     installCount,
-                    collectorLogger.Errors.Concat(failedEvents.Select(e => e.Exception.Message)));
+                    collectorLogger.Errors.Concat(failedEvents.Select(e => new RestoreLogMessage(LogLevel.Error, e.Exception.Message))));
             }
         }
 

@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
@@ -23,7 +23,7 @@ namespace NuGet.Commands
 
         public int InstallCount { get; }
 
-        public IList<string> Errors { get; }
+        public IList<IRestoreLogMessage> Errors { get; }
 
         public RestoreSummary(bool success)
         {
@@ -32,7 +32,7 @@ namespace NuGet.Commands
             ConfigFiles = new List<string>().AsReadOnly();
             FeedsUsed = new List<string>().AsReadOnly();
             InstallCount = 0;
-            Errors = new List<string>().AsReadOnly();
+            Errors = new List<IRestoreLogMessage>().AsReadOnly();
         }
 
         public RestoreSummary(
@@ -40,7 +40,7 @@ namespace NuGet.Commands
             string inputPath,
             ISettings settings,
             IEnumerable<SourceRepository> sourceRepositories,
-            IEnumerable<string> errors)
+            IEnumerable<RestoreLogMessage> errors)
         {
             Success = result.Success;
             InputPath = inputPath;
@@ -63,7 +63,7 @@ namespace NuGet.Commands
             IEnumerable<string> configFiles,
             IEnumerable<string> feedsUsed,
             int installCount,
-            IEnumerable<string> errors)
+            IEnumerable<IRestoreLogMessage> errors)
         {
             Success = success;
             InputPath = inputPath;
@@ -92,7 +92,7 @@ namespace NuGet.Commands
                 logger.LogErrorSummary(string.Format(CultureInfo.CurrentCulture, Strings.Log_ErrorSummary, restoreSummary.InputPath));
                 foreach (var error in restoreSummary.Errors)
                 {
-                    foreach (var line in IndentLines(error))
+                    foreach (var line in IndentLines(error.Message))
                     {
                         logger.LogErrorSummary(line);
                     }

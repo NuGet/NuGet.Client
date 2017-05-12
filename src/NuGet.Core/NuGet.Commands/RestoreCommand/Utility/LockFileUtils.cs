@@ -16,6 +16,7 @@ using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
 using NuGet.Repositories;
+using NuGet.Shared;
 using NuGet.Versioning;
 
 namespace NuGet.Commands
@@ -109,7 +110,7 @@ namespace NuGet.Commands
 
                     if (set != null)
                     {
-                        lockFileLib.Dependencies = set.ToList();
+                        lockFileLib.Dependencies = set.AsList();
                     }
                 }
             }

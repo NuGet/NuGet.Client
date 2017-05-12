@@ -10,6 +10,61 @@ namespace NuGet.Versioning.Test
     public class VersionRangeTests
     {
         [Theory]
+        [InlineData("1.0.0", "(>= 1.0.0)")]
+        [InlineData("[1.0.0]", "(= 1.0.0)")]
+        [InlineData("[1.0.0, ]", "(>= 1.0.0)")]
+        [InlineData("[1.0.0, )", "(>= 1.0.0)")]
+        [InlineData("(1.0.0, )", "(> 1.0.0)")]
+        [InlineData("(1.0.0, ]", "(> 1.0.0)")]
+        [InlineData("(1.0.0, 2.0.0)", "(> 1.0.0 && < 2.0.0)")]
+        [InlineData("[1.0.0, 2.0.0]", "(>= 1.0.0 && <= 2.0.0)")]
+        [InlineData("[1.0.0, 2.0.0)", "(>= 1.0.0 && < 2.0.0)")]
+        [InlineData("(1.0.0, 2.0.0]", "(> 1.0.0 && <= 2.0.0)")]
+        [InlineData("(, 2.0.0]", "(<= 2.0.0)")]
+        [InlineData("(, 2.0.0)", "(< 2.0.0)")]
+        [InlineData("[, 2.0.0)", "(< 2.0.0)")]
+        [InlineData("[, 2.0.0]", "(<= 2.0.0)")]
+        [InlineData("1.0.0-beta*", "(>= 1.0.0-beta)")]
+        [InlineData("[1.0.0-beta*, 2.0.0)", "(>= 1.0.0-beta && < 2.0.0)")]
+        [InlineData("[1.0.0-beta.1, 2.0.0-alpha.2]", "(>= 1.0.0-beta.1 && <= 2.0.0-alpha.2)")]
+        [InlineData("[1.0.0+beta.1, 2.0.0+alpha.2]", "(>= 1.0.0 && <= 2.0.0)")]
+        [InlineData("[1.0, 2.0]", "(>= 1.0.0 && <= 2.0.0)")]
+        public void VersionRange_PrettyPrintTests(string versionString, string expected)
+        {
+            // Arrange
+            var formatter = new VersionRangeFormatter();
+            var range = VersionRange.Parse(versionString);
+
+            // Act
+            var s = string.Format(formatter, "{0:P}", range);
+            var s2 = range.ToString("P", formatter);
+            var s3 = range.PrettyPrint();
+
+            // Assert
+            Assert.Equal(expected, s);
+            Assert.Equal(expected, s2);
+            Assert.Equal(expected, s3);
+        }
+
+        [Fact]
+        public void VersionRange_PrettyPrintAllRange()
+        {
+            // Arrange
+            var formatter = new VersionRangeFormatter();
+            var range = VersionRange.All;
+
+            // Act
+            var s = string.Format(formatter, "{0:P}", range);
+            var s2 = range.ToString("P", formatter);
+            var s3 = range.PrettyPrint();
+
+            // Assert
+            Assert.Equal("", s);
+            Assert.Equal("", s2);
+            Assert.Equal("", s3);
+        }
+
+        [Theory]
         [InlineData("1.0.0", "1.0.1-beta", false)]
         [InlineData("1.0.0", "1.0.1", true)]
         [InlineData("1.0.0-*", "1.0.0-beta", true)]

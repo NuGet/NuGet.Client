@@ -3,13 +3,14 @@
 
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
+using NuGet.Common;
 
 namespace NuGet.Build
 {
     /// <summary>
     /// TaskLoggingHelper -> ILogger
     /// </summary>
-    internal class MSBuildLogger : Common.ILogger
+    internal class MSBuildLogger : LegacyLoggerAdapter, Common.ILogger
     {
         private readonly TaskLoggingHelper _taskLogging;
 
@@ -18,42 +19,42 @@ namespace NuGet.Build
             _taskLogging = taskLogging;
         }
 
-        public void LogDebug(string data)
+        public override void LogDebug(string data)
         {
             _taskLogging.LogMessage(MessageImportance.Low, data);
         }
 
-        public void LogError(string data)
+        public override void LogError(string data)
         {
             _taskLogging.LogError(data);
         }
 
-        public void LogErrorSummary(string data)
+        public override void LogErrorSummary(string data)
         {
             _taskLogging.LogMessage(MessageImportance.High, data);
         }
 
-        public void LogInformation(string data)
+        public override void LogInformation(string data)
         {
             _taskLogging.LogMessage(MessageImportance.Normal, data);
         }
 
-        public void LogInformationSummary(string data)
+        public override void LogInformationSummary(string data)
         {
             _taskLogging.LogMessage(MessageImportance.High, data);
         }
 
-        public void LogMinimal(string data)
+        public override void LogMinimal(string data)
         {
             _taskLogging.LogMessage(MessageImportance.High, data);
         }
 
-        public void LogVerbose(string data)
+        public override void LogVerbose(string data)
         {
             _taskLogging.LogMessage(MessageImportance.Low, data);
         }
 
-        public void LogWarning(string data)
+        public override void LogWarning(string data)
         {
             _taskLogging.LogWarning(data);
         }
