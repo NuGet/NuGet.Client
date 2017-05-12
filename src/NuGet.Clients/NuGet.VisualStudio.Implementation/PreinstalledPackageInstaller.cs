@@ -183,6 +183,13 @@ namespace NuGet.VisualStudio
                 _sourceProvider.CreateRepository(repositorySource, FeedType.FileSystemUnzipped) :
                 _sourceProvider.CreateRepository(repositorySource);
 
+            // For BuildIntegratedNuGetProject, nuget will ignore preunzipped configuration.
+            var buildIntegratedProject = nuGetProject as BuildIntegratedNuGetProject;
+
+            var repository = (buildIntegratedProject == null && configuration.IsPreunzipped) ?
+                _sourceProvider.CreateRepository(repositorySource, FeedType.FileSystemUnzipped) :
+                _sourceProvider.CreateRepository(repositorySource);
+
             var repoProvider = new PreinstalledRepositoryProvider(errorHandler, _sourceProvider);
             repoProvider.AddFromSource(repository);
 
