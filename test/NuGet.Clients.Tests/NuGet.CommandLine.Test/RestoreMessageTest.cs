@@ -121,7 +121,7 @@ namespace NuGet.CommandLine.Test
                 var output = r.Item2 + " " + r.Item3;
 
                 // Assert
-                Assert.Contains("NU1901", output, StringComparison.OrdinalIgnoreCase);
+                Assert.Contains("NU1401", output, StringComparison.OrdinalIgnoreCase);
             }
         }
     }

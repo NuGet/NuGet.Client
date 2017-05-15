@@ -102,7 +102,7 @@ namespace NuGet.Packaging.Test
             }
 
             // Assert
-            Assert.Equal(NuGetLogCode.NU1901, logMessage.Code);
+            Assert.Equal(NuGetLogCode.NU1401, logMessage.Code);
             Assert.Contains("requires NuGet client version", logMessage.Message);
             Assert.Equal(LogLevel.Error, logMessage.Level);
         }
