@@ -10,7 +10,7 @@ using Microsoft;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
-using NuGet.PackageManagement;
+using NuGet.PackageManagement.VisualStudio;
 using NuGet.VisualStudio;
 using Task = System.Threading.Tasks.Task;
 
@@ -27,7 +27,7 @@ namespace NuGet.SolutionRestoreManager
         private static readonly Guid CommandSet = GuidList.guidNuGetDialogCmdSet;
 
         [Import]
-        private Lazy<ISolutionManager> SolutionManager { get; set; }
+        private Lazy<IVsSolutionManager> SolutionManager { get; set; }
 
         [Import]
         private Lazy<ISolutionRestoreWorker> SolutionRestoreWorker { get; set; }
