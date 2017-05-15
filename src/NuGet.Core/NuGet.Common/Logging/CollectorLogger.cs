@@ -81,7 +81,14 @@ namespace NuGet.Common
         /// <returns>bool indicating if this message should be logged.</returns>
         protected bool DisplayMessage(IRestoreLogMessage message)
         {
-            return (message.LogToInnerLogger && message.Level >= VerbosityLevel);
+            if (message.Level == LogLevel.Error || message.Level == LogLevel.Warning)
+            {
+                return message.LogToInnerLogger && message.Level >= VerbosityLevel;
+            }
+            else
+            {
+                return message.Level >= VerbosityLevel;
+            }   
         }
 
         public IEnumerable<IRestoreLogMessage> Errors => _errors.ToArray();
