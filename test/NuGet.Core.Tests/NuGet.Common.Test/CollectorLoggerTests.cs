@@ -5,6 +5,7 @@ using System;
 using System.Diagnostics;
 using System.Linq;
 using Moq;
+using Test.Utility;
 using Xunit;
 
 namespace NuGet.Common.Test
@@ -13,7 +14,7 @@ namespace NuGet.Common.Test
     {
 
         [Fact]
-        public void CollectorLogger_PassesLogMessagesToInnerLogger()
+        public void CollectorLogger_DoesNotPassLogMessagesToInnerLoggerByDefault()
         {
 
             // Arrange
@@ -28,17 +29,16 @@ namespace NuGet.Common.Test
             collector.Log(new RestoreLogMessage(LogLevel.Error, "Error"));
 
             // Assert
-            VerifyInnerLoggerCalls(innerLogger, LogLevel.Debug, "Debug", Times.Once());
-            VerifyInnerLoggerCalls(innerLogger, LogLevel.Verbose, "Verbose", Times.Once());
-            VerifyInnerLoggerCalls(innerLogger, LogLevel.Information, "Information", Times.Once());
-            VerifyInnerLoggerCalls(innerLogger, LogLevel.Warning, "Warning", Times.Once());
-            VerifyInnerLoggerCalls(innerLogger, LogLevel.Error, "Error", Times.Once());
+            VerifyInnerLoggerCalls(innerLogger, LogLevel.Debug, "Debug", Times.Never());
+            VerifyInnerLoggerCalls(innerLogger, LogLevel.Verbose, "Verbose", Times.Never());
+            VerifyInnerLoggerCalls(innerLogger, LogLevel.Information, "Information", Times.Never());
+            VerifyInnerLoggerCalls(innerLogger, LogLevel.Warning, "Warning", Times.Never());
+            VerifyInnerLoggerCalls(innerLogger, LogLevel.Error, "Error", Times.Never());
         }
 
         [Fact]
-        public void CollectorLogger_PassesLogCallsToInnerLogger()
+        public void CollectorLogger_DoesNotPassLogCallsToInnerLoggerByDefault()
         {
-
             // Arrange
             var innerLogger = new Mock<ILogger>();
             var collector = new CollectorLogger(innerLogger.Object, LogLevel.Debug);
@@ -51,15 +51,15 @@ namespace NuGet.Common.Test
             collector.Log(LogLevel.Error, "Error");
 
             // Assert
-            VerifyInnerLoggerCalls(innerLogger, LogLevel.Debug, "Debug", Times.Once());
-            VerifyInnerLoggerCalls(innerLogger, LogLevel.Verbose, "Verbose", Times.Once());
-            VerifyInnerLoggerCalls(innerLogger, LogLevel.Information, "Information", Times.Once());
-            VerifyInnerLoggerCalls(innerLogger, LogLevel.Warning, "Warning", Times.Once());
-            VerifyInnerLoggerCalls(innerLogger, LogLevel.Error, "Error", Times.Once());
+            VerifyInnerLoggerCalls(innerLogger, LogLevel.Debug, "Debug", Times.Never());
+            VerifyInnerLoggerCalls(innerLogger, LogLevel.Verbose, "Verbose", Times.Never());
+            VerifyInnerLoggerCalls(innerLogger, LogLevel.Information, "Information", Times.Never());
+            VerifyInnerLoggerCalls(innerLogger, LogLevel.Warning, "Warning", Times.Never());
+            VerifyInnerLoggerCalls(innerLogger, LogLevel.Error, "Error", Times.Never());
         }
 
         [Fact]
-        public void CollectorLogger_PassesToInnerLogger()
+        public void CollectorLogger_PassesLogMessagesToInnerLoggerOnlyWithLogToInnerLogger()
         {
 
             // Arrange
@@ -67,11 +67,34 @@ namespace NuGet.Common.Test
             var collector = new CollectorLogger(innerLogger.Object, LogLevel.Debug);
 
             // Act
-            collector.LogDebug("Debug");
-            collector.LogVerbose("Verbose");
-            collector.LogInformation("Information");
-            collector.LogWarning("Warning");
-            collector.LogError("Error");
+            collector.Log(new RestoreLogMessage(LogLevel.Debug, "Debug") { LogToInnerLogger = true });
+            collector.Log(new RestoreLogMessage(LogLevel.Verbose, "Verbose") { LogToInnerLogger = false });
+            collector.Log(new RestoreLogMessage(LogLevel.Information, "Information") { LogToInnerLogger = false });
+            collector.Log(new RestoreLogMessage(LogLevel.Warning, "Warning") { LogToInnerLogger = true });
+            collector.Log(new RestoreLogMessage(LogLevel.Error, "Error") { LogToInnerLogger = true });
+
+            // Assert
+            VerifyInnerLoggerCalls(innerLogger, LogLevel.Debug, "Debug", Times.Once());
+            VerifyInnerLoggerCalls(innerLogger, LogLevel.Verbose, "Verbose", Times.Never());
+            VerifyInnerLoggerCalls(innerLogger, LogLevel.Information, "Information", Times.Never());
+            VerifyInnerLoggerCalls(innerLogger, LogLevel.Warning, "Warning", Times.Once());
+            VerifyInnerLoggerCalls(innerLogger, LogLevel.Error, "Error", Times.Once());
+        }
+
+        [Fact]
+        public void CollectorLogger_PassesLogMessagesToInnerLoggerWithLogToInnerLogger()
+        {
+
+            // Arrange
+            var innerLogger = new Mock<ILogger>();
+            var collector = new CollectorLogger(innerLogger.Object, LogLevel.Debug);
+
+            // Act
+            collector.Log(new RestoreLogMessage(LogLevel.Debug, "Debug") { LogToInnerLogger = true });
+            collector.Log(new RestoreLogMessage(LogLevel.Verbose, "Verbose") { LogToInnerLogger = true });
+            collector.Log(new RestoreLogMessage(LogLevel.Information, "Information") { LogToInnerLogger = true });
+            collector.Log(new RestoreLogMessage(LogLevel.Warning, "Warning") { LogToInnerLogger = true });
+            collector.Log(new RestoreLogMessage(LogLevel.Error, "Error") { LogToInnerLogger = true });
 
             // Assert
             VerifyInnerLoggerCalls(innerLogger, LogLevel.Debug, "Debug", Times.Once());
@@ -82,18 +105,18 @@ namespace NuGet.Common.Test
         }
 
         [Fact]
-        public void CollectorLogger_PassesToInnerLoggerWithLessVerbosity()
+        public void CollectorLogger_PassesLogMessagesToInnerLoggerWithLessVerbosity()
         {
             // Arrange
             var innerLogger = new Mock<ILogger>();
             var collector = new CollectorLogger(innerLogger.Object, LogLevel.Verbose);
 
             // Act
-            collector.LogDebug("Debug");
-            collector.LogVerbose("Verbose");
-            collector.LogInformation("Information");
-            collector.LogWarning("Warning");
-            collector.LogError("Error");
+            collector.Log(new RestoreLogMessage(LogLevel.Debug, "Debug") { LogToInnerLogger = true });
+            collector.Log(new RestoreLogMessage(LogLevel.Verbose, "Verbose") { LogToInnerLogger = true });
+            collector.Log(new RestoreLogMessage(LogLevel.Information, "Information") { LogToInnerLogger = true });
+            collector.Log(new RestoreLogMessage(LogLevel.Warning, "Warning") { LogToInnerLogger = true });
+            collector.Log(new RestoreLogMessage(LogLevel.Error, "Error") { LogToInnerLogger = true });
 
             // Assert
             VerifyInnerLoggerCalls(innerLogger, LogLevel.Debug, "Debug", Times.Never());
@@ -104,18 +127,18 @@ namespace NuGet.Common.Test
         }
 
         [Fact]
-        public void CollectorLogger_PassesToInnerLoggerWithLeastVerbosity()
+        public void CollectorLogger_PassesLogMessagesToInnerLoggerWithLeastVerbosity()
         {
             // Arrange
             var innerLogger = new Mock<ILogger>();
             var collector = new CollectorLogger(innerLogger.Object, LogLevel.Error);
 
             // Act
-            collector.LogDebug("Debug");
-            collector.LogVerbose("Verbose");
-            collector.LogInformation("Information");
-            collector.LogWarning("Warning");
-            collector.LogError("Error");
+            collector.Log(new RestoreLogMessage(LogLevel.Debug, "Debug") { LogToInnerLogger = true });
+            collector.Log(new RestoreLogMessage(LogLevel.Verbose, "Verbose") { LogToInnerLogger = true });
+            collector.Log(new RestoreLogMessage(LogLevel.Information, "Information") { LogToInnerLogger = true });
+            collector.Log(new RestoreLogMessage(LogLevel.Warning, "Warning") { LogToInnerLogger = true });
+            collector.Log(new RestoreLogMessage(LogLevel.Error, "Error") { LogToInnerLogger = true });
 
             // Assert
             VerifyInnerLoggerCalls(innerLogger, LogLevel.Debug, "Debug", Times.Never());
@@ -124,6 +147,7 @@ namespace NuGet.Common.Test
             VerifyInnerLoggerCalls(innerLogger, LogLevel.Warning, "Warning", Times.Never());
             VerifyInnerLoggerCalls(innerLogger, LogLevel.Error, "Error", Times.Once());
         }
+
 
         [Fact]
         public void CollectorLogger_CollectsErrors()

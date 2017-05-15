@@ -95,6 +95,5 @@ namespace NuGet.Common
         {
             return (messageLevel >= LogLevel.Warning);
         }
-
     }
 }

@@ -35,26 +35,6 @@ namespace NuGet.Common
             _errors = new ConcurrentQueue<IRestoreLogMessage>();
         }
 
-        public override void Log(ILogMessage message)
-        {
-            if (CollectMessage(message.Level))
-            {
-                _errors.Enqueue(new RestoreLogMessage(message.Level, message.Code, message.Message));
-            }
-
-            _innerLogger.Log(message);
-        }
-
-        public override Task LogAsync(ILogMessage message)
-        {
-            if (CollectMessage(message.Level))
-            {
-                _errors.Enqueue(new RestoreLogMessage(message.Level, message.Code, message.Message));
-            }
-
-            return _innerLogger.LogAsync(message);
-        }
-
         public void Log(IRestoreLogMessage message)
         {
             if (CollectMessage(message.Level))
@@ -62,7 +42,10 @@ namespace NuGet.Common
                 _errors.Enqueue(message);
             }
 
-            _innerLogger.Log(message);
+            if (DisplayMessage(message))
+            {
+                _innerLogger.Log(message);
+            }
         }
 
         public Task LogAsync(IRestoreLogMessage message)
@@ -72,7 +55,33 @@ namespace NuGet.Common
                 _errors.Enqueue(message);
             }
 
-            return _innerLogger.LogAsync(message);
+            if (DisplayMessage(message))
+            {
+                return _innerLogger.LogAsync(message);
+            }
+            else
+            {
+                return Task.FromResult(0);
+            }
+        }
+        public override void Log(ILogMessage message)
+        {
+            Log(new RestoreLogMessage(message.Level, message.Code, message.Message));
+        }
+
+        public override Task LogAsync(ILogMessage message)
+        {
+            return LogAsync(new RestoreLogMessage(message.Level, message.Code, message.Message));
+        }
+
+        /// <summary>
+        /// Decides if the log should be passed to the inner logger.
+        /// </summary>
+        /// <param name="message">IRestoreLogMessage to be logged.</param>
+        /// <returns>bool indicating if this message should be logged.</returns>
+        protected bool DisplayMessage(IRestoreLogMessage message)
+        {
+            return (message.LogToInnerLogger && message.Level >= VerbosityLevel);
         }
 
         public IEnumerable<IRestoreLogMessage> Errors => _errors.ToArray();
