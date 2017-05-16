@@ -2,8 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Linq;
+using NuGet.Common;
 using NuGet.Frameworks;
+using NuGet.ProjectModel;
 using NuGet.Test.Utility;
+using Test.Utility;
 using Xunit;
 
 namespace NuGet.CommandLine.Test
@@ -13,6 +17,7 @@ namespace NuGet.CommandLine.Test
         [Fact]
         public void GivenAProjectIsUsedOverAPackageVerifyNoDowngradeWarning()
         {
+            DebuggerUtils.WaitForDebugger();
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
             {
@@ -49,6 +54,25 @@ namespace NuGet.CommandLine.Test
                 var r = Util.Restore(pathContext, projectA.ProjectPath);
                 var output = r.Item2 + " " + r.Item3;
 
+                var reader = new LockFileFormat();
+                var lockFileObj = reader.Read(projectA.AssetsFileOutputPath);
+                var logMessage = lockFileObj?.LogMessages?.First();
+
+
+                // Assert
+                Assert.NotNull(lockFileObj);
+                Assert.NotNull(logMessage);
+                Assert.Equal(1, lockFileObj.LogMessages.Count());
+                Assert.Equal(LogLevel.Error, logMessage.Level);
+                Assert.Equal(NuGetLogCode.NU1000, logMessage.Code);
+                Assert.Null(logMessage.FilePath);
+                Assert.Equal(-1, logMessage.StartLineNumber);
+                Assert.Equal(-1, logMessage.EndLineNumber);
+                Assert.Equal(-1, logMessage.StartColumnNumber);
+                Assert.Equal(-1, logMessage.EndColumnNumber);
+                Assert.NotNull(logMessage.TargetGraphs);
+                Assert.Equal(0, logMessage.TargetGraphs.Count);
+                Assert.Equal("test log message", logMessage.Message);
                 // Assert
                 Assert.DoesNotContain("downgrade", output, StringComparison.OrdinalIgnoreCase);
             }
