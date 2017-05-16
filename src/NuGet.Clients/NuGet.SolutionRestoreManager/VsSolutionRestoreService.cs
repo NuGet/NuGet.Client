@@ -22,12 +22,13 @@ using static NuGet.Frameworks.FrameworkConstants;
 namespace NuGet.SolutionRestoreManager
 {
     /// <summary>
-    /// Implementation of the <see cref="IVsSolutionRestoreService"/>.
+    /// Implementation of the <see cref="IVsSolutionRestoreService"/> and <see cref="IVsSolutionRestoreService2"/>.
     /// Provides extension API for project restore nomination triggered by 3rd party component.
     /// Configured as a single-instance MEF part.
     /// </summary>
     [PartCreationPolicy(CreationPolicy.Shared)]
     [Export(typeof(IVsSolutionRestoreService))]
+    [Export(typeof(IVsSolutionRestoreService2))]
     public sealed class VsSolutionRestoreService : IVsSolutionRestoreService, IVsSolutionRestoreService2
     {
         private const string PackageId = nameof(PackageId);
