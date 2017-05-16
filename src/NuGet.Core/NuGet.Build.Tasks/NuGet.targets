@@ -466,7 +466,8 @@ Copyright (c) .NET Foundation. All rights reserved.
     <PropertyGroup Condition=" '$(RestoreProjectStyle)' == 'PackageReference' AND '$(_RestoreSkipContentFileWrite)' == '' ">
       <_RestoreSkipContentFileWrite Condition=" '$(TargetFrameworks)' == '' AND '$(TargetFramework)' == '' ">true</_RestoreSkipContentFileWrite>
     </PropertyGroup>
-   
+    
+    <!-- For transitive project styles, we rely on evaluating all the settings and including them in the dg spec to faciliate no-op restore-->
     <GetRestoreSettingsTask Condition=" '$(RestoreProjectStyle)' == 'PackageReference' OR '$(RestoreProjectStyle)' == 'ProjectJson' "
      ProjectUniqueName="$(MSBuildProjectFullPath)"
      RestoreSources="$(RestoreSources)"
