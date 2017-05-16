@@ -486,7 +486,7 @@
     <value>An error occurred while applying transformation to '{0}' in project '{1}'</value>
   </data>
   <data name="InstallingNetstandard20CompatibilityPackage" xml:space="preserve">
-    <value>Installing "NETStandard.Library.NETFramework" for compatibilty between NETStandard 2.0 and current project's target framework.</value>
+    <value>One or more packages target NETStandard 2.0 or higher and require an additional dependency. Automatically installing NETStandard.Library.NETFramework.</value>
   </data>
   <data name="Netstandard20CompatibilityPackageAlreadyInstalled" xml:space="preserve">
     <value>Compatibility package "NETStandard.Library.NETFramework" is already installed and no updates available.</value>

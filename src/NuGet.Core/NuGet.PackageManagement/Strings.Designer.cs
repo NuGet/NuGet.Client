@@ -457,7 +457,7 @@ namespace NuGet.PackageManagement {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Installing &quot;NETStandard.Library.NETFramework&quot; for compatibilty between NETStandard 2.0 and current project&apos;s target framework..
+        ///   Looks up a localized string similar to One or more packages target NETStandard 2.0 or higher and require an additional dependency. Automatically installing NETStandard.Library.NETFramework..
         /// </summary>
         internal static string InstallingNetstandard20CompatibilityPackage {
             get {
