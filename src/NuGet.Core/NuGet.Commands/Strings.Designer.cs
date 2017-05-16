@@ -612,7 +612,7 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Not all packages are on disk for: {1}.
+        ///   Looks up a localized string similar to Not all packages are on disk for: {0}.
         /// </summary>
         internal static string Log_MissingPackagesOnDisk {
             get {

@@ -129,8 +129,6 @@ namespace NuGet.CommandLine
                     argumentBuilder.Append($" {msbuildAdditionalArgs} ");
                 }
 
-
-
                 // Override the target under ImportsAfter with the current NuGet.targets version.
                 argumentBuilder.Append(" /p:NuGetRestoreTargets=");
                 AppendQuoted(argumentBuilder, entryPointTargetPath);
@@ -146,24 +144,21 @@ namespace NuGet.CommandLine
                 // Disallow the import of targets/props from packages
                 argumentBuilder.Append(" /p:ExcludeRestorePackageImports=true ");
 
-                // Projects to restore
-                var isMono = RuntimeEnvironmentHelper.IsMono && !RuntimeEnvironmentHelper.IsWindows;
-
                 if (!string.IsNullOrEmpty(solutionDirectory))
                 {
                     argumentBuilder.Append(" /p:RestoreSolutionDirectory=");
-                    argumentBuilder.Append(EscapeQuoted(PathUtility.RemoveDirectorySeparator(solutionDirectory)));
-
+                    argumentBuilder.Append(EscapeQuoted(solutionDirectory));
                 }
+
                 if (!string.IsNullOrEmpty(restoreConfigFile))
                 {
                     argumentBuilder.Append(" /p:RestoreConfigFile=");
-                    argumentBuilder.Append(EscapeQuoted(PathUtility.RemoveDirectorySeparator(restoreConfigFile)));
-
+                    argumentBuilder.Append(EscapeQuoted(restoreConfigFile));
                 }
+
                 if (!string.IsNullOrEmpty(restoreDirectory)) {
                     argumentBuilder.Append(" /p:RestoreDirectory=");
-                    argumentBuilder.Append(EscapeQuoted(PathUtility.RemoveDirectorySeparator(restoreDirectory)));
+                    argumentBuilder.Append(EscapeQuoted(restoreDirectory));
                 }
 
                 // Add all depenencies as top level restore projects if recursive is set
@@ -172,7 +167,7 @@ namespace NuGet.CommandLine
                 // Filter out unknown project types and avoid errors from projects that do not support CustomAfterTargets
                 argumentBuilder.Append($" /p:RestoreProjectFilterMode=exclusionlist /p:RestoreContinueOnError=WarnAndContinue ");
 
-
+                var isMono = RuntimeEnvironmentHelper.IsMono && !RuntimeEnvironmentHelper.IsWindows;
                 // /p: foo = "bar;baz" doesn't work on bash.
                 // /p: foo = /"bar/;baz/" works.
                 // Need to escape quotes and semicolon on bash.
@@ -227,7 +222,7 @@ namespace NuGet.CommandLine
                     var output = new StringBuilder();
                     var excluded = new string[] { "msb4011", entryPointTargetPath };
                     var errorTask = ConsumeStreamReaderAsync(process.StandardError, errors, filter: null);
-                    var outputTask = ConsumeStreamReaderAsync(process.StandardOutput, output, filter: null /*(line) => IsIgnoredOutput(line, excluded)*/);
+                    var outputTask = ConsumeStreamReaderAsync(process.StandardOutput, output, filter: (line) => IsIgnoredOutput(line, excluded));
                     var finished = process.WaitForExit(timeOut);
                     if (!finished)
                     {
@@ -257,7 +252,7 @@ namespace NuGet.CommandLine
                     if (process.ExitCode != 0)
                     {
                         await errorTask;
-                        throw new CommandLineException(output.ToString() + " ERRORS " + errors.ToString());
+                        throw new CommandLineException(errors.ToString());
                     }
                 }
 
@@ -734,15 +729,6 @@ namespace NuGet.CommandLine
                 .Append('"')
                 .Append(targetPath)
                 .Append('"');
-        }
-
-        private static void AppendEnvironmentAwareQuote(StringBuilder builder, string quotable, bool isMono)
-        {
-            var quote = isMono ? "\\\"" : "\"";
-            builder
-               .Append(quote)
-               .Append(quotable)
-               .Append(quote);
         }
 
         private static void ExtractResource(string resourceName, string targetPath)
