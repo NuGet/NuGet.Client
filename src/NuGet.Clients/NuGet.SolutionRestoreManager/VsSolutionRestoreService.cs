@@ -83,28 +83,25 @@ namespace NuGet.SolutionRestoreManager
                 throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(projectUniqueName));
             }
 
-            if (projectRestoreInfo == null)
-            {
-                throw new ArgumentNullException(nameof(projectRestoreInfo));
-            }
-
-            if (projectRestoreInfo.TargetFrameworks == null)
-            {
-                throw new InvalidOperationException("TargetFrameworks cannot be null.");
-            }
-
             try
             {
-                _logger.LogInformation(
-                    $"The nominate API is called for '{projectUniqueName}'.");
+                if (projectRestoreInfo != null)
+                {
+                    if (projectRestoreInfo.TargetFrameworks == null)
+                    {
+                        throw new InvalidOperationException("TargetFrameworks cannot be null.");
+                    }
+                    _logger.LogInformation(
+                        $"The nominate API is called for '{projectUniqueName}'.");
 
-                var projectNames = ProjectNames.FromFullProjectPath(projectUniqueName);
+                    var projectNames = ProjectNames.FromFullProjectPath(projectUniqueName);
 
-                var dgSpec = ToDependencyGraphSpec(projectNames, projectRestoreInfo);
+                    var dgSpec = ToDependencyGraphSpec(projectNames, projectRestoreInfo);
 #if DEBUG
-                DumpProjectRestoreInfo(projectUniqueName, dgSpec);
+                    DumpProjectRestoreInfo(projectUniqueName, dgSpec);
 #endif
-                _projectSystemCache.AddProjectRestoreInfo(projectNames, dgSpec);
+                    _projectSystemCache.AddProjectRestoreInfo(projectNames, dgSpec);
+                }
 
                 // returned task completes when scheduled restore operation completes.
                 var restoreTask = _restoreWorker.ScheduleRestoreAsync(
