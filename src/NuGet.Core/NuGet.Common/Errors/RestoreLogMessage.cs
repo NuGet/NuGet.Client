@@ -23,7 +23,7 @@ namespace NuGet.Common
         public int EndColumnNumber { get; set; } = -1;
         public string LibraryId { get; set; }
         public IReadOnlyList<string> TargetGraphs { get; set; }
-        public bool LogToInnerLogger { get; set; }
+        public bool DisplayToUser { get; set; }
 
 
         public RestoreLogMessage(LogLevel logLevel, NuGetLogCode errorCode,
@@ -42,7 +42,7 @@ namespace NuGet.Common
             }
 
             TargetGraphs = graphList;
-            LogToInnerLogger = logToInnerLogger;
+            DisplayToUser = logToInnerLogger;
         }
 
         public RestoreLogMessage(LogLevel logLevel, NuGetLogCode errorCode, 

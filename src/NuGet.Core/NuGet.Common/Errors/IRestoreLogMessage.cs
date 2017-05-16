@@ -20,6 +20,6 @@ namespace NuGet.Common
         /// <summary>
         /// Bool indicating if this message needs to be logged to the inner logger.
         /// </summary>
-        bool LogToInnerLogger { get; set; }
+        bool DisplayToUser { get; set; }
     }
 }

@@ -66,12 +66,12 @@ namespace NuGet.Common
         }
         public override void Log(ILogMessage message)
         {
-            Log(new RestoreLogMessage(message.Level, message.Code, message.Message));
+            Log(ToRestoreLogMessage(message));
         }
 
         public override Task LogAsync(ILogMessage message)
         {
-            return LogAsync(new RestoreLogMessage(message.Level, message.Code, message.Message));
+            return LogAsync(ToRestoreLogMessage(message));
         }
 
         /// <summary>
@@ -83,12 +83,24 @@ namespace NuGet.Common
         {
             if (message.Level == LogLevel.Error || message.Level == LogLevel.Warning)
             {
-                return message.LogToInnerLogger && message.Level >= VerbosityLevel;
+                return message.DisplayToUser && message.Level >= VerbosityLevel;
             }
             else
             {
                 return message.Level >= VerbosityLevel;
             }   
+        }
+
+        private static IRestoreLogMessage ToRestoreLogMessage(ILogMessage message)
+        {
+            var restoreLogMessage = message as IRestoreLogMessage;
+
+            if (restoreLogMessage == null)
+            {
+                restoreLogMessage = new RestoreLogMessage(message.Level, message.Code, message.Message);
+            }
+
+            return restoreLogMessage;
         }
 
         public IEnumerable<IRestoreLogMessage> Errors => _errors.ToArray();
