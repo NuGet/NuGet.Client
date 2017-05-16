@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -327,7 +327,7 @@ namespace NuGet.SolutionRestoreManager
                 }
 
                 // Cache p2ps discovered from DTE
-                var cacheContext = new DependencyGraphCacheContext(_logger);
+                var cacheContext = new DependencyGraphCacheContext(_logger, _settings);
                 var pathContext = NuGetPathContext.Create(_settings);
 
                 // add deferred projects package spec in cacheContext packageSpecCache
@@ -364,11 +364,10 @@ namespace NuGet.SolutionRestoreManager
 
                             var restoreSummaries = await DependencyGraphRestoreUtility.RestoreAsync(
                                 _solutionManager,
-                                cacheContext,
+                                cacheContext, //TODO NK - CacheContext now contains the needed settings
                                 providerCache,
                                 cacheModifier,
                                 sources,
-                                _settings,
                                 l,
                                 t);
 

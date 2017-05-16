@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using Microsoft.Build.Framework;
@@ -26,6 +27,9 @@ namespace NuGet.Build.Tasks
 
         public string RestoreConfigFile { get; set; }
 
+        public string RestoreSolutionDirectory { get; set; }
+
+        public string RestoreDirectory { get; set; }
 
         /// <summary>
         /// Output items
@@ -40,13 +44,13 @@ namespace NuGet.Build.Tasks
         public string[] OutputFallbackFolders { get; set; }
 
         [Output]
-        public string[] ConfigFilePaths { get; set; }
+        public string[] OutputConfigFilePaths { get; set; }
 
         private static Lazy<IMachineWideSettings> _machineWideSettings = new Lazy<IMachineWideSettings>(() => new XPlatMachineWideSetting());
 
-        public ISettings GetSettings(string projectDirectory)
+        public ISettings GetSettings(string projectDirectory, string restoreConfigFile)
         {
-            if (string.IsNullOrEmpty(RestoreConfigFile))
+            if (string.IsNullOrEmpty(restoreConfigFile))
             {
                 return Settings.LoadDefaultSettings(projectDirectory,
                     configFileName: null,
@@ -54,11 +58,50 @@ namespace NuGet.Build.Tasks
             }
             else
             {
-                var configFileFullPath = Path.GetFullPath(RestoreConfigFile);
+                var configFileFullPath = Path.GetFullPath(restoreConfigFile);
+                var configFileName = Path.GetFileName(configFileFullPath);
+                var configDirPath = Path.GetDirectoryName(restoreConfigFile);
+                return Settings.LoadSpecificSettings(configDirPath, configFileName: configFileName);
+            }
+        }
+
+        private ISettings ReadSettings(string solutionDirectory, string restoreDirectory, string restoreConfigFile)
+        {
+            if (!string.IsNullOrEmpty(solutionDirectory))
+            {
+                // Read the solution-level settings
+                var solutionSettingsFile = Path.Combine(
+                    solutionDirectory,
+                    NuGetConstants.NuGetSolutionSettingsFolder);
+
+                if (restoreConfigFile != null)
+                {
+                    restoreConfigFile = Path.GetFullPath(restoreConfigFile);
+                }
+
+                return Configuration.Settings.LoadDefaultSettings(
+                    solutionSettingsFile,
+                    configFileName: restoreConfigFile,
+                    machineWideSettings: _machineWideSettings.Value);
+            }
+
+            if (string.IsNullOrEmpty(restoreConfigFile))
+            {
+                return Configuration.Settings.LoadDefaultSettings(
+                    restoreDirectory,
+                    configFileName: null,
+                    machineWideSettings: _machineWideSettings.Value);
+            }
+            else
+            {
+                //TODO NK - Machine Wide Settings are always used in the NuGet.exe case, but not in the MSBuild case, should we add a switch for that?
+                var configFileFullPath = Path.GetFullPath(restoreConfigFile);
                 var directory = Path.GetDirectoryName(configFileFullPath);
                 var configFileName = Path.GetFileName(configFileFullPath);
-                return Settings.LoadSpecificSettings(projectDirectory,
-                    configFileName: configFileName);
+                return Configuration.Settings.LoadDefaultSettings(
+                    directory,
+                    configFileName,
+                    _machineWideSettings.Value);
             }
         }
 
@@ -83,7 +126,18 @@ namespace NuGet.Build.Tasks
             {
                 log.LogDebug($"(in) RestoreConfigFile '{RestoreConfigFile}'");
             }
-            var settings = GetSettings(Path.GetDirectoryName(ProjectUniqueName));
+
+            if (RestoreDirectory != null)
+            {
+                log.LogDebug($"(in) RestoreDirectory '{RestoreDirectory}'");
+            }
+
+            if (RestoreSolutionDirectory != null)
+            {
+                log.LogDebug($"(in) RestoreSolutionDirectory '{RestoreSolutionDirectory}'");
+            }
+
+            var settings = ReadSettings(RestoreSolutionDirectory, string.IsNullOrEmpty(RestoreDirectory) ? Path.GetDirectoryName(ProjectUniqueName) : RestoreDirectory, RestoreConfigFile);
 
             if (string.IsNullOrEmpty(RestorePackagesPath))
             {
@@ -119,12 +173,12 @@ namespace NuGet.Build.Tasks
             {
                 configFilePaths.Add(Path.GetFullPath(Path.Combine(config.Root, config.FileName)));
             }
-            ConfigFilePaths = configFilePaths.ToArray();
+            OutputConfigFilePaths = configFilePaths.ToArray();
 
             log.LogDebug($"(out) OutputPackagesPath '{OutputPackagesPath}'");
             log.LogDebug($"(out) OutputSources '{string.Join(";", OutputSources.Select(p => p))}'");
             log.LogDebug($"(out) OutputFallbackFolders '{string.Join(";", OutputFallbackFolders.Select(p => p))}'");
-            log.LogDebug($"(out) ConfigFilePaths '{string.Join(";", ConfigFilePaths.Select(p => p))}'");
+            log.LogDebug($"(out) OutputConfigFilePaths '{string.Join(";", OutputConfigFilePaths.Select(p => p))}'");
 
             return true;
         }

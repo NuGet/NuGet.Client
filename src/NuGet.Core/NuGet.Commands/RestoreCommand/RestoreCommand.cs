@@ -14,6 +14,7 @@ using NuGet.Common;
 using NuGet.DependencyResolver;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
+using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
 using NuGet.Repositories;
@@ -76,7 +77,7 @@ namespace NuGet.Commands
                 if (cacheFileAndStatus.Value)
                 {
 
-                    if(VerifyAssetsAndMSBuildFilesArePresent(_request))
+                    if(VerifyAssetsAndMSBuildFilesAndPackagesArePresent(_request))
                     {
                         restoreTime.Stop();
 
@@ -213,7 +214,7 @@ namespace NuGet.Commands
             return new KeyValuePair<CacheFile,bool>(cacheFile, _noOp) ;
         }
 
-        private bool VerifyAssetsAndMSBuildFilesArePresent(RestoreRequest request)
+        private bool VerifyAssetsAndMSBuildFilesAndPackagesArePresent(RestoreRequest request)
         {
 
             if (!File.Exists(request.ExistingLockFile?.Path)) {
@@ -236,11 +237,66 @@ namespace NuGet.Commands
                     return false;
                 }
             }
+
+            if (!VerifyPackagesOnDisk(request))
+            {
+                _logger.LogVerbose(string.Format(CultureInfo.CurrentCulture, Strings.Log_MissingPackagesOnDisk, _request.Project.Name));
+                return false;
+            }
             return true;
         }
 
+        private bool VerifyPackagesOnDisk(RestoreRequest request)
+        {
+            var packageFolderPaths = new List<string>();
+            packageFolderPaths.Add(request.Project.RestoreMetadata.PackagesPath);
+            packageFolderPaths.AddRange(request.Project.RestoreMetadata.FallbackFolders);
+            var pathResolvers = packageFolderPaths.Select(path => new VersionFolderPathResolver(path));
 
+            ISet<PackageIdentity> packagesChecked = new HashSet<PackageIdentity>();
 
+            var packages = request.ExistingLockFile.Libraries.Where(library => library.Type == LibraryType.Package);
+
+            foreach (var library in packages)
+            {
+                var identity = new PackageIdentity(library.Name, library.Version);
+
+                // Each id/version only needs to be checked once
+                if (packagesChecked.Add(identity))
+                {
+                    var found = false;
+
+                    //  Check each package folder. These need to match the order used for restore.
+                    foreach (var resolver in pathResolvers)
+                    {
+                        // Verify the SHA for each package
+                        var hashPath = resolver.GetHashPath(library.Name, library.Version);
+
+                        if (File.Exists(hashPath))
+                        {
+                            found = true;
+                            var sha512 = File.ReadAllText(hashPath);
+
+                            if (library.Sha512 != sha512)
+                            {
+                                // A package has changed
+                                return false;
+                            }
+
+                            // Skip checking the rest of the package folders
+                            break;
+                        }
+                    }
+
+                    if (!found)
+                    {
+                        // A package is missing
+                        return false;
+                    }
+                }
+            }
+            return true;
+        }
 
         private string GetAssetsFilePath(LockFile lockFile)
         {

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -11,6 +11,7 @@ using Moq;
 using Newtonsoft.Json.Linq;
 using NuGet.Commands;
 using NuGet.Common;
+using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.PackageManagement;
 using NuGet.Packaging;
@@ -318,7 +319,7 @@ namespace NuGet.Test
                     var format = new LockFileFormat();
 
                     // Restore and build cache
-                    var restoreContext = new DependencyGraphCacheContext(logger);
+                    var restoreContext = new DependencyGraphCacheContext(logger, NullSettings.Instance);
 
                     // Act
                     await nuGetPackageManager.InstallPackageAsync(buildIntegratedProjects[2], packageIdentity, new ResolutionContext(), new TestNuGetProjectContext(),

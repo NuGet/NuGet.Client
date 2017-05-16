@@ -547,4 +547,7 @@ For more information, visit http://docs.nuget.org/docs/reference/command-line-re
   <data name="Log_TargetsFileNotOnDisk" xml:space="preserve">
     <value>The targets file for {0} at location {1} does not exist, no-op is not possible. Continuing restore.</value>
   </data>
+  <data name="Log_MissingPackagesOnDisk" xml:space="preserve">
+    <value>Not all packages are on disk for: {0}</value>
+  </data>
 </root>

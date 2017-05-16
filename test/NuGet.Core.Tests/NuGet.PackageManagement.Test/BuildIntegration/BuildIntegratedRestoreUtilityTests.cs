@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
@@ -54,7 +54,7 @@ namespace NuGet.Test
 
                 var testLogger = new TestLogger();
 
-                var restoreContext = new DependencyGraphCacheContext(testLogger);
+                var restoreContext = new DependencyGraphCacheContext(testLogger, NullSettings.Instance);
 
                 // Act
                 await DependencyGraphRestoreUtility.RestoreAsync(
@@ -63,7 +63,6 @@ namespace NuGet.Test
                     new RestoreCommandProvidersCache(),
                     (c) => { },
                     sources,
-                    NullSettings.Instance,
                     testLogger,
                     CancellationToken.None);
 
@@ -104,7 +103,7 @@ namespace NuGet.Test
 
                 var testLogger = new TestLogger();
 
-                var restoreContext = new DependencyGraphCacheContext(testLogger);
+                var restoreContext = new DependencyGraphCacheContext(testLogger, NullSettings.Instance);
 
                 // Act
                 await DependencyGraphRestoreUtility.RestoreAsync(
@@ -113,7 +112,6 @@ namespace NuGet.Test
                     new RestoreCommandProvidersCache(),
                     (c) => { },
                     sources,
-                    NullSettings.Instance,
                     testLogger,
                     CancellationToken.None);
 
@@ -162,7 +160,7 @@ namespace NuGet.Test
 
                 File.WriteAllText(Path.Combine(configFolder, "sub", "nuget.config"), configContents);
 
-                var settings = new Configuration.Settings(configSubFolder);
+                var settings = new Configuration.Settings(configSubFolder); // TODO NK - Fix this test
 
                 var solutionFolder = new DirectoryInfo(Path.Combine(solutionFolderParent, "solutionFolder"));
                 solutionFolder.Create();
@@ -172,7 +170,7 @@ namespace NuGet.Test
 
                 var testLogger = new TestLogger();
 
-                var restoreContext = new DependencyGraphCacheContext(testLogger);
+                var restoreContext = new DependencyGraphCacheContext(testLogger, NullSettings.Instance);
 
                 // Act
                 await DependencyGraphRestoreUtility.RestoreAsync(
@@ -180,8 +178,7 @@ namespace NuGet.Test
                     restoreContext,
                     new RestoreCommandProvidersCache(),
                     (c) => { },
-                    sources,
-                    settings,
+                    sources, //TODO NK - settings removed
                     testLogger,
                     CancellationToken.None);
 
@@ -260,7 +257,7 @@ namespace NuGet.Test
 
                 var testLogger = new TestLogger();
 
-                var restoreContext = new DependencyGraphCacheContext(testLogger);
+                var restoreContext = new DependencyGraphCacheContext(testLogger, NullSettings.Instance);
                 restoreContext.DeferredPackageSpecs.Add(packageSpec);
 
                 // Act
@@ -270,7 +267,6 @@ namespace NuGet.Test
                     new RestoreCommandProvidersCache(),
                     (c) => { },
                     sourceRepositoryProvider.GetRepositories(),
-                    NullSettings.Instance,
                     testLogger,
                     CancellationToken.None);
 
@@ -326,7 +322,7 @@ namespace NuGet.Test
 
                 var testLogger = new TestLogger();
 
-                var restoreContext = new DependencyGraphCacheContext(testLogger);
+                var restoreContext = new DependencyGraphCacheContext(testLogger, NullSettings.Instance);
                 restoreContext.DeferredPackageSpecs.Add(packageSpec);
 
                 var pathContext = NuGetPathContext.Create(NullSettings.Instance);
