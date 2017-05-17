@@ -36,13 +36,21 @@ namespace NuGet.PackageManagement.VisualStudio
             var projectId = VsHierarchyUtility.GetProjectId(envDTEProject);
             InternalMetadata.Add(NuGetProjectMetadataKeys.ProjectId, projectId);
 
+            UpdateInternalTargetFramework();
+
+            InternalMetadata.Add(NuGetProjectMetadataKeys.UniqueName, uniqueName);
+        }
+
+        private void UpdateInternalTargetFramework()
+        {
             // Override the JSON TFM value from the csproj for UAP framework
             if (InternalMetadata.TryGetValue(NuGetProjectMetadataKeys.TargetFramework, out object targetFramework))
             {
                 var jsonTargetFramework = targetFramework as NuGetFramework;
                 if (IsUAPFramework(jsonTargetFramework))
                 {
-                    var platfromMinVersion = VsHierarchyUtility.GetMSBuildProperty(VsHierarchyUtility.ToVsHierarchy(envDTEProject), EnvDTEProjectInfoUtility.TargetPlatformMinVersion);
+                    // This needs to be on UI Thread.
+                    var platfromMinVersion = VsHierarchyUtility.GetMSBuildProperty(VsHierarchyUtility.ToVsHierarchy(_envDTEProject), EnvDTEProjectInfoUtility.TargetPlatformMinVersion);
 
                     if (!string.IsNullOrEmpty(platfromMinVersion))
                     {
@@ -52,8 +60,6 @@ namespace NuGet.PackageManagement.VisualStudio
                     }
                 }
             }
-
-            InternalMetadata.Add(NuGetProjectMetadataKeys.UniqueName, uniqueName);
         }
 
         private IScriptExecutor ScriptExecutor
@@ -89,6 +95,9 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             var resolvedProjects = context.DeferredPackageSpecs.Select(project => project.Name);
+
+            UpdateInternalTargetFramework();
+
             return VSProjectRestoreReferenceUtility.GetDirectProjectReferences(_envDTEProject, resolvedProjects, context.Logger);
         }
     }
