@@ -12,6 +12,7 @@ namespace NuGet.Common
     {
         private readonly ILogger _innerLogger;
         private readonly ConcurrentQueue<IRestoreLogMessage> _errors;
+        private readonly bool _emitLogs = true;
 
         /// <summary>
         /// Initializes an instance of the <see cref="CollectorLogger"/>, while still
@@ -83,11 +84,11 @@ namespace NuGet.Common
         {
             if (message.Level == LogLevel.Error || message.Level == LogLevel.Warning)
             {
-                return message.DisplayToUser && message.Level >= VerbosityLevel;
+                return ((_emitLogs || message.DisplayToUser) && message.Level >= VerbosityLevel);
             }
             else
             {
-                return message.Level >= VerbosityLevel;
+                return (message.Level >= VerbosityLevel);
             }   
         }
 
