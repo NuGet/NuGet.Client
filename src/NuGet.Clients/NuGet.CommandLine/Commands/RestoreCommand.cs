@@ -222,10 +222,12 @@ namespace NuGet.CommandLine
 
             return _sourceProvider;
         }
+
         private bool IsSolutionRestore(PackageRestoreInputs packageRestoreInputs)
         {
             return !string.IsNullOrEmpty(SolutionDirectory) || packageRestoreInputs.RestoringWithSolutionFile;
         }
+
         private string GetSolutionDirectory(PackageRestoreInputs packageRestoreInputs)
         {
             return packageRestoreInputs.RestoringWithSolutionFile ?
@@ -591,9 +593,10 @@ namespace NuGet.CommandLine
         /// </summary>
         private async Task<DependencyGraphSpec> GetDependencyGraphSpecAsync(string[] projectsWithPotentialP2PReferences, string solutionDirectory, string configFile, string restoreDirectory)
         {
-            // Create requests using settings based on the project directory if no solution was used.
-            // If a solution was used read settings for the solution.
-            // If null is used for settings they will be read per project.
+            // Create requests based on the solution directory if a solution was used read settings for the solution.
+            // If the solution directory is null, then use config file if present
+            // Then use restore directory last
+            // If all 3 are null, then the directory of the project will be used to evaluate the settings
 
             int scaleTimeout;
 

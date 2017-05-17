@@ -16,6 +16,9 @@ namespace NuGet.Build.Tasks
 {
     public class GetRestoreSettingsTask : Task
     {
+
+        public static string CLEAR = "CLEAR";
+
         [Required]
         public string ProjectUniqueName { get; set; }
 
@@ -94,14 +97,13 @@ namespace NuGet.Build.Tasks
             }
             else
             {
-                //TODO NK - Machine Wide Settings are always used in the NuGet.exe case, but not in the MSBuild case, should we add a switch for that?
                 var configFileFullPath = Path.GetFullPath(restoreConfigFile);
                 var directory = Path.GetDirectoryName(configFileFullPath);
                 var configFileName = Path.GetFileName(configFileFullPath);
                 return Configuration.Settings.LoadDefaultSettings(
                     directory,
                     configFileName,
-                    _machineWideSettings.Value);
+                    null);
             }
         }
 
@@ -143,17 +145,34 @@ namespace NuGet.Build.Tasks
             {
                 OutputPackagesPath = SettingsUtility.GetGlobalPackagesFolder(settings);
             }
+            else if (StringComparer.OrdinalIgnoreCase.Compare(RestorePackagesPath, CLEAR) == 0)
+            {
+                RestorePackagesPath = string.Empty;
+            }
             else
             {
                 OutputPackagesPath = RestorePackagesPath;
             }
 
+            bool hasRestoreConfigs = false;
             if (RestoreSources == null)
             {
                 var packageSourceProvider = new PackageSourceProvider(settings);
                 var packageSourcesFromProvider = packageSourceProvider.LoadPackageSources();
                 OutputSources = packageSourcesFromProvider.Select(e => e.Source).ToArray();
+                hasRestoreConfigs = true;
             }
+            else if (RestoreSources.Contains(CLEAR, StringComparer.OrdinalIgnoreCase))
+            {
+                if (RestoreSources.Length == 1)
+                {
+                    OutputSources = new string[] { };
+                }
+                else
+                {
+                    throw new InvalidOperationException($"{CLEAR} cannot be used in conjunction with other values.");
+                }
+            }   
             else
             {
                 OutputSources = RestoreSources;
@@ -163,17 +182,32 @@ namespace NuGet.Build.Tasks
             {
                 OutputFallbackFolders = SettingsUtility.GetFallbackPackageFolders(settings).ToArray();
             }
+            else if (RestoreFallbackFolders.Contains(CLEAR, StringComparer.OrdinalIgnoreCase))
+            {
+                if (RestoreFallbackFolders.Length == 1)
+                {
+                    OutputFallbackFolders = new string[] { };
+                }
+                else
+                {
+                    throw new InvalidOperationException($"{CLEAR} cannot be used in conjunction with other values.");
+                }
+
+            }
             else
             {
                 OutputFallbackFolders = RestoreFallbackFolders;
             }
 
-            var configFilePaths = new List<string>();
-            foreach (var config in settings.Priority)
+            if (hasRestoreConfigs)
             {
-                configFilePaths.Add(Path.GetFullPath(Path.Combine(config.Root, config.FileName)));
+                var configFilePaths = new List<string>();
+                foreach (var config in settings.Priority)
+                {
+                    configFilePaths.Add(Path.GetFullPath(Path.Combine(config.Root, config.FileName)));
+                }
+                OutputConfigFilePaths = configFilePaths.ToArray();
             }
-            OutputConfigFilePaths = configFilePaths.ToArray();
 
             log.LogDebug($"(out) OutputPackagesPath '{OutputPackagesPath}'");
             log.LogDebug($"(out) OutputSources '{string.Join(";", OutputSources.Select(p => p))}'");

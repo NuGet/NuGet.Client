@@ -244,7 +244,7 @@ namespace NuGet.CommandLine
 
                     if (!string.IsNullOrEmpty(msbuildVerbosity))
                     {
-                        console.LogDebug(output.ToString());
+                        console.LogInformation(output.ToString());
                     }
 
                     await outputTask;

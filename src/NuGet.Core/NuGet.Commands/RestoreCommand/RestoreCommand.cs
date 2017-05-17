@@ -76,12 +76,10 @@ namespace NuGet.Commands
                 cacheFile = cacheFileAndStatus.Key;
                 if (cacheFileAndStatus.Value)
                 {
-
-                    if(VerifyAssetsAndMSBuildFilesAndPackagesArePresent(_request))
+                    if(NoOpRestoreUtilities.VerifyAssetsAndMSBuildFilesAndPackagesArePresent(_request))
                     {
                         restoreTime.Stop();
 
-                        // Create result
                         return new NoOpRestoreResult(
                             _success,
                             _request.ExistingLockFile,
@@ -212,90 +210,6 @@ namespace NuGet.Commands
 
             }
             return new KeyValuePair<CacheFile,bool>(cacheFile, _noOp) ;
-        }
-
-        private bool VerifyAssetsAndMSBuildFilesAndPackagesArePresent(RestoreRequest request)
-        {
-
-            if (!File.Exists(request.ExistingLockFile?.Path)) {
-                _logger.LogVerbose(string.Format(CultureInfo.CurrentCulture, Strings.Log_AssetsFileNotOnDisk, _request.Project.Name));
-                return false;
-            }
-
-            if (request.ProjectStyle == ProjectStyle.PackageReference || request.ProjectStyle == ProjectStyle.Standalone)
-            {
-                var targetsFilePath = BuildAssetsUtils.GetMSBuildFilePath(request.Project, request, "targets");
-                if (!File.Exists(targetsFilePath))
-                {
-                    _logger.LogVerbose(string.Format(CultureInfo.CurrentCulture, Strings.Log_TargetsFileNotOnDisk, _request.Project.Name, targetsFilePath));
-                    return false;
-                }
-                var propsFilePath = BuildAssetsUtils.GetMSBuildFilePath(request.Project, request, "props");
-                if (!File.Exists(propsFilePath))
-                {
-                    _logger.LogVerbose(string.Format(CultureInfo.CurrentCulture, Strings.Log_PropsFileNotOnDisk, _request.Project.Name, propsFilePath));
-                    return false;
-                }
-            }
-
-            if (!VerifyPackagesOnDisk(request))
-            {
-                _logger.LogVerbose(string.Format(CultureInfo.CurrentCulture, Strings.Log_MissingPackagesOnDisk, _request.Project.Name));
-                return false;
-            }
-            return true;
-        }
-
-        private bool VerifyPackagesOnDisk(RestoreRequest request)
-        {
-            var packageFolderPaths = new List<string>();
-            packageFolderPaths.Add(request.Project.RestoreMetadata.PackagesPath);
-            packageFolderPaths.AddRange(request.Project.RestoreMetadata.FallbackFolders);
-            var pathResolvers = packageFolderPaths.Select(path => new VersionFolderPathResolver(path));
-
-            ISet<PackageIdentity> packagesChecked = new HashSet<PackageIdentity>();
-
-            var packages = request.ExistingLockFile.Libraries.Where(library => library.Type == LibraryType.Package);
-
-            foreach (var library in packages)
-            {
-                var identity = new PackageIdentity(library.Name, library.Version);
-
-                // Each id/version only needs to be checked once
-                if (packagesChecked.Add(identity))
-                {
-                    var found = false;
-
-                    //  Check each package folder. These need to match the order used for restore.
-                    foreach (var resolver in pathResolvers)
-                    {
-                        // Verify the SHA for each package
-                        var hashPath = resolver.GetHashPath(library.Name, library.Version);
-
-                        if (File.Exists(hashPath))
-                        {
-                            found = true;
-                            var sha512 = File.ReadAllText(hashPath);
-
-                            if (library.Sha512 != sha512)
-                            {
-                                // A package has changed
-                                return false;
-                            }
-
-                            // Skip checking the rest of the package folders
-                            break;
-                        }
-                    }
-
-                    if (!found)
-                    {
-                        // A package is missing
-                        return false;
-                    }
-                }
-            }
-            return true;
         }
 
         private string GetAssetsFilePath(LockFile lockFile)
