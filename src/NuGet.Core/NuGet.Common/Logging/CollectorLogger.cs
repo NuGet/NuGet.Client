@@ -12,29 +12,30 @@ namespace NuGet.Common
     {
         private readonly ILogger _innerLogger;
         private readonly ConcurrentQueue<IRestoreLogMessage> _errors;
-        private readonly bool _emitLogs = true;
-
-        /// <summary>
-        /// Initializes an instance of the <see cref="CollectorLogger"/>, while still
-        /// delegating all log messages to the <param name="innerLogger" />.
-        /// </summary>
-        public CollectorLogger(ILogger innerLogger)
-        {
-            _innerLogger = innerLogger;
-            _errors = new ConcurrentQueue<IRestoreLogMessage>();
-        }
+        private readonly bool _displayAllLogs;
 
         /// <summary>
         /// Initializes an instance of the <see cref="CollectorLogger"/>, while still
         /// delegating all log messages to the <param name="innerLogger" />
         /// based on the <param name="verbosity" />
         /// </summary>
-        public CollectorLogger(ILogger innerLogger, LogLevel verbosity)
+        public CollectorLogger(ILogger innerLogger, LogLevel verbosity, bool displayAllLogs)
             : base(verbosity)
         {
             _innerLogger = innerLogger;
             _errors = new ConcurrentQueue<IRestoreLogMessage>();
+            _displayAllLogs = displayAllLogs;
         }
+
+        /// <summary>
+        /// Initializes an instance of the <see cref="CollectorLogger"/>, while still
+        /// delegating all log messages to the <param name="innerLogger" />.
+        /// </summary>
+        public CollectorLogger(ILogger innerLogger)
+            : this(innerLogger, LogLevel.Verbose, true)
+        {
+        }
+
 
         public void Log(IRestoreLogMessage message)
         {
@@ -84,7 +85,7 @@ namespace NuGet.Common
         {
             if (message.Level == LogLevel.Error || message.Level == LogLevel.Warning)
             {
-                return ((_emitLogs || message.DisplayToUser) && message.Level >= VerbosityLevel);
+                return ((_displayAllLogs || message.ShouldDisplay) && message.Level >= VerbosityLevel);
             }
             else
             {

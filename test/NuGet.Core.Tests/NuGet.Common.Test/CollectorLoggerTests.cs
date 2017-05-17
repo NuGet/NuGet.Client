@@ -1,11 +1,8 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using System.Diagnostics;
 using System.Linq;
 using Moq;
-using Test.Utility;
 using Xunit;
 
 namespace NuGet.Common.Test
@@ -19,7 +16,7 @@ namespace NuGet.Common.Test
 
             // Arrange
             var innerLogger = new Mock<ILogger>();
-            var collector = new CollectorLogger(innerLogger.Object, LogLevel.Debug);
+            var collector = new CollectorLogger(innerLogger.Object, LogLevel.Debug, displayAllLogs: false);
 
             // Act
             collector.Log(new RestoreLogMessage(LogLevel.Debug, "Debug"));
@@ -41,7 +38,7 @@ namespace NuGet.Common.Test
         {
             // Arrange
             var innerLogger = new Mock<ILogger>();
-            var collector = new CollectorLogger(innerLogger.Object, LogLevel.Debug);
+            var collector = new CollectorLogger(innerLogger.Object, LogLevel.Debug, displayAllLogs: false);
 
             // Act
             collector.Log(LogLevel.Debug, "Debug");
@@ -59,19 +56,19 @@ namespace NuGet.Common.Test
         }
 
         [Fact]
-        public void CollectorLogger_PassesLogMessagesToInnerLoggerOnlyWithLogToInnerLogger()
+        public void CollectorLogger_PassesLogMessagesToInnerLoggerOnlyWithShouldDisplay()
         {
 
             // Arrange
             var innerLogger = new Mock<ILogger>();
-            var collector = new CollectorLogger(innerLogger.Object, LogLevel.Debug);
+            var collector = new CollectorLogger(innerLogger.Object, LogLevel.Debug, displayAllLogs: false);
 
             // Act
-            collector.Log(new RestoreLogMessage(LogLevel.Debug, "Debug") { DisplayToUser = true });
-            collector.Log(new RestoreLogMessage(LogLevel.Verbose, "Verbose") { DisplayToUser = false });
-            collector.Log(new RestoreLogMessage(LogLevel.Information, "Information") { DisplayToUser = false });
-            collector.Log(new RestoreLogMessage(LogLevel.Warning, "Warning") { DisplayToUser = false });
-            collector.Log(new RestoreLogMessage(LogLevel.Error, "Error") { DisplayToUser = true });
+            collector.Log(new RestoreLogMessage(LogLevel.Debug, "Debug") { ShouldDisplay = true });
+            collector.Log(new RestoreLogMessage(LogLevel.Verbose, "Verbose") { ShouldDisplay = false });
+            collector.Log(new RestoreLogMessage(LogLevel.Information, "Information") { ShouldDisplay = false });
+            collector.Log(new RestoreLogMessage(LogLevel.Warning, "Warning") { ShouldDisplay = false });
+            collector.Log(new RestoreLogMessage(LogLevel.Error, "Error") { ShouldDisplay = true });
 
             // Assert
             VerifyInnerLoggerCalls(innerLogger, LogLevel.Debug, "Debug", Times.Once());
@@ -82,19 +79,65 @@ namespace NuGet.Common.Test
         }
 
         [Fact]
-        public void CollectorLogger_PassesLogMessagesToInnerLoggerWithLogToInnerLogger()
+        public void CollectorLogger_PassesLogMessagesToInnerLoggerWithShouldDisplay()
         {
 
             // Arrange
             var innerLogger = new Mock<ILogger>();
-            var collector = new CollectorLogger(innerLogger.Object, LogLevel.Debug);
+            var collector = new CollectorLogger(innerLogger.Object, LogLevel.Debug, displayAllLogs: false);
 
             // Act
-            collector.Log(new RestoreLogMessage(LogLevel.Debug, "Debug") { DisplayToUser = true });
-            collector.Log(new RestoreLogMessage(LogLevel.Verbose, "Verbose") { DisplayToUser = true });
-            collector.Log(new RestoreLogMessage(LogLevel.Information, "Information") { DisplayToUser = true });
-            collector.Log(new RestoreLogMessage(LogLevel.Warning, "Warning") { DisplayToUser = true });
-            collector.Log(new RestoreLogMessage(LogLevel.Error, "Error") { DisplayToUser = true });
+            collector.Log(new RestoreLogMessage(LogLevel.Debug, "Debug") { ShouldDisplay = true });
+            collector.Log(new RestoreLogMessage(LogLevel.Verbose, "Verbose") { ShouldDisplay = true });
+            collector.Log(new RestoreLogMessage(LogLevel.Information, "Information") { ShouldDisplay = true });
+            collector.Log(new RestoreLogMessage(LogLevel.Warning, "Warning") { ShouldDisplay = true });
+            collector.Log(new RestoreLogMessage(LogLevel.Error, "Error") { ShouldDisplay = true });
+
+            // Assert
+            VerifyInnerLoggerCalls(innerLogger, LogLevel.Debug, "Debug", Times.Once());
+            VerifyInnerLoggerCalls(innerLogger, LogLevel.Verbose, "Verbose", Times.Once());
+            VerifyInnerLoggerCalls(innerLogger, LogLevel.Information, "Information", Times.Once());
+            VerifyInnerLoggerCalls(innerLogger, LogLevel.Warning, "Warning", Times.Once());
+            VerifyInnerLoggerCalls(innerLogger, LogLevel.Error, "Error", Times.Once());
+        }
+
+        [Fact]
+        public void CollectorLogger_PassesLogMessagesToInnerLoggerWithNoShouldDisplayAndDisplayAllLogs()
+        {
+
+            // Arrange
+            var innerLogger = new Mock<ILogger>();
+            var collector = new CollectorLogger(innerLogger.Object, LogLevel.Debug, displayAllLogs: true);
+
+            // Act
+            collector.Log(new RestoreLogMessage(LogLevel.Debug, "Debug") { ShouldDisplay = true });
+            collector.Log(new RestoreLogMessage(LogLevel.Verbose, "Verbose") { ShouldDisplay = true });
+            collector.Log(new RestoreLogMessage(LogLevel.Information, "Information") { ShouldDisplay = true });
+            collector.Log(new RestoreLogMessage(LogLevel.Warning, "Warning") { ShouldDisplay = false });
+            collector.Log(new RestoreLogMessage(LogLevel.Error, "Error") { ShouldDisplay = false });
+
+            // Assert
+            VerifyInnerLoggerCalls(innerLogger, LogLevel.Debug, "Debug", Times.Once());
+            VerifyInnerLoggerCalls(innerLogger, LogLevel.Verbose, "Verbose", Times.Once());
+            VerifyInnerLoggerCalls(innerLogger, LogLevel.Information, "Information", Times.Once());
+            VerifyInnerLoggerCalls(innerLogger, LogLevel.Warning, "Warning", Times.Once());
+            VerifyInnerLoggerCalls(innerLogger, LogLevel.Error, "Error", Times.Once());
+        }
+
+        [Fact]
+        public void CollectorLogger_PassesLogMessagesToInnerLoggerWithShouldDisplayAndDisplayAllLogs()
+        {
+
+            // Arrange
+            var innerLogger = new Mock<ILogger>();
+            var collector = new CollectorLogger(innerLogger.Object, LogLevel.Debug, displayAllLogs: true);
+
+            // Act
+            collector.Log(new RestoreLogMessage(LogLevel.Debug, "Debug") { ShouldDisplay = true });
+            collector.Log(new RestoreLogMessage(LogLevel.Verbose, "Verbose") { ShouldDisplay = true });
+            collector.Log(new RestoreLogMessage(LogLevel.Information, "Information") { ShouldDisplay = true });
+            collector.Log(new RestoreLogMessage(LogLevel.Warning, "Warning") { ShouldDisplay = true });
+            collector.Log(new RestoreLogMessage(LogLevel.Error, "Error") { ShouldDisplay = true });
 
             // Assert
             VerifyInnerLoggerCalls(innerLogger, LogLevel.Debug, "Debug", Times.Once());
@@ -109,14 +152,14 @@ namespace NuGet.Common.Test
         {
             // Arrange
             var innerLogger = new Mock<ILogger>();
-            var collector = new CollectorLogger(innerLogger.Object, LogLevel.Verbose);
+            var collector = new CollectorLogger(innerLogger.Object, LogLevel.Verbose, displayAllLogs: false);
 
             // Act
-            collector.Log(new RestoreLogMessage(LogLevel.Debug, "Debug") { DisplayToUser = true });
-            collector.Log(new RestoreLogMessage(LogLevel.Verbose, "Verbose") { DisplayToUser = true });
-            collector.Log(new RestoreLogMessage(LogLevel.Information, "Information") { DisplayToUser = true });
-            collector.Log(new RestoreLogMessage(LogLevel.Warning, "Warning") { DisplayToUser = true });
-            collector.Log(new RestoreLogMessage(LogLevel.Error, "Error") { DisplayToUser = true });
+            collector.Log(new RestoreLogMessage(LogLevel.Debug, "Debug") { ShouldDisplay = true });
+            collector.Log(new RestoreLogMessage(LogLevel.Verbose, "Verbose") { ShouldDisplay = true });
+            collector.Log(new RestoreLogMessage(LogLevel.Information, "Information") { ShouldDisplay = true });
+            collector.Log(new RestoreLogMessage(LogLevel.Warning, "Warning") { ShouldDisplay = true });
+            collector.Log(new RestoreLogMessage(LogLevel.Error, "Error") { ShouldDisplay = true });
 
             // Assert
             VerifyInnerLoggerCalls(innerLogger, LogLevel.Debug, "Debug", Times.Never());
@@ -131,14 +174,14 @@ namespace NuGet.Common.Test
         {
             // Arrange
             var innerLogger = new Mock<ILogger>();
-            var collector = new CollectorLogger(innerLogger.Object, LogLevel.Error);
+            var collector = new CollectorLogger(innerLogger.Object, LogLevel.Error, displayAllLogs: false);
 
             // Act
-            collector.Log(new RestoreLogMessage(LogLevel.Debug, "Debug") { DisplayToUser = true });
-            collector.Log(new RestoreLogMessage(LogLevel.Verbose, "Verbose") { DisplayToUser = true });
-            collector.Log(new RestoreLogMessage(LogLevel.Information, "Information") { DisplayToUser = true });
-            collector.Log(new RestoreLogMessage(LogLevel.Warning, "Warning") { DisplayToUser = true });
-            collector.Log(new RestoreLogMessage(LogLevel.Error, "Error") { DisplayToUser = true });
+            collector.Log(new RestoreLogMessage(LogLevel.Debug, "Debug") { ShouldDisplay = true });
+            collector.Log(new RestoreLogMessage(LogLevel.Verbose, "Verbose") { ShouldDisplay = true });
+            collector.Log(new RestoreLogMessage(LogLevel.Information, "Information") { ShouldDisplay = true });
+            collector.Log(new RestoreLogMessage(LogLevel.Warning, "Warning") { ShouldDisplay = true });
+            collector.Log(new RestoreLogMessage(LogLevel.Error, "Error") { ShouldDisplay = true });
 
             // Assert
             VerifyInnerLoggerCalls(innerLogger, LogLevel.Debug, "Debug", Times.Never());
