@@ -147,7 +147,6 @@ namespace NuGetVSExtension
 
             SolutionManager.AfterNuGetProjectRenamed += SolutionManager_NuGetProjectRenamed;
 
-            Styles.LoadVsStyles();
             Brushes.LoadVsBrushes();
 
             // Add our command handlers for menu (commands must exist in the .vsct file)
