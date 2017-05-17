@@ -81,7 +81,7 @@ namespace NuGet.CommandLine
                 SolutionDirectory = Path.GetFullPath(SolutionDirectory);
             }
 
-            var restoreInputs = await DetermineRestoreInputsAsync(); // From here we need to get the inputs
+            var restoreInputs = await DetermineRestoreInputsAsync();
 
             var hasPackagesConfigFiles = restoreInputs.PackagesConfigFiles.Count > 0;
             var hasProjectJsonOrPackageReferences = restoreInputs.RestoreV3Context.Inputs.Any();
