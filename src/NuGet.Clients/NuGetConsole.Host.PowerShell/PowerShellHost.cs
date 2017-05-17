@@ -13,7 +13,6 @@ using System.Management.Automation;
 using System.Management.Automation.Runspaces;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows.Forms;
 using System.Windows.Media;
 using EnvDTE;
 using Microsoft.VisualStudio.Threading;
