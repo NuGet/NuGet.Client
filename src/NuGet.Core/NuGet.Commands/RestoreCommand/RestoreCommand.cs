@@ -28,9 +28,9 @@ namespace NuGet.Commands
         private readonly RestoreRequest _request;
 
         private bool _success = true;
-
         private readonly Dictionary<NuGetFramework, RuntimeGraph> _runtimeGraphCache = new Dictionary<NuGetFramework, RuntimeGraph>();
         private readonly ConcurrentDictionary<PackageIdentity, RuntimeGraph> _runtimeGraphCacheByPackage
+
             = new ConcurrentDictionary<PackageIdentity, RuntimeGraph>(PackageIdentity.Comparer);
         private readonly Dictionary<RestoreTargetGraph, Dictionary<string, LibraryIncludeFlags>> _includeFlagGraphs
             = new Dictionary<RestoreTargetGraph, Dictionary<string, LibraryIncludeFlags>>();
@@ -48,8 +48,6 @@ namespace NuGet.Commands
 
             var collectorLogger = new CollectorLogger(_request.Log);
             _logger = collectorLogger;
-            _request.Log = collectorLogger;
-
         }
 
         public Task<RestoreResult> ExecuteAsync()
@@ -142,6 +140,7 @@ namespace NuGet.Commands
                 .ToList();
 
             assetsFile.LogMessages = logs;
+
 
             restoreTime.Stop();
 

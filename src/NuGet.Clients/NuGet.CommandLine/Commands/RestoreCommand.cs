@@ -161,7 +161,7 @@ namespace NuGet.CommandLine
                     }
 
                     // Run restore
-                    var v3Summaries = await RestoreRunner.Run(restoreContext);
+                    var v3Summaries = await RestoreRunner.RunAsync(restoreContext);
                     restoreSummaries.AddRange(v3Summaries);
                 }
             }

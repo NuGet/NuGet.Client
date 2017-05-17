@@ -17,7 +17,7 @@ namespace NuGet.CommandLine.Test
         [Fact]
         public void GivenAProjectIsUsedOverAPackageVerifyNoDowngradeWarning()
         {
-            DebuggerUtils.WaitForDebugger();
+
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
             {
@@ -53,27 +53,12 @@ namespace NuGet.CommandLine.Test
                 // Act
                 var r = Util.Restore(pathContext, projectA.ProjectPath);
                 var output = r.Item2 + " " + r.Item3;
-
                 var reader = new LockFileFormat();
                 var lockFileObj = reader.Read(projectA.AssetsFileOutputPath);
-                var logMessage = lockFileObj?.LogMessages?.First();
-
 
                 // Assert
                 Assert.NotNull(lockFileObj);
-                Assert.NotNull(logMessage);
-                Assert.Equal(1, lockFileObj.LogMessages.Count());
-                Assert.Equal(LogLevel.Error, logMessage.Level);
-                Assert.Equal(NuGetLogCode.NU1000, logMessage.Code);
-                Assert.Null(logMessage.FilePath);
-                Assert.Equal(-1, logMessage.StartLineNumber);
-                Assert.Equal(-1, logMessage.EndLineNumber);
-                Assert.Equal(-1, logMessage.StartColumnNumber);
-                Assert.Equal(-1, logMessage.EndColumnNumber);
-                Assert.NotNull(logMessage.TargetGraphs);
-                Assert.Equal(0, logMessage.TargetGraphs.Count);
-                Assert.Equal("test log message", logMessage.Message);
-                // Assert
+                Assert.Equal(0, lockFileObj.LogMessages.Count());
                 Assert.DoesNotContain("downgrade", output, StringComparison.OrdinalIgnoreCase);
             }
         }
@@ -108,8 +93,48 @@ namespace NuGet.CommandLine.Test
                 // Act
                 var r = Util.Restore(pathContext, projectA.ProjectPath);
                 var output = r.Item2 + " " + r.Item3;
+                var reader = new LockFileFormat();
+                var lockFileObj = reader.Read(projectA.AssetsFileOutputPath);
 
                 // Assert
+                Assert.NotNull(lockFileObj);
+                Assert.Equal(1, lockFileObj.LogMessages.Count());
+                Assert.Contains("Detected package downgrade: i from 9.0.0 to 1.0.0", lockFileObj.LogMessages.First().Message, StringComparison.OrdinalIgnoreCase);
+                Assert.Contains("Detected package downgrade: i from 9.0.0 to 1.0.0", output, StringComparison.OrdinalIgnoreCase);
+            }
+        }
+
+        [Fact]
+        public void GivenAnUnknownPackageVerifyError()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                    "a",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("NETStandard1.5"));
+
+                var packageB = new SimpleTestPackageContext("b", "9.0.0");
+
+                projectA.AddPackageToAllFrameworks(packageB);
+
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+
+                // Act
+                var r = Util.Restore(pathContext, projectA.ProjectPath, expectedExitCode: 1);
+                var output = r.Item2 + " " + r.Item3;
+                var reader = new LockFileFormat();
+                var lockFileObj = reader.Read(projectA.AssetsFileOutputPath);
+
+                // Assert
+                Assert.NotNull(lockFileObj);
+                Assert.Equal(1, lockFileObj.LogMessages.Count());
+                Assert.Contains("Detected package downgrade: i from 9.0.0 to 1.0.0", lockFileObj.LogMessages.First().Message, StringComparison.OrdinalIgnoreCase);
                 Assert.Contains("Detected package downgrade: i from 9.0.0 to 1.0.0", output, StringComparison.OrdinalIgnoreCase);
             }
         }

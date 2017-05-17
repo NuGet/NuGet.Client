@@ -49,7 +49,7 @@ namespace NuGet.Commands.Test
                     }
                 };
 
-                var summaries = await RestoreRunner.Run(restoreContext);
+                var summaries = await RestoreRunner.RunAsync(restoreContext);
                 return summaries.ToList();
             }
         }

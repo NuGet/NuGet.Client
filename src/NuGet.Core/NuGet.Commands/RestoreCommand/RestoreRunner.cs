@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -34,13 +34,10 @@ namespace NuGet.Commands
         /// <summary>
         /// Create requests, execute requests, and commit restore results.
         /// </summary>
-        public static async Task<IReadOnlyList<RestoreSummary>> Run(RestoreArgs restoreContext)
+        public static async Task<IReadOnlyList<RestoreSummary>> RunAsync(RestoreArgs restoreContext)
         {
-            // Create requests
-            var requests = await GetRequests(restoreContext);
-
             // Run requests
-            return await RunAsync(requests, restoreContext, CancellationToken.None);
+            return await RunAsync(restoreContext, CancellationToken.None);
         }
 
         /// <summary>
@@ -301,7 +298,8 @@ namespace NuGet.Commands
                 summaryRequest.InputPath,
                 summaryRequest.Settings,
                 summaryRequest.Sources,
-                summaryRequest.CollectorLogger.Errors.Select(e => e as RestoreLogMessage).Where(e => e.Level == LogLevel.Error));
+                summaryRequest.CollectorLogger.Errors.Select(e => e as RestoreLogMessage)
+                    .Where(e => e.Level == LogLevel.Error || e.Level == LogLevel.Warning));
         }
 
         private static async Task<RestoreSummary> CompleteTaskAsync(List<Task<RestoreSummary>> restoreTasks)
