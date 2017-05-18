@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -193,6 +193,7 @@ namespace NuGet.ProjectManagement.Projects
 
         public override async Task<IReadOnlyList<PackageSpec>> GetPackageSpecsAsync(DependencyGraphCacheContext context)
         {
+            //TODO NK - Add settings here maybe?
             PackageSpec packageSpec = null;
             if (context == null || !context.PackageSpecCache.TryGetValue(MSBuildProjectPath, out packageSpec))
             {

@@ -74,9 +74,11 @@ namespace NuGet.CommandLine
             bool recursive,
             string solutionDirectory,
             string restoreConfigFile,
-            string restoreDirectory)
+            string restoreDirectory,
+            string[] sources,
+            string packagesDirectory)
         {
-            string msbuildPath = GetMsbuild(msbuildDirectory);
+            var msbuildPath = GetMsbuild(msbuildDirectory);
 
             if (!File.Exists(msbuildPath))
             {
@@ -161,13 +163,54 @@ namespace NuGet.CommandLine
                     argumentBuilder.Append(EscapeQuoted(restoreDirectory));
                 }
 
+                var isMono = RuntimeEnvironmentHelper.IsMono && !RuntimeEnvironmentHelper.IsWindows;
+
+                if (sources.Length != 0)
+                {
+                    if (isMono)
+                    {
+                        argumentBuilder.Append(" /p:RestoreSources=\\\"");
+                    }
+                    else
+                    {
+                        argumentBuilder.Append(" /p:RestoreSources=\"");
+                    }
+
+                    for (var i = 0; i < sources.Length; i++)
+                    {
+                        if (isMono)
+                        {
+                            argumentBuilder.Append(sources[i])
+                                .Append("\\;");
+                        }
+                        else
+                        {
+                            argumentBuilder.Append(sources[i])
+                                .Append(";");
+                        }
+                    }
+
+                    if (isMono)
+                    {
+                        argumentBuilder.Append("\\\" ");
+                    }
+                    else
+                    {
+                        argumentBuilder.Append("\" ");
+                    }
+                }
+                if (!string.IsNullOrEmpty(packagesDirectory))
+                {
+                    argumentBuilder.Append(" /p:RestorePackagesPath=");
+                    AppendQuoted(argumentBuilder, packagesDirectory);
+                }
+
                 // Add all depenencies as top level restore projects if recursive is set
                 argumentBuilder.Append($" /p:RestoreRecursive={recursive} ");
 
                 // Filter out unknown project types and avoid errors from projects that do not support CustomAfterTargets
                 argumentBuilder.Append($" /p:RestoreProjectFilterMode=exclusionlist /p:RestoreContinueOnError=WarnAndContinue ");
 
-                var isMono = RuntimeEnvironmentHelper.IsMono && !RuntimeEnvironmentHelper.IsWindows;
                 // /p: foo = "bar;baz" doesn't work on bash.
                 // /p: foo = /"bar/;baz/" works.
                 // Need to escape quotes and semicolon on bash.

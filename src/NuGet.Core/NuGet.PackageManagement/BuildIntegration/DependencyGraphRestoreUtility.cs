@@ -313,6 +313,9 @@ namespace NuGet.PackageManagement
         {
             // TODO NK - Potentially add the dg spec details here
             var dgSpec = new DependencyGraphSpec();
+            SettingsUtility.GetGlobalPackagesFolder(context.Settings);
+            SettingsUtility.GetFallbackPackageFolders(context.Settings);
+            
 
             foreach (var packageSpec in context.DeferredPackageSpecs)
             {
