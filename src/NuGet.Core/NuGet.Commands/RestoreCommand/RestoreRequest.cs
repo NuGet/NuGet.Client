@@ -137,8 +137,8 @@ namespace NuGet.Commands
         public bool ValidateRuntimeAssets { get; set; } = true;
 
         /// <summary>
-        /// Display Logs to user
+        /// Display Errors and warnings as they occur
         /// </summary>
-        public bool DisplayLogs { get; set; } = true;
+        public bool DisplayAllLogs { get; set; } = true;
     }
 }

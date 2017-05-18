@@ -21,8 +21,6 @@ namespace NuGet.Commands
 
         public string InputPath { get; }
 
-        public CollectorLogger CollectorLogger {get; }
-
         public RestoreSummaryRequest(
             RestoreRequest request,
             string inputPath,
@@ -33,9 +31,6 @@ namespace NuGet.Commands
             Settings = settings;
             Sources = sources;
             InputPath = inputPath;
-
-            CollectorLogger = new CollectorLogger(request.Log);
-            request.Log = CollectorLogger;
         }
     }
 }

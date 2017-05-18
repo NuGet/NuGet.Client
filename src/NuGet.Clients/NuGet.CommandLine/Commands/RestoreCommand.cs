@@ -123,6 +123,9 @@ namespace NuGet.CommandLine
                     restoreContext.Log = Console;
                     restoreContext.CachingSourceProvider = GetSourceRepositoryProvider();
 
+                    // Restore errors and warnings will be displayed through sdk/msbuild target
+                    restoreContext.DisplayAllLogs = false;
+
                     var packageSaveMode = EffectivePackageSaveMode;
                     if (packageSaveMode != Packaging.PackageSaveMode.None)
                     {

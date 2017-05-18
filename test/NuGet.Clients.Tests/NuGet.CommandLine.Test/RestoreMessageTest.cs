@@ -99,8 +99,12 @@ namespace NuGet.CommandLine.Test
                 // Assert
                 Assert.NotNull(lockFileObj);
                 Assert.Equal(1, lockFileObj.LogMessages.Count());
-                Assert.Contains("Detected package downgrade: i from 9.0.0 to 1.0.0", lockFileObj.LogMessages.First().Message, StringComparison.OrdinalIgnoreCase);
-                Assert.Contains("Detected package downgrade: i from 9.0.0 to 1.0.0", output, StringComparison.OrdinalIgnoreCase);
+                Assert.Contains("Detected package downgrade: i from 9.0.0 to 1.0.0", 
+                    lockFileObj.LogMessages.First().Message, 
+                    StringComparison.OrdinalIgnoreCase);
+                Assert.Contains("Detected package downgrade: i from 9.0.0 to 1.0.0", 
+                    output, 
+                    StringComparison.OrdinalIgnoreCase);
             }
         }
 
@@ -134,8 +138,12 @@ namespace NuGet.CommandLine.Test
                 // Assert
                 Assert.NotNull(lockFileObj);
                 Assert.Equal(1, lockFileObj.LogMessages.Count());
-                Assert.Contains("Detected package downgrade: i from 9.0.0 to 1.0.0", lockFileObj.LogMessages.First().Message, StringComparison.OrdinalIgnoreCase);
-                Assert.Contains("Detected package downgrade: i from 9.0.0 to 1.0.0", output, StringComparison.OrdinalIgnoreCase);
+                Assert.Contains("Unable to find package b. No packages exist with this id in source(s): source", 
+                    lockFileObj.LogMessages.First().Message, 
+                    StringComparison.OrdinalIgnoreCase);
+                Assert.Contains("Unable to find package b. No packages exist with this id in source(s): source", 
+                    output, 
+                    StringComparison.OrdinalIgnoreCase);
             }
         }
 

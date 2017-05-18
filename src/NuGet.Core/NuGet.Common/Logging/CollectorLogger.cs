@@ -14,11 +14,15 @@ namespace NuGet.Common
         private readonly ConcurrentQueue<IRestoreLogMessage> _errors;
         private readonly bool _displayAllLogs;
 
+        public IEnumerable<IRestoreLogMessage> Errors => _errors.ToArray();
+
         /// <summary>
         /// Initializes an instance of the <see cref="CollectorLogger"/>, while still
-        /// delegating all log messages to the <param name="innerLogger" />
-        /// based on the <param name="verbosity" />
+        /// delegating all log messages to the inner logger.
         /// </summary>
+        /// <param name="innerLogger">The inner logger used to delegate the logging.</param>
+        /// <param name="verbosity">Minimum verbosity below which no logs will be passed to the inner logger.</param>
+        /// <param name="displayAllLogs">If this is false, then errors and warnings will not be passed to inner logger.</param>
         public CollectorLogger(ILogger innerLogger, LogLevel verbosity, bool displayAllLogs)
             : base(verbosity)
         {
@@ -29,13 +33,35 @@ namespace NuGet.Common
 
         /// <summary>
         /// Initializes an instance of the <see cref="CollectorLogger"/>, while still
-        /// delegating all log messages to the <param name="innerLogger" />.
+        /// delegating all log messages to the inner logger.
         /// </summary>
-        public CollectorLogger(ILogger innerLogger)
-            : this(innerLogger, LogLevel.Verbose, true)
+        /// <param name="innerLogger">The inner logger used to delegate the logging.</param>
+        /// <param name="displayAllLogs">If this is false, then errors and warnings will not be passed to inner logger.</param>
+        public CollectorLogger(ILogger innerLogger, bool displayAllLogs)
+            : this(innerLogger, LogLevel.Debug, displayAllLogs)
         {
         }
 
+        /// <summary>
+        /// Initializes an instance of the <see cref="CollectorLogger"/>, while still
+        /// delegating all log messages to the inner logger.
+        /// </summary>
+        /// <param name="innerLogger">The inner logger used to delegate the logging.</param>
+        /// <param name="verbosity">Minimum verbosity below which no logs will be passed to the inner logger.</param>
+        public CollectorLogger(ILogger innerLogger, LogLevel verbosity)
+            : this(innerLogger, verbosity, true)
+        {
+        }
+
+        /// <summary>
+        /// Initializes an instance of the <see cref="CollectorLogger"/>, while still
+        /// delegating all log messages to the inner logger.
+        /// </summary>
+        /// <param name="innerLogger">The inner logger used to delegate the logging.</param>
+        public CollectorLogger(ILogger innerLogger)
+            : this(innerLogger, LogLevel.Debug, true)
+        {
+        }
 
         public void Log(IRestoreLogMessage message)
         {
@@ -66,6 +92,7 @@ namespace NuGet.Common
                 return Task.FromResult(0);
             }
         }
+
         public override void Log(ILogMessage message)
         {
             Log(ToRestoreLogMessage(message));
@@ -105,6 +132,5 @@ namespace NuGet.Common
             return restoreLogMessage;
         }
 
-        public IEnumerable<IRestoreLogMessage> Errors => _errors.ToArray();
     }
 }

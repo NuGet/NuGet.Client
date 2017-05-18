@@ -292,14 +292,16 @@ namespace NuGet.Commands
                     summaryRequest.InputPath));
             }
 
+            // Remote the summary messages from the assets file. This will be removed later.
+            var messages = restoreResult.Result.LockFile.LogMessages.Select(e => new RestoreLogMessage(e.Level, e.Code, e.Message));
+
             // Build the summary
             return new RestoreSummary(
                 result,
                 summaryRequest.InputPath,
                 summaryRequest.Settings,
                 summaryRequest.Sources,
-                summaryRequest.CollectorLogger.Errors.Select(e => e as RestoreLogMessage)
-                    .Where(e => e.Level == LogLevel.Error || e.Level == LogLevel.Warning));
+                messages);
         }
 
         private static async Task<RestoreSummary> CompleteTaskAsync(List<Task<RestoreSummary>> restoreTasks)

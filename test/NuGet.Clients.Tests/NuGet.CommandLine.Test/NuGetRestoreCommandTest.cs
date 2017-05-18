@@ -19,6 +19,7 @@ using System.Text.RegularExpressions;
 using NuGet.Protocol.Core.Types;
 using NuGet.Protocol;
 using NuGet.Common;
+using Test.Utility;
 
 namespace NuGet.CommandLine.Test
 {
@@ -2020,6 +2021,7 @@ EndProject");
         [Fact]
         public void RestoreCommand_SourceLoggingFileSource()
         {
+            DebuggerUtils.WaitForDebugger();
             // Arrange
             var nugetexe = Util.GetNuGetExePath();
             var identity = new Packaging.Core.PackageIdentity("packageA", new Versioning.NuGetVersion("1.1.0"));

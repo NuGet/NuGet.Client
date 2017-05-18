@@ -24,7 +24,7 @@ namespace NuGet.Commands
 {
     public class RestoreCommand
     {
-        private readonly ILogger _logger;
+        private readonly ICollectorLogger _logger;
         private readonly RestoreRequest _request;
 
         private bool _success = true;
@@ -37,6 +37,7 @@ namespace NuGet.Commands
 
         public RestoreCommand(RestoreRequest request)
         {
+
             _request = request ?? throw new ArgumentNullException(nameof(request));
 
             // Validate the lock file version requested
@@ -46,7 +47,7 @@ namespace NuGet.Commands
                 throw new ArgumentOutOfRangeException(nameof(_request.LockFileVersion));
             }
 
-            var collectorLogger = new CollectorLogger(_request.Log);
+            var collectorLogger = new CollectorLogger(_request.Log, request.DisplayAllLogs);
             _logger = collectorLogger;
         }
 
@@ -67,7 +68,7 @@ namespace NuGet.Commands
 
             localRepositories.AddRange(_request.DependencyProviders.FallbackPackageFolders);
 
-            var contextForProject = CreateRemoteWalkContext(_request);
+            var contextForProject = CreateRemoteWalkContext(_request, _logger);
 
             // Restore
             var graphs = await ExecuteRestoreAsync(
@@ -460,7 +461,8 @@ namespace NuGet.Commands
                 _request.Project,
                 _request.ExistingLockFile,
                 _runtimeGraphCache,
-                _runtimeGraphCacheByPackage);
+                _runtimeGraphCacheByPackage,
+                _logger);
 
             var projectRestoreCommand = new ProjectRestoreCommand(projectRestoreRequest);
 
@@ -626,11 +628,11 @@ namespace NuGet.Commands
             return projectFrameworkRuntimePairs;
         }
 
-        private static RemoteWalkContext CreateRemoteWalkContext(RestoreRequest request)
+        private static RemoteWalkContext CreateRemoteWalkContext(RestoreRequest request, ICollectorLogger logger)
         {
             var context = new RemoteWalkContext(
                 request.CacheContext,
-                request.Log);
+                logger);
 
             foreach (var provider in request.DependencyProviders.LocalProviders)
             {
