@@ -14,6 +14,7 @@
     <XunitVersion>2.2.0</XunitVersion>
     <TestSDKVersion>15.0.0</TestSDKVersion>
     <MoqVersion>4.7.1</MoqVersion>
+    <FluentAssertionsVersion>4.19.2</FluentAssertionsVersion>
     <MicrosoftBuildPackageVersion>0.1.0-preview-00038-160914</MicrosoftBuildPackageVersion>
   </PropertyGroup>
   

@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="NuGet.PackageManagement.UI.SortableColumnHeader"
+<UserControl x:Class="NuGet.PackageManagement.UI.SortableColumnHeader"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -27,7 +27,7 @@
       HorizontalAlignment="Center"
       StrokeThickness="1"
       Stroke="{DynamicResource {x:Static local:Brushes.UIText}}"
-      Visibility="Hidden" />
+      Visibility="Hidden"/>
 
     <!-- up arrow -->
     <Path
@@ -39,6 +39,6 @@
       HorizontalAlignment="Center"
       StrokeThickness="1"
       Stroke="{DynamicResource {x:Static local:Brushes.UIText}}"
-      Visibility="Hidden" />
+      Visibility="Hidden"/>
   </Grid>
 </UserControl>

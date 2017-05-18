@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -178,7 +178,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                     else
                     {
                         // last input invalid, display in red
-                        Write(prompt, ConsoleColor.Red);
+                        Write(prompt, ConsoleColor.DarkRed);
                     }
                     string line = ReadLine();
                     // user hit ESC?
@@ -223,7 +223,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                 else
                 {
                     // last input invalid, display prompt in red
-                    Write(prompt, ConsoleColor.Red);
+                    Write(prompt, ConsoleColor.DarkRed);
                 }
 
                 string input = ReadLine();
@@ -537,7 +537,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
 
         public override void WriteErrorLine(string value)
         {
-            WriteLine(value, foregroundColor: ConsoleColor.White, backgroundColor: ConsoleColor.Red);
+            WriteLine(value, foregroundColor: ConsoleColor.White, backgroundColor: ConsoleColor.DarkRed);
         }
 
         public override void WriteProgress(long sourceId, ProgressRecord record)

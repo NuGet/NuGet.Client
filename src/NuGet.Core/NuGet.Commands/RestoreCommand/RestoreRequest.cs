@@ -23,40 +23,16 @@ namespace NuGet.Commands
             SourceCacheContext cacheContext,
             ILogger log)
         {
-            if (project == null)
-            {
-                throw new ArgumentNullException(nameof(project));
-            }
 
-            if (dependencyProviders == null)
-            {
-                throw new ArgumentNullException(nameof(dependencyProviders));
-            }
-
-            if (cacheContext == null)
-            {
-                throw new ArgumentNullException(nameof(cacheContext));
-            }
-
-            if (log == null)
-            {
-                throw new ArgumentNullException(nameof(log));
-            }
-
-            Project = project;
+            CacheContext = cacheContext ?? throw new ArgumentNullException(nameof(cacheContext));
+            Log = log ?? throw new ArgumentNullException(nameof(log));
+            Project = project ?? throw new ArgumentNullException(nameof(project));
+            DependencyProviders = dependencyProviders ?? throw new ArgumentNullException(nameof(dependencyProviders));
 
             ExternalProjects = new List<ExternalProjectReference>();
             CompatibilityProfiles = new HashSet<FrameworkRuntimePair>();
-
             PackagesDirectory = dependencyProviders.GlobalPackages.RepositoryRoot;
             IsLowercasePackagesDirectory = true;
-
-            CacheContext = cacheContext;
-            Log = log;
-
-            DependencyProviders = dependencyProviders;
-
-            // Default to the project folder
 
             // Default to the project folder
             RestoreOutputPath = Path.GetDirectoryName(Project.FilePath);

@@ -3,11 +3,13 @@
 
 using System;
 using System.Collections.Concurrent;
+using System.Threading.Tasks;
+using NuGet.Common;
 using Xunit.Abstractions;
 
 namespace NuGet.Test.Utility
 {
-    public class TestLogger : Common.ILogger
+    public class TestLogger : ILogger
     {
         private readonly ITestOutputHelper _output;
 
@@ -28,6 +30,7 @@ namespace NuGet.Test.Utility
         public ConcurrentQueue<string> VerboseMessages { get; } = new ConcurrentQueue<string>();
         public ConcurrentQueue<string> MinimalMessages { get; } = new ConcurrentQueue<string>();
         public ConcurrentQueue<string> ErrorMessages { get; } = new ConcurrentQueue<string>();
+        public ConcurrentQueue<ILogMessage> LogMessages { get; } = new ConcurrentQueue<ILogMessage>();
 
         public int Errors { get; set; }
 
@@ -111,6 +114,69 @@ namespace NuGet.Test.Utility
         public string ShowMessages()
         {
             return string.Join(Environment.NewLine, Messages);
+        }
+
+        public void Log(LogLevel level, string data)
+        {
+            switch (level)
+            {
+                case LogLevel.Debug:
+                    {
+                        LogDebug(data);
+                        break;
+                    }
+
+                case LogLevel.Error:
+                    {
+                        LogError(data);
+                        break;
+                    }
+
+                case LogLevel.Information:
+                    {
+                        LogInformation(data);
+                        break;
+                    }
+
+                case LogLevel.Minimal:
+                    {
+                        LogMinimal(data);
+                        break;
+                    }
+
+                case LogLevel.Verbose:
+                    {
+                        LogVerbose(data);
+                        break;
+                    }
+
+                case LogLevel.Warning:
+                    {
+                        LogWarning(data);
+                        break;
+                    }
+            }
+        }
+
+        public Task LogAsync(LogLevel level, string data)
+        {
+            Log(level, data);
+
+            return Task.FromResult(0);
+        }
+
+        public void Log(ILogMessage message)
+        {
+            LogMessages.Enqueue(message);
+
+            Log(message.Level, message.Message);
+        }
+
+        public async Task LogAsync(ILogMessage message)
+        {
+            LogMessages.Enqueue(message);
+
+            await LogAsync(message.Level, message.Message);
         }
     }
 }

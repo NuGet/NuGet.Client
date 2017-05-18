@@ -279,6 +279,9 @@
   <data name="localsCommandButton.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
+  <data name="localsCommandButton.FlatStyle" type="System.Windows.Forms.FlatStyle, System.Windows.Forms"> 
+    <value>System</value> 
+  </data> 
   <data name="localsCommandButton.Location" type="System.Drawing.Point, System.Drawing">
     <value>5, 247</value>
   </data>

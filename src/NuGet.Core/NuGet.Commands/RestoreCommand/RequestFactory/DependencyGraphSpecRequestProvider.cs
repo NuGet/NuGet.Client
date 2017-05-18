@@ -45,7 +45,7 @@ namespace NuGet.Commands
         {
             var requests = GetRequestsFromItems(restoreContext, _dgFile);
 
-            return Task.FromResult<IReadOnlyList<RestoreSummaryRequest>>(requests);
+            return Task.FromResult(requests);
         }
 
         private IReadOnlyList<RestoreSummaryRequest> GetRequestsFromItems(RestoreArgs restoreContext, DependencyGraphSpec dgFile)
@@ -160,14 +160,16 @@ namespace NuGet.Commands
             var request = new RestoreRequest(
                 project.PackageSpec,
                 sharedCache,
-                restoreArgs.CacheContext,
-                restoreArgs.Log);
+                restoreContext.CacheContext,
+                restoreContext.Log)
+            {
+                // Set properties from the restore metadata
+                ProjectStyle = project.PackageSpec?.RestoreMetadata?.ProjectStyle ?? ProjectStyle.Unknown,
+                RestoreOutputPath = project.PackageSpec?.RestoreMetadata?.OutputPath ?? rootPath
+                AllowNoOp = restoreArgs.AllowNoOp;
+                DependencyGraphSpec = projectDgSpec;
+            };
 
-            request.DependencyGraphSpec = projectDgSpec;
-            request.AllowNoOp = restoreArgs.AllowNoOp;
-            // Set properties from the restore metadata
-            request.ProjectStyle = project.PackageSpec?.RestoreMetadata?.ProjectStyle ?? ProjectStyle.Unknown;
-            request.RestoreOutputPath = project.PackageSpec?.RestoreMetadata?.OutputPath ?? rootPath;
             var restoreLegacyPackagesDirectory = project.PackageSpec?.RestoreMetadata?.LegacyPackagesDirectory
                 ?? DefaultRestoreLegacyPackagesDirectory;
             request.IsLowercasePackagesDirectory = !restoreLegacyPackagesDirectory;

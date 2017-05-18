@@ -82,10 +82,10 @@ namespace NuGet.ProjectManagement
 
             return ConcurrencyUtilities.ExecuteWithFileLockedAsync(
                 packageDirectory,
-                action: cancellationToken =>
+                action: async cancellationToken =>
                 {
                     // 1. Set a default package extraction context, if necessary.
-                    PackageExtractionContext packageExtractionContext = nuGetProjectContext.PackageExtractionContext;
+                    var packageExtractionContext = nuGetProjectContext.PackageExtractionContext;
                     if (packageExtractionContext == null)
                     {
                         packageExtractionContext = new PackageExtractionContext(new LoggerAdapter(nuGetProjectContext));
@@ -95,7 +95,7 @@ namespace NuGet.ProjectManagement
                     if (PackageExists(packageIdentity, packageExtractionContext.PackageSaveMode))
                     {
                         nuGetProjectContext.Log(MessageLevel.Info, Strings.PackageAlreadyExistsInFolder, packageIdentity, Root);
-                        return Task.FromResult(false);
+                        return false;
                     }
 
                     nuGetProjectContext.Log(MessageLevel.Info, Strings.AddingPackageToFolder, packageIdentity, Path.GetFullPath(Root));
@@ -107,7 +107,7 @@ namespace NuGet.ProjectManagement
                     if (downloadResourceResult.PackageReader != null)
                     {
                         addedPackageFilesList.AddRange(
-                            PackageExtractor.ExtractPackage(
+                            await PackageExtractor.ExtractPackageAsync(
                                 downloadResourceResult.PackageReader,
                                 downloadResourceResult.PackageStream,
                                 PackagePathResolver,
@@ -117,7 +117,7 @@ namespace NuGet.ProjectManagement
                     else
                     {
                         addedPackageFilesList.AddRange(
-                            PackageExtractor.ExtractPackage(
+                            await PackageExtractor.ExtractPackageAsync(
                                 downloadResourceResult.PackageStream,
                                 PackagePathResolver,
                                 packageExtractionContext,
@@ -146,7 +146,7 @@ namespace NuGet.ProjectManagement
                         nuGetProjectContext.Log(MessageLevel.Debug, Strings.AddedPackageToFolderFromSource, packageIdentity, Path.GetFullPath(Root), downloadResourceResult.PackageSource);
                     }
 
-                    return Task.FromResult(true);
+                    return true;
                 },
                 token: token);
         }
@@ -198,18 +198,18 @@ namespace NuGet.ProjectManagement
             return !string.IsNullOrEmpty(GetInstalledPackageFilePath(packageIdentity)) && !string.IsNullOrEmpty(GetInstalledManifestFilePath(packageIdentity));
         }
 
-        public Task<bool> CopySatelliteFilesAsync(PackageIdentity packageIdentity,
+        public async Task<bool> CopySatelliteFilesAsync(PackageIdentity packageIdentity,
             INuGetProjectContext nuGetProjectContext, CancellationToken token)
         {
             token.ThrowIfCancellationRequested();
 
-            PackageExtractionContext packageExtractionContext = nuGetProjectContext.PackageExtractionContext;
+            var packageExtractionContext = nuGetProjectContext.PackageExtractionContext;
             if (packageExtractionContext == null)
             {
                 packageExtractionContext = new PackageExtractionContext(new LoggerAdapter(nuGetProjectContext));
             }
 
-            var copiedSatelliteFiles = PackageExtractor.CopySatelliteFiles(
+            var copiedSatelliteFiles = await PackageExtractor.CopySatelliteFilesAsync(
                 packageIdentity,
                 PackagePathResolver,
                 GetPackageSaveMode(nuGetProjectContext),
@@ -218,7 +218,7 @@ namespace NuGet.ProjectManagement
 
             FileSystemUtility.PendAddFiles(copiedSatelliteFiles, Root, nuGetProjectContext);
 
-            return Task.FromResult(copiedSatelliteFiles.Any());
+            return copiedSatelliteFiles.Any();
         }
 
         /// <summary>
@@ -304,7 +304,7 @@ namespace NuGet.ProjectManagement
             return string.Empty;
         }
 
-        public Task<bool> DeletePackage(PackageIdentity packageIdentity,
+        public async Task<bool> DeletePackage(PackageIdentity packageIdentity,
             INuGetProjectContext nuGetProjectContext,
             CancellationToken token)
         {
@@ -314,10 +314,11 @@ namespace NuGet.ProjectManagement
                 var packageDirectoryPath = Path.GetDirectoryName(packageFilePath);
                 using (var packageReader = new PackageArchiveReader(packageFilePath))
                 {
-                    var installedSatelliteFilesPair = PackageHelper.GetInstalledSatelliteFiles(
+                    var installedSatelliteFilesPair = await PackageHelper.GetInstalledSatelliteFilesAsync(
                         packageReader,
                         PackagePathResolver,
-                        GetPackageSaveMode(nuGetProjectContext));
+                        GetPackageSaveMode(nuGetProjectContext),
+                        token);
                     var runtimePackageDirectory = installedSatelliteFilesPair.Item1;
                     var installedSatelliteFiles = installedSatelliteFilesPair.Item2;
                     if (!string.IsNullOrEmpty(runtimePackageDirectory))
@@ -335,11 +336,12 @@ namespace NuGet.ProjectManagement
                     }
 
                     // Get all the package files before deleting the package file
-                    var installedPackageFiles = PackageHelper.GetInstalledPackageFiles(
+                    var installedPackageFiles = await PackageHelper.GetInstalledPackageFilesAsync(
                         packageReader,
                         packageIdentity,
                         PackagePathResolver,
-                        GetPackageSaveMode(nuGetProjectContext));
+                        GetPackageSaveMode(nuGetProjectContext),
+                        token);
 
                     try
                     {
@@ -368,7 +370,7 @@ namespace NuGet.ProjectManagement
                 }
             }
 
-            return Task.FromResult(true);
+            return true;
         }
 
         private PackageSaveMode GetPackageSaveMode(INuGetProjectContext nuGetProjectContext)
