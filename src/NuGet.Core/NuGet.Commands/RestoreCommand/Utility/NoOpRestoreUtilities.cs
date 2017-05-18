@@ -17,18 +17,36 @@ namespace NuGet.Commands
     internal class NoOpRestoreUtilities
     {
 
+        /// <summary>
+        /// If the dependencyGraphSpec is not set, we cannot no-op on this project restore. 
+        /// No-Op restore is not supported for CLI Tools at this point
+        /// </summary>
         internal static bool IsNoOpSupported(RestoreRequest request)
         {
             return request.DependencyGraphSpec != null && request.ProjectStyle != ProjectStyle.DotnetCliTool;
         }
 
-        internal static string GetCacheFilePath(RestoreRequest request)
+        /// <summary>
+        /// The cache file path is $(BaseIntermediateOutputPath)\$(project).nuget.cache
+        /// </summary>
+        internal static string GetPackageReferenceCacheFilePath(RestoreRequest request)
+        {
+
+            if (request.ProjectStyle == ProjectStyle.PackageReference
+               || request.ProjectStyle == ProjectStyle.Standalone)
+            {
+                var projFileName = Path.GetFileName(request.Project.RestoreMetadata.ProjectPath);
+                return request.Project.RestoreMetadata.CacheFilePath = Path.Combine(request.RestoreOutputPath, $"{projFileName}.nuget.cache");
+            }
+
+            return null;
+        }
+
+        internal static string GetProjectJsonCacheFilePath(RestoreRequest request)
         {
             string cacheFilePath = null;
 
-            if (request.ProjectStyle == ProjectStyle.PackageReference
-               || request.ProjectStyle == ProjectStyle.Standalone
-               || request.ProjectStyle == ProjectStyle.ProjectJson) // This still goes to the root folder for Project.Json but this will be targetted later
+            if (request.ProjectStyle == ProjectStyle.ProjectJson) // TODO NK - This needs to be fixed. 
             {
                 var projFileName = Path.GetFileName(request.Project.RestoreMetadata.ProjectPath);
                 cacheFilePath = request.Project.RestoreMetadata.CacheFilePath = Path.Combine(request.RestoreOutputPath, $"{projFileName}.nuget.cache");
@@ -36,6 +54,7 @@ namespace NuGet.Commands
 
             return cacheFilePath;
         }
+
 
         internal static string GetToolCacheFilePath(RestoreRequest request, LockFile lockFile)
         {
@@ -50,7 +69,7 @@ namespace NuGet.Commands
                     var version = lockFileLibrary.Version;
 
                     var toolPathResolver = new ToolPathResolver(request.PackagesDirectory);
-                    var projFileName = Path.GetFileName(request.Project.RestoreMetadata.ProjectPath); // TODO NK - Do we have this for the dotnet cli tool?
+                    var projFileName = Path.GetFileName(request.Project.RestoreMetadata.ProjectPath);
                     return PathUtility.GetDirectoryName(toolPathResolver.GetLockFilePath(
                         toolName,
                         version,
@@ -61,9 +80,8 @@ namespace NuGet.Commands
         }
         /// <summary>
         /// Evaluate the location of the cache file path, based on ProjectStyle.
-        /// The lockFile is used to evaluate the cache path for tools
         /// </summary>
-        internal static string GetCacheFilePath(LockFile lockFile, RestoreRequest request)
+        internal static string GetCacheFilePath(RestoreRequest request)
         {
             var projectCacheFilePath = request.Project.RestoreMetadata?.CacheFilePath;
 
@@ -72,23 +90,20 @@ namespace NuGet.Commands
                 if (request.ProjectStyle == ProjectStyle.PackageReference
                     || request.ProjectStyle == ProjectStyle.Standalone)
                 {
-                    projectCacheFilePath = GetCacheFilePath(request);
+                    projectCacheFilePath = GetPackageReferenceCacheFilePath(request);
                 }
                 else if (request.ProjectStyle == ProjectStyle.ProjectJson)
                 {
-                    projectCacheFilePath = GetCacheFilePath(request);
+                    projectCacheFilePath = GetProjectJsonCacheFilePath(request);
                 }
-                else if (request.ProjectStyle == ProjectStyle.DotnetCliTool)
-                {
-
-                    projectCacheFilePath = GetToolCacheFilePath(request, lockFile);
-                }
-
             }
             return projectCacheFilePath != null ? Path.GetFullPath(projectCacheFilePath) : null;
         }
 
-
+        /// <summary>
+        /// This method verifies that the props/targets files and all the packages written out in the lock file are present on disk
+        /// This does not account if the files were manually modified since the last restore
+        /// </summary>
         public static bool VerifyAssetsAndMSBuildFilesAndPackagesArePresent(RestoreRequest request)
         {
 
@@ -121,7 +136,9 @@ namespace NuGet.Commands
             }
             return true;
         }
-
+        /// <summary>
+        /// Read out all the packages specified in the existing lock file and verify that they are in the cache
+        /// </summary>
         public static bool VerifyPackagesOnDisk(RestoreRequest request)
         {
             var packageFolderPaths = new List<string>();

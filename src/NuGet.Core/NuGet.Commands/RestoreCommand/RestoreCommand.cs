@@ -130,7 +130,7 @@ namespace NuGet.Commands
             // Determine the lock file output path
             var assetsFilePath = GetAssetsFilePath(assetsFile);
             // Determine the cache file output path
-            var cacheFilePath = NoOpRestoreUtilities.GetCacheFilePath(assetsFile, _request);
+            var cacheFilePath = NoOpRestoreUtilities.GetCacheFilePath(_request);
 
             // Tool restores are unique since the output path is not known until after restore
             if (_request.LockFilePath == null
