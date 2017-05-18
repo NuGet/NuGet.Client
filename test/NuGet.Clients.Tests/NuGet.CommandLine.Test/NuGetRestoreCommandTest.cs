@@ -2021,7 +2021,6 @@ EndProject");
         [Fact]
         public void RestoreCommand_SourceLoggingFileSource()
         {
-            DebuggerUtils.WaitForDebugger();
             // Arrange
             var nugetexe = Util.GetNuGetExePath();
             var identity = new Packaging.Core.PackageIdentity("packageA", new Versioning.NuGetVersion("1.1.0"));
