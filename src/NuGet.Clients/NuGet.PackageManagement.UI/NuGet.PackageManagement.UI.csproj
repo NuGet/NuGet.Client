@@ -437,6 +437,10 @@
       <Project>{D65583E4-8084-466A-BA4B-55A797EA047B}</Project>
       <Name>NuGet.Packaging.Core</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\NuGet.Core\NuGet.ProjectModel\NuGet.ProjectModel.csproj">
+      <Project>{F013E43F-B6D5-4F59-ACF0-EECEC2C794F5}</Project>
+      <Name>NuGet.ProjectModel</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\NuGet.Core\NuGet.Protocol\NuGet.Protocol.csproj">
       <Project>{020f4c88-3a5c-4b89-9868-089e867cc223}</Project>
       <Name>NuGet.Protocol</Name>

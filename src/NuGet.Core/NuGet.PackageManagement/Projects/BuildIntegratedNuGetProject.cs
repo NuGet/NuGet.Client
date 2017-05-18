@@ -7,7 +7,6 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
@@ -21,7 +20,10 @@ namespace NuGet.ProjectManagement.Projects
     /// A NuGet integrated MSBuild project.k
     /// These projects contain a project.json or package references in CSProj
     /// </summary>
-    public abstract class BuildIntegratedNuGetProject : NuGetProject, INuGetIntegratedProject, IDependencyGraphProject
+    public abstract class BuildIntegratedNuGetProject 
+        : NuGetProject
+        , INuGetIntegratedProject
+        , IDependencyGraphProject
     {
         protected BuildIntegratedNuGetProject()
         {
@@ -47,15 +49,6 @@ namespace NuGet.ProjectManagement.Projects
         public abstract Task<string> GetAssetsFilePathOrNullAsync();
 
         public abstract Task<IReadOnlyList<PackageSpec>> GetPackageSpecsAsync(DependencyGraphCacheContext context);
-
-        /// <summary>
-        /// Script executor hook
-        /// </summary>
-        public abstract Task<bool> ExecuteInitScriptAsync(
-            PackageIdentity identity,
-            string packageInstallPath,
-            INuGetProjectContext projectContext,
-            bool throwOnFailure);
 
         public abstract Task<bool> InstallPackageAsync(
             string packageId,

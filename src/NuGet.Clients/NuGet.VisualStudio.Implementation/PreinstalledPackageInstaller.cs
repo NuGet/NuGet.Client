@@ -39,6 +39,7 @@ namespace NuGet.VisualStudio
         private readonly IVsSolutionManager _solutionManager;
         private readonly ISourceRepositoryProvider _sourceProvider;
         private readonly VsPackageInstaller _installer;
+        private readonly IVsProjectAdapterProvider _vsProjectAdapterProvider;
 
         public Action<string> InfoHandler { get; set; }
 
@@ -47,13 +48,15 @@ namespace NuGet.VisualStudio
             IVsSolutionManager solutionManager,
             Configuration.ISettings settings,
             ISourceRepositoryProvider sourceProvider,
-            VsPackageInstaller installer)
+            VsPackageInstaller installer,
+            IVsProjectAdapterProvider vsProjectAdapterProvider)
         {
             //_websiteHandler = websiteHandler;
             _packageServices = packageServices;
             //_vsCommonOperations = vsCommonOperations;
             _solutionManager = solutionManager;
             _sourceProvider = sourceProvider;
+            _vsProjectAdapterProvider = vsProjectAdapterProvider;
             _installer = installer;
         }
 
@@ -325,7 +328,7 @@ namespace NuGet.VisualStudio
             }
 
             VSAPIProjectContext context = new VSAPIProjectContext(skipAssemblyReferences: true, bindingRedirectsDisabled: true);
-            WebSiteProjectSystem projectSystem = new WebSiteProjectSystem(project, context);
+            WebSiteProjectSystem projectSystem = new WebSiteProjectSystem(_vsProjectAdapterProvider.CreateVsProject(project), context);
 
             foreach (var packageName in packageNames)
             {
@@ -368,19 +371,19 @@ namespace NuGet.VisualStudio
         /// <param name="packageInfos">The packages that were installed.</param>
         private void CopyNativeBinariesToBin(Project project, string repositoryPath, IEnumerable<PreinstalledPackageInfo> packageInfos)
         {
-            VSAPIProjectContext context = new VSAPIProjectContext();
-            VSMSBuildNuGetProjectSystem projectSystem = new VSMSBuildNuGetProjectSystem(project, context);
+            var context = new VSAPIProjectContext();
+            var projectSystem = new VsMSBuildProjectSystem(_vsProjectAdapterProvider.CreateVsProject(project), context);
 
             foreach (var packageInfo in packageInfos)
             {
-                string packagePath = String.Format(CultureInfo.InvariantCulture, "{0}.{1}", packageInfo.Id, packageInfo.Version);
+                var packagePath = string.Format(CultureInfo.InvariantCulture, "{0}.{1}", packageInfo.Id, packageInfo.Version);
 
                 CopyNativeBinaries(projectSystem, repositoryPath,
                     Path.Combine(repositoryPath, packagePath));
             }
         }
 
-        private void CopyNativeBinaries(VSMSBuildNuGetProjectSystem projectSystem, string repositoryPath, string packagePath)
+        private void CopyNativeBinaries(VsMSBuildProjectSystem projectSystem, string repositoryPath, string packagePath)
         {
             const string nativeBinariesFolder = "NativeBinaries";
             const string binFolder = "bin";

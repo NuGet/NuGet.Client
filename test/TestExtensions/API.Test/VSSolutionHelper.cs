@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using EnvDTE;
 using EnvDTE80;
@@ -21,6 +22,13 @@ namespace API.Test
             var solution2 = dte2.Solution as Solution2;
 
             return solution2;
+        }
+
+        public static void WaitForSolutionLoad()
+        {
+            var mre = new ManualResetEvent(false);
+            KnownUIContexts.SolutionExistsAndFullyLoadedContext.WhenActivated(() => mre.Set());
+            mre.WaitOne();
         }
 
         public static string GetSolutionFullName()

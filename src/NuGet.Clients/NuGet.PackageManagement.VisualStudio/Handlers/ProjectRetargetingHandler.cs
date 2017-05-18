@@ -192,7 +192,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 }
             });
 #if !VS14
-            if (retargetedProject != null && retargetedProject is LegacyCSProjPackageReferenceProject)
+            if (retargetedProject != null && retargetedProject is LegacyPackageReferenceProject)
             {
                 // trigger solution restore and don't wait for it to be complete and hold the UI thread
                 System.Threading.Tasks.Task.Run(() => _solutionRestoreWorker.Value.ScheduleRestoreAsync(SolutionRestoreRequest.ByMenu(), CancellationToken.None));
@@ -297,7 +297,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 }
             });
 #if !VS14
-            if (nuGetProject != null && nuGetProject is LegacyCSProjPackageReferenceProject)
+            if (nuGetProject != null && nuGetProject is LegacyPackageReferenceProject)
             {
                 // trigger solution restore and don't wait for it to be complete and hold the UI thread
                 System.Threading.Tasks.Task.Run(() => _solutionRestoreWorker.Value.ScheduleRestoreAsync(SolutionRestoreRequest.ByMenu(), CancellationToken.None));

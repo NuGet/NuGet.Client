@@ -36,6 +36,7 @@
     <PackageReference Include="Microsoft.VisualStudio.Text.UI" Version="14.2.25123" />
     <PackageReference Include="Microsoft.VisualStudio.Text.UI.Wpf" Version="14.2.25123" />
     <PackageReference Include="Microsoft.VisualStudio.Threading" Version="14.1.131" />
+    <PackageReference Include="VSLangProj" Version="7.0.3300" />
   </ItemGroup>
   <ItemGroup Condition="'$(VisualStudioVersion)' == '15.0'">
     <Reference Include="Microsoft.VisualStudio.ProjectSystem">
@@ -65,6 +66,7 @@
     <PackageReference Include="Microsoft.VisualStudio.Threading" Version="15.0.240" />
     <PackageReference Include="Microsoft.VisualStudio.Threading.Analyzers" Version="15.0.240" />
     <PackageReference Include="Newtonsoft.Json" Version="8.0.3" />
+    <PackageReference Include="VSLangProj" Version="7.0.3300" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="PresentationCore" />

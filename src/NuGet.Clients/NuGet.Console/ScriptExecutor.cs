@@ -22,25 +22,30 @@ using Task = System.Threading.Tasks.Task;
 namespace NuGetConsole
 {
     [Export(typeof(IScriptExecutor))]
-    public class ScriptExecutor : IScriptExecutor
+    internal class ScriptExecutor : IScriptExecutor
     {
-        private AsyncLazy<IHost> Host { get; }
-        private ISolutionManager SolutionManager { get; }  = ServiceLocator.GetInstance<ISolutionManager>();
-        private ISettings Settings { get; } = ServiceLocator.GetInstance<ISettings>();
         private ConcurrentDictionary<PackageIdentity, PackageInitPS1State> InitScriptExecutions
             = new ConcurrentDictionary<PackageIdentity, PackageInitPS1State>(PackageIdentityComparer.Default);
 
-        public ScriptExecutor()
-        {
-            Host = new AsyncLazy<IHost>(GetHostAsync, ThreadHelper.JoinableTaskFactory);
-            Reset();
-        }
+        private AsyncLazy<IHost> Host { get; }
+
+        [Import]
+        private ISettings Settings { get; set; }
+
+        [Import]
+        private ISolutionManager SolutionManager { get; set; }
 
         [Import]
         public IPowerConsoleWindow PowerConsoleWindow { get; set; }
 
         [Import]
         public IOutputConsoleProvider OutputConsoleProvider { get; set; }
+
+        public ScriptExecutor()
+        {
+            Host = new AsyncLazy<IHost>(GetHostAsync, ThreadHelper.JoinableTaskFactory);
+            Reset();
+        }
 
         public void Reset()
         {
@@ -84,7 +89,7 @@ namespace NuGetConsole
                 }
                 else
                 {
-                    string logMessage = string.Format(CultureInfo.CurrentCulture, Resources.ExecutingScript, scriptPath);
+                    var logMessage = string.Format(CultureInfo.CurrentCulture, Resources.ExecutingScript, scriptPath);
                     // logging to both the Output window and progress window.
                     nuGetProjectContext.Log(MessageLevel.Info, logMessage);
                     try

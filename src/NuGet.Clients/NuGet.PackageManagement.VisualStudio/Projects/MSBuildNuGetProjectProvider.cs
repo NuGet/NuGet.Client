@@ -1,0 +1,108 @@
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
+using System.ComponentModel.Composition;
+using Microsoft;
+using Microsoft.VisualStudio.ComponentModelHost;
+using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Utilities;
+using NuGet.ProjectManagement;
+using NuGet.VisualStudio;
+
+namespace NuGet.PackageManagement.VisualStudio
+{
+    [Export(typeof(INuGetProjectProvider))]
+    [Name(nameof(MSBuildNuGetProjectProvider))]
+    [Order(After = nameof(ProjectJsonProjectProvider))]
+    internal class MSBuildNuGetProjectProvider : INuGetProjectProvider
+    {
+        private readonly IVsProjectThreadingService _threadingService;
+        private readonly Lazy<IComponentModel> _componentModel;
+
+        public Type ProjectType => typeof(VsMSBuildNuGetProject);
+
+        [ImportingConstructor]
+        public MSBuildNuGetProjectProvider(
+            [Import(typeof(SVsServiceProvider))]
+            IServiceProvider vsServiceProvider,
+            IVsProjectThreadingService threadingService)
+        {
+            Assumes.Present(vsServiceProvider);
+            Assumes.Present(threadingService);
+
+            _threadingService = threadingService;
+
+            _componentModel = new Lazy<IComponentModel>(
+                () => vsServiceProvider.GetService<SComponentModel, IComponentModel>());
+        }
+
+        public bool TryCreateNuGetProject(
+            IVsProjectAdapter vsProjectAdapter, 
+            ProjectProviderContext context, 
+            bool forceProjectType,
+            out NuGetProject result)
+        {
+            Assumes.Present(vsProjectAdapter);
+            Assumes.Present(context);
+
+            _threadingService.ThrowIfNotOnUIThread();
+
+            result = null;
+
+            var projectSystem = MSBuildNuGetProjectSystemFactory.CreateMSBuildNuGetProjectSystem(
+                vsProjectAdapter,
+                context.ProjectContext);
+
+            var projectServices = CreateProjectServices(vsProjectAdapter, projectSystem);
+
+            var folderNuGetProjectFullPath = context.PackagesPathFactory();
+
+            // Project folder path is the packages config folder path
+            var packagesConfigFolderPath = vsProjectAdapter.FullPath;
+
+            result = new VsMSBuildNuGetProject(
+                vsProjectAdapter,
+                projectSystem,
+                folderNuGetProjectFullPath,
+                packagesConfigFolderPath,
+                projectServices);
+
+            return result != null;
+        }
+
+        private INuGetProjectServices CreateProjectServices(
+            IVsProjectAdapter vsProjectAdapter, VsMSBuildProjectSystem projectSystem)
+        {
+            var componentModel = _componentModel.Value;
+
+            if (vsProjectAdapter.IsDeferred)
+            {
+                return new DeferredProjectServicesProxy(
+                    vsProjectAdapter,
+                    () => CreateCoreProjectSystemServices(
+                        vsProjectAdapter, projectSystem, componentModel),
+                    componentModel);
+            }
+            else
+            {
+                return CreateCoreProjectSystemServices(vsProjectAdapter, projectSystem, componentModel);
+            }
+        }
+
+        private static INuGetProjectServices CreateCoreProjectSystemServices(IVsProjectAdapter vsProjectAdapter, VsMSBuildProjectSystem projectSystem, IComponentModel componentModel)
+        {
+            var projectServices = componentModel.GetService<VsProjectSystemServices>();
+            Assumes.Present(projectServices);
+
+            projectServices.AttachProjectAdapter(vsProjectAdapter);
+
+            projectServices.Capabilities = projectSystem;
+            projectServices.ReferencesReader = projectSystem;
+            projectServices.ProjectSystem = projectSystem;
+            projectServices.References = projectSystem;
+
+            return projectServices;
+        }
+    }
+}

@@ -8,64 +8,72 @@ using System.Linq;
 using Microsoft.VisualStudio.Shell;
 using NuGet.ProjectManagement;
 using NuGet.VisualStudio;
-using EnvDTEProject = EnvDTE.Project;
-using IMSBuildNuGetProjectSystemThunk = System.Func<EnvDTE.Project, NuGet.ProjectManagement.INuGetProjectContext, NuGet.ProjectManagement.IMSBuildNuGetProjectSystem>;
+using VsMSBuildNuGetProjectSystemThunk = System.Func<
+    NuGet.VisualStudio.IVsProjectAdapter, 
+    NuGet.ProjectManagement.INuGetProjectContext, 
+    NuGet.PackageManagement.VisualStudio.VsMSBuildProjectSystem>;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
-    public static class MSBuildNuGetProjectSystemFactory
+    internal static class MSBuildNuGetProjectSystemFactory
     {
-        private static Dictionary<string, IMSBuildNuGetProjectSystemThunk> _factories = new Dictionary<string, IMSBuildNuGetProjectSystemThunk>(StringComparer.OrdinalIgnoreCase)
-            {
-                { VsProjectTypes.WebApplicationProjectTypeGuid, (project, nuGetProjectContext) => new WebProjectSystem(project, nuGetProjectContext) },
-                { VsProjectTypes.WebSiteProjectTypeGuid, (project, nuGetProjectContext) => new WebSiteProjectSystem(project, nuGetProjectContext) },
-                { VsProjectTypes.FsharpProjectTypeGuid, (project, nuGetProjectContext) => new FSharpProjectSystem(project, nuGetProjectContext) },
-                { VsProjectTypes.WixProjectTypeGuid, (project, nuGetProjectContext) => new WixProjectSystem(project, nuGetProjectContext) },
-                { VsProjectTypes.JsProjectTypeGuid, (project, nuGetProjectContext) => new JsProjectSystem(project, nuGetProjectContext) },
-                { VsProjectTypes.WindowsStoreProjectTypeGuid, (project, nuGetProjectContext) => new WindowsStoreProjectSystem(project, nuGetProjectContext) },
-                { VsProjectTypes.DeploymentProjectTypeGuid, (project, nuGetProjectContext) => new VSMSBuildNuGetProjectSystem(project, nuGetProjectContext) }
-            };
+        private static Dictionary<string, VsMSBuildNuGetProjectSystemThunk> _factories = new Dictionary<string, VsMSBuildNuGetProjectSystemThunk>(StringComparer.OrdinalIgnoreCase)
+        {
+            { VsProjectTypes.WebApplicationProjectTypeGuid, (project, nuGetProjectContext) => new WebProjectSystem(project, nuGetProjectContext) },
+            { VsProjectTypes.WebSiteProjectTypeGuid, (project, nuGetProjectContext) => new WebSiteProjectSystem(project, nuGetProjectContext) },
+            { VsProjectTypes.FsharpProjectTypeGuid, (project, nuGetProjectContext) => new FSharpProjectSystem(project, nuGetProjectContext) },
+            { VsProjectTypes.WixProjectTypeGuid, (project, nuGetProjectContext) => new WixProjectSystem(project, nuGetProjectContext) },
+            { VsProjectTypes.JsProjectTypeGuid, (project, nuGetProjectContext) => new JsProjectSystem(project, nuGetProjectContext) },
+            { VsProjectTypes.WindowsStoreProjectTypeGuid, (project, nuGetProjectContext) => new WindowsStoreProjectSystem(project, nuGetProjectContext) },
+            { VsProjectTypes.DeploymentProjectTypeGuid, (project, nuGetProjectContext) => new VsMSBuildProjectSystem(project, nuGetProjectContext) }
+        };
 
-        public static IMSBuildNuGetProjectSystem CreateMSBuildNuGetProjectSystem(EnvDTEProject envDTEProject, INuGetProjectContext nuGetProjectContext)
+        public static VsMSBuildProjectSystem CreateMSBuildNuGetProjectSystem(IVsProjectAdapter vsProjectAdapter, INuGetProjectContext nuGetProjectContext)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            if (envDTEProject == null)
+            if (vsProjectAdapter == null)
             {
-                throw new ArgumentNullException(nameof(envDTEProject));
+                throw new ArgumentNullException(nameof(vsProjectAdapter));
             }
 
-            if (String.IsNullOrEmpty(envDTEProject.FullName))
-            {
-                throw new InvalidOperationException(
-                    String.Format(CultureInfo.CurrentCulture,
-                        Strings.DTE_ProjectUnsupported, EnvDTEProjectInfoUtility.GetName(envDTEProject)));
-            }
-
-            if (EnvDTEProjectUtility.SupportsINuGetProjectSystem(envDTEProject))
+            if (string.IsNullOrEmpty(vsProjectAdapter.FullName))
             {
                 throw new InvalidOperationException(
-                    string.Format(CultureInfo.CurrentCulture, Strings.DTE_ProjectUnsupported, typeof(IMSBuildNuGetProjectSystem).FullName));
+                    string.Format(CultureInfo.CurrentCulture,
+                        Strings.DTE_ProjectUnsupported, vsProjectAdapter.ProjectName));
             }
 
-            var guids = VsHierarchyUtility.GetProjectTypeGuids(envDTEProject);
+            if (vsProjectAdapter.IsDeferred)
+            {
+                throw new InvalidOperationException(
+                    string.Format(CultureInfo.CurrentCulture, Strings.DTE_ProjectUnsupported, vsProjectAdapter.ProjectName));
+            }
+
+            if (EnvDTEProjectUtility.SupportsProjectKPackageManager(vsProjectAdapter.Project))
+            {
+                throw new InvalidOperationException(
+                    string.Format(CultureInfo.CurrentCulture, Strings.DTE_ProjectUnsupported, typeof(IMSBuildProjectSystem).FullName));
+            }
+
+            var guids = vsProjectAdapter.ProjectTypeGuids;
             if (guids.Contains(VsProjectTypes.CppProjectTypeGuid)) // Got a cpp project
             {
-                return new NativeProjectSystem(envDTEProject, nuGetProjectContext);
+                return new NativeProjectSystem(vsProjectAdapter, nuGetProjectContext);
             }
 
             // Try to get a factory for the project type guid
             foreach (var guid in guids)
             {
-                IMSBuildNuGetProjectSystemThunk factory;
+                VsMSBuildNuGetProjectSystemThunk factory;
                 if (_factories.TryGetValue(guid, out factory))
                 {
-                    return factory(envDTEProject, nuGetProjectContext);
+                    return factory(vsProjectAdapter, nuGetProjectContext);
                 }
             }
 
             // Fall back to the default if we have no special project types
-            return new VSMSBuildNuGetProjectSystem(envDTEProject, nuGetProjectContext);
+            return new VsMSBuildProjectSystem(vsProjectAdapter, nuGetProjectContext);
         }
     }
 }

@@ -4,6 +4,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using NuGet.ProjectManagement;
+using NuGet.VisualStudio;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
@@ -26,7 +27,7 @@ namespace NuGet.PackageManagement.VisualStudio
         /// </summary>
         /// <param name="name">Project name, full path or unique name.</param>
         /// <returns>Desired project object.</returns>
-        EnvDTE.Project GetDTEProject(string name);
+        IVsProjectAdapter GetVsProjectAdapter(string name);
 
         /// <summary>
         /// Return true if all projects in the solution have been loaded in background.
@@ -44,5 +45,14 @@ namespace NuGet.PackageManagement.VisualStudio
         /// </summary>
         /// <returns>Deferred prokects file path.</returns>
         Task<IEnumerable<string>> GetDeferredProjectsFilePathAsync();
+
+        IEnumerable<IVsProjectAdapter> GetAllVsProjectAdapters();
+
+        /// <summary>
+        /// Creates a new instance of <see cref="NuGetProject"/> supporting package references.
+        /// </summary>
+        /// <param name="project">Existing project to upgrade.</param>
+        /// <returns>New project instance.</returns>
+        Task<NuGetProject> UpgradeProjectToPackageReferenceAsync(NuGetProject project);
     }
 }

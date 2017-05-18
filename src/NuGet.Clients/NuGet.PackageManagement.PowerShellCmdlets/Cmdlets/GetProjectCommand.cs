@@ -2,9 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Management.Automation;
 using EnvDTE;
 using NuGet.PackageManagement.VisualStudio;
+using NuGet.VisualStudio;
 
 namespace NuGet.PackageManagement.PowerShellCmdlets
 {
@@ -50,7 +52,9 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
             if (All.IsPresent)
             {
-                var projects = EnvDTESolutionUtility.GetAllEnvDTEProjects(DTE);
+                VsSolutionManager.EnsureSolutionIsLoaded();
+                var projects = VsSolutionManager.GetAllVsProjectAdapters().Select(p => p.Project);
+
                 WriteObject(projects, enumerateCollection: true);
             }
             else
@@ -58,16 +62,16 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 // No name specified; return default project (if not null)
                 if (Name == null)
                 {
-                    Project defaultProject = GetDefaultProject();
+                    var defaultProject = GetDefaultProject();
                     if (defaultProject != null)
                     {
-                        WriteObject(defaultProject);
+                        WriteObject(defaultProject.Project);
                     }
                 }
                 else
                 {
                     // get all projects matching name(s) - handles wildcards
-                    WriteObject(GetProjectsByName(Name), enumerateCollection: true);
+                    WriteObject(GetProjectsByName(Name).Select(p => p.Project), enumerateCollection: true);
                 }
             }
         }

@@ -2238,7 +2238,7 @@ namespace NuGet.PackageManagement
                 }
 
                 // Save project
-                SolutionManager?.SaveProject(nuGetProject);
+                await nuGetProject.SaveAsync(token);
 
                 // Clear direct install
                 SetDirectInstall(null, nuGetProjectContext);
@@ -2623,7 +2623,8 @@ namespace NuGet.PackageManagement
                     buildIntegratedProject,
                     addedPackages,
                     pathResolver,
-                    nuGetProjectContext);
+                    nuGetProjectContext,
+                    token);
 
                 // find list of buildintegrated projects
                 var projects = SolutionManager.GetNuGetProjects().OfType<BuildIntegratedNuGetProject>().ToList();

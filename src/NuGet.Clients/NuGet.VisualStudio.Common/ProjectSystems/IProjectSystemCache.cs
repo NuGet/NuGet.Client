@@ -42,7 +42,7 @@ namespace NuGet.VisualStudio
         /// <param name="name">Project name, full path or unique name.</param>
         /// <param name="dteProject">Desired project object, not initialized if not found.</param>
         /// <returns>True if found, false otherwise.</returns>
-        bool TryGetDTEProject(string name, out EnvDTE.Project dteProject);
+        bool TryGetVsProjectAdapter(string name, out IVsProjectAdapter vsProjectAdapter);
 
         /// <summary>
         /// Retrieves project restore info as of <see cref="PackageSpec"/> associated with project name.
@@ -85,7 +85,7 @@ namespace NuGet.VisualStudio
         /// Retrieves collection of all project instances stored in the cache.
         /// </summary>
         /// <returns>Collection of projects</returns>
-        IReadOnlyList<EnvDTE.Project> GetEnvDTEProjects();
+        IReadOnlyList<IVsProjectAdapter> GetVsProjectAdapters();
 
         /// <summary>
         /// Determines if a short name is ambiguous.
@@ -101,7 +101,7 @@ namespace NuGet.VisualStudio
         /// <param name="dteProject">The VS project.</param>
         /// <param name="nuGetProject">The NuGet project.</param>
         /// <returns>Returns true if the project was successfully added to the cache.</returns>
-        bool AddProject(ProjectNames projectName, EnvDTE.Project dteProject, NuGetProject nuGetProject);
+        bool AddProject(ProjectNames projectName, IVsProjectAdapter vsProjectAdapter, NuGetProject nuGetProject);
 
         /// <summary>
         /// Adds or updates project restore info in the project cache.

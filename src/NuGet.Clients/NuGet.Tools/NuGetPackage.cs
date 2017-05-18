@@ -182,14 +182,14 @@ namespace NuGetVSExtension
         [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD010", Justification = "NuGet/Home#4833 Baseline")]
         private void SolutionManager_NuGetProjectRenamed(object sender, NuGetProjectEventArgs e)
         {
-            var project = SolutionManager.GetDTEProject(SolutionManager.GetNuGetProjectSafeName(e.NuGetProject));
-            var windowFrame = FindExistingWindowFrame(project);
+            var project = SolutionManager.GetVsProjectAdapter(SolutionManager.GetNuGetProjectSafeName(e.NuGetProject));
+            var windowFrame = FindExistingWindowFrame(project.Project);
             if (windowFrame != null)
             {
                 windowFrame.SetProperty((int)__VSFPROPID.VSFPROPID_OwnerCaption, String.Format(
                     CultureInfo.CurrentCulture,
                     Resx.Label_NuGetWindowCaption,
-                    project.Name));
+                    project.ProjectName));
             }
         }
 
@@ -563,23 +563,18 @@ namespace NuGetVSExtension
         private async Task<IVsWindowFrame> CreateDocWindowForSolutionAsync()
         {
             IVsWindowFrame windowFrame = null;
-            IVsSolution solution = ServiceLocator.GetInstance<IVsSolution>();
+            var solution = ServiceLocator.GetInstance<IVsSolution>();
             var uiShell = await GetServiceAsync(typeof(SVsUIShell)) as IVsUIShell;
-            uint windowFlags =
+            var windowFlags =
                 (uint)_VSRDTFLAGS.RDT_DontAddToMRU |
                 (uint)_VSRDTFLAGS.RDT_DontSaveAs;
 
-            var solutionManager = ServiceLocator.GetInstance<ISolutionManager>();
-
-            if (!solutionManager.IsSolutionAvailable)
+            if (!SolutionManager.IsSolutionAvailable)
             {
                 throw new InvalidOperationException(Resources.SolutionIsNotSaved);
             }
 
-            // make sure all projects are loaded before showing manager ui even with DPL enabled.
-            solutionManager.EnsureSolutionIsLoaded();
-
-            var projects = solutionManager.GetNuGetProjects();
+            var projects = SolutionManager.GetNuGetProjects();
             if (!projects.Any())
             {
                 // NOTE: The menu 'Manage NuGet Packages For Solution' will be disabled in this case.

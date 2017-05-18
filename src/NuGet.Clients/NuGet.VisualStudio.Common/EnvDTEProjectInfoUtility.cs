@@ -15,23 +15,20 @@ using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.Commands;
 using NuGet.Frameworks;
+using NuGet.ProjectManagement;
 
 namespace NuGet.VisualStudio
 {
     public static class EnvDTEProjectInfoUtility
     {
-        #region Constants and Statics
+        #region Constants
 
         public const string WebConfig = "web.config";
         public const string AppConfig = "app.config";
         public const string FullPath = "FullPath";
         public const string ProjectDirectory = "ProjectDirectory";
-        public const string TargetPlatformIdentifier = "TargetPlatformIdentifier";
-        public const string TargetPlatformVersion = "TargetPlatformVersion";
-        public const string TargetPlatformMinVersion = "TargetPlatformMinVersion";
-        public const string TargetFrameworkMoniker = "TargetFrameworkMoniker";
 
-        #endregion // Constants and Statics
+        #endregion // Constants
 
         #region Get Project Information
 
@@ -197,7 +194,7 @@ namespace NuGet.VisualStudio
 
             try
             {
-                EnvDTE.Property property = envDTEProject.Properties.Item(propertyName);
+                var property = envDTEProject.Properties.Item(propertyName);
                 if (property != null)
                 {
                     return (T)property.Value;
@@ -294,31 +291,27 @@ namespace NuGet.VisualStudio
 
         public static async Task<string> GetCustomUniqueNameAsync(EnvDTE.Project envDTEProject)
         {
-            return await NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+            if (IsWebSite(envDTEProject))
             {
-                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                // website projects always have unique name
+                return envDTEProject.Name;
+            }
+            var nameParts = new Stack<string>();
 
-                if (IsWebSite(envDTEProject))
-                {
-                    // website projects always have unique name
-                    return envDTEProject.Name;
-                }
-                Stack<string> nameParts = new Stack<string>();
+            var cursor = envDTEProject;
+            nameParts.Push(GetName(cursor));
 
-                EnvDTE.Project cursor = envDTEProject;
+            // walk up till the solution root
+            while (cursor.ParentProjectItem != null
+                   && cursor.ParentProjectItem.ContainingProject != null)
+            {
+                cursor = cursor.ParentProjectItem.ContainingProject;
                 nameParts.Push(GetName(cursor));
+            }
 
-                // walk up till the solution root
-                while (cursor.ParentProjectItem != null
-                       && cursor.ParentProjectItem.ContainingProject != null)
-                {
-                    cursor = cursor.ParentProjectItem.ContainingProject;
-                    nameParts.Push(GetName(cursor));
-                }
-
-                return String.Join("\\", nameParts);
-            });
-            
+            return string.Join("\\", nameParts);
         }
 
         public static NuGetFramework GetTargetNuGetFramework(EnvDTE.Project envDTEProject)
@@ -348,10 +341,10 @@ namespace NuGet.VisualStudio
             }
 
             var projectPath = GetFullProjectPath(envDTEProject);
-            var platformIdentifier = GetPropertyValue<string>(envDTEProject, TargetPlatformIdentifier);
-            var platformVersion = GetPropertyValue<string>(envDTEProject, TargetPlatformVersion);
-            var platformMinVersion = GetPropertyValue<string>(envDTEProject, TargetPlatformMinVersion);
-            var targetFrameworkMoniker = GetPropertyValue<string>(envDTEProject, TargetFrameworkMoniker);
+            var platformIdentifier = GetPropertyValue<string>(envDTEProject, ProjectBuildProperties.TargetPlatformIdentifier);
+            var platformVersion = GetPropertyValue<string>(envDTEProject, ProjectBuildProperties.TargetPlatformVersion);
+            var platformMinVersion = GetPropertyValue<string>(envDTEProject, ProjectBuildProperties.TargetPlatformMinVersion);
+            var targetFrameworkMoniker = GetPropertyValue<string>(envDTEProject, ProjectBuildProperties.TargetFrameworkMoniker);
             var isManagementPackProject = IsManagementPackProject(envDTEProject);
             var isXnaWindowsPhoneProject = IsXnaWindowsPhoneProject(envDTEProject);
 
@@ -383,8 +376,8 @@ namespace NuGet.VisualStudio
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            string targetFrameworkMoniker = GetTargetFrameworkString(envDTEProject);
-            if (!String.IsNullOrEmpty(targetFrameworkMoniker))
+            var targetFrameworkMoniker = GetTargetFrameworkString(envDTEProject);
+            if (!string.IsNullOrEmpty(targetFrameworkMoniker))
             {
                 return new FrameworkName(targetFrameworkMoniker);
             }

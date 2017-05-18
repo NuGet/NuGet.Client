@@ -39,14 +39,14 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             var solutionManager = ServiceLocator.GetInstance<IVsSolutionManager>();
             if (solutionManager != null)
             {
-                var project = solutionManager.GetDTEProject(projectName);
+                var project = solutionManager.GetVsProjectAdapter(projectName);
                 if (project == null)
                 {
                     throw new InvalidOperationException();
                 }
 
                 var dte = ServiceLocator.GetInstance<DTE>();
-                dte.Solution.Remove(project);
+                dte.Solution.Remove(project.Project);
             }
         }
     }

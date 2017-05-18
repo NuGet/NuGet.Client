@@ -13,20 +13,20 @@ namespace NuGet.ProjectManagement
     /// </summary>
     public class Preprocessor : IPackageFileTransformer
     {
-        public void TransformFile(Func<Stream> fileStreamFactory, string targetPath, IMSBuildNuGetProjectSystem msBuildNuGetProjectSystem)
+        public void TransformFile(Func<Stream> fileStreamFactory, string targetPath, IMSBuildProjectSystem msBuildNuGetProjectSystem)
         {
             MSBuildNuGetProjectSystemUtility.TryAddFile(msBuildNuGetProjectSystem, targetPath,
                 () => StreamUtility.StreamFromString(Process(fileStreamFactory, msBuildNuGetProjectSystem)));
         }
 
-        public void RevertFile(Func<Stream> fileStreamFactory, string targetPath, IEnumerable<InternalZipFileInfo> matchingFiles, IMSBuildNuGetProjectSystem msBuildNuGetProjectSystem)
+        public void RevertFile(Func<Stream> fileStreamFactory, string targetPath, IEnumerable<InternalZipFileInfo> matchingFiles, IMSBuildProjectSystem msBuildNuGetProjectSystem)
         {
             MSBuildNuGetProjectSystemUtility.DeleteFileSafe(targetPath,
                 () => StreamUtility.StreamFromString(Process(fileStreamFactory, msBuildNuGetProjectSystem)),
                 msBuildNuGetProjectSystem);
         }
 
-        internal static string Process(Func<Stream> fileStreamFactory, IMSBuildNuGetProjectSystem msBuildNuGetProjectSystem)
+        internal static string Process(Func<Stream> fileStreamFactory, IMSBuildProjectSystem msBuildNuGetProjectSystem)
         {
             return NuGet.Common.Preprocessor.Process(fileStreamFactory, propName => msBuildNuGetProjectSystem.GetPropertyValue(propName));
         }

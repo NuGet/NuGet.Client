@@ -4,6 +4,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Threading;
 using Test.Utility.Threading;
@@ -12,37 +13,19 @@ using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.PackageManagement.VisualStudio.Test
 {
+    [Collection(DispatcherThreadCollection.CollectionName)]
     public class NuGetLockServiceTests : IDisposable
     {
         private readonly NuGetLockService _lockService;
         private readonly CancellationTokenSource _cts = new CancellationTokenSource();
+        private readonly JoinableTaskFactory _jtf;
 
-        private static DispatcherThread DispatcherThread { get; }
-        private static JoinableTaskContextNode JoinableTaskContext { get; }
-        private static JoinableTaskFactory JoinableTaskFactory => JoinableTaskContext.Factory;
-
-        static NuGetLockServiceTests()
+        public NuGetLockServiceTests(DispatcherThreadFixture fixture)
         {
-            // ThreadHelper in VS requires a persistent dispatcher thread.  Because
-            // each unit test executes on a new thread, we create our own
-            // persistent thread that acts like a UI thread. This will be invoked just
-            // once for the module.
-            DispatcherThread = new DispatcherThread();
+            Assumes.Present(fixture);
 
-            DispatcherThread.Invoke(() =>
-            {
-                // Internally this calls ThreadHelper.SetUIThread(), which
-                // causes ThreadHelper to remember this thread for the
-                // lifetime of the process as the dispatcher thread.
-                var serviceProvider = ServiceProvider.GlobalProvider;
-            });
+            _jtf = fixture.JoinableTaskFactory;
 
-            JoinableTaskContext = new JoinableTaskContextNode(
-                new JoinableTaskContext(DispatcherThread.Thread, DispatcherThread.SyncContext));
-        }
-
-        public NuGetLockServiceTests()
-        {
             _lockService = new NuGetLockService();
             Assert.False(_lockService.IsLockHeld);
         }
@@ -118,16 +101,16 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             var tcs2 = new TaskCompletionSource<bool>();
             var secondTaskAcquiredTheLock = false;
 
-            var jt1 = JoinableTaskFactory.RunAsync(async () =>
+            var jt1 = _jtf.RunAsync(async () =>
             {
-                await JoinableTaskFactory.SwitchToMainThreadAsync();
+                await _jtf.SwitchToMainThreadAsync();
 
                 // awaits global lock acquisition on the main thread (JTF)
                 await _lockService.ExecuteNuGetOperationAsync(async () =>
                 {
                     using (var resource = new ProtectedResource())
                     {
-                        await JoinableTaskFactory.RunAsync(async () =>
+                        await _jtf.RunAsync(async () =>
                         {
                             // once lock is acquired proceeds with long running task on a pool thread.
                             await TaskScheduler.Default;
@@ -143,12 +126,12 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 }, _cts.Token);
             });
 
-            var jt2 = JoinableTaskFactory.RunAsync(async () =>
+            var jt2 = _jtf.RunAsync(async () =>
             {
                 // ensure first task acquired the lock
                 await tcs1.Task;
 
-                await JoinableTaskFactory.SwitchToMainThreadAsync();
+                await _jtf.SwitchToMainThreadAsync();
 
                 var awaiter = _lockService.ExecuteNuGetOperationAsync(() =>
                 {
