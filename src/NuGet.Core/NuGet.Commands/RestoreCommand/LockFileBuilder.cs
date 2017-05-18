@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -25,23 +25,26 @@ namespace NuGet.Commands
         private readonly ILogger _logger;
         private readonly Dictionary<RestoreTargetGraph, Dictionary<string, LibraryIncludeFlags>> _includeFlagGraphs;
 
-        public LockFileBuilder(int lockFileVersion, ILogger logger, Dictionary<RestoreTargetGraph, Dictionary<string, LibraryIncludeFlags>> includeFlagGraphs)
+        public LockFileBuilder(int lockFileVersion, 
+            ILogger logger, 
+            Dictionary<RestoreTargetGraph, 
+            Dictionary<string, LibraryIncludeFlags>> includeFlagGraphs)
         {
             _lockFileVersion = lockFileVersion;
             _logger = logger;
             _includeFlagGraphs = includeFlagGraphs;
         }
 
-        public LockFile CreateLockFile(
-            LockFile previousLockFile,
+        public LockFile CreateLockFile(LockFile previousLockFile,
             PackageSpec project,
             IEnumerable<RestoreTargetGraph> targetGraphs,
             IReadOnlyList<NuGetv3LocalRepository> localRepositories,
             RemoteWalkContext context)
         {
-            var lockFile = new LockFile();
-            lockFile.Version = _lockFileVersion;
-
+            var lockFile = new LockFile()
+            {
+                Version = _lockFileVersion
+            };
             var previousLibraries = previousLockFile?.Libraries.ToDictionary(l => Tuple.Create(l.Name, l.Version));
 
             if (project.RestoreMetadata?.ProjectStyle == ProjectStyle.PackageReference)
@@ -68,7 +71,7 @@ namespace NuGet.Commands
                 if (library.Type == LibraryType.Project || library.Type == LibraryType.ExternalProject)
                 {
                     // Project
-                    LocalMatch localMatch = (LocalMatch)item.Data.Match;
+                    var localMatch = (LocalMatch)item.Data.Match;
 
                     var projectLib = new LockFileLibrary()
                     {
@@ -240,8 +243,21 @@ namespace NuGet.Commands
 
                             if (!targetLibrary.Equals(targetLibraryWithoutFallback))
                             {
-                                var libraryName = $"{library.Name} {library.Version}";
-                                _logger.LogWarning(string.Format(CultureInfo.CurrentCulture, Strings.Log_ImportsFallbackWarning, libraryName, String.Join(", ", fallbackFramework.Fallback), nonFallbackFramework));
+                                var libraryName = DiagnosticUtility.FormatIdentity(library);
+
+                                var message = string.Format(CultureInfo.CurrentCulture,
+                                    Strings.Log_ImportsFallbackWarning,
+                                    libraryName,
+                                    string.Join(", ", fallbackFramework.Fallback),
+                                    nonFallbackFramework);
+
+                                var logMessage = RestoreLogMessage.CreateWarning(
+                                    NuGetLogCode.NU1701,
+                                    message,
+                                    library.Name,
+                                    targetGraph.Name);
+
+                                _logger.Log(logMessage);
 
                                 // only log the warning once per library
                                 librariesWithWarnings.Add(library);

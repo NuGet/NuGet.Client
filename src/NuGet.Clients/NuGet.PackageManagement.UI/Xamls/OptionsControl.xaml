@@ -34,8 +34,7 @@
       <CheckBox
         Margin="16,8,0,0"
         IsChecked="{Binding Path=Options.ShowPreviewWindow}"
-        VerticalContentAlignment="Center"
-        Foreground="{DynamicResource {x:Static nuget:Brushes.UIText}}">
+        VerticalContentAlignment="Center">
         <TextBlock
           TextWrapping="Wrap"
           TextTrimming="WordEllipsis"
@@ -133,8 +132,7 @@
           <CheckBox
             Grid.Row="0"
             IsChecked="{Binding Path=Options.RemoveDependencies}"
-            VerticalContentAlignment="Center"
-            Foreground="{DynamicResource {x:Static nuget:Brushes.UIText}}">
+            VerticalContentAlignment="Center">
             <TextBlock
               TextWrapping="Wrap"
               TextTrimming="WordEllipsis"
@@ -143,8 +141,7 @@
           <CheckBox
             Grid.Row="2"
             IsChecked="{Binding Path=Options.ForceRemove}"
-            VerticalContentAlignment="Center"
-            Foreground="{DynamicResource {x:Static nuget:Brushes.UIText}}">
+            VerticalContentAlignment="Center">
             <TextBlock
               TextWrapping="Wrap"
               TextTrimming="WordEllipsis"

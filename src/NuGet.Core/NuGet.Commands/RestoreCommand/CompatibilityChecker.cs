@@ -92,7 +92,8 @@ namespace NuGet.Commands
                             available);
 
                         issues.Add(issue);
-                        _log.LogError(issue.Format());
+
+                        _log.Log(RestoreLogMessage.CreateError(NuGetLogCode.NU1201, issue.Format()));
                     }
 
                     // Skip further checks on projects
@@ -133,7 +134,8 @@ namespace NuGet.Commands
                         available);
 
                     issues.Add(issue);
-                    _log.LogError(issue.Format());
+
+                    _log.Log(RestoreLogMessage.CreateError(NuGetLogCode.NU1202, issue.Format()));
                 }
 
                 // Check for matching ref/libs if we're checking a runtime-specific graph
@@ -150,7 +152,7 @@ namespace NuGet.Commands
                             .Where(p => Path.GetExtension(p.Path)
                                 .Equals(".dll", StringComparison.OrdinalIgnoreCase)))
                         {
-                            string name = Path.GetFileNameWithoutExtension(compile.Path);
+                            var name = Path.GetFileNameWithoutExtension(compile.Path);
 
                             // If we haven't already started tracking this compile-time assembly, AND there isn't already a runtime-loadable version
                             if (!compileAssemblies.ContainsKey(name) && !runtimeAssemblies.Contains(name))
@@ -165,7 +167,7 @@ namespace NuGet.Commands
                             .Where(p => Path.GetExtension(p.Path)
                                 .Equals(".dll", StringComparison.OrdinalIgnoreCase)))
                         {
-                            string name = Path.GetFileNameWithoutExtension(runtime.Path);
+                            var name = Path.GetFileNameWithoutExtension(runtime.Path);
 
                             // If there was a compile-time-only assembly under this name...
                             if (compileAssemblies.ContainsKey(name))
@@ -206,7 +208,8 @@ namespace NuGet.Commands
                         graph.RuntimeIdentifier);
 
                     issues.Add(issue);
-                    _log.LogError(issue.Format());
+
+                    _log.Log(RestoreLogMessage.CreateError(NuGetLogCode.NU1203, issue.Format()));
                 }
             }
 

@@ -6,8 +6,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
-using NuGet.Versioning;
 using NuGet.LibraryModel;
+using NuGet.Shared;
 
 namespace NuGet.DependencyResolver
 {
@@ -144,7 +144,7 @@ namespace NuGet.DependencyResolver
         {
             foreach (var item in path)
             {
-                var childNode = node.InnerNodes.FirstOrDefault(n => 
+                var childNode = node.InnerNodes.FirstOrDefault(n =>
                     StringComparer.OrdinalIgnoreCase.Equals(n.Key.Name, item));
 
                 if (childNode == null)
@@ -322,7 +322,7 @@ namespace NuGet.DependencyResolver
 
                 // avoid Foreach here since it's inside 3 layer nested loops which might make it to
                 // be called 100 of 1000 times so GetEnumerator() might end up taking lot of memory space.
-                for (int i = 0; i < work.Item1.InnerNodes.Count; i++)
+                for (var i = 0; i < work.Item1.InnerNodes.Count; i++)
                 {
                     var innerNode = work.Item1.InnerNodes[i];
                     queue.Enqueue(Tuple.Create(innerNode, innerState));
@@ -332,8 +332,8 @@ namespace NuGet.DependencyResolver
 
         public static void ForEach<TItem>(this IEnumerable<GraphNode<TItem>> roots, Action<GraphNode<TItem>> visitor)
         {
-            var graphNodes = roots.ToList();
-            for (int i = 0; i < graphNodes.Count; i++)
+            var graphNodes = roots.AsList();
+            for (var i = 0; i < graphNodes.Count; i++)
             {
                 graphNodes[i].ForEach(visitor);
             }

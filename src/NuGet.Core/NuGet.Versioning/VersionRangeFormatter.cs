@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Globalization;
 using System.Text;
 
 namespace NuGet.Versioning
@@ -42,7 +41,7 @@ namespace NuGet.Versioning
             {
                 formatted = ((IFormattable)arg).ToString(format, formatProvider);
             }
-            else if (!String.IsNullOrEmpty(format))
+            else if (!string.IsNullOrEmpty(format))
             {
                 var range = arg as VersionRange;
 
@@ -136,7 +135,7 @@ namespace NuGet.Versioning
                 && range.IsMinInclusive
                 && !range.HasUpperBound)
             {
-                s = range.IsFloating ? 
+                s = range.IsFloating ?
                     range.Float.ToString() :
                     string.Format(_versionFormatter, ZeroN, range.MinVersion);
             }
@@ -282,68 +281,56 @@ namespace NuGet.Versioning
         /// </summary>
         private string PrettyPrint(VersionRange range)
         {
-            var sb = new StringBuilder("(");
-
-            // no upper
-            if (range.HasLowerBound
-                && !range.HasUpperBound)
+            // empty range
+            if (!range.HasLowerBound
+                 && !range.HasUpperBound)
             {
-                sb.Append(GreaterThanOrEqualTo);
-                sb.AppendFormat(_versionFormatter, " {0:N}", range.MinVersion);
+                return string.Empty;
             }
+
             // single version
-            else if (range.HasLowerAndUpperBounds
+            if (range.HasLowerAndUpperBounds
                      && range.MaxVersion.Equals(range.MinVersion)
                      && range.IsMinInclusive
                      && range.IsMaxInclusive)
             {
-                sb.AppendFormat(_versionFormatter, "= {0:N}", range.MinVersion);
+                return string.Format(_versionFormatter, "(= {0:N})", range.MinVersion);
             }
-            else // normal range
+
+            // normal case with a lower, upper, or both.
+            var sb = new StringBuilder("(");
+
+            if (range.HasLowerBound)
             {
-                if (range.HasLowerBound)
-                {
-                    if (range.IsMinInclusive)
-                    {
-                        sb.AppendFormat(CultureInfo.InvariantCulture, "{0} ", GreaterThanOrEqualTo);
-                    }
-                    else
-                    {
-                        sb.Append("> ");
-                    }
+                PrettyPrintBound(sb, range.MinVersion, range.IsMinInclusive, ">");
+            }
 
-                    sb.AppendFormat(_versionFormatter, ZeroN, range.MinVersion);
-                }
+            if (range.HasLowerAndUpperBounds)
+            {
+                sb.Append(" && ");
+            }
 
-                if (range.HasLowerAndUpperBounds)
-                {
-                    sb.Append(" && ");
-                }
-
-                if (range.HasUpperBound)
-                {
-                    if (range.IsMaxInclusive)
-                    {
-                        sb.AppendFormat(CultureInfo.InvariantCulture, "{0} ", LessThanOrEqualTo);
-                    }
-                    else
-                    {
-                        sb.Append("< ");
-                    }
-
-                    sb.AppendFormat(_versionFormatter, ZeroN, range.MaxVersion);
-                }
+            if (range.HasUpperBound)
+            {
+                PrettyPrintBound(sb, range.MaxVersion, range.IsMaxInclusive, "<");
             }
 
             sb.Append(")");
 
-            // avoid ()
-            if (sb.Length == 2)
+            return sb.ToString();
+        }
+
+        private void PrettyPrintBound(StringBuilder sb, NuGetVersion version, bool inclusive, string boundChar)
+        {
+            sb.Append(boundChar);
+
+            if (inclusive)
             {
-                sb.Clear();
+                sb.Append("=");
             }
 
-            return sb.ToString();
+            sb.Append(" ");
+            sb.AppendFormat(_versionFormatter, ZeroN, version);
         }
     }
 }

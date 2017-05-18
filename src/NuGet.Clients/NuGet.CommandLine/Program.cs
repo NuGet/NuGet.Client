@@ -1,4 +1,4 @@
-extern alias CoreV2;
+﻿extern alias CoreV2;
 
 using System;
 using System.Collections.Generic;
@@ -81,8 +81,7 @@ namespace NuGet.CommandLine
 
             var console = new Console();
             var fileSystem = new CoreV2.NuGet.PhysicalFileSystem(workingDirectory);
-
-            Func<Exception, string> getErrorMessage = ExceptionUtilities.DisplayMessage;
+            var logStackAsError = console.Verbosity == Verbosity.Detailed;
 
             try
             {
@@ -119,33 +118,26 @@ namespace NuGet.CommandLine
                 else
                 {
                     SetConsoleInteractivity(console, command as Command);
-
-                    // When we're detailed, get the whole exception including the stack
-                    // This is useful for debugging errors.
-                    if (console.Verbosity == Verbosity.Detailed || ExceptionLogger.Instance.ShowStack)
-                    {
-                        getErrorMessage = e => e.ToString();
-                    }
-
                     command.Execute();
                 }
             }
             catch (AggregateException exception)
             {
-                Exception unwrappedEx = ExceptionUtility.Unwrap(exception);
+                var unwrappedEx = ExceptionUtility.Unwrap(exception);
                 if (unwrappedEx is ExitCodeException)
                 {
                     // Return the exit code without writing out the exception type
                     var exitCodeEx = unwrappedEx as ExitCodeException;
                     return exitCodeEx.ExitCode;
                 }
-                
-                console.WriteError(getErrorMessage(exception));
+
+                // Log the exception and stack trace.
+                ExceptionUtilities.LogException(unwrappedEx, console, logStackAsError);
                 return 1;
             }
             catch (Exception exception)
             {
-                console.WriteError(getErrorMessage(exception));
+                ExceptionUtilities.LogException(exception, console, logStackAsError);
                 return 1;
             }
             finally

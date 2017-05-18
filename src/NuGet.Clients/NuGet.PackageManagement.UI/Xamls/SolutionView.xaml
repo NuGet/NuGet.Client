@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="NuGet.PackageManagement.UI.SolutionView"
+<UserControl x:Class="NuGet.PackageManagement.UI.SolutionView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -24,13 +24,12 @@
             IsEnabled="False" />
       </ControlTemplate>
       
-      <!-- style of the list view headers -->            
+      <!-- style of the list view headers -->
       <Style x:Uid="Style_1" x:Key="GridViewColumnHeaderGripper" TargetType="{x:Type Thumb}">
         <Setter x:Uid="Setter_1" Property="Canvas.Right" Value="-8.5" />
         <Setter x:Uid="Setter_2" Property="Width" Value="18" />
         <Setter x:Uid="Setter_3" Property="Height" Value="{Binding Path=ActualHeight, RelativeSource={RelativeSource TemplatedParent}}" />
-        <Setter x:Uid="Setter_4" Property="Background" Value="{DynamicResource {x:Static
-          local:Brushes.HeaderColorsSeparatorLineBrushKey}}" />
+        <Setter x:Uid="Setter_4" Property="Background" Value="{DynamicResource {x:Static local:Brushes.HeaderColorsSeparatorLineBrushKey}}" />
         <Setter x:Uid="Setter_5" Property="Template">
           <Setter.Value>
             <ControlTemplate x:Uid="ControlTemplate_1" TargetType="{x:Type Thumb}">
@@ -47,6 +46,7 @@
         <Setter x:Uid="Setter_8" Property="Foreground" Value="{DynamicResource {x:Static local:Brushes.HeaderColorsDefaultTextBrushKey}}" />
         <Setter x:Uid="Setter_9" Property="BorderThickness" Value="0,1,0,1" />
         <Setter x:Uid="Setter_10" Property="Padding" Value="4,2,4,2" />
+        <Setter x:Uid="Setter_20" Property="FocusVisualStyle" Value="{DynamicResource MarginFocusVisualStyle}"/>
         <Setter x:Uid="Setter_11" Property="Template">
           <Setter.Value>
             <ControlTemplate x:Uid="ControlTemplate_2" TargetType="{x:Type GridViewColumnHeader}">
@@ -57,8 +57,9 @@
                                 BorderThickness="{TemplateBinding BorderThickness}"
                                 Padding="{TemplateBinding Padding}">
                   <ContentPresenter
-                                              x:Uid="ContentPresenter_1" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-                                              HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" />
+                    x:Uid="ContentPresenter_1"
+                    VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                    HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"/>
                 </Border>
                 <Canvas x:Uid="Canvas_1">
                   <Thumb x:Uid="PART_HeaderGripper" x:Name="PART_HeaderGripper" Style="{StaticResource GridViewColumnHeaderGripper}" />
@@ -88,24 +89,16 @@
       </Style>
 
       <!-- the style of the list view items -->
-      <Style x:Key="ListViewItemFocusVisual">
-        <Setter Property="Control.Template">
-          <Setter.Value>
-            <ControlTemplate>
-              <Rectangle RadiusY="2" RadiusX="2" Stroke="#8E6EA6F5" StrokeThickness="1" />
-            </ControlTemplate>
-          </Setter.Value>
-        </Setter>
+      <Style x:Key="ListViewItemFocusVisual" TargetType="{x:Type Control}" BasedOn="{StaticResource ControlsFocusVisualStyle}">
+        <Setter Property="Margin" Value="2"/>
       </Style>
       <Style x:Key="ListViewItemStyle1" TargetType="{x:Type ListViewItem}">
-        <Setter Property="FocusVisualStyle" Value="{StaticResource ListViewItemFocusVisual}" />
         <Setter Property="Background" Value="{DynamicResource {x:Static local:Brushes.ListPaneBackground}}" />
         <Setter Property="Foreground" Value="{DynamicResource {x:Static local:Brushes.UIText}}" />
         <Setter Property="BorderBrush" Value="Transparent" />
         <Setter Property="BorderThickness" Value="0" />
         <Setter Property="Margin" Value="0" />
         <Setter Property="VerticalContentAlignment" Value="Center" />
-        <Setter Property="IsTabStop" Value="False" />
         <Setter Property="Template">
           <Setter.Value>
             <ControlTemplate TargetType="{x:Type ListViewItem}">
@@ -118,7 +111,6 @@
                   SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"
                   VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
               </Border>
-
               <ControlTemplate.Triggers>
                 <Trigger Property="IsMouseOver" Value="true">
                   <Setter
@@ -172,11 +164,21 @@
       x:Name="_projectList"
       Margin="0,8,0,0"
       ScrollViewer.VerticalScrollBarVisibility="Visible"
-      KeyboardNavigation.TabNavigation="Continue"
       PreviewKeyUp="ProjectList_PreviewKeyUp"
       ItemsSource="{Binding Projects}"
       Background="{DynamicResource {x:Static local:Brushes.ListPaneBackground}}"
-      Foreground="{DynamicResource {x:Static local:Brushes.UIText}}" >
+      Foreground="{DynamicResource {x:Static local:Brushes.UIText}}"
+      KeyboardNavigation.TabNavigation="Local"
+      SelectionMode="Single">
+      
+      <!-- set the list view item style -->
+      <ListView.ItemContainerStyle>
+        <Style TargetType="{x:Type ListViewItem}" BasedOn="{StaticResource ListViewItemStyle1}" >
+          <Setter Property="FocusVisualStyle" Value="{DynamicResource ListViewItemFocusVisual}"/>
+          <Setter Property="IsTabStop" Value="False"/>
+        </Style>
+      </ListView.ItemContainerStyle>
+      
       <ListView.View>
         <GridView ColumnHeaderContainerStyle="{StaticResource GridViewColumnHeaderStyle}">
 
@@ -186,6 +188,8 @@
               <GridViewColumnHeader
                 HorizontalContentAlignment="Left">
                 <CheckBox
+                  KeyboardNavigation.TabIndex="0"
+                  FocusVisualStyle="{DynamicResource ListViewItemFocusVisual}"
                   AutomationProperties.AutomationId="SolutionViewCheckBox"
                   IsChecked="{Binding SelectCheckBoxState}"
                   Checked="CheckBox_Checked"
@@ -198,6 +202,7 @@
             <GridViewColumn.CellTemplate>
               <DataTemplate>
                 <CheckBox
+                  IsTabStop="False"
                   AutomationProperties.AutomationId="{Binding ProjectName, Mode=OneWay, StringFormat='ProjectCheckBox_{0}'}"
                   IsChecked="{Binding IsSelected}"
                   AutomationProperties.Name="{Binding ProjectName, Mode=OneWay}"
@@ -215,8 +220,13 @@
                 HorizontalContentAlignment="Left"
                 Click="ColumnHeader_Clicked">
                 <local:SortableColumnHeader
+                  KeyboardNavigation.TabIndex="1"
                   HeaderText="{x:Static local:Resources.ColumnHeader_Project}"
-                  SortPropertyName="ProjectName" />
+                  SortPropertyName="ProjectName"
+                  PreviewKeyUp="SortableColumnHeader_PreviewKeyUp"
+                  Focusable="True"
+                  IsTabStop="True"
+                  FocusVisualStyle="{DynamicResource ControlsFocusVisualStyle}"/>
               </GridViewColumnHeader>
             </GridViewColumn.Header>
             <GridViewColumn.CellTemplate>
@@ -242,18 +252,18 @@
                 Click="ColumnHeader_Clicked"
                 HorizontalContentAlignment="Left">
                 <local:SortableColumnHeader
+                  KeyboardNavigation.TabIndex="2"
                   HeaderText="{x:Static local:Resources.ColumnHeader_Version}"
-                  SortPropertyName="InstalledVersion" />
+                  SortPropertyName="InstalledVersion"
+                  PreviewKeyUp="SortableColumnHeader_PreviewKeyUp"
+                  Focusable="True"
+                  IsTabStop="True"
+                  FocusVisualStyle="{DynamicResource ControlsFocusVisualStyle}"/>
               </GridViewColumnHeader>
             </GridViewColumn.Header>
           </GridViewColumn>
         </GridView>
       </ListView.View>
-
-      <!-- set the list view item style -->
-      <ListView.ItemContainerStyle>
-        <Style TargetType="{x:Type ListViewItem}" BasedOn="{StaticResource ListViewItemStyle1}" />
-      </ListView.ItemContainerStyle>
     </ListView>
 
     <Grid
@@ -327,7 +337,7 @@
         SelectedItem="{Binding Path=SelectedVersion}">
         
           <ComboBox.ItemContainerStyle>
-            <Style TargetType="{x:Type ComboBoxItem}">
+            <Style TargetType="{x:Type ComboBoxItem}" BasedOn="{StaticResource ComboBoxItemStyle}"> 
                 <Style.Triggers>
                     <DataTrigger 
                         Binding="{Binding Converter={StaticResource NotNullToBooleanConverter}}"

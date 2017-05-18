@@ -19,6 +19,7 @@ using NuGet.PackageManagement.Telemetry;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
 using NuGet.Protocol;
+using NuGet.Protocol.Core.Types;
 using NuGet.VisualStudio;
 using Task = System.Threading.Tasks.Task;
 
@@ -137,42 +138,45 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private async Task InitializeAsync()
         {
-            await NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
-            {
-                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                HttpHandlerResourceV3.CredentialService = _credentialServiceProvider.GetCredentialService();
-                _vsSolution = _serviceProvider.GetService<SVsSolution, IVsSolution>();
-                _vsMonitorSelection = _serviceProvider.GetService<SVsShellMonitorSelection, IVsMonitorSelection>();
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                var solutionLoadedGuid = VSConstants.UICONTEXT.SolutionExistsAndFullyLoaded_guid;
-                _vsMonitorSelection.GetCmdUIContextCookie(ref solutionLoadedGuid, out _solutionLoadedUICookie);
+            var dte = _serviceProvider.GetDTE();
+            UserAgent.SetUserAgentString(
+                    new UserAgentStringBuilder().WithVisualStudioSKU(dte.GetFullVsVersionString()));
 
-                uint cookie;
-                var hr = _vsMonitorSelection.AdviseSelectionEvents(this, out cookie);
-                ErrorHandler.ThrowOnFailure(hr);
-                var dte = _serviceProvider.GetDTE();
-                // Keep a reference to SolutionEvents so that it doesn't get GC'ed. Otherwise, we won't receive events.
-                _solutionEvents = dte.Events.SolutionEvents;
-                _solutionEvents.BeforeClosing += OnBeforeClosing;
-                _solutionEvents.AfterClosing += OnAfterClosing;
-                _solutionEvents.ProjectAdded += OnEnvDTEProjectAdded;
-                _solutionEvents.ProjectRemoved += OnEnvDTEProjectRemoved;
-                _solutionEvents.ProjectRenamed += OnEnvDTEProjectRenamed;
+            HttpHandlerResourceV3.CredentialService = _credentialServiceProvider.GetCredentialService();
 
-                var vSStd97CmdIDGUID = VSConstants.GUID_VSStandardCommandSet97.ToString("B");
-                var solutionSaveID = (int)VSConstants.VSStd97CmdID.SaveSolution;
-                var solutionSaveAsID = (int)VSConstants.VSStd97CmdID.SaveSolutionAs;
+            _vsSolution = _serviceProvider.GetService<SVsSolution, IVsSolution>();
+            _vsMonitorSelection = _serviceProvider.GetService<SVsShellMonitorSelection, IVsMonitorSelection>();
 
-                _solutionSaveEvent = dte.Events.CommandEvents[vSStd97CmdIDGUID, solutionSaveID];
-                _solutionSaveAsEvent = dte.Events.CommandEvents[vSStd97CmdIDGUID, solutionSaveAsID];
+            var solutionLoadedGuid = VSConstants.UICONTEXT.SolutionExistsAndFullyLoaded_guid;
+            _vsMonitorSelection.GetCmdUIContextCookie(ref solutionLoadedGuid, out _solutionLoadedUICookie);
 
-                _solutionSaveEvent.BeforeExecute += SolutionSaveAs_BeforeExecute;
-                _solutionSaveEvent.AfterExecute += SolutionSaveAs_AfterExecute;
-                _solutionSaveAsEvent.BeforeExecute += SolutionSaveAs_BeforeExecute;
-                _solutionSaveAsEvent.AfterExecute += SolutionSaveAs_AfterExecute;
+            uint cookie;
+            var hr = _vsMonitorSelection.AdviseSelectionEvents(this, out cookie);
+            ErrorHandler.ThrowOnFailure(hr);
 
-                _projectSystemCache.CacheUpdated += NuGetCacheUpdate_After;
-            });
+            // Keep a reference to SolutionEvents so that it doesn't get GC'ed. Otherwise, we won't receive events.
+            _solutionEvents = dte.Events.SolutionEvents;
+            _solutionEvents.BeforeClosing += OnBeforeClosing;
+            _solutionEvents.AfterClosing += OnAfterClosing;
+            _solutionEvents.ProjectAdded += OnEnvDTEProjectAdded;
+            _solutionEvents.ProjectRemoved += OnEnvDTEProjectRemoved;
+            _solutionEvents.ProjectRenamed += OnEnvDTEProjectRenamed;
+
+            var vSStd97CmdIDGUID = VSConstants.GUID_VSStandardCommandSet97.ToString("B");
+            var solutionSaveID = (int)VSConstants.VSStd97CmdID.SaveSolution;
+            var solutionSaveAsID = (int)VSConstants.VSStd97CmdID.SaveSolutionAs;
+
+            _solutionSaveEvent = dte.Events.CommandEvents[vSStd97CmdIDGUID, solutionSaveID];
+            _solutionSaveAsEvent = dte.Events.CommandEvents[vSStd97CmdIDGUID, solutionSaveAsID];
+
+            _solutionSaveEvent.BeforeExecute += SolutionSaveAs_BeforeExecute;
+            _solutionSaveEvent.AfterExecute += SolutionSaveAs_AfterExecute;
+            _solutionSaveAsEvent.BeforeExecute += SolutionSaveAs_BeforeExecute;
+            _solutionSaveAsEvent.AfterExecute += SolutionSaveAs_AfterExecute;
+
+            _projectSystemCache.CacheUpdated += NuGetCacheUpdate_After;
         }
 
         public async Task<NuGetProject> UpdateNuGetProjectToPackageRef(NuGetProject oldProject)

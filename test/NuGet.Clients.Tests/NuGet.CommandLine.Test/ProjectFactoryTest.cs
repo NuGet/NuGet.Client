@@ -6,6 +6,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Xml.Linq;
 using System.Xml.XPath;
 using Moq;
@@ -456,7 +458,7 @@ namespace NuGet.CommandLine
         /// </example>
         // Failed on Mono due to https://github.com/NuGet/Home/issues/4073, skip mono for now.
         [SkipMono]
-        public void EnsureProjectFactoryDoesNotAddFileThatIsAlreadyInPackage()
+        public async Task EnsureProjectFactoryDoesNotAddFileThatIsAlreadyInPackage()
         {
             // Setup
             var nugetexe = Util.GetNuGetExePath();
@@ -478,7 +480,7 @@ namespace NuGet.CommandLine
 
                 // Assert
                 var package = new PackageArchiveReader(Path.Combine(workingDirectory, "Assembly.1.0.0.nupkg"));
-                var files = package.GetPackageFiles(PackageSaveMode.Files).ToArray();
+                var files = (await package.GetPackageFilesAsync(PackageSaveMode.Files, CancellationToken.None)).ToArray();
 
                 Assert.Equal(0, r.Item1);
                 Array.Sort(files);
@@ -490,16 +492,16 @@ namespace NuGet.CommandLine
         }
 
         [Fact]
-        public void EnsureProjectFactoryWorksAsExpectedWithReferenceOutputAssemblyValuesBasic()
+        public async Task EnsureProjectFactoryWorksAsExpectedWithReferenceOutputAssemblyValuesBasic()
         {
             // Setup
             var nugetexe = Util.GetNuGetExePath();
             using (var workingDirectory = TestDirectory.Create())
             {
                 // Setup the projects
-                DummyProject link = new DummyProject("Link", Path.Combine(workingDirectory, "Link", "Link.csproj"));
-                DummyProject a = new DummyProject("A", Path.Combine(workingDirectory, "A", "A.csproj"));
-                DummyProject b = new DummyProject("B", Path.Combine(workingDirectory, "B", "B.csproj"));
+                var link = new DummyProject("Link", Path.Combine(workingDirectory, "Link", "Link.csproj"));
+                var a = new DummyProject("A", Path.Combine(workingDirectory, "A", "A.csproj"));
+                var b = new DummyProject("B", Path.Combine(workingDirectory, "B", "B.csproj"));
                 link.AddProjectReference(a, false);
                 link.AddProjectReference(b, true);
                 link.WriteToFile();
@@ -517,7 +519,7 @@ namespace NuGet.CommandLine
                 Util.VerifyResultSuccess(r);
 
                 var package = new PackageArchiveReader(Path.Combine(workingDirectory, "Link.1.0.0.nupkg"));
-                var files = package.GetPackageFiles(PackageSaveMode.Files).ToArray();
+                var files = (await package.GetPackageFilesAsync(PackageSaveMode.Files, CancellationToken.None)).ToArray();
 
                 Assert.Equal(0, r.Item1);
                 Array.Sort(files);
@@ -529,7 +531,7 @@ namespace NuGet.CommandLine
         }
 
         [Fact]
-        public void EnsureProjectFactoryWorksAsExpectedWithReferenceOutputAssemblyValuesComplex()
+        public async Task EnsureProjectFactoryWorksAsExpectedWithReferenceOutputAssemblyValuesComplex()
         {
             // Setup
             var nugetexe = Util.GetNuGetExePath();
@@ -537,12 +539,12 @@ namespace NuGet.CommandLine
             using (var workingDirectory = TestDirectory.Create())
             {
                 // Setup the projects
-                DummyProject link = new DummyProject("Link", Path.Combine(workingDirectory, "Link", "Link.csproj"));
-                DummyProject a = new DummyProject("A", Path.Combine(workingDirectory, "A", "A.csproj"));
-                DummyProject b = new DummyProject("B", Path.Combine(workingDirectory, "B", "B.csproj"));
-                DummyProject c = new DummyProject("C", Path.Combine(workingDirectory, "C", "C.csproj"));
-                DummyProject d = new DummyProject("D", Path.Combine(workingDirectory, "D", "D.csproj"));
-                DummyProject e = new DummyProject("E", Path.Combine(workingDirectory, "E", "E.csproj"));
+                var link = new DummyProject("Link", Path.Combine(workingDirectory, "Link", "Link.csproj"));
+                var a = new DummyProject("A", Path.Combine(workingDirectory, "A", "A.csproj"));
+                var b = new DummyProject("B", Path.Combine(workingDirectory, "B", "B.csproj"));
+                var c = new DummyProject("C", Path.Combine(workingDirectory, "C", "C.csproj"));
+                var d = new DummyProject("D", Path.Combine(workingDirectory, "D", "D.csproj"));
+                var e = new DummyProject("E", Path.Combine(workingDirectory, "E", "E.csproj"));
                 link.AddProjectReference(a, false);
                 link.AddProjectReference(b, true);
                 a.AddProjectReference(c, false);
@@ -565,7 +567,7 @@ namespace NuGet.CommandLine
                 // Assert
                 Util.VerifyResultSuccess(r);
                 var package = new PackageArchiveReader(Path.Combine(workingDirectory, "Link.1.0.0.nupkg"));
-                var files = package.GetPackageFiles(PackageSaveMode.Files).ToArray();
+                var files = (await package.GetPackageFilesAsync(PackageSaveMode.Files, CancellationToken.None)).ToArray();
 
                 Assert.Equal(0, r.Item1);
                 Array.Sort(files);
@@ -702,7 +704,7 @@ namespace Assembly
 
             public void WriteToFile()
             {
-                FileInfo file = new FileInfo(Location);
+                var file = new FileInfo(Location);
                 file.Directory.Create();
                 File.WriteAllText(Location, ToString());
                 File.WriteAllText(Path.Combine(Path.GetDirectoryName(Location), "Source.cs"), GetSourceFileContent());

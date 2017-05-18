@@ -1,15 +1,17 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace NuGet.Common
 {
-    public class CollectorLogger : ICollectorLogger
+    public class CollectorLogger : LoggerBase, ICollectorLogger
     {
         private readonly ILogger _innerLogger;
-        private readonly ConcurrentQueue<string> _errors;
+        private readonly ConcurrentQueue<IRestoreLogMessage> _errors;
 
         /// <summary>
         /// Initializes an instance of the <see cref="CollectorLogger"/>, while still
@@ -18,50 +20,61 @@ namespace NuGet.Common
         public CollectorLogger(ILogger innerLogger)
         {
             _innerLogger = innerLogger;
-            _errors = new ConcurrentQueue<string>();
-        }
-        
-        public void LogDebug(string data)
-        {
-            _innerLogger.LogDebug(data);
+            _errors = new ConcurrentQueue<IRestoreLogMessage>();
         }
 
-        public void LogVerbose(string data)
+        /// <summary>
+        /// Initializes an instance of the <see cref="CollectorLogger"/>, while still
+        /// delegating all log messages to the <param name="innerLogger" />
+        /// based on the <param name="verbosity" />
+        /// </summary>
+        public CollectorLogger(ILogger innerLogger, LogLevel verbosity)
+            : base(verbosity)
         {
-            _innerLogger.LogVerbose(data);
+            _innerLogger = innerLogger;
+            _errors = new ConcurrentQueue<IRestoreLogMessage>();
         }
 
-        public void LogInformation(string data)
+        public override void Log(ILogMessage message)
         {
-            _innerLogger.LogInformation(data);
+            if (CollectMessage(message.Level))
+            {
+                _errors.Enqueue(new RestoreLogMessage(message.Level, message.Code, message.Message));
+            }
+
+            _innerLogger.Log(message);
         }
 
-        public void LogMinimal(string data)
+        public override Task LogAsync(ILogMessage message)
         {
-            _innerLogger.LogMinimal(data);
+            if (CollectMessage(message.Level))
+            {
+                _errors.Enqueue(new RestoreLogMessage(message.Level, message.Code, message.Message));
+            }
+
+            return _innerLogger.LogAsync(message);
         }
 
-        public void LogWarning(string data)
+        public void Log(IRestoreLogMessage message)
         {
-            _innerLogger.LogWarning(data);
+            if (CollectMessage(message.Level))
+            {
+                _errors.Enqueue(message);
+            }
+
+            _innerLogger.Log(message);
         }
 
-        public void LogError(string data)
+        public Task LogAsync(IRestoreLogMessage message)
         {
-            _errors.Enqueue(data);
-            _innerLogger.LogError(data);
+            if (CollectMessage(message.Level))
+            {
+                _errors.Enqueue(message);
+            }
+
+            return _innerLogger.LogAsync(message);
         }
 
-        public void LogInformationSummary(string data)
-        {
-            _innerLogger.LogInformationSummary(data);
-        }
-
-        public void LogErrorSummary(string data)
-        {
-            _innerLogger.LogErrorSummary(data);
-        }
-
-        public IEnumerable<string> Errors => _errors.ToArray();
+        public IEnumerable<IRestoreLogMessage> Errors => _errors.ToArray();
     }
 }

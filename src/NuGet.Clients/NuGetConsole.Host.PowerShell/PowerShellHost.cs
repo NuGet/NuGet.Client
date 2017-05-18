@@ -739,7 +739,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
 
         private void WriteErrorLine(string message)
         {
-            ActiveConsole?.Write(message + Environment.NewLine, Colors.Red, null);
+            ActiveConsole?.Write(message + Environment.NewLine, Colors.DarkRed, null);
         }
 
         private void WriteLine(string message = "")

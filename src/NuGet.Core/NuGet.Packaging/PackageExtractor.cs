@@ -15,7 +15,7 @@ namespace NuGet.Packaging
 {
     public static class PackageExtractor
     {
-        public static IEnumerable<string> ExtractPackage(
+        public static async Task<IEnumerable<string>> ExtractPackageAsync(
             Stream packageStream,
             PackagePathResolver packagePathResolver,
             PackageExtractionContext packageExtractionContext,
@@ -48,13 +48,13 @@ namespace NuGet.Packaging
             var nupkgStartPosition = packageStream.Position;
             using (var packageReader = new PackageArchiveReader(packageStream, leaveStreamOpen: true))
             {
-                var packageIdentityFromNuspec = packageReader.GetIdentity();
+                var packageIdentityFromNuspec = await packageReader.GetIdentityAsync(CancellationToken.None);
 
                 var installPath = packagePathResolver.GetInstallPath(packageIdentityFromNuspec);
                 var packageDirectoryInfo = Directory.CreateDirectory(installPath);
                 var packageDirectory = packageDirectoryInfo.FullName;
 
-                var packageFiles = packageReader.GetPackageFiles(packageSaveMode);
+                var packageFiles = await packageReader.GetPackageFilesAsync(packageSaveMode, token);
 
                 if ((packageSaveMode & PackageSaveMode.Nuspec) == PackageSaveMode.Nuspec)
                 {
@@ -75,7 +75,7 @@ namespace NuGet.Packaging
 
                 var packageFileExtractor = new PackageFileExtractor(packageFiles, packageExtractionContext.XmlDocFileSaveMode);
 
-                filesAdded.AddRange(packageReader.CopyFiles(
+                filesAdded.AddRange(await packageReader.CopyFilesAsync(
                     packageDirectory,
                     packageFiles,
                     packageFileExtractor.ExtractPackageFile,
@@ -99,7 +99,7 @@ namespace NuGet.Packaging
                 // Now, copy satellite files unless requested to not copy them
                 if (packageExtractionContext.CopySatelliteFiles)
                 {
-                    filesAdded.AddRange(CopySatelliteFiles(
+                    filesAdded.AddRange(await CopySatelliteFilesAsync(
                         packageReader,
                         packagePathResolver,
                         packageSaveMode,
@@ -111,7 +111,7 @@ namespace NuGet.Packaging
             return filesAdded;
         }
 
-        public static IEnumerable<string> ExtractPackage(
+        public static async Task<IEnumerable<string>> ExtractPackageAsync(
             PackageReaderBase packageReader,
             Stream packageStream,
             PackagePathResolver packagePathResolver,
@@ -138,14 +138,14 @@ namespace NuGet.Packaging
             var nupkgStartPosition = packageStream.Position;
             var filesAdded = new List<string>();
 
-            var packageIdentityFromNuspec = packageReader.GetIdentity();
+            var packageIdentityFromNuspec = await packageReader.GetIdentityAsync(token);
 
             var packageDirectoryInfo = Directory.CreateDirectory(packagePathResolver.GetInstallPath(packageIdentityFromNuspec));
             var packageDirectory = packageDirectoryInfo.FullName;
 
-            var packageFiles = packageReader.GetPackageFiles(packageSaveMode);
+            var packageFiles = await packageReader.GetPackageFilesAsync(packageSaveMode, token);
             var packageFileExtractor = new PackageFileExtractor(packageFiles, packageExtractionContext.XmlDocFileSaveMode);
-            filesAdded.AddRange(packageReader.CopyFiles(
+            filesAdded.AddRange(await packageReader.CopyFilesAsync(
                 packageDirectory,
                 packageFiles,
                 packageFileExtractor.ExtractPackageFile,
@@ -174,7 +174,7 @@ namespace NuGet.Packaging
             // Now, copy satellite files unless requested to not copy them
             if (packageExtractionContext.CopySatelliteFiles)
             {
-                filesAdded.AddRange(CopySatelliteFiles(
+                filesAdded.AddRange(await CopySatelliteFilesAsync(
                     packageReader,
                     packagePathResolver,
                     packageSaveMode,
@@ -216,8 +216,8 @@ namespace NuGet.Packaging
             }
 
             var packagePathResolver = new VersionFolderPathResolver(
-            	versionFolderPathContext.PackagesDirectory,
-            	versionFolderPathContext.IsLowercasePackagesDirectory);
+                versionFolderPathContext.PackagesDirectory,
+                versionFolderPathContext.IsLowercasePackagesDirectory);
 
             var packageIdentity = versionFolderPathContext.Package;
             var logger = versionFolderPathContext.Logger;
@@ -394,8 +394,8 @@ namespace NuGet.Packaging
             }
 
             // Skip nupkgs and nuspec files found in the root, the valid ones are already extracted
-            if (PackageHelper.IsRoot(fullName) 
-                && (PackageHelper.IsNuspec(fullName) 
+            if (PackageHelper.IsRoot(fullName)
+                && (PackageHelper.IsNuspec(fullName)
                     || fullName.EndsWith(PackagingCoreConstants.NupkgExtension, StringComparison.OrdinalIgnoreCase)))
             {
                 return false;
@@ -404,7 +404,7 @@ namespace NuGet.Packaging
             return true;
         }
 
-        public static IEnumerable<string> CopySatelliteFiles(
+        public static async Task<IEnumerable<string>> CopySatelliteFilesAsync(
             PackageIdentity packageIdentity,
             PackagePathResolver packagePathResolver,
             PackageSaveMode packageSaveMode,
@@ -428,7 +428,7 @@ namespace NuGet.Packaging
             {
                 using (var packageReader = new PackageArchiveReader(nupkgFilePath))
                 {
-                    return CopySatelliteFiles(
+                    return await CopySatelliteFilesAsync(
                         packageReader,
                         packagePathResolver,
                         packageSaveMode,
@@ -440,7 +440,7 @@ namespace NuGet.Packaging
             return satelliteFilesCopied;
         }
 
-        private static IEnumerable<string> CopySatelliteFiles(
+        private static async Task<IEnumerable<string>> CopySatelliteFilesAsync(
             PackageReaderBase packageReader,
             PackagePathResolver packagePathResolver,
             PackageSaveMode packageSaveMode,
@@ -464,17 +464,19 @@ namespace NuGet.Packaging
 
             var satelliteFilesCopied = Enumerable.Empty<string>();
 
-            string runtimePackageDirectory;
-            var satelliteFiles = PackageHelper
-                .GetSatelliteFiles(packageReader, packagePathResolver, out runtimePackageDirectory)
+            var result = await PackageHelper.GetSatelliteFilesAsync(packageReader, packagePathResolver, token);
+
+            var runtimePackageDirectory = result.Item1;
+            var satelliteFiles = result.Item2
                 .Where(file => PackageHelper.IsPackageFile(file, packageSaveMode))
                 .ToList();
+
             if (satelliteFiles.Count > 0)
             {
                 var packageFileExtractor = new PackageFileExtractor(satelliteFiles, packageExtractionContext.XmlDocFileSaveMode);
 
                 // Now, add all the satellite files collected from the package to the runtime package folder(s)
-                satelliteFilesCopied = packageReader.CopyFiles(
+                satelliteFilesCopied = await packageReader.CopyFilesAsync(
                     runtimePackageDirectory,
                     satelliteFiles,
                     packageFileExtractor.ExtractPackageFile,
