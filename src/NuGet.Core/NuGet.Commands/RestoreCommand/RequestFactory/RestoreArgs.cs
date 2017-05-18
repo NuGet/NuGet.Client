@@ -181,7 +181,7 @@ namespace NuGet.Commands
             }
 
             if (request.Project.RestoreMetadata != null) {
-                request.Project.RestoreMetadata.CacheFilePath = NoOpRestoreUtilities.GetCacheFilePath(request.ExistingLockFile, request);
+                request.Project.RestoreMetadata.CacheFilePath = NoOpRestoreUtilities.GetCacheFilePath(request);
             }
 
             request.MaxDegreeOfConcurrency =
