@@ -471,7 +471,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         }
 
         /// <summary>
-        /// Get default project in the type of EnvDTE.Project, to keep PowerShell scripts backward-compatbility.
+        /// Get default project in the type of <see cref="IVsProjectAdapter"/>, to keep PowerShell scripts backward-compatbility.
         /// </summary>
         /// <returns></returns>
         protected IVsProjectAdapter GetDefaultProject()

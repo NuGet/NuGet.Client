@@ -14,7 +14,7 @@ namespace NuGet.PackageManagement.VisualStudio
         /// <summary>
         /// Type of project this provider creates
         /// </summary>
-        System.Type ProjectType { get; }
+        System.RuntimeTypeHandle ProjectType { get; }
 
         /// <summary>
         /// Attempts to create a <see cref="NuGetProject"/> instance if the input DTE project

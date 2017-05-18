@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -26,7 +25,6 @@ namespace NuGet.ProjectManagement.Projects
     /// A NuGet integrated MSBuild project.k
     /// These projects contain a project.json
     /// </summary>
-    [DebuggerDisplay("{ProjectName}")]
     public class ProjectJsonNuGetProject : BuildIntegratedNuGetProject
     {
         private readonly FileInfo _jsonConfig;
@@ -113,27 +111,14 @@ namespace NuGet.ProjectManagement.Projects
         /// <summary>
         /// project.json path
         /// </summary>
-        public string JsonConfigPath
-        {
-            get { return _jsonConfig.FullName; }
-        }
-
-        /// <summary>
-        /// Parsed project.json file
-        /// </summary>
-        private PackageSpec JsonPackageSpec => JsonPackageSpecReader.GetPackageSpec(ProjectName, JsonConfigPath);
+        public string JsonConfigPath => _jsonConfig.FullName;
 
         public override string MSBuildProjectPath { get; }
+
         /// <summary>
         /// Project name
         /// </summary>
-        public override string ProjectName
-        {
-            get
-            {
-                return _projectName;
-            }
-        }
+        public override string ProjectName => _projectName;
 
         public override async Task<IEnumerable<PackageReference>> GetInstalledPackagesAsync(CancellationToken token)
         {
@@ -162,7 +147,7 @@ namespace NuGet.ProjectManagement.Projects
             PackageSpec packageSpec = null;
             if (context == null || !context.PackageSpecCache.TryGetValue(MSBuildProjectPath, out packageSpec))
             {
-                packageSpec = JsonPackageSpec;
+                packageSpec = JsonPackageSpecReader.GetPackageSpec(ProjectName, JsonConfigPath);
                 if (packageSpec == null)
                 {
                     throw new InvalidOperationException(

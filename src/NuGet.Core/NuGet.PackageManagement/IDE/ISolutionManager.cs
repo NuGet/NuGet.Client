@@ -64,13 +64,6 @@ namespace NuGet.PackageManagement
         /// </summary>
         bool IsSolutionAvailable { get; }
 
-        /// <summary>
-        /// Returns true if the solution is loaded with DPL enabled.
-        /// That is, when no project is loaded by default.
-        /// This is only applicable for VS15, for VS14 it will always return false.
-        /// </summary>
-        bool IsSolutionDPLEnabled { get; }
-
         INuGetProjectContext NuGetProjectContext { get; set; }
 
         IEnumerable<NuGetProject> GetNuGetProjects();

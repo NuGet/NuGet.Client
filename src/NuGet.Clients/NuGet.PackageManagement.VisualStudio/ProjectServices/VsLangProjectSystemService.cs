@@ -7,7 +7,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft;
-using Microsoft.VisualStudio.ComponentModelHost;
 using NuGet.Commands;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
@@ -30,9 +29,7 @@ namespace NuGet.PackageManagement.VisualStudio
     {
         private static readonly Array _referenceMetadata;
 
-        private readonly EnvDTE.Project _project;
         private readonly IVsProjectThreadingService _threadingService;
-
         private readonly Lazy<VSProject4> _asVSProject4;
 
         private VSProject4 AsVSProject4 => _asVSProject4.Value;
@@ -52,18 +49,19 @@ namespace NuGet.PackageManagement.VisualStudio
             INuGetProjectServices projectServices)
         {
             Assumes.Present(projectAdapter);
-
-            _project = projectAdapter.Project;
+            Assumes.Present(projectServices);
 
             _threadingService = projectServices.GetGlobalService<IVsProjectThreadingService>();
             Assumes.Present(_threadingService);
 
-            _asVSProject4 = new Lazy<VSProject4>(() => _project.Object as VSProject4);
+            _asVSProject4 = new Lazy<VSProject4>(() => projectAdapter.Project.Object as VSProject4);
         }
 
         public async Task<IEnumerable<LibraryDependency>> GetPackageReferencesAsync(
             NuGetFramework targetFramework, CancellationToken _)
         {
+            Assumes.Present(targetFramework);
+
             await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             var installedPackages = AsVSProject4.PackageReferences?.InstalledPackages;
@@ -78,18 +76,24 @@ namespace NuGet.PackageManagement.VisualStudio
                 .Where(r => !string.IsNullOrEmpty(r))
                 .Select(installedPackage =>
                 {
-                    string version;
-                    Array metadataElements;
-                    Array metadataValues;
-                    AsVSProject4.PackageReferences.TryGetReference(installedPackage, _referenceMetadata, out version, out metadataElements, out metadataValues);
+                    if (AsVSProject4.PackageReferences.TryGetReference(
+                        installedPackage,
+                        _referenceMetadata,
+                        out var version,
+                        out var metadataElements,
+                        out var metadataValues))
+                    {
+                        return new PackageReference(
+                            name: installedPackage,
+                            version: version,
+                            metadataElements: metadataElements,
+                            metadataValues: metadataValues,
+                            targetNuGetFramework: targetFramework);
+                    }
 
-                    return new PackageReference(
-                        name: installedPackage,
-                        version: version,
-                        metadataElements: metadataElements,
-                        metadataValues: metadataValues,
-                        targetNuGetFramework: targetFramework);
+                    return null;
                 })
+                .Where(p => p != null)
                 .Select(ToPackageLibraryDependency);
 
             return references.ToList();
@@ -200,6 +204,8 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public async Task AddOrUpdatePackageReferenceAsync(LibraryDependency packageReference, CancellationToken _)
         {
+            Assumes.Present(packageReference);
+
             await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             var includeFlags = packageReference.IncludeType;
@@ -219,9 +225,9 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             AddOrUpdatePackageReference(
-                packageReference.Name, 
-                packageReference.LibraryRange.VersionRange, 
-                metadataElements.ToArray(), 
+                packageReference.Name,
+                packageReference.LibraryRange.VersionRange,
+                metadataElements.ToArray(),
                 metadataValues.ToArray());
         }
 
@@ -234,14 +240,16 @@ namespace NuGet.PackageManagement.VisualStudio
             // - specify a metadata element name with no value => remove that metadata item from the project reference
             // - don't specify a particular metadata name => if it exists on the package reference, don't change it (e.g. for user defined metadata)
             AsVSProject4.PackageReferences.AddOrUpdate(
-                packageName, 
+                packageName,
                 packageVersion.OriginalString ?? packageVersion.ToShortString(),
-                metadataElements, 
+                metadataElements,
                 metadataValues);
         }
 
         public void RemovePackageReference(string packageName)
         {
+            Assumes.NotNullOrEmpty(packageName);
+
             _threadingService.ThrowIfNotOnUIThread();
 
             AsVSProject4.PackageReferences.Remove(packageName);
@@ -277,11 +285,11 @@ namespace NuGet.PackageManagement.VisualStudio
                 TargetNuGetFramework = targetNuGetFramework;
             }
 
-            public string Name { get; private set; }
-            public string Version { get; private set; }
-            public Array MetadataElements { get; private set; }
-            public Array MetadataValues { get; private set; }
-            public NuGetFramework TargetNuGetFramework { get; private set; }
+            public string Name { get; }
+            public string Version { get; }
+            public Array MetadataElements { get; }
+            public Array MetadataValues { get; }
+            public NuGetFramework TargetNuGetFramework { get; }
         }
     }
 }

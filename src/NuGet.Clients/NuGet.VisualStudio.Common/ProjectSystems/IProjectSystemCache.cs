@@ -37,10 +37,10 @@ namespace NuGet.VisualStudio
         bool TryGetNuGetProject(string name, out NuGetProject nuGetProject);
 
         /// <summary>
-        /// Retrieves instance of <see cref="EnvDTE.Project"/> associated with project name.
+        /// Retrieves instance of <see cref="IVsProjectAdapter"/> associated with project name.
         /// </summary>
         /// <param name="name">Project name, full path or unique name.</param>
-        /// <param name="dteProject">Desired project object, not initialized if not found.</param>
+        /// <param name="vsProjectAdapter">Desired project adapter, not initialized if not found.</param>
         /// <returns>True if found, false otherwise.</returns>
         bool TryGetVsProjectAdapter(string name, out IVsProjectAdapter vsProjectAdapter);
 
@@ -82,7 +82,7 @@ namespace NuGet.VisualStudio
         IReadOnlyList<NuGetProject> GetNuGetProjects();
 
         /// <summary>
-        /// Retrieves collection of all project instances stored in the cache.
+        /// Retrieves collection of all project adapters stored in the cache.
         /// </summary>
         /// <returns>Collection of projects</returns>
         IReadOnlyList<IVsProjectAdapter> GetVsProjectAdapters();
@@ -98,10 +98,10 @@ namespace NuGet.VisualStudio
         /// Adds or updates a project to the project cache.
         /// </summary>
         /// <param name="projectNames">The project name.</param>
-        /// <param name="dteProject">The VS project.</param>
+        /// <param name="vsProjectAdapter">The VS project adapter.</param>
         /// <param name="nuGetProject">The NuGet project.</param>
         /// <returns>Returns true if the project was successfully added to the cache.</returns>
-        bool AddProject(ProjectNames projectName, IVsProjectAdapter vsProjectAdapter, NuGetProject nuGetProject);
+        bool AddProject(ProjectNames projectNames, IVsProjectAdapter vsProjectAdapter, NuGetProject nuGetProject);
 
         /// <summary>
         /// Adds or updates project restore info in the project cache.

@@ -14,7 +14,7 @@ using NuGet.ProjectManagement;
 
 namespace NuGet.Common
 {
-    public class MSBuildProjectSystem 
+    public sealed class MSBuildProjectSystem 
         : MSBuildUser
         , IMSBuildProjectSystem
     {

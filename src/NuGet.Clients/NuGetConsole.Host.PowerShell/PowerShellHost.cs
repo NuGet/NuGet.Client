@@ -355,15 +355,20 @@ namespace NuGetConsole.Host.PowerShell.Implementation
 
         private void UpdateWorkingDirectory()
         {
-            if (Runspace.RunspaceAvailability == RunspaceAvailability.Available)
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
             {
-                // if there is no solution open, we set the active directory to be user profile folder
-                string targetDir = _solutionManager.IsSolutionOpen ?
-                    _solutionManager.SolutionDirectory :
-                    Environment.GetEnvironmentVariable("USERPROFILE");
+                await TaskScheduler.Default;
 
-                Runspace.ChangePSDirectory(targetDir);
-            }
+                if (Runspace.RunspaceAvailability == RunspaceAvailability.Available)
+                {
+                    // if there is no solution open, we set the active directory to be user profile folder
+                    var targetDir = _solutionManager.IsSolutionOpen ?
+                        _solutionManager.SolutionDirectory :
+                        Environment.GetEnvironmentVariable("USERPROFILE");
+
+                    Runspace.ChangePSDirectory(targetDir);
+                }
+            });
         }
 
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We don't want execution of init scripts to crash our console.")]

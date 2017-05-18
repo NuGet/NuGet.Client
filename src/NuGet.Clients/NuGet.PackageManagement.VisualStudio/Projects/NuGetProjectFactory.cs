@@ -116,7 +116,7 @@ namespace NuGet.PackageManagement.VisualStudio
             await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             var provider = _providers
-                .FirstOrDefault(p => p.ProjectType == typeof(TProject));
+                .FirstOrDefault(p => typeof(TProject).TypeHandle.Equals(p.ProjectType));
 
             if (provider == null)
             {

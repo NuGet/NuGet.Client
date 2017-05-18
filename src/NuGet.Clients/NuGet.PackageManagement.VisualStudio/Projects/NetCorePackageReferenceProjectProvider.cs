@@ -31,7 +31,7 @@ namespace NuGet.PackageManagement.VisualStudio
         [Import("Microsoft.VisualStudio.ProjectSystem.IProjectServiceAccessor")]
         private Lazy<object> ProjectServiceAccessor { get; set; }
 
-        public Type ProjectType => typeof(NetCorePackageReferenceProject);
+        public RuntimeTypeHandle ProjectType => typeof(NetCorePackageReferenceProject).TypeHandle;
 
         [ImportingConstructor]
         public NetCorePackageReferenceProjectProvider(IProjectSystemCache projectSystemCache)

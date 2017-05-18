@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.IO.Compression;
@@ -24,6 +25,7 @@ namespace NuGet.ProjectManagement
     /// This class represents a NuGetProject based on a .NET project. This also contains an instance of a
     /// FolderNuGetProject
     /// </summary>
+    [DebuggerDisplay("{ProjectSystem.ProjectName} [{ProjectStyle}]")]
     public class MSBuildNuGetProject
         : NuGetProject
         , IDependencyGraphProject

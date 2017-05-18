@@ -41,7 +41,6 @@ namespace NuGet.PackageManagement.VisualStudio
             Assumes.Present(projectServices);
 
             _vsProjectAdapter = vsProjectAdapter;
-            Assumes.Present(_vsProjectAdapter);
 
             _threadingService = projectServices.GetGlobalService<IVsProjectThreadingService>();
             Assumes.Present(_threadingService);

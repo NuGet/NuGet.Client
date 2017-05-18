@@ -16,7 +16,6 @@ using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.VisualStudio;
-using EnvDTEProject = EnvDTE.Project;
 using Task = System.Threading.Tasks.Task;
 
 namespace NuGetConsole
@@ -30,7 +29,7 @@ namespace NuGetConsole
         private AsyncLazy<IHost> Host { get; }
 
         [Import]
-        private ISettings Settings { get; set; }
+        private Lazy<ISettings> Settings { get; set; }
 
         [Import]
         private ISolutionManager SolutionManager { get; set; }
@@ -56,7 +55,7 @@ namespace NuGetConsole
             PackageIdentity identity,
             string installPath,
             string relativeScriptPath,
-            EnvDTEProject project,
+            EnvDTE.Project project,
             INuGetProjectContext nuGetProjectContext,
             bool throwOnFailure)
         {
@@ -130,7 +129,7 @@ namespace NuGetConsole
             // Reserve the key. We can remove if the package has not been restored.
             if (TryMarkVisited(identity, PackageInitPS1State.NotFound))
             {
-                var nugetPaths = NuGetPathContext.Create(Settings);
+                var nugetPaths = NuGetPathContext.Create(Settings.Value);
                 var fallbackResolver = new FallbackPackagePathResolver(nugetPaths);
                 var installPath = fallbackResolver.GetPackageDirectory(identity.Id, identity.Version);
 

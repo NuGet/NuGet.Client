@@ -19,7 +19,7 @@ namespace NuGet.PackageManagement.VisualStudio
     [Export(typeof(IVsProjectAdapterProvider))]
     internal class VsProjectAdapterProvider : IVsProjectAdapterProvider
     {
-        private readonly IDeferredProjectWorkspaceService _workspaceService;
+        private readonly Lazy<IDeferredProjectWorkspaceService> _workspaceService;
         private readonly IVsProjectThreadingService _threadingService;
 
         private readonly Lazy<IVsSolution> _vsSolution;
@@ -28,7 +28,7 @@ namespace NuGet.PackageManagement.VisualStudio
         public VsProjectAdapterProvider(
             [Import(typeof(SVsServiceProvider))]
             IServiceProvider serviceProvider,
-            IDeferredProjectWorkspaceService workspaceService,
+            Lazy<IDeferredProjectWorkspaceService> workspaceService,
             IVsProjectThreadingService threadingService)
         {
             Assumes.Present(serviceProvider);
@@ -41,7 +41,7 @@ namespace NuGet.PackageManagement.VisualStudio
             _vsSolution = new Lazy<IVsSolution>(() => serviceProvider.GetService<SVsSolution, IVsSolution>());
         }
 
-        public IVsProjectAdapter CreateVsProject(EnvDTE.Project dteProject)
+        public IVsProjectAdapter CreateAdapterForFullyLoadedProject(EnvDTE.Project dteProject)
         {
             Assumes.Present(dteProject);
 
@@ -63,6 +63,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             var projectNames = ProjectNames.FromDTEProject(dteProject);
             var fullProjectPath = EnvDTEProjectInfoUtility.GetFullProjectPath(dteProject);
+
             return new VsProjectAdapter(
                 vsHierarchyItem,
                 projectNames,
@@ -72,7 +73,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 _threadingService);
         }
 
-        public async Task<IVsProjectAdapter> CreateVsProjectAsync(IVsHierarchy project)
+        public async Task<IVsProjectAdapter> CreateAdapterForDeferredProjectAsync(IVsHierarchy project)
         {
             Assumes.Present(project);
 
@@ -91,16 +92,16 @@ namespace NuGet.PackageManagement.VisualStudio
                 customUniqueName: GetCustomUniqueName(uniqueName));
 
             var workspaceBuildProperties = new WorkspaceProjectBuildProperties(
-                fullProjectPath, _workspaceService, _threadingService);
+                fullProjectPath, _workspaceService.Value, _threadingService);
 
             return new VsProjectAdapter(
                 vsHierarchyItem,
-                projectNames, 
+                projectNames,
                 fullProjectPath,
                 EnsureProjectIsLoaded,
                 workspaceBuildProperties,
                 _threadingService,
-                _workspaceService);
+                _workspaceService.Value);
         }
 
         public EnvDTE.Project EnsureProjectIsLoaded(IVsHierarchy project)
@@ -112,27 +113,27 @@ namespace NuGet.PackageManagement.VisualStudio
                 // 1. Ask the solution to load the required project. To reduce wait time,
                 //    we load only the project we need, not the entire solution.
                 ErrorHandler.ThrowOnFailure(project.GetGuidProperty(
-                    (uint)VSConstants.VSITEMID.Root, 
-                    (int)__VSHPROPID.VSHPROPID_ProjectIDGuid, 
+                    (uint)VSConstants.VSITEMID.Root,
+                    (int)__VSHPROPID.VSHPROPID_ProjectIDGuid,
                     out Guid projectGuid));
 
                 var asVsSolution4 = _vsSolution.Value as IVsSolution4;
                 Assumes.Present(asVsSolution4);
 
                 ErrorHandler.ThrowOnFailure(asVsSolution4.EnsureProjectIsLoaded(
-                    projectGuid, 
+                    projectGuid,
                     (uint)__VSBSLFLAGS.VSBSLFLAGS_None));
 
                 // 2. After the project is loaded, grab the latest IVsHierarchy object.
                 ErrorHandler.ThrowOnFailure(_vsSolution.Value.GetProjectOfGuid(
-                    projectGuid, 
+                    projectGuid,
                     out IVsHierarchy loadedProject));
                 Assumes.Present(loadedProject);
 
                 object extObject = null;
                 ErrorHandler.ThrowOnFailure(loadedProject.GetProperty(
-                    (uint)VSConstants.VSITEMID.Root, 
-                    (int)__VSHPROPID.VSHPROPID_ExtObject, 
+                    (uint)VSConstants.VSITEMID.Root,
+                    (int)__VSHPROPID.VSHPROPID_ExtObject,
                     out extObject));
 
                 var dteProject = extObject as EnvDTE.Project;
@@ -155,7 +156,7 @@ namespace NuGet.PackageManagement.VisualStudio
             }
             else
             {
-                var fileName = nameParts[nameParts.Count-1];
+                var fileName = nameParts[nameParts.Count - 1];
                 var directoryName = nameParts[nameParts.Count - 2];
                 nameParts.RemoveAt(nameParts.Count - 1);
                 nameParts.RemoveAt(nameParts.Count - 1);

@@ -378,10 +378,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public virtual void RemoveImport(string targetFullPath)
         {
-            if (string.IsNullOrEmpty(targetFullPath))
-            {
-                throw new ArgumentNullException(CommonResources.Argument_Cannot_Be_Null_Or_Empty, "targetPath");
-            }
+            Assumes.NotNullOrEmpty(targetFullPath);
 
             NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
             {
@@ -762,7 +759,7 @@ namespace NuGet.PackageManagement.VisualStudio
         public Task<IEnumerable<ProjectRestoreReference>> GetProjectReferencesAsync(
             Common.ILogger logger, CancellationToken _)
         {
-            return Task.FromResult<IEnumerable<ProjectRestoreReference>>(Enumerable.Empty<ProjectRestoreReference>().ToList());
+            return Task.FromResult(Enumerable.Empty<ProjectRestoreReference>());
         }
 
         public async Task AddFrameworkReferenceAsync(string name, string packageId)
@@ -917,8 +914,8 @@ namespace NuGet.PackageManagement.VisualStudio
 
             NuGetProjectContext.Log(
                 ProjectManagement.MessageLevel.Debug,
-                $"Added reference '{name}' to project:'{projectName}'. Was the Reference Resolved To Package (resolvedToPackage):'{resolvedToPackage}', " +
-                "where Reference Path from DTE(dteOriginalPath):'{dteOriginalPath}' and Reference Path from package reference(assemblyFullPath):'{assemblyFullPath}'.");
+                Strings.Debug_AddedReferenceToProject, 
+                name, projectName, resolvedToPackage, dteOriginalPath, assemblyFullPath);
         }
 
         public virtual async Task RemoveReferenceAsync(string name)

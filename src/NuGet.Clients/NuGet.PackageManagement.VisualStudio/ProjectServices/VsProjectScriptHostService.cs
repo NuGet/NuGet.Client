@@ -62,39 +62,40 @@ namespace NuGet.PackageManagement.VisualStudio
             var scriptExecutor = _scriptExecutor.Value;
             Assumes.Present(scriptExecutor);
 
-            var packageReader = new PackageFolderReader(packageInstallPath);
-
-            var toolItemGroups = packageReader.GetToolItems();
-
-            if (toolItemGroups != null)
+            using (var packageReader = new PackageFolderReader(packageInstallPath))
             {
-                // Init.ps1 must be found at the root folder, target frameworks are not recognized here,
-                // since this is run for the solution.
-                var toolItemGroup = toolItemGroups
-                    .FirstOrDefault(group => group.TargetFramework.IsAny);
+                var toolItemGroups = packageReader.GetToolItems();
 
-                if (toolItemGroup != null)
+                if (toolItemGroups != null)
                 {
-                    var initPS1RelativePath = toolItemGroup
-                        .Items
-                        .FirstOrDefault(p => p.StartsWith(
-                            PowerShellScripts.InitPS1RelativePath,
-                            StringComparison.OrdinalIgnoreCase));
+                    // Init.ps1 must be found at the root folder, target frameworks are not recognized here,
+                    // since this is run for the solution.
+                    var toolItemGroup = toolItemGroups
+                        .FirstOrDefault(group => group.TargetFramework.IsAny);
 
-                    if (!string.IsNullOrEmpty(initPS1RelativePath))
+                    if (toolItemGroup != null)
                     {
-                        initPS1RelativePath = PathUtility.ReplaceAltDirSeparatorWithDirSeparator(
-                            initPS1RelativePath);
+                        var initPS1RelativePath = toolItemGroup
+                            .Items
+                            .FirstOrDefault(p => p.StartsWith(
+                                PowerShellScripts.InitPS1RelativePath,
+                                StringComparison.OrdinalIgnoreCase));
 
-                        return await scriptExecutor.ExecuteAsync(
-                            packageIdentity,
-                            packageInstallPath,
-                            initPS1RelativePath,
-                            _vsProjectAdapter.Project,
-                            projectContext,
-                            throwOnFailure);
+                        if (!string.IsNullOrEmpty(initPS1RelativePath))
+                        {
+                            initPS1RelativePath = PathUtility.ReplaceAltDirSeparatorWithDirSeparator(
+                                initPS1RelativePath);
+
+                            return await scriptExecutor.ExecuteAsync(
+                                packageIdentity,
+                                packageInstallPath,
+                                initPS1RelativePath,
+                                _vsProjectAdapter.Project,
+                                projectContext,
+                                throwOnFailure);
+                        }
                     }
-                }
+                } 
             }
 
             return false;

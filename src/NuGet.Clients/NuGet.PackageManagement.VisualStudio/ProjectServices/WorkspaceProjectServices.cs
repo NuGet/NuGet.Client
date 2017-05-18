@@ -1,7 +1,6 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -19,9 +18,11 @@ using NuGet.VisualStudio;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
+    /// <summary>
+    /// Implementation of read-only project services available in DPL mode.
+    /// </summary>
     internal class WorkspaceProjectServices
-        : IProjectSystemCapabilities
-        , IProjectSystemReferencesReader
+        : IProjectSystemReferencesReader
     {
         private readonly IVsProjectAdapter _vsProjectAdapter;
         private readonly IDeferredProjectWorkspaceService _workspaceService;
@@ -31,8 +32,6 @@ namespace NuGet.PackageManagement.VisualStudio
         private readonly string _fullProjectPath;
 
         private IMSBuildProjectDataService BuildProjectDataService => _threadingService.ExecuteSynchronously(_buildProjectDataService.GetValueAsync);
-
-        public bool SupportsPackageReferences => throw new NotImplementedException();
 
         public WorkspaceProjectServices(
             IVsProjectAdapter vsProjectAdapter,
@@ -119,9 +118,9 @@ namespace NuGet.PackageManagement.VisualStudio
         private static string GetItemMetadataValueOrDefault(
             MSBuildProjectItemData item, string propertyName, string defaultValue = "")
         {
-            if (item.Metadata.Keys.Contains(propertyName))
+            if (item.Metadata.TryGetValue(propertyName, out var propertyValue))
             {
-                return item.Metadata[propertyName];
+                return propertyValue;
             }
 
             return defaultValue;

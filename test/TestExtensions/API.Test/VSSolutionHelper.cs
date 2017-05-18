@@ -26,9 +26,11 @@ namespace API.Test
 
         public static void WaitForSolutionLoad()
         {
-            var mre = new ManualResetEvent(false);
-            KnownUIContexts.SolutionExistsAndFullyLoadedContext.WhenActivated(() => mre.Set());
-            mre.WaitOne();
+            using (var mre = new ManualResetEvent(false))
+            {
+                KnownUIContexts.SolutionExistsAndFullyLoadedContext.WhenActivated(() => mre.Set());
+                mre.WaitOne(); 
+            }
         }
 
         public static string GetSolutionFullName()

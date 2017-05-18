@@ -19,7 +19,7 @@ namespace NuGet.ProjectManagement
         string GetPropertyValue(string propertyName);
 
         /// <summary>
-        /// Asyncronous method to retrieve a property value.
+        /// Asynchronous method to retrieve a property value.
         /// </summary>
         /// <param name="propertyName">A property name</param>
         /// <returns>Property value or <code>null</code> if not found.</returns>

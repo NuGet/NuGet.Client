@@ -132,7 +132,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 Mock.Get(projectAdapter)
                     .Verify(x => x.GetRuntimeSupportsAsync(), Times.AtLeastOnce);
                 Mock.Get(projectAdapter)
-                    .VerifyGet(x => x.FullPath, Times.AtLeastOnce);
+                    .VerifyGet(x => x.FullProjectPath, Times.AtLeastOnce);
                 Mock.Get(projectAdapter)
                     .Verify(x => x.GetTargetFrameworkAsync(), Times.AtLeastOnce);
             }
@@ -479,7 +479,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         {
             var projectAdapter = CreateProjectAdapter();
             projectAdapter
-                .Setup(x => x.FullPath)
+                .Setup(x => x.FullProjectPath)
                 .Returns(Path.Combine(fullPath, "foo.csproj"));
             projectAdapter
                 .Setup(x => x.GetTargetFrameworkAsync())

@@ -32,6 +32,8 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public string GetPropertyValue(string propertyName)
         {
+            Assumes.NotNullOrEmpty(propertyName);
+
             _threadingService.ThrowIfNotOnUIThread();
 
             string output = null;

@@ -104,6 +104,7 @@
     <Compile Include="Common\PackageCollectionExtensions.cs" />
     <Compile Include="Common\PackageCollectionItem.cs" />
     <Compile Include="Common\PackageCollectionItemExtensions.cs" />
+    <Compile Include="ProjectServices\DeferredProjectCapabilities.cs" />
     <Compile Include="Utility\SupportedProjectTypes.cs" />
     <Compile Include="Common\VersionCollectionExtensions.cs" />
     <Compile Include="DefaultVSCredentialServiceProvider.cs" />
@@ -127,7 +128,7 @@
     <Compile Include="PackageFeeds\SearchResult.cs" />
     <Compile Include="PackageFeeds\SourceRepositoryExtensions.cs" />
     <Compile Include="PackageFeeds\UpdatePackageFeed.cs" />
-    <Compile Include="IDE\DeferredProjectWorkspaceService.cs" Condition="'$(VisualStudioVersion)' == '15.0'" />
+    <Compile Include="Services\DeferredProjectWorkspaceService.cs" Condition="'$(VisualStudioVersion)' == '15.0'" />
     <Compile Include="IDE\ExtensibleSourceRepositoryProvider.cs" />
     <Compile Include="IInteractiveLoginProvider.cs" />
     <Compile Include="InteractiveLoginProvider.cs" />

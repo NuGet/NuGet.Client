@@ -64,7 +64,7 @@ namespace NuGet.PackageManagement.Telemetry
 
                 // Get project type.
                 var projectType = NuGetProjectType.Unknown;
-                if (nuGetProject.ProjectStyle == ProjectModel.ProjectStyle.PackagesConfig)
+                if (nuGetProject is MSBuildNuGetProject)
                 {
                     projectType = NuGetProjectType.PackagesConfig;
                 }
@@ -78,7 +78,7 @@ namespace NuGet.PackageManagement.Telemetry
                     projectType = NuGetProjectType.LegacyProjectSystemWithPackageRefs;
                 }
 #endif
-                else if (nuGetProject.ProjectStyle == ProjectModel.ProjectStyle.ProjectJson)
+                else if (nuGetProject is ProjectJsonNuGetProject)
                 {
                     projectType = NuGetProjectType.UwpProjectJson;
                 }

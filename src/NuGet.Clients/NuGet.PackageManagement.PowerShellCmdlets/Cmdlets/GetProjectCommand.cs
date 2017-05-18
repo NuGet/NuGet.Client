@@ -4,9 +4,6 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Management.Automation;
-using EnvDTE;
-using NuGet.PackageManagement.VisualStudio;
-using NuGet.VisualStudio;
 
 namespace NuGet.PackageManagement.PowerShellCmdlets
 {
@@ -15,7 +12,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
     /// which is also used for tab expansion.
     /// </summary>
     [Cmdlet(VerbsCommon.Get, "Project", DefaultParameterSetName = ParameterSetByName)]
-    [OutputType(typeof(Project))]
+    [OutputType(typeof(EnvDTE.Project))]
     public class GetProjectCommand : NuGetPowerShellBaseCommand
     {
         private const string ParameterSetByName = "ByName";
@@ -32,13 +29,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// <summary>
         /// logging time disabled for tab command
         /// </summary>
-        protected override bool IsLoggingTimeDisabled
-        {
-            get
-            {
-                return true;
-            }
-        }
+        protected override bool IsLoggingTimeDisabled => true;
 
         private void Preprocess()
         {

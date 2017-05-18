@@ -9,8 +9,8 @@ using Microsoft.VisualStudio.Shell;
 using NuGet.ProjectManagement;
 using NuGet.VisualStudio;
 using VsMSBuildNuGetProjectSystemThunk = System.Func<
-    NuGet.VisualStudio.IVsProjectAdapter, 
-    NuGet.ProjectManagement.INuGetProjectContext, 
+    NuGet.VisualStudio.IVsProjectAdapter,
+    NuGet.ProjectManagement.INuGetProjectContext,
     NuGet.PackageManagement.VisualStudio.VsMSBuildProjectSystem>;
 
 namespace NuGet.PackageManagement.VisualStudio
@@ -44,13 +44,8 @@ namespace NuGet.PackageManagement.VisualStudio
                         Strings.DTE_ProjectUnsupported, vsProjectAdapter.ProjectName));
             }
 
-            if (vsProjectAdapter.IsDeferred)
-            {
-                throw new InvalidOperationException(
-                    string.Format(CultureInfo.CurrentCulture, Strings.DTE_ProjectUnsupported, vsProjectAdapter.ProjectName));
-            }
-
-            if (EnvDTEProjectUtility.SupportsProjectKPackageManager(vsProjectAdapter.Project))
+            if (!vsProjectAdapter.IsDeferred 
+                && EnvDTEProjectUtility.SupportsProjectKPackageManager(vsProjectAdapter.Project))
             {
                 throw new InvalidOperationException(
                     string.Format(CultureInfo.CurrentCulture, Strings.DTE_ProjectUnsupported, typeof(IMSBuildProjectSystem).FullName));
@@ -65,8 +60,7 @@ namespace NuGet.PackageManagement.VisualStudio
             // Try to get a factory for the project type guid
             foreach (var guid in guids)
             {
-                VsMSBuildNuGetProjectSystemThunk factory;
-                if (_factories.TryGetValue(guid, out factory))
+                if (_factories.TryGetValue(guid, out var factory))
                 {
                     return factory(vsProjectAdapter, nuGetProjectContext);
                 }

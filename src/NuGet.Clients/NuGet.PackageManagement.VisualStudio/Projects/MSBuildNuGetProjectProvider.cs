@@ -20,7 +20,7 @@ namespace NuGet.PackageManagement.VisualStudio
         private readonly IVsProjectThreadingService _threadingService;
         private readonly Lazy<IComponentModel> _componentModel;
 
-        public Type ProjectType => typeof(VsMSBuildNuGetProject);
+        public RuntimeTypeHandle ProjectType => typeof(VsMSBuildNuGetProject).TypeHandle;
 
         [ImportingConstructor]
         public MSBuildNuGetProjectProvider(
@@ -80,6 +80,7 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 return new DeferredProjectServicesProxy(
                     vsProjectAdapter,
+                    new DeferredProjectCapabilities { SupportsPackageReferences = false },
                     () => CreateCoreProjectSystemServices(
                         vsProjectAdapter, projectSystem, componentModel),
                     componentModel);

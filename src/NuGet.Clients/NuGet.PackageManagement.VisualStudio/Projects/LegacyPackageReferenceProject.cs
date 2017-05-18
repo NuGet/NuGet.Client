@@ -52,7 +52,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             _projectName = _vsProjectAdapter.ProjectName;
             _projectUniqueName = _vsProjectAdapter.UniqueName;
-            _projectFullPath = _vsProjectAdapter.FullPath;
+            _projectFullPath = _vsProjectAdapter.FullProjectPath;
 
             ProjectStyle = ProjectStyle.PackageReference;
 
@@ -127,8 +127,8 @@ namespace NuGet.PackageManagement.VisualStudio
         public override async Task<bool> InstallPackageAsync(
             string packageId,
             VersionRange range,
-            INuGetProjectContext projectContext,
-            BuildIntegratedInstallationContext installationContext,
+            INuGetProjectContext _,
+            BuildIntegratedInstallationContext __,
             CancellationToken token)
         {
             var dependency = new LibraryDependency
@@ -266,7 +266,7 @@ namespace NuGet.PackageManagement.VisualStudio
                     OriginalTargetFrameworks = tfis
                         .Select(tfi => tfi.FrameworkName.GetShortFolderName())
                         .ToList(),
-                    TargetFrameworks = new List<ProjectRestoreMetadataFrameworkInfo>()
+                    TargetFrameworks = new List<ProjectRestoreMetadataFrameworkInfo>
                     {
                         new ProjectRestoreMetadataFrameworkInfo(tfis[0].FrameworkName)
                         {

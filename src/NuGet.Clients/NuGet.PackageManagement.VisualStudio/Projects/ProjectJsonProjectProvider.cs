@@ -26,7 +26,7 @@ namespace NuGet.PackageManagement.VisualStudio
         private readonly IVsProjectThreadingService _threadingService;
         private readonly Lazy<IComponentModel> _componentModel;
 
-        public Type ProjectType => typeof(VsProjectJsonNuGetProject);
+        public RuntimeTypeHandle ProjectType => typeof(VsProjectJsonNuGetProject).TypeHandle;
 
         [ImportingConstructor]
         public ProjectJsonProjectProvider(
@@ -111,6 +111,7 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 return new DeferredProjectServicesProxy(
                     vsProjectAdapter,
+                    new DeferredProjectCapabilities { SupportsPackageReferences = false },
                     () => CreateCoreProjectSystemServices(vsProjectAdapter, componentModel),
                     componentModel);
             }

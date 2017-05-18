@@ -15,7 +15,7 @@ namespace NuGet.PackageManagement.VisualStudio
     [Name(nameof(ProjectKNuGetProjectProvider))]
     public class ProjectKNuGetProjectProvider : INuGetProjectProvider
     {
-        public Type ProjectType => typeof(ProjectKNuGetProject);
+        public RuntimeTypeHandle ProjectType => typeof(ProjectKNuGetProject).TypeHandle;
 
         public bool TryCreateNuGetProject(
             IVsProjectAdapter project, 

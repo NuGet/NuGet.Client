@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -20,6 +21,7 @@ namespace NuGet.ProjectManagement.Projects
     /// A NuGet integrated MSBuild project.k
     /// These projects contain a project.json or package references in CSProj
     /// </summary>
+    [DebuggerDisplay("{ProjectName} [{ProjectStyle}]")]
     public abstract class BuildIntegratedNuGetProject 
         : NuGetProject
         , INuGetIntegratedProject

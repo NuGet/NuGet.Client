@@ -43,6 +43,8 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public async Task<string> GetPropertyValueAsync(string propertyName)
         {
+            Assumes.NotNullOrEmpty(propertyName);
+
             var dataService = await _buildProjectDataService.GetValueAsync();
             var propertyData = await dataService.GetProjectProperty(propertyName);
             return propertyData.EvaluatedValue;

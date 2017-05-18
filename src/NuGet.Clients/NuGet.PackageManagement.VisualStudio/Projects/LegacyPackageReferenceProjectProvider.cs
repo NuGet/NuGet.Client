@@ -19,7 +19,7 @@ using ProjectSystem = Microsoft.VisualStudio.ProjectSystem;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
-    [Export, Export(typeof(INuGetProjectProvider))]
+    [Export(typeof(INuGetProjectProvider))]
     [Name(nameof(LegacyPackageReferenceProjectProvider))]
     [Order(After = nameof(NetCorePackageReferenceProjectProvider))]
     public sealed class LegacyPackageReferenceProjectProvider : INuGetProjectProvider
@@ -34,7 +34,7 @@ namespace NuGet.PackageManagement.VisualStudio
         [Import("Microsoft.VisualStudio.ProjectSystem.IProjectServiceAccessor")]
         private Lazy<object> ProjectServiceAccessor { get; set; }
 
-        public Type ProjectType => typeof(LegacyPackageReferenceProject);
+        public RuntimeTypeHandle ProjectType => typeof(LegacyPackageReferenceProject).TypeHandle;
 
         [ImportingConstructor]
         public LegacyPackageReferenceProjectProvider(
@@ -71,7 +71,8 @@ namespace NuGet.PackageManagement.VisualStudio
 
             var projectServices = _threadingService.ExecuteSynchronously(
                 () => TryCreateProjectServicesAsync(
-                    vsProjectAdapter, forceCreate: forceProjectType));
+                    vsProjectAdapter,
+                    forceCreate: forceProjectType));
 
             if (projectServices == null)
             {
@@ -117,11 +118,9 @@ namespace NuGet.PackageManagement.VisualStudio
                     }
                 }
 
-                var projectServices = componentModel.GetService<VsProjectSystemServices>();
-                Assumes.Present(projectServices);
-
                 return new DeferredProjectServicesProxy(
                     vsProjectAdapter,
+                    new DeferredProjectCapabilities { SupportsPackageReferences = true },
                     () => CreateCoreProjectSystemServices(vsProjectAdapter, componentModel),
                     componentModel);
             }

@@ -35,17 +35,9 @@ namespace NuGet.PackageManagement.VisualStudio
         Task<bool> IsSolutionFullyLoadedAsync();
 
         /// <summary>
-        /// Returns true if solution has any project in deferred state.
+        /// Retrieves collection of <see cref="IVsProjectAdapter"/> for all supported projects in a solution.
         /// </summary>
-        /// <returns>Deferred projects state.</returns>
-        Task<bool> SolutionHasDeferredProjectsAsync();
-
-        /// <summary>
-        /// Retrieves deferred projects file path from current solution.
-        /// </summary>
-        /// <returns>Deferred prokects file path.</returns>
-        Task<IEnumerable<string>> GetDeferredProjectsFilePathAsync();
-
+        /// <returns>Collection of <see cref="IVsProjectAdapter"/></returns>
         IEnumerable<IVsProjectAdapter> GetAllVsProjectAdapters();
 
         /// <summary>

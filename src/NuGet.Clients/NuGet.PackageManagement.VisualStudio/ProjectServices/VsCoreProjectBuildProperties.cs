@@ -22,6 +22,7 @@ namespace NuGet.PackageManagement.VisualStudio
             IVsProjectThreadingService threadingService)
         {
             Assumes.Present(project);
+            Assumes.Present(threadingService);
 
             _project = project;
             _threadingService = threadingService;
@@ -34,6 +35,8 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public async Task<string> GetPropertyValueAsync(string propertyName)
         {
+            Assumes.NotNullOrEmpty(propertyName);
+
             await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             try
