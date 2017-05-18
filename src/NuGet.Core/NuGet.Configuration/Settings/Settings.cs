@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -245,6 +245,7 @@ namespace NuGet.Configuration
             var file = new FileInfo(configPath);
             return new Settings(file.DirectoryName, file.Name);
         }
+
         // Used to reconstruct the settings from give config files
         public static ISettings LoadSettingsForSpecificConfigs(
             string root,
@@ -266,8 +267,7 @@ namespace NuGet.Configuration
                         s => new Settings(s.Root, s.FileName, s.IsMachineWideSettings)));
             }
 
-            if (validSettingFiles == null
-                || !validSettingFiles.Any())
+            if (validSettingFiles?.Any() != true)
             {
                 // This means we've failed to load all config files and also failed to load or create the one in %AppData%
                 // Work Item 1531: If the config file is malformed and the constructor throws, NuGet fails to load in VS.
