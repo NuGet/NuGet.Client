@@ -2053,7 +2053,7 @@ namespace NuGet.PackageManagement
                 {
                     nuGetProjectContext.OriginalPackagesConfig =
                         msbuildProject.PackagesConfigNuGetProject?.GetPackagesConfig();
-                    projectTargetFramework = msbuildProject.PackagesConfigNuGetProject?.TargetFramework;
+                    projectTargetFramework = nuGetProject.GetMetadata<NuGetFramework>(NuGetProjectMetadataKeys.TargetFramework);
                     mightNeedHelperNetstandardPackage =
                         NetStandard20CompatibilityUtil.IsCompatibilityPackageNeededForProjectFramework(projectTargetFramework);
                 }
@@ -2147,7 +2147,9 @@ namespace NuGet.PackageManagement
 
                                 // Check to see if the hack to install make net461/net462/net47 compatibile with netstandard20 or greater
                                 // is required.
-                                if(!needsNetstandard20OrGreaterAssets && mightNeedHelperNetstandardPackage && projectTargetFramework != null)
+                                if (!needsNetstandard20OrGreaterAssets 
+                                        && mightNeedHelperNetstandardPackage 
+                                            && projectTargetFramework != null)
                                 {
                                     needsNetstandard20OrGreaterAssets =
                                         NetStandard20CompatibilityUtil.IsNearestFrameworkNetStandard20OrGreater(projectTargetFramework,
@@ -2175,10 +2177,10 @@ namespace NuGet.PackageManagement
                         }
                     }
 
-                    if(needsNetstandard20OrGreaterAssets)
+                    if (needsNetstandard20OrGreaterAssets)
                     {
                         // Install the compatibility package
-                        await NetStandard20CompatibilityUtil.InstallNetStandard20CompatibilityPackage(nuGetProject,
+                        await NetStandard20CompatibilityUtil.InstallNetStandard20CompatibilityPackageAsync(nuGetProject,
                             nuGetProjectContext,
                             this,
                             SourceRepositoryProvider,

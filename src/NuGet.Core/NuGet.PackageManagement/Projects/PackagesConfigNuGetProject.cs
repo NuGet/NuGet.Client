@@ -50,7 +50,7 @@ namespace NuGet.ProjectManagement
         /// </summary>
         private string PackagesProjectNameConfigPath { get; }
 
-        internal NuGetFramework TargetFramework { get; }
+        private NuGetFramework TargetFramework { get; }
 
         public PackagesConfigNuGetProject(string folderPath, Dictionary<string, object> metadata)
             : base(metadata)

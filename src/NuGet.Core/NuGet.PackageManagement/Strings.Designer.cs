@@ -511,11 +511,11 @@ namespace NuGet.PackageManagement {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Compatibility package &quot;NETStandard.Library.NETFramework&quot; is already installed and no updates available..
+        ///   Looks up a localized string similar to Unable to find package NETStandard.Library.NetFramework in an enabled source. Install the package manually to prevent any build errors..
         /// </summary>
-        internal static string Netstandard20CompatibilityPackageAlreadyInstalled {
+        internal static string NetStandardCompatibilityPackageNotFound {
             get {
-                return ResourceManager.GetString("Netstandard20CompatibilityPackageAlreadyInstalled", resourceCulture);
+                return ResourceManager.GetString("NetStandardCompatibilityPackageNotFound", resourceCulture);
             }
         }
         

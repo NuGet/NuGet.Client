@@ -1,14 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using NuGet.Frameworks;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
 using NuGet.Resolver;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace NuGet.PackageManagement
 {
@@ -42,7 +44,6 @@ namespace NuGet.PackageManagement
         /// If the install actions include the compatibility package itself, then we mark the boolean as false
         /// to avoid running into a recursive loop (since installing the compatibility package does need netstandard2.0 assets).
         /// </summary>
-        /// <param name="actionsList"></param>
         internal static bool IsCompatibilityPackageBeingInstalled(IEnumerable<NuGetProjectAction> actionsList)
         {
             if (actionsList.Where(action => action.NuGetProjectActionType == NuGetProjectActionType.Install)
@@ -54,6 +55,7 @@ namespace NuGet.PackageManagement
 
             return true;
         }
+
         internal static bool IsNearestFrameworkNetStandard20OrGreater(NuGetFramework currentProjectFramework,
             IEnumerable<NuGetFramework> supportedFrameworks)
         {
@@ -62,7 +64,8 @@ namespace NuGet.PackageManagement
             // hence the !needsNetstandard20Assets condition.
             var frameworkReducer = new FrameworkReducer();
             var nearestFramework = frameworkReducer.GetNearest(currentProjectFramework, supportedFrameworks);
-            if (string.Equals(nearestFramework.Framework, FrameworkConstants.FrameworkIdentifiers.NetStandard, StringComparison.OrdinalIgnoreCase)
+            if (nearestFramework !=null 
+                && string.Equals(nearestFramework.Framework, FrameworkConstants.FrameworkIdentifiers.NetStandard, StringComparison.OrdinalIgnoreCase)
                     && nearestFramework.Version >= FrameworkConstants.CommonFrameworks.NetStandard20.Version)
             {
                 return true;
@@ -71,7 +74,7 @@ namespace NuGet.PackageManagement
             return false;
         }
 
-        internal static async Task InstallNetStandard20CompatibilityPackage(NuGetProject nuGetProject,
+        internal static async Task InstallNetStandard20CompatibilityPackageAsync(NuGetProject nuGetProject,
             INuGetProjectContext nuGetProjectContext,
             NuGetPackageManager packageManager,
             ISourceRepositoryProvider sourceRepositoryProvider,
@@ -126,9 +129,11 @@ namespace NuGet.PackageManagement
                     log,
                     token);
 
-                if (resolvedPackage == null || resolvedPackage.LatestVersion == null)
+                if (resolvedPackage?.LatestVersion == null)
                 {
-                    throw new InvalidOperationException(string.Format(Strings.NoLatestVersionFound, CompatibilityPackageId));
+                    nuGetProjectContext.Log(ProjectManagement.MessageLevel.Warning,
+                        Strings.NetStandardCompatibilityPackageNotFound);
+                    return;
                 }
 
             }

@@ -488,7 +488,7 @@
   <data name="InstallingNetstandard20CompatibilityPackage" xml:space="preserve">
     <value>One or more packages target NETStandard 2.0 or higher and require an additional dependency. Automatically installing NETStandard.Library.NETFramework.</value>
   </data>
-  <data name="Netstandard20CompatibilityPackageAlreadyInstalled" xml:space="preserve">
-    <value>Compatibility package "NETStandard.Library.NETFramework" is already installed and no updates available.</value>
+  <data name="NetStandardCompatibilityPackageNotFound" xml:space="preserve">
+    <value>Unable to find package NETStandard.Library.NetFramework in an enabled source. Install the package manually to prevent any build errors.</value>
   </data>
 </root>
