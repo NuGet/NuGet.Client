@@ -145,8 +145,8 @@ namespace NuGet.Commands
             var request = new RestoreRequest(
                 project.PackageSpec,
                 sharedCache,
-                restoreContext.CacheContext,
-                restoreContext.Log)
+                restoreArgs.CacheContext,
+                restoreArgs.Log)
             {
                 // Set properties from the restore metadata
                 ProjectStyle = project.PackageSpec?.RestoreMetadata?.ProjectStyle ?? ProjectStyle.Unknown,
