@@ -14,6 +14,9 @@ using NuGet.Configuration;
 
 namespace NuGet.Build.Tasks
 {
+    /// <summary>
+    /// Get all the settings to be used for project restore.
+    /// </summary>
     public class GetRestoreSettingsTask : Task
     {
 
@@ -207,6 +210,10 @@ namespace NuGet.Build.Tasks
                     configFilePaths.Add(Path.GetFullPath(Path.Combine(config.Root, config.FileName)));
                 }
                 OutputConfigFilePaths = configFilePaths.ToArray();
+            } 
+            else
+            {
+                OutputConfigFilePaths = new string[] { };
             }
 
             log.LogDebug($"(out) OutputPackagesPath '{OutputPackagesPath}'");
