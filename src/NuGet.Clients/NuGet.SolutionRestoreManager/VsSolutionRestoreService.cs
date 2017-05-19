@@ -77,6 +77,21 @@ namespace NuGet.SolutionRestoreManager
 
         public Task<bool> CurrentRestoreOperation => _restoreWorker.CurrentRestoreOperation;
 
+        public Task<bool> NominateProjectAsync(string projectUniqueName, CancellationToken token)
+        {
+            if (string.IsNullOrEmpty(projectUniqueName))
+            {
+                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(projectUniqueName));
+            }
+
+            // returned task completes when scheduled restore operation completes.
+            var restoreTask = _restoreWorker.ScheduleRestoreAsync(
+                SolutionRestoreRequest.OnUpdate(),
+                token);
+
+            return restoreTask;
+        }
+
         public Task<bool> NominateProjectAsync(string projectUniqueName, IVsProjectRestoreInfo projectRestoreInfo, CancellationToken token)
         {
             if (string.IsNullOrEmpty(projectUniqueName))
@@ -125,21 +140,6 @@ namespace NuGet.SolutionRestoreManager
                 _logger.LogError(e.ToString());
                 throw;
             }
-        }
-
-        public Task<bool> NominateProjectAsync2(string projectUniqueName, CancellationToken token)
-        {
-            if (string.IsNullOrEmpty(projectUniqueName))
-            {
-                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(projectUniqueName));
-            }
-
-            // returned task completes when scheduled restore operation completes.
-            var restoreTask = _restoreWorker.ScheduleRestoreAsync(
-                SolutionRestoreRequest.OnUpdate(),
-                token);
-
-            return restoreTask;
         }
 
 #if DEBUG

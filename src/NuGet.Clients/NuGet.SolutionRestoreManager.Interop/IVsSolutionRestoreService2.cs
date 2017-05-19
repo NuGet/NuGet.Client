@@ -13,7 +13,7 @@ namespace NuGet.SolutionRestoreManager
     /// </summary>
     [ComImport]
     [Guid("88BE06DF-97B7-47E8-8047-28279C02E401")]
-    public interface IVsSolutionRestoreService2: IVsSolutionRestoreService
+    public interface IVsSolutionRestoreService2
     {
         /// <summary>
         /// An entry point used by CPS to indicate given project needs to be restored.
@@ -27,6 +27,6 @@ namespace NuGet.SolutionRestoreManager
         /// NuGet will batch restore requests so it's possible the same restore task will be returned for multiple projects.
         /// When the requested restore operation for the given project completes the task will indicate operation success or failure.
         /// </returns>
-        Task<bool> NominateProjectAsync2(string projectUniqueName, CancellationToken token);
+        Task<bool> NominateProjectAsync(string projectUniqueName, CancellationToken token);
     }
 }
