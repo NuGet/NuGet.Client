@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -44,7 +44,8 @@ namespace NuGet.PackageManagement.UI
 
             _projectList.SizeChanged += ListView_SizeChanged;
 
-            _sortableColumns = new List<GridViewColumnHeader> {
+            _sortableColumns = new List<GridViewColumnHeader>
+            {
                 _projectColumnHeader,
                 _versionColumnHeader
             };
@@ -54,18 +55,12 @@ namespace NuGet.PackageManagement.UI
 
         private void UninstallButton_Clicked(object sender, RoutedEventArgs e)
         {
-            if (UninstallButtonClicked != null)
-            {
-                UninstallButtonClicked(this, EventArgs.Empty);
-            }
+            UninstallButtonClicked?.Invoke(this, EventArgs.Empty);
         }
 
         private void InstallButton_Clicked(object sender, RoutedEventArgs e)
         {
-            if (InstallButtonClicked != null)
-            {
-                InstallButtonClicked(this, EventArgs.Empty);
-            }
+            InstallButtonClicked?.Invoke(this, EventArgs.Empty);
         }
 
         private void ColumnHeader_Clicked(object sender, RoutedEventArgs e)
@@ -95,11 +90,11 @@ namespace NuGet.PackageManagement.UI
             var sortColumn = _sortableColumns.FirstOrDefault(
                 column =>
                 {
-                    var header = column.Content as SortableColumnHeader;
                     return StringComparer.OrdinalIgnoreCase.Equals(
-                        header?.SortPropertyName,
+                        SortableColumnHeader.GetSortPropertyName(column),
                         userSettings.SortPropertyName);
                 });
+
             if (sortColumn == null)
             {
                 return;
@@ -113,8 +108,7 @@ namespace NuGet.PackageManagement.UI
                     userSettings.SortDirection));
 
             // upate sortInfo
-            var sortInfo = (SortableColumnHeader)sortColumn.Content;
-            sortInfo.SortDirection = userSettings.SortDirection;
+            SortableColumnHeader.SetSortDirectionProperty(sortColumn, userSettings.SortDirection);
 
             // clear sort direction of other columns
             foreach (var column in _sortableColumns)
@@ -124,43 +118,29 @@ namespace NuGet.PackageManagement.UI
                     continue;
                 }
 
-                sortInfo = (SortableColumnHeader)column.Content;
-                sortInfo.SortDirection = null;
+                SortableColumnHeader.SetSortDirectionProperty(column, null);
             }
         }
 
         private void SortByColumn(GridViewColumnHeader sortColumn)
         {
-            var sortInfo = sortColumn.Content as SortableColumnHeader;
-            if (sortInfo == null)
-            {
-                return;
-            }
-
             _projectList.Items.SortDescriptions.Clear();
 
-            // add new sort description
             var sortDescription = new SortDescription();
-            sortDescription.PropertyName = sortInfo.SortPropertyName;
-            if (sortInfo.SortDirection == null)
-            {
-                sortDescription.Direction = ListSortDirection.Ascending;
-            }
-            else if (sortInfo.SortDirection == ListSortDirection.Ascending)
-            {
-                sortDescription.Direction = ListSortDirection.Descending;
-            }
-            else
-            {
-                sortDescription.Direction = ListSortDirection.Ascending;
-            }
+
+            sortDescription.PropertyName = SortableColumnHeader.GetSortPropertyName(sortColumn);
+            var sortDir = SortableColumnHeader.GetSortDirectionProperty(sortColumn);
+
+            sortDescription.Direction = sortDir == null
+                ? ListSortDirection.Ascending
+                : sortDir == ListSortDirection.Ascending
+                    ? ListSortDirection.Descending
+                    : ListSortDirection.Ascending;
+
+            SortableColumnHeader.SetSortDirectionProperty(sortColumn, sortDescription.Direction);
 
             _projectList.Items.SortDescriptions.Add(sortDescription);
 
-            // upate sortInfo
-            sortInfo.SortDirection = sortDescription.Direction;
-
-            // clear sort direction of other columns
             foreach (var column in _sortableColumns)
             {
                 if (column == sortColumn)
@@ -168,31 +148,20 @@ namespace NuGet.PackageManagement.UI
                     continue;
                 }
 
-                sortInfo = (SortableColumnHeader)column.Content;
-                sortInfo.SortDirection = null;
+                SortableColumnHeader.SetSortDirectionProperty(column, null);
             }
         }
 
         private void CheckBox_Checked(object sender, RoutedEventArgs e)
         {
             var model = DataContext as PackageSolutionDetailControlModel;
-            if (model == null)
-            {
-                return;
-            }
-
-            model.SelectAllProjects();
+            model?.SelectAllProjects();
         }
 
         private void CheckBox_Unchecked(object sender, RoutedEventArgs e)
         {
             var model = DataContext as PackageSolutionDetailControlModel;
-            if (model == null)
-            {
-                return;
-            }
-
-            model.UnselectAllProjects();
+            model?.UnselectAllProjects();
         }
 
         private void ListView_SizeChanged(object sender, SizeChangedEventArgs e)
@@ -212,6 +181,16 @@ namespace NuGet.PackageManagement.UI
 
             // this width adjustment is only done once.
             _projectList.SizeChanged -= ListView_SizeChanged;
+        }
+
+        private void HandleColumnHeaderSizeChanged(object sender, SizeChangedEventArgs sizeChangedEventArgs)
+        {
+            // GridViewColumnHeader doesn't handle setting minwidth very well so we prevent it here.
+            if (sizeChangedEventArgs.NewSize.Width <= 60)
+            {
+                sizeChangedEventArgs.Handled = true;
+                ((GridViewColumnHeader)sender).Column.Width = 60;
+            }
         }
 
         private void ProjectList_PreviewKeyUp(object sender, System.Windows.Input.KeyEventArgs e)

@@ -230,20 +230,17 @@
           </GridViewColumn>
 
           <!-- the project column -->
-          <GridViewColumn
-            x:Name="_projectColumn">
-            <GridViewColumn.Header>
-              <GridViewColumnHeader
-                AutomationProperties.Name="{x:Static local:Resources.ColumnHeader_Project}"
-                x:Name="_projectColumnHeader"
-                HorizontalContentAlignment="Left"
-                Click="ColumnHeader_Clicked">
-                <local:SortableColumnHeader
-                  AutomationProperties.Name="{x:Static local:Resources.ColumnHeader_Project}"
-                  HeaderText="{x:Static local:Resources.ColumnHeader_Project}"
-                  SortPropertyName="ProjectName"/>
-              </GridViewColumnHeader>
-            </GridViewColumn.Header>
+          <GridViewColumn x:Name="_projectColumn">
+            <GridViewColumnHeader
+              x:Name="_projectColumnHeader"
+              Content="{x:Static local:Resources.ColumnHeader_Project}"
+              AutomationProperties.Name="{x:Static local:Resources.ColumnHeader_Project}"
+              local:SortableColumnHeader.SortPropertyName="ProjectName"
+              Click="ColumnHeader_Clicked"
+              HorizontalContentAlignment="Left"
+              SizeChanged="HandleColumnHeaderSizeChanged">
+            </GridViewColumnHeader>
+            
             <GridViewColumn.CellTemplate>
               <DataTemplate>
                 <StackPanel Orientation="Horizontal">
@@ -266,11 +263,10 @@
                 AutomationProperties.Name="{x:Static local:Resources.ColumnHeader_Version}"
                 x:Name="_versionColumnHeader"
                 Click="ColumnHeader_Clicked"
-                HorizontalContentAlignment="Left">
-                <local:SortableColumnHeader
-                  AutomationProperties.Name="{x:Static local:Resources.ColumnHeader_Version}"
-                  HeaderText="{x:Static local:Resources.ColumnHeader_Version}"
-                  SortPropertyName="InstalledVersion" />
+                Content="{x:Static local:Resources.ColumnHeader_Version}"
+                local:SortableColumnHeader.SortPropertyName="InstalledVersion"
+                HorizontalContentAlignment="Left"
+                SizeChanged="HandleColumnHeaderSizeChanged">
               </GridViewColumnHeader>
             </GridViewColumn.Header>
           </GridViewColumn>
