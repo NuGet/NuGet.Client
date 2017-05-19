@@ -201,7 +201,7 @@
     <value>Package '{0}' was restored using '{1}' instead the project target framework '{2}'. This may cause compatibility problems.</value>
   </data>
   <data name="Log_CycleDetected" xml:space="preserve">
-    <value>Cycle detected:</value>
+    <value>Cycle detected.</value>
   </data>
   <data name="Log_DowngradeWarning" xml:space="preserve">
     <value>Detected package downgrade: {0} from {1} to {2}. Reference the package directly from the project to select a different version.</value>
@@ -547,6 +547,7 @@ For more information, visit http://docs.nuget.org/docs/reference/command-line-re
   </data>
   <data name="Log_TargetsFileNotOnDisk" xml:space="preserve">
     <value>The targets file for {0} at location {1} does not exist, no-op is not possible. Continuing restore.</value>
+  </data>
   <data name="Warning_MinVersionDoesNotExist" xml:space="preserve">
     <value>{0} depends on {1} but {2} was not found. An approximate best match of {3} was resolved.</value>
   </data>

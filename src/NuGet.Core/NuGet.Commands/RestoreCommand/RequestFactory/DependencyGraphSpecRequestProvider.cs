@@ -151,7 +151,6 @@ namespace NuGet.Commands
                 // Set properties from the restore metadata
                 ProjectStyle = project.PackageSpec?.RestoreMetadata?.ProjectStyle ?? ProjectStyle.Unknown,
                 RestoreOutputPath = project.PackageSpec?.RestoreMetadata?.OutputPath ?? rootPath,
-                AllowNoOp = restoreArgs.AllowNoOp,
                 DependencyGraphSpec = projectDgSpec
             };
             
