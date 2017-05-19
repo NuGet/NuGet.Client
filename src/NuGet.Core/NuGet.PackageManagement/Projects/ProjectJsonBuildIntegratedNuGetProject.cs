@@ -346,15 +346,18 @@ namespace NuGet.ProjectManagement.Projects
             }
         }
 
-        protected void UpdateFramework(JObject json)
+        private void UpdateFramework(JObject json)
         {
             // Update the internal target framework with TPMinV from csproj
             UpdateInternalTargetFramework();
 
             var frameworks = JsonConfigUtility.GetFrameworks(json);
-            if (InternalMetadata.TryGetValue(NuGetProjectMetadataKeys.TargetFramework, out object newTargetFramework))
+            if (InternalMetadata.TryGetValue(NuGetProjectMetadataKeys.TargetFramework, out object newTargetFrameworkObject))
             {
-                if (IsUAPFramework(newTargetFramework as NuGetFramework) && frameworks.Count() == 1)
+                var newTargetFramework = newTargetFrameworkObject as NuGetFramework;
+                if (IsUAPFramework(newTargetFramework) 
+                    && frameworks.Count() == 1
+                    && frameworks.Single() != newTargetFramework)
                 {
                     // project.json can have only one target framework
                     JsonConfigUtility.ClearFrameworks(json);
