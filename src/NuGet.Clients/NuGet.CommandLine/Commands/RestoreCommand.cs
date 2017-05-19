@@ -123,6 +123,9 @@ namespace NuGet.CommandLine
                     restoreContext.Log = Console;
                     restoreContext.CachingSourceProvider = GetSourceRepositoryProvider();
 
+                    // Restore errors and warnings will be displayed through sdk/msbuild target
+                    restoreContext.DisplayAllLogs = false;
+
                     var packageSaveMode = EffectivePackageSaveMode;
                     if (packageSaveMode != Packaging.PackageSaveMode.None)
                     {
@@ -161,7 +164,7 @@ namespace NuGet.CommandLine
                     }
 
                     // Run restore
-                    var v3Summaries = await RestoreRunner.Run(restoreContext);
+                    var v3Summaries = await RestoreRunner.RunAsync(restoreContext);
                     restoreSummaries.AddRange(v3Summaries);
                 }
             }

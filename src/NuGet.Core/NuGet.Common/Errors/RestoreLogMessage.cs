@@ -23,9 +23,11 @@ namespace NuGet.Common
         public int EndColumnNumber { get; set; } = -1;
         public string LibraryId { get; set; }
         public IReadOnlyList<string> TargetGraphs { get; set; }
+        public bool ShouldDisplay { get; set; }
 
-        public RestoreLogMessage(LogLevel logLevel, NuGetLogCode errorCode, 
-            string errorString, string targetGraph)
+
+        public RestoreLogMessage(LogLevel logLevel, NuGetLogCode errorCode,
+            string errorString, string targetGraph, bool logToInnerLogger)
         {
             Level = logLevel;
             Code = errorCode;
@@ -40,15 +42,27 @@ namespace NuGet.Common
             }
 
             TargetGraphs = graphList;
+            ShouldDisplay = logToInnerLogger;
+        }
+
+        public RestoreLogMessage(LogLevel logLevel, NuGetLogCode errorCode, 
+            string errorString, string targetGraph)
+            : this(logLevel, errorCode, errorString, targetGraph, false)
+        {
         }
 
         public RestoreLogMessage(LogLevel logLevel, NuGetLogCode errorCode, string errorString)
-            : this(logLevel, errorCode, errorString, string.Empty)
+            : this(logLevel, errorCode, errorString, string.Empty, false)
         {
         }
 
         public RestoreLogMessage(LogLevel logLevel, string errorString)
-            : this(logLevel, LogLevel.Error == logLevel ? NuGetLogCode.NU1000 : NuGetLogCode.NU1500, errorString, string.Empty)
+            : this(logLevel, LogLevel.Error == logLevel ? NuGetLogCode.NU1000 : NuGetLogCode.NU1500, errorString, string.Empty, false)
+        {
+        }
+
+        public RestoreLogMessage(LogLevel logLevel, string errorString, bool logToInnerLogger)
+            : this(logLevel, LogLevel.Error == logLevel ? NuGetLogCode.NU1000 : NuGetLogCode.NU1500, errorString, string.Empty, logToInnerLogger)
         {
         }
 

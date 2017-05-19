@@ -2,8 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Linq;
+using NuGet.Common;
 using NuGet.Frameworks;
+using NuGet.ProjectModel;
 using NuGet.Test.Utility;
+using Test.Utility;
 using Xunit;
 
 namespace NuGet.CommandLine.Test
@@ -13,6 +17,7 @@ namespace NuGet.CommandLine.Test
         [Fact]
         public void GivenAProjectIsUsedOverAPackageVerifyNoDowngradeWarning()
         {
+
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
             {
@@ -48,8 +53,12 @@ namespace NuGet.CommandLine.Test
                 // Act
                 var r = Util.Restore(pathContext, projectA.ProjectPath);
                 var output = r.Item2 + " " + r.Item3;
+                var reader = new LockFileFormat();
+                var lockFileObj = reader.Read(projectA.AssetsFileOutputPath);
 
                 // Assert
+                Assert.NotNull(lockFileObj);
+                Assert.Equal(0, lockFileObj.LogMessages.Count());
                 Assert.DoesNotContain("downgrade", output, StringComparison.OrdinalIgnoreCase);
             }
         }
@@ -84,9 +93,57 @@ namespace NuGet.CommandLine.Test
                 // Act
                 var r = Util.Restore(pathContext, projectA.ProjectPath);
                 var output = r.Item2 + " " + r.Item3;
+                var reader = new LockFileFormat();
+                var lockFileObj = reader.Read(projectA.AssetsFileOutputPath);
 
                 // Assert
-                Assert.Contains("Detected package downgrade: i from 9.0.0 to 1.0.0", output, StringComparison.OrdinalIgnoreCase);
+                Assert.NotNull(lockFileObj);
+                Assert.Equal(1, lockFileObj.LogMessages.Count());
+                Assert.Contains("Detected package downgrade: i from 9.0.0 to 1.0.0", 
+                    lockFileObj.LogMessages.First().Message, 
+                    StringComparison.OrdinalIgnoreCase);
+                Assert.Contains("Detected package downgrade: i from 9.0.0 to 1.0.0", 
+                    output, 
+                    StringComparison.OrdinalIgnoreCase);
+            }
+        }
+
+        [Fact]
+        public void GivenAnUnknownPackageVerifyError()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                    "a",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("NETStandard1.5"));
+
+                var packageB = new SimpleTestPackageContext("b", "9.0.0");
+
+                projectA.AddPackageToAllFrameworks(packageB);
+
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+
+                // Act
+                var r = Util.Restore(pathContext, projectA.ProjectPath, expectedExitCode: 1);
+                var output = r.Item2 + " " + r.Item3;
+                var reader = new LockFileFormat();
+                var lockFileObj = reader.Read(projectA.AssetsFileOutputPath);
+
+                // Assert
+                Assert.NotNull(lockFileObj);
+                Assert.Equal(1, lockFileObj.LogMessages.Count());
+                Assert.Contains("Unable to find package b. No packages exist with this id in source(s): source", 
+                    lockFileObj.LogMessages.First().Message, 
+                    StringComparison.OrdinalIgnoreCase);
+                Assert.Contains("Unable to find package b. No packages exist with this id in source(s): source", 
+                    output, 
+                    StringComparison.OrdinalIgnoreCase);
             }
         }
 

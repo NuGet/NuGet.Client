@@ -80,7 +80,7 @@ namespace NuGet.Commands.Test
                     };
 
                     // Act
-                    var summaries = await RestoreRunner.Run(restoreContext);
+                    var summaries = await RestoreRunner.RunAsync(restoreContext);
                     var summary = summaries.Single();
 
                     // Assert
@@ -176,7 +176,7 @@ namespace NuGet.Commands.Test
                     var propsPath = Path.Combine(project1.FullName, "project1.nuget.props");
 
                     // Act
-                    var summaries = await RestoreRunner.Run(restoreContext);
+                    var summaries = await RestoreRunner.RunAsync(restoreContext);
                     var summary = summaries.Single();
 
                     var targets = TargetsUtility.GetMSBuildPackageImports(targetsPath);
@@ -266,7 +266,7 @@ namespace NuGet.Commands.Test
                     };
 
                     // Act
-                    var summaries = await RestoreRunner.Run(restoreContext);
+                    var summaries = await RestoreRunner.RunAsync(restoreContext);
                     var summary = summaries.Single();
 
                     // Assert
@@ -346,7 +346,7 @@ namespace NuGet.Commands.Test
                     };
 
                     // Act
-                    var summaries = await RestoreRunner.Run(restoreContext);
+                    var summaries = await RestoreRunner.RunAsync(restoreContext);
                     var summary = summaries.Single();
 
                     // Assert
@@ -479,7 +479,7 @@ namespace NuGet.Commands.Test
                 restoreContext.Inputs.Add(dgPath);
 
                 // Act
-                var summaries = await RestoreRunner.Run(restoreContext);
+                var summaries = await RestoreRunner.RunAsync(restoreContext);
                 var success = summaries.All(s => s.Success);
 
                 var lockFormat = new LockFileFormat();
@@ -616,7 +616,7 @@ namespace NuGet.Commands.Test
                     };
 
                     // Act
-                    var summaries = await RestoreRunner.Run(restoreContext);
+                    var summaries = await RestoreRunner.RunAsync(restoreContext);
                     var success = summaries.All(s => s.Success);
 
                     var lockFormat = new LockFileFormat();
@@ -714,7 +714,7 @@ namespace NuGet.Commands.Test
                     };
 
                     // Act
-                    var summaries = await RestoreRunner.Run(restoreContext);
+                    var summaries = await RestoreRunner.RunAsync(restoreContext);
                     var success = summaries.All(s => s.Success);
 
                     // Assert
@@ -787,7 +787,7 @@ namespace NuGet.Commands.Test
                     restoreContext.Runtimes.Add("linux-x86");
 
                     // Act
-                    var summaries = await RestoreRunner.Run(restoreContext);
+                    var summaries = await RestoreRunner.RunAsync(restoreContext);
                     var success = summaries.All(s => s.Success);
 
                     var lockFormat = new LockFileFormat();
@@ -826,7 +826,7 @@ namespace NuGet.Commands.Test
                     };
 
                     // Act
-                    var summaries = await RestoreRunner.Run(restoreContext);
+                    var summaries = await RestoreRunner.RunAsync(restoreContext);
 
                     // Assert
                     Assert.Equal(0, summaries.Count);

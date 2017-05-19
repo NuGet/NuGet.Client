@@ -158,7 +158,8 @@ namespace NuGet.Build.Tasks
                     Log = log,
                     MachineWideSettings = new XPlatMachineWideSetting(),
                     PreLoadedRequestProviders = providers,
-                    CachingSourceProvider = sourceProvider
+                    CachingSourceProvider = sourceProvider,
+                    DisplayAllLogs = false
                 };
 
                 if (!string.IsNullOrEmpty(RestoreSources))

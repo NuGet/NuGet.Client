@@ -135,5 +135,10 @@ namespace NuGet.Commands
         /// Compatibility options
         /// </summary>
         public bool ValidateRuntimeAssets { get; set; } = true;
+
+        /// <summary>
+        /// Display Errors and warnings as they occur
+        /// </summary>
+        public bool DisplayAllLogs { get; set; } = true;
     }
 }

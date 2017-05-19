@@ -62,6 +62,8 @@ namespace NuGet.Commands
 
         public bool? ValidateRuntimeAssets { get; set; }
 
+        public bool DisplayAllLogs { get; set; } = true;
+
         // Cache directory -> ISettings
         private ConcurrentDictionary<string, ISettings> _settingsCache
             = new ConcurrentDictionary<string, ISettings>(StringComparer.Ordinal);
@@ -213,6 +215,8 @@ namespace NuGet.Commands
             {
                 request.ValidateRuntimeAssets = ValidateRuntimeAssets.Value;
             }
+
+            request.DisplayAllLogs = DisplayAllLogs;
         }
     }
 }

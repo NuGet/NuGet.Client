@@ -19,6 +19,7 @@ using System.Text.RegularExpressions;
 using NuGet.Protocol.Core.Types;
 using NuGet.Protocol;
 using NuGet.Common;
+using Test.Utility;
 
 namespace NuGet.CommandLine.Test
 {
