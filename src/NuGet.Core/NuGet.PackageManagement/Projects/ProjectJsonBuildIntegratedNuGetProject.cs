@@ -169,6 +169,11 @@ namespace NuGet.ProjectManagement.Projects
                 Enumerable.Empty<ProjectRestoreReference>().ToList());
         }
 
+        protected virtual void UpdateInternalTargetFramework()
+        {
+            // Extending class will implement this functionality
+        }
+
         public override async Task<IEnumerable<PackageReference>> GetInstalledPackagesAsync(CancellationToken token)
         {
             var packages = new List<PackageReference>();
@@ -212,6 +217,20 @@ namespace NuGet.ProjectManagement.Projects
                 metadata.ProjectUniqueName = MSBuildProjectPath;
 
                 var references = await GetDirectProjectReferencesAsync(context);
+
+                // Reload the target framework from csproj and update the target framework in packageSpec for restore
+                UpdateInternalTargetFramework();
+                if (InternalMetadata.TryGetValue(NuGetProjectMetadataKeys.TargetFramework, out var internalTargetFramework))
+                {
+                    var replaceTargetFramework = new TargetFrameworkInformation();
+                    replaceTargetFramework.FrameworkName = internalTargetFramework as NuGetFramework;
+                    // Ensure the project json has only one target framework
+                    if (packageSpec.TargetFrameworks != null && packageSpec.TargetFrameworks.Count == 1)
+                    {
+                        packageSpec.TargetFrameworks[0] = replaceTargetFramework;
+                    }
+                }
+
                 if (references != null && references.Count > 0)
                 {
                     // Add msbuild reference groups for each TFM in the project
@@ -327,8 +346,11 @@ namespace NuGet.ProjectManagement.Projects
             }
         }
 
-        private void UpdateFramework(JObject json)
+        protected void UpdateFramework(JObject json)
         {
+            // Update the internal target framework with TPMinV from csproj
+            UpdateInternalTargetFramework();
+
             var frameworks = JsonConfigUtility.GetFrameworks(json);
             if (InternalMetadata.TryGetValue(NuGetProjectMetadataKeys.TargetFramework, out object newTargetFramework))
             {
