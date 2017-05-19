@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -178,6 +178,11 @@ namespace NuGet.Commands
                     foreach (var source in MSBuildStringUtility.Split(specItem.GetProperty("Sources")))
                     {
                         result.RestoreMetadata.Sources.Add(new PackageSource(source));
+                    }
+
+                    foreach( var configFilePath in MSBuildStringUtility.Split(specItem.GetProperty("ConfigFilePaths")))
+                    {
+                        result.RestoreMetadata.ConfigFilePaths.Add(configFilePath);
                     }
 
                     foreach (var folder in MSBuildStringUtility.Split(specItem.GetProperty("FallbackFolders")))

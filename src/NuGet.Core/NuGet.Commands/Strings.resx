@@ -578,4 +578,7 @@ For more information, visit http://docs.nuget.org/docs/reference/command-line-re
   <data name="FoundVersionsInSourceWithoutMatch" xml:space="preserve">
     <value>Found {0} version(s) in {1}</value>
   </data>
+  <data name="Log_MissingPackagesOnDisk" xml:space="preserve">
+    <value>Not all packages are on disk for: {0}</value>
+  </data>
 </root>

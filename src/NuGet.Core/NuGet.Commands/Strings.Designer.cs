@@ -675,6 +675,15 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Not all packages are on disk for: {0}.
+        /// </summary>
+        internal static string Log_MissingPackagesOnDisk {
+            get {
+                return ResourceManager.GetString("Log_MissingPackagesOnDisk", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Added file &apos;{0}&apos;..
         /// </summary>
         internal static string Log_PackageCommandAddedFile {

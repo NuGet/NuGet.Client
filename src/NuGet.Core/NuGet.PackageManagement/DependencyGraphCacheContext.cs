@@ -1,18 +1,20 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
 using NuGet.Common;
+using NuGet.Configuration;
 using NuGet.ProjectModel;
 
 namespace NuGet.ProjectManagement
 {
     public class DependencyGraphCacheContext
     {
-        public DependencyGraphCacheContext(ILogger logger)
+        public DependencyGraphCacheContext(ILogger logger, ISettings settings)
         {
             Logger = logger;
+            Settings = settings;
         }
 
         public DependencyGraphCacheContext()
@@ -47,5 +49,7 @@ namespace NuGet.ProjectManagement
         /// Logger
         /// </summary>
         public ILogger Logger { get; }
+
+        public ISettings Settings { get; }
     }
 }

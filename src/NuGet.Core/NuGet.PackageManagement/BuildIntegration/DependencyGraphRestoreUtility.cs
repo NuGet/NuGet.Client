@@ -36,7 +36,6 @@ namespace NuGet.PackageManagement
             RestoreCommandProvidersCache providerCache,
             Action<SourceCacheContext> cacheContextModifier,
             IEnumerable<SourceRepository> sources,
-            ISettings settings,
             ILogger log,
             CancellationToken token)
         {
@@ -47,7 +46,6 @@ namespace NuGet.PackageManagement
                 cacheContextModifier,
                 sources,
                 userPackagesPath: null,
-                settings: settings,
                 log: log,
                 token: token);
         }
@@ -62,7 +60,6 @@ namespace NuGet.PackageManagement
             Action<SourceCacheContext> cacheContextModifier,
             IEnumerable<SourceRepository> sources,
             string userPackagesPath,
-            ISettings settings,
             ILogger log,
             CancellationToken token)
         {
@@ -84,7 +81,6 @@ namespace NuGet.PackageManagement
                     var restoreContext = GetRestoreContext(
                         context,
                         providerCache,
-                        settings,
                         sourceCacheContext,
                         sources,
                         dgSpec,
@@ -110,7 +106,6 @@ namespace NuGet.PackageManagement
             RestoreCommandProvidersCache providerCache,
             Action<SourceCacheContext> cacheContextModifier,
             IEnumerable<SourceRepository> sources,
-            ISettings settings,
             ILogger log,
             CancellationToken token)
         {
@@ -125,7 +120,6 @@ namespace NuGet.PackageManagement
                     var restoreContext = GetRestoreContext(
                         context,
                         providerCache,
-                        settings,
                         sourceCacheContext,
                         sources,
                         dgSpec,
@@ -153,7 +147,6 @@ namespace NuGet.PackageManagement
             RestoreCommandProvidersCache providerCache,
             Action<SourceCacheContext> cacheContextModifier,
             IEnumerable<SourceRepository> sources,
-            ISettings settings,
             ILogger log,
             CancellationToken token)
         {
@@ -166,7 +159,6 @@ namespace NuGet.PackageManagement
                 cacheContextModifier,
                 sources,
                 userPackagesPath: null,
-                settings: settings,
                 log: log,
                 token: token);
         }
@@ -183,7 +175,6 @@ namespace NuGet.PackageManagement
             Action<SourceCacheContext> cacheContextModifier,
             IEnumerable<SourceRepository> sources,
             string userPackagesPath,
-            ISettings settings,
             ILogger log,
             CancellationToken token)
         {
@@ -204,7 +195,7 @@ namespace NuGet.PackageManagement
                 cacheContextModifier(sourceCacheContext);
 
                 // Settings passed here will be used to populate the restore requests.
-                RestoreArgs restoreContext = GetRestoreContext(context, providerCache, settings, sourceCacheContext, sources, dgFile, userPackagesPath);
+                RestoreArgs restoreContext = GetRestoreContext(context, providerCache, sourceCacheContext, sources, dgFile, userPackagesPath);
 
                 var requests = await RestoreRunner.GetRequests(restoreContext);
                 var results = await RestoreRunner.RunWithoutCommit(requests, restoreContext);
@@ -222,7 +213,6 @@ namespace NuGet.PackageManagement
             RestoreCommandProvidersCache providerCache,
             Action<SourceCacheContext> cacheContextModifier,
             IEnumerable<SourceRepository> sources,
-            ISettings settings,
             ILogger log,
             CancellationToken token)
         {
@@ -239,7 +229,6 @@ namespace NuGet.PackageManagement
                 providerCache,
                 cacheContextModifier,
                 sources,
-                settings,
                 log,
                 token);
 
@@ -322,7 +311,11 @@ namespace NuGet.PackageManagement
             ISolutionManager solutionManager,
             DependencyGraphCacheContext context)
         {
+            // TODO NK - Potentially add the dg spec details here
             var dgSpec = new DependencyGraphSpec();
+            SettingsUtility.GetGlobalPackagesFolder(context.Settings);
+            SettingsUtility.GetFallbackPackageFolders(context.Settings);
+            
 
             foreach (var packageSpec in context.DeferredPackageSpecs)
             {
@@ -366,13 +359,12 @@ namespace NuGet.PackageManagement
         private static RestoreArgs GetRestoreContext(
             DependencyGraphCacheContext context,
             RestoreCommandProvidersCache providerCache,
-            ISettings settings,
             SourceCacheContext sourceCacheContext,
             IEnumerable<SourceRepository> sources,
             DependencyGraphSpec dgFile,
             string userPackagesPath)
         {
-            var dgProvider = new DependencyGraphSpecRequestProvider(providerCache, dgFile, settings);
+            var dgProvider = new DependencyGraphSpecRequestProvider(providerCache, dgFile);
 
             var restoreContext = new RestoreArgs()
             {

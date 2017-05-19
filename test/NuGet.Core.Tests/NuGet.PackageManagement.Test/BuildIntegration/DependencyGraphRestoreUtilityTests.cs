@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
@@ -43,7 +43,7 @@ namespace NuGet.PackageManagement.Test
                     new TestNuGetProjectContext());
                 var project = new ProjectJsonBuildIntegratedNuGetProject(projectConfig.FullName, msbuildProjectPath.FullName, msBuildNuGetProjectSystem);
 
-                var restoreContext = new DependencyGraphCacheContext(logger);
+                var restoreContext = new DependencyGraphCacheContext(logger, NullSettings.Instance);
 
                 var projects = new List<IDependencyGraphProject>() { project };
 
@@ -61,7 +61,6 @@ namespace NuGet.PackageManagement.Test
                     new RestoreCommandProvidersCache(),
                     (c) => { },
                     sources,
-                    NullSettings.Instance,
                     logger,
                     CancellationToken.None);
 
@@ -69,7 +68,7 @@ namespace NuGet.PackageManagement.Test
 
                 var oldHash = restoreContext.SolutionSpecHash;
 
-                var newContext = new DependencyGraphCacheContext(logger);
+                var newContext = new DependencyGraphCacheContext(logger, NullSettings.Instance);
 
                 // Act
                 var result = await DependencyGraphRestoreUtility.IsRestoreRequiredAsync(
@@ -112,7 +111,7 @@ namespace NuGet.PackageManagement.Test
 
                 var effectiveGlobalPackagesFolder = SettingsUtility.GetGlobalPackagesFolder(NullSettings.Instance);
 
-                var restoreContext = new DependencyGraphCacheContext(logger);
+                var restoreContext = new DependencyGraphCacheContext(logger, NullSettings.Instance);
 
                 var projects = new List<IDependencyGraphProject>() { project };
 
@@ -126,7 +125,6 @@ namespace NuGet.PackageManagement.Test
                     new RestoreCommandProvidersCache(),
                     (c) => { },
                     sources,
-                    NullSettings.Instance,
                     logger,
                     CancellationToken.None);
 

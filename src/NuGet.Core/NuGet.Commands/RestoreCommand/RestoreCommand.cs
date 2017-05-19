@@ -14,6 +14,7 @@ using NuGet.Common;
 using NuGet.DependencyResolver;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
+using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
 using NuGet.Repositories;
@@ -76,12 +77,10 @@ namespace NuGet.Commands
                 cacheFile = cacheFileAndStatus.Key;
                 if (cacheFileAndStatus.Value)
                 {
-
-                    if(VerifyAssetsAndMSBuildFilesArePresent(_request))
+                    if(NoOpRestoreUtilities.VerifyAssetsAndMSBuildFilesAndPackagesArePresent(_request))
                     {
                         restoreTime.Stop();
 
-                        // Create result
                         return new NoOpRestoreResult(
                             _success,
                             _request.ExistingLockFile,
@@ -131,7 +130,7 @@ namespace NuGet.Commands
             // Determine the lock file output path
             var assetsFilePath = GetAssetsFilePath(assetsFile);
             // Determine the cache file output path
-            var cacheFilePath = NoOpRestoreUtilities.GetCacheFilePath(assetsFile, _request);
+            var cacheFilePath = NoOpRestoreUtilities.GetCacheFilePath(_request);
 
             // Tool restores are unique since the output path is not known until after restore
             if (_request.LockFilePath == null
@@ -219,35 +218,6 @@ namespace NuGet.Commands
             }
             return new KeyValuePair<CacheFile,bool>(cacheFile, noOp) ;
         }
-
-        private bool VerifyAssetsAndMSBuildFilesArePresent(RestoreRequest request)
-        {
-
-            if (!File.Exists(request.ExistingLockFile?.Path)) {
-                _logger.LogVerbose(string.Format(CultureInfo.CurrentCulture, Strings.Log_AssetsFileNotOnDisk, _request.Project.Name));
-                return false;
-            }
-
-            if (request.ProjectStyle == ProjectStyle.PackageReference || request.ProjectStyle == ProjectStyle.Standalone)
-            {
-                var targetsFilePath = BuildAssetsUtils.GetMSBuildFilePath(request.Project, request, "targets");
-                if (!File.Exists(targetsFilePath))
-                {
-                    _logger.LogVerbose(string.Format(CultureInfo.CurrentCulture, Strings.Log_TargetsFileNotOnDisk, _request.Project.Name, targetsFilePath));
-                    return false;
-                }
-                var propsFilePath = BuildAssetsUtils.GetMSBuildFilePath(request.Project, request, "props");
-                if (!File.Exists(propsFilePath))
-                {
-                    _logger.LogVerbose(string.Format(CultureInfo.CurrentCulture, Strings.Log_PropsFileNotOnDisk, _request.Project.Name, propsFilePath));
-                    return false;
-                }
-            }
-            return true;
-        }
-
-
-
 
         private string GetAssetsFilePath(LockFile lockFile)
         {

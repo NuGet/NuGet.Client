@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -71,6 +71,11 @@ namespace NuGet.Build.Tasks
         /// </summary>
         public bool RestoreRecursive { get; set; }
 
+        /// <summary>
+        /// Force restore, skip no op
+        /// </summary>
+        public bool RestoreForce { get; set; }
+
         public override bool Execute()
         {
             var log = new MSBuildLogger(Log);
@@ -85,6 +90,7 @@ namespace NuGet.Build.Tasks
             log.LogDebug($"(in) RestoreNoCache '{RestoreNoCache}'");
             log.LogDebug($"(in) RestoreIgnoreFailedSources '{RestoreIgnoreFailedSources}'");
             log.LogDebug($"(in) RestoreRecursive '{RestoreRecursive}'");
+            log.LogDebug($"(in) RestoreForce '{RestoreForce}'");
 
             try
             {
@@ -158,7 +164,8 @@ namespace NuGet.Build.Tasks
                     Log = log,
                     MachineWideSettings = new XPlatMachineWideSetting(),
                     PreLoadedRequestProviders = providers,
-                    CachingSourceProvider = sourceProvider
+                    CachingSourceProvider = sourceProvider,
+                    AllowNoOp = !RestoreForce
                 };
 
                 if (!string.IsNullOrEmpty(RestoreSources))

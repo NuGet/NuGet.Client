@@ -50,8 +50,6 @@ namespace NuGet.Commands
         /// </summary>
         public List<string> Sources { get; set; } = new List<string>();
 
-        public List<string> FallbackSources { get; set; } = new List<string>();
-
         public CachingSourceProvider CachingSourceProvider { get; set; }
 
         public List<IRestoreRequestProvider> RequestProviders { get; set; } = new List<IRestoreRequestProvider>();
@@ -145,7 +143,7 @@ namespace NuGet.Commands
             var useNugetConfigSources = (Sources.Count == 0);
 
             // Always use passed-in sources and fallback sources
-            foreach (var sourceUri in Enumerable.Concat(Sources, FallbackSources))
+            foreach (var sourceUri in Sources)
             {
                 sourceObjects[sourceUri] = new PackageSource(sourceUri);
             }
