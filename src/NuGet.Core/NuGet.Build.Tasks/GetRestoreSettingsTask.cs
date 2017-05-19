@@ -157,13 +157,11 @@ namespace NuGet.Build.Tasks
                 OutputPackagesPath = RestorePackagesPath;
             }
 
-            bool hasRestoreConfigs = false;
             if (RestoreSources == null)
             {
                 var packageSourceProvider = new PackageSourceProvider(settings);
                 var packageSourcesFromProvider = packageSourceProvider.LoadPackageSources();
                 OutputSources = packageSourcesFromProvider.Select(e => e.Source).ToArray();
-                hasRestoreConfigs = true;
             }
             else if (RestoreSources.Contains(CLEAR, StringComparer.OrdinalIgnoreCase))
             {
@@ -202,19 +200,13 @@ namespace NuGet.Build.Tasks
                 OutputFallbackFolders = RestoreFallbackFolders;
             }
 
-            if (hasRestoreConfigs)
+            var configFilePaths = new List<string>();
+            foreach (var config in settings.Priority)
             {
-                var configFilePaths = new List<string>();
-                foreach (var config in settings.Priority)
-                {
-                    configFilePaths.Add(Path.GetFullPath(Path.Combine(config.Root, config.FileName)));
-                }
-                OutputConfigFilePaths = configFilePaths.ToArray();
-            } 
-            else
-            {
-                OutputConfigFilePaths = new string[] { };
+                configFilePaths.Add(Path.GetFullPath(Path.Combine(config.Root, config.FileName)));
             }
+            OutputConfigFilePaths = configFilePaths.ToArray();
+
 
             log.LogDebug($"(out) OutputPackagesPath '{OutputPackagesPath}'");
             log.LogDebug($"(out) OutputSources '{string.Join(";", OutputSources.Select(p => p))}'");

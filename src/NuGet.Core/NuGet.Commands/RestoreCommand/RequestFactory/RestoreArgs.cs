@@ -117,7 +117,7 @@ namespace NuGet.Commands
         /// <summary>
         /// Uses either Sources or Settings, and then adds Fallback sources.
         /// </summary>
-        public List<SourceRepository> GetEffectiveSources(ISettings settings)
+        internal List<SourceRepository> GetEffectiveSources(ISettings settings, IList<PackageSource> dgSpecSources)
         {
             if (settings == null)
             {
@@ -126,10 +126,10 @@ namespace NuGet.Commands
 
             var cacheKey = string.Join("|", settings.Priority.Select(e => e.Root));
 
-            return _sourcesCache.GetOrAdd(cacheKey, (root) => GetEffectiveSourcesCore(settings));
+            return _sourcesCache.GetOrAdd(cacheKey, (root) => GetEffectiveSourcesCore(settings, dgSpecSources));
         }
 
-        private List<SourceRepository> GetEffectiveSourcesCore(ISettings settings)
+        private List<SourceRepository> GetEffectiveSourcesCore(ISettings settings, IList<PackageSource> dgSpecSources)
         {
             if (SourceRepositories.Count > 0)
             {
@@ -137,21 +137,24 @@ namespace NuGet.Commands
                 return SourceRepositories;
             }
 
-            var sourceObjects = new Dictionary<string, PackageSource>(StringComparer.Ordinal);
+            var sourceObjects = dgSpecSources.ToDictionary(k => k.Source, v => v, StringComparer.Ordinal);
             var packageSourceProvider = new PackageSourceProvider(settings);
             var packageSourcesFromProvider = packageSourceProvider.LoadPackageSources();
-            var useNugetConfigSources = (Sources.Count == 0);
 
-            // Always use passed-in sources and fallback sources
             foreach (var sourceUri in Sources)
             {
-                sourceObjects[sourceUri] = new PackageSource(sourceUri);
+                //DGSpecSources should always match the Sources
+                if (!sourceObjects.ContainsKey(sourceUri))
+                {
+                    Log.LogDebug($"{sourceUri} is in the RestoreArgs Sources but in the passed in dgSpecSources");
+                    sourceObjects[sourceUri] = new PackageSource(sourceUri);
+                }
             }
-
+            
             // Use PackageSource objects from the provider when possible (since those will have credentials from nuget.config)
             foreach (var source in packageSourcesFromProvider)
             {
-                if (source.IsEnabled && (useNugetConfigSources || sourceObjects.ContainsKey(source.Source)))
+                if (source.IsEnabled && (sourceObjects.ContainsKey(source.Source)))
                 {
                     sourceObjects[source.Source] = source;
                 }
