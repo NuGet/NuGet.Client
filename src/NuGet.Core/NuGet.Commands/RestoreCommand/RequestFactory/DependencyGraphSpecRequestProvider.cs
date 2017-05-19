@@ -160,14 +160,13 @@ namespace NuGet.Commands
             var request = new RestoreRequest(
                 project.PackageSpec,
                 sharedCache,
-                restoreContext.CacheContext,
-                restoreContext.Log)
+                restoreArgs.CacheContext,
+                restoreArgs.Log)
             {
                 // Set properties from the restore metadata
                 ProjectStyle = project.PackageSpec?.RestoreMetadata?.ProjectStyle ?? ProjectStyle.Unknown,
-                RestoreOutputPath = project.PackageSpec?.RestoreMetadata?.OutputPath ?? rootPath
-                AllowNoOp = restoreArgs.AllowNoOp;
-                DependencyGraphSpec = projectDgSpec;
+                RestoreOutputPath = project.PackageSpec?.RestoreMetadata?.OutputPath ?? rootPath,
+                DependencyGraphSpec = projectDgSpec
             };
 
             var restoreLegacyPackagesDirectory = project.PackageSpec?.RestoreMetadata?.LegacyPackagesDirectory
