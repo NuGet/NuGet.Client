@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -119,6 +119,7 @@ namespace NuGet.PackageManagement.VisualStudio
             Assumes.Present(projectSystemCache);
             Assumes.Present(projectSystemFactory);
             Assumes.Present(credentialServiceProvider);
+            Assumes.Present(vsProjectAdapterProvider);
             Assumes.Present(logger);
             Assumes.Present(settings);
 
@@ -506,13 +507,10 @@ namespace NuGet.PackageManagement.VisualStudio
                 {
                     RemoveVsProjectAdapterFromCache(oldName);
                     AddVsProjectAdapterToCache(_vsProjectAdapterProvider.CreateAdapterForFullyLoadedProject(envDTEProject));
-                    NuGetProject nuGetProject;
-                    _projectSystemCache.TryGetNuGetProject(envDTEProject.Name, out nuGetProject);
 
-                    if (NuGetProjectRenamed != null)
-                    {
-                        NuGetProjectRenamed(this, new NuGetProjectEventArgs(nuGetProject));
-                    }
+                    _projectSystemCache.TryGetNuGetProject(envDTEProject.Name, out var nuGetProject);
+
+                    NuGetProjectRenamed?.Invoke(this, new NuGetProjectEventArgs(nuGetProject));
 
                     // VSSolutionManager susbscribes to this Event, in order to update the caption on the DocWindow Tab.
                     // This needs to fire after NugetProjectRenamed so that PackageManagerModel has been updated with
@@ -703,8 +701,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 return;
             }
 
-            ProjectNames projectName;
-            _projectSystemCache.TryGetProjectNames(name, out projectName);
+            _projectSystemCache.TryGetProjectNames(name, out var projectNames);
 
             // Remove the project from the cache
             _projectSystemCache.RemoveProject(name);
@@ -716,11 +713,11 @@ namespace NuGet.PackageManagement.VisualStudio
 
             // for LightSwitch project, the main project is not added to _projectCache, but it is called on removal.
             // in that case, projectName is null.
-            if (projectName != null
-                && projectName.CustomUniqueName.Equals(DefaultNuGetProjectName, StringComparison.OrdinalIgnoreCase)
-                && !_projectSystemCache.IsAmbiguous(projectName.ShortName))
+            if (projectNames != null
+                && projectNames.CustomUniqueName.Equals(DefaultNuGetProjectName, StringComparison.OrdinalIgnoreCase)
+                && !_projectSystemCache.IsAmbiguous(projectNames.ShortName))
             {
-                DefaultNuGetProjectName = projectName.ShortName;
+                DefaultNuGetProjectName = projectNames.ShortName;
             }
         }
 
@@ -783,25 +780,6 @@ namespace NuGet.PackageManagement.VisualStudio
             return null;
         }
 
-        // REVIEW: This might be inefficient, see what we can do with caching projects until references change
-        internal static IEnumerable<IVsProjectAdapter> GetDependentProjects(IDictionary<string, List<IVsProjectAdapter>> dependentProjectsDictionary, IVsProjectAdapter vsProjectAdapter)
-        {
-            Debug.Assert(ThreadHelper.CheckAccess());
-
-            if (vsProjectAdapter == null)
-            {
-                throw new ArgumentNullException(nameof(vsProjectAdapter));
-            }
-
-            List<IVsProjectAdapter> dependents;
-            if (dependentProjectsDictionary.TryGetValue(vsProjectAdapter.UniqueName, out dependents))
-            {
-                return dependents;
-            }
-
-            return Enumerable.Empty<IVsProjectAdapter>();
-        }
-
         internal async Task<IDictionary<string, List<IVsProjectAdapter>>> GetDependentProjectsDictionaryAsync()
         {
             // Get all of the projects in the solution and build the reverse graph. i.e.
@@ -831,11 +809,11 @@ namespace NuGet.PackageManagement.VisualStudio
             return dependentProjectsDictionary;
         }
 
-        private static void AddDependentProject(IDictionary<string, List<IVsProjectAdapter>> dependentProjectsDictionary,
-            IVsProjectAdapter vsProjectAdapter, IVsProjectAdapter dependentVsProjectAdapter)
+        private static void AddDependentProject(
+            IDictionary<string, List<IVsProjectAdapter>> dependentProjectsDictionary,
+            IVsProjectAdapter vsProjectAdapter,
+            IVsProjectAdapter dependentVsProjectAdapter)
         {
-            Debug.Assert(ThreadHelper.CheckAccess());
-
             var uniqueName = vsProjectAdapter.UniqueName;
 
             if (!dependentProjectsDictionary.TryGetValue(uniqueName, out List<IVsProjectAdapter> dependentProjects))
@@ -911,7 +889,7 @@ namespace NuGet.PackageManagement.VisualStudio
             }
         }
 
-#endregion IVsSelectionEvents
+        #endregion IVsSelectionEvents
 
         #region IVsSolutionManager
 
@@ -977,7 +955,7 @@ namespace NuGet.PackageManagement.VisualStudio
             var projectName = GetNuGetProjectSafeName(oldProject);
             var vsProjectAdapter = GetVsProjectAdapter(projectName);
 
-            _projectSystemCache.TryGetProjectNames(projectName, out ProjectNames oldProjectName);
+            _projectSystemCache.TryGetProjectNames(projectName, out var projectNames);
 
             RemoveVsProjectAdapterFromCache(projectName);
 
@@ -988,7 +966,7 @@ namespace NuGet.PackageManagement.VisualStudio
             var nuGetProject = await _projectSystemFactory.CreateNuGetProjectAsync<LegacyPackageReferenceProject>(
                 vsProjectAdapter, context);
 
-            var added = _projectSystemCache.AddProject(oldProjectName, vsProjectAdapter, nuGetProject);
+            var added = _projectSystemCache.AddProject(projectNames, vsProjectAdapter, nuGetProject);
 
             if (DefaultNuGetProjectName == null)
             {

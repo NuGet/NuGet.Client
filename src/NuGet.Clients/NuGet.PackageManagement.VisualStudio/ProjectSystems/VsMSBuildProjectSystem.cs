@@ -27,7 +27,7 @@ using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
-    public class VsMSBuildProjectSystem 
+    public class VsMSBuildProjectSystem
         : IMSBuildProjectSystem
         , IProjectSystemCapabilities
         , IProjectSystemReferencesReader
@@ -41,25 +41,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private IVsProjectBuildSystem _buildSystem;
 
-        public VsMSBuildProjectSystem(
-            IVsProjectAdapter vsProjectAdapter,
-            INuGetProjectContext nuGetProjectContext)
-        {
-            Assumes.Present(vsProjectAdapter);
-            Assumes.Present(nuGetProjectContext);
-
-            VsProjectAdapter = vsProjectAdapter;
-            BuildProperties = vsProjectAdapter.BuildProperties;
-            NuGetProjectContext = nuGetProjectContext;
-
-            _targetFramework = new AsyncLazy<NuGetFramework>(
-                VsProjectAdapter.GetTargetFrameworkAsync,
-                NuGetUIThreadHelper.JoinableTaskFactory);
-        }
-
         protected IVsProjectAdapter VsProjectAdapter { get; }
-
-        public IProjectBuildProperties BuildProperties { get; }
 
         public INuGetProjectContext NuGetProjectContext { get; set; }
 
@@ -179,6 +161,21 @@ namespace NuGet.PackageManagement.VisualStudio
                 });
 #endif
             }
+        }
+
+        public VsMSBuildProjectSystem(
+            IVsProjectAdapter vsProjectAdapter,
+            INuGetProjectContext nuGetProjectContext)
+        {
+            Assumes.Present(vsProjectAdapter);
+            Assumes.Present(nuGetProjectContext);
+
+            VsProjectAdapter = vsProjectAdapter;
+            NuGetProjectContext = nuGetProjectContext;
+
+            _targetFramework = new AsyncLazy<NuGetFramework>(
+                VsProjectAdapter.GetTargetFrameworkAsync,
+                NuGetUIThreadHelper.JoinableTaskFactory);
         }
 
         public virtual void AddFile(string path, Stream stream)
@@ -482,7 +479,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public virtual dynamic GetPropertyValue(string propertyName)
         {
-            return BuildProperties.GetPropertyValue(propertyName);
+            return VsProjectAdapter.BuildProperties.GetPropertyValue(propertyName);
         }
 
         public virtual bool IsSupportedFile(string path)
@@ -539,7 +536,7 @@ namespace NuGet.PackageManagement.VisualStudio
             }
         }
 
-#region Binding Redirects Stuff
+        #region Binding Redirects Stuff
 
         private const string SilverlightTargetFrameworkIdentifier = "Silverlight";
 
@@ -612,7 +609,7 @@ namespace NuGet.PackageManagement.VisualStudio
             }
         }
 
-#endregion Binding Redirects Stuff
+        #endregion Binding Redirects Stuff
 
         [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD010", Justification = "NuGet/Home#4833 Baseline")]
         public virtual void BeginProcessing()
@@ -914,7 +911,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             NuGetProjectContext.Log(
                 ProjectManagement.MessageLevel.Debug,
-                Strings.Debug_AddedReferenceToProject, 
+                Strings.Debug_AddedReferenceToProject,
                 name, projectName, resolvedToPackage, dteOriginalPath, assemblyFullPath);
         }
 

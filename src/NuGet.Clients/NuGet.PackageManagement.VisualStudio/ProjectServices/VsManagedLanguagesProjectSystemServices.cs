@@ -7,6 +7,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft;
+using Microsoft.VisualStudio.ComponentModelHost;
 using NuGet.Commands;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
@@ -22,13 +23,16 @@ namespace NuGet.PackageManagement.VisualStudio
     /// <summary>
     /// Contains the information specific to a Visual Basic or C# project.
     /// </summary>
-    internal class VsLangProjectSystemService
-        : IProjectSystemCapabilities
+    internal class VsManagedLanguagesProjectSystemServices
+        : GlobalProjectServiceProvider
+        , INuGetProjectServices
+        , IProjectSystemCapabilities
         , IProjectSystemReferencesReader
         , IProjectSystemReferencesService
     {
         private static readonly Array _referenceMetadata;
 
+        private readonly IVsProjectAdapter _vsProjectAdapter;
         private readonly IVsProjectThreadingService _threadingService;
         private readonly Lazy<VSProject4> _asVSProject4;
 
@@ -36,7 +40,23 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public bool SupportsPackageReferences => true;
 
-        static VsLangProjectSystemService()
+        #region INuGetProjectServices
+
+        public IProjectBuildProperties BuildProperties => _vsProjectAdapter.BuildProperties;
+
+        public IProjectSystemCapabilities Capabilities => this;
+
+        public IProjectSystemReferencesReader ReferencesReader => this;
+
+        public IProjectSystemReferencesService References => this;
+
+        public IProjectSystemService ProjectSystem => throw new NotSupportedException();
+
+        public IProjectScriptHostService ScriptService { get; }
+
+        #endregion INuGetProjectServices
+
+        static VsManagedLanguagesProjectSystemServices()
         {
             _referenceMetadata = Array.CreateInstance(typeof(string), 3);
             _referenceMetadata.SetValue(ProjectItemProperties.IncludeAssets, 0);
@@ -44,17 +64,21 @@ namespace NuGet.PackageManagement.VisualStudio
             _referenceMetadata.SetValue(ProjectItemProperties.PrivateAssets, 2);
         }
 
-        public VsLangProjectSystemService(
-            IVsProjectAdapter projectAdapter,
-            INuGetProjectServices projectServices)
+        public VsManagedLanguagesProjectSystemServices(
+            IVsProjectAdapter vsProjectAdapter,
+            IComponentModel componentModel)
+            : base(componentModel)
         {
-            Assumes.Present(projectAdapter);
-            Assumes.Present(projectServices);
+            Assumes.Present(vsProjectAdapter);
 
-            _threadingService = projectServices.GetGlobalService<IVsProjectThreadingService>();
+            _vsProjectAdapter = vsProjectAdapter;
+
+            _threadingService = GetGlobalService<IVsProjectThreadingService>();
             Assumes.Present(_threadingService);
 
-            _asVSProject4 = new Lazy<VSProject4>(() => projectAdapter.Project.Object as VSProject4);
+            _asVSProject4 = new Lazy<VSProject4>(() => vsProjectAdapter.Project.Object as VSProject4);
+
+            ScriptService = new VsProjectScriptHostService(vsProjectAdapter, this);
         }
 
         public async Task<IEnumerable<LibraryDependency>> GetPackageReferencesAsync(

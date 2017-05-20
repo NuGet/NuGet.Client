@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.ProjectManagement;
@@ -75,7 +76,10 @@ namespace NuGet.PackageManagement.VisualStudio
             IDictionary<string, List<IVsProjectAdapter>> dependentEnvDTEProjectsDictionary,
             INuGetProjectContext nuGetProjectContext)
         {
+            Assumes.Present(vsProjectAdapter);
+
             // Need to be on the UI thread
+            ThreadHelper.ThrowIfNotOnUIThread();
 
             var envDTEProjectUniqueName = vsProjectAdapter.UniqueName;
             if (visitedProjects.Contains(envDTEProjectUniqueName))
@@ -89,7 +93,7 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             // Add binding redirects to all envdteprojects that are referencing this one
-            foreach (var dependentEnvDTEProject in VSSolutionManager.GetDependentProjects(dependentEnvDTEProjectsDictionary, vsProjectAdapter))
+            foreach (var dependentEnvDTEProject in GetDependentProjects(dependentEnvDTEProjectsDictionary, vsProjectAdapter))
             {
                 await AddBindingRedirectsAsync(
                     vsSolutionManager,
@@ -103,6 +107,18 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             visitedProjects.Add(envDTEProjectUniqueName);
+        }
+
+        private static IEnumerable<IVsProjectAdapter> GetDependentProjects(
+            IDictionary<string, List<IVsProjectAdapter>> dependentProjectsDictionary,
+            IVsProjectAdapter vsProjectAdapter)
+        {
+            if (dependentProjectsDictionary.TryGetValue(vsProjectAdapter.UniqueName, out var dependents))
+            {
+                return dependents;
+            }
+
+            return Enumerable.Empty<IVsProjectAdapter>();
         }
 
         [SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters", MessageId = "nuGetProjectContext")]

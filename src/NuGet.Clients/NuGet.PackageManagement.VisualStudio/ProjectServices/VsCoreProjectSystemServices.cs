@@ -10,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft;
 using Microsoft.VisualStudio;
+using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
@@ -22,10 +23,12 @@ using VSLangProj80;
 namespace NuGet.PackageManagement.VisualStudio
 {
     /// <summary>
-    /// Represents VS core project system in the integrated development environment (IDE).
+    /// Represents Visual Studio core project system in the integrated development environment (IDE).
     /// </summary>
-    internal class VsCoreProjectSystemService 
-        : IProjectSystemCapabilities
+    internal class VsCoreProjectSystemServices
+        : GlobalProjectServiceProvider
+        , INuGetProjectServices
+        , IProjectSystemCapabilities
         , IProjectSystemReferencesReader
     {
         private readonly IVsProjectAdapter _vsProjectAdapter;
@@ -33,18 +36,38 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public bool SupportsPackageReferences => false;
 
-        public VsCoreProjectSystemService(
+        #region INuGetProjectServices
+
+        public IProjectBuildProperties BuildProperties => _vsProjectAdapter.BuildProperties;
+
+        public IProjectSystemCapabilities Capabilities => this;
+
+        public IProjectSystemReferencesReader ReferencesReader => this;
+
+        public IProjectSystemReferencesService References => throw new NotSupportedException();
+
+        public IProjectSystemService ProjectSystem => throw new NotSupportedException();
+
+        public IProjectScriptHostService ScriptService { get; }
+
+        #endregion INuGetProjectServices
+
+        public VsCoreProjectSystemServices(
             IVsProjectAdapter vsProjectAdapter,
-            INuGetProjectServices projectServices)
+            IComponentModel componentModel)
+            : base(componentModel)
         {
             Assumes.Present(vsProjectAdapter);
-            Assumes.Present(projectServices);
 
             _vsProjectAdapter = vsProjectAdapter;
 
-            _threadingService = projectServices.GetGlobalService<IVsProjectThreadingService>();
+            _threadingService = GetGlobalService<IVsProjectThreadingService>();
             Assumes.Present(_threadingService);
+
+            ScriptService = new VsProjectScriptHostService(vsProjectAdapter, this);
         }
+
+        #region IProjectSystemReferencesReader
 
         public async Task<IEnumerable<ProjectRestoreReference>> GetProjectReferencesAsync(
             Common.ILogger logger, CancellationToken _)
@@ -209,9 +232,12 @@ namespace NuGet.PackageManagement.VisualStudio
             return excludedReferences;
         }
 
-        public Task<IEnumerable<LibraryDependency>> GetPackageReferencesAsync(NuGetFramework targetFramework, CancellationToken _)
+        public Task<IEnumerable<LibraryDependency>> GetPackageReferencesAsync(
+            NuGetFramework targetFramework, CancellationToken _)
         {
             throw new NotSupportedException();
         }
+
+        #endregion IProjectSystemReferencesReader
     }
 }

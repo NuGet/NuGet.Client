@@ -102,7 +102,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             if (vsProjectAdapter.IsDeferred)
             {
-                if (!forceCreate && 
+                if (!forceCreate &&
                     !PackageReference.Equals(restoreProjectStyle, StringComparison.OrdinalIgnoreCase))
                 {
                     var packagesConfigFilePath = Path.Combine(vsProjectAdapter.FullPath, NuGetConstants.PackageReferenceFile);
@@ -136,7 +136,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
                 // For legacy csproj, either the RestoreProjectStyle must be set to PackageReference or
                 // project has atleast one package dependency defined as PackageReference
-                if (forceCreate 
+                if (forceCreate
                     || PackageReference.Equals(restoreProjectStyle, StringComparison.OrdinalIgnoreCase)
                     || (asVSProject4.PackageReferences?.InstalledPackages?.Length ?? 0) > 0)
                 {
@@ -153,18 +153,7 @@ namespace NuGet.PackageManagement.VisualStudio
             // Lazy load the CPS enabled JoinableTaskFactory for the UI.
             NuGetUIThreadHelper.SetJoinableTaskFactoryFromService(ProjectServiceAccessor.Value as ProjectSystem.IProjectServiceAccessor);
 
-            var vsProjectServices = componentModel.GetService<VsProjectSystemServices>();
-            Assumes.Present(vsProjectServices);
-
-            vsProjectServices.AttachProjectAdapter(vsProjectAdapter);
-
-            var vsLangProjectSystemService = new VsLangProjectSystemService(vsProjectAdapter, vsProjectServices);
-
-            vsProjectServices.Capabilities = vsLangProjectSystemService;
-            vsProjectServices.ReferencesReader = vsLangProjectSystemService;
-            vsProjectServices.References = vsLangProjectSystemService;
-
-            return vsProjectServices;
+            return new VsManagedLanguagesProjectSystemServices(vsProjectAdapter, componentModel);
         }
     }
 }

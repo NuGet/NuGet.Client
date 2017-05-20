@@ -112,29 +112,13 @@ namespace NuGet.PackageManagement.VisualStudio
                 return new DeferredProjectServicesProxy(
                     vsProjectAdapter,
                     new DeferredProjectCapabilities { SupportsPackageReferences = false },
-                    () => CreateCoreProjectSystemServices(vsProjectAdapter, componentModel),
+                    () => new VsCoreProjectSystemServices(vsProjectAdapter, componentModel),
                     componentModel);
             }
             else
             {
-                return CreateCoreProjectSystemServices(vsProjectAdapter, componentModel);
+                return new VsCoreProjectSystemServices(vsProjectAdapter, componentModel);
             }
-        }
-
-        private static INuGetProjectServices CreateCoreProjectSystemServices(
-            IVsProjectAdapter vsProjectAdapter, IComponentModel componentModel)
-        {
-            var vsProjectServices = componentModel.GetService<VsProjectSystemServices>();
-            Assumes.Present(vsProjectServices);
-
-            vsProjectServices.AttachProjectAdapter(vsProjectAdapter);
-
-            var vsCoreProjectSystemService = new VsCoreProjectSystemService(vsProjectAdapter, vsProjectServices);
-
-            vsProjectServices.Capabilities = vsCoreProjectSystemService;
-            vsProjectServices.ReferencesReader = vsCoreProjectSystemService;
-
-            return vsProjectServices;
         }
     }
 }

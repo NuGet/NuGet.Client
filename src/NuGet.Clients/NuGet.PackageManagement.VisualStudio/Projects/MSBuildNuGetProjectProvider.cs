@@ -38,8 +38,8 @@ namespace NuGet.PackageManagement.VisualStudio
         }
 
         public bool TryCreateNuGetProject(
-            IVsProjectAdapter vsProjectAdapter, 
-            ProjectProviderContext context, 
+            IVsProjectAdapter vsProjectAdapter,
+            ProjectProviderContext context,
             bool forceProjectType,
             out NuGetProject result)
         {
@@ -81,29 +81,51 @@ namespace NuGet.PackageManagement.VisualStudio
                 return new DeferredProjectServicesProxy(
                     vsProjectAdapter,
                     new DeferredProjectCapabilities { SupportsPackageReferences = false },
-                    () => CreateCoreProjectSystemServices(
-                        vsProjectAdapter, projectSystem, componentModel),
+                    () => new VsMSBuildProjectSystemServices(vsProjectAdapter, projectSystem, componentModel),
                     componentModel);
             }
             else
             {
-                return CreateCoreProjectSystemServices(vsProjectAdapter, projectSystem, componentModel);
+                return new VsMSBuildProjectSystemServices(vsProjectAdapter, projectSystem, componentModel);
             }
         }
 
-        private static INuGetProjectServices CreateCoreProjectSystemServices(IVsProjectAdapter vsProjectAdapter, VsMSBuildProjectSystem projectSystem, IComponentModel componentModel)
+        /// <summary>
+        /// Implements project services in terms of <see cref="VsMSBuildProjectSystem"/>
+        /// </summary>
+        private class VsMSBuildProjectSystemServices
+            : GlobalProjectServiceProvider
+            , INuGetProjectServices
         {
-            var projectServices = componentModel.GetService<VsProjectSystemServices>();
-            Assumes.Present(projectServices);
+            private readonly IVsProjectAdapter _vsProjectAdapter;
+            private readonly VsMSBuildProjectSystem _vsProjectSystem;
 
-            projectServices.AttachProjectAdapter(vsProjectAdapter);
+            public IProjectBuildProperties BuildProperties => _vsProjectAdapter.BuildProperties;
 
-            projectServices.Capabilities = projectSystem;
-            projectServices.ReferencesReader = projectSystem;
-            projectServices.ProjectSystem = projectSystem;
-            projectServices.References = projectSystem;
+            public IProjectSystemCapabilities Capabilities => _vsProjectSystem;
 
-            return projectServices;
+            public IProjectSystemReferencesReader ReferencesReader => _vsProjectSystem;
+
+            public IProjectSystemReferencesService References => _vsProjectSystem;
+
+            public IProjectSystemService ProjectSystem => _vsProjectSystem;
+
+            public IProjectScriptHostService ScriptService { get; }
+
+            public VsMSBuildProjectSystemServices(
+                IVsProjectAdapter vsProjectAdapter,
+                VsMSBuildProjectSystem vsProjectSystem,
+                IComponentModel componentModel)
+                : base(componentModel)
+            {
+                Assumes.Present(vsProjectAdapter);
+                Assumes.Present(vsProjectSystem);
+
+                _vsProjectAdapter = vsProjectAdapter;
+                _vsProjectSystem = vsProjectSystem;
+
+                ScriptService = new VsProjectScriptHostService(vsProjectAdapter, this);
+            }
         }
     }
 }

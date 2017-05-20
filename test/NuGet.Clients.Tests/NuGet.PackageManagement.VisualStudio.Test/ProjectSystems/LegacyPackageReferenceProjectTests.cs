@@ -280,7 +280,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 // Verify
                 Mock.Get(projectServices.ReferencesReader)
                     .Verify(
-                        x => x.GetPackageReferencesAsync(framework, CancellationToken.None), 
+                        x => x.GetPackageReferencesAsync(framework, CancellationToken.None),
                         Times.AtLeastOnce);
             }
         }
@@ -380,7 +380,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         }
 
         [Fact]
-        public async Task InstallPackageAsync_Always_AddsPackageReference()
+        public async Task InstallPackageAsync_AddsPackageReference()
         {
             // Arrange
             using (var randomTestFolder = TestDirectory.Create())
@@ -393,7 +393,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 Mock.Get(projectServices.References)
                     .Setup(x => x.AddOrUpdatePackageReferenceAsync(
                         It.IsAny<LibraryDependency>(), CancellationToken.None))
-                    .Callback<LibraryDependency>(d => actualDependency = d)
+                    .Callback<LibraryDependency, CancellationToken>((d, _) => actualDependency = d)
                     .Returns(Task.CompletedTask);
 
                 var testProject = new LegacyPackageReferenceProject(

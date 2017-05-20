@@ -105,6 +105,7 @@
     <Compile Include="Common\PackageCollectionItem.cs" />
     <Compile Include="Common\PackageCollectionItemExtensions.cs" />
     <Compile Include="ProjectServices\DeferredProjectCapabilities.cs" />
+    <Compile Include="ProjectServices\GlobalProjectServiceProvider.cs" />
     <Compile Include="Utility\SupportedProjectTypes.cs" />
     <Compile Include="Common\VersionCollectionExtensions.cs" />
     <Compile Include="DefaultVSCredentialServiceProvider.cs" />
@@ -141,7 +142,6 @@
     <Compile Include="Projects\NetCorePackageReferenceProjectProvider.cs" Condition="'$(VisualStudioVersion)' == '15.0'" />
     <Compile Include="Projects\ProjectProviderContext.cs" />
     <Compile Include="ProjectServices\VsProjectScriptHostService.cs" />
-    <Compile Include="ProjectServices\VsProjectSystemServices.cs" />
     <Compile Include="Prompts\DeprecatedFrameworkModel.cs" />
     <Compile Include="Prompts\DotnetDeprecatedPrompt.cs" />
     <Compile Include="Services\NuGetLockService.cs" />
@@ -215,10 +215,10 @@
     <Compile Include="Services\IVsProjectThreadingService.cs" />
     <Compile Include="ProjectServices\VsCoreProjectBuildProperties.cs" />
     <Compile Include="ProjectServices\VsLangProjectBuildProperties.cs" />
-    <Compile Include="ProjectServices\VsLangProjectSystemService.cs" Condition="'$(VisualStudioVersion)' == '15.0'" />
+    <Compile Include="ProjectServices\VsManagedLanguagesProjectSystemServices.cs" Condition="'$(VisualStudioVersion)' == '15.0'" />
     <Compile Include="Projects\VsProjectAdapter.cs" />
     <Compile Include="Projects\VsProjectAdapterProvider.cs" />
-    <Compile Include="ProjectServices\VsCoreProjectSystemService.cs" />
+    <Compile Include="ProjectServices\VsCoreProjectSystemServices.cs" />
     <Compile Include="ProjectServices\WorkspaceProjectBuildProperties.cs" />
     <Compile Include="ProjectServices\WorkspaceProjectServices.cs" />
     <Compile Include="VSSettings.cs" />
