@@ -129,11 +129,8 @@ namespace NuGet.Commands
             var fallbackPaths = new ReadOnlyCollection<string>(project.PackageSpec.RestoreMetadata.FallbackFolders);
             var globalPath = GetPackagesPath(restoreArgs, project);
             var settings = Settings.LoadSettingsGivenConfigPaths(project.PackageSpec.RestoreMetadata.ConfigFilePaths);
-            var sources = restoreArgs.GetEffectiveSources(settings);
-            UpdateSources(project.PackageSpec.RestoreMetadata, sources); // TODO NK - We cannot rely on that all cases are covered here.
-            // For example, if a csproj property is set, the source will be in the dg spec, but not in the restore args. 
-            // We need to do a cross check.
-            // priority of vals?
+            var sources = restoreArgs.GetEffectiveSources(settings, project.PackageSpec.RestoreMetadata.Sources);
+            UpdateSources(project.PackageSpec.RestoreMetadata, sources);
 
             var sharedCache = _providerCache.GetOrCreate(
                 globalPath,
