@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -131,8 +132,10 @@ namespace NuGet.Commands.FuncTest
         public async Task RestoreCommand_CannotFindProjectReferenceWithDifferentNameCase()
         {
             // Arrange
-            var sources = new List<PackageSource>();
-            sources.Add(new PackageSource("https://www.nuget.org/api/v2/"));
+            var sources = new List<PackageSource>
+            {
+                new PackageSource("https://www.nuget.org/api/v2/")
+            };
 
             using (var packagesDir = TestDirectory.Create())
             using (var projectDir = TestDirectory.Create())
@@ -262,8 +265,10 @@ namespace NuGet.Commands.FuncTest
         public async Task RestoreCommand_VerifyMinClientVersionV2Source()
         {
             // Arrange
-            var sources = new List<PackageSource>();
-            sources.Add(new PackageSource("https://www.nuget.org/api/v2/"));
+            var sources = new List<PackageSource>
+            {
+                new PackageSource("https://www.nuget.org/api/v2/")
+            };
 
             using (var packagesDir = TestDirectory.Create())
             using (var projectDir = TestDirectory.Create())
@@ -304,8 +309,10 @@ namespace NuGet.Commands.FuncTest
         public async Task RestoreCommand_VerifyMinClientVersionV3Source()
         {
             // Arrange
-            var sources = new List<PackageSource>();
-            sources.Add(new PackageSource("https://api.nuget.org/v3/index.json"));
+            var sources = new List<PackageSource>
+            {
+                new PackageSource("https://api.nuget.org/v3/index.json")
+            };
 
             using (var packagesDir = TestDirectory.Create())
             using (var projectDir = TestDirectory.Create())
@@ -470,8 +477,10 @@ namespace NuGet.Commands.FuncTest
         public async Task RestoreCommand_FrameworkImportRulesAreApplied()
         {
             // Arrange
-            var sources = new List<PackageSource>();
-            sources.Add(new PackageSource("https://www.nuget.org/api/v2/"));
+            var sources = new List<PackageSource>
+            {
+                new PackageSource("https://www.nuget.org/api/v2/")
+            };
 
             using (var packagesDir = TestDirectory.Create())
             using (var projectDir = TestDirectory.Create())
@@ -524,8 +533,10 @@ namespace NuGet.Commands.FuncTest
         public async Task RestoreCommand_FrameworkImportArray()
         {
             // Arrange
-            var sources = new List<PackageSource>();
-            sources.Add(new PackageSource("https://www.nuget.org/api/v2/"));
+            var sources = new List<PackageSource>
+            {
+                new PackageSource("https://www.nuget.org/api/v2/")
+            };
 
             using (var packagesDir = TestDirectory.Create())
             using (var projectDir = TestDirectory.Create())
@@ -580,8 +591,10 @@ namespace NuGet.Commands.FuncTest
         public async Task RestoreCommand_FrameworkImportRulesAreApplied_Noop()
         {
             // Arrange
-            var sources = new List<PackageSource>();
-            sources.Add(new PackageSource("https://www.nuget.org/api/v2/"));
+            var sources = new List<PackageSource>
+            {
+                new PackageSource("https://www.nuget.org/api/v2/")
+            };
 
             using (var packagesDir = TestDirectory.Create())
             using (var projectDir = TestDirectory.Create())
@@ -635,8 +648,10 @@ namespace NuGet.Commands.FuncTest
         public async Task RestoreCommand_LeftOverNupkg_Overwritten()
         {
             // Arrange
-            var sources = new List<PackageSource>();
-            sources.Add(new PackageSource("https://www.nuget.org/api/v2/"));
+            var sources = new List<PackageSource>
+            {
+                new PackageSource("https://www.nuget.org/api/v2/")
+            };
 
             using (var packagesDir = TestDirectory.Create())
             using (var projectDir = TestDirectory.Create())
@@ -694,8 +709,10 @@ namespace NuGet.Commands.FuncTest
         public async Task RestoreCommand_FrameworkImport_WarnOn()
         {
             // Arrange
-            var sources = new List<PackageSource>();
-            sources.Add(new PackageSource("https://www.nuget.org/api/v2/"));
+            var sources = new List<PackageSource>
+            {
+                new PackageSource("https://www.nuget.org/api/v2/")
+            };
 
             using (var packagesDir = TestDirectory.Create())
             using (var projectDir = TestDirectory.Create())
@@ -736,7 +753,7 @@ namespace NuGet.Commands.FuncTest
                 Assert.Equal(1, result.GetAllInstalled().Count);
                 Assert.Equal(0, logger.Errors);
                 Assert.Equal(1, logger.Warnings);
-                Assert.Equal(1, logger.Messages.Where(message => message.Equals(warning)).Count());
+                Assert.Equal(1, logger.Messages.Where(message => message.Contains(warning)).Count());
             }
         }
 
@@ -1227,7 +1244,7 @@ namespace NuGet.Commands.FuncTest
                 var packages = new List<SimpleTestPackageContext>();
                 var dependencies = new List<SimpleTestPackageContext>();
 
-                for (int i = 0; i < 500; i++)
+                for (var i = 0; i < 500; i++)
                 {
                     var package = new SimpleTestPackageContext()
                     {
@@ -1435,8 +1452,8 @@ namespace NuGet.Commands.FuncTest
                 var runtimeAssembly = runtimeAssemblies.FirstOrDefault();
 
                 // Assert
-                Assert.Equal(3, logger.Warnings); // We'll get the warning for each runtime and for the runtime-less restore.
-                Assert.Contains("Dependency specified was Newtonsoft.Json (>= 7.0.0) but ended up with Newtonsoft.Json 7.0.1.", logger.Messages);
+                Assert.Equal(1, logger.Warnings); // Warnings are combined on message
+                Assert.Contains("TestProject depends on Newtonsoft.Json (>= 7.0.0) but Newtonsoft.Json 7.0.0 was not found. An approximate best match of Newtonsoft.Json 7.0.1 was resolved.", logger.Messages);
             }
         }
 
@@ -1471,8 +1488,8 @@ namespace NuGet.Commands.FuncTest
                 var resultB = await commandB.ExecuteAsync();
 
                 // Assert
-                Assert.Equal(3, logger.Warnings); // We'll get the warning for each runtime and for the runtime-less restore.
-                Assert.Contains("Dependency specified was Newtonsoft.Json (>= 7.0.0) but ended up with Newtonsoft.Json 7.0.1.", logger.Messages);
+                Assert.Equal(1, logger.Warnings); // Warnings for all graphs are combined
+                Assert.Contains("TestProject depends on Newtonsoft.Json (>= 7.0.0) but Newtonsoft.Json 7.0.0 was not found. An approximate best match of Newtonsoft.Json 7.0.1 was resolved.", logger.Messages);
             }
         }
 
@@ -1523,9 +1540,10 @@ namespace NuGet.Commands.FuncTest
         public async Task RestoreCommand_NoCompatibleRuntimeAssembliesForProject()
         {
             // Arrange
-            var sources = new List<PackageSource>();
-            sources.Add(new PackageSource("https://www.nuget.org/api/v2/"));
-
+            var sources = new List<PackageSource>
+            {
+                new PackageSource("https://www.nuget.org/api/v2/")
+            };
             using (var packagesDir = TestDirectory.Create())
             using (var projectDir = TestDirectory.Create())
             {
@@ -1556,11 +1574,12 @@ namespace NuGet.Commands.FuncTest
                     FrameworkConstants.CommonFrameworks.NetCore50,
                     null,
                     new[] { NuGetFramework.Parse("net40-client") });
+
                 Assert.Contains(expectedIssue, result.CompatibilityCheckResults.SelectMany(c => c.Issues).ToArray());
                 Assert.False(result.CompatibilityCheckResults.Any(c => c.Success));
-                Assert.Contains(expectedIssue.Format(), logger.Messages);
+                Assert.True(logger.Messages.Any(e => e.Contains(expectedIssue.Format())));
 
-                Assert.Equal(9, logger.Errors);
+                Assert.Equal(6, logger.Errors);
                 Assert.Equal(2, installed.Count);
                 Assert.Equal(0, unresolved.Count);
                 Assert.Equal(0, runtimeAssemblies.Count);
@@ -1571,8 +1590,10 @@ namespace NuGet.Commands.FuncTest
         public async Task RestoreCommand_CorrectlyIdentifiesUnresolvedPackages()
         {
             // Arrange
-            var sources = new List<PackageSource>();
-            sources.Add(new PackageSource("https://www.nuget.org/api/v2/"));
+            var sources = new List<PackageSource>
+            {
+                new PackageSource("https://www.nuget.org/api/v2/")
+            };
 
             using (var packagesDir = TestDirectory.Create())
             using (var projectDir = TestDirectory.Create())
@@ -1599,7 +1620,7 @@ namespace NuGet.Commands.FuncTest
                 // Assert
                 Assert.False(result.Success);
 
-                Assert.Equal(3, logger.Errors);
+                Assert.Equal(1, logger.Errors);
                 Assert.Empty(result.CompatibilityCheckResults);
                 Assert.DoesNotContain("compatible with", logger.Messages);
                 Assert.Equal(1, unresolved.Count);
@@ -1835,9 +1856,11 @@ namespace NuGet.Commands.FuncTest
         public async Task RestoreCommand_RestoreExactVersionWithFailingSource()
         {
             // Arrange
-            var sources = new List<PackageSource>();
-            sources.Add(new PackageSource("https://failingSource"));
-            sources.Add(new PackageSource("https://www.nuget.org/api/v2/"));
+            var sources = new List<PackageSource>
+            {
+                new PackageSource("https://failingSource"),
+                new PackageSource("https://www.nuget.org/api/v2/")
+            };
 
             using (var packagesDir = TestDirectory.Create())
             using (var projectDir = TestDirectory.Create())
@@ -1876,9 +1899,11 @@ namespace NuGet.Commands.FuncTest
         public async Task RestoreCommand_RestoreFloatingVersionWithFailingHttpSource()
         {
             // Arrange
-            var sources = new List<PackageSource>();
-            sources.Add(new PackageSource("https://failingSource"));
-            sources.Add(new PackageSource("https://www.nuget.org/api/v2/"));
+            var sources = new List<PackageSource>
+            {
+                new PackageSource("https://failingSource"),
+                new PackageSource("https://www.nuget.org/api/v2/")
+            };
 
             using (var packagesDir = TestDirectory.Create())
             using (var projectDir = TestDirectory.Create())
@@ -1915,9 +1940,11 @@ namespace NuGet.Commands.FuncTest
         public async Task RestoreCommand_RestoreFloatingVersionWithFailingLocalSource()
         {
             // Arrange
-            var sources = new List<PackageSource>();
-            sources.Add(new PackageSource("\\failingSource"));
-            sources.Add(new PackageSource("https://www.nuget.org/api/v2/"));
+            var sources = new List<PackageSource>
+            {
+                new PackageSource("\\failingSource"),
+                new PackageSource("https://www.nuget.org/api/v2/")
+            };
 
             using (var packagesDir = TestDirectory.Create())
             using (var projectDir = TestDirectory.Create())
@@ -1953,9 +1980,11 @@ namespace NuGet.Commands.FuncTest
         public async Task RestoreCommand_RestoreFloatingVersionWithIgnoreFailingLocalSource()
         {
             // Arrange
-            var sources = new List<PackageSource>();
-            sources.Add(new PackageSource("\\failingSource"));
-            sources.Add(new PackageSource("https://www.nuget.org/api/v2/"));
+            var sources = new List<PackageSource>
+            {
+                new PackageSource("\\failingSource"),
+                new PackageSource("https://www.nuget.org/api/v2/")
+            };
 
             using (var packagesDir = TestDirectory.Create())
             using (var projectDir = TestDirectory.Create())
@@ -2000,9 +2029,11 @@ namespace NuGet.Commands.FuncTest
         public async Task RestoreCommand_RestoreFloatingVersionWithIgnoreFailingHttpSource()
         {
             // Arrange
-            var sources = new List<PackageSource>();
-            sources.Add(new PackageSource("https://failingSource"));
-            sources.Add(new PackageSource("https://www.nuget.org/api/v2/"));
+            var sources = new List<PackageSource>
+            {
+                new PackageSource("https://failingSource"),
+                new PackageSource("https://www.nuget.org/api/v2/")
+            };
 
             using (var packagesDir = TestDirectory.Create())
             using (var projectDir = TestDirectory.Create())
@@ -2091,14 +2122,19 @@ namespace NuGet.Commands.FuncTest
         {
             get
             {
-                var json = new JObject();
 
-                var frameworks = new JObject();
-                frameworks["netcore50"] = new JObject();
 
-                json["dependencies"] = new JObject();
+                var frameworks = new JObject
+                {
+                    ["netcore50"] = new JObject()
+                };
 
-                json["frameworks"] = frameworks;
+                var json = new JObject
+                {
+                    ["dependencies"] = new JObject(),
+
+                    ["frameworks"] = frameworks
+                };
 
                 json.Add("runtimes", JObject.Parse("{ \"uap10-x86\": { }, \"uap10-x86-aot\": { } }"));
 
@@ -2110,14 +2146,19 @@ namespace NuGet.Commands.FuncTest
         {
             get
             {
-                var json = new JObject();
 
-                var frameworks = new JObject();
-                frameworks["net46"] = new JObject();
 
-                json["dependencies"] = new JObject();
+                var frameworks = new JObject
+                {
+                    ["net46"] = new JObject()
+                };
 
-                json["frameworks"] = frameworks;
+                var json = new JObject
+                {
+                    ["dependencies"] = new JObject(),
+
+                    ["frameworks"] = frameworks
+                };
 
                 json.Add("runtimes", JObject.Parse("{ \"uap10-x86\": { }, \"uap10-x86-aot\": { } }"));
 

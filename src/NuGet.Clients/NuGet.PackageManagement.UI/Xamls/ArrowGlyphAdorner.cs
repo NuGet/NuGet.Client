@@ -9,12 +9,12 @@ using Microsoft.VisualStudio.PlatformUI;
 
 namespace NuGet.PackageManagement.UI
 {
-    public class SortGlyphAdorner : Adorner
+    public class ArrowGlyphAdorner : Adorner
     {
         private GridViewColumnHeader _columnHeader;
         private ListSortDirection _direction;
 
-        public SortGlyphAdorner(GridViewColumnHeader columnHeader, ListSortDirection direction) : base(columnHeader)
+        public ArrowGlyphAdorner(GridViewColumnHeader columnHeader, ListSortDirection direction) : base(columnHeader)
         {
             _columnHeader = columnHeader;
             _direction = direction;

@@ -84,6 +84,17 @@ $regKeyNuGet32 = "HKLM:SOFTWARE\Wow6432Node\Microsoft\StrongName\Verification\*,
 
 
 $has32bitNode = Test-Path "HKLM:SOFTWARE\Wow6432Node"
+
+# update submodule NuGet.Build.Localization
+$NuGetClientRoot = $env:BUILD_REPOSITORY_LOCALPATH
+$Submodules = Join-Path $NuGetClientRoot submodules -Resolve
+
+$NuGetLocalization = Join-Path $Submodules NuGet.Build.Localization -Resolve
+$updateOpts = 'pull', 'origin', 'master', '--verbose'
+           
+Write-Host "git update NuGet.Build.Localization at $NuGetLocalization"
+& git -C $NuGetLocalization $updateOpts 2>&1 | Write-Host
+
 if (-not (Test-Path $regKey) -or ($has32bitNode -and -not (Test-Path $regKey32)))
 {
     Write-Host "Disabling StrongName Verification so that test-signed binaries can be used on the build machine"

@@ -60,7 +60,7 @@ namespace NuGet.PackageManagement.UI
                 {
                     foreach (var adorner in adorners)
                     {
-                        if (adorner is SortGlyphAdorner)
+                        if (adorner is ArrowGlyphAdorner)
                         {
                             layer.Remove(adorner);
                         }
@@ -73,7 +73,7 @@ namespace NuGet.PackageManagement.UI
                 return;
             }
 
-            layer.Add(new SortGlyphAdorner(columnHeader, newValue.Value));
+            layer.Add(new ArrowGlyphAdorner(columnHeader, newValue.Value));
         }
     }
 }

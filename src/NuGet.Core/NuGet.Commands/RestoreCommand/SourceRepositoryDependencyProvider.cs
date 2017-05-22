@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
@@ -101,7 +102,7 @@ namespace NuGet.Commands
             await EnsureResource();
 
             // Discover all versions from the feed
-            var packageVersions = await GetPackageVersionsAsync(libraryRange.Name, cacheContext, logger, cancellationToken);
+            var packageVersions = await GetAllVersionsAsync(libraryRange.Name, cacheContext, logger, cancellationToken);
 
             // Select the best match
             var packageVersion = packageVersions?.FindBestMatch(libraryRange.VersionRange, version => version);
@@ -128,14 +129,14 @@ namespace NuGet.Commands
         {
             AsyncLazy<LibraryDependencyInfo> result = null;
 
-            var action = new AsyncLazy<LibraryDependencyInfo>(async () => 
+            var action = new AsyncLazy<LibraryDependencyInfo>(async () =>
                 await GetDependenciesCoreAsync(match, targetFramework, cacheContext, logger, cancellationToken));
 
             var key = new LibraryRangeCacheKey(match, targetFramework);
 
             if (cacheContext.RefreshMemoryCache)
             {
-                result = _dependencyInfoCache.AddOrUpdate(key, action, (k,v) => action);
+                result = _dependencyInfoCache.AddOrUpdate(key, action, (k, v) => action);
             }
             else
             {
@@ -174,7 +175,7 @@ namespace NuGet.Commands
             {
                 if (!_ignoreWarning)
                 {
-                    _logger.LogWarning(e.Message);
+                    await _logger.LogAsync(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1801, e.Message, match.Name));
                 }
             }
             finally
@@ -233,7 +234,7 @@ namespace NuGet.Commands
             {
                 if (!_ignoreWarning)
                 {
-                    _logger.LogWarning(e.Message);
+                    await _logger.LogAsync(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1801, e.Message, identity.Name));
                 }
             }
             finally
@@ -286,7 +287,7 @@ namespace NuGet.Commands
         /// <summary>
         /// Discover all package versions from a feed.
         /// </summary>
-        private async Task<IEnumerable<NuGetVersion>> GetPackageVersionsAsync(string id,
+        public async Task<IEnumerable<NuGetVersion>> GetAllVersionsAsync(string id,
                                                                     SourceCacheContext cacheContext,
                                                                     ILogger logger,
                                                                     CancellationToken cancellationToken)
@@ -308,7 +309,7 @@ namespace NuGet.Commands
             {
                 if (!_ignoreWarning)
                 {
-                    _logger.LogWarning(e.Message);
+                    await _logger.LogAsync(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1801, e.Message, id));
                 }
                 return null;
             }

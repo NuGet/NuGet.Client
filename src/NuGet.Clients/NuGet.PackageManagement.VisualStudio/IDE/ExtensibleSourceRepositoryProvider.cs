@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -20,9 +20,15 @@ namespace NuGet.PackageManagement.VisualStudio
     {
 
         // TODO: add support for reloading sources when changes occur
-        private readonly Configuration.IPackageSourceProvider _packageSourceProvider;
+        private Configuration.IPackageSourceProvider _packageSourceProvider;
         private IEnumerable<Lazy<INuGetResourceProvider>> _resourceProviders;
         private Lazy<List<SourceRepository>> _repositories;
+
+        private readonly Lazy<ISettings> _settings;
+
+        private bool _initialized;
+
+        private readonly object _lockObj = new object();
 
         /// <summary>
         /// Public parameter-less constructor for SourceRepositoryProvider
@@ -35,21 +41,30 @@ namespace NuGet.PackageManagement.VisualStudio
         /// Public importing constructor for SourceRepositoryProvider
         /// </summary>
         [ImportingConstructor]
-        public ExtensibleSourceRepositoryProvider([ImportMany] IEnumerable<Lazy<INuGetResourceProvider>> resourceProviders, [Import] Configuration.ISettings settings)
-            : this(new Configuration.PackageSourceProvider(settings, migratePackageSources: null), resourceProviders)
+        public ExtensibleSourceRepositoryProvider(
+            [ImportMany]
+            IEnumerable<Lazy<INuGetResourceProvider>> resourceProviders,
+            [Import]
+            Lazy<ISettings> settings)
         {
+            _settings = settings;
+            _resourceProviders = Repository.Provider.GetVisualStudio().Concat(resourceProviders);
         }
 
-        /// <summary>
-        /// Non-MEF constructor
-        /// </summary>
-        public ExtensibleSourceRepositoryProvider(Configuration.IPackageSourceProvider packageSourceProvider, IEnumerable<Lazy<INuGetResourceProvider>> resourceProviders)
+        private void EnsureInitialized()
         {
-            _packageSourceProvider = packageSourceProvider;
-            _resourceProviders = Repository.Provider.GetVisualStudio().Concat(resourceProviders);
+            lock (_lockObj)
+            {
+                if (!_initialized)
+                {
+                    _initialized = true;
 
-            // Hook up event to refresh package sources when the package sources changed
-            packageSourceProvider.PackageSourcesChanged += (sender, e) => { ResetRepositories(); };
+                    _packageSourceProvider = new Configuration.PackageSourceProvider(_settings.Value, migratePackageSources: null);
+
+                    // Hook up event to refresh package sources when the package sources changed
+                    _packageSourceProvider.PackageSourcesChanged += (sender, e) => { ResetRepositories(); };
+                }
+            }
         }
 
         /// <summary>
@@ -58,6 +73,8 @@ namespace NuGet.PackageManagement.VisualStudio
         /// <returns></returns>
         public IEnumerable<SourceRepository> GetRepositories()
         {
+            EnsureInitialized();
+
             if (_repositories == null)
             {
                 // initialize repositories from package source 
@@ -72,6 +89,8 @@ namespace NuGet.PackageManagement.VisualStudio
         /// </summary>
         public SourceRepository CreateRepository(PackageSource source)
         {
+            EnsureInitialized();
+
             return CreateRepository(source, FeedType.Undefined);
         }
 
@@ -80,12 +99,19 @@ namespace NuGet.PackageManagement.VisualStudio
         /// </summary>
         public SourceRepository CreateRepository(PackageSource source, FeedType type)
         {
+            EnsureInitialized();
+
             return new SourceRepository(source, _resourceProviders, type);
         }
 
         public Configuration.IPackageSourceProvider PackageSourceProvider
         {
-            get { return _packageSourceProvider; }
+            get
+            {
+                EnsureInitialized();
+
+                return _packageSourceProvider;
+            }
         }
 
         private void ResetRepositories()

@@ -21,11 +21,10 @@
   </ItemGroup>
   <ItemGroup Condition="'$(VisualStudioVersion)' == '14.0'">
     <PackageReference Include="Microsoft.VisualStudio.Shell.14.0" Version="14.2.25123" />
+    <PackageReference Include="Microsoft.VisualStudio.ComponentModelHost.NuGet" Version="14.0.0.0" />
   </ItemGroup>
   <ItemGroup Condition="'$(VisualStudioVersion)' == '15.0'">
     <PackageReference Include="Microsoft.VisualStudio.Shell.15.0" Version="15.0.26201" />
-  </ItemGroup>
-  <ItemGroup>
     <PackageReference Include="Microsoft.VisualStudio.ComponentModelHost" Version="15.0.26201" />
   </ItemGroup>
   <ItemGroup>

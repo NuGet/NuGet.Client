@@ -121,7 +121,7 @@ namespace NuGet.PackageManagement.UI
                 SortableColumnHeader.SetSortDirectionProperty(column, null);
             }
         }
-
+        
         private void SortByColumn(GridViewColumnHeader sortColumn)
         {
             _projectList.Items.SortDescriptions.Clear();
@@ -193,13 +193,25 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private void ProjectList_PreviewKeyUp(object sender, System.Windows.Input.KeyEventArgs e)
+        private void ProjectList_PreviewKeyUp(object sender, KeyEventArgs e)
         {
-            // toggle the selection state when user presses the space bar
+            // toggle the selection state when user presses the space bar when focus is on the ListViewItem
             var packageInstallationInfo = _projectList.SelectedItem as PackageInstallationInfo;
-            if (packageInstallationInfo != null && e.Key == Key.Space)
+            if (packageInstallationInfo != null
+                && e.Key == Key.Space
+                && ((ListViewItem)(_projectList.ItemContainerGenerator.ContainerFromItem(_projectList.SelectedItem))).IsFocused)
             {
                 packageInstallationInfo.IsSelected = !packageInstallationInfo.IsSelected;
+                e.Handled = true;
+            }
+        }
+
+        private void SortableColumnHeader_PreviewKeyUp(object sender, KeyEventArgs e)
+        {
+            var sortableColumnHeader = sender as GridViewColumnHeader;
+            if(sortableColumnHeader != null && (e.Key == Key.Space || e.Key == Key.Enter))
+            {
+                SortByColumn(sortableColumnHeader);
                 e.Handled = true;
             }
         }

@@ -345,7 +345,7 @@ namespace NuGet.CommandLine
                 _properties.Add("Id", metadata.Id);
             }
 
-            _properties.Add("Version", metadata.Version.ToString());
+            _properties.Add("Version", metadata.Version.ToFullString());
 
             if (!String.IsNullOrEmpty(metadata.Title))
             {
