@@ -176,7 +176,7 @@ namespace NuGet.Commands
 
         private string GetPackagesPath(RestoreArgs restoreArgs, ExternalProjectReference project)
         {
-            if (restoreArgs.GlobalPackagesFolder != null)
+            if (!string.IsNullOrEmpty(restoreArgs.GlobalPackagesFolder))
             {
                 project.PackageSpec.RestoreMetadata.PackagesPath = restoreArgs.GlobalPackagesFolder;
             }
