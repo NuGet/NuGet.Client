@@ -183,9 +183,12 @@ namespace NuGet.ProjectModel
                 Targets = ReadObject(cursor[TargetsProperty] as JObject, ReadTarget),
                 ProjectFileDependencyGroups = ReadObject(cursor[ProjectFileDependencyGroupsProperty] as JObject, ReadProjectFileDependencyGroup),
                 PackageFolders = ReadObject(cursor[PackageFoldersProperty] as JObject, ReadFileItem),
-                PackageSpec = ReadPackageSpec(cursor[PackageSpecProperty] as JObject),
-                LogMessages = ReadArray(cursor[LogsProperty] as JArray, ReadLogMessage)
+                PackageSpec = ReadPackageSpec(cursor[PackageSpecProperty] as JObject)
             };
+
+            lockFile.LogMessages = ReadLogMessageArray(cursor[LogsProperty] as JArray,
+                lockFile?.PackageSpec?.RestoreMetadata?.ProjectPath);
+
             return lockFile;
         }
 
@@ -218,7 +221,8 @@ namespace NuGet.ProjectModel
             {
                 if(lockFile.LogMessages.Count > 0)
                 {
-                    json[LogsProperty] = WriteLogMessages(lockFile.LogMessages);
+                    var projectPath = lockFile.PackageSpec?.RestoreMetadata?.ProjectPath;
+                    json[LogsProperty] = WriteLogMessages(lockFile.LogMessages, projectPath);
                 }
             }
 
@@ -309,7 +313,7 @@ namespace NuGet.ProjectModel
         /// </summary>
         /// <param name="logMessage"><code>IAssetsLogMessage</code> representing the log message.</param>
         /// <returns><code>JObject</code> containg the json representation of the log message.</returns>
-        private static JObject WriteLogMessage(IAssetsLogMessage logMessage)
+        private static JObject WriteLogMessage(IAssetsLogMessage logMessage, string projectPath)
         {
             var logJObject = new JObject()
             {
@@ -322,8 +326,11 @@ namespace NuGet.ProjectModel
                 logJObject[LogMessageProperties.WARNING_LEVEL] = logMessage.WarningLevel.ToString();
             }
 
-            if (logMessage.FilePath != null)
+            if (logMessage.FilePath != null && 
+               (projectPath == null || !PathUtility.GetStringComparerBasedOnOS().Equals(logMessage.FilePath, projectPath)))
             {
+                // Do not write the file path if it is the same as the project path.
+                // This prevents duplicate information in the lock file.
                 logJObject[LogMessageProperties.FILE_PATH] = logMessage.FilePath;
             }
 
@@ -372,7 +379,7 @@ namespace NuGet.ProjectModel
         /// </summary>
         /// <param name="json"><code>JObject</code> containg the json representation of the log message.</param>
         /// <returns><code>IAssetsLogMessage</code> representing the log message.</returns>
-        private static IAssetsLogMessage ReadLogMessage(JObject json)
+        private static IAssetsLogMessage ReadLogMessage(JObject json, string projectPath)
         {
             AssetsLogMessage assetsLogMessage = null;
 
@@ -412,6 +419,10 @@ namespace NuGet.ProjectModel
                     {
                         assetsLogMessage.FilePath = filePathJson.Value<string>();
                     }
+                    else
+                    {
+                        assetsLogMessage.FilePath = projectPath;
+                    }
 
                     if (startLineNumberJson != null)
                     {
@@ -443,17 +454,12 @@ namespace NuGet.ProjectModel
             return assetsLogMessage;
         }
 
-        private static IAssetsLogMessage ReadLogMessage(JToken json)
-        {
-            return ReadLogMessage(json as JObject);          
-        }
-
-        private static JArray WriteLogMessages(IEnumerable<IAssetsLogMessage> logMessages)
+        private static JArray WriteLogMessages(IEnumerable<IAssetsLogMessage> logMessages, string projectPath)
         {
             var logMessageArray = new JArray();
             foreach(var logMessage in logMessages)
             {
-                logMessageArray.Add(WriteLogMessage(logMessage));
+                logMessageArray.Add(WriteLogMessage(logMessage, projectPath));
             }
             return logMessageArray;
         }
@@ -691,6 +697,25 @@ namespace NuGet.ProjectModel
                 if(item != null)
                 {
                     items.Add(item);
+                }
+            }
+            return items;
+        }
+
+        private static IList<IAssetsLogMessage> ReadLogMessageArray(JArray json, string projectPath)
+        {
+            if (json == null)
+            {
+                return new List<IAssetsLogMessage>();
+            }
+
+            var items = new List<IAssetsLogMessage>();
+            foreach (var child in json)
+            {
+                var logMessage = ReadLogMessage(child as JObject, projectPath);
+                if (logMessage != null)
+                {
+                    items.Add(logMessage);
                 }
             }
             return items;

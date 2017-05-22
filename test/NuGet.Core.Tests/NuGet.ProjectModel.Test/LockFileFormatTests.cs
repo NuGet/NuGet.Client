@@ -801,6 +801,134 @@ namespace NuGet.ProjectModel.Test
         }
 
         [Fact]
+        public void LockFileFormat_WritesErrorMessageWithFilePathSameAsProjectPath()
+        {
+
+            // Arrange
+            var lockFileContent = @"{
+  ""version"": 3,
+  ""targets"": {
+    "".NETPlatform,Version=v5.0"": {
+      ""System.Runtime/4.0.20-beta-22927"": {
+        ""type"": ""package"",
+        ""dependencies"": {
+          ""Frob"": ""4.0.20""
+        },
+        ""compile"": {
+          ""ref/dotnet/System.Runtime.dll"": {}
+        }
+      }
+    }
+  },
+  ""libraries"": {
+    ""System.Runtime/4.0.20-beta-22927"": {
+      ""sha512"": ""sup3rs3cur3"",
+      ""type"": ""package"",
+      ""files"": [
+        ""System.Runtime.nuspec""
+      ]
+    }
+  },
+  ""projectFileDependencyGroups"": {
+    """": [
+      ""System.Runtime [4.0.10-beta-*, )""
+    ],
+    "".NETPlatform,Version=v5.0"": []
+  },
+  ""project"": {
+    ""restore"": {
+      ""projectPath"": ""kung\\fu\\fighting.csproj""
+    }
+  },
+  ""logs"": [
+    {
+      ""code"": ""NU1000"",
+      ""level"": ""Error"",
+      ""startLineNumber"": 11,
+      ""startColumnNumber"": 2,
+      ""endLineNumber"": 11,
+      ""endColumnNumber"": 10,
+      ""message"": ""test log message"",
+      ""libraryId"": ""nuget.versioning"",
+      ""targetGraphs"": [
+        ""net46"",
+        ""netcoreapp1.0"",
+        ""netstandard1.6""
+      ]
+    }
+  ]
+}";
+            var lockFile = new LockFile()
+            {
+                Version = 3
+            };
+
+            var target = new LockFileTarget()
+            {
+                TargetFramework = FrameworkConstants.CommonFrameworks.DotNet
+            };
+
+            var targetLib = new LockFileTargetLibrary()
+            {
+                Name = "System.Runtime",
+                Version = NuGetVersion.Parse("4.0.20-beta-22927"),
+                Type = LibraryType.Package
+            };
+
+            targetLib.Dependencies.Add(new Packaging.Core.PackageDependency("Frob",
+                new VersionRange(NuGetVersion.Parse("4.0.20"))));
+            targetLib.CompileTimeAssemblies.Add(new LockFileItem("ref/dotnet/System.Runtime.dll"));
+            target.Libraries.Add(targetLib);
+            lockFile.Targets.Add(target);
+
+            var lib = new LockFileLibrary()
+            {
+                Name = "System.Runtime",
+                Version = NuGetVersion.Parse("4.0.20-beta-22927"),
+                Type = LibraryType.Package,
+                Sha512 = "sup3rs3cur3"
+            };
+            lib.Files.Add("System.Runtime.nuspec");
+            lockFile.Libraries.Add(lib);
+
+            lockFile.ProjectFileDependencyGroups.Add(
+                new ProjectFileDependencyGroup("", new string[] { "System.Runtime [4.0.10-beta-*, )" }));
+            lockFile.ProjectFileDependencyGroups.Add(
+                new ProjectFileDependencyGroup(FrameworkConstants.CommonFrameworks.DotNet.DotNetFrameworkName, new string[0]));
+
+            lockFile.PackageSpec = new PackageSpec(new List<TargetFrameworkInformation>())
+            {
+                RestoreMetadata = new ProjectRestoreMetadata()
+                {
+                    ProjectPath = "kung\\fu\\fighting.csproj"
+                }
+            };
+
+            lockFile.LogMessages = new List<IAssetsLogMessage>
+            {
+                new AssetsLogMessage(LogLevel.Error, NuGetLogCode.NU1000, "test log message")
+                {
+                    FilePath = @"kung\fu\fighting.csproj",
+                    ProjectPath = @"kung\fu\fighting.csproj",
+                    TargetGraphs = new List<string>{ "net46", "netcoreapp1.0", "netstandard1.6" },
+                    StartLineNumber = 11,
+                    StartColumnNumber = 2,
+                    EndLineNumber = 11,
+                    EndColumnNumber = 10,
+                    LibraryId = "nuget.versioning"
+                }
+            };
+
+            // Act
+            var lockFileFormat = new LockFileFormat();
+            var output = JObject.Parse(lockFileFormat.Render(lockFile)).ToString();
+            var expected = JObject.Parse(lockFileContent).ToString();
+
+            // Assert
+            Assert.Equal(expected, output);
+        }
+
+        [Fact]
         public void LockFileFormat_ReadsMinimalErrorMessage()
         {
             // Arrange
@@ -957,6 +1085,7 @@ namespace NuGet.ProjectModel.Test
         [Fact]
         public void LockFileFormat_ReadsWarningMessage()
         {
+
             // Arrange
             var lockFileContent = @"{
   ""version"": 3,
@@ -1128,5 +1257,161 @@ namespace NuGet.ProjectModel.Test
             Assert.Equal(1, lockFileObj.LogMessages.Where(m => m.Code == NuGetLogCode.NU1001).Count());
         }
 
+        [Fact]
+        public void LockFileFormat_ReadsLogMessageWithSameFilePathAndProjectPath()
+        {
+            // Arrange
+            var lockFileContent = @"{
+  ""version"": 3,
+  ""targets"": {
+    "".NETPlatform,Version=v5.0"": {
+      ""System.Runtime/4.0.20-beta-22927"": {
+        ""type"": ""package"",
+        ""dependencies"": {
+          ""Frob"": ""4.0.20""
+        },
+        ""compile"": {
+          ""ref/dotnet/System.Runtime.dll"": {}
+        }
+      }
+    }
+  },
+  ""libraries"": {
+    ""System.Runtime/4.0.20-beta-22927"": {
+      ""sha512"": ""sup3rs3cur3"",
+      ""type"": ""package"",
+      ""files"": [
+        ""System.Runtime.nuspec""
+      ]
+    }
+  },
+  ""projectFileDependencyGroups"": {
+    """": [
+      ""System.Runtime [4.0.10-beta-*, )""
+    ],
+    "".NETPlatform,Version=v5.0"": []
+  },
+  ""project"": {
+    ""restore"": {
+      ""projectPath"": ""kung\\fu\\fighting.csproj""
+    }
+  },
+  ""logs"": [
+    {
+      ""code"": ""NU1000"",
+      ""level"": ""Error"",
+      ""message"": ""test log message"",
+      ""filePath"": ""kung\\fu\\fighting.csproj""
+    }
+  ]
+}";
+            LockFile lockFileObj = null;
+            IAssetsLogMessage logMessage = null;
+            using (var lockFile = new TempFile())
+            {
+
+                File.WriteAllText(lockFile, lockFileContent);
+
+                // Act
+                var reader = new LockFileFormat();
+                lockFileObj = reader.Read(lockFile);
+                logMessage = lockFileObj?.LogMessages?.First();
+            }
+
+
+            // Assert
+            Assert.NotNull(lockFileObj);
+            Assert.NotNull(logMessage);
+            Assert.Equal(1, lockFileObj.LogMessages.Count());
+            Assert.Equal(LogLevel.Error, logMessage.Level);
+            Assert.Equal(NuGetLogCode.NU1000, logMessage.Code);
+            Assert.NotNull(logMessage.FilePath);
+            Assert.Equal("kung\\fu\\fighting.csproj", logMessage.FilePath);
+            Assert.Equal(-1, logMessage.StartLineNumber);
+            Assert.Equal(-1, logMessage.EndLineNumber);
+            Assert.Equal(-1, logMessage.StartColumnNumber);
+            Assert.Equal(-1, logMessage.EndColumnNumber);
+            Assert.NotNull(logMessage.TargetGraphs);
+            Assert.Equal(0, logMessage.TargetGraphs.Count);
+            Assert.Equal("test log message", logMessage.Message);
+        }
+
+        [Fact]
+        public void LockFileFormat_ReadsLogMessageWithNoFilePath()
+        {
+            // Arrange
+            var lockFileContent = @"{
+  ""version"": 3,
+  ""targets"": {
+    "".NETPlatform,Version=v5.0"": {
+      ""System.Runtime/4.0.20-beta-22927"": {
+        ""type"": ""package"",
+        ""dependencies"": {
+          ""Frob"": ""4.0.20""
+        },
+        ""compile"": {
+          ""ref/dotnet/System.Runtime.dll"": {}
+        }
+      }
+    }
+  },
+  ""libraries"": {
+    ""System.Runtime/4.0.20-beta-22927"": {
+      ""sha512"": ""sup3rs3cur3"",
+      ""type"": ""package"",
+      ""files"": [
+        ""System.Runtime.nuspec""
+      ]
+    }
+  },
+  ""projectFileDependencyGroups"": {
+    """": [
+      ""System.Runtime [4.0.10-beta-*, )""
+    ],
+    "".NETPlatform,Version=v5.0"": []
+  },
+  ""project"": {
+    ""restore"": {
+      ""projectPath"": ""kung\\fu\\fighting.csproj""
+    }
+  },
+  ""logs"": [
+    {
+      ""code"": ""NU1000"",
+      ""level"": ""Error"",
+      ""message"": ""test log message""
+    }
+  ]
+}";
+            LockFile lockFileObj = null;
+            IAssetsLogMessage logMessage = null;
+            using (var lockFile = new TempFile())
+            {
+
+                File.WriteAllText(lockFile, lockFileContent);
+
+                // Act
+                var reader = new LockFileFormat();
+                lockFileObj = reader.Read(lockFile);
+                logMessage = lockFileObj?.LogMessages?.First();
+            }
+
+
+            // Assert
+            Assert.NotNull(lockFileObj);
+            Assert.NotNull(logMessage);
+            Assert.Equal(1, lockFileObj.LogMessages.Count());
+            Assert.Equal(LogLevel.Error, logMessage.Level);
+            Assert.Equal(NuGetLogCode.NU1000, logMessage.Code);
+            Assert.NotNull(logMessage.FilePath);
+            Assert.Equal("kung\\fu\\fighting.csproj", logMessage.FilePath);
+            Assert.Equal(-1, logMessage.StartLineNumber);
+            Assert.Equal(-1, logMessage.EndLineNumber);
+            Assert.Equal(-1, logMessage.StartColumnNumber);
+            Assert.Equal(-1, logMessage.EndColumnNumber);
+            Assert.NotNull(logMessage.TargetGraphs);
+            Assert.Equal(0, logMessage.TargetGraphs.Count);
+            Assert.Equal("test log message", logMessage.Message);
+        }
     }
 }
