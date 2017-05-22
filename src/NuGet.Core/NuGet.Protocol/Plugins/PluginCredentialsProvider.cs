@@ -34,12 +34,10 @@ namespace NuGet.Protocol.Plugins
         /// <param name="plugin">A plugin.</param>
         /// <param name="packageSource">A package source.</param>
         /// <param name="proxy">A web proxy.</param>
-        /// <param name="credentialService">A credential service.</param>
+        /// <param name="credentialService">An optional credential service.</param>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="plugin" />
         /// is <c>null</c>.</exception>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="packageSource" />
-        /// is <c>null</c>.</exception>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="credentialService" />
         /// is <c>null</c>.</exception>
         public PluginCredentialsProvider(
             IPlugin plugin,
@@ -55,11 +53,6 @@ namespace NuGet.Protocol.Plugins
             if (packageSource == null)
             {
                 throw new ArgumentNullException(nameof(packageSource));
-            }
-
-            if (credentialService == null)
-            {
-                throw new ArgumentNullException(nameof(credentialService));
             }
 
             _plugin = plugin;
@@ -208,6 +201,11 @@ namespace NuGet.Protocol.Plugins
                 return new NetworkCredential(_packageSource.Credentials.Username, _packageSource.Credentials.Password);
             }
 
+            if (_credentialService == null)
+            {
+                return null;
+            }
+
             string message;
             if (requestType == CredentialRequestType.Unauthorized)
             {
@@ -237,7 +235,7 @@ namespace NuGet.Protocol.Plugins
 
         private async Task<NetworkCredential> GetProxyCredentialAsync(CancellationToken cancellationToken)
         {
-            if (_proxy != null)
+            if (_proxy != null && _credentialService != null)
             {
                 var sourceUri = _packageSource.SourceUri;
                 var proxyUri = _proxy.GetProxy(sourceUri);

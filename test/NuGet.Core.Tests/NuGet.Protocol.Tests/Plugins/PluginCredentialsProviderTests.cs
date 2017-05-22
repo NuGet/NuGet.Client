@@ -42,19 +42,6 @@ namespace NuGet.Protocol.Plugins.Tests
         }
 
         [Fact]
-        public void Constructor_ThrowsForNullCredentialService()
-        {
-            var exception = Assert.Throws<ArgumentNullException>(
-                () => new PluginCredentialsProvider(
-                    Mock.Of<IPlugin>(),
-                    _packageSource,
-                    Mock.Of<IWebProxy>(),
-                    credentialService: null));
-
-            Assert.Equal("credentialService", exception.ParamName);
-        }
-
-        [Fact]
         public void CancellationToken_IsNone()
         {
             var provider = new PluginCredentialsProvider(
@@ -336,6 +323,37 @@ namespace NuGet.Protocol.Plugins.Tests
         }
 
         [Fact]
+        public async Task HandleResponseAsync_ReturnsNullPackageSourceCredentialsIfPackageSourceCredentialsAreInvalidAndCredentialServiceIsNull()
+        {
+            using (var provider = new PluginCredentialsProvider(
+                Mock.Of<IPlugin>(),
+                _packageSource,
+                Mock.Of<IWebProxy>(),
+                credentialService: null))
+            {
+                var request = CreateRequest(
+                    MessageType.Request,
+                    new GetCredentialsRequest(_packageSource.Source, HttpStatusCode.Unauthorized));
+                var responseHandler = new Mock<IResponseHandler>(MockBehavior.Strict);
+
+                responseHandler.Setup(x => x.SendResponseAsync(
+                        It.Is<Message>(r => r == request),
+                        It.Is<GetCredentialsResponse>(r => r.ResponseCode == MessageResponseCode.NotFound
+                            && r.Username == null && r.Password == null),
+                        It.IsAny<CancellationToken>()))
+                    .Returns(Task.FromResult(0));
+
+                await provider.HandleResponseAsync(
+                    Mock.Of<IConnection>(),
+                    request,
+                    responseHandler.Object,
+                    CancellationToken.None);
+
+                responseHandler.Verify();
+            }
+        }
+
+        [Fact]
         public async Task HandleResponseAsync_ReturnsNullPackageSourceCredentialsIfNoCredentials()
         {
             var credentialService = new Mock<ICredentialService>();
@@ -423,6 +441,37 @@ namespace NuGet.Protocol.Plugins.Tests
                         It.Is<Message>(r => r == request),
                         It.Is<GetCredentialsResponse>(r => r.ResponseCode == MessageResponseCode.Success
                             && r.Username == "a" && r.Password == "b"),
+                        It.IsAny<CancellationToken>()))
+                    .Returns(Task.FromResult(0));
+
+                await provider.HandleResponseAsync(
+                    Mock.Of<IConnection>(),
+                    request,
+                    responseHandler.Object,
+                    CancellationToken.None);
+
+                responseHandler.Verify();
+            }
+        }
+
+        [Fact]
+        public async Task HandleResponseAsync_ReturnsNullProxyCredentialsIfCredentialServiceIsNull()
+        {
+            using (var provider = new PluginCredentialsProvider(
+                Mock.Of<IPlugin>(),
+                _packageSource,
+                Mock.Of<IWebProxy>(),
+                credentialService: null))
+            {
+                var request = CreateRequest(
+                    MessageType.Request,
+                    new GetCredentialsRequest(_packageSource.Source, HttpStatusCode.ProxyAuthenticationRequired));
+                var responseHandler = new Mock<IResponseHandler>(MockBehavior.Strict);
+
+                responseHandler.Setup(x => x.SendResponseAsync(
+                        It.Is<Message>(r => r == request),
+                        It.Is<GetCredentialsResponse>(r => r.ResponseCode == MessageResponseCode.NotFound
+                            && r.Username == null && r.Password == null),
                         It.IsAny<CancellationToken>()))
                     .Returns(Task.FromResult(0));
 
