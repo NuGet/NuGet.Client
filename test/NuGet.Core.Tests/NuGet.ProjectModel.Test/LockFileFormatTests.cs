@@ -802,7 +802,6 @@ namespace NuGet.ProjectModel.Test
         [Fact]
         public void LockFileFormat_WritesErrorMessageWithFilePathSameAsProjectPath()
         {
-
             // Arrange
             var lockFileContent = @"{
   ""version"": 3,
@@ -842,7 +841,6 @@ namespace NuGet.ProjectModel.Test
   ""logs"": [
     {
       ""code"": ""NU1000"",
-<<<<<<< HEAD
       ""level"": ""Error"",
       ""startLineNumber"": 11,
       ""startColumnNumber"": 2,
@@ -855,11 +853,6 @@ namespace NuGet.ProjectModel.Test
         ""netcoreapp1.0"",
         ""netstandard1.6""
       ]
-=======
-      ""level"": ""Warning"",
-      ""warningLevel"": 1,
-      ""message"": ""test log message""
->>>>>>> making warninglevel an integer
     }
   ]
 }";
