@@ -1,7 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
+using Microsoft;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell.Interop;
 using ThreadHelper = Microsoft.VisualStudio.Shell.ThreadHelper;
@@ -17,21 +17,15 @@ namespace NuGet.VisualStudio
         private IVsSolution _vsSolution;
         private uint _cookie;
 
-        protected void Advise(IServiceProvider serviceProvider)
+        protected void Advise(IVsSolution vsSolution)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            if (serviceProvider == null)
-            {
-                throw new ArgumentNullException(nameof(serviceProvider));
-            }
+            Assumes.Present(vsSolution);
 
-            _vsSolution = serviceProvider.GetService<SVsSolution, IVsSolution>();
-            if (_vsSolution != null)
-            {
-                var hr = _vsSolution.AdviseSolutionEvents(this, out _cookie);
-                ErrorHandler.ThrowOnFailure(hr);
-            }
+            _vsSolution = vsSolution;
+            var hr = _vsSolution.AdviseSolutionEvents(this, out _cookie);
+            ErrorHandler.ThrowOnFailure(hr);
         }
 
         protected void Unadvise()

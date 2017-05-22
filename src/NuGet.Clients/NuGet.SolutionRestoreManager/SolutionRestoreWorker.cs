@@ -7,9 +7,11 @@ using System.ComponentModel.Composition;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Threading;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.VisualStudio;
@@ -41,6 +43,8 @@ namespace NuGet.SolutionRestoreManager
         private BackgroundRestoreOperation _pendingRestore;
         private Task<bool> _activeRestoreTask;
         private int _initialized;
+
+        private IVsSolution _vsSolution;
 
         private SolutionRestoreJobContext _restoreJobContext;
 
@@ -126,10 +130,13 @@ namespace NuGet.SolutionRestoreManager
                     _solutionEvents = dte.Events.SolutionEvents;
                     _solutionEvents.BeforeClosing += SolutionEvents_BeforeClosing;
                     _solutionEvents.AfterClosing += SolutionEvents_AfterClosing;
+
+                    _vsSolution = _serviceProvider.GetService<SVsSolution, IVsSolution>();
+                    Assumes.Present(_vsSolution);
 #if VS15
                     // these properties are specific to VS15 since they are use to attach to solution events
                     // which is further used to start bg job runner to schedule auto restore
-                    Advise(_serviceProvider);
+                    Advise(_vsSolution);
 #endif
                 });
             }
@@ -137,12 +144,21 @@ namespace NuGet.SolutionRestoreManager
             // Signal the background job runner solution is loaded
             // Needed when OnAfterBackgroundSolutionLoadComplete fires before
             // Advise has been called.
-            // IsSolutionFullyLoaded may be expensive so make sure it's called only once.
-            if (!_solutionLoadedEvent.IsSet
-                && await SolutionManager.IsSolutionFullyLoadedAsync())
+            if (!_solutionLoadedEvent.IsSet && await IsSolutionFullyLoadedAsync())
             {
                 _solutionLoadedEvent.Set();
             }
+        }
+
+        private async Task<bool> IsSolutionFullyLoadedAsync()
+        {
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+            object value;
+            var hr = _vsSolution.GetProperty((int)(__VSPROPID4.VSPROPID_IsSolutionFullyLoaded), out value);
+            ErrorHandler.ThrowOnFailure(hr);
+
+            return (bool)value;
         }
 
         public void Dispose()
