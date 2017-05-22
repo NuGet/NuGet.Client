@@ -565,7 +565,6 @@ namespace NuGet.ProjectModel.Test
         [Fact]
         public void LockFileFormat_WritesMultipleErrorMessages()
         {
-
             // Arrange
             var lockFileContent = @"{
   ""version"": 3,
@@ -606,13 +605,13 @@ namespace NuGet.ProjectModel.Test
     {
       ""code"": ""NU1000"",
       ""level"": ""Warning"",
-      ""warningLevel"": ""1"",
+      ""warningLevel"": 1,
       ""message"": ""test log message""
     },
     {
       ""code"": ""NU1000"",
       ""level"": ""Warning"",
-      ""warningLevel"": ""2"",
+      ""warningLevel"": 2,
       ""message"": ""test log message""
     },
     {
@@ -843,6 +842,7 @@ namespace NuGet.ProjectModel.Test
   ""logs"": [
     {
       ""code"": ""NU1000"",
+<<<<<<< HEAD
       ""level"": ""Error"",
       ""startLineNumber"": 11,
       ""startColumnNumber"": 2,
@@ -855,6 +855,11 @@ namespace NuGet.ProjectModel.Test
         ""netcoreapp1.0"",
         ""netstandard1.6""
       ]
+=======
+      ""level"": ""Warning"",
+      ""warningLevel"": 1,
+      ""message"": ""test log message""
+>>>>>>> making warninglevel an integer
     }
   ]
 }";
@@ -966,7 +971,7 @@ namespace NuGet.ProjectModel.Test
     {
       ""code"": ""NU1000"",
       ""level"": ""Warning"",
-      ""warningLevel"": ""2"",
+      ""warningLevel"": 2,
       ""message"": ""test log message""
     }
   ]
@@ -1219,7 +1224,7 @@ namespace NuGet.ProjectModel.Test
     {
       ""code"": ""NU1000"",
       ""level"": ""Warning"",
-      ""warningLevel"": ""2"",
+      ""warningLevel"": 2,
       ""filePath"": ""kung\\fu\\fighting.targets"",
       ""startLineNumber"": 11,
       ""startColumnNumber"": 2,
@@ -1392,13 +1397,13 @@ namespace NuGet.ProjectModel.Test
     {
       ""code"": ""NU1500"",
       ""level"": ""Warning"",
-      ""warningLevel"": ""1"",
+      ""warningLevel"": 1,
       ""message"": ""test warning message""
     },
     {
       ""code"": ""NU1500"",
       ""level"": ""Warning"",
-      ""warningLevel"": ""1"",
+      ""warningLevel"": 1,
       ""message"": ""test warning message""
     },
     {

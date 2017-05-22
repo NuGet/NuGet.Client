@@ -323,7 +323,7 @@ namespace NuGet.ProjectModel
 
             if (logMessage.Level == LogLevel.Warning)
             {
-                logJObject[LogMessageProperties.WARNING_LEVEL] = $"{(int)logMessage.WarningLevel}";
+                logJObject[LogMessageProperties.WARNING_LEVEL] = (int)logMessage.WarningLevel;
             }
 
             if (logMessage.FilePath != null && 
@@ -411,8 +411,7 @@ namespace NuGet.ProjectModel
 
                     if (level == LogLevel.Warning && warningLevelJson != null)
                     {
-                        assetsLogMessage.WarningLevel = (WarningLevel)Enum.Parse(typeof(WarningLevel),
-                            warningLevelJson.Value<string>());
+                        assetsLogMessage.WarningLevel = (WarningLevel)Enum.ToObject(typeof(WarningLevel), warningLevelJson.Value<int>());
                     }
 
                     if (filePathJson != null)
