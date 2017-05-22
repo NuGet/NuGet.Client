@@ -11,6 +11,7 @@ using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.Versioning;
+using Test.Utility;
 using Xunit;
 using static NuGet.Test.Utility.TestPackagesCore;
 
@@ -466,7 +467,6 @@ namespace NuGet.ProjectModel.Test
             Assert.Equal(expected.ToString(), output.ToString());
         }
 
-
         [Fact]
         public void LockFileFormat_WritesMinimalErrorMessage()
         {
@@ -565,7 +565,6 @@ namespace NuGet.ProjectModel.Test
         [Fact]
         public void LockFileFormat_WritesMultipleErrorMessages()
         {
-
             // Arrange
             var lockFileContent = @"{
   ""version"": 3,
@@ -606,13 +605,13 @@ namespace NuGet.ProjectModel.Test
     {
       ""code"": ""NU1000"",
       ""level"": ""Warning"",
-      ""warningLevel"": ""Severe"",
+      ""warningLevel"": 1,
       ""message"": ""test log message""
     },
     {
       ""code"": ""NU1000"",
       ""level"": ""Warning"",
-      ""warningLevel"": ""Severe"",
+      ""warningLevel"": 2,
       ""message"": ""test log message""
     },
     {
@@ -669,7 +668,7 @@ namespace NuGet.ProjectModel.Test
                 },
                 new AssetsLogMessage(LogLevel.Warning, NuGetLogCode.NU1000, "test log message")
                 {
-                    WarningLevel = WarningLevel.Severe
+                    WarningLevel = WarningLevel.Important
                 },
                 new AssetsLogMessage(LogLevel.Error, NuGetLogCode.NU1000, "test log message")
             };
@@ -803,7 +802,6 @@ namespace NuGet.ProjectModel.Test
         [Fact]
         public void LockFileFormat_WritesErrorMessageWithFilePathSameAsProjectPath()
         {
-
             // Arrange
             var lockFileContent = @"{
   ""version"": 3,
@@ -895,7 +893,6 @@ namespace NuGet.ProjectModel.Test
                 new ProjectFileDependencyGroup("", new string[] { "System.Runtime [4.0.10-beta-*, )" }));
             lockFile.ProjectFileDependencyGroups.Add(
                 new ProjectFileDependencyGroup(FrameworkConstants.CommonFrameworks.DotNet.DotNetFrameworkName, new string[0]));
-
             lockFile.PackageSpec = new PackageSpec(new List<TargetFrameworkInformation>())
             {
                 RestoreMetadata = new ProjectRestoreMetadata()
@@ -916,6 +913,105 @@ namespace NuGet.ProjectModel.Test
                     EndLineNumber = 11,
                     EndColumnNumber = 10,
                     LibraryId = "nuget.versioning"
+                }
+            };
+
+            // Act
+            var lockFileFormat = new LockFileFormat();
+            var output = JObject.Parse(lockFileFormat.Render(lockFile)).ToString();
+            var expected = JObject.Parse(lockFileContent).ToString();
+
+            // Assert
+            Assert.Equal(expected, output);
+        }
+
+        [Fact]
+        public void LockFileFormat_WritesMinimalWarningMessageWithWarningLevel()
+        {
+
+            // Arrange
+            var lockFileContent = @"{
+  ""version"": 3,
+  ""targets"": {
+    "".NETPlatform,Version=v5.0"": {
+      ""System.Runtime/4.0.20-beta-22927"": {
+        ""type"": ""package"",
+        ""dependencies"": {
+          ""Frob"": ""4.0.20""
+        },
+        ""compile"": {
+          ""ref/dotnet/System.Runtime.dll"": {}
+        }
+      }
+    }
+  },
+  ""libraries"": {
+    ""System.Runtime/4.0.20-beta-22927"": {
+      ""sha512"": ""sup3rs3cur3"",
+      ""type"": ""package"",
+      ""files"": [
+        ""System.Runtime.nuspec""
+      ]
+    }
+  },
+  ""projectFileDependencyGroups"": {
+    """": [
+      ""System.Runtime [4.0.10-beta-*, )""
+    ],
+    "".NETPlatform,Version=v5.0"": []
+  },
+  ""logs"": [
+    {
+      ""code"": ""NU1000"",
+      ""level"": ""Warning"",
+      ""warningLevel"": 2,
+      ""message"": ""test log message""
+    }
+  ]
+}";
+            var lockFile = new LockFile()
+            {
+                Version = 3
+            };
+
+            var target = new LockFileTarget()
+            {
+                TargetFramework = FrameworkConstants.CommonFrameworks.DotNet
+            };
+
+            var targetLib = new LockFileTargetLibrary()
+            {
+                Name = "System.Runtime",
+                Version = NuGetVersion.Parse("4.0.20-beta-22927"),
+                Type = LibraryType.Package
+            };
+
+            targetLib.Dependencies.Add(new Packaging.Core.PackageDependency("Frob",
+                new VersionRange(NuGetVersion.Parse("4.0.20"))));
+            targetLib.CompileTimeAssemblies.Add(new LockFileItem("ref/dotnet/System.Runtime.dll"));
+            target.Libraries.Add(targetLib);
+            lockFile.Targets.Add(target);
+
+            var lib = new LockFileLibrary()
+            {
+                Name = "System.Runtime",
+                Version = NuGetVersion.Parse("4.0.20-beta-22927"),
+                Type = LibraryType.Package,
+                Sha512 = "sup3rs3cur3"
+            };
+            lib.Files.Add("System.Runtime.nuspec");
+            lockFile.Libraries.Add(lib);
+
+            lockFile.ProjectFileDependencyGroups.Add(
+                new ProjectFileDependencyGroup("", new string[] { "System.Runtime [4.0.10-beta-*, )" }));
+            lockFile.ProjectFileDependencyGroups.Add(
+                new ProjectFileDependencyGroup(FrameworkConstants.CommonFrameworks.DotNet.DotNetFrameworkName, new string[0]));
+
+            lockFile.LogMessages = new List<IAssetsLogMessage>
+            {
+                new AssetsLogMessage(LogLevel.Warning, NuGetLogCode.NU1000, "test log message")
+                {
+                    WarningLevel = WarningLevel.Important
                 }
             };
 
@@ -1121,7 +1217,90 @@ namespace NuGet.ProjectModel.Test
     {
       ""code"": ""NU1000"",
       ""level"": ""Warning"",
-      ""warningLevel"": ""1"",
+      ""warningLevel"": 2,
+      ""filePath"": ""kung\\fu\\fighting.targets"",
+      ""startLineNumber"": 11,
+      ""startColumnNumber"": 2,
+      ""endLineNumber"": 11,
+      ""endColumnNumber"": 10,
+      ""message"": ""test log message"",
+      ""targetGraphs"": [
+        ""net46"",
+        ""netcoreapp1.0"",
+        ""netstandard1.6""
+      ]
+    }
+  ]
+}";
+            LockFile lockFileObj = null;
+            IAssetsLogMessage logMessage = null;
+            using (var lockFile = new TempFile())
+            {
+
+                File.WriteAllText(lockFile, lockFileContent);
+
+                // Act
+                var reader = new LockFileFormat();
+                lockFileObj = reader.Read(lockFile);
+                logMessage = lockFileObj?.LogMessages?.First();
+            }
+
+
+            // Assert
+            Assert.NotNull(lockFileObj);
+            Assert.NotNull(logMessage);
+            Assert.Equal(1, lockFileObj.LogMessages.Count());
+            Assert.Equal(LogLevel.Warning, logMessage.Level);
+            Assert.Equal(WarningLevel.Important, logMessage.WarningLevel);
+            Assert.Equal(NuGetLogCode.NU1000, logMessage.Code);
+            Assert.Equal("kung\\fu\\fighting.targets", logMessage.FilePath);
+            Assert.Equal(11, logMessage.StartLineNumber);
+            Assert.Equal(11, logMessage.EndLineNumber);
+            Assert.Equal(2, logMessage.StartColumnNumber);
+            Assert.Equal(10, logMessage.EndColumnNumber);
+            Assert.NotNull(logMessage.TargetGraphs);
+            Assert.Equal(3, logMessage.TargetGraphs.Count);
+            Assert.Equal("test log message", logMessage.Message);
+        }
+
+        [Fact]
+        public void LockFileFormat_ReadsWarningMessageWithoutWarningLevel()
+        {
+            // Arrange
+            var lockFileContent = @"{
+  ""version"": 3,
+  ""targets"": {
+    "".NETPlatform,Version=v5.0"": {
+      ""System.Runtime/4.0.20-beta-22927"": {
+        ""type"": ""package"",
+        ""dependencies"": {
+          ""Frob"": ""4.0.20""
+        },
+        ""compile"": {
+          ""ref/dotnet/System.Runtime.dll"": {}
+        }
+      }
+    }
+  },
+  ""libraries"": {
+    ""System.Runtime/4.0.20-beta-22927"": {
+      ""sha512"": ""sup3rs3cur3"",
+      ""type"": ""package"",
+      ""files"": [
+        ""System.Runtime.nuspec""
+      ]
+    }
+  },
+  ""projectFileDependencyGroups"": {
+    """": [
+      ""System.Runtime [4.0.10-beta-*, )""
+    ],
+    "".NETPlatform,Version=v5.0"": []
+  },
+  ""logs"": [
+    {
+      ""code"": ""NU1000"",
+      ""level"": ""Warning"",
       ""filePath"": ""kung\\fu\\fighting.targets"",
       ""startLineNumber"": 11,
       ""startColumnNumber"": 2,
@@ -1211,13 +1390,13 @@ namespace NuGet.ProjectModel.Test
     {
       ""code"": ""NU1500"",
       ""level"": ""Warning"",
-      ""warningLevel"": ""Severe"",
+      ""warningLevel"": 1,
       ""message"": ""test warning message""
     },
     {
       ""code"": ""NU1500"",
       ""level"": ""Warning"",
-      ""warningLevel"": ""Severe"",
+      ""warningLevel"": 1,
       ""message"": ""test warning message""
     },
     {
