@@ -16,7 +16,7 @@ namespace NuGet.Protocol.Plugins
     /// <summary>
     /// A plugin factory.
     /// </summary>
-    public sealed class PluginFactory : IDisposable
+    public sealed class PluginFactory : IPluginFactory
     {
         private bool _isDisposed;
         private readonly TimeSpan _pluginIdleTimeout;

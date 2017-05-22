@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Moq;
@@ -78,7 +80,7 @@ namespace NuGet.Protocol.Plugins.Tests
         [InlineData("")]
         public async Task TryCreate_ReturnsFalseForNullOrEmptyEnvironmentVariable(string pluginsPath)
         {
-            var test = new PluginResourceProviderTest(
+            var test = new PluginResourceProviderNegativeTest(
                 serviceIndexJson: "{}",
                 sourceUri: _sourceUri,
                 pluginsPath: pluginsPath);
@@ -92,7 +94,7 @@ namespace NuGet.Protocol.Plugins.Tests
         [Fact]
         public async Task TryCreate_ReturnsFalseIfNoServiceIndexResourceV3()
         {
-            var test = new PluginResourceProviderTest(
+            var test = new PluginResourceProviderNegativeTest(
                 serviceIndexJson: null,
                 sourceUri: _sourceUri);
 
@@ -107,7 +109,7 @@ namespace NuGet.Protocol.Plugins.Tests
         [InlineData("file:///C:/unit/test")]
         public async Task TryCreate_ReturnsFalseIfPackageSourceIsNotHttpOrHttps(string sourceUri)
         {
-            var test = new PluginResourceProviderTest(
+            var test = new PluginResourceProviderNegativeTest(
                 serviceIndexJson: "{}",
                 sourceUri: sourceUri);
 
@@ -120,14 +122,82 @@ namespace NuGet.Protocol.Plugins.Tests
         [PlatformFact(Platform.Windows)]
         public async Task TryCreate_ReturnsPluginResource()
         {
-            var test = new PluginResourceProviderTest(
-                serviceIndexJson: "{}",
-                sourceUri: _sourceUri);
+            var expectations = new[]
+                {
+                    new PositiveTestExpectation("{}", "https://unit.test", new [] { OperationClaim.DownloadPackage })
+                };
 
-            var result = await test.Provider.TryCreate(test.SourceRepository, CancellationToken.None);
+            using (var test = new PluginResourceProviderPositiveTest(
+                pluginFilePath: "a",
+                pluginFileState: PluginFileState.Valid,
+                expectations: expectations))
+            {
+                var result = await test.Provider.TryCreate(expectations[0].SourceRepository, CancellationToken.None);
 
-            Assert.True(result.Item1);
-            Assert.IsType<PluginResource>(result.Item2);
+                Assert.True(result.Item1);
+                Assert.IsType<PluginResource>(result.Item2);
+
+                var pluginResource = (PluginResource)result.Item2;
+                var pluginResult = await pluginResource.GetPluginAsync(
+                    OperationClaim.DownloadPackage,
+                    CancellationToken.None);
+
+                Assert.NotNull(pluginResult);
+                Assert.NotNull(pluginResult.Plugin);
+                Assert.NotNull(pluginResult.PluginMulticlientUtilities);
+            }
+        }
+
+        [PlatformFact(Platform.Windows)]
+        public async Task TryCreate_QueriesPluginForEachPackageSourceRepository()
+        {
+            var expectations = new[]
+                {
+                    new PositiveTestExpectation("{\"serviceIndex\":1}", "https://1.unit.test", new [] { OperationClaim.DownloadPackage }),
+                    new PositiveTestExpectation("{\"serviceIndex\":2}", "https://2.unit.test", Enumerable.Empty<OperationClaim>()),
+                    new PositiveTestExpectation("{\"serviceIndex\":3}", "https://3.unit.test", new [] { OperationClaim.DownloadPackage })
+                };
+
+            using (var test = new PluginResourceProviderPositiveTest(
+                pluginFilePath: "a",
+                pluginFileState: PluginFileState.Valid,
+                expectations: expectations))
+            {
+                IPlugin firstPluginResult = null;
+                IPlugin thirdPluginResult = null;
+
+                for (var i = 0; i < expectations.Length; ++i)
+                {
+                    var expectation = expectations[i];
+                    var result = await test.Provider.TryCreate(expectation.SourceRepository, CancellationToken.None);
+
+                    Assert.True(result.Item1);
+                    Assert.IsType<PluginResource>(result.Item2);
+
+                    var pluginResource = (PluginResource)result.Item2;
+                    var pluginResult = await pluginResource.GetPluginAsync(
+                        OperationClaim.DownloadPackage,
+                        CancellationToken.None);
+
+                    switch (i)
+                    {
+                        case 0:
+                            firstPluginResult = pluginResult.Plugin;
+                            break;
+
+                        case 1:
+                            Assert.Null(pluginResult);
+                            break;
+
+                        case 2:
+                            thirdPluginResult = pluginResult.Plugin;
+                            break;
+                    }
+                }
+
+                Assert.NotNull(firstPluginResult);
+                Assert.Same(firstPluginResult, thirdPluginResult);
+            }
         }
 
         [Fact]
@@ -135,9 +205,38 @@ namespace NuGet.Protocol.Plugins.Tests
         {
             var provider = new PluginResourceProvider();
             var exception = Assert.Throws<ArgumentNullException>(
-                () => provider.Reinitialize(reader: null));
+                () => provider.Reinitialize(
+                    reader: null,
+                    pluginDiscoverer: new Lazy<IPluginDiscoverer>(),
+                    pluginFactory: Mock.Of<IPluginFactory>()));
 
             Assert.Equal("reader", exception.ParamName);
+        }
+
+        [Fact]
+        public void Reinitialize_ThrowsForNullPluginDiscoverer()
+        {
+            var provider = new PluginResourceProvider();
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => provider.Reinitialize(
+                    Mock.Of<IEnvironmentVariableReader>(),
+                    pluginDiscoverer: null,
+                    pluginFactory: Mock.Of<IPluginFactory>()));
+
+            Assert.Equal("pluginDiscoverer", exception.ParamName);
+        }
+
+        [Fact]
+        public void Reinitialize_ThrowsForNullPluginFactory()
+        {
+            var provider = new PluginResourceProvider();
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => provider.Reinitialize(
+                    Mock.Of<IEnvironmentVariableReader>(),
+                    new Lazy<IPluginDiscoverer>(() => Mock.Of<IPluginDiscoverer>()),
+                    pluginFactory: null));
+
+            Assert.Equal("pluginFactory", exception.ParamName);
         }
 
         [Fact]
@@ -146,36 +245,12 @@ namespace NuGet.Protocol.Plugins.Tests
             var reader = Mock.Of<IEnvironmentVariableReader>();
             var provider = new PluginResourceProvider();
 
-            provider.Reinitialize(reader);
+            provider.Reinitialize(
+                reader,
+                new Lazy<IPluginDiscoverer>(() => Mock.Of<IPluginDiscoverer>()),
+                Mock.Of<IPluginFactory>());
 
             Assert.Same(reader, PluginResourceProvider.EnvironmentVariableReader);
-        }
-
-        private sealed class PluginResourceProviderTest
-        {
-            internal PluginResourceProvider Provider { get; }
-            internal SourceRepository SourceRepository { get; }
-
-            internal PluginResourceProviderTest(string serviceIndexJson, string sourceUri, string pluginsPath = "a")
-            {
-                var serviceIndex = string.IsNullOrEmpty(serviceIndexJson)
-                    ? null : new ServiceIndexResourceV3(JObject.Parse(serviceIndexJson), DateTime.UtcNow);
-
-                SourceRepository = CreateSourceRepository(serviceIndex, sourceUri);
-
-                var reader = new Mock<IEnvironmentVariableReader>(MockBehavior.Strict);
-
-                reader.Setup(x => x.GetEnvironmentVariable(
-                        It.Is<string>(value => value == _pluginPathsEnvironmentVariable)))
-                    .Returns(pluginsPath);
-                reader.Setup(x => x.GetEnvironmentVariable(
-                        It.Is<string>(value => value == _pluginRequestTimeoutEnvironmentVariable)))
-                    .Returns("b");
-
-                Provider = new PluginResourceProvider();
-
-                Provider.Reinitialize(reader.Object);
-            }
         }
 
         private static SourceRepository CreateSourceRepository(
@@ -196,6 +271,212 @@ namespace NuGet.Protocol.Plugins.Tests
                 .Returns(Task.FromResult(tryCreateResult));
 
             return new SourceRepository(packageSource, new[] { provider.Object });
+        }
+
+        private sealed class PluginResourceProviderNegativeTest
+        {
+            internal PluginResourceProvider Provider { get; }
+            internal SourceRepository SourceRepository { get; }
+
+            internal PluginResourceProviderNegativeTest(string serviceIndexJson, string sourceUri, string pluginsPath = "a")
+            {
+                var serviceIndex = string.IsNullOrEmpty(serviceIndexJson)
+                    ? null : new ServiceIndexResourceV3(JObject.Parse(serviceIndexJson), DateTime.UtcNow);
+
+                SourceRepository = CreateSourceRepository(serviceIndex, sourceUri);
+
+                var reader = new Mock<IEnvironmentVariableReader>(MockBehavior.Strict);
+
+                reader.Setup(x => x.GetEnvironmentVariable(
+                        It.Is<string>(value => value == _pluginPathsEnvironmentVariable)))
+                    .Returns(pluginsPath);
+                reader.Setup(x => x.GetEnvironmentVariable(
+                        It.Is<string>(value => value == _pluginRequestTimeoutEnvironmentVariable)))
+                    .Returns("b");
+
+                var pluginDiscoverer = new Mock<IPluginDiscoverer>(MockBehavior.Strict);
+                var pluginDiscoveryResults = GetPluginDiscoveryResults(pluginsPath);
+
+                pluginDiscoverer.Setup(x => x.DiscoverAsync(It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(pluginDiscoveryResults);
+
+                Provider = new PluginResourceProvider();
+
+                Provider.Reinitialize(
+                    reader.Object,
+                    new Lazy<IPluginDiscoverer>(() => pluginDiscoverer.Object),
+                    Mock.Of<IPluginFactory>());
+            }
+
+            private static IEnumerable<PluginDiscoveryResult> GetPluginDiscoveryResults(string pluginPaths)
+            {
+                var results = new List<PluginDiscoveryResult>();
+
+                if (string.IsNullOrEmpty(pluginPaths))
+                {
+                    return results;
+                }
+
+                foreach (var path in pluginPaths.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries))
+                {
+                    var state = path == "a" ? PluginFileState.Valid : PluginFileState.InvalidEmbeddedSignature;
+                    var file = new PluginFile(path, state);
+
+                    results.Add(new PluginDiscoveryResult(file));
+                }
+
+                return results;
+            }
+        }
+
+        private sealed class PluginResourceProviderPositiveTest : IDisposable
+        {
+            private readonly Mock<IConnection> _connection;
+            private readonly IEnumerable<PositiveTestExpectation> _expectations;
+            private readonly Mock<IPluginFactory> _factory;
+            private readonly Mock<IPlugin> _plugin;
+            private readonly Mock<IPluginDiscoverer> _pluginDiscoverer;
+            private readonly Mock<IEnvironmentVariableReader> _reader;
+
+            internal PluginResourceProvider Provider { get; }
+
+            internal PluginResourceProviderPositiveTest(
+                string pluginFilePath,
+                PluginFileState pluginFileState,
+                IEnumerable<PositiveTestExpectation> expectations)
+            {
+                _expectations = expectations;
+
+                _reader = new Mock<IEnvironmentVariableReader>(MockBehavior.Strict);
+
+                _reader.Setup(x => x.GetEnvironmentVariable(
+                        It.Is<string>(value => value == _pluginPathsEnvironmentVariable)))
+                    .Returns(pluginFilePath);
+                _reader.Setup(x => x.GetEnvironmentVariable(
+                        It.Is<string>(value => value == _pluginRequestTimeoutEnvironmentVariable)))
+                    .Returns("timeout");
+
+                _pluginDiscoverer = new Mock<IPluginDiscoverer>(MockBehavior.Strict);
+
+                _pluginDiscoverer.Setup(x => x.Dispose());
+                _pluginDiscoverer.Setup(x => x.DiscoverAsync(It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(new[]
+                        {
+                            new PluginDiscoveryResult(new PluginFile(pluginFilePath, pluginFileState))
+                        });
+
+                _connection = new Mock<IConnection>(MockBehavior.Strict);
+
+                _connection.Setup(x => x.Dispose());
+                _connection.SetupGet(x => x.Options)
+                    .Returns(ConnectionOptions.CreateDefault());
+
+                _connection.Setup(x => x.SendRequestAndReceiveResponseAsync<MonitorNuGetProcessExitRequest, MonitorNuGetProcessExitResponse>(
+                        It.Is<MessageMethod>(m => m == MessageMethod.MonitorNuGetProcessExit),
+                        It.IsNotNull<MonitorNuGetProcessExitRequest>(),
+                        It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(new MonitorNuGetProcessExitResponse(MessageResponseCode.Success));
+
+                _connection.Setup(x => x.SendRequestAndReceiveResponseAsync<InitializeRequest, InitializeResponse>(
+                        It.Is<MessageMethod>(m => m == MessageMethod.Initialize),
+                        It.IsNotNull<InitializeRequest>(),
+                        It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(new InitializeResponse(MessageResponseCode.Success));
+
+                foreach (var expectation in expectations)
+                {
+                    _connection.Setup(x => x.SendRequestAndReceiveResponseAsync<GetOperationClaimsRequest, GetOperationClaimsResponse>(
+                            It.Is<MessageMethod>(m => m == MessageMethod.GetOperationClaims),
+                            It.Is<GetOperationClaimsRequest>(
+                                g => g.PackageSourceRepository == expectation.SourceRepository.PackageSource.Source),
+                            It.IsAny<CancellationToken>()))
+                        .ReturnsAsync(new GetOperationClaimsResponse(expectation.OperationClaims.ToArray()));
+
+                    if (expectation.OperationClaims.Any())
+                    {
+                        _connection.Setup(x => x.SendRequestAndReceiveResponseAsync<SetCredentialsRequest, SetCredentialsResponse>(
+                                It.Is<MessageMethod>(m => m == MessageMethod.SetCredentials),
+                                It.Is<SetCredentialsRequest>(
+                                    g => g.PackageSourceRepository == expectation.SourceRepository.PackageSource.Source),
+                                It.IsAny<CancellationToken>()))
+                            .ReturnsAsync(new SetCredentialsResponse(MessageResponseCode.Success));
+                    }
+                }
+
+                _plugin = new Mock<IPlugin>(MockBehavior.Strict);
+
+                _plugin.Setup(x => x.Dispose());
+                _plugin.SetupGet(x => x.Connection)
+                    .Returns(_connection.Object);
+                _plugin.SetupGet(x => x.Id)
+                    .Returns("id");
+
+                _factory = new Mock<IPluginFactory>(MockBehavior.Strict);
+
+                _factory.Setup(x => x.Dispose());
+                _factory.Setup(x => x.GetOrCreateAsync(
+                        It.Is<string>(p => p == pluginFilePath),
+                        It.IsNotNull<IEnumerable<string>>(),
+                        It.IsNotNull<IRequestHandlers>(),
+                        It.IsNotNull<ConnectionOptions>(),
+                        It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(_plugin.Object);
+
+                Provider = new PluginResourceProvider();
+
+                Provider.Reinitialize(
+                    _reader.Object,
+                    new Lazy<IPluginDiscoverer>(() => _pluginDiscoverer.Object),
+                    _factory.Object);
+            }
+
+            public void Dispose()
+            {
+                Provider.Dispose();
+                GC.SuppressFinalize(this);
+
+                _reader.Verify();
+                _pluginDiscoverer.Verify();
+
+                foreach (var expectation in _expectations)
+                {
+                    _connection.Verify(x => x.SendRequestAndReceiveResponseAsync<GetOperationClaimsRequest, GetOperationClaimsResponse>(
+                        It.Is<MessageMethod>(m => m == MessageMethod.GetOperationClaims),
+                        It.Is<GetOperationClaimsRequest>(
+                            g => g.PackageSourceRepository == expectation.SourceRepository.PackageSource.Source),
+                        It.IsAny<CancellationToken>()), Times.Once());
+
+                    var expectedSetCredentialsRequestCalls = expectation.OperationClaims.Any()
+                        ? Times.Once() : Times.Never();
+
+                    _connection.Verify(x => x.SendRequestAndReceiveResponseAsync<SetCredentialsRequest, SetCredentialsResponse>(
+                        It.Is<MessageMethod>(m => m == MessageMethod.SetCredentials),
+                        It.Is<SetCredentialsRequest>(
+                            g => g.PackageSourceRepository == expectation.SourceRepository.PackageSource.Source),
+                        It.IsAny<CancellationToken>()), expectedSetCredentialsRequestCalls);
+                }
+
+                _plugin.Verify();
+                _factory.Verify();
+            }
+        }
+
+        private sealed class PositiveTestExpectation
+        {
+            internal IEnumerable<OperationClaim> OperationClaims { get; }
+            internal SourceRepository SourceRepository { get; }
+
+            internal PositiveTestExpectation(
+                string serviceIndexJson,
+                string sourceUri,
+                IEnumerable<OperationClaim> operationClaims)
+            {
+                var serviceIndex = string.IsNullOrEmpty(serviceIndexJson)
+                    ? null : new ServiceIndexResourceV3(JObject.Parse(serviceIndexJson), DateTime.UtcNow);
+
+                OperationClaims = operationClaims;
+                SourceRepository = CreateSourceRepository(serviceIndex, sourceUri);
+            }
         }
     }
 }

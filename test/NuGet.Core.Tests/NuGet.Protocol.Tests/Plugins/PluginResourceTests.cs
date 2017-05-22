@@ -122,7 +122,7 @@ namespace NuGet.Protocol.Plugins.Tests
             var connection = new Mock<IConnection>(MockBehavior.Strict);
 
             connection.Setup(x => x.SendRequestAndReceiveResponseAsync<SetCredentialsRequest, SetCredentialsResponse>(
-                    It.Is<MessageMethod>(m => m == MessageMethod.SetPackageSourceCredentials),
+                    It.Is<MessageMethod>(m => m == MessageMethod.SetCredentials),
                     It.Is<SetCredentialsRequest>(s => s.PackageSourceRepository == _packageSource.Source
                         && s.ProxyUsername == null && s.ProxyPassword == null
                         && s.Username == null && s.Password == null),
@@ -189,7 +189,7 @@ namespace NuGet.Protocol.Plugins.Tests
                 .Returns(true);
 
             connection.Setup(x => x.SendRequestAndReceiveResponseAsync<SetCredentialsRequest, SetCredentialsResponse>(
-                    It.Is<MessageMethod>(m => m == MessageMethod.SetPackageSourceCredentials),
+                    It.Is<MessageMethod>(m => m == MessageMethod.SetCredentials),
                     It.Is<SetCredentialsRequest>(s => s.PackageSourceRepository == _packageSource.Source
                         && s.ProxyUsername == proxyCredentials.UserName
                         && s.ProxyPassword == proxyCredentials.Password

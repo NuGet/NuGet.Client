@@ -15,7 +15,7 @@ namespace NuGet.Protocol.Plugins
     /// <summary>
     /// Discovers plugins and their operation claims.
     /// </summary>
-    public sealed class PluginDiscoverer : IDisposable
+    public sealed class PluginDiscoverer : IPluginDiscoverer
     {
         private bool _isDisposed;
         private List<PluginFile> _pluginFiles;

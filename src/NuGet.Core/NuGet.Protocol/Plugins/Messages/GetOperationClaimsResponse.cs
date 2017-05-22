@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -28,7 +28,7 @@ namespace NuGet.Protocol.Plugins
         /// <exception cref="ArgumentException">Thrown if <paramref name="claims" /> contains
         /// undefined <see cref="OperationClaim" /> values.</exception>
         [JsonConstructor]
-        public GetOperationClaimsResponse(OperationClaim[] claims)
+        public GetOperationClaimsResponse(IEnumerable<OperationClaim> claims)
         {
             if (claims == null)
             {
@@ -47,7 +47,7 @@ namespace NuGet.Protocol.Plugins
                     nameof(claims));
             }
 
-            Claims = (IReadOnlyList<OperationClaim>)claims.Clone();
+            Claims = claims.ToList();
         }
     }
 }

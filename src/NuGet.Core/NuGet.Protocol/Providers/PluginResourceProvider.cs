@@ -25,10 +25,10 @@ namespace NuGet.Protocol.Core.Types
         private const string _pluginPathsEnvironmentVariable = "NUGET_PLUGIN_PATHS";
         private const string _pluginRequestTimeoutEnvironmentVariable = "NUGET_PLUGIN_REQUEST_TIMEOUT_IN_SECONDS";
 
-        private Lazy<PluginDiscoverer> _discoverer;
+        private Lazy<IPluginDiscoverer> _discoverer;
         private bool _isDisposed;
-        private PluginFactory _pluginFactory;
-        private ConcurrentDictionary<string, Lazy<Task<IReadOnlyList<OperationClaim>>>> _pluginOperationClaims;
+        private IPluginFactory _pluginFactory;
+        private ConcurrentDictionary<string, ConcurrentDictionary<string, Lazy<Task<IReadOnlyList<OperationClaim>>>>> _pluginOperationClaims;
         private ConcurrentDictionary<string, Lazy<IPluginMulticlientUtilities>> _pluginUtilities;
         private string _rawPluginPaths;
         private TimeSpan _requestTimeout;
@@ -47,7 +47,10 @@ namespace NuGet.Protocol.Core.Types
         public PluginResourceProvider()
             : base(typeof(PluginResource), nameof(PluginResourceProvider))
         {
-            Reinitialize(new EnvironmentVariableWrapper());
+            Reinitialize(
+                new EnvironmentVariableWrapper(),
+                new Lazy<IPluginDiscoverer>(InitializeDiscoverer),
+                new PluginFactory(PluginConstants.IdleTimeout));
         }
 
         /// <summary>
@@ -124,14 +127,33 @@ namespace NuGet.Protocol.Core.Types
         /// <summary>
         /// Reinitializes static state.
         /// </summary>
-        /// <remarks>This is non-private only to facilitate unit testing.</remarks>
+        /// <remarks>This is non-private only to facilitate unit testing.
+        /// This should not be called by product code.</remarks>
         /// <param name="reader">An environment variable reader.</param>
+        /// <param name="pluginDiscoverer">A lazy plugin discoverer.</param>
+        /// <param name="pluginFactory">A plugin factory.</param>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="reader" /> is <c>null</c>.</exception>
-        public void Reinitialize(IEnvironmentVariableReader reader)
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="pluginDiscoverer" />
+        /// is <c>null</c>.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="pluginFactory" />
+        /// is <c>null</c>.</exception>
+        public void Reinitialize(IEnvironmentVariableReader reader,
+            Lazy<IPluginDiscoverer> pluginDiscoverer,
+            IPluginFactory pluginFactory)
         {
             if (reader == null)
             {
                 throw new ArgumentNullException(nameof(reader));
+            }
+
+            if (pluginDiscoverer == null)
+            {
+                throw new ArgumentNullException(nameof(pluginDiscoverer));
+            }
+
+            if (pluginFactory == null)
+            {
+                throw new ArgumentNullException(nameof(pluginFactory));
             }
 
             EnvironmentVariableReader = reader;
@@ -140,9 +162,9 @@ namespace NuGet.Protocol.Core.Types
             var requestTimeoutInSeconds = reader.GetEnvironmentVariable(_pluginRequestTimeoutEnvironmentVariable);
 
             _requestTimeout = GetRequestTimeout(requestTimeoutInSeconds);
-            _discoverer = new Lazy<PluginDiscoverer>(InitializeDiscoverer);
-            _pluginFactory = new PluginFactory(PluginConstants.IdleTimeout);
-            _pluginOperationClaims = new ConcurrentDictionary<string, Lazy<Task<IReadOnlyList<OperationClaim>>>>(
+            _discoverer = pluginDiscoverer;
+            _pluginFactory = pluginFactory;
+            _pluginOperationClaims = new ConcurrentDictionary<string, ConcurrentDictionary<string, Lazy<Task<IReadOnlyList<OperationClaim>>>>>(
                 StringComparer.OrdinalIgnoreCase);
             _pluginUtilities = new ConcurrentDictionary<string, Lazy<IPluginMulticlientUtilities>>(
                 StringComparer.OrdinalIgnoreCase);
@@ -188,17 +210,24 @@ namespace NuGet.Protocol.Core.Types
                         () => InitializePluginAsync(plugin, _requestTimeout, cancellationToken),
                         cancellationToken);
 
-                    var lazyOperationClaims = _pluginOperationClaims.GetOrAdd(
+                    var pluginOperationClaims = _pluginOperationClaims.GetOrAdd(
                         result.PluginFile.Path,
-                        filePath => new Lazy<Task<IReadOnlyList<OperationClaim>>>(() => GetPluginOperationClaimsAsync(
+                        filePath => new ConcurrentDictionary<string, Lazy<Task<IReadOnlyList<OperationClaim>>>>(StringComparer.OrdinalIgnoreCase));
+
+                    var lazyOperationClaimsForPackageSource = pluginOperationClaims.GetOrAdd(
+                        packageSourceRepository,
+                        source => new Lazy<Task<IReadOnlyList<OperationClaim>>>(() => GetPluginOperationClaimsAsync(
                             plugin,
                             packageSourceRepository,
                             serviceIndexJson,
                             cancellationToken)));
 
-                    await lazyOperationClaims.Value;
+                    await lazyOperationClaimsForPackageSource.Value;
 
-                    pluginCreationResult = new PluginCreationResult(plugin, utilities.Value, lazyOperationClaims.Value.Result);
+                    pluginCreationResult = new PluginCreationResult(
+                        plugin,
+                        utilities.Value,
+                        lazyOperationClaimsForPackageSource.Value.Result);
                 }
                 else
                 {

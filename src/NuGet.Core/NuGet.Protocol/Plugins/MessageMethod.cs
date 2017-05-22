@@ -79,13 +79,13 @@ namespace NuGet.Protocol.Plugins
         PrefetchPackage,
 
         /// <summary>
-        /// Set log level
+        /// Set credentials
         /// </summary>
-        SetLogLevel,
+        SetCredentials,
 
         /// <summary>
-        /// Set package source credentials
+        /// Set log level
         /// </summary>
-        SetPackageSourceCredentials,
+        SetLogLevel
     }
 }

@@ -77,7 +77,7 @@ namespace NuGet.Protocol.Core.Types
 
                 if (result.Claims.Contains(requiredClaim))
                 {
-                    var key = $"{MessageMethod.SetPackageSourceCredentials}.{_packageSource.SourceUri}";
+                    var key = $"{MessageMethod.SetCredentials}.{_packageSource.SourceUri}";
 
                     await result.PluginMulticlientUtilities.DoOncePerPluginLifetimeAsync(
                         key,
@@ -96,7 +96,7 @@ namespace NuGet.Protocol.Core.Types
             var payload = CreateRequest();
 
             await plugin.Connection.SendRequestAndReceiveResponseAsync<SetCredentialsRequest, SetCredentialsResponse>(
-                MessageMethod.SetPackageSourceCredentials,
+                MessageMethod.SetCredentials,
                 payload,
                 cancellationToken);
         }
