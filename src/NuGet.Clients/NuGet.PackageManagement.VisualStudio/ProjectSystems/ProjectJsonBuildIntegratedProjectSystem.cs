@@ -56,8 +56,8 @@ namespace NuGet.PackageManagement.VisualStudio
                             EnvDTEProjectInfoUtility.TargetPlatformMinVersion);
 
                         var platformMinVersion = !string.IsNullOrEmpty(platformMinVersionString)
-                        ? new Version(platformMinVersionString)
-                        : null;
+                            ? new Version(platformMinVersionString)
+                            : null;
 
                         if (platformMinVersion != null && jsonTargetFramework.Version != platformMinVersion)
                         {
