@@ -51,11 +51,18 @@ namespace NuGet.PackageManagement.VisualStudio
                     var jsonTargetFramework = targetFramework as NuGetFramework;
                     if (IsUAPFramework(jsonTargetFramework))
                     {
-                        var platformMinVersionString = VsHierarchyUtility.GetMSBuildProperty(VsHierarchyUtility.ToVsHierarchy(_envDTEProject), EnvDTEProjectInfoUtility.TargetPlatformMinVersion);
-                        var platformMinVersion = !string.IsNullOrEmpty(platformMinVersionString) ? new Version(platformMinVersionString) : null;
+                        var platformMinVersionString = VsHierarchyUtility.GetMSBuildProperty(
+                            VsHierarchyUtility.ToVsHierarchy(_envDTEProject),
+                            EnvDTEProjectInfoUtility.TargetPlatformMinVersion);
+
+                        var platformMinVersion = !string.IsNullOrEmpty(platformMinVersionString)
+                        ? new Version(platformMinVersionString)
+                        : null;
+
                         if (platformMinVersion != null && jsonTargetFramework.Version != platformMinVersion)
                         {
-                            // Found the TPMinV in csproj and it is different from project json's framework version, store this as a new target framework to be replaced in project.json
+                            // Found the TPMinV in csproj and it is different from project json's framework version, 
+                            // store this as a new target framework to be replaced in project.json
                             var newTargetFramework = new NuGetFramework(jsonTargetFramework.Framework, platformMinVersion);
                             InternalMetadata[NuGetProjectMetadataKeys.TargetFramework] = newTargetFramework;
                         }
