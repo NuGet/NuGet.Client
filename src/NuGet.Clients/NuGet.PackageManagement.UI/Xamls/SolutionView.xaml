@@ -157,7 +157,6 @@
                 Background="{TemplateBinding Background}"
                 SnapsToDevicePixels="True">
                 <ScrollViewer
-                  FocusVisualStyle="{DynamicResource ControlsFocusVisualStyle}"
                   VerticalAlignment="Center" 
                   x:Name="PART_ContentHost"
                   Focusable="false"
@@ -197,7 +196,7 @@
       <ListView.ItemContainerStyle>
         <Style TargetType="{x:Type ListViewItem}" BasedOn="{StaticResource ListViewItemStyle1}" >
           <Setter Property="FocusVisualStyle" Value="{DynamicResource ListViewItemFocusVisual}"/>
-          <Setter Property="IsTabStop" Value="False"/>
+          <Setter Property="IsTabStop" Value="True"/>
         </Style>
       </ListView.ItemContainerStyle>
       
@@ -311,6 +310,7 @@
         Text="{x:Static local:Resources.Label_InstalledColon}" />
 
         <TextBox
+          FocusVisualStyle="{DynamicResource MarginFocusVisualStyle}"
           Grid.Row="0"
           Grid.Column="2"
           VerticalAlignment="Center"
