@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -42,26 +43,36 @@ namespace NuGet.Commands.Test
 
             using (var workingDir = TestDirectory.Create())
             {
+                var projectName = "project1";
                 var packagesDir = new DirectoryInfo(Path.Combine(workingDir, "globalPackages"));
                 var packageSource = new DirectoryInfo(Path.Combine(workingDir, "packageSource"));
-                var project1 = new DirectoryInfo(Path.Combine(workingDir, "projects", "project1"));
+                var project1 = new DirectoryInfo(Path.Combine(workingDir, "projects", projectName));
+                
                 packagesDir.Create();
                 packageSource.Create();
                 project1.Create();
                 sources.Add(new PackageSource(packageSource.FullName));
 
-                File.WriteAllText(Path.Combine(project1.FullName, "project.json"), project1Json);
-
                 var specPath1 = Path.Combine(project1.FullName, "project.json");
-                var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1);
+                var dgPath = Path.Combine(project1.FullName, "project.dg");
+
+                File.WriteAllText(specPath1, project1Json);
+
+                var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, projectName , specPath1);
+
+                spec1 = spec1.EnsureRestoreMetadata();
+                spec1.RestoreMetadata.Sources = new List<PackageSource> { new PackageSource(packageSource.FullName) };
+                spec1.RestoreMetadata.PackagesPath = packagesDir.FullName;
+                var dgSpec = new DependencyGraphSpec();
+                dgSpec.AddProject(spec1);
+                dgSpec.AddRestore(projectName);
 
                 var logger = new TestLogger();
-                var lockPath = Path.Combine(project1.FullName, "project.lock.json");
+                var lockPath = Path.Combine(project1.FullName, "project.assets.json");
 
                 var sourceRepos = sources.Select(source => Repository.Factory.GetCoreV3(source.Source)).ToList();
 
                 var providerCache = new RestoreCommandProvidersCache();
-
                 using (var cacheContext = new SourceCacheContext())
                 {
                     var restoreContext = new RestoreArgs()
@@ -70,12 +81,11 @@ namespace NuGet.Commands.Test
                         DisableParallel = true,
                         GlobalPackagesFolder = packagesDir.FullName,
                         Sources = new List<string>() { packageSource.FullName },
-                        Inputs = new List<string>() { specPath1 },
                         Log = logger,
                         CachingSourceProvider = new CachingSourceProvider(new TestPackageSourceProvider(sources)),
-                        RequestProviders = new List<IRestoreRequestProvider>()
+                        PreLoadedRequestProviders = new List<IPreLoadedRestoreRequestProvider>()
                         {
-                            new ProjectJsonRestoreRequestProvider(providerCache)
+                            new DependencyGraphSpecRequestProvider(providerCache, dgSpec)
                         }
                     };
 
@@ -87,8 +97,9 @@ namespace NuGet.Commands.Test
                     Assert.True(summary.Success, "Failed: " + string.Join(Environment.NewLine, logger.Messages));
                     Assert.Equal(1, summary.FeedsUsed.Count);
                     Assert.True(File.Exists(lockPath), lockPath);
-                    Assert.False(File.Exists(Path.Combine(project1.FullName, "project1.nuget.targets")));
+                    Assert.False(File.Exists(Path.Combine(project1.FullName, "project1.nuget.targets"))); // TODO NK - Why are we doing this? The name of the targets has changed!
                     Assert.False(File.Exists(Path.Combine(project1.FullName, "project1.nuget.props")));
+                    Debugger.Launch();
                 }
             }
         }
@@ -320,11 +331,19 @@ namespace NuGet.Commands.Test
 
                 var specPath1 = Path.Combine(project1.FullName, "project.json");
                 var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1);
-
                 var configPath = Path.Combine(workingDir, "NuGet.Config");
 
+                var dgFile = new DependencyGraphSpec();
+                spec1 = spec1.EnsureRestoreMetadata();
+                spec1.RestoreMetadata.ConfigFilePaths = new List<string> { configPath };
+                spec1.RestoreMetadata.Sources = new List<PackageSource> { new PackageSource(packageSource.FullName) };
+                spec1.RestoreMetadata.PackagesPath = packagesDir.FullName;
+
+                dgFile.AddProject(spec1);
+                dgFile.AddRestore("project1");
+
                 var logger = new TestLogger();
-                var lockPath = Path.Combine(project1.FullName, "project.lock.json");
+                var lockPath = Path.Combine(project1.FullName, "project.assets.json");
 
                 var providerCache = new RestoreCommandProvidersCache();
 
@@ -334,14 +353,13 @@ namespace NuGet.Commands.Test
                     {
                         CacheContext = cacheContext,
                         DisableParallel = true,
-                        GlobalPackagesFolder = packagesDir.FullName,
+                        GlobalPackagesFolder = spec1.RestoreMetadata.PackagesPath,
                         ConfigFile = configPath,
-                        Inputs = new List<string>() { specPath1 },
                         Log = logger,
                         CachingSourceProvider = new CachingSourceProvider(new TestPackageSourceProvider(new List<PackageSource>())),
-                        RequestProviders = new List<IRestoreRequestProvider>()
+                        PreLoadedRequestProviders = new List<IPreLoadedRestoreRequestProvider>
                         {
-                            new ProjectJsonRestoreRequestProvider(providerCache)
+                            new DependencyGraphSpecRequestProvider(providerCache, dgFile)
                         }
                     };
 

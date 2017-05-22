@@ -65,7 +65,7 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
-        public async Task RequestFactory_FindProjectJsonFilesInDirectory()
+        public async Task RequestFactory_ReadDGSpec()
         {
             // Arrange
             var cache = new RestoreCommandProvidersCache();
@@ -112,8 +112,6 @@ namespace NuGet.Commands.Test
         ""outputPath"": ""C:\\Users\\Documents\\Visual Studio 2017\\Projects\\ConsoleApp7\\ConsoleApp1\\obj\\"",
         ""projectStyle"": ""PackageReference"",
         ""configFilePaths"": [
-          ""C:\\Users\\AppData\\Roaming\\NuGetNuGet.Config"",
-          ""C:\\Program Files (x86)\\NuGet\\ConfigMicrosoft.VisualStudio.Offline.config""
         ],
         ""fallbackFolders"": [
           ""C:\\Users\\.dotnet\\NuGetFallbackFolder""
