@@ -9,10 +9,13 @@ using Microsoft.VisualStudio.PlatformUI;
 
 namespace NuGet.PackageManagement.UI
 {
-    public class ArrowGlyphAdorner : Adorner
+    /// <summary>
+    /// Adorner used to indicate direction of list sort
+    /// </summary>
+    internal class ArrowGlyphAdorner : Adorner
     {
-        private GridViewColumnHeader _columnHeader;
-        private ListSortDirection _direction;
+        private readonly GridViewColumnHeader _columnHeader;
+        private readonly ListSortDirection _direction;
 
         public ArrowGlyphAdorner(GridViewColumnHeader columnHeader, ListSortDirection direction) : base(columnHeader)
         {
@@ -36,10 +39,10 @@ namespace NuGet.PackageManagement.UI
             }
 
             var pathSegmentCollection = new PathSegmentCollection();
-            pathSegmentCollection.Add(new LineSegment(new Point(x3, y2), true));
-            pathSegmentCollection.Add(new LineSegment(new Point(x2, y1), true));
+            pathSegmentCollection.Add(new LineSegment(new Point(x3, y2), isStroked: true));
+            pathSegmentCollection.Add(new LineSegment(new Point(x2, y1), isStroked: true));
 
-            var pathFigure = new PathFigure(new Point(x1, y1), pathSegmentCollection, false);
+            var pathFigure = new PathFigure(start: new Point(x1, y1), segments: pathSegmentCollection, closed: false);
 
             var pathGeometry = new PathGeometry() { Figures = { pathFigure } };
             return pathGeometry;
@@ -51,7 +54,7 @@ namespace NuGet.PackageManagement.UI
 
             var drawingColor = VSColorTheme.GetThemedColor(EnvironmentColors.BrandedUITextBrushKey);
             var mediaColor = Color.FromRgb(drawingColor.R, drawingColor.G, drawingColor.B);
-            drawingContext.DrawGeometry(null, new Pen(new SolidColorBrush(mediaColor), 1.0), GetDefaultGlyph());
+            drawingContext.DrawGeometry(brush: null, pen: new Pen(new SolidColorBrush(mediaColor), 1.0), geometry: GetDefaultGlyph());
         }
     }
 }

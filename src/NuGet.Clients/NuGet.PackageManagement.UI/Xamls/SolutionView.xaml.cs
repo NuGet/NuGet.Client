@@ -91,7 +91,7 @@ namespace NuGet.PackageManagement.UI
                 column =>
                 {
                     return StringComparer.OrdinalIgnoreCase.Equals(
-                        SortableColumnHeader.GetSortPropertyName(column),
+                        SortableColumnHeaderAttachedProperties.GetSortPropertyName(obj: column),
                         userSettings.SortPropertyName);
                 });
 
@@ -108,7 +108,7 @@ namespace NuGet.PackageManagement.UI
                     userSettings.SortDirection));
 
             // upate sortInfo
-            SortableColumnHeader.SetSortDirectionProperty(sortColumn, userSettings.SortDirection);
+            SortableColumnHeaderAttachedProperties.SetSortDirectionProperty(obj: sortColumn, value: userSettings.SortDirection);
 
             // clear sort direction of other columns
             foreach (var column in _sortableColumns)
@@ -118,7 +118,7 @@ namespace NuGet.PackageManagement.UI
                     continue;
                 }
 
-                SortableColumnHeader.SetSortDirectionProperty(column, null);
+                SortableColumnHeaderAttachedProperties.RemoveSortDirectionProperty(obj: column);
             }
         }
         
@@ -128,8 +128,8 @@ namespace NuGet.PackageManagement.UI
 
             var sortDescription = new SortDescription();
 
-            sortDescription.PropertyName = SortableColumnHeader.GetSortPropertyName(sortColumn);
-            var sortDir = SortableColumnHeader.GetSortDirectionProperty(sortColumn);
+            sortDescription.PropertyName = SortableColumnHeaderAttachedProperties.GetSortPropertyName(sortColumn);
+            var sortDir = SortableColumnHeaderAttachedProperties.GetSortDirectionProperty(sortColumn);
 
             sortDescription.Direction = sortDir == null
                 ? ListSortDirection.Ascending
@@ -137,7 +137,7 @@ namespace NuGet.PackageManagement.UI
                     ? ListSortDirection.Descending
                     : ListSortDirection.Ascending;
 
-            SortableColumnHeader.SetSortDirectionProperty(sortColumn, sortDescription.Direction);
+            SortableColumnHeaderAttachedProperties.SetSortDirectionProperty(obj: sortColumn, value: sortDescription.Direction);
 
             _projectList.Items.SortDescriptions.Add(sortDescription);
 
@@ -148,7 +148,7 @@ namespace NuGet.PackageManagement.UI
                     continue;
                 }
 
-                SortableColumnHeader.SetSortDirectionProperty(column, null);
+                SortableColumnHeaderAttachedProperties.RemoveSortDirectionProperty(obj: column);
             }
         }
 
@@ -183,7 +183,7 @@ namespace NuGet.PackageManagement.UI
             _projectList.SizeChanged -= ListView_SizeChanged;
         }
 
-        private void HandleColumnHeaderSizeChanged(object sender, SizeChangedEventArgs sizeChangedEventArgs)
+        private void SortableColumnHeader_SizeChanged(object sender, SizeChangedEventArgs sizeChangedEventArgs)
         {
             // GridViewColumnHeader doesn't handle setting minwidth very well so we prevent it here.
             if (sizeChangedEventArgs.NewSize.Width <= 60)

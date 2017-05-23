@@ -192,7 +192,7 @@
     <Compile Include="Xamls\SolutionView.xaml.cs">
       <DependentUpon>SolutionView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Xamls\SortableColumnHeader.cs" />
+    <Compile Include="Xamls\SortableColumnHeaderAttachedProperties.cs" />
     <Compile Include="Xamls\ArrowGlyphAdorner.cs" />
     <Compile Include="Xamls\Spinner.xaml.cs">
       <DependentUpon>Spinner.xaml</DependentUpon>

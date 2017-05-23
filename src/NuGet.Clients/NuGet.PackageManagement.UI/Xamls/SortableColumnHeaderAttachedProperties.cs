@@ -4,38 +4,50 @@ using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
+using Microsoft;
 
 namespace NuGet.PackageManagement.UI
 {
-    public class SortableColumnHeader
+    internal static class SortableColumnHeaderAttachedProperties
     {
+        public static readonly DependencyProperty SortPropertyNameProperty =
+    DependencyProperty.RegisterAttached("SortPropertyName", typeof(string), typeof(SortableColumnHeaderAttachedProperties), new PropertyMetadata(null));
+
+        public static readonly DependencyProperty SortDirectionProperty =
+            DependencyProperty.RegisterAttached("SortDirectionProperty", typeof(ListSortDirection?), typeof(SortableColumnHeaderAttachedProperties), new PropertyMetadata(null, SortDirectionProperty_PropertyChanged));
+
+
         public static string GetSortPropertyName(DependencyObject obj)
         {
-            return (string)obj.GetValue(SortPropertyNameProperty);
+            Assumes.Present(obj);
+            return (string)obj?.GetValue(SortPropertyNameProperty);
         }
 
         public static void SetSortPropertyName(DependencyObject obj, string value)
         {
-            obj.SetValue(SortPropertyNameProperty, value);
+            Assumes.Present(obj);
+            obj?.SetValue(SortPropertyNameProperty, value);
         }
 
         public static ListSortDirection? GetSortDirectionProperty(DependencyObject obj)
         {
-            return (ListSortDirection?)obj.GetValue(SortDirectionProperty);
+            Assumes.Present(obj);
+            return (ListSortDirection?)obj?.GetValue(SortDirectionProperty);
         }
 
-        public static void SetSortDirectionProperty(DependencyObject obj, ListSortDirection? value)
+        public static void SetSortDirectionProperty(DependencyObject obj, ListSortDirection value)
         {
-            obj.SetValue(SortDirectionProperty, value);
+            Assumes.Present(obj);
+            obj?.SetValue(SortDirectionProperty, value);
         }
 
-        public static readonly DependencyProperty SortPropertyNameProperty =
-            DependencyProperty.RegisterAttached("SortPropertyName", typeof(string), typeof(SortableColumnHeader), new PropertyMetadata(null));
+        public static void RemoveSortDirectionProperty(DependencyObject obj)
+        {
+            Assumes.Present(obj);
+            obj?.SetValue(SortDirectionProperty, null);
+        }
 
-        public static readonly DependencyProperty SortDirectionProperty =
-            DependencyProperty.RegisterAttached("SortDirectionProperty", typeof(ListSortDirection?), typeof(SortableColumnHeader), new PropertyMetadata(null, GlyphChanged));
-
-        private static void GlyphChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        private static void SortDirectionProperty_PropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             var columnHeader = d as GridViewColumnHeader;
             if (columnHeader == null)
