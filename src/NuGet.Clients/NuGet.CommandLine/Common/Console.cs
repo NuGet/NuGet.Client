@@ -383,46 +383,49 @@ namespace NuGet.CommandLine
 
         public override void Log(ILogMessage message)
         {
-            if (message.Level == LogLevel.Debug)
+            if (DisplayMessage(message.Level))
             {
-                WriteColor(Out, ConsoleColor.Gray, message.Message);
-            }
-            else if (message.Level == LogLevel.Warning)
-            {
-                if (message.Code >= NuGetLogCode.NU1000)
+                if (message.Level == LogLevel.Debug)
                 {
-                    WriteWarning(FormatWithCode(message));
+                    WriteColor(Out, ConsoleColor.Gray, message.Message);
                 }
-                else
+                else if (message.Level == LogLevel.Warning)
                 {
-                    // Write warnings without codes otherwise.
-                    WriteWarning(message.Message);
-                }
-            }
-            else if (message.Level == LogLevel.Error)
-            {
-                if (message is RestoreLogMessage)
-                {
-                    WriteLine(ConsoleColor.Red, message.Message);
-                }
-                else
-                {
-                    // Write out codes for messages that have codes.
                     if (message.Code >= NuGetLogCode.NU1000)
                     {
-                        WriteError(FormatWithCode(message));
+                        WriteWarning(FormatWithCode(message));
                     }
                     else
                     {
-                        // Write errors without codes otherwise.
-                        WriteError(message.Message);
+                        // Write warnings without codes otherwise.
+                        WriteWarning(message.Message);
                     }
                 }
-            }
-            else
-            {
-                // Verbose, Information
-                WriteLine(message.Message);
+                else if (message.Level == LogLevel.Error)
+                {
+                    if (message is RestoreLogMessage)
+                    {
+                        WriteLine(ConsoleColor.Red, message.Message);
+                    }
+                    else
+                    {
+                        // Write out codes for messages that have codes.
+                        if (message.Code >= NuGetLogCode.NU1000)
+                        {
+                            WriteError(FormatWithCode(message));
+                        }
+                        else
+                        {
+                            // Write errors without codes otherwise.
+                            WriteError(message.Message);
+                        }
+                    }
+                }
+                else
+                {
+                    // Verbose, Information
+                    WriteLine(message.Message);
+                }
             }
         }
 

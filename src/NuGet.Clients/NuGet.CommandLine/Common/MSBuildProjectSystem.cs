@@ -380,7 +380,7 @@ namespace NuGet.Common
             dynamic targetElement = null;
             foreach (dynamic target in Project.Xml.Targets)
             {
-                if (string.Equals(target.Name, targetsPath, StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(target.Name, TargetName, StringComparison.OrdinalIgnoreCase))
                 {
                     targetElement = target;
                     break;
@@ -407,7 +407,7 @@ namespace NuGet.Common
             }
 
             taskElement.Parent.RemoveChild(taskElement);
-            if (targetElement.Tasks.Count == 0)
+            if (((System.Collections.ICollection)targetElement.Tasks).Count == 0)
             {
                 targetElement.Parent.RemoveChild(targetElement);
             }

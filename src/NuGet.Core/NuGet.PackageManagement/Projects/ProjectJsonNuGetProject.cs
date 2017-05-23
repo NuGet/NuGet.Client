@@ -120,6 +120,12 @@ namespace NuGet.ProjectManagement.Projects
         /// </summary>
         public override string ProjectName => _projectName;
 
+        protected virtual Task UpdateInternalTargetFrameworkAsync()
+        {
+            // Extending class will implement the functionality
+            return Task.FromResult(0);
+        }
+
         public override async Task<IEnumerable<PackageReference>> GetInstalledPackagesAsync(CancellationToken token)
         {
             var packages = new List<PackageReference>();
@@ -162,10 +168,25 @@ namespace NuGet.ProjectManagement.Projects
                 metadata.ProjectName = packageSpec.Name;
                 metadata.ProjectUniqueName = MSBuildProjectPath;
 
+                // Reload the target framework from csproj and update the target framework in packageSpec for restore
+                await UpdateInternalTargetFrameworkAsync();
+
+                if (TryGetInternalFramework(out var internalTargetFramework))
+                {
+                    // Ensure the project json has only one target framework
+                    if (packageSpec.TargetFrameworks != null && packageSpec.TargetFrameworks.Count == 1)
+                    {
+                        var replaceTargetFramework = new TargetFrameworkInformation();
+                        replaceTargetFramework.FrameworkName = internalTargetFramework as NuGetFramework;
+                        packageSpec.TargetFrameworks[0] = replaceTargetFramework;
+                    }
+                }
+
                 var references = (await ProjectServices
                     .ReferencesReader
                     .GetProjectReferencesAsync(context.Logger, CancellationToken.None))
                     .ToList();
+
                 if (references != null && references.Count > 0)
                 {
                     // Add msbuild reference groups for each TFM in the project
@@ -206,7 +227,7 @@ namespace NuGet.ProjectManagement.Projects
 
             JsonConfigUtility.AddDependency(json, dependency);
 
-            UpdateFramework(json);
+            await UpdateFrameworkAsync(json);
 
             await SaveJsonAsync(json);
 
@@ -224,7 +245,7 @@ namespace NuGet.ProjectManagement.Projects
 
             JsonConfigUtility.RemoveDependency(json, packageId);
 
-            UpdateFramework(json);
+            await UpdateFrameworkAsync(json);
 
             await SaveJsonAsync(json);
 
@@ -281,18 +302,29 @@ namespace NuGet.ProjectManagement.Projects
             }
         }
 
-        private void UpdateFramework(JObject json)
+        private async Task UpdateFrameworkAsync(JObject json)
         {
-            var frameworks = JsonConfigUtility.GetFrameworks(json);
-            if (InternalMetadata.TryGetValue(NuGetProjectMetadataKeys.TargetFramework, out object newTargetFramework))
+            // Update the internal target framework with TPMinV from csproj
+            await UpdateInternalTargetFrameworkAsync();
+
+            if (TryGetInternalFramework(out object newTargetFrameworkObject))
             {
-                if (IsUAPFramework(newTargetFramework as NuGetFramework) && frameworks.Count() == 1)
+                var frameworks = JsonConfigUtility.GetFrameworks(json);
+                var newTargetFramework = newTargetFrameworkObject as NuGetFramework;
+                if (IsUAPFramework(newTargetFramework)
+                    && frameworks.Count() == 1
+                    && frameworks.Single() != newTargetFramework)
                 {
                     // project.json can have only one target framework
                     JsonConfigUtility.ClearFrameworks(json);
                     JsonConfigUtility.AddFramework(json, newTargetFramework as NuGetFramework);
                 }
             }
+        }
+
+        private bool TryGetInternalFramework(out object internalTargetFramework)
+        {
+            return InternalMetadata.TryGetValue(NuGetProjectMetadataKeys.TargetFramework, out internalTargetFramework);
         }
     }
 }
