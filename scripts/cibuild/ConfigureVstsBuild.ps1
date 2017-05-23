@@ -72,7 +72,16 @@ Function Update-VsixVersion {
     Write-Host "Updated the VSIX version [$oldVersion] => [$($root.Metadata.Identity.Version)]"
 }
 
+Function Print-GitLog {
+    $mdFolder = [System.IO.Path]::Combine($env:SYSTEM_DEFAULTWORKINGDIRECTORY, 'MicroBuild', 'Output')
+    New-Item -ItemType Directory -Force -Path $mdFolder | Out-Null
+    $mdFile = Join-Path $mdFolder 'GitLog.md'
+    & git log -1 --pretty=format:' Author: %an%n Commit: [%H](https://github.com/NuGet/NuGet.Client/commit/%H)%n Message: %s' 2>&1  | Set-Content $mdFile 
+    Write-Host "##vso[task.addattachment type=Distributedtask.Core.Summary;name=Associated changes;]$mdFile"
+}
+
 $msbuildExe = 'C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\MSBuild\15.0\bin\msbuild.exe'
+
 # Turn off strong name verification for common DevDiv public keys so that people can execute things against
 # test-signed assemblies. One example would be running unit tests on a test-signed assembly during the build.
 $regKey = "HKLM:SOFTWARE\Microsoft\StrongName\Verification\*,b03f5f7f11d50a3a"
@@ -81,8 +90,6 @@ $regKey32 = "HKLM:SOFTWARE\Wow6432Node\Microsoft\StrongName\Verification\*,b03f5
 $regKeyNuGet = "HKLM:SOFTWARE\Microsoft\StrongName\Verification\*,31bf3856ad364e35"
 $regKeyNuGet32 = "HKLM:SOFTWARE\Wow6432Node\Microsoft\StrongName\Verification\*,31bf3856ad364e35"
 
-
-
 $has32bitNode = Test-Path "HKLM:SOFTWARE\Wow6432Node"
 
 # update submodule NuGet.Build.Localization
@@ -90,7 +97,7 @@ $NuGetClientRoot = $env:BUILD_REPOSITORY_LOCALPATH
 $Submodules = Join-Path $NuGetClientRoot submodules -Resolve
 
 $NuGetLocalization = Join-Path $Submodules NuGet.Build.Localization -Resolve
-$updateOpts = 'pull', 'origin', 'master', '--verbose'
+$updateOpts = 'pull', 'origin', 'master'
            
 Write-Host "git update NuGet.Build.Localization at $NuGetLocalization"
 & git -C $NuGetLocalization $updateOpts 2>&1 | Write-Host
@@ -120,6 +127,7 @@ if (-not (Test-Path $regKeyNuGet) -or ($has32bitNode -and -not (Test-Path $regKe
 
 if ($BuildRTM -eq 'true')
 {
+    Print-GitLog
     # Set the $(NupkgOutputDir) build variable in VSTS build
     Write-Host "##vso[task.setvariable variable=NupkgOutputDir;]ReleaseNupkgs"
     $numberOfTries = 0
