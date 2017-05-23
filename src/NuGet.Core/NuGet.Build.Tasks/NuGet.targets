@@ -301,6 +301,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     ============================================================
   -->
   <Target Name="_GenerateDotnetCliToolReferenceSpecs"
+      DependsOnTargets="_GetRestoreSettings"
       Returns="@(_RestoreGraphEntry)">
 
     <PropertyGroup>
@@ -312,12 +313,17 @@ Copyright (c) .NET Foundation. All rights reserved.
       Condition=" '$(RestoreDotnetCliToolReferences)' == '' OR '$(RestoreDotnetCliToolReferences)' == 'true' "
       ProjectPath="$(MSBuildProjectFullPath)"
       ToolFramework="$(DotnetCliToolTargetFramework)"
+      RestorePackagesPath="$(_OutputPackagesPath)"
+      RestoreFallbackFolders="$(_OutputFallbackFolders)"
+      RestoreSources="$(_OutputSources)"
+      RestoreConfigFilePaths="$(_OutputConfigFilePaths)"
       DotnetCliToolReferences="@(DotnetCliToolReference)">
 
       <Output
         TaskParameter="RestoreGraphItems"
         ItemName="_RestoreGraphEntry" />
     </GetRestoreDotnetCliToolsTask>
+    
   </Target>
 
   <!--
@@ -414,12 +420,43 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <!--
     ============================================================
+    _GetRestoreSettings
+    ============================================================
+  -->
+  <Target Name="_GetRestoreSettings" DependsOnTargets="_GetRestoreProjectStyle" Returns="$(_OutputSources);$(_OutputPackagesPath);$(_OutputFallbackFolders);$(_OutputConfigFilePaths)">
+    <!-- For transitive project styles, we rely on evaluating all the settings and including them in the dg spec to faciliate no-op restore-->
+    <GetRestoreSettingsTask Condition=" '$(RestoreProjectStyle)' == 'PackageReference' OR '$(RestoreProjectStyle)' == 'ProjectJson' "
+     ProjectUniqueName="$(MSBuildProjectFullPath)"
+     RestoreSources="$(RestoreSources)"
+     RestorePackagesPath="$(RestorePackagesPath)"
+     RestoreFallbackFolders="$(RestoreFallbackFolders)"
+     RestoreConfigFile="$(RestoreConfigFile)"
+     RestoreSolutionDirectory="$(RestoreSolutionDirectory)"
+     RestoreDirectory="$(RestoreDirectory)"
+     >
+      <Output
+        TaskParameter="OutputSources"
+        PropertyName="_OutputSources" />
+      <Output
+        TaskParameter="OutputPackagesPath"
+        PropertyName="_OutputPackagesPath" />
+      <Output
+        TaskParameter="OutputFallbackFolders"
+        PropertyName="_OutputFallbackFolders" />
+      <Output
+        TaskParameter="OutputConfigFilePaths"
+        PropertyName="_OutputConfigFilePaths" />
+    </GetRestoreSettingsTask>
+  </Target>
+
+  <!--
+    ============================================================
     _GenerateRestoreProjectSpec
     Generate a restore project spec for the current project.
     ============================================================
   -->
   <Target Name="_GenerateRestoreProjectSpec"
-    DependsOnTargets="_GetRestoreProjectStyle;_GetRestoreTargetFrameworksOutput"
+    DependsOnTargets="_GetRestoreProjectStyle;_GetRestoreTargetFrameworksOutput;_GetRestoreSettings"
     Returns="@(_RestoreGraphEntry)">
 
     <!-- Determine the restore output path -->
@@ -467,29 +504,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       <_RestoreSkipContentFileWrite Condition=" '$(TargetFrameworks)' == '' AND '$(TargetFramework)' == '' ">true</_RestoreSkipContentFileWrite>
     </PropertyGroup>
     
-    <!-- For transitive project styles, we rely on evaluating all the settings and including them in the dg spec to faciliate no-op restore-->
-    <GetRestoreSettingsTask Condition=" '$(RestoreProjectStyle)' == 'PackageReference' OR '$(RestoreProjectStyle)' == 'ProjectJson' "
-     ProjectUniqueName="$(MSBuildProjectFullPath)"
-     RestoreSources="$(RestoreSources)"
-     RestorePackagesPath="$(RestorePackagesPath)"
-     RestoreFallbackFolders="$(RestoreFallbackFolders)"
-     RestoreConfigFile="$(RestoreConfigFile)"
-     RestoreSolutionDirectory="$(RestoreSolutionDirectory)"
-     RestoreDirectory="$(RestoreDirectory)"
-     >
-      <Output
-        TaskParameter="OutputSources"
-        PropertyName="_OutputSources" />
-      <Output
-        TaskParameter="OutputPackagesPath"
-        PropertyName="_OutputPackagesPath" />
-      <Output
-        TaskParameter="OutputFallbackFolders"
-        PropertyName="_OutputFallbackFolders" />
-      <Output
-        TaskParameter="OutputConfigFilePaths"
-        PropertyName="_OutputConfigFilePaths" />
-    </GetRestoreSettingsTask>
+
 
 
     <!-- Write properties for the top level entry point -->
