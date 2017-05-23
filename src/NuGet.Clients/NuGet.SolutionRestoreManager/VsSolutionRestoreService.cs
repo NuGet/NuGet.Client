@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft;
 using NuGet.Commands;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
@@ -79,10 +80,7 @@ namespace NuGet.SolutionRestoreManager
 
         public Task<bool> NominateProjectAsync(string projectUniqueName, CancellationToken token)
         {
-            if (string.IsNullOrEmpty(projectUniqueName))
-            {
-                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(projectUniqueName));
-            }
+            Assumes.NotNullOrEmpty(projectUniqueName);
 
             // returned task completes when scheduled restore operation completes.
             var restoreTask = _restoreWorker.ScheduleRestoreAsync(
