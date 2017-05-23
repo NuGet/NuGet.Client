@@ -528,6 +528,7 @@ Copyright (c) .NET Foundation. All rights reserved.
         <PackagesPath>$(_OutputPackagesPath)</PackagesPath>
         <ProjectJsonPath>$(_CurrentProjectJsonPath)</ProjectJsonPath>
         <ProjectStyle>$(RestoreProjectStyle)</ProjectStyle>
+        <ConfigFilePaths>$(_OutputConfigFilePaths)</ConfigFilePaths>
       </_RestoreGraphEntry>
     </ItemGroup>
 
