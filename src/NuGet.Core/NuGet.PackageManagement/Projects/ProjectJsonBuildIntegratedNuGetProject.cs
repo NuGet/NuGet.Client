@@ -169,7 +169,7 @@ namespace NuGet.ProjectManagement.Projects
                 Enumerable.Empty<ProjectRestoreReference>().ToList());
         }
 
-        protected virtual Task UpdateInternalTargetFramework()
+        protected virtual Task UpdateInternalTargetFrameworkAsync()
         {
             // Extending class will implement the functionality
             return Task.FromResult(0);
@@ -220,7 +220,7 @@ namespace NuGet.ProjectManagement.Projects
                 var references = await GetDirectProjectReferencesAsync(context);
 
                 // Reload the target framework from csproj and update the target framework in packageSpec for restore
-                await UpdateInternalTargetFramework();
+                await UpdateInternalTargetFrameworkAsync();
                 if (TryGetInternalFramework(out var internalTargetFramework))
                 {
                     // Ensure the project json has only one target framework
@@ -272,7 +272,7 @@ namespace NuGet.ProjectManagement.Projects
 
             JsonConfigUtility.AddDependency(json, dependency);
 
-            await UpdateFramework(json);
+            await UpdateFrameworkAsync(json);
 
             await SaveJsonAsync(json);
 
@@ -290,7 +290,7 @@ namespace NuGet.ProjectManagement.Projects
 
             JsonConfigUtility.RemoveDependency(json, packageId);
 
-            await UpdateFramework(json);
+            await UpdateFrameworkAsync(json);
 
             await SaveJsonAsync(json);
 
@@ -347,10 +347,10 @@ namespace NuGet.ProjectManagement.Projects
             }
         }
 
-        private async Task UpdateFramework(JObject json)
+        private async Task UpdateFrameworkAsync(JObject json)
         {
             // Update the internal target framework with TPMinV from csproj
-            await UpdateInternalTargetFramework();
+            await UpdateInternalTargetFrameworkAsync();
             if (TryGetInternalFramework(out object newTargetFrameworkObject))
             {
                 var frameworks = JsonConfigUtility.GetFrameworks(json);

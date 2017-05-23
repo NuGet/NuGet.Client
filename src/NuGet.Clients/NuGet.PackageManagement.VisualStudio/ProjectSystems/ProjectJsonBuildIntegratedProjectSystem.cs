@@ -38,7 +38,7 @@ namespace NuGet.PackageManagement.VisualStudio
             InternalMetadata.Add(NuGetProjectMetadataKeys.UniqueName, uniqueName);
         }
 
-        protected override async Task UpdateInternalTargetFramework()
+        protected override async Task UpdateInternalTargetFrameworkAsync()
         {
             // VsHierarchyUtility.ToVsHierarchy can only be run on UI Thread.
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
