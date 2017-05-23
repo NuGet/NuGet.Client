@@ -1,4 +1,6 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+﻿using System;
+using System.Threading.Tasks;
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.Build.Framework;
@@ -10,13 +12,40 @@ namespace NuGet.Build
     /// <summary>
     /// TaskLoggingHelper -> ILogger
     /// </summary>
-    internal class MSBuildLogger : LegacyLoggerAdapter, Common.ILogger
+    internal class MSBuildLogger : LoggerBase, Common.ILogger
     {
         private readonly TaskLoggingHelper _taskLogging;
 
         public MSBuildLogger(TaskLoggingHelper taskLogging)
         {
             _taskLogging = taskLogging;
+        }
+
+        public override void Log(ILogMessage message)
+        {
+            var restoreLogMessage = message as IRestoreLogMessage;
+
+            if (restoreLogMessage == null)
+            {
+                LogError(FormatMessage(message));
+            }
+            else
+            {
+                _taskLogging.LogError(string.Empty,
+                    Enum.GetName(typeof(NuGetLogCode), restoreLogMessage.Code),
+                    Enum.GetName(typeof(NuGetLogCode), restoreLogMessage.Code),
+                    restoreLogMessage.FilePath,
+                    restoreLogMessage.StartLineNumber,
+                    restoreLogMessage.StartColumnNumber,
+                    restoreLogMessage.EndLineNumber,
+                    restoreLogMessage.EndColumnNumber,
+                    restoreLogMessage.Message);
+            }
+        }
+
+        public override System.Threading.Tasks.Task LogAsync(ILogMessage message)
+        {
+            return new System.Threading.Tasks.Task(() => Log(message));
         }
 
         public override void LogDebug(string data)
