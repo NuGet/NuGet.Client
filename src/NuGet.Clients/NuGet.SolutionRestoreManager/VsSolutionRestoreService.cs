@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft;
 using NuGet.Commands;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
@@ -22,13 +23,14 @@ using static NuGet.Frameworks.FrameworkConstants;
 namespace NuGet.SolutionRestoreManager
 {
     /// <summary>
-    /// Implementation of the <see cref="IVsSolutionRestoreService"/>.
+    /// Implementation of the <see cref="IVsSolutionRestoreService"/> and <see cref="IVsSolutionRestoreService2"/>.
     /// Provides extension API for project restore nomination triggered by 3rd party component.
     /// Configured as a single-instance MEF part.
     /// </summary>
     [PartCreationPolicy(CreationPolicy.Shared)]
     [Export(typeof(IVsSolutionRestoreService))]
-    public sealed class VsSolutionRestoreService : IVsSolutionRestoreService
+    [Export(typeof(IVsSolutionRestoreService2))]
+    public sealed class VsSolutionRestoreService : IVsSolutionRestoreService, IVsSolutionRestoreService2
     {
         private const string PackageId = nameof(PackageId);
         private const string PackageVersion = nameof(PackageVersion);
@@ -75,6 +77,18 @@ namespace NuGet.SolutionRestoreManager
         }
 
         public Task<bool> CurrentRestoreOperation => _restoreWorker.CurrentRestoreOperation;
+
+        public Task<bool> NominateProjectAsync(string projectUniqueName, CancellationToken token)
+        {
+            Assumes.NotNullOrEmpty(projectUniqueName);
+
+            // returned task completes when scheduled restore operation completes.
+            var restoreTask = _restoreWorker.ScheduleRestoreAsync(
+                SolutionRestoreRequest.OnUpdate(),
+                token);
+
+            return restoreTask;
+        }
 
         public Task<bool> NominateProjectAsync(string projectUniqueName, IVsProjectRestoreInfo projectRestoreInfo, CancellationToken token)
         {
