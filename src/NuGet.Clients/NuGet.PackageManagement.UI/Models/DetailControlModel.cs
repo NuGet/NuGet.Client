@@ -510,7 +510,8 @@ namespace NuGet.PackageManagement.UI
             if (autoReferenced)
             {
                 OptionsBlockedUrl = new Uri("https://go.microsoft.com/fwlink/?linkid=841238");
-                OptionsBlockedMessage = "AutoReferenced";
+                var autoReferencedMessage = "This package is automatically referenced by the SDK and should not be updated independently. To update the package, update the SDK to which it belongs. More details:";
+                OptionsBlockedMessage = autoReferencedMessage;
 
                 if (_searchResultPackage != null)
                 {

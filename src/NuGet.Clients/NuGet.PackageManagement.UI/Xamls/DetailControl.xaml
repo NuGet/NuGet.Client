@@ -98,6 +98,7 @@
           <TextBlock
             x:Name="_optionsBlockedTextBox"
             Margin="0,12,0,16"
+            TextWrapping="WrapWithOverflow"
             Visibility="{Binding Path=OptionsBlockedMessage,Converter={StaticResource NullToVisibilityConverter}}">
             <Run Text="{Binding OptionsBlockedMessage}"/>
             <Hyperlink
