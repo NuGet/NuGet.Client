@@ -3,19 +3,16 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Web.XmlTransform;
-using NuGet.PackageManagement;
 
 namespace NuGet.ProjectManagement
 {
     /// <summary>
-    /// An XDT project file transformer.
+    /// Simple token replacement system for content files.
     /// </summary>
-    public class XdtTransformer : IPackageFileTransformer
+    public class Preprocessor : IPackageFileTransformer
     {
         /// <summary>
         /// Asynchronously transforms a file.
@@ -49,7 +46,11 @@ namespace NuGet.ProjectManagement
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            await PerformXdtTransformAsync(streamTaskFactory, targetPath, projectSystem, cancellationToken);
+            await MSBuildNuGetProjectSystemUtility.TryAddFileAsync(
+                projectSystem,
+                targetPath,
+                async () => StreamUtility.StreamFromString(await ProcessAsync(streamTaskFactory, projectSystem, cancellationToken)),
+                cancellationToken);
         }
 
         /// <summary>
@@ -62,8 +63,6 @@ namespace NuGet.ProjectManagement
         /// <param name="cancellationToken">A cancellation token.</param>
         /// <returns>A task that represents the asynchronous operation.</returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="streamTaskFactory" />
-        /// is <c>null</c>.</exception>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="matchingFiles" />
         /// is <c>null</c>.</exception>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="projectSystem" />
         /// is <c>null</c>.</exception>
@@ -88,55 +87,22 @@ namespace NuGet.ProjectManagement
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            await PerformXdtTransformAsync(streamTaskFactory, targetPath, projectSystem, cancellationToken);
+            await MSBuildNuGetProjectSystemUtility.DeleteFileSafeAsync(
+                targetPath,
+                async () => StreamUtility.StreamFromString(await ProcessAsync(streamTaskFactory, projectSystem, cancellationToken)),
+                projectSystem,
+                cancellationToken);
         }
 
-        private static async Task PerformXdtTransformAsync(
+        internal static Task<string> ProcessAsync(
             Func<Task<Stream>> streamTaskFactory,
-            string targetPath,
-            IMSBuildProjectSystem msBuildNuGetProjectSystem,
+            IMSBuildProjectSystem projectSystem,
             CancellationToken cancellationToken)
         {
-            if (FileSystemUtility.FileExists(msBuildNuGetProjectSystem.ProjectFullPath, targetPath))
-            {
-                var content = await Preprocessor.ProcessAsync(streamTaskFactory, msBuildNuGetProjectSystem, cancellationToken);
-
-                try
-                {
-                    using (var transformation = new XmlTransformation(content, isTransformAFile: false, logger: null))
-                    {
-                        using (var document = new XmlTransformableDocument())
-                        {
-                            document.PreserveWhitespace = true;
-
-                            // make sure we close the input stream immediately so that we can override 
-                            // the file below when we save to it.
-                            using (var inputStream = File.OpenRead(FileSystemUtility.GetFullPath(msBuildNuGetProjectSystem.ProjectFullPath, targetPath)))
-                            {
-                                document.Load(inputStream);
-                            }
-
-                            var succeeded = transformation.Apply(document);
-                            if (succeeded)
-                            {
-                                // save the result into a memoryStream first so that if there is any
-                                // exception during document.Save(), the original file won't be truncated.
-                                MSBuildNuGetProjectSystemUtility.AddFile(msBuildNuGetProjectSystem, targetPath, document.Save);
-                            }
-                        }
-                    }
-                }
-                catch (Exception exception)
-                {
-                    throw new InvalidDataException(
-                        string.Format(
-                            CultureInfo.CurrentCulture,
-                            Strings.XdtError + " " + exception.Message,
-                            targetPath,
-                            msBuildNuGetProjectSystem.ProjectName),
-                        exception);
-                }
-            }
+            return Common.Preprocessor.ProcessAsync(
+                streamTaskFactory,
+                propName => projectSystem.GetPropertyValue(propName),
+                cancellationToken);
         }
     }
 }

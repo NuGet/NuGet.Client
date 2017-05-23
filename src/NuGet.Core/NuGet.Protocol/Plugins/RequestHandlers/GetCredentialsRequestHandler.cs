@@ -2,46 +2,44 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Concurrent;
 using System.Globalization;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Configuration;
+using NuGet.Protocol.Core.Types;
 
 namespace NuGet.Protocol.Plugins
 {
     /// <summary>
-    /// A credentials provider for plugins.
+    /// A request handler for get credentials requests.
     /// </summary>
-    public sealed class PluginCredentialsProvider : IRequestHandler, IDisposable
+    public sealed class GetCredentialsRequestHandler : IRequestHandler, IDisposable
     {
         private const string _basicAuthenticationType = "Basic";
 
         private readonly ICredentialService _credentialService;
         private bool _isDisposed;
-        private readonly PackageSource _packageSource;
         private readonly IPlugin _plugin;
         private readonly IWebProxy _proxy;
+        private readonly ConcurrentDictionary<string, SourceRepository> _repositories;
 
         /// <summary>
-        /// Gets the cancellation token.
+        /// Gets the <see cref="CancellationToken" /> for a request.
         /// </summary>
         public CancellationToken CancellationToken => CancellationToken.None;
 
         /// <summary>
-        /// Initializes a new <see cref="PluginCredentialsProvider" /> class.
+        /// Initializes a new <see cref="GetCredentialsRequestHandler" /> class.
         /// </summary>
         /// <param name="plugin">A plugin.</param>
-        /// <param name="packageSource">A package source.</param>
         /// <param name="proxy">A web proxy.</param>
         /// <param name="credentialService">An optional credential service.</param>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="plugin" />
         /// is <c>null</c>.</exception>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="packageSource" />
-        /// is <c>null</c>.</exception>
-        public PluginCredentialsProvider(
+        public GetCredentialsRequestHandler(
             IPlugin plugin,
-            PackageSource packageSource,
             IWebProxy proxy,
             ICredentialService credentialService)
         {
@@ -50,15 +48,10 @@ namespace NuGet.Protocol.Plugins
                 throw new ArgumentNullException(nameof(plugin));
             }
 
-            if (packageSource == null)
-            {
-                throw new ArgumentNullException(nameof(packageSource));
-            }
-
             _plugin = plugin;
-            _packageSource = packageSource;
             _proxy = proxy;
             _credentialService = credentialService;
+            _repositories = new ConcurrentDictionary<string, SourceRepository>();
         }
 
         /// <summary>
@@ -73,6 +66,28 @@ namespace NuGet.Protocol.Plugins
                 GC.SuppressFinalize(this);
 
                 _isDisposed = true;
+            }
+        }
+
+        /// <summary>
+        /// Adds or updates a source repository in a source repository cache.
+        /// </summary>
+        /// <param name="sourceRepository">A source repository.</param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="sourceRepository" />
+        /// is <c>null</c>.</exception>
+        public void AddOrUpdateSourceRepository(SourceRepository sourceRepository)
+        {
+            if (sourceRepository == null)
+            {
+                throw new ArgumentNullException(nameof(sourceRepository));
+            }
+
+            if (sourceRepository.PackageSource != null && sourceRepository.PackageSource.IsHttp)
+            {
+                _repositories.AddOrUpdate(
+                    sourceRepository.PackageSource.Source,
+                    sourceRepository,
+                    (source, repo) => sourceRepository);
             }
         }
 
@@ -133,12 +148,14 @@ namespace NuGet.Protocol.Plugins
             cancellationToken.ThrowIfCancellationRequested();
 
             var requestPayload = MessageUtilities.DeserializePayload<GetCredentialsRequest>(request);
+            var packageSource = GetPackageSource(requestPayload.PackageSourceRepository);
+
             GetCredentialsResponse responsePayload;
 
-            if (_packageSource.IsHttp &&
+            if (packageSource.IsHttp &&
                 string.Equals(
                     requestPayload.PackageSourceRepository,
-                    _packageSource.Source,
+                    packageSource.Source,
                     StringComparison.OrdinalIgnoreCase))
             {
                 NetworkCredential credential = null;
@@ -149,7 +166,10 @@ namespace NuGet.Protocol.Plugins
                     PluginConstants.ProgressInterval,
                     cancellationToken))
                 {
-                    credential = await GetCredentialAsync(requestPayload.StatusCode, cancellationToken);
+                    credential = await GetCredentialAsync(
+                        packageSource,
+                        requestPayload.StatusCode,
+                        cancellationToken);
                 }
 
                 if (credential == null)
@@ -179,6 +199,7 @@ namespace NuGet.Protocol.Plugins
         }
 
         private async Task<NetworkCredential> GetCredentialAsync(
+            PackageSource packageSource,
             HttpStatusCode statusCode,
             CancellationToken cancellationToken)
         {
@@ -186,19 +207,20 @@ namespace NuGet.Protocol.Plugins
 
             if (requestType == CredentialRequestType.Proxy)
             {
-                return await GetProxyCredentialAsync(cancellationToken);
+                return await GetProxyCredentialAsync(packageSource, cancellationToken);
             }
 
-            return await GetPackageSourceCredential(requestType, cancellationToken);
+            return await GetPackageSourceCredential(requestType, packageSource, cancellationToken);
         }
 
         private async Task<NetworkCredential> GetPackageSourceCredential(
             CredentialRequestType requestType,
+            PackageSource packageSource,
             CancellationToken cancellationToken)
         {
-            if (_packageSource.Credentials != null && _packageSource.Credentials.IsValid())
+            if (packageSource.Credentials != null && packageSource.Credentials.IsValid())
             {
-                return new NetworkCredential(_packageSource.Credentials.Username, _packageSource.Credentials.Password);
+                return new NetworkCredential(packageSource.Credentials.Username, packageSource.Credentials.Password);
             }
 
             if (_credentialService == null)
@@ -212,17 +234,17 @@ namespace NuGet.Protocol.Plugins
                 message = string.Format(
                     CultureInfo.CurrentCulture,
                     Strings.Http_CredentialsForUnauthorized,
-                    _packageSource.Source);
+                    packageSource.Source);
             }
             else
             {
                 message = string.Format(
                     CultureInfo.CurrentCulture,
                     Strings.Http_CredentialsForForbidden,
-                    _packageSource.Source);
+                    packageSource.Source);
             }
 
-            var sourceUri = _packageSource.SourceUri;
+            var sourceUri = packageSource.SourceUri;
             var credentials = await _credentialService.GetCredentialsAsync(
                 sourceUri,
                 _proxy,
@@ -230,14 +252,16 @@ namespace NuGet.Protocol.Plugins
                 message,
                 cancellationToken);
 
-            return credentials.GetCredential(sourceUri, authType: null);
+            return credentials?.GetCredential(sourceUri, authType: null);
         }
 
-        private async Task<NetworkCredential> GetProxyCredentialAsync(CancellationToken cancellationToken)
+        private async Task<NetworkCredential> GetProxyCredentialAsync(
+            PackageSource packageSource,
+            CancellationToken cancellationToken)
         {
             if (_proxy != null && _credentialService != null)
             {
-                var sourceUri = _packageSource.SourceUri;
+                var sourceUri = packageSource.SourceUri;
                 var proxyUri = _proxy.GetProxy(sourceUri);
                 var message = string.Format(
                     CultureInfo.CurrentCulture,
@@ -270,6 +294,18 @@ namespace NuGet.Protocol.Plugins
                 default:
                     return CredentialRequestType.Forbidden;
             }
+        }
+
+        private PackageSource GetPackageSource(string packageSourceRepository)
+        {
+            SourceRepository sourceRepository;
+
+            if (_repositories.TryGetValue(packageSourceRepository, out sourceRepository))
+            {
+                return sourceRepository.PackageSource;
+            }
+
+            return new PackageSource(packageSourceRepository);
         }
     }
 }

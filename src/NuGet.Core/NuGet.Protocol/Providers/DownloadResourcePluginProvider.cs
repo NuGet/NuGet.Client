@@ -60,22 +60,54 @@ namespace NuGet.Protocol
 
                     if (result != null)
                     {
-                        var credentialsProvider = new PluginCredentialsProvider(
-                            result.Plugin,
-                            source.PackageSource,
-                            httpHandlerResource.ClientHandler?.Proxy,
-                            HttpHandlerResourceV3.CredentialService);
+                        AddOrUpdateGetCredentialsRequestHandler(result.Plugin, source, httpHandlerResource);
+                        AddOrUpdateGetServiceIndexRequestHandler(result.Plugin, source);
 
                         resource = new DownloadResourcePlugin(
                             result.Plugin,
                             result.PluginMulticlientUtilities,
-                            source.PackageSource,
-                            credentialsProvider);
+                            source.PackageSource);
                     }
                 }
             }
 
             return new Tuple<bool, INuGetResource>(resource != null, resource);
+        }
+
+        private static void AddOrUpdateGetCredentialsRequestHandler(
+            IPlugin plugin,
+            SourceRepository source,
+            HttpHandlerResource httpHandlerResource)
+        {
+            plugin.Connection.MessageDispatcher.RequestHandlers.AddOrUpdate(
+                MessageMethod.GetCredentials,
+                () => new GetCredentialsRequestHandler(
+                    plugin,
+                    httpHandlerResource.ClientHandler?.Proxy,
+                    HttpHandlerResourceV3.CredentialService),
+                existingHandler =>
+                    {
+                        var handler = (GetCredentialsRequestHandler)existingHandler;
+
+                        handler.AddOrUpdateSourceRepository(source);
+
+                        return handler;
+                    });
+        }
+
+        private static void AddOrUpdateGetServiceIndexRequestHandler(IPlugin plugin, SourceRepository source)
+        {
+            plugin.Connection.MessageDispatcher.RequestHandlers.AddOrUpdate(
+                MessageMethod.GetServiceIndex,
+                () => new GetServiceIndexRequestHandler(plugin),
+                existingHandler =>
+                    {
+                        var handler = (GetServiceIndexRequestHandler)existingHandler;
+
+                        handler.AddOrUpdateSourceRepository(source);
+
+                        return handler;
+                    });
         }
     }
 }

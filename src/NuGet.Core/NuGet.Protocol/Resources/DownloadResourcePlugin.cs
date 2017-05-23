@@ -18,7 +18,6 @@ namespace NuGet.Protocol
     /// </summary>
     public sealed class DownloadResourcePlugin : DownloadResource
     {
-        private PluginCredentialsProvider _credentialsProvider;
         private readonly IPlugin _plugin;
         private readonly PackageSource _packageSource;
         private readonly IPluginMulticlientUtilities _utilities;
@@ -29,20 +28,16 @@ namespace NuGet.Protocol
         /// <param name="plugin">A plugin.</param>
         /// <param name="utilities">A plugin multiclient utilities.</param>
         /// <param name="packageSource">A package source.</param>
-        /// <param name="credentialsProvider">A plugin credentials provider.</param>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="plugin" />
         /// is <c>null</c>.</exception>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="utilities" />
         /// is <c>null</c>.</exception>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="packageSource" />
         /// is <c>null</c>.</exception>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="credentialsProvider" />
-        /// is <c>null</c>.</exception>
         public DownloadResourcePlugin(
             IPlugin plugin,
             IPluginMulticlientUtilities utilities,
-            PackageSource packageSource,
-            PluginCredentialsProvider credentialsProvider)
+            PackageSource packageSource)
         {
             if (plugin == null)
             {
@@ -59,15 +54,9 @@ namespace NuGet.Protocol
                 throw new ArgumentNullException(nameof(packageSource));
             }
 
-            if (credentialsProvider == null)
-            {
-                throw new ArgumentNullException(nameof(credentialsProvider));
-            }
-
             _plugin = plugin;
             _utilities = utilities;
             _packageSource = packageSource;
-            _credentialsProvider = credentialsProvider;
         }
 
         /// <summary>
@@ -112,8 +101,6 @@ namespace NuGet.Protocol
             cancellationToken.ThrowIfCancellationRequested();
 
             AddOrUpdateLogger(_plugin, logger);
-
-            _credentialsProvider = TryUpdateCredentialProvider(_plugin, _credentialsProvider);
 
             await _utilities.DoOncePerPluginLifetimeAsync(
                 MessageMethod.SetLogLevel.ToString(),
@@ -168,25 +155,6 @@ namespace NuGet.Protocol
                 MessageMethod.SetLogLevel,
                 new SetLogLevelRequest(logLevel),
                 cancellationToken);
-        }
-
-        private static PluginCredentialsProvider TryUpdateCredentialProvider(
-            IPlugin plugin,
-            PluginCredentialsProvider credentialProvider)
-        {
-            if (plugin.Connection.MessageDispatcher.RequestHandlers.TryAdd(MessageMethod.GetCredentials, credentialProvider))
-            {
-                return credentialProvider;
-            }
-
-            IRequestHandler handler;
-
-            if (plugin.Connection.MessageDispatcher.RequestHandlers.TryGet(MessageMethod.GetCredentials, out handler))
-            {
-                return (PluginCredentialsProvider)handler;
-            }
-
-            throw new InvalidOperationException();
         }
     }
 }

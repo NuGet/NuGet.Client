@@ -17,9 +17,8 @@ using Xunit;
 
 namespace NuGet.Protocol.Plugins.Tests
 {
-    public class PluginFindPackageByIdResourceTests : IDisposable
+    public class PluginFindPackageByIdResourceTests
     {
-        private readonly PluginCredentialsProvider _credentialsProvider;
         private readonly Mock<ICredentialService> _credentialService;
         private readonly PackageSource _packageSource;
         private readonly Mock<IPlugin> _plugin;
@@ -33,20 +32,8 @@ namespace NuGet.Protocol.Plugins.Tests
             _credentialService = new Mock<ICredentialService>();
             _plugin = new Mock<IPlugin>();
             _utilities = new Mock<IPluginMulticlientUtilities>();
-            _credentialsProvider = new PluginCredentialsProvider(
-                _plugin.Object,
-                _packageSource,
-                _proxy.Object,
-                _credentialService.Object);
 
             HttpHandlerResourceV3.CredentialService = Mock.Of<ICredentialService>();
-        }
-
-        public void Dispose()
-        {
-            _credentialsProvider.Dispose();
-
-            GC.SuppressFinalize(this);
         }
 
         [Fact]
@@ -56,8 +43,7 @@ namespace NuGet.Protocol.Plugins.Tests
                 () => new PluginFindPackageByIdResource(
                     plugin: null,
                     utilities: _utilities.Object,
-                    packageSource: _packageSource,
-                    credentialsProvider: _credentialsProvider));
+                    packageSource: _packageSource));
 
             Assert.Equal("plugin", exception.ParamName);
         }
@@ -69,8 +55,7 @@ namespace NuGet.Protocol.Plugins.Tests
                 () => new PluginFindPackageByIdResource(
                     _plugin.Object,
                     utilities: null,
-                    packageSource: _packageSource,
-                    credentialsProvider: _credentialsProvider));
+                    packageSource: _packageSource));
 
             Assert.Equal("utilities", exception.ParamName);
         }
@@ -82,23 +67,9 @@ namespace NuGet.Protocol.Plugins.Tests
                 () => new PluginFindPackageByIdResource(
                     _plugin.Object,
                     _utilities.Object,
-                    packageSource: null,
-                    credentialsProvider: _credentialsProvider));
+                    packageSource: null));
 
             Assert.Equal("packageSource", exception.ParamName);
-        }
-
-        [Fact]
-        public void Constructor_ThrowsForNullCredentialProvider()
-        {
-            var exception = Assert.Throws<ArgumentNullException>(
-                () => new PluginFindPackageByIdResource(
-                    _plugin.Object,
-                    _utilities.Object,
-                    _packageSource,
-                    credentialsProvider: null));
-
-            Assert.Equal("credentialsProvider", exception.ParamName);
         }
 
         [Theory]
@@ -552,17 +523,15 @@ namespace NuGet.Protocol.Plugins.Tests
 
                 var utilities = new Mock<IPluginMulticlientUtilities>();
                 var credentialService = new Mock<ICredentialService>();
-                var credentialsProvider = new PluginCredentialsProvider(
+                var credentialsProvider = new GetCredentialsRequestHandler(
                     plugin.Object,
-                    packageSource,
                     proxy: null,
                     credentialService: credentialService.Object);
 
                 var resource = new PluginFindPackageByIdResource(
                     plugin.Object,
                     utilities.Object,
-                    packageSource,
-                    credentialsProvider);
+                    packageSource);
 
                 return new PluginFindPackageByIdResourceTest(
                     resource,

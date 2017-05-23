@@ -54,6 +54,11 @@ namespace NuGet.Protocol.Plugins
         GetPackageVersions,
 
         /// <summary>
+        /// Get service index
+        /// </summary>
+        GetServiceIndex,
+
+        /// <summary>
         /// Handshake
         /// </summary>
         Handshake,

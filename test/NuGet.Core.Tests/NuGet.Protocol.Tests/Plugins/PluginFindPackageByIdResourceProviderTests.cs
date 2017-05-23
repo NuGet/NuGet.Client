@@ -181,6 +181,13 @@ namespace NuGet.Protocol.Plugins.Tests
                 var plugin = new Mock<IPlugin>();
                 var utilities = new Mock<IPluginMulticlientUtilities>();
                 var connection = new Mock<IConnection>();
+                var dispatcher = new Mock<IMessageDispatcher>();
+
+                dispatcher.SetupGet(x => x.RequestHandlers)
+                    .Returns(new RequestHandlers());
+
+                connection.SetupGet(x => x.MessageDispatcher)
+                    .Returns(dispatcher.Object);
 
                 plugin.Setup(x => x.Connection)
                     .Returns(connection.Object);

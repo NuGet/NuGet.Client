@@ -23,7 +23,6 @@ namespace NuGet.Protocol.Core.Types
     /// </summary>
     public sealed class PluginFindPackageByIdResource : FindPackageByIdResource
     {
-        private PluginCredentialsProvider _credentialsProvider;
         private readonly ConcurrentDictionary<string, AsyncLazy<SortedDictionary<NuGetVersion, PackageInfo>>> _packageInfoCache =
             new ConcurrentDictionary<string, AsyncLazy<SortedDictionary<NuGetVersion, PackageInfo>>>(StringComparer.OrdinalIgnoreCase);
         private readonly PackageSource _packageSource;
@@ -36,20 +35,16 @@ namespace NuGet.Protocol.Core.Types
         /// <param name="plugin">A plugin.</param>
         /// <param name="utilities">A plugin multiclient utilities.</param>
         /// <param name="packageSource">A package source.</param>
-        /// <param name="credentialsProvider">A plugin credentials provider.</param>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="plugin" />
         /// is <c>null</c>.</exception>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="utilities" />
         /// is <c>null</c>.</exception>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="packageSource" />
         /// is <c>null</c>.</exception>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="credentialsProvider" />
-        /// is <c>null</c>.</exception>
         public PluginFindPackageByIdResource(
             IPlugin plugin,
             IPluginMulticlientUtilities utilities,
-            PackageSource packageSource,
-            PluginCredentialsProvider credentialsProvider)
+            PackageSource packageSource)
         {
             if (plugin == null)
             {
@@ -66,15 +61,9 @@ namespace NuGet.Protocol.Core.Types
                 throw new ArgumentNullException(nameof(packageSource));
             }
 
-            if (credentialsProvider == null)
-            {
-                throw new ArgumentNullException(nameof(credentialsProvider));
-            }
-
             _plugin = plugin;
             _utilities = utilities;
             _packageSource = packageSource;
-            _credentialsProvider = credentialsProvider;
         }
 
         /// <summary>
@@ -185,8 +174,6 @@ namespace NuGet.Protocol.Core.Types
 
             AddOrUpdateLogger(_plugin, logger);
 
-            _credentialsProvider = TryUpdateCredentialProvider(_plugin, _credentialsProvider);
-
             await _utilities.DoOncePerPluginLifetimeAsync(
                 MessageMethod.SetLogLevel.ToString(),
                 () => SetLogLevelAsync(logger, cancellationToken),
@@ -251,8 +238,6 @@ namespace NuGet.Protocol.Core.Types
             if (packageInfos.TryGetValue(version, out packageInfo))
             {
                 AddOrUpdateLogger(_plugin, logger);
-
-                _credentialsProvider = TryUpdateCredentialProvider(_plugin, _credentialsProvider);
 
                 await _utilities.DoOncePerPluginLifetimeAsync(
                     MessageMethod.SetLogLevel.ToString(),
@@ -417,25 +402,6 @@ namespace NuGet.Protocol.Core.Types
                 MessageMethod.SetLogLevel,
                 new SetLogLevelRequest(logLevel),
                 cancellationToken);
-        }
-
-        private static PluginCredentialsProvider TryUpdateCredentialProvider(
-            IPlugin plugin,
-            PluginCredentialsProvider credentialProvider)
-        {
-            if (plugin.Connection.MessageDispatcher.RequestHandlers.TryAdd(MessageMethod.GetCredentials, credentialProvider))
-            {
-                return credentialProvider;
-            }
-
-            IRequestHandler handler;
-
-            if (plugin.Connection.MessageDispatcher.RequestHandlers.TryGet(MessageMethod.GetCredentials, out handler))
-            {
-                return (PluginCredentialsProvider)handler;
-            }
-
-            throw new InvalidOperationException();
         }
 
         private class PackageInfo

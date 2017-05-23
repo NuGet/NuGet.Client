@@ -15,11 +15,10 @@ using Xunit;
 
 namespace NuGet.Protocol.Plugins.Tests
 {
-    public class DownloadResourcePluginTests : IDisposable
+    public class DownloadResourcePluginTests
     {
         private readonly Mock<IConnection> _connection;
         private readonly Mock<ICredentialService> _credentialService;
-        private readonly PluginCredentialsProvider _credentialsProvider;
         private readonly Mock<IMessageDispatcher> _dispatcher;
         private readonly PackageSource _packageSource;
         private readonly Mock<IPlugin> _plugin;
@@ -36,11 +35,6 @@ namespace NuGet.Protocol.Plugins.Tests
             _connection = new Mock<IConnection>();
             _plugin = new Mock<IPlugin>();
             _utilities = new Mock<IPluginMulticlientUtilities>();
-            _credentialsProvider = new PluginCredentialsProvider(
-                _plugin.Object,
-                _packageSource,
-                _proxy.Object,
-                _credentialService.Object);
 
             _dispatcher.SetupGet(x => x.RequestHandlers)
                 .Returns(new RequestHandlers());
@@ -54,15 +48,7 @@ namespace NuGet.Protocol.Plugins.Tests
             _resource = new DownloadResourcePlugin(
                 _plugin.Object,
                 _utilities.Object,
-                _packageSource,
-                _credentialsProvider);
-        }
-
-        public void Dispose()
-        {
-            _credentialsProvider.Dispose();
-
-            GC.SuppressFinalize(this);
+                _packageSource);
         }
 
         [Fact]
@@ -72,8 +58,7 @@ namespace NuGet.Protocol.Plugins.Tests
                 () => new DownloadResourcePlugin(
                     plugin: null,
                     utilities: _utilities.Object,
-                    packageSource: _packageSource,
-                    credentialsProvider: _credentialsProvider));
+                    packageSource: _packageSource));
 
             Assert.Equal("plugin", exception.ParamName);
         }
@@ -85,8 +70,7 @@ namespace NuGet.Protocol.Plugins.Tests
                 () => new DownloadResourcePlugin(
                     _plugin.Object,
                     utilities: null,
-                    packageSource: _packageSource,
-                    credentialsProvider: _credentialsProvider));
+                    packageSource: _packageSource));
 
             Assert.Equal("utilities", exception.ParamName);
         }
@@ -98,23 +82,9 @@ namespace NuGet.Protocol.Plugins.Tests
                 () => new DownloadResourcePlugin(
                     _plugin.Object,
                     _utilities.Object,
-                    packageSource: null,
-                    credentialsProvider: _credentialsProvider));
+                    packageSource: null));
 
             Assert.Equal("packageSource", exception.ParamName);
-        }
-
-        [Fact]
-        public void Constructor_ThrowsForNullCredentialProvider()
-        {
-            var exception = Assert.Throws<ArgumentNullException>(
-                () => new DownloadResourcePlugin(
-                    _plugin.Object,
-                    _utilities.Object,
-                    _packageSource,
-                    credentialsProvider: null));
-
-            Assert.Equal("credentialsProvider", exception.ParamName);
         }
 
         [Fact]
@@ -140,8 +110,7 @@ namespace NuGet.Protocol.Plugins.Tests
             var resource = new DownloadResourcePlugin(
                 _plugin.Object,
                 _utilities.Object,
-                _packageSource,
-                _credentialsProvider);
+                _packageSource);
 
             using (var sourceCacheContext = new SourceCacheContext())
             {

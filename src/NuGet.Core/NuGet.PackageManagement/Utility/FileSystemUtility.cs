@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -7,6 +7,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.PackageManagement;
 using NuGet.Packaging;
@@ -303,9 +304,60 @@ namespace NuGet.ProjectManagement
             }
         }
 
+        /// <summary>
+        /// Determines if the contents of a file and stream are equal.
+        /// </summary>
+        /// <param name="path">The path to a file.</param>
+        /// <param name="streamFactory">A stream task factory.</param>
+        /// <returns><c>true</c> if contents are equal; otherwise, <c>false</c>.</returns>
+        /// <exception cref="ArgumentException">Thrown if <paramref name="path" /> is either
+        /// <c>null</c> or an empty string.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="streamFactory" />
+        /// is <c>null</c>.</exception>
         public static bool ContentEquals(string path, Func<Stream> streamFactory)
         {
+            if (string.IsNullOrEmpty(path))
+            {
+                throw new ArgumentException(Strings.Argument_Cannot_Be_Null_Or_Empty, nameof(path));
+            }
+
+            if (streamFactory == null)
+            {
+                throw new ArgumentNullException(nameof(streamFactory));
+            }
+
             using (Stream stream = streamFactory(),
+                fileStream = File.OpenRead(path))
+            {
+                return StreamUtility.ContentEquals(stream, fileStream);
+            }
+        }
+
+        /// <summary>
+        /// Asynchronously determines if the contents of a file and stream are equal.
+        /// </summary>
+        /// <param name="path">The path to a file.</param>
+        /// <param name="streamTaskFactory">A stream task factory.</param>
+        /// <returns>A task that represents the asynchronous operation.
+        /// The task result (<see cref="Task{TResult}.Result" />) returns a <see cref="bool" />
+        /// which is <c>true</c> if contents are equal; otherwise, <c>false</c>.</returns>
+        /// <exception cref="ArgumentException">Thrown if <paramref name="path" /> is either
+        /// <c>null</c> or an empty string.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="streamTaskFactory" />
+        /// is <c>null</c>.</exception>
+        public static async Task<bool> ContentEqualsAsync(string path, Func<Task<Stream>> streamTaskFactory)
+        {
+            if (string.IsNullOrEmpty(path))
+            {
+                throw new ArgumentException(Strings.Argument_Cannot_Be_Null_Or_Empty, nameof(path));
+            }
+
+            if (streamTaskFactory == null)
+            {
+                throw new ArgumentNullException(nameof(streamTaskFactory));
+            }
+
+            using (Stream stream = await streamTaskFactory(),
                 fileStream = File.OpenRead(path))
             {
                 return StreamUtility.ContentEquals(stream, fileStream);
