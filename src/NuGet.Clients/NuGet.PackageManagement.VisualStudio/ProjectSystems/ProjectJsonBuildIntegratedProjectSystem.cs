@@ -38,37 +38,34 @@ namespace NuGet.PackageManagement.VisualStudio
             InternalMetadata.Add(NuGetProjectMetadataKeys.UniqueName, uniqueName);
         }
 
-        protected override void UpdateInternalTargetFramework()
+        protected override async Task UpdateInternalTargetFramework()
         {
-            NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
+            // VsHierarchyUtility.ToVsHierarchy can only be run on UI Thread.
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+            // Override the JSON TFM value from the csproj for UAP framework
+            if (InternalMetadata.TryGetValue(NuGetProjectMetadataKeys.TargetFramework, out object targetFramework))
             {
-                // VsHierarchyUtility.ToVsHierarchy can only be run on UI Thread.
-                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-                // Override the JSON TFM value from the csproj for UAP framework
-                if (InternalMetadata.TryGetValue(NuGetProjectMetadataKeys.TargetFramework, out object targetFramework))
+                var jsonTargetFramework = targetFramework as NuGetFramework;
+                if (IsUAPFramework(jsonTargetFramework))
                 {
-                    var jsonTargetFramework = targetFramework as NuGetFramework;
-                    if (IsUAPFramework(jsonTargetFramework))
+                    var platformMinVersionString = VsHierarchyUtility.GetMSBuildProperty(
+                        VsHierarchyUtility.ToVsHierarchy(_envDTEProject),
+                        EnvDTEProjectInfoUtility.TargetPlatformMinVersion);
+
+                    var platformMinVersion = !string.IsNullOrEmpty(platformMinVersionString)
+                        ? new Version(platformMinVersionString)
+                        : null;
+
+                    if (platformMinVersion != null && jsonTargetFramework.Version != platformMinVersion)
                     {
-                        var platformMinVersionString = VsHierarchyUtility.GetMSBuildProperty(
-                            VsHierarchyUtility.ToVsHierarchy(_envDTEProject),
-                            EnvDTEProjectInfoUtility.TargetPlatformMinVersion);
-
-                        var platformMinVersion = !string.IsNullOrEmpty(platformMinVersionString)
-                            ? new Version(platformMinVersionString)
-                            : null;
-
-                        if (platformMinVersion != null && jsonTargetFramework.Version != platformMinVersion)
-                        {
-                            // Found the TPMinV in csproj and it is different from project json's framework version, 
-                            // store this as a new target framework to be replaced in project.json
-                            var newTargetFramework = new NuGetFramework(jsonTargetFramework.Framework, platformMinVersion);
-                            InternalMetadata[NuGetProjectMetadataKeys.TargetFramework] = newTargetFramework;
-                        }
+                        // Found the TPMinV in csproj and it is different from project json's framework version, 
+                        // store this as a new target framework to be replaced in project.json
+                        var newTargetFramework = new NuGetFramework(jsonTargetFramework.Framework, platformMinVersion);
+                        InternalMetadata[NuGetProjectMetadataKeys.TargetFramework] = newTargetFramework;
                     }
                 }
-            });
+            }
         }
 
         private IScriptExecutor ScriptExecutor

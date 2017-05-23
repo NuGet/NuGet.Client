@@ -169,9 +169,10 @@ namespace NuGet.ProjectManagement.Projects
                 Enumerable.Empty<ProjectRestoreReference>().ToList());
         }
 
-        protected virtual void UpdateInternalTargetFramework()
+        protected virtual Task UpdateInternalTargetFramework()
         {
-            // Extending class will implement this functionality
+            // Extending class will implement the functionality
+            return Task.FromResult(0);
         }
 
         public override async Task<IEnumerable<PackageReference>> GetInstalledPackagesAsync(CancellationToken token)
@@ -219,14 +220,14 @@ namespace NuGet.ProjectManagement.Projects
                 var references = await GetDirectProjectReferencesAsync(context);
 
                 // Reload the target framework from csproj and update the target framework in packageSpec for restore
-                UpdateInternalTargetFramework();
-                if (InternalMetadata.TryGetValue(NuGetProjectMetadataKeys.TargetFramework, out var internalTargetFramework))
+                await UpdateInternalTargetFramework();
+                if (TryGetInternalFramework(out var internalTargetFramework))
                 {
-                    var replaceTargetFramework = new TargetFrameworkInformation();
-                    replaceTargetFramework.FrameworkName = internalTargetFramework as NuGetFramework;
                     // Ensure the project json has only one target framework
                     if (packageSpec.TargetFrameworks != null && packageSpec.TargetFrameworks.Count == 1)
                     {
+                        var replaceTargetFramework = new TargetFrameworkInformation();
+                        replaceTargetFramework.FrameworkName = internalTargetFramework as NuGetFramework;
                         packageSpec.TargetFrameworks[0] = replaceTargetFramework;
                     }
                 }
@@ -271,7 +272,7 @@ namespace NuGet.ProjectManagement.Projects
 
             JsonConfigUtility.AddDependency(json, dependency);
 
-            UpdateFramework(json);
+            await UpdateFramework(json);
 
             await SaveJsonAsync(json);
 
@@ -289,7 +290,7 @@ namespace NuGet.ProjectManagement.Projects
 
             JsonConfigUtility.RemoveDependency(json, packageId);
 
-            UpdateFramework(json);
+            await UpdateFramework(json);
 
             await SaveJsonAsync(json);
 
@@ -346,14 +347,13 @@ namespace NuGet.ProjectManagement.Projects
             }
         }
 
-        private void UpdateFramework(JObject json)
+        private async Task UpdateFramework(JObject json)
         {
             // Update the internal target framework with TPMinV from csproj
-            UpdateInternalTargetFramework();
-
-            var frameworks = JsonConfigUtility.GetFrameworks(json);
-            if (InternalMetadata.TryGetValue(NuGetProjectMetadataKeys.TargetFramework, out object newTargetFrameworkObject))
+            await UpdateInternalTargetFramework();
+            if (TryGetInternalFramework(out object newTargetFrameworkObject))
             {
+                var frameworks = JsonConfigUtility.GetFrameworks(json);
                 var newTargetFramework = newTargetFrameworkObject as NuGetFramework;
                 if (IsUAPFramework(newTargetFramework) 
                     && frameworks.Count() == 1
@@ -364,6 +364,11 @@ namespace NuGet.ProjectManagement.Projects
                     JsonConfigUtility.AddFramework(json, newTargetFramework as NuGetFramework);
                 }
             }
+        }
+
+        private bool TryGetInternalFramework(out object internalTargetFramework)
+        {
+            return InternalMetadata.TryGetValue(NuGetProjectMetadataKeys.TargetFramework, out internalTargetFramework);
         }
     }
 }
