@@ -43,8 +43,8 @@ Copyright (c) .NET Foundation. All rights reserved.
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
     <!-- RuntimeIdentifier compatibility check -->
     <ValidateRuntimeIdentifierCompatibility Condition=" '$(ValidateRuntimeIdentifierCompatibility)' == '' ">false</ValidateRuntimeIdentifierCompatibility>
-    <!-- Error handling while walking projects -->
-    <RestoreContinueOnError Condition=" '$(RestoreContinueOnError)' == '' ">WarnAndContinue</RestoreContinueOnError>
+    <!-- Error handling while walking projects: keep going, but fail the overall "build" -->
+    <RestoreContinueOnError Condition=" '$(RestoreContinueOnError)' == '' ">ErrorAndContinue</RestoreContinueOnError>
   </PropertyGroup>
 
   <PropertyGroup>
