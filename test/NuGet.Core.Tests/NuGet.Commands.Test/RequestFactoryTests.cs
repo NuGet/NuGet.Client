@@ -70,7 +70,7 @@ namespace NuGet.Commands.Test
             // Arrange
             var cache = new RestoreCommandProvidersCache();
             var provider = new DependencyGraphFileRequestProvider(cache);
-            //Debugger.Launch();
+
             using (var workingDir = TestDirectory.Create())
             {
                 var dgSpec = Path.Combine(workingDir, "project.dg");

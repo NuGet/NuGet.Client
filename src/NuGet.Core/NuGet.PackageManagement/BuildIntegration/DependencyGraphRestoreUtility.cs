@@ -331,8 +331,8 @@ namespace NuGet.PackageManagement
             foreach (var packageSpec in context.DeferredPackageSpecs)
             {
                 //TODO NK - Does this really make sense? Anything unforeseen here? 
-                packageSpec.RestoreMetadata.FallbackFolders = packageSpec.RestoreMetadata.FallbackFolders ?? fallbackFolders.AsList();
-                packageSpec.RestoreMetadata.PackagesPath = packageSpec.RestoreMetadata.PackagesPath ?? globalPackagesFolder;
+                packageSpec.RestoreMetadata.FallbackFolders = fallbackFolders.AsList();
+                packageSpec.RestoreMetadata.PackagesPath = globalPackagesFolder;
 
                 dgSpec.AddProject(packageSpec);
 
@@ -353,7 +353,7 @@ namespace NuGet.PackageManagement
 
                 foreach (var packageSpec in packageSpecs)
                 {
-                    packageSpec.RestoreMetadata.FallbackFolders = (IList<string>)fallbackFolders;
+                    packageSpec.RestoreMetadata.FallbackFolders = fallbackFolders.AsList();
                     packageSpec.RestoreMetadata.PackagesPath = globalPackagesFolder;
 
                     dgSpec.AddProject(packageSpec);
