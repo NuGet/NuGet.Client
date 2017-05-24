@@ -187,8 +187,8 @@
 
   <PropertyGroup Condition=" '$(IsNetCoreProject)' == 'true' ">
     <!-- Assembly attributes for net core projects -->
-    <!--AssemblyVersion should not contain the build number as all NuGet.Core projects had the build number as 0 every time -->
-    <AssemblyVersion>$(SemanticVersion).0</AssemblyVersion>
+    <!--AssemblyVersion should have the build number incremented for every milestone. Currently this is 2 to align with 15.3 preview2 -->
+    <AssemblyVersion>$(SemanticVersion).2</AssemblyVersion>
     <FileVersion>$(SemanticVersion).$(PreReleaseVersion)</FileVersion>
     <InformationalVersion>$(SemanticVersion)$(PreReleaseInformationVersion)</InformationalVersion>
     <Company>Microsoft Corporation</Company>
