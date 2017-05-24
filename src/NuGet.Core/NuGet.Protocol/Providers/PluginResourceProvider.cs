@@ -13,6 +13,7 @@ using Newtonsoft.Json.Linq;
 using NuGet.Common;
 using NuGet.Packaging;
 using NuGet.Protocol.Plugins;
+using NuGet.Shared;
 
 namespace NuGet.Protocol.Core.Types
 {
@@ -28,7 +29,7 @@ namespace NuGet.Protocol.Core.Types
         private Lazy<IPluginDiscoverer> _discoverer;
         private bool _isDisposed;
         private IPluginFactory _pluginFactory;
-        private ConcurrentDictionary<string, ConcurrentDictionary<string, Lazy<Task<IReadOnlyList<OperationClaim>>>>> _pluginOperationClaims;
+        private ConcurrentDictionary<PluginPackageSourceKey, Lazy<Task<IReadOnlyList<OperationClaim>>>> _pluginOperationClaims;
         private ConcurrentDictionary<string, Lazy<IPluginMulticlientUtilities>> _pluginUtilities;
         private string _rawPluginPaths;
         private TimeSpan _requestTimeout;
@@ -164,8 +165,7 @@ namespace NuGet.Protocol.Core.Types
             _requestTimeout = GetRequestTimeout(requestTimeoutInSeconds);
             _discoverer = pluginDiscoverer;
             _pluginFactory = pluginFactory;
-            _pluginOperationClaims = new ConcurrentDictionary<string, ConcurrentDictionary<string, Lazy<Task<IReadOnlyList<OperationClaim>>>>>(
-                StringComparer.OrdinalIgnoreCase);
+            _pluginOperationClaims = new ConcurrentDictionary<PluginPackageSourceKey, Lazy<Task<IReadOnlyList<OperationClaim>>>>();
             _pluginUtilities = new ConcurrentDictionary<string, Lazy<IPluginMulticlientUtilities>>(
                 StringComparer.OrdinalIgnoreCase);
         }
@@ -210,24 +210,20 @@ namespace NuGet.Protocol.Core.Types
                         () => InitializePluginAsync(plugin, _requestTimeout, cancellationToken),
                         cancellationToken);
 
-                    var pluginOperationClaims = _pluginOperationClaims.GetOrAdd(
-                        result.PluginFile.Path,
-                        filePath => new ConcurrentDictionary<string, Lazy<Task<IReadOnlyList<OperationClaim>>>>(StringComparer.OrdinalIgnoreCase));
-
-                    var lazyOperationClaimsForPackageSource = pluginOperationClaims.GetOrAdd(
-                        packageSourceRepository,
-                        source => new Lazy<Task<IReadOnlyList<OperationClaim>>>(() => GetPluginOperationClaimsAsync(
+                    var lazyOperationClaims = _pluginOperationClaims.GetOrAdd(
+                        new PluginPackageSourceKey(result.PluginFile.Path, packageSourceRepository),
+                        key => new Lazy<Task<IReadOnlyList<OperationClaim>>>(() => GetPluginOperationClaimsAsync(
                             plugin,
                             packageSourceRepository,
                             serviceIndexJson,
                             cancellationToken)));
 
-                    await lazyOperationClaimsForPackageSource.Value;
+                    await lazyOperationClaims.Value;
 
                     pluginCreationResult = new PluginCreationResult(
                         plugin,
                         utilities.Value,
-                        lazyOperationClaimsForPackageSource.Value.Result);
+                        lazyOperationClaims.Value.Result);
                 }
                 else
                 {
@@ -326,6 +322,50 @@ namespace NuGet.Protocol.Core.Types
             }
 
             plugin.Connection.Options.SetRequestTimeout(requestTimeout);
+        }
+
+        private sealed class PluginPackageSourceKey : IEquatable<PluginPackageSourceKey>
+        {
+            internal string PluginFilePath { get; }
+            internal string PackageSourceRepository { get; }
+
+            internal PluginPackageSourceKey(string pluginFilePath, string packageSourceRepository)
+            {
+                PluginFilePath = pluginFilePath;
+                PackageSourceRepository = packageSourceRepository;
+            }
+
+            public override bool Equals(object obj)
+            {
+                return Equals(obj as PluginPackageSourceKey);
+            }
+
+            public override int GetHashCode()
+            {
+                return HashCodeCombiner.GetHashCode(PluginFilePath, PackageSourceRepository);
+            }
+
+            public bool Equals(PluginPackageSourceKey other)
+            {
+                if (ReferenceEquals(this, other))
+                {
+                    return true;
+                }
+
+                if (ReferenceEquals(null, other))
+                {
+                    return false;
+                }
+
+                return string.Equals(
+                        PluginFilePath,
+                        other.PluginFilePath,
+                        StringComparison.OrdinalIgnoreCase)
+                    && string.Equals(
+                        PackageSourceRepository,
+                        other.PackageSourceRepository,
+                        StringComparison.OrdinalIgnoreCase);
+            }
         }
     }
 }
