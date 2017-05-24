@@ -124,6 +124,15 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to This package is automatically referenced by the SDK and should not be updated independently. To update the package, update the SDK to which it belongs. More details:.
+        /// </summary>
+        public static string AutoReferenced {
+            get {
+                return ResourceManager.GetString("AutoReferenced", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Select a Package Source Folder.
         /// </summary>
         public static string BrowseFolderDialogDescription {
