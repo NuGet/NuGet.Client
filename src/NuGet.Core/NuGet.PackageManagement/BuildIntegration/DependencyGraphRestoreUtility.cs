@@ -222,6 +222,11 @@ namespace NuGet.PackageManagement
             var spec = specs.Single(e => e.RestoreMetadata.ProjectStyle == ProjectStyle.PackageReference
                 || e.RestoreMetadata.ProjectStyle == ProjectStyle.ProjectJson);
 
+            var globalPackagesFolder = SettingsUtility.GetGlobalPackagesFolder(context.Settings);
+            var fallbackFolders = SettingsUtility.GetFallbackPackageFolders(context.Settings);
+            spec.RestoreMetadata.FallbackFolders = spec.RestoreMetadata.FallbackFolders ?? fallbackFolders.AsList();
+            spec.RestoreMetadata.PackagesPath = spec.RestoreMetadata.PackagesPath ?? globalPackagesFolder;
+
             var result = await PreviewRestoreAsync(
                 solutionManager,
                 project,
@@ -325,6 +330,7 @@ namespace NuGet.PackageManagement
 
             foreach (var packageSpec in context.DeferredPackageSpecs)
             {
+                //TODO NK - Does this really make sense? Anything unforeseen here? 
                 packageSpec.RestoreMetadata.FallbackFolders = packageSpec.RestoreMetadata.FallbackFolders ?? fallbackFolders.AsList();
                 packageSpec.RestoreMetadata.PackagesPath = packageSpec.RestoreMetadata.PackagesPath ?? globalPackagesFolder;
 
