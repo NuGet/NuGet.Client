@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -133,6 +133,7 @@ namespace NuGet.PackageManagement.VisualStudio
         private PackageSpec GetPackageSpec()
         {
             DependencyGraphSpec projectRestoreInfo;
+            //TODO NK - We need the Project System team to plumb through extra details
             if (_projectSystemCache.TryGetProjectRestoreInfo(_projectFullPath, out projectRestoreInfo))
             {
                 return projectRestoreInfo.GetProjectSpec(_projectFullPath);

@@ -166,18 +166,19 @@ namespace NuGet.Commands
                 // Read project references for all
                 AddProjectReferences(result, items);
 
-                // Read package references for netcore, tools, and standalone
                 if (restoreType == ProjectStyle.PackageReference
                     || restoreType == ProjectStyle.Standalone
-                    || restoreType == ProjectStyle.DotnetCliTool)
-                {
-                    AddFrameworkAssemblies(result, items);
-                    AddPackageReferences(result, items);
-                    result.RestoreMetadata.OutputPath = specItem.GetProperty("OutputPath");
+                    || restoreType == ProjectStyle.DotnetCliTool
+                    || restoreType == ProjectStyle.ProjectJson) {
 
                     foreach (var source in MSBuildStringUtility.Split(specItem.GetProperty("Sources")))
                     {
                         result.RestoreMetadata.Sources.Add(new PackageSource(source));
+                    }
+
+                    foreach (var configFilePath in MSBuildStringUtility.Split(specItem.GetProperty("ConfigFilePaths")))
+                    {
+                        result.RestoreMetadata.ConfigFilePaths.Add(configFilePath);
                     }
 
                     foreach (var folder in MSBuildStringUtility.Split(specItem.GetProperty("FallbackFolders")))
@@ -186,6 +187,16 @@ namespace NuGet.Commands
                     }
 
                     result.RestoreMetadata.PackagesPath = specItem.GetProperty("PackagesPath");
+                }
+
+                // Read package references for netcore, tools, and standalone
+                if (restoreType == ProjectStyle.PackageReference
+                    || restoreType == ProjectStyle.Standalone
+                    || restoreType == ProjectStyle.DotnetCliTool)
+                {
+                    AddFrameworkAssemblies(result, items);
+                    AddPackageReferences(result, items);
+                    result.RestoreMetadata.OutputPath = specItem.GetProperty("OutputPath");
 
                     // Store the original framework strings for msbuild conditionals
                     foreach (var originalFramework in GetFrameworksStrings(specItem))

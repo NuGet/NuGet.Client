@@ -17,6 +17,7 @@ using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
 using NuGet.ProjectModel;
 using NuGet.Protocol.Core.Types;
+using NuGet.Shared;
 
 namespace NuGet.PackageManagement
 {
@@ -36,7 +37,6 @@ namespace NuGet.PackageManagement
             RestoreCommandProvidersCache providerCache,
             Action<SourceCacheContext> cacheContextModifier,
             IEnumerable<SourceRepository> sources,
-            ISettings settings,
             ILogger log,
             CancellationToken token)
         {
@@ -47,7 +47,6 @@ namespace NuGet.PackageManagement
                 cacheContextModifier,
                 sources,
                 userPackagesPath: null,
-                settings: settings,
                 log: log,
                 token: token);
         }
@@ -62,7 +61,6 @@ namespace NuGet.PackageManagement
             Action<SourceCacheContext> cacheContextModifier,
             IEnumerable<SourceRepository> sources,
             string userPackagesPath,
-            ISettings settings,
             ILogger log,
             CancellationToken token)
         {
@@ -84,7 +82,6 @@ namespace NuGet.PackageManagement
                     var restoreContext = GetRestoreContext(
                         context,
                         providerCache,
-                        settings,
                         sourceCacheContext,
                         sources,
                         dgSpec,
@@ -110,7 +107,6 @@ namespace NuGet.PackageManagement
             RestoreCommandProvidersCache providerCache,
             Action<SourceCacheContext> cacheContextModifier,
             IEnumerable<SourceRepository> sources,
-            ISettings settings,
             ILogger log,
             CancellationToken token)
         {
@@ -125,7 +121,6 @@ namespace NuGet.PackageManagement
                     var restoreContext = GetRestoreContext(
                         context,
                         providerCache,
-                        settings,
                         sourceCacheContext,
                         sources,
                         dgSpec,
@@ -153,7 +148,6 @@ namespace NuGet.PackageManagement
             RestoreCommandProvidersCache providerCache,
             Action<SourceCacheContext> cacheContextModifier,
             IEnumerable<SourceRepository> sources,
-            ISettings settings,
             ILogger log,
             CancellationToken token)
         {
@@ -166,7 +160,6 @@ namespace NuGet.PackageManagement
                 cacheContextModifier,
                 sources,
                 userPackagesPath: null,
-                settings: settings,
                 log: log,
                 token: token);
         }
@@ -183,7 +176,6 @@ namespace NuGet.PackageManagement
             Action<SourceCacheContext> cacheContextModifier,
             IEnumerable<SourceRepository> sources,
             string userPackagesPath,
-            ISettings settings,
             ILogger log,
             CancellationToken token)
         {
@@ -204,7 +196,7 @@ namespace NuGet.PackageManagement
                 cacheContextModifier(sourceCacheContext);
 
                 // Settings passed here will be used to populate the restore requests.
-                RestoreArgs restoreContext = GetRestoreContext(context, providerCache, settings, sourceCacheContext, sources, dgFile, userPackagesPath);
+                RestoreArgs restoreContext = GetRestoreContext(context, providerCache, sourceCacheContext, sources, dgFile, userPackagesPath);
 
                 var requests = await RestoreRunner.GetRequests(restoreContext);
                 var results = await RestoreRunner.RunWithoutCommit(requests, restoreContext);
@@ -222,7 +214,6 @@ namespace NuGet.PackageManagement
             RestoreCommandProvidersCache providerCache,
             Action<SourceCacheContext> cacheContextModifier,
             IEnumerable<SourceRepository> sources,
-            ISettings settings,
             ILogger log,
             CancellationToken token)
         {
@@ -230,6 +221,11 @@ namespace NuGet.PackageManagement
             var specs = await project.GetPackageSpecsAsync(context);
             var spec = specs.Single(e => e.RestoreMetadata.ProjectStyle == ProjectStyle.PackageReference
                 || e.RestoreMetadata.ProjectStyle == ProjectStyle.ProjectJson);
+
+            var globalPackagesFolder = SettingsUtility.GetGlobalPackagesFolder(context.Settings);
+            var fallbackFolders = SettingsUtility.GetFallbackPackageFolders(context.Settings);
+            spec.RestoreMetadata.FallbackFolders = spec.RestoreMetadata.FallbackFolders ?? fallbackFolders.AsList();
+            spec.RestoreMetadata.PackagesPath = spec.RestoreMetadata.PackagesPath ?? globalPackagesFolder;
 
             var result = await PreviewRestoreAsync(
                 solutionManager,
@@ -239,7 +235,6 @@ namespace NuGet.PackageManagement
                 providerCache,
                 cacheContextModifier,
                 sources,
-                settings,
                 log,
                 token);
 
@@ -313,9 +308,16 @@ namespace NuGet.PackageManagement
         {
             var specs = await project.GetPackageSpecsAsync(context);
 
-            return specs.Where(e => e.RestoreMetadata.ProjectStyle != ProjectStyle.Standalone
+            var projectSpec =  specs.Where(e => e.RestoreMetadata.ProjectStyle != ProjectStyle.Standalone
                 && e.RestoreMetadata.ProjectStyle != ProjectStyle.DotnetCliTool)
                 .FirstOrDefault();
+
+            var globalPackagesFolder = SettingsUtility.GetGlobalPackagesFolder(context.Settings);
+            var fallbackFolders = SettingsUtility.GetFallbackPackageFolders(context.Settings);
+            projectSpec.RestoreMetadata.FallbackFolders = projectSpec.RestoreMetadata.FallbackFolders ?? fallbackFolders.AsList();
+            projectSpec.RestoreMetadata.PackagesPath = projectSpec.RestoreMetadata.PackagesPath ?? globalPackagesFolder;
+
+            return projectSpec;
         }
 
         public static async Task<DependencyGraphSpec> GetSolutionRestoreSpec(
@@ -323,9 +325,15 @@ namespace NuGet.PackageManagement
             DependencyGraphCacheContext context)
         {
             var dgSpec = new DependencyGraphSpec();
+            var globalPackagesFolder = SettingsUtility.GetGlobalPackagesFolder(context.Settings);
+            var fallbackFolders = SettingsUtility.GetFallbackPackageFolders(context.Settings);
 
             foreach (var packageSpec in context.DeferredPackageSpecs)
             {
+                //TODO NK - Does this really make sense? Anything unforeseen here? 
+                packageSpec.RestoreMetadata.FallbackFolders = packageSpec.RestoreMetadata.FallbackFolders ?? fallbackFolders.AsList();
+                packageSpec.RestoreMetadata.PackagesPath = packageSpec.RestoreMetadata.PackagesPath ?? globalPackagesFolder;
+
                 dgSpec.AddProject(packageSpec);
 
                 if (packageSpec.RestoreMetadata.ProjectStyle == ProjectStyle.PackageReference ||
@@ -345,6 +353,9 @@ namespace NuGet.PackageManagement
 
                 foreach (var packageSpec in packageSpecs)
                 {
+                    packageSpec.RestoreMetadata.FallbackFolders = (IList<string>)fallbackFolders;
+                    packageSpec.RestoreMetadata.PackagesPath = globalPackagesFolder;
+
                     dgSpec.AddProject(packageSpec);
 
                     if (packageSpec.RestoreMetadata.ProjectStyle == ProjectStyle.PackageReference ||
@@ -366,13 +377,12 @@ namespace NuGet.PackageManagement
         private static RestoreArgs GetRestoreContext(
             DependencyGraphCacheContext context,
             RestoreCommandProvidersCache providerCache,
-            ISettings settings,
             SourceCacheContext sourceCacheContext,
             IEnumerable<SourceRepository> sources,
             DependencyGraphSpec dgFile,
             string userPackagesPath)
         {
-            var dgProvider = new DependencyGraphSpecRequestProvider(providerCache, dgFile, settings);
+            var dgProvider = new DependencyGraphSpecRequestProvider(providerCache, dgFile);
 
             var restoreContext = new RestoreArgs()
             {

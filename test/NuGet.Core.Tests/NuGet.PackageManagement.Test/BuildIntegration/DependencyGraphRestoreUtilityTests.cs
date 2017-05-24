@@ -1,7 +1,8 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -23,6 +24,7 @@ namespace NuGet.PackageManagement.Test
         [Fact]
         public async Task DependencyGraphRestoreUtility_NoopIsRestoreRequiredAsyncTest()
         {
+            Debugger.Launch();
             // Arrange
             var projectName = "testproj";
             var logger = new TestLogger();
@@ -41,7 +43,7 @@ namespace NuGet.PackageManagement.Test
                     new TestNuGetProjectContext());
                 var project = new ProjectJsonBuildIntegratedNuGetProject(projectConfig.FullName, msbuildProjectPath.FullName, msBuildNuGetProjectSystem);
 
-                var restoreContext = new DependencyGraphCacheContext(logger);
+                var restoreContext = new DependencyGraphCacheContext(logger, NullSettings.Instance);
 
                 var projects = new List<IDependencyGraphProject>() { project };
 
@@ -59,7 +61,6 @@ namespace NuGet.PackageManagement.Test
                     new RestoreCommandProvidersCache(),
                     (c) => { },
                     sources,
-                    NullSettings.Instance,
                     logger,
                     CancellationToken.None);
 
@@ -67,7 +68,7 @@ namespace NuGet.PackageManagement.Test
 
                 var oldHash = restoreContext.SolutionSpecHash;
 
-                var newContext = new DependencyGraphCacheContext(logger);
+                var newContext = new DependencyGraphCacheContext(logger, NullSettings.Instance);
 
                 // Act
                 var result = await DependencyGraphRestoreUtility.IsRestoreRequiredAsync(
@@ -81,7 +82,7 @@ namespace NuGet.PackageManagement.Test
                 Assert.Equal(false, result);
                 Assert.Equal(0, logger.Errors);
                 Assert.Equal(0, logger.Warnings);
-                Assert.Equal(3, logger.MinimalMessages.Count);
+                Assert.Equal(2, logger.MinimalMessages.Count);
             }
         }
 
@@ -110,7 +111,7 @@ namespace NuGet.PackageManagement.Test
 
                 var effectiveGlobalPackagesFolder = SettingsUtility.GetGlobalPackagesFolder(NullSettings.Instance);
 
-                var restoreContext = new DependencyGraphCacheContext(logger);
+                var restoreContext = new DependencyGraphCacheContext(logger, NullSettings.Instance);
 
                 var projects = new List<IDependencyGraphProject>() { project };
 
@@ -124,7 +125,6 @@ namespace NuGet.PackageManagement.Test
                     new RestoreCommandProvidersCache(),
                     (c) => { },
                     sources,
-                    NullSettings.Instance,
                     logger,
                     CancellationToken.None);
 

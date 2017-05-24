@@ -14,6 +14,7 @@ using NuGet.Common;
 using NuGet.DependencyResolver;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
+using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
 using NuGet.Repositories;
@@ -68,8 +69,30 @@ namespace NuGet.Commands
             };
 
             localRepositories.AddRange(_request.DependencyProviders.FallbackPackageFolders);
-
+            
             var contextForProject = CreateRemoteWalkContext(_request);
+            CacheFile cacheFile = null;
+            if (NoOpRestoreUtilities.IsNoOpSupported(_request)) {
+                var cacheFileAndStatus = EvaluateCacheFile();
+                cacheFile = cacheFileAndStatus.Key;
+                if (cacheFileAndStatus.Value)
+                {
+                    if(NoOpRestoreUtilities.VerifyAssetsAndMSBuildFilesAndPackagesArePresent(_request))
+                    {
+                        restoreTime.Stop();
+
+                        return new NoOpRestoreResult(
+                            _success,
+                            _request.ExistingLockFile,
+                            _request.ExistingLockFile,
+                            _request.ExistingLockFile.Path,
+                            cacheFile,
+                            _request.Project.RestoreMetadata.CacheFilePath,
+                            _request.ProjectStyle,
+                            restoreTime.Elapsed);
+                    }
+                }
+            }
 
             // Restore
             var graphs = await ExecuteRestoreAsync(
@@ -106,6 +129,8 @@ namespace NuGet.Commands
 
             // Determine the lock file output path
             var assetsFilePath = GetAssetsFilePath(assetsFile);
+            // Determine the cache file output path
+            var cacheFilePath = NoOpRestoreUtilities.GetCacheFilePath(_request);
 
             // Tool restores are unique since the output path is not known until after restore
             if (_request.LockFilePath == null
@@ -136,6 +161,11 @@ namespace NuGet.Commands
             // Revert to the original case if needed
             await FixCaseForLegacyReaders(graphs, assetsFile, token);
 
+            if (cacheFile != null)
+            {
+                cacheFile.Success = _success;
+            }
+            
             // Write the logs into the assets file
             var logs = (_logger as CollectorLogger).Errors
                 .Select(l => AssetsLogMessage.Create(l))
@@ -143,8 +173,8 @@ namespace NuGet.Commands
 
             assetsFile.LogMessages = logs;
 
-            restoreTime.Stop();
 
+            restoreTime.Stop();
             // Create result
             return new RestoreResult(
                 _success,
@@ -154,8 +184,39 @@ namespace NuGet.Commands
                 assetsFile,
                 _request.ExistingLockFile,
                 assetsFilePath,
+                cacheFile,
+                cacheFilePath,
                 _request.ProjectStyle,
                 restoreTime.Elapsed);
+        }
+
+        private KeyValuePair<CacheFile,bool> EvaluateCacheFile()
+        {
+            CacheFile cacheFile;
+            var newDgSpecHash = _request.DependencyGraphSpec.GetHash();
+            var noOp = false;
+            if (_request.AllowNoOp && File.Exists(_request.Project.RestoreMetadata.CacheFilePath))
+            {
+                cacheFile = CacheFileFormat.Load(_request.Project.RestoreMetadata.CacheFilePath, _logger);
+
+                if (cacheFile.IsValid && StringComparer.Ordinal.Equals(cacheFile.DgSpecHash, newDgSpecHash))
+                {
+                    _logger.LogVerbose(string.Format(CultureInfo.CurrentCulture, Strings.Log_RestoreNoOpFinish, _request.Project.Name));
+                    _success = true;
+                    noOp = true;
+                }
+                else
+                {
+                    cacheFile = new CacheFile(newDgSpecHash);
+                    _logger.LogVerbose(string.Format(CultureInfo.CurrentCulture, Strings.Log_RestoreNoOpDGChanged, _request.Project.Name));
+                }
+            }
+            else
+            {
+                cacheFile = new CacheFile(newDgSpecHash);
+
+            }
+            return new KeyValuePair<CacheFile,bool>(cacheFile, noOp) ;
         }
 
         private string GetAssetsFilePath(LockFile lockFile)

@@ -201,7 +201,7 @@
     <value>Package '{0}' was restored using '{1}' instead the project target framework '{2}'. This may cause compatibility problems.</value>
   </data>
   <data name="Log_CycleDetected" xml:space="preserve">
-    <value>Cycle detected:</value>
+    <value>Cycle detected.</value>
   </data>
   <data name="Log_DowngradeWarning" xml:space="preserve">
     <value>Detected package downgrade: {0} from {1} to {2}. Reference the package directly from the project to select a different version.</value>
@@ -512,6 +512,42 @@ For more information, visit http://docs.nuget.org/docs/reference/command-line-re
     <value>Clearing NuGet Temp cache: {0}</value>
     <comment>{0} : Temp cache path</comment>
   </data>
+  <data name="Log_RestoreNoOpDGChanged" xml:space="preserve">
+    <value>The restore inputs for '{0}' have changed. Continuing restore.</value>
+  </data>
+  <data name="Log_RestoreNoOpFinish" xml:space="preserve">
+    <value>The restore inputs for '{0}' have not changed. No further actions are required to complete the restore.</value>
+  </data>
+  <data name="Log_SkippingAssetsFile" xml:space="preserve">
+    <value>Assets file has not changed. Skipping assets file writing. Path: {0}</value>
+  </data>
+  <data name="Log_ToolSkippingAssetsFile" xml:space="preserve">
+    <value>Tool assets file has not changed. Skipping assets file write. Path: {0}</value>
+  </data>
+  <data name="Log_ToolWritingCacheFile" xml:space="preserve">
+    <value>Writing tool cache file to disk. Path: {0}</value>
+  </data>
+  <data name="Log_ToolWritingLockFile" xml:space="preserve">
+    <value>Writing tool lock file to disk. Path: {0}</value>
+  </data>
+  <data name="Log_WritingCacheFile" xml:space="preserve">
+    <value>Writing cache file to disk. Path: {0}</value>
+  </data>
+  <data name="Log_WritingLockFile" xml:space="preserve">
+    <value>Writing lock file to disk. Path: {0}</value>
+  </data>
+  <data name="Log_SkippingCacheFile" xml:space="preserve">
+    <value>No-Op restore. The cache will not be updated. Path: {0}</value>
+  </data>
+  <data name="Log_AssetsFileNotOnDisk" xml:space="preserve">
+    <value>The expected assets file for {0} does not exist, no-op is not possible. Continuing restore.</value>
+  </data>
+  <data name="Log_PropsFileNotOnDisk" xml:space="preserve">
+    <value>The props file for {0} at location {1} does not exist, no-op is not possible. Continuing restore.</value>
+  </data>
+  <data name="Log_TargetsFileNotOnDisk" xml:space="preserve">
+    <value>The targets file for {0} at location {1} does not exist, no-op is not possible. Continuing restore.</value>
+  </data>
   <data name="Warning_MinVersionDoesNotExist" xml:space="preserve">
     <value>{0} depends on {1} but {2} was not found. An approximate best match of {3} was resolved.</value>
   </data>
@@ -541,5 +577,8 @@ For more information, visit http://docs.nuget.org/docs/reference/command-line-re
   </data>
   <data name="FoundVersionsInSourceWithoutMatch" xml:space="preserve">
     <value>Found {0} version(s) in {1}</value>
+  </data>
+  <data name="Log_MissingPackagesOnDisk" xml:space="preserve">
+    <value>Not all packages are on disk for: {0}</value>
   </data>
 </root>

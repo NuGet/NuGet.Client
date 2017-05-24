@@ -77,6 +77,8 @@ Copyright (c) .NET Foundation. All rights reserved.
   <UsingTask TaskName="NuGet.Build.Tasks.GetRestoreDotnetCliToolsTask" AssemblyFile="$(RestoreTaskAssemblyFile)" />
   <UsingTask TaskName="NuGet.Build.Tasks.GetRestoreProjectFrameworks" AssemblyFile="$(RestoreTaskAssemblyFile)" />
   <UsingTask TaskName="NuGet.Build.Tasks.GetRestoreSolutionProjectsTask" AssemblyFile="$(RestoreTaskAssemblyFile)" />
+  <UsingTask TaskName="NuGet.Build.Tasks.GetRestoreSettingsTask" AssemblyFile="$(RestoreTaskAssemblyFile)" />
+
 
   <!--
     ============================================================
@@ -103,7 +105,8 @@ Copyright (c) .NET Foundation. All rights reserved.
       RestoreConfigFile="$(RestoreConfigFile)"
       RestoreNoCache="$(RestoreNoCache)"
       RestoreIgnoreFailedSources="$(RestoreIgnoreFailedSources)"
-      RestoreRecursive="$(RestoreRecursive)" />
+      RestoreRecursive="$(RestoreRecursive)"
+      RestoreForce="$(RestoreForce)" />
   </Target>
 
   <!--
@@ -298,6 +301,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     ============================================================
   -->
   <Target Name="_GenerateDotnetCliToolReferenceSpecs"
+      DependsOnTargets="_GetRestoreSettings"
       Returns="@(_RestoreGraphEntry)">
 
     <PropertyGroup>
@@ -309,12 +313,17 @@ Copyright (c) .NET Foundation. All rights reserved.
       Condition=" '$(RestoreDotnetCliToolReferences)' == '' OR '$(RestoreDotnetCliToolReferences)' == 'true' "
       ProjectPath="$(MSBuildProjectFullPath)"
       ToolFramework="$(DotnetCliToolTargetFramework)"
+      RestorePackagesPath="$(_OutputPackagesPath)"
+      RestoreFallbackFolders="$(_OutputFallbackFolders)"
+      RestoreSources="$(_OutputSources)"
+      RestoreConfigFilePaths="$(_OutputConfigFilePaths)"
       DotnetCliToolReferences="@(DotnetCliToolReference)">
 
       <Output
         TaskParameter="RestoreGraphItems"
         ItemName="_RestoreGraphEntry" />
     </GetRestoreDotnetCliToolsTask>
+    
   </Target>
 
   <!--
@@ -411,12 +420,42 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <!--
     ============================================================
+    _GetRestoreSettings
+    ============================================================
+  -->
+  <Target Name="_GetRestoreSettings" DependsOnTargets="_GetRestoreProjectStyle" Returns="$(_OutputSources);$(_OutputPackagesPath);$(_OutputFallbackFolders);$(_OutputConfigFilePaths)">
+    <!-- For transitive project styles, we rely on evaluating all the settings and including them in the dg spec to faciliate no-op restore-->
+    <GetRestoreSettingsTask Condition=" '$(RestoreProjectStyle)' == 'PackageReference' OR '$(RestoreProjectStyle)' == 'ProjectJson' "
+     ProjectUniqueName="$(MSBuildProjectFullPath)"
+     RestoreSources="$(RestoreSources)"
+     RestorePackagesPath="$(RestorePackagesPath)"
+     RestoreFallbackFolders="$(RestoreFallbackFolders)"
+     RestoreConfigFile="$(RestoreConfigFile)"
+     RestoreSolutionDirectory="$(RestoreSolutionDirectory)"
+     >
+      <Output
+        TaskParameter="OutputSources"
+        PropertyName="_OutputSources" />
+      <Output
+        TaskParameter="OutputPackagesPath"
+        PropertyName="_OutputPackagesPath" />
+      <Output
+        TaskParameter="OutputFallbackFolders"
+        PropertyName="_OutputFallbackFolders" />
+      <Output
+        TaskParameter="OutputConfigFilePaths"
+        PropertyName="_OutputConfigFilePaths" />
+    </GetRestoreSettingsTask>
+  </Target>
+
+  <!--
+    ============================================================
     _GenerateRestoreProjectSpec
     Generate a restore project spec for the current project.
     ============================================================
   -->
   <Target Name="_GenerateRestoreProjectSpec"
-    DependsOnTargets="_GetRestoreProjectStyle;_GetRestoreTargetFrameworksOutput"
+    DependsOnTargets="_GetRestoreProjectStyle;_GetRestoreTargetFrameworksOutput;_GetRestoreSettings"
     Returns="@(_RestoreGraphEntry)">
 
     <!-- Determine the restore output path -->
@@ -463,6 +502,9 @@ Copyright (c) .NET Foundation. All rights reserved.
     <PropertyGroup Condition=" '$(RestoreProjectStyle)' == 'PackageReference' AND '$(_RestoreSkipContentFileWrite)' == '' ">
       <_RestoreSkipContentFileWrite Condition=" '$(TargetFrameworks)' == '' AND '$(TargetFramework)' == '' ">true</_RestoreSkipContentFileWrite>
     </PropertyGroup>
+    
+
+
 
     <!-- Write properties for the top level entry point -->
     <ItemGroup Condition=" '$(RestoreProjectStyle)' == 'PackageReference' ">
@@ -472,9 +514,9 @@ Copyright (c) .NET Foundation. All rights reserved.
         <ProjectUniqueName>$(MSBuildProjectFullPath)</ProjectUniqueName>
         <ProjectPath>$(MSBuildProjectFullPath)</ProjectPath>
         <ProjectName>$(_RestoreProjectName)</ProjectName>
-        <Sources>$(RestoreSources)</Sources>
-        <FallbackFolders>$(RestoreFallbackFolders)</FallbackFolders>
-        <PackagesPath>$(RestorePackagesPath)</PackagesPath>
+        <Sources>$(_OutputSources)</Sources>
+        <FallbackFolders>$(_OutputFallbackFolders)</FallbackFolders>
+        <PackagesPath>$(_OutputPackagesPath)</PackagesPath>
         <ProjectStyle>$(RestoreProjectStyle)</ProjectStyle>
         <OutputPath>$(RestoreOutputAbsolutePath)</OutputPath>
         <TargetFrameworks>@(_RestoreTargetFrameworksOutputFiltered)</TargetFrameworks>
@@ -484,6 +526,7 @@ Copyright (c) .NET Foundation. All rights reserved.
         <RestoreLegacyPackagesDirectory>$(RestoreLegacyPackagesDirectory)</RestoreLegacyPackagesDirectory>
         <ValidateRuntimeAssets>$(ValidateRuntimeIdentifierCompatibility)</ValidateRuntimeAssets>
         <SkipContentFileWrite>$(_RestoreSkipContentFileWrite)</SkipContentFileWrite>
+        <ConfigFilePaths>$(_OutputConfigFilePaths)</ConfigFilePaths>
       </_RestoreGraphEntry>
     </ItemGroup>
 
@@ -494,12 +537,12 @@ Copyright (c) .NET Foundation. All rights reserved.
         <ProjectUniqueName>$(MSBuildProjectFullPath)</ProjectUniqueName>
         <ProjectPath>$(MSBuildProjectFullPath)</ProjectPath>
         <ProjectName>$(_RestoreProjectName)</ProjectName>
-        <Sources>$(RestoreSources)</Sources>
-        <FallbackFolders>$(RestoreFallbackFolders)</FallbackFolders>
-        <PackagesPath>$(RestorePackagesPath)</PackagesPath>
-        <FallbackFolders>$(RestoreFallbackFolders)</FallbackFolders>
+        <Sources>$(_OutputSources)</Sources>
+        <FallbackFolders>$(_OutputFallbackFolders)</FallbackFolders>
+        <PackagesPath>$(_OutputPackagesPath)</PackagesPath>
         <ProjectJsonPath>$(_CurrentProjectJsonPath)</ProjectJsonPath>
         <ProjectStyle>$(RestoreProjectStyle)</ProjectStyle>
+        <ConfigFilePaths>$(_OutputConfigFilePaths)</ConfigFilePaths>
       </_RestoreGraphEntry>
     </ItemGroup>
 

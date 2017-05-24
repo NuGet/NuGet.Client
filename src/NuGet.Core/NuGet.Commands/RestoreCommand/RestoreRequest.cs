@@ -38,6 +38,10 @@ namespace NuGet.Commands
             RestoreOutputPath = Path.GetDirectoryName(Project.FilePath);
         }
 
+        public DependencyGraphSpec DependencyGraphSpec { get; set; }
+
+        public bool AllowNoOp { get; set; }
+
         public SourceCacheContext CacheContext { get; set; }
 
         public ILogger Log { get; set; }

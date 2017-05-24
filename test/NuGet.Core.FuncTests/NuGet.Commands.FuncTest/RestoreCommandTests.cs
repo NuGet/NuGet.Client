@@ -1002,56 +1002,6 @@ namespace NuGet.Commands.FuncTest
         }
 
         [Fact]
-        public async Task RestoreCommand_WriteLockFileOnForce()
-        {
-            // Arrange
-            var sources = new List<PackageSource>();
-            sources.Add(new PackageSource("https://www.nuget.org/api/v2/"));
-
-            using (var packagesDir = TestDirectory.Create())
-            using (var projectDir = TestDirectory.Create())
-            {
-                var specPath = Path.Combine(projectDir, "TestProject", "project.json");
-                var spec = JsonPackageSpecReader.GetPackageSpec(BasicConfig.ToString(), "TestProject", specPath);
-
-                AddDependency(spec, "NuGet.Versioning", "1.0.7");
-
-                var logger = new TestLogger();
-                var request = new TestRestoreRequest(spec, sources, packagesDir, logger);
-
-                request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
-
-                var lockFileFormat = new LockFileFormat();
-                var command = new RestoreCommand(request);
-                var result = await command.ExecuteAsync();
-                await result.CommitAsync(logger, CancellationToken.None);
-
-                var lockFilePath = Path.Combine(projectDir, "project.lock.json");
-
-                // Add white space to the end of the file
-                var whitespace = $"{Environment.NewLine}{Environment.NewLine}{Environment.NewLine}";
-                File.AppendAllText(lockFilePath, whitespace);
-
-                // Act
-                request = new TestRestoreRequest(spec, sources, packagesDir, logger);
-
-                request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
-                var previousLockFile = result.LockFile;
-                request.ExistingLockFile = result.LockFile;
-
-                command = new RestoreCommand(request);
-                result = await command.ExecuteAsync();
-                await result.CommitAsync(logger, true, CancellationToken.None);
-
-                var output = File.ReadAllText(lockFilePath);
-
-                // Assert
-                // The file should committed and it should clear the whitespace
-                Assert.False(output.EndsWith(whitespace, StringComparison.OrdinalIgnoreCase));
-            }
-        }
-
-        [Fact]
         public async Task RestoreCommand_NoopOnLockFileWriteIfFilesMatch()
         {
             // Arrange

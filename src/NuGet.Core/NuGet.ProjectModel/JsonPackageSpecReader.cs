@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -269,6 +269,18 @@ namespace NuGet.ProjectModel
                     msbuildMetadata.TargetFrameworks.Add(frameworkGroup);
                 }
             }
+            // Add the config file paths to the equals method
+            msbuildMetadata.ConfigFilePaths = new List<string>();
+
+            var configFilePaths = rawMSBuildMetadata.GetValue<JArray>("configFilePaths");
+            if (configFilePaths != null)
+            {
+                foreach (var fallbackFolder in configFilePaths.Select(t => t.Value<string>()))
+                {
+                    msbuildMetadata.ConfigFilePaths.Add(fallbackFolder);
+                }
+            }
+
 
             msbuildMetadata.FallbackFolders = new List<string>();
 
