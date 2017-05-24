@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -104,10 +104,14 @@ namespace NuGet.ProjectManagement
             ProjectSystem = msbuildNuGetProjectSystem ?? throw new ArgumentNullException(nameof(msbuildNuGetProjectSystem));
             FolderNuGetProject = new FolderNuGetProject(folderNuGetProjectPath);
             InternalMetadata.Add(NuGetProjectMetadataKeys.Name, ProjectSystem.ProjectName);
-            InternalMetadata.Add(NuGetProjectMetadataKeys.TargetFramework, ProjectSystem.TargetFramework);
-            InternalMetadata.Add(NuGetProjectMetadataKeys.FullPath, msbuildNuGetProjectSystem.ProjectFullPath);
-            InternalMetadata.Add(NuGetProjectMetadataKeys.UniqueName, msbuildNuGetProjectSystem.ProjectUniqueName);
             PackagesConfigNuGetProject = new PackagesConfigNuGetProject(packagesConfigFolderPath, InternalMetadata);
+        }
+
+        protected override void InitializeMetadata()
+        {
+            InternalMetadata.Add(NuGetProjectMetadataKeys.TargetFramework, ProjectSystem.TargetFramework);
+            InternalMetadata.Add(NuGetProjectMetadataKeys.FullPath, ProjectSystem.ProjectFullPath);
+            InternalMetadata.Add(NuGetProjectMetadataKeys.UniqueName, ProjectSystem.ProjectUniqueName);
         }
 
         public override Task<IEnumerable<PackageReference>> GetInstalledPackagesAsync(CancellationToken token)
