@@ -187,8 +187,7 @@
 
   <PropertyGroup Condition=" '$(IsNetCoreProject)' == 'true' ">
     <!-- Assembly attributes for net core projects -->
-    <!--AssemblyVersion should have the build number incremented for every milestone. Currently this is 2 to align with 15.3 preview2 -->
-    <AssemblyVersion>$(SemanticVersion).2</AssemblyVersion>
+    <AssemblyVersion>$(SemanticVersion).$(NetCoreAssemblyBuildNumber)</AssemblyVersion>
     <FileVersion>$(SemanticVersion).$(PreReleaseVersion)</FileVersion>
     <InformationalVersion>$(SemanticVersion)$(PreReleaseInformationVersion)</InformationalVersion>
     <Company>Microsoft Corporation</Company>
