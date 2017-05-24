@@ -303,9 +303,16 @@ namespace NuGet.PackageManagement
         {
             var specs = await project.GetPackageSpecsAsync(context);
 
-            return specs.Where(e => e.RestoreMetadata.ProjectStyle != ProjectStyle.Standalone
+            var projectSpec =  specs.Where(e => e.RestoreMetadata.ProjectStyle != ProjectStyle.Standalone
                 && e.RestoreMetadata.ProjectStyle != ProjectStyle.DotnetCliTool)
                 .FirstOrDefault();
+
+            var globalPackagesFolder = SettingsUtility.GetGlobalPackagesFolder(context.Settings);
+            var fallbackFolders = SettingsUtility.GetFallbackPackageFolders(context.Settings);
+            projectSpec.RestoreMetadata.FallbackFolders = projectSpec.RestoreMetadata.FallbackFolders ?? fallbackFolders.AsList();
+            projectSpec.RestoreMetadata.PackagesPath = projectSpec.RestoreMetadata.PackagesPath ?? globalPackagesFolder;
+
+            return projectSpec;
         }
 
         public static async Task<DependencyGraphSpec> GetSolutionRestoreSpec(
