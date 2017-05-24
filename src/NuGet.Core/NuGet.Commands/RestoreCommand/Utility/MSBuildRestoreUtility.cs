@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -166,21 +166,17 @@ namespace NuGet.Commands
                 // Read project references for all
                 AddProjectReferences(result, items);
 
-                // Read package references for netcore, tools, and standalone
                 if (restoreType == ProjectStyle.PackageReference
                     || restoreType == ProjectStyle.Standalone
-                    || restoreType == ProjectStyle.DotnetCliTool)
-                {
-                    AddFrameworkAssemblies(result, items);
-                    AddPackageReferences(result, items);
-                    result.RestoreMetadata.OutputPath = specItem.GetProperty("OutputPath");
+                    || restoreType == ProjectStyle.DotnetCliTool
+                    || restoreType == ProjectStyle.ProjectJson) {
 
                     foreach (var source in MSBuildStringUtility.Split(specItem.GetProperty("Sources")))
                     {
                         result.RestoreMetadata.Sources.Add(new PackageSource(source));
                     }
 
-                    foreach( var configFilePath in MSBuildStringUtility.Split(specItem.GetProperty("ConfigFilePaths")))
+                    foreach (var configFilePath in MSBuildStringUtility.Split(specItem.GetProperty("ConfigFilePaths")))
                     {
                         result.RestoreMetadata.ConfigFilePaths.Add(configFilePath);
                     }
@@ -191,6 +187,16 @@ namespace NuGet.Commands
                     }
 
                     result.RestoreMetadata.PackagesPath = specItem.GetProperty("PackagesPath");
+                }
+
+                // Read package references for netcore, tools, and standalone
+                if (restoreType == ProjectStyle.PackageReference
+                    || restoreType == ProjectStyle.Standalone
+                    || restoreType == ProjectStyle.DotnetCliTool)
+                {
+                    AddFrameworkAssemblies(result, items);
+                    AddPackageReferences(result, items);
+                    result.RestoreMetadata.OutputPath = specItem.GetProperty("OutputPath");
 
                     // Store the original framework strings for msbuild conditionals
                     foreach (var originalFramework in GetFrameworksStrings(specItem))

@@ -74,7 +74,6 @@ namespace NuGet.CommandLine
             bool recursive,
             string solutionDirectory,
             string restoreConfigFile,
-            string restoreDirectory,
             string[] sources,
             string packagesDirectory)
         {
@@ -156,11 +155,6 @@ namespace NuGet.CommandLine
                 {
                     argumentBuilder.Append(" /p:RestoreConfigFile=");
                     argumentBuilder.Append(EscapeQuoted(restoreConfigFile));
-                }
-
-                if (!string.IsNullOrEmpty(restoreDirectory)) {
-                    argumentBuilder.Append(" /p:RestoreDirectory=");
-                    argumentBuilder.Append(EscapeQuoted(restoreDirectory));
                 }
 
                 var isMono = RuntimeEnvironmentHelper.IsMono && !RuntimeEnvironmentHelper.IsWindows;

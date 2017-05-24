@@ -17,6 +17,7 @@ using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
 using NuGet.ProjectModel;
 using NuGet.Protocol.Core.Types;
+using NuGet.Shared;
 
 namespace NuGet.PackageManagement
 {
@@ -221,6 +222,11 @@ namespace NuGet.PackageManagement
             var spec = specs.Single(e => e.RestoreMetadata.ProjectStyle == ProjectStyle.PackageReference
                 || e.RestoreMetadata.ProjectStyle == ProjectStyle.ProjectJson);
 
+            var globalPackagesFolder = SettingsUtility.GetGlobalPackagesFolder(context.Settings);
+            var fallbackFolders = SettingsUtility.GetFallbackPackageFolders(context.Settings);
+            spec.RestoreMetadata.FallbackFolders = spec.RestoreMetadata.FallbackFolders ?? fallbackFolders.AsList();
+            spec.RestoreMetadata.PackagesPath = spec.RestoreMetadata.PackagesPath ?? globalPackagesFolder;
+
             var result = await PreviewRestoreAsync(
                 solutionManager,
                 project,
@@ -302,23 +308,32 @@ namespace NuGet.PackageManagement
         {
             var specs = await project.GetPackageSpecsAsync(context);
 
-            return specs.Where(e => e.RestoreMetadata.ProjectStyle != ProjectStyle.Standalone
+            var projectSpec =  specs.Where(e => e.RestoreMetadata.ProjectStyle != ProjectStyle.Standalone
                 && e.RestoreMetadata.ProjectStyle != ProjectStyle.DotnetCliTool)
                 .FirstOrDefault();
+
+            var globalPackagesFolder = SettingsUtility.GetGlobalPackagesFolder(context.Settings);
+            var fallbackFolders = SettingsUtility.GetFallbackPackageFolders(context.Settings);
+            projectSpec.RestoreMetadata.FallbackFolders = projectSpec.RestoreMetadata.FallbackFolders ?? fallbackFolders.AsList();
+            projectSpec.RestoreMetadata.PackagesPath = projectSpec.RestoreMetadata.PackagesPath ?? globalPackagesFolder;
+
+            return projectSpec;
         }
 
         public static async Task<DependencyGraphSpec> GetSolutionRestoreSpec(
             ISolutionManager solutionManager,
             DependencyGraphCacheContext context)
         {
-            // TODO NK - Potentially add the dg spec details here
             var dgSpec = new DependencyGraphSpec();
-            SettingsUtility.GetGlobalPackagesFolder(context.Settings);
-            SettingsUtility.GetFallbackPackageFolders(context.Settings);
-            
+            var globalPackagesFolder = SettingsUtility.GetGlobalPackagesFolder(context.Settings);
+            var fallbackFolders = SettingsUtility.GetFallbackPackageFolders(context.Settings);
 
             foreach (var packageSpec in context.DeferredPackageSpecs)
             {
+                //TODO NK - Does this really make sense? Anything unforeseen here? 
+                packageSpec.RestoreMetadata.FallbackFolders = fallbackFolders.AsList();
+                packageSpec.RestoreMetadata.PackagesPath = globalPackagesFolder;
+
                 dgSpec.AddProject(packageSpec);
 
                 if (packageSpec.RestoreMetadata.ProjectStyle == ProjectStyle.PackageReference ||
@@ -338,6 +353,9 @@ namespace NuGet.PackageManagement
 
                 foreach (var packageSpec in packageSpecs)
                 {
+                    packageSpec.RestoreMetadata.FallbackFolders = fallbackFolders.AsList();
+                    packageSpec.RestoreMetadata.PackagesPath = globalPackagesFolder;
+
                     dgSpec.AddProject(packageSpec);
 
                     if (packageSpec.RestoreMetadata.ProjectStyle == ProjectStyle.PackageReference ||

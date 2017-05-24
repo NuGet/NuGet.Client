@@ -65,6 +65,14 @@ namespace NuGet.Build.Tasks
             }
         }
 
+        public static void AddPropertyIfExists(IDictionary<string, string> properties, string key, string[] value)
+        {
+            if (value!=null && !properties.ContainsKey(key))
+            {
+                properties.Add(key, string.Concat(value.Select(e => e + ";")));
+            }
+        }
+
         private static HashSet<ProjectStyle> RestorableTypes = new HashSet<ProjectStyle>()
         {
             ProjectStyle.DotnetCliTool,

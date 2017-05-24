@@ -35,8 +35,6 @@ namespace NuGet.Build.Tasks
 
         public string RestoreSolutionDirectory { get; set; }
 
-        public string RestoreDirectory { get; set; }
-
         /// <summary>
         /// Output items
         /// </summary>
@@ -132,17 +130,12 @@ namespace NuGet.Build.Tasks
                 log.LogDebug($"(in) RestoreConfigFile '{RestoreConfigFile}'");
             }
 
-            if (RestoreDirectory != null)
-            {
-                log.LogDebug($"(in) RestoreDirectory '{RestoreDirectory}'");
-            }
-
             if (RestoreSolutionDirectory != null)
             {
                 log.LogDebug($"(in) RestoreSolutionDirectory '{RestoreSolutionDirectory}'");
             }
 
-            var settings = ReadSettings(RestoreSolutionDirectory, string.IsNullOrEmpty(RestoreDirectory) ? Path.GetDirectoryName(ProjectUniqueName) : RestoreDirectory, RestoreConfigFile);
+            var settings = ReadSettings(RestoreSolutionDirectory, Path.GetDirectoryName(ProjectUniqueName) , RestoreConfigFile);
 
             if (string.IsNullOrEmpty(RestorePackagesPath))
             {
