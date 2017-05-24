@@ -81,25 +81,6 @@ namespace NuGet.Commands
                 return;
             }
 
-            // Display the errors summary
-            foreach (var restoreSummary in restoreSummaries)
-            {
-                if (!restoreSummary.Errors.Any())
-                {
-                    continue;
-                }
-
-                logger.LogErrorSummary(string.Empty);
-                logger.LogErrorSummary(string.Format(CultureInfo.CurrentCulture, Strings.Log_ErrorSummary, restoreSummary.InputPath));
-                foreach (var error in restoreSummary.Errors)
-                {
-                    foreach (var line in IndentLines($"{Enum.GetName(typeof(NuGetLogCode), error.Code)}: {error.Message}"))
-                    {
-                        logger.LogError(line);
-                    }
-                }
-            }
-
             // Display the information summary
             var configFiles = restoreSummaries
                 .SelectMany(summary => summary.ConfigFiles)
