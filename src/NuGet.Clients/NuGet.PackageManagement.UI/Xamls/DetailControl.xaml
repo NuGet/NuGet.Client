@@ -105,7 +105,7 @@
               NavigateUri="{Binding Path=OptionsBlockedUrl}"
               Style="{StaticResource HyperlinkStyle}"
               Command="{x:Static nuget:PackageManagerControlCommands.OpenExternalLink}">
-              <Run Text="{Binding Path=OptionsBlockedUrl}" />
+              <Run Text="{Binding Path=OptionsBlockedUrlText}" />
             </Hyperlink>
           </TextBlock>
           <nuget:OptionsControl

@@ -124,7 +124,7 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to This package is automatically referenced by the SDK and should not be updated independently. To update the package, update the SDK to which it belongs. More details:.
+        ///   Looks up a localized string similar to Implicitly referenced by an SDK. To update the package, update the SDK to which it belongs..
         /// </summary>
         public static string AutoReferenced {
             get {

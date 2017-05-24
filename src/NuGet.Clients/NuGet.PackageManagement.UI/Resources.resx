@@ -667,6 +667,6 @@ Please see https://aka.ms/troubleshoot_nuget_cache for more help.</value>
     <value>The source specified has already been added to the list of available package sources. Please provide a unique source.</value>
   </data>
   <data name="AutoReferenced" xml:space="preserve">
-    <value>This package is automatically referenced by the SDK and should not be updated independently. To update the package, update the SDK to which it belongs. More details:</value>
+    <value>Implicitly referenced by an SDK. To update the package, update the SDK to which it belongs.</value>
   </data>
 </root>
