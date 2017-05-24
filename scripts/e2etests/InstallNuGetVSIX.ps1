@@ -46,6 +46,11 @@ if($VSVersion -eq '14.0')
 }
 else 
 {
+    $success = DowngradeVSIX $NuGetVSIXID $VSVersion $VSIXInstallerWaitTimeInSecs
+	if ($success -eq $false)
+	{
+		exit 1
+	}
 	# Clearing MEF cache helps load the right dlls for vsix
 	ClearDev15MEFCache
 }

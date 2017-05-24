@@ -169,6 +169,45 @@ function UninstallVSIX
     return $true
 }
 
+function DowngradeVSIX
+{
+    param(
+        [Parameter(Mandatory=$true)]
+        [string]$vsixID,
+        [Parameter(Mandatory=$true)]
+        [ValidateSet("15.0")]
+        [string]$VSVersion,
+        [Parameter(Mandatory=$true)]
+        [int]$VSIXInstallerWaitTimeInSecs
+    )
+
+    $VSIXInstallerPath = GetVSIXInstallerPath $VSVersion
+
+    Write-Host 'Downgrading VSIX...'
+    $p = start-process "$VSIXInstallerPath" -Wait -PassThru -NoNewWindow -ArgumentList "/q /a /d:$vsixID"
+
+    if ($p.ExitCode -ne 0)
+    {
+        if($p.ExitCode -eq 1002)
+        {
+            Write-Host "VSIX already downgraded. Moving on to installing the VSIX! Exit code: $($p.ExitCode)" 
+            return $true
+        }
+        else 
+        {
+            Write-Error "Error downgrading the VSIX! Exit code: $($p.ExitCode)"
+            return $false
+        }
+
+    }
+
+    start-sleep -Seconds $VSIXInstallerWaitTimeInSecs
+    Write-Host "VSIX has been downgraded successfully."
+    
+    return $true
+}
+
+
 function InstallVSIX
 {
     param(
