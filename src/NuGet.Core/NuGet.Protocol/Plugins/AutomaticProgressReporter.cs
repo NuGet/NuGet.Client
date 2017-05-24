@@ -14,19 +14,19 @@ namespace NuGet.Protocol.Plugins
     {
         private readonly CancellationToken _cancellationToken;
         private readonly CancellationTokenSource _cancellationTokenSource;
+        private readonly IConnection _connection;
         private bool _isDisposed;
-        private readonly IPlugin _plugin;
         private readonly Message _request;
         private readonly SemaphoreSlim _semaphore;
         private readonly Timer _timer;
 
         private AutomaticProgressReporter(
-            IPlugin plugin,
+            IConnection connection,
             Message request,
             TimeSpan interval,
             CancellationToken cancellationToken)
         {
-            _plugin = plugin;
+            _connection = connection;
             _request = request;
             _cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             _cancellationToken = _cancellationTokenSource.Token;
@@ -72,7 +72,8 @@ namespace NuGet.Protocol.Plugins
                     // does not fire after Dispose().  Otherwise, a progress notification might be sent after a
                     // response, which would be a fatal plugin protocol error.
                     _timer.Dispose();
-                    _plugin.Dispose();
+
+                    // Do not dispose of _connection.  It is still in use by a plugin.
 
                     GC.SuppressFinalize(this);
 
@@ -94,11 +95,12 @@ namespace NuGet.Protocol.Plugins
         /// <summary>
         /// Creates a new <see cref="AutomaticProgressReporter" /> class.
         /// </summary>
-        /// <param name="plugin">A plugin.</param>
+        /// <remarks>This class does not take ownership of and dispose of <paramref name="connection" />.</remarks>
+        /// <param name="connection">A connection.</param>
         /// <param name="request">A request.</param>
         /// <param name="interval">A progress interval.</param>
         /// <param name="cancellationToken">A cancellation token.</param>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="plugin" />
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="connection" />
         /// is <c>null</c>.</exception>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="request" />
         /// is <c>null</c>.</exception>
@@ -108,14 +110,14 @@ namespace NuGet.Protocol.Plugins
         /// <exception cref="OperationCanceledException">Thrown if <paramref name="cancellationToken" />
         /// is cancelled.</exception>
         public static AutomaticProgressReporter Create(
-            IPlugin plugin,
+            IConnection connection,
             Message request,
             TimeSpan interval,
             CancellationToken cancellationToken)
         {
-            if (plugin == null)
+            if (connection == null)
             {
-                throw new ArgumentNullException(nameof(plugin));
+                throw new ArgumentNullException(nameof(connection));
             }
 
             if (request == null)
@@ -134,7 +136,7 @@ namespace NuGet.Protocol.Plugins
             cancellationToken.ThrowIfCancellationRequested();
 
             return new AutomaticProgressReporter(
-                plugin,
+                connection,
                 request,
                 interval,
                 cancellationToken);
@@ -171,7 +173,7 @@ namespace NuGet.Protocol.Plugins
                             _request.Method,
                             new Progress());
 
-                        await _plugin.Connection.SendAsync(progress, _cancellationToken);
+                        await _connection.SendAsync(progress, _cancellationToken);
                     }
                     catch (Exception)
                     {

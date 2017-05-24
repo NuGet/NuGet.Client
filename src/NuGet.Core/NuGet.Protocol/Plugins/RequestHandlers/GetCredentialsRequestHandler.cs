@@ -161,7 +161,7 @@ namespace NuGet.Protocol.Plugins
                 NetworkCredential credential = null;
 
                 using (var progressReporter = AutomaticProgressReporter.Create(
-                    _plugin,
+                    _plugin.Connection,
                     request,
                     PluginConstants.ProgressInterval,
                     cancellationToken))

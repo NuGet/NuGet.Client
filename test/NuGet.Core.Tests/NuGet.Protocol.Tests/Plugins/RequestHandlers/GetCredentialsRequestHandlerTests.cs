@@ -209,8 +209,10 @@ namespace NuGet.Protocol.Plugins.Tests
                     It.IsAny<CancellationToken>()))
                 .ReturnsAsync((ICredentials)null);
 
+            var plugin = CreateMockPlugin();
+
             using (var provider = new GetCredentialsRequestHandler(
-                Mock.Of<IPlugin>(),
+                plugin,
                 Mock.Of<IWebProxy>(),
                 credentialService.Object))
             {
@@ -294,10 +296,9 @@ namespace NuGet.Protocol.Plugins.Tests
                     It.IsAny<CancellationToken>()))
                 .Returns(Task.FromResult(credentials.Object));
 
-            using (var provider = new GetCredentialsRequestHandler(
-                Mock.Of<IPlugin>(),
-                proxy,
-                credentialService.Object))
+            var plugin = CreateMockPlugin();
+
+            using (var provider = new GetCredentialsRequestHandler(plugin, proxy, credentialService.Object))
             {
                 var request = CreateRequest(
                     MessageType.Request,
@@ -324,8 +325,10 @@ namespace NuGet.Protocol.Plugins.Tests
         [Fact]
         public async Task HandleResponseAsync_ReturnsNullPackageSourceCredentialsIfPackageSourceCredentialsAreInvalidAndCredentialServiceIsNull()
         {
+            var plugin = CreateMockPlugin();
+
             using (var provider = new GetCredentialsRequestHandler(
-                Mock.Of<IPlugin>(),
+                plugin,
                 Mock.Of<IWebProxy>(),
                 credentialService: null))
             {
@@ -371,10 +374,9 @@ namespace NuGet.Protocol.Plugins.Tests
                     It.IsAny<CancellationToken>()))
                 .Returns(Task.FromResult(credentials.Object));
 
-            using (var provider = new GetCredentialsRequestHandler(
-                Mock.Of<IPlugin>(),
-                proxy,
-                credentialService.Object))
+            var plugin = CreateMockPlugin();
+
+            using (var provider = new GetCredentialsRequestHandler(plugin, proxy, credentialService.Object))
             {
                 var request = CreateRequest(
                     MessageType.Request,
@@ -423,10 +425,9 @@ namespace NuGet.Protocol.Plugins.Tests
                     It.IsAny<CancellationToken>()))
                 .Returns(Task.FromResult(credentials.Object));
 
-            using (var provider = new GetCredentialsRequestHandler(
-                Mock.Of<IPlugin>(),
-                proxy.Object,
-                credentialService.Object))
+            var plugin = CreateMockPlugin();
+
+            using (var provider = new GetCredentialsRequestHandler(plugin, proxy.Object, credentialService.Object))
             {
                 var request = CreateRequest(
                     MessageType.Request,
@@ -453,8 +454,10 @@ namespace NuGet.Protocol.Plugins.Tests
         [Fact]
         public async Task HandleResponseAsync_ReturnsNullProxyCredentialsIfCredentialServiceIsNull()
         {
+            var plugin = CreateMockPlugin();
+
             using (var provider = new GetCredentialsRequestHandler(
-                Mock.Of<IPlugin>(),
+                plugin,
                 Mock.Of<IWebProxy>(),
                 credentialService: null))
             {
@@ -500,10 +503,9 @@ namespace NuGet.Protocol.Plugins.Tests
                     It.IsAny<CancellationToken>()))
                 .Returns(Task.FromResult(credentials.Object));
 
-            using (var provider = new GetCredentialsRequestHandler(
-                Mock.Of<IPlugin>(),
-                proxy,
-                credentialService.Object))
+            var plugin = CreateMockPlugin();
+
+            using (var provider = new GetCredentialsRequestHandler(plugin, proxy, credentialService.Object))
             {
                 var request = CreateRequest(
                     MessageType.Request,
@@ -530,8 +532,10 @@ namespace NuGet.Protocol.Plugins.Tests
         [Fact]
         public async Task HandleResponseAsync_ReturnsNullProxyCredentialsIfNoProxy()
         {
+            var plugin = CreateMockPlugin();
+
             using (var provider = new GetCredentialsRequestHandler(
-                Mock.Of<IPlugin>(),
+                plugin,
                 proxy: null,
                 credentialService: Mock.Of<ICredentialService>()))
             {
@@ -559,10 +563,19 @@ namespace NuGet.Protocol.Plugins.Tests
 
         private GetCredentialsRequestHandler CreateDefaultRequestHandler()
         {
-            return new GetCredentialsRequestHandler(
-                Mock.Of<IPlugin>(),
-                Mock.Of<IWebProxy>(),
-                Mock.Of<ICredentialService>());
+            var plugin = CreateMockPlugin();
+
+            return new GetCredentialsRequestHandler(plugin, Mock.Of<IWebProxy>(), Mock.Of<ICredentialService>());
+        }
+
+        private static IPlugin CreateMockPlugin()
+        {
+            var plugin = new Mock<IPlugin>();
+
+            plugin.SetupGet(x => x.Connection)
+                .Returns(Mock.Of<IConnection>());
+
+            return plugin.Object;
         }
 
         private static Message CreateRequest(MessageType type, GetCredentialsRequest payload = null)

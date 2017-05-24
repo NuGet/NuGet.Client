@@ -2,8 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Moq;
@@ -14,18 +12,18 @@ namespace NuGet.Protocol.Plugins.Tests
     public class AutomaticProgressReporterTests
     {
         [Fact]
-        public void Create_ThrowsForNullPlugin()
+        public void Create_ThrowsForNullConnection()
         {
             using (var test = new AutomaticProgressReporterTest())
             {
                 var exception = Assert.Throws<ArgumentNullException>(
                     () => AutomaticProgressReporter.Create(
-                        plugin: null,
+                        connection: null,
                         request: test.Request,
                         interval: test.Interval,
                         cancellationToken: CancellationToken.None));
 
-                Assert.Equal("plugin", exception.ParamName);
+                Assert.Equal("connection", exception.ParamName);
             }
         }
 
@@ -36,7 +34,7 @@ namespace NuGet.Protocol.Plugins.Tests
             {
                 var exception = Assert.Throws<ArgumentNullException>(
                     () => AutomaticProgressReporter.Create(
-                        test.Plugin.Object,
+                        test.Connection.Object,
                         request: null,
                         interval: test.Interval,
                         cancellationToken: CancellationToken.None));
@@ -72,7 +70,7 @@ namespace NuGet.Protocol.Plugins.Tests
             {
                 Assert.Throws<OperationCanceledException>(
                     () => AutomaticProgressReporter.Create(
-                        test.Plugin.Object,
+                        test.Connection.Object,
                         test.Request,
                         test.Interval,
                         new CancellationToken(canceled: true)));
@@ -85,6 +83,27 @@ namespace NuGet.Protocol.Plugins.Tests
             using (var test = new AutomaticProgressReporterTest())
             {
             }
+        }
+
+        [Fact]
+        public void Dispose_DoesNotDisposeConnection()
+        {
+            var connection = new Mock<IConnection>(MockBehavior.Strict);
+            var request = MessageUtilities.Create(
+                    requestId: "a",
+                    type: MessageType.Request,
+                    method: MessageMethod.GetServiceIndex,
+                    payload: new GetServiceIndexRequest(packageSourceRepository: "https://unit.test"));
+
+            using (var reporter = AutomaticProgressReporter.Create(
+                connection.Object,
+                request,
+                TimeSpan.FromHours(1),
+                CancellationToken.None))
+            {
+            }
+
+            connection.Verify();
         }
 
         [Fact]
@@ -114,7 +133,7 @@ namespace NuGet.Protocol.Plugins.Tests
             {
                 var exception = Assert.Throws<ArgumentOutOfRangeException>(
                     () => AutomaticProgressReporter.Create(
-                        test.Plugin.Object,
+                        test.Connection.Object,
                         test.Request,
                         interval,
                         CancellationToken.None));
@@ -126,13 +145,12 @@ namespace NuGet.Protocol.Plugins.Tests
         private sealed class AutomaticProgressReporterTest : IDisposable
         {
             private int _actualSentCount;
-            private readonly Mock<IConnection> _connection;
             private readonly int _expectedSentCount;
             private bool _isDisposed;
 
             internal CancellationTokenSource CancellationTokenSource { get; }
+            internal Mock<IConnection> Connection { get; }
             internal TimeSpan Interval { get; }
-            internal Mock<IPlugin> Plugin { get; }
             internal AutomaticProgressReporter Reporter { get; }
             internal Message Request { get; }
             internal ManualResetEventSlim SentEvent { get; }
@@ -148,13 +166,10 @@ namespace NuGet.Protocol.Plugins.Tests
                 CancellationTokenSource = new CancellationTokenSource();
                 Interval = interval.HasValue ? interval.Value : ProtocolConstants.MaxTimeout;
                 SentEvent = new ManualResetEventSlim(initialState: false);
-                Plugin = new Mock<IPlugin>(MockBehavior.Strict);
 
-                Plugin.Setup(x => x.Dispose());
+                Connection = new Mock<IConnection>(MockBehavior.Strict);
 
-                _connection = new Mock<IConnection>(MockBehavior.Strict);
-
-                _connection.Setup(x => x.SendAsync(
+                Connection.Setup(x => x.SendAsync(
                         It.IsNotNull<Message>(),
                         It.IsAny<CancellationToken>()))
                     .Callback<Message, CancellationToken>(
@@ -169,16 +184,13 @@ namespace NuGet.Protocol.Plugins.Tests
                     })
                     .Returns(Task.FromResult(0));
 
-                Plugin.SetupGet(x => x.Connection)
-                    .Returns(_connection.Object);
-
                 Request = MessageUtilities.Create(
                     requestId: "a",
                     type: MessageType.Request,
                     method: MessageMethod.Handshake,
                     payload: payload);
                 Reporter = AutomaticProgressReporter.Create(
-                    Plugin.Object,
+                    Connection.Object,
                     Request,
                     Interval,
                     CancellationTokenSource.Token);
@@ -207,10 +219,9 @@ namespace NuGet.Protocol.Plugins.Tests
 
                     var connectionTimes = _expectedSentCount == 0 ? Times.Never() : Times.AtLeast(_expectedSentCount);
 
-                    _connection.Verify(x => x.SendAsync(
+                    Connection.Verify(x => x.SendAsync(
                         It.IsNotNull<Message>(),
                         It.IsAny<CancellationToken>()), connectionTimes);
-                    Plugin.Verify(x => x.Dispose(), Times.Once);
                 }
             }
         }
