@@ -17,6 +17,7 @@ using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
 using NuGet.ProjectModel;
 using NuGet.Protocol.Core.Types;
+using NuGet.Shared;
 
 namespace NuGet.PackageManagement
 {
@@ -311,14 +312,15 @@ namespace NuGet.PackageManagement
             ISolutionManager solutionManager,
             DependencyGraphCacheContext context)
         {
-            // TODO NK - Potentially add the dg spec details here
             var dgSpec = new DependencyGraphSpec();
-            SettingsUtility.GetGlobalPackagesFolder(context.Settings);
-            SettingsUtility.GetFallbackPackageFolders(context.Settings);
-            
+            var globalPackagesFolder = SettingsUtility.GetGlobalPackagesFolder(context.Settings);
+            var fallbackFolders = SettingsUtility.GetFallbackPackageFolders(context.Settings);
 
             foreach (var packageSpec in context.DeferredPackageSpecs)
             {
+                packageSpec.RestoreMetadata.FallbackFolders = packageSpec.RestoreMetadata.FallbackFolders ?? fallbackFolders.AsList();
+                packageSpec.RestoreMetadata.PackagesPath = packageSpec.RestoreMetadata.PackagesPath ?? globalPackagesFolder;
+
                 dgSpec.AddProject(packageSpec);
 
                 if (packageSpec.RestoreMetadata.ProjectStyle == ProjectStyle.PackageReference ||
@@ -338,6 +340,9 @@ namespace NuGet.PackageManagement
 
                 foreach (var packageSpec in packageSpecs)
                 {
+                    packageSpec.RestoreMetadata.FallbackFolders = (IList<string>)fallbackFolders;
+                    packageSpec.RestoreMetadata.PackagesPath = globalPackagesFolder;
+
                     dgSpec.AddProject(packageSpec);
 
                     if (packageSpec.RestoreMetadata.ProjectStyle == ProjectStyle.PackageReference ||
