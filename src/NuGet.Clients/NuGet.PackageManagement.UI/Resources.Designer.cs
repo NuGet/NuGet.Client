@@ -448,6 +448,15 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Learn more.
+        /// </summary>
+        public static string Description_LearnMore {
+            get {
+                return ResourceManager.GetString("Description_LearnMore", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Do not show this again.
         /// </summary>
         public static string DoNotShowThisAgain {

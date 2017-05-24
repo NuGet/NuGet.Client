@@ -529,7 +529,7 @@ namespace NuGet.PackageManagement.UI
             {
                 OptionsBlockedUrl = new Uri("https://go.microsoft.com/fwlink/?linkid=841238");
                 OptionsBlockedMessage = Resources.AutoReferenced;
-                OptionsBlockedUrlText = "Learn more";
+                OptionsBlockedUrlText = Resources.Description_LearnMore;
                 if (_searchResultPackage != null)
                 {
                     _searchResultPackage.AutoReferenced = true;

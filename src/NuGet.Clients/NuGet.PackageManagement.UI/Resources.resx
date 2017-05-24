@@ -669,4 +669,7 @@ Please see https://aka.ms/troubleshoot_nuget_cache for more help.</value>
   <data name="AutoReferenced" xml:space="preserve">
     <value>Implicitly referenced by an SDK. To update the package, update the SDK to which it belongs.</value>
   </data>
+  <data name="Description_LearnMore" xml:space="preserve">
+    <value>Learn more</value>
+  </data>
 </root>
