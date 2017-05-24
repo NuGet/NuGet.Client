@@ -121,7 +121,7 @@ namespace NuGet.PackageManagement.UI
 
         public override string ToString()
         {
-            return $"{ProjectName} {InstalledVersion?.Version}";
+            return $"{ProjectName} {InstalledVersion?.Version.ToString() ?? Resources.Text_NotInstalled}";
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
