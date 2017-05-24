@@ -482,8 +482,7 @@ namespace NuGet.CommandLine
                 {
                     dgFileOutput = await GetDependencyGraphSpecAsync(projectsWithPotentialP2PReferences,
                         GetSolutionDirectory(packageRestoreInputs),
-                        ConfigFile,
-                        CurrentDirectory);
+                        ConfigFile);
                 }
                 catch (Exception ex)
                 {
@@ -591,7 +590,7 @@ namespace NuGet.CommandLine
         /// <summary>
         ///  Create a dg v2 file using msbuild.
         /// </summary>
-        private async Task<DependencyGraphSpec> GetDependencyGraphSpecAsync(string[] projectsWithPotentialP2PReferences, string solutionDirectory, string configFile, string restoreDirectory)
+        private async Task<DependencyGraphSpec> GetDependencyGraphSpecAsync(string[] projectsWithPotentialP2PReferences, string solutionDirectory, string configFile)
         {
             // Create requests based on the solution directory if a solution was used read settings for the solution.
             // If the solution directory is null, then use config file if present
@@ -621,7 +620,6 @@ namespace NuGet.CommandLine
                 Recursive,
                 solutionDirectory,
                 configFile,
-                restoreDirectory,
                 Source.ToArray(),
                 PackagesDirectory
                 );

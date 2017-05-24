@@ -432,7 +432,6 @@ Copyright (c) .NET Foundation. All rights reserved.
      RestoreFallbackFolders="$(RestoreFallbackFolders)"
      RestoreConfigFile="$(RestoreConfigFile)"
      RestoreSolutionDirectory="$(RestoreSolutionDirectory)"
-     RestoreDirectory="$(RestoreDirectory)"
      >
       <Output
         TaskParameter="OutputSources"

@@ -232,9 +232,9 @@ namespace NuGet.Configuration
             {
                 return NullSettings.Instance;
             }
-            foreach(var configPath in configFilePaths)
+            foreach(var configFile in configFilePaths)
             {
-                settings.Add(LoadSettings(configPath));
+                settings.Add(LoadSettings(configFile));
             }
 
             return LoadSettingsForSpecificConfigs(settings.First().Root, settings.First().FileName, settings, null, true, false);
