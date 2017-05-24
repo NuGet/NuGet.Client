@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.ProjectSystem;
 using Microsoft.VisualStudio.ProjectSystem.References;
+using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.Packaging.Core;
@@ -161,7 +162,25 @@ namespace NuGet.PackageManagement.VisualStudio
                     string.Format(Strings.ProjectNotLoaded_RestoreFailed, ProjectName));
             }
 
-            var projects = projectRestoreInfo.Projects;
+            // Apply ISettings when needed to the return values.
+            // This should not change the cached specs since they
+            // contain values such as CLEAR which need to be persisted
+            // and used here.
+            var originalProjects = projectRestoreInfo.Projects;
+            var projects = new List<PackageSpec>();
+
+            foreach (var originalProject in originalProjects)
+            {
+                var project = originalProject.Clone();
+
+                // Set from Settings if not given. Clear is not an option here.
+                if (string.IsNullOrEmpty(project.RestoreMetadata.PackagesPath) && context != null)
+                {
+                    project.RestoreMetadata.PackagesPath = SettingsUtility.GetGlobalPackagesFolder(context.Settings);
+                }
+
+                projects.Add(project);
+            }
 
             if (context != null)
             {
@@ -176,7 +195,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 }
             }
 
-            return Task.FromResult(projects);
+            return Task.FromResult<IReadOnlyList<PackageSpec>>(projects);
         }
 
         #endregion

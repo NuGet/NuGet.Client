@@ -10,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft;
 using NuGet.Commands;
+using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.PackageManagement.VisualStudio;
@@ -251,7 +252,8 @@ namespace NuGet.SolutionRestoreManager
                         .Select(item => ToProjectRestoreMetadataFrameworkInfo(item, projectDirectory))
                         .ToList(),
                     OriginalTargetFrameworks = originalTargetFrameworks,
-                    CrossTargeting = crossTargeting
+                    CrossTargeting = crossTargeting,
+                    PackagesPath = GetRestoreProjectPath(projectRestoreInfo.TargetFrameworks)
                 },
                 RuntimeGraph = GetRuntimeGraph(projectRestoreInfo)
             };
@@ -273,6 +275,11 @@ namespace NuGet.SolutionRestoreManager
                 ?? GetNonEvaluatedPropertyOrNull(tfms, Version, NuGetVersion.Parse);
 
             return versionPropertyValue ?? PackageSpec.DefaultVersion;
+        }
+
+        private static string GetRestoreProjectPath(IVsTargetFrameworks tfms)
+        {
+            return GetNonEvaluatedPropertyOrNull(tfms, "RestorePackagesPath", e => e);
         }
 
         // Trying to fetch a property value from tfm property bags.

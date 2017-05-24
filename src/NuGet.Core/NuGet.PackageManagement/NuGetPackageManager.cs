@@ -2413,7 +2413,7 @@ namespace NuGet.PackageManagement
                 // Exclude upgrades, for now we take the simplest case.
                 !PackageSpecOperations.HasPackage(originalPackageSpec, firstAction.PackageIdentity.Id))
             {
-                updatedPackageSpec = originalPackageSpec.Clone();
+                updatedPackageSpec = originalPackageSpec.Clone(); // TODO NK - Does this packageSpec contain the packages path and global package folders?
 
                 PackageSpecOperations.AddOrUpdateDependency(
                     updatedPackageSpec,
@@ -2636,7 +2636,7 @@ namespace NuGet.PackageManagement
                     projects,
                     buildIntegratedProject,
                     _buildIntegratedProjectsCache);
-
+                // The settings contained in the context are applied to the dg spec.
                 var dgSpecForParents = await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(SolutionManager, referenceContext);
                 dgSpecForParents = dgSpecForParents.WithoutRestores();
 
@@ -2658,13 +2658,15 @@ namespace NuGet.PackageManagement
                 if (dgSpecForParents.Restore.Count > 0)
                 {
                     // Restore and commit the lock file to disk regardless of the result
-                    // This will restore all parents in a single restore
+                    // This will restore all parents in a single restore 
+                    // TODO NK - What? :) The restore file is always committed to disk
                     await DependencyGraphRestoreUtility.RestoreAsync(
                         dgSpecForParents,
                         referenceContext,
                         GetRestoreProviderCache(),
                         cacheContextModifier,
-                        projectAction.Sources, //TODO NK - settings removed
+                        projectAction.Sources,
+                        false, // No need to force restore as the inputs would've changed here anyways
                         logger,
                         token);
                 }

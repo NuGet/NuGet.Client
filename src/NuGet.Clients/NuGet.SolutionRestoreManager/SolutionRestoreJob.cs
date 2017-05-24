@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -297,7 +297,7 @@ namespace NuGet.SolutionRestoreManager
             CancellationToken token)
         {
             // Only continue if there are some build integrated type projects.
-            if (!(projects.Any(project => project is BuildIntegratedNuGetProject) || 
+            if (!(projects.Any(project => project is BuildIntegratedNuGetProject) ||
                 packageSpecs.Any(project => IsProjectBuildIntegrated(project))))
             {
                 return;
@@ -333,19 +333,13 @@ namespace NuGet.SolutionRestoreManager
                 // add deferred projects package spec in cacheContext packageSpecCache
                 cacheContext.DeferredPackageSpecs.AddRange(packageSpecs);
 
-                var isRestoreRequired = await DependencyGraphRestoreUtility.IsRestoreRequiredAsync(
-                    _solutionManager,
-                    forceRestore,
-                    pathContext,
-                    cacheContext,
-                    _dependencyGraphProjectCacheHash);
+                // Get full dg spec
+                // TODO: pass this down instead of creating it twice.
+                var dgSpec = await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(_solutionManager, cacheContext);
 
-                // No-op all project closures are up to date and all packages exist on disk.
-                if (isRestoreRequired)
+                // Avoid restoring solutions with zero potential PackageReference projects.
+                if (DependencyGraphRestoreUtility.IsRestoreRequired(dgSpec))
                 {
-                    // Save the project between operations.
-                    _dependencyGraphProjectCacheHash = cacheContext.SolutionSpecHash;
-
                     // NOTE: During restore for build integrated projects,
                     //       We might show the dialog even if there are no packages to restore
                     // When both currentStep and totalSteps are 0, we get a marquee on the dialog
@@ -364,10 +358,11 @@ namespace NuGet.SolutionRestoreManager
 
                             var restoreSummaries = await DependencyGraphRestoreUtility.RestoreAsync(
                                 _solutionManager,
-                                cacheContext, //TODO NK - CacheContext now contains the needed settings
+                                cacheContext,
                                 providerCache,
                                 cacheModifier,
                                 sources,
+                                forceRestore,
                                 l,
                                 t);
 

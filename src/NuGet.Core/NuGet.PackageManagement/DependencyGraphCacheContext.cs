@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -41,9 +41,7 @@ namespace NuGet.ProjectManagement
         /// </summary>
         public Dictionary<string, IReadOnlyList<IDependencyGraphProject>> DirectReferenceCache { get; set; } = new Dictionary<string, IReadOnlyList<IDependencyGraphProject>>(StringComparer.Ordinal);
 
-        public DependencyGraphSpec SolutionSpec { get; set; }
-
-        public string SolutionSpecHash { get; set; }
+        public DependencyGraphSpec SolutionSpec { get; set; } // TODO NK - Check if the solution spec is the one that ends up in the restore command or dependency graph context
 
         /// <summary>
         /// Logger
