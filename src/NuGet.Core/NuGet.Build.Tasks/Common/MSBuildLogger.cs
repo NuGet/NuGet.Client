@@ -1,8 +1,7 @@
-﻿using System;
-using System.Threading.Tasks;
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using NuGet.Common;
@@ -56,46 +55,49 @@ namespace NuGet.Build
 
         public override void Log(ILogMessage message)
         {
-            var logMessage = message as IRestoreLogMessage;
-
-            if (logMessage == null)
+            if (DisplayMessage(message.Level))
             {
-                logMessage = new RestoreLogMessage(message.Level, message.Message)
+
+                var logMessage = message as IRestoreLogMessage;
+
+                if (logMessage == null)
                 {
-                    Code = message.Code,
-                    FilePath = message.ProjectPath,
-                    StartLineNumber = -1,
-                    EndLineNumber = -1,
-                    StartColumnNumber = -1,
-                    EndColumnNumber = -1
-                };
-            }
+                    logMessage = new RestoreLogMessage(message.Level, message.Message)
+                    {
+                        Code = message.Code,
+                        FilePath = message.ProjectPath,
+                        StartLineNumber = -1,
+                        EndLineNumber = -1,
+                        StartColumnNumber = -1,
+                        EndColumnNumber = -1
+                    };
+                }
 
-            switch (message.Level)
-            {
-                case LogLevel.Error:
-                    LogError(logMessage, _taskLogging.LogError, _taskLogging.LogError);
-                    break;
+                switch (message.Level)
+                {
+                    case LogLevel.Error:
+                        LogError(logMessage, _taskLogging.LogError, _taskLogging.LogError);
+                        break;
 
-                case LogLevel.Warning:
-                    LogError(logMessage, _taskLogging.LogError, _taskLogging.LogError);
-                    break;
+                    case LogLevel.Warning:
+                        LogError(logMessage, _taskLogging.LogWarning, _taskLogging.LogWarning);
+                        break;
 
-                case LogLevel.Minimal:
-                    LogMessage(logMessage, MessageImportance.High, _taskLogging.LogMessage, _taskLogging.LogMessage);
-                    break;
+                    case LogLevel.Minimal:
+                        LogMessage(logMessage, MessageImportance.High, _taskLogging.LogMessage, _taskLogging.LogMessage);
+                        break;
 
-                case LogLevel.Information:
-                    LogMessage(logMessage, MessageImportance.Normal, _taskLogging.LogMessage, _taskLogging.LogMessage);
-                    break;
+                    case LogLevel.Information:
+                        LogMessage(logMessage, MessageImportance.Normal, _taskLogging.LogMessage, _taskLogging.LogMessage);
+                        break;
 
-                case LogLevel.Debug:
-                case LogLevel.Verbose:
-                default:
-                    // Default to LogLevel.Debug and low importance
-                    LogMessage(logMessage, MessageImportance.Low, _taskLogging.LogMessage, _taskLogging.LogMessage);
-                    break;
-
+                    case LogLevel.Debug:
+                    case LogLevel.Verbose:
+                    default:
+                        // Default to LogLevel.Debug and low importance
+                        LogMessage(logMessage, MessageImportance.Low, _taskLogging.LogMessage, _taskLogging.LogMessage);
+                        break;
+                }
             }
         }
 
@@ -106,6 +108,7 @@ namespace NuGet.Build
         {
             if (logMessage.Code > NuGetLogCode.Undefined)
             {
+                // NuGet does not currently have a subcategory while throwing logs, hence string.Empty
                 logWithDetails(string.Empty,
                     Enum.GetName(typeof(NuGetLogCode), logMessage.Code),
                     Enum.GetName(typeof(NuGetLogCode), logMessage.Code),
@@ -129,6 +132,7 @@ namespace NuGet.Build
         {
             if (logMessage.Code > NuGetLogCode.Undefined)
             {
+                // NuGet does not currently have a subcategory while throwing logs, hence string.Empty
                 logWithDetails(string.Empty,
                     Enum.GetName(typeof(NuGetLogCode), logMessage.Code),
                     Enum.GetName(typeof(NuGetLogCode), logMessage.Code),
