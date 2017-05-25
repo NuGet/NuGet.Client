@@ -171,12 +171,6 @@ namespace NuGet.SolutionRestoreManager
             LogDebug(data);
         }
 
-        public override void LogErrorSummary(string data)
-        {
-            // Treat Summary as Debug
-            LogDebug(data);
-        }
-
         private void LogToVS(VerbosityLevel verbosityLevel, string message)
         {
             if (_cancelled)

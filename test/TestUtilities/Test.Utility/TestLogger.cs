@@ -84,12 +84,6 @@ namespace NuGet.Test.Utility
             DumpMessage("ISMRY", data);
         }
 
-        public void LogErrorSummary(string data)
-        {
-            Messages.Enqueue(data);
-            DumpMessage("ESMRY", data);
-        }
-
         private void DumpMessage(string level, string data)
         {
             // NOTE(anurse): Uncomment this to help when debugging tests

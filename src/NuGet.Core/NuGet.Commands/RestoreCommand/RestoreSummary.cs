@@ -74,11 +74,34 @@ namespace NuGet.Commands
             Errors = errors.ToArray();
         }
 
-        public static void Log(ILogger logger, IEnumerable<RestoreSummary> restoreSummaries)
+        public static void Log(ILogger logger, IEnumerable<RestoreSummary> restoreSummaries, bool logErrors = false)
         {
             if (!restoreSummaries.Any())
             {
                 return;
+            }
+
+            // This should only be true by nuget exe since it does not have msbuild logger
+            if (logErrors)
+            {
+                // Display the errors summary
+                foreach (var restoreSummary in restoreSummaries)
+                {
+                    if (!restoreSummary.Errors.Any())
+                    {
+                        continue;
+                    }
+
+                    logger.LogError(string.Empty);
+                    logger.LogError(string.Format(CultureInfo.CurrentCulture, Strings.Log_ErrorSummary, restoreSummary.InputPath));
+                    foreach (var error in restoreSummary.Errors.Where(m => m.Level == LogLevel.Error))
+                    {
+                        foreach (var line in IndentLines(error.Message))
+                        {
+                            logger.LogError(line);
+                        }
+                    }
+                }
             }
 
             // Display the information summary
