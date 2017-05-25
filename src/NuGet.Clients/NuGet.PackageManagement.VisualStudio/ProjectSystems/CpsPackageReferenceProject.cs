@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.ProjectSystem;
 using Microsoft.VisualStudio.ProjectSystem.References;
+using NuGet.Commands;
 using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
@@ -100,12 +101,12 @@ namespace NuGet.PackageManagement.VisualStudio
                         _envDTEProject, throwOnFailure);
         }
 
-        public override async Task<String> GetAssetsFilePathAsync()
+        public override async Task<string> GetAssetsFilePathAsync()
         {
             return await GetAssetsFilePathAsync(shouldThrow: true);
         }
 
-        public override async Task<String> GetAssetsFilePathOrNullAsync()
+        public override async Task<string> GetAssetsFilePathOrNullAsync()
         {
             return await GetAssetsFilePathAsync(shouldThrow: false);
         }
@@ -150,11 +151,13 @@ namespace NuGet.PackageManagement.VisualStudio
 
 
         public override string MSBuildProjectPath => _projectFullPath;
-        
+
         public override string ProjectName => _projectName;
 
         public override Task<IReadOnlyList<PackageSpec>> GetPackageSpecsAsync(DependencyGraphCacheContext context)
         {
+            var projects = new List<PackageSpec>();
+
             DependencyGraphSpec projectRestoreInfo;
             if (!_projectSystemCache.TryGetProjectRestoreInfo(_projectFullPath, out projectRestoreInfo))
             {
@@ -167,17 +170,17 @@ namespace NuGet.PackageManagement.VisualStudio
             // contain values such as CLEAR which need to be persisted
             // and used here.
             var originalProjects = projectRestoreInfo.Projects;
-            var projects = new List<PackageSpec>();
+
+            var settings = context?.Settings ?? NullSettings.Instance;
 
             foreach (var originalProject in originalProjects)
             {
                 var project = originalProject.Clone();
 
-                // Set from Settings if not given. Clear is not an option here.
-                if (string.IsNullOrEmpty(project.RestoreMetadata.PackagesPath) && context != null)
-                {
-                    project.RestoreMetadata.PackagesPath = SettingsUtility.GetGlobalPackagesFolder(context.Settings);
-                }
+                // Read restore settings from ISettings if it doesn't exist in the project.
+                project.RestoreMetadata.PackagesPath = GetPackagesPath(settings, project);
+                project.RestoreMetadata.Sources = GetSources(settings, project);
+                project.RestoreMetadata.FallbackFolders = GetFallbackFolders(settings, project);
 
                 projects.Add(project);
             }
@@ -190,12 +193,70 @@ namespace NuGet.PackageManagement.VisualStudio
                         p.RestoreMetadata.ProjectUniqueName, out ignore)))
                 {
                     context.PackageSpecCache.Add(
-                        project.RestoreMetadata.ProjectUniqueName, 
+                        project.RestoreMetadata.ProjectUniqueName,
                         project);
                 }
             }
 
             return Task.FromResult<IReadOnlyList<PackageSpec>>(projects);
+        }
+
+        private static string GetPackagesPath(ISettings settings, PackageSpec project)
+        {
+            // Set from Settings if not given. Clear is not an option here.
+            if (string.IsNullOrEmpty(project.RestoreMetadata.PackagesPath))
+            {
+                return SettingsUtility.GetGlobalPackagesFolder(settings);
+            }
+
+            return project.RestoreMetadata.PackagesPath;
+        }
+
+        private static List<PackageSource> GetSources(ISettings settings, PackageSpec project)
+        {
+            var sources = project.RestoreMetadata.Sources.Select(e => e.Source);
+
+            if (ShouldReadFromSettings(sources))
+            {
+                sources = SettingsUtility.GetEnabledSources(settings).Select(e => e.Source);
+            }
+            else
+            {
+                sources = HandleClear(sources);
+            }
+
+            return sources.Select(e => new PackageSource(e)).ToList();
+        }
+
+        private static List<string> GetFallbackFolders(ISettings settings, PackageSpec project)
+        {
+            IEnumerable<string> fallbackFolders = project.RestoreMetadata.FallbackFolders;
+
+            if (ShouldReadFromSettings(fallbackFolders))
+            {
+                fallbackFolders = SettingsUtility.GetFallbackPackageFolders(settings);
+            }
+            else
+            {
+                fallbackFolders = HandleClear(fallbackFolders);
+            }
+
+            return fallbackFolders.ToList();
+        }
+
+        private static bool ShouldReadFromSettings(IEnumerable<string> values)
+        {
+            return !values.Any() && values.All(e => !StringComparer.OrdinalIgnoreCase.Equals("CLEAR", e));
+        }
+
+        private static IEnumerable<string> HandleClear(IEnumerable<string> values)
+        {
+            if (values.Any(e => StringComparer.OrdinalIgnoreCase.Equals("CLEAR", e)))
+            {
+                return Enumerable.Empty<string>();
+            }
+
+            return values;
         }
 
         #endregion
@@ -252,7 +313,7 @@ namespace NuGet.PackageManagement.VisualStudio
             nuGetProjectContext.Log(MessageLevel.Info, Strings.InstallingPackage, $"{packageId} {formattedRange}");
 
             if (installationContext.SuccessfulFrameworks.Any() && installationContext.UnsuccessfulFrameworks.Any())
-            {   
+            {
                 // This is the "partial install" case. That is, install the package to only a subset of the frameworks
                 // supported by this project.
                 var conditionalService = _unconfiguredProject
@@ -286,7 +347,7 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 // Install the package to all frameworks.
                 var configuredProject = await _unconfiguredProject.GetSuggestedConfiguredProjectAsync();
-                
+
                 var result = await configuredProject?
                     .Services
                     .PackageReferences
@@ -303,13 +364,13 @@ namespace NuGet.PackageManagement.VisualStudio
             return true;
         }
 
-        public override async Task<Boolean> UninstallPackageAsync(PackageIdentity packageIdentity, INuGetProjectContext nuGetProjectContext, CancellationToken token)
+        public override async Task<bool> UninstallPackageAsync(PackageIdentity packageIdentity, INuGetProjectContext nuGetProjectContext, CancellationToken token)
         {
             var configuredProject = await _unconfiguredProject.GetSuggestedConfiguredProjectAsync();
             await configuredProject?.Services.PackageReferences.RemoveAsync(packageIdentity.Id);
             return true;
         }
-        
+
         #endregion
     }
 }
