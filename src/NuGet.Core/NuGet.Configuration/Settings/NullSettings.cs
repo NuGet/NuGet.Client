@@ -11,6 +11,10 @@ namespace NuGet.Configuration
     {
         private static readonly NullSettings _settings = new NullSettings();
 
+        private NullSettings()
+        {
+            //keep this private, use the instance in your tests
+        }
         public event EventHandler SettingsChanged = delegate { };
 
         public static NullSettings Instance
