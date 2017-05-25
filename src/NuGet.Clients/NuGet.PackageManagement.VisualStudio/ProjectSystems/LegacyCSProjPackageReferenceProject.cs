@@ -131,7 +131,9 @@ namespace NuGet.PackageManagement.VisualStudio
             PackageSpec packageSpec;
             if (context == null || !context.PackageSpecCache.TryGetValue(MSBuildProjectPath, out packageSpec))
             {
-                packageSpec = await GetPackageSpecAsync();
+                var settings = context?.Settings ?? NullSettings.Instance;
+
+                packageSpec = await GetPackageSpecAsync(settings);
                 if (packageSpec == null)
                 {
                     throw new InvalidOperationException(
@@ -149,10 +151,11 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public override async Task<IEnumerable<PackageReference>> GetInstalledPackagesAsync(CancellationToken token)
         {
-            return GetPackageReferences(await GetPackageSpecAsync());
+            // Settings are not needed for this purpose, this only finds the installed packages.
+            return GetPackageReferences(await GetPackageSpecAsync(NullSettings.Instance));
         }
 
-        public override async Task<Boolean> InstallPackageAsync(
+        public override async Task<bool> InstallPackageAsync(
             string packageId,
             VersionRange range,
             INuGetProjectContext nuGetProjectContext,
@@ -165,7 +168,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 metadataValues: new string[0]);
         }
 
-        public async Task<Boolean> InstallPackageWithMetadataAsync(
+        public async Task<bool> InstallPackageWithMetadataAsync(
             string packageId,
             VersionRange range,
             IEnumerable<string> metadataElements,
@@ -190,7 +193,7 @@ namespace NuGet.PackageManagement.VisualStudio
             return success;
         }
 
-        public override async Task<Boolean> UninstallPackageAsync(PackageIdentity packageIdentity, INuGetProjectContext nuGetProjectContext, CancellationToken token)
+        public override async Task<bool> UninstallPackageAsync(PackageIdentity packageIdentity, INuGetProjectContext nuGetProjectContext, CancellationToken token)
         {
             var success = false;
             await NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async delegate
@@ -233,7 +236,7 @@ namespace NuGet.PackageManagement.VisualStudio
             return baseIntermediatePath;
         }
 
-        private string GetPackagesPath(bool shouldThrow = true)
+        private string GetPackagesPath(ISettings settings)
         {
             EnsureUIThread();
 
@@ -241,25 +244,24 @@ namespace NuGet.PackageManagement.VisualStudio
 
             if (string.IsNullOrEmpty(packagePath))
             {
-                return null;
+                return SettingsUtility.GetGlobalPackagesFolder(settings);
             }
 
             return packagePath;
         }
 
-        private IList<PackageSource> GetSources(bool shouldThrow = true)
+        private IList<PackageSource> GetSources(ISettings settings, bool shouldThrow = true)
         {
             EnsureUIThread();
 
-            var sourcesVal = _project.RestoreSources;
+            var sources = MSBuildStringUtility.Split(_project.RestoreSources);
 
-            if (string.IsNullOrEmpty(sourcesVal))
+            if (sources.Length == 0)
             {
-                return null;
+                return SettingsUtility.GetEnabledSources(settings).ToList();
             }
             else
             {
-                var sources = sourcesVal.Split(';');
                 if (sources.Contains("clear", StringComparer.OrdinalIgnoreCase))
                 {
                     if (sources.Length == 1)
@@ -281,6 +283,43 @@ namespace NuGet.PackageManagement.VisualStudio
                 else
                 {
                     return sources.Select(e => new PackageSource(e)).ToList();
+                }
+            }
+        }
+
+        private IList<string> GetFallbackFolders(ISettings settings, bool shouldThrow = true)
+        {
+            EnsureUIThread();
+
+            var folders = MSBuildStringUtility.Split(_project.RestoreFallbackFolders);
+
+            if (folders.Length == 0)
+            {
+                return SettingsUtility.GetFallbackPackageFolders(settings).ToList();
+            }
+            else
+            {
+                if (folders.Contains("clear", StringComparer.OrdinalIgnoreCase))
+                {
+                    if (folders.Length == 1)
+                    {
+                        return new List<string>();
+                    }
+                    else
+                    {
+                        if (shouldThrow)
+                        {
+                            throw new InvalidDataException($"In {nameof(_project.RestoreFallbackFolders)} CLEAR cannot be used in conjunction with other values.");
+                        }
+                        else
+                        {
+                            return null;
+                        }
+                    }
+                }
+                else
+                {
+                    return folders.ToList();
                 }
             }
         }
@@ -329,15 +368,15 @@ namespace NuGet.PackageManagement.VisualStudio
             return new PackageReference(identity, targetFramework);
         }
 
-        private async Task<PackageSpec> GetPackageSpecAsync()
+        private async Task<PackageSpec> GetPackageSpecAsync(ISettings settings)
         {
-            return await RunOnUIThread(GetPackageSpec);
+            return await RunOnUIThread(() => GetPackageSpec(settings));
         }
 
         /// <summary>
         /// Emulates a JSON deserialization from project.json to PackageSpec in a post-project.json world
         /// </summary>
-        private PackageSpec GetPackageSpec(
+        private PackageSpec GetPackageSpec(ISettings settings)
         {
             EnsureUIThread();
 
@@ -399,8 +438,9 @@ namespace NuGet.PackageManagement.VisualStudio
                             ProjectReferences = projectReferences?.ToList()
                         }
                     },
-                    PackagesPath = GetPackagesPath(),
-                    Sources = GetSources()
+                    PackagesPath = GetPackagesPath(settings),
+                    Sources = GetSources(settings),
+                    FallbackFolders = GetFallbackFolders(settings)
                 }
             };
         }
@@ -455,7 +495,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             if (item.MetadataElements == null || item.MetadataValues == null)
             {
-                return String.Empty; // no metadata for project
+                return string.Empty; // no metadata for project
             }
 
             var index = Array.IndexOf(item.MetadataElements, metadataElement);
@@ -481,7 +521,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             if (item.MetadataElements == null || item.MetadataValues == null)
             {
-                return String.Empty; // no metadata for package
+                return string.Empty; // no metadata for package
             }
 
             var index = Array.IndexOf(item.MetadataElements, metadataElement);
@@ -500,7 +540,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 return uiThreadFunction();
             }
 
-            T result = default(T);
+            var result = default(T);
             await NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async delegate
             {
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();

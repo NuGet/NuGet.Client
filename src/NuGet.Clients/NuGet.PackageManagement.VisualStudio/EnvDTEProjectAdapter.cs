@@ -144,14 +144,7 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 ThreadHelper.ThrowIfNotOnUIThread();
 
-                var restorePackagesPath = GetMSBuildProperty(AsIVsBuildPropertyStorage, "RestorePackagesPath");
-
-                if (string.IsNullOrEmpty(restorePackagesPath))
-                {
-                    return null;
-                }
-
-                return restorePackagesPath;
+                return GetMSBuildProperty(AsIVsBuildPropertyStorage, "RestorePackagesPath");
             }
         }
 
@@ -161,14 +154,17 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 ThreadHelper.ThrowIfNotOnUIThread();
 
-                var restoreSources = GetMSBuildProperty(AsIVsBuildPropertyStorage, "RestoreSources");
+                return GetMSBuildProperty(AsIVsBuildPropertyStorage, "RestoreSources");
+            }
+        }
 
-                if (string.IsNullOrEmpty(restoreSources))
-                {
-                    return null;
-                }
+        public string RestoreFallbackFolders
+        {
+            get
+            {
+                ThreadHelper.ThrowIfNotOnUIThread();
 
-                return restoreSources;
+                return GetMSBuildProperty(AsIVsBuildPropertyStorage, "RestoreFallbackFolders");
             }
         }
 
@@ -180,7 +176,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
                 if (AsIVsBuildPropertyStorage == null)
                 {
-                    return String.Empty;
+                    return string.Empty;
                 }
 
                 return GetMSBuildProperty(AsIVsBuildPropertyStorage, "PackageTargetFallback");
@@ -371,7 +367,9 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
+#pragma warning disable IDE0007 // Use implicit type
             foreach (Reference6 reference in AsVSProject4.References)
+#pragma warning restore IDE0007 // Use implicit type
             {
                 if (reference.SourceProject != null)
                 {

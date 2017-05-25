@@ -56,6 +56,12 @@ namespace NuGet.PackageManagement.VisualStudio
         /// Restore Sources DTE property
         /// </summary>
         string RestoreSources { get; }
+
+        /// <summary>
+        /// RestoreFallbackFolders DTE property
+        /// </summary>
+        string RestoreFallbackFolders { get; }
+
         /// <summary>
         /// PackageTargetFallback DTE property
         /// </summary>
