@@ -274,6 +274,11 @@ namespace NuGet.Configuration
             return source;
         }
 
+        public static IEnumerable<string> GetConfigFilePaths(ISettings settings)
+        {
+            return settings.Priority.Select(config => Path.GetFullPath(Path.Combine(config.Root, config.FileName)));
+        }
+
         private static string GetPathFromEnvOrConfig(string envVarName, string configKey, ISettings settings)
         {
             var path = Environment.GetEnvironmentVariable(envVarName);

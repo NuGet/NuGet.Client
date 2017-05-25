@@ -254,74 +254,51 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             EnsureUIThread();
 
-            var sources = MSBuildStringUtility.Split(_project.RestoreSources);
+            var sources = MSBuildStringUtility.Split(_project.RestoreSources).AsEnumerable();
 
-            if (sources.Length == 0)
+            if (ShouldReadFromSettings(sources))
             {
-                return SettingsUtility.GetEnabledSources(settings).ToList();
+                sources = SettingsUtility.GetEnabledSources(settings).Select(e => e.Source);
             }
             else
             {
-                if (sources.Contains("clear", StringComparer.OrdinalIgnoreCase))
-                {
-                    if (sources.Length == 1)
-                    {
-                        return new List<PackageSource>();
-                    }
-                    else
-                    {
-                        if (shouldThrow)
-                        {
-                            throw new InvalidDataException($"In {nameof(_project.RestoreSources)} CLEAR cannot be used in conjunction with other values.");
-                        }
-                        else
-                        {
-                            return null;
-                        }
-                    }
-                }
-                else
-                {
-                    return sources.Select(e => new PackageSource(e)).ToList();
-                }
+                sources = HandleClear(sources);
             }
+
+            return sources.Select(e => new PackageSource(e)).ToList();
         }
 
         private IList<string> GetFallbackFolders(ISettings settings, bool shouldThrow = true)
         {
             EnsureUIThread();
 
-            var folders = MSBuildStringUtility.Split(_project.RestoreFallbackFolders);
+            var fallbackFolders = MSBuildStringUtility.Split(_project.RestoreFallbackFolders).AsEnumerable();
 
-            if (folders.Length == 0)
+            if (ShouldReadFromSettings(fallbackFolders))
             {
-                return SettingsUtility.GetFallbackPackageFolders(settings).ToList();
+                fallbackFolders = SettingsUtility.GetFallbackPackageFolders(settings);
             }
             else
             {
-                if (folders.Contains("clear", StringComparer.OrdinalIgnoreCase))
-                {
-                    if (folders.Length == 1)
-                    {
-                        return new List<string>();
-                    }
-                    else
-                    {
-                        if (shouldThrow)
-                        {
-                            throw new InvalidDataException($"In {nameof(_project.RestoreFallbackFolders)} CLEAR cannot be used in conjunction with other values.");
-                        }
-                        else
-                        {
-                            return null;
-                        }
-                    }
-                }
-                else
-                {
-                    return folders.ToList();
-                }
+                fallbackFolders = HandleClear(fallbackFolders);
             }
+
+            return fallbackFolders.ToList();
+        }
+
+        private static bool ShouldReadFromSettings(IEnumerable<string> values)
+        {
+            return !values.Any() && values.All(e => !StringComparer.OrdinalIgnoreCase.Equals("CLEAR", e));
+        }
+
+        private static IEnumerable<string> HandleClear(IEnumerable<string> values)
+        {
+            if (values.Any(e => StringComparer.OrdinalIgnoreCase.Equals("CLEAR", e)))
+            {
+                return Enumerable.Empty<string>();
+            }
+
+            return values;
         }
 
         private static string[] GetProjectReferences(PackageSpec packageSpec)
@@ -440,9 +417,15 @@ namespace NuGet.PackageManagement.VisualStudio
                     },
                     PackagesPath = GetPackagesPath(settings),
                     Sources = GetSources(settings),
-                    FallbackFolders = GetFallbackFolders(settings)
+                    FallbackFolders = GetFallbackFolders(settings),
+                    ConfigFilePaths = GetConfigFilePaths(settings)
                 }
             };
+        }
+
+        private IList<string> GetConfigFilePaths(ISettings settings)
+        {
+            return SettingsUtility.GetConfigFilePaths(settings).ToList();
         }
 
         private static ProjectRestoreReference ToProjectRestoreReference(LegacyCSProjProjectReference item)

@@ -2413,7 +2413,7 @@ namespace NuGet.PackageManagement
                 // Exclude upgrades, for now we take the simplest case.
                 !PackageSpecOperations.HasPackage(originalPackageSpec, firstAction.PackageIdentity.Id))
             {
-                updatedPackageSpec = originalPackageSpec.Clone(); // TODO NK - Does this packageSpec contain the packages path and global package folders?
+                updatedPackageSpec = originalPackageSpec.Clone();
 
                 PackageSpecOperations.AddOrUpdateDependency(
                     updatedPackageSpec,

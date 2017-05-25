@@ -156,6 +156,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public override Task<IReadOnlyList<PackageSpec>> GetPackageSpecsAsync(DependencyGraphCacheContext context)
         {
+            //TODO NK - From here on it should be used in restore
             var projects = new List<PackageSpec>();
 
             DependencyGraphSpec projectRestoreInfo;
@@ -181,7 +182,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 project.RestoreMetadata.PackagesPath = GetPackagesPath(settings, project);
                 project.RestoreMetadata.Sources = GetSources(settings, project);
                 project.RestoreMetadata.FallbackFolders = GetFallbackFolders(settings, project);
-
+                project.RestoreMetadata.ConfigFilePaths = GetConfigFilePaths(settings);
                 projects.Add(project);
             }
 
@@ -199,6 +200,11 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             return Task.FromResult<IReadOnlyList<PackageSpec>>(projects);
+        }
+
+        private IList<string> GetConfigFilePaths(ISettings settings)
+        {
+            return SettingsUtility.GetConfigFilePaths(settings).ToList();
         }
 
         private static string GetPackagesPath(ISettings settings, PackageSpec project)

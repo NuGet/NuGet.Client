@@ -47,7 +47,7 @@ namespace NuGet.PackageManagement
                 providerCache,
                 cacheContextModifier,
                 sources,
-                userPackagesPath: null, // TODO NK - Why is this null? What happens when it's null
+                userPackagesPath: null,
                 log: log,
                 forceRestore: forceRestore,
                 token: token);
@@ -62,7 +62,7 @@ namespace NuGet.PackageManagement
             RestoreCommandProvidersCache providerCache,
             Action<SourceCacheContext> cacheContextModifier,
             IEnumerable<SourceRepository> sources,
-            string userPackagesPath, // Is this ever not null?
+            string userPackagesPath,
             bool forceRestore,
             ILogger log,
             CancellationToken token)
@@ -201,7 +201,7 @@ namespace NuGet.PackageManagement
                 cacheContextModifier(sourceCacheContext);
 
                 // Settings passed here will be used to populate the restore requests.
-                RestoreArgs restoreContext = GetRestoreContext(context, providerCache, sourceCacheContext, sources, dgFile, userPackagesPath, false); // TODO NK - Do we want to force in preview? 
+                var restoreContext = GetRestoreContext(context, providerCache, sourceCacheContext, sources, dgFile, userPackagesPath, false); // TODO NK - Do we want to force in preview? 
 
                 var requests = await RestoreRunner.GetRequests(restoreContext);
                 var results = await RestoreRunner.RunWithoutCommit(requests, restoreContext);
@@ -226,11 +226,6 @@ namespace NuGet.PackageManagement
             var specs = await project.GetPackageSpecsAsync(context);
             var spec = specs.Single(e => e.RestoreMetadata.ProjectStyle == ProjectStyle.PackageReference
                 || e.RestoreMetadata.ProjectStyle == ProjectStyle.ProjectJson);
-            // TODO NK - Might be a better to move this to the root where we call project.GetPackageSpecsAsync
-            var globalPackagesFolder = SettingsUtility.GetGlobalPackagesFolder(context.Settings);
-            var fallbackFolders = SettingsUtility.GetFallbackPackageFolders(context.Settings);
-            spec.RestoreMetadata.FallbackFolders = spec.RestoreMetadata.FallbackFolders ?? fallbackFolders.AsList();
-            spec.RestoreMetadata.PackagesPath = spec.RestoreMetadata.PackagesPath ?? globalPackagesFolder;
 
             var result = await PreviewRestoreAsync(
                 solutionManager,
@@ -275,11 +270,6 @@ namespace NuGet.PackageManagement
                 && e.RestoreMetadata.ProjectStyle != ProjectStyle.DotnetCliTool)
                 .FirstOrDefault();
 
-            var globalPackagesFolder = SettingsUtility.GetGlobalPackagesFolder(context.Settings);
-            var fallbackFolders = SettingsUtility.GetFallbackPackageFolders(context.Settings);
-            projectSpec.RestoreMetadata.FallbackFolders = projectSpec.RestoreMetadata.FallbackFolders ?? fallbackFolders.AsList();
-            projectSpec.RestoreMetadata.PackagesPath = projectSpec.RestoreMetadata.PackagesPath ?? globalPackagesFolder;
-
             return projectSpec;
         }
 
@@ -293,10 +283,6 @@ namespace NuGet.PackageManagement
 
             foreach (var packageSpec in context.DeferredPackageSpecs)
             {
-                //TODO NK - Does this really make sense? Anything unforeseen here? 
-                packageSpec.RestoreMetadata.FallbackFolders = fallbackFolders.AsList();
-                packageSpec.RestoreMetadata.PackagesPath = globalPackagesFolder;
-
                 dgSpec.AddProject(packageSpec);
 
                 if (packageSpec.RestoreMetadata.ProjectStyle == ProjectStyle.PackageReference ||
@@ -316,9 +302,6 @@ namespace NuGet.PackageManagement
 
                 foreach (var packageSpec in packageSpecs)
                 {
-                    packageSpec.RestoreMetadata.FallbackFolders = fallbackFolders.AsList();
-                    packageSpec.RestoreMetadata.PackagesPath = globalPackagesFolder;
-
                     dgSpec.AddProject(packageSpec);
 
                     if (packageSpec.RestoreMetadata.ProjectStyle == ProjectStyle.PackageReference ||

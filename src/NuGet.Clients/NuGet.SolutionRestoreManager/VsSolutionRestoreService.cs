@@ -312,7 +312,7 @@ namespace NuGet.SolutionRestoreManager
         {
             if (input.Any(e => StringComparer.OrdinalIgnoreCase.Equals(Clear, e)))
             {
-                return new string[0];
+                return new string[] { Clear};
             }
 
             return input;
