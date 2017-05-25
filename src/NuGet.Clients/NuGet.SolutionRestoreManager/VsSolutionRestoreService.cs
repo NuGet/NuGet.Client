@@ -43,6 +43,11 @@ namespace NuGet.SolutionRestoreManager
         private const string RuntimeIdentifier = "RuntimeIdentifier";
         private const string RuntimeIdentifiers = "RuntimeIdentifiers";
         private const string RuntimeSupports = "RuntimeSupports";
+        private const string Clear = nameof(Clear);
+        private const string RestorePackagesPath = nameof(RestorePackagesPath);
+        private const string RestoreSources = nameof(RestoreSources);
+        private const string RestoreFallbackFolders = nameof(RestoreFallbackFolders);
+
 
         private static readonly Version Version20 = new Version(2, 0, 0, 0);
 
@@ -253,7 +258,14 @@ namespace NuGet.SolutionRestoreManager
                         .ToList(),
                     OriginalTargetFrameworks = originalTargetFrameworks,
                     CrossTargeting = crossTargeting,
-                    PackagesPath = GetRestoreProjectPath(projectRestoreInfo.TargetFrameworks)
+
+                    // Read project properties for settings. ISettings values will be applied later since
+                    // this value is put in the nomination cache and ISettings could change.
+                    PackagesPath = GetRestoreProjectPath(projectRestoreInfo.TargetFrameworks),
+                    FallbackFolders = GetRestoreFallbackFolders(projectRestoreInfo.TargetFrameworks).ToList(),
+                    Sources = GetRestoreSources(projectRestoreInfo.TargetFrameworks)
+                                    .Select(e => new PackageSource(e))
+                                    .ToList(),
                 },
                 RuntimeGraph = GetRuntimeGraph(projectRestoreInfo)
             };
@@ -279,7 +291,31 @@ namespace NuGet.SolutionRestoreManager
 
         private static string GetRestoreProjectPath(IVsTargetFrameworks tfms)
         {
-            return GetNonEvaluatedPropertyOrNull(tfms, "RestorePackagesPath", e => e);
+            return GetNonEvaluatedPropertyOrNull(tfms, RestorePackagesPath, e => e);
+        }
+
+        private static string[] GetRestoreSources(IVsTargetFrameworks tfms)
+        {
+            var sources = MSBuildStringUtility.Split(GetNonEvaluatedPropertyOrNull(tfms, RestoreSources, e => e));
+
+            return HandleClear(sources);
+        }
+
+        private static string[] GetRestoreFallbackFolders(IVsTargetFrameworks tfms)
+        {
+            var folders = MSBuildStringUtility.Split(GetNonEvaluatedPropertyOrNull(tfms, RestoreFallbackFolders, e => e));
+
+            return HandleClear(folders);
+        }
+
+        private static string[] HandleClear(string[] input)
+        {
+            if (input.Any(e => StringComparer.OrdinalIgnoreCase.Equals(Clear, e)))
+            {
+                return new string[0];
+            }
+
+            return input;
         }
 
         // Trying to fetch a property value from tfm property bags.
