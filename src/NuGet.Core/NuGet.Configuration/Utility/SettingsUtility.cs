@@ -235,6 +235,12 @@ namespace NuGet.Configuration
             return NuGetEnvironment.GetFolderPath(NuGetFolderPath.HttpCacheDirectory);
         }
 
+        public static IEnumerable<PackageSource> GetEnabledSources(ISettings settings)
+        {
+            var provider = new PackageSourceProvider(settings);
+            return provider.LoadPackageSources().Where(e => e.IsEnabled == true).ToList();
+        }
+
         /// <summary>
         /// The DefaultPushSource can be:
         /// - An absolute URL

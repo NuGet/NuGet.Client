@@ -590,14 +590,6 @@ namespace NuGet.ProjectManagement
                 };
         }
 
-        public Task<bool> IsRestoreRequired(
-            IEnumerable<VersionFolderPathResolver> pathResolvers,
-            ISet<PackageIdentity> packagesChecked,
-            DependencyGraphCacheContext context)
-        {
-            return Task.FromResult<bool>(false);
-        }
-
         public async Task<IReadOnlyList<PackageSpec>> GetPackageSpecsAsync(DependencyGraphCacheContext context)
         {
             if (context == null)

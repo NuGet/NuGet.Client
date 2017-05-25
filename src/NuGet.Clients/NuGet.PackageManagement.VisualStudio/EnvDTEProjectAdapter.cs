@@ -138,6 +138,27 @@ namespace NuGet.PackageManagement.VisualStudio
             }
         }
 
+        public string RestorePackagesPath
+        {
+            get
+            {
+                ThreadHelper.ThrowIfNotOnUIThread();
+
+                var restorePackagesPath = GetMSBuildProperty(AsIVsBuildPropertyStorage, "RestorePackagesPath");
+
+                if (string.IsNullOrEmpty(restorePackagesPath))
+                {
+                    throw new InvalidOperationException(string.Format(
+                        Strings.BaseIntermediateOutputPathNotFound,
+                        ProjectFullPath));
+                }
+
+                var projectDirectory = Path.GetDirectoryName(ProjectFullPath);
+
+                return Path.Combine(projectDirectory, restorePackagesPath);
+            }
+        }
+
         public string PackageTargetFallback
         {
             get

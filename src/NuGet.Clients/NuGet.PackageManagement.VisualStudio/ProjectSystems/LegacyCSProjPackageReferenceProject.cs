@@ -232,6 +232,27 @@ namespace NuGet.PackageManagement.VisualStudio
             return baseIntermediatePath;
         }
 
+        private string GetPackagesPath(bool shouldThrow = true)
+        {
+            EnsureUIThread();
+
+            var packagePath = _project.RestorePackagesPath;
+
+            if (string.IsNullOrEmpty(packagePath))
+            {
+                if (shouldThrow)
+                {
+                    throw new InvalidDataException(nameof(_project.RestorePackagesPath));
+                }
+                else
+                {
+                    return null;
+                }
+            }
+
+            return packagePath;
+        }
+
         private static string[] GetProjectReferences(PackageSpec packageSpec)
         {
             // There is only one target framework for legacy csproj projects
@@ -345,7 +366,9 @@ namespace NuGet.PackageManagement.VisualStudio
                         {
                             ProjectReferences = projectReferences?.ToList()
                         }
-                    }
+                    },
+                    PackagesPath = GetPackagesPath()
+                    //TODO NK - Add the rest analogous to packages path
                 }
             };
         }

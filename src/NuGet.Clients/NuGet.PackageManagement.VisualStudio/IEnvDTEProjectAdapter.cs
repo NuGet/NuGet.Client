@@ -46,6 +46,11 @@ namespace NuGet.PackageManagement.VisualStudio
         /// BaseIntermediateOutputPath DTE property (e.g. c:\projFoo\obj)
         /// </summary>
         string BaseIntermediateOutputPath { get; }
+        
+        /// <summary>
+        /// Restore Packages Path DTE property
+        /// </summary>
+        string RestorePackagesPath { get;  }
 
         /// <summary>
         /// PackageTargetFallback DTE property
