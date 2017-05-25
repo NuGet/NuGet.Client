@@ -16,7 +16,7 @@ namespace NuGet.Common.Test
 
             // Arrange
             var innerLogger = new Mock<ILogger>();
-            var collector = new CollectorLogger(innerLogger.Object, LogLevel.Debug, displayAllLogs: false);
+            var collector = new CollectorLogger(innerLogger.Object, LogLevel.Debug, hideWarningsAndErrors: true);
 
             // Act
             collector.Log(new RestoreLogMessage(LogLevel.Debug, "Debug"));
@@ -38,7 +38,7 @@ namespace NuGet.Common.Test
         {
             // Arrange
             var innerLogger = new Mock<ILogger>();
-            var collector = new CollectorLogger(innerLogger.Object, LogLevel.Debug, displayAllLogs: false);
+            var collector = new CollectorLogger(innerLogger.Object, LogLevel.Debug, hideWarningsAndErrors: true);
 
             // Act
             collector.Log(LogLevel.Debug, "Debug");
@@ -61,7 +61,7 @@ namespace NuGet.Common.Test
 
             // Arrange
             var innerLogger = new Mock<ILogger>();
-            var collector = new CollectorLogger(innerLogger.Object, LogLevel.Debug, displayAllLogs: false);
+            var collector = new CollectorLogger(innerLogger.Object, LogLevel.Debug, hideWarningsAndErrors: true);
 
             // Act
             collector.Log(new RestoreLogMessage(LogLevel.Debug, "Debug") { ShouldDisplay = true });
@@ -84,7 +84,7 @@ namespace NuGet.Common.Test
 
             // Arrange
             var innerLogger = new Mock<ILogger>();
-            var collector = new CollectorLogger(innerLogger.Object, LogLevel.Debug, displayAllLogs: false);
+            var collector = new CollectorLogger(innerLogger.Object, LogLevel.Debug, hideWarningsAndErrors: true);
 
             // Act
             collector.Log(new RestoreLogMessage(LogLevel.Debug, "Debug") { ShouldDisplay = true });
@@ -102,12 +102,12 @@ namespace NuGet.Common.Test
         }
 
         [Fact]
-        public void CollectorLogger_PassesLogMessagesToInnerLoggerWithNoShouldDisplayAndDisplayAllLogs()
+        public void CollectorLogger_PassesLogMessagesToInnerLoggerWithNoShouldDisplayAndHideWarningsAndErrors()
         {
 
             // Arrange
             var innerLogger = new Mock<ILogger>();
-            var collector = new CollectorLogger(innerLogger.Object, LogLevel.Debug, displayAllLogs: true);
+            var collector = new CollectorLogger(innerLogger.Object, LogLevel.Debug, hideWarningsAndErrors: false);
 
             // Act
             collector.Log(new RestoreLogMessage(LogLevel.Debug, "Debug") { ShouldDisplay = true });
@@ -125,12 +125,12 @@ namespace NuGet.Common.Test
         }
 
         [Fact]
-        public void CollectorLogger_PassesLogMessagesToInnerLoggerWithShouldDisplayAndDisplayAllLogs()
+        public void CollectorLogger_PassesLogMessagesToInnerLoggerWithShouldDisplayAndHideWarningsAndErrors()
         {
 
             // Arrange
             var innerLogger = new Mock<ILogger>();
-            var collector = new CollectorLogger(innerLogger.Object, LogLevel.Debug, displayAllLogs: true);
+            var collector = new CollectorLogger(innerLogger.Object, LogLevel.Debug, hideWarningsAndErrors: false);
 
             // Act
             collector.Log(new RestoreLogMessage(LogLevel.Debug, "Debug") { ShouldDisplay = true });
@@ -152,7 +152,7 @@ namespace NuGet.Common.Test
         {
             // Arrange
             var innerLogger = new Mock<ILogger>();
-            var collector = new CollectorLogger(innerLogger.Object, LogLevel.Verbose, displayAllLogs: false);
+            var collector = new CollectorLogger(innerLogger.Object, LogLevel.Verbose, hideWarningsAndErrors: true);
 
             // Act
             collector.Log(new RestoreLogMessage(LogLevel.Debug, "Debug") { ShouldDisplay = true });
@@ -174,7 +174,7 @@ namespace NuGet.Common.Test
         {
             // Arrange
             var innerLogger = new Mock<ILogger>();
-            var collector = new CollectorLogger(innerLogger.Object, LogLevel.Error, displayAllLogs: false);
+            var collector = new CollectorLogger(innerLogger.Object, LogLevel.Error, hideWarningsAndErrors: false);
 
             // Act
             collector.Log(new RestoreLogMessage(LogLevel.Debug, "Debug") { ShouldDisplay = true });

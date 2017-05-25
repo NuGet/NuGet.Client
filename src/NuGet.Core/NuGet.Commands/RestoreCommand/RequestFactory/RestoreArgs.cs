@@ -62,7 +62,7 @@ namespace NuGet.Commands
 
         public bool? ValidateRuntimeAssets { get; set; }
 
-        public bool DisplayAllLogs { get; set; } = true;
+        public bool HideWarningsAndErrors { get; set; } = false;
 
         // Cache directory -> ISettings
         private ConcurrentDictionary<string, ISettings> _settingsCache
@@ -216,7 +216,7 @@ namespace NuGet.Commands
                 request.ValidateRuntimeAssets = ValidateRuntimeAssets.Value;
             }
 
-            request.DisplayAllLogs = DisplayAllLogs;
+            request.HideWarningsAndErrors = HideWarningsAndErrors;
         }
     }
 }
