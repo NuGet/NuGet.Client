@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.Shell;
 using NuGet.Commands;
+using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
@@ -247,7 +248,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 return SettingsUtility.GetGlobalPackagesFolder(settings);
             }
 
-            return packagePath;
+            return UriUtility.GetAbsolutePathFromFile(_projectFullPath, packagePath);
         }
 
         private IList<PackageSource> GetSources(ISettings settings, bool shouldThrow = true)
@@ -265,7 +266,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 sources = HandleClear(sources);
             }
 
-            return sources.Select(e => new PackageSource(e)).ToList();
+            return sources.Select(e => new PackageSource(UriUtility.GetAbsolutePathFromFile(_projectFullPath, e))).ToList();
         }
 
         private IList<string> GetFallbackFolders(ISettings settings, bool shouldThrow = true)
@@ -283,7 +284,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 fallbackFolders = HandleClear(fallbackFolders);
             }
 
-            return fallbackFolders.ToList();
+            return fallbackFolders.Select(e => UriUtility.GetAbsolutePathFromFile(_projectFullPath, e)).ToList();
         }
 
         private static bool ShouldReadFromSettings(IEnumerable<string> values)

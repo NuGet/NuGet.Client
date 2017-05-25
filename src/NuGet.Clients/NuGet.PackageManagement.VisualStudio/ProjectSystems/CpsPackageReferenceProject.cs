@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Microsoft.VisualStudio.ProjectSystem;
 using Microsoft.VisualStudio.ProjectSystem.References;
 using NuGet.Commands;
+using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
@@ -215,7 +216,10 @@ namespace NuGet.PackageManagement.VisualStudio
                 return SettingsUtility.GetGlobalPackagesFolder(settings);
             }
 
-            return project.RestoreMetadata.PackagesPath;
+            // Resolve relative paths
+            return UriUtility.GetAbsolutePathFromFile(
+                sourceFile: project.RestoreMetadata.ProjectPath,
+                path: project.RestoreMetadata.PackagesPath);
         }
 
         private static List<PackageSource> GetSources(ISettings settings, PackageSpec project)
@@ -231,7 +235,12 @@ namespace NuGet.PackageManagement.VisualStudio
                 sources = HandleClear(sources);
             }
 
-            return sources.Select(e => new PackageSource(e)).ToList();
+            // Resolve relative paths
+            return sources.Select(e => new PackageSource(
+                UriUtility.GetAbsolutePathFromFile(
+                    sourceFile: project.RestoreMetadata.ProjectPath,
+                    path: e)))
+                .ToList();
         }
 
         private static List<string> GetFallbackFolders(ISettings settings, PackageSpec project)
@@ -247,7 +256,12 @@ namespace NuGet.PackageManagement.VisualStudio
                 fallbackFolders = HandleClear(fallbackFolders);
             }
 
-            return fallbackFolders.ToList();
+            // Resolve relative paths
+            return fallbackFolders.Select(e => 
+                UriUtility.GetAbsolutePathFromFile(
+                    sourceFile: project.RestoreMetadata.ProjectPath,
+                    path: e))
+                .ToList();
         }
 
         private static bool ShouldReadFromSettings(IEnumerable<string> values)

@@ -2,14 +2,13 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using Newtonsoft.Json;
+using NuGet.Common;
 using NuGet.Configuration;
 
 namespace NuGet.Build.Tasks
@@ -135,7 +134,7 @@ namespace NuGet.Build.Tasks
                 log.LogDebug($"(in) RestoreSolutionDirectory '{RestoreSolutionDirectory}'");
             }
 
-            var settings = ReadSettings(RestoreSolutionDirectory, Path.GetDirectoryName(ProjectUniqueName) , RestoreConfigFile);
+            var settings = ReadSettings(RestoreSolutionDirectory, Path.GetDirectoryName(ProjectUniqueName), RestoreConfigFile);
 
             if (string.IsNullOrEmpty(RestorePackagesPath))
             {
@@ -147,7 +146,8 @@ namespace NuGet.Build.Tasks
             }
             else
             {
-                OutputPackagesPath = RestorePackagesPath;
+                // Relative -> Absolute path
+                OutputPackagesPath = UriUtility.GetAbsolutePathFromFile(ProjectUniqueName, RestorePackagesPath);
             }
 
             if (RestoreSources == null)
@@ -166,10 +166,11 @@ namespace NuGet.Build.Tasks
                 {
                     throw new InvalidOperationException($"{CLEAR} cannot be used in conjunction with other values.");
                 }
-            }   
+            }
             else
             {
-                OutputSources = RestoreSources;
+                // Relative -> Absolute paths
+                OutputSources = RestoreSources.Select(e => UriUtility.GetAbsolutePathFromFile(ProjectUniqueName, e)).ToArray();
             }
 
             if (RestoreFallbackFolders == null)
@@ -190,7 +191,8 @@ namespace NuGet.Build.Tasks
             }
             else
             {
-                OutputFallbackFolders = RestoreFallbackFolders;
+                // Relative -> Absolute paths
+                OutputFallbackFolders = RestoreFallbackFolders.Select(e => UriUtility.GetAbsolutePathFromFile(ProjectUniqueName, e)).ToArray();
             }
 
             var configFilePaths = new List<string>();
