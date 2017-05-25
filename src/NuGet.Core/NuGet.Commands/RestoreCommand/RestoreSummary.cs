@@ -76,7 +76,7 @@ namespace NuGet.Commands
 
         public static void Log(ILogger logger, IEnumerable<RestoreSummary> restoreSummaries, bool logErrors = false)
         {
-            if (!restoreSummaries.Any())
+            if (restoreSummaries.Count() == 0)
             {
                 return;
             }
@@ -87,7 +87,7 @@ namespace NuGet.Commands
                 // Display the errors summary
                 foreach (var restoreSummary in restoreSummaries)
                 {
-                    if (!restoreSummary.Errors.Any())
+                    if (restoreSummary.Errors.Count == 0)
                     {
                         continue;
                     }
