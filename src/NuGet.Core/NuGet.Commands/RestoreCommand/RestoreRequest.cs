@@ -139,6 +139,6 @@ namespace NuGet.Commands
         /// <summary>
         /// Display Errors and warnings as they occur
         /// </summary>
-        public bool HideErrorsAndWarnings { get; set; } = false;
+        public bool HideWarningsAndErrors { get; set; } = false;
     }
 }

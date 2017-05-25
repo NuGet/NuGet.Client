@@ -12,7 +12,7 @@ namespace NuGet.Common
     {
         private readonly ILogger _innerLogger;
         private readonly ConcurrentQueue<IRestoreLogMessage> _errors;
-        private readonly bool _hideErrorsAndWarnings;
+        private readonly bool _hideWarningsAndErrors;
 
         public IEnumerable<IRestoreLogMessage> Errors => _errors.ToArray();
 
@@ -22,13 +22,13 @@ namespace NuGet.Common
         /// </summary>
         /// <param name="innerLogger">The inner logger used to delegate the logging.</param>
         /// <param name="verbosity">Minimum verbosity below which no logs will be passed to the inner logger.</param>
-        /// <param name="hideErrorsAndWarnings">If this is true, then errors and warnings will not be passed to inner logger.</param>
-        public CollectorLogger(ILogger innerLogger, LogLevel verbosity, bool hideErrorsAndWarnings)
+        /// <param name="hideWarningsAndErrors">If this is true, then errors and warnings will not be passed to inner logger.</param>
+        public CollectorLogger(ILogger innerLogger, LogLevel verbosity, bool hideWarningsAndErrors)
             : base(verbosity)
         {
             _innerLogger = innerLogger;
             _errors = new ConcurrentQueue<IRestoreLogMessage>();
-            _hideErrorsAndWarnings = hideErrorsAndWarnings;
+            _hideWarningsAndErrors = hideWarningsAndErrors;
         }
 
         /// <summary>
@@ -36,9 +36,9 @@ namespace NuGet.Common
         /// delegating all log messages to the inner logger.
         /// </summary>
         /// <param name="innerLogger">The inner logger used to delegate the logging.</param>
-        /// <param name="hideErrorsAndWarnings">If this is false, then errors and warnings will not be passed to inner logger.</param>
-        public CollectorLogger(ILogger innerLogger, bool hideErrorsAndWarnings)
-            : this(innerLogger, LogLevel.Debug, hideErrorsAndWarnings)
+        /// <param name="hideWarningsAndErrors">If this is false, then errors and warnings will not be passed to inner logger.</param>
+        public CollectorLogger(ILogger innerLogger, bool hideWarningsAndErrors)
+            : this(innerLogger, LogLevel.Debug, hideWarningsAndErrors)
         {
         }
 
@@ -49,7 +49,7 @@ namespace NuGet.Common
         /// <param name="innerLogger">The inner logger used to delegate the logging.</param>
         /// <param name="verbosity">Minimum verbosity below which no logs will be passed to the inner logger.</param>
         public CollectorLogger(ILogger innerLogger, LogLevel verbosity)
-            : this(innerLogger, verbosity, hideErrorsAndWarnings: false)
+            : this(innerLogger, verbosity, hideWarningsAndErrors: false)
         {
         }
 
@@ -59,7 +59,7 @@ namespace NuGet.Common
         /// </summary>
         /// <param name="innerLogger">The inner logger used to delegate the logging.</param>
         public CollectorLogger(ILogger innerLogger)
-            : this(innerLogger, LogLevel.Debug, hideErrorsAndWarnings: false)
+            : this(innerLogger, LogLevel.Debug, hideWarningsAndErrors: false)
         {
         }
 
@@ -112,7 +112,7 @@ namespace NuGet.Common
         {
             if (message.Level == LogLevel.Error || message.Level == LogLevel.Warning)
             {
-                return ((!_hideErrorsAndWarnings || message.ShouldDisplay) && message.Level >= VerbosityLevel);
+                return ((!_hideWarningsAndErrors || message.ShouldDisplay) && message.Level >= VerbosityLevel);
             }
             else
             {
