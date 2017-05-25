@@ -167,7 +167,7 @@ namespace NuGet.CommandLine
             }
 
             // Summaries
-            RestoreSummary.Log(Console, restoreSummaries);
+            RestoreSummary.Log(Console, restoreSummaries, logErrors: true);
 
             if (restoreSummaries.Any(x => !x.Success))
             {

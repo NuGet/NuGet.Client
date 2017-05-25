@@ -50,11 +50,6 @@ namespace NuGet.Common
             Log(LogLevel.Error, data);
         }
 
-        public void LogErrorSummary(string data)
-        {
-            Log(LogLevel.Error, data);
-        }
-
         public void LogInformation(string data)
         {
             Log(LogLevel.Information, data);

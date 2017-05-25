@@ -65,11 +65,6 @@ namespace NuGet.CommandLine.XPlat
             }
         }
 
-        public override void LogErrorSummary(string data)
-        {
-            Console.Error.WriteLine(data);
-        }
-
         protected virtual void LogInternal(LogLevel logLevel, string message)
         {
             if (logLevel < _logLevel)

@@ -25,8 +25,6 @@ namespace NuGet.Common
 
         void LogInformationSummary(string data);
         
-        void LogErrorSummary(string data);
-
         void Log(LogLevel level, string data);
 
         Task LogAsync(LogLevel level, string data);

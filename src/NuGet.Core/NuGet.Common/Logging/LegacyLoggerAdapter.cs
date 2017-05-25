@@ -85,6 +85,5 @@ namespace NuGet.Common
 
         public abstract void LogInformationSummary(string data);
 
-        public abstract void LogErrorSummary(string data);
     }
 }
