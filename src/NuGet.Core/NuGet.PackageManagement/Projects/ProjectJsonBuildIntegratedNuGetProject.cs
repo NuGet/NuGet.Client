@@ -256,12 +256,12 @@ namespace NuGet.ProjectManagement.Projects
                     }
                 }
 
+                // Write restore settings to the package spec.
+                // For project.json these properties may not come from the project file.
                 var settings = context?.Settings ?? NullSettings.Instance;
-                //TODO NK populate the properties to the spec
-                //pack path
-                //fallback
                 packageSpec.RestoreMetadata.PackagesPath = SettingsUtility.GetGlobalPackagesFolder(settings);
                 packageSpec.RestoreMetadata.Sources = SettingsUtility.GetEnabledSources(settings).AsList();
+                packageSpec.RestoreMetadata.FallbackFolders = SettingsUtility.GetFallbackPackageFolders(settings).AsList();
 
                 context?.PackageSpecCache.Add(MSBuildProjectPath, packageSpec);
             }
