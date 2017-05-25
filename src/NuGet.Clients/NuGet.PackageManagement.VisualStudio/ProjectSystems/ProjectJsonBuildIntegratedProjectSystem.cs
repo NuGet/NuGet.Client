@@ -35,6 +35,13 @@ namespace NuGet.PackageManagement.VisualStudio
             // set project id
             var projectId = VsHierarchyUtility.GetProjectId(envDTEProject);
             InternalMetadata.Add(NuGetProjectMetadataKeys.ProjectId, projectId);
+            InternalMetadata.Add(NuGetProjectMetadataKeys.UniqueName, uniqueName);
+        }
+
+        protected override async Task UpdateInternalTargetFrameworkAsync()
+        {
+            // VsHierarchyUtility.ToVsHierarchy can only be run on UI Thread.
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             // Override the JSON TFM value from the csproj for UAP framework
             if (InternalMetadata.TryGetValue(NuGetProjectMetadataKeys.TargetFramework, out object targetFramework))
@@ -42,18 +49,23 @@ namespace NuGet.PackageManagement.VisualStudio
                 var jsonTargetFramework = targetFramework as NuGetFramework;
                 if (IsUAPFramework(jsonTargetFramework))
                 {
-                    var platfromMinVersion = VsHierarchyUtility.GetMSBuildProperty(VsHierarchyUtility.ToVsHierarchy(envDTEProject), EnvDTEProjectInfoUtility.TargetPlatformMinVersion);
+                    var platformMinVersionString = VsHierarchyUtility.GetMSBuildProperty(
+                        VsHierarchyUtility.ToVsHierarchy(_envDTEProject),
+                        EnvDTEProjectInfoUtility.TargetPlatformMinVersion);
 
-                    if (!string.IsNullOrEmpty(platfromMinVersion))
+                    var platformMinVersion = !string.IsNullOrEmpty(platformMinVersionString)
+                        ? new Version(platformMinVersionString)
+                        : null;
+
+                    if (platformMinVersion != null && jsonTargetFramework.Version != platformMinVersion)
                     {
-                        // Found the TPMinV in csproj, store this as a new target framework to be replaced in project.json
-                        var newTargetFramework = new NuGetFramework(jsonTargetFramework.Framework, new Version(platfromMinVersion));
+                        // Found the TPMinV in csproj and it is different from project json's framework version, 
+                        // store this as a new target framework to be replaced in project.json
+                        var newTargetFramework = new NuGetFramework(jsonTargetFramework.Framework, platformMinVersion);
                         InternalMetadata[NuGetProjectMetadataKeys.TargetFramework] = newTargetFramework;
                     }
                 }
             }
-
-            InternalMetadata.Add(NuGetProjectMetadataKeys.UniqueName, uniqueName);
         }
 
         private IScriptExecutor ScriptExecutor
@@ -89,6 +101,7 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             var resolvedProjects = context.DeferredPackageSpecs.Select(project => project.Name);
+
             return VSProjectRestoreReferenceUtility.GetDirectProjectReferences(_envDTEProject, resolvedProjects, context.Logger);
         }
     }

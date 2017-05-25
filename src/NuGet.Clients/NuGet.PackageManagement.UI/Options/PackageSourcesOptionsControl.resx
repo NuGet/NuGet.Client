@@ -431,6 +431,9 @@
   <data name="BrowseButton.Padding" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>2, 0, 2, 0</value>
   </data>
+  <data name="BrowseButton.AccessibleName" xml:space="preserve">
+    <value>Browse</value>
+  </data>
   <data name="BrowseButton.Size" type="System.Drawing.Size, System.Drawing">
     <value>30, 23</value>
   </data>

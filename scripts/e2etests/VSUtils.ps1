@@ -11,12 +11,27 @@
     {
         $ProgramFilesPath = ${env:ProgramFiles(x86)}
     }
-    $VS15RelativePath = "Microsoft Visual Studio\2017\Enterprise"
-    if(($VSVersion -eq "15.0") -and (Test-Path (Join-Path $ProgramFilesPath $VS15RelativePath))){
-        $VSFolderPath = Join-Path $ProgramFilesPath $VS15RelativePath
-    } else {
+
+    $VS15PreviewRelativePath = "Microsoft Visual Studio\Preview\Enterprise"
+    $VS15StableRelativePath = "Microsoft Visual Studio\2017\Enterprise"
+
+    if ($VSVersion -eq "15.0")
+    {
+        # Give preference to preview installation of VS2017
+        if (Test-Path (Join-Path $ProgramFilesPath $VS15PreviewRelativePath))
+        {
+            $VSFolderPath = Join-Path $ProgramFilesPath $VS15PreviewRelativePath
+        }
+        elseif (Test-Path (Join-Path $ProgramFilesPath $VS15StableRelativePath)) 
+        {
+            $VSFolderPath = Join-Path $ProgramFilesPath $VS15StableRelativePath
+        }
+    } 
+    else 
+    {
         $VSFolderPath = Join-Path $ProgramFilesPath ("Microsoft Visual Studio " + $VSVersion)
     }
+    
     return $VSFolderPath
 }
 

@@ -666,4 +666,7 @@ Please see https://aka.ms/troubleshoot_nuget_cache for more help.</value>
   <data name="ShowWarning_UniqueSource" xml:space="preserve">
     <value>The source specified has already been added to the list of available package sources. Please provide a unique source.</value>
   </data>
+  <data name="ColumnHeader_Selected" xml:space="preserve">
+    <value>Selected</value>
+  </data>
 </root>
