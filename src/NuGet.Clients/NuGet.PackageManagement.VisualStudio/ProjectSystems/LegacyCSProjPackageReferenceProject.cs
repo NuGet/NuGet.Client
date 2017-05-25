@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.Shell;
 using NuGet.Commands;
+using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.Packaging;
@@ -240,17 +241,48 @@ namespace NuGet.PackageManagement.VisualStudio
 
             if (string.IsNullOrEmpty(packagePath))
             {
-                if (shouldThrow)
-                {
-                    throw new InvalidDataException(nameof(_project.RestorePackagesPath));
-                }
-                else
-                {
-                    return null;
-                }
+                return null;
             }
 
             return packagePath;
+        }
+
+        private IList<PackageSource> GetSources(bool shouldThrow = true)
+        {
+            EnsureUIThread();
+
+            var sourcesVal = _project.RestoreSources;
+
+            if (string.IsNullOrEmpty(sourcesVal))
+            {
+                return null;
+            }
+            else
+            {
+                var sources = sourcesVal.Split(';');
+                if (sources.Contains("clear", StringComparer.OrdinalIgnoreCase))
+                {
+                    if (sources.Length == 1)
+                    {
+                        return new List<PackageSource>();
+                    }
+                    else
+                    {
+                        if (shouldThrow)
+                        {
+                            throw new InvalidDataException($"In {nameof(_project.RestoreSources)} CLEAR cannot be used in conjunction with other values.");
+                        }
+                        else
+                        {
+                            return null;
+                        }
+                    }
+                }
+                else
+                {
+                    return sources.Select(e => new PackageSource(e)).ToList();
+                }
+            }
         }
 
         private static string[] GetProjectReferences(PackageSpec packageSpec)
@@ -305,7 +337,7 @@ namespace NuGet.PackageManagement.VisualStudio
         /// <summary>
         /// Emulates a JSON deserialization from project.json to PackageSpec in a post-project.json world
         /// </summary>
-        private PackageSpec GetPackageSpec()
+        private PackageSpec GetPackageSpec(
         {
             EnsureUIThread();
 
@@ -367,8 +399,8 @@ namespace NuGet.PackageManagement.VisualStudio
                             ProjectReferences = projectReferences?.ToList()
                         }
                     },
-                    PackagesPath = GetPackagesPath()
-                    //TODO NK - Add the rest analogous to packages path
+                    PackagesPath = GetPackagesPath(),
+                    Sources = GetSources()
                 }
             };
         }

@@ -148,14 +148,27 @@ namespace NuGet.PackageManagement.VisualStudio
 
                 if (string.IsNullOrEmpty(restorePackagesPath))
                 {
-                    throw new InvalidOperationException(string.Format(
-                        Strings.BaseIntermediateOutputPathNotFound,
-                        ProjectFullPath));
+                    return null;
                 }
 
-                var projectDirectory = Path.GetDirectoryName(ProjectFullPath);
+                return restorePackagesPath;
+            }
+        }
 
-                return Path.Combine(projectDirectory, restorePackagesPath);
+        public string RestoreSources
+        {
+            get
+            {
+                ThreadHelper.ThrowIfNotOnUIThread();
+
+                var restoreSources = GetMSBuildProperty(AsIVsBuildPropertyStorage, "RestoreSources");
+
+                if (string.IsNullOrEmpty(restoreSources))
+                {
+                    return null;
+                }
+
+                return restoreSources;
             }
         }
 
