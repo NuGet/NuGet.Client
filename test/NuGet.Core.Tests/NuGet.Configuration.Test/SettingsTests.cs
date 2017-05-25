@@ -2226,7 +2226,7 @@ namespace NuGet.Configuration.Test
             var expectedPath = Path.Combine(userProfile, ".nuget", SettingsUtility.DefaultGlobalPackagesFolderPath);
 
             // Act
-            var globalPackagesFolderPath = SettingsUtility.GetGlobalPackagesFolder(new NullSettings());
+            var globalPackagesFolderPath = SettingsUtility.GetGlobalPackagesFolder(NullSettings.Instance);
 
             // Assert
             Assert.Equal(expectedPath, globalPackagesFolderPath);
