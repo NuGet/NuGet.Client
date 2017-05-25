@@ -276,7 +276,7 @@ namespace NuGet.Configuration
 
         public static IEnumerable<string> GetConfigFilePaths(ISettings settings)
         {
-            if (!NullSettings.Instance.Equals(settings))
+            if (!(settings is NullSettings))
             {
                 return settings.Priority.Select(config => Path.GetFullPath(Path.Combine(config.Root, config.FileName)));
             }
