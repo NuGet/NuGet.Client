@@ -387,7 +387,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             // In legacy CSProj, we only have one target framework per project
             var tfis = new TargetFrameworkInformation[] { projectTfi };
-            //TODO NK - Here we need to add the packages target fallback/sources/config files etc etc
+
             return new PackageSpec(tfis)
             {
                 Name = _projectName ?? _projectUniqueName,

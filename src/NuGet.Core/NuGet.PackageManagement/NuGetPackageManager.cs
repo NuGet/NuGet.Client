@@ -2659,7 +2659,6 @@ namespace NuGet.PackageManagement
                 {
                     // Restore and commit the lock file to disk regardless of the result
                     // This will restore all parents in a single restore 
-                    // TODO NK - What? :) The restore file is always committed to disk
                     await DependencyGraphRestoreUtility.RestoreAsync(
                         dgSpecForParents,
                         referenceContext,

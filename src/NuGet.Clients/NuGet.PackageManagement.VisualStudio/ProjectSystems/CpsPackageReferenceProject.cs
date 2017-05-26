@@ -136,7 +136,6 @@ namespace NuGet.PackageManagement.VisualStudio
         private PackageSpec GetPackageSpec()
         {
             DependencyGraphSpec projectRestoreInfo;
-            //TODO NK - We need the Project System team to plumb through extra details
             if (_projectSystemCache.TryGetProjectRestoreInfo(_projectFullPath, out projectRestoreInfo))
             {
                 return projectRestoreInfo.GetProjectSpec(_projectFullPath);
@@ -157,7 +156,6 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public override Task<IReadOnlyList<PackageSpec>> GetPackageSpecsAsync(DependencyGraphCacheContext context)
         {
-            //TODO NK - From here on it should be used in restore
             var projects = new List<PackageSpec>();
 
             DependencyGraphSpec projectRestoreInfo;
