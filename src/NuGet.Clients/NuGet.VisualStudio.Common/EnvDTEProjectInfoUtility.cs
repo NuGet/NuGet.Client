@@ -221,7 +221,7 @@ namespace NuGet.VisualStudio
             var projectDirectory = GetFullPath(envDTEProject);
 
             var packagesConfigFullPath = Path.Combine(
-                projectDirectory ?? String.Empty,
+                projectDirectory ?? string.Empty,
                 ProjectManagement.Constants.PackageReferenceFile);
 
             return packagesConfigFullPath;
@@ -242,18 +242,6 @@ namespace NuGet.VisualStudio
                 {
                     name = name.Substring(0, name.Length - suffix.Length);
                 }
-            }
-            return name;
-        }
-
-        public static string GetDisplayName(EnvDTE.Project envDTEProject)
-        {
-            ThreadHelper.ThrowIfNotOnUIThread();
-
-            string name = GetCustomUniqueName(envDTEProject);
-            if (IsWebSite(envDTEProject))
-            {
-                name = PathHelper.SmartTruncate(name, 40);
             }
             return name;
         }
@@ -284,11 +272,6 @@ namespace NuGet.VisualStudio
         /// <remarks>
         /// This is different from the DTE Project.UniqueName property, which is the absolute path to the project file.
         /// </remarks>
-        public static string GetCustomUniqueName(EnvDTE.Project envDTEProject)
-        {
-            return NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate { return await GetCustomUniqueNameAsync(envDTEProject); });
-        }
-
         public static async Task<string> GetCustomUniqueNameAsync(EnvDTE.Project envDTEProject)
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();

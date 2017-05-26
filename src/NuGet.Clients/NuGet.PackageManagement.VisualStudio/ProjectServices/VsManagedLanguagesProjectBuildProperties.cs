@@ -6,20 +6,19 @@ using Microsoft;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.ProjectManagement;
-using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
     /// <summary>
     /// Contains the information specific to a Visual Basic or C# project.
     /// </summary>
-    internal class VsLangProjectBuildProperties
+    internal class VsManagedLanguagesProjectBuildProperties
         : IProjectBuildProperties
     {
         private readonly IVsBuildPropertyStorage _propertyStorage;
         private readonly IVsProjectThreadingService _threadingService;
 
-        public VsLangProjectBuildProperties(
+        public VsManagedLanguagesProjectBuildProperties(
             IVsBuildPropertyStorage propertyStorage,
             IVsProjectThreadingService threadingService)
         {
@@ -32,9 +31,14 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public string GetPropertyValue(string propertyName)
         {
+            return _threadingService.ExecuteSynchronously(() => GetPropertyValueAsync(propertyName));
+        }
+
+        public async Task<string> GetPropertyValueAsync(string propertyName)
+        {
             Assumes.NotNullOrEmpty(propertyName);
 
-            _threadingService.ThrowIfNotOnUIThread();
+            await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             string output = null;
             var result = _propertyStorage.GetPropertyValue(
@@ -49,11 +53,6 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             return output;
-        }
-
-        public Task<string> GetPropertyValueAsync(string propertyName)
-        {
-            return Task.FromResult(GetPropertyValue(propertyName));
         }
     }
 }

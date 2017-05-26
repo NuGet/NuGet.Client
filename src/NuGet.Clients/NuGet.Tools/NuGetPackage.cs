@@ -396,7 +396,8 @@ namespace NuGetVSExtension
                 throw new InvalidOperationException(Resources.SolutionIsNotSaved);
             }
 
-            var nugetProject = SolutionManager.GetNuGetProject(EnvDTEProjectInfoUtility.GetCustomUniqueName(project));
+            var customUniqueName = await EnvDTEProjectInfoUtility.GetCustomUniqueNameAsync(project);
+            var nugetProject = SolutionManager.GetNuGetProject(customUniqueName);
 
             // If we failed to generate a cache entry in the solution manager something went wrong.
             if (nugetProject == null)

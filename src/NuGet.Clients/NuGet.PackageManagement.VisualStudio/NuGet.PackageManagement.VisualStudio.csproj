@@ -214,7 +214,7 @@
     <Compile Include="Projects\IVsProjectAdapterProvider.cs" />
     <Compile Include="Services\IVsProjectThreadingService.cs" />
     <Compile Include="ProjectServices\VsCoreProjectBuildProperties.cs" />
-    <Compile Include="ProjectServices\VsLangProjectBuildProperties.cs" />
+    <Compile Include="ProjectServices\VsManagedLanguagesProjectBuildProperties.cs" />
     <Compile Include="ProjectServices\VsManagedLanguagesProjectSystemServices.cs" Condition="'$(VisualStudioVersion)' == '15.0'" />
     <Compile Include="Projects\VsProjectAdapter.cs" />
     <Compile Include="Projects\VsProjectAdapterProvider.cs" />

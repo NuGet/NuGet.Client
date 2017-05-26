@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -69,8 +69,7 @@ namespace NuGet.PackageManagement.VisualStudio
                     return null;
                 }
 
-                NuGetProject defaultNuGetProject;
-                _projectSystemCache.TryGetNuGetProject(DefaultNuGetProjectName, out defaultNuGetProject);
+                _projectSystemCache.TryGetNuGetProject(DefaultNuGetProjectName, out var defaultNuGetProject);
                 return defaultNuGetProject;
             }
         }
@@ -496,39 +495,45 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private void OnEnvDTEProjectRenamed(EnvDTE.Project envDTEProject, string oldName)
         {
-            // This is a solution event. Should be on the UI thread
-            ThreadHelper.ThrowIfNotOnUIThread();
-
-            if (!string.IsNullOrEmpty(oldName) && IsSolutionOpen && _solutionOpenedRaised)
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
             {
-                NuGetUIThreadHelper.JoinableTaskFactory.Run(EnsureNuGetAndVsProjectAdapterCacheAsync);
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                if (EnvDTEProjectUtility.IsSupported(envDTEProject))
+                if (!string.IsNullOrEmpty(oldName) && IsSolutionOpen && _solutionOpenedRaised)
                 {
-                    RemoveVsProjectAdapterFromCache(oldName);
-                    AddVsProjectAdapterToCache(_vsProjectAdapterProvider.CreateAdapterForFullyLoadedProject(envDTEProject));
+                    await EnsureNuGetAndVsProjectAdapterCacheAsync();
 
-                    _projectSystemCache.TryGetNuGetProject(envDTEProject.Name, out var nuGetProject);
-
-                    NuGetProjectRenamed?.Invoke(this, new NuGetProjectEventArgs(nuGetProject));
-
-                    // VSSolutionManager susbscribes to this Event, in order to update the caption on the DocWindow Tab.
-                    // This needs to fire after NugetProjectRenamed so that PackageManagerModel has been updated with
-                    // the right project context.
-                    AfterNuGetProjectRenamed?.Invoke(this, new NuGetProjectEventArgs(nuGetProject));
-
-                }
-                else if (EnvDTEProjectUtility.IsSolutionFolder(envDTEProject))
-                {
-                    // In the case where a solution directory was changed, project FullNames are unchanged.
-                    // We only need to invalidate the projects under the current tree so as to sync the CustomUniqueNames.
-                    foreach (var item in EnvDTEProjectUtility.GetSupportedChildProjects(envDTEProject))
+                    if (EnvDTEProjectUtility.IsSupported(envDTEProject))
                     {
-                        RemoveVsProjectAdapterFromCache(item.FullName);
-                        AddVsProjectAdapterToCache(_vsProjectAdapterProvider.CreateAdapterForFullyLoadedProject(item));
+                        RemoveVsProjectAdapterFromCache(oldName);
+
+                        var vsProjectAdapter = await _vsProjectAdapterProvider.CreateAdapterForFullyLoadedProjectAsync(envDTEProject);
+                        AddVsProjectAdapterToCache(vsProjectAdapter);
+
+                        _projectSystemCache.TryGetNuGetProject(envDTEProject.Name, out var nuGetProject);
+
+                        NuGetProjectRenamed?.Invoke(this, new NuGetProjectEventArgs(nuGetProject));
+
+                        // VSSolutionManager susbscribes to this Event, in order to update the caption on the DocWindow Tab.
+                        // This needs to fire after NugetProjectRenamed so that PackageManagerModel has been updated with
+                        // the right project context.
+                        AfterNuGetProjectRenamed?.Invoke(this, new NuGetProjectEventArgs(nuGetProject));
+
+                    }
+                    else if (EnvDTEProjectUtility.IsSolutionFolder(envDTEProject))
+                    {
+                        // In the case where a solution directory was changed, project FullNames are unchanged.
+                        // We only need to invalidate the projects under the current tree so as to sync the CustomUniqueNames.
+                        foreach (var item in EnvDTEProjectUtility.GetSupportedChildProjects(envDTEProject))
+                        {
+                            RemoveVsProjectAdapterFromCache(item.FullName);
+
+                            var vsProjectAdapter = await _vsProjectAdapterProvider.CreateAdapterForFullyLoadedProjectAsync(item);
+                            AddVsProjectAdapterToCache(vsProjectAdapter);
+                        }
                     }
                 }
-            }
+            });
         }
 
         private void OnEnvDTEProjectRemoved(EnvDTE.Project envDTEProject)
@@ -540,32 +545,29 @@ namespace NuGet.PackageManagement.VisualStudio
             NuGetProject nuGetProject;
             _projectSystemCache.TryGetNuGetProject(envDTEProject.Name, out nuGetProject);
 
-            if (NuGetProjectRemoved != null)
-            {
-                NuGetProjectRemoved(this, new NuGetProjectEventArgs(nuGetProject));
-            }
+            NuGetProjectRemoved?.Invoke(this, new NuGetProjectEventArgs(nuGetProject));
         }
 
         private void OnEnvDTEProjectAdded(EnvDTE.Project envDTEProject)
         {
-            // This is a solution event. Should be on the UI thread
-            ThreadHelper.ThrowIfNotOnUIThread();
-
-            if (IsSolutionOpen
-                && EnvDTEProjectUtility.IsSupported(envDTEProject)
-                && !EnvDTEProjectUtility.IsParentProjectExplicitlyUnsupported(envDTEProject)
-                && _solutionOpenedRaised)
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
             {
-                NuGetUIThreadHelper.JoinableTaskFactory.Run(EnsureNuGetAndVsProjectAdapterCacheAsync);
-                AddVsProjectAdapterToCache(_vsProjectAdapterProvider.CreateAdapterForFullyLoadedProject(envDTEProject));
-                NuGetProject nuGetProject;
-                _projectSystemCache.TryGetNuGetProject(envDTEProject.Name, out nuGetProject);
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                if (NuGetProjectAdded != null)
+                if (IsSolutionOpen
+                    && EnvDTEProjectUtility.IsSupported(envDTEProject)
+                    && !EnvDTEProjectUtility.IsParentProjectExplicitlyUnsupported(envDTEProject)
+                    && _solutionOpenedRaised)
                 {
-                    NuGetProjectAdded(this, new NuGetProjectEventArgs(nuGetProject));
+                    await EnsureNuGetAndVsProjectAdapterCacheAsync();
+                    var vsProjectAdapter = await _vsProjectAdapterProvider.CreateAdapterForFullyLoadedProjectAsync(envDTEProject);
+                    AddVsProjectAdapterToCache(vsProjectAdapter);
+                    NuGetProject nuGetProject;
+                    _projectSystemCache.TryGetNuGetProject(envDTEProject.Name, out nuGetProject);
+
+                    NuGetProjectAdded?.Invoke(this, new NuGetProjectEventArgs(nuGetProject));
                 }
-            }
+            });
         }
 
         private void SetDefaultProjectName()
@@ -629,7 +631,7 @@ namespace NuGet.PackageManagement.VisualStudio
                     {
                         try
                         {
-                            var vsProjectAdapter = _vsProjectAdapterProvider.CreateAdapterForFullyLoadedProject(project);
+                            var vsProjectAdapter = await _vsProjectAdapterProvider.CreateAdapterForFullyLoadedProjectAsync(project);
                             AddVsProjectAdapterToCache(vsProjectAdapter);
                         }
                         catch (Exception e)
@@ -904,7 +906,8 @@ namespace NuGet.PackageManagement.VisualStudio
             // create it manually
             if (nuGetProject == null)
             {
-                nuGetProject = CreateNuGetProject(_vsProjectAdapterProvider.CreateAdapterForFullyLoadedProject(project), projectContext);
+                var vsProjectAdapter = await _vsProjectAdapterProvider.CreateAdapterForFullyLoadedProjectAsync(project);
+                nuGetProject = CreateNuGetProject(vsProjectAdapter, projectContext);
             }
 
             return nuGetProject;
@@ -912,15 +915,23 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public IVsProjectAdapter GetVsProjectAdapter(string nuGetProjectSafeName)
         {
-            if (string.IsNullOrEmpty(nuGetProjectSafeName))
-            {
-                throw new ArgumentException(Strings.Argument_Cannot_Be_Null_Or_Empty, "nuGetProjectSafeName");
-            }
+            Assumes.NotNullOrEmpty(nuGetProjectSafeName);
 
             EnsureInitialize();
 
-            IVsProjectAdapter vsProjectAdapter;
-            _projectSystemCache.TryGetVsProjectAdapter(nuGetProjectSafeName, out vsProjectAdapter);
+            _projectSystemCache.TryGetVsProjectAdapter(nuGetProjectSafeName, out var vsProjectAdapter);
+            return vsProjectAdapter;
+        }
+
+        public IVsProjectAdapter GetVsProjectAdapter(NuGetProject nuGetProject)
+        {
+            Assumes.Present(nuGetProject);
+
+            EnsureInitialize();
+
+            var nuGetProjectSafeName = GetNuGetProjectSafeName(nuGetProject);
+
+            _projectSystemCache.TryGetVsProjectAdapter(nuGetProjectSafeName, out var vsProjectAdapter);
             return vsProjectAdapter;
         }
 

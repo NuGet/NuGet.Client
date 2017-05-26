@@ -117,17 +117,6 @@ namespace Test.Utility
             }
         }
 
-        public NuGetProject DefaultNuGetProject
-        {
-            get { return NuGetProjects.FirstOrDefault(); }
-        }
-
-        public string DefaultNuGetProjectName
-        {
-            get { return DefaultNuGetProject.GetMetadata<string>(NuGetProjectMetadataKeys.Name); }
-            set { throw new NotImplementedException(); }
-        }
-
         public NuGetProject GetNuGetProject(string nuGetProjectSafeName)
         {
             return NuGetProjects.

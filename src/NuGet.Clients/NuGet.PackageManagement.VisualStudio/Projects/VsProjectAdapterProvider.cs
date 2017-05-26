@@ -43,6 +43,12 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public IVsProjectAdapter CreateAdapterForFullyLoadedProject(EnvDTE.Project dteProject)
         {
+            return _threadingService.ExecuteSynchronously(
+                () => CreateAdapterForFullyLoadedProjectAsync(dteProject));
+        }
+
+        public async Task<IVsProjectAdapter> CreateAdapterForFullyLoadedProjectAsync(EnvDTE.Project dteProject)
+        {
             Assumes.Present(dteProject);
 
             _threadingService.ThrowIfNotOnUIThread();
@@ -53,7 +59,7 @@ namespace NuGet.PackageManagement.VisualStudio
             IProjectBuildProperties vsBuildProperties;
             if (vsHierarchyItem.VsHierarchy is IVsBuildPropertyStorage)
             {
-                vsBuildProperties = new VsLangProjectBuildProperties(
+                vsBuildProperties = new VsManagedLanguagesProjectBuildProperties(
                     vsHierarchyItem.VsHierarchy as IVsBuildPropertyStorage, _threadingService);
             }
             else
@@ -61,7 +67,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 vsBuildProperties = new VsCoreProjectBuildProperties(dteProject, _threadingService);
             }
 
-            var projectNames = ProjectNames.FromDTEProject(dteProject);
+            var projectNames = await ProjectNames.FromDTEProjectAsync(dteProject);
             var fullProjectPath = EnvDTEProjectInfoUtility.GetFullProjectPath(dteProject);
 
             return new VsProjectAdapter(

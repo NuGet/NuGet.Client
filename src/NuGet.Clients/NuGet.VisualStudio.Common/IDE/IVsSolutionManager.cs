@@ -14,6 +14,17 @@ namespace NuGet.PackageManagement.VisualStudio
     public interface IVsSolutionManager : ISolutionManager
     {
         /// <summary>
+        /// Gets the default <see cref="NuGetProject" />. Default NuGetProject is the selected NuGetProject in the IDE.
+        /// </summary>
+        NuGetProject DefaultNuGetProject { get; }
+
+        /// <summary>
+        /// Gets the name of the default <see cref="NuGetProject" />. Default NuGetProject is the selected NuGetProject
+        /// in the IDE.
+        /// </summary>
+        string DefaultNuGetProjectName { get; set; }
+
+        /// <summary>
         /// Retrieves <see cref="NuGetProject"/> instance associated with VS project.
         /// Creates new instance if not found in project system cache.
         /// </summary>
@@ -28,6 +39,13 @@ namespace NuGet.PackageManagement.VisualStudio
         /// <param name="name">Project name, full path or unique name.</param>
         /// <returns>Desired project object.</returns>
         IVsProjectAdapter GetVsProjectAdapter(string name);
+
+        /// <summary>
+        /// Retrieves instance of <see cref="EnvDTE.Project"/> associated with project name, path, or id.
+        /// </summary>
+        /// <param name="name">Project name, full path or unique name.</param>
+        /// <returns>Desired project object.</returns>
+        IVsProjectAdapter GetVsProjectAdapter(NuGetProject project);
 
         /// <summary>
         /// Return true if all projects in the solution have been loaded in background.

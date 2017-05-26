@@ -476,21 +476,14 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// <returns></returns>
         protected IVsProjectAdapter GetDefaultProject()
         {
-            var customUniqueName = string.Empty;
-
             var defaultNuGetProject = VsSolutionManager.DefaultNuGetProject;
             // Solution may be open without a project in it. Then defaultNuGetProject is null.
             if (defaultNuGetProject != null)
             {
-                customUniqueName = defaultNuGetProject.GetMetadata<string>(NuGetProjectMetadataKeys.UniqueName);
+                return VsSolutionManager.GetVsProjectAdapter(defaultNuGetProject);
             }
 
-            // Get all  VsprojectAdapters in the solution and compare by CustomUnique names, especially for projects under solution folders.
-            var allVsProjectAdapters = VsSolutionManager.GetAllVsProjectAdapters();
-            var defaultProject = allVsProjectAdapters?
-                .FirstOrDefault(p => StringComparer.OrdinalIgnoreCase.Equals(p.CustomUniqueName, customUniqueName));
-
-            return defaultProject;
+            return null;
         }
 
         /// <summary>

@@ -41,17 +41,6 @@ namespace NuGet.PackageManagement
         string SolutionDirectory { get; }
 
         /// <summary>
-        /// Gets the name of the default <see cref="NuGetProject" />. Default NuGetProject is the selected NuGetProject
-        /// in the IDE.
-        /// </summary>
-        string DefaultNuGetProjectName { get; set; }
-
-        /// <summary>
-        /// Gets the default <see cref="NuGetProject" />. Default NuGetProject is the selected NuGetProject in the IDE.
-        /// </summary>
-        NuGetProject DefaultNuGetProject { get; }
-
-        /// <summary>
         /// Returns true if the solution is open
         /// </summary>
         bool IsSolutionOpen { get; }
