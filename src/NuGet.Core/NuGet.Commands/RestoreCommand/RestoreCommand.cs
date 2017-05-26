@@ -69,7 +69,7 @@ namespace NuGet.Commands
 
             localRepositories.AddRange(_request.DependencyProviders.FallbackPackageFolders);
             
-            var contextForProject = CreateRemoteWalkContext(_request);
+            var contextForProject = CreateRemoteWalkContext(_request, _logger);
 
             CacheFile cacheFile = null;
             if (NoOpRestoreUtilities.IsNoOpSupported(_request)) {

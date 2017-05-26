@@ -76,6 +76,7 @@ namespace NuGet.Build.Tasks
         /// </summary>
         public bool RestoreForce { get; set; }
         
+        /// <summary>
         /// Do not display Errors and Warnings to the user. 
         /// The Warnings and Errors are written into the assets file and will be read by an sdk target.
         /// </summary>
