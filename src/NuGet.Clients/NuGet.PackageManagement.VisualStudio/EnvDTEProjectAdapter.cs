@@ -138,6 +138,36 @@ namespace NuGet.PackageManagement.VisualStudio
             }
         }
 
+        public string RestorePackagesPath
+        {
+            get
+            {
+                ThreadHelper.ThrowIfNotOnUIThread();
+
+                return GetMSBuildProperty(AsIVsBuildPropertyStorage, "RestorePackagesPath");
+            }
+        }
+
+        public string RestoreSources
+        {
+            get
+            {
+                ThreadHelper.ThrowIfNotOnUIThread();
+
+                return GetMSBuildProperty(AsIVsBuildPropertyStorage, "RestoreSources");
+            }
+        }
+
+        public string RestoreFallbackFolders
+        {
+            get
+            {
+                ThreadHelper.ThrowIfNotOnUIThread();
+
+                return GetMSBuildProperty(AsIVsBuildPropertyStorage, "RestoreFallbackFolders");
+            }
+        }
+
         public string PackageTargetFallback
         {
             get
@@ -146,7 +176,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
                 if (AsIVsBuildPropertyStorage == null)
                 {
-                    return String.Empty;
+                    return string.Empty;
                 }
 
                 return GetMSBuildProperty(AsIVsBuildPropertyStorage, "PackageTargetFallback");
@@ -337,7 +367,9 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
+#pragma warning disable IDE0007 // Use implicit type
             foreach (Reference6 reference in AsVSProject4.References)
+#pragma warning restore IDE0007 // Use implicit type
             {
                 if (reference.SourceProject != null)
                 {

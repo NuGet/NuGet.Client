@@ -16,7 +16,7 @@ namespace NuGet.Configuration.Test
         public void GetFallbackPackageFolders_DefaultHasNoFallbackFolders()
         {
             // Arrange & Act
-            var paths = SettingsUtility.GetFallbackPackageFolders(new NullSettings());
+            var paths = SettingsUtility.GetFallbackPackageFolders(NullSettings.Instance);
 
             // Assert
             Assert.Equal(0, paths.Count);

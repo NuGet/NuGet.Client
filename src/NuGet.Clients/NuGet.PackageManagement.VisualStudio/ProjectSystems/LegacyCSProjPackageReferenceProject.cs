@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -9,6 +9,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.Shell;
 using NuGet.Commands;
+using NuGet.Common;
+using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.Packaging;
@@ -130,7 +132,9 @@ namespace NuGet.PackageManagement.VisualStudio
             PackageSpec packageSpec;
             if (context == null || !context.PackageSpecCache.TryGetValue(MSBuildProjectPath, out packageSpec))
             {
-                packageSpec = await GetPackageSpecAsync();
+                var settings = context?.Settings ?? NullSettings.Instance;
+
+                packageSpec = await GetPackageSpecAsync(settings);
                 if (packageSpec == null)
                 {
                     throw new InvalidOperationException(
@@ -148,10 +152,11 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public override async Task<IEnumerable<PackageReference>> GetInstalledPackagesAsync(CancellationToken token)
         {
-            return GetPackageReferences(await GetPackageSpecAsync());
+            // Settings are not needed for this purpose, this only finds the installed packages.
+            return GetPackageReferences(await GetPackageSpecAsync(NullSettings.Instance));
         }
 
-        public override async Task<Boolean> InstallPackageAsync(
+        public override async Task<bool> InstallPackageAsync(
             string packageId,
             VersionRange range,
             INuGetProjectContext nuGetProjectContext,
@@ -164,7 +169,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 metadataValues: new string[0]);
         }
 
-        public async Task<Boolean> InstallPackageWithMetadataAsync(
+        public async Task<bool> InstallPackageWithMetadataAsync(
             string packageId,
             VersionRange range,
             IEnumerable<string> metadataElements,
@@ -189,7 +194,7 @@ namespace NuGet.PackageManagement.VisualStudio
             return success;
         }
 
-        public override async Task<Boolean> UninstallPackageAsync(PackageIdentity packageIdentity, INuGetProjectContext nuGetProjectContext, CancellationToken token)
+        public override async Task<bool> UninstallPackageAsync(PackageIdentity packageIdentity, INuGetProjectContext nuGetProjectContext, CancellationToken token)
         {
             var success = false;
             await NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async delegate
@@ -230,6 +235,71 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             return baseIntermediatePath;
+        }
+
+        private string GetPackagesPath(ISettings settings)
+        {
+            EnsureUIThread();
+
+            var packagePath = _project.RestorePackagesPath;
+
+            if (string.IsNullOrEmpty(packagePath))
+            {
+                return SettingsUtility.GetGlobalPackagesFolder(settings);
+            }
+
+            return UriUtility.GetAbsolutePathFromFile(_projectFullPath, packagePath);
+        }
+
+        private IList<PackageSource> GetSources(ISettings settings, bool shouldThrow = true)
+        {
+            EnsureUIThread();
+
+            var sources = MSBuildStringUtility.Split(_project.RestoreSources).AsEnumerable();
+
+            if (ShouldReadFromSettings(sources))
+            {
+                sources = SettingsUtility.GetEnabledSources(settings).Select(e => e.Source);
+            }
+            else
+            {
+                sources = HandleClear(sources);
+            }
+
+            return sources.Select(e => new PackageSource(UriUtility.GetAbsolutePathFromFile(_projectFullPath, e))).ToList();
+        }
+
+        private IList<string> GetFallbackFolders(ISettings settings, bool shouldThrow = true)
+        {
+            EnsureUIThread();
+
+            var fallbackFolders = MSBuildStringUtility.Split(_project.RestoreFallbackFolders).AsEnumerable();
+
+            if (ShouldReadFromSettings(fallbackFolders))
+            {
+                fallbackFolders = SettingsUtility.GetFallbackPackageFolders(settings);
+            }
+            else
+            {
+                fallbackFolders = HandleClear(fallbackFolders);
+            }
+
+            return fallbackFolders.Select(e => UriUtility.GetAbsolutePathFromFile(_projectFullPath, e)).ToList();
+        }
+
+        private static bool ShouldReadFromSettings(IEnumerable<string> values)
+        {
+            return !values.Any() && values.All(e => !StringComparer.OrdinalIgnoreCase.Equals("CLEAR", e));
+        }
+
+        private static IEnumerable<string> HandleClear(IEnumerable<string> values)
+        {
+            if (values.Any(e => StringComparer.OrdinalIgnoreCase.Equals("CLEAR", e)))
+            {
+                return Enumerable.Empty<string>();
+            }
+
+            return values;
         }
 
         private static string[] GetProjectReferences(PackageSpec packageSpec)
@@ -276,15 +346,15 @@ namespace NuGet.PackageManagement.VisualStudio
             return new PackageReference(identity, targetFramework);
         }
 
-        private async Task<PackageSpec> GetPackageSpecAsync()
+        private async Task<PackageSpec> GetPackageSpecAsync(ISettings settings)
         {
-            return await RunOnUIThread(GetPackageSpec);
+            return await RunOnUIThread(() => GetPackageSpec(settings));
         }
 
         /// <summary>
         /// Emulates a JSON deserialization from project.json to PackageSpec in a post-project.json world
         /// </summary>
-        private PackageSpec GetPackageSpec()
+        private PackageSpec GetPackageSpec(ISettings settings)
         {
             EnsureUIThread();
 
@@ -345,9 +415,18 @@ namespace NuGet.PackageManagement.VisualStudio
                         {
                             ProjectReferences = projectReferences?.ToList()
                         }
-                    }
+                    },
+                    PackagesPath = GetPackagesPath(settings),
+                    Sources = GetSources(settings),
+                    FallbackFolders = GetFallbackFolders(settings),
+                    ConfigFilePaths = GetConfigFilePaths(settings)
                 }
             };
+        }
+
+        private IList<string> GetConfigFilePaths(ISettings settings)
+        {
+            return SettingsUtility.GetConfigFilePaths(settings).ToList();
         }
 
         private static ProjectRestoreReference ToProjectRestoreReference(LegacyCSProjProjectReference item)
@@ -400,7 +479,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             if (item.MetadataElements == null || item.MetadataValues == null)
             {
-                return String.Empty; // no metadata for project
+                return string.Empty; // no metadata for project
             }
 
             var index = Array.IndexOf(item.MetadataElements, metadataElement);
@@ -426,7 +505,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             if (item.MetadataElements == null || item.MetadataValues == null)
             {
-                return String.Empty; // no metadata for package
+                return string.Empty; // no metadata for package
             }
 
             var index = Array.IndexOf(item.MetadataElements, metadataElement);
@@ -445,7 +524,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 return uiThreadFunction();
             }
 
-            T result = default(T);
+            var result = default(T);
             await NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async delegate
             {
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();

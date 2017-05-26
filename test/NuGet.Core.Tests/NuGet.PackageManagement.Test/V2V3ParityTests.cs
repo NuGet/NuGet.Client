@@ -35,7 +35,7 @@ namespace NuGet.Test
             using (var testSolutionManager = new TestSolutionManager(true))
             using (var randomPackagesConfigFolderPath = TestDirectory.Create())
             {
-                var testSettings = new Configuration.NullSettings();
+                var testSettings = NullSettings.Instance;
                 var token = CancellationToken.None;
                 var deleteOnRestartManger = new TestDeleteOnRestartManager();
                 var nuGetPackageManager = new NuGetPackageManager(

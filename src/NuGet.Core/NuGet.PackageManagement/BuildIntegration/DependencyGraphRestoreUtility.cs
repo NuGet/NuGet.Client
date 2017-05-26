@@ -37,6 +37,7 @@ namespace NuGet.PackageManagement
             RestoreCommandProvidersCache providerCache,
             Action<SourceCacheContext> cacheContextModifier,
             IEnumerable<SourceRepository> sources,
+            bool forceRestore,
             ILogger log,
             CancellationToken token)
         {
@@ -48,6 +49,7 @@ namespace NuGet.PackageManagement
                 sources,
                 userPackagesPath: null,
                 log: log,
+                forceRestore: forceRestore,
                 token: token);
         }
 
@@ -61,15 +63,15 @@ namespace NuGet.PackageManagement
             Action<SourceCacheContext> cacheContextModifier,
             IEnumerable<SourceRepository> sources,
             string userPackagesPath,
+            bool forceRestore,
             ILogger log,
             CancellationToken token)
         {
             // Get full dg spec
             var dgSpec = await GetSolutionRestoreSpec(solutionManager, context);
 
-            // Cache spec
+            // Cache spec TODO NK - Why do we cache the spec?
             context.SolutionSpec = dgSpec;
-            context.SolutionSpecHash = dgSpec.GetHash();
 
             // Check if there are actual projects to restore before running.
             if (dgSpec.Restore.Count > 0)
@@ -85,7 +87,8 @@ namespace NuGet.PackageManagement
                         sourceCacheContext,
                         sources,
                         dgSpec,
-                        userPackagesPath);
+                        userPackagesPath,
+                        forceRestore);
 
                     var restoreSummaries = await RestoreRunner.RunAsync(restoreContext, token);
 
@@ -99,7 +102,7 @@ namespace NuGet.PackageManagement
         }
 
         /// <summary>
-        /// Restore a dg spec. This will not update the context cache.
+        /// Restore a dg spec. This will not update the context cache. // TODO NK - Why? :D 
         /// </summary>
         public static async Task<IReadOnlyList<RestoreSummary>> RestoreAsync(
             DependencyGraphSpec dgSpec,
@@ -107,6 +110,7 @@ namespace NuGet.PackageManagement
             RestoreCommandProvidersCache providerCache,
             Action<SourceCacheContext> cacheContextModifier,
             IEnumerable<SourceRepository> sources,
+            bool forceRestore,
             ILogger log,
             CancellationToken token)
         {
@@ -124,7 +128,8 @@ namespace NuGet.PackageManagement
                         sourceCacheContext,
                         sources,
                         dgSpec,
-                        userPackagesPath: null);
+                        userPackagesPath: null,
+                        forceRestore: forceRestore);
 
                     var restoreSummaries = await RestoreRunner.RunAsync(restoreContext, token);
 
@@ -196,7 +201,7 @@ namespace NuGet.PackageManagement
                 cacheContextModifier(sourceCacheContext);
 
                 // Settings passed here will be used to populate the restore requests.
-                RestoreArgs restoreContext = GetRestoreContext(context, providerCache, sourceCacheContext, sources, dgFile, userPackagesPath);
+                var restoreContext = GetRestoreContext(context, providerCache, sourceCacheContext, sources, dgFile, userPackagesPath, false); // TODO NK - Do we want to force in preview? 
 
                 var requests = await RestoreRunner.GetRequests(restoreContext);
                 var results = await RestoreRunner.RunWithoutCommit(requests, restoreContext);
@@ -222,11 +227,6 @@ namespace NuGet.PackageManagement
             var spec = specs.Single(e => e.RestoreMetadata.ProjectStyle == ProjectStyle.PackageReference
                 || e.RestoreMetadata.ProjectStyle == ProjectStyle.ProjectJson);
 
-            var globalPackagesFolder = SettingsUtility.GetGlobalPackagesFolder(context.Settings);
-            var fallbackFolders = SettingsUtility.GetFallbackPackageFolders(context.Settings);
-            spec.RestoreMetadata.FallbackFolders = spec.RestoreMetadata.FallbackFolders ?? fallbackFolders.AsList();
-            spec.RestoreMetadata.PackagesPath = spec.RestoreMetadata.PackagesPath ?? globalPackagesFolder;
-
             var result = await PreviewRestoreAsync(
                 solutionManager,
                 project,
@@ -249,59 +249,17 @@ namespace NuGet.PackageManagement
             return result.Result;
         }
 
-        public static async Task<bool> IsRestoreRequiredAsync(
-            ISolutionManager solutionManager,
-            bool forceRestore,
-            INuGetPathContext pathContext,
-            DependencyGraphCacheContext cacheContext,
-            string oldDependencyGraphSpecHash)
+        public static bool IsRestoreRequired(
+            DependencyGraphSpec solutionDgSpec)
         {
-            var projects = solutionManager.GetNuGetProjects().OfType<IDependencyGraphProject>().ToArray();
-
-            var solutionDgSpec = await GetSolutionRestoreSpec(solutionManager, cacheContext);
-
             if (solutionDgSpec.Restore.Count < 1)
             {
                 // Nothing to restore
                 return false;
             }
 
-            var newDependencyGraphSpecHash = solutionDgSpec.GetHash();
-            cacheContext.SolutionSpec = solutionDgSpec;
-            cacheContext.SolutionSpecHash = newDependencyGraphSpecHash;
-
-            // Comment by @emgarten from PR -
-            // Force is only done during a rebuild, all of the work done here to build the dg file is stored in the cache context and used again later on.
-            // The time different should only be the time it takes to create the hash, which @dtivel has perf numbers on.
-            if (forceRestore || (oldDependencyGraphSpecHash != newDependencyGraphSpecHash))
-            {
-                // A new project has been added
-                return true;
-            }
-
-            // Read package folder locations, initializing them in order of priority
-            var packageFolderPaths = new List<string>();
-            packageFolderPaths.Add(pathContext.UserPackageFolder);
-            packageFolderPaths.AddRange(pathContext.FallbackPackageFolders);
-            var pathResolvers = packageFolderPaths.Select(path => new VersionFolderPathResolver(path));
-
-            var packagesChecked = new HashSet<PackageIdentity>();
-            if (
-                projects.Select(async p => await p.IsRestoreRequired(pathResolvers, packagesChecked, cacheContext))
-                    .Any(r => r.Result == true))
-            {
-                // The project.json file does not match the lock file
-                return true;
-            }
-
-            if (cacheContext.DeferredPackageSpecs.Where(spec => spec.RestoreMetadata.ProjectJsonPath != null).
-                Select(p => IsRestoreRequired(p, pathResolvers, packagesChecked, cacheContext))
-                .Any(r => r == true))
-            {
-                return true;
-            }
-
-            return false;
+            // NO Op will be checked in the restore command 
+            return true;
         }
 
         public static async Task<PackageSpec> GetProjectSpec(IDependencyGraphProject project, DependencyGraphCacheContext context)
@@ -311,11 +269,6 @@ namespace NuGet.PackageManagement
             var projectSpec =  specs.Where(e => e.RestoreMetadata.ProjectStyle != ProjectStyle.Standalone
                 && e.RestoreMetadata.ProjectStyle != ProjectStyle.DotnetCliTool)
                 .FirstOrDefault();
-
-            var globalPackagesFolder = SettingsUtility.GetGlobalPackagesFolder(context.Settings);
-            var fallbackFolders = SettingsUtility.GetFallbackPackageFolders(context.Settings);
-            projectSpec.RestoreMetadata.FallbackFolders = projectSpec.RestoreMetadata.FallbackFolders ?? fallbackFolders.AsList();
-            projectSpec.RestoreMetadata.PackagesPath = projectSpec.RestoreMetadata.PackagesPath ?? globalPackagesFolder;
 
             return projectSpec;
         }
@@ -330,10 +283,6 @@ namespace NuGet.PackageManagement
 
             foreach (var packageSpec in context.DeferredPackageSpecs)
             {
-                //TODO NK - Does this really make sense? Anything unforeseen here? 
-                packageSpec.RestoreMetadata.FallbackFolders = fallbackFolders.AsList();
-                packageSpec.RestoreMetadata.PackagesPath = globalPackagesFolder;
-
                 dgSpec.AddProject(packageSpec);
 
                 if (packageSpec.RestoreMetadata.ProjectStyle == ProjectStyle.PackageReference ||
@@ -353,9 +302,6 @@ namespace NuGet.PackageManagement
 
                 foreach (var packageSpec in packageSpecs)
                 {
-                    packageSpec.RestoreMetadata.FallbackFolders = fallbackFolders.AsList();
-                    packageSpec.RestoreMetadata.PackagesPath = globalPackagesFolder;
-
                     dgSpec.AddProject(packageSpec);
 
                     if (packageSpec.RestoreMetadata.ProjectStyle == ProjectStyle.PackageReference ||
@@ -380,7 +326,8 @@ namespace NuGet.PackageManagement
             SourceCacheContext sourceCacheContext,
             IEnumerable<SourceRepository> sources,
             DependencyGraphSpec dgFile,
-            string userPackagesPath)
+            string userPackagesPath,
+            bool forceRestore)
         {
             var dgProvider = new DependencyGraphSpecRequestProvider(providerCache, dgFile);
 
@@ -390,81 +337,11 @@ namespace NuGet.PackageManagement
                 PreLoadedRequestProviders = new List<IPreLoadedRestoreRequestProvider>() { dgProvider },
                 Log = context.Logger,
                 SourceRepositories = sources.ToList(),
-                GlobalPackagesFolder = userPackagesPath // Optional, this will load from settings if null
+                GlobalPackagesFolder = userPackagesPath, // Optional, this will load from settings if null
+                AllowNoOp = !forceRestore
             };
 
             return restoreContext;
-        }
-
-        private static bool IsRestoreRequired(
-            PackageSpec packageSpec,
-            IEnumerable<VersionFolderPathResolver> pathResolvers,
-            ISet<PackageIdentity> packagesChecked,
-            DependencyGraphCacheContext context)
-        {
-            var lockFilePath = ProjectJsonPathUtilities.GetLockFilePath(packageSpec.RestoreMetadata.ProjectJsonPath);
-
-            if (!File.Exists(lockFilePath))
-            {
-                // If the lock file does not exist a restore is needed
-                return true;
-            }
-
-            var lockFileFormat = new LockFileFormat();
-            LockFile lockFile;
-            try
-            {
-                lockFile = lockFileFormat.Read(lockFilePath, context.Logger);
-            }
-            catch
-            {
-                // If the lock file is invalid, then restore.
-                return true;
-            }
-
-            // Verify all libraries are on disk
-            var packages = lockFile.Libraries.Where(library => library.Type == LibraryType.Package);
-
-            foreach (var library in packages)
-            {
-                var identity = new PackageIdentity(library.Name, library.Version);
-
-                // Each id/version only needs to be checked once
-                if (packagesChecked.Add(identity))
-                {
-                    var found = false;
-
-                    //  Check each package folder. These need to match the order used for restore.
-                    foreach (var resolver in pathResolvers)
-                    {
-                        // Verify the SHA for each package
-                        var hashPath = resolver.GetHashPath(library.Name, library.Version);
-
-                        if (File.Exists(hashPath))
-                        {
-                            found = true;
-                            var sha512 = File.ReadAllText(hashPath);
-
-                            if (library.Sha512 != sha512)
-                            {
-                                // A package has changed
-                                return true;
-                            }
-
-                            // Skip checking the rest of the package folders
-                            break;
-                        }
-                    }
-
-                    if (!found)
-                    {
-                        // A package is missing
-                        return true;
-                    }
-                }
-            }
-
-            return false;
         }
     }
 }

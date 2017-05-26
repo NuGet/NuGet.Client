@@ -27,10 +27,5 @@ namespace NuGet.ProjectManagement
         /// optionally include more specs to restore such as tools.
         /// </summary>
         Task<IReadOnlyList<PackageSpec>> GetPackageSpecsAsync(DependencyGraphCacheContext context);
-
-        Task<bool> IsRestoreRequired(
-            IEnumerable<VersionFolderPathResolver> pathResolvers,
-            ISet<PackageIdentity> packagesChecked,
-            DependencyGraphCacheContext context);
     }
 }

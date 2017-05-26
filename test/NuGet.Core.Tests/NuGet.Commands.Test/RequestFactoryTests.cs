@@ -13,12 +13,13 @@ namespace NuGet.Commands.Test
 {
     public class RequestFactoryTests
     {
-        [Fact]
+        [Fact (Skip ="This test is redundant now. To be replaced with the GetRestoreSettingsTests. TODO NK")]
         public void RequestFactory_FindConfigInProjectFolder()
         {
             // Verifies that we include any config file found in the project folder
             using (var workingDir = TestDirectory.Create())
             {
+                Debugger.Launch();
                 // Arrange
                 var innerConfigFile = Path.Combine(workingDir, "sub", Settings.DefaultSettingsFileName);
                 var outerConfigFile = Path.Combine(workingDir, Settings.DefaultSettingsFileName);
@@ -150,7 +151,7 @@ namespace NuGet.Commands.Test
 
 
         private static string InnerConfig =
-                @" <?xml version=""1.0"" encoding=""utf-8""?>
+            @"<?xml version=""1.0"" encoding=""utf-8""?>
               <configuration>
                 <SectionName>
                   <add key=""inner-key"" value=""inner-value"" />

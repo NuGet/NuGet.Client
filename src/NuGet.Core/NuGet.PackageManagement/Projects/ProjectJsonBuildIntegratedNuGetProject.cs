@@ -13,11 +13,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 using NuGet.Common;
+using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.PackageManagement;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
+using NuGet.Shared;
 using NuGet.Versioning;
 
 namespace NuGet.ProjectManagement.Projects
@@ -253,6 +255,14 @@ namespace NuGet.ProjectManagement.Projects
                         }
                     }
                 }
+
+                // Write restore settings to the package spec.
+                // For project.json these properties may not come from the project file.
+                var settings = context?.Settings ?? NullSettings.Instance;
+                packageSpec.RestoreMetadata.PackagesPath = SettingsUtility.GetGlobalPackagesFolder(settings);
+                packageSpec.RestoreMetadata.Sources = SettingsUtility.GetEnabledSources(settings).AsList();
+                packageSpec.RestoreMetadata.FallbackFolders = SettingsUtility.GetFallbackPackageFolders(settings).AsList();
+                packageSpec.RestoreMetadata.ConfigFilePaths = SettingsUtility.GetConfigFilePaths(settings).AsList();
 
                 context?.PackageSpecCache.Add(MSBuildProjectPath, packageSpec);
             }
