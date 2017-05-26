@@ -75,6 +75,11 @@ namespace NuGet.Build.Tasks
         /// Force restore, skip no op
         /// </summary>
         public bool RestoreForce { get; set; }
+        
+        /// Do not display Errors and Warnings to the user. 
+        /// The Warnings and Errors are written into the assets file and will be read by an sdk target.
+        /// </summary>
+        public bool HideWarningsAndErrors { get; set; }
 
         public override bool Execute()
         {
@@ -91,6 +96,7 @@ namespace NuGet.Build.Tasks
             log.LogDebug($"(in) RestoreIgnoreFailedSources '{RestoreIgnoreFailedSources}'");
             log.LogDebug($"(in) RestoreRecursive '{RestoreRecursive}'");
             log.LogDebug($"(in) RestoreForce '{RestoreForce}'");
+            log.LogDebug($"(in) HideWarningsAndErrors '{HideWarningsAndErrors}'");
 
             try
             {
@@ -165,7 +171,8 @@ namespace NuGet.Build.Tasks
                     MachineWideSettings = new XPlatMachineWideSetting(),
                     PreLoadedRequestProviders = providers,
                     CachingSourceProvider = sourceProvider,
-                    AllowNoOp = !RestoreForce
+                    AllowNoOp = !RestoreForce,
+                    HideWarningsAndErrors = HideWarningsAndErrors
                 };
 
                 if (!string.IsNullOrEmpty(RestoreSources))

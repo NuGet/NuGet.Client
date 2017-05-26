@@ -19,6 +19,7 @@ using System.Text.RegularExpressions;
 using NuGet.Protocol.Core.Types;
 using NuGet.Protocol;
 using NuGet.Common;
+using Test.Utility;
 
 namespace NuGet.CommandLine.Test
 {
@@ -1385,7 +1386,7 @@ EndProject";
   <package id=""packageB"" version=""2.2.0"" targetFramework=""net45"" />
 </packages>");
 
-                string[] args = new string[] { "restore", "-PackagesDirectory", "outputDir", "-Source", repositoryPath, "-nocache" };
+                var args = new string[] { "restore", "-PackagesDirectory", "outputDir", "-Source", repositoryPath, "-nocache" };
 
                 // Act
                 var path = Environment.GetEnvironmentVariable("PATH");
@@ -1396,17 +1397,18 @@ EndProject";
                     string.Join(" ", args),
                     waitForExit: true);
                 Environment.SetEnvironmentVariable("PATH", path);
+                var output = r.Item2 + " " + r.Item3;
 
                 // Assert
                 Assert.Equal(1, r.Item1);
-                Assert.False(r.Item2.IndexOf("exception", StringComparison.OrdinalIgnoreCase) > -1);
-                Assert.False(r.Item3.IndexOf("exception", StringComparison.OrdinalIgnoreCase) > -1);
+                Assert.False(output.IndexOf("exception", StringComparison.OrdinalIgnoreCase) > -1);
+                Assert.False(output.IndexOf("exception", StringComparison.OrdinalIgnoreCase) > -1);
 
-                var firstIndex = r.Item2.IndexOf(
+                var firstIndex = output.IndexOf(
                     "Unable to find version '1.1.0' of package 'packageA'.",
                     StringComparison.OrdinalIgnoreCase);
                 Assert.True(firstIndex > -1);
-                var secondIndex = r.Item3.IndexOf(
+                var secondIndex = output.IndexOf(
                     "Unable to find version '1.1.0' of package 'packageA'.",
                     StringComparison.OrdinalIgnoreCase);
                 Assert.True(secondIndex > -1);

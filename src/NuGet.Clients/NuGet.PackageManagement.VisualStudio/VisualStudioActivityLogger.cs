@@ -29,6 +29,5 @@ namespace NuGet.PackageManagement.VisualStudio
         
         public override void LogInformationSummary(string data) => LogInformation(data);
         
-        public override void LogErrorSummary(string data) => LogError(data);
     }
 }

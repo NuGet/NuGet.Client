@@ -595,10 +595,11 @@ namespace NuGet.CommandLine.Test
 
                 // Act
                 var r = Util.RestoreSolution(pathContext, expectedExitCode: 1);
+                var output = r.Item2 + " " + r.Item3;
 
                 // Assert
                 Assert.True(r.Item1 == 1);
-                Assert.Contains("no run-time assembly compatible", r.Item3);
+                Assert.Contains("no run-time assembly compatible", output);
             }
         }
 
@@ -693,10 +694,11 @@ namespace NuGet.CommandLine.Test
 
                 // Act
                 var r = Util.RestoreSolution(pathContext, expectedExitCode: 1);
+                var output = r.Item2 + " " + r.Item3;
 
                 // Assert
                 Assert.True(r.Item1 == 1);
-                Assert.Contains("no run-time assembly compatible", r.Item3);
+                Assert.Contains("no run-time assembly compatible", output);
             }
         }
 
@@ -832,10 +834,11 @@ namespace NuGet.CommandLine.Test
 
                 // Act
                 var r = Util.RestoreSolution(pathContext);
+                var output = r.Item2 + r.Item3;
 
                 // Assert
-                Assert.True(File.Exists(projectA.AssetsFileOutputPath), r.Item2);
-                Assert.Contains($"Compatibility Profile: {guid}", r.Item2);
+                Assert.True(File.Exists(projectA.AssetsFileOutputPath), output);
+                Assert.Contains($"Compatibility Profile: {guid}", output);
             }
         }
 

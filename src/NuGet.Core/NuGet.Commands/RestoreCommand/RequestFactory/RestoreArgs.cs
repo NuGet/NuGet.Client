@@ -62,6 +62,8 @@ namespace NuGet.Commands
 
         public bool? ValidateRuntimeAssets { get; set; }
 
+        public bool HideWarningsAndErrors { get; set; } = false;
+
         // Cache directory -> ISettings
         private ConcurrentDictionary<string, ISettings> _settingsCache
             = new ConcurrentDictionary<string, ISettings>(StringComparer.Ordinal);
@@ -222,6 +224,7 @@ namespace NuGet.Commands
             }
 
             request.AllowNoOp = AllowNoOp;
+            request.HideWarningsAndErrors = HideWarningsAndErrors;
         }
     }
 }
