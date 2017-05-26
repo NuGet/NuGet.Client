@@ -108,14 +108,6 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         protected IPackageRestoreManager PackageRestoreManager { get; private set; }
 
         /// <summary>
-        /// Package Source Provider
-        /// </summary>
-        protected Configuration.PackageSourceProvider PackageSourceProvider
-        {
-            get { return new Configuration.PackageSourceProvider(ConfigSettings); }
-        }
-
-        /// <summary>
         /// List of primary source repositories used for search operations
         /// </summary>
         protected IEnumerable<SourceRepository> PrimarySourceRepositories
