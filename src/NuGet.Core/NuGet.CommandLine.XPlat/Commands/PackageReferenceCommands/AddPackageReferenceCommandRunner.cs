@@ -185,7 +185,7 @@ namespace NuGet.CommandLine.XPlat
                     MachineWideSettings = new XPlatMachineWideSetting(),
                     GlobalPackagesFolder = packageReferenceArgs.PackageDirectory,
                     PreLoadedRequestProviders = providers,
-                    Sources = packageReferenceArgs.Sources?.ToList()
+                    Sources = packageReferenceArgs.Sources?.ToList()                    
                 };
 
                 // Generate Restore Requests. There will always be 1 request here since we are restoring for 1 project.

@@ -16,7 +16,7 @@ namespace NuGet.ProjectModel
         public NuGetLogCode Code { get; }
         public string Message { get; }
         public string ProjectPath { get; set; }
-        public WarningLevel WarningLevel { get; set; }
+        public WarningLevel WarningLevel { get; set; } = WarningLevel.Severe; //setting default to Severe as 0 implies show no warnings
         public string FilePath { get; set; }
         public string LibraryId { get; set; }
         public IReadOnlyList<string> TargetGraphs { get; set; }

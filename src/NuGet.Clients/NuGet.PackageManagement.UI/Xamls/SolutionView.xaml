@@ -146,6 +146,27 @@
           </Setter.Value>
         </Setter>
       </Style>
+      <Style x:Key="InstalledTextBoxStyle" TargetType="{x:Type TextBox}" BasedOn="{StaticResource {x:Type TextBox}}">
+        <Setter Property="Template">
+          <Setter.Value>
+            <ControlTemplate TargetType="{x:Type TextBox}">
+              <Border
+                x:Name="border"
+                BorderBrush="{TemplateBinding BorderBrush}"
+                BorderThickness="{TemplateBinding BorderThickness}"
+                Background="{TemplateBinding Background}"
+                SnapsToDevicePixels="True">
+                <ScrollViewer
+                  VerticalAlignment="Center" 
+                  x:Name="PART_ContentHost"
+                  Focusable="false"
+                  HorizontalScrollBarVisibility="Disabled" 
+                  VerticalScrollBarVisibility="Disabled"/>
+              </Border>
+            </ControlTemplate>
+          </Setter.Value>
+        </Setter>
+      </Style>
     </ResourceDictionary>
   </UserControl.Resources>
   <Grid>
@@ -175,7 +196,7 @@
       <ListView.ItemContainerStyle>
         <Style TargetType="{x:Type ListViewItem}" BasedOn="{StaticResource ListViewItemStyle1}" >
           <Setter Property="FocusVisualStyle" Value="{DynamicResource ListViewItemFocusVisual}"/>
-          <Setter Property="IsTabStop" Value="False"/>
+          <Setter Property="IsTabStop" Value="True"/>
         </Style>
       </ListView.ItemContainerStyle>
       
@@ -186,7 +207,8 @@
           <GridViewColumn>
             <GridViewColumn.Header>
               <GridViewColumnHeader
-                HorizontalContentAlignment="Left">
+                HorizontalContentAlignment="Left"
+                AutomationProperties.Name="{x:Static local:Resources.ColumnHeader_Selected}">
                 <CheckBox
                   KeyboardNavigation.TabIndex="0"
                   FocusVisualStyle="{DynamicResource ListViewItemFocusVisual}"
@@ -212,23 +234,21 @@
           </GridViewColumn>
 
           <!-- the project column -->
-          <GridViewColumn
-            x:Name="_projectColumn">
-            <GridViewColumn.Header>
-              <GridViewColumnHeader
-                x:Name="_projectColumnHeader"
-                HorizontalContentAlignment="Left"
-                Click="ColumnHeader_Clicked">
-                <local:SortableColumnHeader
-                  KeyboardNavigation.TabIndex="1"
-                  HeaderText="{x:Static local:Resources.ColumnHeader_Project}"
-                  SortPropertyName="ProjectName"
-                  PreviewKeyUp="SortableColumnHeader_PreviewKeyUp"
-                  Focusable="True"
-                  IsTabStop="True"
-                  FocusVisualStyle="{DynamicResource ControlsFocusVisualStyle}"/>
-              </GridViewColumnHeader>
-            </GridViewColumn.Header>
+          <GridViewColumn x:Name="_projectColumn">
+            <GridViewColumnHeader
+              x:Name="_projectColumnHeader"
+              Content="{x:Static local:Resources.ColumnHeader_Project}"
+              AutomationProperties.Name="{x:Static local:Resources.ColumnHeader_Project}"
+              local:SortableColumnHeaderAttachedProperties.SortPropertyName="ProjectName"
+              Click="ColumnHeader_Clicked"
+              HorizontalContentAlignment="Left"
+              SizeChanged="SortableColumnHeader_SizeChanged"
+              KeyboardNavigation.TabIndex="1"
+              PreviewKeyUp="SortableColumnHeader_PreviewKeyUp"
+              Focusable="True"
+              IsTabStop="True"
+              FocusVisualStyle="{DynamicResource ControlsFocusVisualStyle}"/>
+            
             <GridViewColumn.CellTemplate>
               <DataTemplate>
                 <StackPanel Orientation="Horizontal">
@@ -248,18 +268,17 @@
             DisplayMemberBinding="{Binding InstalledVersion,Converter={StaticResource VersionToStringConverter}}">
             <GridViewColumn.Header>
               <GridViewColumnHeader
+                AutomationProperties.Name="{x:Static local:Resources.ColumnHeader_Version}"
                 x:Name="_versionColumnHeader"
                 Click="ColumnHeader_Clicked"
-                HorizontalContentAlignment="Left">
-                <local:SortableColumnHeader
-                  KeyboardNavigation.TabIndex="2"
-                  HeaderText="{x:Static local:Resources.ColumnHeader_Version}"
-                  SortPropertyName="InstalledVersion"
-                  PreviewKeyUp="SortableColumnHeader_PreviewKeyUp"
-                  Focusable="True"
-                  IsTabStop="True"
-                  FocusVisualStyle="{DynamicResource ControlsFocusVisualStyle}"/>
-              </GridViewColumnHeader>
+                Content="{x:Static local:Resources.ColumnHeader_Version}"
+                local:SortableColumnHeaderAttachedProperties.SortPropertyName="InstalledVersion"
+                HorizontalContentAlignment="Left"
+                SizeChanged="SortableColumnHeader_SizeChanged"
+                PreviewKeyUp="SortableColumnHeader_PreviewKeyUp"
+                Focusable="True"
+                IsTabStop="True"
+                FocusVisualStyle="{DynamicResource ControlsFocusVisualStyle}"/>
             </GridViewColumn.Header>
           </GridViewColumn>
         </GridView>
@@ -290,20 +309,22 @@
         VerticalAlignment="Center"
         Text="{x:Static local:Resources.Label_InstalledColon}" />
 
-      <Border
-        Grid.Row="0"
-        Grid.Column="2"
-        BorderBrush="{DynamicResource {x:Static local:Brushes.ComboBoxBorderKey}}"
-        BorderThickness="1"
-        MinHeight="24"
-        VerticalAlignment="Center">
-        <TextBlock
+        <TextBox
+          FocusVisualStyle="{DynamicResource MarginFocusVisualStyle}"
+          Grid.Row="0"
+          Grid.Column="2"
           VerticalAlignment="Center"
+          Style="{StaticResource InstalledTextBoxStyle}"
+          Background="{x:Null}"
+          IsReadOnly="true"
+          BorderBrush="{DynamicResource {x:Static local:Brushes.ComboBoxBorderKey}}"
+          BorderThickness="1"
+          MinHeight="24"
           AutomationProperties.AutomationId="InstalledVersion"
-          Margin="4,0,0,0"
+          AutomationProperties.Name="{x:Static local:Resources.Version_Installed}"
+          Margin="0"
           Focusable="True"
           Text="{Binding InstalledVersions}" />
-      </Border>
 
       <Button
         x:Name="_uninstallButton"

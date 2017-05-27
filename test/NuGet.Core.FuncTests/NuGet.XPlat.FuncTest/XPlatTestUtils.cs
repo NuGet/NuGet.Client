@@ -71,44 +71,28 @@ namespace NuGet.XPlat.FuncTest
             }
         }
 
-        internal const string CoreConfigFileName = "NuGet.Core.FuncTests.Config";
-
-        public static string CoreConfigPath
-        {
-            get
-            {
-                var fullPath = NuGetEnvironment.GetFolderPath(NuGetFolderPath.UserSettingsDirectory);
-
-                return Path.Combine(fullPath, CoreConfigFileName);
-            }
-        }
-
         /// <summary>
         /// Copies test sources configuration to a test folder
         /// </summary>
         public static string CopyFuncTestConfig(string destinationFolder)
         {
+            var testSettingsFolder = NuGetEnvironment.GetFolderPath(NuGetFolderPath.UserSettingsDirectory);
+            var funcTestConfigPath = Path.Combine(testSettingsFolder, TestSources.ConfigFile);
+
             var destConfigFile = Path.Combine(destinationFolder, "NuGet.Config");
-            File.Copy(CoreConfigPath, destConfigFile);
+            File.Copy(funcTestConfigPath, destConfigFile);
             return destConfigFile;
         }
 
-        internal const string ProtocolConfigFileName = "NuGet.Protocol.FuncTest.config";
-
-        public static string ProtocolConfigPath
-        {
-            get
-            {
-                var fullPath = NuGetEnvironment.GetFolderPath(NuGetFolderPath.UserSettingsDirectory);
-
-                return Path.Combine(fullPath, ProtocolConfigFileName);
-            }
-        }
+        private const string ProtocolConfigFileName = "NuGet.Protocol.FuncTest.config";
 
         public static string ReadApiKey(string feedName)
         {
+            var testSettingsFolder = NuGetEnvironment.GetFolderPath(NuGetFolderPath.UserSettingsDirectory);
+            var protocolConfigPath = Path.Combine(testSettingsFolder, ProtocolConfigFileName);
+
             var fullPath = NuGetEnvironment.GetFolderPath(NuGetFolderPath.UserSettingsDirectory);
-            using (Stream configStream = File.OpenRead(ProtocolConfigPath))
+            using (Stream configStream = File.OpenRead(protocolConfigPath))
             {
                 var doc = XDocument.Load(XmlReader.Create(configStream));
                 var element = doc.Root.Element(feedName);

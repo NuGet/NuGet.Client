@@ -71,6 +71,12 @@ namespace NuGet.Build.Tasks
         /// </summary>
         public bool RestoreRecursive { get; set; }
 
+        /// <summary>
+        /// Do not display Errors and Warnings to the user. 
+        /// The Warnings and Errors are written into the assets file and will be read by an sdk target.
+        /// </summary>
+        public bool HideWarningsAndErrors { get; set; }
+
         public override bool Execute()
         {
             var log = new MSBuildLogger(Log);
@@ -85,6 +91,7 @@ namespace NuGet.Build.Tasks
             log.LogDebug($"(in) RestoreNoCache '{RestoreNoCache}'");
             log.LogDebug($"(in) RestoreIgnoreFailedSources '{RestoreIgnoreFailedSources}'");
             log.LogDebug($"(in) RestoreRecursive '{RestoreRecursive}'");
+            log.LogDebug($"(in) HideWarningsAndErrors '{HideWarningsAndErrors}'");
 
             try
             {
@@ -158,7 +165,8 @@ namespace NuGet.Build.Tasks
                     Log = log,
                     MachineWideSettings = new XPlatMachineWideSetting(),
                     PreLoadedRequestProviders = providers,
-                    CachingSourceProvider = sourceProvider
+                    CachingSourceProvider = sourceProvider,
+                    HideWarningsAndErrors = HideWarningsAndErrors
                 };
 
                 if (!string.IsNullOrEmpty(RestoreSources))

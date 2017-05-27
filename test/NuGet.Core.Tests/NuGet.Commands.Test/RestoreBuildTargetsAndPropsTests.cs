@@ -440,7 +440,7 @@ namespace NuGet.Commands.Test
                 }
             };
 
-            return await RestoreRunner.Run(restoreContext);
+            return await RestoreRunner.RunAsync(restoreContext);
         }
 
         private static PackageSpec GetProject(string projectName, params string[] frameworks)

@@ -103,19 +103,10 @@ Invoke-BuildStep 'Cleaning package cache' {
     -skip:(-not $CI) `
     -ev +BuildErrors
 
-Invoke-BuildStep 'Copying Config Files for functest' {
-    Move-ConfigFile NuGet.Config
-    Move-ConfigFile NuGet.Core.FuncTests.Config
-    Move-ConfigFile NuGet.Protocol.FuncTest.config
-} `
--skip:(-not $CI) `
--ev +BuildErrors
-
-
 Invoke-BuildStep 'Running /t:RestoreVS15' {
 
     & $MSBuildExe build\build.proj /t:RestoreVS15 /p:Configuration=$Configuration /p:ReleaseLabel=$ReleaseLabel /p:BuildNumber=$BuildNumber /v:m /m:1
-    
+
     if (-not $?)
     {
         Write-Error "Restore failed!"

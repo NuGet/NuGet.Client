@@ -58,10 +58,5 @@ namespace NuGet.ProjectManagement
         {
             ProjectLogger.Log(MessageLevel.Debug, data);
         }
-
-        public override void LogErrorSummary(string data)
-        {
-            ProjectLogger.Log(MessageLevel.Debug, data);
-        }
     }
 }
