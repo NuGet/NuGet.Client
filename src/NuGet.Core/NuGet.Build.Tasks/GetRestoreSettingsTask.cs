@@ -8,6 +8,7 @@ using System.Linq;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using Newtonsoft.Json;
+using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Configuration;
 
@@ -134,74 +135,79 @@ namespace NuGet.Build.Tasks
                 log.LogDebug($"(in) RestoreSolutionDirectory '{RestoreSolutionDirectory}'");
             }
 
-            var settings = ReadSettings(RestoreSolutionDirectory, Path.GetDirectoryName(ProjectUniqueName), RestoreConfigFile);
+            try
+            {
+                var settings = ReadSettings(RestoreSolutionDirectory, Path.GetDirectoryName(ProjectUniqueName), RestoreConfigFile);
 
-            if (string.IsNullOrEmpty(RestorePackagesPath))
-            {
-                OutputPackagesPath = SettingsUtility.GetGlobalPackagesFolder(settings);
-            }
-            else if (StringComparer.OrdinalIgnoreCase.Compare(RestorePackagesPath, CLEAR) == 0)
-            {
-                RestorePackagesPath = string.Empty;
-            }
-            else
-            {
-                // Relative -> Absolute path
-                OutputPackagesPath = UriUtility.GetAbsolutePathFromFile(ProjectUniqueName, RestorePackagesPath);
-            }
-
-            if (RestoreSources == null)
-            {
-                var packageSourceProvider = new PackageSourceProvider(settings);
-                var packageSourcesFromProvider = packageSourceProvider.LoadPackageSources();
-                OutputSources = packageSourcesFromProvider.Select(e => e.Source).ToArray();
-            }
-            else if (RestoreSources.Contains(CLEAR, StringComparer.OrdinalIgnoreCase))
-            {
-                if (RestoreSources.Length == 1)
+                if (string.IsNullOrEmpty(RestorePackagesPath))
                 {
+                    OutputPackagesPath = SettingsUtility.GetGlobalPackagesFolder(settings);
+                }
+                else if (StringComparer.OrdinalIgnoreCase.Compare(RestorePackagesPath, CLEAR) == 0)
+                {
+                    RestorePackagesPath = string.Empty;
+                }
+                else
+                {
+                    // Relative -> Absolute path
+                    OutputPackagesPath = UriUtility.GetAbsolutePathFromFile(ProjectUniqueName, RestorePackagesPath);
+                }
+
+                if (RestoreSources == null)
+                {
+                    var packageSourceProvider = new PackageSourceProvider(settings);
+                    var packageSourcesFromProvider = packageSourceProvider.LoadPackageSources();
+                    OutputSources = packageSourcesFromProvider.Select(e => e.Source).ToArray();
+                }
+                else if (MSBuildRestoreUtility.ContainsClearKeyword(RestoreSources))
+                {
+                    if (MSBuildRestoreUtility.LogErrorForClearIfInvalid(RestoreSources, ProjectUniqueName, log))
+                    {
+                        // Fail due to invalid combination
+                        return false;
+                    }
+
                     OutputSources = new string[] { };
                 }
                 else
                 {
-                    throw new InvalidOperationException($"{CLEAR} cannot be used in conjunction with other values.");
+                    // Relative -> Absolute paths
+                    OutputSources = RestoreSources.Select(e => UriUtility.GetAbsolutePathFromFile(ProjectUniqueName, e)).ToArray();
                 }
-            }
-            else
-            {
-                // Relative -> Absolute paths
-                OutputSources = RestoreSources.Select(e => UriUtility.GetAbsolutePathFromFile(ProjectUniqueName, e)).ToArray();
-            }
 
-            if (RestoreFallbackFolders == null)
-            {
-                OutputFallbackFolders = SettingsUtility.GetFallbackPackageFolders(settings).ToArray();
-            }
-            else if (RestoreFallbackFolders.Contains(CLEAR, StringComparer.OrdinalIgnoreCase))
-            {
-                if (RestoreFallbackFolders.Length == 1)
+                if (RestoreFallbackFolders == null)
                 {
+                    OutputFallbackFolders = SettingsUtility.GetFallbackPackageFolders(settings).ToArray();
+                }
+                else if (MSBuildRestoreUtility.ContainsClearKeyword(RestoreFallbackFolders))
+                {
+                    if (MSBuildRestoreUtility.LogErrorForClearIfInvalid(RestoreFallbackFolders, ProjectUniqueName, log))
+                    {
+                        // Fail due to invalid combination
+                        return false;
+                    }
+
                     OutputFallbackFolders = new string[] { };
                 }
                 else
                 {
-                    throw new InvalidOperationException($"{CLEAR} cannot be used in conjunction with other values.");
+                    // Relative -> Absolute paths
+                    OutputFallbackFolders = RestoreFallbackFolders.Select(e => UriUtility.GetAbsolutePathFromFile(ProjectUniqueName, e)).ToArray();
                 }
 
+                var configFilePaths = new List<string>();
+                foreach (var config in settings.Priority)
+                {
+                    configFilePaths.Add(Path.GetFullPath(Path.Combine(config.Root, config.FileName)));
+                }
+                OutputConfigFilePaths = configFilePaths.ToArray();
             }
-            else
+            catch (Exception ex)
             {
-                // Relative -> Absolute paths
-                OutputFallbackFolders = RestoreFallbackFolders.Select(e => UriUtility.GetAbsolutePathFromFile(ProjectUniqueName, e)).ToArray();
+                // Log exceptions with error codes if they exist.
+                ExceptionUtilities.LogException(ex, log);
+                return false;
             }
-
-            var configFilePaths = new List<string>();
-            foreach (var config in settings.Priority)
-            {
-                configFilePaths.Add(Path.GetFullPath(Path.Combine(config.Root, config.FileName)));
-            }
-            OutputConfigFilePaths = configFilePaths.ToArray();
-
 
             log.LogDebug($"(out) OutputPackagesPath '{OutputPackagesPath}'");
             log.LogDebug($"(out) OutputSources '{string.Join(";", OutputSources.Select(p => p))}'");

@@ -80,6 +80,15 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to &apos;{0}&apos; cannot be used in conjunction with other values..
+        /// </summary>
+        internal static string CannotBeUsedWithOtherValues {
+            get {
+                return ResourceManager.GetString("CannotBeUsedWithOtherValues", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Failed to build using &apos;{0} {1}&apos;..
         /// </summary>
         internal static string Error_BuildFailed {
@@ -495,7 +504,7 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Cycle detected:.
+        ///   Looks up a localized string similar to Cycle detected..
         /// </summary>
         internal static string Log_CycleDetected {
             get {
