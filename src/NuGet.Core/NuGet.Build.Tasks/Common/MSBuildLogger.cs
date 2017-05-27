@@ -83,7 +83,7 @@ namespace NuGet.Build
             }
         }
 
-        private void Log(RestoreLogMessage message)
+        private void Log(IRestoreLogMessage message)
         {
             switch (message.Level)
             {
