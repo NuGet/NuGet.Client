@@ -24,7 +24,6 @@ namespace Test.Utility
         private HashSet<string> FilesInProcessing { get; set; }
         public HashSet<string> ProcessedFiles { get; private set; }
         public HashSet<string> Imports { get; }
-        public Dictionary<string, int> ScriptsExecuted { get; }
         public int BindingRedirectsCallCount { get; private set; }
         public INuGetProjectContext NuGetProjectContext { get; set; }
         public int BatchCount { get; private set; }
@@ -45,7 +44,6 @@ namespace Test.Utility
             Imports = new HashSet<string>();
             NuGetProjectContext = nuGetProjectContext;
             ProjectFullPath = string.IsNullOrEmpty(projectFullPath) ? Environment.CurrentDirectory : projectFullPath;
-            ScriptsExecuted = new Dictionary<string, int>();
             ProcessedFiles = new HashSet<string>();
             ProjectName = projectName ?? TestProjectName;
             ProjectFileFullPath = projectFileFullPath ?? Path.Combine(ProjectFullPath, ProjectName);
@@ -158,24 +156,6 @@ namespace Test.Utility
         public void AddBindingRedirects()
         {
             BindingRedirectsCallCount++;
-        }
-
-        public Task ExecuteScriptAsync(PackageIdentity identity, string packageInstallPath, string scriptRelativePath, bool throwOnFailure)
-        {
-            var scriptFullPath = Path.Combine(packageInstallPath, scriptRelativePath);
-            if (!File.Exists(scriptFullPath) && throwOnFailure)
-            {
-                throw new InvalidOperationException(scriptRelativePath + " was not found. Could not execute PS script");
-            }
-
-            int runCount;
-            if (!ScriptsExecuted.TryGetValue(scriptRelativePath, out runCount))
-            {
-                ScriptsExecuted.Add(scriptRelativePath, 0);
-            }
-
-            ScriptsExecuted[scriptRelativePath]++;
-            return Task.FromResult(0);
         }
 
         public void BeginProcessing()

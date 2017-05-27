@@ -1200,7 +1200,7 @@ namespace ProjectManagement.Test
                 var projectTargetFramework = NuGetFramework.Parse("net45");
                 var testNuGetProjectContext = new TestNuGetProjectContext();
                 var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, testNuGetProjectContext);
-                var msBuildNuGetProject = new MSBuildNuGetProject(msBuildNuGetProjectSystem, randomPackagesFolderPath, randomPackagesConfigFolderPath);
+                var msBuildNuGetProject = new TestMSBuildNuGetProject(msBuildNuGetProjectSystem, randomPackagesFolderPath, randomPackagesConfigFolderPath);
 
                 // Pre-Assert
                 // Check that the packages.config file does not exist
@@ -1227,12 +1227,12 @@ namespace ProjectManagement.Test
                 Assert.Equal(packageIdentity, packagesInPackagesConfig[0].PackageIdentity);
                 Assert.Equal(projectTargetFramework, packagesInPackagesConfig[0].TargetFramework);
                 // Check that the ps script install.ps1 has been executed
-                var keys = msBuildNuGetProjectSystem.ScriptsExecuted.Keys.ToList();
-                Assert.Equal(2, msBuildNuGetProjectSystem.ScriptsExecuted.Count);
+                var keys = msBuildNuGetProject.ScriptsExecuted.Keys.ToList();
+                Assert.Equal(2, msBuildNuGetProject.ScriptsExecuted.Count);
                 Assert.True(StringComparer.OrdinalIgnoreCase.Equals("tools\\init.ps1", keys[0]));
                 Assert.True(StringComparer.OrdinalIgnoreCase.Equals("tools\\net45\\install.ps1", keys[1]));
-                Assert.Equal(1, msBuildNuGetProjectSystem.ScriptsExecuted[keys[0]]);
-                Assert.Equal(1, msBuildNuGetProjectSystem.ScriptsExecuted[keys[1]]);
+                Assert.Equal(1, msBuildNuGetProject.ScriptsExecuted[keys[0]]);
+                Assert.Equal(1, msBuildNuGetProject.ScriptsExecuted[keys[1]]);
             }
         }
 
@@ -1252,7 +1252,7 @@ namespace ProjectManagement.Test
                 var projectTargetFramework = NuGetFramework.Parse("net45");
                 var testNuGetProjectContext = new TestNuGetProjectContext();
                 var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, testNuGetProjectContext);
-                var msBuildNuGetProject = new MSBuildNuGetProject(msBuildNuGetProjectSystem, randomPackagesFolderPath, randomPackagesConfigFolderPath);
+                var msBuildNuGetProject = new TestMSBuildNuGetProject(msBuildNuGetProjectSystem, randomPackagesFolderPath, randomPackagesConfigFolderPath);
 
                 // Pre-Assert
                 // Check that the packages.config file does not exist
@@ -1280,12 +1280,12 @@ namespace ProjectManagement.Test
                 Assert.Equal(packageIdentity, packagesInPackagesConfig[0].PackageIdentity);
                 Assert.Equal(projectTargetFramework, packagesInPackagesConfig[0].TargetFramework);
                 // Check that the ps script install.ps1 has been executed
-                var keys = msBuildNuGetProjectSystem.ScriptsExecuted.Keys.ToList();
-                Assert.Equal(2, msBuildNuGetProjectSystem.ScriptsExecuted.Count);
+                var keys = msBuildNuGetProject.ScriptsExecuted.Keys.ToList();
+                Assert.Equal(2, msBuildNuGetProject.ScriptsExecuted.Count);
                 Assert.True(StringComparer.OrdinalIgnoreCase.Equals("tools\\init.ps1", keys[0]));
                 Assert.True(StringComparer.OrdinalIgnoreCase.Equals("tools\\net45\\install.ps1", keys[1]));
-                Assert.Equal(1, msBuildNuGetProjectSystem.ScriptsExecuted[keys[0]]);
-                Assert.Equal(1, msBuildNuGetProjectSystem.ScriptsExecuted[keys[1]]);
+                Assert.Equal(1, msBuildNuGetProject.ScriptsExecuted[keys[0]]);
+                Assert.Equal(1, msBuildNuGetProject.ScriptsExecuted[keys[1]]);
 
                 // Main Act
                 await msBuildNuGetProject.UninstallPackageAsync(packageIdentity, testNuGetProjectContext, token);
@@ -1297,14 +1297,14 @@ namespace ProjectManagement.Test
                 packagesInPackagesConfig = (await msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
                 Assert.Equal(0, packagesInPackagesConfig.Count);
                 // Check that the ps script install.ps1 has been executed
-                Assert.Equal(3, msBuildNuGetProjectSystem.ScriptsExecuted.Count);
-                keys = msBuildNuGetProjectSystem.ScriptsExecuted.Keys.ToList();
+                Assert.Equal(3, msBuildNuGetProject.ScriptsExecuted.Count);
+                keys = msBuildNuGetProject.ScriptsExecuted.Keys.ToList();
                 Assert.True(StringComparer.OrdinalIgnoreCase.Equals("tools\\init.ps1", keys[0]));
                 Assert.True(StringComparer.OrdinalIgnoreCase.Equals("tools\\net45\\install.ps1", keys[1]));
                 Assert.True(StringComparer.OrdinalIgnoreCase.Equals("tools\\net45\\uninstall.ps1", keys[2]));
-                Assert.Equal(1, msBuildNuGetProjectSystem.ScriptsExecuted[keys[0]]);
-                Assert.Equal(1, msBuildNuGetProjectSystem.ScriptsExecuted[keys[1]]);
-                Assert.Equal(1, msBuildNuGetProjectSystem.ScriptsExecuted[keys[2]]);
+                Assert.Equal(1, msBuildNuGetProject.ScriptsExecuted[keys[0]]);
+                Assert.Equal(1, msBuildNuGetProject.ScriptsExecuted[keys[1]]);
+                Assert.Equal(1, msBuildNuGetProject.ScriptsExecuted[keys[2]]);
             }
         }
 
@@ -2018,6 +2018,59 @@ namespace ProjectManagement.Test
         private static DownloadResourceResult GetDownloadResourceResult(FileInfo fileInfo)
         {
             return new DownloadResourceResult(fileInfo.OpenRead());
+        }
+
+        private class TestMSBuildNuGetProject 
+            : MSBuildNuGetProject
+            , INuGetProjectServices
+            , IProjectScriptHostService
+        {
+            public IDictionary<string, int> ScriptsExecuted { get; } = new Dictionary<string, int>();
+
+            public IProjectBuildProperties BuildProperties => throw new NotImplementedException();
+
+            public IProjectSystemCapabilities Capabilities => throw new NotImplementedException();
+
+            public IProjectSystemReferencesReader ReferencesReader => throw new NotImplementedException();
+
+            public IProjectSystemReferencesService References => throw new NotImplementedException();
+
+            public IProjectScriptHostService ScriptService => this;
+
+            IProjectSystemService INuGetProjectServices.ProjectSystem => throw new NotImplementedException();
+
+            public TestMSBuildNuGetProject(IMSBuildProjectSystem msbuildNuGetProjectSystem, string folderNuGetProjectPath, string packagesConfigFolderPath) : base(msbuildNuGetProjectSystem, folderNuGetProjectPath, packagesConfigFolderPath)
+            {
+                ProjectServices = this;
+            }
+
+            public T GetGlobalService<T>() where T : class
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task ExecutePackageScriptAsync(PackageIdentity packageIdentity, string packageInstallPath, string scriptRelativePath, INuGetProjectContext projectContext, bool throwOnFailure, CancellationToken token)
+            {
+                var scriptFullPath = Path.Combine(packageInstallPath, scriptRelativePath);
+                if (!File.Exists(scriptFullPath) && throwOnFailure)
+                {
+                    throw new InvalidOperationException(scriptRelativePath + " was not found. Could not execute PS script");
+                }
+
+                int runCount;
+                if (!ScriptsExecuted.TryGetValue(scriptRelativePath, out runCount))
+                {
+                    ScriptsExecuted.Add(scriptRelativePath, 0);
+                }
+
+                ScriptsExecuted[scriptRelativePath]++;
+                return Task.FromResult(0);
+            }
+
+            public Task<bool> ExecutePackageInitScriptAsync(PackageIdentity packageIdentity, string packageInstallPath, INuGetProjectContext projectContext, bool throwOnFailure, CancellationToken token)
+            {
+                throw new NotImplementedException();
+            }
         }
     }
 }
