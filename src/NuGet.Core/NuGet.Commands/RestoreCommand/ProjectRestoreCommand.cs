@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -234,7 +234,7 @@ namespace NuGet.Commands
             }
         }
 
-        private Task InstallPackageAsync(RemoteMatch installItem, CancellationToken token)
+        private async Task InstallPackageAsync(RemoteMatch installItem, CancellationToken token)
         {
             var packageIdentity = new PackageIdentity(installItem.Library.Name, installItem.Library.Version);
 
@@ -245,15 +245,17 @@ namespace NuGet.Commands
                 _request.PackageSaveMode,
                 _request.XmlDocFileSaveMode);
 
-            return PackageExtractor.InstallFromSourceAsync(
-                stream => installItem.Provider.CopyToAsync(
-                    installItem.Library,
-                    stream,
-                    _request.CacheContext,
-                    _logger,
-                    token),
-                versionFolderPathContext,
-                token);
+            using (var packageDependency = await installItem.Provider.GetPackageDownloaderAsync(
+                packageIdentity,
+                _request.CacheContext,
+                _logger,
+                token))
+            {
+                await PackageExtractor.InstallFromSourceAsync(
+                    packageDependency,
+                    versionFolderPathContext,
+                    token);
+            }
         }
 
         private Task<RestoreTargetGraph[]> WalkRuntimeDependenciesAsync(LibraryRange projectRange,

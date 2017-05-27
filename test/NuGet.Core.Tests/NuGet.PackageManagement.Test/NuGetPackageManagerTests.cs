@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -121,7 +121,7 @@ namespace NuGet.Test
 
                     // Act
                     // Install and Uninstall 50 times while polling for installed packages
-                    for (int i = 0; i < 50; i++)
+                    for (var i = 0; i < 50; i++)
                     {
                         // Install
                         await nuGetPackageManager.InstallPackageAsync(projectA, "packageA",
@@ -198,10 +198,11 @@ namespace NuGet.Test
 
                 // Ensure that installation compatibility was checked.
                 installationCompatibility.Verify(
-                    x => x.EnsurePackageCompatibility(
+                    x => x.EnsurePackageCompatibilityAsync(
                         msBuildNuGetProject,
                         packageIdentity,
-                        It.IsAny<DownloadResourceResult>()),
+                        It.IsAny<DownloadResourceResult>(),
+                        It.IsAny<CancellationToken>()),
                     Times.Once);
                 installationCompatibility.Verify(
                     x => x.EnsurePackageCompatibility(
@@ -5542,9 +5543,9 @@ namespace NuGet.Test
 
             // Set up Package Dependencies
             var dependencies = new List<PackageDependency>();
-            for (int j = 1; j < 3; j++)
+            for (var j = 1; j < 3; j++)
             {
-                for (int i = 2; i <= 30; i++)
+                for (var i = 2; i <= 30; i++)
                 {
                     dependencies.Add(new PackageDependency($"Package{i}", new VersionRange(new NuGetVersion(j, 0, 0))));
                 }
@@ -5552,10 +5553,10 @@ namespace NuGet.Test
 
             // Set up Package Source
             var packages = new List<SourcePackageDependencyInfo>();
-            int next = 1;
-            for (int i = 1; i < 3; i++)
+            var next = 1;
+            for (var i = 1; i < 3; i++)
             {
-                for (int j = 1; j < 30; j++)
+                for (var j = 1; j < 30; j++)
                 {
                     next = j + 1;
                     packages.Add(new SourcePackageDependencyInfo($"Package{j}", new NuGetVersion(i, 0, 0),
@@ -5579,7 +5580,7 @@ namespace NuGet.Test
             var fwk45 = NuGetFramework.Parse("net45");
 
             var installedPackages = new List<PackageReference>();
-            for (int i = 1; i <= 30; i++)
+            for (var i = 1; i <= 30; i++)
             {
                 installedPackages.Add(new PackageReference(
                     new PackageIdentity($"Package{i}", new NuGetVersion(1, 0, 0)), fwk45, true));
@@ -5622,7 +5623,7 @@ namespace NuGet.Test
                 var resulting = result.Select(a => Tuple.Create(a.PackageIdentity, a.NuGetProjectActionType)).ToArray();
 
                 var expected = new List<Tuple<PackageIdentity, NuGetProjectActionType>>();
-                for (int i = 1; i <= 30; i++)
+                for (var i = 1; i <= 30; i++)
                 {
                     Expected(expected, $"Package{i}", new NuGetVersion(1, 0, 0), new NuGetVersion(2, 0, 0));
                 }
@@ -6119,7 +6120,7 @@ namespace NuGet.Test
             IEnumerable<Tuple<PackageIdentity, NuGetProjectActionType>> lhs,
             IEnumerable<Tuple<PackageIdentity, NuGetProjectActionType>> rhs)
         {
-            bool ok = true;
+            var ok = true;
             ok &= RhsContainsAllLhs(lhs, rhs);
             ok &= RhsContainsAllLhs(rhs, lhs);
             return ok;
@@ -6143,8 +6144,8 @@ namespace NuGet.Test
         {
             public bool Equals(Tuple<PackageIdentity, NuGetProjectActionType> x, Tuple<PackageIdentity, NuGetProjectActionType> y)
             {
-                bool f1 = x.Item1.Equals(y.Item1);
-                bool f2 = x.Item2 == y.Item2;
+                var f1 = x.Item1.Equals(y.Item1);
+                var f2 = x.Item2 == y.Item2;
                 return f1 && f2;
             }
 

@@ -10,22 +10,38 @@ namespace NuGet.Protocol.Core.Types
     /// <summary>
     /// The result of <see cref="DownloadResource"/>.
     /// </summary>
-    public class DownloadResourceResult : IDisposable
+    public sealed class DownloadResourceResult : IDisposable
     {
+        private bool _isDisposed;
         private readonly Stream _stream;
         private readonly PackageReaderBase _packageReader;
         private readonly string _packageSource;
 
+        /// <summary>
+        /// Initializes a new <see cref="DownloadResourceResult" /> class.
+        /// </summary>
+        /// <param name="status">A download resource result status.</param>
+        /// <exception cref="ArgumentException">Thrown if <paramref name="status" />
+        /// is either <see cref="DownloadResourceResultStatus.Available" /> or
+        /// <see cref="DownloadResourceResultStatus.AvailableWithoutStream" />.</exception>
         public DownloadResourceResult(DownloadResourceResultStatus status)
         {
-            if (status == DownloadResourceResultStatus.Available)
+            if (status == DownloadResourceResultStatus.Available ||
+                status == DownloadResourceResultStatus.AvailableWithoutStream)
             {
-                throw new ArgumentException("A stream should be provided when the result is available.");
+                throw new ArgumentException("A stream should be provided when the result is available.",
+                    nameof(status));
             }
 
             Status = status;
         }
 
+        /// <summary>
+        /// Initializes a new <see cref="DownloadResourceResult" /> class.
+        /// </summary>
+        /// <param name="stream">A package stream.</param>
+        /// <param name="source">A package source.</param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="stream" /> is <c>null</c>.</exception>
         public DownloadResourceResult(Stream stream, string source)
         {
             if (stream == null)
@@ -38,20 +54,56 @@ namespace NuGet.Protocol.Core.Types
             _packageSource = source;
         }
 
+        /// <summary>
+        /// Initializes a new <see cref="DownloadResourceResult" /> class.
+        /// </summary>
+        /// <param name="stream">A package stream.</param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="stream" /> is <c>null</c>.</exception>
         public DownloadResourceResult(Stream stream)
             : this(stream, source: null)
         {
         }
 
+        /// <summary>
+        /// Initializes a new <see cref="DownloadResourceResult" /> class.
+        /// </summary>
+        /// <param name="stream">A package stream.</param>
+        /// <param name="packageReader">A package reader.</param>
+        /// <param name="source">A package source.</param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="stream" /> is <c>null</c>.</exception>
         public DownloadResourceResult(Stream stream, PackageReaderBase packageReader, string source)
             : this(stream, source)
         {
             _packageReader = packageReader;
         }
 
+        /// <summary>
+        /// Initializes a new <see cref="DownloadResourceResult" /> class.
+        /// </summary>
+        /// <param name="stream">A package stream.</param>
+        /// <param name="packageReader">A package reader.</param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="stream" /> is <c>null</c>.</exception>
         public DownloadResourceResult(Stream stream, PackageReaderBase packageReader)
             : this(stream, packageReader, source: null)
         {
+        }
+
+        /// <summary>
+        /// Initializes a new <see cref="DownloadResourceResult" /> class.
+        /// </summary>
+        /// <param name="packageReader">A package reader.</param>
+        /// <param name="source">A package source.</param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="packageReader" /> is <c>null</c>.</exception>
+        public DownloadResourceResult(PackageReaderBase packageReader, string source)
+        {
+            if (packageReader == null)
+            {
+                throw new ArgumentNullException(nameof(packageReader));
+            }
+
+            Status = DownloadResourceResultStatus.AvailableWithoutStream;
+            _packageReader = packageReader;
+            _packageSource = source;
         }
 
         public DownloadResourceResultStatus Status { get; }
@@ -59,23 +111,35 @@ namespace NuGet.Protocol.Core.Types
         /// <summary>
         /// Gets the package <see cref="PackageStream"/>.
         /// </summary>
+        /// <remarks>The value may be <c>null</c>.</remarks>
         public Stream PackageStream => _stream;
 
         /// <summary>
         /// Gets the source containing this package, if not from cache
         /// </summary>
+        /// <remarks>The value may be <c>null</c>.</remarks>
         public string PackageSource => _packageSource;
 
         /// <summary>
         /// Gets the <see cref="PackageReaderBase"/> for the package.
         /// </summary>
-        /// <remarks>This property can be null.</remarks>
+        /// <remarks>The value may be <c>null</c>.</remarks>
         public PackageReaderBase PackageReader => _packageReader;
 
+        /// <summary>
+        /// Disposes of this instance.
+        /// </summary>
         public void Dispose()
         {
-            _stream?.Dispose();
-            _packageReader?.Dispose();
+            if (!_isDisposed)
+            {
+                _stream?.Dispose();
+                _packageReader?.Dispose();
+
+                GC.SuppressFinalize(this);
+
+                _isDisposed = true;
+            }
         }
     }
 }

@@ -1,13 +1,16 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Moq;
 using NuGet.Common;
 using NuGet.Configuration;
+using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
@@ -20,11 +23,216 @@ namespace NuGet.PackageManagement
 {
     public class PackageDownloaderTests
     {
-        /// <summary>
-        /// Verifies that download throws when package does not exist in V2
-        /// </summary>
         [Fact]
-        public async Task TestDownloadThrows_PackageDoesNotExist_InV2()
+        public async Task GetDownloadResourceResultAsync_Sources_ThrowsForNullSources()
+        {
+            using (var test = new PackageDownloaderTest())
+            {
+                var exception = await Assert.ThrowsAsync<ArgumentNullException>(
+                    () => PackageDownloader.GetDownloadResourceResultAsync(
+                        sources: null,
+                        packageIdentity: test.PackageIdentity,
+                        downloadContext: test.Context,
+                        globalPackagesFolder: "",
+                        logger: NullLogger.Instance,
+                        token: CancellationToken.None));
+
+                Assert.Equal("sources", exception.ParamName);
+            }
+        }
+
+        [Fact]
+        public async Task GetDownloadResourceResultAsync_Sources_ThrowsForNullPackageIdentity()
+        {
+            using (var test = new PackageDownloaderTest())
+            {
+                var exception = await Assert.ThrowsAsync<ArgumentNullException>(
+                    () => PackageDownloader.GetDownloadResourceResultAsync(
+                        Enumerable.Empty<SourceRepository>(),
+                        packageIdentity: null,
+                        downloadContext: test.Context,
+                        globalPackagesFolder: "",
+                        logger: NullLogger.Instance,
+                        token: CancellationToken.None));
+
+                Assert.Equal("packageIdentity", exception.ParamName);
+            }
+        }
+
+        [Fact]
+        public async Task GetDownloadResourceResultAsync_Sources_ThrowsForNullDownloadContext()
+        {
+            using (var test = new PackageDownloaderTest())
+            {
+                var exception = await Assert.ThrowsAsync<ArgumentNullException>(
+                    () => PackageDownloader.GetDownloadResourceResultAsync(
+                        Enumerable.Empty<SourceRepository>(),
+                        test.PackageIdentity,
+                        downloadContext: null,
+                        globalPackagesFolder: "",
+                        logger: NullLogger.Instance,
+                        token: CancellationToken.None));
+
+                Assert.Equal("downloadContext", exception.ParamName);
+            }
+        }
+
+        [Fact]
+        public async Task GetDownloadResourceResultAsync_Sources_ThrowsForNullLogger()
+        {
+            using (var test = new PackageDownloaderTest())
+            {
+                var exception = await Assert.ThrowsAsync<ArgumentNullException>(
+                    () => PackageDownloader.GetDownloadResourceResultAsync(
+                        Enumerable.Empty<SourceRepository>(),
+                        test.PackageIdentity,
+                        test.Context,
+                        globalPackagesFolder: "",
+                        logger: null,
+                        token: CancellationToken.None));
+
+                Assert.Equal("logger", exception.ParamName);
+            }
+        }
+
+        [Fact]
+        public async Task GetDownloadResourceResultAsync_Sources_ThrowsIfCancelled()
+        {
+            using (var test = new PackageDownloaderTest())
+            {
+                await Assert.ThrowsAsync<OperationCanceledException>(
+                    () => PackageDownloader.GetDownloadResourceResultAsync(
+                        Enumerable.Empty<SourceRepository>(),
+                        test.PackageIdentity,
+                        test.Context,
+                        globalPackagesFolder: "",
+                        logger: NullLogger.Instance,
+                        token: new CancellationToken(canceled: true)));
+            }
+        }
+
+        [Fact]
+        public async Task GetDownloadResourceResultAsync_Source_ThrowsForNullSourceRepository()
+        {
+            using (var test = new PackageDownloaderTest())
+            {
+                var exception = await Assert.ThrowsAsync<ArgumentNullException>(
+                    () => PackageDownloader.GetDownloadResourceResultAsync(
+                        sourceRepository: null,
+                        packageIdentity: test.PackageIdentity,
+                        downloadContext: test.Context,
+                        globalPackagesFolder: "",
+                        logger: NullLogger.Instance,
+                        token: CancellationToken.None));
+
+                Assert.Equal("sourceRepository", exception.ParamName);
+            }
+        }
+
+        [Fact]
+        public async Task GetDownloadResourceResultAsync_Source_ThrowsForNullPackageIdentity()
+        {
+            using (var test = new PackageDownloaderTest())
+            {
+                var exception = await Assert.ThrowsAsync<ArgumentNullException>(
+                    () => PackageDownloader.GetDownloadResourceResultAsync(
+                        test.SourceRepository,
+                        packageIdentity: null,
+                        downloadContext: test.Context,
+                        globalPackagesFolder: "",
+                        logger: NullLogger.Instance,
+                        token: CancellationToken.None));
+
+                Assert.Equal("packageIdentity", exception.ParamName);
+            }
+        }
+
+        [Fact]
+        public async Task GetDownloadResourceResultAsync_Source_ThrowsForNullDownloadContext()
+        {
+            using (var test = new PackageDownloaderTest())
+            {
+                var exception = await Assert.ThrowsAsync<ArgumentNullException>(
+                    () => PackageDownloader.GetDownloadResourceResultAsync(
+                        test.SourceRepository,
+                        test.PackageIdentity,
+                        downloadContext: null,
+                        globalPackagesFolder: "",
+                        logger: NullLogger.Instance,
+                        token: CancellationToken.None));
+
+                Assert.Equal("downloadContext", exception.ParamName);
+            }
+        }
+
+        [Fact]
+        public async Task GetDownloadResourceResultAsync_Source_ThrowsForNullLogger()
+        {
+            using (var test = new PackageDownloaderTest())
+            {
+                var exception = await Assert.ThrowsAsync<ArgumentNullException>(
+                    () => PackageDownloader.GetDownloadResourceResultAsync(
+                        test.SourceRepository,
+                        test.PackageIdentity,
+                        test.Context,
+                        globalPackagesFolder: "",
+                        logger: null,
+                        token: CancellationToken.None));
+
+                Assert.Equal("logger", exception.ParamName);
+            }
+        }
+
+        [Fact]
+        public async Task GetDownloadResourceResultAsync_Source_ThrowsIfCancelled()
+        {
+            using (var test = new PackageDownloaderTest())
+            {
+                var resourceProvider = new Mock<INuGetResourceProvider>();
+
+                resourceProvider.SetupGet(x => x.Name)
+                    .Returns(nameof(DownloadResource) + "Provider");
+                resourceProvider.SetupGet(x => x.ResourceType)
+                    .Returns(typeof(DownloadResource));
+
+                resourceProvider.Setup(x => x.TryCreate(
+                        It.IsNotNull<SourceRepository>(),
+                        It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(new Tuple<bool, INuGetResource>(true, Mock.Of<DownloadResource>()));
+
+                var sourceRepository = new SourceRepository(
+                    test.SourceRepository.PackageSource,
+                    new[] { resourceProvider.Object });
+
+                await Assert.ThrowsAsync<OperationCanceledException>(
+                    () => PackageDownloader.GetDownloadResourceResultAsync(
+                        sourceRepository,
+                        test.PackageIdentity,
+                        test.Context,
+                        globalPackagesFolder: "",
+                        logger: NullLogger.Instance,
+                        token: new CancellationToken(canceled: true)));
+            }
+        }
+
+        [Fact]
+        public async Task GetDownloadResourceResultAsync_Source_ThrowsIfNoDownloadResource()
+        {
+            using (var test = new PackageDownloaderTest())
+            {
+                await Assert.ThrowsAsync<InvalidOperationException>(
+                    () => PackageDownloader.GetDownloadResourceResultAsync(
+                        test.SourceRepository,
+                        test.PackageIdentity,
+                        test.Context,
+                        globalPackagesFolder: "",
+                        logger: NullLogger.Instance,
+                        token: CancellationToken.None));
+            }
+        }
+
+        [Fact]
+        public async Task GetDownloadResourceResultAsync_V2_ThrowIfPackageDoesNotExist()
         {
             // Arrange
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV2OnlySourceRepositoryProvider();
@@ -39,7 +247,8 @@ namespace NuGet.PackageManagement
                 using (var cacheContext = new SourceCacheContext())
                 using (var packagesDirectory = TestDirectory.Create())
                 {
-                    await PackageDownloader.GetDownloadResourceResultAsync(v2sourceRepository,
+                    await PackageDownloader.GetDownloadResourceResultAsync(
+                        v2sourceRepository,
                         packageIdentity,
                         new PackageDownloadContext(cacheContext),
                         packagesDirectory,
@@ -56,11 +265,8 @@ namespace NuGet.PackageManagement
             Assert.NotNull(exception);
         }
 
-        /// <summary>
-        /// Verifies that download throws when package does not exist in V3
-        /// </summary>
         [Fact]
-        public async Task TestDownloadThrows_PackageDoesNotExist_InV3()
+        public async Task GetDownloadResourceResultAsync_V3_ThrowIfPackageDoesNotExist()
         {
             // Arrange
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
@@ -75,7 +281,8 @@ namespace NuGet.PackageManagement
                 using (var cacheContext = new SourceCacheContext())
                 using (var packagesDirectory = TestDirectory.Create())
                 {
-                    await PackageDownloader.GetDownloadResourceResultAsync(v3sourceRepository,
+                    await PackageDownloader.GetDownloadResourceResultAsync(
+                        v3sourceRepository,
                         packageIdentity,
                         new PackageDownloadContext(cacheContext),
                         packagesDirectory,
@@ -93,7 +300,7 @@ namespace NuGet.PackageManagement
         }
 
         [Fact]
-        public async Task TestDownloadPackage_InV2()
+        public async Task GetDownloadResourceResultAsync_V2_DownloadsPackage()
         {
             // Arrange
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV2OnlySourceRepositoryProvider();
@@ -103,7 +310,8 @@ namespace NuGet.PackageManagement
             // Act
             using (var cacheContext = new SourceCacheContext())
             using (var packagesDirectory = TestDirectory.Create())
-            using (var downloadResult = await PackageDownloader.GetDownloadResourceResultAsync(v2sourceRepository,
+            using (var downloadResult = await PackageDownloader.GetDownloadResourceResultAsync(
+                v2sourceRepository,
                 packageIdentity,
                 new PackageDownloadContext(cacheContext),
                 packagesDirectory,
@@ -120,7 +328,7 @@ namespace NuGet.PackageManagement
         }
 
         [Fact]
-        public async Task TestDownloadPackage_InV3()
+        public async Task GetDownloadResourceResultAsync_V3_DownloadsPackage()
         {
             // Arrange
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
@@ -130,7 +338,8 @@ namespace NuGet.PackageManagement
             // Act
             using (var cacheContext = new SourceCacheContext())
             using (var packagesDirectory = TestDirectory.Create())
-            using (var downloadResult = await PackageDownloader.GetDownloadResourceResultAsync(v3sourceRepository,
+            using (var downloadResult = await PackageDownloader.GetDownloadResourceResultAsync(
+                v3sourceRepository,
                 packageIdentity,
                 new PackageDownloadContext(cacheContext),
                 packagesDirectory,
@@ -167,7 +376,7 @@ namespace NuGet.PackageManagement
         }
 
         [Fact]
-        public async Task TestDownloadPackage_MultipleSources()
+        public async Task GetDownloadResourceResultAsync_MultipleSources_DownloadsPackage()
         {
             // Arrange
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(new[]
@@ -182,7 +391,8 @@ namespace NuGet.PackageManagement
             // Act
             using (var cacheContext = new SourceCacheContext())
             using (var packagesDirectory = TestDirectory.Create())
-            using (var downloadResult = await PackageDownloader.GetDownloadResourceResultAsync(sourceRepositoryProvider.GetRepositories(),
+            using (var downloadResult = await PackageDownloader.GetDownloadResourceResultAsync(
+                sourceRepositoryProvider.GetRepositories(),
                 packageIdentity,
                 new PackageDownloadContext(cacheContext),
                 packagesDirectory,
@@ -197,7 +407,7 @@ namespace NuGet.PackageManagement
         }
 
         [Fact]
-        public async Task TestDownloadPackage_MultipleSources_NotFound()
+        public async Task GetDownloadResourceResultAsync_MultipleSources_PackageNotFound()
         {
             // Arrange
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(new[]
@@ -211,17 +421,19 @@ namespace NuGet.PackageManagement
             using (var packagesDirectory = TestDirectory.Create())
             using (var cacheContext = new SourceCacheContext())
             {
-                await Assert.ThrowsAsync<FatalProtocolException>(async () => await PackageDownloader.GetDownloadResourceResultAsync(sourceRepositoryProvider.GetRepositories(),
-                packageIdentity,
-                new PackageDownloadContext(cacheContext),
-                packagesDirectory,
-                NullLogger.Instance,
-                CancellationToken.None));
+                await Assert.ThrowsAsync<FatalProtocolException>(
+                    async () => await PackageDownloader.GetDownloadResourceResultAsync(
+                        sourceRepositoryProvider.GetRepositories(),
+                        packageIdentity,
+                        new PackageDownloadContext(cacheContext),
+                        packagesDirectory,
+                        NullLogger.Instance,
+                        CancellationToken.None));
             }
         }
 
         [Fact]
-        public async Task TestDownloadPackage_MultipleSources_FoundOnMultiple()
+        public async Task GetDownloadResourceResultAsync_MultipleSources_PackageDownloadedWhenFoundInMultipleSources()
         {
             // Arrange
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(new[]
@@ -253,7 +465,56 @@ namespace NuGet.PackageManagement
             }
         }
 
-        private static async Task VerifyDirectDownloadSkipsGlobalPackagesFolder(SourceRepositoryProvider sourceRepositoryProvider)
+        [Fact]
+        public async Task GetDownloadResourceResultAsync_SupportsDownloadResultWithoutPackageStream()
+        {
+            using (var test = new PackageDownloaderTest())
+            using (var stream = new MemoryStream())
+            using (var zipArchive = new ZipArchive(stream, ZipArchiveMode.Create))
+            using (var packageReader = new PackageArchiveReader(zipArchive))
+            {
+                var resourceProvider = new Mock<INuGetResourceProvider>();
+                var resource = new Mock<DownloadResource>();
+                var expectedResult = new DownloadResourceResult(
+                    packageReader,
+                    test.SourceRepository.PackageSource.Source);
+
+                resource.Setup(x => x.GetDownloadResourceResultAsync(
+                        It.IsNotNull<PackageIdentity>(),
+                        It.IsNotNull<PackageDownloadContext>(),
+                        It.IsAny<string>(),
+                        It.IsNotNull<ILogger>(),
+                        It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(expectedResult);
+
+                resourceProvider.SetupGet(x => x.Name)
+                    .Returns(nameof(DownloadResource) + "Provider");
+                resourceProvider.SetupGet(x => x.ResourceType)
+                    .Returns(typeof(DownloadResource));
+                resourceProvider.Setup(x => x.TryCreate(
+                        It.IsNotNull<SourceRepository>(),
+                        It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(new Tuple<bool, INuGetResource>(true, resource.Object));
+
+                var sourceRepository = new SourceRepository(
+                    test.SourceRepository.PackageSource,
+                    new[] { resourceProvider.Object });
+
+                var actualResult = await PackageDownloader.GetDownloadResourceResultAsync(
+                    sourceRepository,
+                    test.PackageIdentity,
+                    test.Context,
+                    globalPackagesFolder: "",
+                    logger: NullLogger.Instance,
+                    token: CancellationToken.None);
+
+                Assert.Equal(DownloadResourceResultStatus.AvailableWithoutStream, actualResult.Status);
+                Assert.Same(expectedResult, actualResult);
+            }
+        }
+
+        private static async Task VerifyDirectDownloadSkipsGlobalPackagesFolder(
+            SourceRepositoryProvider sourceRepositoryProvider)
         {
             // Arrange
             var sourceRepository = sourceRepositoryProvider.GetRepositories().First();
@@ -292,6 +553,31 @@ namespace NuGet.PackageManagement
                 // Verify that the package was not cached in the Global Packages Folder
                 var globalPackage = GlobalPackagesFolderUtility.GetPackage(packageIdentity, packagesDirectory);
                 Assert.Null(globalPackage);
+            }
+        }
+
+        private sealed class PackageDownloaderTest : IDisposable
+        {
+            private readonly SourceCacheContext _sourceCacheContext;
+
+            internal PackageDownloadContext Context { get; }
+            internal PackageIdentity PackageIdentity { get; }
+            internal SourceRepository SourceRepository { get; }
+
+            internal PackageDownloaderTest()
+            {
+                _sourceCacheContext = new SourceCacheContext();
+                Context = new PackageDownloadContext(_sourceCacheContext);
+                PackageIdentity = new PackageIdentity(id: "a", version: NuGetVersion.Parse("1.0.0"));
+                SourceRepository = new SourceRepository(
+                    new PackageSource("https://unit/test"),
+                    Enumerable.Empty<INuGetResourceProvider>());
+            }
+
+            public void Dispose()
+            {
+                _sourceCacheContext.Dispose();
+                GC.SuppressFinalize(this);
             }
         }
     }

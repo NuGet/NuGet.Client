@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -189,8 +189,9 @@ namespace NuGet.PackageManagement
         {
             // FileSystemPackagesConfig supports id.version formats, if the version is excluded use the normal v2 format
             var feedType = excludeVersion ? FeedType.FileSystemV2 : FeedType.FileSystemPackagesConfig;
+            var resolver = new PackagePathResolver(packagesFolderPath, !excludeVersion);
 
-            PackagesFolderNuGetProject = new FolderNuGetProject(packagesFolderPath, excludeVersion);
+            PackagesFolderNuGetProject = new FolderNuGetProject(packagesFolderPath, resolver);
             // Capturing it locally is important since it allows for the instance to cache packages for the lifetime
             // of the closure \ NuGetPackageManager.
             PackagesFolderSourceRepository = SourceRepositoryProvider.CreateRepository(
@@ -893,7 +894,7 @@ namespace NuGet.PackageManagement
             var projectInstalledPackageReferences = await nuGetProject.GetInstalledPackagesAsync(token);
             var oldListOfInstalledPackages = projectInstalledPackageReferences.Select(p => p.PackageIdentity);
 
-            bool isUpdateAll = (packageId == null && packageIdentities.Count == 0);
+            var isUpdateAll = (packageId == null && packageIdentities.Count == 0);
 
             var preferredVersions = new Dictionary<string, PackageIdentity>(StringComparer.OrdinalIgnoreCase);
 
@@ -1051,7 +1052,7 @@ namespace NuGet.PackageManagement
                 {
                     // BUG #1181 VS2015 : Updating from one feed fails for packages from different feed.
 
-                    DependencyInfoResource packagesFolderResource = await PackagesFolderSourceRepository.GetResourceAsync<DependencyInfoResource>(token);
+                    var packagesFolderResource = await PackagesFolderSourceRepository.GetResourceAsync<DependencyInfoResource>(token);
                     var packages = new List<SourcePackageDependencyInfo>();
                     foreach (var installedPackage in projectInstalledPackageReferences)
                     {
@@ -1126,7 +1127,7 @@ namespace NuGet.PackageManagement
                 }
 
                 // if we have been asked for exact versions of packages then we should also force the uninstall/install of those packages (this corresponds to a -Reinstall)
-                bool isReinstall = PrunePackageTree.IsExactVersion(resolutionContext.VersionConstraints);
+                var isReinstall = PrunePackageTree.IsExactVersion(resolutionContext.VersionConstraints);
 
                 var targetIds = Enumerable.Empty<string>();
                 if (!isUpdateAll)
@@ -2128,7 +2129,7 @@ namespace NuGet.PackageManagement
                             using (var downloadPackageResult = await preFetchResult.GetResultAsync())
                             {
                                 // use the version exactly as specified in the nuspec file
-                                var packageIdentity = downloadPackageResult.PackageReader.GetIdentity();
+                                var packageIdentity = await downloadPackageResult.PackageReader.GetIdentityAsync(token);
 
                                 await ExecuteInstallAsync(
                                     nuGetProject,
@@ -2832,7 +2833,7 @@ namespace NuGet.PackageManagement
             return PackagesFolderNuGetProject.PackageExists(packageIdentity);
         }
 
-        private Task ExecuteInstallAsync(
+        private async Task ExecuteInstallAsync(
             NuGetProject nuGetProject,
             PackageIdentity packageIdentity,
             DownloadResourceResult resourceResult,
@@ -2841,10 +2842,11 @@ namespace NuGet.PackageManagement
             CancellationToken token)
         {
             // TODO: EnsurePackageCompatibility check should be performed in preview. Can easily avoid a lot of rollback
-            InstallationCompatibility.EnsurePackageCompatibility(nuGetProject, packageIdentity, resourceResult);
+            await InstallationCompatibility.EnsurePackageCompatibilityAsync(nuGetProject, packageIdentity, resourceResult, token);
 
             packageWithDirectoriesToBeDeleted.Remove(packageIdentity);
-            return nuGetProject.InstallPackageAsync(packageIdentity, resourceResult, nuGetProjectContext, token);
+
+            await nuGetProject.InstallPackageAsync(packageIdentity, resourceResult, nuGetProjectContext, token);
         }
 
         private async Task ExecuteUninstallAsync(NuGetProject nuGetProject, PackageIdentity packageIdentity, HashSet<PackageIdentity> packageWithDirectoriesToBeDeleted,

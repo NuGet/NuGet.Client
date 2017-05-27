@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -19,6 +19,9 @@ using NuGet.Versioning;
 
 namespace NuGet.Protocol
 {
+    /// <summary>
+    /// A resource capable of fetching packages, package versions and package dependency information.
+    /// </summary>
     public class LocalV2FindPackageByIdResource : FindPackageByIdResource
     {
         private readonly ConcurrentDictionary<string, IReadOnlyList<LocalPackageInfo>> _packageInfoCache
@@ -26,38 +29,130 @@ namespace NuGet.Protocol
 
         private readonly string _source;
 
+        /// <summary>
+        /// Initializes a new <see cref="LocalV2FindPackageByIdResource" /> class.
+        /// </summary>
+        /// <param name="packageSource">A package source.</param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="packageSource" />
+        /// is <c>null</c>.</exception>
         public LocalV2FindPackageByIdResource(PackageSource packageSource)
         {
+            if (packageSource == null)
+            {
+                throw new ArgumentNullException(nameof(packageSource));
+            }
+
             var rootDirInfo = LocalFolderUtility.GetAndVerifyRootDirectory(packageSource.Source);
 
             _source = rootDirInfo.FullName;
         }
 
+        /// <summary>
+        /// Asynchronously gets all package versions for a package ID.
+        /// </summary>
+        /// <param name="id">A package ID.</param>
+        /// <param name="cacheContext">A source cache context.</param>
+        /// <param name="logger">A logger.</param>
+        /// <param name="cancellationToken">A cancellation token.</param>
+        /// <returns>A task that represents the asynchronous operation.
+        /// The task result (<see cref="Task{TResult}.Result" />) returns an
+        /// <see cref="IEnumerable{NuGetVersion}" />.</returns>
+        /// <exception cref="ArgumentException">Thrown if <paramref name="id" />
+        /// is either <c>null</c> or an empty string.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="cacheContext" /> <c>null</c>.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="logger" /> <c>null</c>.</exception>
+        /// <exception cref="OperationCanceledException">Thrown if <paramref name="cancellationToken" />
+        /// is cancelled.</exception>
         public override Task<IEnumerable<NuGetVersion>> GetAllVersionsAsync(
             string id,
             SourceCacheContext cacheContext,
             ILogger logger,
-            CancellationToken token)
+            CancellationToken cancellationToken)
         {
+            if (string.IsNullOrEmpty(id))
+            {
+                throw new ArgumentException(Strings.ArgumentCannotBeNullOrEmpty, nameof(id));
+            }
+
+            if (cacheContext == null)
+            {
+                throw new ArgumentNullException(nameof(cacheContext));
+            }
+
+            if (logger == null)
+            {
+                throw new ArgumentNullException(nameof(logger));
+            }
+
+            cancellationToken.ThrowIfCancellationRequested();
+
             var infos = GetPackageInfos(id, cacheContext, logger);
+
             return Task.FromResult(infos.Select(p => p.Identity.Version));
         }
 
+        /// <summary>
+        /// Asynchronously copies a .nupkg to a stream.
+        /// </summary>
+        /// <param name="id">A package ID.</param>
+        /// <param name="version">A package version.</param>
+        /// <param name="destination">A destination stream.</param>
+        /// <param name="cacheContext">A source cache context.</param>
+        /// <param name="logger">A logger.</param>
+        /// <param name="cancellationToken">A cancellation token.</param>
+        /// <returns>A task that represents the asynchronous operation.
+        /// The task result (<see cref="Task{TResult}.Result" />) returns an
+        /// <see cref="bool" /> indicating whether or not the .nupkg file was copied.</returns>
+        /// <exception cref="ArgumentException">Thrown if <paramref name="id" />
+        /// is either <c>null</c> or an empty string.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="version" /> <c>null</c>.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="destination" /> <c>null</c>.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="cacheContext" /> <c>null</c>.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="logger" /> <c>null</c>.</exception>
+        /// <exception cref="OperationCanceledException">Thrown if <paramref name="cancellationToken" />
+        /// is cancelled.</exception>
         public override async Task<bool> CopyNupkgToStreamAsync(
             string id,
             NuGetVersion version,
             Stream destination,
             SourceCacheContext cacheContext,
             ILogger logger,
-            CancellationToken token)
+            CancellationToken cancellationToken)
         {
+            if (string.IsNullOrEmpty(id))
+            {
+                throw new ArgumentException(Strings.ArgumentCannotBeNullOrEmpty, nameof(id));
+            }
+
+            if (version == null)
+            {
+                throw new ArgumentNullException(nameof(version));
+            }
+
+            if (destination == null)
+            {
+                throw new ArgumentNullException(nameof(destination));
+            }
+
+            if (cacheContext == null)
+            {
+                throw new ArgumentNullException(nameof(cacheContext));
+            }
+
+            if (logger == null)
+            {
+                throw new ArgumentNullException(nameof(logger));
+            }
+
+            cancellationToken.ThrowIfCancellationRequested();
+
             var info = GetPackageInfo(id, version, cacheContext, logger);
 
             if (info != null)
             {
                 using (var fileStream = File.OpenRead(info.Path))
                 {
-                    await fileStream.CopyToAsync(destination, token);
+                    await fileStream.CopyToAsync(destination, cancellationToken);
                     return true;
                 }
             }
@@ -65,13 +160,53 @@ namespace NuGet.Protocol
             return false;
         }
 
+        /// <summary>
+        /// Asynchronously gets dependency information for a specific package.
+        /// </summary>
+        /// <param name="id">A package id.</param>
+        /// <param name="version">A package version.</param>
+        /// <param name="cacheContext">A source cache context.</param>
+        /// <param name="logger">A logger.</param>
+        /// <param name="cancellationToken">A cancellation token.</param>
+        /// <returns>A task that represents the asynchronous operation.
+        /// The task result (<see cref="Task{TResult}.Result" />) returns an
+        /// <see cref="IEnumerable{NuGetVersion}" />.</returns>
+        /// <exception cref="ArgumentException">Thrown if <paramref name="id" />
+        /// is either <c>null</c> or an empty string.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="version" /> <c>null</c>.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="cacheContext" /> <c>null</c>.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="logger" /> <c>null</c>.</exception>
+        /// <exception cref="OperationCanceledException">Thrown if <paramref name="cancellationToken" />
+        /// is cancelled.</exception>
         public override Task<FindPackageByIdDependencyInfo> GetDependencyInfoAsync(
             string id,
             NuGetVersion version,
             SourceCacheContext cacheContext,
             ILogger logger,
-            CancellationToken token)
+            CancellationToken cancellationToken)
         {
+            if (string.IsNullOrEmpty(id))
+            {
+                throw new ArgumentException(Strings.ArgumentCannotBeNullOrEmpty, nameof(id));
+            }
+
+            if (version == null)
+            {
+                throw new ArgumentNullException(nameof(version));
+            }
+
+            if (cacheContext == null)
+            {
+                throw new ArgumentNullException(nameof(cacheContext));
+            }
+
+            if (logger == null)
+            {
+                throw new ArgumentNullException(nameof(logger));
+            }
+
+            cancellationToken.ThrowIfCancellationRequested();
+
             FindPackageByIdDependencyInfo dependencyInfo = null;
             var info = GetPackageInfo(id, version, cacheContext, logger);
             if (info != null)
@@ -82,12 +217,68 @@ namespace NuGet.Protocol
             return Task.FromResult(dependencyInfo);
         }
 
-        private LocalPackageInfo GetPackageInfo(string id, NuGetVersion version, SourceCacheContext cacheContext, ILogger logger)
+        private LocalPackageInfo GetPackageInfo(
+            string id,
+            NuGetVersion version,
+            SourceCacheContext cacheContext,
+            ILogger logger)
         {
-            return GetPackageInfos(id, cacheContext, logger).FirstOrDefault(package => package.Identity.Version == version);
+            return GetPackageInfos(id, cacheContext, logger)
+                .FirstOrDefault(package => package.Identity.Version == version);
         }
 
-        private IReadOnlyList<LocalPackageInfo> GetPackageInfos(string id, SourceCacheContext cacheContext, ILogger logger)
+        /// <summary>
+        /// Asynchronously gets a package downloader for a package identity.
+        /// </summary>
+        /// <param name="packageIdentity">A package identity.</param>
+        /// <param name="cacheContext">A source cache context.</param>
+        /// <param name="logger">A logger.</param>
+        /// <param name="cancellationToken">A cancellation token.</param>
+        /// <returns>A task that represents the asynchronous operation.
+        /// The task result (<see cref="Task{TResult}.Result" />) returns an <see cref="IPackageDownloader" />.</returns>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="packageIdentity" /> <c>null</c>.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="cacheContext" /> <c>null</c>.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="logger" /> <c>null</c>.</exception>
+        /// <exception cref="OperationCanceledException">Thrown if <paramref name="cancellationToken" />
+        /// is cancelled.</exception>
+        public override Task<IPackageDownloader> GetPackageDownloaderAsync(
+            PackageIdentity packageIdentity,
+            SourceCacheContext cacheContext,
+            ILogger logger,
+            CancellationToken cancellationToken)
+        {
+            if (packageIdentity == null)
+            {
+                throw new ArgumentNullException(nameof(packageIdentity));
+            }
+
+            if (cacheContext == null)
+            {
+                throw new ArgumentNullException(nameof(cacheContext));
+            }
+
+            if (logger == null)
+            {
+                throw new ArgumentNullException(nameof(logger));
+            }
+
+            cancellationToken.ThrowIfCancellationRequested();
+
+            var packageInfo = GetPackageInfo(packageIdentity.Id, packageIdentity.Version, cacheContext, logger);
+            IPackageDownloader packageDownloader = null;
+
+            if (packageInfo != null)
+            {
+                packageDownloader = new LocalPackageArchiveDownloader(packageInfo.Path, packageInfo.Identity, logger);
+            }
+
+            return Task.FromResult(packageDownloader);
+        }
+
+        private IReadOnlyList<LocalPackageInfo> GetPackageInfos(
+            string id,
+            SourceCacheContext cacheContext,
+            ILogger logger)
         {
             IReadOnlyList<LocalPackageInfo> results = null;
 

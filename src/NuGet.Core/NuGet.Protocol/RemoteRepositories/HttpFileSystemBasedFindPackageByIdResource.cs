@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -10,6 +10,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
+using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
@@ -35,6 +36,14 @@ namespace NuGet.Protocol
         private readonly IReadOnlyList<Uri> _baseUris;
         private readonly FindPackagesByIdNupkgDownloader _nupkgDownloader;
 
+        /// <summary>
+        /// Initializes a new <see cref="HttpFileSystemBasedFindPackageByIdResource" /> class.
+        /// </summary>
+        /// <param name="baseUris">Base URI's.</param>
+        /// <param name="httpSource">An HTTP source.</param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="baseUris" /> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentException">Thrown if <paramref name="baseUris" /> is empty.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="httpSource" /> is <c>null</c>.</exception>
         public HttpFileSystemBasedFindPackageByIdResource(
             IReadOnlyList<Uri> baseUris,
             HttpSource httpSource)
@@ -49,6 +58,11 @@ namespace NuGet.Protocol
                 throw new ArgumentException(Strings.OneOrMoreUrisMustBeSpecified, nameof(baseUris));
             }
 
+            if (httpSource == null)
+            {
+                throw new ArgumentNullException(nameof(httpSource));
+            }
+
             _baseUris = baseUris
                 .Take(MaxRetries)
                 .Select(uri => uri.OriginalString.EndsWith("/", StringComparison.Ordinal) ? uri : new Uri(uri.OriginalString + "/"))
@@ -58,16 +72,68 @@ namespace NuGet.Protocol
             _nupkgDownloader = new FindPackagesByIdNupkgDownloader(httpSource);
         }
 
+        /// <summary>
+        /// Asynchronously gets all package versions for a package ID.
+        /// </summary>
+        /// <param name="id">A package ID.</param>
+        /// <param name="cacheContext">A source cache context.</param>
+        /// <param name="logger">A logger.</param>
+        /// <param name="cancellationToken">A cancellation token.</param>
+        /// <returns>A task that represents the asynchronous operation.
+        /// The task result (<see cref="Task{TResult}.Result" />) returns an
+        /// <see cref="IEnumerable{NuGetVersion}" />.</returns>
+        /// <exception cref="ArgumentException">Thrown if <paramref name="id" />
+        /// is either <c>null</c> or an empty string.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="cacheContext" /> <c>null</c>.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="logger" /> <c>null</c>.</exception>
+        /// <exception cref="OperationCanceledException">Thrown if <paramref name="cancellationToken" />
+        /// is cancelled.</exception>
         public override async Task<IEnumerable<NuGetVersion>> GetAllVersionsAsync(
             string id,
             SourceCacheContext cacheContext,
             ILogger logger,
             CancellationToken cancellationToken)
         {
+            if (string.IsNullOrEmpty(id))
+            {
+                throw new ArgumentException(Strings.ArgumentCannotBeNullOrEmpty, nameof(id));
+            }
+
+            if (cacheContext == null)
+            {
+                throw new ArgumentNullException(nameof(cacheContext));
+            }
+
+            if (logger == null)
+            {
+                throw new ArgumentNullException(nameof(logger));
+            }
+
+            cancellationToken.ThrowIfCancellationRequested();
+
             var packageInfos = await EnsurePackagesAsync(id, cacheContext, logger, cancellationToken);
+
             return packageInfos.Keys;
         }
 
+        /// <summary>
+        /// Asynchronously gets dependency information for a specific package.
+        /// </summary>
+        /// <param name="id">A package id.</param>
+        /// <param name="version">A package version.</param>
+        /// <param name="cacheContext">A source cache context.</param>
+        /// <param name="logger">A logger.</param>
+        /// <param name="cancellationToken">A cancellation token.</param>
+        /// <returns>A task that represents the asynchronous operation.
+        /// The task result (<see cref="Task{TResult}.Result" />) returns an
+        /// <see cref="IEnumerable{NuGetVersion}" />.</returns>
+        /// <exception cref="ArgumentException">Thrown if <paramref name="id" />
+        /// is either <c>null</c> or an empty string.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="version" /> <c>null</c>.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="cacheContext" /> <c>null</c>.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="logger" /> <c>null</c>.</exception>
+        /// <exception cref="OperationCanceledException">Thrown if <paramref name="cancellationToken" />
+        /// is cancelled.</exception>
         public override async Task<FindPackageByIdDependencyInfo> GetDependencyInfoAsync(
             string id,
             NuGetVersion version,
@@ -75,6 +141,28 @@ namespace NuGet.Protocol
             ILogger logger,
             CancellationToken cancellationToken)
         {
+            if (string.IsNullOrEmpty(id))
+            {
+                throw new ArgumentException(Strings.ArgumentCannotBeNullOrEmpty, nameof(id));
+            }
+
+            if (version == null)
+            {
+                throw new ArgumentNullException(nameof(version));
+            }
+
+            if (cacheContext == null)
+            {
+                throw new ArgumentNullException(nameof(cacheContext));
+            }
+
+            if (logger == null)
+            {
+                throw new ArgumentNullException(nameof(logger));
+            }
+
+            cancellationToken.ThrowIfCancellationRequested();
+
             var packageInfos = await EnsurePackagesAsync(id, cacheContext, logger, cancellationToken);
 
             PackageInfo packageInfo;
@@ -93,6 +181,26 @@ namespace NuGet.Protocol
             return null;
         }
 
+        /// <summary>
+        /// Asynchronously copies a .nupkg to a stream.
+        /// </summary>
+        /// <param name="id">A package ID.</param>
+        /// <param name="version">A package version.</param>
+        /// <param name="destination">A destination stream.</param>
+        /// <param name="cacheContext">A source cache context.</param>
+        /// <param name="logger">A logger.</param>
+        /// <param name="cancellationToken">A cancellation token.</param>
+        /// <returns>A task that represents the asynchronous operation.
+        /// The task result (<see cref="Task{TResult}.Result" />) returns an
+        /// <see cref="bool" /> indicating whether or not the .nupkg file was copied.</returns>
+        /// <exception cref="ArgumentException">Thrown if <paramref name="id" />
+        /// is either <c>null</c> or an empty string.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="version" /> <c>null</c>.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="destination" /> <c>null</c>.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="cacheContext" /> <c>null</c>.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="logger" /> <c>null</c>.</exception>
+        /// <exception cref="OperationCanceledException">Thrown if <paramref name="cancellationToken" />
+        /// is cancelled.</exception>
         public override async Task<bool> CopyNupkgToStreamAsync(
             string id,
             NuGetVersion version,
@@ -101,6 +209,33 @@ namespace NuGet.Protocol
             ILogger logger,
             CancellationToken cancellationToken)
         {
+            if (string.IsNullOrEmpty(id))
+            {
+                throw new ArgumentException(Strings.ArgumentCannotBeNullOrEmpty, nameof(id));
+            }
+
+            if (version == null)
+            {
+                throw new ArgumentNullException(nameof(version));
+            }
+
+            if (destination == null)
+            {
+                throw new ArgumentNullException(nameof(destination));
+            }
+
+            if (cacheContext == null)
+            {
+                throw new ArgumentNullException(nameof(cacheContext));
+            }
+
+            if (logger == null)
+            {
+                throw new ArgumentNullException(nameof(logger));
+            }
+
+            cancellationToken.ThrowIfCancellationRequested();
+
             var packageInfos = await EnsurePackagesAsync(id, cacheContext, logger, cancellationToken);
 
             PackageInfo packageInfo;
@@ -118,6 +253,54 @@ namespace NuGet.Protocol
             return false;
         }
 
+        /// <summary>
+        /// Asynchronously gets a package downloader for a package identity.
+        /// </summary>
+        /// <param name="packageIdentity">A package identity.</param>
+        /// <param name="cacheContext">A source cache context.</param>
+        /// <param name="logger">A logger.</param>
+        /// <param name="cancellationToken">A cancellation token.</param>
+        /// <returns>A task that represents the asynchronous operation.
+        /// The task result (<see cref="Task{TResult}.Result" />) returns an <see cref="IPackageDownloader" />.</returns>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="packageIdentity" /> <c>null</c>.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="cacheContext" /> <c>null</c>.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="logger" /> <c>null</c>.</exception>
+        /// <exception cref="OperationCanceledException">Thrown if <paramref name="cancellationToken" />
+        /// is cancelled.</exception>
+        public override async Task<IPackageDownloader> GetPackageDownloaderAsync(
+            PackageIdentity packageIdentity,
+            SourceCacheContext cacheContext,
+            ILogger logger,
+            CancellationToken cancellationToken)
+        {
+            if (packageIdentity == null)
+            {
+                throw new ArgumentNullException(nameof(packageIdentity));
+            }
+
+            if (cacheContext == null)
+            {
+                throw new ArgumentNullException(nameof(cacheContext));
+            }
+
+            if (logger == null)
+            {
+                throw new ArgumentNullException(nameof(logger));
+            }
+
+            cancellationToken.ThrowIfCancellationRequested();
+
+            var packageInfos = await EnsurePackagesAsync(packageIdentity.Id, cacheContext, logger, cancellationToken);
+
+            PackageInfo packageInfo;
+            if (packageInfos.TryGetValue(packageIdentity.Version, out packageInfo))
+            {
+                return new RemotePackageArchiveDownloader(this, packageInfo.Identity, cacheContext, logger);
+            }
+
+            return null;
+        }
+
         private async Task<SortedDictionary<NuGetVersion, PackageInfo>> EnsurePackagesAsync(
             string id,
             SourceCacheContext cacheContext,
@@ -127,11 +310,12 @@ namespace NuGet.Protocol
             AsyncLazy<SortedDictionary<NuGetVersion, PackageInfo>> result = null;
 
             Func<string, AsyncLazy<SortedDictionary<NuGetVersion, PackageInfo>>> findPackages =
-                (keyId) => new AsyncLazy<SortedDictionary<NuGetVersion, PackageInfo>>(() => FindPackagesByIdAsync(
-                                keyId,
-                                cacheContext,
-                                logger,
-                                cancellationToken));
+                (keyId) => new AsyncLazy<SortedDictionary<NuGetVersion, PackageInfo>>(
+                    () => FindPackagesByIdAsync(
+                        keyId,
+                        cacheContext,
+                        logger,
+                        cancellationToken));
 
             if (cacheContext.RefreshMemoryCache)
             {

@@ -30,6 +30,7 @@ namespace NuGet.Protocol
         {
             yield return new Lazy<INuGetResourceProvider>(() => new FeedTypeResourceProvider());
             yield return new Lazy<INuGetResourceProvider>(() => new DependencyInfoResourceV3Provider());
+            yield return new Lazy<INuGetResourceProvider>(() => new DownloadResourcePluginProvider());
             yield return new Lazy<INuGetResourceProvider>(() => new DownloadResourceV3Provider());
             yield return new Lazy<INuGetResourceProvider>(() => new MetadataResourceV3Provider());
             yield return new Lazy<INuGetResourceProvider>(() => new RawSearchResourceV3Provider());
@@ -39,6 +40,7 @@ namespace NuGet.Protocol
             yield return new Lazy<INuGetResourceProvider>(() => new ODataServiceDocumentResourceV2Provider());
             yield return new Lazy<INuGetResourceProvider>(() => new HttpHandlerResourceV3Provider());
             yield return new Lazy<INuGetResourceProvider>(() => new HttpSourceResourceProvider());
+            yield return new Lazy<INuGetResourceProvider>(() => new PluginFindPackageByIdResourceProvider());
             yield return new Lazy<INuGetResourceProvider>(() => new HttpFileSystemBasedFindPackageByIdResourceProvider());
             yield return new Lazy<INuGetResourceProvider>(() => new RemoteV3FindPackageByIdResourceProvider());
             yield return new Lazy<INuGetResourceProvider>(() => new RemoteV2FindPackageByIdResourceProvider());
@@ -58,6 +60,7 @@ namespace NuGet.Protocol
             yield return new Lazy<INuGetResourceProvider>(() => new PackageMetadataResourceV3Provider());
             yield return new Lazy<INuGetResourceProvider>(() => new AutoCompleteResourceV2FeedProvider());
             yield return new Lazy<INuGetResourceProvider>(() => new AutoCompleteResourceV3Provider());
+            yield return new Lazy<INuGetResourceProvider>(() => new PluginResourceProvider());
 
             // Local repository providers
             yield return new Lazy<INuGetResourceProvider>(() => new FindLocalPackagesResourceUnzippedProvider());
