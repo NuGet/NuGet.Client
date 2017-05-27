@@ -15,16 +15,16 @@ namespace NuGet.Build
     {
         private readonly TaskLoggingHelper _taskLogging;
 
-        private delegate void LogMessageWithDetails(string subcategory, 
-            string code, 
-            string helpKeyword, 
-            string file, 
-            int lineNumber, 
-            int columnNumber, 
-            int endLineNumber, 
-            int endColumnNumber, 
-            MessageImportance importance, 
-            string message, 
+        private delegate void LogMessageWithDetails(string subcategory,
+            string code,
+            string helpKeyword,
+            string file,
+            int lineNumber,
+            int columnNumber,
+            int endLineNumber,
+            int endColumnNumber,
+            MessageImportance importance,
+            string message,
             params object[] messageArgs);
 
         private delegate void LogErrorWithDetails(string subcategory,
@@ -38,8 +38,8 @@ namespace NuGet.Build
             string message,
             params object[] messageArgs);
 
-        private delegate void LogMessageAsString(MessageImportance importance, 
-            string message, 
+        private delegate void LogMessageAsString(MessageImportance importance,
+            string message,
             params object[] messageArgs);
 
         private delegate void LogErrorAsString(string message,
@@ -57,53 +57,98 @@ namespace NuGet.Build
         {
             if (DisplayMessage(message.Level))
             {
-
-                var logMessage = message as IRestoreLogMessage;
-
-                if (logMessage == null)
+                if (RuntimeEnvironmentHelper.IsMono)
                 {
-                    logMessage = new RestoreLogMessage(message.Level, message.Message)
-                    {
-                        Code = message.Code,
-                        FilePath = message.ProjectPath,
-                        StartLineNumber = -1,
-                        EndLineNumber = -1,
-                        StartColumnNumber = -1,
-                        EndColumnNumber = -1
-                    };
+                    LogForMono(message);
+                    return;
                 }
-
-                switch (message.Level)
+                else
                 {
-                    case LogLevel.Error:
-                        LogError(logMessage, _taskLogging.LogError, _taskLogging.LogError);
-                        break;
+                    var logMessage = message as IRestoreLogMessage;
 
-                    case LogLevel.Warning:
-                        LogError(logMessage, _taskLogging.LogWarning, _taskLogging.LogWarning);
-                        break;
-
-                    case LogLevel.Minimal:
-                        LogMessage(logMessage, MessageImportance.High, _taskLogging.LogMessage, _taskLogging.LogMessage);
-                        break;
-
-                    case LogLevel.Information:
-                        LogMessage(logMessage, MessageImportance.Normal, _taskLogging.LogMessage, _taskLogging.LogMessage);
-                        break;
-
-                    case LogLevel.Debug:
-                    case LogLevel.Verbose:
-                    default:
-                        // Default to LogLevel.Debug and low importance
-                        LogMessage(logMessage, MessageImportance.Low, _taskLogging.LogMessage, _taskLogging.LogMessage);
-                        break;
+                    if (logMessage == null)
+                    {
+                        logMessage = new RestoreLogMessage(message.Level, message.Message)
+                        {
+                            Code = message.Code,
+                            FilePath = message.ProjectPath,
+                            StartLineNumber = -1,
+                            EndLineNumber = -1,
+                            StartColumnNumber = -1,
+                            EndColumnNumber = -1
+                        };
+                    }
+                    Log(logMessage);
                 }
             }
         }
 
-        private void LogMessage(IRestoreLogMessage logMessage, 
+        private void Log(RestoreLogMessage message)
+        {
+            switch (message.Level)
+            {
+                case LogLevel.Error:
+                    LogError(message, _taskLogging.LogError, _taskLogging.LogError);
+                    break;
+
+                case LogLevel.Warning:
+                    LogError(message, _taskLogging.LogWarning, _taskLogging.LogWarning);
+                    break;
+
+                case LogLevel.Minimal:
+                    LogMessage(message, MessageImportance.High, _taskLogging.LogMessage, _taskLogging.LogMessage);
+                    break;
+
+                case LogLevel.Information:
+                    LogMessage(message, MessageImportance.Normal, _taskLogging.LogMessage, _taskLogging.LogMessage);
+                    break;
+
+                case LogLevel.Debug:
+                case LogLevel.Verbose:
+                default:
+                    // Default to LogLevel.Debug and low importance
+                    LogMessage(message, MessageImportance.Low, _taskLogging.LogMessage, _taskLogging.LogMessage);
+                    break;
+            }
+        }
+
+        /// <summary>
+        /// Log using basic methods to avoid missing methods on mono.
+        /// </summary>
+        private void LogForMono(ILogMessage message)
+        {
+            switch (message.Level)
+            {
+                case LogLevel.Error:
+                    _taskLogging.LogError(message.Message);
+                    break;
+
+                case LogLevel.Warning:
+                    _taskLogging.LogWarning(message.Message);
+                    break;
+
+                case LogLevel.Minimal:
+                    _taskLogging.LogMessage(MessageImportance.High, message.Message);
+                    break;
+
+                case LogLevel.Information:
+                    _taskLogging.LogMessage(MessageImportance.Normal, message.Message);
+                    break;
+
+                case LogLevel.Debug:
+                case LogLevel.Verbose:
+                default:
+                    // Default to LogLevel.Debug and low importance
+                    _taskLogging.LogMessage(MessageImportance.Low, message.Message);
+                    break;
+            }
+
+            return;
+        }
+
+        private void LogMessage(IRestoreLogMessage logMessage,
             MessageImportance importance,
-            LogMessageWithDetails logWithDetails, 
+            LogMessageWithDetails logWithDetails,
             LogMessageAsString logAsString)
         {
             if (logMessage.Code > NuGetLogCode.Undefined)
