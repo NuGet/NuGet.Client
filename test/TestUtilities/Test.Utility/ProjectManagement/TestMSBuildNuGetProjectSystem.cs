@@ -13,7 +13,7 @@ using NuGet.Test.Utility;
 
 namespace Test.Utility
 {
-    public class TestMSBuildNuGetProjectSystem : IMSBuildNuGetProjectSystem
+    public class TestMSBuildNuGetProjectSystem : IMSBuildProjectSystem
     {
         private const string TestProjectName = "TestProjectName";
         private const string TestProjectFileName = "Test.csproj";
@@ -26,7 +26,7 @@ namespace Test.Utility
         public HashSet<string> Imports { get; }
         public Dictionary<string, int> ScriptsExecuted { get; }
         public int BindingRedirectsCallCount { get; private set; }
-        public INuGetProjectContext NuGetProjectContext { get; private set; }
+        public INuGetProjectContext NuGetProjectContext { get; set; }
         public int BatchCount { get; private set; }
         public Action<string> AddReferenceAction { get; set; }
         public Action<string> RemoveReferenceAction { get; set; }
@@ -70,13 +70,14 @@ namespace Test.Utility
             }
         }
 
-        public void AddFrameworkReference(string name, string packageId)
+        public Task AddFrameworkReferenceAsync(string name, string packageId)
         {
             if (FrameworkReferences.Contains(name))
             {
                 throw new InvalidOperationException("Cannot add existing reference. That would be a COMException in VS");
             }
             FrameworkReferences.Add(name);
+            return Task.CompletedTask;
         }
 
         public void AddImport(string targetFullPath, ImportLocation location)
@@ -84,9 +85,10 @@ namespace Test.Utility
             Imports.Add(targetFullPath);
         }
 
-        public void AddReference(string referencePath)
+        public Task AddReferenceAsync(string referencePath)
         {
             AddReferenceAction(referencePath);
+            return Task.CompletedTask;
         }
 
         public void RemoveFile(string path)
@@ -99,8 +101,6 @@ namespace Test.Utility
             }
         }
 
-        public dynamic VSProject4 { get; }
-
         public string ProjectFullPath { get; }
 
         public string ProjectFileFullPath { get; }
@@ -112,9 +112,9 @@ namespace Test.Utility
             get { return ProjectName; }
         }
 
-        public bool ReferenceExists(string name)
+        public Task<bool> ReferenceExistsAsync(string name)
         {
-            return References.ContainsKey(name) || FrameworkReferences.Contains(name);
+            return Task.FromResult(References.ContainsKey(name) || FrameworkReferences.Contains(name));
         }
 
         public void RemoveImport(string targetFullPath)
@@ -122,17 +122,13 @@ namespace Test.Utility
             Imports.Remove(targetFullPath);
         }
 
-        public void RemoveReference(string name)
+        public Task RemoveReferenceAsync(string name)
         {
             RemoveReferenceAction(name);
+            return Task.CompletedTask;
         }
 
         public NuGetFramework TargetFramework { get; }
-
-        public void SetNuGetProjectContext(INuGetProjectContext nuGetProjectContext)
-        {
-            NuGetProjectContext = nuGetProjectContext;
-        }
 
         public bool FileExistsInProject(string path)
         {

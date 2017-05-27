@@ -59,7 +59,7 @@ namespace NuGet.PackageManagement.Test
 
                 var projectTargetFramework = NuGetFramework.Parse("uap10.0");
                 var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, new TestNuGetProjectContext());
-                var project = new ProjectJsonBuildIntegratedNuGetProject(projectConfig.FullName, msbuildProjectPath.FullName, msBuildNuGetProjectSystem);
+                var project = new ProjectJsonNuGetProject(projectConfig.FullName, msbuildProjectPath.FullName);
 
                 var solutionManager = new TestSolutionManager(false);
                 solutionManager.NuGetProjects.Add(project);
@@ -128,7 +128,7 @@ namespace NuGet.PackageManagement.Test
 
                 var projectTargetFramework = NuGetFramework.Parse("uap10.0");
                 var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, new TestNuGetProjectContext());
-                var project = new ProjectJsonBuildIntegratedNuGetProject(projectConfig.FullName, msbuildProjectPath.FullName, msBuildNuGetProjectSystem);
+                var project = new ProjectJsonNuGetProject(projectConfig.FullName, msbuildProjectPath.FullName);
 
                 var solutionManager = new TestSolutionManager(false);
                 solutionManager.NuGetProjects.Add(project);
@@ -195,7 +195,7 @@ namespace NuGet.PackageManagement.Test
 
                 var projectTargetFramework = NuGetFramework.Parse("uap10.0");
                 var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, new TestNuGetProjectContext());
-                var project = new ProjectJsonBuildIntegratedNuGetProject(projectConfig.FullName, msbuildProjectPath.FullName, msBuildNuGetProjectSystem);
+                var project = new ProjectJsonNuGetProject(projectConfig.FullName, msbuildProjectPath.FullName);
 
                 var effectiveGlobalPackagesFolder = SettingsUtility.GetGlobalPackagesFolder(NullSettings.Instance);
 
@@ -258,7 +258,7 @@ namespace NuGet.PackageManagement.Test
 
                 var projectTargetFramework = NuGetFramework.Parse("uap10.0");
                 var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, new TestNuGetProjectContext());
-                var project = new ProjectJsonBuildIntegratedNuGetProject(projectConfig.FullName, msbuildProjectPath.FullName, msBuildNuGetProjectSystem);
+                var project = new ProjectJsonNuGetProject(projectConfig.FullName, msbuildProjectPath.FullName);
 
                 var effectiveGlobalPackagesFolder = SettingsUtility.GetGlobalPackagesFolder(NullSettings.Instance);
 
@@ -323,7 +323,7 @@ namespace NuGet.PackageManagement.Test
 
                 var projectTargetFramework = NuGetFramework.Parse("uap10.0");
                 var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, new TestNuGetProjectContext());
-                var project = new ProjectJsonBuildIntegratedNuGetProject(projectConfig.FullName, msbuildProjectPath.FullName, msBuildNuGetProjectSystem);
+                var project = new ProjectJsonNuGetProject(projectConfig.FullName, msbuildProjectPath.FullName);
 
                 // Restore to the fallback folder
                 var solutionManager = new TestSolutionManager(false);

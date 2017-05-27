@@ -81,7 +81,7 @@ namespace Test.Utility
                 projectFullPath, projectName);
 
             var projectFilePath = Path.Combine(projectFullPath, $"{msBuildNuGetProjectSystem.ProjectName}.csproj");
-            NuGetProject nuGetProject = new ProjectJsonBuildIntegratedNuGetProject(projectJsonPath, projectFilePath);
+            NuGetProject nuGetProject = new ProjectJsonNuGetProject(projectJsonPath, projectFilePath);
             NuGetProjects.Add(nuGetProject);
             return nuGetProject;
         }
@@ -117,17 +117,6 @@ namespace Test.Utility
             }
         }
 
-        public NuGetProject DefaultNuGetProject
-        {
-            get { return NuGetProjects.FirstOrDefault(); }
-        }
-
-        public string DefaultNuGetProjectName
-        {
-            get { return DefaultNuGetProject.GetMetadata<string>(NuGetProjectMetadataKeys.Name); }
-            set { throw new NotImplementedException(); }
-        }
-
         public NuGetProject GetNuGetProject(string nuGetProjectSafeName)
         {
             return NuGetProjects.
@@ -155,20 +144,9 @@ namespace Test.Utility
             get { return IsSolutionOpen; }
         }
 
-        public bool IsSolutionDPLEnabled
-        {
-            get { return false; }
-        }
-
         public void EnsureSolutionIsLoaded()
         {
             // do nothing
-        }
-
-        public Task<NuGetProject> UpdateNuGetProjectToPackageRef(NuGetProject oldProject)
-        {
-            // do nothing
-            return null;
         }
 
 #pragma warning disable 0067
@@ -201,11 +179,6 @@ namespace Test.Utility
             {
                 ActionsExecuted(this, new ActionsExecutedEventArgs(actions));
             }
-        }
-
-        public void SaveProject(NuGetProject nuGetProject)
-        {
-            //do nothing.
         }
 
         public void Dispose()

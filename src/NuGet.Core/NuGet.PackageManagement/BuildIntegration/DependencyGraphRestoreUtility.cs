@@ -299,13 +299,6 @@ namespace NuGet.PackageManagement
                 return true;
             }
 
-            if (cacheContext.DeferredPackageSpecs.Where(spec => spec.RestoreMetadata.ProjectJsonPath != null).
-                Select(p => IsRestoreRequired(p, pathResolvers, packagesChecked, cacheContext))
-                .Any(r => r == true))
-            {
-                return true;
-            }
-
             return false;
         }
 
@@ -323,19 +316,6 @@ namespace NuGet.PackageManagement
             DependencyGraphCacheContext context)
         {
             var dgSpec = new DependencyGraphSpec();
-
-            foreach (var packageSpec in context.DeferredPackageSpecs)
-            {
-                dgSpec.AddProject(packageSpec);
-
-                if (packageSpec.RestoreMetadata.ProjectStyle == ProjectStyle.PackageReference ||
-                    packageSpec.RestoreMetadata.ProjectStyle == ProjectStyle.ProjectJson ||
-                    packageSpec.RestoreMetadata.ProjectStyle == ProjectStyle.DotnetCliTool ||
-                    packageSpec.RestoreMetadata.ProjectStyle == ProjectStyle.Standalone)
-                {
-                    dgSpec.AddRestore(packageSpec.RestoreMetadata.ProjectUniqueName);
-                }
-            }
 
             var projects = solutionManager.GetNuGetProjects().OfType<IDependencyGraphProject>();
 

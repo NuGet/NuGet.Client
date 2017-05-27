@@ -6,11 +6,13 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Threading;
 using NuGet.Common;
 using NuGet.LibraryModel;
+using NuGet.ProjectManagement.Projects;
 using NuGet.ProjectModel;
 using NuGet.VisualStudio;
 using Task = System.Threading.Tasks.Task;
@@ -19,9 +21,12 @@ namespace NuGet.PackageManagement.VisualStudio
 {
     public static class ProjectJsonToPackageRefMigrator
     {
-        public static async Task MigrateAsync(LegacyCSProjPackageReferenceProject project, string dteProjectFullName)
+        public static async Task MigrateAsync(
+            BuildIntegratedNuGetProject project)
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+            var dteProjectFullName = project.MSBuildProjectPath;
             var projectJsonFilePath = ProjectJsonPathUtilities.GetProjectConfigPath(Path.GetDirectoryName(project.MSBuildProjectPath),
                 Path.GetFileNameWithoutExtension(project.MSBuildProjectPath));
 
@@ -42,7 +47,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             await MigrateDependenciesAsync(project, packageSpec);
 
-            var buildProject = EnvDTEProjectUtility.AsMicrosoftBuildEvaluationProject(dteProjectFullName);
+            var buildProject = EnvDTEProjectUtility.AsMSBuildEvaluationProject(dteProjectFullName);
 
             MigrateRuntimes(packageSpec, buildProject);
 
@@ -52,9 +57,10 @@ namespace NuGet.PackageManagement.VisualStudio
                 projectJsonFilePath);
         }
 
-        private static async Task MigrateDependenciesAsync(LegacyCSProjPackageReferenceProject project, PackageSpec packageSpec)
+        private static async Task MigrateDependenciesAsync(BuildIntegratedNuGetProject project, PackageSpec packageSpec)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
+
             if (packageSpec.TargetFrameworks.Count > 1)
             {
                 throw new InvalidOperationException(
@@ -73,23 +79,7 @@ namespace NuGet.PackageManagement.VisualStudio
             dependencies.AddRange(packageSpec.Dependencies);
             foreach (var dependency in dependencies)
             {
-                var includeFlags = dependency.IncludeType;
-                var privateAssetsFlag = dependency.SuppressParent;
-                var metadataElements = new List<string>();
-                var metadataValues = new List<string>();
-                if (includeFlags != LibraryIncludeFlags.All)
-                {
-                    metadataElements.Add("IncludeAssets");
-                    metadataValues.Add(LibraryIncludeFlagUtils.GetFlagString(includeFlags).Replace(',', ';'));
-                }
-
-                if (privateAssetsFlag != LibraryIncludeFlagUtils.DefaultSuppressParent)
-                {
-                    metadataElements.Add("PrivateAssets");
-                    metadataValues.Add(LibraryIncludeFlagUtils.GetFlagString(privateAssetsFlag).Replace(',', ';'));
-                }
-
-                await project.InstallPackageWithMetadataAsync(dependency.Name, dependency.LibraryRange.VersionRange, metadataElements, metadataValues);
+                await project.ProjectServices.References.AddOrUpdatePackageReferenceAsync(dependency, CancellationToken.None);
             }
         }
 
@@ -129,7 +119,8 @@ namespace NuGet.PackageManagement.VisualStudio
         }
         
 
-        private static async Task CreateBackupAsync(LegacyCSProjPackageReferenceProject project,
+        private static async Task CreateBackupAsync(
+            BuildIntegratedNuGetProject project,
             string projectJsonFilePath)
         {
             try

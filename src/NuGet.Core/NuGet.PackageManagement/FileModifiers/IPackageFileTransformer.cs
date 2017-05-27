@@ -12,7 +12,7 @@ namespace NuGet.ProjectManagement
         /// <summary>
         /// Transforms the file
         /// </summary>
-        void TransformFile(Func<Stream> fileStreamFactory, string targetPath, IMSBuildNuGetProjectSystem projectSystem);
+        void TransformFile(Func<Stream> fileStreamFactory, string targetPath, IMSBuildProjectSystem projectSystem);
 
         /// <summary>
         /// Reverses the transform on the targetPath, using all the potential source of change
@@ -24,6 +24,6 @@ namespace NuGet.ProjectManagement
         void RevertFile(Func<Stream> fileStreamFactory,
             string targetPath,
             IEnumerable<InternalZipFileInfo> matchingFiles,
-            IMSBuildNuGetProjectSystem projectSystem);
+            IMSBuildProjectSystem projectSystem);
     }
 }

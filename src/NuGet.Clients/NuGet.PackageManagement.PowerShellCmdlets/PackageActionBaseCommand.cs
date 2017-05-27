@@ -284,7 +284,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 // if default format is PackageReference then update NuGet Project
                 if (packageManagementFormat.SelectedPackageManagementFormat == 1)
                 {
-                    var newProject = await VsSolutionManager.UpdateNuGetProjectToPackageRef(Project);
+                    var newProject = await VsSolutionManager.UpgradeProjectToPackageReferenceAsync(Project);
 
                     if (newProject != null)
                     {

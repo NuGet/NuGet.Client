@@ -7,12 +7,13 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Microsoft;
 using Microsoft.Build.Evaluation;
 using Microsoft.CSharp.RuntimeBinder;
 using Microsoft.VisualStudio;
+using Microsoft.VisualStudio.ProjectSystem.Interop;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.Common;
@@ -21,58 +22,13 @@ using NuGet.VisualStudio;
 using VSLangProj;
 using VSLangProj80;
 using VsWebSite;
-using MicrosoftBuildEvaluationProject = Microsoft.Build.Evaluation.Project;
+using MSBuildEvaluationProject = Microsoft.Build.Evaluation.Project;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
     public static class EnvDTEProjectUtility
     {
         #region Constants and Statics
-
-        private static readonly HashSet<string> SupportedProjectTypes = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-            {
-                VsProjectTypes.WebSiteProjectTypeGuid,
-                VsProjectTypes.CsharpProjectTypeGuid,
-                VsProjectTypes.VbProjectTypeGuid,
-                VsProjectTypes.CppProjectTypeGuid,
-                VsProjectTypes.JsProjectTypeGuid,
-                VsProjectTypes.FsharpProjectTypeGuid,
-                VsProjectTypes.NemerleProjectTypeGuid,
-                VsProjectTypes.WixProjectTypeGuid,
-                VsProjectTypes.SynergexProjectTypeGuid,
-                VsProjectTypes.NomadForVisualStudioProjectTypeGuid,
-                VsProjectTypes.TDSProjectTypeGuid,
-                VsProjectTypes.DxJsProjectTypeGuid,
-                VsProjectTypes.DeploymentProjectTypeGuid,
-                VsProjectTypes.CosmosProjectTypeGuid,
-                VsProjectTypes.ManagementPackProjectTypeGuid,
-            };
-
-        private static readonly HashSet<string> UnsupportedProjectTypes = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-            {
-                VsProjectTypes.LightSwitchProjectTypeGuid,
-                VsProjectTypes.InstallShieldLimitedEditionTypeGuid,
-            };
-
-        // List of project types that cannot have binding redirects added
-        private static readonly string[] UnsupportedProjectTypesForBindingRedirects =
-            {
-                VsProjectTypes.WixProjectTypeGuid,
-                VsProjectTypes.JsProjectTypeGuid,
-                VsProjectTypes.NemerleProjectTypeGuid,
-                VsProjectTypes.CppProjectTypeGuid,
-                VsProjectTypes.SynergexProjectTypeGuid,
-                VsProjectTypes.NomadForVisualStudioProjectTypeGuid,
-                VsProjectTypes.DxJsProjectTypeGuid,
-                VsProjectTypes.CosmosProjectTypeGuid,
-            };
-
-        // List of project types that cannot have references added to them
-        private static readonly string[] UnsupportedProjectTypesForAddingReferences =
-            {
-                VsProjectTypes.WixProjectTypeGuid,
-                VsProjectTypes.CppProjectTypeGuid,
-            };
 
         private static readonly HashSet<string> UnsupportedProjectCapabilities = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
             {
@@ -122,7 +78,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 EnvDTE.ProjectItem item = await GetProjectItemAsync(envDTEProject, path);
                 return item != null;
             }
-            IVsProject vsProject = (IVsProject)VsHierarchyUtility.ToVsHierarchy(envDTEProject);
+            var vsProject = (IVsProject)VsHierarchyUtility.ToVsHierarchy(envDTEProject);
             if (vsProject == null)
             {
                 return false;
@@ -136,7 +92,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 // REVIEW: We want to revisit this after RTM - the code in this if statement should be applied to every project type.
                 // We're checking for VSDOCUMENTPRIORITY.DP_Standard here to see if the file is included in the project.
                 // Original check (outside of if) did not have this.
-                VSDOCUMENTPRIORITY[] priority = new VSDOCUMENTPRIORITY[1];
+                var priority = new VSDOCUMENTPRIORITY[1];
                 int hr = vsProject.IsDocumentInProject(path, out pFound, priority, out itemId);
                 return ErrorHandler.Succeeded(hr) && pFound == 1 && priority[0] >= VSDOCUMENTPRIORITY.DP_Standard;
             }
@@ -415,17 +371,13 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private static string GetPattern(string token)
         {
-            // Need NOT be on the UI thread
-
             return token == "*" ? @"(.*)" : @"(" + token + ")";
         }
 
-        internal static MicrosoftBuildEvaluationProject AsMicrosoftBuildEvaluationProject(string dteProjectFullName)
+        internal static MSBuildEvaluationProject AsMSBuildEvaluationProject(string projectFullName)
         {
-            // Should be called from the UI thread
-
-            return ProjectCollection.GlobalProjectCollection.GetLoadedProjects(dteProjectFullName).FirstOrDefault() ??
-                   ProjectCollection.GlobalProjectCollection.LoadProject(dteProjectFullName);
+            return ProjectCollection.GlobalProjectCollection.GetLoadedProjects(projectFullName).FirstOrDefault() ??
+                   ProjectCollection.GlobalProjectCollection.LoadProject(projectFullName);
         }
 
         internal static References GetReferences(EnvDTE.Project project)
@@ -440,11 +392,11 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public static bool IsSupported(EnvDTE.Project envDTEProject)
         {
+            Assumes.Present(envDTEProject);
+
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            Debug.Assert(envDTEProject != null);
-
-            if (SupportsINuGetProjectSystem(envDTEProject))
+            if (SupportsProjectKPackageManager(envDTEProject))
             {
                 return true;
             }
@@ -454,7 +406,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 return true;
             }
 
-            return envDTEProject.Kind != null && SupportedProjectTypes.Contains(envDTEProject.Kind) && !HasUnsupportedProjectCapability(envDTEProject);
+            return envDTEProject.Kind != null && SupportedProjectTypes.IsSupported(envDTEProject.Kind) && !HasUnsupportedProjectCapability(envDTEProject);
         }
 
         private static bool IsProjectCapabilityCompliant(EnvDTE.Project envDTEProject)
@@ -688,7 +640,7 @@ namespace NuGet.PackageManagement.VisualStudio
             Debug.Assert(ThreadHelper.CheckAccess());
 
             var envDTEProjects = new List<EnvDTE.Project>();
-            AssemblyReferences references = GetAssemblyReferences(envDTEProject);
+            var references = GetAssemblyReferences(envDTEProject);
             foreach (AssemblyReference reference in references)
             {
                 if (reference.ReferencedProject != null)
@@ -707,7 +659,7 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            return envDTEProject.Kind == null || UnsupportedProjectTypes.Contains(envDTEProject.Kind);
+            return envDTEProject.Kind == null || SupportedProjectTypes.IsUnsupported(envDTEProject.Kind);
         }
 
         public static bool IsParentProjectExplicitlyUnsupported(EnvDTE.Project envDTEProject)
@@ -721,32 +673,57 @@ namespace NuGet.PackageManagement.VisualStudio
                 return false;
             }
 
-            EnvDTE.Project parentEnvDTEProject = envDTEProject.ParentProjectItem.ContainingProject;
+            var parentEnvDTEProject = envDTEProject.ParentProjectItem.ContainingProject;
             return IsExplicitlyUnsupported(parentEnvDTEProject);
         }
 
-        public static bool SupportsINuGetProjectSystem(EnvDTE.Project envDTEProject)
+        public static bool SupportsProjectKPackageManager(EnvDTE.Project envDTEProject)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            var projectKProject = ProjectKNuGetProjectProvider.GetProjectKProject(envDTEProject);
+            var projectKProject = GetProjectKPackageManager(envDTEProject);
             return projectKProject != null;
         }
 
-        public static bool SupportsBindingRedirects(EnvDTE.Project envDTEProject)
+        public static INuGetPackageManager GetProjectKPackageManager(EnvDTE.Project project)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            return (envDTEProject.Kind != null & !UnsupportedProjectTypesForBindingRedirects.Contains(envDTEProject.Kind, StringComparer.OrdinalIgnoreCase)) &&
-                   !EnvDTEProjectInfoUtility.IsWindowsStoreApp(envDTEProject);
-        }
+            var vsProject = project as IVsProject;
+            if (vsProject == null)
+            {
+                return null;
+            }
 
-        public static bool SupportsReferences(EnvDTE.Project envDTEProject)
-        {
-            ThreadHelper.ThrowIfNotOnUIThread();
+            Microsoft.VisualStudio.OLE.Interop.IServiceProvider serviceProvider = null;
+            vsProject.GetItemContext(
+                (uint)VSConstants.VSITEMID.Root,
+                out serviceProvider);
+            if (serviceProvider == null)
+            {
+                return null;
+            }
 
-            return envDTEProject.Kind != null &&
-                   !UnsupportedProjectTypesForAddingReferences.Contains(envDTEProject.Kind, StringComparer.OrdinalIgnoreCase);
+            using (var sp = new ServiceProvider(serviceProvider))
+            {
+                var retValue = sp.GetService(typeof(INuGetPackageManager));
+                if (retValue == null)
+                {
+                    return null;
+                }
+
+                if (!(retValue is INuGetPackageManager))
+                {
+                    // Workaround a bug in Dev14 prereleases where Lazy<INuGetPackageManager> was returned.
+                    var properties = retValue.GetType().GetProperties().Where(p => p.Name == "Value");
+                    if (properties.Count() == 1)
+                    {
+                        retValue = properties.First().GetValue(retValue);
+                    }
+                }
+
+                return retValue as INuGetPackageManager;
+            }
         }
 
         /// <summary>
@@ -789,31 +766,6 @@ namespace NuGet.PackageManagement.VisualStudio
 
         #region Act on Project
 
-        public static IVsProjectBuildSystem GetVsProjectBuildSystem(EnvDTE.Project project)
-        {
-            if (project == null)
-            {
-                throw new ArgumentNullException(nameof(project));
-            }
-
-            return NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
-            {
-                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-                // Get the vs solution
-                IVsSolution solution = ServiceLocator.GetInstance<IVsSolution>();
-                IVsHierarchy hierarchy;
-                var hr = solution.GetProjectOfUniqueName(EnvDTEProjectInfoUtility.GetUniqueName(project), out hierarchy);
-
-                if (hr != VSConstants.S_OK)
-                {
-                    Marshal.ThrowExceptionForHR(hr);
-                }
-
-                return hierarchy as IVsProjectBuildSystem;
-            });
-        }
-
         internal static void EnsureCheckedOutIfExists(EnvDTE.Project envDTEProject, string root, string path)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
@@ -830,7 +782,7 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            EnvDTE.ProjectItem projectItem = await GetProjectItemAsync(envDTEProject, path);
+            var projectItem = await GetProjectItemAsync(envDTEProject, path);
             if (projectItem == null)
             {
                 return false;
@@ -838,40 +790,6 @@ namespace NuGet.PackageManagement.VisualStudio
 
             projectItem.Delete();
             return true;
-        }
-
-        internal static void AddImportStatement(EnvDTE.Project project, string targetsPath, ImportLocation location)
-        {
-            // Need NOT be on the UI Thread
-            MicrosoftBuildEvaluationProjectUtility.AddImportStatement(AsMSBuildProject(project), targetsPath, location);
-        }
-
-        internal static void RemoveImportStatement(EnvDTE.Project project, string targetsPath)
-        {
-            // Need NOT be on the UI Thread
-            MicrosoftBuildEvaluationProjectUtility.RemoveImportStatement(AsMSBuildProject(project), targetsPath);
-        }
-
-        private static MicrosoftBuildEvaluationProject AsMSBuildProject(EnvDTE.Project project)
-        {
-            // Need NOT be on the UI Thread
-            return ProjectCollection.GlobalProjectCollection.GetLoadedProjects(project.FullName).FirstOrDefault() ??
-                   ProjectCollection.GlobalProjectCollection.LoadProject(project.FullName);
-        }
-
-        internal static void Save(EnvDTE.Project project)
-        {
-            ThreadHelper.ThrowIfNotOnUIThread();
-
-            try
-            {
-                FileSystemUtility.MakeWritable(project.FullName);
-                project.Save();
-            }
-            catch (Exception ex)
-            {
-                ExceptionHelper.WriteErrorToActivityLog(ex);
-            }
         }
 
         #endregion

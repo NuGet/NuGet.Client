@@ -9,7 +9,7 @@ using System.Windows.Threading;
 
 namespace Test.Utility.Threading
 {
-    public class DispatcherThread : IDisposable
+    internal sealed class DispatcherThread : IDisposable
     {
         private readonly Thread _thread;
         private Dispatcher _dispatcher;
@@ -17,7 +17,7 @@ namespace Test.Utility.Threading
         private SynchronizationContext _syncContext;
         private Exception _invokeException;
         private bool _isInvoking;
-        private bool _isClosed;
+        private int _isClosed;
 
         public DispatcherThread()
         {
@@ -92,9 +92,9 @@ namespace Test.Utility.Threading
 
         public void Invoke(Action action)
         {
-            if (_isClosed)
+            if (_isClosed != 0)
             {
-                throw new ObjectDisposedException(GetType().Name);
+                throw new ObjectDisposedException(nameof(DispatcherThread));
             }
 
             lock (_invokeSyncRoot)
@@ -120,9 +120,9 @@ namespace Test.Utility.Threading
 
         public DispatcherOperation BeginInvoke(Action action)
         {
-            if (_isClosed)
+            if (_isClosed != 0)
             {
-                throw new ObjectDisposedException(GetType().Name);
+                throw new ObjectDisposedException(nameof(DispatcherThread));
             }
 
             return _dispatcher.BeginInvoke(DispatcherPriority.Normal, action);
@@ -131,21 +131,22 @@ namespace Test.Utility.Threading
         [SecurityPermission(SecurityAction.Demand, ControlThread = true)]
         public void Close()
         {
-            if (!_isClosed)
+            if (Interlocked.CompareExchange(ref _isClosed, 1, 0) == 0)
             {
-                _dispatcher?.InvokeShutdown();
+                _dispatcher.InvokeShutdown();
                 _dispatcher = null;
 
                 try
                 {
-                    _thread.Abort();
+                    if (!_thread.Join(TimeSpan.FromSeconds(20)))
+                    {
+                        _thread.Abort();
+                    }
                 }
-                finally
+                catch (ThreadAbortException)
                 {
-                    _isClosed = true;
                 }
             }
- 
         }
 
         public void Dispose()

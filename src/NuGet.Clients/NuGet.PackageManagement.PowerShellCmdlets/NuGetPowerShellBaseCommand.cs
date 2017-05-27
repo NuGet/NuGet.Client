@@ -40,8 +40,8 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         #region Members
 
         private readonly BlockingCollection<Message> _blockingCollection = new BlockingCollection<Message>();
-        private readonly Semaphore _scriptEndSemaphore = new Semaphore(0, Int32.MaxValue);
-        private readonly Semaphore _flushSemaphore = new Semaphore(0, Int32.MaxValue);
+        private readonly Semaphore _scriptEndSemaphore = new Semaphore(0, int.MaxValue);
+        private readonly Semaphore _flushSemaphore = new Semaphore(0, int.MaxValue);
         private readonly ISourceRepositoryProvider _sourceRepositoryProvider;
         private readonly ICommonOperations _commonOperations;
         private readonly IDeleteOnRestartManager _deleteOnRestartManager;
@@ -66,7 +66,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         {
             _sourceRepositoryProvider = ServiceLocator.GetInstance<ISourceRepositoryProvider>();
             ConfigSettings = ServiceLocator.GetInstance<Configuration.ISettings>();
-            VsSolutionManager = ServiceLocator.GetInstance<ISolutionManager>();
+            VsSolutionManager = ServiceLocator.GetInstance<IVsSolutionManager>();
             DTE = ServiceLocator.GetInstance<DTE>();
             SourceControlManagerProvider = ServiceLocator.GetInstance<ISourceControlManagerProvider>();
             _commonOperations = ServiceLocator.GetInstance<ICommonOperations>();
@@ -103,7 +103,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// <summary>
         /// Vs Solution Manager for PowerShell Cmdlets
         /// </summary>
-        protected ISolutionManager VsSolutionManager { get; }
+        protected IVsSolutionManager VsSolutionManager { get; }
 
         protected IPackageRestoreManager PackageRestoreManager { get; private set; }
 
@@ -463,29 +463,19 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         }
 
         /// <summary>
-        /// Get default project in the type of EnvDTE.Project, to keep PowerShell scripts backward-compatbility.
+        /// Get default project in the type of <see cref="IVsProjectAdapter"/>, to keep PowerShell scripts backward-compatbility.
         /// </summary>
         /// <returns></returns>
-        protected Project GetDefaultProject()
+        protected IVsProjectAdapter GetDefaultProject()
         {
-            string customUniqueName = string.Empty;
-            Project defaultDTEProject = null;
-
-            NuGetProject defaultNuGetProject = VsSolutionManager.DefaultNuGetProject;
+            var defaultNuGetProject = VsSolutionManager.DefaultNuGetProject;
             // Solution may be open without a project in it. Then defaultNuGetProject is null.
             if (defaultNuGetProject != null)
             {
-                customUniqueName = defaultNuGetProject.GetMetadata<string>(NuGetProjectMetadataKeys.UniqueName);
+                return VsSolutionManager.GetVsProjectAdapter(defaultNuGetProject);
             }
 
-            // Get all DTE projects in the solution and compare by CustomUnique names, especially for projects under solution folders.
-            IEnumerable<Project> allDTEProjects = EnvDTESolutionUtility.GetAllEnvDTEProjects(DTE);
-            if (allDTEProjects != null)
-            {
-                defaultDTEProject = allDTEProjects.Where(p => StringComparer.OrdinalIgnoreCase.Equals(EnvDTEProjectInfoUtility.GetCustomUniqueName(p), customUniqueName)).FirstOrDefault();
-            }
-
-            return defaultDTEProject;
+            return null;
         }
 
         /// <summary>
@@ -495,12 +485,12 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// </summary>
         /// <param name="projectNames">An array of project names that may or may not include wildcards.</param>
         /// <returns>Projects matching the project name(s) provided.</returns>
-        protected IEnumerable<Project> GetProjectsByName(string[] projectNames)
+        protected IEnumerable<IVsProjectAdapter> GetProjectsByName(string[] projectNames)
         {
             var allValidProjectNames = GetAllValidProjectNames().ToList();
-            var allDteProjects = EnvDTESolutionUtility.GetAllEnvDTEProjects(DTE);
+            var allVsProjectAdapters = VsSolutionManager.GetAllVsProjectAdapters();
 
-            foreach (string projectName in projectNames)
+            foreach (var projectName in projectNames)
             {
                 // if ctrl+c hit, leave immediately
                 if (Stopping)
@@ -515,17 +505,16 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                               where pattern.IsMatch(s)
                               select VsSolutionManager.GetNuGetProject(s);
 
-                int count = 0;
+                var count = 0;
                 foreach (var project in matches)
                 {
                     if (project != null)
                     {
                         count++;
-                        string name = project.GetMetadata<string>(NuGetProjectMetadataKeys.UniqueName);
-                        Project dteProject = allDteProjects
-                            .Where(p => StringComparer.OrdinalIgnoreCase.Equals(EnvDTEProjectInfoUtility.GetCustomUniqueName(p), name))
-                            .FirstOrDefault();
-                        yield return dteProject;
+                        var name = project.GetMetadata<string>(NuGetProjectMetadataKeys.UniqueName);
+                        var vsProjectAdapter = allVsProjectAdapters
+                            .FirstOrDefault(p => StringComparer.OrdinalIgnoreCase.Equals(p.CustomUniqueName, name));
+                        yield return vsProjectAdapter;
                     }
                 }
 

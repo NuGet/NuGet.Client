@@ -12,17 +12,17 @@ namespace NuGet.ProjectManagement
 {
     public class XdtTransformer : IPackageFileTransformer
     {
-        public void TransformFile(Func<Stream> fileStreamFactory, string targetPath, IMSBuildNuGetProjectSystem msBuildNuGetProjectSystem)
+        public void TransformFile(Func<Stream> fileStreamFactory, string targetPath, IMSBuildProjectSystem msBuildNuGetProjectSystem)
         {
             PerformXdtTransform(fileStreamFactory, targetPath, msBuildNuGetProjectSystem);
         }
 
-        public void RevertFile(Func<Stream> fileStreamFactory, string targetPath, IEnumerable<InternalZipFileInfo> matchingFiles, IMSBuildNuGetProjectSystem msBuildNuGetProjectSystem)
+        public void RevertFile(Func<Stream> fileStreamFactory, string targetPath, IEnumerable<InternalZipFileInfo> matchingFiles, IMSBuildProjectSystem msBuildNuGetProjectSystem)
         {
             PerformXdtTransform(fileStreamFactory, targetPath, msBuildNuGetProjectSystem);
         }
 
-        private static void PerformXdtTransform(Func<Stream> fileStreamFactory, string targetPath, IMSBuildNuGetProjectSystem msBuildNuGetProjectSystem)
+        private static void PerformXdtTransform(Func<Stream> fileStreamFactory, string targetPath, IMSBuildProjectSystem msBuildNuGetProjectSystem)
         {
             if (FileSystemUtility.FileExists(msBuildNuGetProjectSystem.ProjectFullPath, targetPath))
             {

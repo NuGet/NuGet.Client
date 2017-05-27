@@ -4,7 +4,6 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Management.Automation;
-using EnvDTE;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.VisualStudio;
 
@@ -22,7 +21,8 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                 {
                     await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                    return EnvDTEProjectInfoUtility.GetCustomUniqueName((Project)psObject.BaseObject);
+                    return await EnvDTEProjectInfoUtility.GetCustomUniqueNameAsync(
+                        (EnvDTE.Project)psObject.BaseObject);
                 });
         }
 
@@ -31,7 +31,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         /// </summary>
         public static void RemoveProject(string projectName)
         {
-            if (String.IsNullOrEmpty(projectName))
+            if (string.IsNullOrEmpty(projectName))
             {
                 throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, "projectName");
             }
@@ -39,14 +39,14 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             var solutionManager = ServiceLocator.GetInstance<IVsSolutionManager>();
             if (solutionManager != null)
             {
-                var project = solutionManager.GetDTEProject(projectName);
+                var project = solutionManager.GetVsProjectAdapter(projectName);
                 if (project == null)
                 {
                     throw new InvalidOperationException();
                 }
 
-                var dte = ServiceLocator.GetInstance<DTE>();
-                dte.Solution.Remove(project);
+                var dte = ServiceLocator.GetInstance<EnvDTE.DTE>();
+                dte.Solution.Remove(project.Project);
             }
         }
     }

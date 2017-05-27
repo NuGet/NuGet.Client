@@ -13,7 +13,7 @@ namespace NuGet.PackageManagement.Test
         public IReadOnlyList<ExternalProjectReference> ProjectClosure { get; set; }
 
         public TestMSBuildNuGetProject(
-            IMSBuildNuGetProjectSystem msbuildProjectSystem,
+            IMSBuildProjectSystem msbuildProjectSystem,
             string folderNuGetProjectPath,
             string packagesConfigFolderPath) : base(
                 msbuildProjectSystem,

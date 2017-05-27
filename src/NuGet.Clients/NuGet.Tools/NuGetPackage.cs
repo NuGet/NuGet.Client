@@ -5,8 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.ComponentModel.Design;
-using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -18,7 +16,7 @@ using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.OLE.Interop;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
-using NuGet.Common;
+using Microsoft.VisualStudio.Threading;
 using NuGet.Options;
 using NuGet.PackageManagement;
 using NuGet.PackageManagement.UI;
@@ -66,7 +64,8 @@ namespace NuGetVSExtension
         private DTE _dte;
         private DTEEvents _dteEvents;
 
-        private IVsMonitorSelection _vsMonitorSelection;
+        private AsyncLazy<IVsMonitorSelection> _vsMonitorSelection;
+        private uint _solutionExistsAndFullyLoadedContextCookie;
         private uint _solutionNotBuildingAndNotDebuggingContextCookie;
 
         private OleMenuCommand _managePackageDialogCommand;
@@ -79,7 +78,7 @@ namespace NuGetVSExtension
         public NuGetPackage()
         {
 #if VS14
-            RuntimeEnvironmentHelper.IsDev14 = true;
+            NuGet.Common.RuntimeEnvironmentHelper.IsDev14 = true;
 #endif
             ServiceLocator.InitializePackageServiceProvider(this);
         }
@@ -115,23 +114,7 @@ namespace NuGetVSExtension
         [Import]
         private IVsSourceControlTracker SourceControlTracker { get; set; }
 
-        [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD010", Justification = "NuGet/Home#4833 Baseline")]
-        private IVsMonitorSelection VsMonitorSelection
-        {
-            get
-            {
-                if (_vsMonitorSelection == null)
-                {
-                    // get the UI context cookie for the debugging mode
-                    _vsMonitorSelection = (IVsMonitorSelection)GetService(typeof(IVsMonitorSelection));
-
-                    // get the solution not building and not debugging cookie
-                    Guid guid = VSConstants.UICONTEXT.SolutionExistsAndNotBuildingAndNotDebugging_guid;
-                    _vsMonitorSelection.GetCmdUIContextCookie(ref guid, out _solutionNotBuildingAndNotDebuggingContextCookie);
-                }
-                return _vsMonitorSelection;
-            }
-        }
+        private IVsMonitorSelection VsMonitorSelection => ThreadHelper.JoinableTaskFactory.Run(_vsMonitorSelection.GetValueAsync);
 
         [Import]
         private INuGetUIFactory UIFactory { get; set; }
@@ -177,19 +160,42 @@ namespace NuGetVSExtension
 
             // This instantiates a decoupled ICommand instance responsible to locate and display output pane by a UI control
             UI.Commands.ShowErrorsCommand = new ShowErrorsCommand(this);
+
+            _vsMonitorSelection = new AsyncLazy<IVsMonitorSelection>(
+                async () =>
+                {
+                    await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                    // get the UI context cookie for the debugging mode
+                    var vsMonitorSelection = await GetServiceAsync(typeof(IVsMonitorSelection)) as IVsMonitorSelection;
+
+                    // get the solution not building and not debugging cookie
+                    var guidCmdUI = VSConstants.UICONTEXT.SolutionExistsAndFullyLoaded_guid;
+                    vsMonitorSelection.GetCmdUIContextCookie(
+                        ref guidCmdUI, out _solutionExistsAndFullyLoadedContextCookie);
+
+                    guidCmdUI = VSConstants.UICONTEXT.SolutionExistsAndNotBuildingAndNotDebugging_guid;
+                    vsMonitorSelection.GetCmdUIContextCookie(
+                        ref guidCmdUI, out _solutionNotBuildingAndNotDebuggingContextCookie);
+
+                    return vsMonitorSelection;
+                },
+                ThreadHelper.JoinableTaskFactory);
         }
 
-        [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD010", Justification = "NuGet/Home#4833 Baseline")]
         private void SolutionManager_NuGetProjectRenamed(object sender, NuGetProjectEventArgs e)
         {
-            var project = SolutionManager.GetDTEProject(SolutionManager.GetNuGetProjectSafeName(e.NuGetProject));
-            var windowFrame = FindExistingWindowFrame(project);
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            var project = SolutionManager.GetVsProjectAdapter(
+                SolutionManager.GetNuGetProjectSafeName(e.NuGetProject));
+            var windowFrame = FindExistingWindowFrame(project.Project);
             if (windowFrame != null)
             {
-                windowFrame.SetProperty((int)__VSFPROPID.VSFPROPID_OwnerCaption, String.Format(
+                windowFrame.SetProperty((int)__VSFPROPID.VSFPROPID_OwnerCaption, string.Format(
                     CultureInfo.CurrentCulture,
                     Resx.Label_NuGetWindowCaption,
-                    project.Name));
+                    project.ProjectName));
             }
         }
 
@@ -199,8 +205,8 @@ namespace NuGetVSExtension
             if (null != _mcs)
             {
                 // menu command for opening Package Manager Console
-                CommandID toolwndCommandID = new CommandID(GuidList.guidNuGetConsoleCmdSet, PkgCmdIDList.cmdidPowerConsole);
-                OleMenuCommand powerConsoleExecuteCommand = new OleMenuCommand(ExecutePowerConsoleCommand, null, BeforeQueryStatusForPowerConsole, toolwndCommandID);
+                var toolwndCommandID = new CommandID(GuidList.guidNuGetConsoleCmdSet, PkgCmdIDList.cmdidPowerConsole);
+                var powerConsoleExecuteCommand = new OleMenuCommand(ExecutePowerConsoleCommand, null, BeforeQueryStatusForPowerConsole, toolwndCommandID);
                 // '$' - This indicates that the input line other than the argument forms a single argument string with no autocompletion
                 //       Autocompletion for filename(s) is supported for option 'p' or 'd' which is not applicable for this command
                 powerConsoleExecuteCommand.ParametersDescription = "$";
@@ -216,7 +222,7 @@ namespace NuGetVSExtension
                 //_mcs.AddCommand(debugConsoleExecuteCommand);
 
                 // menu command for opening Manage NuGet packages dialog
-                CommandID managePackageDialogCommandID = new CommandID(GuidList.guidNuGetDialogCmdSet, PkgCmdIDList.cmdidAddPackageDialog);
+                var managePackageDialogCommandID = new CommandID(GuidList.guidNuGetDialogCmdSet, PkgCmdIDList.cmdidAddPackageDialog);
                 _managePackageDialogCommand = new OleMenuCommand(ShowManageLibraryPackageDialog, null, BeforeQueryStatusForAddPackageDialog, managePackageDialogCommandID);
                 // '$' - This indicates that the input line other than the argument forms a single argument string with no autocompletion
                 //       Autocompletion for filename(s) is supported for option 'p' or 'd' which is not applicable for this command
@@ -224,7 +230,7 @@ namespace NuGetVSExtension
                 _mcs.AddCommand(_managePackageDialogCommand);
 
                 // menu command for opening "Manage NuGet packages for solution" dialog
-                CommandID managePackageForSolutionDialogCommandID = new CommandID(GuidList.guidNuGetDialogCmdSet, PkgCmdIDList.cmdidAddPackageDialogForSolution);
+                var managePackageForSolutionDialogCommandID = new CommandID(GuidList.guidNuGetDialogCmdSet, PkgCmdIDList.cmdidAddPackageDialogForSolution);
                 _managePackageForSolutionDialogCommand = new OleMenuCommand(ShowManageLibraryPackageForSolutionDialog, null, BeforeQueryStatusForAddPackageForSolutionDialog, managePackageForSolutionDialogCommandID);
                 // '$' - This indicates that the input line other than the argument forms a single argument string with no autocompletion
                 //       Autocompletion for filename(s) is supported for option 'p' or 'd' which is not applicable for this command
@@ -232,36 +238,37 @@ namespace NuGetVSExtension
                 _mcs.AddCommand(_managePackageForSolutionDialogCommand);
 
                 // menu command for opening Package Source settings options page
-                CommandID settingsCommandID = new CommandID(GuidList.guidNuGetConsoleCmdSet, PkgCmdIDList.cmdidSourceSettings);
-                OleMenuCommand settingsMenuCommand = new OleMenuCommand(ShowPackageSourcesOptionPage, settingsCommandID);
+                var settingsCommandID = new CommandID(GuidList.guidNuGetConsoleCmdSet, PkgCmdIDList.cmdidSourceSettings);
+                var settingsMenuCommand = new OleMenuCommand(ShowPackageSourcesOptionPage, settingsCommandID);
                 _mcs.AddCommand(settingsMenuCommand);
 
                 // menu command for opening General options page
-                CommandID generalSettingsCommandID = new CommandID(GuidList.guidNuGetToolsGroupCmdSet, PkgCmdIDList.cmdIdGeneralSettings);
-                OleMenuCommand generalSettingsCommand = new OleMenuCommand(ShowGeneralSettingsOptionPage, generalSettingsCommandID);
+                var generalSettingsCommandID = new CommandID(GuidList.guidNuGetToolsGroupCmdSet, PkgCmdIDList.cmdIdGeneralSettings);
+                var generalSettingsCommand = new OleMenuCommand(ShowGeneralSettingsOptionPage, generalSettingsCommandID);
                 _mcs.AddCommand(generalSettingsCommand);
             }
         }
 
-        [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD010", Justification = "NuGet/Home#4833 Baseline")]
         private void ExecutePowerConsoleCommand(object sender, EventArgs e)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             // Get the instance number 0 of this tool window. This window is single instance so this instance
             // is actually the only one.
             // The last flag is set to true so that if the tool window does not exists it will be created.
-            ToolWindowPane window = FindToolWindow(typeof(PowerConsoleToolWindow), 0, true);
+            var window = FindToolWindow(typeof(PowerConsoleToolWindow), 0, true);
             if ((null == window)
                 || (null == window.Frame))
             {
                 throw new NotSupportedException(Resources.CanNotCreateWindow);
             }
-            IVsWindowFrame windowFrame = (IVsWindowFrame)window.Frame;
+            var windowFrame = (IVsWindowFrame)window.Frame;
             ErrorHandler.ThrowOnFailure(windowFrame.Show());
 
             // Parse the arguments to determine the command and arguments to be passed to IHost
             // passed which is of type OleMenuCmdEventArgs
             string command = null;
-            OleMenuCmdEventArgs eventArgs = e as OleMenuCmdEventArgs;
+            var eventArgs = e as OleMenuCmdEventArgs;
             if (eventArgs != null
                 && eventArgs.InValue != null)
             {
@@ -269,9 +276,9 @@ namespace NuGetVSExtension
             }
 
             // If the command string is null or empty, simply launch the console and return
-            if (!String.IsNullOrEmpty(command))
+            if (!string.IsNullOrEmpty(command))
             {
-                IPowerConsoleService powerConsoleService = (IPowerConsoleService)window;
+                var powerConsoleService = (IPowerConsoleService)window;
 
                 if (powerConsoleService.Execute(command, null))
                 {
@@ -286,15 +293,16 @@ namespace NuGetVSExtension
             _powerConsoleCommandExecuting = false;
         }
 
-        [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD010", Justification = "NuGet/Home#4833 Baseline")]
         private IVsWindowFrame FindExistingWindowFrame(
             Project project)
         {
-            IVsUIShell uiShell = (IVsUIShell)GetService(typeof(SVsUIShell));
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            var uiShell = (IVsUIShell)GetService(typeof(SVsUIShell));
             foreach (var windowFrame in VsUtility.GetDocumentWindows(uiShell))
             {
                 object docView;
-                int hr = windowFrame.GetProperty(
+                var hr = windowFrame.GetProperty(
                     (int)__VSFPROPID.VSFPROPID_DocView,
                     out docView);
                 if (hr == VSConstants.S_OK
@@ -325,10 +333,9 @@ namespace NuGetVSExtension
             return null;
         }
 
-        [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD010", Justification = "NuGet/Home#4833 Baseline")]
         private async Task<IVsWindowFrame> CreateNewWindowFrameAsync(Project project)
         {
-            Debug.Assert(ThreadHelper.CheckAccess());
+            ThreadHelper.ThrowIfNotOnUIThread();
 
             var vsProject = VsHierarchyUtility.ToVsHierarchy(project);
             var documentName = project.UniqueName;
@@ -338,7 +345,7 @@ namespace NuGetVSExtension
             var rdt = await GetServiceAsync(typeof(IVsRunningDocumentTable)) as IVsRunningDocumentTable;
             IVsHierarchy hier;
             uint itemId;
-            IntPtr docData = IntPtr.Zero;
+            var docData = IntPtr.Zero;
             int hr;
 
             try
@@ -372,14 +379,15 @@ namespace NuGetVSExtension
             return await CreateDocWindowAsync(project, documentName, hier, itemId);
         }
 
-        [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD010", Justification = "NuGet/Home#4833 Baseline")]
         private async Task<IVsWindowFrame> CreateDocWindowAsync(
             Project project,
             string documentName,
             IVsHierarchy hier,
             uint itemId)
         {
-            uint windowFlags =
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            var windowFlags =
                 (uint)_VSRDTFLAGS.RDT_DontAddToMRU |
                 (uint)_VSRDTFLAGS.RDT_DontSaveAs;
 
@@ -388,7 +396,8 @@ namespace NuGetVSExtension
                 throw new InvalidOperationException(Resources.SolutionIsNotSaved);
             }
 
-            var nugetProject = SolutionManager.GetNuGetProject(EnvDTEProjectInfoUtility.GetCustomUniqueName(project));
+            var customUniqueName = await EnvDTEProjectInfoUtility.GetCustomUniqueNameAsync(project);
+            var nugetProject = SolutionManager.GetNuGetProject(customUniqueName);
 
             // If we failed to generate a cache entry in the solution manager something went wrong.
             if (nugetProject == null)
@@ -415,7 +424,7 @@ namespace NuGetVSExtension
             var windowPane = new PackageManagerWindowPane(control);
             var guidEditorType = GuidList.guidNuGetEditorType;
             var guidCommandUI = Guid.Empty;
-            var caption = String.Format(
+            var caption = string.Format(
                 CultureInfo.CurrentCulture,
                 Resx.Label_NuGetWindowCaption,
                 project.Name);
@@ -423,9 +432,9 @@ namespace NuGetVSExtension
             IVsWindowFrame windowFrame;
             var uiShell = await GetServiceAsync(typeof(SVsUIShell)) as IVsUIShell;
 
-            IntPtr ppunkDocView = IntPtr.Zero;
-            IntPtr ppunkDocData = IntPtr.Zero;
-            int hr = 0;
+            var ppunkDocView = IntPtr.Zero;
+            var ppunkDocData = IntPtr.Zero;
+            var hr = 0;
 
             try
             {
@@ -464,15 +473,14 @@ namespace NuGetVSExtension
             return windowFrame;
         }
 
-        [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD010", Justification = "NuGet/Home#4833 Baseline")]
         private void ShowManageLibraryPackageDialog(object sender, EventArgs e)
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
-
             NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
             {
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
                 string parameterString = null;
-                OleMenuCmdEventArgs args = e as OleMenuCmdEventArgs;
+                var args = e as OleMenuCmdEventArgs;
                 if (null != args)
                 {
                     parameterString = args.InValue as string;
@@ -480,7 +488,7 @@ namespace NuGetVSExtension
                 var searchText = GetSearchText(parameterString);
 
                 // *** temp code
-                Project project = EnvDTEProjectInfoUtility.GetActiveProject(VsMonitorSelection);
+                var project = EnvDTEProjectInfoUtility.GetActiveProject(VsMonitorSelection);
 
                 if (project != null
                     &&
@@ -503,25 +511,26 @@ namespace NuGetVSExtension
                 else
                 {
                     // show error message when no supported project is selected.
-                    string projectName = project != null ? project.Name : String.Empty;
+                    var projectName = project != null ? project.Name : string.Empty;
 
-                    string errorMessage = String.IsNullOrEmpty(projectName)
+                    var errorMessage = string.IsNullOrEmpty(projectName)
                         ? Resources.NoProjectSelected
-                        : String.Format(CultureInfo.CurrentCulture, Resources.DTE_ProjectUnsupported, projectName);
+                        : string.Format(CultureInfo.CurrentCulture, Resources.DTE_ProjectUnsupported, projectName);
 
                     MessageHelper.ShowWarningMessage(errorMessage, Resources.ErrorDialogBoxTitle);
                 }
             });
         }
 
-        [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD010", Justification = "NuGet/Home#4833 Baseline")]
         private async Task<IVsWindowFrame> FindExistingSolutionWindowFrameAsync()
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             var uiShell = await GetServiceAsync(typeof(SVsUIShell)) as IVsUIShell;
             foreach (var windowFrame in VsUtility.GetDocumentWindows(uiShell))
             {
                 object property;
-                int hr = windowFrame.GetProperty(
+                var hr = windowFrame.GetProperty(
                     (int)__VSFPROPID.VSFPROPID_DocData,
                     out property);
                 var packageManagerControl = VsUtility.GetPackageManagerControl(windowFrame);
@@ -550,7 +559,7 @@ namespace NuGetVSExtension
             // or just "jquery"
 
             parameterString = parameterString.Trim();
-            int lastIndexOfSearchInSwitch = parameterString.LastIndexOf("/searchin:", StringComparison.OrdinalIgnoreCase);
+            var lastIndexOfSearchInSwitch = parameterString.LastIndexOf("/searchin:", StringComparison.OrdinalIgnoreCase);
 
             if (lastIndexOfSearchInSwitch == -1)
             {
@@ -559,27 +568,23 @@ namespace NuGetVSExtension
             return parameterString.Substring(0, lastIndexOfSearchInSwitch);
         }
 
-        [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD010", Justification = "NuGet/Home#4833 Baseline")]
         private async Task<IVsWindowFrame> CreateDocWindowForSolutionAsync()
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             IVsWindowFrame windowFrame = null;
-            IVsSolution solution = ServiceLocator.GetInstance<IVsSolution>();
-            var uiShell = await GetServiceAsync(typeof(SVsUIShell)) as IVsUIShell;
-            uint windowFlags =
+            var solution = await this.GetServiceAsync<IVsSolution>();
+            var uiShell = await this.GetServiceAsync<SVsUIShell, IVsUIShell>();
+            var windowFlags =
                 (uint)_VSRDTFLAGS.RDT_DontAddToMRU |
                 (uint)_VSRDTFLAGS.RDT_DontSaveAs;
 
-            var solutionManager = ServiceLocator.GetInstance<ISolutionManager>();
-
-            if (!solutionManager.IsSolutionAvailable)
+            if (!SolutionManager.IsSolutionAvailable)
             {
                 throw new InvalidOperationException(Resources.SolutionIsNotSaved);
             }
 
-            // make sure all projects are loaded before showing manager ui even with DPL enabled.
-            solutionManager.EnsureSolutionIsLoaded();
-
-            var projects = solutionManager.GetNuGetProjects();
+            var projects = SolutionManager.GetNuGetProjects();
             if (!projects.Any())
             {
                 // NOTE: The menu 'Manage NuGet Packages For Solution' will be disabled in this case.
@@ -618,9 +623,9 @@ namespace NuGetVSExtension
             var caption = Resx.Label_SolutionNuGetWindowCaption;
             var documentName = _dte.Solution.FullName;
 
-            IntPtr ppunkDocView = IntPtr.Zero;
-            IntPtr ppunkDocData = IntPtr.Zero;
-            int hr = 0;
+            var ppunkDocView = IntPtr.Zero;
+            var ppunkDocData = IntPtr.Zero;
+            var hr = 0;
 
             try
             {
@@ -659,13 +664,12 @@ namespace NuGetVSExtension
             return windowFrame;
         }
 
-        [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD010", Justification = "NuGet/Home#4833 Baseline")]
         private void ShowManageLibraryPackageForSolutionDialog(object sender, EventArgs e)
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
-
             NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
             {
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
                 var windowFrame = await FindExistingSolutionWindowFrameAsync();
                 if (windowFrame == null)
                 {
@@ -677,7 +681,7 @@ namespace NuGetVSExtension
                 {
                     // process search string
                     string parameterString = null;
-                    OleMenuCmdEventArgs args = e as OleMenuCmdEventArgs;
+                    var args = e as OleMenuCmdEventArgs;
                     if (args != null)
                     {
                         parameterString = args.InValue as string;
@@ -712,7 +716,7 @@ namespace NuGetVSExtension
         // For PowerShell, it's okay to query from the worker thread.
         private void BeforeQueryStatusForPowerConsole(object sender, EventArgs args)
         {
-            OleMenuCommand command = (OleMenuCommand)sender;
+            var command = (OleMenuCommand)sender;
             command.Enabled = !ConsoleStatus.Value.IsBusy && !_powerConsoleCommandExecuting;
         }
 
@@ -722,7 +726,7 @@ namespace NuGetVSExtension
             {
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                OleMenuCommand command = (OleMenuCommand)sender;
+                var command = (OleMenuCommand)sender;
 
                 // Keep the 'Manage NuGet Packages' visible, only if a solution is open. Following is why.
                 // When all menu commands in the 'Project' menu are invisible, when a solution is closed, Project menu goes away.
@@ -732,10 +736,13 @@ namespace NuGetVSExtension
                 command.Visible = (_dte != null && _dte.Solution != null && _dte.Solution.IsOpen);
 
                 // Enable the 'Manage NuGet Packages' dialog menu
-                // a) if the console is NOT busy executing a command, AND
-                // b) if the solution exists and not debugging and not building AND
-                // c) if the active project is loaded and supported
-                command.Enabled = !ConsoleStatus.Value.IsBusy && IsSolutionExistsAndNotDebuggingAndNotBuilding() && HasActiveLoadedSupportedProject;
+                // - if the solution exists and not debugging and not building AND
+                // - if the console is NOT busy executing a command, AND
+                // - if the active project is loaded and supported
+                command.Enabled = 
+                    IsSolutionExistsAndNotDebuggingAndNotBuilding() && 
+                    !ConsoleStatus.Value.IsBusy && 
+                    HasActiveLoadedSupportedProject;
             });
         }
 
@@ -745,25 +752,35 @@ namespace NuGetVSExtension
             {
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                OleMenuCommand command = (OleMenuCommand)sender;
+                var command = (OleMenuCommand)sender;
 
                 // Enable the 'Manage NuGet Packages For Solution' dialog menu
-                // a) if the console is NOT busy executing a command, AND
-                // b) if the solution exists and not debugging and not building AND
-                // c) if the solution is DPL enabled or there are NuGetProjects. This means that there loaded, supported projects
-                // Checking for DPL more is a temporary code until we've the capability to get nuget projects
-                // even in DPL mode. See https://github.com/NuGet/Home/issues/3711
-                command.Enabled = !ConsoleStatus.Value.IsBusy && IsSolutionExistsAndNotDebuggingAndNotBuilding() &&
-                    (SolutionManager.IsSolutionDPLEnabled || SolutionManager.GetNuGetProjects().Any());
+                // - if the console is NOT busy executing a command, AND
+                // - if the solution exists and not debugging and not building AND
+                // - if there are NuGetProjects. This means there are loaded, supported projects.
+                command.Enabled =
+                    IsSolutionExistsAndNotDebuggingAndNotBuilding() &&
+                    !ConsoleStatus.Value.IsBusy &&
+                    SolutionManager.GetNuGetProjects().Any();
             });
         }
 
-        [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD010", Justification = "NuGet/Home#4833 Baseline")]
-        public bool IsSolutionExistsAndNotDebuggingAndNotBuilding()
+        private bool IsSolutionExistsAndNotDebuggingAndNotBuilding()
         {
-            int pfActive;
-            int result = VsMonitorSelection.IsCmdUIContextActive(_solutionNotBuildingAndNotDebuggingContextCookie, out pfActive);
-            return (result == VSConstants.S_OK && pfActive > 0);
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            var hr = VsMonitorSelection.IsCmdUIContextActive(
+                _solutionExistsAndFullyLoadedContextCookie, out var pfActive);
+
+            if (ErrorHandler.Succeeded(hr) && pfActive > 0)
+            {
+                hr = VsMonitorSelection.IsCmdUIContextActive(
+                    _solutionNotBuildingAndNotDebuggingContextCookie, out pfActive);
+
+                return ErrorHandler.Succeeded(hr) && pfActive > 0;
+            }
+
+            return false;
         }
 
         private void ShowPackageSourcesOptionPage(object sender, EventArgs args)
@@ -797,7 +814,7 @@ namespace NuGetVSExtension
         {
             get
             {
-                Project project = EnvDTEProjectInfoUtility.GetActiveProject(VsMonitorSelection);
+                var project = EnvDTEProjectInfoUtility.GetActiveProject(VsMonitorSelection);
                 return project != null && !EnvDTEProjectInfoUtility.IsUnloaded(project)
                        && EnvDTEProjectUtility.IsSupported(project);
             }

@@ -20,7 +20,7 @@ namespace NuGet.ProjectManagement
             _nodeActions = nodeActions;
         }
 
-        public void TransformFile(Func<Stream> fileStreamFactory, string targetPath, IMSBuildNuGetProjectSystem msBuildNuGetProjectSystem)
+        public void TransformFile(Func<Stream> fileStreamFactory, string targetPath, IMSBuildProjectSystem msBuildNuGetProjectSystem)
         {
             // Get the xml fragment
             var xmlFragment = GetXml(fileStreamFactory, msBuildNuGetProjectSystem);
@@ -36,7 +36,7 @@ namespace NuGet.ProjectManagement
         public void RevertFile(Func<Stream> fileStreamFactory,
             string targetPath,
             IEnumerable<InternalZipFileInfo> matchingFiles,
-            IMSBuildNuGetProjectSystem msBuildNuGetProjectSystem)
+            IMSBuildProjectSystem msBuildNuGetProjectSystem)
         {
             // Get the xml snippet
             var xmlFragment = GetXml(fileStreamFactory, msBuildNuGetProjectSystem);
@@ -61,7 +61,7 @@ namespace NuGet.ProjectManagement
             }
         }
 
-        private static XElement GetXml(InternalZipFileInfo packageFileInfo, IMSBuildNuGetProjectSystem msBuildNuGetProjectSystem)
+        private static XElement GetXml(InternalZipFileInfo packageFileInfo, IMSBuildProjectSystem msBuildNuGetProjectSystem)
         {
             string content;
             using (var packageStream = File.OpenRead(packageFileInfo.ZipArchivePath))
@@ -78,7 +78,7 @@ namespace NuGet.ProjectManagement
             return XElement.Parse(content, LoadOptions.PreserveWhitespace);
         }
 
-        private static XElement GetXml(Func<Stream> fileStreamFactory, IMSBuildNuGetProjectSystem msBuildNuGetProjectSystem)
+        private static XElement GetXml(Func<Stream> fileStreamFactory, IMSBuildProjectSystem msBuildNuGetProjectSystem)
         {
             var content = Preprocessor.Process(fileStreamFactory, msBuildNuGetProjectSystem);
             return XElement.Parse(content, LoadOptions.PreserveWhitespace);

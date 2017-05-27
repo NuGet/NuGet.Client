@@ -342,16 +342,20 @@ namespace NuGet.PackageManagement.UI
 #else
             var potentialProjects = new List<NuGetProject>();
 
-            // check if project is packages.config and it's dte project instance can also be converted to VSProject4.
+            // check if project suppports <PackageReference> items.
             // otherwise don't show format selector dialog for this project
-            var msBuildProjects = uiService.Projects.Where(project =>
-                project is MSBuildNuGetProject &&
-                (project as MSBuildNuGetProject).MSBuildNuGetProjectSystem.VSProject4 != null);
+            var capableProjects = uiService
+                .Projects
+                .Where(project =>
+                    project.ProjectStyle == ProjectModel.ProjectStyle.PackagesConfig &&
+                    project.ProjectServices.Capabilities.SupportsPackageReferences);
 
             // get all packages.config based projects with no installed packages
-            foreach (var project in msBuildProjects)
+            foreach (var project in capableProjects)
             {
-                if (!(await project.GetInstalledPackagesAsync(token)).Any())
+                var installedPackages = await project.GetInstalledPackagesAsync(token);
+
+                if (!installedPackages.Any())
                 {
                     potentialProjects.Add(project);
                 }
