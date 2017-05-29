@@ -278,8 +278,6 @@ namespace NuGet.PackageManagement
             DependencyGraphCacheContext context)
         {
             var dgSpec = new DependencyGraphSpec();
-            var globalPackagesFolder = SettingsUtility.GetGlobalPackagesFolder(context.Settings);
-            var fallbackFolders = SettingsUtility.GetFallbackPackageFolders(context.Settings);
 
             foreach (var packageSpec in context.DeferredPackageSpecs)
             {
