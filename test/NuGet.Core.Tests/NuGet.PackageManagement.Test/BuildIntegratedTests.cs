@@ -12,6 +12,7 @@ using Newtonsoft.Json.Linq;
 using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Frameworks;
+using NuGet.LibraryModel;
 using NuGet.PackageManagement;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
@@ -1731,7 +1732,11 @@ namespace NuGet.Test
             }
         }
 
-        private class TestProjectJsonBuildIntegratedNuGetProject : ProjectJsonNuGetProject
+        private class TestProjectJsonBuildIntegratedNuGetProject 
+            : ProjectJsonNuGetProject
+            , INuGetProjectServices
+            , IProjectScriptHostService
+            , IProjectSystemReferencesReader
         {
             public HashSet<PackageIdentity> ExecuteInitScriptAsyncCalls { get; }
                 = new HashSet<PackageIdentity>(PackageIdentity.Comparer);
@@ -1741,43 +1746,69 @@ namespace NuGet.Test
 
             public bool IsCacheEnabled { get; set; }
 
+            public IProjectBuildProperties BuildProperties => throw new NotImplementedException();
+
+            public IProjectSystemCapabilities Capabilities => throw new NotImplementedException();
+
+            public IProjectSystemReferencesReader ReferencesReader => this;
+
+            public IProjectSystemReferencesService References => throw new NotImplementedException();
+
+            public IProjectSystemService ProjectSystem => throw new NotImplementedException();
+
+            public IProjectScriptHostService ScriptService => this;
+
             public TestProjectJsonBuildIntegratedNuGetProject(
                 string jsonConfig,
                 IMSBuildProjectSystem msbuildProjectSystem)
                 : base(jsonConfig, msbuildProjectSystem.ProjectFileFullPath)
             {
+                ProjectServices = this;
             }
 
             public override async Task<IReadOnlyList<PackageSpec>> GetPackageSpecsAsync(DependencyGraphCacheContext context)
             {
                 if (IsCacheEnabled)
                 {
-                    PackageSpec cachedResult;
-                    if (context.PackageSpecCache.TryGetValue(MSBuildProjectPath, out cachedResult))
+                    if (context.PackageSpecCache.TryGetValue(MSBuildProjectPath, out var cachedResult))
                     {
                         return new[] { cachedResult };
                     }
                 }
 
-                var specs = await base.GetPackageSpecsAsync(context);
+                return await base.GetPackageSpecsAsync(context);
+            }
 
+            public T GetGlobalService<T>() where T : class
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task ExecutePackageScriptAsync(PackageIdentity packageIdentity, string packageInstallPath, string scriptRelativePath, INuGetProjectContext projectContext, bool throwOnFailure, CancellationToken token)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task<bool> ExecutePackageInitScriptAsync(PackageIdentity packageIdentity, string packageInstallPath, INuGetProjectContext projectContext, bool throwOnFailure, CancellationToken token)
+            {
+                ExecuteInitScriptAsyncCalls.Add(packageIdentity);
+                return Task.FromResult(true);
+            }
+
+            public Task<IEnumerable<LibraryDependency>> GetPackageReferencesAsync(NuGetFramework targetFramework, CancellationToken token)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task<IEnumerable<ProjectRestoreReference>> GetProjectReferencesAsync(ILogger logger, CancellationToken token)
+            {
                 var projectRefs = ProjectReferences.Select(e => new ProjectRestoreReference()
                 {
                     ProjectUniqueName = e.MSBuildProjectPath,
                     ProjectPath = e.MSBuildProjectPath,
                 });
 
-                var spec = specs.Single();
-
-                spec.RestoreMetadata.TargetFrameworks = new List<ProjectRestoreMetadataFrameworkInfo>()
-                {
-                    new ProjectRestoreMetadataFrameworkInfo(spec.TargetFrameworks.First().FrameworkName)
-                    {
-                        ProjectReferences = projectRefs.ToList()
-                    }
-                };
-
-                return specs;
+                return Task.FromResult(projectRefs);
             }
         }
 
