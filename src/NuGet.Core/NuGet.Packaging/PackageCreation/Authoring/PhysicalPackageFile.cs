@@ -47,7 +47,8 @@ namespace NuGet.Packaging
             {
                 if (String.Compare(_targetPath, value, StringComparison.OrdinalIgnoreCase) != 0)
                 {
-                    _targetPath = value;
+                    // Always use forward slash in package.
+                    _targetPath = value.Replace("\\", "/");
                     string effectivePath;
                     _targetFramework = FrameworkNameUtility.ParseFrameworkNameFromFilePath(_targetPath, out effectivePath);
                     EffectivePath = effectivePath;

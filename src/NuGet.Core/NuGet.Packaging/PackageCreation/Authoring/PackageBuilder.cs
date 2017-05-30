@@ -396,8 +396,8 @@ namespace NuGet.Packaging
             bool hasContentOrTool = files.Any(
                 f => f.TargetFramework != null &&
                      f.TargetFramework.Identifier != FrameworkConstants.SpecialIdentifiers.Unsupported &&
-                     (f.Path.StartsWith(PackagingConstants.Folders.Content + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase) ||
-                      f.Path.StartsWith(PackagingConstants.Folders.Tools + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase)));
+                     (f.Path.StartsWith(PackagingConstants.Folders.Content + "/", StringComparison.OrdinalIgnoreCase) ||
+                      f.Path.StartsWith(PackagingConstants.Folders.Tools + "/", StringComparison.OrdinalIgnoreCase)));
 
             if (hasContentOrTool)
             {
@@ -407,7 +407,7 @@ namespace NuGet.Packaging
             // now check if the Lib folder has any empty framework folder
             bool hasEmptyLibFolder = files.Any(
                 f => f.TargetFramework != null &&
-                     f.Path.StartsWith(PackagingConstants.Folders.Lib + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase) &&
+                     f.Path.StartsWith(PackagingConstants.Folders.Lib + "/", StringComparison.OrdinalIgnoreCase) &&
                      f.EffectivePath == PackagingConstants.PackageEmptyFileName);
 
             return hasEmptyLibFolder;
@@ -417,7 +417,7 @@ namespace NuGet.Packaging
         {
             return contentFiles.Any(file =>
                 file.Path != null &&
-                file.Path.StartsWith(PackagingConstants.Folders.ContentFiles + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase));
+                file.Path.StartsWith(PackagingConstants.Folders.ContentFiles + "/", StringComparison.OrdinalIgnoreCase));
         }
 
         private static bool HasIncludeExclude(IEnumerable<PackageDependencyGroup> dependencyGroups)
@@ -431,7 +431,7 @@ namespace NuGet.Packaging
         {
             return contentFiles.Any(file =>
                 file.Path != null &&
-                file.Path.StartsWith(PackagingConstants.Folders.Content + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase) &&
+                file.Path.StartsWith(PackagingConstants.Folders.Content + "/", StringComparison.OrdinalIgnoreCase) &&
                 (file.Path.EndsWith(".install.xdt", StringComparison.OrdinalIgnoreCase) ||
                  file.Path.EndsWith(".uninstall.xdt", StringComparison.OrdinalIgnoreCase)));
         }

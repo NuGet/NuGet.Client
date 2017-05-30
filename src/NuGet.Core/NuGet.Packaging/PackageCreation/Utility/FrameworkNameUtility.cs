@@ -17,7 +17,7 @@ namespace NuGet.Packaging
         {
             foreach (string knownFolder in PackagingConstants.Folders.Known)
             {
-                string folderPrefix = knownFolder + System.IO.Path.DirectorySeparatorChar;
+                string folderPrefix = knownFolder + "/";
                 if (filePath.Length > folderPrefix.Length &&
                     filePath.StartsWith(folderPrefix, StringComparison.OrdinalIgnoreCase))
                 {
