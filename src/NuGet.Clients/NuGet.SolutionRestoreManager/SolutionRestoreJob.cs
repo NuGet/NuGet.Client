@@ -363,6 +363,7 @@ namespace NuGet.SolutionRestoreManager
                                 cacheModifier,
                                 sources,
                                 forceRestore,
+                                dgSpec,
                                 l,
                                 t);
 

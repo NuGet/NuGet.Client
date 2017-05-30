@@ -25,7 +25,8 @@ namespace NuGet.Build.Tasks.Test
 
 
         // TODO NK - Add tests here!
-        //[Theory]
+        // TODO Justin wanted to add something else. We're stepping over each other's toes. 
+            //[Theory]
         //[InlineData("proj1.csproj")]
         public void TestWithFullPaths(string solutionDirectory, string restoreDirectory, string restoreConfigFile)
         {

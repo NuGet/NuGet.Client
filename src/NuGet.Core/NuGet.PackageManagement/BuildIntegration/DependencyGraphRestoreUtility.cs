@@ -38,6 +38,7 @@ namespace NuGet.PackageManagement
             Action<SourceCacheContext> cacheContextModifier,
             IEnumerable<SourceRepository> sources,
             bool forceRestore,
+            DependencyGraphSpec dgSpec,
             ILogger log,
             CancellationToken token)
         {
@@ -50,6 +51,7 @@ namespace NuGet.PackageManagement
                 userPackagesPath: null,
                 log: log,
                 forceRestore: forceRestore,
+                dgSpec: dgSpec,
                 token: token);
         }
 
@@ -64,12 +66,10 @@ namespace NuGet.PackageManagement
             IEnumerable<SourceRepository> sources,
             string userPackagesPath,
             bool forceRestore,
+            DependencyGraphSpec dgSpec,
             ILogger log,
             CancellationToken token)
         {
-            // Get full dg spec
-            var dgSpec = await GetSolutionRestoreSpec(solutionManager, context);
-
             // Check if there are actual projects to restore before running.
             if (dgSpec.Restore.Count > 0)
             {

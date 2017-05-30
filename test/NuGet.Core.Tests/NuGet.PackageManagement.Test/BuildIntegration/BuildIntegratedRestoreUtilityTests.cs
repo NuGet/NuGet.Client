@@ -64,6 +64,7 @@ namespace NuGet.Test
                     (c) => { },
                     sources,
                     false,
+                    await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(solutionManager, restoreContext),
                     testLogger,
                     CancellationToken.None);
 
@@ -114,6 +115,7 @@ namespace NuGet.Test
                     (c) => { },
                     sources,
                     false,
+                    await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(solutionManager, restoreContext),
                     testLogger,
                     CancellationToken.None);
 
@@ -182,6 +184,7 @@ namespace NuGet.Test
                     (c) => { },
                     sources,
                     false,
+                    await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(solutionManager, restoreContext),
                     testLogger,
                     CancellationToken.None);
 
@@ -271,6 +274,7 @@ namespace NuGet.Test
                     (c) => { },
                     sourceRepositoryProvider.GetRepositories(),
                     false,
+                    await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(solutionManager, restoreContext),
                     testLogger,
                     CancellationToken.None);
 

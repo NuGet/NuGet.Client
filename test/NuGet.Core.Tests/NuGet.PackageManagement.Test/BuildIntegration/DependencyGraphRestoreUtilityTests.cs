@@ -62,6 +62,7 @@ namespace NuGet.PackageManagement.Test
                     (c) => { },
                     sources,
                     false,
+                    await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(solutionManager, restoreContext),
                     logger,
                     CancellationToken.None);
 
@@ -127,6 +128,7 @@ namespace NuGet.PackageManagement.Test
                     (c) => { },
                     sources,
                     false,
+                    await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(solutionManager, restoreContext),
                     logger,
                     CancellationToken.None);
 
