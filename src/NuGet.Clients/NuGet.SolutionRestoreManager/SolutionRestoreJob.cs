@@ -9,13 +9,13 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Threading;
 using NuGet.Commands;
 using NuGet.Configuration;
 using NuGet.PackageManagement;
 using NuGet.PackageManagement.VisualStudio;
-using NuGet.Packaging;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
 using NuGet.ProjectModel;
@@ -38,7 +38,6 @@ namespace NuGet.SolutionRestoreManager
         private readonly IVsSolutionManager _solutionManager;
         private readonly ISourceRepositoryProvider _sourceRepositoryProvider;
         private readonly ISettings _settings;
-        private readonly IDeferredProjectWorkspaceService _deferredWorkspaceService;
         private readonly IRestoreEventsPublisher _restoreEventsPublisher;
 
         private RestoreOperationLogger _logger;
@@ -60,40 +59,14 @@ namespace NuGet.SolutionRestoreManager
             IVsSolutionManager solutionManager,
             ISourceRepositoryProvider sourceRepositoryProvider,
             IRestoreEventsPublisher restoreEventsPublisher,
-#if !VS14
-            IDeferredProjectWorkspaceService deferredWorkspaceService,
-#endif
             ISettings settings)
         {
-            if (serviceProvider == null)
-            {
-                throw new ArgumentNullException(nameof(serviceProvider));
-            }
-
-            if (packageRestoreManager == null)
-            {
-                throw new ArgumentNullException(nameof(packageRestoreManager));
-            }
-
-            if (solutionManager == null)
-            {
-                throw new ArgumentNullException(nameof(solutionManager));
-            }
-
-            if (sourceRepositoryProvider == null)
-            {
-                throw new ArgumentNullException(nameof(sourceRepositoryProvider));
-            }
-
-            if (restoreEventsPublisher == null)
-            {
-                throw new ArgumentNullException(nameof(restoreEventsPublisher));
-            }
-
-            if (settings == null)
-            {
-                throw new ArgumentNullException(nameof(settings));
-            }
+            Assumes.Present(serviceProvider);
+            Assumes.Present(packageRestoreManager);
+            Assumes.Present(solutionManager);
+            Assumes.Present(sourceRepositoryProvider);
+            Assumes.Present(restoreEventsPublisher);
+            Assumes.Present(settings);
 
             _serviceProvider = serviceProvider;
             _packageRestoreManager = packageRestoreManager;
@@ -101,11 +74,6 @@ namespace NuGet.SolutionRestoreManager
             _sourceRepositoryProvider = sourceRepositoryProvider;
             _restoreEventsPublisher = restoreEventsPublisher;
             _settings = settings;
-#if VS14
-            _deferredWorkspaceService = null;
-#else
-            _deferredWorkspaceService = deferredWorkspaceService;
-#endif
         }
 
         /// <summary>
@@ -191,15 +159,6 @@ namespace NuGet.SolutionRestoreManager
                     return;
                 }
 
-                // Check if solution has deferred projects
-                var deferredProjectsData = new DeferredProjectRestoreData(new Dictionary<PackageReference, List<string>>(), new List<PackageSpec>());
-                if (await _solutionManager.SolutionHasDeferredProjectsAsync())
-                {
-                    var deferredProjectsPath = await _solutionManager.GetDeferredProjectsFilePathAsync();
-
-                    deferredProjectsData = await DeferredProjectRestoreUtility.GetDeferredProjectsData(_deferredWorkspaceService, deferredProjectsPath, token);
-                }
-
                 // Get the projects from the SolutionManager
                 // Note that projects that are not supported by NuGet, will not show up in this list
                 projects = _solutionManager.GetNuGetProjects();
@@ -207,13 +166,11 @@ namespace NuGet.SolutionRestoreManager
                 // Check if there are any projects that are not INuGetIntegratedProject, that is,
                 // projects with packages.config. OR 
                 // any of the deferred project is type of packages.config, If so, perform package restore on them
-                if (projects.Any(project => !(project is INuGetIntegratedProject)) ||
-                    deferredProjectsData.PackageReferenceDict.Count > 0)
+                if (projects.Any(project => !(project is INuGetIntegratedProject)))
                 {
                     await RestorePackagesOrCheckForMissingPackagesAsync(
                         solutionDirectory,
                         isSolutionAvailable,
-                        deferredProjectsData.PackageReferenceDict,
                         token);
                 }
 
@@ -225,14 +182,13 @@ namespace NuGet.SolutionRestoreManager
                     dependencyGraphProjects,
                     forceRestore,
                     isSolutionAvailable,
-                    deferredProjectsData.PackageSpecs,
                     token);
 
                 // TODO: To limit risk, we only publish the event when there is a cross-platform PackageReference
                 // project in the solution. Extending this behavior to all solutions is tracked here:
-                // https://github.com/NuGet/Home/issues/4478
+                // NuGet/Home#4478
 #if !VS14
-                if (projects.OfType<CpsPackageReferenceProject>().Any() &&
+                if (projects.OfType<NetCorePackageReferenceProject>().Any() &&
                     !string.IsNullOrEmpty(_dependencyGraphProjectCacheHash))
                 {
                     // A no-op restore is considered successful. A cancellation is considered unsuccessful.
@@ -293,12 +249,10 @@ namespace NuGet.SolutionRestoreManager
             List<IDependencyGraphProject> projects,
             bool forceRestore,
             bool isSolutionAvailable,
-            IReadOnlyList<PackageSpec> packageSpecs,
             CancellationToken token)
         {
             // Only continue if there are some build integrated type projects.
-            if (!(projects.Any(project => project is BuildIntegratedNuGetProject) || 
-                packageSpecs.Any(project => IsProjectBuildIntegrated(project))))
+            if (!(projects.Any(project => project is BuildIntegratedNuGetProject)))
             {
                 return;
             }
@@ -329,9 +283,6 @@ namespace NuGet.SolutionRestoreManager
                 // Cache p2ps discovered from DTE
                 var cacheContext = new DependencyGraphCacheContext(_logger);
                 var pathContext = NuGetPathContext.Create(_settings);
-
-                // add deferred projects package spec in cacheContext packageSpecCache
-                cacheContext.DeferredPackageSpecs.AddRange(packageSpecs);
 
                 var isRestoreRequired = await DependencyGraphRestoreUtility.IsRestoreRequiredAsync(
                     _solutionManager,
@@ -454,7 +405,6 @@ namespace NuGet.SolutionRestoreManager
         private async Task RestorePackagesOrCheckForMissingPackagesAsync(
             string solutionDirectory,
             bool isSolutionAvailable,
-            IReadOnlyDictionary<PackageReference, List<string>> packageReferencesDict,
             CancellationToken token)
         {
             if (string.IsNullOrEmpty(solutionDirectory))
@@ -465,10 +415,6 @@ namespace NuGet.SolutionRestoreManager
 
             var packages = (await _packageRestoreManager.GetPackagesInSolutionAsync(
                 solutionDirectory, token)).ToList();
-
-            packages.AddRange(
-                _packageRestoreManager.GetPackagesRestoreData(
-                    solutionDirectory, packageReferencesDict.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.ToList())));
 
             if (IsConsentGranted(_settings))
             {

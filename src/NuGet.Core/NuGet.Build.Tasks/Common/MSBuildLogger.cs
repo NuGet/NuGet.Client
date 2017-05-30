@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using NuGet.Common;
@@ -10,53 +11,133 @@ namespace NuGet.Build
     /// <summary>
     /// TaskLoggingHelper -> ILogger
     /// </summary>
-    internal class MSBuildLogger : LegacyLoggerAdapter, Common.ILogger
+    internal class MSBuildLogger : LoggerBase, Common.ILogger
     {
         private readonly TaskLoggingHelper _taskLogging;
 
         public MSBuildLogger(TaskLoggingHelper taskLogging)
         {
-            _taskLogging = taskLogging;
+            _taskLogging = taskLogging ?? throw new ArgumentNullException(nameof(taskLogging));
         }
 
-        public override void LogDebug(string data)
+        public override void Log(ILogMessage message)
         {
-            _taskLogging.LogMessage(MessageImportance.Low, data);
+            if (DisplayMessage(message.Level))
+            {
+                var logMessage = message as IRestoreLogMessage;
+
+                if (logMessage == null)
+                {
+                    logMessage = new RestoreLogMessage(message.Level, message.Message)
+                    {
+                        Code = message.Code,
+                        FilePath = message.ProjectPath,
+                        StartLineNumber = -1,
+                        EndLineNumber = -1,
+                        StartColumnNumber = -1,
+                        EndColumnNumber = -1
+                    };
+                }
+
+                switch (message.Level)
+                {
+                    case LogLevel.Error:
+                        LogError(logMessage);
+                        break;
+
+                    case LogLevel.Warning:
+                        LogWarning(logMessage);
+                        break;
+
+                    case LogLevel.Minimal:
+                        LogMessage(MessageImportance.High, logMessage);
+                        break;
+
+                    case LogLevel.Information:
+                        LogMessage(MessageImportance.Normal, logMessage);
+                        break;
+
+                    case LogLevel.Debug:
+                    case LogLevel.Verbose:
+                    default:
+                        // Default to LogLevel.Debug and low importance
+                        LogMessage(MessageImportance.Low, logMessage);
+                        break;
+                }
+            }
         }
 
-        public override void LogError(string data)
+        private void LogMessage(
+            MessageImportance importance,
+            IRestoreLogMessage logMessage)
         {
-            _taskLogging.LogError(data);
+            if (logMessage.Code > NuGetLogCode.Undefined)
+            {
+                // NuGet does not currently have a subcategory while throwing logs, hence string.Empty
+                _taskLogging.LogMessage(string.Empty,
+                    Enum.GetName(typeof(NuGetLogCode), logMessage.Code),
+                    Enum.GetName(typeof(NuGetLogCode), logMessage.Code),
+                    logMessage.FilePath,
+                    logMessage.StartLineNumber,
+                    logMessage.StartColumnNumber,
+                    logMessage.EndLineNumber,
+                    logMessage.EndColumnNumber,
+                    importance,
+                    logMessage.Message);
+            }
+            else
+            {
+                _taskLogging.LogMessage(importance, logMessage.Message);
+            }
         }
 
-        public override void LogErrorSummary(string data)
+        private void LogWarning(IRestoreLogMessage logMessage)
         {
-            _taskLogging.LogMessage(MessageImportance.High, data);
+            if (logMessage.Code > NuGetLogCode.Undefined)
+            {
+                // NuGet does not currently have a subcategory while throwing logs, hence string.Empty
+                _taskLogging.LogWarning(string.Empty,
+                    Enum.GetName(typeof(NuGetLogCode), logMessage.Code),
+                    Enum.GetName(typeof(NuGetLogCode), logMessage.Code),
+                    logMessage.FilePath,
+                    logMessage.StartLineNumber,
+                    logMessage.StartColumnNumber,
+                    logMessage.EndLineNumber,
+                    logMessage.EndColumnNumber,
+                    logMessage.Message);
+            }
+            else
+            {
+                _taskLogging.LogWarning(logMessage.Message);
+            }
         }
 
-        public override void LogInformation(string data)
+        private void LogError(IRestoreLogMessage logMessage)
         {
-            _taskLogging.LogMessage(MessageImportance.Normal, data);
+            if (logMessage.Code > NuGetLogCode.Undefined)
+            {
+                // NuGet does not currently have a subcategory while throwing logs, hence string.Empty
+                _taskLogging.LogError(string.Empty,
+                    Enum.GetName(typeof(NuGetLogCode), logMessage.Code),
+                    Enum.GetName(typeof(NuGetLogCode), logMessage.Code),
+                    logMessage.FilePath,
+                    logMessage.StartLineNumber,
+                    logMessage.StartColumnNumber,
+                    logMessage.EndLineNumber,
+                    logMessage.EndColumnNumber,
+                    logMessage.Message);
+            }
+            else
+            {
+                _taskLogging.LogError(logMessage.Message);
+            }
         }
 
-        public override void LogInformationSummary(string data)
+        public override System.Threading.Tasks.Task LogAsync(ILogMessage message)
         {
-            _taskLogging.LogMessage(MessageImportance.High, data);
-        }
+            Log(message);
 
-        public override void LogMinimal(string data)
-        {
-            _taskLogging.LogMessage(MessageImportance.High, data);
-        }
-
-        public override void LogVerbose(string data)
-        {
-            _taskLogging.LogMessage(MessageImportance.Low, data);
-        }
-
-        public override void LogWarning(string data)
-        {
-            _taskLogging.LogWarning(data);
+            return System.Threading.Tasks.Task.FromResult(0);
         }
     }
 }

@@ -2,9 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
+using Microsoft;
 using Microsoft.VisualStudio;
+using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 
 namespace NuGet.VisualStudio
@@ -12,28 +12,42 @@ namespace NuGet.VisualStudio
     /// <summary>
     /// Represent a particular tree node in the SolutionExplorer window.
     /// </summary>
-    public class VsHierarchyItem : IEquatable<VsHierarchyItem>
+    public sealed class VsHierarchyItem : IEquatable<VsHierarchyItem>
     {
         private readonly uint _vsitemid;
         private readonly IVsHierarchy _hierarchy;
 
         internal delegate int ProcessItemDelegate(VsHierarchyItem item, object callerObject, out object newCallerObject);
 
-        internal VsHierarchyItem(IVsHierarchy hierarchy, uint id)
+        public IVsHierarchy VsHierarchy => _hierarchy;
+
+        private VsHierarchyItem(IVsHierarchy hierarchy, uint id)
         {
-            Debug.Assert(hierarchy != null);
             _vsitemid = id;
             _hierarchy = hierarchy;
         }
 
-        internal VsHierarchyItem(IVsHierarchy hierarchy)
+        private VsHierarchyItem(IVsHierarchy hierarchy)
             : this(hierarchy, VSConstants.VSITEMID_ROOT)
         {
         }
 
-        [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD010", Justification = "NuGet/Home#4833 Baseline")]
-        internal bool TryGetProjectId(out Guid projectId)
+        public static VsHierarchyItem FromDteProject(EnvDTE.Project project)
         {
+            Assumes.Present(project);
+            return new VsHierarchyItem(VsHierarchyUtility.ToVsHierarchy(project));
+        }
+
+        public static VsHierarchyItem FromVsHierarchy(IVsHierarchy project)
+        {
+            Assumes.Present(project);
+            return new VsHierarchyItem(project);
+        }
+
+        public bool TryGetProjectId(out Guid projectId)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             var result = _hierarchy.GetGuidProperty(
                 VSConstants.VSITEMID_ROOT,
                 (int)__VSHPROPID.VSHPROPID_ProjectIDGuid,
@@ -42,14 +56,11 @@ namespace NuGet.VisualStudio
             return result == VSConstants.S_OK;
         }
 
-        internal uint VsItemID
-        {
-            get { return _vsitemid; }
-        }
+        internal uint VsItemID => _vsitemid;
 
         internal bool IsExpandable()
         {
-            object o = GetProperty(__VSHPROPID.VSHPROPID_Expandable);
+            var o = GetProperty(__VSHPROPID.VSHPROPID_Expandable);
             if (o is bool)
             {
                 return (bool)o;
@@ -57,33 +68,34 @@ namespace NuGet.VisualStudio
             return (o is int) && (int)o != 0;
         }
 
-        [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD010", Justification = "NuGet/Home#4833 Baseline")]
-        public IVsUIHierarchy UIHierarchy()
-        {
-            return _hierarchy as IVsUIHierarchy;
-        }
-
         private object GetProperty(__VSHPROPID propid)
         {
-            return GetProperty(_vsitemid, (int)propid);
+            object value = null;
+            if (TryGetProperty((int)propid, out value))
+            {
+                return value;
+            }
+
+            return null;
         }
 
-        [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD010", Justification = "NuGet/Home#4833 Baseline")]
-        private object GetProperty(uint itemid, int propid)
+        private bool TryGetProperty(int propid, out object value)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            value = null;
             try
             {
-                object o = null;
                 if (_hierarchy != null)
                 {
-                    _hierarchy.GetProperty(itemid, propid, out o);
+                    _hierarchy.GetProperty(_vsitemid, propid, out value);
                 }
 
-                return o;
+                return true;
             }
-            catch (Exception)
+            catch
             {
-                return null;
+                return false;
             }
         }
 

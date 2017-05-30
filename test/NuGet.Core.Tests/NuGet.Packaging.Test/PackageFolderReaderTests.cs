@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -1044,6 +1044,40 @@ namespace NuGet.Packaging.Test
                 var isDevelopmentDependency = await test.Reader.GetDevelopmentDependencyAsync(CancellationToken.None);
 
                 Assert.False(isDevelopmentDependency);
+            }
+        }
+
+        [Fact]
+        public void NuspecReader_ReturnsNuspecReader()
+        {
+            using (var test = PackageReaderTest.Create(TestPackagesCore.GetPackageCoreReaderTestPackage()))
+            {
+                var nuspecReader = test.Reader.NuspecReader;
+
+                Assert.NotNull(nuspecReader);
+            }
+        }
+
+        [Fact]
+        public async Task GetNuspecReaderAsync_ReturnsNuspecReader()
+        {
+            using (var test = PackageReaderTest.Create(TestPackagesCore.GetPackageCoreReaderTestPackage()))
+            {
+                var nuspecReader = await test.Reader.GetNuspecReaderAsync(CancellationToken.None);
+
+                Assert.NotNull(nuspecReader);
+            }
+        }
+
+        [Fact]
+        public async Task CopyNupkgAsync_Throws()
+        {
+            using (var test = PackageReaderTest.Create(TestPackagesCore.GetPackageCoreReaderTestPackage()))
+            {
+                await Assert.ThrowsAsync<NotImplementedException>(
+                    () => test.Reader.CopyNupkgAsync(
+                        nupkgFilePath: "a",
+                        cancellationToken: CancellationToken.None));
             }
         }
 

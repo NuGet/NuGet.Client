@@ -3,7 +3,10 @@
   <!-- Version -->
   <PropertyGroup>
     <SemanticVersion Condition=" '$(SemanticVersion)' == '' ">4.3.0</SemanticVersion>
-    <ReleaseLabel Condition=" '$(ReleaseLabel)' == '' ">preview1</ReleaseLabel>
+    <!-- We need to update this netcoreassembly build number with every milestone to workaround any breaking api
+    changes we might have made-->
+    <NetCoreAssemblyBuildNumber Condition=" '$(NetCoreAssemblyBuildNumber)' == '' ">2</NetCoreAssemblyBuildNumber>
+    <ReleaseLabel Condition=" '$(ReleaseLabel)' == '' ">preview$(NetCoreAssemblyBuildNumber)</ReleaseLabel>
   </PropertyGroup>
 
   <!-- Dependency versions -->

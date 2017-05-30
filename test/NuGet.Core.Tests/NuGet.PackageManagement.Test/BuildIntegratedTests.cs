@@ -12,6 +12,7 @@ using Newtonsoft.Json.Linq;
 using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Frameworks;
+using NuGet.LibraryModel;
 using NuGet.PackageManagement;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
@@ -379,7 +380,7 @@ namespace NuGet.Test
                 testNuGetProjectContext.TestExecutionContext = new TestExecutionContext(packageIdentity);
                 var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, testNuGetProjectContext, randomProjectFolderPath);
                 var projectFilePath = Path.Combine(randomProjectFolderPath, $"{msBuildNuGetProjectSystem.ProjectName}.csproj");
-                var buildIntegratedProject = new ProjectJsonBuildIntegratedNuGetProject(randomConfig, projectFilePath, msBuildNuGetProjectSystem);
+                var buildIntegratedProject = new ProjectJsonNuGetProject(randomConfig, projectFilePath);
 
                 string message = string.Empty;
 
@@ -428,7 +429,7 @@ namespace NuGet.Test
                 var testNuGetProjectContext = new TestNuGetProjectContext();
                 var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, testNuGetProjectContext, randomProjectFolderPath);
                 var projectFilePath = Path.Combine(randomProjectFolderPath, $"{msBuildNuGetProjectSystem.ProjectName}.csproj");
-                var buildIntegratedProject = new ProjectJsonBuildIntegratedNuGetProject(randomConfig, projectFilePath, msBuildNuGetProjectSystem);
+                var buildIntegratedProject = new ProjectJsonNuGetProject(randomConfig, projectFilePath);
 
                 string message = string.Empty;
 
@@ -487,7 +488,7 @@ namespace NuGet.Test
                     randomProjectFolderPath);
 
                 var projectFilePath = Path.Combine(randomProjectFolderPath, $"{msBuildNuGetProjectSystem.ProjectName}.csproj");
-                var buildIntegratedProject = new ProjectJsonBuildIntegratedNuGetProject(randomConfig, projectFilePath, msBuildNuGetProjectSystem);
+                var buildIntegratedProject = new ProjectJsonNuGetProject(randomConfig, projectFilePath);
 
                 var message = string.Empty;
 
@@ -555,7 +556,7 @@ namespace NuGet.Test
                     randomProjectFolderPath);
 
                 var projectFilePath = Path.Combine(randomProjectFolderPath, $"{msBuildNuGetProjectSystem.ProjectName}.csproj");
-                var buildIntegratedProject = new ProjectJsonBuildIntegratedNuGetProject(randomConfig, projectFilePath, msBuildNuGetProjectSystem);
+                var buildIntegratedProject = new ProjectJsonNuGetProject(randomConfig, projectFilePath);
 
                 var message = string.Empty;
 
@@ -625,7 +626,7 @@ namespace NuGet.Test
                 var testNuGetProjectContext = new TestNuGetProjectContext();
                 var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, testNuGetProjectContext, randomProjectFolderPath);
                 var projectFilePath = Path.Combine(randomProjectFolderPath, $"{msBuildNuGetProjectSystem.ProjectName}.csproj");
-                var buildIntegratedProject = new ProjectJsonBuildIntegratedNuGetProject(randomConfig, projectFilePath, msBuildNuGetProjectSystem);
+                var buildIntegratedProject = new ProjectJsonNuGetProject(randomConfig, projectFilePath);
 
                 string message = string.Empty;
 
@@ -678,7 +679,7 @@ namespace NuGet.Test
                 var testNuGetProjectContext = new TestNuGetProjectContext();
                 var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, testNuGetProjectContext, randomProjectFolderPath);
                 var projectFilePath = Path.Combine(randomProjectFolderPath, $"{msBuildNuGetProjectSystem.ProjectName}.csproj");
-                var buildIntegratedProject = new ProjectJsonBuildIntegratedNuGetProject(randomConfig, projectFilePath, msBuildNuGetProjectSystem);
+                var buildIntegratedProject = new ProjectJsonNuGetProject(randomConfig, projectFilePath);
 
                 string message = string.Empty;
 
@@ -726,7 +727,7 @@ namespace NuGet.Test
                 var testNuGetProjectContext = new TestNuGetProjectContext();
                 var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, testNuGetProjectContext, randomProjectFolderPath);
                 var projectFilePath = Path.Combine(randomProjectFolderPath, $"{msBuildNuGetProjectSystem.ProjectName}.csproj");
-                var buildIntegratedProject = new ProjectJsonBuildIntegratedNuGetProject(randomConfig, projectFilePath, msBuildNuGetProjectSystem);
+                var buildIntegratedProject = new ProjectJsonNuGetProject(randomConfig, projectFilePath);
 
                 string message = string.Empty;
 
@@ -789,7 +790,7 @@ namespace NuGet.Test
                 var testNuGetProjectContext = new TestNuGetProjectContext();
                 var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, testNuGetProjectContext, randomProjectFolderPath);
                 var projectFilePath = Path.Combine(randomProjectFolderPath, $"{msBuildNuGetProjectSystem.ProjectName}.csproj");
-                var buildIntegratedProject = new ProjectJsonBuildIntegratedNuGetProject(projectJson, projectFilePath, msBuildNuGetProjectSystem);
+                var buildIntegratedProject = new ProjectJsonNuGetProject(projectJson, projectFilePath);
 
                 await nuGetPackageManager.InstallPackageAsync(
                     buildIntegratedProject,
@@ -873,7 +874,7 @@ namespace NuGet.Test
                 var testNuGetProjectContext = new TestNuGetProjectContext();
                 var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, testNuGetProjectContext, randomProjectFolderPath);
                 var projectFilePath = Path.Combine(randomProjectFolderPath, $"{msBuildNuGetProjectSystem.ProjectName}.csproj");
-                var buildIntegratedProject = new ProjectJsonBuildIntegratedNuGetProject(randomConfig, projectFilePath, msBuildNuGetProjectSystem);
+                var buildIntegratedProject = new ProjectJsonNuGetProject(randomConfig, projectFilePath);
 
                 string message = string.Empty;
 
@@ -965,7 +966,7 @@ namespace NuGet.Test
                 var testNuGetProjectContext = new TestNuGetProjectContext();
                 var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, testNuGetProjectContext, randomProjectFolderPath);
                 var projectFilePath = Path.Combine(randomProjectFolderPath, $"{msBuildNuGetProjectSystem.ProjectName}.csproj");
-                var buildIntegratedProject = new ProjectJsonBuildIntegratedNuGetProject(randomConfig, projectFilePath, msBuildNuGetProjectSystem);
+                var buildIntegratedProject = new ProjectJsonNuGetProject(randomConfig, projectFilePath);
 
                 string message = string.Empty;
                 using (var cacheContext = new SourceCacheContext())
@@ -1049,7 +1050,7 @@ namespace NuGet.Test
                 var testNuGetProjectContext = new TestNuGetProjectContext();
                 var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, testNuGetProjectContext, randomProjectFolderPath);
                 var projectFilePath = Path.Combine(randomProjectFolderPath, $"{msBuildNuGetProjectSystem.ProjectName}.csproj");
-                var buildIntegratedProject = new ProjectJsonBuildIntegratedNuGetProject(randomConfig, projectFilePath, msBuildNuGetProjectSystem);
+                var buildIntegratedProject = new ProjectJsonNuGetProject(randomConfig, projectFilePath);
 
                 string message = string.Empty;
 
@@ -1117,7 +1118,7 @@ namespace NuGet.Test
                 var testNuGetProjectContext = new TestNuGetProjectContext();
                 var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, testNuGetProjectContext, randomProjectFolderPath);
                 var projectFilePath = Path.Combine(randomProjectFolderPath, $"{msBuildNuGetProjectSystem.ProjectName}.csproj");
-                var buildIntegratedProject = new ProjectJsonBuildIntegratedNuGetProject(randomConfig, projectFilePath, msBuildNuGetProjectSystem);
+                var buildIntegratedProject = new ProjectJsonNuGetProject(randomConfig, projectFilePath);
 
                 string message = string.Empty;
 
@@ -1223,7 +1224,7 @@ namespace NuGet.Test
                 var testNuGetProjectContext = new TestNuGetProjectContext();
                 var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, testNuGetProjectContext, randomProjectFolderPath);
                 var projectFilePath = Path.Combine(randomProjectFolderPath, $"{msBuildNuGetProjectSystem.ProjectName}.csproj");
-                var buildIntegratedProject = new ProjectJsonBuildIntegratedNuGetProject(randomConfig, projectFilePath, msBuildNuGetProjectSystem);
+                var buildIntegratedProject = new ProjectJsonNuGetProject(randomConfig, projectFilePath);
 
                 string message = string.Empty;
 
@@ -1284,7 +1285,7 @@ namespace NuGet.Test
                 var testNuGetProjectContext = new TestNuGetProjectContext();
                 var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, testNuGetProjectContext, randomProjectFolderPath);
                 var projectFilePath = Path.Combine(randomProjectFolderPath, $"{msBuildNuGetProjectSystem.ProjectName}.csproj");
-                var buildIntegratedProject = new ProjectJsonBuildIntegratedNuGetProject(randomConfig, projectFilePath, msBuildNuGetProjectSystem);
+                var buildIntegratedProject = new ProjectJsonNuGetProject(randomConfig, projectFilePath);
 
                 string message = string.Empty;
 
@@ -1341,7 +1342,7 @@ namespace NuGet.Test
                 var testNuGetProjectContext = new TestNuGetProjectContext();
                 var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, testNuGetProjectContext, randomProjectFolderPath);
                 var projectFilePath = Path.Combine(randomProjectFolderPath, $"{msBuildNuGetProjectSystem.ProjectName}.csproj");
-                var buildIntegratedProject = new ProjectJsonBuildIntegratedNuGetProject(randomConfig, projectFilePath, msBuildNuGetProjectSystem);
+                var buildIntegratedProject = new ProjectJsonNuGetProject(randomConfig, projectFilePath);
 
                 // Check that there are no packages returned by PackagesConfigProject
                 var installedPackages = (await buildIntegratedProject.GetInstalledPackagesAsync(token)).ToList();
@@ -1389,7 +1390,7 @@ namespace NuGet.Test
                 var testNuGetProjectContext = new TestNuGetProjectContext();
                 var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, testNuGetProjectContext, randomProjectFolderPath);
                 var projectFilePath = Path.Combine(randomProjectFolderPath, $"{msBuildNuGetProjectSystem.ProjectName}.csproj");
-                var buildIntegratedProject = new ProjectJsonBuildIntegratedNuGetProject(randomConfig, projectFilePath, msBuildNuGetProjectSystem);
+                var buildIntegratedProject = new ProjectJsonNuGetProject(randomConfig, projectFilePath);
 
                 await buildIntegratedProject.InstallPackageAsync(
                     "dotnetrdf",
@@ -1445,7 +1446,7 @@ namespace NuGet.Test
                 var testNuGetProjectContext = new TestNuGetProjectContext();
                 var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, testNuGetProjectContext, randomProjectFolderPath);
                 var projectFilePath = Path.Combine(randomProjectFolderPath, $"{msBuildNuGetProjectSystem.ProjectName}.csproj");
-                var buildIntegratedProject = new ProjectJsonBuildIntegratedNuGetProject(randomConfig, projectFilePath, msBuildNuGetProjectSystem);
+                var buildIntegratedProject = new ProjectJsonNuGetProject(randomConfig, projectFilePath);
 
                 await nuGetPackageManager.InstallPackageAsync(buildIntegratedProject,
                     packageIdentityA,
@@ -1731,7 +1732,11 @@ namespace NuGet.Test
             }
         }
 
-        private class TestProjectJsonBuildIntegratedNuGetProject : ProjectJsonBuildIntegratedNuGetProject
+        private class TestProjectJsonBuildIntegratedNuGetProject 
+            : ProjectJsonNuGetProject
+            , INuGetProjectServices
+            , IProjectScriptHostService
+            , IProjectSystemReferencesReader
         {
             public HashSet<PackageIdentity> ExecuteInitScriptAsyncCalls { get; }
                 = new HashSet<PackageIdentity>(PackageIdentity.Comparer);
@@ -1741,54 +1746,69 @@ namespace NuGet.Test
 
             public bool IsCacheEnabled { get; set; }
 
+            public IProjectBuildProperties BuildProperties => throw new NotImplementedException();
+
+            public IProjectSystemCapabilities Capabilities => throw new NotImplementedException();
+
+            public IProjectSystemReferencesReader ReferencesReader => this;
+
+            public IProjectSystemReferencesService References => throw new NotImplementedException();
+
+            public IProjectSystemService ProjectSystem => throw new NotImplementedException();
+
+            public IProjectScriptHostService ScriptService => this;
+
             public TestProjectJsonBuildIntegratedNuGetProject(
                 string jsonConfig,
-                IMSBuildNuGetProjectSystem msbuildProjectSystem)
-                : base(jsonConfig, msbuildProjectSystem.ProjectFileFullPath, msbuildProjectSystem)
+                IMSBuildProjectSystem msbuildProjectSystem)
+                : base(jsonConfig, msbuildProjectSystem.ProjectFileFullPath)
             {
-            }
-
-            public override Task<bool> ExecuteInitScriptAsync(
-                PackageIdentity identity,
-                string packageInstallPath,
-                INuGetProjectContext projectContext,
-                bool throwOnFailure)
-            {
-                ExecuteInitScriptAsyncCalls.Add(identity);
-
-                return base.ExecuteInitScriptAsync(identity, packageInstallPath, projectContext, throwOnFailure);
+                ProjectServices = this;
             }
 
             public override async Task<IReadOnlyList<PackageSpec>> GetPackageSpecsAsync(DependencyGraphCacheContext context)
             {
                 if (IsCacheEnabled)
                 {
-                    PackageSpec cachedResult;
-                    if (context.PackageSpecCache.TryGetValue(MSBuildProjectPath, out cachedResult))
+                    if (context.PackageSpecCache.TryGetValue(MSBuildProjectPath, out var cachedResult))
                     {
                         return new[] { cachedResult };
                     }
                 }
 
-                var specs = await base.GetPackageSpecsAsync(context);
+                return await base.GetPackageSpecsAsync(context);
+            }
 
+            public T GetGlobalService<T>() where T : class
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task ExecutePackageScriptAsync(PackageIdentity packageIdentity, string packageInstallPath, string scriptRelativePath, INuGetProjectContext projectContext, bool throwOnFailure, CancellationToken token)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task<bool> ExecutePackageInitScriptAsync(PackageIdentity packageIdentity, string packageInstallPath, INuGetProjectContext projectContext, bool throwOnFailure, CancellationToken token)
+            {
+                ExecuteInitScriptAsyncCalls.Add(packageIdentity);
+                return Task.FromResult(true);
+            }
+
+            public Task<IEnumerable<LibraryDependency>> GetPackageReferencesAsync(NuGetFramework targetFramework, CancellationToken token)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task<IEnumerable<ProjectRestoreReference>> GetProjectReferencesAsync(ILogger logger, CancellationToken token)
+            {
                 var projectRefs = ProjectReferences.Select(e => new ProjectRestoreReference()
                 {
                     ProjectUniqueName = e.MSBuildProjectPath,
                     ProjectPath = e.MSBuildProjectPath,
                 });
 
-                var spec = specs.Single();
-
-                spec.RestoreMetadata.TargetFrameworks = new List<ProjectRestoreMetadataFrameworkInfo>()
-                {
-                    new ProjectRestoreMetadataFrameworkInfo(spec.TargetFrameworks.First().FrameworkName)
-                    {
-                        ProjectReferences = projectRefs.ToList()
-                    }
-                };
-
-                return specs;
+                return Task.FromResult(projectRefs);
             }
         }
 

@@ -102,6 +102,12 @@ namespace NuGet.Common
         /// </summary>
         NU1203 = 1203,
 
+
+        /// <summary>
+        /// Package MinClientVersion did not match.
+        /// </summary>
+        NU1401 = 1401,
+
         /// <summary>
         /// Undefined warning
         /// </summary>
@@ -161,10 +167,5 @@ namespace NuGet.Common
         /// Feed error converted to a warning when ignoreFailedSources is true.
         /// </summary>
         NU1801 = 1801,
-
-        /// <summary>
-        /// Package MinClientVersion did not match.
-        /// </summary>
-        NU1901 = 1901,
     }
 }

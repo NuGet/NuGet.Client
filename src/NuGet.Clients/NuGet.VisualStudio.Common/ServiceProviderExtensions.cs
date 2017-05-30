@@ -23,6 +23,13 @@ namespace NuGet.VisualStudio
             return serviceProvider.GetService<SComponentModel, IComponentModel>();
         }
 
+        public static TService GetService<TService>(
+            this IServiceProvider serviceProvider)
+            where TService : class
+        {
+            return serviceProvider.GetService(typeof(TService)) as TService;
+        }
+
         public static TInterface GetService<TService, TInterface>(
             this IServiceProvider serviceProvider) 
             where TInterface : class

@@ -15,6 +15,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Media;
 using EnvDTE;
+using Microsoft;
 using Microsoft.VisualStudio.Threading;
 using NuGet.Common;
 using NuGet.Configuration;
@@ -219,7 +220,8 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         {
             get
             {
-                Debug.Assert(_solutionManager != null);
+                Assumes.Present(_solutionManager);
+
                 if (_solutionManager.DefaultNuGetProject == null)
                 {
                     return null;
@@ -355,15 +357,20 @@ namespace NuGetConsole.Host.PowerShell.Implementation
 
         private void UpdateWorkingDirectory()
         {
-            if (Runspace.RunspaceAvailability == RunspaceAvailability.Available)
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
             {
-                // if there is no solution open, we set the active directory to be user profile folder
-                string targetDir = _solutionManager.IsSolutionOpen ?
-                    _solutionManager.SolutionDirectory :
-                    Environment.GetEnvironmentVariable("USERPROFILE");
+                await TaskScheduler.Default;
 
-                Runspace.ChangePSDirectory(targetDir);
-            }
+                if (Runspace.RunspaceAvailability == RunspaceAvailability.Available)
+                {
+                    // if there is no solution open, we set the active directory to be user profile folder
+                    var targetDir = _solutionManager.IsSolutionOpen ?
+                        _solutionManager.SolutionDirectory :
+                        Environment.GetEnvironmentVariable("USERPROFILE");
+
+                    Runspace.ChangePSDirectory(targetDir);
+                }
+            });
         }
 
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We don't want execution of init scripts to crash our console.")]
@@ -391,15 +398,6 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                     _currentRestore = latestRestore;
                     _currentSolutionDirectory = latestSolutionDirectory;
 
-                    return;
-                }
-
-                // make sure all projects are loaded before start to execute init scripts. Since
-                // projects might not be loaded when DPL is enabled.
-                _solutionManager.EnsureSolutionIsLoaded();
-
-                if (!await _solutionManager.IsSolutionFullyLoadedAsync())
-                {
                     return;
                 }
 
@@ -824,41 +822,27 @@ namespace NuGetConsole.Host.PowerShell.Implementation
 
                     var allProjects = _solutionManager.GetNuGetProjects();
                     _projectSafeNames = allProjects.Select(_solutionManager.GetNuGetProjectSafeName).ToArray();
-                    var displayNames = GetDisplayNames(allProjects).ToArray();
+                    var displayNames = allProjects.Select(GetDisplayName).ToArray();
                     Array.Sort(displayNames, _projectSafeNames, StringComparer.CurrentCultureIgnoreCase);
                     return _projectSafeNames;
                 });
         }
 
-        private IEnumerable<string> GetDisplayNames(IEnumerable<NuGetProject> allProjects)
-        {
-            Debug.Assert(ThreadHelper.CheckAccess());
-
-            List<string> projectNames = new List<string>();
-            var solutionManager = (IVsSolutionManager)_solutionManager;
-            foreach (var nuGetProject in allProjects)
-            {
-                string displayName = GetDisplayName(nuGetProject, solutionManager);
-                projectNames.Add(displayName);
-            }
-            return projectNames;
-        }
-
         private string GetDisplayName(NuGetProject nuGetProject)
         {
-            Debug.Assert(ThreadHelper.CheckAccess());
+            var vsProjectAdapter = _solutionManager.GetVsProjectAdapter(nuGetProject);
 
-            var solutionManager = (IVsSolutionManager)_solutionManager;
-            return GetDisplayName(nuGetProject, solutionManager);
+            var name = vsProjectAdapter.CustomUniqueName;
+            if (IsWebSite(vsProjectAdapter))
+            {
+                name = PathHelper.SmartTruncate(name, 40);
+            }
+            return name;
         }
 
-        private static string GetDisplayName(NuGetProject nuGetProject, IVsSolutionManager solutionManager)
+        private static bool IsWebSite(IVsProjectAdapter project)
         {
-            Debug.Assert(ThreadHelper.CheckAccess());
-
-            var safeName = solutionManager.GetNuGetProjectSafeName(nuGetProject);
-            var project = solutionManager.GetDTEProject(safeName);
-            return EnvDTEProjectInfoUtility.GetDisplayName(project);
+            return project.ProjectTypeGuids.Contains(VsProjectTypes.WebSiteProjectTypeGuid);
         }
 
         #region ITabExpansion

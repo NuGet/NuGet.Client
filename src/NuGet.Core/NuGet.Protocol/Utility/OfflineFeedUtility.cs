@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -33,9 +33,9 @@ namespace NuGet.Protocol.Core.Types
             }
 
             var versionFolderPathResolver = new VersionFolderPathResolver(offlineFeed);
-            string nupkgFilePath = versionFolderPathResolver.GetPackageFilePath(packageIdentity.Id, packageIdentity.Version);
-            string hashFilePath = versionFolderPathResolver.GetHashPath(packageIdentity.Id, packageIdentity.Version);
-            string nuspecFilePath = versionFolderPathResolver.GetManifestFilePath(packageIdentity.Id, packageIdentity.Version);
+            var nupkgFilePath = versionFolderPathResolver.GetPackageFilePath(packageIdentity.Id, packageIdentity.Version);
+            var hashFilePath = versionFolderPathResolver.GetHashPath(packageIdentity.Id, packageIdentity.Version);
+            var nuspecFilePath = versionFolderPathResolver.GetManifestFilePath(packageIdentity.Id, packageIdentity.Version);
 
             var nupkgFileExists = File.Exists(nupkgFilePath);
 
@@ -66,6 +66,7 @@ namespace NuGet.Protocol.Core.Types
             isValidPackage = false;
             return false;
         }
+
         public static string GetPackageDirectory(PackageIdentity packageIdentity, string offlineFeed)
         {
             var versionFolderPathResolver = new VersionFolderPathResolver(offlineFeed);
@@ -75,7 +76,7 @@ namespace NuGet.Protocol.Core.Types
 
         public static void ThrowIfInvalid(string path)
         {
-            Uri pathUri = UriUtility.TryCreateSourceUri(path, UriKind.RelativeOrAbsolute);
+            var pathUri = UriUtility.TryCreateSourceUri(path, UriKind.RelativeOrAbsolute);
             if (pathUri == null)
             {
                 throw new ArgumentException(string.Format(CultureInfo.CurrentCulture,
@@ -130,6 +131,13 @@ namespace NuGet.Protocol.Core.Types
             OfflineFeedAddContext offlineFeedAddContext,
             CancellationToken token)
         {
+            if (offlineFeedAddContext == null)
+            {
+                throw new ArgumentNullException(nameof(offlineFeedAddContext));
+            }
+
+            token.ThrowIfCancellationRequested();
+
             var packagePath = offlineFeedAddContext.PackagePath;
             var source = offlineFeedAddContext.Source;
             var logger = offlineFeedAddContext.Logger;
@@ -181,7 +189,6 @@ namespace NuGet.Protocol.Core.Types
                     }
                     else
                     {
-                        packageStream.Seek(0, SeekOrigin.Begin);
                         var packageSaveMode = offlineFeedAddContext.Expand
                             ? PackageSaveMode.Defaultv3
                             : PackageSaveMode.Nuspec | PackageSaveMode.Nupkg;
@@ -193,10 +200,16 @@ namespace NuGet.Protocol.Core.Types
                             packageSaveMode: packageSaveMode,
                             xmlDocFileSaveMode: PackageExtractionBehavior.XmlDocFileSaveMode);
 
-                        await PackageExtractor.InstallFromSourceAsync(
-                            stream => packageStream.CopyToAsync(stream),
-                            versionFolderPathContext,
-                            token);
+                        using (var packageDownloader = new LocalPackageArchiveDownloader(
+                            packagePath,
+                            packageIdentity,
+                            logger))
+                        {
+                            await PackageExtractor.InstallFromSourceAsync(
+                                packageDownloader,
+                                versionFolderPathContext,
+                                token);
+                        }
 
                         var message = string.Format(
                             CultureInfo.CurrentCulture,

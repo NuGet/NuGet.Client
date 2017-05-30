@@ -190,7 +190,7 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
                     getLockFileOrNullAsync: null);
 
                 var project = new Mock<MSBuildNuGetProject>(
-                    Mock.Of<IMSBuildNuGetProjectSystem>(), userPackageFolder, testDirectory.Path);
+                    Mock.Of<IMSBuildProjectSystem>(), userPackageFolder, testDirectory.Path);
 
                 project
                     .Setup(x => x.GetInstalledPackagesAsync(It.IsAny<CancellationToken>()))
@@ -238,7 +238,7 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
 
                 var projectUniqueName = Guid.NewGuid().ToString();
 
-                var projectSystem = Mock.Of<IMSBuildNuGetProjectSystem>();
+                var projectSystem = Mock.Of<IMSBuildProjectSystem>();
                 Mock.Get(projectSystem)
                     .SetupGet(x => x.ProjectUniqueName)
                     .Returns(projectUniqueName);
@@ -302,11 +302,6 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
                 {
                     throw new NotImplementedException();
                 }
-            }
-
-            public override Task<bool> ExecuteInitScriptAsync(PackageIdentity identity, string packageInstallPath, INuGetProjectContext projectContext, bool throwOnFailure)
-            {
-                throw new NotImplementedException();
             }
 
             public override Task<string> GetAssetsFilePathAsync()

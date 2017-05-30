@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -73,28 +74,32 @@ namespace NuGet.Commands
             Errors = errors.ToArray();
         }
 
-        public static void Log(ILogger logger, IEnumerable<RestoreSummary> restoreSummaries)
+        public static void Log(ILogger logger, IEnumerable<RestoreSummary> restoreSummaries, bool logErrors = false)
         {
-            if (!restoreSummaries.Any())
+            if (restoreSummaries.Count() == 0)
             {
                 return;
             }
 
-            // Display the errors summary
-            foreach (var restoreSummary in restoreSummaries)
+            // This should only be true by nuget exe since it does not have msbuild logger
+            if (logErrors)
             {
-                if (!restoreSummary.Errors.Any())
+                // Display the errors summary
+                foreach (var restoreSummary in restoreSummaries)
                 {
-                    continue;
-                }
-
-                logger.LogErrorSummary(string.Empty);
-                logger.LogErrorSummary(string.Format(CultureInfo.CurrentCulture, Strings.Log_ErrorSummary, restoreSummary.InputPath));
-                foreach (var error in restoreSummary.Errors)
-                {
-                    foreach (var line in IndentLines(error.Message))
+                    if (restoreSummary.Errors.Count == 0)
                     {
-                        logger.LogErrorSummary(line);
+                        continue;
+                    }
+
+                    logger.LogError(string.Empty);
+                    logger.LogError(string.Format(CultureInfo.CurrentCulture, Strings.Log_ErrorSummary, restoreSummary.InputPath));
+                    foreach (var error in restoreSummary.Errors.Where(m => m.Level == LogLevel.Error))
+                    {
+                        foreach (var line in IndentLines(error.Message))
+                        {
+                            logger.LogError(line);
+                        }
                     }
                 }
             }

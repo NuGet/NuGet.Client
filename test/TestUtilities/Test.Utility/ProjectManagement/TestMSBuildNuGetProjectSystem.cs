@@ -13,7 +13,7 @@ using NuGet.Test.Utility;
 
 namespace Test.Utility
 {
-    public class TestMSBuildNuGetProjectSystem : IMSBuildNuGetProjectSystem
+    public class TestMSBuildNuGetProjectSystem : IMSBuildProjectSystem
     {
         private const string TestProjectName = "TestProjectName";
         private const string TestProjectFileName = "Test.csproj";
@@ -24,9 +24,8 @@ namespace Test.Utility
         private HashSet<string> FilesInProcessing { get; set; }
         public HashSet<string> ProcessedFiles { get; private set; }
         public HashSet<string> Imports { get; }
-        public Dictionary<string, int> ScriptsExecuted { get; }
         public int BindingRedirectsCallCount { get; private set; }
-        public INuGetProjectContext NuGetProjectContext { get; private set; }
+        public INuGetProjectContext NuGetProjectContext { get; set; }
         public int BatchCount { get; private set; }
         public Action<string> AddReferenceAction { get; set; }
         public Action<string> RemoveReferenceAction { get; set; }
@@ -45,7 +44,6 @@ namespace Test.Utility
             Imports = new HashSet<string>();
             NuGetProjectContext = nuGetProjectContext;
             ProjectFullPath = string.IsNullOrEmpty(projectFullPath) ? Environment.CurrentDirectory : projectFullPath;
-            ScriptsExecuted = new Dictionary<string, int>();
             ProcessedFiles = new HashSet<string>();
             ProjectName = projectName ?? TestProjectName;
             ProjectFileFullPath = projectFileFullPath ?? Path.Combine(ProjectFullPath, ProjectName);
@@ -70,13 +68,14 @@ namespace Test.Utility
             }
         }
 
-        public void AddFrameworkReference(string name, string packageId)
+        public Task AddFrameworkReferenceAsync(string name, string packageId)
         {
             if (FrameworkReferences.Contains(name))
             {
                 throw new InvalidOperationException("Cannot add existing reference. That would be a COMException in VS");
             }
             FrameworkReferences.Add(name);
+            return Task.CompletedTask;
         }
 
         public void AddImport(string targetFullPath, ImportLocation location)
@@ -84,9 +83,10 @@ namespace Test.Utility
             Imports.Add(targetFullPath);
         }
 
-        public void AddReference(string referencePath)
+        public Task AddReferenceAsync(string referencePath)
         {
             AddReferenceAction(referencePath);
+            return Task.CompletedTask;
         }
 
         public void RemoveFile(string path)
@@ -99,8 +99,6 @@ namespace Test.Utility
             }
         }
 
-        public dynamic VSProject4 { get; }
-
         public string ProjectFullPath { get; }
 
         public string ProjectFileFullPath { get; }
@@ -112,9 +110,9 @@ namespace Test.Utility
             get { return ProjectName; }
         }
 
-        public bool ReferenceExists(string name)
+        public Task<bool> ReferenceExistsAsync(string name)
         {
-            return References.ContainsKey(name) || FrameworkReferences.Contains(name);
+            return Task.FromResult(References.ContainsKey(name) || FrameworkReferences.Contains(name));
         }
 
         public void RemoveImport(string targetFullPath)
@@ -122,17 +120,13 @@ namespace Test.Utility
             Imports.Remove(targetFullPath);
         }
 
-        public void RemoveReference(string name)
+        public Task RemoveReferenceAsync(string name)
         {
             RemoveReferenceAction(name);
+            return Task.CompletedTask;
         }
 
         public NuGetFramework TargetFramework { get; }
-
-        public void SetNuGetProjectContext(INuGetProjectContext nuGetProjectContext)
-        {
-            NuGetProjectContext = nuGetProjectContext;
-        }
 
         public bool FileExistsInProject(string path)
         {
@@ -162,24 +156,6 @@ namespace Test.Utility
         public void AddBindingRedirects()
         {
             BindingRedirectsCallCount++;
-        }
-
-        public Task ExecuteScriptAsync(PackageIdentity identity, string packageInstallPath, string scriptRelativePath, bool throwOnFailure)
-        {
-            var scriptFullPath = Path.Combine(packageInstallPath, scriptRelativePath);
-            if (!File.Exists(scriptFullPath) && throwOnFailure)
-            {
-                throw new InvalidOperationException(scriptRelativePath + " was not found. Could not execute PS script");
-            }
-
-            int runCount;
-            if (!ScriptsExecuted.TryGetValue(scriptRelativePath, out runCount))
-            {
-                ScriptsExecuted.Add(scriptRelativePath, 0);
-            }
-
-            ScriptsExecuted[scriptRelativePath]++;
-            return Task.FromResult(0);
         }
 
         public void BeginProcessing()

@@ -38,6 +38,8 @@ Copyright (c) .NET Foundation. All rights reserved.
     <IsRestoreTargetsFileLoaded>true</IsRestoreTargetsFileLoaded>
     <!-- Load NuGet.Build.Tasks.dll, this can be overridden to use a different version with $(RestoreTaskAssemblyFile) -->
     <RestoreTaskAssemblyFile Condition=" '$(RestoreTaskAssemblyFile)' == '' ">NuGet.Build.Tasks.dll</RestoreTaskAssemblyFile>
+    <!-- Do not hide errors and warnings by default -->
+    <HideWarningsAndErrors Condition=" '$(HideWarningsAndErrors)' == '' ">false</HideWarningsAndErrors>
     <!-- Recurse by default -->
     <RestoreRecursive Condition=" '$(RestoreRecursive)' == '' ">true</RestoreRecursive>
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
@@ -45,7 +47,9 @@ Copyright (c) .NET Foundation. All rights reserved.
     <ValidateRuntimeIdentifierCompatibility Condition=" '$(ValidateRuntimeIdentifierCompatibility)' == '' ">false</ValidateRuntimeIdentifierCompatibility>
     <!-- Error handling while walking projects -->
     <RestoreContinueOnError Condition=" '$(RestoreContinueOnError)' == '' ">WarnAndContinue</RestoreContinueOnError>
-  </PropertyGroup>
+  
+
+</PropertyGroup>
 
   <PropertyGroup>
     <!-- Generate a restore graph for each entry point project. -->
@@ -103,7 +107,8 @@ Copyright (c) .NET Foundation. All rights reserved.
       RestoreConfigFile="$(RestoreConfigFile)"
       RestoreNoCache="$(RestoreNoCache)"
       RestoreIgnoreFailedSources="$(RestoreIgnoreFailedSources)"
-      RestoreRecursive="$(RestoreRecursive)" />
+      RestoreRecursive="$(RestoreRecursive)"
+      HideWarningsAndErrors="$(HideWarningsAndErrors)"/>
   </Target>
 
   <!--

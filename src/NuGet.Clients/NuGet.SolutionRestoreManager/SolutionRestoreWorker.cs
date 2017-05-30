@@ -139,14 +139,14 @@ namespace NuGet.SolutionRestoreManager
                     Advise(_vsSolution);
 #endif
                 });
-            }
 
-            // Signal the background job runner solution is loaded
-            // Needed when OnAfterBackgroundSolutionLoadComplete fires before
-            // Advise has been called.
-            if (!_solutionLoadedEvent.IsSet && await IsSolutionFullyLoadedAsync())
-            {
-                _solutionLoadedEvent.Set();
+                // Signal the background job runner solution is loaded
+                // Needed when OnAfterBackgroundSolutionLoadComplete fires before
+                // Advise has been called.
+                if (!_solutionLoadedEvent.IsSet && await IsSolutionFullyLoadedAsync())
+                {
+                    _solutionLoadedEvent.Set();
+                }
             }
         }
 

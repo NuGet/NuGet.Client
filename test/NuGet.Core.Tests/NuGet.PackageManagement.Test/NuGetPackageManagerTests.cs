@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -121,7 +121,7 @@ namespace NuGet.Test
 
                     // Act
                     // Install and Uninstall 50 times while polling for installed packages
-                    for (int i = 0; i < 50; i++)
+                    for (var i = 0; i < 50; i++)
                     {
                         // Install
                         await nuGetPackageManager.InstallPackageAsync(projectA, "packageA",
@@ -170,7 +170,7 @@ namespace NuGet.Test
                 nuGetPackageManager.InstallationCompatibility = installationCompatibility.Object;
 
                 var msBuildNuGetProject = testSolutionManager.AddNewMSBuildProject();
-                var msBuildNuGetProjectSystem = msBuildNuGetProject.MSBuildNuGetProjectSystem as TestMSBuildNuGetProjectSystem;
+                var msBuildNuGetProjectSystem = msBuildNuGetProject.ProjectSystem as TestMSBuildNuGetProjectSystem;
                 var packagesConfigPath = msBuildNuGetProject.PackagesConfigNuGetProject.FullPath;
                 var packageIdentity = NoDependencyLibPackages[0];
 
@@ -194,14 +194,15 @@ namespace NuGet.Test
                 packagesInPackagesConfig = (await msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
                 Assert.Equal(1, packagesInPackagesConfig.Count);
                 Assert.Equal(packageIdentity, packagesInPackagesConfig[0].PackageIdentity);
-                Assert.Equal(msBuildNuGetProject.MSBuildNuGetProjectSystem.TargetFramework, packagesInPackagesConfig[0].TargetFramework);
+                Assert.Equal(msBuildNuGetProject.ProjectSystem.TargetFramework, packagesInPackagesConfig[0].TargetFramework);
 
                 // Ensure that installation compatibility was checked.
                 installationCompatibility.Verify(
-                    x => x.EnsurePackageCompatibility(
+                    x => x.EnsurePackageCompatibilityAsync(
                         msBuildNuGetProject,
                         packageIdentity,
-                        It.IsAny<DownloadResourceResult>()),
+                        It.IsAny<DownloadResourceResult>(),
+                        It.IsAny<CancellationToken>()),
                     Times.Once);
                 installationCompatibility.Verify(
                     x => x.EnsurePackageCompatibility(
@@ -231,7 +232,7 @@ namespace NuGet.Test
                 var packagesFolderPath = PackagesFolderPathUtility.GetPackagesFolderPath(testSolutionManager, testSettings);
 
                 var msBuildNuGetProject = testSolutionManager.AddNewMSBuildProject();
-                var msBuildNuGetProjectSystem = msBuildNuGetProject.MSBuildNuGetProjectSystem as TestMSBuildNuGetProjectSystem;
+                var msBuildNuGetProjectSystem = msBuildNuGetProject.ProjectSystem as TestMSBuildNuGetProjectSystem;
                 var packagesConfigPath = msBuildNuGetProject.PackagesConfigNuGetProject.FullPath;
                 var packageIdentity = NoDependencyLibPackages[0];
 
@@ -269,7 +270,7 @@ namespace NuGet.Test
                 var packagesFolderPath = PackagesFolderPathUtility.GetPackagesFolderPath(testSolutionManager, testSettings);
 
                 var msBuildNuGetProject = testSolutionManager.AddNewMSBuildProject();
-                var msBuildNuGetProjectSystem = msBuildNuGetProject.MSBuildNuGetProjectSystem as TestMSBuildNuGetProjectSystem;
+                var msBuildNuGetProjectSystem = msBuildNuGetProject.ProjectSystem as TestMSBuildNuGetProjectSystem;
                 var packagesConfigPath = msBuildNuGetProject.PackagesConfigNuGetProject.FullPath;
                 var packageIdentity = NoDependencyLibPackages[0];
 
@@ -292,7 +293,7 @@ namespace NuGet.Test
                 packagesInPackagesConfig = (await msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
                 Assert.Equal(1, packagesInPackagesConfig.Count);
                 Assert.Equal(packageIdentity, packagesInPackagesConfig[0].PackageIdentity);
-                Assert.Equal(msBuildNuGetProject.MSBuildNuGetProjectSystem.TargetFramework, packagesInPackagesConfig[0].TargetFramework);
+                Assert.Equal(msBuildNuGetProject.ProjectSystem.TargetFramework, packagesInPackagesConfig[0].TargetFramework);
 
                 InvalidOperationException alreadyInstalledException = null;
                 try
@@ -330,7 +331,7 @@ namespace NuGet.Test
                 var packagesFolderPath = PackagesFolderPathUtility.GetPackagesFolderPath(testSolutionManager, testSettings);
 
                 var msBuildNuGetProject = testSolutionManager.AddNewMSBuildProject();
-                var msBuildNuGetProjectSystem = msBuildNuGetProject.MSBuildNuGetProjectSystem as TestMSBuildNuGetProjectSystem;
+                var msBuildNuGetProjectSystem = msBuildNuGetProject.ProjectSystem as TestMSBuildNuGetProjectSystem;
                 var packagesConfigPath = msBuildNuGetProject.PackagesConfigNuGetProject.FullPath;
                 var firstPackageIdentity = NoDependencyLibPackages[0];
 
@@ -357,9 +358,9 @@ namespace NuGet.Test
                 packagesInPackagesConfig = (await msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
                 Assert.Equal(2, packagesInPackagesConfig.Count);
                 Assert.Equal(firstPackageIdentity, packagesInPackagesConfig[1].PackageIdentity);
-                Assert.Equal(msBuildNuGetProject.MSBuildNuGetProjectSystem.TargetFramework, packagesInPackagesConfig[1].TargetFramework);
+                Assert.Equal(msBuildNuGetProject.ProjectSystem.TargetFramework, packagesInPackagesConfig[1].TargetFramework);
                 Assert.Equal(secondPackageIdentity, packagesInPackagesConfig[0].PackageIdentity);
-                Assert.Equal(msBuildNuGetProject.MSBuildNuGetProjectSystem.TargetFramework, packagesInPackagesConfig[0].TargetFramework);
+                Assert.Equal(msBuildNuGetProject.ProjectSystem.TargetFramework, packagesInPackagesConfig[0].TargetFramework);
             }
         }
 
@@ -381,7 +382,7 @@ namespace NuGet.Test
                 var packagesFolderPath = PackagesFolderPathUtility.GetPackagesFolderPath(testSolutionManager, testSettings);
 
                 var msBuildNuGetProject = testSolutionManager.AddNewMSBuildProject();
-                var msBuildNuGetProjectSystem = msBuildNuGetProject.MSBuildNuGetProjectSystem as TestMSBuildNuGetProjectSystem;
+                var msBuildNuGetProjectSystem = msBuildNuGetProject.ProjectSystem as TestMSBuildNuGetProjectSystem;
                 var packagesConfigPath = msBuildNuGetProject.PackagesConfigNuGetProject.FullPath;
                 var firstPackageIdentity = NoDependencyLibPackages[0];
 
@@ -408,7 +409,7 @@ namespace NuGet.Test
                 packagesInPackagesConfig = (await msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
                 Assert.Equal(1, packagesInPackagesConfig.Count);
                 Assert.Equal(secondPackageIdentity, packagesInPackagesConfig[0].PackageIdentity);
-                Assert.Equal(msBuildNuGetProject.MSBuildNuGetProjectSystem.TargetFramework, packagesInPackagesConfig[0].TargetFramework);
+                Assert.Equal(msBuildNuGetProject.ProjectSystem.TargetFramework, packagesInPackagesConfig[0].TargetFramework);
             }
         }
 
@@ -430,7 +431,7 @@ namespace NuGet.Test
                 var packagesFolderPath = PackagesFolderPathUtility.GetPackagesFolderPath(testSolutionManager, testSettings);
 
                 var msBuildNuGetProject = testSolutionManager.AddNewMSBuildProject();
-                var msBuildNuGetProjectSystem = msBuildNuGetProject.MSBuildNuGetProjectSystem as TestMSBuildNuGetProjectSystem;
+                var msBuildNuGetProjectSystem = msBuildNuGetProject.ProjectSystem as TestMSBuildNuGetProjectSystem;
                 var packagesConfigPath = msBuildNuGetProject.PackagesConfigNuGetProject.FullPath;
                 var packageIdentity = PackageWithDependents[2];
 
@@ -453,9 +454,9 @@ namespace NuGet.Test
                 packagesInPackagesConfig = (await msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
                 Assert.Equal(2, packagesInPackagesConfig.Count);
                 Assert.Equal(packageIdentity, packagesInPackagesConfig[1].PackageIdentity);
-                Assert.Equal(msBuildNuGetProject.MSBuildNuGetProjectSystem.TargetFramework, packagesInPackagesConfig[1].TargetFramework);
+                Assert.Equal(msBuildNuGetProject.ProjectSystem.TargetFramework, packagesInPackagesConfig[1].TargetFramework);
                 Assert.Equal(PackageWithDependents[0], packagesInPackagesConfig[0].PackageIdentity);
-                Assert.Equal(msBuildNuGetProject.MSBuildNuGetProjectSystem.TargetFramework, packagesInPackagesConfig[0].TargetFramework);
+                Assert.Equal(msBuildNuGetProject.ProjectSystem.TargetFramework, packagesInPackagesConfig[0].TargetFramework);
             }
         }
 
@@ -477,7 +478,7 @@ namespace NuGet.Test
                 var packagesFolderPath = PackagesFolderPathUtility.GetPackagesFolderPath(testSolutionManager, testSettings);
 
                 var msBuildNuGetProject = testSolutionManager.AddNewMSBuildProject();
-                var msBuildNuGetProjectSystem = msBuildNuGetProject.MSBuildNuGetProjectSystem as TestMSBuildNuGetProjectSystem;
+                var msBuildNuGetProjectSystem = msBuildNuGetProject.ProjectSystem as TestMSBuildNuGetProjectSystem;
                 var packagesConfigPath = msBuildNuGetProject.PackagesConfigNuGetProject.FullPath;
                 var packageIdentity = MorePackageWithDependents[3];
 
@@ -528,7 +529,7 @@ namespace NuGet.Test
                 var packagesFolderPath = PackagesFolderPathUtility.GetPackagesFolderPath(testSolutionManager, testSettings);
 
                 var msBuildNuGetProject = testSolutionManager.AddNewMSBuildProject();
-                var msBuildNuGetProjectSystem = msBuildNuGetProject.MSBuildNuGetProjectSystem as TestMSBuildNuGetProjectSystem;
+                var msBuildNuGetProjectSystem = msBuildNuGetProject.ProjectSystem as TestMSBuildNuGetProjectSystem;
                 var packagesConfigPath = msBuildNuGetProject.PackagesConfigNuGetProject.FullPath;
                 var packageIdentity = LatestAspNetPackages[0]; // Microsoft.AspNet.Mvc.6.0.0-beta3
 
@@ -576,7 +577,7 @@ namespace NuGet.Test
                 var packagePathResolver = new PackagePathResolver(packagesFolderPath);
 
                 var msBuildNuGetProject = testSolutionManager.AddNewMSBuildProject();
-                var msBuildNuGetProjectSystem = msBuildNuGetProject.MSBuildNuGetProjectSystem as TestMSBuildNuGetProjectSystem;
+                var msBuildNuGetProjectSystem = msBuildNuGetProject.ProjectSystem as TestMSBuildNuGetProjectSystem;
                 var packagesConfigPath = msBuildNuGetProject.PackagesConfigNuGetProject.FullPath;
                 var packageIdentity = NoDependencyLibPackages[0];
 
@@ -599,7 +600,7 @@ namespace NuGet.Test
                 packagesInPackagesConfig = (await msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
                 Assert.Equal(1, packagesInPackagesConfig.Count);
                 Assert.Equal(packageIdentity, packagesInPackagesConfig[0].PackageIdentity);
-                Assert.Equal(msBuildNuGetProject.MSBuildNuGetProjectSystem.TargetFramework, packagesInPackagesConfig[0].TargetFramework);
+                Assert.Equal(msBuildNuGetProject.ProjectSystem.TargetFramework, packagesInPackagesConfig[0].TargetFramework);
 
                 // Main Act
                 var uninstallationContext = new UninstallationContext();
@@ -636,7 +637,7 @@ namespace NuGet.Test
                     deleteOnRestartManager);
 
                 var msBuildNuGetProject = testSolutionManager.AddNewMSBuildProject();
-                var msBuildNuGetProjectSystem = msBuildNuGetProject.MSBuildNuGetProjectSystem as TestMSBuildNuGetProjectSystem;
+                var msBuildNuGetProjectSystem = msBuildNuGetProject.ProjectSystem as TestMSBuildNuGetProjectSystem;
                 var packagesConfigPath = msBuildNuGetProject.PackagesConfigNuGetProject.FullPath;
                 var packageIdentity = PackageWithDependents[2];
 
@@ -659,9 +660,9 @@ namespace NuGet.Test
                 packagesInPackagesConfig = (await msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
                 Assert.Equal(2, packagesInPackagesConfig.Count);
                 Assert.Equal(packageIdentity, packagesInPackagesConfig[1].PackageIdentity);
-                Assert.Equal(msBuildNuGetProject.MSBuildNuGetProjectSystem.TargetFramework, packagesInPackagesConfig[1].TargetFramework);
+                Assert.Equal(msBuildNuGetProject.ProjectSystem.TargetFramework, packagesInPackagesConfig[1].TargetFramework);
                 Assert.Equal(PackageWithDependents[0], packagesInPackagesConfig[0].PackageIdentity);
-                Assert.Equal(msBuildNuGetProject.MSBuildNuGetProjectSystem.TargetFramework, packagesInPackagesConfig[0].TargetFramework);
+                Assert.Equal(msBuildNuGetProject.ProjectSystem.TargetFramework, packagesInPackagesConfig[0].TargetFramework);
 
                 // Main Act
                 Exception exception = null;
@@ -707,7 +708,7 @@ namespace NuGet.Test
                     deleteOnRestartManager);
 
                 var msBuildNuGetProject = testSolutionManager.AddNewMSBuildProject();
-                var msBuildNuGetProjectSystem = msBuildNuGetProject.MSBuildNuGetProjectSystem as TestMSBuildNuGetProjectSystem;
+                var msBuildNuGetProjectSystem = msBuildNuGetProject.ProjectSystem as TestMSBuildNuGetProjectSystem;
                 var packagesConfigPath = msBuildNuGetProject.PackagesConfigNuGetProject.FullPath;
                 var packageIdentity = PackageWithDependents[2];
 
@@ -730,9 +731,9 @@ namespace NuGet.Test
                 packagesInPackagesConfig = (await msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
                 Assert.Equal(2, packagesInPackagesConfig.Count);
                 Assert.Equal(packageIdentity, packagesInPackagesConfig[1].PackageIdentity);
-                Assert.Equal(msBuildNuGetProject.MSBuildNuGetProjectSystem.TargetFramework, packagesInPackagesConfig[1].TargetFramework);
+                Assert.Equal(msBuildNuGetProject.ProjectSystem.TargetFramework, packagesInPackagesConfig[1].TargetFramework);
                 Assert.Equal(PackageWithDependents[0], packagesInPackagesConfig[0].PackageIdentity);
-                Assert.Equal(msBuildNuGetProject.MSBuildNuGetProjectSystem.TargetFramework, packagesInPackagesConfig[0].TargetFramework);
+                Assert.Equal(msBuildNuGetProject.ProjectSystem.TargetFramework, packagesInPackagesConfig[0].TargetFramework);
 
                 // Main Act
                 Exception exception = null;
@@ -1597,7 +1598,7 @@ namespace NuGet.Test
                     deleteOnRestartManager);
 
                 var msBuildNuGetProject = testSolutionManager.AddNewMSBuildProject();
-                var msBuildNuGetProjectSystem = msBuildNuGetProject.MSBuildNuGetProjectSystem as TestMSBuildNuGetProjectSystem;
+                var msBuildNuGetProjectSystem = msBuildNuGetProject.ProjectSystem as TestMSBuildNuGetProjectSystem;
                 var packagesConfigPath = msBuildNuGetProject.PackagesConfigNuGetProject.FullPath;
                 var packageIdentity = PackageWithDependents[2];
 
@@ -1620,9 +1621,9 @@ namespace NuGet.Test
                 packagesInPackagesConfig = (await msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
                 Assert.Equal(2, packagesInPackagesConfig.Count);
                 Assert.Equal(packageIdentity, packagesInPackagesConfig[1].PackageIdentity);
-                Assert.Equal(msBuildNuGetProject.MSBuildNuGetProjectSystem.TargetFramework, packagesInPackagesConfig[1].TargetFramework);
+                Assert.Equal(msBuildNuGetProject.ProjectSystem.TargetFramework, packagesInPackagesConfig[1].TargetFramework);
                 Assert.Equal(PackageWithDependents[0], packagesInPackagesConfig[0].PackageIdentity);
-                Assert.Equal(msBuildNuGetProject.MSBuildNuGetProjectSystem.TargetFramework, packagesInPackagesConfig[0].TargetFramework);
+                Assert.Equal(msBuildNuGetProject.ProjectSystem.TargetFramework, packagesInPackagesConfig[0].TargetFramework);
 
                 // Main Act
                 var uninstallationContext = new UninstallationContext(removeDependencies: false, forceRemove: true);
@@ -1637,7 +1638,7 @@ namespace NuGet.Test
                 packagesInPackagesConfig = (await msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
                 Assert.Equal(1, packagesInPackagesConfig.Count);
                 Assert.Equal(packageIdentity, packagesInPackagesConfig[0].PackageIdentity);
-                Assert.Equal(msBuildNuGetProject.MSBuildNuGetProjectSystem.TargetFramework, packagesInPackagesConfig[0].TargetFramework);
+                Assert.Equal(msBuildNuGetProject.ProjectSystem.TargetFramework, packagesInPackagesConfig[0].TargetFramework);
             }
         }
 
@@ -1659,7 +1660,7 @@ namespace NuGet.Test
                 var packagesFolderPath = PackagesFolderPathUtility.GetPackagesFolderPath(testSolutionManager, testSettings);
 
                 var msBuildNuGetProject = testSolutionManager.AddNewMSBuildProject();
-                var msBuildNuGetProjectSystem = msBuildNuGetProject.MSBuildNuGetProjectSystem as TestMSBuildNuGetProjectSystem;
+                var msBuildNuGetProjectSystem = msBuildNuGetProject.ProjectSystem as TestMSBuildNuGetProjectSystem;
                 var packagesConfigPath = msBuildNuGetProject.PackagesConfigNuGetProject.FullPath;
                 var packageIdentity = PackageWithDependents[2];
 
@@ -1682,7 +1683,7 @@ namespace NuGet.Test
                 packagesInPackagesConfig = (await msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
                 Assert.Equal(1, packagesInPackagesConfig.Count);
                 Assert.Equal(packageIdentity, packagesInPackagesConfig[0].PackageIdentity);
-                Assert.Equal(msBuildNuGetProject.MSBuildNuGetProjectSystem.TargetFramework, packagesInPackagesConfig[0].TargetFramework);
+                Assert.Equal(msBuildNuGetProject.ProjectSystem.TargetFramework, packagesInPackagesConfig[0].TargetFramework);
             }
         }
 
@@ -1704,7 +1705,7 @@ namespace NuGet.Test
                 var packagesFolderPath = PackagesFolderPathUtility.GetPackagesFolderPath(testSolutionManager, testSettings);
 
                 var msBuildNuGetProject = testSolutionManager.AddNewMSBuildProject();
-                var msBuildNuGetProjectSystem = msBuildNuGetProject.MSBuildNuGetProjectSystem as TestMSBuildNuGetProjectSystem;
+                var msBuildNuGetProjectSystem = msBuildNuGetProject.ProjectSystem as TestMSBuildNuGetProjectSystem;
                 var packagesConfigPath = msBuildNuGetProject.PackagesConfigNuGetProject.FullPath;
                 var packageIdentity = new PackageIdentity("DoesNotExist", new NuGetVersion("1.0.0"));
 
@@ -1752,7 +1753,7 @@ namespace NuGet.Test
                 var packagesFolderPath = PackagesFolderPathUtility.GetPackagesFolderPath(testSolutionManager, testSettings);
 
                 var msBuildNuGetProject = testSolutionManager.AddNewMSBuildProject();
-                var msBuildNuGetProjectSystem = msBuildNuGetProject.MSBuildNuGetProjectSystem as TestMSBuildNuGetProjectSystem;
+                var msBuildNuGetProjectSystem = msBuildNuGetProject.ProjectSystem as TestMSBuildNuGetProjectSystem;
                 var packagesConfigPath = msBuildNuGetProject.PackagesConfigNuGetProject.FullPath;
                 var packageIdentity = "DoesNotExist";
 
@@ -1800,7 +1801,7 @@ namespace NuGet.Test
                 var packagesFolderPath = PackagesFolderPathUtility.GetPackagesFolderPath(testSolutionManager, testSettings);
 
                 var msBuildNuGetProject = testSolutionManager.AddNewMSBuildProject();
-                var msBuildNuGetProjectSystem = msBuildNuGetProject.MSBuildNuGetProjectSystem as TestMSBuildNuGetProjectSystem;
+                var msBuildNuGetProjectSystem = msBuildNuGetProject.ProjectSystem as TestMSBuildNuGetProjectSystem;
                 var packagesConfigPath = msBuildNuGetProject.PackagesConfigNuGetProject.FullPath;
                 var packageIdentity = PackageWithDeepDependency[6]; // WindowsAzure.Storage.4.3.0
 
@@ -1828,7 +1829,7 @@ namespace NuGet.Test
                 for (var i = 0; i < 7; i++)
                 {
                     Assert.Equal(installedPackages[i], packagesInPackagesConfig[i].PackageIdentity);
-                    Assert.Equal(msBuildNuGetProject.MSBuildNuGetProjectSystem.TargetFramework, packagesInPackagesConfig[i].TargetFramework);
+                    Assert.Equal(msBuildNuGetProject.ProjectSystem.TargetFramework, packagesInPackagesConfig[i].TargetFramework);
                 }
             }
         }
@@ -1851,7 +1852,7 @@ namespace NuGet.Test
                 var packagesFolderPath = PackagesFolderPathUtility.GetPackagesFolderPath(testSolutionManager, testSettings);
 
                 var msBuildNuGetProject = testSolutionManager.AddNewMSBuildProject();
-                var msBuildNuGetProjectSystem = msBuildNuGetProject.MSBuildNuGetProjectSystem as TestMSBuildNuGetProjectSystem;
+                var msBuildNuGetProjectSystem = msBuildNuGetProject.ProjectSystem as TestMSBuildNuGetProjectSystem;
                 var packagesConfigPath = msBuildNuGetProject.PackagesConfigNuGetProject.FullPath;
                 var packageIdentity = PackageWithDeepDependency[6]; // WindowsAzure.Storage.4.3.0
 
@@ -1895,7 +1896,7 @@ namespace NuGet.Test
                 var packagesFolderPath = PackagesFolderPathUtility.GetPackagesFolderPath(testSolutionManager, testSettings);
 
                 var msBuildNuGetProject = testSolutionManager.AddNewMSBuildProject();
-                var msBuildNuGetProjectSystem = msBuildNuGetProject.MSBuildNuGetProjectSystem as TestMSBuildNuGetProjectSystem;
+                var msBuildNuGetProjectSystem = msBuildNuGetProject.ProjectSystem as TestMSBuildNuGetProjectSystem;
                 var packagesConfigPath = msBuildNuGetProject.PackagesConfigNuGetProject.FullPath;
                 var packageIdentity = PackageWithDeepDependency[6]; // WindowsAzure.Storage.4.3.0
 
@@ -1950,7 +1951,7 @@ namespace NuGet.Test
                 var packagesFolderPath = PackagesFolderPathUtility.GetPackagesFolderPath(testSolutionManager, testSettings);
 
                 var msBuildNuGetProject = testSolutionManager.AddNewMSBuildProject();
-                var msBuildNuGetProjectSystem = msBuildNuGetProject.MSBuildNuGetProjectSystem as TestMSBuildNuGetProjectSystem;
+                var msBuildNuGetProjectSystem = msBuildNuGetProject.ProjectSystem as TestMSBuildNuGetProjectSystem;
                 var packagesConfigPath = msBuildNuGetProject.PackagesConfigNuGetProject.FullPath;
                 var packageIdentity = PackageWithDeepDependency[6]; // WindowsAzure.Storage.4.3.0
 
@@ -1981,7 +1982,7 @@ namespace NuGet.Test
                 for (var i = 0; i < 7; i++)
                 {
                     Assert.True(installedPackages[i].Equals(packagesInPackagesConfig[i].PackageIdentity));
-                    Assert.Equal(msBuildNuGetProject.MSBuildNuGetProjectSystem.TargetFramework, packagesInPackagesConfig[i].TargetFramework);
+                    Assert.Equal(msBuildNuGetProject.ProjectSystem.TargetFramework, packagesInPackagesConfig[i].TargetFramework);
                 }
 
                 // Main Assert
@@ -2020,7 +2021,7 @@ namespace NuGet.Test
                 var packagesFolderPath = PackagesFolderPathUtility.GetPackagesFolderPath(testSolutionManager, testSettings);
 
                 var msBuildNuGetProject = testSolutionManager.AddNewMSBuildProject();
-                var msBuildNuGetProjectSystem = msBuildNuGetProject.MSBuildNuGetProjectSystem as TestMSBuildNuGetProjectSystem;
+                var msBuildNuGetProjectSystem = msBuildNuGetProject.ProjectSystem as TestMSBuildNuGetProjectSystem;
                 var packagesConfigPath = msBuildNuGetProject.PackagesConfigNuGetProject.FullPath;
                 var packageIdentity = PackageWithDeepDependency[6]; // WindowsAzure.Storage.4.3.0
 
@@ -2067,7 +2068,7 @@ namespace NuGet.Test
                 var packagesFolderPath = PackagesFolderPathUtility.GetPackagesFolderPath(testSolutionManager, testSettings);
 
                 var msBuildNuGetProject = testSolutionManager.AddNewMSBuildProject();
-                var msBuildNuGetProjectSystem = msBuildNuGetProject.MSBuildNuGetProjectSystem as TestMSBuildNuGetProjectSystem;
+                var msBuildNuGetProjectSystem = msBuildNuGetProject.ProjectSystem as TestMSBuildNuGetProjectSystem;
                 var packagesConfigPath = msBuildNuGetProject.PackagesConfigNuGetProject.FullPath;
                 var packageIdentity = PackageWithDeepDependency[6]; // WindowsAzure.Storage.4.3.0
 
@@ -2090,7 +2091,7 @@ namespace NuGet.Test
                 packagesInPackagesConfig = (await msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
                 Assert.Equal(7, packagesInPackagesConfig.Count);
                 Assert.Equal(packageIdentity, packagesInPackagesConfig[6].PackageIdentity);
-                Assert.Equal(msBuildNuGetProject.MSBuildNuGetProjectSystem.TargetFramework, packagesInPackagesConfig[6].TargetFramework);
+                Assert.Equal(msBuildNuGetProject.ProjectSystem.TargetFramework, packagesInPackagesConfig[6].TargetFramework);
 
                 // Main Act
                 var packageActions = (await nuGetPackageManager.PreviewUninstallPackageAsync(msBuildNuGetProject, PackageWithDeepDependency[6],
@@ -2132,7 +2133,7 @@ namespace NuGet.Test
                 var packagesFolderPath = PackagesFolderPathUtility.GetPackagesFolderPath(testSolutionManager, testSettings);
 
                 var msBuildNuGetProject = testSolutionManager.AddNewMSBuildProject("projectName", NuGetFramework.Parse("aspenetcore50"));
-                var msBuildNuGetProjectSystem = msBuildNuGetProject.MSBuildNuGetProjectSystem as TestMSBuildNuGetProjectSystem;
+                var msBuildNuGetProjectSystem = msBuildNuGetProject.ProjectSystem as TestMSBuildNuGetProjectSystem;
                 var packagesConfigPath = msBuildNuGetProject.PackagesConfigNuGetProject.FullPath;
                 var packageIdentity = LatestAspNetPackages[0]; // Microsoft.AspNet.Mvc.6.0.0-beta3
 
@@ -2156,7 +2157,7 @@ namespace NuGet.Test
                 packagesInPackagesConfig = (await msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
                 Assert.Equal(1, packagesInPackagesConfig.Count);
                 Assert.Equal(packageIdentity, packagesInPackagesConfig[0].PackageIdentity);
-                Assert.Equal(msBuildNuGetProject.MSBuildNuGetProjectSystem.TargetFramework, packagesInPackagesConfig[0].TargetFramework);
+                Assert.Equal(msBuildNuGetProject.ProjectSystem.TargetFramework, packagesInPackagesConfig[0].TargetFramework);
             }
         }
 
@@ -2178,7 +2179,7 @@ namespace NuGet.Test
                 var packagesFolderPath = PackagesFolderPathUtility.GetPackagesFolderPath(testSolutionManager, testSettings);
 
                 var msBuildNuGetProject = testSolutionManager.AddNewMSBuildProject();
-                var msBuildNuGetProjectSystem = msBuildNuGetProject.MSBuildNuGetProjectSystem as TestMSBuildNuGetProjectSystem;
+                var msBuildNuGetProjectSystem = msBuildNuGetProject.ProjectSystem as TestMSBuildNuGetProjectSystem;
                 var packagesConfigPath = msBuildNuGetProject.PackagesConfigNuGetProject.FullPath;
                 var packageIdentity = LatestAspNetPackages[0]; // Microsoft.AspNet.Mvc.6.0.0-beta3
 
@@ -2199,7 +2200,7 @@ namespace NuGet.Test
 
                 var errorMessage = string.Format(CultureInfo.CurrentCulture,
                     "Could not install package '{0}'. You are trying to install this package into a project that targets '{1}', but the package does not contain any assembly references or content files that are compatible with that framework. For more information, contact the package author.",
-                    packageIdentity.Id + " " + packageIdentity.Version.ToNormalizedString(), msBuildNuGetProject.MSBuildNuGetProjectSystem.TargetFramework);
+                    packageIdentity.Id + " " + packageIdentity.Version.ToNormalizedString(), msBuildNuGetProject.ProjectSystem.TargetFramework);
                 Assert.Equal(errorMessage, exception.Message);
 
             }
@@ -2223,7 +2224,7 @@ namespace NuGet.Test
                 var packagesFolderPath = PackagesFolderPathUtility.GetPackagesFolderPath(testSolutionManager, testSettings);
 
                 var msBuildNuGetProject = testSolutionManager.AddNewMSBuildProject();
-                var msBuildNuGetProjectSystem = msBuildNuGetProject.MSBuildNuGetProjectSystem as TestMSBuildNuGetProjectSystem;
+                var msBuildNuGetProjectSystem = msBuildNuGetProject.ProjectSystem as TestMSBuildNuGetProjectSystem;
                 var packagesConfigPath = msBuildNuGetProject.PackagesConfigNuGetProject.FullPath;
                 var packageIdentity0 = PackageWithDependents[0]; // jQuery.1.4.4
 
@@ -2257,7 +2258,7 @@ namespace NuGet.Test
                 packagesInPackagesConfig = (await msBuildNuGetProject.GetInstalledPackagesAsync(token)).ToList();
                 Assert.Equal(1, packagesInPackagesConfig.Count);
                 Assert.Equal(packageIdentity0, packagesInPackagesConfig[0].PackageIdentity);
-                Assert.Equal(msBuildNuGetProject.MSBuildNuGetProjectSystem.TargetFramework, packagesInPackagesConfig[0].TargetFramework);
+                Assert.Equal(msBuildNuGetProject.ProjectSystem.TargetFramework, packagesInPackagesConfig[0].TargetFramework);
 
                 // Main Act
                 var packageActions = (await nuGetPackageManager.PreviewUpdatePackagesAsync(
@@ -2848,7 +2849,7 @@ namespace NuGet.Test
                 var packagesFolderPath = PackagesFolderPathUtility.GetPackagesFolderPath(testSolutionManager, testSettings);
 
                 var msBuildNuGetProject = testSolutionManager.AddNewMSBuildProject();
-                var msBuildNuGetProjectSystem = msBuildNuGetProject.MSBuildNuGetProjectSystem as TestMSBuildNuGetProjectSystem;
+                var msBuildNuGetProjectSystem = msBuildNuGetProject.ProjectSystem as TestMSBuildNuGetProjectSystem;
                 var packagesConfigPath = msBuildNuGetProject.PackagesConfigNuGetProject.FullPath;
                 var packageIdentity = MorePackageWithDependents[3]; // Microsoft.Net.Http.2.2.22
 
@@ -2871,11 +2872,11 @@ namespace NuGet.Test
                 packagesInPackagesConfig = (await msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
                 Assert.Equal(3, packagesInPackagesConfig.Count);
                 Assert.Equal(packageIdentity, packagesInPackagesConfig[2].PackageIdentity);
-                Assert.Equal(msBuildNuGetProject.MSBuildNuGetProjectSystem.TargetFramework, packagesInPackagesConfig[2].TargetFramework);
+                Assert.Equal(msBuildNuGetProject.ProjectSystem.TargetFramework, packagesInPackagesConfig[2].TargetFramework);
                 Assert.Equal(MorePackageWithDependents[0], packagesInPackagesConfig[1].PackageIdentity);
-                Assert.Equal(msBuildNuGetProject.MSBuildNuGetProjectSystem.TargetFramework, packagesInPackagesConfig[1].TargetFramework);
+                Assert.Equal(msBuildNuGetProject.ProjectSystem.TargetFramework, packagesInPackagesConfig[1].TargetFramework);
                 Assert.Equal(MorePackageWithDependents[2], packagesInPackagesConfig[0].PackageIdentity);
-                Assert.Equal(msBuildNuGetProject.MSBuildNuGetProjectSystem.TargetFramework, packagesInPackagesConfig[0].TargetFramework);
+                Assert.Equal(msBuildNuGetProject.ProjectSystem.TargetFramework, packagesInPackagesConfig[0].TargetFramework);
 
                 // Main Act
                 var packageActions = (await nuGetPackageManager.PreviewUpdatePackagesAsync(
@@ -2921,7 +2922,7 @@ namespace NuGet.Test
                 var packagesFolderPath = PackagesFolderPathUtility.GetPackagesFolderPath(testSolutionManager, testSettings);
 
                 var msBuildNuGetProject = testSolutionManager.AddNewMSBuildProject();
-                var msBuildNuGetProjectSystem = msBuildNuGetProject.MSBuildNuGetProjectSystem as TestMSBuildNuGetProjectSystem;
+                var msBuildNuGetProjectSystem = msBuildNuGetProject.ProjectSystem as TestMSBuildNuGetProjectSystem;
                 var packagesConfigPath = msBuildNuGetProject.PackagesConfigNuGetProject.FullPath;
                 var packageIdentity = MorePackageWithDependents[3]; // Microsoft.Net.Http.2.2.22
 
@@ -2944,11 +2945,11 @@ namespace NuGet.Test
                 packagesInPackagesConfig = (await msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
                 Assert.Equal(3, packagesInPackagesConfig.Count);
                 Assert.Equal(packageIdentity, packagesInPackagesConfig[2].PackageIdentity);
-                Assert.Equal(msBuildNuGetProject.MSBuildNuGetProjectSystem.TargetFramework, packagesInPackagesConfig[2].TargetFramework);
+                Assert.Equal(msBuildNuGetProject.ProjectSystem.TargetFramework, packagesInPackagesConfig[2].TargetFramework);
                 Assert.Equal(MorePackageWithDependents[0], packagesInPackagesConfig[1].PackageIdentity);
-                Assert.Equal(msBuildNuGetProject.MSBuildNuGetProjectSystem.TargetFramework, packagesInPackagesConfig[1].TargetFramework);
+                Assert.Equal(msBuildNuGetProject.ProjectSystem.TargetFramework, packagesInPackagesConfig[1].TargetFramework);
                 Assert.Equal(MorePackageWithDependents[2], packagesInPackagesConfig[0].PackageIdentity);
-                Assert.Equal(msBuildNuGetProject.MSBuildNuGetProjectSystem.TargetFramework, packagesInPackagesConfig[0].TargetFramework);
+                Assert.Equal(msBuildNuGetProject.ProjectSystem.TargetFramework, packagesInPackagesConfig[0].TargetFramework);
 
                 var resolutionContext = new ResolutionContext(
                     DependencyBehavior.Highest,
@@ -3007,7 +3008,7 @@ namespace NuGet.Test
                 var packagePathResolver = new PackagePathResolver(packagesFolderPath);
 
                 var msBuildNuGetProject = testSolutionManager.AddNewMSBuildProject();
-                var msBuildNuGetProjectSystem = msBuildNuGetProject.MSBuildNuGetProjectSystem as TestMSBuildNuGetProjectSystem;
+                var msBuildNuGetProjectSystem = msBuildNuGetProject.ProjectSystem as TestMSBuildNuGetProjectSystem;
                 var packagesConfigPath = msBuildNuGetProject.PackagesConfigNuGetProject.FullPath;
                 var folderNuGetProject = msBuildNuGetProject.FolderNuGetProject;
                 var packageIdentity = MorePackageWithDependents[3]; // Microsoft.Net.Http.2.2.22
@@ -3031,11 +3032,11 @@ namespace NuGet.Test
                 packagesInPackagesConfig = (await msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
                 Assert.Equal(3, packagesInPackagesConfig.Count);
                 Assert.Equal(packageIdentity, packagesInPackagesConfig[2].PackageIdentity);
-                Assert.Equal(msBuildNuGetProject.MSBuildNuGetProjectSystem.TargetFramework, packagesInPackagesConfig[2].TargetFramework);
+                Assert.Equal(msBuildNuGetProject.ProjectSystem.TargetFramework, packagesInPackagesConfig[2].TargetFramework);
                 Assert.Equal(MorePackageWithDependents[0], packagesInPackagesConfig[1].PackageIdentity);
-                Assert.Equal(msBuildNuGetProject.MSBuildNuGetProjectSystem.TargetFramework, packagesInPackagesConfig[1].TargetFramework);
+                Assert.Equal(msBuildNuGetProject.ProjectSystem.TargetFramework, packagesInPackagesConfig[1].TargetFramework);
                 Assert.Equal(MorePackageWithDependents[2], packagesInPackagesConfig[0].PackageIdentity);
-                Assert.Equal(msBuildNuGetProject.MSBuildNuGetProjectSystem.TargetFramework, packagesInPackagesConfig[0].TargetFramework);
+                Assert.Equal(msBuildNuGetProject.ProjectSystem.TargetFramework, packagesInPackagesConfig[0].TargetFramework);
                 var installedPackageIdentities = (await msBuildNuGetProject.GetInstalledPackagesAsync(token))
                     .Select(pr => pr.PackageIdentity);
 
@@ -3083,11 +3084,11 @@ namespace NuGet.Test
                 packagesInPackagesConfig = (await msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
                 Assert.Equal(3, packagesInPackagesConfig.Count);
                 Assert.Equal(packageIdentity, packagesInPackagesConfig[2].PackageIdentity);
-                Assert.Equal(msBuildNuGetProject.MSBuildNuGetProjectSystem.TargetFramework, packagesInPackagesConfig[2].TargetFramework);
+                Assert.Equal(msBuildNuGetProject.ProjectSystem.TargetFramework, packagesInPackagesConfig[2].TargetFramework);
                 Assert.Equal(MorePackageWithDependents[0], packagesInPackagesConfig[1].PackageIdentity);
-                Assert.Equal(msBuildNuGetProject.MSBuildNuGetProjectSystem.TargetFramework, packagesInPackagesConfig[1].TargetFramework);
+                Assert.Equal(msBuildNuGetProject.ProjectSystem.TargetFramework, packagesInPackagesConfig[1].TargetFramework);
                 Assert.Equal(MorePackageWithDependents[2], packagesInPackagesConfig[0].PackageIdentity);
-                Assert.Equal(msBuildNuGetProject.MSBuildNuGetProjectSystem.TargetFramework, packagesInPackagesConfig[0].TargetFramework);
+                Assert.Equal(msBuildNuGetProject.ProjectSystem.TargetFramework, packagesInPackagesConfig[0].TargetFramework);
                 Assert.True(File.Exists(folderNuGetProject.GetInstalledPackageFilePath(packageIdentity)));
                 Assert.True(File.Exists(folderNuGetProject.GetInstalledPackageFilePath(MorePackageWithDependents[0])));
                 Assert.True(File.Exists(folderNuGetProject.GetInstalledPackageFilePath(MorePackageWithDependents[2])));
@@ -3217,7 +3218,7 @@ namespace NuGet.Test
                 var packagePathResolver = new PackagePathResolver(packagesFolderPath);
 
                 var msBuildNuGetProject = testSolutionManager.AddNewMSBuildProject();
-                var msBuildNuGetProjectSystem = msBuildNuGetProject.MSBuildNuGetProjectSystem as TestMSBuildNuGetProjectSystem;
+                var msBuildNuGetProjectSystem = msBuildNuGetProject.ProjectSystem as TestMSBuildNuGetProjectSystem;
                 var packagesConfigPath = msBuildNuGetProject.PackagesConfigNuGetProject.FullPath;
                 var packageIdentity = new PackageIdentity("elmah", new NuGetVersion("1.2.2"));
 
@@ -3243,7 +3244,7 @@ namespace NuGet.Test
                 packagesInPackagesConfig = (await msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
                 Assert.Equal(2, packagesInPackagesConfig.Count);
                 Assert.Equal(packageIdentity, packagesInPackagesConfig[0].PackageIdentity);
-                Assert.Equal(msBuildNuGetProject.MSBuildNuGetProjectSystem.TargetFramework, packagesInPackagesConfig[0].TargetFramework);
+                Assert.Equal(msBuildNuGetProject.ProjectSystem.TargetFramework, packagesInPackagesConfig[0].TargetFramework);
                 Assert.Equal(1, testNuGetProjectContext.TestExecutionContext.FilesOpened.Count);
                 Assert.True(string.Equals(Path.Combine(packagePathResolver.GetInstallPath(packageIdentity), "ReadMe.txt"),
                     testNuGetProjectContext.TestExecutionContext.FilesOpened.First(), StringComparison.OrdinalIgnoreCase));
@@ -3268,7 +3269,7 @@ namespace NuGet.Test
                 var packagesFolderPath = PackagesFolderPathUtility.GetPackagesFolderPath(testSolutionManager, testSettings);
 
                 var msBuildNuGetProject = testSolutionManager.AddNewMSBuildProject("TestProjectName");
-                var msBuildNuGetProjectSystem = msBuildNuGetProject.MSBuildNuGetProjectSystem as TestMSBuildNuGetProjectSystem;
+                var msBuildNuGetProjectSystem = msBuildNuGetProject.ProjectSystem as TestMSBuildNuGetProjectSystem;
                 var packagesConfigPath = msBuildNuGetProject.PackagesConfigNuGetProject.FullPath;
                 var packageId = "Newtonsoft.Json";
                 var testNuGetProjectContext = new TestNuGetProjectContext();
@@ -3339,7 +3340,7 @@ namespace NuGet.Test
                 var packagesFolderPath = PackagesFolderPathUtility.GetPackagesFolderPath(testSolutionManager, testSettings);
 
                 var msBuildNuGetProject = testSolutionManager.AddNewMSBuildProject();
-                var msBuildNuGetProjectSystem = msBuildNuGetProject.MSBuildNuGetProjectSystem as TestMSBuildNuGetProjectSystem;
+                var msBuildNuGetProjectSystem = msBuildNuGetProject.ProjectSystem as TestMSBuildNuGetProjectSystem;
                 var packagesConfigPath = msBuildNuGetProject.PackagesConfigNuGetProject.FullPath;
                 var testNuGetProjectContext = new TestNuGetProjectContext();
                 var primarySourceRepository = sourceRepositoryProvider.GetRepositories().First();
@@ -3406,7 +3407,7 @@ namespace NuGet.Test
 
                 var primarySourceRepository = sourceRepositoryProvider.GetRepositories().First();
                 var msBuildNuGetProject = testSolutionManager.AddNewMSBuildProject();
-                var msBuildNuGetProjectSystem = msBuildNuGetProject.MSBuildNuGetProjectSystem as TestMSBuildNuGetProjectSystem;
+                var msBuildNuGetProjectSystem = msBuildNuGetProject.ProjectSystem as TestMSBuildNuGetProjectSystem;
                 var packagesConfigPath = msBuildNuGetProject.PackagesConfigNuGetProject.FullPath;
                 var dotnetrdfPackageIdentity = new PackageIdentity("dotnetrdf", new NuGetVersion("1.0.8-prerelease1"));
                 var resolutionContext = new ResolutionContext(DependencyBehavior.Highest, includePrelease: true, includeUnlisted: false, versionConstraints: VersionConstraints.None);
@@ -3454,7 +3455,7 @@ namespace NuGet.Test
 
                 var primarySourceRepository = sourceRepositoryProvider.GetRepositories().First();
                 var msBuildNuGetProject = testSolutionManager.AddNewMSBuildProject();
-                var msBuildNuGetProjectSystem = msBuildNuGetProject.MSBuildNuGetProjectSystem as TestMSBuildNuGetProjectSystem;
+                var msBuildNuGetProjectSystem = msBuildNuGetProject.ProjectSystem as TestMSBuildNuGetProjectSystem;
                 var packagesConfigPath = msBuildNuGetProject.PackagesConfigNuGetProject.FullPath;
                 var webgreasePackageIdentity = new PackageIdentity("WebGrease", new NuGetVersion("1.6.0"));
                 var resolutionContext = new ResolutionContext(DependencyBehavior.Lowest, includePrelease: true, includeUnlisted: true, versionConstraints: VersionConstraints.None);
@@ -3506,7 +3507,7 @@ namespace NuGet.Test
                 var packagesFolderPath = PackagesFolderPathUtility.GetPackagesFolderPath(testSolutionManager, testSettings);
 
                 var msBuildNuGetProject = testSolutionManager.AddNewMSBuildProject();
-                var msBuildNuGetProjectSystem = msBuildNuGetProject.MSBuildNuGetProjectSystem as TestMSBuildNuGetProjectSystem;
+                var msBuildNuGetProjectSystem = msBuildNuGetProject.ProjectSystem as TestMSBuildNuGetProjectSystem;
                 var packagesConfigPath = msBuildNuGetProject.PackagesConfigNuGetProject.FullPath;
                 var newtonsoftJsonPackageId = "newtonsoft.json";
                 var newtonsoftJsonPackageIdentity = new PackageIdentity(newtonsoftJsonPackageId, NuGetVersion.Parse("4.5.11"));
@@ -3525,7 +3526,7 @@ namespace NuGet.Test
                 var packagesInPackagesConfig = (await msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
                 Assert.Equal(1, packagesInPackagesConfig.Count);
                 Assert.Equal(newtonsoftJsonPackageIdentity, packagesInPackagesConfig[0].PackageIdentity);
-                Assert.Equal(msBuildNuGetProject.MSBuildNuGetProjectSystem.TargetFramework, packagesInPackagesConfig[0].TargetFramework);
+                Assert.Equal(msBuildNuGetProject.ProjectSystem.TargetFramework, packagesInPackagesConfig[0].TargetFramework);
                 var installedPackages = await msBuildNuGetProject.GetInstalledPackagesAsync(token);
                 var newtonsoftJsonPackageReference = installedPackages.Where(pr => pr.PackageIdentity.Equals(newtonsoftJsonPackageIdentity)).FirstOrDefault();
 
@@ -3544,7 +3545,7 @@ namespace NuGet.Test
                 packagesInPackagesConfig = (await msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
                 Assert.Equal(1, packagesInPackagesConfig.Count);
                 Assert.Equal(newtonsoftJsonPackageIdentity, packagesInPackagesConfig[0].PackageIdentity);
-                Assert.Equal(msBuildNuGetProject.MSBuildNuGetProjectSystem.TargetFramework, packagesInPackagesConfig[0].TargetFramework);
+                Assert.Equal(msBuildNuGetProject.ProjectSystem.TargetFramework, packagesInPackagesConfig[0].TargetFramework);
                 installedPackages = await msBuildNuGetProject.GetInstalledPackagesAsync(token);
                 newtonsoftJsonPackageReference = installedPackages.Where(pr => pr.PackageIdentity.Equals(newtonsoftJsonPackageIdentity)).FirstOrDefault();
 
@@ -3584,7 +3585,7 @@ namespace NuGet.Test
                 var packagesFolderPath = PackagesFolderPathUtility.GetPackagesFolderPath(testSolutionManager, testSettings);
 
                 var msBuildNuGetProject = testSolutionManager.AddNewMSBuildProject();
-                var msBuildNuGetProjectSystem = msBuildNuGetProject.MSBuildNuGetProjectSystem as TestMSBuildNuGetProjectSystem;
+                var msBuildNuGetProjectSystem = msBuildNuGetProject.ProjectSystem as TestMSBuildNuGetProjectSystem;
                 var packagesConfigPath = msBuildNuGetProject.PackagesConfigNuGetProject.FullPath;
                 var newtonsoftJsonPackageId = "newtonsoft.json";
                 var newtonsoftJsonPackageIdentity = new PackageIdentity(newtonsoftJsonPackageId, NuGetVersion.Parse("4.5.11"));
@@ -3606,7 +3607,7 @@ namespace NuGet.Test
                 var packagesInPackagesConfig = (await msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
                 Assert.Equal(2, packagesInPackagesConfig.Count);
                 Assert.Equal(newtonsoftJsonPackageIdentity, packagesInPackagesConfig[1].PackageIdentity);
-                Assert.Equal(msBuildNuGetProject.MSBuildNuGetProjectSystem.TargetFramework, packagesInPackagesConfig[1].TargetFramework);
+                Assert.Equal(msBuildNuGetProject.ProjectSystem.TargetFramework, packagesInPackagesConfig[1].TargetFramework);
                 var installedPackages = await msBuildNuGetProject.GetInstalledPackagesAsync(token);
                 var newtonsoftJsonPackageReference = installedPackages.Where(pr => pr.PackageIdentity.Equals(newtonsoftJsonPackageIdentity)).FirstOrDefault();
 
@@ -3626,7 +3627,7 @@ namespace NuGet.Test
                 packagesInPackagesConfig = (await msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
                 Assert.Equal(2, packagesInPackagesConfig.Count);
                 Assert.Equal(newtonsoftJsonPackageIdentity, packagesInPackagesConfig[1].PackageIdentity);
-                Assert.Equal(msBuildNuGetProject.MSBuildNuGetProjectSystem.TargetFramework, packagesInPackagesConfig[1].TargetFramework);
+                Assert.Equal(msBuildNuGetProject.ProjectSystem.TargetFramework, packagesInPackagesConfig[1].TargetFramework);
                 installedPackages = await msBuildNuGetProject.GetInstalledPackagesAsync(token);
                 newtonsoftJsonPackageReference = installedPackages.Where(pr => pr.PackageIdentity.Equals(newtonsoftJsonPackageIdentity)).FirstOrDefault();
 
@@ -3665,7 +3666,7 @@ namespace NuGet.Test
                 var packagesFolderPath = PackagesFolderPathUtility.GetPackagesFolderPath(testSolutionManager, testSettings);
 
                 var msBuildNuGetProject = testSolutionManager.AddNewMSBuildProject();
-                var msBuildNuGetProjectSystem = msBuildNuGetProject.MSBuildNuGetProjectSystem as TestMSBuildNuGetProjectSystem;
+                var msBuildNuGetProjectSystem = msBuildNuGetProject.ProjectSystem as TestMSBuildNuGetProjectSystem;
                 var packagesConfigPath = msBuildNuGetProject.PackagesConfigNuGetProject.FullPath;
                 var newtonsoftJsonPackageId = "newtonsoft.json";
                 var newtonsoftJsonPackageIdentity = new PackageIdentity(newtonsoftJsonPackageId, NuGetVersion.Parse("4.5.11"));
@@ -3687,7 +3688,7 @@ namespace NuGet.Test
                 var packagesInPackagesConfig = (await msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
                 Assert.Equal(2, packagesInPackagesConfig.Count);
                 Assert.Equal(newtonsoftJsonPackageIdentity, packagesInPackagesConfig[1].PackageIdentity);
-                Assert.Equal(msBuildNuGetProject.MSBuildNuGetProjectSystem.TargetFramework, packagesInPackagesConfig[1].TargetFramework);
+                Assert.Equal(msBuildNuGetProject.ProjectSystem.TargetFramework, packagesInPackagesConfig[1].TargetFramework);
                 var installedPackages = await msBuildNuGetProject.GetInstalledPackagesAsync(token);
                 var newtonsoftJsonPackageReference = installedPackages.Where(pr => pr.PackageIdentity.Equals(newtonsoftJsonPackageIdentity)).FirstOrDefault();
 
@@ -3707,7 +3708,7 @@ namespace NuGet.Test
                 packagesInPackagesConfig = (await msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
                 Assert.Equal(2, packagesInPackagesConfig.Count);
                 Assert.Equal(newtonsoftJsonPackageIdentity, packagesInPackagesConfig[1].PackageIdentity);
-                Assert.Equal(msBuildNuGetProject.MSBuildNuGetProjectSystem.TargetFramework, packagesInPackagesConfig[1].TargetFramework);
+                Assert.Equal(msBuildNuGetProject.ProjectSystem.TargetFramework, packagesInPackagesConfig[1].TargetFramework);
                 installedPackages = await msBuildNuGetProject.GetInstalledPackagesAsync(token);
                 newtonsoftJsonPackageReference = installedPackages.Where(pr => pr.PackageIdentity.Equals(newtonsoftJsonPackageIdentity)).FirstOrDefault();
 
@@ -3752,7 +3753,7 @@ namespace NuGet.Test
                 var packagesFolderPath = PackagesFolderPathUtility.GetPackagesFolderPath(testSolutionManager, testSettings);
 
                 var msBuildNuGetProject = testSolutionManager.AddNewMSBuildProject();
-                var msBuildNuGetProjectSystem = msBuildNuGetProject.MSBuildNuGetProjectSystem as TestMSBuildNuGetProjectSystem;
+                var msBuildNuGetProjectSystem = msBuildNuGetProject.ProjectSystem as TestMSBuildNuGetProjectSystem;
                 var packagesConfigPath = msBuildNuGetProject.PackagesConfigNuGetProject.FullPath;
                 var newtonsoftJsonPackageId = "newtonsoft.json";
                 var newtonsoftJsonPackageIdentity = new PackageIdentity(newtonsoftJsonPackageId, NuGetVersion.Parse("4.5.11"));
@@ -3795,7 +3796,7 @@ namespace NuGet.Test
                 var packagesFolderPath = PackagesFolderPathUtility.GetPackagesFolderPath(testSolutionManager, testSettings);
 
                 var msBuildNuGetProject = testSolutionManager.AddNewMSBuildProject();
-                var msBuildNuGetProjectSystem = msBuildNuGetProject.MSBuildNuGetProjectSystem as TestMSBuildNuGetProjectSystem;
+                var msBuildNuGetProjectSystem = msBuildNuGetProject.ProjectSystem as TestMSBuildNuGetProjectSystem;
                 var packagesConfigPath = msBuildNuGetProject.PackagesConfigNuGetProject.FullPath;
                 var aspnetrazorjaPackageIdentity = new PackageIdentity("Microsoft.AspNet.Razor.ja", new NuGetVersion("3.2.3"));
 
@@ -3818,7 +3819,7 @@ namespace NuGet.Test
                 packagesInPackagesConfig = (await msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
                 Assert.Equal(2, packagesInPackagesConfig.Count);
                 Assert.Equal(aspnetrazorjaPackageIdentity, packagesInPackagesConfig[1].PackageIdentity);
-                Assert.Equal(msBuildNuGetProject.MSBuildNuGetProjectSystem.TargetFramework, packagesInPackagesConfig[1].TargetFramework);
+                Assert.Equal(msBuildNuGetProject.ProjectSystem.TargetFramework, packagesInPackagesConfig[1].TargetFramework);
             }
         }
 
@@ -3840,7 +3841,7 @@ namespace NuGet.Test
                 var packagesFolderPath = PackagesFolderPathUtility.GetPackagesFolderPath(testSolutionManager, testSettings);
 
                 var msBuildNuGetProject = testSolutionManager.AddNewMSBuildProject();
-                var msBuildNuGetProjectSystem = msBuildNuGetProject.MSBuildNuGetProjectSystem as TestMSBuildNuGetProjectSystem;
+                var msBuildNuGetProjectSystem = msBuildNuGetProject.ProjectSystem as TestMSBuildNuGetProjectSystem;
                 var packagesConfigPath = msBuildNuGetProject.PackagesConfigNuGetProject.FullPath;
                 var version = new NuGetVersion("1.0.0.0");
                 var microsoftWebInfrastructurePackageIdentity = new PackageIdentity("Microsoft.Web.Infrastructure", version);
@@ -3864,7 +3865,7 @@ namespace NuGet.Test
                 packagesInPackagesConfig = (await msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
                 Assert.Equal(1, packagesInPackagesConfig.Count);
                 Assert.Equal(microsoftWebInfrastructurePackageIdentity, packagesInPackagesConfig[0].PackageIdentity);
-                Assert.Equal(msBuildNuGetProject.MSBuildNuGetProjectSystem.TargetFramework, packagesInPackagesConfig[0].TargetFramework);
+                Assert.Equal(msBuildNuGetProject.ProjectSystem.TargetFramework, packagesInPackagesConfig[0].TargetFramework);
 
                 var microsoftWebInfrastructure1000FolderPath = Path.Combine(packagesFolderPath, "Microsoft.Web.Infrastructure.1.0.0.0");
                 Assert.True(Directory.Exists(microsoftWebInfrastructure1000FolderPath));
@@ -3889,7 +3890,7 @@ namespace NuGet.Test
                 var packagesFolderPath = PackagesFolderPathUtility.GetPackagesFolderPath(testSolutionManager, testSettings);
 
                 var msBuildNuGetProject = testSolutionManager.AddNewMSBuildProject();
-                var msBuildNuGetProjectSystem = msBuildNuGetProject.MSBuildNuGetProjectSystem as TestMSBuildNuGetProjectSystem;
+                var msBuildNuGetProjectSystem = msBuildNuGetProject.ProjectSystem as TestMSBuildNuGetProjectSystem;
                 var packagesConfigPath = msBuildNuGetProject.PackagesConfigNuGetProject.FullPath;
                 var version = new NuGetVersion("1.0.0.0");
                 var microsoftWebInfrastructurePackageIdentity = new PackageIdentity("Microsoft.Web.Infrastructure", version);
@@ -3913,7 +3914,7 @@ namespace NuGet.Test
                 packagesInPackagesConfig = (await msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
                 Assert.Equal(1, packagesInPackagesConfig.Count);
                 Assert.Equal(microsoftWebInfrastructurePackageIdentity, packagesInPackagesConfig[0].PackageIdentity);
-                Assert.Equal(msBuildNuGetProject.MSBuildNuGetProjectSystem.TargetFramework, packagesInPackagesConfig[0].TargetFramework);
+                Assert.Equal(msBuildNuGetProject.ProjectSystem.TargetFramework, packagesInPackagesConfig[0].TargetFramework);
 
                 var microsoftWebInfrastructure1000FolderPath = Path.Combine(packagesFolderPath, "Microsoft.Web.Infrastructure.1.0.0.0");
                 Assert.True(Directory.Exists(microsoftWebInfrastructure1000FolderPath));
@@ -3938,7 +3939,7 @@ namespace NuGet.Test
                 var packagesFolderPath = PackagesFolderPathUtility.GetPackagesFolderPath(testSolutionManager, testSettings);
 
                 var msBuildNuGetProject = testSolutionManager.AddNewMSBuildProject();
-                var msBuildNuGetProjectSystem = msBuildNuGetProject.MSBuildNuGetProjectSystem as TestMSBuildNuGetProjectSystem;
+                var msBuildNuGetProjectSystem = msBuildNuGetProject.ProjectSystem as TestMSBuildNuGetProjectSystem;
                 var packagesConfigPath = msBuildNuGetProject.PackagesConfigNuGetProject.FullPath;
                 var version = new NuGetVersion("1.1");
                 var elmahPackageIdentity = new PackageIdentity("elmah", version);
@@ -3962,7 +3963,7 @@ namespace NuGet.Test
                 packagesInPackagesConfig = (await msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
                 Assert.Equal(1, packagesInPackagesConfig.Count);
                 Assert.Equal(elmahPackageIdentity, packagesInPackagesConfig[0].PackageIdentity);
-                Assert.Equal(msBuildNuGetProject.MSBuildNuGetProjectSystem.TargetFramework, packagesInPackagesConfig[0].TargetFramework);
+                Assert.Equal(msBuildNuGetProject.ProjectSystem.TargetFramework, packagesInPackagesConfig[0].TargetFramework);
 
                 var microsoftWebInfrastructure1000FolderPath = Path.Combine(packagesFolderPath, "elmah.1.1");
                 Assert.True(Directory.Exists(microsoftWebInfrastructure1000FolderPath));
@@ -3987,7 +3988,7 @@ namespace NuGet.Test
                 var packagesFolderPath = PackagesFolderPathUtility.GetPackagesFolderPath(testSolutionManager, testSettings);
 
                 var msBuildNuGetProject = testSolutionManager.AddNewMSBuildProject();
-                var msBuildNuGetProjectSystem = msBuildNuGetProject.MSBuildNuGetProjectSystem as TestMSBuildNuGetProjectSystem;
+                var msBuildNuGetProjectSystem = msBuildNuGetProject.ProjectSystem as TestMSBuildNuGetProjectSystem;
                 var packagesConfigPath = msBuildNuGetProject.PackagesConfigNuGetProject.FullPath;
                 var version = new NuGetVersion("1.1");
                 var elmahPackageIdentity = new PackageIdentity("elmah", version);
@@ -4011,7 +4012,7 @@ namespace NuGet.Test
                 packagesInPackagesConfig = (await msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
                 Assert.Equal(1, packagesInPackagesConfig.Count);
                 Assert.Equal(elmahPackageIdentity, packagesInPackagesConfig[0].PackageIdentity);
-                Assert.Equal(msBuildNuGetProject.MSBuildNuGetProjectSystem.TargetFramework, packagesInPackagesConfig[0].TargetFramework);
+                Assert.Equal(msBuildNuGetProject.ProjectSystem.TargetFramework, packagesInPackagesConfig[0].TargetFramework);
 
                 var microsoftWebInfrastructure1000FolderPath = Path.Combine(packagesFolderPath, "elmah.1.1");
                 Assert.True(Directory.Exists(microsoftWebInfrastructure1000FolderPath));
@@ -4036,7 +4037,7 @@ namespace NuGet.Test
                 var packagesFolderPath = PackagesFolderPathUtility.GetPackagesFolderPath(testSolutionManager, testSettings);
 
                 var msBuildNuGetProject = testSolutionManager.AddNewMSBuildProject();
-                var msBuildNuGetProjectSystem = msBuildNuGetProject.MSBuildNuGetProjectSystem as TestMSBuildNuGetProjectSystem;
+                var msBuildNuGetProjectSystem = msBuildNuGetProject.ProjectSystem as TestMSBuildNuGetProjectSystem;
                 var packagesConfigPath = msBuildNuGetProject.PackagesConfigNuGetProject.FullPath;
                 var version = new NuGetVersion("2.6.3");
                 var sharpDXDXGIv263Package = new PackageIdentity("SharpDX.DXGI", version);
@@ -4097,7 +4098,7 @@ namespace NuGet.Test
                 var packagesFolderPath = PackagesFolderPathUtility.GetPackagesFolderPath(testSolutionManager, testSettings);
 
                 var msBuildNuGetProject = testSolutionManager.AddNewMSBuildProject();
-                var msBuildNuGetProjectSystem = msBuildNuGetProject.MSBuildNuGetProjectSystem as TestMSBuildNuGetProjectSystem;
+                var msBuildNuGetProjectSystem = msBuildNuGetProject.ProjectSystem as TestMSBuildNuGetProjectSystem;
                 var packagesConfigPath = msBuildNuGetProject.PackagesConfigNuGetProject.FullPath;
                 var target = "a";
 
@@ -4163,7 +4164,7 @@ namespace NuGet.Test
                 var packagesFolderPath = PackagesFolderPathUtility.GetPackagesFolderPath(testSolutionManager, testSettings);
 
                 var msBuildNuGetProject = testSolutionManager.AddNewMSBuildProject();
-                var msBuildNuGetProjectSystem = msBuildNuGetProject.MSBuildNuGetProjectSystem as TestMSBuildNuGetProjectSystem;
+                var msBuildNuGetProjectSystem = msBuildNuGetProject.ProjectSystem as TestMSBuildNuGetProjectSystem;
                 var packagesConfigPath = msBuildNuGetProject.PackagesConfigNuGetProject.FullPath;
                 var target = "a";
 
@@ -4205,7 +4206,7 @@ namespace NuGet.Test
                 var packagesFolderPath = PackagesFolderPathUtility.GetPackagesFolderPath(testSolutionManager, testSettings);
 
                 var msBuildNuGetProject = testSolutionManager.AddNewMSBuildProject();
-                var msBuildNuGetProjectSystem = msBuildNuGetProject.MSBuildNuGetProjectSystem as TestMSBuildNuGetProjectSystem;
+                var msBuildNuGetProjectSystem = msBuildNuGetProject.ProjectSystem as TestMSBuildNuGetProjectSystem;
                 var packagesConfigPath = msBuildNuGetProject.PackagesConfigNuGetProject.FullPath;
                 var target = new PackageIdentity("Umbraco", NuGetVersion.Parse("5.1.0.175"));
 
@@ -4297,7 +4298,7 @@ namespace NuGet.Test
                 var packagesFolderPath = PackagesFolderPathUtility.GetPackagesFolderPath(testSolutionManager, testSettings);
 
                 var msBuildNuGetProject = testSolutionManager.AddNewMSBuildProject();
-                var msBuildNuGetProjectSystem = msBuildNuGetProject.MSBuildNuGetProjectSystem as TestMSBuildNuGetProjectSystem;
+                var msBuildNuGetProjectSystem = msBuildNuGetProject.ProjectSystem as TestMSBuildNuGetProjectSystem;
                 var packagesConfigPath = msBuildNuGetProject.PackagesConfigNuGetProject.FullPath;
                 var target = new PackageIdentity("DependencyTestA", NuGetVersion.Parse("1.0.0"));
 
@@ -4345,7 +4346,7 @@ namespace NuGet.Test
                 var packagesFolderPath = PackagesFolderPathUtility.GetPackagesFolderPath(testSolutionManager, testSettings);
 
                 var msBuildNuGetProject = testSolutionManager.AddNewMSBuildProject();
-                var msBuildNuGetProjectSystem = msBuildNuGetProject.MSBuildNuGetProjectSystem as TestMSBuildNuGetProjectSystem;
+                var msBuildNuGetProjectSystem = msBuildNuGetProject.ProjectSystem as TestMSBuildNuGetProjectSystem;
                 var packagesConfigPath = msBuildNuGetProject.PackagesConfigNuGetProject.FullPath;
                 var target = new PackageIdentity("DependencyTestA", NuGetVersion.Parse("1.0.0"));
 
@@ -4397,7 +4398,7 @@ namespace NuGet.Test
                 var packagesFolderPath = PackagesFolderPathUtility.GetPackagesFolderPath(testSolutionManager, testSettings);
 
                 var msBuildNuGetProject = testSolutionManager.AddNewMSBuildProject();
-                var msBuildNuGetProjectSystem = msBuildNuGetProject.MSBuildNuGetProjectSystem as TestMSBuildNuGetProjectSystem;
+                var msBuildNuGetProjectSystem = msBuildNuGetProject.ProjectSystem as TestMSBuildNuGetProjectSystem;
                 var packagesConfigPath = msBuildNuGetProject.PackagesConfigNuGetProject.FullPath;
                 var target = new PackageIdentity("Microsoft.ApplicationInsights.Web", NuGetVersion.Parse("0.16.1-build00418"));
 
@@ -4630,7 +4631,7 @@ namespace NuGet.Test
                     Assert.Equal(2, actions.Count());
                     Assert.Equal(1, packagesInPackagesConfig.Count);
                     Assert.Equal(packageIdentity, packagesInPackagesConfig[0].PackageIdentity);
-                    Assert.Equal(msBuildNuGetProject.MSBuildNuGetProjectSystem.TargetFramework, packagesInPackagesConfig[0].TargetFramework);
+                    Assert.Equal(msBuildNuGetProject.ProjectSystem.TargetFramework, packagesInPackagesConfig[0].TargetFramework);
 
                     Assert.Equal("[1.0.0, 2.0.0]", entry.Attribute(XName.Get("allowedVersions")).Value);
                     Assert.Equal("true", entry.Attribute(XName.Get("developmentDependency")).Value);
@@ -4724,7 +4725,7 @@ namespace NuGet.Test
                     Assert.Equal(2, actions.Count());
                     Assert.Equal(2, packagesInPackagesConfig.Count);
                     Assert.Equal(packageIdentity, packagesInPackagesConfig[1].PackageIdentity);
-                    Assert.Equal(msBuildNuGetProject.MSBuildNuGetProjectSystem.TargetFramework, packagesInPackagesConfig[1].TargetFramework);
+                    Assert.Equal(msBuildNuGetProject.ProjectSystem.TargetFramework, packagesInPackagesConfig[1].TargetFramework);
 
                     Assert.Equal("[1.0.0, 2.0.0]", entry.Attribute(XName.Get("allowedVersions")).Value);
                     Assert.Equal("true", entry.Attribute(XName.Get("developmentDependency")).Value);
@@ -5542,9 +5543,9 @@ namespace NuGet.Test
 
             // Set up Package Dependencies
             var dependencies = new List<PackageDependency>();
-            for (int j = 1; j < 3; j++)
+            for (var j = 1; j < 3; j++)
             {
-                for (int i = 2; i <= 30; i++)
+                for (var i = 2; i <= 30; i++)
                 {
                     dependencies.Add(new PackageDependency($"Package{i}", new VersionRange(new NuGetVersion(j, 0, 0))));
                 }
@@ -5552,10 +5553,10 @@ namespace NuGet.Test
 
             // Set up Package Source
             var packages = new List<SourcePackageDependencyInfo>();
-            int next = 1;
-            for (int i = 1; i < 3; i++)
+            var next = 1;
+            for (var i = 1; i < 3; i++)
             {
-                for (int j = 1; j < 30; j++)
+                for (var j = 1; j < 30; j++)
                 {
                     next = j + 1;
                     packages.Add(new SourcePackageDependencyInfo($"Package{j}", new NuGetVersion(i, 0, 0),
@@ -5579,7 +5580,7 @@ namespace NuGet.Test
             var fwk45 = NuGetFramework.Parse("net45");
 
             var installedPackages = new List<PackageReference>();
-            for (int i = 1; i <= 30; i++)
+            for (var i = 1; i <= 30; i++)
             {
                 installedPackages.Add(new PackageReference(
                     new PackageIdentity($"Package{i}", new NuGetVersion(1, 0, 0)), fwk45, true));
@@ -5622,7 +5623,7 @@ namespace NuGet.Test
                 var resulting = result.Select(a => Tuple.Create(a.PackageIdentity, a.NuGetProjectActionType)).ToArray();
 
                 var expected = new List<Tuple<PackageIdentity, NuGetProjectActionType>>();
-                for (int i = 1; i <= 30; i++)
+                for (var i = 1; i <= 30; i++)
                 {
                     Expected(expected, $"Package{i}", new NuGetVersion(1, 0, 0), new NuGetVersion(2, 0, 0));
                 }
@@ -6119,7 +6120,7 @@ namespace NuGet.Test
             IEnumerable<Tuple<PackageIdentity, NuGetProjectActionType>> lhs,
             IEnumerable<Tuple<PackageIdentity, NuGetProjectActionType>> rhs)
         {
-            bool ok = true;
+            var ok = true;
             ok &= RhsContainsAllLhs(lhs, rhs);
             ok &= RhsContainsAllLhs(rhs, lhs);
             return ok;
@@ -6143,8 +6144,8 @@ namespace NuGet.Test
         {
             public bool Equals(Tuple<PackageIdentity, NuGetProjectActionType> x, Tuple<PackageIdentity, NuGetProjectActionType> y)
             {
-                bool f1 = x.Item1.Equals(y.Item1);
-                bool f2 = x.Item2 == y.Item2;
+                var f1 = x.Item1.Equals(y.Item1);
+                var f2 = x.Item2 == y.Item2;
                 return f1 && f2;
             }
 

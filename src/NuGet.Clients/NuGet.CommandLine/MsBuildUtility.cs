@@ -202,9 +202,15 @@ namespace NuGet.CommandLine
                     var errors = new StringBuilder();
                     var output = new StringBuilder();
                     var excluded = new string[] { "msb4011", entryPointTargetPath };
+
+                    // Read console output
                     var errorTask = ConsumeStreamReaderAsync(process.StandardError, errors, filter: null);
                     var outputTask = ConsumeStreamReaderAsync(process.StandardOutput, output, filter: (line) => IsIgnoredOutput(line, excluded));
+
+                    // Run msbuild
                     var finished = process.WaitForExit(timeOut);
+
+                    // Handle timeouts
                     if (!finished)
                     {
                         try
@@ -218,17 +224,41 @@ namespace NuGet.CommandLine
                                 ex.Message,
                                 ex);
                         }
-
-                        throw new CommandLineException(
-                            LocalizedResourceManager.GetString(nameof(NuGetResources.Error_MsBuildTimedOut)));
                     }
 
-                    await outputTask;
+                    // Read all console output from msbuild.
+                    await Task.WhenAll(outputTask, errorTask);
+
+                    // By default log msbuild output so that it is only
+                    // displayed under -Verbosity detailed
+                    var logLevel = LogLevel.Verbose;
+
+                    if (process.ExitCode != 0 || !finished)
+                    {
+                        // If a problem occurred log all msbuild output as an error 
+                        // so that the user can see it.
+                        // By default this runs with /v:q which means that only
+                        // errors and warnings will be in the output.
+                        logLevel = LogLevel.Error;
+                    }
+
+                    // MSBuild writes errors to the output stream, parsing the console output to find
+                    // the errors would be error prone so here we log all output combined with any
+                    // errors on the error stream (haven't seen the error stream used to date) 
+                    // to give the user the complete info.
+                    await console.LogAsync(logLevel, output.ToString() + errors.ToString());
+
+                    if (!finished)
+                    {
+                        // MSBuild timed out
+                        throw new CommandLineException(
+                                LocalizedResourceManager.GetString(nameof(NuGetResources.Error_MsBuildTimedOut)));
+                    }
 
                     if (process.ExitCode != 0)
                     {
-                        await errorTask;
-                        throw new CommandLineException(errors.ToString());
+                        // Do not continue if msbuild failed.
+                        throw new ExitCodeException(1);
                     }
                 }
 
@@ -260,7 +290,7 @@ namespace NuGet.CommandLine
             string line;
             while ((line = await reader.ReadLineAsync()) != null)
             {
-                if (filter == null || 
+                if (filter == null ||
                     !filter(line))
                 {
                     lines.AppendLine(line);
