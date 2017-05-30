@@ -279,11 +279,18 @@ namespace NuGet.Common
                 dynamic importElement = null;
                 foreach (dynamic import in Project.Xml.Imports)
                 {
+
                     if (targetRelativePath.Equals(import.Project, StringComparison.OrdinalIgnoreCase))
                     {
                         importElement = import;
                         break;
                     }
+                    else if (targetFullPath.Equals(import.Project, StringComparison.OrdinalIgnoreCase))
+                    {
+                        importElement = import;
+                        break;
+                    }
+
                 }
 
                 if (importElement != null)
