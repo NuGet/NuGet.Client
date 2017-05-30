@@ -79,7 +79,6 @@
     <Setter Property="HorizontalContentAlignment" Value="Center"/>
     <Setter Property="VerticalContentAlignment" Value="Center"/>
     <Setter Property="Padding" Value="10,1,10,1"/>
-    <Setter Property="MinWidth" Value="75"/>
     <Setter Property="MinHeight" Value="23"/>
     <Setter Property="Template">
       <Setter.Value>
