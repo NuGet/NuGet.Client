@@ -1,7 +1,8 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO;
 using System.Threading.Tasks;
 using Microsoft;
 using NuGet.Frameworks;
@@ -36,6 +37,25 @@ namespace NuGet.PackageManagement.VisualStudio
             ProjectServices = projectServices;
         }
 
+        protected override string GetBaseIntermediatePath(bool shouldThrow = true)
+        {
+
+            var baseIntermediatePath = _vsProjectAdapter.BaseIntermediateOutputPath;
+
+            if (string.IsNullOrEmpty(baseIntermediatePath))
+            {
+                if (shouldThrow)
+                {
+                    throw new InvalidDataException(string.Format(
+                        Strings.BaseIntermediateOutputPathNotFound,
+                        _vsProjectAdapter.FullPath));
+                }
+
+                return null;
+            }
+
+            return baseIntermediatePath;
+        }
         protected override async Task UpdateInternalTargetFrameworkAsync()
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();

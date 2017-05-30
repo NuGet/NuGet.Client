@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -150,6 +150,11 @@ namespace NuGet.ProjectManagement.Projects
             return packages;
         }
 
+        protected virtual string GetBaseIntermediatePath(bool shouldThrow = true)
+        {
+            return null;
+        }
+       
         public override async Task<IReadOnlyList<PackageSpec>> GetPackageSpecsAsync(DependencyGraphCacheContext context)
         {
             //TODO NK - Add settings here maybe?
@@ -166,6 +171,7 @@ namespace NuGet.ProjectManagement.Projects
                 packageSpec.RestoreMetadata = metadata;
 
                 metadata.ProjectStyle = ProjectStyle.ProjectJson;
+                metadata.OutputPath = GetBaseIntermediatePath();
                 metadata.ProjectPath = MSBuildProjectPath;
                 metadata.ProjectJsonPath = packageSpec.FilePath;
                 metadata.ProjectName = packageSpec.Name;
@@ -210,7 +216,7 @@ namespace NuGet.ProjectManagement.Projects
                         }
                     }
                 }
-
+                // TODO NK - Where is the OutputPathSet
                 // Write restore settings to the package spec.
                 // For project.json these properties may not come from the project file.
                 var settings = context?.Settings ?? NullSettings.Instance;
