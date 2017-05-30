@@ -41,8 +41,6 @@ namespace NuGet.ProjectManagement
         /// </summary>
         public Dictionary<string, IReadOnlyList<IDependencyGraphProject>> DirectReferenceCache { get; set; } = new Dictionary<string, IReadOnlyList<IDependencyGraphProject>>(StringComparer.Ordinal);
 
-        public DependencyGraphSpec SolutionSpec { get; set; } // TODO NK - Check if the solution spec is the one that ends up in the restore command or dependency graph context
-
         /// <summary>
         /// Logger
         /// </summary>

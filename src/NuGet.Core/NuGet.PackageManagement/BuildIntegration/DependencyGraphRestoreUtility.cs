@@ -70,9 +70,6 @@ namespace NuGet.PackageManagement
             // Get full dg spec
             var dgSpec = await GetSolutionRestoreSpec(solutionManager, context);
 
-            // Cache spec TODO NK - Why do we cache the spec?
-            context.SolutionSpec = dgSpec;
-
             // Check if there are actual projects to restore before running.
             if (dgSpec.Restore.Count > 0)
             {
