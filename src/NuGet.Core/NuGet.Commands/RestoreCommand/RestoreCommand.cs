@@ -52,7 +52,8 @@ namespace NuGet.Commands
             if (request.Project.ProjectSettings != null &&
                 request.Project.ProjectSettings.ContainsKey(PackageSpec.HideWarningsAndErrorsProperty))
             {
-                collectorLoggerHideWarningsAndErrors = (bool)request.Project.ProjectSettings[PackageSpec.HideWarningsAndErrorsProperty] || request.HideWarningsAndErrors;
+                collectorLoggerHideWarningsAndErrors = (bool)request.Project.ProjectSettings[PackageSpec.HideWarningsAndErrorsProperty] 
+                    || request.HideWarningsAndErrors;
             }
             else
             {

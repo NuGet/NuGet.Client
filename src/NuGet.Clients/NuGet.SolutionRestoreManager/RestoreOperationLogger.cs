@@ -198,7 +198,7 @@ namespace NuGet.SolutionRestoreManager
             // Output console
             if (showAsOutputMessage)
             {
-                WriteLine(verbosityLevel, logMessage.Message);
+                WriteLine(verbosityLevel, logMessage.FormatWithCode());
             }
         }
 
