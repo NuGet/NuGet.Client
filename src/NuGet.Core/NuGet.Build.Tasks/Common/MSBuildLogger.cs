@@ -45,12 +45,9 @@ namespace NuGet.Build
         private delegate void LogErrorAsString(string message,
             params object[] messageArgs);
 
-
-
-
         public MSBuildLogger(TaskLoggingHelper taskLogging)
         {
-            _taskLogging = taskLogging;
+            _taskLogging = taskLogging ?? throw new ArgumentNullException(nameof(taskLogging));
         }
 
         public override void Log(ILogMessage message)
@@ -83,6 +80,9 @@ namespace NuGet.Build
             }
         }
 
+        /// <summary>
+        /// Log using with metadata for non mono platforms.
+        /// </summary>
         private void LogForNonMono(IRestoreLogMessage message)
         {
             switch (message.Level)
