@@ -2,15 +2,16 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Threading.Tasks;
 using NuGet.ProjectManagement;
-using EnvDTEProject = EnvDTE.Project;
+using NuGet.VisualStudio;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
-    public class WixProjectSystem : VSMSBuildNuGetProjectSystem
+    public class WixProjectSystem : VsMSBuildProjectSystem
     {
-        public WixProjectSystem(EnvDTEProject envDTEProject, INuGetProjectContext nuGetProjectContext)
-            : base(envDTEProject, nuGetProjectContext)
+        public WixProjectSystem(IVsProjectAdapter vsProjectAdapter, INuGetProjectContext nuGetProjectContext)
+            : base(vsProjectAdapter, nuGetProjectContext)
         {
         }
 
@@ -18,12 +19,13 @@ namespace NuGet.PackageManagement.VisualStudio
         private const string OutputName = "OutputName";
         private const string DefaultNamespace = "WiX";
 
-        public override void AddReference(string referencePath)
+        public override Task AddReferenceAsync(string referencePath)
         {
             // References aren't allowed for WiX projects
+            return Task.CompletedTask;
         }
 
-        protected override void AddGacReference(string name)
+        public override void AddGacReference(string name)
         {
             // GAC references aren't allowed for WiX projects
         }
@@ -50,15 +52,16 @@ namespace NuGet.PackageManagement.VisualStudio
             return base.GetPropertyValue(propertyName);
         }
 
-        public override void RemoveReference(string name)
+        public override Task RemoveReferenceAsync(string name)
         {
             // References aren't allowed for WiX projects
+            return Task.CompletedTask;
         }
 
-        public override bool ReferenceExists(string name)
+        public override Task<bool> ReferenceExistsAsync(string name)
         {
             // References aren't allowed for WiX projects
-            return true;
+            return Task.FromResult(true);
         }
 
         public override bool IsSupportedFile(string path)

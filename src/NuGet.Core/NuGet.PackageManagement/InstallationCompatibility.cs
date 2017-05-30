@@ -1,10 +1,12 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using NuGet.Commands;
 using NuGet.Common;
 using NuGet.LibraryModel;
@@ -77,15 +79,50 @@ namespace NuGet.PackageManagement
             }
         }
 
-        public void EnsurePackageCompatibility(
+        /// <summary>
+        /// Asynchronously validates the compatibility of a single downloaded package.
+        /// </summary>
+        /// <param name="nuGetProject">The NuGet project. The type of the NuGet project determines the sorts or
+        /// validations that are done.</param>
+        /// <param name="packageIdentity">The identity of that package contained in the download result.</param>
+        /// <param name="resourceResult">The downloaded package.</param>
+        /// <param name="cancellationToken">A cancellation token.</param>.
+        /// <returns>A task that represents the asynchronous operation.</returns>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="nuGetProject" />
+        /// is <c>null</c>.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="packageIdentity" />
+        /// is <c>null</c>.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="resourceResult" />
+        /// is <c>null</c>.</exception>
+        /// <exception cref="OperationCanceledException">Thrown if <paramref name="cancellationToken" />
+        /// is cancelled.</exception>
+        public async Task EnsurePackageCompatibilityAsync(
             NuGetProject nuGetProject,
             PackageIdentity packageIdentity,
-            DownloadResourceResult resourceResult)
+            DownloadResourceResult resourceResult,
+            CancellationToken cancellationToken)
         {
+            if (nuGetProject == null)
+            {
+                throw new ArgumentNullException(nameof(nuGetProject));
+            }
+
+            if (packageIdentity == null)
+            {
+                throw new ArgumentNullException(nameof(packageIdentity));
+            }
+
+            if (resourceResult == null)
+            {
+                throw new ArgumentNullException(nameof(resourceResult));
+            }
+
+            cancellationToken.ThrowIfCancellationRequested();
+
             NuspecReader nuspecReader;
             if (resourceResult.PackageReader != null)
             {
-                nuspecReader = resourceResult.PackageReader.NuspecReader;
+                nuspecReader = await resourceResult.PackageReader.GetNuspecReaderAsync(cancellationToken);
             }
             else
             {

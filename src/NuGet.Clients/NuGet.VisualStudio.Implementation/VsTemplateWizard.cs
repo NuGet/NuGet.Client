@@ -44,6 +44,7 @@ namespace NuGet.VisualStudio
         private readonly PreinstalledPackageInstaller _preinstalledPackageInstaller;
         private readonly Configuration.ISettings _settings;
         private readonly ISourceRepositoryProvider _sourceProvider;
+        private readonly IVsProjectAdapterProvider _vsProjectAdapterProvider;
 
         private JoinableTaskFactory PumpingJTF { get; }
 
@@ -54,7 +55,8 @@ namespace NuGet.VisualStudio
             IOutputConsoleProvider consoleProvider,
             IVsSolutionManager solutionManager,
             Configuration.ISettings settings,
-            ISourceRepositoryProvider sourceProvider
+            ISourceRepositoryProvider sourceProvider,
+            IVsProjectAdapterProvider vsProjectAdapterProvider
             )
         {
             _installer = installer;
@@ -63,8 +65,9 @@ namespace NuGet.VisualStudio
             _solutionManager = solutionManager;
             _settings = settings;
             _sourceProvider = sourceProvider;
+            _vsProjectAdapterProvider = vsProjectAdapterProvider;
 
-            _preinstalledPackageInstaller = new PreinstalledPackageInstaller(_packageServices, _solutionManager, _settings, _sourceProvider, (VsPackageInstaller)_installer);
+            _preinstalledPackageInstaller = new PreinstalledPackageInstaller(_packageServices, _solutionManager, _settings, _sourceProvider, (VsPackageInstaller)_installer, _vsProjectAdapterProvider);
 
             PumpingJTF = new PumpingJTF(NuGetUIThreadHelper.JoinableTaskFactory.Context);
         }

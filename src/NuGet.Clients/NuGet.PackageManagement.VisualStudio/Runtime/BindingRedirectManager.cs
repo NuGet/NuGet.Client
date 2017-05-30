@@ -21,9 +21,9 @@ namespace NuGet.PackageManagement.VisualStudio
         private static readonly XName BindingRedirectName = AssemblyBinding.GetQualifiedName("bindingRedirect");
 
         private string ConfigurationFile { get; set; }
-        private IMSBuildNuGetProjectSystem MSBuildNuGetProjectSystem { get; set; }
+        private IMSBuildProjectSystem MSBuildNuGetProjectSystem { get; set; }
 
-        public BindingRedirectManager(string configurationFile, IMSBuildNuGetProjectSystem msBuildNuGetProjectSystem)
+        public BindingRedirectManager(string configurationFile, IMSBuildProjectSystem msBuildNuGetProjectSystem)
         {
             if (String.IsNullOrEmpty(configurationFile))
             {

@@ -124,6 +124,15 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Implicitly referenced by an SDK. To update the package, update the SDK to which it belongs..
+        /// </summary>
+        public static string AutoReferenced {
+            get {
+                return ResourceManager.GetString("AutoReferenced", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Select a Package Source Folder.
         /// </summary>
         public static string BrowseFolderDialogDescription {
@@ -444,6 +453,15 @@ namespace NuGet.PackageManagement.UI {
         public static string DependencyBehavior_Lowest {
             get {
                 return ResourceManager.GetString("DependencyBehavior_Lowest", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Learn more.
+        /// </summary>
+        public static string Description_LearnMore {
+            get {
+                return ResourceManager.GetString("Description_LearnMore", resourceCulture);
             }
         }
         

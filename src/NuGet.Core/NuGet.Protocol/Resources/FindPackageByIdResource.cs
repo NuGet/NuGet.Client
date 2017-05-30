@@ -1,51 +1,117 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.Packaging;
+using NuGet.Packaging.Core;
 using NuGet.Versioning;
 
 namespace NuGet.Protocol.Core.Types
 {
+    /// <summary>
+    /// A resource capable of fetching packages, package versions and package dependency information.
+    /// </summary>
     public abstract class FindPackageByIdResource : INuGetResource
     {
+        /// <summary>
+        /// Asynchronously gets all package versions for a package ID.
+        /// </summary>
+        /// <param name="id">A package ID.</param>
+        /// <param name="cacheContext">A source cache context.</param>
+        /// <param name="logger">A logger.</param>
+        /// <param name="cancellationToken">A cancellation token.</param>
+        /// <returns>A task that represents the asynchronous operation.
+        /// The task result (<see cref="Task{TResult}.Result" />) returns an
+        /// <see cref="IEnumerable{NuGetVersion}" />.</returns>
+        /// <exception cref="ArgumentException">Thrown if <paramref name="id" />
+        /// is either <c>null</c> or an empty string.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="cacheContext" /> <c>null</c>.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="logger" /> <c>null</c>.</exception>
+        /// <exception cref="OperationCanceledException">Thrown if <paramref name="cancellationToken" />
+        /// is cancelled.</exception>
         public abstract Task<IEnumerable<NuGetVersion>> GetAllVersionsAsync(
             string id,
             SourceCacheContext cacheContext,
             ILogger logger,
-            CancellationToken token);
+            CancellationToken cancellationToken);
 
         /// <summary>
-        /// Gets the <see cref="FindPackageByIdDependencyInfo" /> for a specific package.
+        /// Asynchronously gets dependency information for a specific package.
         /// </summary>
-        /// <param name="id">The packag id.</param>
-        /// <param name="version">The package version.</param>
-        /// <param name="cacheContext">The source cache context.</param>
-        /// <param name="logger">The logger.</param>
-        /// <param name="token">The <see cref="CancellationToken" />.</param>
-        /// <returns>
-        /// A <see cref="Task" /> that on completion returns a <see cref="FindPackageByIdDependencyInfo" /> of the
-        /// package, if found,
-        /// <c>null</c> otherwise.
-        /// </returns>
+        /// <param name="id">A package id.</param>
+        /// <param name="version">A package version.</param>
+        /// <param name="cacheContext">A source cache context.</param>
+        /// <param name="logger">A logger.</param>
+        /// <param name="cancellationToken">A cancellation token.</param>
+        /// <returns>A task that represents the asynchronous operation.
+        /// The task result (<see cref="Task{TResult}.Result" />) returns an
+        /// <see cref="IEnumerable{NuGetVersion}" />.</returns>
+        /// <exception cref="ArgumentException">Thrown if <paramref name="id" />
+        /// is either <c>null</c> or an empty string.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="version" /> <c>null</c>.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="cacheContext" /> <c>null</c>.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="logger" /> <c>null</c>.</exception>
+        /// <exception cref="OperationCanceledException">Thrown if <paramref name="cancellationToken" />
+        /// is cancelled.</exception>
         public abstract Task<FindPackageByIdDependencyInfo> GetDependencyInfoAsync(
             string id,
             NuGetVersion version,
             SourceCacheContext cacheContext,
             ILogger logger,
-            CancellationToken token);
+            CancellationToken cancellationToken);
 
+        /// <summary>
+        /// Asynchronously copies a .nupkg to a stream.
+        /// </summary>
+        /// <param name="id">A package ID.</param>
+        /// <param name="version">A package version.</param>
+        /// <param name="destination">A destination stream.</param>
+        /// <param name="cacheContext">A source cache context.</param>
+        /// <param name="logger">A logger.</param>
+        /// <param name="cancellationToken">A cancellation token.</param>
+        /// <returns>A task that represents the asynchronous operation.
+        /// The task result (<see cref="Task{TResult}.Result" />) returns an
+        /// <see cref="bool" /> indicating whether or not the .nupkg file was copied.</returns>
+        /// <exception cref="ArgumentException">Thrown if <paramref name="id" />
+        /// is either <c>null</c> or an empty string.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="version" /> <c>null</c>.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="destination" /> <c>null</c>.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="cacheContext" /> <c>null</c>.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="logger" /> <c>null</c>.</exception>
+        /// <exception cref="OperationCanceledException">Thrown if <paramref name="cancellationToken" />
+        /// is cancelled.</exception>
         public abstract Task<bool> CopyNupkgToStreamAsync(
             string id,
             NuGetVersion version,
             Stream destination,
             SourceCacheContext cacheContext,
             ILogger logger,
-            CancellationToken token);
+            CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Asynchronously gets a package downloader for a package identity.
+        /// </summary>
+        /// <param name="packageIdentity">A package identity.</param>
+        /// <param name="cacheContext">A source cache context.</param>
+        /// <param name="logger">A logger.</param>
+        /// <param name="cancellationToken">A cancellation token.</param>
+        /// <returns>A task that represents the asynchronous operation.
+        /// The task result (<see cref="Task{TResult}.Result" />) returns an <see cref="IPackageDownloader" />.</returns>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="packageIdentity" /> <c>null</c>.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="cacheContext" /> <c>null</c>.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="logger" /> <c>null</c>.</exception>
+        /// <exception cref="OperationCanceledException">Thrown if <paramref name="cancellationToken" />
+        /// is cancelled.</exception>
+        public abstract Task<IPackageDownloader> GetPackageDownloaderAsync(
+            PackageIdentity packageIdentity,
+            SourceCacheContext cacheContext,
+            ILogger logger,
+            CancellationToken cancellationToken);
 
         /// <summary>
         /// Read dependency info from a nuspec.

@@ -257,7 +257,6 @@ namespace NuGet.PackageManagement
                 // Nothing to restore
                 return false;
             }
-
             // NO Op will be checked in the restore command 
             return true;
         }
@@ -280,19 +279,6 @@ namespace NuGet.PackageManagement
             var dgSpec = new DependencyGraphSpec();
             var globalPackagesFolder = SettingsUtility.GetGlobalPackagesFolder(context.Settings);
             var fallbackFolders = SettingsUtility.GetFallbackPackageFolders(context.Settings);
-
-            foreach (var packageSpec in context.DeferredPackageSpecs)
-            {
-                dgSpec.AddProject(packageSpec);
-
-                if (packageSpec.RestoreMetadata.ProjectStyle == ProjectStyle.PackageReference ||
-                    packageSpec.RestoreMetadata.ProjectStyle == ProjectStyle.ProjectJson ||
-                    packageSpec.RestoreMetadata.ProjectStyle == ProjectStyle.DotnetCliTool ||
-                    packageSpec.RestoreMetadata.ProjectStyle == ProjectStyle.Standalone)
-                {
-                    dgSpec.AddRestore(packageSpec.RestoreMetadata.ProjectUniqueName);
-                }
-            }
 
             var projects = solutionManager.GetNuGetProjects().OfType<IDependencyGraphProject>();
 

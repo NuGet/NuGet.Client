@@ -449,6 +449,24 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
+        private string _optionsBlockedUrlText;
+
+        public virtual string OptionsBlockedUrlText
+        {
+            get
+            {
+                return _optionsBlockedUrlText;
+            }
+
+            set
+            {
+                _optionsBlockedUrlText = value;
+                OnPropertyChanged(nameof(OptionsBlockedUrlText));
+                OnPropertyChanged(nameof(OptionsBlockedUrl));
+                OnPropertyChanged(nameof(OptionsBlockedMessage));
+            }
+        }
+
         private Options _options;
 
         public Options Options
@@ -510,8 +528,8 @@ namespace NuGet.PackageManagement.UI
             if (autoReferenced)
             {
                 OptionsBlockedUrl = new Uri("https://go.microsoft.com/fwlink/?linkid=841238");
-                OptionsBlockedMessage = "AutoReferenced";
-
+                OptionsBlockedMessage = Resources.AutoReferenced;
+                OptionsBlockedUrlText = Resources.Description_LearnMore;
                 if (_searchResultPackage != null)
                 {
                     _searchResultPackage.AutoReferenced = true;

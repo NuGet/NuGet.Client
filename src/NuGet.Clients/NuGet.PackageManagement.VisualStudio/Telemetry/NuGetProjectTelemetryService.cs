@@ -69,16 +69,16 @@ namespace NuGet.PackageManagement.Telemetry
                     projectType = NuGetProjectType.PackagesConfig;
                 }
 #if VS15
-                else if (nuGetProject is CpsPackageReferenceProject)
+                else if (nuGetProject is NetCorePackageReferenceProject)
                 {
                     projectType = NuGetProjectType.CPSBasedPackageRefs;
                 }
-                else if (nuGetProject is LegacyCSProjPackageReferenceProject)
+                else if (nuGetProject is LegacyPackageReferenceProject)
                 {
                     projectType = NuGetProjectType.LegacyProjectSystemWithPackageRefs;
                 }
 #endif
-                else if (nuGetProject is ProjectJsonBuildIntegratedProjectSystem)
+                else if (nuGetProject is ProjectJsonNuGetProject)
                 {
                     projectType = NuGetProjectType.UwpProjectJson;
                 }

@@ -65,22 +65,22 @@ namespace NuGet.Protocol.Core.Types
             _after = after;
         }
 
-        public IEnumerable<string> After
+        public virtual IEnumerable<string> After
         {
             get { return _after; }
         }
 
-        public IEnumerable<string> Before
+        public virtual IEnumerable<string> Before
         {
             get { return _before; }
         }
 
-        public string Name
+        public virtual string Name
         {
             get { return _name; }
         }
 
-        public Type ResourceType
+        public virtual Type ResourceType
         {
             get { return _resourceType; }
         }

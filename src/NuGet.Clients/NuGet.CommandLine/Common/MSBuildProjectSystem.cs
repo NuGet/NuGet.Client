@@ -10,13 +10,13 @@ using System.Reflection;
 using System.Threading.Tasks;
 using NuGet.Commands;
 using NuGet.Frameworks;
-using NuGet.PackageManagement;
-using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 
 namespace NuGet.Common
 {
-    public class MSBuildProjectSystem : MSBuildUser, IMSBuildNuGetProjectSystem
+    public sealed class MSBuildProjectSystem 
+        : MSBuildUser
+        , IMSBuildProjectSystem
     {
         private const string TargetName = "EnsureNuGetPackageBuildImports";
         
@@ -35,7 +35,7 @@ namespace NuGet.Common
             NuGetProjectContext = projectContext;
         }
 
-        public INuGetProjectContext NuGetProjectContext { get; private set; }
+        public INuGetProjectContext NuGetProjectContext { get; set; }
 
         /// <summary>
         /// This does not contain the filename, just the path to the directory where the project file exists
@@ -101,9 +101,10 @@ namespace NuGet.Common
             FileSystemUtility.AddFile(ProjectFullPath, path, stream, NuGetProjectContext);
         }
 
-        public void AddFrameworkReference(string name, string packageId)
+        public Task AddFrameworkReferenceAsync(string name, string packageId)
         {
             // No-op
+            return Task.FromResult(0);
         }
 
         public void AddImport(string targetFullPath, ImportLocation location)
@@ -151,11 +152,11 @@ namespace NuGet.Common
             Project.Save();
         }
 
-        public void AddReference(string referencePath)
+        public Task AddReferenceAsync(string referencePath)
         {
-            string fullPath = PathUtility.GetAbsolutePath(ProjectFullPath, referencePath);
-            string relativePath = PathUtility.GetRelativePath(Project.FullPath, fullPath);
-            string assemblyFileName = Path.GetFileNameWithoutExtension(fullPath);
+            var fullPath = PathUtility.GetAbsolutePath(ProjectFullPath, referencePath);
+            var relativePath = PathUtility.GetRelativePath(Project.FullPath, fullPath);
+            var assemblyFileName = Path.GetFileNameWithoutExtension(fullPath);
 
             try
             {
@@ -173,6 +174,8 @@ namespace NuGet.Common
                 assemblyFileName,
                 new[] { new KeyValuePair<string, string>("HintPath", relativePath),
                         new KeyValuePair<string, string>("Private", "True")});
+
+            return Task.FromResult(0);
         }
 
         public void BeginProcessing()
@@ -193,12 +196,6 @@ namespace NuGet.Common
         public void DeleteDirectory(string path, bool recursive)
         {
             FileSystemUtility.DeleteDirectory(path, recursive, NuGetProjectContext);
-        }
-
-        public Task ExecuteScriptAsync(PackageIdentity identity, string packageInstallPath, string scriptRelativePath, bool throwOnFailure)
-        {
-            // No-op
-            return Task.FromResult(0);
         }
 
         public bool FileExistsInProject(string path)
@@ -257,9 +254,9 @@ namespace NuGet.Common
             return true;
         }
 
-        public bool ReferenceExists(string name)
+        public Task<bool> ReferenceExistsAsync(string name)
         {
-            return GetReference(name) != null;
+            return Task.FromResult(GetReference(name) != null);
         }
 
         public void RemoveFile(string path)
@@ -300,23 +297,20 @@ namespace NuGet.Common
             Project.Save();
         }
 
-        public void RemoveReference(string name)
+        public Task RemoveReferenceAsync(string name)
         {
             dynamic assemblyReference = GetReference(name);
             if (assemblyReference != null)
             {
                 Project.RemoveItem(assemblyReference);
             }
+
+            return Task.FromResult(0);
         }
 
         public string ResolvePath(string path)
         {
             return path;
-        }
-
-        public void SetNuGetProjectContext(INuGetProjectContext nuGetProjectContext)
-        {
-            NuGetProjectContext = nuGetProjectContext;
         }
 
         public void Save()

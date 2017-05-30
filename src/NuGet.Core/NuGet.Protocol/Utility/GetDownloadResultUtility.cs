@@ -1,10 +1,9 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Globalization;
 using System.IO;
-using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
@@ -103,14 +102,14 @@ namespace NuGet.Protocol
                 }
                 catch (Exception ex) when (retry < 2)
                 {
-                    string message = string.Format(CultureInfo.CurrentCulture, Strings.Log_ErrorDownloading, identity, uri)
+                    var message = string.Format(CultureInfo.CurrentCulture, Strings.Log_ErrorDownloading, identity, uri)
                         + Environment.NewLine
                         + ExceptionUtilities.DisplayMessage(ex);
                     logger.LogWarning(message);
                 }
                 catch (Exception ex)
                 {
-                    string message = string.Format(CultureInfo.CurrentCulture, Strings.Log_ErrorDownloading, identity, uri);
+                    var message = string.Format(CultureInfo.CurrentCulture, Strings.Log_ErrorDownloading, identity, uri);
 
                     throw new FatalProtocolException(message, ex);
                 }

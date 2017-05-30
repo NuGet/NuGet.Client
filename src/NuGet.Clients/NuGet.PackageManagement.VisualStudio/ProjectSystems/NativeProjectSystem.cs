@@ -1,25 +1,25 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.IO;
+using System.Threading.Tasks;
 using NuGet.ProjectManagement;
 using NuGet.VisualStudio;
-using EnvDTEProject = EnvDTE.Project;
 using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
-    public class NativeProjectSystem : CpsProjectSystem
+    internal class NativeProjectSystem : CpsProjectSystem
     {
-        public NativeProjectSystem(EnvDTEProject envDTEProject, INuGetProjectContext nuGetProjectContext)
-            : base(envDTEProject, nuGetProjectContext)
+        public NativeProjectSystem(IVsProjectAdapter vsProjectAdapter, INuGetProjectContext nuGetProjectContext)
+            : base(vsProjectAdapter, nuGetProjectContext)
         {
         }
 
-        public override void AddReference(string referencePath)
+        public override Task AddReferenceAsync(string referencePath)
         {
             // We disable assembly reference for native projects
+            return Task.CompletedTask;
         }
 
         protected override async Task AddFileToProjectAsync(string path)
@@ -31,23 +31,24 @@ namespace NuGet.PackageManagement.VisualStudio
 
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
             // Get the project items for the folder path
-            string folderPath = Path.GetDirectoryName(path);
-            string fullPath = FileSystemUtility.GetFullPath(ProjectFullPath, path);
+            var folderPath = Path.GetDirectoryName(path);
+            var fullPath = FileSystemUtility.GetFullPath(ProjectFullPath, path);
 
-            VCProjectHelper.AddFileToProject(EnvDTEProject.Object, fullPath, folderPath);
+            VCProjectHelper.AddFileToProject(VsProjectAdapter.Project.Object, fullPath, folderPath);
 
             NuGetProjectContext.Log(ProjectManagement.MessageLevel.Debug, Strings.Debug_AddedFileToProject, path, ProjectName);
         }
 
-        public override bool ReferenceExists(string name)
+        public override Task<bool> ReferenceExistsAsync(string name)
         {
             // We disable assembly reference for native projects
-            return true;
+            return Task.FromResult(true);
         }
 
-        public override void RemoveReference(string name)
+        public override Task RemoveReferenceAsync(string name)
         {
             // We disable assembly reference for native projects
+            return Task.CompletedTask;
         }
 
         public override void RemoveFile(string path)
@@ -57,18 +58,18 @@ namespace NuGet.PackageManagement.VisualStudio
                 return;
             }
 
-            string folderPath = Path.GetDirectoryName(path);
-            string fullPath = FileSystemUtility.GetFullPath(ProjectFullPath, path);
+            var folderPath = Path.GetDirectoryName(path);
+            var fullPath = FileSystemUtility.GetFullPath(ProjectFullPath, path);
 
             bool succeeded;
-            succeeded = VCProjectHelper.RemoveFileFromProject(EnvDTEProject.Object, fullPath, folderPath);
+            succeeded = VCProjectHelper.RemoveFileFromProject(VsProjectAdapter.Project.Object, fullPath, folderPath);
             if (succeeded)
             {
                 // The RemoveFileFromProject() method only removes file from project.
                 // We want to delete it from disk too.
                 FileSystemUtility.DeleteFileAndParentDirectoriesIfEmpty(ProjectFullPath, path, NuGetProjectContext);
 
-                if (!String.IsNullOrEmpty(folderPath))
+                if (!string.IsNullOrEmpty(folderPath))
                 {
                     NuGetProjectContext.Log(ProjectManagement.MessageLevel.Debug, Strings.Debug_RemovedFileFromFolder, Path.GetFileName(path), folderPath);
                 }

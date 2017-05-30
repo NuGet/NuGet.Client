@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -8,6 +8,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.PackageManagement;
@@ -77,40 +78,46 @@ namespace NuGet.ProjectManagement
             return false;
         }
 
-        internal static void TryAddFile(IMSBuildNuGetProjectSystem msBuildNuGetProjectSystem, string path, Func<Stream> content)
+        internal static async Task TryAddFileAsync(
+            IMSBuildProjectSystem projectSystem,
+            string path,
+            Func<Task<Stream>> streamTaskFactory,
+            CancellationToken cancellationToken)
         {
-            if (msBuildNuGetProjectSystem.FileExistsInProject(path))
+            if (projectSystem.FileExistsInProject(path))
             {
                 // file exists in project, ask user if he wants to overwrite or ignore
                 var conflictMessage = string.Format(CultureInfo.CurrentCulture,
-                    Strings.FileConflictMessage, path, msBuildNuGetProjectSystem.ProjectName);
-                var fileConflictAction = msBuildNuGetProjectSystem.NuGetProjectContext.ResolveFileConflict(conflictMessage);
+                    Strings.FileConflictMessage, path, projectSystem.ProjectName);
+                var fileConflictAction = projectSystem.NuGetProjectContext.ResolveFileConflict(conflictMessage);
                 if (fileConflictAction == FileConflictAction.Overwrite
                     || fileConflictAction == FileConflictAction.OverwriteAll)
                 {
                     // overwrite
-                    msBuildNuGetProjectSystem.NuGetProjectContext.Log(MessageLevel.Info, Strings.Info_OverwritingExistingFile, path);
-                    using (var stream = content())
+                    projectSystem.NuGetProjectContext.Log(MessageLevel.Info, Strings.Info_OverwritingExistingFile, path);
+                    using (var stream = await streamTaskFactory())
                     {
-                        msBuildNuGetProjectSystem.AddFile(path, stream);
+                        projectSystem.AddFile(path, stream);
                     }
                 }
                 else
                 {
                     // ignore
-                    msBuildNuGetProjectSystem.NuGetProjectContext.Log(MessageLevel.Warning, Strings.Warning_FileAlreadyExists, path);
+                    projectSystem.NuGetProjectContext.Log(MessageLevel.Warning, Strings.Warning_FileAlreadyExists, path);
                 }
             }
             else
             {
-                msBuildNuGetProjectSystem.AddFile(path, content());
+                projectSystem.AddFile(path, await streamTaskFactory());
             }
         }
 
-        internal static void AddFiles(IMSBuildNuGetProjectSystem msBuildNuGetProjectSystem,
-            IPackageCoreReader packageReader,
+        internal static async Task AddFilesAsync(
+            IMSBuildProjectSystem projectSystem,
+            IAsyncPackageCoreReader packageReader,
             FrameworkSpecificGroup frameworkSpecificGroup,
-            IDictionary<FileTransformExtensions, IPackageFileTransformer> fileTransformers)
+            IDictionary<FileTransformExtensions, IPackageFileTransformer> fileTransformers,
+            CancellationToken cancellationToken)
         {
             var packageTargetFramework = frameworkSpecificGroup.TargetFramework;
 
@@ -125,7 +132,7 @@ namespace NuGet.ProjectManagement
                             GetEffectivePathForContentFile(packageTargetFramework, file)));
                 paths = paths.Where(p => !string.IsNullOrEmpty(p));
 
-                msBuildNuGetProjectSystem.RegisterProcessedFiles(paths);
+                projectSystem.RegisterProcessedFiles(paths);
             }
             catch (Exception)
             {
@@ -143,16 +150,19 @@ namespace NuGet.ProjectManagement
 
                 // Resolve the target path
                 IPackageFileTransformer installTransformer;
-                var path = ResolveTargetPath(msBuildNuGetProjectSystem,
+                var path = ResolveTargetPath(projectSystem,
                     fileTransformers,
                     fte => fte.InstallExtension, effectivePathForContentFile, out installTransformer);
 
-                if (msBuildNuGetProjectSystem.IsSupportedFile(path))
+                if (projectSystem.IsSupportedFile(path))
                 {
                     if (installTransformer != null)
                     {
-                        installTransformer.TransformFile(() => packageReader.GetStream(file), path,
-                            msBuildNuGetProjectSystem);
+                        await installTransformer.TransformFileAsync(
+                            () => packageReader.GetStreamAsync(file, cancellationToken),
+                            path,
+                            projectSystem,
+                            cancellationToken);
                     }
                     else
                     {
@@ -165,18 +175,25 @@ namespace NuGet.ProjectManagement
                         {
                             continue;
                         }
-                        TryAddFile(msBuildNuGetProjectSystem, path, () => packageReader.GetStream(file));
+
+                        await TryAddFileAsync(
+                            projectSystem,
+                            path,
+                            () => packageReader.GetStreamAsync(file, cancellationToken),
+                            cancellationToken);
                     }
                 }
             }
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope")]
-        internal static void DeleteFiles(IMSBuildNuGetProjectSystem projectSystem,
+        internal static async Task DeleteFilesAsync(
+            IMSBuildProjectSystem projectSystem,
             ZipArchive zipArchive,
             IEnumerable<string> otherPackagesPath,
             FrameworkSpecificGroup frameworkSpecificGroup,
-            IDictionary<FileTransformExtensions, IPackageFileTransformer> fileTransformers)
+            IDictionary<FileTransformExtensions, IPackageFileTransformer> fileTransformers,
+            CancellationToken cancellationToken)
         {
             var packageTargetFramework = frameworkSpecificGroup.TargetFramework;
             IPackageFileTransformer transformer;
@@ -194,7 +211,7 @@ namespace NuGet.ProjectManagement
                 orderby directory.Length descending
                 select directory;
 
-            string projectFullPath = projectSystem.ProjectFullPath;
+            var projectFullPath = projectSystem.ProjectFullPath;
 
             // Remove files from every directory
             foreach (var directory in directories)
@@ -268,8 +285,11 @@ namespace NuGet.ProjectManagement
                                 var zipArchiveFileEntry = PathUtility.GetEntry(zipArchive, file);
                                 if (zipArchiveFileEntry != null)
                                 {
-                                    transformer.RevertFile(zipArchiveFileEntry.Open, path, matchingFiles,
-                                        projectSystem);
+                                    await transformer.RevertFileAsync(
+                                        () => Task.FromResult(zipArchiveFileEntry.Open()),
+                                        path, matchingFiles,
+                                        projectSystem,
+                                        cancellationToken);
                                 }
                             }
                             catch (Exception e)
@@ -284,7 +304,11 @@ namespace NuGet.ProjectManagement
                                 var zipArchiveFileEntry = PathUtility.GetEntry(zipArchive, file);
                                 if (zipArchiveFileEntry != null)
                                 {
-                                    DeleteFileSafe(path, zipArchiveFileEntry.Open, projectSystem);
+                                    await DeleteFileSafeAsync(
+                                        path,
+                                        () => Task.FromResult(zipArchiveFileEntry.Open()),
+                                        projectSystem,
+                                        cancellationToken);
                                 }
                             }
                             catch (Exception e)
@@ -305,74 +329,82 @@ namespace NuGet.ProjectManagement
             }
         }
 
-        internal static IEnumerable<string> GetFilesSafe(IMSBuildNuGetProjectSystem msBuildNuGetProjectSystem, string path)
+        internal static IEnumerable<string> GetFilesSafe(IMSBuildProjectSystem projectSystem, string path)
         {
-            return GetFilesSafe(msBuildNuGetProjectSystem, path, "*.*");
+            return GetFilesSafe(projectSystem, path, "*.*");
         }
 
-        internal static IEnumerable<string> GetFilesSafe(IMSBuildNuGetProjectSystem msBuildNuGetProjectSystem, string path, string filter)
+        internal static IEnumerable<string> GetFilesSafe(IMSBuildProjectSystem projectSystem, string path, string filter)
         {
             try
             {
-                return GetFiles(msBuildNuGetProjectSystem, path, filter, recursive: false);
+                return GetFiles(projectSystem, path, filter, recursive: false);
             }
             catch (Exception e)
             {
-                msBuildNuGetProjectSystem.NuGetProjectContext.Log(MessageLevel.Warning, e.Message);
+                projectSystem.NuGetProjectContext.Log(MessageLevel.Warning, e.Message);
             }
 
             return Enumerable.Empty<string>();
         }
 
-        internal static IEnumerable<string> GetFiles(IMSBuildNuGetProjectSystem msBuildNuGetProjectSystem, string path, string filter, bool recursive)
+        internal static IEnumerable<string> GetFiles(
+            IMSBuildProjectSystem projectSystem,
+            string path,
+            string filter,
+            bool recursive)
         {
-            return msBuildNuGetProjectSystem.GetFiles(path, filter, recursive);
+            return projectSystem.GetFiles(path, filter, recursive);
         }
 
-        internal static void DeleteFileSafe(string path, Func<Stream> streamFactory, IMSBuildNuGetProjectSystem msBuildNuGetProjectSystem)
+        internal static async Task DeleteFileSafeAsync(
+            string path,
+            Func<Task<Stream>> streamFactory,
+            IMSBuildProjectSystem projectSystem,
+            CancellationToken cancellationToken)
         {
             // Only delete the file if it exists and the checksum is the same
-            if (msBuildNuGetProjectSystem.FileExistsInProject(path))
+            if (projectSystem.FileExistsInProject(path))
             {
-                var fullPath = Path.Combine(msBuildNuGetProjectSystem.ProjectFullPath, path);
-                if (FileSystemUtility.ContentEquals(fullPath, streamFactory))
+                var fullPath = Path.Combine(projectSystem.ProjectFullPath, path);
+                if (await FileSystemUtility.ContentEqualsAsync(fullPath, streamFactory))
                 {
-                    PerformSafeAction(() => msBuildNuGetProjectSystem.RemoveFile(path), msBuildNuGetProjectSystem.NuGetProjectContext);
+                    PerformSafeAction(() => projectSystem.RemoveFile(path), projectSystem.NuGetProjectContext);
                 }
                 else
                 {
                     // This package installed a file that was modified so warn the user
-                    msBuildNuGetProjectSystem.NuGetProjectContext.Log(MessageLevel.Warning, Strings.Warning_FileModified, fullPath);
+                    projectSystem.NuGetProjectContext.Log(MessageLevel.Warning, Strings.Warning_FileModified, fullPath);
                 }
             }
         }
 
-        internal static IEnumerable<string> GetDirectoriesSafe(IMSBuildNuGetProjectSystem msBuildNuGetProjectSystem, string path)
+        internal static IEnumerable<string> GetDirectoriesSafe(IMSBuildProjectSystem projectSystem, string path)
         {
             try
             {
-                return GetDirectories(msBuildNuGetProjectSystem, path);
+                return GetDirectories(projectSystem, path);
             }
             catch (Exception e)
             {
-                msBuildNuGetProjectSystem.NuGetProjectContext.Log(MessageLevel.Warning, e.Message);
+                projectSystem.NuGetProjectContext.Log(MessageLevel.Warning, e.Message);
             }
 
             return Enumerable.Empty<string>();
         }
 
-        internal static IEnumerable<string> GetDirectories(IMSBuildNuGetProjectSystem msBuildNuGetProjectSystem, string path)
+        internal static IEnumerable<string> GetDirectories(IMSBuildProjectSystem projectSystem, string path)
         {
-            return msBuildNuGetProjectSystem.GetDirectories(path);
+            return projectSystem.GetDirectories(path);
         }
 
-        internal static void DeleteDirectorySafe(IMSBuildNuGetProjectSystem projectSystem, string path)
+        internal static void DeleteDirectorySafe(IMSBuildProjectSystem projectSystem, string path)
         {
             PerformSafeAction(() => DeleteDirectory(projectSystem, path), projectSystem.NuGetProjectContext);
         }
 
         // Deletes an empty folder from disk and the project
-        private static void DeleteDirectory(IMSBuildNuGetProjectSystem projectSystem, string path)
+        private static void DeleteDirectory(IMSBuildProjectSystem projectSystem, string path)
         {
             var fullPath = Path.Combine(projectSystem.ProjectFullPath, path);
             if (!Directory.Exists(fullPath))
@@ -476,7 +508,8 @@ namespace NuGet.ProjectManagement
             return effectivePath;
         }
 
-        private static string ResolveTargetPath(IMSBuildNuGetProjectSystem msBuildNuGetProjectSystem,
+        private static string ResolveTargetPath(
+            IMSBuildProjectSystem projectSystem,
             IDictionary<FileTransformExtensions, IPackageFileTransformer> fileTransformers,
             Func<FileTransformExtensions, string> extensionSelector,
             string effectivePath,
@@ -491,7 +524,7 @@ namespace NuGet.ProjectManagement
                 effectivePath = truncatedPath;
             }
 
-            return msBuildNuGetProjectSystem.ResolvePath(effectivePath);
+            return projectSystem.ResolvePath(effectivePath);
         }
 
         private static IPackageFileTransformer FindFileTransformer(
@@ -561,13 +594,13 @@ namespace NuGet.ProjectManagement
             return items.Where(i => PackageHelper.IsPackageFile(i, PackageSaveMode.Defaultv3));
         }
 
-        internal static void AddFile(IMSBuildNuGetProjectSystem msBuildNuGetProjectSystem, string path, Action<Stream> writeToStream)
+        internal static void AddFile(IMSBuildProjectSystem projectSystem, string path, Action<Stream> writeToStream)
         {
             using (var memoryStream = new MemoryStream())
             {
                 writeToStream(memoryStream);
                 memoryStream.Seek(0, SeekOrigin.Begin);
-                msBuildNuGetProjectSystem.AddFile(path, memoryStream);
+                projectSystem.AddFile(path, memoryStream);
             }
         }
 
