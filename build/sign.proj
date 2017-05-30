@@ -26,6 +26,7 @@
       </FilesToSign>
       <FilesToSign Include="$(ArtifactsDirectory)Microsoft.Web.Xdt.2.1.1\lib\net40\**\Microsoft.Web.XmlTransform.resources.dll">
         <Authenticode>Microsoft</Authenticode>
+        <StrongName>25</StrongName>
       </FilesToSign>
     </ItemGroup>
     <MSBuild
