@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -19,6 +19,7 @@ namespace NuGet.ProjectModel
     public class PackageSpec
     {
         public static readonly string PackageSpecFileName = "project.json";
+        public static readonly string HideWarningsAndErrorsProperty  = "HideWarningsAndErrors";
         public static readonly NuGetVersion DefaultVersion = new NuGetVersion(1, 0, 0);
 
         public PackageSpec(IList<TargetFrameworkInformation> frameworks)
@@ -32,10 +33,7 @@ namespace NuGet.ProjectModel
 
         public string FilePath { get; set; }
 
-        public string BaseDirectory
-        {
-            get { return Path.GetDirectoryName(FilePath); }
-        }
+        public string BaseDirectory => Path.GetDirectoryName(FilePath);
 
         public string Name { get; set; }
 
@@ -51,7 +49,7 @@ namespace NuGet.ProjectModel
             set
             {
                 _version = value;
-                this.IsDefaultVersion = false;
+                IsDefaultVersion = false;
             }
         }
         public bool IsDefaultVersion { get; set; } = true;
@@ -97,6 +95,12 @@ namespace NuGet.ProjectModel
         public IList<TargetFrameworkInformation> TargetFrameworks { get; private set; } = new List<TargetFrameworkInformation>();
 
         public RuntimeGraph RuntimeGraph { get; set; } = new RuntimeGraph();
+
+        /// <summary>
+        /// Project Settings is used to pass settings like HideWarningsAndErrors down to lower levels.
+        /// This should not be part of the Equals and GetHashCode.
+        /// </summary>
+        public IDictionary<string, object> ProjectSettings { get; set; } = new Dictionary<string, object>();
 
         /// <summary>
         /// Additional MSBuild properties.
