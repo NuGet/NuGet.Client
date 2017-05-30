@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information. 
 
+using System;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Shell.TableControl;
 using Microsoft.VisualStudio.Shell.TableManager;
@@ -12,22 +13,18 @@ namespace NuGet.SolutionRestoreManager
     {
         internal const string ErrorSouce = "NuGet";
 
-        public object Identity
-        {
-            get
-            {
-                return Message;
-            }
-        }
+        public ILogMessage Message { get; }
 
-        public string Message { get; }
+        public object Identity => Message.Message;
 
-        public LogLevel LogLevel { get; }
-
-        public ErrorListTableEntry(string message, LogLevel level)
+        public ErrorListTableEntry(ILogMessage message)
         {
             Message = message;
-            LogLevel = level;
+        }
+
+        public ErrorListTableEntry(string message, LogLevel level)
+            : this(new LogMessage(level, message))
+        {
         }
 
         public bool CanSetValue(string keyName)
@@ -42,10 +39,10 @@ namespace NuGet.SolutionRestoreManager
             switch (keyName)
             {
                 case StandardTableColumnDefinitions.Text:
-                    content = Message;
+                    content = Message.Message;
                     return true;
                 case StandardTableColumnDefinitions.ErrorSeverity:
-                    content = GetErrorCategory(LogLevel);
+                    content = GetErrorCategory(Message.Level);
                     return true;
                 case StandardTableColumnDefinitions.Priority:
                     content = "high";
@@ -53,6 +50,26 @@ namespace NuGet.SolutionRestoreManager
                 case StandardTableColumnDefinitions.ErrorSource:
                     content = ErrorSouce;
                     return true;
+                case StandardTableColumnDefinitions.ErrorCode:
+                    if (Message.Code > NuGetLogCode.Undefined)
+                    {
+                        content = Message.Code.GetName();
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                case StandardTableColumnDefinitions.DocumentName:
+                    if (Message.ProjectPath != null)
+                    {
+                        content = Message.ProjectPath;
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
             }
 
             return false;

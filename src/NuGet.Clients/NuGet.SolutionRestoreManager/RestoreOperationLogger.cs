@@ -207,7 +207,7 @@ namespace NuGet.SolutionRestoreManager
             // Display only errors/warnings
             if (logMessage.Level >= LogLevel.Warning)
             {
-                var errorListEntry = new ErrorListTableEntry(logMessage.Message, logMessage.Level);
+                var errorListEntry = new ErrorListTableEntry(logMessage);
 
                 // Add the entry to the list
                 _errorListDataSource.Value.AddNuGetEntries(errorListEntry);
