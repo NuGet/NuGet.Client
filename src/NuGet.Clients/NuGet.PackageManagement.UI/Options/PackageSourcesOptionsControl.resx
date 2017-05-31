@@ -178,7 +178,7 @@
     <value>Delete the selected package source</value>
   </data>
   <data name="removeButton.AccessibleName" xml:space="preserve">
-    <value>Delete Button</value>
+    <value>Delete package source</value>
   </data>
   <data name="removeButton.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Top, Left, Right</value>
@@ -282,7 +282,7 @@
     <value>Move the selected source up</value>
   </data>
   <data name="MoveUpButton.AccessibleName" xml:space="preserve">
-    <value>Move Up Button</value>
+    <value>Move package source up</value>
   </data>
   <data name="MoveUpButton.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Top, Left, Right</value>
@@ -321,7 +321,7 @@
     <value>Move the selected source down</value>
   </data>
   <data name="MoveDownButton.AccessibleName" xml:space="preserve">
-    <value>Move Down Button</value>
+    <value>Move package source down</value>
   </data>
   <data name="MoveDownButton.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Top, Left, Right</value>
@@ -606,7 +606,7 @@
     <value>Add a new package source</value>
   </data>
   <data name="addButton.AccessibleName" xml:space="preserve">
-    <value>Add Button</value>
+    <value>Add package source</value>
   </data>
   <data name="addButton.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Top, Left, Right</value>
