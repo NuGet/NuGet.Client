@@ -222,18 +222,6 @@ namespace NuGet.Commands
 
                 throw RestoreSpecException.Create(message, files);
             }
-
-            //// Do not allow changing the output path for UAP
-            //if (!string.IsNullOrEmpty(spec.RestoreMetadata.OutputPath))
-            //{
-            //    var message = string.Format(
-            //        CultureInfo.CurrentCulture,
-            //        Strings.PropertyNotAllowedForProjectType,
-            //        nameof(spec.RestoreMetadata.OutputPath),
-            //        ProjectStyle.ProjectJson.ToString());
-
-            //    throw RestoreSpecException.Create(message, files);
-            //}
         }
 
         private static void ValidateStandaloneSpec(PackageSpec spec, IEnumerable<string> files)

@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -215,7 +215,6 @@ namespace NuGet.ProjectManagement.Projects
                         }
                     }
                 }
-                // TODO NK - Where is the OutputPathSet
                 // Write restore settings to the package spec.
                 // For project.json these properties may not come from the project file.
                 var settings = context?.Settings ?? NullSettings.Instance;
