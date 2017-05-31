@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -149,9 +149,10 @@ namespace NuGet.Commands
                 restoreArgs.Log)
             {
                 // Set properties from the restore metadata
-                ProjectStyle = project.PackageSpec?.RestoreMetadata?.ProjectStyle ?? ProjectStyle.Unknown,
-                RestoreOutputPath = project.PackageSpec?.RestoreMetadata?.OutputPath ?? rootPath, // TODO NK - We set it here...at this point the projectjson should have it preloaded
-                DependencyGraphSpec = projectDgSpec
+                ProjectStyle = project.PackageSpec.RestoreMetadata.ProjectStyle, 
+                RestoreOutputPath = project.PackageSpec.RestoreMetadata.ProjectStyle == ProjectStyle.ProjectJson ? rootPath : project.PackageSpec.RestoreMetadata.OutputPath,
+                DependencyGraphSpec = projectDgSpec,
+                BaseIntermediateOutputPath = project.PackageSpec.RestoreMetadata.OutputPath
             };
             
             var restoreLegacyPackagesDirectory = project.PackageSpec?.RestoreMetadata?.LegacyPackagesDirectory

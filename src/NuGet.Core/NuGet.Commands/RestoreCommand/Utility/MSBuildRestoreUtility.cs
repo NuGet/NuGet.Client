@@ -190,13 +190,7 @@ namespace NuGet.Commands
                     }
 
                     result.RestoreMetadata.PackagesPath = specItem.GetProperty("PackagesPath");
-                }
 
-                if(restoreType == ProjectStyle.PackageReference
-                    || restoreType == ProjectStyle.Standalone
-                    || restoreType == ProjectStyle.DotnetCliTool
-                    || restoreType = ProjectStyle.ProjectJson)
-                {
                     result.RestoreMetadata.OutputPath = specItem.GetProperty("OutputPath");
                 }
                 

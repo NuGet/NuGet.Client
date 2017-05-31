@@ -29,27 +29,16 @@ namespace NuGet.Commands
         /// <summary>
         /// The cache file path is $(BaseIntermediateOutputPath)\$(project).nuget.cache
         /// </summary>
-        internal static string GetPackageReferenceCacheFilePath(RestoreRequest request)
-        {
-
-            if (request.ProjectStyle == ProjectStyle.PackageReference
-               || request.ProjectStyle == ProjectStyle.Standalone)
-            {
-                var projFileName = Path.GetFileName(request.Project.RestoreMetadata.ProjectPath);
-                return request.Project.RestoreMetadata.CacheFilePath = Path.Combine(request.RestoreOutputPath, $"{projFileName}.nuget.cache");
-            }
-
-            return null;
-        }
-
-        internal static string GetProjectJsonCacheFilePath(RestoreRequest request)
+        internal static string GetPJorPRCacheFilePath(RestoreRequest request)
         {
             string cacheFilePath = null;
 
-            if (request.ProjectStyle == ProjectStyle.ProjectJson) // TODO NK - This needs to be fixed. 
+            if (request.ProjectStyle == ProjectStyle.ProjectJson
+                || request.ProjectStyle == ProjectStyle.PackageReference
+               || request.ProjectStyle == ProjectStyle.Standalone)
             {
                 var projFileName = Path.GetFileName(request.Project.RestoreMetadata.ProjectPath);
-                cacheFilePath = request.Project.RestoreMetadata.CacheFilePath = Path.Combine(request.RestoreOutputPath, $"{projFileName}.nuget.cache");
+                cacheFilePath = request.Project.RestoreMetadata.CacheFilePath = Path.Combine(request.BaseIntermediateOutputPath, $"{projFileName}.nuget.cache");
             }
 
             return cacheFilePath;
@@ -88,13 +77,10 @@ namespace NuGet.Commands
             if (string.IsNullOrEmpty(projectCacheFilePath))
             {
                 if (request.ProjectStyle == ProjectStyle.PackageReference
-                    || request.ProjectStyle == ProjectStyle.Standalone)
+                    || request.ProjectStyle == ProjectStyle.Standalone
+                    || request.ProjectStyle == ProjectStyle.ProjectJson)
                 {
-                    projectCacheFilePath = GetPackageReferenceCacheFilePath(request);
-                }
-                else if (request.ProjectStyle == ProjectStyle.ProjectJson)
-                {
-                    projectCacheFilePath = GetProjectJsonCacheFilePath(request);
+                    projectCacheFilePath = GetPJorPRCacheFilePath(request);
                 }
             }
             return projectCacheFilePath != null ? Path.GetFullPath(projectCacheFilePath) : null;

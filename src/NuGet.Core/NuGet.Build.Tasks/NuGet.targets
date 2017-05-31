@@ -460,11 +460,11 @@ Copyright (c) .NET Foundation. All rights reserved.
     Returns="@(_RestoreGraphEntry)">
 
     <!-- Determine the restore output path -->
-    <PropertyGroup Condition=" '$(RestoreProjectStyle)' == 'PackageReference' AND '$(RestoreProjectStyle)' == 'ProjectJson' ">
+    <PropertyGroup Condition=" '$(RestoreProjectStyle)' == 'PackageReference' OR '$(RestoreProjectStyle)' == 'ProjectJson' ">
       <RestoreOutputPath Condition=" '$(RestoreOutputPath)' == '' " >$(BaseIntermediateOutputPath)</RestoreOutputPath>
     </PropertyGroup>
 
-    <ConvertToAbsolutePath Paths="$(RestoreOutputPath)" Condition=" '$(RestoreProjectStyle)' == 'PackageReference' AND '$(RestoreProjectStyle)' == 'ProjectJson'">
+    <ConvertToAbsolutePath Paths="$(RestoreOutputPath)" Condition=" '$(RestoreProjectStyle)' == 'PackageReference' OR '$(RestoreProjectStyle)' == 'ProjectJson'">
       <Output TaskParameter="AbsolutePaths" PropertyName="RestoreOutputAbsolutePath" />
     </ConvertToAbsolutePath>
 
@@ -504,9 +504,6 @@ Copyright (c) .NET Foundation. All rights reserved.
       <_RestoreSkipContentFileWrite Condition=" '$(TargetFrameworks)' == '' AND '$(TargetFramework)' == '' ">true</_RestoreSkipContentFileWrite>
     </PropertyGroup>
 
-
-
-
     <!-- Write properties for the top level entry point -->
     <ItemGroup Condition=" '$(RestoreProjectStyle)' == 'PackageReference' ">
       <_RestoreGraphEntry Include="$([System.Guid]::NewGuid())">
@@ -539,6 +536,7 @@ Copyright (c) .NET Foundation. All rights reserved.
         <ProjectPath>$(MSBuildProjectFullPath)</ProjectPath>
         <ProjectName>$(_RestoreProjectName)</ProjectName>
         <Sources>$(_OutputSources)</Sources>
+        <OutputPath>$(RestoreOutputAbsolutePath)</OutputPath>
         <FallbackFolders>$(_OutputFallbackFolders)</FallbackFolders>
         <PackagesPath>$(_OutputPackagesPath)</PackagesPath>
         <ProjectJsonPath>$(_CurrentProjectJsonPath)</ProjectJsonPath>
