@@ -72,6 +72,9 @@
     <Compile Include="Options\OptionsPageBase.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="Options\PackageSourceCheckedListBox.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="Options\PackageSourceOptionsPage.cs">
       <SubType>Component</SubType>
     </Compile>
