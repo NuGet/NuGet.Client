@@ -301,15 +301,16 @@ namespace NuGet.Common.Test
             collector.Log(new RestoreLogMessage(LogLevel.Verbose, "Verbose") { ShouldDisplay = true });
             collector.Log(new RestoreLogMessage(LogLevel.Information, "Information") { ShouldDisplay = true });
             collector.Log(new RestoreLogMessage(LogLevel.Warning, NuGetLogCode.NU1500, "Warning") { ShouldDisplay = true });
+            collector.Log(new RestoreLogMessage(LogLevel.Warning, NuGetLogCode.NU1601, "Warning") { ShouldDisplay = true });
             collector.Log(new RestoreLogMessage(LogLevel.Error, NuGetLogCode.NU1000, "Error") { ShouldDisplay = true });
 
             // Assert
             VerifyInnerLoggerCalls(innerLogger, LogLevel.Debug, "Debug", Times.Once());
             VerifyInnerLoggerCalls(innerLogger, LogLevel.Verbose, "Verbose", Times.Once());
             VerifyInnerLoggerCalls(innerLogger, LogLevel.Information, "Information", Times.Once());
-            VerifyInnerLoggerCalls(innerLogger, LogLevel.Warning, "Warning", Times.Never());
+            VerifyInnerLoggerCalls(innerLogger, LogLevel.Warning, "Warning", Times.Once(), NuGetLogCode.NU1601);
             VerifyInnerLoggerCalls(innerLogger, LogLevel.Error, "Error", Times.Once());
-            VerifyInnerLoggerCalls(innerLogger, LogLevel.Error, "Warning", Times.Once());
+            VerifyInnerLoggerCalls(innerLogger, LogLevel.Error, "Warning", Times.Once(), NuGetLogCode.NU1500);
         }
 
 
@@ -343,6 +344,37 @@ namespace NuGet.Common.Test
         }
 
         [Fact]
+        public void CollectorLogger_LogsWarningsAsErrorsForProjectAllWarningsAsErrorsAndWarnAsErrorSet()
+        {
+            // Arrange
+            var noWarnSet = new HashSet<NuGetLogCode> { };
+            var warnAsErrorSet = new HashSet<NuGetLogCode> { NuGetLogCode.NU1500 };
+            var allWarningsAsErrors = true;
+            var innerLogger = new Mock<ILogger>();
+            var collector = new CollectorLogger(innerLogger.Object)
+            {
+                ProjectWideWarningProperties = new WarningProperties(warnAsErrorSet, noWarnSet, allWarningsAsErrors)
+            };
+
+            // Act
+            collector.Log(new RestoreLogMessage(LogLevel.Debug, "Debug") { ShouldDisplay = true });
+            collector.Log(new RestoreLogMessage(LogLevel.Verbose, "Verbose") { ShouldDisplay = true });
+            collector.Log(new RestoreLogMessage(LogLevel.Information, "Information") { ShouldDisplay = true });
+            collector.Log(new RestoreLogMessage(LogLevel.Warning, NuGetLogCode.NU1500, "Warning") { ShouldDisplay = true });
+            collector.Log(new RestoreLogMessage(LogLevel.Warning, NuGetLogCode.NU1601, "Warning") { ShouldDisplay = true });
+            collector.Log(new RestoreLogMessage(LogLevel.Warning, NuGetLogCode.NU1603, "Warning") { ShouldDisplay = true });
+            collector.Log(new RestoreLogMessage(LogLevel.Error, NuGetLogCode.NU1000, "Error") { ShouldDisplay = true });
+
+            // Assert
+            VerifyInnerLoggerCalls(innerLogger, LogLevel.Debug, "Debug", Times.Once());
+            VerifyInnerLoggerCalls(innerLogger, LogLevel.Verbose, "Verbose", Times.Once());
+            VerifyInnerLoggerCalls(innerLogger, LogLevel.Information, "Information", Times.Once());
+            VerifyInnerLoggerCalls(innerLogger, LogLevel.Warning, "Warning", Times.Never());
+            VerifyInnerLoggerCalls(innerLogger, LogLevel.Error, "Error", Times.Once());
+            VerifyInnerLoggerCalls(innerLogger, LogLevel.Error, "Warning", Times.Exactly(3));
+        }
+
+        [Fact]
         public void CollectorLogger_DoesNotLogsWarningsForProjectWideNoWarnSet()
         {
             // Arrange
@@ -371,11 +403,71 @@ namespace NuGet.Common.Test
             VerifyInnerLoggerCalls(innerLogger, LogLevel.Error, "Error", Times.Once());
         }
 
-        private void VerifyInnerLoggerCalls(Mock<ILogger> innerLogger, LogLevel messageLevel, string message, Times times)
+        [Fact]
+        public void CollectorLogger_DoesNotLogsWarningsForProjectWideNoWarnSetAndAllWarningsAsErrors()
+        {
+            // Arrange
+            var noWarnSet = new HashSet<NuGetLogCode> { NuGetLogCode.NU1500 };
+            var warnAsErrorSet = new HashSet<NuGetLogCode> { };
+            var allWarningsAsErrors = true;
+            var innerLogger = new Mock<ILogger>();
+            var collector = new CollectorLogger(innerLogger.Object)
+            {
+                ProjectWideWarningProperties = new WarningProperties(warnAsErrorSet, noWarnSet, allWarningsAsErrors)
+            };
+
+            // Act
+            collector.Log(new RestoreLogMessage(LogLevel.Debug, "Debug") { ShouldDisplay = true });
+            collector.Log(new RestoreLogMessage(LogLevel.Verbose, "Verbose") { ShouldDisplay = true });
+            collector.Log(new RestoreLogMessage(LogLevel.Information, "Information") { ShouldDisplay = true });
+            collector.Log(new RestoreLogMessage(LogLevel.Warning, NuGetLogCode.NU1500, "Warning") { ShouldDisplay = true });
+            collector.Log(new RestoreLogMessage(LogLevel.Error, NuGetLogCode.NU1000, "Error") { ShouldDisplay = true });
+
+            // Assert
+            VerifyInnerLoggerCalls(innerLogger, LogLevel.Debug, "Debug", Times.Once());
+            VerifyInnerLoggerCalls(innerLogger, LogLevel.Verbose, "Verbose", Times.Once());
+            VerifyInnerLoggerCalls(innerLogger, LogLevel.Information, "Information", Times.Once());
+            VerifyInnerLoggerCalls(innerLogger, LogLevel.Warning, "Warning", Times.Never());
+            VerifyInnerLoggerCalls(innerLogger, LogLevel.Error, "Warning", Times.Never());
+            VerifyInnerLoggerCalls(innerLogger, LogLevel.Error, "Error", Times.Once());
+        }
+
+        [Fact]
+        public void CollectorLogger_DoesNotLogsWarningsForProjectWideNoWarnSetAndWarnAsErrorSet()
+        {
+            // Arrange
+            var noWarnSet = new HashSet<NuGetLogCode> { NuGetLogCode.NU1500 };
+            var warnAsErrorSet = new HashSet<NuGetLogCode> { NuGetLogCode.NU1500 };
+            var allWarningsAsErrors = false;
+            var innerLogger = new Mock<ILogger>();
+            var collector = new CollectorLogger(innerLogger.Object)
+            {
+                ProjectWideWarningProperties = new WarningProperties(warnAsErrorSet, noWarnSet, allWarningsAsErrors)
+            };
+
+            // Act
+            collector.Log(new RestoreLogMessage(LogLevel.Debug, "Debug") { ShouldDisplay = true });
+            collector.Log(new RestoreLogMessage(LogLevel.Verbose, "Verbose") { ShouldDisplay = true });
+            collector.Log(new RestoreLogMessage(LogLevel.Information, "Information") { ShouldDisplay = true });
+            collector.Log(new RestoreLogMessage(LogLevel.Warning, NuGetLogCode.NU1500, "Warning") { ShouldDisplay = true });
+            collector.Log(new RestoreLogMessage(LogLevel.Error, NuGetLogCode.NU1000, "Error") { ShouldDisplay = true });
+
+            // Assert
+            VerifyInnerLoggerCalls(innerLogger, LogLevel.Debug, "Debug", Times.Once());
+            VerifyInnerLoggerCalls(innerLogger, LogLevel.Verbose, "Verbose", Times.Once());
+            VerifyInnerLoggerCalls(innerLogger, LogLevel.Information, "Information", Times.Once());
+            VerifyInnerLoggerCalls(innerLogger, LogLevel.Warning, "Warning", Times.Never());
+            VerifyInnerLoggerCalls(innerLogger, LogLevel.Error, "Warning", Times.Never());
+            VerifyInnerLoggerCalls(innerLogger, LogLevel.Error, "Error", Times.Once());
+        }
+
+
+        private void VerifyInnerLoggerCalls(Mock<ILogger> innerLogger, LogLevel messageLevel, string message, Times times, NuGetLogCode code = NuGetLogCode.Undefined)
         {
             innerLogger.Verify(x => x.Log(It.Is<ILogMessage>(l => 
             l.Level == messageLevel && 
-            l.Message == message)), 
+            l.Message == message &&
+            (code == NuGetLogCode.Undefined || l.Code == code))), 
             times);
         }
     }
