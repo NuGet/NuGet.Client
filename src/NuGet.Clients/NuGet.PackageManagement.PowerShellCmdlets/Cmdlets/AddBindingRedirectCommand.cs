@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Management.Automation;
-using EnvDTE;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.VisualStudio;
@@ -45,12 +44,12 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 {
                     CheckSolutionState();
 
-                    var projects = new List<Project>();
+                    var projects = new List<IVsProjectAdapter>();
 
                     // if no project specified, use default
                     if (ProjectName == null)
                     {
-                        Project defaultProject = GetDefaultProject();
+                        var defaultProject = GetDefaultProject();
 
                         // if no default project (empty solution), throw terminating
                         if (defaultProject == null)
@@ -67,11 +66,11 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                     }
 
                     // Create a new app domain so we don't load the assemblies into the host app domain
-                    AppDomain domain = AppDomain.CreateDomain("domain");
+                    var domain = AppDomain.CreateDomain("domain");
 
                     try
                     {
-                        foreach (Project project in projects)
+                        foreach (var project in projects)
                         {
                             var projectAssembliesCache = new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
                             var redirects = await RuntimeHelpers.AddBindingRedirectsAsync(VsSolutionManager, project, domain, projectAssembliesCache, _frameworkMultiTargeting, this);

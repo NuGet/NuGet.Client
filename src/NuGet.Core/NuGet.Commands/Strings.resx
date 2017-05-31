@@ -581,4 +581,7 @@ For more information, visit http://docs.nuget.org/docs/reference/command-line-re
   <data name="Log_MissingPackagesOnDisk" xml:space="preserve">
     <value>Not all packages are on disk for: {0}</value>
   </data>
+  <data name="CannotBeUsedWithOtherValues" xml:space="preserve">
+    <value>'{0}' cannot be used in conjunction with other values.</value>
+  </data>
 </root>

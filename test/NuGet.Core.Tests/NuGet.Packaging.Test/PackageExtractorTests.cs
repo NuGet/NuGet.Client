@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -10,6 +10,8 @@ using System.IO.Compression;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Xml.Linq;
+using Moq;
 using NuGet.Common;
 using NuGet.Packaging.Core;
 using NuGet.Test.Utility;
@@ -21,7 +23,7 @@ namespace NuGet.Packaging.Test
     public class PackageExtractorTests
     {
         [Fact]
-        public async Task PackageExtractor_InstallFromSourceAsync_StressTest()
+        public async Task InstallFromSourceAsync_StressTest()
         {
             // Arrange
             using (var root = TestDirectory.Create())
@@ -58,15 +60,21 @@ namespace NuGet.Packaging.Test
 
                             sem.Wait();
 
-                            var installed = await PackageExtractor.InstallFromSourceAsync(
-                                packageStream.CopyToAsync,
-                                pathContext,
-                                CancellationToken.None);
+                            using (var packageDownloader = new LocalPackageArchiveDownloader(
+                                sourcePathResolver.GetPackageFilePath(identity.Id, identity.Version),
+                                identity,
+                                NullLogger.Instance))
+                            {
+                                var installed = await PackageExtractor.InstallFromSourceAsync(
+                                    packageDownloader,
+                                    pathContext,
+                                    CancellationToken.None);
 
-                            var exists = File.Exists(hashPath);
+                                var exists = File.Exists(hashPath);
 
-                            installedBag.Add(installed);
-                            hashBag.Add(exists);
+                                installedBag.Add(installed);
+                                hashBag.Add(exists);
+                            }
                         }
                     });
 
@@ -86,7 +94,7 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public async Task PackageExtractor_InstallFromSourceAsync_ReturnsFalseWhenAlreadyInstalled()
+        public async Task InstallFromSourceAsync_ReturnsFalseWhenAlreadyInstalled()
         {
             // Arrange
             using (var root = TestDirectory.Create())
@@ -105,11 +113,14 @@ namespace NuGet.Packaging.Test
                 var packagesPath = Path.Combine(root, "packages");
                 await SimpleTestPackageUtility.CreateFolderFeedV3(packagesPath, identity);
 
-                using (var packageStream = File.OpenRead(packageFileInfo.FullName))
+                using (var packageDownloader = new LocalPackageArchiveDownloader(
+                    packageFileInfo.FullName,
+                    identity,
+                    NullLogger.Instance))
                 {
                     // Act
                     var installed = await PackageExtractor.InstallFromSourceAsync(
-                        packageStream.CopyToAsync,
+                        packageDownloader,
                         new VersionFolderPathContext(
                             identity,
                             packagesPath,
@@ -125,7 +136,7 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public async Task PackageExtractor_InstallFromSourceAsync_ReturnsTrueAfterNewInstall()
+        public async Task InstallFromSourceAsync_ReturnsTrueAfterNewInstall()
         {
             // Arrange
             using (var root = TestDirectory.Create())
@@ -143,11 +154,14 @@ namespace NuGet.Packaging.Test
 
                 var packagesPath = Path.Combine(root, "packages");
 
-                using (var packageStream = File.OpenRead(packageFileInfo.FullName))
+                using (var packageDownloader = new LocalPackageArchiveDownloader(
+                    packageFileInfo.FullName,
+                    identity,
+                    NullLogger.Instance))
                 {
                     // Act
                     var installed = await PackageExtractor.InstallFromSourceAsync(
-                        packageStream.CopyToAsync,
+                        packageDownloader,
                         new VersionFolderPathContext(
                             identity,
                             packagesPath,
@@ -165,7 +179,7 @@ namespace NuGet.Packaging.Test
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
-        public async Task PackageExtractor_WithLowercaseSpecified_ExtractsToSpecifiedCase(bool isLowercase)
+        public async Task InstallFromSourceAsync_WithLowercaseSpecified_ExtractsToSpecifiedCase(bool isLowercase)
         {
             // Arrange
             using (var root = TestDirectory.Create())
@@ -184,18 +198,21 @@ namespace NuGet.Packaging.Test
                 var packagesPath = Path.Combine(root, "packages");
                 var resolver = new VersionFolderPathResolver(packagesPath, isLowercase);
 
-                using (var packageStream = File.OpenRead(packageFileInfo.FullName))
+                using (var packageDownloader = new LocalPackageArchiveDownloader(
+                    packageFileInfo.FullName,
+                    identity,
+                    NullLogger.Instance))
                 {
                     // Act
                     await PackageExtractor.InstallFromSourceAsync(
-                        packageStream.CopyToAsync,
+                        packageDownloader,
                         new VersionFolderPathContext(
                             identity,
                             packagesPath,
                             isLowercase,
-                            new TestLogger(),
-                            packageSaveMode: PackageSaveMode.Nupkg,
-                            xmlDocFileSaveMode: XmlDocFileSaveMode.None),
+                            NullLogger.Instance,
+                            PackageSaveMode.Nupkg,
+                            XmlDocFileSaveMode.None),
                         CancellationToken.None);
 
                     // Assert
@@ -205,7 +222,7 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public async Task PackageExtractor_NuspecWithDifferentName_InstallForV3()
+        public async Task InstallFromSourceAsync_NuspecWithDifferentName_InstallsForV3()
         {
             // Arrange
             using (var root = TestDirectory.Create())
@@ -237,13 +254,18 @@ namespace NuGet.Packaging.Test
                     nuspecEntry.Delete();
                 }
 
-                using (var packageStream = File.OpenRead(packageFile))
+                var packageIdentity = new PackageIdentity("a", NuGetVersion.Parse("1.0.0"));
+
+                using (var packageDownloader = new LocalPackageArchiveDownloader(
+                    packageFile,
+                    packageIdentity,
+                    NullLogger.Instance))
                 {
                     // Act
                     await PackageExtractor.InstallFromSourceAsync(
-                        packageStream.CopyToAsync,
+                        packageDownloader,
                         new VersionFolderPathContext(
-                            new PackageIdentity("a", NuGetVersion.Parse("1.0.0")),
+                            packageIdentity,
                             root,
                             NullLogger.Instance,
                             packageSaveMode: PackageSaveMode.Defaultv3,
@@ -258,7 +280,7 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public async Task PackageExtractor_NupkgWithDifferentName_InstallForV3()
+        public async Task InstallFromSourceAsync_NupkgWithDifferentName_InstallsForV3()
         {
             // Arrange
             using (var root = TestDirectory.Create())
@@ -275,14 +297,18 @@ namespace NuGet.Packaging.Test
                 SimpleTestPackageUtility.CreatePackages(root, packageA);
 
                 var packageFile = Path.Combine(root, "a.1.0.0.nupkg");
+                var packageIdentity = new PackageIdentity("a", NuGetVersion.Parse("1.0.0"));
 
-                using (var packageStream = File.OpenRead(packageFile))
+                using (var packageDownloader = new LocalPackageArchiveDownloader(
+                    packageFile,
+                    packageIdentity,
+                    NullLogger.Instance))
                 {
                     // Act
                     await PackageExtractor.InstallFromSourceAsync(
-                        packageStream.CopyToAsync,
+                        packageDownloader,
                         new VersionFolderPathContext(
-                            new PackageIdentity("a", NuGetVersion.Parse("1.0.0")),
+                            packageIdentity,
                             root,
                             NullLogger.Instance,
                             packageSaveMode: PackageSaveMode.Defaultv3,
@@ -297,7 +323,7 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public async Task PackageExtractor_WithContentXmlFile()
+        public async Task ExtractPackageAsync_WithContentXmlFile()
         {
             // Arrange
             using (var packageStream = TestPackagesCore.GetTestPackageWithContentXmlFile())
@@ -323,7 +349,7 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public async Task PackageExtractor_DuplicateNupkg()
+        public async Task ExtractPackageAsync_DuplicateNupkg()
         {
             using (var packageFile = TestPackagesCore.GetLegacyTestPackage())
             {
@@ -354,7 +380,7 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public async Task PackageExtractor_NupkgContent()
+        public async Task ExtractPackageAsync_NupkgContent()
         {
             // Arrange
             using (var root = TestDirectory.Create())
@@ -390,7 +416,7 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public async Task PackageExtractor_PackageSaveModeNupkg_FolderReader()
+        public async Task ExtractPackageAsync_PackageSaveModeNupkg_FolderReader()
         {
             // Arrange
             using (var packageFile = TestPackagesCore.GetLegacyTestPackage())
@@ -421,7 +447,7 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public async Task PackageExtractor_PackageSaveModeNuspec_FolderReader()
+        public async Task ExtractPackageAsync_PackageSaveModeNuspec_FolderReader()
         {
             // Arrange
             using (var packageFile = TestPackagesCore.GetLegacyTestPackage())
@@ -452,7 +478,7 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public async Task PackageExtractor_PackageSaveModeNuspecAndNupkg_PackageStream()
+        public async Task ExtractPackageAsync_PackageSaveModeNuspecAndNupkg_PackageStream()
         {
             // Arrange
             using (var packageFile = TestPackagesCore.GetLegacyTestPackage())
@@ -483,7 +509,7 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public async Task PackageExtractor_DefaultPackageExtractionContext()
+        public async Task ExtractPackageAsync_DefaultPackageExtractionContext()
         {
             // Arrange
             using (var root = TestDirectory.Create())
@@ -522,7 +548,7 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public async Task PackageExtractor_ExtractsXmlFiles_IfXmlSaveModeIsSetToNone()
+        public async Task ExtractPackageAsync_ExtractsXmlFiles_IfXmlSaveModeIsSetToNone()
         {
             // Arrange
             using (var root = TestDirectory.Create())
@@ -562,7 +588,7 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public async Task PackageExtractor_CompressesXmlFiles_IfXmlSaveModeIsSetToCompress()
+        public async Task ExtractPackageAsync_CompressesXmlFiles_IfXmlSaveModeIsSetToCompress()
         {
             // Arrange
             using (var root = TestDirectory.Create())
@@ -612,7 +638,7 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public async Task PackageExtractor_CompressesXmlFilesForLanguageSpecificDirectories()
+        public async Task ExtractPackageAsync_CompressesXmlFilesForLanguageSpecificDirectories()
         {
             // Arrange
             using (var root = TestDirectory.Create())
@@ -656,7 +682,7 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public async Task PackageExtractor_SkipsXmlFiles_IfXmlSaveModeIsSetToSkip()
+        public async Task ExtractPackageAsync_SkipsXmlFiles_IfXmlSaveModeIsSetToSkip()
         {
             // Arrange
             using (var root = TestDirectory.Create())
@@ -697,7 +723,7 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public async Task PackageExtractor_SkipsXmlFiles_ForLanguageSpecificDirectories()
+        public async Task ExtractPackageAsync_SkipsXmlFiles_ForLanguageSpecificDirectories()
         {
             // Arrange
             using (var root = TestDirectory.Create())
@@ -745,7 +771,7 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public async Task PackageExtractor_SkipsSatelliteXmlFiles()
+        public async Task ExtractPackageAsync_SkipsSatelliteXmlFiles()
         {
             // Arrange
             using (var root = TestDirectory.Create())
@@ -803,7 +829,7 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public async Task PackageExtractor_WithXmlModeCompress_DoesNotThrowIfPackageAlreadyContainsAXmlZipFile()
+        public async Task ExtractPackageAsync_WithXmlModeCompress_DoesNotThrowIfPackageAlreadyContainsAXmlZipFile()
         {
             // Arrange
             using (var root = TestDirectory.Create())
@@ -844,7 +870,7 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public async Task PackageExtractor_WithXmlModeSkip_DoesNotSkipXmlZipFile()
+        public async Task ExtractPackageAsync_WithXmlModeSkip_DoesNotSkipXmlZipFile()
         {
             // Arrange
             using (var root = TestDirectory.Create())
@@ -883,7 +909,7 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public async Task PackageExtractor_WithoutPackageSaveModeFile_DoesNotExtractFiles()
+        public async Task ExtractPackageAsync_WithoutPackageSaveModeFile_DoesNotExtractFiles()
         {
             // Arrange
             using (var root = TestDirectory.Create())
@@ -923,7 +949,7 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public async Task PackageExtractor_WithoutPackageSaveModeNuspec_DoesNotExtractNuspec()
+        public async Task ExtractPackageAsync_WithoutPackageSaveModeNuspec_DoesNotExtractNuspec()
         {
             // Arrange
             using (var root = TestDirectory.Create())
@@ -963,7 +989,7 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public async Task PackageExtractor_WithPackageSaveModeNuspec_ExtractsInnerNuspec()
+        public async Task ExtractPackageAsync_WithPackageSaveModeNuspec_ExtractsInnerNuspec()
         {
             // Arrange
             using (var root = TestDirectory.Create())
@@ -1003,7 +1029,7 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public async Task PackageExtractor_WithoutPackageSaveModeNuspec_ExtractsInnerNuspec()
+        public async Task ExtractPackageAsync_WithoutPackageSaveModeNuspec_ExtractsInnerNuspec()
         {
             // Arrange
             using (var root = TestDirectory.Create())
@@ -1043,7 +1069,7 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public async Task PackageExtractor_WithoutPackageSaveModeNupkg_DoesNotExtractNupkg()
+        public async Task ExtractPackageAsync_WithoutPackageSaveModeNupkg_DoesNotExtractNupkg()
         {
             // Arrange
             using (var root = TestDirectory.Create())
@@ -1083,116 +1109,7 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public async Task InstallFromSourceAsync_WithoutPackageSaveModeNuspec_DoesNotExtractNuspec()
-        {
-            // Arrange
-            using (var root = TestDirectory.Create())
-            {
-                var resolver = new VersionFolderPathResolver(root);
-                var identity = new PackageIdentity("A", new NuGetVersion("2.0.3"));
-                var packageFileInfo = await TestPackagesCore.GeneratePackageAsync(
-                   root,
-                   identity.Id,
-                   identity.Version.ToString(),
-                   DateTimeOffset.UtcNow.LocalDateTime,
-                   "lib/net45/A.dll");
-
-                using (var packageStream = File.OpenRead(packageFileInfo.FullName))
-                {
-                    // Act
-                    await PackageExtractor.InstallFromSourceAsync(
-                        packageStream.CopyToAsync,
-                        new VersionFolderPathContext(
-                            identity,
-                            root,
-                            NullLogger.Instance,
-                            packageSaveMode: PackageSaveMode.Nupkg | PackageSaveMode.Files,
-                            xmlDocFileSaveMode: XmlDocFileSaveMode.None),
-                        CancellationToken.None);
-
-                    // Assert
-                    Assert.True(File.Exists(resolver.GetPackageFilePath(identity.Id, identity.Version)), "The .nupkg should exist.");
-                    Assert.False(File.Exists(resolver.GetManifestFilePath(identity.Id, identity.Version)), "The .nuspec should not exist.");
-                    Assert.True(File.Exists(Path.Combine(resolver.GetInstallPath(identity.Id, identity.Version), "lib", "net45", "A.dll")), "The asset should exist.");
-                }
-            }
-        }
-
-        [Fact]
-        public async Task InstallFromSourceAsync_WithoutPackageSaveModeNupkg_DoesNotExtractNupkg()
-        {
-            // Arrange
-            using (var root = TestDirectory.Create())
-            {
-                var resolver = new VersionFolderPathResolver(root);
-                var identity = new PackageIdentity("A", new NuGetVersion("2.0.3"));
-                var packageFileInfo = await TestPackagesCore.GeneratePackageAsync(
-                   root,
-                   identity.Id,
-                   identity.Version.ToString(),
-                   DateTimeOffset.UtcNow.LocalDateTime,
-                   "lib/net45/A.dll");
-
-                using (var packageStream = File.OpenRead(packageFileInfo.FullName))
-                {
-                    // Act
-                    await PackageExtractor.InstallFromSourceAsync(
-                        packageStream.CopyToAsync,
-                        new VersionFolderPathContext(
-                            identity,
-                            root,
-                            NullLogger.Instance,
-                            packageSaveMode: PackageSaveMode.Nuspec | PackageSaveMode.Files,
-                            xmlDocFileSaveMode: XmlDocFileSaveMode.None),
-                        CancellationToken.None);
-
-                    // Assert
-                    Assert.False(File.Exists(resolver.GetPackageFilePath(identity.Id, identity.Version)), "The .nupkg should not exist.");
-                    Assert.True(File.Exists(resolver.GetManifestFilePath(identity.Id, identity.Version)), "The .nuspec should exist.");
-                    Assert.True(File.Exists(Path.Combine(resolver.GetInstallPath(identity.Id, identity.Version), "lib", "net45", "A.dll")), "The asset should exist.");
-
-                }
-            }
-        }
-
-        [Fact]
-        public async Task InstallFromSourceAsync_WithoutPackageSaveModeFiles_DoesNotExtractFiles()
-        {
-            // Arrange
-            using (var root = TestDirectory.Create())
-            {
-                var resolver = new VersionFolderPathResolver(root);
-                var identity = new PackageIdentity("A", new NuGetVersion("2.0.3"));
-                var packageFileInfo = await TestPackagesCore.GeneratePackageAsync(
-                   root,
-                   identity.Id,
-                   identity.Version.ToString(),
-                   DateTimeOffset.UtcNow.LocalDateTime,
-                   "lib/net45/A.dll");
-
-                using (var packageStream = File.OpenRead(packageFileInfo.FullName))
-                {
-                    // Act
-                    await PackageExtractor.InstallFromSourceAsync(
-                        packageStream.CopyToAsync,
-                        new VersionFolderPathContext(
-                            identity,
-                            root,
-                            NullLogger.Instance,
-                            packageSaveMode: PackageSaveMode.Nupkg | PackageSaveMode.Nuspec,
-                            xmlDocFileSaveMode: XmlDocFileSaveMode.None),
-                        CancellationToken.None);
-
-                    // Assert
-                    Assert.True(File.Exists(resolver.GetPackageFilePath(identity.Id, identity.Version)), "The .nupkg should exist.");
-                    Assert.True(File.Exists(resolver.GetManifestFilePath(identity.Id, identity.Version)), "The .nuspec should exist.");
-                    Assert.False(File.Exists(Path.Combine(resolver.GetInstallPath(identity.Id, identity.Version), "lib", "net45", "A.dll")), "The asset should not exist.");
-                }
-            }
-        }
-
-        [Fact]
-        public async Task PackageExtractor_PreservesZipEntryTime()
+        public async Task ExtractPackageAsync_PreservesZipEntryTime()
         {
             // Arrange
             using (var root = TestDirectory.Create())
@@ -1235,7 +1152,7 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public async Task PackageExtractor_IgnoresFutureZipEntryTime()
+        public async Task ExtractPackageAsync_IgnoresFutureZipEntryTime()
         {
             // Arrange
             using (var root = TestDirectory.Create())
@@ -1281,7 +1198,7 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public async Task PackageExtractor_SetsFilePermissions()
+        public async Task ExtractPackageAsync_SetsFilePermissions()
         {
             if (RuntimeEnvironmentHelper.IsWindows)
             {
@@ -1319,6 +1236,612 @@ namespace NuGet.Packaging.Test
                     Assert.Equal("766", StatPermissions(outputDll));
                 }
             }
+        }
+
+        [Fact]
+        public async Task ExtractPackageAsync_WithoutPackageStream_ThrowsForNullPackageReader()
+        {
+            using (var test = new ExtractPackageAsyncTest())
+            {
+                var exception = await Assert.ThrowsAsync<ArgumentNullException>(
+                    () => PackageExtractor.ExtractPackageAsync(
+                        packageReader: null,
+                        packagePathResolver: test.Resolver,
+                        packageExtractionContext: test.Context,
+                        token: CancellationToken.None));
+
+                Assert.Equal("packageReader", exception.ParamName);
+            }
+        }
+
+        [Fact]
+        public async Task ExtractPackageAsync_WithoutPackageStream_ThrowsForNullPackagePathResolver()
+        {
+            using (var test = new ExtractPackageAsyncTest())
+            {
+                var exception = await Assert.ThrowsAsync<ArgumentNullException>(
+                    () => PackageExtractor.ExtractPackageAsync(
+                        test.Reader,
+                        packagePathResolver: null,
+                        packageExtractionContext: test.Context,
+                        token: CancellationToken.None));
+
+                Assert.Equal("packagePathResolver", exception.ParamName);
+            }
+        }
+
+        [Fact]
+        public async Task ExtractPackageAsync_WithoutPackageStream_ThrowsForNullPackageExtractionContext()
+        {
+            using (var test = new ExtractPackageAsyncTest())
+            {
+                var exception = await Assert.ThrowsAsync<ArgumentNullException>(
+                    () => PackageExtractor.ExtractPackageAsync(
+                        test.Reader,
+                        test.Resolver,
+                        packageExtractionContext: null,
+                        token: CancellationToken.None));
+
+                Assert.Equal("packageExtractionContext", exception.ParamName);
+            }
+        }
+
+        [Fact]
+        public async Task ExtractPackageAsync_WithoutPackageStream_ThrowsIfCancelled()
+        {
+            using (var test = new ExtractPackageAsyncTest())
+            {
+                await Assert.ThrowsAsync<OperationCanceledException>(
+                    () => PackageExtractor.ExtractPackageAsync(
+                        test.Reader,
+                        test.Resolver,
+                        test.Context,
+                        new CancellationToken(canceled: true)));
+            }
+        }
+
+        [Fact]
+        public async Task ExtractPackageAsync_WithoutPackageStream_PackageSaveModeNone()
+        {
+            using (var test = new ExtractPackageAsyncTest())
+            {
+                test.Context.PackageSaveMode = PackageSaveMode.None;
+
+                var files = await PackageExtractor.ExtractPackageAsync(
+                    test.Reader,
+                    test.Resolver,
+                    test.Context,
+                    CancellationToken.None);
+
+                var packageId = test.PackageIdentity.Id;
+                var packageVersion = test.PackageIdentity.Version.ToNormalizedString();
+                var packageDirectoryPath = Path.Combine(
+                    test.DestinationDirectory.FullName,
+                    $"{packageId}.{packageVersion}");
+                var nupkgFilePath = Path.Combine(
+                    packageDirectoryPath,
+                    $"{packageId}.{packageVersion}{PackagingCoreConstants.NupkgExtension}");
+                var nuspecFilePath = Path.Combine(packageDirectoryPath, $"{packageId}{PackagingCoreConstants.NuspecExtension}");
+                var libFilePath = Path.Combine(packageDirectoryPath, "lib", "net45", $"{packageId}.dll");
+
+                var comparer = PathUtility.GetStringComparerBasedOnOS();
+
+                Assert.DoesNotContain(nupkgFilePath, files, comparer);
+                Assert.DoesNotContain(nuspecFilePath, files, comparer);
+                Assert.DoesNotContain(libFilePath, files, comparer);
+                Assert.False(File.Exists(nupkgFilePath));
+                Assert.False(File.Exists(nuspecFilePath));
+                Assert.False(File.Exists(libFilePath));
+            }
+        }
+
+        [Fact]
+        public async Task ExtractPackageAsync_WithoutPackageStream_PackageSaveModeFiles()
+        {
+            using (var test = new ExtractPackageAsyncTest())
+            {
+                test.Context.PackageSaveMode = PackageSaveMode.Files;
+
+                var files = await PackageExtractor.ExtractPackageAsync(
+                    test.Reader,
+                    test.Resolver,
+                    test.Context,
+                    CancellationToken.None);
+
+                var packageId = test.PackageIdentity.Id;
+                var packageVersion = test.PackageIdentity.Version.ToNormalizedString();
+                var packageDirectoryPath = Path.Combine(
+                    test.DestinationDirectory.FullName,
+                    $"{packageId}.{packageVersion}");
+                var nupkgFilePath = Path.Combine(
+                    packageDirectoryPath,
+                    $"{packageId}.{packageVersion}{PackagingCoreConstants.NupkgExtension}");
+                var nuspecFilePath = Path.Combine(packageDirectoryPath, $"{packageId}{PackagingCoreConstants.NuspecExtension}");
+                var libFilePath = Path.Combine(packageDirectoryPath, "lib", "net45", $"{packageId}.dll");
+
+                var comparer = PathUtility.GetStringComparerBasedOnOS();
+
+                Assert.DoesNotContain(nupkgFilePath, files, comparer);
+                Assert.DoesNotContain(nuspecFilePath, files, comparer);
+                Assert.Contains(libFilePath, files, comparer);
+                Assert.False(File.Exists(nupkgFilePath));
+                Assert.False(File.Exists(nuspecFilePath));
+                Assert.True(File.Exists(libFilePath));
+            }
+        }
+
+        [Fact]
+        public async Task ExtractPackageAsync_WithoutPackageStream_PackageSaveModeNuspec()
+        {
+            using (var test = new ExtractPackageAsyncTest())
+            {
+                test.Context.PackageSaveMode = PackageSaveMode.Nuspec;
+
+                var files = await PackageExtractor.ExtractPackageAsync(
+                    test.Reader,
+                    test.Resolver,
+                    test.Context,
+                    CancellationToken.None);
+
+                var packageId = test.PackageIdentity.Id;
+                var packageVersion = test.PackageIdentity.Version.ToNormalizedString();
+                var packageDirectoryPath = Path.Combine(
+                    test.DestinationDirectory.FullName,
+                    $"{packageId}.{packageVersion}");
+                var nupkgFilePath = Path.Combine(
+                    packageDirectoryPath,
+                    $"{packageId}.{packageVersion}{PackagingCoreConstants.NupkgExtension}");
+                var nuspecFilePath = Path.Combine(packageDirectoryPath, $"{packageId}{PackagingCoreConstants.NuspecExtension}");
+                var libFilePath = Path.Combine(packageDirectoryPath, "lib", "net45", $"{packageId}.dll");
+
+                var comparer = PathUtility.GetStringComparerBasedOnOS();
+
+                Assert.DoesNotContain(nupkgFilePath, files, comparer);
+                Assert.Contains(nuspecFilePath, files, comparer);
+                Assert.DoesNotContain(libFilePath, files, comparer);
+                Assert.False(File.Exists(nupkgFilePath));
+                Assert.True(File.Exists(nuspecFilePath));
+                Assert.False(File.Exists(libFilePath));
+            }
+        }
+
+        [Fact]
+        public async Task ExtractPackageAsync_WithoutPackageStream_PackageSaveModeNupkg()
+        {
+            using (var test = new ExtractPackageAsyncTest())
+            {
+                test.Context.PackageSaveMode = PackageSaveMode.Nupkg;
+
+                var files = await PackageExtractor.ExtractPackageAsync(
+                    test.Reader,
+                    test.Resolver,
+                    test.Context,
+                    CancellationToken.None);
+
+                var packageId = test.PackageIdentity.Id;
+                var packageVersion = test.PackageIdentity.Version.ToNormalizedString();
+                var packageDirectoryPath = Path.Combine(
+                    test.DestinationDirectory.FullName,
+                    $"{packageId}.{packageVersion}");
+                var nupkgFilePath = Path.Combine(
+                    packageDirectoryPath,
+                    $"{packageId}.{packageVersion}{PackagingCoreConstants.NupkgExtension}");
+                var nuspecFilePath = Path.Combine(packageDirectoryPath, $"{packageId}{PackagingCoreConstants.NuspecExtension}");
+                var libFilePath = Path.Combine(packageDirectoryPath, "lib", "net45", $"{packageId}.dll");
+
+                var comparer = PathUtility.GetStringComparerBasedOnOS();
+
+                Assert.Contains(nupkgFilePath, files, comparer);
+                Assert.DoesNotContain(nuspecFilePath, files, comparer);
+                Assert.DoesNotContain(libFilePath, files, comparer);
+                Assert.True(File.Exists(nupkgFilePath));
+                Assert.False(File.Exists(nuspecFilePath));
+                Assert.False(File.Exists(libFilePath));
+            }
+        }
+
+        [Fact]
+        public async Task ExtractPackageAsync_WithoutPackageStream_PackageSaveModeDefaultV2()
+        {
+            using (var test = new ExtractPackageAsyncTest())
+            {
+                test.Context.PackageSaveMode = PackageSaveMode.Defaultv2;
+
+                var files = await PackageExtractor.ExtractPackageAsync(
+                    test.Reader,
+                    test.Resolver,
+                    test.Context,
+                    CancellationToken.None);
+
+                var packageId = test.PackageIdentity.Id;
+                var packageVersion = test.PackageIdentity.Version.ToNormalizedString();
+                var packageDirectoryPath = Path.Combine(
+                    test.DestinationDirectory.FullName,
+                    $"{packageId}.{packageVersion}");
+                var nupkgFilePath = Path.Combine(
+                    packageDirectoryPath,
+                    $"{packageId}.{packageVersion}{PackagingCoreConstants.NupkgExtension}");
+                var nuspecFilePath = Path.Combine(packageDirectoryPath, $"{packageId}{PackagingCoreConstants.NuspecExtension}");
+                var libFilePath = Path.Combine(packageDirectoryPath, "lib", "net45", $"{packageId}.dll");
+
+                var comparer = PathUtility.GetStringComparerBasedOnOS();
+
+                Assert.Contains(nupkgFilePath, files, comparer);
+                Assert.DoesNotContain(nuspecFilePath, files, comparer);
+                Assert.Contains(libFilePath, files, comparer);
+                Assert.True(File.Exists(nupkgFilePath));
+                Assert.False(File.Exists(nuspecFilePath));
+                Assert.True(File.Exists(libFilePath));
+            }
+        }
+
+        [Fact]
+        public async Task ExtractPackageAsync_WithoutPackageStream_PackageSaveModeDefaultV3()
+        {
+            using (var test = new ExtractPackageAsyncTest())
+            {
+                test.Context.PackageSaveMode = PackageSaveMode.Defaultv3;
+
+                var files = await PackageExtractor.ExtractPackageAsync(
+                    test.Reader,
+                    test.Resolver,
+                    test.Context,
+                    CancellationToken.None);
+
+                var packageId = test.PackageIdentity.Id;
+                var packageVersion = test.PackageIdentity.Version.ToNormalizedString();
+                var packageDirectoryPath = Path.Combine(
+                    test.DestinationDirectory.FullName,
+                    $"{packageId}.{packageVersion}");
+                var nupkgFilePath = Path.Combine(
+                    packageDirectoryPath,
+                    $"{packageId}.{packageVersion}{PackagingCoreConstants.NupkgExtension}");
+                var nuspecFilePath = Path.Combine(packageDirectoryPath, $"{packageId}{PackagingCoreConstants.NuspecExtension}");
+                var libFilePath = Path.Combine(packageDirectoryPath, "lib", "net45", $"{packageId}.dll");
+
+                var comparer = PathUtility.GetStringComparerBasedOnOS();
+
+                Assert.Contains(nupkgFilePath, files, comparer);
+                Assert.Contains(nuspecFilePath, files, comparer);
+                Assert.Contains(libFilePath, files, comparer);
+                Assert.True(File.Exists(nupkgFilePath));
+                Assert.True(File.Exists(nuspecFilePath));
+                Assert.True(File.Exists(libFilePath));
+            }
+        }
+
+        [Fact]
+        public async Task ExtractPackageAsync_WithoutPackageStream_XmlDocFileSaveModeNone()
+        {
+            using (var test = new ExtractPackageAsyncTest())
+            {
+                test.Context.PackageSaveMode = PackageSaveMode.Files;
+                test.Context.XmlDocFileSaveMode = XmlDocFileSaveMode.None;
+
+                var files = await PackageExtractor.ExtractPackageAsync(
+                    test.Reader,
+                    test.Resolver,
+                    test.Context,
+                    CancellationToken.None);
+
+                var packageId = test.PackageIdentity.Id;
+                var packageVersion = test.PackageIdentity.Version.ToNormalizedString();
+                var packageDirectoryPath = Path.Combine(
+                    test.DestinationDirectory.FullName,
+                    $"{packageId}.{packageVersion}");
+                var xmlFilePath = Path.Combine(packageDirectoryPath, "lib", "net45", $"{packageId}.xml");
+
+                var comparer = PathUtility.GetStringComparerBasedOnOS();
+
+                Assert.Contains(xmlFilePath, files, comparer);
+                Assert.True(File.Exists(xmlFilePath));
+            }
+        }
+
+        [Fact]
+        public async Task ExtractPackageAsync_WithoutPackageStream_XmlDocFileSaveModeSkip()
+        {
+            using (var test = new ExtractPackageAsyncTest())
+            {
+                test.Context.PackageSaveMode = PackageSaveMode.Files;
+                test.Context.XmlDocFileSaveMode = XmlDocFileSaveMode.Skip;
+
+                var files = await PackageExtractor.ExtractPackageAsync(
+                    test.Reader,
+                    test.Resolver,
+                    test.Context,
+                    CancellationToken.None);
+
+                var packageId = test.PackageIdentity.Id;
+                var packageVersion = test.PackageIdentity.Version.ToNormalizedString();
+                var packageDirectoryPath = Path.Combine(
+                    test.DestinationDirectory.FullName,
+                    $"{packageId}.{packageVersion}");
+                var xmlFilePath = Path.Combine(packageDirectoryPath, "lib", "net45", $"{packageId}.xml");
+
+                var comparer = PathUtility.GetStringComparerBasedOnOS();
+
+                Assert.DoesNotContain(xmlFilePath, files, comparer);
+                Assert.False(File.Exists(xmlFilePath));
+            }
+        }
+
+        [Fact]
+        public async Task ExtractPackageAsync_WithoutPackageStream_XmlDocFileSaveModeCompress()
+        {
+            using (var test = new ExtractPackageAsyncTest())
+            {
+                test.Context.PackageSaveMode = PackageSaveMode.Files;
+                test.Context.XmlDocFileSaveMode = XmlDocFileSaveMode.Compress;
+
+                var files = await PackageExtractor.ExtractPackageAsync(
+                    test.Reader,
+                    test.Resolver,
+                    test.Context,
+                    CancellationToken.None);
+
+                var packageId = test.PackageIdentity.Id;
+                var packageVersion = test.PackageIdentity.Version.ToNormalizedString();
+                var packageDirectoryPath = Path.Combine(
+                    test.DestinationDirectory.FullName,
+                    $"{packageId}.{packageVersion}");
+                var xmlZipFilePath = Path.Combine(packageDirectoryPath, "lib", "net45", $"{packageId}.xml.zip");
+
+                var comparer = PathUtility.GetStringComparerBasedOnOS();
+
+                Assert.Contains(xmlZipFilePath, files, comparer);
+                Assert.True(File.Exists(xmlZipFilePath));
+            }
+        }
+
+        [Fact]
+        public async Task InstallFromSourceAsync_WithoutPackageSaveModeNuspec_DoesNotExtractNuspec()
+        {
+            // Arrange
+            using (var root = TestDirectory.Create())
+            {
+                var resolver = new VersionFolderPathResolver(root);
+                var identity = new PackageIdentity("A", new NuGetVersion("2.0.3"));
+                var packageFileInfo = await TestPackagesCore.GeneratePackageAsync(
+                   root,
+                   identity.Id,
+                   identity.Version.ToString(),
+                   DateTimeOffset.UtcNow.LocalDateTime,
+                   "lib/net45/A.dll");
+
+                using (var packageDownloader = new LocalPackageArchiveDownloader(
+                    packageFileInfo.FullName,
+                    identity,
+                    NullLogger.Instance))
+                {
+                    // Act
+                    await PackageExtractor.InstallFromSourceAsync(
+                        packageDownloader,
+                        new VersionFolderPathContext(
+                            identity,
+                            root,
+                            NullLogger.Instance,
+                            packageSaveMode: PackageSaveMode.Nupkg | PackageSaveMode.Files,
+                            xmlDocFileSaveMode: XmlDocFileSaveMode.None),
+                        CancellationToken.None);
+
+                    // Assert
+                    Assert.True(File.Exists(resolver.GetPackageFilePath(identity.Id, identity.Version)), "The .nupkg should exist.");
+                    Assert.False(File.Exists(resolver.GetManifestFilePath(identity.Id, identity.Version)), "The .nuspec should not exist.");
+                    Assert.True(File.Exists(Path.Combine(resolver.GetInstallPath(identity.Id, identity.Version), "lib", "net45", "A.dll")), "The asset should exist.");
+                }
+            }
+        }
+
+        [Fact]
+        public async Task InstallFromSourceAsync_WithoutPackageSaveModeNupkg_DoesNotExtractNupkg()
+        {
+            // Arrange
+            using (var root = TestDirectory.Create())
+            {
+                var resolver = new VersionFolderPathResolver(root);
+                var identity = new PackageIdentity("A", new NuGetVersion("2.0.3"));
+                var packageFileInfo = await TestPackagesCore.GeneratePackageAsync(
+                   root,
+                   identity.Id,
+                   identity.Version.ToString(),
+                   DateTimeOffset.UtcNow.LocalDateTime,
+                   "lib/net45/A.dll");
+
+                using (var packageDownloader = new LocalPackageArchiveDownloader(
+                    packageFileInfo.FullName,
+                    identity,
+                    NullLogger.Instance))
+                {
+                    // Act
+                    await PackageExtractor.InstallFromSourceAsync(
+                        packageDownloader,
+                        new VersionFolderPathContext(
+                            identity,
+                            root,
+                            NullLogger.Instance,
+                            packageSaveMode: PackageSaveMode.Nuspec | PackageSaveMode.Files,
+                            xmlDocFileSaveMode: XmlDocFileSaveMode.None),
+                        CancellationToken.None);
+
+                    // Assert
+                    Assert.False(File.Exists(resolver.GetPackageFilePath(identity.Id, identity.Version)), "The .nupkg should not exist.");
+                    Assert.True(File.Exists(resolver.GetManifestFilePath(identity.Id, identity.Version)), "The .nuspec should exist.");
+                    Assert.True(File.Exists(Path.Combine(resolver.GetInstallPath(identity.Id, identity.Version), "lib", "net45", "A.dll")), "The asset should exist.");
+
+                }
+            }
+        }
+
+        [Fact]
+        public async Task InstallFromSourceAsync_WithoutPackageSaveModeFiles_DoesNotExtractFiles()
+        {
+            // Arrange
+            using (var root = TestDirectory.Create())
+            {
+                var resolver = new VersionFolderPathResolver(root);
+                var identity = new PackageIdentity("A", new NuGetVersion("2.0.3"));
+                var packageFileInfo = await TestPackagesCore.GeneratePackageAsync(
+                   root,
+                   identity.Id,
+                   identity.Version.ToString(),
+                   DateTimeOffset.UtcNow.LocalDateTime,
+                   "lib/net45/A.dll");
+
+                using (var packageDownloader = new LocalPackageArchiveDownloader(
+                    packageFileInfo.FullName,
+                    identity,
+                    NullLogger.Instance))
+                {
+                    // Act
+                    await PackageExtractor.InstallFromSourceAsync(
+                        packageDownloader,
+                        new VersionFolderPathContext(
+                            identity,
+                            root,
+                            NullLogger.Instance,
+                            packageSaveMode: PackageSaveMode.Nupkg | PackageSaveMode.Nuspec,
+                            xmlDocFileSaveMode: XmlDocFileSaveMode.None),
+                        CancellationToken.None);
+
+                    // Assert
+                    Assert.True(File.Exists(resolver.GetPackageFilePath(identity.Id, identity.Version)), "The .nupkg should exist.");
+                    Assert.True(File.Exists(resolver.GetManifestFilePath(identity.Id, identity.Version)), "The .nuspec should exist.");
+                    Assert.False(File.Exists(Path.Combine(resolver.GetInstallPath(identity.Id, identity.Version), "lib", "net45", "A.dll")), "The asset should not exist.");
+                }
+            }
+        }
+
+        [Fact]
+        public async Task InstallFromSourceAsync_DoesNotMoveNuspecFileIfFileNameIsSameAsExpected()
+        {
+            var nuspecFileName = "a.nuspec";
+            var packageDownloader = new Mock<IPackageDownloader>(MockBehavior.Strict);
+            var coreReader = new Mock<IAsyncPackageCoreReader>(MockBehavior.Strict);
+
+            packageDownloader.Setup(x => x.CopyNupkgFileToAsync(It.IsNotNull<string>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(false);
+            packageDownloader.Setup(x => x.GetPackageHashAsync(It.IsNotNull<string>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync("hash");
+            packageDownloader.SetupGet(x => x.CoreReader)
+                .Returns(coreReader.Object);
+            packageDownloader.Setup(x => x.Dispose());
+
+            coreReader.Setup(x => x.GetNuspecFileAsync(It.IsAny<CancellationToken>()))
+                .ReturnsAsync(nuspecFileName);
+
+            IEnumerable<string> copiedFilePaths = null;
+
+            coreReader.Setup(x => x.CopyFilesAsync(
+                    It.IsNotNull<string>(),
+                    It.IsNotNull<IEnumerable<string>>(),
+                    It.IsNotNull<ExtractPackageFileDelegate>(),
+                    It.IsNotNull<ILogger>(),
+                    It.IsAny<CancellationToken>()))
+                .Callback<string, IEnumerable<string>, ExtractPackageFileDelegate, ILogger, CancellationToken>(
+                    (destination, packageFiles, extractFileDelegate, logger, cancellationToken) =>
+                    {
+                        var copiedFilePath = Path.Combine(destination, nuspecFileName);
+
+                        File.WriteAllText(copiedFilePath, string.Empty);
+
+                        copiedFilePaths = new[] { copiedFilePath };
+                    })
+                .ReturnsAsync(() => copiedFilePaths);
+
+            var packageIdentity = new PackageIdentity(id: "a", version: NuGetVersion.Parse("1.0.0"));
+
+            using (var testDirectory = TestDirectory.Create())
+            {
+                var versionFolderPathContext = new VersionFolderPathContext(
+                    packageIdentity,
+                    testDirectory.Path,
+                    NullLogger.Instance,
+                    PackageSaveMode.Nuspec,
+                    XmlDocFileSaveMode.None);
+                var versionFolderPathResolver = new VersionFolderPathResolver(testDirectory.Path);
+                var installDirectoryPath = versionFolderPathResolver.GetInstallPath(packageIdentity.Id, packageIdentity.Version);
+                var expectedNuspecFilePath = Path.Combine(installDirectoryPath, nuspecFileName);
+
+                var wasInstalled = await PackageExtractor.InstallFromSourceAsync(
+                    packageDownloader.Object,
+                    versionFolderPathContext,
+                    CancellationToken.None);
+
+                Assert.True(wasInstalled);
+                Assert.True(File.Exists(expectedNuspecFilePath));
+                Assert.True(FileExistsCaseSensitively(expectedNuspecFilePath));
+            }
+
+            coreReader.Verify();
+            packageDownloader.Verify();
+        }
+
+        [Fact]
+        public async Task InstallFromSourceAsync_MovesNuspecFileIfFileNameIsDifferentThanExpected()
+        {
+            var intendedNuspecFileName = "a.nuspec";
+            var actualNuspecFileName = intendedNuspecFileName.ToUpperInvariant();
+            var packageDownloader = new Mock<IPackageDownloader>(MockBehavior.Strict);
+            var coreReader = new Mock<IAsyncPackageCoreReader>(MockBehavior.Strict);
+
+            packageDownloader.Setup(x => x.CopyNupkgFileToAsync(It.IsNotNull<string>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(false);
+            packageDownloader.Setup(x => x.GetPackageHashAsync(It.IsNotNull<string>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync("hash");
+            packageDownloader.SetupGet(x => x.CoreReader)
+                .Returns(coreReader.Object);
+            packageDownloader.Setup(x => x.Dispose());
+
+            coreReader.Setup(x => x.GetNuspecFileAsync(It.IsAny<CancellationToken>()))
+                .ReturnsAsync(actualNuspecFileName);
+
+            IEnumerable<string> copiedFilePaths = null;
+
+            coreReader.Setup(x => x.CopyFilesAsync(
+                    It.IsNotNull<string>(),
+                    It.IsNotNull<IEnumerable<string>>(),
+                    It.IsNotNull<ExtractPackageFileDelegate>(),
+                    It.IsNotNull<ILogger>(),
+                    It.IsAny<CancellationToken>()))
+                .Callback<string, IEnumerable<string>, ExtractPackageFileDelegate, ILogger, CancellationToken>(
+                    (destination, packageFiles, extractFileDelegate, logger, cancellationToken) =>
+                    {
+                        var copiedFilePath = Path.Combine(destination, actualNuspecFileName);
+
+                        File.WriteAllText(copiedFilePath, string.Empty);
+
+                        copiedFilePaths = new[] { copiedFilePath };
+                    })
+                .ReturnsAsync(() => copiedFilePaths);
+
+            var packageIdentity = new PackageIdentity(id: "a", version: NuGetVersion.Parse("1.0.0"));
+
+            using (var testDirectory = TestDirectory.Create())
+            {
+                var versionFolderPathContext = new VersionFolderPathContext(
+                    packageIdentity,
+                    testDirectory.Path,
+                    NullLogger.Instance,
+                    PackageSaveMode.Nuspec,
+                    XmlDocFileSaveMode.None);
+
+                var versionFolderPathResolver = new VersionFolderPathResolver(testDirectory.Path);
+                var installDirectoryPath = versionFolderPathResolver.GetInstallPath(packageIdentity.Id, packageIdentity.Version);
+                var intendedNuspecFilePath = Path.Combine(installDirectoryPath, intendedNuspecFileName);
+
+                var wasInstalled = await PackageExtractor.InstallFromSourceAsync(
+                    packageDownloader.Object,
+                    versionFolderPathContext,
+                    CancellationToken.None);
+
+                Assert.True(wasInstalled);
+                Assert.True(File.Exists(intendedNuspecFilePath));
+                Assert.True(FileExistsCaseSensitively(intendedNuspecFilePath));
+            }
+
+            coreReader.Verify();
+            packageDownloader.Verify();
         }
 
         private string StatPermissions(string path)
@@ -1456,6 +1979,112 @@ namespace NuGet.Packaging.Test
 
                 Assert.Equal(1, files.Length);
                 Assert.Equal(Path.Combine(testDirectory.Path, "lib", "net45", "fr", "A.resources.dll"), files[0]);
+            }
+        }
+
+        private static bool FileExistsRecursively(string directoryPath, string fileNamePattern)
+        {
+            return Directory.GetFiles(directoryPath, fileNamePattern, SearchOption.AllDirectories)
+                .Any();
+        }
+
+        private static bool FileExistsCaseSensitively(string expectedFilePath)
+        {
+            var directoryPath = Path.GetDirectoryName(expectedFilePath);
+
+            return Directory.GetFiles(directoryPath, "*", SearchOption.TopDirectoryOnly)
+                .Where(filePath => string.Equals(filePath, expectedFilePath, StringComparison.Ordinal))
+                .Any();
+        }
+
+        private sealed class ExtractPackageAsyncTest : IDisposable
+        {
+            private readonly TestDirectory _testDirectory;
+
+            internal PackageExtractionContext Context { get; }
+            internal DirectoryInfo DestinationDirectory { get; }
+            internal FileInfo Package { get; }
+            internal PackageIdentity PackageIdentity { get; }
+            internal PackageReader Reader { get; }
+            internal PackagePathResolver Resolver { get; }
+
+            internal ExtractPackageAsyncTest()
+            {
+                Context = new PackageExtractionContext(NullLogger.Instance);
+                PackageIdentity = new PackageIdentity(id: "a", version: NuGetVersion.Parse("1.0.0"));
+                _testDirectory = TestDirectory.Create();
+
+                var sourceDirectory = Path.Combine(_testDirectory.Path, "source");
+
+                Directory.CreateDirectory(sourceDirectory);
+
+                DestinationDirectory = Directory.CreateDirectory(Path.Combine(_testDirectory.Path, "destination"));
+
+                Package = CreatePackage(PackageIdentity, sourceDirectory);
+                Reader = new PackageReader(File.OpenRead(Package.FullName));
+                Resolver = new PackagePathResolver(DestinationDirectory.FullName);
+            }
+
+            public void Dispose()
+            {
+                Reader.Dispose();
+                _testDirectory.Dispose();
+
+                GC.SuppressFinalize(this);
+            }
+
+            private static FileInfo CreatePackage(PackageIdentity packageIdentity, string directoryPath)
+            {
+                var packageContext = new SimpleTestPackageContext()
+                {
+                    Id = packageIdentity.Id,
+                    Version = packageIdentity.Version.ToNormalizedString(),
+                    Nuspec = XDocument.Parse($@"<?xml version=""1.0"" encoding=""utf-8""?>
+                        <package>
+                            <metadata>
+                                <id>{packageIdentity.Id}</id>
+                                <version>{packageIdentity.Version.ToNormalizedString()}</version>
+                                <title />
+                                <language>en-US</language>
+                                <contentFiles>
+                                    <files include=""lib/net45/{packageIdentity.Id}.dll"" copyToOutput=""true"" flatten=""false"" />
+                                </contentFiles>
+                            </metadata>
+                        </package>")
+                };
+
+                packageContext.AddFile($"lib/net45/{packageIdentity.Id}.dll");
+                packageContext.AddFile($"lib/net45/{packageIdentity.Id}.xml");
+
+                SimpleTestPackageUtility.CreatePackages(directoryPath, packageContext);
+
+                return new FileInfo(
+                    Path.Combine(
+                        directoryPath,
+                        $"{packageIdentity.Id}.{packageIdentity.Version.ToNormalizedString()}.nupkg"));
+            }
+        }
+
+        private sealed class PackageReader : PackageArchiveReader
+        {
+            private readonly Stream _stream;
+
+            public PackageReader(Stream stream)
+                : base(stream)
+            {
+                _stream = stream;
+            }
+
+            public override async Task<string> CopyNupkgAsync(string nupkgFilePath, CancellationToken cancellationToken)
+            {
+                _stream.Seek(offset: 0, origin: SeekOrigin.Begin);
+
+                using (var destination = File.OpenWrite(nupkgFilePath))
+                {
+                    await _stream.CopyToAsync(destination);
+                }
+
+                return nupkgFilePath;
             }
         }
     }

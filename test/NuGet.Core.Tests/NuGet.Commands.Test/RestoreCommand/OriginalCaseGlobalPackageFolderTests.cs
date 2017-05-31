@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.IO;
@@ -15,6 +15,7 @@ using NuGet.LibraryModel;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
+using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
@@ -25,7 +26,7 @@ namespace NuGet.Commands.Test
     public class OriginalCaseGlobalPackageFolderTests
     {
         [Fact]
-        public async Task OriginalCaseGlobalPackagesFolder_WhenPackageMustComeFromProvider_ConvertsPackages()
+        public async Task CopyPackagesToOriginalCaseAsync_WhenPackageMustComeFromProvider_ConvertsPackages()
         {
             // Arrange
             using (var workingDirectory = TestDirectory.Create())
@@ -60,7 +61,7 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
-        public async Task OriginalCaseGlobalPackagesFolder_WhenPackageComesFromLocalFolder_ConvertsPackages()
+        public async Task CopyPackagesToOriginalCaseAsync_WhenPackageComesFromLocalFolder_ConvertsPackages()
         {
             // Arrange
             using (var workingDirectory = TestDirectory.Create())
@@ -101,7 +102,7 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
-        public async Task OriginalCaseGlobalPackagesFolder_DoesNothingIfPackageIsAlreadyInstalled()
+        public async Task CopyPackagesToOriginalCaseAsync_DoesNothingIfPackageIsAlreadyInstalled()
         {
             // Arrange
             using (var workingDirectory = TestDirectory.Create())
@@ -141,7 +142,7 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
-        public async Task OriginalCaseGlobalPackagesFolder_OnlyInstallsPackagesOnce()
+        public async Task CopyPackagesToOriginalCaseAsync_OnlyInstallsPackagesOnce()
         {
             // Arrange
             using (var workingDirectory = TestDirectory.Create())
@@ -176,7 +177,7 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
-        public void OriginalCaseGlobalPackagesFolder_ConvertsPackagesPathsInLockFile()
+        public void ConvertLockFileToOriginalCase_ConvertsPackagesPathsInLockFile()
         {
             // Arrange
             var logger = new TestLogger();
@@ -223,47 +224,50 @@ namespace NuGet.Commands.Test
             };
         }
 
-        private static RestoreTargetGraph GetRestoreTargetGraph(PackageIdentity identity, FileInfo packagePath, TestLogger logger)
+        private static RestoreTargetGraph GetRestoreTargetGraph(
+            PackageIdentity identity,
+            FileInfo packagePath,
+            TestLogger logger)
         {
             var libraryRange = new LibraryRange { Name = identity.Id };
             var libraryIdentity = new LibraryIdentity(identity.Id, identity.Version, LibraryType.Package);
 
             var dependencyProvider = new Mock<IRemoteDependencyProvider>();
+            IPackageDownloader packageDependency = null;
 
             dependencyProvider
-                .Setup(x => x.CopyToAsync(
-                    It.IsAny<LibraryIdentity>(),
-                    It.IsAny<Stream>(),
+                .Setup(x => x.GetPackageDownloaderAsync(
+                    It.IsAny<PackageIdentity>(),
                     It.IsAny<SourceCacheContext>(),
                     It.IsAny<ILogger>(),
                     It.IsAny<CancellationToken>()))
-                .Callback<LibraryIdentity, Stream, SourceCacheContext, ILogger, CancellationToken>(
-                    (_, destination, __, ___, ____) =>
+                .Callback<PackageIdentity, SourceCacheContext, ILogger, CancellationToken>(
+                    (callbackIdentity, sourceCacheContext, callbackLogger, cancellationToken) =>
                     {
-                        using (var package = File.OpenRead(packagePath.FullName))
-                        {
-                            package.CopyTo(destination);
-                        }
+                        packageDependency = new LocalPackageArchiveDownloader(
+                            packagePath.FullName,
+                            callbackIdentity,
+                            callbackLogger);
                     })
-                .Returns(Task.CompletedTask);
+                .Returns(() => Task.FromResult(packageDependency));
 
             var graph = RestoreTargetGraph.Create(
                 new[]
                 {
-                        new GraphNode<RemoteResolveResult>(libraryRange)
+                    new GraphNode<RemoteResolveResult>(libraryRange)
+                    {
+                        Item = new GraphItem<RemoteResolveResult>(libraryIdentity)
                         {
-                            Item = new GraphItem<RemoteResolveResult>(libraryIdentity)
+                            Data = new RemoteResolveResult
                             {
-                                Data = new RemoteResolveResult
+                                Match = new RemoteMatch
                                 {
-                                    Match = new RemoteMatch
-                                    {
-                                        Library = libraryIdentity,
-                                        Provider = dependencyProvider.Object
-                                    }
+                                    Library = libraryIdentity,
+                                    Provider = dependencyProvider.Object
                                 }
                             }
                         }
+                    }
                 },
                 new TestRemoteWalkContext(),
                 logger,

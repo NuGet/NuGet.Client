@@ -20,7 +20,7 @@ namespace NuGet.Protocol {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "4.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "15.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class Strings {
@@ -517,6 +517,231 @@ namespace NuGet.Protocol {
         internal static string Path_Invalid_NotFileNotUnc {
             get {
                 return ResourceManager.GetString("Path_Invalid_NotFileNotUnc", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to A connection has already been started..
+        /// </summary>
+        internal static string Plugin_ConnectionAlreadyStarted {
+            get {
+                return ResourceManager.GetString("Plugin_ConnectionAlreadyStarted", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The plugin connection is closed..
+        /// </summary>
+        internal static string Plugin_ConnectionIsClosed {
+            get {
+                return ResourceManager.GetString("Plugin_ConnectionIsClosed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Plugin &apos;{0}&apos; failed with the exception:  {1}.
+        /// </summary>
+        internal static string Plugin_Exception {
+            get {
+                return ResourceManager.GetString("Plugin_Exception", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Plugin &apos;{0}&apos; failed a {1} operation for package {2}.{3}..
+        /// </summary>
+        internal static string Plugin_FailedOperationForPackage {
+            get {
+                return ResourceManager.GetString("Plugin_FailedOperationForPackage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to A failure occurred while attempting to query plugin operation claims for the plugin at &apos;{0}&apos;.  Exception:  {1}.
+        /// </summary>
+        internal static string Plugin_FailedToQueryPluginOperationsClaims {
+            get {
+                return ResourceManager.GetString("Plugin_FailedToQueryPluginOperationsClaims", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to A failure occurred while attempting to query package versions for package &apos;{0}&apos; using the plugin at &apos;{1}&apos;..
+        /// </summary>
+        internal static string Plugin_FailureQueryingPackageVersions {
+            get {
+                return ResourceManager.GetString("Plugin_FailureQueryingPackageVersions", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to A plugin was not found at path &apos;{0}&apos;..
+        /// </summary>
+        internal static string Plugin_FileNotFound {
+            get {
+                return ResourceManager.GetString("Plugin_FileNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The plugin handshake failed..
+        /// </summary>
+        internal static string Plugin_HandshakeFailed {
+            get {
+                return ResourceManager.GetString("Plugin_HandshakeFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to A handshake request handler already exists..
+        /// </summary>
+        internal static string Plugin_HandshakeRequestHandlerAlreadyExists {
+            get {
+                return ResourceManager.GetString("Plugin_HandshakeRequestHandlerAlreadyExists", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The idle timeout must be greater than or equal to System.Threading.Timeout.InfiniteTimeSpan..
+        /// </summary>
+        internal static string Plugin_IdleTimeoutMustBeGreaterThanOrEqualToInfiniteTimeSpan {
+            get {
+                return ResourceManager.GetString("Plugin_IdleTimeoutMustBeGreaterThanOrEqualToInfiniteTimeSpan", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to An illegal message type was received during handshake..
+        /// </summary>
+        internal static string Plugin_IllegalMessageWhileHandshaking {
+            get {
+                return ResourceManager.GetString("Plugin_IllegalMessageWhileHandshaking", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Plugin initialization failed..
+        /// </summary>
+        internal static string Plugin_InitializationFailed {
+            get {
+                return ResourceManager.GetString("Plugin_InitializationFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The plugin at &apos;{0}&apos; did not have a valid embedded signature..
+        /// </summary>
+        internal static string Plugin_InvalidEmbeddedSignature {
+            get {
+                return ResourceManager.GetString("Plugin_InvalidEmbeddedSignature", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The message type &apos;{0}&apos; is invalid at this time..
+        /// </summary>
+        internal static string Plugin_InvalidMessageType {
+            get {
+                return ResourceManager.GetString("Plugin_InvalidMessageType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The plugin file path &apos;{0}&apos; is invalid..
+        /// </summary>
+        internal static string Plugin_InvalidPluginFilePath {
+            get {
+                return ResourceManager.GetString("Plugin_InvalidPluginFilePath", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to A plugin is not connected..
+        /// </summary>
+        internal static string Plugin_NotConnected {
+            get {
+                return ResourceManager.GetString("Plugin_NotConnected", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Plugin &apos;{0}&apos; failed to download package &apos;{1}&apos;..
+        /// </summary>
+        internal static string Plugin_PackageDownloadFailed {
+            get {
+                return ResourceManager.GetString("Plugin_PackageDownloadFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to A plugin protocol exception occurred..
+        /// </summary>
+        internal static string Plugin_ProtocolException {
+            get {
+                return ResourceManager.GetString("Plugin_ProtocolException", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to A protocol version is not supported on error..
+        /// </summary>
+        internal static string Plugin_ProtocolVersionNotSupportedOnError {
+            get {
+                return ResourceManager.GetString("Plugin_ProtocolVersionNotSupportedOnError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &apos;{0}&apos; must be greater than or equal to &apos;{1}&apos;..
+        /// </summary>
+        internal static string Plugin_ProtocolVersionOutOfRange {
+            get {
+                return ResourceManager.GetString("Plugin_ProtocolVersionOutOfRange", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Request context does not exist for request ID &apos;{0}&apos;..
+        /// </summary>
+        internal static string Plugin_RequestContextDoesNotExist {
+            get {
+                return ResourceManager.GetString("Plugin_RequestContextDoesNotExist", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to A request handler does not exist for the message method &apos;{0}&apos;..
+        /// </summary>
+        internal static string Plugin_RequestHandlerDoesNotExist {
+            get {
+                return ResourceManager.GetString("Plugin_RequestHandlerDoesNotExist", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Timeout must be greater than TimeSpan.Zero and less than or equal to TimeSpan.FromMilliseconds(int.MaxValue)..
+        /// </summary>
+        internal static string Plugin_TimeoutOutOfRange {
+            get {
+                return ResourceManager.GetString("Plugin_TimeoutOutOfRange", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The enum value &apos;{0}&apos; is unrecognized..
+        /// </summary>
+        internal static string Plugin_UnrecognizedEnumValue {
+            get {
+                return ResourceManager.GetString("Plugin_UnrecognizedEnumValue", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The operation claims are unrecognized:  {0}..
+        /// </summary>
+        internal static string Plugin_UnrecognizedOperationClaims {
+            get {
+                return ResourceManager.GetString("Plugin_UnrecognizedOperationClaims", resourceCulture);
             }
         }
         

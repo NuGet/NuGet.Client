@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -14,6 +14,7 @@ using NuGet.LibraryModel;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
+using NuGet.Protocol;
 using NuGet.Repositories;
 
 namespace NuGet.Commands
@@ -73,19 +74,41 @@ namespace NuGet.Commands
                     }
 
                     var originalCaseContext = GetPathContext(identity, isLowercase: _request.IsLowercasePackagesDirectory);
+                    var localPackageFilePath = GetLocalPackageFilePath(remoteMatch);
+                    var packageIdentity = new PackageIdentity(remoteMatch.Library.Name, remoteMatch.Library.Version);
+                    IPackageDownloader packageDependency = null;
+
+                    if (string.IsNullOrEmpty(localPackageFilePath))
+                    {
+                        packageDependency = await remoteMatch.Provider.GetPackageDownloaderAsync(
+                            packageIdentity,
+                            _request.CacheContext,
+                            _request.Log,
+                            token);
+                    }
+                    else
+                    {
+                        packageDependency = new LocalPackageArchiveDownloader(
+                            localPackageFilePath,
+                            packageIdentity,
+                            _request.Log);
+                    }
 
                     // Install the package.
-                    var installed = await PackageExtractor.InstallFromSourceAsync(
-                        destination => CopyToAsync(remoteMatch, destination, token),
-                        originalCaseContext,
-                        token);
-
-                    if (installed)
+                    using (packageDependency)
                     {
-                        _request.Log.LogMinimal(string.Format(
-                            CultureInfo.CurrentCulture,
-                            Strings.Log_ConvertedPackageToOriginalCase,
-                            identity));
+                        var installed = await PackageExtractor.InstallFromSourceAsync(
+                            packageDependency,
+                            originalCaseContext,
+                            token);
+
+                        if (installed)
+                        {
+                            _request.Log.LogMinimal(string.Format(
+                                CultureInfo.CurrentCulture,
+                                Strings.Log_ConvertedPackageToOriginalCase,
+                                identity));
+                        }
                     }
                 }
             }
@@ -122,11 +145,11 @@ namespace NuGet.Commands
                 remoteMatch.Library.Version);
         }
 
-        private async Task CopyToAsync(RemoteMatch remoteMatch, Stream destination, CancellationToken token)
+        private string GetLocalPackageFilePath(RemoteMatch remoteMatch)
         {
             var library = remoteMatch.Library;
-            
-            // Try to get the package from the local repositories first. 
+
+            // Try to get the package from the local repositories first.
             var localPackage = NuGetv3LocalRepositoryUtility.GetPackage(
                 _localRepositories,
                 library.Name,
@@ -134,27 +157,10 @@ namespace NuGet.Commands
 
             if (localPackage != null && File.Exists(localPackage.Package.ZipPath))
             {
-                using (var stream = new FileStream(
-                    localPackage.Package.ZipPath,
-                    FileMode.Open,
-                    FileAccess.Read,
-                    FileShare.Read,
-                    bufferSize: 4096,
-                    useAsync: true))
-                {
-                    await stream.CopyToAsync(destination, bufferSize: 4096, cancellationToken: token);
-                }
+                return localPackage.Package.ZipPath;
             }
-            else
-            {
-                // Otherwise, get it from the provider.
-                await remoteMatch.Provider.CopyToAsync(
-                    remoteMatch.Library,
-                    destination,
-                    _request.CacheContext,
-                    _request.Log,
-                    token);
-            }
+
+            return null;
         }
     }
 }

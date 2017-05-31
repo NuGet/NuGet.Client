@@ -13,10 +13,6 @@ namespace NuGet.VisualStudio
 
         Task<IEnumerable<string>> GetProjectReferencesAsync(string projectFilePath);
 
-        Task<IMSBuildProjectDataService> GetMSBuildProjectDataService(string projectFilePath, string targetFramework = "");
-
-        Task<IEnumerable<MSBuildProjectItemData>> GetProjectItemsAsync(IMSBuildProjectDataService dataService, string itemType);
-
-        Task<string> GetProjectPropertyAsync(IMSBuildProjectDataService dataService, string propertyName);
+        Task<IMSBuildProjectDataService> GetMSBuildProjectDataServiceAsync(string projectFilePath, string targetFramework = null);
     }
 }

@@ -4,9 +4,12 @@
 using System;
 using System.ComponentModel.Composition;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
-using EnvDTE;
+using Microsoft;
 using NuGet.PackageManagement.VisualStudio;
+using NuGet.ProjectManagement;
+using NuGet.ProjectManagement.Projects;
 using NuGet.VisualStudio.Implementation.Resources;
 
 namespace NuGet.VisualStudio
@@ -15,16 +18,20 @@ namespace NuGet.VisualStudio
     internal class VsProjectJsonToPackageReferenceMigrator : IVsProjectJsonToPackageReferenceMigrator
     {
         private readonly Lazy<IVsSolutionManager> _solutionManager;
+        private readonly Lazy<NuGetProjectFactory> _projectFactory;
 
         [ImportingConstructor]
-        public VsProjectJsonToPackageReferenceMigrator(Lazy<IVsSolutionManager> solutionManager)
+        public VsProjectJsonToPackageReferenceMigrator(
+            Lazy<IVsSolutionManager> solutionManager,
+            Lazy<NuGetProjectFactory> projectFactory)
         {
+            Assumes.Present(solutionManager);
+            Assumes.Present(projectFactory);
+
             _solutionManager = solutionManager;
-            if (solutionManager == null)
-            {
-                throw new ArgumentNullException(nameof(solutionManager));
-            }
+            _projectFactory = projectFactory;
         }
+
         public Task<object> MigrateProjectJsonToPackageReferenceAsync(string projectUniqueName)
         {
             if (string.IsNullOrEmpty(projectUniqueName))
@@ -43,37 +50,37 @@ namespace NuGet.VisualStudio
         private async Task<object> MigrateProjectToPackageRefAsync(string projectUniqueName)
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-            var project = _solutionManager.Value.GetDTEProject(projectUniqueName);
+            var project = _solutionManager.Value.GetVsProjectAdapter(projectUniqueName);
 
             if (project == null)
             {
                 throw new InvalidOperationException(string.Format(VsResources.Error_ProjectNotInCache, projectUniqueName));
             }
 
-            var projectSafeName = await EnvDTEProjectInfoUtility.GetCustomUniqueNameAsync(project);
+            var projectSafeName = project.CustomUniqueName;
 
             var nuGetProject = _solutionManager.Value.GetNuGetProject(projectSafeName);
 
             // If the project already has PackageReference, do nothing.
-            if (nuGetProject is LegacyCSProjPackageReferenceProject)
+            if (nuGetProject is LegacyPackageReferenceProject)
             {
                 return new VsProjectJsonToPackageReferenceMigrateResult(success: true, errorMessage: null);
             }
 
             try
             {
-                _solutionManager.Value.SaveProject(nuGetProject);
-                
-                var legacyPackageRefBasedProject = new LegacyCSProjPackageReferenceProject(
-                    new EnvDTEProjectAdapter(project),
-                    VsHierarchyUtility.GetProjectId(project));
+                await nuGetProject.SaveAsync(CancellationToken.None);
+
+                var legacyPackageRefBasedProject = await _projectFactory.Value
+                    .CreateNuGetProjectAsync<LegacyPackageReferenceProject>(
+                        project, optionalContext: null);
+                Assumes.Present(legacyPackageRefBasedProject);
                 
                 await ProjectJsonToPackageRefMigrator.MigrateAsync(
-                    legacyPackageRefBasedProject,
-                    legacyPackageRefBasedProject.MSBuildProjectPath);
+                    legacyPackageRefBasedProject as BuildIntegratedNuGetProject);
                 var result = new VsProjectJsonToPackageReferenceMigrateResult(success: true, errorMessage: null);
-                _solutionManager.Value.SaveProject(nuGetProject);
-                await _solutionManager.Value.UpdateNuGetProjectToPackageRef(nuGetProject);
+                await nuGetProject.SaveAsync(CancellationToken.None);
+                await _solutionManager.Value.UpgradeProjectToPackageReferenceAsync(nuGetProject);
 
                 return result;
 
@@ -87,9 +94,9 @@ namespace NuGet.VisualStudio
             }
         }
 
-        private void ReloadProject(Project project)
+        private void ReloadProject(IVsProjectAdapter project)
         {
-            project = _solutionManager.Value.GetDTEProject(project.FullName);
+            project = _solutionManager.Value.GetVsProjectAdapter(project.FullName);
         }
     }
 }

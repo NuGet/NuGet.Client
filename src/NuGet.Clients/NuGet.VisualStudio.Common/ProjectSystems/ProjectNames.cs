@@ -2,8 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Diagnostics;
 using System.IO;
+using System.Threading.Tasks;
+using Microsoft;
 using Microsoft.VisualStudio.Shell;
 
 namespace NuGet.VisualStudio
@@ -55,20 +56,17 @@ namespace NuGet.VisualStudio
         /// </summary>
         /// <param name="dteProject">DTE project to get project names for.</param>
         /// <returns>New instance of <see cref="ProjectNames"/>.</returns>
-        public static ProjectNames FromDTEProject(EnvDTE.Project dteProject)
+        public static async Task<ProjectNames> FromDTEProjectAsync(EnvDTE.Project dteProject)
         {
-            if (dteProject == null)
-            {
-                throw new ArgumentNullException(nameof(dteProject));
-            }
+            Assumes.Present(dteProject);
 
-            Debug.Assert(ThreadHelper.CheckAccess());
+            ThreadHelper.ThrowIfNotOnUIThread();
 
             return new ProjectNames(
                 fullName: dteProject.FullName,
                 uniqueName: EnvDTEProjectInfoUtility.GetUniqueName(dteProject),
                 shortName: EnvDTEProjectInfoUtility.GetName(dteProject),
-                customUniqueName: EnvDTEProjectInfoUtility.GetCustomUniqueName(dteProject));
+                customUniqueName: await EnvDTEProjectInfoUtility.GetCustomUniqueNameAsync(dteProject));
         }
 
         public static ProjectNames FromFullProjectPath(string name)

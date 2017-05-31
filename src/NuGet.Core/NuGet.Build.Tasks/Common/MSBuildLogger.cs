@@ -15,49 +15,15 @@ namespace NuGet.Build
     {
         private readonly TaskLoggingHelper _taskLogging;
 
-        private delegate void LogMessageWithDetails(string subcategory, 
-            string code, 
-            string helpKeyword, 
-            string file, 
-            int lineNumber, 
-            int columnNumber, 
-            int endLineNumber, 
-            int endColumnNumber, 
-            MessageImportance importance, 
-            string message, 
-            params object[] messageArgs);
-
-        private delegate void LogErrorWithDetails(string subcategory,
-            string code,
-            string helpKeyword,
-            string file,
-            int lineNumber,
-            int columnNumber,
-            int endLineNumber,
-            int endColumnNumber,
-            string message,
-            params object[] messageArgs);
-
-        private delegate void LogMessageAsString(MessageImportance importance, 
-            string message, 
-            params object[] messageArgs);
-
-        private delegate void LogErrorAsString(string message,
-            params object[] messageArgs);
-
-
-
-
         public MSBuildLogger(TaskLoggingHelper taskLogging)
         {
-            _taskLogging = taskLogging;
+            _taskLogging = taskLogging ?? throw new ArgumentNullException(nameof(taskLogging));
         }
 
         public override void Log(ILogMessage message)
         {
             if (DisplayMessage(message.Level))
             {
-
                 var logMessage = message as IRestoreLogMessage;
 
                 if (logMessage == null)
@@ -76,40 +42,39 @@ namespace NuGet.Build
                 switch (message.Level)
                 {
                     case LogLevel.Error:
-                        LogError(logMessage, _taskLogging.LogError, _taskLogging.LogError);
+                        LogError(logMessage);
                         break;
 
                     case LogLevel.Warning:
-                        LogError(logMessage, _taskLogging.LogWarning, _taskLogging.LogWarning);
+                        LogWarning(logMessage);
                         break;
 
                     case LogLevel.Minimal:
-                        LogMessage(logMessage, MessageImportance.High, _taskLogging.LogMessage, _taskLogging.LogMessage);
+                        LogMessage(MessageImportance.High, logMessage);
                         break;
 
                     case LogLevel.Information:
-                        LogMessage(logMessage, MessageImportance.Normal, _taskLogging.LogMessage, _taskLogging.LogMessage);
+                        LogMessage(MessageImportance.Normal, logMessage);
                         break;
 
                     case LogLevel.Debug:
                     case LogLevel.Verbose:
                     default:
                         // Default to LogLevel.Debug and low importance
-                        LogMessage(logMessage, MessageImportance.Low, _taskLogging.LogMessage, _taskLogging.LogMessage);
+                        LogMessage(MessageImportance.Low, logMessage);
                         break;
                 }
             }
         }
 
-        private void LogMessage(IRestoreLogMessage logMessage, 
+        private void LogMessage(
             MessageImportance importance,
-            LogMessageWithDetails logWithDetails, 
-            LogMessageAsString logAsString)
+            IRestoreLogMessage logMessage)
         {
             if (logMessage.Code > NuGetLogCode.Undefined)
             {
                 // NuGet does not currently have a subcategory while throwing logs, hence string.Empty
-                logWithDetails(string.Empty,
+                _taskLogging.LogMessage(string.Empty,
                     Enum.GetName(typeof(NuGetLogCode), logMessage.Code),
                     Enum.GetName(typeof(NuGetLogCode), logMessage.Code),
                     logMessage.FilePath,
@@ -122,18 +87,16 @@ namespace NuGet.Build
             }
             else
             {
-                logAsString(importance, logMessage.Message);
+                _taskLogging.LogMessage(importance, logMessage.Message);
             }
         }
 
-        private void LogError(IRestoreLogMessage logMessage,
-            LogErrorWithDetails logWithDetails,
-            LogErrorAsString logAsString)
+        private void LogWarning(IRestoreLogMessage logMessage)
         {
             if (logMessage.Code > NuGetLogCode.Undefined)
             {
                 // NuGet does not currently have a subcategory while throwing logs, hence string.Empty
-                logWithDetails(string.Empty,
+                _taskLogging.LogWarning(string.Empty,
                     Enum.GetName(typeof(NuGetLogCode), logMessage.Code),
                     Enum.GetName(typeof(NuGetLogCode), logMessage.Code),
                     logMessage.FilePath,
@@ -145,7 +108,28 @@ namespace NuGet.Build
             }
             else
             {
-                logAsString(logMessage.Message);
+                _taskLogging.LogWarning(logMessage.Message);
+            }
+        }
+
+        private void LogError(IRestoreLogMessage logMessage)
+        {
+            if (logMessage.Code > NuGetLogCode.Undefined)
+            {
+                // NuGet does not currently have a subcategory while throwing logs, hence string.Empty
+                _taskLogging.LogError(string.Empty,
+                    Enum.GetName(typeof(NuGetLogCode), logMessage.Code),
+                    Enum.GetName(typeof(NuGetLogCode), logMessage.Code),
+                    logMessage.FilePath,
+                    logMessage.StartLineNumber,
+                    logMessage.StartColumnNumber,
+                    logMessage.EndLineNumber,
+                    logMessage.EndColumnNumber,
+                    logMessage.Message);
+            }
+            else
+            {
+                _taskLogging.LogError(logMessage.Message);
             }
         }
 

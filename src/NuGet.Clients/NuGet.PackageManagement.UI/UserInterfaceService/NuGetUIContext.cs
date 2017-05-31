@@ -20,7 +20,7 @@ namespace NuGet.PackageManagement.UI
 
         public NuGetUIContext(
             ISourceRepositoryProvider sourceProvider,
-            ISolutionManager solutionManager,
+            IVsSolutionManager solutionManager,
             NuGetPackageManager packageManager,
             UIActionEngine uiActionEngine,
             IPackageRestoreManager packageRestoreManager,
@@ -41,7 +41,7 @@ namespace NuGet.PackageManagement.UI
 
         public ISourceRepositoryProvider SourceProvider { get; }
 
-        public ISolutionManager SolutionManager { get; }
+        public IVsSolutionManager SolutionManager { get; }
 
         public NuGetPackageManager PackageManager { get; }
 

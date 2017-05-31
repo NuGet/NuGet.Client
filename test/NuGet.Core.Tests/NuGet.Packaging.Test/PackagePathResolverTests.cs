@@ -1,9 +1,10 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.IO;
 using NuGet.Packaging.Core;
+using NuGet.Test.Utility;
 using NuGet.Versioning;
 using Xunit;
 
@@ -15,7 +16,7 @@ namespace NuGet.Packaging.Test
         private static readonly PackageIdentity PackageIdentity = new PackageIdentity("PackageA", new NuGetVersion("1.0.0.0-BETA"));
 
         [Fact]
-        public void PackagePathResolver_RejectsNullRootDirectory()
+        public void Constructor_ThrowsForNullRootDirectory()
         {
             // Arrange & Act & Assert
             var exception = Assert.Throws<ArgumentException>(() => new PackagePathResolver(
@@ -25,7 +26,7 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public void PackagePathResolver_RejectsEmptyRootDirectory()
+        public void Constructor_ThrowsForEmptyRootDirectory()
         {
             // Arrange & Act & Assert
             var exception = Assert.Throws<ArgumentException>(() => new PackagePathResolver(
@@ -37,7 +38,7 @@ namespace NuGet.Packaging.Test
         [Theory]
         [InlineData(true, "PackageA.1.0.0.0-BETA")]
         [InlineData(false, "PackageA")]
-        public void PackagePathResolver_GetPackageDirectoryName(bool useSideBySidePaths, string expected)
+        public void GetPackageDirectoryName_ReturnsPackageDirectoryName(bool useSideBySidePaths, string expected)
         {
             // Arrange
             var target = new PackagePathResolver(
@@ -54,7 +55,7 @@ namespace NuGet.Packaging.Test
         [Theory]
         [InlineData(true, "PackageA.1.0.0.0-BETA.nupkg")]
         [InlineData(false, "PackageA.nupkg")]
-        public void PackagePathResolver_GetPackageFileName(bool useSideBySidePaths, string expected)
+        public void GetPackageFileName_ReturnsPackageFileName(bool useSideBySidePaths, string expected)
         {
             // Arrange
             var target = new PackagePathResolver(
@@ -69,9 +70,23 @@ namespace NuGet.Packaging.Test
         }
 
         [Theory]
+        [InlineData(true, "PackageA.packagedownload.marker")]
+        [InlineData(false, "PackageA.packagedownload.marker")]
+        public void GetPackageDownloadMarkerFileName_ReturnsPackageDownloadMarkerFileName(
+            bool useSideBySidePaths,
+            string expected)
+        {
+            var target = new PackagePathResolver(InMemoryRootDirectory, useSideBySidePaths);
+
+            var actual = target.GetPackageDownloadMarkerFileName(PackageIdentity);
+
+            Assert.Equal(expected, actual);
+        }
+
+        [Theory]
         [InlineData(true, "PackageA.nuspec")]
         [InlineData(false, "PackageA.nuspec")]
-        public void PackagePathResolver_GetManifestFileName(bool useSideBySidePaths, string expected)
+        public void GetManifestFileName_ReturnsManifestFileName(bool useSideBySidePaths, string expected)
         {
             // Arrange
             var target = new PackagePathResolver(
@@ -88,7 +103,7 @@ namespace NuGet.Packaging.Test
         [Theory]
         [InlineData(true, "PackageA.1.0.0.0-BETA")]
         [InlineData(false, "PackageA")]
-        public void PackagePathResolver_GetInstallPath(bool useSideBySidePaths, string expected)
+        public void GetInstallPath_ReturnsInstallPath(bool useSideBySidePaths, string expected)
         {
             // Arrange
             var target = new PackagePathResolver(
@@ -101,6 +116,74 @@ namespace NuGet.Packaging.Test
 
             // Assert
             Assert.Equal(expected, actual);
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void GetInstalledPath_ReturnsNullIfFileDoesNotExist(bool useSideBySidePaths)
+        {
+            using (var testDirectory = TestDirectory.Create())
+            {
+                var target = new PackagePathResolver(testDirectory.Path, useSideBySidePaths);
+
+                var filePath = target.GetInstalledPath(PackageIdentity);
+
+                Assert.Null(filePath);
+            }
+        }
+
+        [Theory]
+        [InlineData(true, "PackageA.1.0.0.0-BETA.nupkg")]
+        [InlineData(false, "PackageA.nupkg")]
+        public void GetInstalledPath_ReturnsInstalledPath(bool useSideBySidePaths, string expectedFileName)
+        {
+            using (var testDirectory = TestDirectory.Create())
+            {
+                var expectedFilePath = Path.Combine(testDirectory.Path, expectedFileName);
+
+                File.WriteAllText(expectedFilePath, string.Empty);
+
+                var target = new PackagePathResolver(testDirectory.Path, useSideBySidePaths);
+
+                var actualFilePath = target.GetInstalledPath(PackageIdentity);
+
+                Assert.Equal(testDirectory.Path, actualFilePath);
+            }
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void GetInstalledPackageFilePath_ReturnsNullIfFileDoesNotExist(bool useSideBySidePaths)
+        {
+            using (var testDirectory = TestDirectory.Create())
+            {
+                var target = new PackagePathResolver(testDirectory.Path, useSideBySidePaths);
+
+                var filePath = target.GetInstalledPackageFilePath(PackageIdentity);
+
+                Assert.Null(filePath);
+            }
+        }
+
+        [Theory]
+        [InlineData(true, "PackageA.1.0.0.0-BETA.nupkg")]
+        [InlineData(false, "PackageA.nupkg")]
+        public void GetInstalledPackageFilePath_ReturnsInstalledPackageFilePath(bool useSideBySidePaths, string expectedFileName)
+        {
+            using (var testDirectory = TestDirectory.Create())
+            {
+                var expectedFilePath = Path.Combine(testDirectory.Path, expectedFileName);
+
+                File.WriteAllText(expectedFilePath, string.Empty);
+
+                var target = new PackagePathResolver(testDirectory.Path, useSideBySidePaths);
+
+                var actualFilePath = target.GetInstalledPackageFilePath(PackageIdentity);
+
+                Assert.Equal(expectedFilePath, actualFilePath);
+            }
         }
     }
 }

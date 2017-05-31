@@ -1,10 +1,9 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -14,12 +13,16 @@ using NuGet.DependencyResolver;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.Packaging;
+using NuGet.Packaging.Core;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 
 namespace NuGet.Commands
 {
+    /// <summary>
+    /// A source repository dependency provider.
+    /// </summary>
     public class SourceRepositoryDependencyProvider : IRemoteDependencyProvider
     {
         private readonly object _lock = new object();
@@ -46,6 +49,18 @@ namespace NuGet.Commands
         // In order to avoid too many open files error, set concurrent requests number to 16 on Mac
         private const int ConcurrencyLimit = 16;
 
+        /// <summary>
+        /// Initializes a new <see cref="SourceRepositoryDependencyProvider" /> class.
+        /// </summary>
+        /// <param name="sourceRepository">A source repository.</param>
+        /// <param name="logger">A logger.</param>
+        /// <param name="cacheContext">A source cache context.</param>
+        /// <param name="ignoreFailedSources"><c>true</c> to ignore failed sources; otherwise <c>false</c>.</param>
+        /// <param name="ignoreWarning"><c>true</c> to ignore warnings; otherwise <c>false</c>.</param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="sourceRepository" />
+        /// is <c>null</c>.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="logger" /> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="cacheContext" /> is <c>null</c>.</exception>
         public SourceRepositoryDependencyProvider(
             SourceRepository sourceRepository,
             ILogger logger,
@@ -53,6 +68,21 @@ namespace NuGet.Commands
             bool ignoreFailedSources,
             bool ignoreWarning)
         {
+            if (sourceRepository == null)
+            {
+                throw new ArgumentNullException(nameof(sourceRepository));
+            }
+
+            if (logger == null)
+            {
+                throw new ArgumentNullException(nameof(logger));
+            }
+
+            if (cacheContext == null)
+            {
+                throw new ArgumentNullException(nameof(cacheContext));
+            }
+
             _sourceRepository = sourceRepository;
             _logger = logger;
             _cacheContext = cacheContext;
@@ -60,14 +90,39 @@ namespace NuGet.Commands
             _ignoreWarning = ignoreWarning;
         }
 
+        /// <summary>
+        /// Gets a flag indicating whether or not the provider source is HTTP or HTTPS.
+        /// </summary>
         public bool IsHttp => _sourceRepository.PackageSource.IsHttp;
 
+        /// <summary>
+        /// Gets the package source.
+        /// </summary>
+        /// <remarks>Optional. This will be <c>null</c> for project providers.</remarks>
         public PackageSource Source => _sourceRepository.PackageSource;
 
         /// <summary>
-        /// Discovers all versions of a package from a source and selects the best match.
-        /// This does not download the package.
+        /// Asynchronously discovers all versions of a package from a source and selects the best match.
         /// </summary>
+        /// <remarks>This does not download the package.</remarks>
+        /// <param name="libraryRange">A library range.</param>
+        /// <param name="targetFramework">A target framework.</param>
+        /// <param name="cacheContext">A source cache context.</param>
+        /// <param name="logger">A logger.</param>
+        /// <param name="cancellationToken">A cancellation token.</param>
+        /// <returns>A task that represents the asynchronous operation.
+        /// The task result (<see cref="Task{TResult}.Result" />) returns a <see cref="LibraryIdentity" />
+        /// instance.</returns>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="libraryRange" />
+        /// is either <c>null</c> or empty.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="targetFramework" />
+        /// is either <c>null</c> or empty.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="cacheContext" />
+        /// is either <c>null</c> or empty.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="logger" />
+        /// is either <c>null</c> or empty.</exception>
+        /// <exception cref="OperationCanceledException">Thrown if <paramref name="cancellationToken" />
+        /// is cancelled.</exception>
         public async Task<LibraryIdentity> FindLibraryAsync(
             LibraryRange libraryRange,
             NuGetFramework targetFramework,
@@ -75,6 +130,28 @@ namespace NuGet.Commands
             ILogger logger,
             CancellationToken cancellationToken)
         {
+            if (libraryRange == null)
+            {
+                throw new ArgumentNullException(nameof(libraryRange));
+            }
+
+            if (targetFramework == null)
+            {
+                throw new ArgumentNullException(nameof(targetFramework));
+            }
+
+            if (cacheContext == null)
+            {
+                throw new ArgumentNullException(nameof(cacheContext));
+            }
+
+            if (logger == null)
+            {
+                throw new ArgumentNullException(nameof(logger));
+            }
+
+            cancellationToken.ThrowIfCancellationRequested();
+
             AsyncLazy<LibraryIdentity> result = null;
 
             var action = new AsyncLazy<LibraryIdentity>(async () =>
@@ -92,7 +169,7 @@ namespace NuGet.Commands
             return await result;
         }
 
-        public async Task<LibraryIdentity> FindLibraryCoreAsync(
+        private async Task<LibraryIdentity> FindLibraryCoreAsync(
             LibraryRange libraryRange,
             NuGetFramework targetFramework,
             SourceCacheContext cacheContext,
@@ -120,19 +197,62 @@ namespace NuGet.Commands
             return null;
         }
 
+        /// <summary>
+        /// Asynchronously gets package dependencies.
+        /// </summary>
+        /// <param name="libraryIdentity">A library identity.</param>
+        /// <param name="targetFramework">A target framework.</param>
+        /// <param name="cacheContext">A source cache context.</param>
+        /// <param name="logger">A logger.</param>
+        /// <param name="cancellationToken">A cancellation token.</param>
+        /// <returns>A task that represents the asynchronous operation.
+        /// The task result (<see cref="Task{TResult}.Result" />) returns a <see cref="LibraryDependencyInfo" />
+        /// instance.</returns>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="libraryIdentity" />
+        /// is either <c>null</c> or empty.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="targetFramework" />
+        /// is either <c>null</c> or empty.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="cacheContext" />
+        /// is either <c>null</c> or empty.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="logger" />
+        /// is either <c>null</c> or empty.</exception>
+        /// <exception cref="OperationCanceledException">Thrown if <paramref name="cancellationToken" />
+        /// is cancelled.</exception>
         public async Task<LibraryDependencyInfo> GetDependenciesAsync(
-            LibraryIdentity match,
+            LibraryIdentity libraryIdentity,
             NuGetFramework targetFramework,
             SourceCacheContext cacheContext,
             ILogger logger,
             CancellationToken cancellationToken)
         {
+            if (libraryIdentity == null)
+            {
+                throw new ArgumentNullException(nameof(libraryIdentity));
+            }
+
+            if (targetFramework == null)
+            {
+                throw new ArgumentNullException(nameof(targetFramework));
+            }
+
+            if (cacheContext == null)
+            {
+                throw new ArgumentNullException(nameof(cacheContext));
+            }
+
+            if (logger == null)
+            {
+                throw new ArgumentNullException(nameof(logger));
+            }
+
+            cancellationToken.ThrowIfCancellationRequested();
+
             AsyncLazy<LibraryDependencyInfo> result = null;
 
             var action = new AsyncLazy<LibraryDependencyInfo>(async () =>
-                await GetDependenciesCoreAsync(match, targetFramework, cacheContext, logger, cancellationToken));
+                await GetDependenciesCoreAsync(libraryIdentity, targetFramework, cacheContext, logger, cancellationToken));
 
-            var key = new LibraryRangeCacheKey(match, targetFramework);
+            var key = new LibraryRangeCacheKey(libraryIdentity, targetFramework);
 
             if (cacheContext.RefreshMemoryCache)
             {
@@ -202,13 +322,47 @@ namespace NuGet.Commands
             }
         }
 
-        public async Task CopyToAsync(
-            LibraryIdentity identity,
-            Stream stream,
+        /// <summary>
+        /// Asynchronously gets a package downloader.
+        /// </summary>
+        /// <param name="packageIdentity">A package identity.</param>
+        /// <param name="cacheContext">A source cache context.</param>
+        /// <param name="logger">A logger.</param>
+        /// <param name="cancellationToken">A cancellation token.</param>
+        /// <returns>A task that represents the asynchronous operation.
+        /// The task result (<see cref="Task{TResult}.Result" />) returns a <see cref="IPackageDownloader" />
+        /// instance.</returns>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="packageIdentity" />
+        /// is either <c>null</c> or empty.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="cacheContext" />
+        /// is either <c>null</c> or empty.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="logger" />
+        /// is either <c>null</c> or empty.</exception>
+        /// <exception cref="OperationCanceledException">Thrown if <paramref name="cancellationToken" />
+        /// is cancelled.</exception>
+        public async Task<IPackageDownloader> GetPackageDownloaderAsync(
+            PackageIdentity packageIdentity,
             SourceCacheContext cacheContext,
             ILogger logger,
             CancellationToken cancellationToken)
         {
+            if (packageIdentity == null)
+            {
+                throw new ArgumentNullException(nameof(packageIdentity));
+            }
+
+            if (cacheContext == null)
+            {
+                throw new ArgumentNullException(nameof(cacheContext));
+            }
+
+            if (logger == null)
+            {
+                throw new ArgumentNullException(nameof(logger));
+            }
+
+            cancellationToken.ThrowIfCancellationRequested();
+
             await EnsureResource();
 
             try
@@ -220,30 +374,30 @@ namespace NuGet.Commands
 
                 cancellationToken.ThrowIfCancellationRequested();
 
-                // If the stream is already available, do not stop in the middle of copying the stream
-                // Pass in CancellationToken.None
-                await _findPackagesByIdResource.CopyNupkgToStreamAsync(
-                    identity.Name,
-                    identity.Version,
-                    stream,
+                return await _findPackagesByIdResource.GetPackageDownloaderAsync(
+                    packageIdentity,
                     cacheContext,
                     logger,
-                    CancellationToken.None);
+                    cancellationToken);
             }
             catch (FatalProtocolException e) when (_ignoreFailedSources)
             {
                 if (!_ignoreWarning)
                 {
-                    await _logger.LogAsync(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1801, e.Message, identity.Name));
+                    await _logger.LogAsync(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1801, e.Message, packageIdentity.Id));
                 }
             }
             finally
             {
                 _throttle?.Release();
             }
+
+            return null;
         }
 
-        private IEnumerable<LibraryDependency> GetDependencies(FindPackageByIdDependencyInfo packageInfo, NuGetFramework targetFramework)
+        private IEnumerable<LibraryDependency> GetDependencies(
+            FindPackageByIdDependencyInfo packageInfo,
+            NuGetFramework targetFramework)
         {
             if (packageInfo == null)
             {
@@ -285,12 +439,20 @@ namespace NuGet.Commands
         }
 
         /// <summary>
-        /// Discover all package versions from a feed.
+        /// Asynchronously discover all package versions from a feed.
         /// </summary>
-        public async Task<IEnumerable<NuGetVersion>> GetAllVersionsAsync(string id,
-                                                                    SourceCacheContext cacheContext,
-                                                                    ILogger logger,
-                                                                    CancellationToken cancellationToken)
+        /// <param name="id">A package ID.</param>
+        /// <param name="cacheContext">A source cache context.</param>
+        /// <param name="logger">A logger.</param>
+        /// <param name="cancellationToken">A cancellation token.</param>
+        /// <returns>A task that represents the asynchronous operation.
+        /// The task result (<see cref="Task{TResult}.Result" />) returns an
+        /// <see cref="IEnumerable{NuGetVersion}" />.</returns>
+        public async Task<IEnumerable<NuGetVersion>> GetAllVersionsAsync(
+            string id,
+            SourceCacheContext cacheContext,
+            ILogger logger,
+            CancellationToken cancellationToken)
         {
             IEnumerable<NuGetVersion> packageVersions = null;
             try

@@ -1,9 +1,8 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -11,6 +10,8 @@ using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
+using NuGet.Packaging;
+using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 using Xunit;
@@ -831,9 +832,8 @@ namespace NuGet.DependencyResolver.Tests
 
             public PackageSource Source => new PackageSource("Test");
 
-            public Task CopyToAsync(
-                LibraryIdentity match,
-                Stream stream,
+            public Task<IPackageDownloader> GetPackageDownloaderAsync(
+                PackageIdentity packageIdentity,
                 SourceCacheContext cacheContext,
                 ILogger logger,
                 CancellationToken cancellationToken)

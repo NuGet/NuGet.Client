@@ -13,7 +13,7 @@ namespace NuGet.PackageManagement.UI
     {
         ISourceRepositoryProvider SourceProvider { get; }
 
-        ISolutionManager SolutionManager { get; }
+        IVsSolutionManager SolutionManager { get; }
 
         NuGetPackageManager PackageManager { get; }
 

@@ -79,15 +79,89 @@ namespace NuGet.Build.Tasks
             }
 
             // Process
-            var settings = RestoreSettingsUtils.ReadSettings(RestoreSolutionDirectory, Path.GetDirectoryName(ProjectUniqueName), RestoreConfigFile, _machineWideSettings);
+            // TODO NK - This needs to be reworked properly so that it's unique everywhere.
+            // var settings = RestoreSettingsUtils.ReadSettings(RestoreSolutionDirectory, Path.GetDirectoryName(ProjectUniqueName), RestoreConfigFile, _machineWideSettings);
 
-            OutputPackagesPath = RestoreSettingsUtils.GetPackagesPath(ProjectUniqueName, settings, RestorePackagesPath);
+            // OutputPackagesPath = RestoreSettingsUtils.GetPackagesPath(ProjectUniqueName, settings, RestorePackagesPath);
 
-            OutputSources = RestoreSettingsUtils.GetSources(ProjectUniqueName, settings, RestoreSources != null ? RestoreSources.AsEnumerable() : new List<string>()).Select(e => e.Source).ToArray();
+            // OutputSources = RestoreSettingsUtils.GetSources(ProjectUniqueName, settings, RestoreSources != null ? RestoreSources.AsEnumerable() : new List<string>()).Select(e => e.Source).ToArray();
 
-            OutputFallbackFolders = RestoreSettingsUtils.GetFallbackFolders(ProjectUniqueName, settings, RestoreFallbackFolders != null ? RestoreFallbackFolders.AsEnumerable() : new List<string>()).ToArray();
+            // OutputFallbackFolders = RestoreSettingsUtils.GetFallbackFolders(ProjectUniqueName, settings, RestoreFallbackFolders != null ? RestoreFallbackFolders.AsEnumerable() : new List<string>()).ToArray();
 
-            OutputConfigFilePaths = SettingsUtility.GetConfigFilePaths(settings).ToArray();
+            // OutputConfigFilePaths = SettingsUtility.GetConfigFilePaths(settings).ToArray();
+            try
+            {
+                var settings = ReadSettings(RestoreSolutionDirectory, Path.GetDirectoryName(ProjectUniqueName), RestoreConfigFile);
+
+                if (string.IsNullOrEmpty(RestorePackagesPath))
+                {
+                    OutputPackagesPath = SettingsUtility.GetGlobalPackagesFolder(settings);
+                }
+                else if (StringComparer.OrdinalIgnoreCase.Compare(RestorePackagesPath, CLEAR) == 0)
+                {
+                    RestorePackagesPath = string.Empty;
+                }
+                else
+                {
+                    // Relative -> Absolute path
+                    OutputPackagesPath = UriUtility.GetAbsolutePathFromFile(ProjectUniqueName, RestorePackagesPath);
+                }
+
+                if (RestoreSources == null)
+                {
+                    var packageSourceProvider = new PackageSourceProvider(settings);
+                    var packageSourcesFromProvider = packageSourceProvider.LoadPackageSources();
+                    OutputSources = packageSourcesFromProvider.Select(e => e.Source).ToArray();
+                }
+                else if (MSBuildRestoreUtility.ContainsClearKeyword(RestoreSources))
+                {
+                    if (MSBuildRestoreUtility.LogErrorForClearIfInvalid(RestoreSources, ProjectUniqueName, log))
+                    {
+                        // Fail due to invalid combination
+                        return false;
+                    }
+
+                    OutputSources = new string[] { };
+                }
+                else
+                {
+                    // Relative -> Absolute paths
+                    OutputSources = RestoreSources.Select(e => UriUtility.GetAbsolutePathFromFile(ProjectUniqueName, e)).ToArray();
+                }
+
+                if (RestoreFallbackFolders == null)
+                {
+                    OutputFallbackFolders = SettingsUtility.GetFallbackPackageFolders(settings).ToArray();
+                }
+                else if (MSBuildRestoreUtility.ContainsClearKeyword(RestoreFallbackFolders))
+                {
+                    if (MSBuildRestoreUtility.LogErrorForClearIfInvalid(RestoreFallbackFolders, ProjectUniqueName, log))
+                    {
+                        // Fail due to invalid combination
+                        return false;
+                    }
+
+                    OutputFallbackFolders = new string[] { };
+                }
+                else
+                {
+                    // Relative -> Absolute paths
+                    OutputFallbackFolders = RestoreFallbackFolders.Select(e => UriUtility.GetAbsolutePathFromFile(ProjectUniqueName, e)).ToArray();
+                }
+
+                var configFilePaths = new List<string>();
+                foreach (var config in settings.Priority)
+                {
+                    configFilePaths.Add(Path.GetFullPath(Path.Combine(config.Root, config.FileName)));
+                }
+                OutputConfigFilePaths = configFilePaths.ToArray();
+            }
+            catch (Exception ex)
+            {
+                // Log exceptions with error codes if they exist.
+                ExceptionUtilities.LogException(ex, log);
+                return false;
+            }
 
             // Log Outputs
             log.LogDebug($"(out) OutputPackagesPath '{OutputPackagesPath}'");

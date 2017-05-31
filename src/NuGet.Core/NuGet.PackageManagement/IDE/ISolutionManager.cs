@@ -41,17 +41,6 @@ namespace NuGet.PackageManagement
         string SolutionDirectory { get; }
 
         /// <summary>
-        /// Gets the name of the default <see cref="NuGetProject" />. Default NuGetProject is the selected NuGetProject
-        /// in the IDE.
-        /// </summary>
-        string DefaultNuGetProjectName { get; set; }
-
-        /// <summary>
-        /// Gets the default <see cref="NuGetProject" />. Default NuGetProject is the selected NuGetProject in the IDE.
-        /// </summary>
-        NuGetProject DefaultNuGetProject { get; }
-
-        /// <summary>
         /// Returns true if the solution is open
         /// </summary>
         bool IsSolutionOpen { get; }
@@ -63,13 +52,6 @@ namespace NuGet.PackageManagement
         /// not a relative path, it will return true, even if the solution file is not available.
         /// </summary>
         bool IsSolutionAvailable { get; }
-
-        /// <summary>
-        /// Returns true if the solution is loaded with DPL enabled.
-        /// That is, when no project is loaded by default.
-        /// This is only applicable for VS15, for VS14 it will always return false.
-        /// </summary>
-        bool IsSolutionDPLEnabled { get; }
 
         INuGetProjectContext NuGetProjectContext { get; set; }
 
@@ -104,19 +86,11 @@ namespace NuGet.PackageManagement
         void OnActionsExecuted(IEnumerable<ResolvedAction> actions);
 
         /// <summary>
-        /// Saves the specified project
-        /// </summary>
-        /// <param name="nuGetProject"></param>
-        void SaveProject(NuGetProject nuGetProject);
-
-        /// <summary>
         /// It ensure to completely load the solution before continue if it was loaded with DPL.
         /// That is, not all the projects were loaded when solution was open.
         /// This will only be applicable for VS15 and will do nothing for VS14.
         /// </summary>
         void EnsureSolutionIsLoaded();
-
-        Task<NuGetProject> UpdateNuGetProjectToPackageRef(NuGetProject oldProject);
     }
 
     public class NuGetProjectEventArgs : EventArgs

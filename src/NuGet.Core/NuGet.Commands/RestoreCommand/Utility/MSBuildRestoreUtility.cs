@@ -22,6 +22,9 @@ namespace NuGet.Commands
     /// </summary>
     public static class MSBuildRestoreUtility
     {
+        // Clear keyword for properties.
+        public static readonly string Clear = nameof(Clear);
+
         /// <summary>
         /// Convert MSBuild items to a DependencyGraphSpec.
         /// </summary>
@@ -282,6 +285,43 @@ namespace NuGet.Commands
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// True if the list contains CLEAR.
+        /// </summary>
+        public static bool ContainsClearKeyword(IEnumerable<string> values)
+        {
+            return (values?.Contains(Clear, StringComparer.OrdinalIgnoreCase) == true);
+        }
+
+        /// <summary>
+        /// True if the list contains CLEAR and non-CLEAR keywords.
+        /// </summary>
+        /// <remarks>CLEAR;CLEAR is considered valid.</remarks>
+        public static bool HasInvalidClear(IEnumerable<string> values)
+        {
+            return ContainsClearKeyword(values) 
+                    && (values?.Any(e => !StringComparer.OrdinalIgnoreCase.Equals(e, Clear)) == true);
+        }
+
+        /// <summary>
+        /// Logs an error if CLEAR is used with non-CLEAR entries.
+        /// </summary>
+        /// <returns>True if an invalid combination exists.</returns>
+        public static bool LogErrorForClearIfInvalid(IEnumerable<string> values, string projectPath, ILogger logger)
+        {
+            if (HasInvalidClear(values))
+            {
+                var text = string.Format(CultureInfo.CurrentCulture, Strings.CannotBeUsedWithOtherValues, Clear);
+                var message = LogMessage.CreateError(NuGetLogCode.NU1002, text);
+                message.ProjectPath = projectPath;
+                logger.Log(message);
+
+                return true;
+            }
+
+            return false;
         }
 
         private static void AddPackageTargetFallbacks(PackageSpec spec, IEnumerable<IMSBuildItem> items)

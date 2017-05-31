@@ -22,7 +22,7 @@ namespace NuGet.PackageManagement.VisualStudio
         /// <remarks>Adds the file to the DTE project system</remarks>
         /// <param name="projectSystem">the web site project system where this will be added</param>
         /// <param name="assemblyPath">The path to the assembly being added</param>
-        public static void CreateRefreshFile(VSMSBuildNuGetProjectSystem projectSystem, string assemblyPath)
+        public static void CreateRefreshFile(VsMSBuildProjectSystem projectSystem, string assemblyPath)
         {
             if (projectSystem == null)
             {
@@ -81,7 +81,7 @@ namespace NuGet.PackageManagement.VisualStudio
         /// <remarks>Adds the file to disk ONLY!</remarks>
         /// <param name="root">the root path is dte full path</param>
         /// <param name="assemblyPath">The relative path to the assembly being added</param>
-        public static void CreateRefreshFile(string root, string assemblyPath, IMSBuildNuGetProjectSystem msbuildNuGetProjectSystem)
+        public static void CreateRefreshFile(string root, string assemblyPath, IMSBuildProjectSystem msbuildNuGetProjectSystem)
         {
             string refreshFilePath = CreateRefreshFilePath(assemblyPath);
 
