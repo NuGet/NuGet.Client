@@ -150,14 +150,13 @@ namespace NuGet.ProjectManagement.Projects
             return packages;
         }
 
-        protected virtual string GetBaseIntermediatePath(bool shouldThrow = true)
+        protected virtual async Task<string> GetBaseIntermediatePathAsync()
         {
             return null;
         }
        
         public override async Task<IReadOnlyList<PackageSpec>> GetPackageSpecsAsync(DependencyGraphCacheContext context)
         {
-            //TODO NK - Add settings here maybe?
             PackageSpec packageSpec = null;
             if (context == null || !context.PackageSpecCache.TryGetValue(MSBuildProjectPath, out packageSpec))
             {
@@ -171,7 +170,7 @@ namespace NuGet.ProjectManagement.Projects
                 packageSpec.RestoreMetadata = metadata;
 
                 metadata.ProjectStyle = ProjectStyle.ProjectJson;
-                metadata.OutputPath = GetBaseIntermediatePath();
+                metadata.OutputPath = await GetBaseIntermediatePathAsync();
                 metadata.ProjectPath = MSBuildProjectPath;
                 metadata.ProjectJsonPath = packageSpec.FilePath;
                 metadata.ProjectName = packageSpec.Name;

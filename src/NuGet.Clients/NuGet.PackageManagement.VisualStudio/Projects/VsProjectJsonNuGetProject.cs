@@ -37,25 +37,20 @@ namespace NuGet.PackageManagement.VisualStudio
             ProjectServices = projectServices;
         }
 
-        protected override string GetBaseIntermediatePath(bool shouldThrow = true)
+        protected override async Task<string> GetBaseIntermediatePathAsync()
         {
-
-            var baseIntermediatePath = _vsProjectAdapter.BaseIntermediateOutputPath;
+            var baseIntermediatePath = await ProjectServices.BuildProperties.GetPropertyValueAsync(ProjectBuildProperties.BaseIntermediateOutputPath);
 
             if (string.IsNullOrEmpty(baseIntermediatePath))
             {
-                if (shouldThrow)
-                {
-                    throw new InvalidDataException(string.Format(
-                        Strings.BaseIntermediateOutputPathNotFound,
-                        _vsProjectAdapter.FullPath));
-                }
-
-                return null;
+                throw new InvalidDataException(string.Format(
+                    Strings.BaseIntermediateOutputPathNotFound,
+                    MSBuildProjectPath));
             }
 
             return baseIntermediatePath;
         }
+
         protected override async Task UpdateInternalTargetFrameworkAsync()
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();

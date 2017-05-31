@@ -460,11 +460,11 @@ Copyright (c) .NET Foundation. All rights reserved.
     Returns="@(_RestoreGraphEntry)">
 
     <!-- Determine the restore output path -->
-    <PropertyGroup Condition=" '$(RestoreProjectStyle)' == 'PackageReference' ">
+    <PropertyGroup Condition=" '$(RestoreProjectStyle)' == 'PackageReference' AND '$(RestoreProjectStyle)' == 'ProjectJson' ">
       <RestoreOutputPath Condition=" '$(RestoreOutputPath)' == '' " >$(BaseIntermediateOutputPath)</RestoreOutputPath>
     </PropertyGroup>
 
-    <ConvertToAbsolutePath Paths="$(RestoreOutputPath)" Condition=" '$(RestoreProjectStyle)' == 'PackageReference' ">
+    <ConvertToAbsolutePath Paths="$(RestoreOutputPath)" Condition=" '$(RestoreProjectStyle)' == 'PackageReference' AND '$(RestoreProjectStyle)' == 'ProjectJson'">
       <Output TaskParameter="AbsolutePaths" PropertyName="RestoreOutputAbsolutePath" />
     </ConvertToAbsolutePath>
 
