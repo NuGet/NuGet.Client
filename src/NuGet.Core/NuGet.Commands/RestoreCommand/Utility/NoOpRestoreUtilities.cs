@@ -38,7 +38,8 @@ namespace NuGet.Commands
                || request.ProjectStyle == ProjectStyle.Standalone)
             {
                 var projFileName = Path.GetFileName(request.Project.RestoreMetadata.ProjectPath);
-                cacheFilePath = request.Project.RestoreMetadata.CacheFilePath = Path.Combine(request.BaseIntermediateOutputPath, $"{projFileName}.nuget.cache");
+                var cacheRoot = request.BaseIntermediateOutputPath ?? request.RestoreOutputPath;
+                cacheFilePath = request.Project.RestoreMetadata.CacheFilePath = Path.Combine(cacheRoot, $"{projFileName}.nuget.cache");
             }
 
             return cacheFilePath;
