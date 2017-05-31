@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Configuration;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
@@ -28,7 +29,7 @@ namespace NuGet.PackageManagement.Test
                 // Arrange
                 var actions = new List<NuGetProjectAction>();
                 var packagesFolder = new FolderNuGetProject(packagesFolderDir);
-                var testSettings = new Configuration.NullSettings();
+                var testSettings = NullSettings.Instance;
                 var logger = new TestLogger();
 
                 // Act
@@ -56,7 +57,7 @@ namespace NuGet.PackageManagement.Test
                 // Arrange
                 var actions = new List<NuGetProjectAction>();
                 var packagesFolder = new FolderNuGetProject(packagesFolderDir);
-                var testSettings = new Configuration.NullSettings();
+                var testSettings = NullSettings.Instance;
                 var logger = new TestLogger();
 
                 var target = new PackageIdentity("packageA", NuGetVersion.Parse("1.0.0"));
@@ -92,7 +93,7 @@ namespace NuGet.PackageManagement.Test
                 // Arrange
                 var actions = new List<NuGetProjectAction>();
                 var packagesFolder = new FolderNuGetProject(packagesFolderDir);
-                var testSettings = new Configuration.NullSettings();
+                var testSettings = NullSettings.Instance;
                 var logger = new TestLogger();
                 var target = new PackageIdentity("packageA", NuGetVersion.Parse("1.0.0"));
                 var source = Repository.Factory.GetVisualStudio(new Configuration.PackageSource(sourceDir.Path));
@@ -139,7 +140,7 @@ namespace NuGet.PackageManagement.Test
                 // Arrange
                 var actions = new List<NuGetProjectAction>();
                 var packagesFolder = new FolderNuGetProject(packagesFolderDir);
-                var testSettings = new Configuration.NullSettings();
+                var testSettings = NullSettings.Instance;
                 var logger = new TestLogger();
                 var target = new PackageIdentity("packageA", NuGetVersion.Parse("1.0.0"));
                 var source = Repository.Factory.GetVisualStudio(new Configuration.PackageSource(sourceDir.Path));
@@ -187,7 +188,7 @@ namespace NuGet.PackageManagement.Test
                 // Arrange
                 var actions = new List<NuGetProjectAction>();
                 var packagesFolder = new FolderNuGetProject(packagesFolderDir);
-                var testSettings = new Configuration.NullSettings();
+                var testSettings = NullSettings.Instance;
                 var logger = new TestLogger();
 
 
@@ -271,7 +272,7 @@ namespace NuGet.PackageManagement.Test
                 // Arrange
                 var actions = new List<NuGetProjectAction>();
                 var packagesFolder = new FolderNuGetProject(packagesFolderDir);
-                var testSettings = new Configuration.NullSettings();
+                var testSettings = NullSettings.Instance;
                 var logger = new TestLogger();
                 var target = new PackageIdentity("packageA", NuGetVersion.Parse("1.0.0"));
                 var targetNonNormalized = new PackageIdentity("packageA", NuGetVersion.Parse("1.0"));
@@ -318,7 +319,7 @@ namespace NuGet.PackageManagement.Test
                 // Arrange
                 var actions = new List<NuGetProjectAction>();
                 var packagesFolder = new FolderNuGetProject(packagesFolderDir);
-                var testSettings = new Configuration.NullSettings();
+                var testSettings = NullSettings.Instance;
                 var logger = new TestLogger();
                 var target = new PackageIdentity("packageA", NuGetVersion.Parse("1.0.0"));
                 var targetNonNormalized = new PackageIdentity("packageA", NuGetVersion.Parse("1.0"));
@@ -365,7 +366,7 @@ namespace NuGet.PackageManagement.Test
                 // Arrange
                 var actions = new List<NuGetProjectAction>();
                 var packagesFolder = new FolderNuGetProject(packagesFolderDir);
-                var testSettings = new Configuration.NullSettings();
+                var testSettings = NullSettings.Instance;
                 var logger = new TestLogger();
                 var target = new PackageIdentity("packageA", NuGetVersion.Parse("1.0.0"));
                 var source = Repository.Factory.GetVisualStudio(new Configuration.PackageSource(sourceDir.Path));
@@ -409,7 +410,7 @@ namespace NuGet.PackageManagement.Test
                 // Arrange
                 var actions = new List<NuGetProjectAction>();
                 var packagesFolder = new FolderNuGetProject(packagesFolderDir);
-                var testSettings = new Configuration.NullSettings();
+                var testSettings = NullSettings.Instance;
                 var logger = new TestLogger();
                 var target = new PackageIdentity("packageA", NuGetVersion.Parse("1.0.0"));
                 var source = Repository.Factory.GetVisualStudio(new Configuration.PackageSource(sourceDir.Path));

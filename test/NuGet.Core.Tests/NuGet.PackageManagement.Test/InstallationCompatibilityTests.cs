@@ -506,6 +506,8 @@ namespace NuGet.PackageManagement.Test
                     null,
                     null,
                     null,
+                    null,
+                    null,
                     ProjectStyle.Unknown,
                     TimeSpan.MinValue);
             }

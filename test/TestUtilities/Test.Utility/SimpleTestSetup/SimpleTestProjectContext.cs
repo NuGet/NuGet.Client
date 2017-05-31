@@ -9,6 +9,7 @@ using System.Text;
 using System.Xml.Linq;
 using Newtonsoft.Json.Linq;
 using NuGet.Common;
+using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.Packaging.Core;
@@ -110,6 +111,12 @@ namespace NuGet.Test.Utility
 
         public bool ToolingVersion15 { get; set; } = false;
 
+        public IEnumerable<PackageSource> Sources { get; set; }
+
+        public IList<string> FallbackFolders { get; set; }
+
+        public string GlobalPackagesFolder { get; set; }
+
         /// <summary>
         /// project.lock.json or project.assets.json
         /// </summary>
@@ -204,6 +211,9 @@ namespace NuGet.Test.Utility
                     _packageSpec.RestoreMetadata.TargetFrameworks = Frameworks
                         .Select(f => new ProjectRestoreMetadataFrameworkInfo(f.Framework))
                         .ToList();
+                    _packageSpec.RestoreMetadata.Sources = Sources.ToList();
+                    _packageSpec.RestoreMetadata.PackagesPath = GlobalPackagesFolder;
+                    _packageSpec.RestoreMetadata.FallbackFolders = FallbackFolders;
                     if (Type == ProjectStyle.ProjectJson)
                     {
                         _packageSpec.RestoreMetadata.ProjectJsonPath = Path.Combine(Path.GetDirectoryName(ProjectPath), "project.json");

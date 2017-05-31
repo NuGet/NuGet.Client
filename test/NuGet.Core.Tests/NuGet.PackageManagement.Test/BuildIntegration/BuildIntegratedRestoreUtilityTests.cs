@@ -54,7 +54,7 @@ namespace NuGet.Test
 
                 var testLogger = new TestLogger();
 
-                var restoreContext = new DependencyGraphCacheContext(testLogger);
+                var restoreContext = new DependencyGraphCacheContext(testLogger, NullSettings.Instance);
 
                 // Act
                 await DependencyGraphRestoreUtility.RestoreAsync(
@@ -63,7 +63,7 @@ namespace NuGet.Test
                     new RestoreCommandProvidersCache(),
                     (c) => { },
                     sources,
-                    NullSettings.Instance,
+                    false,
                     testLogger,
                     CancellationToken.None);
 
@@ -104,7 +104,7 @@ namespace NuGet.Test
 
                 var testLogger = new TestLogger();
 
-                var restoreContext = new DependencyGraphCacheContext(testLogger);
+                var restoreContext = new DependencyGraphCacheContext(testLogger, NullSettings.Instance);
 
                 // Act
                 await DependencyGraphRestoreUtility.RestoreAsync(
@@ -113,7 +113,7 @@ namespace NuGet.Test
                     new RestoreCommandProvidersCache(),
                     (c) => { },
                     sources,
-                    NullSettings.Instance,
+                    false,
                     testLogger,
                     CancellationToken.None);
 
@@ -162,7 +162,7 @@ namespace NuGet.Test
 
                 File.WriteAllText(Path.Combine(configFolder, "sub", "nuget.config"), configContents);
 
-                var settings = new Configuration.Settings(configSubFolder);
+                var settings = new Configuration.Settings(configSubFolder); // TODO NK - Fix this test
 
                 var solutionFolder = new DirectoryInfo(Path.Combine(solutionFolderParent, "solutionFolder"));
                 solutionFolder.Create();
@@ -172,7 +172,7 @@ namespace NuGet.Test
 
                 var testLogger = new TestLogger();
 
-                var restoreContext = new DependencyGraphCacheContext(testLogger);
+                var restoreContext = new DependencyGraphCacheContext(testLogger, settings);
 
                 // Act
                 await DependencyGraphRestoreUtility.RestoreAsync(
@@ -181,7 +181,7 @@ namespace NuGet.Test
                     new RestoreCommandProvidersCache(),
                     (c) => { },
                     sources,
-                    settings,
+                    false,
                     testLogger,
                     CancellationToken.None);
 

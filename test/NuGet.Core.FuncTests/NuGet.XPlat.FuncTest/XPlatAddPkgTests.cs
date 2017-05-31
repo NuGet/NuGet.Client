@@ -575,7 +575,6 @@ namespace NuGet.XPlat.FuncTest
         public async void AddPkg_ConditionalAddTwoPackages_Success(string packageFrameworks, string projectFrameworks, string userInputFrameworks)
         {
             // Arrange
-
             using (var pathContext = new SimpleTestPathContext())
             {
                 var projectA = XPlatTestUtils.CreateProject(projectName, pathContext, projectFrameworks);

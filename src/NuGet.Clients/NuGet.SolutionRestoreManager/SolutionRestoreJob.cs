@@ -281,22 +281,16 @@ namespace NuGet.SolutionRestoreManager
                 }
 
                 // Cache p2ps discovered from DTE
-                var cacheContext = new DependencyGraphCacheContext(_logger);
+                var cacheContext = new DependencyGraphCacheContext(_logger, _settings);
                 var pathContext = NuGetPathContext.Create(_settings);
 
-                var isRestoreRequired = await DependencyGraphRestoreUtility.IsRestoreRequiredAsync(
-                    _solutionManager,
-                    forceRestore,
-                    pathContext,
-                    cacheContext,
-                    _dependencyGraphProjectCacheHash);
+                // Get full dg spec
+                // TODO: pass this down instead of creating it twice.
+                var dgSpec = await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(_solutionManager, cacheContext);
 
-                // No-op all project closures are up to date and all packages exist on disk.
-                if (isRestoreRequired)
+                // Avoid restoring solutions with zero potential PackageReference projects.
+                if (DependencyGraphRestoreUtility.IsRestoreRequired(dgSpec))
                 {
-                    // Save the project between operations.
-                    _dependencyGraphProjectCacheHash = cacheContext.SolutionSpecHash;
-
                     // NOTE: During restore for build integrated projects,
                     //       We might show the dialog even if there are no packages to restore
                     // When both currentStep and totalSteps are 0, we get a marquee on the dialog
@@ -319,7 +313,7 @@ namespace NuGet.SolutionRestoreManager
                                 providerCache,
                                 cacheModifier,
                                 sources,
-                                _settings,
+                                forceRestore,
                                 l,
                                 t);
 

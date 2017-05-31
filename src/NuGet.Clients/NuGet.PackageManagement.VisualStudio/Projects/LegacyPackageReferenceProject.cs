@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -9,6 +9,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft;
 using Microsoft.VisualStudio.Shell;
+using NuGet.Commands;
+using NuGet.Common;
+using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.Packaging;
@@ -103,7 +106,7 @@ namespace NuGet.PackageManagement.VisualStudio
             PackageSpec packageSpec;
             if (context == null || !context.PackageSpecCache.TryGetValue(MSBuildProjectPath, out packageSpec))
             {
-                packageSpec = await GetPackageSpecAsync();
+                packageSpec = await GetPackageSpecAsync(context.Settings);
                 if (packageSpec == null)
                 {
                     throw new InvalidOperationException(
@@ -121,7 +124,8 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public override async Task<IEnumerable<PackageReference>> GetInstalledPackagesAsync(CancellationToken token)
         {
-            return GetPackageReferences(await GetPackageSpecAsync());
+            // Settings are not needed for this purpose, this only finds the installed packages
+            return GetPackageReferences(await GetPackageSpecAsync(NullSettings.Instance));
         }
 
         public override async Task<bool> InstallPackageAsync(
@@ -175,6 +179,76 @@ namespace NuGet.PackageManagement.VisualStudio
             return baseIntermediatePath;
         }
 
+        private string GetPackagesPath(ISettings settings)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            var packagePath = _vsProjectAdapter.RestorePackagesPath;
+
+            if (string.IsNullOrEmpty(packagePath))
+            {
+                return SettingsUtility.GetGlobalPackagesFolder(settings);
+            }
+
+            return UriUtility.GetAbsolutePathFromFile(_projectFullPath, packagePath);
+        }
+
+        private IList<PackageSource> GetSources(ISettings settings, bool shouldThrow = true)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            var sources = MSBuildStringUtility.Split(_vsProjectAdapter.RestoreSources).AsEnumerable();
+
+            if (ShouldReadFromSettings(sources))
+            {
+                sources = SettingsUtility.GetEnabledSources(settings).Select(e => e.Source);
+            }
+            else
+            {
+                sources = HandleClear(sources);
+            }
+
+            return sources.Select(e => new PackageSource(UriUtility.GetAbsolutePathFromFile(_projectFullPath, e))).ToList();
+        }
+
+        private IList<string> GetFallbackFolders(ISettings settings, bool shouldThrow = true)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            var fallbackFolders = MSBuildStringUtility.Split(_vsProjectAdapter.RestoreFallbackFolders).AsEnumerable();
+
+            if (ShouldReadFromSettings(fallbackFolders))
+            {
+                fallbackFolders = SettingsUtility.GetFallbackPackageFolders(settings);
+            }
+            else
+            {
+                fallbackFolders = HandleClear(fallbackFolders);
+            }
+
+            return fallbackFolders.Select(e => UriUtility.GetAbsolutePathFromFile(_projectFullPath, e)).ToList();
+        }
+
+        private static bool ShouldReadFromSettings(IEnumerable<string> values)
+        {
+            return !values.Any() && values.All(e => !StringComparer.OrdinalIgnoreCase.Equals("CLEAR", e));
+        }
+
+        private static IEnumerable<string> HandleClear(IEnumerable<string> values)
+        {
+            if (values.Any(e => StringComparer.OrdinalIgnoreCase.Equals("CLEAR", e)))
+            {
+                return Enumerable.Empty<string>();
+            }
+
+            return values;
+        }
+
+        private IList<string> GetConfigFilePaths(ISettings settings)
+        {
+            return SettingsUtility.GetConfigFilePaths(settings).ToList();
+        }
+
         private static PackageReference[] GetPackageReferences(PackageSpec packageSpec)
         {
             var frameworkSorter = new NuGetFrameworkSorter();
@@ -206,7 +280,7 @@ namespace NuGet.PackageManagement.VisualStudio
         /// <summary>
         /// Emulates a JSON deserialization from project.json to PackageSpec in a post-project.json world
         /// </summary>
-        private async Task<PackageSpec> GetPackageSpecAsync()
+        private async Task<PackageSpec> GetPackageSpecAsync(ISettings settings)
         {
             await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
 
@@ -272,7 +346,11 @@ namespace NuGet.PackageManagement.VisualStudio
                         {
                             ProjectReferences = projectReferences?.ToList()
                         }
-                    }
+                    },
+                    PackagesPath = GetPackagesPath(settings),
+                    Sources = GetSources(settings),
+                    FallbackFolders = GetFallbackFolders(settings),
+                    ConfigFilePaths = GetConfigFilePaths(settings)
                 }
             };
         }

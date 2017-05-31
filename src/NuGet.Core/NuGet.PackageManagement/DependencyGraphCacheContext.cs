@@ -4,15 +4,17 @@
 using System;
 using System.Collections.Generic;
 using NuGet.Common;
+using NuGet.Configuration;
 using NuGet.ProjectModel;
 
 namespace NuGet.ProjectManagement
 {
     public class DependencyGraphCacheContext
     {
-        public DependencyGraphCacheContext(ILogger logger)
+        public DependencyGraphCacheContext(ILogger logger, ISettings settings)
         {
             Logger = logger;
+            Settings = settings;
         }
 
         public DependencyGraphCacheContext()
@@ -37,13 +39,13 @@ namespace NuGet.ProjectManagement
         /// </summary>
         public Dictionary<string, IReadOnlyList<IDependencyGraphProject>> DirectReferenceCache { get; set; } = new Dictionary<string, IReadOnlyList<IDependencyGraphProject>>(StringComparer.Ordinal);
 
-        public DependencyGraphSpec SolutionSpec { get; set; }
-
-        public string SolutionSpecHash { get; set; }
+        public DependencyGraphSpec SolutionSpec { get; set; } // TODO NK - Check if the solution spec is the one that ends up in the restore command or dependency graph context
 
         /// <summary>
         /// Logger
         /// </summary>
         public ILogger Logger { get; }
+
+        public ISettings Settings { get; }
     }
 }

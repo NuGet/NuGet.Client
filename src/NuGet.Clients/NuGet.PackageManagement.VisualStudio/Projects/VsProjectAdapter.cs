@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -46,6 +46,51 @@ namespace NuGet.PackageManagement.VisualStudio
                 var projectDirectory = Path.GetDirectoryName(FullPath);
 
                 return Path.Combine(projectDirectory, baseIntermediateOutputPath);
+            }
+        }
+
+        public string RestorePackagesPath
+        {
+            get
+            {
+                var restorePackagesPath = BuildProperties.GetPropertyValue(ProjectBuildProperties.RestorePackagesPath);
+
+                if (string.IsNullOrWhiteSpace(restorePackagesPath))
+                {
+                    return null;
+                }
+
+                return restorePackagesPath;
+            }
+        }
+
+        public string RestoreSources
+        {
+            get
+            {
+                var restoreSources = BuildProperties.GetPropertyValue(ProjectBuildProperties.RestoreSources);
+
+                if (string.IsNullOrWhiteSpace(restoreSources))
+                {
+                    return null;
+                }
+
+                return restoreSources;
+            }
+        }
+
+        public string RestoreFallbackFolders
+        {
+            get
+            {
+                var restoreFallbackFolders = BuildProperties.GetPropertyValue(ProjectBuildProperties.RestoreFallbackFolders);
+
+                if (string.IsNullOrWhiteSpace(restoreFallbackFolders))
+                {
+                    return null;
+                }
+
+                return restoreFallbackFolders;
             }
         }
 

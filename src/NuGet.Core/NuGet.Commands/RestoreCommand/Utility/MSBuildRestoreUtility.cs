@@ -22,6 +22,9 @@ namespace NuGet.Commands
     /// </summary>
     public static class MSBuildRestoreUtility
     {
+        // Clear keyword for properties.
+        public static readonly string Clear = nameof(Clear);
+
         /// <summary>
         /// Convert MSBuild items to a DependencyGraphSpec.
         /// </summary>
@@ -166,18 +169,19 @@ namespace NuGet.Commands
                 // Read project references for all
                 AddProjectReferences(result, items);
 
-                // Read package references for netcore, tools, and standalone
                 if (restoreType == ProjectStyle.PackageReference
                     || restoreType == ProjectStyle.Standalone
-                    || restoreType == ProjectStyle.DotnetCliTool)
-                {
-                    AddFrameworkAssemblies(result, items);
-                    AddPackageReferences(result, items);
-                    result.RestoreMetadata.OutputPath = specItem.GetProperty("OutputPath");
+                    || restoreType == ProjectStyle.DotnetCliTool
+                    || restoreType == ProjectStyle.ProjectJson) {
 
                     foreach (var source in MSBuildStringUtility.Split(specItem.GetProperty("Sources")))
                     {
                         result.RestoreMetadata.Sources.Add(new PackageSource(source));
+                    }
+
+                    foreach (var configFilePath in MSBuildStringUtility.Split(specItem.GetProperty("ConfigFilePaths")))
+                    {
+                        result.RestoreMetadata.ConfigFilePaths.Add(configFilePath);
                     }
 
                     foreach (var folder in MSBuildStringUtility.Split(specItem.GetProperty("FallbackFolders")))
@@ -186,6 +190,17 @@ namespace NuGet.Commands
                     }
 
                     result.RestoreMetadata.PackagesPath = specItem.GetProperty("PackagesPath");
+
+                    result.RestoreMetadata.OutputPath = specItem.GetProperty("OutputPath");
+                }
+                
+                // Read package references for netcore, tools, and standalone
+                if (restoreType == ProjectStyle.PackageReference
+                    || restoreType == ProjectStyle.Standalone
+                    || restoreType == ProjectStyle.DotnetCliTool)
+                {
+                    AddFrameworkAssemblies(result, items);
+                    AddPackageReferences(result, items);
 
                     // Store the original framework strings for msbuild conditionals
                     foreach (var originalFramework in GetFrameworksStrings(specItem))
@@ -271,6 +286,43 @@ namespace NuGet.Commands
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// True if the list contains CLEAR.
+        /// </summary>
+        public static bool ContainsClearKeyword(IEnumerable<string> values)
+        {
+            return (values?.Contains(Clear, StringComparer.OrdinalIgnoreCase) == true);
+        }
+
+        /// <summary>
+        /// True if the list contains CLEAR and non-CLEAR keywords.
+        /// </summary>
+        /// <remarks>CLEAR;CLEAR is considered valid.</remarks>
+        public static bool HasInvalidClear(IEnumerable<string> values)
+        {
+            return ContainsClearKeyword(values) 
+                    && (values?.Any(e => !StringComparer.OrdinalIgnoreCase.Equals(e, Clear)) == true);
+        }
+
+        /// <summary>
+        /// Logs an error if CLEAR is used with non-CLEAR entries.
+        /// </summary>
+        /// <returns>True if an invalid combination exists.</returns>
+        public static bool LogErrorForClearIfInvalid(IEnumerable<string> values, string projectPath, ILogger logger)
+        {
+            if (HasInvalidClear(values))
+            {
+                var text = string.Format(CultureInfo.CurrentCulture, Strings.CannotBeUsedWithOtherValues, Clear);
+                var message = LogMessage.CreateError(NuGetLogCode.NU1002, text);
+                message.ProjectPath = projectPath;
+                logger.Log(message);
+
+                return true;
+            }
+
+            return false;
         }
 
         private static void AddPackageTargetFallbacks(PackageSpec spec, IEnumerable<IMSBuildItem> items)

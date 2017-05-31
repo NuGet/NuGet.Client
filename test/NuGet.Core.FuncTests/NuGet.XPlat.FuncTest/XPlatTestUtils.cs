@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -12,6 +13,7 @@ using Newtonsoft.Json.Linq;
 using NuGet.CommandLine.XPlat;
 using NuGet.Commands;
 using NuGet.Common;
+using NuGet.Configuration;
 using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
 using NuGet.Test.Utility;
@@ -164,11 +166,17 @@ namespace NuGet.XPlat.FuncTest
             SimpleTestPathContext pathContext,
             string projectFrameworks)
         {
+            var settings = Settings.LoadDefaultSettings(Path.GetDirectoryName(pathContext.NuGetConfig), Path.GetFileName(pathContext.NuGetConfig), null);
             var project = SimpleTestProjectContext.CreateNETCoreWithSDK(
                     projectName: projectName,
                     solutionRoot: pathContext.SolutionRoot,
                     isToolingVersion15: true,
                     frameworks: MSBuildStringUtility.Split(projectFrameworks));
+
+            project.FallbackFolders = (IList<string>) SettingsUtility.GetFallbackPackageFolders(settings);
+            project.GlobalPackagesFolder = SettingsUtility.GetGlobalPackagesFolder(settings);
+            var packageSourceProvider = new PackageSourceProvider(settings);
+            project.Sources = packageSourceProvider.LoadPackageSources();
 
             project.Save();
             return project;

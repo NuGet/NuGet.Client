@@ -69,7 +69,7 @@ namespace NuGet.Commands
             // Get settings relative to the input file
             var settings = restoreContext.GetSettings(file.DirectoryName);
 
-            var sources = restoreContext.GetEffectiveSources(settings);
+            var sources = restoreContext.GetEffectiveSources(settings, null);
             var FallbackPackageFolders = restoreContext.GetEffectiveFallbackPackageFolders(settings);
 
             var globalPath = restoreContext.GetEffectiveGlobalPackagesFolder(file.DirectoryName, settings);

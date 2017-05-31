@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using NuGet.Configuration;
 using NuGet.LibraryModel;
 using NuGet.RuntimeModel;
 using NuGet.Shared;
@@ -197,6 +198,11 @@ namespace NuGet.ProjectModel
             spec.FilePath = FilePath;
 
             return spec;
+        }
+
+        public PackageSpec WithSettings(ISettings settings)
+        {
+            return null;
         }
     }
 }

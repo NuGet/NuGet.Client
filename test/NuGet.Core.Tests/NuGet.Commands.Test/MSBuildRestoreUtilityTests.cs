@@ -304,6 +304,7 @@ namespace NuGet.Commands.Test
 
                 var items = new List<IDictionary<string, string>>();
 
+                //TODO NK - Add tests
                 items.Add(new Dictionary<string, string>()
                 {
                     { "Type", "ProjectSpec" },
@@ -1419,6 +1420,34 @@ namespace NuGet.Commands.Test
 
             // Verify the value was not changed when it was stored
             Assert.Equal(input, raw);
+        }
+
+        [Theory]
+        [InlineData("a", false)]
+        [InlineData("", false)]
+        [InlineData("cLear", false)]
+        [InlineData("cLear;clear", false)]
+        [InlineData("cLear;a", true)]
+        [InlineData("a;CLEAR", true)]
+        [InlineData("a;CLEAR;CLEAR", true)]
+        public void MSBuildRestoreUtility_HasInvalidClear(string input, bool expected)
+        {
+            Assert.Equal(expected, MSBuildRestoreUtility.HasInvalidClear(MSBuildStringUtility.Split(input)));
+        }
+
+        [Theory]
+        [InlineData("a", false)]
+        [InlineData("", false)]
+        [InlineData("c;lear", false)]
+        [InlineData("a;b", false)]
+        [InlineData("cLear", true)]
+        [InlineData("cLear;clear", true)]
+        [InlineData("cLear;a", true)]
+        [InlineData("a;CLEAR", true)]
+        [InlineData("a;CLEAR;CLEAR", true)]
+        public void MSBuildRestoreUtility_ContainsClearKeyword(string input, bool expected)
+        {
+            Assert.Equal(expected, MSBuildRestoreUtility.ContainsClearKeyword(MSBuildStringUtility.Split(input)));
         }
 
         private IMSBuildItem CreateItems(IDictionary<string, string> properties)
