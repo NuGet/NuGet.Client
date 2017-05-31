@@ -21,6 +21,8 @@ namespace NuGet.ProjectModel
     public class JsonPackageSpecReader
     {
         public static readonly string RestoreOptions = "restore";
+        public static readonly string RestoreSettings = "restoreSettings";
+        public static readonly string HideWarningsAndErrors = "hideWarningsAndErrors";
         public static readonly string PackOptions = "packOptions";
         public static readonly string PackageType = "packageType";
         public static readonly string Files = "files";
@@ -161,6 +163,8 @@ namespace NuGet.ProjectModel
 
             packageSpec.PackOptions = GetPackOptions(packageSpec, rawPackageSpec);
 
+            packageSpec.RestoreSettings = GetRestoreSettings(packageSpec, rawPackageSpec);
+
             packageSpec.RestoreMetadata = GetMSBuildMetadata(packageSpec, rawPackageSpec);
 
             // Read the runtime graph
@@ -180,6 +184,19 @@ namespace NuGet.ProjectModel
             }
 
             return packageSpec;
+        }
+
+        private static ProjectRestoreSettings GetRestoreSettings(PackageSpec packageSpec, JObject rawPackageSpec)
+        {
+            var rawRestoreSettings = rawPackageSpec.Value<JToken>(RestoreSettings) as JObject;
+            var restoreSettings = new ProjectRestoreSettings();
+
+            if (rawRestoreSettings != null)
+            {
+                restoreSettings.HideWarningsAndErrors = GetBoolOrFalse(rawRestoreSettings, HideWarningsAndErrors, packageSpec.FilePath);
+            }
+
+            return restoreSettings;
         }
 
         private static ProjectRestoreMetadata GetMSBuildMetadata(PackageSpec packageSpec, JObject rawPackageSpec)

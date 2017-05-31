@@ -6,6 +6,7 @@ using System.Linq;
 using NuGet.LibraryModel;
 using NuGet.Packaging.Core;
 using NuGet.Versioning;
+using Test.Utility;
 using Xunit;
 
 namespace NuGet.ProjectModel.Test
@@ -368,7 +369,7 @@ namespace NuGet.ProjectModel.Test
         public void PackageSpecReader_PackOptions_Files1()
         {
             // Arrange & Act
-            string json = @"{
+            var json = @"{
                         ""packOptions"": {
                           ""files"": {
                             ""include"": ""file1"",
@@ -407,7 +408,7 @@ namespace NuGet.ProjectModel.Test
         public void PackageSpecReader_PackOptions_Files2()
         {
             // Arrange & Act
-            string json = @"{
+            var json = @"{
                         ""packOptions"": {
                           ""files"": {
                             ""include"": [""file1a"", ""file1b""],
@@ -492,6 +493,55 @@ namespace NuGet.ProjectModel.Test
                 Assert.NotNull(actual.BuildOptions);
                 Assert.Equal(expectedValue, actual.BuildOptions.OutputName);
             }
+        }
+
+        [Fact]
+        public void PackageSpecReader_ReadsWithRestoreSettings()
+        {
+            // Arrange
+            var json = @"{
+                          ""dependencies"": {
+                                ""packageA"": {
+                                    ""target"": ""package"",
+                                    ""version"": ""1.0.0""
+                                }
+                            },
+                            ""frameworks"": {
+                                ""net46"": {}
+                            },
+                            ""restoreSettings"": {
+                            ""hideWarningsAndErrors"": true
+                            },
+                        }";
+
+            var actual = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
+
+            Assert.NotNull(actual);
+            Assert.NotNull(actual.RestoreSettings);
+            Assert.True(actual.RestoreSettings.HideWarningsAndErrors);
+        }
+
+        [Fact]
+        public void PackageSpecReader_ReadsWithoutRestoreSettings()
+        {
+            // Arrange
+            var json = @"{
+                          ""dependencies"": {
+                                ""packageA"": {
+                                    ""target"": ""package"",
+                                    ""version"": ""1.0.0""
+                                }
+                            },
+                            ""frameworks"": {
+                                ""net46"": {}
+                            },
+                        }";
+
+            var actual = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
+
+            Assert.NotNull(actual);
+            Assert.NotNull(actual.RestoreSettings);
+            Assert.False(actual.RestoreSettings.HideWarningsAndErrors);
         }
     }
 }

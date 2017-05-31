@@ -19,7 +19,6 @@ namespace NuGet.ProjectModel
     public class PackageSpec
     {
         public static readonly string PackageSpecFileName = "project.json";
-        public static readonly string HideWarningsAndErrorsProperty  = "HideWarningsAndErrors";
         public static readonly NuGetVersion DefaultVersion = new NuGetVersion(1, 0, 0);
 
         public PackageSpec(IList<TargetFrameworkInformation> frameworks)
@@ -100,7 +99,7 @@ namespace NuGet.ProjectModel
         /// Project Settings is used to pass settings like HideWarningsAndErrors down to lower levels.
         /// This should not be part of the Equals and GetHashCode.
         /// </summary>
-        public IDictionary<string, object> ProjectSettings { get; set; } = new Dictionary<string, object>();
+        public ProjectRestoreSettings RestoreSettings { get; set; } = new ProjectRestoreSettings();
 
         /// <summary>
         /// Additional MSBuild properties.

@@ -51,6 +51,7 @@ namespace NuGet.ProjectModel
             SetArrayValue(writer, "contentFiles", packageSpec.ContentFiles);
             SetDictionaryValue(writer, "packInclude", packageSpec.PackInclude);
             SetPackOptions(writer, packageSpec);
+            SetRestoreSettings(writer, packageSpec);
             SetMSBuildMetadata(writer, packageSpec);
             SetDictionaryValues(writer, "scripts", packageSpec.Scripts);
 
@@ -81,7 +82,7 @@ namespace NuGet.ProjectModel
                 throw new ArgumentException(Strings.ArgumentNullOrEmpty, nameof(filePath));
             }
 
-            var writer = new RuntimeModel.JsonObjectWriter();
+            var writer = new JsonObjectWriter();
 
             Write(packageSpec, writer);
 
@@ -92,6 +93,23 @@ namespace NuGet.ProjectModel
                 jsonWriter.Formatting = Formatting.Indented;
                 writer.WriteTo(jsonWriter);
             }
+        }
+
+        private static void SetRestoreSettings(IObjectWriter writer, PackageSpec packageSpec)
+        {
+            var restoreSettings = packageSpec.RestoreSettings;
+
+            // Do not write Restore Setting if the HideWarningsAndErrors is false
+            // This should be changed in the future as more properties are added to ProjectRestoreSettings
+            if (restoreSettings == null || !restoreSettings.HideWarningsAndErrors)
+            {
+                return;
+            }
+            writer.WriteObjectStart(JsonPackageSpecReader.RestoreSettings);
+
+            SetValueIfTrue(writer, JsonPackageSpecReader.HideWarningsAndErrors, restoreSettings.HideWarningsAndErrors);
+
+            writer.WriteObjectEnd();
         }
 
         private static void SetMSBuildMetadata(IObjectWriter writer, PackageSpec packageSpec)

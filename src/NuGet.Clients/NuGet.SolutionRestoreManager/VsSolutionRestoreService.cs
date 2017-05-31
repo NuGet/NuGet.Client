@@ -254,7 +254,7 @@ namespace NuGet.SolutionRestoreManager
                     CrossTargeting = crossTargeting
                 },
                 RuntimeGraph = GetRuntimeGraph(projectRestoreInfo),
-                ProjectSettings = new Dictionary<string, object> { { PackageSpec.HideWarningsAndErrorsProperty, true } }
+                RestoreSettings = new ProjectRestoreSettings() { HideWarningsAndErrors  = true }
             };
 
             return packageSpec;
