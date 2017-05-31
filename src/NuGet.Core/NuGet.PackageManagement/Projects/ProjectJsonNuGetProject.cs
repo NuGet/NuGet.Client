@@ -152,7 +152,9 @@ namespace NuGet.ProjectManagement.Projects
 
         protected virtual async Task<string> GetBaseIntermediatePathAsync()
         {
-            return null;
+            // Extending class will implement the functionality.
+            // This will only be used in tests
+            return Path.GetDirectoryName(MSBuildProjectPath); 
         }
        
         public override async Task<IReadOnlyList<PackageSpec>> GetPackageSpecsAsync(DependencyGraphCacheContext context)
