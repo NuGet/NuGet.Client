@@ -208,7 +208,6 @@ namespace NuGet.ProjectModel
             msbuildMetadata.ProjectJsonPath = rawMSBuildMetadata.GetValue<string>("projectJsonPath");
             msbuildMetadata.ProjectName = rawMSBuildMetadata.GetValue<string>("projectName");
             msbuildMetadata.ProjectPath = rawMSBuildMetadata.GetValue<string>("projectPath");
-            msbuildMetadata.OutputPath = rawMSBuildMetadata.GetValue<string>("outputPath");
             msbuildMetadata.CrossTargeting = GetBoolOrFalse(rawMSBuildMetadata, "crossTargeting", packageSpec.FilePath);
             msbuildMetadata.LegacyPackagesDirectory = GetBoolOrFalse(rawMSBuildMetadata, "legacyPackagesDirectory", packageSpec.FilePath);
             msbuildMetadata.ValidateRuntimeAssets = GetBoolOrFalse(rawMSBuildMetadata, "validateRuntimeAssets", packageSpec.FilePath);
