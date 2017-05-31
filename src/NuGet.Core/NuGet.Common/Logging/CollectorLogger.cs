@@ -16,6 +16,8 @@ namespace NuGet.Common
 
         public IEnumerable<IRestoreLogMessage> Errors => _errors.ToArray();
 
+        public WarningProperties ProjectWideWarningProperties { get; set; }
+
         /// <summary>
         /// Initializes an instance of the <see cref="CollectorLogger"/>, while still
         /// delegating all log messages to the inner logger.
@@ -65,6 +67,15 @@ namespace NuGet.Common
 
         public void Log(IRestoreLogMessage message)
         {
+            // This will be true only when the Message is a Warning and should be suppressed.
+            var suppressWarning = (ProjectWideWarningProperties != null)
+                && ProjectWideWarningProperties.TrySuppressWarning(message);
+
+            if (suppressWarning)
+            {
+                return;
+            }
+
             if (CollectMessage(message.Level))
             {
                 _errors.Enqueue(message);
@@ -78,6 +89,16 @@ namespace NuGet.Common
 
         public Task LogAsync(IRestoreLogMessage message)
         {
+
+            // This will be true only when the Message is a Warning and should be suppressed.
+            var suppressWarning = (ProjectWideWarningProperties != null)
+                && ProjectWideWarningProperties.TrySuppressWarning(message);
+
+            if (suppressWarning)
+            {
+                return Task.FromResult(0);
+            }
+
             if (CollectMessage(message.Level))
             {
                 _errors.Enqueue(message);
