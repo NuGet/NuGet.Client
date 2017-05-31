@@ -87,14 +87,19 @@ namespace NuGet.Commands
                 // Display the errors summary
                 foreach (var restoreSummary in restoreSummaries)
                 {
-                    if (restoreSummary.Errors.Count == 0)
+                    var errors = restoreSummary
+                        .Errors
+                        .Where(m => m.Level == LogLevel.Error)
+                        .ToList();
+
+                    if (errors.Count == 0)
                     {
                         continue;
                     }
 
                     logger.LogError(string.Empty);
                     logger.LogError(string.Format(CultureInfo.CurrentCulture, Strings.Log_ErrorSummary, restoreSummary.InputPath));
-                    foreach (var error in restoreSummary.Errors.Where(m => m.Level == LogLevel.Error))
+                    foreach (var error in errors)
                     {
                         foreach (var line in IndentLines(error.Message))
                         {
