@@ -94,6 +94,16 @@ namespace NuGet.ProjectModel
         /// </summary>
         public bool SkipContentFileWrite { get; set; }
 
+        /// <summary>
+        /// Contains Project wide properties for Warnings.
+        /// </summary>
+        public WarningProperties ProjectWideWarningProperties { get; set; }
+
+        /// <summary>
+        /// Contains Package specific properties for Warnings.
+        /// </summary>
+        public IDictionary<string, WarningProperties> PackageSpecificWarningProperties { get; set; }
+
         public override int GetHashCode()
         {
             var hashCode = new HashCodeCombiner();
