@@ -748,7 +748,7 @@ namespace NuGet.PackageManagement.VisualStudio
             throw new NotSupportedException();
         }
 
-        public void RemovePackageReference(string packageName)
+        public Task RemovePackageReferenceAsync(string packageName)
         {
             throw new NotSupportedException();
         }
