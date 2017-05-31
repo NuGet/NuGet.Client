@@ -1,7 +1,8 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO;
 using System.Threading.Tasks;
 using Microsoft;
 using NuGet.Frameworks;
@@ -34,6 +35,20 @@ namespace NuGet.PackageManagement.VisualStudio
             InternalMetadata.Add(NuGetProjectMetadataKeys.UniqueName, _vsProjectAdapter.CustomUniqueName);
 
             ProjectServices = projectServices;
+        }
+
+        protected override async Task<string> GetBaseIntermediatePathAsync()
+        {
+            var baseIntermediatePath = await ProjectServices.BuildProperties.GetPropertyValueAsync(ProjectBuildProperties.BaseIntermediateOutputPath);
+
+            if (string.IsNullOrEmpty(baseIntermediatePath))
+            {
+                throw new InvalidDataException(string.Format(
+                    Strings.BaseIntermediateOutputPathNotFound,
+                    MSBuildProjectPath));
+            }
+
+            return baseIntermediatePath;
         }
 
         protected override async Task UpdateInternalTargetFrameworkAsync()

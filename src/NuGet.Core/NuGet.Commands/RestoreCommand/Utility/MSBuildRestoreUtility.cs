@@ -190,8 +190,10 @@ namespace NuGet.Commands
                     }
 
                     result.RestoreMetadata.PackagesPath = specItem.GetProperty("PackagesPath");
-                }
 
+                    result.RestoreMetadata.OutputPath = specItem.GetProperty("OutputPath");
+                }
+                
                 // Read package references for netcore, tools, and standalone
                 if (restoreType == ProjectStyle.PackageReference
                     || restoreType == ProjectStyle.Standalone
@@ -199,7 +201,6 @@ namespace NuGet.Commands
                 {
                     AddFrameworkAssemblies(result, items);
                     AddPackageReferences(result, items);
-                    result.RestoreMetadata.OutputPath = specItem.GetProperty("OutputPath");
 
                     // Store the original framework strings for msbuild conditionals
                     foreach (var originalFramework in GetFrameworksStrings(specItem))
