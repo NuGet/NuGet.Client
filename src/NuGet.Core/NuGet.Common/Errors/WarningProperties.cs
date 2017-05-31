@@ -25,10 +25,10 @@ namespace NuGet.Common
         /// </summary>
         public bool AllWarningsAsErrors { get; } = false;
 
-        public WarningProperties(ISet<NuGetLogCode> warningsAsErrorsList, ISet<NuGetLogCode> noWarnList, bool allWarningsAsErrors)
+        public WarningProperties(ISet<NuGetLogCode> warningsAsErrorsSet, ISet<NuGetLogCode> noWarnSet, bool allWarningsAsErrors)
         {
-            WarningsAsErrorsSet = warningsAsErrorsList;
-            NoWarnSet = noWarnList;
+            WarningsAsErrorsSet = warningsAsErrorsSet;
+            NoWarnSet = noWarnSet;
             AllWarningsAsErrors = allWarningsAsErrors;
         }
 

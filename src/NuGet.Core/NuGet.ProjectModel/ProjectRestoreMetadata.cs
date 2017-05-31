@@ -102,8 +102,9 @@ namespace NuGet.ProjectModel
 
         /// <summary>
         /// Contains Package specific properties for Warnings.
+        /// packageId -> tfm -> WarningProperties.
         /// </summary>
-        public IDictionary<string, WarningProperties> PackageSpecificWarningProperties { get; set; }
+        public IDictionary<string, IDictionary<string, WarningProperties>> PackageSpecificWarningProperties { get; set; }
 
         public override int GetHashCode()
         {
