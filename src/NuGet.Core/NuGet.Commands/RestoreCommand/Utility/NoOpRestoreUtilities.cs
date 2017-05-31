@@ -46,7 +46,7 @@ namespace NuGet.Commands
         {
             string cacheFilePath = null;
 
-            if (request.ProjectStyle == ProjectStyle.ProjectJson) // TODO NK - This needs to be fixed. 
+            if (request.ProjectStyle == ProjectStyle.ProjectJson)
             {
                 var projFileName = Path.GetFileName(request.Project.RestoreMetadata.ProjectPath);
                 cacheFilePath = request.Project.RestoreMetadata.CacheFilePath = Path.Combine(request.RestoreOutputPath, $"{projFileName}.nuget.cache");

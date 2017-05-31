@@ -123,7 +123,7 @@ namespace NuGet.CommandLine
                     restoreContext.AllowNoOp = !Force; // if force, no-op is not allowed
                     restoreContext.ConfigFile = ConfigFile;
                     restoreContext.MachineWideSettings = MachineWideSettings;
-                    restoreContext.Sources = Source.ToList(); // TODO NK - Do we still need the sources here?
+                    restoreContext.Sources = Source.ToList();
                     restoreContext.Log = Console;
                     restoreContext.CachingSourceProvider = GetSourceRepositoryProvider();
 
