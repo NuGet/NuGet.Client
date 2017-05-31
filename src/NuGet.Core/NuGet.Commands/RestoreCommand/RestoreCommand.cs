@@ -47,7 +47,10 @@ namespace NuGet.Commands
                 throw new ArgumentOutOfRangeException(nameof(_request.LockFileVersion));
             }
 
-            var collectorLogger = new CollectorLogger(_request.Log, request.HideWarningsAndErrors);
+            var collectorLoggerHideWarningsAndErrors = request.Project.RestoreSettings.HideWarningsAndErrors 
+                || request.HideWarningsAndErrors;
+
+            var collectorLogger = new CollectorLogger(_request.Log, collectorLoggerHideWarningsAndErrors);
             _logger = collectorLogger;
         }
 

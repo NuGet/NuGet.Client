@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -32,10 +32,7 @@ namespace NuGet.ProjectModel
 
         public string FilePath { get; set; }
 
-        public string BaseDirectory
-        {
-            get { return Path.GetDirectoryName(FilePath); }
-        }
+        public string BaseDirectory => Path.GetDirectoryName(FilePath);
 
         public string Name { get; set; }
 
@@ -51,7 +48,7 @@ namespace NuGet.ProjectModel
             set
             {
                 _version = value;
-                this.IsDefaultVersion = false;
+                IsDefaultVersion = false;
             }
         }
         public bool IsDefaultVersion { get; set; } = true;
@@ -97,6 +94,12 @@ namespace NuGet.ProjectModel
         public IList<TargetFrameworkInformation> TargetFrameworks { get; private set; } = new List<TargetFrameworkInformation>();
 
         public RuntimeGraph RuntimeGraph { get; set; } = new RuntimeGraph();
+
+        /// <summary>
+        /// Project Settings is used to pass settings like HideWarningsAndErrors down to lower levels.
+        /// This should not be part of the Equals and GetHashCode.
+        /// </summary>
+        public ProjectRestoreSettings RestoreSettings { get; set; } = new ProjectRestoreSettings();
 
         /// <summary>
         /// Additional MSBuild properties.

@@ -253,7 +253,8 @@ namespace NuGet.SolutionRestoreManager
                     OriginalTargetFrameworks = originalTargetFrameworks,
                     CrossTargeting = crossTargeting
                 },
-                RuntimeGraph = GetRuntimeGraph(projectRestoreInfo)
+                RuntimeGraph = GetRuntimeGraph(projectRestoreInfo),
+                RestoreSettings = new ProjectRestoreSettings() { HideWarningsAndErrors  = true }
             };
 
             return packageSpec;

@@ -393,7 +393,7 @@ namespace NuGet.CommandLine
                 {
                     if (message.Code >= NuGetLogCode.NU1000)
                     {
-                        WriteWarning(FormatWithCode(message));
+                        WriteWarning(message.FormatWithCode());
                     }
                     else
                     {
@@ -412,7 +412,7 @@ namespace NuGet.CommandLine
                         // Write out codes for messages that have codes.
                         if (message.Code >= NuGetLogCode.NU1000)
                         {
-                            WriteError(FormatWithCode(message));
+                            WriteError(message.FormatWithCode());
                         }
                         else
                         {
@@ -434,11 +434,6 @@ namespace NuGet.CommandLine
             Log(message);
 
             return Task.FromResult(0);
-        }
-
-        private static string FormatWithCode(ILogMessage message)
-        {
-            return $"{Enum.GetName(typeof(NuGetLogCode), message.Code)}: {message.Message}";
         }
 
         private static LogLevel GetVerbosityLevel(Verbosity level)
