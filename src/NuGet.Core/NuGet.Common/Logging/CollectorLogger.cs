@@ -10,13 +10,23 @@ namespace NuGet.Common
 {
     public class CollectorLogger : LoggerBase, ICollectorLogger
     {
+        private const string GlobalTFM = "Global";
         private readonly ILogger _innerLogger;
         private readonly ConcurrentQueue<IRestoreLogMessage> _errors;
         private readonly bool _hideWarningsAndErrors;
 
         public IEnumerable<IRestoreLogMessage> Errors => _errors.ToArray();
 
-        public WarningProperties ProjectWideWarningProperties { get; set; }
+         /// <summary>
+        /// Contains Project wide properties for Warnings.
+        /// </summary>
+        public WarningProperties ProjectWideWarningProperties { get; set; } = new WarningProperties();
+
+        /// <summary>
+        /// Contains Package specific properties for Warnings.
+        /// packageId -> tfm -> WarningProperties.
+        /// </summary>
+        public IDictionary<NuGetLogCode, IDictionary<string, ISet<string>>> PackageSpecificWarningProperties { get; set; }
 
         /// <summary>
         /// Initializes an instance of the <see cref="CollectorLogger"/>, while still
@@ -153,5 +163,40 @@ namespace NuGet.Common
             return restoreLogMessage;
         }
 
+        private bool TrySuppressWarning(IRestoreLogMessage message)
+        {
+            if (string.IsNullOrEmpty(message.LibraryId))
+            {
+                // The message does not contain a LibraryId
+                // Use ProjectWideWarningProperties
+                return ProjectWideWarningProperties.TrySuppressWarning(message);
+            }
+            else 
+            {
+                // The message contains a LibraryId
+                // First look at PackageSpecificWarningProperties and then at ProjectWideWarningProperties
+                if (PackageSpecificWarningProperties.Contains(message.Code) && 
+                PackageSpecificWarningProperties[message.Code].Contains(message.LibraryId))
+                {
+                    if (message.TargetGraphs.Count == 0) 
+                    {
+                       return  PackageSpecificWarningProperties[message.Code][message.LibraryId].Contains(GlobalTFM);
+                    }
+                    else 
+                    {
+                        message.TargetGraphs.RemoveWhere(t => PackageSpecificWarningProperties[message.Code][message.LibraryId].Contains(t));
+                        if (message.Count == 0)
+                        {
+                            return true;
+                        }
+                    }
+
+                }
+                else 
+                {
+                    return ProjectWideWarningProperties.TrySuppressWarning(message);
+                }
+            }
+        }
     }
 }

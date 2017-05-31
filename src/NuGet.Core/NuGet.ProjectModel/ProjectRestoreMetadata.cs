@@ -112,12 +112,6 @@ namespace NuGet.ProjectModel
         /// </summary>
         public WarningProperties ProjectWideWarningProperties { get; set; }
 
-        /// <summary>
-        /// Contains Package specific properties for Warnings.
-        /// packageId -> tfm -> WarningProperties.
-        /// </summary>
-        public IDictionary<string, IDictionary<string, WarningProperties>> PackageSpecificWarningProperties { get; set; }
-
         public override int GetHashCode()
         {
             var hashCode = new HashCodeCombiner();

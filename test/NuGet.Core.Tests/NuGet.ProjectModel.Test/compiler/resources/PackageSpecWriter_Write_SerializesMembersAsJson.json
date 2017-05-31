@@ -66,13 +66,8 @@
       "frameworkidentifier123-frameworkprofile": {
         "projectReferences": {}
       }
-    },
-    "warningSettings": {
-        "noWarn": [],
-        "warnAsError": [],
-        "allWarningsAsErrors": false
-    },
-  }, 
+    }
+  },
   "scripts": {
     "a": [
       "b",
@@ -103,8 +98,7 @@
         "range": {
           "include": "Build",
           "target": "Package",
-          "version": "[1.2.3, )",
-          "noWarn": ["NU1001", "NU2001"]
+          "version": "[1.2.3, )"
         }
       },
       "imports": [
