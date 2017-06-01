@@ -416,6 +416,12 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 Assert.NotNull(actualDependency);
                 Assert.Equal("packageA", actualDependency.LibraryRange.Name);
                 Assert.Equal(VersionRange.Parse("1.*"), actualDependency.LibraryRange.VersionRange);
+
+                // Verify
+                Mock.Get(projectServices.References)
+                    .Verify(
+                        x => x.AddOrUpdatePackageReferenceAsync(It.IsAny<LibraryDependency>(), CancellationToken.None),
+                        Times.Once);
             }
         }
 
@@ -432,7 +438,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 string actualPackageId = null;
                 Mock.Get(projectServices.References)
                     .Setup(x => x.RemovePackageReferenceAsync(It.IsAny<string>()))
-                    .Callback<string>(p => actualPackageId = p);
+                    .Callback<string>(p => actualPackageId = p)
+                    .Returns(Task.CompletedTask);
 
                 var testProject = new LegacyPackageReferenceProject(
                     projectAdapter,
@@ -449,6 +456,12 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 // Assert
                 Assert.True(result);
                 Assert.Equal("packageA", actualPackageId);
+
+                // Verify
+                Mock.Get(projectServices.References)
+                    .Verify(
+                        x => x.RemovePackageReferenceAsync(It.IsAny<string>()),
+                        Times.Once);
             }
         }
 
