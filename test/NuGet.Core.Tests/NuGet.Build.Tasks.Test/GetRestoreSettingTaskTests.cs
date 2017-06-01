@@ -1,14 +1,15 @@
-﻿using Xunit;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using NuGet.Configuration;
-using System.Collections.Generic;
 using NuGet.Configuration.Test;
-using System.Linq;
 using NuGet.Test.Utility;
-using System.IO;
-using Microsoft.Build.Framework;
-using Moq;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using Xunit;
 
 namespace NuGet.Build.Tasks.Test
 {

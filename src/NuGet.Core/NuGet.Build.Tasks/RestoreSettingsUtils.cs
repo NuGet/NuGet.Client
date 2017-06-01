@@ -1,15 +1,19 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using NuGet.Common;
+using NuGet.Configuration;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using NuGet.Common;
-using NuGet.Configuration;
 
 namespace NuGet.Build.Tasks
 {
     public class RestoreSettingsUtils
     {
+        public static readonly string Clear = nameof(Clear);
+
         public static ISettings ReadSettings(string solutionDirectory, string restoreDirectory, string restoreConfigFile, Lazy<IMachineWideSettings> machineWideSettings) 
         {
             if (!string.IsNullOrEmpty(solutionDirectory))
@@ -91,12 +95,12 @@ namespace NuGet.Build.Tasks
 
         private static bool ShouldReadFromSettings(IEnumerable<string> values)
         {
-            return !values.Any() && values.All(e => !StringComparer.OrdinalIgnoreCase.Equals("CLEAR", e));
+            return !values.Any() && values.All(e => !StringComparer.OrdinalIgnoreCase.Equals(Clear, e));
         }
 
         private static IEnumerable<string> HandleClear(IEnumerable<string> values)
         {
-            if (values.Any(e => StringComparer.OrdinalIgnoreCase.Equals("CLEAR", e)))
+            if (values.Any(e => StringComparer.OrdinalIgnoreCase.Equals(Clear, e)))
             {
                 return Enumerable.Empty<string>();
             }
