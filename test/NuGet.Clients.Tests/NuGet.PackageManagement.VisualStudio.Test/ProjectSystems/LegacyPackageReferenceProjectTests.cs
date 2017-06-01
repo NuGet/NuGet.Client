@@ -431,7 +431,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
                 string actualPackageId = null;
                 Mock.Get(projectServices.References)
-                    .Setup(x => x.RemovePackageReference(It.IsAny<string>()))
+                    .Setup(x => x.RemovePackageReferenceAsync(It.IsAny<string>()))
                     .Callback<string>(p => actualPackageId = p);
 
                 var testProject = new LegacyPackageReferenceProject(
