@@ -3215,6 +3215,15 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Overrides the default dependency resolution behavior.
+        /// </summary>
+        internal static string InstallCommandDependencyVersion {
+            get {
+                return ResourceManager.GetString("InstallCommandDependencyVersion", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Installs a package using the specified sources. If no sources are specified, all sources defined in the NuGet configuration file are used. If the configuration file specifies no sources, uses the default NuGet feed..
         /// </summary>
         internal static string InstallCommandDescription {
@@ -13140,6 +13149,15 @@ namespace NuGet.CommandLine {
         internal static string SymbolApiKey {
             get {
                 return ResourceManager.GetString("SymbolApiKey", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unknown Dependency Resolution Behavior for -dependencyVersion.
+        /// </summary>
+        internal static string UnknownDependencyVersion {
+            get {
+                return ResourceManager.GetString("UnknownDependencyVersion", resourceCulture);
             }
         }
         
