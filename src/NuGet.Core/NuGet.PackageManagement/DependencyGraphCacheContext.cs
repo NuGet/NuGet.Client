@@ -20,6 +20,7 @@ namespace NuGet.ProjectManagement
         public DependencyGraphCacheContext()
         {
             Logger = NullLogger.Instance;
+            Settings = NullSettings.Instance;
         }
 
         /// <summary>

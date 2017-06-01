@@ -138,6 +138,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             }
         }
 
+        // TODO NK - Add tests that verify the packages/sources etc
         [Fact]
         public async Task GetPackageSpecsAsync_WithVersion_Succeeds()
         {
