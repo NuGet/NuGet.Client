@@ -10,7 +10,6 @@ namespace NuGet.Common
 {
     public class CollectorLogger : LoggerBase, ICollectorLogger
     {
-        private const string GlobalTFM = "Global";
         private readonly ILogger _innerLogger;
         private readonly ConcurrentQueue<IRestoreLogMessage> _errors;
         private readonly bool _hideWarningsAndErrors;
@@ -26,7 +25,7 @@ namespace NuGet.Common
         /// Contains Package specific properties for Warnings.
         /// NuGetLogCode -> LibraryId -> Set of TargerGraphs.
         /// </summary>
-        public IDictionary<NuGetLogCode, IDictionary<string, ISet<string>>> PackageSpecificWarningProperties { get; set; }
+        public PackageSpecificWarningProperties PackageSpecificWarningProperties { get; set; }
 
         /// <summary>
         /// Initializes an instance of the <see cref="CollectorLogger"/>, while still
@@ -78,7 +77,7 @@ namespace NuGet.Common
         public void Log(IRestoreLogMessage message)
         {
             // This will be true only when the Message is a Warning and should be suppressed.
-            if (!TrySuppressWarning(message))
+            if (!TrySuppressOrUpgradeToErrorWarning(message))
             {
 
                 if (CollectMessage(message.Level))
@@ -97,7 +96,7 @@ namespace NuGet.Common
         {
 
             // This will be true only when the Message is a Warning and should be suppressed.
-            if (!TrySuppressWarning(message))
+            if (!TrySuppressOrUpgradeToErrorWarning(message))
             {
 
                 if (CollectMessage(message.Level))
@@ -153,38 +152,45 @@ namespace NuGet.Common
             return restoreLogMessage;
         }
 
-        private bool TrySuppressWarning(IRestoreLogMessage message)
+        /// <summary>
+        /// Attempts to suppress a warning log message or upgrade it to error log message.
+        /// The decision is made based on the Package Specific or Project wide warning properties.
+        /// </summary>
+        /// <param name="message">Message that should be suppressed or upgraded to an error.</param>
+        /// <returns>Bool indicating is the warning should be suppressed or not. 
+        /// If not then the param message sould have been mutated to an error</returns>
+        private bool TrySuppressOrUpgradeToErrorWarning(IRestoreLogMessage message)
         {
+            if (message.Level != LogLevel.Warning)
+            {
+                return false;
+            }
+
             if (!string.IsNullOrEmpty(message.LibraryId) && PackageSpecificWarningProperties != null)
             {
                 // The message contains a LibraryId
                 // First look at PackageSpecificWarningProperties and then at ProjectWideWarningProperties
-                if (PackageSpecificWarningProperties.ContainsKey(message.Code) && 
-                PackageSpecificWarningProperties[message.Code].ContainsKey(message.LibraryId))
+                if (message.TargetGraphs.Count == 0) 
                 {
-                    if (message.TargetGraphs.Count == 0) 
+                    return PackageSpecificWarningProperties.Contains(message.Code, message.LibraryId);
+                }
+                else 
+                {
+                    var newTargetGraphList = new List<string>();
+                    foreach (var targetGraph in message.TargetGraphs)
                     {
-                       return  PackageSpecificWarningProperties[message.Code][message.LibraryId].Contains(GlobalTFM);
-                    }
-                    else 
-                    {
-                        var newTargetGraphList = new List<string>();
-                        foreach (var targetGraph in message.TargetGraphs)
+                        if(!PackageSpecificWarningProperties.Contains(message.Code, message.LibraryId, targetGraph))
                         {
-                            if(!PackageSpecificWarningProperties[message.Code][message.LibraryId].Contains(targetGraph))
-                            {
-                                newTargetGraphList.Add(targetGraph);
-                            }
-                        }
-
-                        message.TargetGraphs = newTargetGraphList;
-
-                        if (message.TargetGraphs.Count == 0)
-                        {
-                            return true;
+                            newTargetGraphList.Add(targetGraph);
                         }
                     }
 
+                    message.TargetGraphs = newTargetGraphList;
+
+                    if (message.TargetGraphs.Count == 0)
+                    {
+                        return true;
+                    }
                 }
             }
 

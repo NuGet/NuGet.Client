@@ -14,7 +14,6 @@ using NuGet.Common;
 using NuGet.DependencyResolver;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
-using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
 using NuGet.Repositories;
@@ -26,13 +25,16 @@ namespace NuGet.Commands
     public class RestoreCommand
     {
         private readonly ICollectorLogger _logger;
+
         private readonly RestoreRequest _request;
 
         private bool _success = true;
-        private readonly Dictionary<NuGetFramework, RuntimeGraph> _runtimeGraphCache = new Dictionary<NuGetFramework, RuntimeGraph>();
-        private readonly ConcurrentDictionary<PackageIdentity, RuntimeGraph> _runtimeGraphCacheByPackage
 
+        private readonly Dictionary<NuGetFramework, RuntimeGraph> _runtimeGraphCache = new Dictionary<NuGetFramework, RuntimeGraph>();
+
+        private readonly ConcurrentDictionary<PackageIdentity, RuntimeGraph> _runtimeGraphCacheByPackage
             = new ConcurrentDictionary<PackageIdentity, RuntimeGraph>(PackageIdentity.Comparer);
+
         private readonly Dictionary<RestoreTargetGraph, Dictionary<string, LibraryIncludeFlags>> _includeFlagGraphs
             = new Dictionary<RestoreTargetGraph, Dictionary<string, LibraryIncludeFlags>>();
 
@@ -51,8 +53,34 @@ namespace NuGet.Commands
             var collectorLoggerHideWarningsAndErrors = request.Project.RestoreSettings.HideWarningsAndErrors 
                 || request.HideWarningsAndErrors;
 
-            var collectorLogger = new CollectorLogger(_request.Log, collectorLoggerHideWarningsAndErrors);
+            var collectorLogger = new CollectorLogger(_request.Log, collectorLoggerHideWarningsAndErrors)
+            {
+                ProjectWideWarningProperties = request.Project.RestoreMetadata.ProjectWideWarningProperties,
+                PackageSpecificWarningProperties = GetPackageSpecificWarningProperties(request.Project)
+            };
+
             _logger = collectorLogger;
+        }
+
+        private PackageSpecificWarningProperties GetPackageSpecificWarningProperties(PackageSpec packageSpec)
+        {
+            // NuGetLogCode -> LibraryId -> Set of TargerGraphs.
+            var warningProperties = new PackageSpecificWarningProperties();
+
+            foreach (var dependency in packageSpec.Dependencies)
+            {
+                warningProperties.AddRange(dependency.NoWarn, dependency.Name);
+            }
+
+            foreach (var framework in packageSpec.TargetFrameworks)
+            {
+                foreach (var dependency in framework.Dependencies)
+                {
+                    warningProperties.AddRange(dependency.NoWarn, dependency.Name, framework.FrameworkName.Framework);
+                }
+            }
+
+            return warningProperties;
         }
 
         public Task<RestoreResult> ExecuteAsync()
