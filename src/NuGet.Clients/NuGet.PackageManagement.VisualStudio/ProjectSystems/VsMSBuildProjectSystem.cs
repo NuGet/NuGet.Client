@@ -18,9 +18,7 @@ using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Threading;
 using NuGet.Frameworks;
-using NuGet.LibraryModel;
 using NuGet.ProjectManagement;
-using NuGet.ProjectModel;
 using NuGet.VisualStudio;
 using PathUtility = NuGet.Common.PathUtility;
 using Task = System.Threading.Tasks.Task;
@@ -29,9 +27,6 @@ namespace NuGet.PackageManagement.VisualStudio
 {
     public class VsMSBuildProjectSystem
         : IMSBuildProjectSystem
-        , IProjectSystemCapabilities
-        , IProjectSystemReferencesReader
-        , IProjectSystemReferencesService
         , IProjectSystemService
     {
         private const string BinDir = "bin";
@@ -145,23 +140,6 @@ namespace NuGet.PackageManagement.VisualStudio
         }
 
         public NuGetFramework TargetFramework => NuGetUIThreadHelper.JoinableTaskFactory.Run(_targetFramework.GetValueAsync);
-
-        public bool SupportsPackageReferences
-        {
-            get
-            {
-#if VS14
-                // VSProject4 doesn't apply for Dev14 so simply returns null.
-                return false;
-#else
-                return NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
-                {
-                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                    return VsProjectAdapter.Project.Object is VSLangProj150.VSProject4;
-                });
-#endif
-            }
-        }
 
         public VsMSBuildProjectSystem(
             IVsProjectAdapter vsProjectAdapter,
@@ -734,29 +712,6 @@ namespace NuGet.PackageManagement.VisualStudio
                 projectObj = null;
                 return references;
             }
-        }
-
-        public Task<IEnumerable<LibraryDependency>> GetPackageReferencesAsync(
-            NuGetFramework targetFramework, CancellationToken _)
-        {
-            throw new NotSupportedException();
-        }
-
-        public Task AddOrUpdatePackageReferenceAsync(
-            LibraryDependency packageReference, CancellationToken _)
-        {
-            throw new NotSupportedException();
-        }
-
-        public Task RemovePackageReferenceAsync(string packageName)
-        {
-            throw new NotSupportedException();
-        }
-
-        public Task<IEnumerable<ProjectRestoreReference>> GetProjectReferencesAsync(
-            Common.ILogger logger, CancellationToken _)
-        {
-            return Task.FromResult(Enumerable.Empty<ProjectRestoreReference>());
         }
 
         public async Task AddFrameworkReferenceAsync(string name, string packageId)
