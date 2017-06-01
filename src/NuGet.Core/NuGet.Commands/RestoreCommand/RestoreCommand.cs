@@ -50,12 +50,12 @@ namespace NuGet.Commands
                 throw new ArgumentOutOfRangeException(nameof(_request.LockFileVersion));
             }
 
-            var collectorLoggerHideWarningsAndErrors = request.Project.RestoreSettings.HideWarningsAndErrors 
+            var collectorLoggerHideWarningsAndErrors = request.Project.RestoreSettings.HideWarningsAndErrors
                 || request.HideWarningsAndErrors;
 
             var collectorLogger = new CollectorLogger(_request.Log, collectorLoggerHideWarningsAndErrors)
             {
-                ProjectWideWarningProperties = request.Project.RestoreMetadata.ProjectWideWarningProperties,
+                ProjectWideWarningProperties = request.Project?.RestoreMetadata?.ProjectWideWarningProperties,
                 PackageSpecificWarningProperties = GetPackageSpecificWarningProperties(request.Project)
             };
 
