@@ -32,6 +32,10 @@ namespace NuGet.Common
             AllWarningsAsErrors = allWarningsAsErrors;
         }
 
+        public WarningProperties()
+        {
+        }
+
         /// <summary>
         /// Method is used to check is a warning should be suppressed and if not then if it should be treated as an error.
         /// </summary>

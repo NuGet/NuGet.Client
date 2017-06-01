@@ -20,11 +20,11 @@ namespace NuGet.Common
          /// <summary>
         /// Contains Project wide properties for Warnings.
         /// </summary>
-        public WarningProperties ProjectWideWarningProperties { get; set; } = new WarningProperties();
+        public WarningProperties ProjectWideWarningProperties { get; set; }
 
         /// <summary>
         /// Contains Package specific properties for Warnings.
-        /// packageId -> tfm -> WarningProperties.
+        /// NuGetLogCode -> LibraryId -> Set of TargerGraphs.
         /// </summary>
         public IDictionary<NuGetLogCode, IDictionary<string, ISet<string>>> PackageSpecificWarningProperties { get; set; }
 
@@ -78,22 +78,18 @@ namespace NuGet.Common
         public void Log(IRestoreLogMessage message)
         {
             // This will be true only when the Message is a Warning and should be suppressed.
-            var suppressWarning = (ProjectWideWarningProperties != null)
-                && ProjectWideWarningProperties.TrySuppressWarning(message);
-
-            if (suppressWarning)
+            if (!TrySuppressWarning(message))
             {
-                return;
-            }
 
-            if (CollectMessage(message.Level))
-            {
-                _errors.Enqueue(message);
-            }
+                if (CollectMessage(message.Level))
+                {
+                    _errors.Enqueue(message);
+                }
 
-            if (DisplayMessage(message))
-            {
-                _innerLogger.Log(message);
+                if (DisplayMessage(message))
+                {
+                    _innerLogger.Log(message);
+                }
             }
         }
 
@@ -101,27 +97,21 @@ namespace NuGet.Common
         {
 
             // This will be true only when the Message is a Warning and should be suppressed.
-            var suppressWarning = (ProjectWideWarningProperties != null)
-                && ProjectWideWarningProperties.TrySuppressWarning(message);
+            if (!TrySuppressWarning(message))
+            {
 
-            if (suppressWarning)
-            {
-                return Task.FromResult(0);
+                if (CollectMessage(message.Level))
+                {
+                    _errors.Enqueue(message);
+                }
+
+                if (DisplayMessage(message))
+                {
+                    return _innerLogger.LogAsync(message);
+                }
             }
 
-            if (CollectMessage(message.Level))
-            {
-                _errors.Enqueue(message);
-            }
-
-            if (DisplayMessage(message))
-            {
-                return _innerLogger.LogAsync(message);
-            }
-            else
-            {
-                return Task.FromResult(0);
-            }
+            return Task.FromResult(0);
         }
 
         public override void Log(ILogMessage message)
@@ -165,18 +155,12 @@ namespace NuGet.Common
 
         private bool TrySuppressWarning(IRestoreLogMessage message)
         {
-            if (string.IsNullOrEmpty(message.LibraryId))
-            {
-                // The message does not contain a LibraryId
-                // Use ProjectWideWarningProperties
-                return ProjectWideWarningProperties.TrySuppressWarning(message);
-            }
-            else 
+            if (!string.IsNullOrEmpty(message.LibraryId) && PackageSpecificWarningProperties != null)
             {
                 // The message contains a LibraryId
                 // First look at PackageSpecificWarningProperties and then at ProjectWideWarningProperties
-                if (PackageSpecificWarningProperties.Contains(message.Code) && 
-                PackageSpecificWarningProperties[message.Code].Contains(message.LibraryId))
+                if (PackageSpecificWarningProperties.ContainsKey(message.Code) && 
+                PackageSpecificWarningProperties[message.Code].ContainsKey(message.LibraryId))
                 {
                     if (message.TargetGraphs.Count == 0) 
                     {
@@ -184,19 +168,29 @@ namespace NuGet.Common
                     }
                     else 
                     {
-                        message.TargetGraphs.RemoveWhere(t => PackageSpecificWarningProperties[message.Code][message.LibraryId].Contains(t));
-                        if (message.Count == 0)
+                        var newTargetGraphList = new List<string>();
+                        foreach (var targetGraph in message.TargetGraphs)
+                        {
+                            if(!PackageSpecificWarningProperties[message.Code][message.LibraryId].Contains(targetGraph))
+                            {
+                                newTargetGraphList.Add(targetGraph);
+                            }
+                        }
+
+                        message.TargetGraphs = newTargetGraphList;
+
+                        if (message.TargetGraphs.Count == 0)
                         {
                             return true;
                         }
                     }
 
                 }
-                else 
-                {
-                    return ProjectWideWarningProperties.TrySuppressWarning(message);
-                }
             }
+
+            // The message does not contain a LibraryId or it is not suppressed in package specific settings
+            // Use ProjectWideWarningProperties
+            return ProjectWideWarningProperties != null && ProjectWideWarningProperties.TrySuppressWarning(message);
         }
     }
 }
