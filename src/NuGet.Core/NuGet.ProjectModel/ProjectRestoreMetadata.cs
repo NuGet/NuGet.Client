@@ -65,7 +65,6 @@ namespace NuGet.ProjectModel
         /// ConfigFilePaths used.
         /// </summary>
         public IList<string> ConfigFilePaths { get; set; } = new List<string>();
-        //TODO NK - Add config file paths tests
 
         /// <summary>
         /// Framework specific metadata, this may be a subset of the project's frameworks.

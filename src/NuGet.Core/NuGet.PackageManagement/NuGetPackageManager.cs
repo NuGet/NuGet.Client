@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -2350,7 +2350,7 @@ namespace NuGet.PackageManagement
                     dependencyGraphContext,
                     providerCache,
                     cacheModifier,
-                    sources, //TODO NK - settings removed
+                    sources,
                     logger,
                     token);
 
@@ -2378,7 +2378,7 @@ namespace NuGet.PackageManagement
                 dependencyGraphContext,
                 providerCache,
                 cacheModifier,
-                sources, //TODO NK - settings removed
+                sources,
                 logger,
                 token);
 
@@ -2428,7 +2428,7 @@ namespace NuGet.PackageManagement
                     dependencyGraphContext,
                     providerCache,
                     cacheModifier,
-                    sources, //TODO NK - settings removed
+                    sources,
                     logger,
                     token);
             }
@@ -2576,7 +2576,7 @@ namespace NuGet.PackageManagement
                             referenceContext,
                             GetRestoreProviderCache(),
                             cacheContextModifier,
-                            projectAction.Sources, //TODO NK - settings removed
+                            projectAction.Sources,
                             logger,
                             token);
                 }
