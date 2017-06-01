@@ -36,6 +36,8 @@ namespace NuGet.LibraryModel
             sb.Append(Type);
             sb.Append(" ");
             sb.Append(LibraryIncludeFlagUtils.GetFlagString(IncludeType));
+            sb.Append(" ");
+            sb.Append(NoWarn);
             return sb.ToString();
         }
 
@@ -56,6 +58,7 @@ namespace NuGet.LibraryModel
             hashCode.AddObject(IncludeType);
             hashCode.AddObject(SuppressParent);
             hashCode.AddObject(AutoReferenced);
+            hashCode.AddSequence(NoWarn);
 
             return hashCode.CombinedHash;
         }
@@ -81,7 +84,8 @@ namespace NuGet.LibraryModel
                    EqualityUtility.EqualsWithNullCheck(LibraryRange, other.LibraryRange) &&
                    EqualityUtility.EqualsWithNullCheck(Type, other.Type) &&
                    IncludeType == other.IncludeType &&
-                   SuppressParent == other.SuppressParent;
+                   SuppressParent == other.SuppressParent &&
+                   NoWarn.SequenceEqualWithNullCheck(other.NoWarn);
         }
 
         public LibraryDependency Clone()

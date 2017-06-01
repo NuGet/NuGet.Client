@@ -9,6 +9,7 @@ using System.Linq;
 using System.Text;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
@@ -455,6 +456,7 @@ namespace NuGet.ProjectModel
                     var dependencyExcludeFlagsValue = LibraryIncludeFlags.None;
                     var suppressParentFlagsValue = LibraryIncludeFlagUtils.DefaultSuppressParent;
 
+                    var noWarn = new List<NuGetLogCode>();
                     // This method handles both the dependencies and framework assembly sections.
                     // Framework references should be limited to references.
                     // Dependencies should allow everything but framework references.
@@ -518,6 +520,12 @@ namespace NuGet.ProjectModel
                         {
                             // This overrides any settings that came from the type property.
                             suppressParentFlagsValue = LibraryIncludeFlagUtils.GetFlags(strings);
+                        }
+
+                        IEnumerable<NuGetLogCode> codes;
+                        if (TryGetEnumerableFromJArray<NuGetLogCode>(dependencyValue["noWarn"], out codes))
+                        {
+                            noWarn = codes.ToList();
                         }
 
                         var targetToken = dependencyValue["target"];
@@ -592,6 +600,7 @@ namespace NuGet.ProjectModel
                         IncludeType = includeFlags,
                         SuppressParent = suppressParentFlagsValue,
                         AutoReferenced = autoReferenced,
+                        NoWarn = noWarn
                     });
                 }
             }
@@ -655,6 +664,35 @@ namespace NuGet.ProjectModel
             else if (token.Type == JTokenType.Array)
             {
                 values = token.ValueAsArray<string>();
+            }
+            else
+            {
+                result = null;
+                return false;
+            }
+
+            result = values;
+            return true;
+        }
+
+        internal static bool TryGetEnumerableFromJArray<T>(JToken token, out IEnumerable<T> result)
+        {
+            IEnumerable<T> values;
+            if (token == null)
+            {
+                result = null;
+                return false;
+            }
+            else if (token.Type == JTokenType.String)
+            {
+                values = new[]
+                    {
+                        token.Value<T>()
+                    };
+            }
+            else if (token.Type == JTokenType.Array)
+            {
+                values = token.ValueAsArray<T>();
             }
             else
             {

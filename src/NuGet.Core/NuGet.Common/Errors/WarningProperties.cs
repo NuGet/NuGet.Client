@@ -1,14 +1,16 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
+using NuGet.Shared;
 
 namespace NuGet.Common
 {
     /// <summary>
     /// Class to hold warning properties given by project system.
     /// </summary>
-    public class WarningProperties
+    public class WarningProperties : IEquatable<WarningProperties>
     {
         /// <summary>
         /// List of Warning Codes that should be treated as Errors.
@@ -52,6 +54,39 @@ namespace NuGet.Common
                 }
             }
             return false;
+        }
+
+        public override int GetHashCode()
+        {
+            var hashCode = new HashCodeCombiner();
+
+            hashCode.AddObject(AllWarningsAsErrors);
+            hashCode.AddSequence(WarningsAsErrorsSet);
+            hashCode.AddSequence(NoWarnSet);
+
+            return hashCode.CombinedHash;
+        }
+
+        public override bool Equals(object obj)
+        {
+            return Equals(obj as WarningProperties);
+        }
+
+        public bool Equals(WarningProperties other)
+        {
+            if (other == null)
+            {
+                return false;
+            }
+
+            if (ReferenceEquals(this, other))
+            {
+                return true;
+            }
+
+            return AllWarningsAsErrors == other.AllWarningsAsErrors &&
+                WarningsAsErrorsSet.SetEquals(other.WarningsAsErrorsSet) &&
+                NoWarnSet.SetEquals(other.NoWarnSet);
         }
     }
 }
