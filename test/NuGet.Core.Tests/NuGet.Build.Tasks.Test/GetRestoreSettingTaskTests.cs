@@ -47,9 +47,7 @@ namespace NuGet.Build.Tasks.Test
                 </packageSources>
             </configuration>";
 
-            var machineWideSettingsConfig = @"<?xml version=""1.0"" encoding=""utf-8""?>
-                <configuration>
-                </configuration>";
+        
 
             var baseConfigPath = "NuGet.Config";
 
@@ -81,5 +79,60 @@ namespace NuGet.Build.Tasks.Test
                 Assert.True(filePaths.Contains(Path.Combine(subFolder, baseConfigPath)));
             }
         }
+
+        [Fact]
+        public void GetRestoreSettingsTask_FindConfigInProjectFolder()
+        {
+            // Verifies that we include any config file found in the project folder
+            using (var machineWide = TestDirectory.Create())
+            using (var workingDir = TestDirectory.Create())
+            {
+                // Arrange
+                ConfigurationFileTestUtility.CreateConfigurationFile(Settings.DefaultSettingsFileName, machineWide, machineWideSettingsConfig);
+                var machineWideSettings = new Lazy<IMachineWideSettings>(() => new TestMachineWideSettings(new Settings(machineWide, Settings.DefaultSettingsFileName, true)));
+
+                var innerConfigFile = Path.Combine(workingDir, "sub", Settings.DefaultSettingsFileName);
+                var outerConfigFile = Path.Combine(workingDir, Settings.DefaultSettingsFileName);
+
+                var projectDirectory = Path.GetDirectoryName(innerConfigFile);
+                Directory.CreateDirectory(projectDirectory);
+
+                File.WriteAllText(innerConfigFile, InnerConfig);
+                File.WriteAllText(outerConfigFile, OuterConfig);
+
+                var settings = RestoreSettingsUtils.ReadSettings(null, projectDirectory, null, machineWideSettings);
+
+                var innerValue = settings.GetValue("SectionName", "inner-key");
+                var outerValue = settings.GetValue("SectionName", "outer-key");
+
+                // Assert
+                Assert.Equal("inner-value", innerValue);
+                Assert.Equal("outer-value", outerValue);
+                Assert.True(SettingsUtility.GetConfigFilePaths(settings).Contains(innerConfigFile));
+                Assert.True(SettingsUtility.GetConfigFilePaths(settings).Contains(outerConfigFile));
+            }
+        }
+
+        private static string machineWideSettingsConfig = @"<?xml version=""1.0"" encoding=""utf-8""?>
+                <configuration>
+                </configuration>";
+
+        private static string InnerConfig =
+            @"<?xml version=""1.0"" encoding=""utf-8""?>
+              <configuration>
+                <SectionName>
+                  <add key=""inner-key"" value=""inner-value"" />
+                </SectionName>
+              </configuration>";
+
+        private static string OuterConfig =
+            @"<?xml version=""1.0"" encoding=""utf-8""?>
+              <configuration>
+                <SectionName>
+                  <add key=""outer-key"" value=""outer-value"" />
+                </SectionName>
+              </configuration>";
+
+
     }
 }
