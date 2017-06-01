@@ -73,8 +73,6 @@ namespace NuGet.Build.Tasks.Test
                 Assert.True(filePaths.Contains(Path.Combine(solutionDirectoryConfig, baseConfigPath)));
                 Assert.True(filePaths.Contains(Path.Combine(machineWide, baseConfigPath)));
 
-                Debugger.Launch();
-
                 // Test 
                  settings = RestoreSettingsUtils.ReadSettings(mockBaseDirectory, mockBaseDirectory, Path.Combine(subFolder, baseConfigPath), machineWideSettings);
                  filePaths = SettingsUtility.GetConfigFilePaths(settings);

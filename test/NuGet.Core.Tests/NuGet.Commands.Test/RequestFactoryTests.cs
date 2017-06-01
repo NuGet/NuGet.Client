@@ -19,7 +19,6 @@ namespace NuGet.Commands.Test
             // Verifies that we include any config file found in the project folder
             using (var workingDir = TestDirectory.Create())
             {
-                Debugger.Launch();
                 // Arrange
                 var innerConfigFile = Path.Combine(workingDir, "sub", Settings.DefaultSettingsFileName);
                 var outerConfigFile = Path.Combine(workingDir, Settings.DefaultSettingsFileName);
