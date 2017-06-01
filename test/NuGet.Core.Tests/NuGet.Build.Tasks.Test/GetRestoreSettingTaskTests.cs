@@ -8,6 +8,7 @@ using System.IO;
 using Microsoft.Build.Framework;
 using Moq;
 using System;
+using System.Diagnostics;
 
 namespace NuGet.Build.Tasks.Test
 {
@@ -24,11 +25,8 @@ namespace NuGet.Build.Tasks.Test
         }
 
 
-        // TODO NK - Add tests here!
-        // TODO Justin wanted to add something else. We're stepping over each other's toes. 
-            //[Theory]
-        //[InlineData("proj1.csproj")]
-        public void TestWithFullPaths(string solutionDirectory, string restoreDirectory, string restoreConfigFile)
+        [Fact]
+        public void TestSolutionSettings()
         {
             // Arrange
             var subFolderConfig = @"<?xml version=""1.0"" encoding=""utf-8""?>
@@ -58,15 +56,30 @@ namespace NuGet.Build.Tasks.Test
             using (var mockBaseDirectory = TestDirectory.Create())
             {
                 var subFolder = Path.Combine(mockBaseDirectory, "sub");
-                ConfigurationFileTestUtility.CreateConfigurationFile(baseConfigPath, mockBaseDirectory, baseConfig);
+                var solutionDirectoryConfig = Path.Combine(mockBaseDirectory, NuGetConstants.NuGetSolutionSettingsFolder);
+
+                ConfigurationFileTestUtility.CreateConfigurationFile(baseConfigPath, solutionDirectoryConfig, baseConfig);
                 ConfigurationFileTestUtility.CreateConfigurationFile(baseConfigPath, subFolder, subFolderConfig);
                 ConfigurationFileTestUtility.CreateConfigurationFile(baseConfigPath, machineWide, machineWideSettingsConfig);
+                var machineWideSettings = new Lazy<IMachineWideSettings>(() => new TestMachineWideSettings(new Settings(machineWide, baseConfigPath, true)));
 
                 // Test
-                var machineWideSettings = new Lazy<IMachineWideSettings>(() => new TestMachineWideSettings(new Settings(machineWide)));
 
-                RestoreSettingsUtils.ReadSettings(null, restoreDirectory, restoreConfigFile, machineWideSettings);
+                var settings = RestoreSettingsUtils.ReadSettings(mockBaseDirectory, mockBaseDirectory,null, machineWideSettings);
+                var filePaths = SettingsUtility.GetConfigFilePaths(settings);
 
+                Assert.Equal(3, filePaths.Count()); // Solution, app data + machine wide
+                Assert.True(filePaths.Contains(Path.Combine(solutionDirectoryConfig, baseConfigPath)));
+                Assert.True(filePaths.Contains(Path.Combine(machineWide, baseConfigPath)));
+
+                Debugger.Launch();
+
+                // Test 
+                 settings = RestoreSettingsUtils.ReadSettings(mockBaseDirectory, mockBaseDirectory, Path.Combine(subFolder, baseConfigPath), machineWideSettings);
+                 filePaths = SettingsUtility.GetConfigFilePaths(settings);
+
+                Assert.Equal(1, filePaths.Count());
+                Assert.True(filePaths.Contains(Path.Combine(subFolder, baseConfigPath)));
             }
         }
     }

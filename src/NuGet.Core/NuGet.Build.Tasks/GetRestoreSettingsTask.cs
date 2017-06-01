@@ -78,34 +78,11 @@ namespace NuGet.Build.Tasks
                 log.LogDebug($"(in) RestoreSolutionDirectory '{RestoreSolutionDirectory}'");
             }
 
-            // Process
-            // TODO NK - This needs to be reworked properly so that it's unique everywhere.
-            // var settings = RestoreSettingsUtils.ReadSettings(RestoreSolutionDirectory, Path.GetDirectoryName(ProjectUniqueName), RestoreConfigFile, _machineWideSettings);
-
-            // OutputPackagesPath = RestoreSettingsUtils.GetPackagesPath(ProjectUniqueName, settings, RestorePackagesPath);
-
-            // OutputSources = RestoreSettingsUtils.GetSources(ProjectUniqueName, settings, RestoreSources != null ? RestoreSources.AsEnumerable() : new List<string>()).Select(e => e.Source).ToArray();
-
-            // OutputFallbackFolders = RestoreSettingsUtils.GetFallbackFolders(ProjectUniqueName, settings, RestoreFallbackFolders != null ? RestoreFallbackFolders.AsEnumerable() : new List<string>()).ToArray();
-
-            // OutputConfigFilePaths = SettingsUtility.GetConfigFilePaths(settings).ToArray();
             try
             {
                 var settings = RestoreSettingsUtils.ReadSettings(RestoreSolutionDirectory, Path.GetDirectoryName(ProjectUniqueName), RestoreConfigFile, _machineWideSettings);
 
-                if (string.IsNullOrEmpty(RestorePackagesPath))
-                {
-                    OutputPackagesPath = SettingsUtility.GetGlobalPackagesFolder(settings);
-                }
-                else if (StringComparer.OrdinalIgnoreCase.Compare(RestorePackagesPath, CLEAR) == 0)
-                {
-                    RestorePackagesPath = string.Empty;
-                }
-                else
-                {
-                    // Relative -> Absolute path
-                    OutputPackagesPath = UriUtility.GetAbsolutePathFromFile(ProjectUniqueName, RestorePackagesPath);
-                }
+                OutputPackagesPath = RestoreSettingsUtils.GetPackagesPath(ProjectUniqueName, settings, RestorePackagesPath);
 
                 if (RestoreSources == null)
                 {
@@ -149,12 +126,7 @@ namespace NuGet.Build.Tasks
                     OutputFallbackFolders = RestoreFallbackFolders.Select(e => UriUtility.GetAbsolutePathFromFile(ProjectUniqueName, e)).ToArray();
                 }
 
-                var configFilePaths = new List<string>();
-                foreach (var config in settings.Priority)
-                {
-                    configFilePaths.Add(Path.GetFullPath(Path.Combine(config.Root, config.FileName)));
-                }
-                OutputConfigFilePaths = configFilePaths.ToArray();
+                OutputConfigFilePaths = SettingsUtility.GetConfigFilePaths(settings).ToArray();
             }
             catch (Exception ex)
             {
