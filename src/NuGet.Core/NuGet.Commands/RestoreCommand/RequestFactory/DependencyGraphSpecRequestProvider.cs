@@ -149,9 +149,10 @@ namespace NuGet.Commands
                 restoreArgs.Log)
             {
                 // Set properties from the restore metadata
-                ProjectStyle = project.PackageSpec?.RestoreMetadata?.ProjectStyle ?? ProjectStyle.Unknown,
-                RestoreOutputPath = project.PackageSpec?.RestoreMetadata?.OutputPath ?? rootPath,
-                DependencyGraphSpec = projectDgSpec
+                ProjectStyle = project.PackageSpec.RestoreMetadata.ProjectStyle, 
+                RestoreOutputPath = project.PackageSpec.RestoreMetadata.ProjectStyle == ProjectStyle.ProjectJson ? rootPath : project.PackageSpec.RestoreMetadata.OutputPath,
+                DependencyGraphSpec = projectDgSpec,
+                BaseIntermediateOutputPath = project.PackageSpec.RestoreMetadata.OutputPath
             };
             
             var restoreLegacyPackagesDirectory = project.PackageSpec?.RestoreMetadata?.LegacyPackagesDirectory
@@ -168,7 +169,7 @@ namespace NuGet.Commands
             var summaryRequest = new RestoreSummaryRequest(
                 request,
                 project.MSBuildProjectPath,
-                settings, // TODO NK - We don't need to pass the settings down here. We just need the config files
+                settings,
                 sources);
 
             return summaryRequest;

@@ -267,7 +267,8 @@ namespace NuGet.SolutionRestoreManager
                                     .Select(e => new PackageSource(e))
                                     .ToList(),
                 },
-                RuntimeGraph = GetRuntimeGraph(projectRestoreInfo)
+                RuntimeGraph = GetRuntimeGraph(projectRestoreInfo),
+                RestoreSettings = new ProjectRestoreSettings() { HideWarningsAndErrors  = true }
             };
 
             return packageSpec;

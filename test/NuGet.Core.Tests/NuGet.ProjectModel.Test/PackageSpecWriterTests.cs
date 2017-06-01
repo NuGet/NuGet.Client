@@ -10,6 +10,7 @@ using NuGet.LibraryModel;
 using NuGet.RuntimeModel;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
+using Test.Utility;
 using Xunit;
 
 namespace NuGet.ProjectModel.Test
@@ -163,11 +164,22 @@ namespace NuGet.ProjectModel.Test
         public void Write_SerializesMembersAsJson()
         {
             var expectedJson = ResourceTestUtility.GetResource("NuGet.ProjectModel.Test.compiler.resources.PackageSpecWriter_Write_SerializesMembersAsJson.json", typeof(PackageSpecWriterTests));
-            var packageSpec = CreatePackageSpec();
+            var packageSpec = CreatePackageSpec(withRestoreSettings: true);
             var actualJson = GetJson(packageSpec);
 
             Assert.Equal(expectedJson, actualJson);
         }
+
+        [Fact]
+        public void Write_SerializesMembersAsJsonWithoutRestoreSettings()
+        {
+            var expectedJson = ResourceTestUtility.GetResource("NuGet.ProjectModel.Test.compiler.resources.PackageSpecWriter_Write_SerializesMembersAsJsonWithoutRestoreSettings.json", typeof(PackageSpecWriterTests));
+            var packageSpec = CreatePackageSpec(withRestoreSettings: false);
+            var actualJson = GetJson(packageSpec);
+
+            Assert.Equal(expectedJson, actualJson);
+        }
+
 
         private static string GetJson(PackageSpec packageSpec)
         {
@@ -178,7 +190,7 @@ namespace NuGet.ProjectModel.Test
             return writer.GetJson();
         }
 
-        private static PackageSpec CreatePackageSpec()
+        private static PackageSpec CreatePackageSpec(bool withRestoreSettings)
         {
             var unsortedArray = new[] { "b", "a", "c" };
             var unsortedReadOnlyList = new List<string>(unsortedArray).AsReadOnly();
@@ -242,6 +254,11 @@ namespace NuGet.ProjectModel.Test
                 Title = "title",
                 Version = new NuGetVersion("1.2.3")
             };
+
+            if (withRestoreSettings)
+            {
+                packageSpec.RestoreSettings = new ProjectRestoreSettings() { HideWarningsAndErrors = true };
+            }
 
             packageSpec.PackInclude.Add("b", "d");
             packageSpec.PackInclude.Add("a", "e");

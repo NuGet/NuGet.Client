@@ -37,9 +37,6 @@
     "licenseUrl": "licenseUrl",
     "requireLicenseAcceptance": true
   },
-  "restoreSettings": {
-    "hideWarningsAndErrors": true
-  },
   "restore": {
     "projectUniqueName": "projectUniqueName",
     "projectName": "projectName",

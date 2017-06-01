@@ -1,4 +1,4 @@
-using System.Windows.Forms;
+﻿using System.Windows.Forms;
 namespace NuGet.Options
 {
     partial class PackageSourcesOptionsControl
@@ -196,6 +196,7 @@ namespace NuGet.Options
             this.tableLayoutPanel1.SetColumnSpan(this.MachineWideSourcesLabel, 4);
             resources.ApplyResources(this.MachineWideSourcesLabel, "MachineWideSourcesLabel");
             this.MachineWideSourcesLabel.Name = "MachineWideSourcesLabel";
+            this.MachineWideSourcesLabel.AutoSize = true;
             // 
             // MachineWidePackageSourcesListBox
             // 

@@ -136,6 +136,12 @@ namespace NuGet.Commands
         public string RestoreOutputPath { get; set; }
 
         /// <summary>
+        /// Base Intermediate output path
+        /// </summary>
+        public string BaseIntermediateOutputPath { get; set; }
+
+        
+        /// <summary>
         /// Compatibility options
         /// </summary>
         public bool ValidateRuntimeAssets { get; set; } = true;
