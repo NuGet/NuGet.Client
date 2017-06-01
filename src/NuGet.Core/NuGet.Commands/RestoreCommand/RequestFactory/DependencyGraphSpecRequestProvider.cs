@@ -169,7 +169,7 @@ namespace NuGet.Commands
             var summaryRequest = new RestoreSummaryRequest(
                 request,
                 project.MSBuildProjectPath,
-                settings, // TODO NK - We don't need to pass the settings down here. We just need the config files
+                settings,
                 sources);
 
             return summaryRequest;
