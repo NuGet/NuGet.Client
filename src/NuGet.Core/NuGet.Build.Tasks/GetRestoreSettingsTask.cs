@@ -91,7 +91,7 @@ namespace NuGet.Build.Tasks
             // OutputConfigFilePaths = SettingsUtility.GetConfigFilePaths(settings).ToArray();
             try
             {
-                var settings = ReadSettings(RestoreSolutionDirectory, Path.GetDirectoryName(ProjectUniqueName), RestoreConfigFile);
+                var settings = RestoreSettingsUtils.ReadSettings(RestoreSolutionDirectory, Path.GetDirectoryName(ProjectUniqueName), RestoreConfigFile, _machineWideSettings);
 
                 if (string.IsNullOrEmpty(RestorePackagesPath))
                 {

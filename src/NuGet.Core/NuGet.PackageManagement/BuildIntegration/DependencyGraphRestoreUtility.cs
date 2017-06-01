@@ -99,7 +99,7 @@ namespace NuGet.PackageManagement
         }
 
         /// <summary>
-        /// Restore a dg spec. This will not update the context cache. // TODO NK - Why? :D 
+        /// Restore a dg spec. This will not update the context cache.
         /// </summary>
         public static async Task<IReadOnlyList<RestoreSummary>> RestoreAsync(
             DependencyGraphSpec dgSpec,

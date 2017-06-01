@@ -231,6 +231,7 @@ namespace NuGet.ProjectModel.Test
                 {
                     CrossTargeting = true,
                     FallbackFolders = unsortedReadOnlyList,
+                    ConfigFilePaths = unsortedReadOnlyList,
                     LegacyPackagesDirectory = false,
                     OriginalTargetFrameworks = unsortedReadOnlyList,
                     OutputPath = "outputPath",

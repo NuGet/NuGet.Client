@@ -301,6 +301,7 @@ namespace NuGet.Commands.Test
                 var outputPath1 = Path.Combine(project1Root, "obj");
                 var fallbackFolder = Path.Combine(project1Root, "fallback");
                 var packagesFolder = Path.Combine(project1Root, "packages");
+                var configFilePath = Path.Combine(project1Root, "nuget.config");
 
                 var items = new List<IDictionary<string, string>>();
 
@@ -318,6 +319,7 @@ namespace NuGet.Commands.Test
                     { "Sources", "https://nuget.org/a/index.json;https://nuget.org/b/index.json" },
                     { "FallbackFolders", fallbackFolder },
                     { "PackagesPath", packagesFolder },
+                    { "ConfigFilePaths", configFilePath },
                     { "CrossTargeting", "true" },
                     { "RestoreLegacyPackagesDirectory", "true" }
                 });
@@ -343,6 +345,7 @@ namespace NuGet.Commands.Test
                 Assert.Equal("https://nuget.org/a/index.json|https://nuget.org/b/index.json", string.Join("|", project1Spec.RestoreMetadata.Sources.Select(s => s.Source)));
                 Assert.Equal(fallbackFolder, string.Join("|", project1Spec.RestoreMetadata.FallbackFolders));
                 Assert.Equal(packagesFolder, string.Join("|", project1Spec.RestoreMetadata.PackagesPath));
+                Assert.Equal(configFilePath, string.Join("|", project1Spec.RestoreMetadata.ConfigFilePaths));
                 Assert.Equal(0, project1Spec.RuntimeGraph.Runtimes.Count);
                 Assert.Equal(0, project1Spec.RuntimeGraph.Supports.Count);
                 Assert.True(project1Spec.RestoreMetadata.CrossTargeting);
@@ -361,6 +364,7 @@ namespace NuGet.Commands.Test
                 var outputPath1 = Path.Combine(project1Root, "obj");
                 var fallbackFolder = Path.Combine(project1Root, "fallback");
                 var packagesFolder = Path.Combine(project1Root, "packages");
+                var configFilePath = Path.Combine(project1Root, "nuget.config");
 
                 var items = new List<IDictionary<string, string>>();
 
@@ -375,6 +379,7 @@ namespace NuGet.Commands.Test
                     { "TargetFrameworks", "net46;netstandard16" },
                     { "Sources", "https://nuget.org/a/index.json;https://nuget.org/b/index.json" },
                     { "FallbackFolders", fallbackFolder },
+                    { "ConfigFilePaths", configFilePath },
                     { "PackagesPath", packagesFolder },
                     { "CrossTargeting", "true" },
                     { "RestoreLegacyPackagesDirectory", "true" }
@@ -402,6 +407,7 @@ namespace NuGet.Commands.Test
                 var outputPath1 = Path.Combine(project1Root, "obj");
                 var fallbackFolder = Path.Combine(project1Root, "fallback");
                 var packagesFolder = Path.Combine(project1Root, "packages");
+                var configFilePath = Path.Combine(project1Root, "nuget.config");
 
                 var items = new List<IDictionary<string, string>>();
 
@@ -417,6 +423,7 @@ namespace NuGet.Commands.Test
                     { "TargetFrameworks", "net46;netstandard16" },
                     { "Sources", "https://nuget.org/a/index.json;https://nuget.org/b/index.json" },
                     { "FallbackFolders", fallbackFolder },
+                    { "ConfigFilePaths", configFilePath },
                     { "PackagesPath", packagesFolder },
                     { "CrossTargeting", "true" },
                     { "RestoreLegacyPackagesDirectory", "true" }
@@ -441,6 +448,7 @@ namespace NuGet.Commands.Test
                 var outputPath1 = Path.Combine(project1Root, "obj");
                 var fallbackFolder = Path.Combine(project1Root, "fallback");
                 var packagesFolder = Path.Combine(project1Root, "packages");
+                var configFilePath = Path.Combine(project1Root, "nuget.config");
 
                 var items = new List<IDictionary<string, string>>();
 
@@ -456,6 +464,7 @@ namespace NuGet.Commands.Test
                     { "Sources", "https://nuget.org/a/index.json;https://nuget.org/b/index.json" },
                     { "FallbackFolders", fallbackFolder },
                     { "PackagesPath", packagesFolder },
+                    { "ConfigFilePaths", configFilePath },
                 });
 
                 var wrappedItems = items.Select(CreateItems).ToList();
