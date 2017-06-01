@@ -3,6 +3,7 @@
 
 using System;
 using System.Linq;
+using NuGet.Common;
 using NuGet.LibraryModel;
 using NuGet.Packaging.Core;
 using NuGet.Versioning;
@@ -516,6 +517,7 @@ namespace NuGet.ProjectModel.Test
 
             var actual = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
 
+            // Assert
             Assert.NotNull(actual);
             Assert.NotNull(actual.RestoreSettings);
             Assert.True(actual.RestoreSettings.HideWarningsAndErrors);
@@ -539,9 +541,97 @@ namespace NuGet.ProjectModel.Test
 
             var actual = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
 
+            // Assert
             Assert.NotNull(actual);
             Assert.NotNull(actual.RestoreSettings);
             Assert.False(actual.RestoreSettings.HideWarningsAndErrors);
+        }
+
+        [Fact]
+        public void PackageSpecReader_ReadsDependencyWithMultipleNoWarn()
+        {
+            // Arrange
+            var json = @"{
+                          ""dependencies"": {
+                                ""packageA"": {
+                                    ""target"": ""package"",
+                                    ""version"": ""1.0.0"",
+                                    ""noWarn"": [
+                                        ""NU1500"",
+                                        ""NU1607""
+                                      ]
+                                }
+                            },
+                            ""frameworks"": {
+                                ""net46"": {}
+                            },
+                        }";
+
+            var actual = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
+
+            // Assert
+            var dep = actual.Dependencies.FirstOrDefault(d => d.Name.Equals("packageA"));
+            Assert.NotNull(dep);
+            Assert.NotNull(dep.NoWarn);
+            Assert.Equal(dep.NoWarn.Count, 2);
+            Assert.True(dep.NoWarn.Contains(NuGetLogCode.NU1500));
+            Assert.True(dep.NoWarn.Contains(NuGetLogCode.NU1607));
+        }
+
+        [Fact]
+        public void PackageSpecReader_ReadsDependencyWithSingleNoWarn()
+        {
+            // Arrange
+            var json = @"{
+                          ""dependencies"": {
+                                ""packageA"": {
+                                    ""target"": ""package"",
+                                    ""version"": ""1.0.0"",
+                                    ""noWarn"": [
+                                        ""NU1500""
+                                      ]
+                                }
+                            },
+                            ""frameworks"": {
+                                ""net46"": {}
+                            },
+                        }";
+
+            var actual = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
+
+            // Assert
+            var dep = actual.Dependencies.FirstOrDefault(d => d.Name.Equals("packageA"));
+            Assert.NotNull(dep);
+            Assert.NotNull(dep.NoWarn);
+            Assert.Equal(dep.NoWarn.Count, 1);
+            Assert.True(dep.NoWarn.Contains(NuGetLogCode.NU1500));
+        }
+
+        [Fact]
+        public void PackageSpecReader_ReadsDependencyWithSingleEmptyNoWarn()
+        {
+            // Arrange
+            var json = @"{
+                          ""dependencies"": {
+                                ""packageA"": {
+                                    ""target"": ""package"",
+                                    ""version"": ""1.0.0"",
+                                    ""noWarn"": [
+                                      ]
+                                }
+                            },
+                            ""frameworks"": {
+                                ""net46"": {}
+                            },
+                        }";
+
+            var actual = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
+
+            // Assert
+            var dep = actual.Dependencies.FirstOrDefault(d => d.Name.Equals("packageA"));
+            Assert.NotNull(dep);
+            Assert.NotNull(dep.NoWarn);
+            Assert.Equal(dep.NoWarn.Count, 0);
         }
     }
 }

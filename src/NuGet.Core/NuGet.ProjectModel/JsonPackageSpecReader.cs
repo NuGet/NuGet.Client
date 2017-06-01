@@ -455,8 +455,8 @@ namespace NuGet.ProjectModel
                     var dependencyIncludeFlagsValue = LibraryIncludeFlags.All;
                     var dependencyExcludeFlagsValue = LibraryIncludeFlags.None;
                     var suppressParentFlagsValue = LibraryIncludeFlagUtils.DefaultSuppressParent;
-
                     var noWarn = new List<NuGetLogCode>();
+
                     // This method handles both the dependencies and framework assembly sections.
                     // Framework references should be limited to references.
                     // Dependencies should allow everything but framework references.
@@ -522,11 +522,8 @@ namespace NuGet.ProjectModel
                             suppressParentFlagsValue = LibraryIncludeFlagUtils.GetFlags(strings);
                         }
 
-                        IEnumerable<NuGetLogCode> codes;
-                        if (TryGetEnumerableFromJArray<NuGetLogCode>(dependencyValue["noWarn"], out codes))
-                        {
-                            noWarn = codes.ToList();
-                        }
+                        noWarn = GetNuGetLogCodeEnumerableFromJArray(dependencyValue["noWarn"])
+                            .ToList();
 
                         var targetToken = dependencyValue["target"];
 
@@ -600,7 +597,7 @@ namespace NuGet.ProjectModel
                         IncludeType = includeFlags,
                         SuppressParent = suppressParentFlagsValue,
                         AutoReferenced = autoReferenced,
-                        NoWarn = noWarn
+                        NoWarn = noWarn.ToList()
                     });
                 }
             }
@@ -675,33 +672,21 @@ namespace NuGet.ProjectModel
             return true;
         }
 
-        internal static bool TryGetEnumerableFromJArray<T>(JToken token, out IEnumerable<T> result)
+        internal static IEnumerable<NuGetLogCode> GetNuGetLogCodeEnumerableFromJArray(JToken token)
         {
-            IEnumerable<T> values;
-            if (token == null)
+            var items = new List<NuGetLogCode>();
+            var array = (JArray)token;
+            if (array != null)
             {
-                result = null;
-                return false;
-            }
-            else if (token.Type == JTokenType.String)
-            {
-                values = new[]
+                foreach (var child in array)
+                {
+                    if (child.Type == JTokenType.String && Enum.TryParse(child.Value<string>(), out NuGetLogCode code))
                     {
-                        token.Value<T>()
-                    };
+                        items.Add(code);
+                    }
+                }
             }
-            else if (token.Type == JTokenType.Array)
-            {
-                values = token.ValueAsArray<T>();
-            }
-            else
-            {
-                result = null;
-                return false;
-            }
-
-            result = values;
-            return true;
+            return items;
         }
 
         private static void BuildTargetFrameworks(PackageSpec packageSpec, JObject rawPackageSpec)
