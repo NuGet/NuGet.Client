@@ -351,7 +351,7 @@ namespace NuGet.CommandLine
 
             CheckRequireConsent();
 
-            var collectorLogger = new CollectorLogger(Console);
+            var collectorLogger = new RestoreCollectorLogger(Console);
             var projectContext = new ConsoleProjectContext(collectorLogger)
             {
                 PackageExtractionContext = new PackageExtractionContext(collectorLogger)

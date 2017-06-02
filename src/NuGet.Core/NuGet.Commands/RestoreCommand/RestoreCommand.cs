@@ -14,7 +14,6 @@ using NuGet.Common;
 using NuGet.DependencyResolver;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
-using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
 using NuGet.Repositories;
@@ -25,14 +24,17 @@ namespace NuGet.Commands
 {
     public class RestoreCommand
     {
-        private readonly ICollectorLogger _logger;
+        private readonly RestoreCollectorLogger _logger;
+
         private readonly RestoreRequest _request;
 
         private bool _success = true;
-        private readonly Dictionary<NuGetFramework, RuntimeGraph> _runtimeGraphCache = new Dictionary<NuGetFramework, RuntimeGraph>();
-        private readonly ConcurrentDictionary<PackageIdentity, RuntimeGraph> _runtimeGraphCacheByPackage
 
+        private readonly Dictionary<NuGetFramework, RuntimeGraph> _runtimeGraphCache = new Dictionary<NuGetFramework, RuntimeGraph>();
+
+        private readonly ConcurrentDictionary<PackageIdentity, RuntimeGraph> _runtimeGraphCacheByPackage
             = new ConcurrentDictionary<PackageIdentity, RuntimeGraph>(PackageIdentity.Comparer);
+
         private readonly Dictionary<RestoreTargetGraph, Dictionary<string, LibraryIncludeFlags>> _includeFlagGraphs
             = new Dictionary<RestoreTargetGraph, Dictionary<string, LibraryIncludeFlags>>();
 
@@ -48,10 +50,18 @@ namespace NuGet.Commands
                 throw new ArgumentOutOfRangeException(nameof(_request.LockFileVersion));
             }
 
-            var collectorLoggerHideWarningsAndErrors = request.Project.RestoreSettings.HideWarningsAndErrors 
+            var collectorLoggerHideWarningsAndErrors = request.Project.RestoreSettings.HideWarningsAndErrors
                 || request.HideWarningsAndErrors;
 
-            var collectorLogger = new CollectorLogger(_request.Log, collectorLoggerHideWarningsAndErrors);
+            var collectorLogger = new RestoreCollectorLogger(_request.Log, collectorLoggerHideWarningsAndErrors)
+            {
+                WarningPropertiesCollection =  new WarningPropertiesCollection()
+                {
+                    ProjectWideWarningProperties = request.Project?.RestoreMetadata?.ProjectWideWarningProperties,
+                    PackageSpecificWarningProperties = WarningPropertiesCollection.GetPackageSpecificWarningProperties(request.Project)
+                }
+            };
+
             _logger = collectorLogger;
         }
 
@@ -80,7 +90,7 @@ namespace NuGet.Commands
                 cacheFile = cacheFileAndStatus.Key;
                 if (cacheFileAndStatus.Value)
                 {
-                    if(NoOpRestoreUtilities.VerifyAssetsAndMSBuildFilesAndPackagesArePresent(_request))
+                    if (NoOpRestoreUtilities.VerifyAssetsAndMSBuildFilesAndPackagesArePresent(_request))
                     {
                         restoreTime.Stop();
 
@@ -170,7 +180,7 @@ namespace NuGet.Commands
             }
             
             // Write the logs into the assets file
-            var logs = (_logger as CollectorLogger).Errors
+            var logs = _logger.Errors
                 .Select(l => AssetsLogMessage.Create(l))
                 .ToList();
 
@@ -691,7 +701,7 @@ namespace NuGet.Commands
             return projectFrameworkRuntimePairs;
         }
 
-        private static RemoteWalkContext CreateRemoteWalkContext(RestoreRequest request, ICollectorLogger logger)
+        private static RemoteWalkContext CreateRemoteWalkContext(RestoreRequest request, RestoreCollectorLogger logger)
         {
             var context = new RemoteWalkContext(
                 request.CacheContext,

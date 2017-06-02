@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using Newtonsoft.Json.Linq;
+using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
@@ -195,9 +196,31 @@ namespace NuGet.ProjectModel.Test
         {
             var unsortedArray = new[] { "b", "a", "c" };
             var unsortedReadOnlyList = new List<string>(unsortedArray).AsReadOnly();
-            var libraryRange = new LibraryRange("range", new VersionRange(new NuGetVersion("1.2.3")), LibraryDependencyTarget.Package);
-            var libraryDependency = new LibraryDependency() { IncludeType = LibraryIncludeFlags.Build, LibraryRange = libraryRange };
+            var libraryRange = new LibraryRange("library", new VersionRange(new NuGetVersion("1.2.3")), LibraryDependencyTarget.Package);
+            var libraryRangeWithNoWarn = new LibraryRange("libraryWithNoWarn", new VersionRange(new NuGetVersion("1.2.3")), LibraryDependencyTarget.Package);
+            var libraryRangeWithNoWarnGlobal = new LibraryRange("libraryRangeWithNoWarnGlobal", new VersionRange(new NuGetVersion("1.2.3")), LibraryDependencyTarget.Package);
+            var libraryDependency = new LibraryDependency()
+            {
+                IncludeType = LibraryIncludeFlags.Build,
+                LibraryRange = libraryRange
+            };
+
+            var libraryDependencyWithNoWarn = new LibraryDependency()
+            {
+                IncludeType = LibraryIncludeFlags.Build,
+                LibraryRange = libraryRangeWithNoWarn,
+                NoWarn = new List<NuGetLogCode> { NuGetLogCode.NU1500, NuGetLogCode.NU1601 }
+            };
+
+            var libraryDependencyWithNoWarnGlobal = new LibraryDependency()
+            {
+                IncludeType = LibraryIncludeFlags.Build,
+                LibraryRange = libraryRangeWithNoWarnGlobal,
+                NoWarn = new List<NuGetLogCode> { NuGetLogCode.NU1500, NuGetLogCode.NU1607 }
+            };
+
             var nugetFramework = new NuGetFramework("frameworkIdentifier", new Version("1.2.3"), "frameworkProfile");
+            var nugetFrameworkWithNoWarn = new NuGetFramework("frameworkIdentifierWithNoWarn", new Version("1.2.5"), "frameworkProfileWithNoWarn");
 
             var packageSpec = new PackageSpec()
             {
@@ -205,7 +228,7 @@ namespace NuGet.ProjectModel.Test
                 BuildOptions = new BuildOptions() { OutputName = "outputName" },
                 ContentFiles = new List<string>(unsortedArray),
                 Copyright = "copyright",
-                Dependencies = new List<LibraryDependency>() { libraryDependency },
+                Dependencies = new List<LibraryDependency>() { libraryDependency, libraryDependencyWithNoWarnGlobal },
                 Description = "description",
                 FilePath = "filePath",
                 HasVersionSnapshot = true,
@@ -287,9 +310,17 @@ namespace NuGet.ProjectModel.Test
 
             packageSpec.TargetFrameworks.Add(new TargetFrameworkInformation()
             {
-                Dependencies = new List<LibraryDependency>() { libraryDependency },
+                Dependencies = new List<LibraryDependency>(),
                 FrameworkName = nugetFramework,
                 Imports = new List<NuGetFramework>() { nugetFramework },
+            });
+
+            packageSpec.TargetFrameworks.Add(new TargetFrameworkInformation()
+            {
+                Dependencies = new List<LibraryDependency>() { libraryDependencyWithNoWarn },
+                FrameworkName = nugetFrameworkWithNoWarn,
+                Imports = new List<NuGetFramework>() { nugetFrameworkWithNoWarn },
+                Warn = true
             });
 
             return packageSpec;

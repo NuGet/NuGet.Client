@@ -5,10 +5,11 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using NuGet.Common;
 
-namespace NuGet.Common
+namespace NuGet.Commands
 {
-    public class CollectorLogger : LoggerBase, ICollectorLogger
+    public class RestoreCollectorLogger : LoggerBase, ICollectorLogger
     {
         private readonly ILogger _innerLogger;
         private readonly ConcurrentQueue<IRestoreLogMessage> _errors;
@@ -16,14 +17,16 @@ namespace NuGet.Common
 
         public IEnumerable<IRestoreLogMessage> Errors => _errors.ToArray();
 
+        public WarningPropertiesCollection WarningPropertiesCollection;
+
         /// <summary>
-        /// Initializes an instance of the <see cref="CollectorLogger"/>, while still
+        /// Initializes an instance of the <see cref="RestoreCollectorLogger"/>, while still
         /// delegating all log messages to the inner logger.
         /// </summary>
         /// <param name="innerLogger">The inner logger used to delegate the logging.</param>
         /// <param name="verbosity">Minimum verbosity below which no logs will be passed to the inner logger.</param>
         /// <param name="hideWarningsAndErrors">If this is true, then errors and warnings will not be passed to inner logger.</param>
-        public CollectorLogger(ILogger innerLogger, LogLevel verbosity, bool hideWarningsAndErrors)
+        public RestoreCollectorLogger(ILogger innerLogger, LogLevel verbosity, bool hideWarningsAndErrors)
             : base(verbosity)
         {
             _innerLogger = innerLogger;
@@ -32,65 +35,74 @@ namespace NuGet.Common
         }
 
         /// <summary>
-        /// Initializes an instance of the <see cref="CollectorLogger"/>, while still
+        /// Initializes an instance of the <see cref="RestoreCollectorLogger"/>, while still
         /// delegating all log messages to the inner logger.
         /// </summary>
         /// <param name="innerLogger">The inner logger used to delegate the logging.</param>
         /// <param name="hideWarningsAndErrors">If this is false, then errors and warnings will not be passed to inner logger.</param>
-        public CollectorLogger(ILogger innerLogger, bool hideWarningsAndErrors)
+        public RestoreCollectorLogger(ILogger innerLogger, bool hideWarningsAndErrors)
             : this(innerLogger, LogLevel.Debug, hideWarningsAndErrors)
         {
         }
 
         /// <summary>
-        /// Initializes an instance of the <see cref="CollectorLogger"/>, while still
+        /// Initializes an instance of the <see cref="RestoreCollectorLogger"/>, while still
         /// delegating all log messages to the inner logger.
         /// </summary>
         /// <param name="innerLogger">The inner logger used to delegate the logging.</param>
         /// <param name="verbosity">Minimum verbosity below which no logs will be passed to the inner logger.</param>
-        public CollectorLogger(ILogger innerLogger, LogLevel verbosity)
+        public RestoreCollectorLogger(ILogger innerLogger, LogLevel verbosity)
             : this(innerLogger, verbosity, hideWarningsAndErrors: false)
         {
         }
 
         /// <summary>
-        /// Initializes an instance of the <see cref="CollectorLogger"/>, while still
+        /// Initializes an instance of the <see cref="RestoreCollectorLogger"/>, while still
         /// delegating all log messages to the inner logger.
         /// </summary>
         /// <param name="innerLogger">The inner logger used to delegate the logging.</param>
-        public CollectorLogger(ILogger innerLogger)
+        public RestoreCollectorLogger(ILogger innerLogger)
             : this(innerLogger, LogLevel.Debug, hideWarningsAndErrors: false)
         {
         }
 
         public void Log(IRestoreLogMessage message)
         {
-            if (CollectMessage(message.Level))
+            // This will be true only when the Message is a Warning and should be suppressed.
+            if (WarningPropertiesCollection == null || !WarningPropertiesCollection.ApplyWarningProperties(message))
             {
-                _errors.Enqueue(message);
-            }
 
-            if (DisplayMessage(message))
-            {
-                _innerLogger.Log(message);
+                if (CollectMessage(message.Level))
+                {
+                    _errors.Enqueue(message);
+                }
+
+                if (DisplayMessage(message))
+                {
+                    _innerLogger.Log(message);
+                }
             }
         }
 
         public Task LogAsync(IRestoreLogMessage message)
         {
-            if (CollectMessage(message.Level))
+
+            // This will be true only when the Message is a Warning and should be suppressed.
+            if (WarningPropertiesCollection == null || !WarningPropertiesCollection.ApplyWarningProperties(message))
             {
-                _errors.Enqueue(message);
+
+                if (CollectMessage(message.Level))
+                {
+                    _errors.Enqueue(message);
+                }
+
+                if (DisplayMessage(message))
+                {
+                    return _innerLogger.LogAsync(message);
+                }
             }
 
-            if (DisplayMessage(message))
-            {
-                return _innerLogger.LogAsync(message);
-            }
-            else
-            {
-                return Task.FromResult(0);
-            }
+            return Task.FromResult(0);
         }
 
         public override void Log(ILogMessage message)
@@ -131,6 +143,5 @@ namespace NuGet.Common
 
             return restoreLogMessage;
         }
-
     }
 }

@@ -2,7 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Text;
+using NuGet.Common;
 using NuGet.Shared;
 
 namespace NuGet.LibraryModel
@@ -17,11 +19,10 @@ namespace NuGet.LibraryModel
 
         public LibraryIncludeFlags SuppressParent { get; set; } = LibraryIncludeFlagUtils.DefaultSuppressParent;
 
-        public string Name
-        {
-            get { return LibraryRange.Name; }
-        }
+        public IList<NuGetLogCode> NoWarn { get; set; } = new List<NuGetLogCode>();
 
+        public string Name => LibraryRange.Name;
+        
         /// <summary>
         /// True if the PackageReference is added by the SDK and not the user.
         /// </summary>
@@ -55,6 +56,7 @@ namespace NuGet.LibraryModel
             hashCode.AddObject(IncludeType);
             hashCode.AddObject(SuppressParent);
             hashCode.AddObject(AutoReferenced);
+            hashCode.AddSequence(NoWarn);
 
             return hashCode.CombinedHash;
         }
@@ -80,7 +82,8 @@ namespace NuGet.LibraryModel
                    EqualityUtility.EqualsWithNullCheck(LibraryRange, other.LibraryRange) &&
                    EqualityUtility.EqualsWithNullCheck(Type, other.Type) &&
                    IncludeType == other.IncludeType &&
-                   SuppressParent == other.SuppressParent;
+                   SuppressParent == other.SuppressParent &&
+                   NoWarn.SequenceEqualWithNullCheck(other.NoWarn);
         }
 
         public LibraryDependency Clone()

@@ -90,5 +90,21 @@ namespace NuGet.Frameworks
                     runtimeIdentifier);
             }
         }
+
+        public static string GetTargetGraphName(NuGetFramework framework, string runtimeIdentifier)
+        {
+            if (string.IsNullOrEmpty(runtimeIdentifier))
+            {
+                return framework.ToString();
+            }
+            else
+            {
+                return string.Format(
+                    CultureInfo.InvariantCulture,
+                    "{0}/{1}",
+                    framework,
+                    runtimeIdentifier);
+            }
+        }
     }
 }

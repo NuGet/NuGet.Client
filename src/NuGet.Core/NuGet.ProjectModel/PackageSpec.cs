@@ -42,10 +42,7 @@ namespace NuGet.ProjectModel
         private NuGetVersion _version = DefaultVersion;
         public NuGetVersion Version
         {
-            get
-            {
-                return _version;
-            }
+            get => _version;
             set
             {
                 _version = value;

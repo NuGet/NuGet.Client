@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Newtonsoft.Json;
+using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.RuntimeModel;
@@ -358,6 +359,11 @@ namespace NuGet.ProjectModel
                     }
 
                     SetValueIfTrue(writer, "autoReferenced", dependency.AutoReferenced);
+
+                    if (dependency.NoWarn.Count > 0)
+                    {
+                        SetArrayValue(writer, "noWarn", dependency.NoWarn.Select(code => code.GetName()));
+                    }
 
                     writer.WriteObjectEnd();
                 }

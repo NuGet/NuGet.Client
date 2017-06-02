@@ -31,7 +31,7 @@ namespace NuGet.Commands.Test
             var dependencySet = new HashSet<ResolvedDependencyKey>() { dependency1, dependency2 };
             var targetGraph = new Mock<IRestoreTargetGraph>();
             targetGraph.SetupGet(e => e.ResolvedDependencies).Returns(dependencySet);
-            targetGraph.SetupGet(e => e.Name).Returns("net46/win10");
+            targetGraph.SetupGet(e => e.TargetGraphName).Returns("net46/win10");
             var targetGraphs = new[] { targetGraph.Object };
             var ignore = new HashSet<string>();
 
@@ -60,7 +60,7 @@ namespace NuGet.Commands.Test
             };
             var targetGraph = new Mock<IRestoreTargetGraph>();
             targetGraph.SetupGet(e => e.Flattened).Returns(flattened);
-            targetGraph.SetupGet(e => e.Name).Returns("net46/win10");
+            targetGraph.SetupGet(e => e.TargetGraphName).Returns("net46/win10");
             targetGraph.SetupGet(e => e.Framework).Returns(NuGetFramework.Parse("net46"));
             var parent = new LibraryIdentity("z", NuGetVersion.Parse("9.0.0"), LibraryType.Package);
             var child = new LibraryIdentity("x", NuGetVersion.Parse("1.0.0"), LibraryType.Package);
@@ -91,7 +91,7 @@ namespace NuGet.Commands.Test
             };
             var targetGraph = new Mock<IRestoreTargetGraph>();
             targetGraph.SetupGet(e => e.Flattened).Returns(flattened);
-            targetGraph.SetupGet(e => e.Name).Returns("net46/win10");
+            targetGraph.SetupGet(e => e.TargetGraphName).Returns("net46/win10");
             targetGraph.SetupGet(e => e.Framework).Returns(NuGetFramework.Parse("net46"));
             var parent = new LibraryIdentity("z", NuGetVersion.Parse("9.0.0"), LibraryType.Package);
             var child = new LibraryIdentity("x", NuGetVersion.Parse("1.0.0"), LibraryType.Package);
@@ -125,7 +125,7 @@ namespace NuGet.Commands.Test
             };
             var targetGraph = new Mock<IRestoreTargetGraph>();
             targetGraph.SetupGet(e => e.Flattened).Returns(flattened);
-            targetGraph.SetupGet(e => e.Name).Returns("net46/win10");
+            targetGraph.SetupGet(e => e.TargetGraphName).Returns("net46/win10");
             targetGraph.SetupGet(e => e.Framework).Returns(NuGetFramework.Parse("net46"));
             var parent = new LibraryIdentity("z", NuGetVersion.Parse("9.0.0"), LibraryType.Package);
             var child = new LibraryIdentity("x", NuGetVersion.Parse("2.5.0"), LibraryType.Package);
@@ -159,7 +159,7 @@ namespace NuGet.Commands.Test
             };
             var targetGraph = new Mock<IRestoreTargetGraph>();
             targetGraph.SetupGet(e => e.Flattened).Returns(flattened);
-            targetGraph.SetupGet(e => e.Name).Returns("net46/win10");
+            targetGraph.SetupGet(e => e.TargetGraphName).Returns("net46/win10");
             targetGraph.SetupGet(e => e.Framework).Returns(NuGetFramework.Parse("net46"));
             var parent = new LibraryIdentity("z", NuGetVersion.Parse("9.0.0"), LibraryType.Package);
             var child = new LibraryIdentity("x", NuGetVersion.Parse("2.5.0"), LibraryType.Package);
@@ -192,7 +192,7 @@ namespace NuGet.Commands.Test
             };
             var targetGraph = new Mock<IRestoreTargetGraph>();
             targetGraph.SetupGet(e => e.Flattened).Returns(flattened);
-            targetGraph.SetupGet(e => e.Name).Returns("net46/win10");
+            targetGraph.SetupGet(e => e.TargetGraphName).Returns("net46/win10");
             targetGraph.SetupGet(e => e.Framework).Returns(NuGetFramework.Parse("net46"));
             var targetGraphs = new[] { targetGraph.Object };
             var ignore = new HashSet<string>();
@@ -215,7 +215,7 @@ namespace NuGet.Commands.Test
             };
             var targetGraph = new Mock<IRestoreTargetGraph>();
             targetGraph.SetupGet(e => e.Flattened).Returns(flattened);
-            targetGraph.SetupGet(e => e.Name).Returns("net46/win10");
+            targetGraph.SetupGet(e => e.TargetGraphName).Returns("net46/win10");
             targetGraph.SetupGet(e => e.Framework).Returns(NuGetFramework.Parse("net46"));
             var targetGraphs = new[] { targetGraph.Object };
             var ignore = new HashSet<string>();
@@ -238,7 +238,7 @@ namespace NuGet.Commands.Test
             };
             var targetGraph = new Mock<IRestoreTargetGraph>();
             targetGraph.SetupGet(e => e.Flattened).Returns(flattened);
-            targetGraph.SetupGet(e => e.Name).Returns("net46/win10");
+            targetGraph.SetupGet(e => e.TargetGraphName).Returns("net46/win10");
             targetGraph.SetupGet(e => e.Framework).Returns(NuGetFramework.Parse("net46"));
             var targetGraphs = new[] { targetGraph.Object };
             var ignore = new HashSet<string>() { "X" };
@@ -261,7 +261,7 @@ namespace NuGet.Commands.Test
             };
             var targetGraph = new Mock<IRestoreTargetGraph>();
             targetGraph.SetupGet(e => e.Flattened).Returns(flattened);
-            targetGraph.SetupGet(e => e.Name).Returns("net46/win10");
+            targetGraph.SetupGet(e => e.TargetGraphName).Returns("net46/win10");
             targetGraph.SetupGet(e => e.Framework).Returns(NuGetFramework.Parse("net46"));
             var targetGraphs = new[] { targetGraph.Object };
             var ignore = new HashSet<string>();
@@ -283,7 +283,7 @@ namespace NuGet.Commands.Test
             var dependencySet = new HashSet<ResolvedDependencyKey>() { dependency };
             var targetGraph = new Mock<IRestoreTargetGraph>();
             targetGraph.SetupGet(e => e.ResolvedDependencies).Returns(dependencySet);
-            targetGraph.SetupGet(e => e.Name).Returns("net46/win10");
+            targetGraph.SetupGet(e => e.TargetGraphName).Returns("net46/win10");
             var targetGraphs = new[] { targetGraph.Object };
             var ignore = new HashSet<string>() { "B" };
 
@@ -302,7 +302,7 @@ namespace NuGet.Commands.Test
             var dependencySet = new HashSet<ResolvedDependencyKey>() { dependency };
             var targetGraph = new Mock<IRestoreTargetGraph>();
             targetGraph.SetupGet(e => e.ResolvedDependencies).Returns(dependencySet);
-            targetGraph.SetupGet(e => e.Name).Returns("net46/win10");
+            targetGraph.SetupGet(e => e.TargetGraphName).Returns("net46/win10");
             var targetGraphs = new[] { targetGraph.Object };
             var ignore = new HashSet<string>();
 

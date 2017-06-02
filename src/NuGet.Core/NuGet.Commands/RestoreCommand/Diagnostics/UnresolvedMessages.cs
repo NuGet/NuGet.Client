@@ -116,13 +116,13 @@ namespace NuGet.Commands
                 message = string.Format(CultureInfo.CurrentCulture,
                     Strings.Log_UnresolvedDependency,
                     unresolved.ToString(),
-                    graph.Name);
+                    graph.TargetGraphName);
 
                 // Set again for clarity
                 code = NuGetLogCode.NU1100;
             }
 
-            return RestoreLogMessage.CreateError(code, message, unresolved.Name, graph.Name);
+            return RestoreLogMessage.CreateError(code, message, unresolved.Name, graph.TargetGraphName);
         }
 
         /// <summary>

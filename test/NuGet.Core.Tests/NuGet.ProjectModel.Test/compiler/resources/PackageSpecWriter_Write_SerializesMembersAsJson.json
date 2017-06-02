@@ -91,23 +91,41 @@
     ]
   },
   "dependencies": {
-    "range": {
+    "library": {
       "include": "Build",
       "target": "Package",
       "version": "[1.2.3, )"
+    },
+    "libraryRangeWithNoWarnGlobal": {
+      "include": "Build",
+      "target": "Package",
+      "version": "[1.2.3, )",
+      "noWarn": [
+        "NU1500",
+        "NU1607"
+      ]
     }
   },
   "frameworks": {
     "frameworkidentifier123-frameworkprofile": {
+      "imports": [
+        "frameworkidentifier123-frameworkprofile"
+      ]
+    },
+    "frameworkidentifierwithnowarn125-frameworkprofilewithnowarn": {
       "dependencies": {
-        "range": {
+        "libraryWithNoWarn": {
           "include": "Build",
           "target": "Package",
-          "version": "[1.2.3, )"
+          "version": "[1.2.3, )",
+          "noWarn": [
+            "NU1500",
+            "NU1601"
+          ]
         }
       },
       "imports": [
-        "frameworkidentifier123-frameworkprofile"
+        "frameworkidentifierwithnowarn125-frameworkprofilewithnowarn"
       ]
     }
   },

@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Protocol.Core.Types;
 using NuGet.Shared;
@@ -104,6 +105,11 @@ namespace NuGet.ProjectModel
         /// True if this is an XPlat PackageReference project.
         /// </summary>
         public bool SkipContentFileWrite { get; set; }
+
+        /// <summary>
+        /// Contains Project wide properties for Warnings.
+        /// </summary>
+        public WarningProperties ProjectWideWarningProperties { get; set; }
 
         public override int GetHashCode()
         {

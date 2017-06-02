@@ -258,7 +258,7 @@ namespace NuGet.Commands
                                     NuGetLogCode.NU1701,
                                     message,
                                     library.Name,
-                                    targetGraph.Name);
+                                    targetGraph.TargetGraphName);
 
                                 _logger.Log(logMessage);
 
