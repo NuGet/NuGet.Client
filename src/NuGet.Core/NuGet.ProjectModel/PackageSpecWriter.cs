@@ -160,6 +160,7 @@ namespace NuGet.ProjectModel
 
             SetArrayValue(writer, "configFilePaths", msbuildMetadata.ConfigFilePaths);
             SetArrayValue(writer, "fallbackFolders", msbuildMetadata.FallbackFolders);
+            SetArrayValue(writer, "configFilePaths", msbuildMetadata.ConfigFilePaths);
             SetArrayValue(writer, "originalTargetFrameworks", msbuildMetadata.OriginalTargetFrameworks);
 
             if (msbuildMetadata.Sources?.Count > 0)
@@ -391,6 +392,8 @@ namespace NuGet.ProjectModel
 
                     SetDependencies(writer, framework.Dependencies);
                     SetImports(writer, framework.Imports);
+                    SetValueIfTrue(writer, "assetTargetFallback", framework.AssetTargetFallback);
+                    SetValueIfTrue(writer, "warn", framework.Warn);
 
                     writer.WriteObjectEnd();
                 }

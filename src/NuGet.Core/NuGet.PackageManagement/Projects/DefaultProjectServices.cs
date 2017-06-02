@@ -72,7 +72,7 @@ namespace NuGet.ProjectManagement
             return null;
         }
 
-        public void RemovePackageReference(string packageName)
+        public Task RemovePackageReferenceAsync(string packageName)
         {
             throw new NotSupportedException();
         }

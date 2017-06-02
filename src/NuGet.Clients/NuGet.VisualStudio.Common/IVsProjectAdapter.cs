@@ -40,6 +40,11 @@ namespace NuGet.VisualStudio
         string PackageTargetFallback { get; }
 
         /// <summary>
+        /// AssetTargetFallback project property
+        /// </summary>
+        string AssetTargetFallback { get; }
+
+        /// <summary>
         /// Restore Packages Path DTE property
         /// </summary>
         string RestorePackagesPath { get; }

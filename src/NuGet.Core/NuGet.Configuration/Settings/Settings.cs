@@ -232,12 +232,13 @@ namespace NuGet.Configuration
             {
                 return NullSettings.Instance;
             }
+
             foreach(var configFile in configFilePaths)
             {
                 settings.Add(LoadSettings(configFile));
             }
 
-            return LoadSettingsForSpecificConfigs(settings.First().Root, settings.First().FileName, settings, null, true, false);
+            return LoadSettingsForSpecificConfigs(settings.First().Root, settings.First().FileName, settings, null, false, false);
         }
 
         private static Settings LoadSettings(string configPath)

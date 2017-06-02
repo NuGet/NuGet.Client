@@ -270,11 +270,11 @@ namespace NuGet.PackageManagement.VisualStudio
                 metadataValues);
         }
 
-        public void RemovePackageReference(string packageName)
+        public async Task RemovePackageReferenceAsync(string packageName)
         {
             Assumes.NotNullOrEmpty(packageName);
 
-            _threadingService.ThrowIfNotOnUIThread();
+            await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             AsVSProject4.PackageReferences.Remove(packageName);
         }

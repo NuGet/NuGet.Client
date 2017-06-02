@@ -47,6 +47,7 @@ namespace NuGet.SolutionRestoreManager
         private const string RestorePackagesPath = nameof(RestorePackagesPath);
         private const string RestoreSources = nameof(RestoreSources);
         private const string RestoreFallbackFolders = nameof(RestoreFallbackFolders);
+        private const string AssetTargetFallback = nameof(AssetTargetFallback);
 
 
         private static readonly Version Version20 = new Version(2, 0, 0, 0);
@@ -268,7 +269,7 @@ namespace NuGet.SolutionRestoreManager
                                     .ToList(),
                 },
                 RuntimeGraph = GetRuntimeGraph(projectRestoreInfo),
-                RestoreSettings = new ProjectRestoreSettings() { HideWarningsAndErrors  = true }
+                RestoreSettings = new ProjectRestoreSettings() { HideWarningsAndErrors = true }
             };
 
             return packageSpec;
@@ -313,7 +314,7 @@ namespace NuGet.SolutionRestoreManager
         {
             if (input.Any(e => StringComparer.OrdinalIgnoreCase.Equals(Clear, e)))
             {
-                return new string[] { Clear};
+                return new string[] { Clear };
             }
 
             return input;
@@ -372,21 +373,16 @@ namespace NuGet.SolutionRestoreManager
                 FrameworkName = NuGetFramework.Parse(targetFrameworkInfo.TargetFrameworkMoniker)
             };
 
-            var ptf = GetPropertyValueOrNull(targetFrameworkInfo.Properties, PackageTargetFallback);
-            if (!string.IsNullOrEmpty(ptf))
-            {
-                var fallbackList = MSBuildStringUtility.Split(ptf)
-                    .Select(NuGetFramework.Parse)
-                    .ToList();
+            var ptf = MSBuildStringUtility.Split(GetPropertyValueOrNull(targetFrameworkInfo.Properties, PackageTargetFallback))
+                                          .Select(NuGetFramework.Parse)
+                                          .ToList();
 
-                tfi.Imports = fallbackList;
+            var atf = MSBuildStringUtility.Split(GetPropertyValueOrNull(targetFrameworkInfo.Properties, AssetTargetFallback))
+                                          .Select(NuGetFramework.Parse)
+                                          .ToList();
 
-                // Update the PackageSpec framework to include fallback frameworks
-                if (tfi.Imports.Count != 0)
-                {
-                    tfi.FrameworkName = new FallbackFramework(tfi.FrameworkName, fallbackList);
-                }
-            }
+            // Update TFI with fallback properties
+            AssetTargetFallbackUtility.ApplyFramework(tfi, ptf, atf);
 
             if (targetFrameworkInfo.PackageReferences != null)
             {

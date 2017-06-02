@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -50,6 +50,8 @@ namespace NuGet.ProjectManagement
         /// </summary>
         private string PackagesProjectNameConfigPath { get; }
 
+        private NuGetFramework TargetFramework { get; }
+
         public PackagesConfigNuGetProject(string folderPath, Dictionary<string, object> metadata)
             : base(metadata)
         {
@@ -58,12 +60,11 @@ namespace NuGet.ProjectManagement
                 throw new ArgumentNullException(nameof(folderPath));
             }
 
+            TargetFramework = GetMetadata<NuGetFramework>(NuGetProjectMetadataKeys.TargetFramework);
+
             PackagesConfigPath = Path.Combine(folderPath, "packages.config");
 
-            // Reading project name directly from InternalMetadata instead of using GetMetadata api because
-            // at this time, we don't want to initialize all the project's metadata which also includes target framework
-            // since it impacts project creation performance.
-            var projectName = InternalMetadata[NuGetProjectMetadataKeys.Name];
+            var projectName = GetMetadata<string>(NuGetProjectMetadataKeys.Name);
             PackagesProjectNameConfigPath = Path.Combine(folderPath, "packages." + projectName + ".config");
         }
 
@@ -85,8 +86,12 @@ namespace NuGet.ProjectManagement
             }
 
             var isDevelopmentDependency = await CheckDevelopmentDependencyAsync(downloadResourceResult, token);
-            var targetFramework = GetMetadata<NuGetFramework>(NuGetProjectMetadataKeys.TargetFramework);
-            var newPackageReference = new PackageReference(packageIdentity, targetFramework, userInstalled: true, developmentDependency: isDevelopmentDependency, requireReinstallation: false);
+            var newPackageReference = new PackageReference(
+                packageIdentity,
+                TargetFramework,
+                userInstalled: true,
+                developmentDependency: isDevelopmentDependency,
+                requireReinstallation: false);
             var installedPackagesList = GetInstalledPackagesList();
 
             try

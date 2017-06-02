@@ -687,7 +687,7 @@ namespace NuGet.ProjectModel
                 {
                     try
                     {
-                        BuildTargetFrameworkNode(packageSpec, framework);
+                        BuildTargetFrameworkNode(packageSpec, framework, packageSpec.FilePath);
                     }
                     catch (Exception ex)
                     {
@@ -697,11 +697,12 @@ namespace NuGet.ProjectModel
             }
         }
 
-        private static bool BuildTargetFrameworkNode(PackageSpec packageSpec, KeyValuePair<string, JToken> targetFramework)
+        private static bool BuildTargetFrameworkNode(PackageSpec packageSpec, KeyValuePair<string, JToken> targetFramework, string filePath)
         {
             var frameworkName = GetFramework(targetFramework.Key);
 
             var properties = targetFramework.Value.Value<JObject>();
+            var assetTargetFallback = GetBoolOrFalse(properties, "assetTargetFallback", filePath);
 
             var importFrameworks = GetImports(properties, packageSpec);
 
@@ -710,7 +711,14 @@ namespace NuGet.ProjectModel
 
             if (importFrameworks.Count != 0)
             {
-                updatedFramework = new FallbackFramework(frameworkName, importFrameworks);
+                if (assetTargetFallback)
+                {
+                    updatedFramework = new AssetTargetFallbackFramework(frameworkName, importFrameworks);
+                }
+                else
+                {
+                    updatedFramework = new FallbackFramework(frameworkName, importFrameworks);
+                }
             }
 
             var targetFrameworkInformation = new TargetFrameworkInformation
@@ -718,7 +726,8 @@ namespace NuGet.ProjectModel
                 FrameworkName = updatedFramework,
                 Dependencies = new List<LibraryDependency>(),
                 Imports = importFrameworks,
-                Warn = GetWarnSetting(properties)
+                Warn = GetWarnSetting(properties),
+                AssetTargetFallback = assetTargetFallback
             };
 
             PopulateDependencies(
@@ -745,7 +754,7 @@ namespace NuGet.ProjectModel
 
         private static List<NuGetFramework> GetImports(JObject properties, PackageSpec packageSpec)
         {
-            List<NuGetFramework> frameworks = new List<NuGetFramework>();
+            var frameworks = new List<NuGetFramework>();
 
             var importsProperty = properties["imports"];
 

@@ -270,7 +270,7 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
-        public void SpecValidationUtility_UAP_VerifyNoOutputPath()
+        public void SpecValidationUtility_UAP_VerifyOutputPath()
         {
             // Arrange
             var spec = new DependencyGraphSpec();
@@ -296,9 +296,8 @@ namespace NuGet.Commands.Test
             project.RestoreMetadata.OriginalTargetFrameworks.Add("net45");
 
             spec.AddProject(project);
-
-            // Act && Assert
-            AssertError(spec, "Invalid input combination. Property 'OutputPath' is not allowed for project type 'ProjectJson'.");
+            // Now the output path is read in for project json projects as well
+            SpecValidationUtility.ValidateDependencySpec(spec);
         }
 
         [Fact]
@@ -328,9 +327,9 @@ namespace NuGet.Commands.Test
             project.RestoreMetadata.OriginalTargetFrameworks.Add("net45");
 
             spec.AddProject(project);
+    
+            SpecValidationUtility.ValidateDependencySpec(spec);
 
-            // Act && Assert
-            AssertError(spec, "Property 'OutputPath' is not allowed for project type 'ProjectJson'", "project.json");
         }
 
         [Fact]

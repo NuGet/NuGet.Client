@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using NuGet.Configuration;
 using NuGet.ProjectModel;
 using NuGet.Protocol.Core.Types;
+using NuGet.Shared;
 
 namespace NuGet.Commands
 {
@@ -73,7 +74,7 @@ namespace NuGet.Commands
                 var rootProject = externalClosure.Single(p =>
                     StringComparer.Ordinal.Equals(projectNameToRestore, p.UniqueName));
 
-                var request = Create(rootProject, externalClosure, restoreContext, projectDgSpec: projectDependencyGraphSpec);
+                var request = Create(projectNameToRestore, rootProject, externalClosure, restoreContext, projectDgSpec: projectDependencyGraphSpec);
 
                 if (request.Request.ProjectStyle == ProjectStyle.DotnetCliTool)
                 {
@@ -120,21 +121,21 @@ namespace NuGet.Commands
         }
 
         private RestoreSummaryRequest Create(
+            string projectNameToRestore,
             ExternalProjectReference project,
             HashSet<ExternalProjectReference> projectReferenceClosure,
             RestoreArgs restoreArgs,
             DependencyGraphSpec projectDgSpec)
         {
             //fallback paths, global packages path and sources need to all be passed in the dg spec
-            var fallbackPaths = new ReadOnlyCollection<string>(project.PackageSpec.RestoreMetadata.FallbackFolders);
-            var globalPath = GetPackagesPath(restoreArgs, project);
-            var settings = Settings.LoadSettingsGivenConfigPaths(project.PackageSpec.RestoreMetadata.ConfigFilePaths);
-            var sources = restoreArgs.GetEffectiveSources(settings, project.PackageSpec.RestoreMetadata.Sources);
-            UpdateSources(project.PackageSpec.RestoreMetadata, sources);
+            var fallbackPaths = projectDgSpec.GetProjectSpec(projectNameToRestore).RestoreMetadata.FallbackFolders;
+            var globalPath = GetPackagesPath(restoreArgs, projectDgSpec.GetProjectSpec(projectNameToRestore));
+            var settings = Settings.LoadSettingsGivenConfigPaths(projectDgSpec.GetProjectSpec(projectNameToRestore).RestoreMetadata.ConfigFilePaths);
+            var sources = restoreArgs.GetEffectiveSources(settings, projectDgSpec.GetProjectSpec(projectNameToRestore).RestoreMetadata.Sources);
 
             var sharedCache = _providerCache.GetOrCreate(
                 globalPath,
-                fallbackPaths,
+                fallbackPaths.AsList(),
                 sources,
                 restoreArgs.CacheContext,
                 restoreArgs.Log);
@@ -175,13 +176,13 @@ namespace NuGet.Commands
             return summaryRequest;
         }
 
-        private string GetPackagesPath(RestoreArgs restoreArgs, ExternalProjectReference project)
+        private string GetPackagesPath(RestoreArgs restoreArgs, PackageSpec project)
         {
             if (!string.IsNullOrEmpty(restoreArgs.GlobalPackagesFolder))
             {
-                project.PackageSpec.RestoreMetadata.PackagesPath = restoreArgs.GlobalPackagesFolder;
+                project.RestoreMetadata.PackagesPath = restoreArgs.GlobalPackagesFolder;
             }
-            return project.PackageSpec.RestoreMetadata.PackagesPath;
+            return project.RestoreMetadata.PackagesPath;
         }
 
         private void UpdateSources(ProjectRestoreMetadata project, List<SourceRepository> sources)

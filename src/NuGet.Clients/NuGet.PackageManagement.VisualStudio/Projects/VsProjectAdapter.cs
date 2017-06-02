@@ -161,6 +161,14 @@ namespace NuGet.PackageManagement.VisualStudio
             }
         }
 
+        public string AssetTargetFallback
+        {
+            get
+            {
+                return BuildProperties.GetPropertyValue(ProjectBuildProperties.AssetTargetFallback);
+            }
+        }
+
         public EnvDTE.Project Project => _dteProject.Value;
 
         public string ProjectId

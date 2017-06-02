@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -64,6 +65,7 @@ namespace NuGet.Test
                     (c) => { },
                     sources,
                     false,
+                    await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(solutionManager, restoreContext),
                     testLogger,
                     CancellationToken.None);
 
@@ -114,6 +116,7 @@ namespace NuGet.Test
                     (c) => { },
                     sources,
                     false,
+                    await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(solutionManager, restoreContext),
                     testLogger,
                     CancellationToken.None);
 
@@ -151,11 +154,14 @@ namespace NuGet.Test
                 var project = new ProjectJsonNuGetProject(projectConfig.FullName, msbuildProjectPath.FullName);
 
                 var configContents = @"<?xml version=""1.0"" encoding=""utf-8""?>
-<configuration>
-<config>
-<add key=""globalPackagesFolder"" value=""..\NuGetPackages"" />
-</config>
-</configuration>";
+                    <configuration>
+                    <config>
+                    <add key=""globalPackagesFolder"" value=""..\NuGetPackages"" />
+                    </config>
+                    <packageSources>
+                        <add key=""nuget.org.v2"" value=""https://www.nuget.org/api/v2/"" />
+                    </packageSources>
+                    </configuration>";
 
                 var configSubFolder = Path.Combine(configFolder, "sub");
                 Directory.CreateDirectory(configSubFolder);
@@ -182,6 +188,7 @@ namespace NuGet.Test
                     (c) => { },
                     sources,
                     false,
+                    await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(solutionManager, restoreContext),
                     testLogger,
                     CancellationToken.None);
 

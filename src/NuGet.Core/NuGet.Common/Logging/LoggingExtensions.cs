@@ -9,7 +9,14 @@ namespace NuGet.Common
     {
         public static string FormatWithCode(this ILogMessage message)
         {
-            return $"{message.Code.GetName()}: {message.Message}";
+            if (message.Code > NuGetLogCode.Undefined)
+            {
+                return $"{message.Code.GetName()}: {message.Message}";
+            }
+            else
+            {
+                return message.Message;
+            }
         }
 
         public static string GetName(this NuGetLogCode code)

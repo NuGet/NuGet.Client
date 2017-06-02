@@ -330,29 +330,32 @@ namespace NuGet.Commands
             foreach (var item in GetItemByType(items, "TargetFrameworkInformation"))
             {
                 var frameworkString = item.GetProperty("TargetFramework");
-                TargetFrameworkInformation targetFrameworkInfo = null;
+                var frameworks = new List<TargetFrameworkInformation>();
 
                 if (!string.IsNullOrEmpty(frameworkString))
                 {
-                    targetFrameworkInfo = spec.GetTargetFramework(NuGetFramework.Parse(frameworkString));
+                    frameworks.Add(spec.GetTargetFramework(NuGetFramework.Parse(frameworkString)));
+                }
+                else
+                {
+                    frameworks.AddRange(spec.TargetFrameworks);
                 }
 
-                Debug.Assert(targetFrameworkInfo != null, $"PackageSpec does not contain the target framework: {frameworkString}");
-
-                if (targetFrameworkInfo != null)
+                foreach (var targetFrameworkInfo in frameworks)
                 {
-                    var fallbackList = MSBuildStringUtility.Split(item.GetProperty("PackageTargetFallback"))
+                    var packageTargetFallback = MSBuildStringUtility.Split(item.GetProperty("PackageTargetFallback"))
                         .Select(NuGetFramework.Parse)
                         .ToList();
 
-                    targetFrameworkInfo.Imports = fallbackList;
+                    var assetTargetFallback = MSBuildStringUtility.Split(item.GetProperty(AssetTargetFallbackUtility.AssetTargetFallback))
+                        .Select(NuGetFramework.Parse)
+                        .ToList();
 
-                    // Update the PackageSpec framework to include fallback frameworks
-                    if (targetFrameworkInfo.Imports.Count > 0)
-                    {
-                        targetFrameworkInfo.FrameworkName =
-                            new FallbackFramework(targetFrameworkInfo.FrameworkName, fallbackList);
-                    }
+                    // Throw if an invalid combination was used.
+                    AssetTargetFallbackUtility.EnsureValidFallback(packageTargetFallback, assetTargetFallback, spec.FilePath);
+
+                    // Update the framework appropriately
+                    AssetTargetFallbackUtility.ApplyFramework(targetFrameworkInfo, packageTargetFallback, assetTargetFallback);
                 }
             }
         }

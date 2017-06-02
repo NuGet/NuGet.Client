@@ -11,6 +11,7 @@ namespace NuGet.ProjectManagement
     {
         public const string BaseIntermediateOutputPath = "BaseIntermediateOutputPath";
         public const string PackageTargetFallback = "PackageTargetFallback";
+        public const string AssetTargetFallback = "AssetTargetFallback";
         public const string PackageVersion = "PackageVersion";
         public const string RestoreProjectStyle = "RestoreProjectStyle";
         public const string RuntimeIdentifier = "RuntimeIdentifier";

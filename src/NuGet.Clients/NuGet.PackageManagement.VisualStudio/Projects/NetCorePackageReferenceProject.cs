@@ -132,7 +132,6 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public override Task<IReadOnlyList<PackageSpec>> GetPackageSpecsAsync(DependencyGraphCacheContext context)
         {
-            //TODO NK - From here on it should be used in restore
             var projects = new List<PackageSpec>();
 
             DependencyGraphSpec projectRestoreInfo;

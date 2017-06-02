@@ -20,6 +20,7 @@ namespace NuGet.ProjectManagement
         public DependencyGraphCacheContext()
         {
             Logger = NullLogger.Instance;
+            Settings = NullSettings.Instance;
         }
 
         /// <summary>
@@ -38,8 +39,6 @@ namespace NuGet.ProjectManagement
         /// Cache for direct project references of a project
         /// </summary>
         public Dictionary<string, IReadOnlyList<IDependencyGraphProject>> DirectReferenceCache { get; set; } = new Dictionary<string, IReadOnlyList<IDependencyGraphProject>>(StringComparer.Ordinal);
-
-        public DependencyGraphSpec SolutionSpec { get; set; } // TODO NK - Check if the solution spec is the one that ends up in the restore command or dependency graph context
 
         /// <summary>
         /// Logger

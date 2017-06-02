@@ -22,6 +22,11 @@ namespace NuGet.ProjectModel
         public IList<NuGetFramework> Imports { get; set; } = new List<NuGetFramework>();
 
         /// <summary>
+        /// If True AssetTargetFallback behavior will be used for Imports.
+        /// </summary>
+        public bool AssetTargetFallback { get; set; }
+
+        /// <summary>
         /// Display warnings when the Imports framework is used.
         /// </summary>
         public bool Warn { get; set; }
@@ -36,6 +41,7 @@ namespace NuGet.ProjectModel
             var hashCode = new HashCodeCombiner();
 
             hashCode.AddObject(FrameworkName);
+            hashCode.AddObject(AssetTargetFallback);
             hashCode.AddSequence(Dependencies);
             hashCode.AddSequence(Imports);
 
@@ -61,7 +67,8 @@ namespace NuGet.ProjectModel
 
             return EqualityUtility.EqualsWithNullCheck(FrameworkName, other.FrameworkName) &&
                    Dependencies.SequenceEqualWithNullCheck(other.Dependencies) &&
-                   Imports.SequenceEqualWithNullCheck(other.Imports);
+                   Imports.SequenceEqualWithNullCheck(other.Imports) &&
+                   AssetTargetFallback == other.AssetTargetFallback;
         }
     }
 }
