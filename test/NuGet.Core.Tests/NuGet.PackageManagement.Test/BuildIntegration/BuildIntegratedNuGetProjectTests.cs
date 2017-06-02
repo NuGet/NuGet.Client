@@ -2,10 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Moq;
 using Newtonsoft.Json.Linq;
 using NuGet.Commands;
 using NuGet.Configuration;
@@ -25,7 +27,7 @@ namespace NuGet.PackageManagement.Test
 {
     public class BuildIntegratedNuGetProjectTests
     {
-        [Fact (Skip ="This test is now obsolete, it needs to be replaced by tests in the new world. TODO NK")]
+        [Fact]
         public async Task BuildIntegratedNuGetProject_IsRestoreRequiredChangedSha512()
         {
             // Arrange
@@ -56,27 +58,45 @@ namespace NuGet.PackageManagement.Test
                 };
 
                 var testLogger = new TestLogger();
+                var settings = new Settings(rootFolder);
+                settings.SetValue(SettingsUtility.ConfigSection, "globalPackagesFolder", packagesFolder);
 
-                var projectTargetFramework = NuGetFramework.Parse("uap10.0");
-                var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, new TestNuGetProjectContext());
                 var project = new ProjectJsonNuGetProject(projectConfig.FullName, msbuildProjectPath.FullName);
 
                 var solutionManager = new TestSolutionManager(false);
                 solutionManager.NuGetProjects.Add(project);
 
-                var restoreContext = new DependencyGraphCacheContext(testLogger, NullSettings.Instance);
+                var restoreContext = new DependencyGraphCacheContext(testLogger, settings);
+                var providersCache = new RestoreCommandProvidersCache();
+                var dgSpec1 = await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(solutionManager, restoreContext);
 
                 await DependencyGraphRestoreUtility.RestoreAsync(
                     solutionManager,
                     restoreContext,
-                    new RestoreCommandProvidersCache(),
+                    providersCache,
                     (c) => { },
                     sources,
-                    packagesFolder,
                     false,
-                    await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(solutionManager, restoreContext),
+                    dgSpec1,
                     testLogger,
                     CancellationToken.None);
+
+                var dgSpec2 = await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(solutionManager, restoreContext);
+                var noOpRestoreSummaries = await DependencyGraphRestoreUtility.RestoreAsync(
+                    solutionManager,
+                    restoreContext,
+                    providersCache,
+                    (c) => { },
+                    sources,
+                    false,
+                    dgSpec2,
+                    testLogger,
+                    CancellationToken.None);
+
+                foreach(var restoreSummary in noOpRestoreSummaries)
+                {
+                    Assert.True(restoreSummary.NoOpRestore);
+                }
 
                 var resolver = new VersionFolderPathResolver(packagesFolder);
                 var hashPath = resolver.GetHashPath("nuget.versioning", NuGetVersion.Parse("1.0.7"));
@@ -86,14 +106,23 @@ namespace NuGet.PackageManagement.Test
                     writer.Write("ANAWESOMELYWRONGHASH!!!");
                 }
 
-                // Act
-                //var actual = await project.IsRestoreRequired(
-                //    new[] { resolver },
-                //    new HashSet<PackageIdentity>(),
-                //    restoreContext);
+                var restoreSummaries = await DependencyGraphRestoreUtility.RestoreAsync(
+                    solutionManager,
+                    restoreContext,
+                    new RestoreCommandProvidersCache(),
+                    (c) => { },
+                    sources,
+                    false,
+                    await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(solutionManager, restoreContext),
+                    testLogger,
+                    CancellationToken.None);
 
-                //// Assert
-                //Assert.True(actual);
+                foreach (var restoreSummary in restoreSummaries)
+                {
+                    Assert.True(restoreSummary.Success);
+                    Assert.False(restoreSummary.NoOpRestore);
+                }
+
             }
         }
 
@@ -137,6 +166,8 @@ namespace NuGet.PackageManagement.Test
                 var testLogger = new TestLogger();
 
                 var restoreContext = new DependencyGraphCacheContext(testLogger, NullSettings.Instance);
+                // TODO NK - set the packagesFolder
+
 
                 await DependencyGraphRestoreUtility.RestoreAsync(
                     solutionManager,
@@ -144,7 +175,6 @@ namespace NuGet.PackageManagement.Test
                     new RestoreCommandProvidersCache(),
                     (c) => { },
                     sources,
-                    packagesFolder,
                     false,
                     await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(solutionManager, restoreContext),
                     testLogger,
