@@ -31,6 +31,6 @@ namespace NuGet.ProjectManagement
         /// <param name="packageName">Name of a package to remove from project</param>
         /// <exception cref="NotSupportedException">Thrown when the project system doesn't support package references.</exception>
         /// <remarks>A caller should verify project system's capabilities before calling this method.</remarks>
-        void RemovePackageReference(string packageName);
+        Task RemovePackageReferenceAsync(string packageName);
     }
 }

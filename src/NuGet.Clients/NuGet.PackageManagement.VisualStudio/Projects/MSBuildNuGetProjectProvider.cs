@@ -89,43 +89,5 @@ namespace NuGet.PackageManagement.VisualStudio
                 return new VsMSBuildProjectSystemServices(vsProjectAdapter, projectSystem, componentModel);
             }
         }
-
-        /// <summary>
-        /// Implements project services in terms of <see cref="VsMSBuildProjectSystem"/>
-        /// </summary>
-        private class VsMSBuildProjectSystemServices
-            : GlobalProjectServiceProvider
-            , INuGetProjectServices
-        {
-            private readonly IVsProjectAdapter _vsProjectAdapter;
-            private readonly VsMSBuildProjectSystem _vsProjectSystem;
-
-            public IProjectBuildProperties BuildProperties => _vsProjectAdapter.BuildProperties;
-
-            public IProjectSystemCapabilities Capabilities => _vsProjectSystem;
-
-            public IProjectSystemReferencesReader ReferencesReader => _vsProjectSystem;
-
-            public IProjectSystemReferencesService References => _vsProjectSystem;
-
-            public IProjectSystemService ProjectSystem => _vsProjectSystem;
-
-            public IProjectScriptHostService ScriptService { get; }
-
-            public VsMSBuildProjectSystemServices(
-                IVsProjectAdapter vsProjectAdapter,
-                VsMSBuildProjectSystem vsProjectSystem,
-                IComponentModel componentModel)
-                : base(componentModel)
-            {
-                Assumes.Present(vsProjectAdapter);
-                Assumes.Present(vsProjectSystem);
-
-                _vsProjectAdapter = vsProjectAdapter;
-                _vsProjectSystem = vsProjectSystem;
-
-                ScriptService = new VsProjectScriptHostService(vsProjectAdapter, this);
-            }
-        }
     }
 }
