@@ -188,17 +188,8 @@ function DowngradeVSIX
 
     if ($p.ExitCode -ne 0)
     {
-        if($p.ExitCode -eq 1002)
-        {
-            Write-Host "VSIX already downgraded. Moving on to installing the VSIX! Exit code: $($p.ExitCode)" 
-            return $true
-        }
-        else 
-        {
             Write-Error "Error downgrading the VSIX! Exit code: $($p.ExitCode)"
             return $false
-        }
-
     }
 
     start-sleep -Seconds $VSIXInstallerWaitTimeInSecs
