@@ -10,8 +10,8 @@
 
 namespace NuGet.PackageManagement {
     using System;
-    using System.Reflection;
-
+    
+    
     /// <summary>
     ///   A strongly-typed resource class, for looking up localized strings, etc.
     /// </summary>
@@ -39,7 +39,7 @@ namespace NuGet.PackageManagement {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("NuGet.PackageManagement.Strings", typeof(Strings).GetTypeInfo().Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("NuGet.PackageManagement.Strings", typeof(Strings).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -457,6 +457,15 @@ namespace NuGet.PackageManagement {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to One or more packages target NETStandard 2.0 or higher and require an additional dependency. Automatically installing NETStandard.Library.NETFramework..
+        /// </summary>
+        internal static string InstallingNetstandard20CompatibilityPackage {
+            get {
+                return ResourceManager.GetString("InstallingNetstandard20CompatibilityPackage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Installing package &apos;{0}&apos; to project.
         /// </summary>
         internal static string InstallingPackage {
@@ -498,6 +507,15 @@ namespace NuGet.PackageManagement {
         internal static string MultiplePackageTypesNotSupported {
             get {
                 return ResourceManager.GetString("MultiplePackageTypesNotSupported", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unable to find package NETStandard.Library.NetFramework in an enabled source. Install the package manually to prevent any build errors..
+        /// </summary>
+        internal static string NetStandardCompatibilityPackageNotFound {
+            get {
+                return ResourceManager.GetString("NetStandardCompatibilityPackageNotFound", resourceCulture);
             }
         }
         

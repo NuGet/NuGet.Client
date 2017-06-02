@@ -426,7 +426,6 @@ namespace NuGet.PackageManagement
                 nuGetProjectContext, primarySources, secondarySources, token);
 
             SetDirectInstall(packageIdentity, nuGetProjectContext);
-
             // Step-2 : Execute all the nuGetProjectActions
             await ExecuteNuGetProjectActionsAsync(
                 nuGetProject,
@@ -2048,10 +2047,16 @@ namespace NuGet.PackageManagement
             {
                 // Set the original packages config if it exists
                 var msbuildProject = nuGetProject as MSBuildNuGetProject;
+                var mightNeedHelperNetstandardPackage = false;
+                var needsNetstandard20OrGreaterAssets = false;
+                NuGetFramework projectTargetFramework = null;
                 if (msbuildProject != null)
                 {
                     nuGetProjectContext.OriginalPackagesConfig =
                         msbuildProject.PackagesConfigNuGetProject?.GetPackagesConfig();
+                    projectTargetFramework = nuGetProject.GetMetadata<NuGetFramework>(NuGetProjectMetadataKeys.TargetFramework);
+                    mightNeedHelperNetstandardPackage =
+                        NetStandard20CompatibilityUtil.IsCompatibilityPackageNeededForProjectFramework(projectTargetFramework);
                 }
 
                 var executedNuGetProjectActions = new Stack<NuGetProjectAction>();
@@ -2081,6 +2086,8 @@ namespace NuGet.PackageManagement
 
                     if (hasInstalls)
                     {
+                        mightNeedHelperNetstandardPackage = 
+                            NetStandard20CompatibilityUtil.IsCompatibilityPackageBeingInstalled(actionsList);
                         // Make this independently cancelable.
                         downloadTokenSource = CancellationTokenSource.CreateLinkedTokenSource(token);
 
@@ -2120,6 +2127,13 @@ namespace NuGet.PackageManagement
                                 nuGetProjectAction.PackageIdentity,
                                 packageWithDirectoriesToBeDeleted,
                                 nuGetProjectContext, token);
+
+                            // uninstall
+                            nuGetProjectContext.Log(
+                                ProjectManagement.MessageLevel.Info,
+                                Strings.SuccessfullyUninstalled,
+                                nuGetProjectAction.PackageIdentity,
+                                nuGetProject.GetMetadata<string>(NuGetProjectMetadataKeys.Name));
                         }
                         else
                         {
@@ -2128,8 +2142,20 @@ namespace NuGet.PackageManagement
                             var preFetchResult = downloadTasks[nuGetProjectAction.PackageIdentity];
                             using (var downloadPackageResult = await preFetchResult.GetResultAsync())
                             {
+
                                 // use the version exactly as specified in the nuspec file
                                 var packageIdentity = await downloadPackageResult.PackageReader.GetIdentityAsync(token);
+
+                                // Check to see if the hack to install make net461/net462/net47 compatibile with netstandard20 or greater
+                                // is required.
+                                if (!needsNetstandard20OrGreaterAssets 
+                                        && mightNeedHelperNetstandardPackage 
+                                            && projectTargetFramework != null)
+                                {
+                                    needsNetstandard20OrGreaterAssets =
+                                        NetStandard20CompatibilityUtil.IsNearestFrameworkNetStandard20OrGreater(projectTargetFramework,
+                                            downloadPackageResult.PackageReader.GetSupportedFrameworks());
+                                }
 
                                 await ExecuteInstallAsync(
                                     nuGetProject,
@@ -2138,30 +2164,28 @@ namespace NuGet.PackageManagement
                                     packageWithDirectoriesToBeDeleted,
                                     nuGetProjectContext,
                                     token);
-                            }
-                        }
 
-                        if (nuGetProjectAction.NuGetProjectActionType == NuGetProjectActionType.Install)
-                        {
-                            var identityString = string.Format(CultureInfo.InvariantCulture, "{0} {1}",
+                                var identityString = string.Format(CultureInfo.InvariantCulture, "{0} {1}",
                                 nuGetProjectAction.PackageIdentity.Id,
                                 nuGetProjectAction.PackageIdentity.Version.ToNormalizedString());
 
-                            nuGetProjectContext.Log(
-                                ProjectManagement.MessageLevel.Info,
-                                Strings.SuccessfullyInstalled,
-                                identityString,
-                                nuGetProject.GetMetadata<string>(NuGetProjectMetadataKeys.Name));
+                                nuGetProjectContext.Log(
+                                    ProjectManagement.MessageLevel.Info,
+                                    Strings.SuccessfullyInstalled,
+                                    identityString,
+                                    nuGetProject.GetMetadata<string>(NuGetProjectMetadataKeys.Name));
+                            }
                         }
-                        else
-                        {
-                            // uninstall
-                            nuGetProjectContext.Log(
-                                ProjectManagement.MessageLevel.Info,
-                                Strings.SuccessfullyUninstalled,
-                                nuGetProjectAction.PackageIdentity,
-                                nuGetProject.GetMetadata<string>(NuGetProjectMetadataKeys.Name));
-                        }
+                    }
+
+                    if (needsNetstandard20OrGreaterAssets)
+                    {
+                        // Install the compatibility package
+                        await NetStandard20CompatibilityUtil.InstallNetStandard20CompatibilityPackageAsync(nuGetProject,
+                            nuGetProjectContext,
+                            this,
+                            SourceRepositoryProvider,
+                            token);
                     }
 
                     // Post process
