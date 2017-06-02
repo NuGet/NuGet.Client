@@ -635,13 +635,18 @@ Copyright (c) .NET Foundation. All rights reserved.
         TaskParameter="RestoreGraphItems"
         ItemName="_RestoreGraphEntry" />
     </GetRestorePackageReferencesTask>
-
+    
+    <PropertyGroup>
+      <_CombinedFallbacks>$(PackageTargetFallback);$(AssetTargetFallback)</_CombinedFallbacks>
+    </PropertyGroup>
+    
     <!-- Write out target framework information -->
-    <ItemGroup Condition="  '$(RestoreProjectStyle)' == 'PackageReference' AND '$(PackageTargetFallback)' != '' ">
+    <ItemGroup Condition="  '$(RestoreProjectStyle)' == 'PackageReference' AND '$(_CombinedFallbacks)' != '' ">
       <_RestoreGraphEntry Include="$([System.Guid]::NewGuid())">
         <Type>TargetFrameworkInformation</Type>
         <ProjectUniqueName>$(MSBuildProjectFullPath)</ProjectUniqueName>
         <PackageTargetFallback>$(PackageTargetFallback)</PackageTargetFallback>
+        <AssetTargetFallback>$(AssetTargetFallback)</AssetTargetFallback>
         <TargetFramework>$(TargetFramework)</TargetFramework>
       </_RestoreGraphEntry>
     </ItemGroup>

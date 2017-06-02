@@ -584,4 +584,7 @@ For more information, visit http://docs.nuget.org/docs/reference/command-line-re
   <data name="CannotBeUsedWithOtherValues" xml:space="preserve">
     <value>'{0}' cannot be used in conjunction with other values.</value>
   </data>
+  <data name="Error_InvalidATF" xml:space="preserve">
+    <value>PackageTargetFallback and AssetTargetFallback cannot be used together. Remove PackageTargetFallback(deprecated) references from the project environment.</value>
+  </data>
 </root>
