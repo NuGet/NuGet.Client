@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -72,6 +72,11 @@ namespace NuGet.Build.Tasks
         public bool RestoreRecursive { get; set; }
 
         /// <summary>
+        /// Force restore, skip no op
+        /// </summary>
+        public bool RestoreForce { get; set; }
+        
+        /// <summary>
         /// Do not display Errors and Warnings to the user. 
         /// The Warnings and Errors are written into the assets file and will be read by an sdk target.
         /// </summary>
@@ -91,6 +96,7 @@ namespace NuGet.Build.Tasks
             log.LogDebug($"(in) RestoreNoCache '{RestoreNoCache}'");
             log.LogDebug($"(in) RestoreIgnoreFailedSources '{RestoreIgnoreFailedSources}'");
             log.LogDebug($"(in) RestoreRecursive '{RestoreRecursive}'");
+            log.LogDebug($"(in) RestoreForce '{RestoreForce}'");
             log.LogDebug($"(in) HideWarningsAndErrors '{HideWarningsAndErrors}'");
 
             try
@@ -166,6 +172,7 @@ namespace NuGet.Build.Tasks
                     MachineWideSettings = new XPlatMachineWideSetting(),
                     PreLoadedRequestProviders = providers,
                     CachingSourceProvider = sourceProvider,
+                    AllowNoOp = !RestoreForce,
                     HideWarningsAndErrors = HideWarningsAndErrors
                 };
 

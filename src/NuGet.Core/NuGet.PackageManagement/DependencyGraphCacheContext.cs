@@ -4,20 +4,23 @@
 using System;
 using System.Collections.Generic;
 using NuGet.Common;
+using NuGet.Configuration;
 using NuGet.ProjectModel;
 
 namespace NuGet.ProjectManagement
 {
     public class DependencyGraphCacheContext
     {
-        public DependencyGraphCacheContext(ILogger logger)
+        public DependencyGraphCacheContext(ILogger logger, ISettings settings)
         {
             Logger = logger;
+            Settings = settings;
         }
 
         public DependencyGraphCacheContext()
         {
             Logger = NullLogger.Instance;
+            Settings = NullSettings.Instance;
         }
 
         /// <summary>
@@ -37,13 +40,11 @@ namespace NuGet.ProjectManagement
         /// </summary>
         public Dictionary<string, IReadOnlyList<IDependencyGraphProject>> DirectReferenceCache { get; set; } = new Dictionary<string, IReadOnlyList<IDependencyGraphProject>>(StringComparer.Ordinal);
 
-        public DependencyGraphSpec SolutionSpec { get; set; }
-
-        public string SolutionSpecHash { get; set; }
-
         /// <summary>
         /// Logger
         /// </summary>
         public ILogger Logger { get; }
+
+        public ISettings Settings { get; }
     }
 }

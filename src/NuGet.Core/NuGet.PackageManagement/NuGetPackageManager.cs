@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -1932,7 +1932,7 @@ namespace NuGet.PackageManagement
             if (buildIntegratedProjectsToUpdate.Count > 0)
             {
                 var logger = new ProjectContextLogger(nuGetProjectContext);
-                var referenceContext = new DependencyGraphCacheContext(logger);
+                var referenceContext = new DependencyGraphCacheContext(logger, Settings);
                 _buildIntegratedProjectsUpdateDict = new Dictionary<string, bool>(StringComparer.OrdinalIgnoreCase);
 
                 var projectUniqueNamesForBuildIntToUpdate
@@ -2321,7 +2321,7 @@ namespace NuGet.PackageManagement
             }
 
             var logger = new ProjectContextLogger(nuGetProjectContext);
-            var dependencyGraphContext = new DependencyGraphCacheContext(logger);
+            var dependencyGraphContext = new DependencyGraphCacheContext(logger, Settings );
 
             // Get Package Spec as json object
             var originalPackageSpec = await DependencyGraphRestoreUtility.GetProjectSpec(buildIntegratedProject, dependencyGraphContext);
@@ -2351,7 +2351,6 @@ namespace NuGet.PackageManagement
                     providerCache,
                     cacheModifier,
                     sources,
-                    Settings,
                     logger,
                     token);
 
@@ -2380,7 +2379,6 @@ namespace NuGet.PackageManagement
                 providerCache,
                 cacheModifier,
                 sources,
-                Settings,
                 logger,
                 token);
 
@@ -2431,7 +2429,6 @@ namespace NuGet.PackageManagement
                     providerCache,
                     cacheModifier,
                     sources,
-                    Settings,
                     logger,
                     token);
             }
@@ -2558,7 +2555,7 @@ namespace NuGet.PackageManagement
                 }
 
                 var logger = new ProjectContextLogger(nuGetProjectContext);
-                var referenceContext = new DependencyGraphCacheContext(logger);
+                var referenceContext = new DependencyGraphCacheContext(logger, Settings);
                 var pathContext = NuGetPathContext.Create(Settings);
                 var pathResolver = new FallbackPackagePathResolver(pathContext);
 
@@ -2580,7 +2577,6 @@ namespace NuGet.PackageManagement
                             GetRestoreProviderCache(),
                             cacheContextModifier,
                             projectAction.Sources,
-                            Settings,
                             logger,
                             token);
                 }
@@ -2642,7 +2638,7 @@ namespace NuGet.PackageManagement
                     projects,
                     buildIntegratedProject,
                     _buildIntegratedProjectsCache);
-
+                // The settings contained in the context are applied to the dg spec.
                 var dgSpecForParents = await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(SolutionManager, referenceContext);
                 dgSpecForParents = dgSpecForParents.WithoutRestores();
 
@@ -2664,14 +2660,14 @@ namespace NuGet.PackageManagement
                 if (dgSpecForParents.Restore.Count > 0)
                 {
                     // Restore and commit the lock file to disk regardless of the result
-                    // This will restore all parents in a single restore
+                    // This will restore all parents in a single restore 
                     await DependencyGraphRestoreUtility.RestoreAsync(
                         dgSpecForParents,
                         referenceContext,
                         GetRestoreProviderCache(),
                         cacheContextModifier,
                         projectAction.Sources,
-                        Settings,
+                        false, // No need to force restore as the inputs would've changed here anyways
                         logger,
                         token);
                 }

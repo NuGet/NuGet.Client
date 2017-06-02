@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using NuGet.Configuration;
+using NuGet.Protocol.Core.Types;
 using NuGet.Shared;
 
 namespace NuGet.ProjectModel
@@ -51,9 +52,19 @@ namespace NuGet.ProjectModel
         public string PackagesPath { get; set; }
 
         /// <summary>
+        /// Cache file path
+        /// </summary>
+        public string CacheFilePath { get; set; }
+
+        /// <summary>
         /// Fallback folders.
         /// </summary>
         public IList<string> FallbackFolders { get; set; } = new List<string>();
+
+        /// <summary>
+        /// ConfigFilePaths used.
+        /// </summary>
+        public IList<string> ConfigFilePaths { get; set; } = new List<string>();
 
         /// <summary>
         /// Framework specific metadata, this may be a subset of the project's frameworks.
@@ -106,6 +117,7 @@ namespace NuGet.ProjectModel
             hashCode.AddObject(ProjectUniqueName);
             hashCode.AddSequence(Sources);
             hashCode.AddObject(PackagesPath);
+            hashCode.AddSequence(ConfigFilePaths);
             hashCode.AddSequence(FallbackFolders);
             hashCode.AddSequence(TargetFrameworks);
             hashCode.AddSequence(OriginalTargetFrameworks);
@@ -143,6 +155,7 @@ namespace NuGet.ProjectModel
                    ProjectUniqueName == other.ProjectUniqueName &&
                    EqualityUtility.SequenceEqualWithNullCheck(Sources, other.Sources) &&
                    PackagesPath == other.PackagesPath &&
+                   EqualityUtility.SequenceEqualWithNullCheck(ConfigFilePaths, other.ConfigFilePaths) &&
                    EqualityUtility.SequenceEqualWithNullCheck(FallbackFolders, other.FallbackFolders) &&
                    EqualityUtility.SequenceEqualWithNullCheck(TargetFrameworks, other.TargetFrameworks) &&
                    EqualityUtility.SequenceEqualWithNullCheck(OriginalTargetFrameworks, other.OriginalTargetFrameworks) &&

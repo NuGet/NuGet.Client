@@ -16,6 +16,8 @@ namespace NuGet.Commands
     {
         public bool Success { get; }
 
+        public bool NoOpRestore { get; }
+
         public string InputPath { get; }
 
         public IList<string> ConfigFiles { get; }
@@ -29,6 +31,7 @@ namespace NuGet.Commands
         public RestoreSummary(bool success)
         {
             Success = success;
+            NoOpRestore = false;
             InputPath = null;
             ConfigFiles = new List<string>().AsReadOnly();
             FeedsUsed = new List<string>().AsReadOnly();
@@ -44,6 +47,7 @@ namespace NuGet.Commands
             IEnumerable<RestoreLogMessage> errors)
         {
             Success = result.Success;
+            NoOpRestore = result is NoOpRestoreResult;
             InputPath = inputPath;
             ConfigFiles = settings
                 .Priority

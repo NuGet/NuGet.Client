@@ -13,6 +13,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.Setup.Configuration;
 using NuGet.Common;
+using NuGet.Configuration;
 using NuGet.ProjectModel;
 
 namespace NuGet.CommandLine
@@ -70,9 +71,13 @@ namespace NuGet.CommandLine
             string[] projectPaths,
             int timeOut,
             IConsole console,
-            bool recursive)
+            bool recursive,
+            string solutionDirectory,
+            string restoreConfigFile,
+            string[] sources,
+            string packagesDirectory)
         {
-            string msbuildPath = GetMsbuild(msbuildDirectory);
+            var msbuildPath = GetMsbuild(msbuildDirectory);
 
             if (!File.Exists(msbuildPath))
             {
@@ -140,14 +145,65 @@ namespace NuGet.CommandLine
                 // Disallow the import of targets/props from packages
                 argumentBuilder.Append(" /p:ExcludeRestorePackageImports=true ");
 
+                if (!string.IsNullOrEmpty(solutionDirectory))
+                {
+                    argumentBuilder.Append(" /p:RestoreSolutionDirectory=");
+                    argumentBuilder.Append(EscapeQuoted(solutionDirectory));
+                }
+
+                if (!string.IsNullOrEmpty(restoreConfigFile))
+                {
+                    argumentBuilder.Append(" /p:RestoreConfigFile=");
+                    argumentBuilder.Append(EscapeQuoted(restoreConfigFile));
+                }
+
+                var isMono = RuntimeEnvironmentHelper.IsMono && !RuntimeEnvironmentHelper.IsWindows;
+
+                if (sources.Length != 0)
+                {
+                    if (isMono)
+                    {
+                        argumentBuilder.Append(" /p:RestoreSources=\\\"");
+                    }
+                    else
+                    {
+                        argumentBuilder.Append(" /p:RestoreSources=\"");
+                    }
+
+                    for (var i = 0; i < sources.Length; i++)
+                    {
+                        if (isMono)
+                        {
+                            argumentBuilder.Append(sources[i])
+                                .Append("\\;");
+                        }
+                        else
+                        {
+                            argumentBuilder.Append(sources[i])
+                                .Append(";");
+                        }
+                    }
+
+                    if (isMono)
+                    {
+                        argumentBuilder.Append("\\\" ");
+                    }
+                    else
+                    {
+                        argumentBuilder.Append("\" ");
+                    }
+                }
+                if (!string.IsNullOrEmpty(packagesDirectory))
+                {
+                    argumentBuilder.Append(" /p:RestorePackagesPath=");
+                    AppendQuoted(argumentBuilder, packagesDirectory);
+                }
+
                 // Add all depenencies as top level restore projects if recursive is set
                 argumentBuilder.Append($" /p:RestoreRecursive={recursive} ");
 
                 // Filter out unknown project types and avoid errors from projects that do not support CustomAfterTargets
                 argumentBuilder.Append($" /p:RestoreProjectFilterMode=exclusionlist /p:RestoreContinueOnError=WarnAndContinue ");
-
-                // Projects to restore
-                bool isMono = RuntimeEnvironmentHelper.IsMono && !RuntimeEnvironmentHelper.IsWindows;
 
                 // /p: foo = "bar;baz" doesn't work on bash.
                 // /p: foo = /"bar/;baz/" works.
@@ -255,6 +311,8 @@ namespace NuGet.CommandLine
                                 LocalizedResourceManager.GetString(nameof(NuGetResources.Error_MsBuildTimedOut)));
                     }
 
+                    await outputTask;
+                    
                     if (process.ExitCode != 0)
                     {
                         // Do not continue if msbuild failed.
@@ -308,7 +366,7 @@ namespace NuGet.CommandLine
             try
             {
                 var assembly = Assembly.Load(
-                    "Microsoft.Build.Engine, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a");
+                    "Microsoft.Build.Engine, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f1d50a3a");
                 var solutionParserType = assembly.GetType("Mono.XBuild.CommandLine.SolutionParser");
                 if (solutionParserType == null)
                 {
@@ -822,6 +880,18 @@ namespace NuGet.CommandLine
                 RegexOptions.Singleline);
 
             return escaped;
+        }
+
+        public static string EscapeQuoted(string argument)
+        {
+            if (argument == string.Empty)
+            {
+                return "\"\"";
+            }
+            var escaped = Regex.Replace(argument, @"(\\*)" + "\"", @"$1$1\" + "\"");
+            escaped = "\"" + Regex.Replace(escaped, @"(\\+)$", @"$1$1") + "\"";
+            return escaped;
+
         }
 
         private static string GetMsbuild(string msbuildDirectory)

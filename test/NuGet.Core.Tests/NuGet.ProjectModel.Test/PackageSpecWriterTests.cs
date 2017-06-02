@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using Newtonsoft.Json.Linq;
 using NuGet.Configuration;
 using NuGet.Frameworks;
@@ -231,6 +232,7 @@ namespace NuGet.ProjectModel.Test
                 {
                     CrossTargeting = true,
                     FallbackFolders = unsortedReadOnlyList,
+                    ConfigFilePaths = unsortedReadOnlyList,
                     LegacyPackagesDirectory = false,
                     OriginalTargetFrameworks = unsortedReadOnlyList,
                     OutputPath = "outputPath",

@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -11,6 +12,7 @@ using Moq;
 using Newtonsoft.Json.Linq;
 using NuGet.Commands;
 using NuGet.Common;
+using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.PackageManagement;
@@ -78,7 +80,7 @@ namespace NuGet.Test
             {
                 using (var testSolutionManager = new TestSolutionManager(true))
                 {
-                    var testSettings = new Configuration.NullSettings();
+                    var testSettings = NullSettings.Instance;
                     var deleteOnRestartManager = new TestDeleteOnRestartManager();
                     var nuGetPackageManager = new NuGetPackageManager(
                         sourceRepositoryProvider,
@@ -219,7 +221,7 @@ namespace NuGet.Test
             {
                 using (var testSolutionManager = new TestSolutionManager(true))
                 {
-                    var testSettings = new Configuration.NullSettings();
+                    var testSettings = NullSettings.Instance;
                     var deleteOnRestartManager = new TestDeleteOnRestartManager();
                     var nuGetPackageManager = new NuGetPackageManager(
                         sourceRepositoryProvider,
@@ -319,7 +321,7 @@ namespace NuGet.Test
                     var format = new LockFileFormat();
 
                     // Restore and build cache
-                    var restoreContext = new DependencyGraphCacheContext(logger);
+                    var restoreContext = new DependencyGraphCacheContext(logger, NullSettings.Instance);
 
                     // Act
                     await nuGetPackageManager.InstallPackageAsync(buildIntegratedProjects[2], packageIdentity, new ResolutionContext(), new TestNuGetProjectContext(),
@@ -362,7 +364,7 @@ namespace NuGet.Test
             using (var testSolutionManager = new TestSolutionManager(true))
             using (var randomProjectFolderPath = TestDirectory.Create())
             {
-                var testSettings = new Configuration.NullSettings();
+                var testSettings = NullSettings.Instance;
                 var deleteOnRestartManager = new TestDeleteOnRestartManager();
                 var nuGetPackageManager = new NuGetPackageManager(
                     sourceRepositoryProvider,
@@ -409,7 +411,7 @@ namespace NuGet.Test
             using (var testSolutionManager = new TestSolutionManager(true))
             using (var randomProjectFolderPath = TestDirectory.Create())
             {
-                var testSettings = new Configuration.NullSettings();
+                var testSettings = NullSettings.Instance;
                 var deleteOnRestartManager = new TestDeleteOnRestartManager();
                 var nuGetPackageManager = new NuGetPackageManager(
                     sourceRepositoryProvider,
@@ -467,7 +469,7 @@ namespace NuGet.Test
             using (var testSolutionManager = new TestSolutionManager(true))
             using (var randomProjectFolderPath = TestDirectory.Create())
             {
-                var testSettings = new Configuration.NullSettings();
+                var testSettings = NullSettings.Instance;
                 var deleteOnRestartManager = new TestDeleteOnRestartManager();
                 var nuGetPackageManager = new NuGetPackageManager(
                     sourceRepositoryProvider,
@@ -535,7 +537,7 @@ namespace NuGet.Test
             using (var testSolutionManager = new TestSolutionManager(true))
             using (var randomProjectFolderPath = TestDirectory.Create())
             {
-                var testSettings = new Configuration.NullSettings();
+                var testSettings = NullSettings.Instance;;
                 var deleteOnRestartManager = new TestDeleteOnRestartManager();
                 var nuGetPackageManager = new NuGetPackageManager(
                     sourceRepositoryProvider,
@@ -609,7 +611,7 @@ namespace NuGet.Test
             using (var testSolutionManager = new TestSolutionManager(true))
             using (var randomProjectFolderPath = TestDirectory.Create())
             {
-                var testSettings = new Configuration.NullSettings();
+                var testSettings = NullSettings.Instance;
                 var deleteOnRestartManager = new TestDeleteOnRestartManager();
                 var nuGetPackageManager = new NuGetPackageManager(
                     sourceRepositoryProvider,
@@ -662,7 +664,7 @@ namespace NuGet.Test
             using (var testSolutionManager = new TestSolutionManager(true))
             using (var randomProjectFolderPath = TestDirectory.Create())
             {
-                var testSettings = new Configuration.NullSettings();
+                var testSettings = NullSettings.Instance;
                 var deleteOnRestartManager = new TestDeleteOnRestartManager();
                 var nuGetPackageManager = new NuGetPackageManager(
                     sourceRepositoryProvider,
@@ -710,7 +712,7 @@ namespace NuGet.Test
             using (var testSolutionManager = new TestSolutionManager(true))
             using (var randomProjectFolderPath = TestDirectory.Create())
             {
-                var testSettings = new Configuration.NullSettings();
+                var testSettings = NullSettings.Instance;
                 var deleteOnRestartManager = new TestDeleteOnRestartManager();
                 var nuGetPackageManager = new NuGetPackageManager(
                     sourceRepositoryProvider,
@@ -779,7 +781,7 @@ namespace NuGet.Test
             {
                 var nuGetPackageManager = new NuGetPackageManager(
                     sourceRepositoryProvider,
-                    Configuration.NullSettings.Instance,
+                    NullSettings.Instance,
                     testSolutionManager,
                     new TestDeleteOnRestartManager());
 
@@ -857,7 +859,7 @@ namespace NuGet.Test
             using (var testSolutionManager = new TestSolutionManager(true))
             using (var randomProjectFolderPath = TestDirectory.Create())
             {
-                var testSettings = new Configuration.NullSettings();
+                var testSettings = NullSettings.Instance;
                 var deleteOnRestartManager = new TestDeleteOnRestartManager();
                 var nuGetPackageManager = new NuGetPackageManager(
                     sourceRepositoryProvider,
@@ -949,7 +951,7 @@ namespace NuGet.Test
             using (var testSolutionManager = new TestSolutionManager(true))
             using (var randomProjectFolderPath = TestDirectory.Create())
             {
-                var testSettings = new Configuration.NullSettings();
+                var testSettings = NullSettings.Instance;
                 var deleteOnRestartManager = new TestDeleteOnRestartManager();
                 var nuGetPackageManager = new NuGetPackageManager(
                     sourceRepositoryProvider,
@@ -1033,7 +1035,7 @@ namespace NuGet.Test
             using (var testSolutionManager = new TestSolutionManager(true))
             using (var randomProjectFolderPath = TestDirectory.Create())
             {
-                var testSettings = new Configuration.NullSettings();
+                var testSettings = NullSettings.Instance;
                 var deleteOnRestartManager = new TestDeleteOnRestartManager();
                 var nuGetPackageManager = new NuGetPackageManager(
                     sourceRepositoryProvider,
@@ -1100,7 +1102,7 @@ namespace NuGet.Test
             using (var testSolutionManager = new TestSolutionManager(true))
             using (var randomProjectFolderPath = TestDirectory.Create())
             {
-                var testSettings = new Configuration.NullSettings();
+                var testSettings = NullSettings.Instance;
                 var deleteOnRestartManager = new TestDeleteOnRestartManager();
 
                 var nuGetPackageManager = new NuGetPackageManager(
@@ -1207,7 +1209,7 @@ namespace NuGet.Test
             using (var testSolutionManager = new TestSolutionManager(true))
             using (var randomProjectFolderPath = TestDirectory.Create())
             {
-                var testSettings = new Configuration.NullSettings();
+                var testSettings = NullSettings.Instance;
                 var deleteOnRestartManager = new TestDeleteOnRestartManager();
                 var nuGetPackageManager = new NuGetPackageManager(
                     sourceRepositoryProvider,
@@ -1268,7 +1270,7 @@ namespace NuGet.Test
             using (var testSolutionManager = new TestSolutionManager(true))
             using (var randomProjectFolderPath = TestDirectory.Create())
             {
-                var testSettings = new Configuration.NullSettings();
+                var testSettings = NullSettings.Instance;
                 var deleteOnRestartManager = new TestDeleteOnRestartManager();
                 var nuGetPackageManager = new NuGetPackageManager(
                     sourceRepositoryProvider,
@@ -1317,7 +1319,7 @@ namespace NuGet.Test
             using (var testSolutionManager = new TestSolutionManager(true))
             using (var randomProjectFolderPath = TestDirectory.Create())
             {
-                var testSettings = new Configuration.NullSettings();
+                var testSettings = NullSettings.Instance;
                 var deleteOnRestartManager = new TestDeleteOnRestartManager();
                 var nuGetPackageManager = new NuGetPackageManager(
                     sourceRepositoryProvider,
@@ -1373,7 +1375,7 @@ namespace NuGet.Test
             using (var testSolutionManager = new TestSolutionManager(true))
             using (var randomProjectFolderPath = TestDirectory.Create())
             {
-                var testSettings = new Configuration.NullSettings();
+                var testSettings = NullSettings.Instance;
                 var deleteOnRestartManager = new TestDeleteOnRestartManager();
                 var nuGetPackageManager = new NuGetPackageManager(
                     sourceRepositoryProvider,
@@ -1433,7 +1435,7 @@ namespace NuGet.Test
             using (var testSolutionManager = new TestSolutionManager(true))
             using (var randomProjectFolderPath = TestDirectory.Create())
             {
-                var testSettings = new Configuration.NullSettings();
+                var testSettings = NullSettings.Instance;
                 var deleteOnRestartManager = new TestDeleteOnRestartManager();
                 var nuGetPackageManager = new NuGetPackageManager(sourceRepositoryProvider, testSettings, testSolutionManager, deleteOnRestartManager);
 
@@ -1504,7 +1506,7 @@ namespace NuGet.Test
             using (var testSolutionManager = new TestSolutionManager(true))
             using (var randomProjectFolderPath = TestDirectory.Create())
             {
-                var testSettings = new Configuration.NullSettings();
+                var testSettings = NullSettings.Instance;
                 var deleteManager = new TestDeleteOnRestartManager();
                 var nuGetPackageManager = new NuGetPackageManager(sourceRepositoryProvider, testSettings, testSolutionManager, deleteManager);
 
@@ -1543,7 +1545,7 @@ namespace NuGet.Test
             using (var testSolutionManager = new TestSolutionManager(true))
             using (var randomProjectFolderPath = TestDirectory.Create())
             {
-                var testSettings = new Configuration.NullSettings();
+                var testSettings = NullSettings.Instance;
                 var testDeleteManager = new TestDeleteOnRestartManager();
                 var nuGetPackageManager = new NuGetPackageManager(sourceRepositoryProvider, testSettings, testSolutionManager, testDeleteManager);
 
@@ -1585,7 +1587,7 @@ namespace NuGet.Test
             using (var testSolutionManager = new TestSolutionManager(true))
             using (var randomProjectFolderPath = TestDirectory.Create())
             {
-                var testSettings = new Configuration.NullSettings();
+                var testSettings = NullSettings.Instance;
                 var deleteOnRestartManager = new TestDeleteOnRestartManager();
                 var nuGetPackageManager = new NuGetPackageManager(sourceRepositoryProvider, testSettings, testSolutionManager, deleteOnRestartManager);
 
@@ -1631,7 +1633,7 @@ namespace NuGet.Test
                 using (var testSolutionManager = new TestSolutionManager(true))
                 using (var randomProjectFolderPath = TestDirectory.Create())
                 {
-                    var testSettings = new Configuration.NullSettings();
+                    var testSettings = NullSettings.Instance;
                     var token = CancellationToken.None;
                     var resolutionContext = new ResolutionContext(DependencyBehavior.Lowest, includePrelease: true, includeUnlisted: true, versionConstraints: VersionConstraints.None);
                     var testNuGetProjectContext = new TestNuGetProjectContext();

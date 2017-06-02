@@ -1,4 +1,4 @@
-{
+﻿{
   "title": "title",
   "version": "1.2.3",
   "description": "description",
@@ -47,6 +47,11 @@
     "projectStyle": "PackageReference",
     "crossTargeting": true,
     "fallbackFolders": [
+      "b",
+      "a",
+      "c"
+    ],
+    "configFilePaths": [
       "b",
       "a",
       "c"

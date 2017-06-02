@@ -65,6 +65,11 @@ namespace NuGet.Protocol
             return _cachedSources.GetOrAdd(source.Source, new SourceRepository(source, _resourceProviders, type));
         }
 
+        public void AddSourceRepository(SourceRepository source)
+        {
+            _cachedSources.TryAdd(source.PackageSource.Source, source);
+        }
+
         public IPackageSourceProvider PackageSourceProvider
         {
             get { return _packageSourceProvider; }

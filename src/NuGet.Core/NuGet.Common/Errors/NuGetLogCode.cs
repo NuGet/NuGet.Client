@@ -47,7 +47,7 @@ namespace NuGet.Common
         NU1001 = 1001,
 
         /// <summary>
-        /// 
+        /// Invalid combination with CLEAR
         /// </summary>
         NU1002 = 1002,
 

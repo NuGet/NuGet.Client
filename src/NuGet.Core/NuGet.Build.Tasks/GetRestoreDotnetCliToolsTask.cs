@@ -33,19 +33,24 @@ namespace NuGet.Build.Tasks
         public string ToolFramework { get; set; }
 
         /// <summary>
-        /// NuGet sources, ; delimited
+        /// NuGet sources
         /// </summary>
-        public string RestoreSources { get; set; }
+        public string[] RestoreSources { get; set; }
 
         /// <summary>
         /// NuGet fallback folders
         /// </summary>
-        public string RestoreFallbackFolders { get; set; }
+        public string[] RestoreFallbackFolders { get; set; }
 
         /// <summary>
         /// User packages folder
         /// </summary>
         public string RestorePackagesPath { get; set; }
+
+        /// <summary>
+        /// Config File Paths used
+        /// </summary>
+        public string[] RestoreConfigFilePaths { get; set; }
 
         [Required]
         public ITaskItem[] DotnetCliToolReferences { get; set; }
@@ -55,6 +60,22 @@ namespace NuGet.Build.Tasks
             var log = new MSBuildLogger(Log);
             log.LogDebug($"(in) ProjectPath '{ProjectPath}'");
             log.LogDebug($"(in) DotnetCliToolReferences '{string.Join(";", DotnetCliToolReferences.Select(p => p.ItemSpec))}'");
+            if (RestoreSources != null)
+            {
+                log.LogDebug($"(in) RestoreSources '{string.Join(";", RestoreSources.Select(p => p))}'");
+            }
+            if (RestorePackagesPath != null)
+            {
+                log.LogDebug($"(in) RestorePackagesPath '{RestorePackagesPath}'");
+            }
+            if (RestoreFallbackFolders != null)
+            {
+                log.LogDebug($"(in) RestoreFallbackFolders '{string.Join(";", RestoreFallbackFolders.Select(p => p))}'");
+            }
+            if (RestoreConfigFilePaths != null)
+            {
+                log.LogDebug($"(in) RestoreConfigFilePaths '{string.Join(";", RestoreConfigFilePaths.Select(p => p))}'");
+            }
 
             var entries = new List<ITaskItem>();
 
@@ -75,6 +96,7 @@ namespace NuGet.Build.Tasks
                 properties.Add("ProjectName", $"DotnetCliToolReference-{msbuildItem.ItemSpec}");
                 BuildTasksUtility.AddPropertyIfExists(properties, "Sources", RestoreSources);
                 BuildTasksUtility.AddPropertyIfExists(properties, "FallbackFolders", RestoreFallbackFolders);
+                BuildTasksUtility.AddPropertyIfExists(properties, "ConfigFilePaths", RestoreConfigFilePaths);
                 BuildTasksUtility.AddPropertyIfExists(properties, "PackagesPath", RestorePackagesPath);
                 properties.Add("TargetFrameworks", ToolFramework);
                 properties.Add("ProjectStyle", ProjectStyle.DotnetCliTool.ToString());

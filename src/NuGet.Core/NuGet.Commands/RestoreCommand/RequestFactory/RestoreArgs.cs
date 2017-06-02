@@ -27,6 +27,8 @@ namespace NuGet.Commands
 
         public bool DisableParallel { get; set; }
 
+        public bool AllowNoOp {get; set;}
+
         public HashSet<string> Runtimes { get; set; } = new HashSet<string>(StringComparer.Ordinal);
 
         public HashSet<string> FallbackRuntimes { get; set; } = new HashSet<string>(StringComparer.Ordinal);
@@ -36,19 +38,12 @@ namespace NuGet.Commands
         public SourceCacheContext CacheContext { get; set; }
 
         public ILogger Log { get; set; }
-
-        /// <summary>
-        /// Sources to use for restore. Overrides Sources
-        /// </summary>
-        public List<SourceRepository> SourceRepositories { get; set; } = new List<SourceRepository>();
-
+        
         /// <summary>
         /// Sources to use for restore. This is not used if SourceRepositories contains the 
         /// already built SourceRepository objects.
         /// </summary>
         public List<string> Sources { get; set; } = new List<string>();
-
-        public List<string> FallbackSources { get; set; } = new List<string>();
 
         public CachingSourceProvider CachingSourceProvider { get; set; }
 
@@ -119,7 +114,7 @@ namespace NuGet.Commands
         /// <summary>
         /// Uses either Sources or Settings, and then adds Fallback sources.
         /// </summary>
-        public List<SourceRepository> GetEffectiveSources(ISettings settings)
+        internal List<SourceRepository> GetEffectiveSources(ISettings settings, IList<PackageSource> dgSpecSources)
         {
             if (settings == null)
             {
@@ -128,32 +123,29 @@ namespace NuGet.Commands
 
             var cacheKey = string.Join("|", settings.Priority.Select(e => e.Root));
 
-            return _sourcesCache.GetOrAdd(cacheKey, (root) => GetEffectiveSourcesCore(settings));
+            return _sourcesCache.GetOrAdd(cacheKey, (root) => GetEffectiveSourcesCore(settings, dgSpecSources));
         }
 
-        private List<SourceRepository> GetEffectiveSourcesCore(ISettings settings)
+        private List<SourceRepository> GetEffectiveSourcesCore(ISettings settings, IList<PackageSource> dgSpecSources)
         {
-            if (SourceRepositories.Count > 0)
-            {
-                // SourceRepositories overrides
-                return SourceRepositories;
-            }
-
-            var sourceObjects = new Dictionary<string, PackageSource>(StringComparer.Ordinal);
+            var sourceObjects = dgSpecSources.ToDictionary(k => k.Source, v => v, StringComparer.Ordinal);
             var packageSourceProvider = new PackageSourceProvider(settings);
             var packageSourcesFromProvider = packageSourceProvider.LoadPackageSources();
-            var useNugetConfigSources = (Sources.Count == 0);
 
-            // Always use passed-in sources and fallback sources
-            foreach (var sourceUri in Enumerable.Concat(Sources, FallbackSources))
+            foreach (var sourceUri in Sources)
             {
-                sourceObjects[sourceUri] = new PackageSource(sourceUri);
+                //DGSpecSources should always match the Sources
+                if (!sourceObjects.ContainsKey(sourceUri))
+                {
+                    Log.LogDebug($"{sourceUri} is in the RestoreArgs Sources but in the passed in dgSpecSources");
+                    sourceObjects[sourceUri] = new PackageSource(sourceUri);
+                }
             }
-
+            
             // Use PackageSource objects from the provider when possible (since those will have credentials from nuget.config)
             foreach (var source in packageSourcesFromProvider)
             {
-                if (source.IsEnabled && (useNugetConfigSources || sourceObjects.ContainsKey(source.Source)))
+                if (source.IsEnabled && (sourceObjects.ContainsKey(source.Source)))
                 {
                     sourceObjects[source.Source] = source;
                 }
@@ -180,6 +172,10 @@ namespace NuGet.Commands
             else if (request.ProjectStyle != ProjectStyle.DotnetCliTool)
             {
                 request.LockFilePath = ProjectJsonPathUtilities.GetLockFilePath(request.Project.FilePath);
+            }
+
+            if (request.Project.RestoreMetadata != null) {
+                request.Project.RestoreMetadata.CacheFilePath = NoOpRestoreUtilities.GetCacheFilePath(request);
             }
 
             request.MaxDegreeOfConcurrency =
@@ -216,6 +212,7 @@ namespace NuGet.Commands
                 request.ValidateRuntimeAssets = ValidateRuntimeAssets.Value;
             }
 
+            request.AllowNoOp = AllowNoOp;
             request.HideWarningsAndErrors = HideWarningsAndErrors;
         }
     }
