@@ -21,7 +21,7 @@
     <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="Project" Path="|NuGet.PackageManagement|" d:ProjectName="NuGet.PackageManagement" />
     <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="Project" d:ProjectName="NuGet.Tools" Path="|NuGet.Tools|" />
     <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="Project" d:ProjectName="NuGet.Console" Path="|NuGet.Console|" />
-    <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="Project" d:ProjectName="NuGet.VisualStudioImplement" Path="|NuGet.VisualStudio.Implementation|" />
+    <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="Project" d:ProjectName="NuGet.VisualStudio.Implementation" Path="|NuGet.VisualStudio.Implementation|" />
     <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="Project" d:ProjectName="NuGet.SolutionRestoreManager" Path="|NuGet.SolutionRestoreManager|" />
     <Asset Type="Microsoft.VisualStudio.VsPackage" d:Source="Project" d:ProjectName="NuGet.SolutionRestoreManager" Path="|NuGet.SolutionRestoreManager;PkgdefProjectOutputGroup|" />
     <Asset Type="Microsoft.VisualStudio.Assembly" d:Source="File" Path="Lucene.Net.dll" AssemblyName="Lucene.Net, Version=3.0.3.0, Culture=neutral, PublicKeyToken=85089178b9ac3181" />
