@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -5492,14 +5492,18 @@ namespace NuGet.Test
         {
             // Arrange
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
+            using (var settingsdir = TestDirectory.Create())
             using (var testSolutionManager = new TestSolutionManager(true))
             {
-                var testSettings = NullSettings.Instance;
+                var Settings = new Settings(settingsdir);
+                foreach (var source in sourceRepositoryProvider.GetRepositories())
+                    Settings.SetValue(ConfigurationConstants.PackageSources, ConfigurationConstants.PackageSources, source.PackageSource.Source);
+
                 var token = CancellationToken.None;
                 var deleteOnRestartManager = new TestDeleteOnRestartManager();
                 var nuGetPackageManager = new NuGetPackageManager(
                     sourceRepositoryProvider,
-                    testSettings,
+                    Settings,
                     testSolutionManager,
                     deleteOnRestartManager);
 
@@ -5690,14 +5694,18 @@ namespace NuGet.Test
         {
             // Arrange
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
+            using (var settingsdir = TestDirectory.Create())
             using (var testSolutionManager = new TestSolutionManager(true))
             {
-                var testSettings = NullSettings.Instance;
+                var Settings = new Settings(settingsdir);
+                foreach (var source in sourceRepositoryProvider.GetRepositories())
+                    Settings.SetValue(ConfigurationConstants.PackageSources, ConfigurationConstants.PackageSources, source.PackageSource.Source);
+
                 var token = CancellationToken.None;
                 var deleteOnRestartManager = new TestDeleteOnRestartManager();
                 var nuGetPackageManager = new NuGetPackageManager(
                     sourceRepositoryProvider,
-                    testSettings,
+                    Settings,
                     testSolutionManager,
                     deleteOnRestartManager);
 
@@ -6020,14 +6028,18 @@ namespace NuGet.Test
             var nugetProjectContext = new TestNuGetProjectContext();
             nugetProjectContext.TelemetryService = telemetryService;
 
+            using (var settingsdir = TestDirectory.Create())
             using (var testSolutionManager = new TestSolutionManager(true))
             {
-                var testSettings = NullSettings.Instance;
+                var Settings = new Settings(settingsdir);
+                foreach (var source in sourceRepositoryProvider.GetRepositories())
+                    Settings.SetValue(ConfigurationConstants.PackageSources, ConfigurationConstants.PackageSources, source.PackageSource.Source);
+
                 var token = CancellationToken.None;
                 var deleteOnRestartManager = new TestDeleteOnRestartManager();
                 var nuGetPackageManager = new NuGetPackageManager(
                     sourceRepositoryProvider,
-                    testSettings,
+                    Settings,
                     testSolutionManager,
                     deleteOnRestartManager);
 

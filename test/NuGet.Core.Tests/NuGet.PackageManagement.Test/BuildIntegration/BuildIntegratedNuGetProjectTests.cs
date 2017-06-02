@@ -52,10 +52,7 @@ namespace NuGet.PackageManagement.Test
                     writer.Write(json.ToString());
                 }
 
-                var sources = new List<SourceRepository>
-                {
-                    Repository.Factory.GetVisualStudio("https://www.nuget.org/api/v2/")
-                };
+                var sources = new List<SourceRepository> { };
 
                 var testLogger = new TestLogger();
                 var settings = new Settings(rootFolder);
@@ -126,12 +123,175 @@ namespace NuGet.PackageManagement.Test
             }
         }
 
-        [Fact(Skip = "This test is now obsolete, it needs to be replaced by tests in the new world. TODO NK")]
+        [Fact]
         public async Task BuildIntegratedNuGetProject_IsRestoreRequiredMissingPackage()
         {
             // Arrange
             var projectName = "testproj";
 
+            using (var packagesFolder = TestDirectory.Create())
+            using (var rootFolder = TestDirectory.Create())
+            {
+                var projectFolder = new DirectoryInfo(Path.Combine(rootFolder, projectName));
+                projectFolder.Create();
+                var projectConfig = new FileInfo(Path.Combine(projectFolder.FullName, "project.json"));
+                var msbuildProjectPath = new FileInfo(Path.Combine(projectFolder.FullName, $"{projectName}.csproj"));
+
+                BuildIntegrationTestUtility.CreateConfigJson(projectConfig.FullName);
+
+                var json = JObject.Parse(File.ReadAllText(projectConfig.FullName));
+
+                JsonConfigUtility.AddDependency(json, new NuGet.Packaging.Core.PackageDependency("nuget.versioning", VersionRange.Parse("1.0.7")));
+
+                using (var writer = new StreamWriter(projectConfig.FullName))
+                {
+                    writer.Write(json.ToString());
+                }
+
+                var sources = new List<SourceRepository> { };
+
+                var projectTargetFramework = NuGetFramework.Parse("uap10.0");
+                var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, new TestNuGetProjectContext());
+                var project = new ProjectJsonNuGetProject(projectConfig.FullName, msbuildProjectPath.FullName);
+
+                var solutionManager = new TestSolutionManager(false);
+                solutionManager.NuGetProjects.Add(project);
+
+                var testLogger = new TestLogger();
+                var settings = new Settings(rootFolder);
+                settings.SetValue(SettingsUtility.ConfigSection, "globalPackagesFolder", packagesFolder);
+
+                var restoreContext = new DependencyGraphCacheContext(testLogger, settings);
+                var providersCache = new RestoreCommandProvidersCache();
+
+                await DependencyGraphRestoreUtility.RestoreAsync(
+                    solutionManager,
+                    restoreContext,
+                    providersCache,
+                    (c) => { },
+                    sources,
+                    false,
+                    await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(solutionManager, restoreContext),
+                    testLogger,
+                    CancellationToken.None);
+
+                var noOpRestoreSummaries = await DependencyGraphRestoreUtility.RestoreAsync(
+                    solutionManager,
+                    restoreContext,
+                    providersCache,
+                    (c) => { },
+                    sources,
+                    false,
+                    await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(solutionManager, restoreContext),
+                    testLogger,
+                    CancellationToken.None);
+
+                foreach (var restoreSummary in noOpRestoreSummaries)
+                {
+                    Assert.True(restoreSummary.NoOpRestore);
+                }
+
+                var resolver = new VersionFolderPathResolver(packagesFolder);
+                var pathToDelete = resolver.GetInstallPath("nuget.versioning", NuGetVersion.Parse("1.0.7"));
+
+                TestFileSystemUtility.DeleteRandomTestFolder(pathToDelete);
+
+                var restoreSummaries = await DependencyGraphRestoreUtility.RestoreAsync(
+                    solutionManager,
+                    restoreContext,
+                    new RestoreCommandProvidersCache(),
+                    (c) => { },
+                    sources,
+                    false,
+                    await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(solutionManager, restoreContext),
+                    testLogger,
+                    CancellationToken.None);
+
+                foreach (var restoreSummary in restoreSummaries)
+                {
+                    Assert.True(restoreSummary.Success);
+                    Assert.False(restoreSummary.NoOpRestore);
+                }
+            }
+        }
+
+        [Fact]
+        public async Task BuildIntegratedNuGetProject_IsRestoreNotRequiredWithFloatingVersion()
+        {
+            // Arrange
+            var projectName = "testproj";
+            using (var packagesFolder = TestDirectory.Create())
+            using (var rootFolder = TestDirectory.Create())
+            {
+                var projectFolder = new DirectoryInfo(Path.Combine(rootFolder, projectName));
+                projectFolder.Create();
+                var projectConfig = new FileInfo(Path.Combine(projectFolder.FullName, "project.json"));
+                var msbuildProjectPath = new FileInfo(Path.Combine(projectFolder.FullName, $"{projectName}.csproj"));
+
+                BuildIntegrationTestUtility.CreateConfigJson(projectConfig.FullName);
+
+                var json = JObject.Parse(File.ReadAllText(projectConfig.FullName));
+
+                json.Add("dependencies", JObject.Parse("{ \"nuget.versioning\": \"1.0.*\" }"));
+
+                using (var writer = new StreamWriter(projectConfig.FullName))
+                {
+                    writer.Write(json.ToString());
+                }
+
+                var sources = new List<SourceRepository>
+                {
+                    Repository.Factory.GetVisualStudio("https://www.nuget.org/api/v2/")
+                };
+
+                var projectTargetFramework = NuGetFramework.Parse("uap10.0");
+                var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, new TestNuGetProjectContext());
+                var project = new ProjectJsonNuGetProject(projectConfig.FullName, msbuildProjectPath.FullName);
+
+                var testLogger = new TestLogger();
+                var settings = new Settings(rootFolder);
+                settings.SetValue(SettingsUtility.ConfigSection, "globalPackagesFolder", packagesFolder);
+
+                var solutionManager = new TestSolutionManager(false);
+                solutionManager.NuGetProjects.Add(project);
+
+                var restoreContext = new DependencyGraphCacheContext(testLogger, settings);
+                var providersCache = new RestoreCommandProvidersCache();
+
+                await DependencyGraphRestoreUtility.RestoreAsync(
+                    solutionManager,
+                    restoreContext,
+                    providersCache,
+                    (c) => { },
+                    sources,
+                    false,
+                    await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(solutionManager, restoreContext),
+                    testLogger,
+                    CancellationToken.None);
+
+                var noOpRestoreSummaries = await DependencyGraphRestoreUtility.RestoreAsync(
+                    solutionManager,
+                    restoreContext,
+                    providersCache,
+                    (c) => { },
+                    sources,
+                    false,
+                    await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(solutionManager, restoreContext),
+                    testLogger,
+                    CancellationToken.None);
+
+                foreach (var restoreSummary in noOpRestoreSummaries)
+                {
+                    Assert.True(restoreSummary.NoOpRestore);
+                }
+            }
+        }
+
+        [Fact]
+        public async Task BuildIntegratedNuGetProject_IsRestoreRequiredWithNoChanges()
+        {
+            // Arrange
+            var projectName = "testproj";
             using (var packagesFolder = TestDirectory.Create())
             using (var rootFolder = TestDirectory.Create())
             {
@@ -160,88 +320,22 @@ namespace NuGet.PackageManagement.Test
                 var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, new TestNuGetProjectContext());
                 var project = new ProjectJsonNuGetProject(projectConfig.FullName, msbuildProjectPath.FullName);
 
-                var solutionManager = new TestSolutionManager(false);
-                solutionManager.NuGetProjects.Add(project);
-
-                var testLogger = new TestLogger();
-
-                var restoreContext = new DependencyGraphCacheContext(testLogger, NullSettings.Instance);
-                // TODO NK - set the packagesFolder
-
-
-                await DependencyGraphRestoreUtility.RestoreAsync(
-                    solutionManager,
-                    restoreContext,
-                    new RestoreCommandProvidersCache(),
-                    (c) => { },
-                    sources,
-                    false,
-                    await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(solutionManager, restoreContext),
-                    testLogger,
-                    CancellationToken.None);
-
-                var resolver = new VersionFolderPathResolver(packagesFolder);
-                var pathToDelete = resolver.GetInstallPath("nuget.versioning", NuGetVersion.Parse("1.0.7"));
-
-                TestFileSystemUtility.DeleteRandomTestFolder(pathToDelete);
-
-                //// Act
-                //var actual = await project.IsRestoreRequired(
-                //    new[] { resolver },
-                //    new HashSet<PackageIdentity>(),
-                //    restoreContext);
-
-                //// Assert
-                //Assert.True(actual);
-            }
-        }
-
-        [Fact(Skip = "This test is now obsolete, it needs to be replaced by tests in the new world. TODO NK")]
-        public async Task BuildIntegratedNuGetProject_IsRestoreNotRequiredWithFloatingVersion()
-        {
-            // Arrange
-            var projectName = "testproj";
-
-            using (var rootFolder = TestDirectory.Create())
-            {
-                var projectFolder = new DirectoryInfo(Path.Combine(rootFolder, projectName));
-                projectFolder.Create();
-                var projectConfig = new FileInfo(Path.Combine(projectFolder.FullName, "project.json"));
-                var msbuildProjectPath = new FileInfo(Path.Combine(projectFolder.FullName, $"{projectName}.csproj"));
-
-                BuildIntegrationTestUtility.CreateConfigJson(projectConfig.FullName);
-
-                var json = JObject.Parse(File.ReadAllText(projectConfig.FullName));
-
-                json.Add("dependencies", JObject.Parse("{ \"nuget.versioning\": \"1.0.*\" }"));
-
-                using (var writer = new StreamWriter(projectConfig.FullName))
-                {
-                    writer.Write(json.ToString());
-                }
-
-                var sources = new List<SourceRepository>
-                {
-                    Repository.Factory.GetVisualStudio("https://www.nuget.org/api/v2/")
-                };
-
-                var projectTargetFramework = NuGetFramework.Parse("uap10.0");
-                var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, new TestNuGetProjectContext());
-                var project = new ProjectJsonNuGetProject(projectConfig.FullName, msbuildProjectPath.FullName);
-
                 var effectiveGlobalPackagesFolder = SettingsUtility.GetGlobalPackagesFolder(NullSettings.Instance);
 
                 var solutionManager = new TestSolutionManager(false);
                 solutionManager.NuGetProjects.Add(project);
 
                 var testLogger = new TestLogger();
+                var settings = new Settings(rootFolder);
+                settings.SetValue(SettingsUtility.ConfigSection, "globalPackagesFolder", packagesFolder);
 
-                var restoreContext = new DependencyGraphCacheContext(testLogger, NullSettings.Instance);
+                var providersCache = new RestoreCommandProvidersCache();
+                var restoreContext = new DependencyGraphCacheContext(testLogger, settings);
 
                 await DependencyGraphRestoreUtility.RestoreAsync(
                     solutionManager,
                     restoreContext,
-                    new RestoreCommandProvidersCache(),
+                    providersCache,
                     (c) => { },
                     sources,
                     false,
@@ -249,78 +343,21 @@ namespace NuGet.PackageManagement.Test
                     testLogger,
                     CancellationToken.None);
 
-                // Act
-                //var actual = await project.IsRestoreRequired(
-                //    new[] { new VersionFolderPathResolver(effectiveGlobalPackagesFolder) },
-                //    new HashSet<PackageIdentity>(),
-                //    restoreContext);
+                var noOpRestoreSummaries = await DependencyGraphRestoreUtility.RestoreAsync(
+                    solutionManager,
+                    restoreContext,
+                    providersCache,
+                    (c) => { },
+                    sources,
+                    false,
+                    await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(solutionManager, restoreContext),
+                    testLogger,
+                    CancellationToken.None);
 
-                //// Assert
-                //Assert.False(actual);
-            }
-        }
-
-        [Fact(Skip = "This test is now obsolete, it needs to be replaced by tests in the new world. TODO NK")]
-        public async Task BuildIntegratedNuGetProject_IsRestoreRequiredWithNoChanges()
-        {
-            // Arrange
-            var projectName = "testproj";
-
-            using (var rootFolder = TestDirectory.Create())
-            {
-                var projectFolder = new DirectoryInfo(Path.Combine(rootFolder, projectName));
-                projectFolder.Create();
-                var projectConfig = new FileInfo(Path.Combine(projectFolder.FullName, "project.json"));
-                var msbuildProjectPath = new FileInfo(Path.Combine(projectFolder.FullName, $"{projectName}.csproj"));
-
-                BuildIntegrationTestUtility.CreateConfigJson(projectConfig.FullName);
-
-                var json = JObject.Parse(File.ReadAllText(projectConfig.FullName));
-
-                JsonConfigUtility.AddDependency(json, new NuGet.Packaging.Core.PackageDependency("nuget.versioning", VersionRange.Parse("1.0.7")));
-
-                using (var writer = new StreamWriter(projectConfig.FullName))
+                foreach (var restoreSummary in noOpRestoreSummaries)
                 {
-                    writer.Write(json.ToString());
+                    Assert.True(restoreSummary.NoOpRestore);
                 }
-
-                var sources = new List<SourceRepository>
-                {
-                    Repository.Factory.GetVisualStudio("https://www.nuget.org/api/v2/")
-                };
-
-                var projectTargetFramework = NuGetFramework.Parse("uap10.0");
-                var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, new TestNuGetProjectContext());
-                var project = new ProjectJsonNuGetProject(projectConfig.FullName, msbuildProjectPath.FullName);
-
-                var effectiveGlobalPackagesFolder = SettingsUtility.GetGlobalPackagesFolder(NullSettings.Instance);
-
-                var solutionManager = new TestSolutionManager(false);
-                solutionManager.NuGetProjects.Add(project);
-
-                var testLogger = new TestLogger();
-
-                var restoreContext = new DependencyGraphCacheContext(testLogger, NullSettings.Instance);
-
-                await DependencyGraphRestoreUtility.RestoreAsync(
-                    solutionManager,
-                    restoreContext,
-                    new RestoreCommandProvidersCache(),
-                    (c) => { },
-                    sources,
-                    false,
-                    await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(solutionManager, restoreContext),
-                    testLogger,
-                    CancellationToken.None);
-
-                // Act
-                //var actual = await project.IsRestoreRequired(
-                //    new[] { new VersionFolderPathResolver(effectiveGlobalPackagesFolder) },
-                //    new HashSet<PackageIdentity>(),
-                //    restoreContext);
-
-                //// Assert
-                //Assert.False(actual);
             }
         }
 
