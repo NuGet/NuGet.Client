@@ -106,6 +106,8 @@
     <Compile Include="Common\PackageCollectionItemExtensions.cs" />
     <Compile Include="ProjectServices\DeferredProjectCapabilities.cs" />
     <Compile Include="ProjectServices\GlobalProjectServiceProvider.cs" />
+    <Compile Include="ProjectServices\VsCoreProjectSystemReferenceReader.cs" />
+    <Compile Include="Projects\VsMSBuildProjectSystemServices.cs" />
     <Compile Include="Utility\SupportedProjectTypes.cs" />
     <Compile Include="Common\VersionCollectionExtensions.cs" />
     <Compile Include="DefaultVSCredentialServiceProvider.cs" />

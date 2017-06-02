@@ -148,12 +148,12 @@ namespace NuGet.PackageManagement.VisualStudio
             return true;
         }
 
-        public override Task<bool> UninstallPackageAsync(
+        public override async Task<bool> UninstallPackageAsync(
             PackageIdentity packageIdentity, INuGetProjectContext _, CancellationToken token)
         {
-            ProjectServices.References.RemovePackageReference(packageIdentity.Id);
+            await ProjectServices.References.RemovePackageReferenceAsync(packageIdentity.Id);
 
-            return Task.FromResult(true);
+            return true;
         }
 
         #endregion

@@ -240,7 +240,7 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
 
                 var projectSystem = Mock.Of<IMSBuildProjectSystem>();
                 Mock.Get(projectSystem)
-                    .SetupGet(x => x.ProjectName)
+                    .SetupGet(x => x.ProjectUniqueName)
                     .Returns(projectUniqueName);
 
                 var project = new Mock<MSBuildNuGetProject>(
