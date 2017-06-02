@@ -85,58 +85,6 @@ namespace NuGet.Protocol.Plugins
             _isDisposed = true;
         }
 
-
-        /// <summary>
-        /// Asynchronously starts processing a cancellation request for the inbound request.
-        /// </summary>
-        /// <param name="request">The request.</param>
-        /// <param name="requestHandler">A request handler.</param>
-        /// <param name="responseHandler">A response handler.</param>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="request" />
-        /// is <c>null</c>.</exception>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="requestHandler" />
-        /// is <c>null</c>.</exception>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="responseHandler" />
-        /// is <c>null</c>.</exception>
-        public void BeginCancelAsync(
-            Message request,
-            IRequestHandler requestHandler,
-            IResponseHandler responseHandler)
-        {
-            if (request == null)
-            {
-                throw new ArgumentNullException(nameof(request));
-            }
-
-            if (requestHandler == null)
-            {
-                throw new ArgumentNullException(nameof(requestHandler));
-            }
-
-            if (responseHandler == null)
-            {
-                throw new ArgumentNullException(nameof(responseHandler));
-            }
-
-            Task.Run(async () =>
-                {
-                    // Top-level exception handler for a worker pool thread.
-                    try
-                    {
-                        await requestHandler.HandleCancelAsync(
-                            _connection,
-                            request,
-                            responseHandler,
-                            _cancellationToken);
-                    }
-                    catch (Exception ex)
-                    {
-                        BeginFaultAsync(request, ex);
-                    }
-                },
-                _cancellationToken);
-        }
-
         /// <summary>
         /// Asynchronously starts processing a fault response for the inbound request.
         /// </summary>
@@ -222,12 +170,35 @@ namespace NuGet.Protocol.Plugins
                             responseHandler,
                             _cancellationToken);
                     }
+                    catch (OperationCanceledException) when (_cancellationToken.IsCancellationRequested)
+                    {
+                        var response = MessageUtilities.Create(request.RequestId, MessageType.Cancel, request.Method);
+
+                        await _connection.SendAsync(response, CancellationToken.None);
+                    }
                     catch (Exception ex)
                     {
                         BeginFaultAsync(request, ex);
                     }
                 },
                 _cancellationToken);
+        }
+
+        /// <summary>
+        /// Cancels an inbound request.
+        /// </summary>
+        public void Cancel()
+        {
+            try
+            {
+                _cancellationTokenSource.Cancel();
+            }
+            catch (AggregateException)
+            {
+            }
+            catch (ObjectDisposedException)
+            {
+            }
         }
     }
 }

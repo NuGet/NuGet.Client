@@ -76,22 +76,6 @@ namespace NuGet.Protocol.Plugins.Tests
         }
 
         [Fact]
-        public async Task HandleCancelAsync_Throws()
-        {
-            using (var provider = new GetServiceIndexRequestHandler(Mock.Of<IPlugin>()))
-            {
-                var request = CreateRequest(MessageType.Cancel);
-
-                await Assert.ThrowsAsync<NotSupportedException>(
-                    () => provider.HandleCancelAsync(
-                        Mock.Of<IConnection>(),
-                        request,
-                        Mock.Of<IResponseHandler>(),
-                        CancellationToken.None));
-            }
-        }
-
-        [Fact]
         public async Task HandleResponseAsync_ThrowsForNullConnection()
         {
             using (var provider = new GetServiceIndexRequestHandler(Mock.Of<IPlugin>()))
