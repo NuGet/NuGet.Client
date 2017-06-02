@@ -132,6 +132,7 @@ namespace NuGet.ProjectModel
             hashCode.AddObject(Files);
             hashCode.AddObject(ValidateRuntimeAssets);
             hashCode.AddObject(SkipContentFileWrite);
+            hashCode.AddObject(ProjectWideWarningProperties);
 
             return hashCode.CombinedHash;
         }
@@ -169,7 +170,8 @@ namespace NuGet.ProjectModel
                    LegacyPackagesDirectory == other.LegacyPackagesDirectory &&
                    ValidateRuntimeAssets == other.ValidateRuntimeAssets &&
                    SkipContentFileWrite == other.SkipContentFileWrite &&
-                   EqualityUtility.SequenceEqualWithNullCheck(Files, other.Files);
+                   EqualityUtility.SequenceEqualWithNullCheck(Files, other.Files) &&
+                   EqualityUtility.EqualsWithNullCheck(ProjectWideWarningProperties, other.ProjectWideWarningProperties);
         }
     }
 }

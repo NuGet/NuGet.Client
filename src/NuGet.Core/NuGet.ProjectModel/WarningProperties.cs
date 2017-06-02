@@ -28,10 +28,10 @@ namespace NuGet.ProjectModel
         /// </summary>
         public bool AllWarningsAsErrors { get; } = false;
 
-        public WarningProperties(ISet<NuGetLogCode> warningsAsErrorsSet, ISet<NuGetLogCode> noWarnSet, bool allWarningsAsErrors)
+        public WarningProperties(ISet<NuGetLogCode> warningsAsErrors, ISet<NuGetLogCode> noWarn, bool allWarningsAsErrors)
         {
-            WarningsAsErrors = warningsAsErrorsSet;
-            NoWarn = noWarnSet;
+            WarningsAsErrors = warningsAsErrors ?? throw new ArgumentNullException(nameof(warningsAsErrors));
+            NoWarn = noWarn ?? throw new ArgumentNullException(nameof(noWarn));
             AllWarningsAsErrors = allWarningsAsErrors;
         }
 
