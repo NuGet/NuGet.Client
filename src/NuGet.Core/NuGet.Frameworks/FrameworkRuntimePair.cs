@@ -100,7 +100,7 @@ namespace NuGet.Frameworks
             else
             {
                 return string.Format(
-                    CultureInfo.CurrentCulture,
+                    CultureInfo.InvariantCulture,
                     "{0}/{1}",
                     framework,
                     runtimeIdentifier);

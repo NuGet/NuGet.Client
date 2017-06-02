@@ -14,11 +14,11 @@ namespace NuGet.Commands
     /// </summary>
     public class PackageSpecificWarningProperties
     {
-        private static readonly NuGetFramework _globalTFM = NuGetFramework.AnyFramework;
+        private static readonly NuGetFramework _globalFramework = NuGetFramework.AnyFramework;
 
         /// <summary>
         /// Contains Package specific No warn properties.
-        /// NuGetLogCode -> LibraryId -> Set of TargerGraphs.
+        /// NuGetLogCode -> LibraryId -> Set of Frameworks.
         /// </summary>
         private IDictionary<NuGetLogCode, IDictionary<string, ISet<NuGetFramework>>> Properties;
 
@@ -57,7 +57,7 @@ namespace NuGet.Commands
         /// <param name="libraryId">Library for which no warning should be thrown.</param>
         public void Add(NuGetLogCode code, string libraryId)
         {
-            Add(code, libraryId, _globalTFM);
+            Add(code, libraryId, _globalFramework);
         }
 
         /// <summary>
@@ -83,7 +83,7 @@ namespace NuGet.Commands
         {
             foreach (var code in codes)
             {
-                Add(code, libraryId, _globalTFM);
+                Add(code, libraryId, _globalFramework);
             }
         }
 
@@ -98,9 +98,9 @@ namespace NuGet.Commands
         public bool Contains(NuGetLogCode code, string libraryId, NuGetFramework framework)
         {
             return Properties != null &&
-                Properties.ContainsKey(code) &&
-                Properties[code].ContainsKey(libraryId) &&
-                Properties[code][libraryId].Contains(framework);
+                Properties.TryGetValue(code, out var libraryIdsAndFrameworks) &&
+                libraryIdsAndFrameworks.TryGetValue(libraryId, out var frameworkSet) &&
+                frameworkSet.Contains(framework);
         }
 
         /// <summary>
@@ -111,10 +111,7 @@ namespace NuGet.Commands
         /// <returns>True iff the NugetLogCode is part of the NoWarn list for the specified libraryId with uncoditional reference.</returns>
         public bool Contains(NuGetLogCode code, string libraryId)
         {
-            return Properties != null &&
-                Properties.ContainsKey(code) &&
-                Properties[code].ContainsKey(libraryId) &&
-                Properties[code][libraryId].Contains(_globalTFM);
+            return Contains(code, libraryId, _globalFramework);
         }
     }
 }

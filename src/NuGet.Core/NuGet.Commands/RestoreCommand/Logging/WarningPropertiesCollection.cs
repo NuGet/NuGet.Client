@@ -24,7 +24,7 @@ namespace NuGet.Commands
 
         /// <summary>
         /// Contains Package specific properties for Warnings.
-        /// NuGetLogCode -> LibraryId -> Set of TargerGraphs.
+        /// NuGetLogCode -> LibraryId -> Set of Frameworks.
         /// </summary>
         public PackageSpecificWarningProperties PackageSpecificWarningProperties { get; set; }
 
@@ -50,7 +50,10 @@ namespace NuGet.Commands
                     // First look at PackageSpecificWarningProperties and then at ProjectWideWarningProperties
                     if (message.TargetGraphs.Count == 0)
                     {
-                        return PackageSpecificWarningProperties.Contains(message.Code, message.LibraryId);
+                        if (PackageSpecificWarningProperties.Contains(message.Code, message.LibraryId))
+                        {
+                            return true;
+                        }
                     }
                     else
                     {
@@ -85,7 +88,7 @@ namespace NuGet.Commands
         /// <returns>PackageSpecific WarningProperties extracted from a PackageSpec</returns>
         public static PackageSpecificWarningProperties GetPackageSpecificWarningProperties(PackageSpec packageSpec)
         {
-            // NuGetLogCode -> LibraryId -> Set of TargerGraphs.
+            // NuGetLogCode -> LibraryId -> Set of Frameworks.
             var warningProperties = new PackageSpecificWarningProperties();
 
             foreach (var dependency in packageSpec.Dependencies)

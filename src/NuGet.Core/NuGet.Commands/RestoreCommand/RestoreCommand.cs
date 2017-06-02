@@ -24,7 +24,7 @@ namespace NuGet.Commands
 {
     public class RestoreCommand
     {
-        private readonly ICollectorLogger _logger;
+        private readonly RestoreCollectorLogger _logger;
 
         private readonly RestoreRequest _request;
 
@@ -90,7 +90,7 @@ namespace NuGet.Commands
                 cacheFile = cacheFileAndStatus.Key;
                 if (cacheFileAndStatus.Value)
                 {
-                    if(NoOpRestoreUtilities.VerifyAssetsAndMSBuildFilesAndPackagesArePresent(_request))
+                    if (NoOpRestoreUtilities.VerifyAssetsAndMSBuildFilesAndPackagesArePresent(_request))
                     {
                         restoreTime.Stop();
 
@@ -180,7 +180,7 @@ namespace NuGet.Commands
             }
             
             // Write the logs into the assets file
-            var logs = (_logger as RestoreCollectorLogger).Errors
+            var logs = _logger.Errors
                 .Select(l => AssetsLogMessage.Create(l))
                 .ToList();
 
@@ -701,7 +701,7 @@ namespace NuGet.Commands
             return projectFrameworkRuntimePairs;
         }
 
-        private static RemoteWalkContext CreateRemoteWalkContext(RestoreRequest request, ICollectorLogger logger)
+        private static RemoteWalkContext CreateRemoteWalkContext(RestoreRequest request, RestoreCollectorLogger logger)
         {
             var context = new RemoteWalkContext(
                 request.CacheContext,
