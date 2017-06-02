@@ -74,7 +74,7 @@ namespace NuGet.Commands
                 var rootProject = externalClosure.Single(p =>
                     StringComparer.Ordinal.Equals(projectNameToRestore, p.UniqueName));
 
-                var request = Create(rootProject, externalClosure, restoreContext, projectDgSpec: projectDependencyGraphSpec);
+                var request = Create(projectNameToRestore, rootProject, externalClosure, restoreContext, projectDgSpec: projectDependencyGraphSpec);
 
                 if (request.Request.ProjectStyle == ProjectStyle.DotnetCliTool)
                 {
@@ -121,16 +121,17 @@ namespace NuGet.Commands
         }
 
         private RestoreSummaryRequest Create(
+            string projectNameToRestore,
             ExternalProjectReference project,
             HashSet<ExternalProjectReference> projectReferenceClosure,
             RestoreArgs restoreArgs,
             DependencyGraphSpec projectDgSpec)
         {
             //fallback paths, global packages path and sources need to all be passed in the dg spec
-            var fallbackPaths = projectDgSpec.GetProjectSpec(project.MSBuildProjectPath).RestoreMetadata.FallbackFolders;
-            var globalPath = GetPackagesPath(restoreArgs, projectDgSpec.GetProjectSpec(project.MSBuildProjectPath));
-            var settings = Settings.LoadSettingsGivenConfigPaths(projectDgSpec.GetProjectSpec(project.MSBuildProjectPath).RestoreMetadata.ConfigFilePaths);
-            var sources = restoreArgs.GetEffectiveSources(settings, projectDgSpec.GetProjectSpec(project.MSBuildProjectPath).RestoreMetadata.Sources);
+            var fallbackPaths = projectDgSpec.GetProjectSpec(projectNameToRestore).RestoreMetadata.FallbackFolders;
+            var globalPath = GetPackagesPath(restoreArgs, projectDgSpec.GetProjectSpec(projectNameToRestore));
+            var settings = Settings.LoadSettingsGivenConfigPaths(projectDgSpec.GetProjectSpec(projectNameToRestore).RestoreMetadata.ConfigFilePaths);
+            var sources = restoreArgs.GetEffectiveSources(settings, projectDgSpec.GetProjectSpec(projectNameToRestore).RestoreMetadata.Sources);
 
             var sharedCache = _providerCache.GetOrCreate(
                 globalPath,
