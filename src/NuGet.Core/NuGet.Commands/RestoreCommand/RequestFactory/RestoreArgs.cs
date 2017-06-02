@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -38,12 +38,7 @@ namespace NuGet.Commands
         public SourceCacheContext CacheContext { get; set; }
 
         public ILogger Log { get; set; }
-
-        /// <summary>
-        /// Sources to use for restore. Overrides Sources
-        /// </summary>
-        public List<SourceRepository> SourceRepositories { get; set; } = new List<SourceRepository>();
-
+        
         /// <summary>
         /// Sources to use for restore. This is not used if SourceRepositories contains the 
         /// already built SourceRepository objects.
@@ -133,12 +128,6 @@ namespace NuGet.Commands
 
         private List<SourceRepository> GetEffectiveSourcesCore(ISettings settings, IList<PackageSource> dgSpecSources)
         {
-            if (SourceRepositories.Count > 0)
-            {
-                // SourceRepositories overrides
-                return SourceRepositories;
-            }
-
             var sourceObjects = dgSpecSources.ToDictionary(k => k.Source, v => v, StringComparer.Ordinal);
             var packageSourceProvider = new PackageSourceProvider(settings);
             var packageSourcesFromProvider = packageSourceProvider.LoadPackageSources();

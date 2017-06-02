@@ -23,5 +23,10 @@ namespace Test.Utility
             Debugger.Launch();
 #endif
         }
+
+        public static void Launch()
+        {
+            throw new NotImplementedException();
+        }
     }
 }

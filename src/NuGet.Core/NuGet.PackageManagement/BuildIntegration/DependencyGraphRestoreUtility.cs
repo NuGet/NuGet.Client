@@ -16,6 +16,7 @@ using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
 using NuGet.ProjectModel;
+using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using NuGet.Shared;
 
@@ -31,40 +32,12 @@ namespace NuGet.PackageManagement
         /// <summary>
         /// Restore a solution and cache the dg spec to context.
         /// </summary>
-        public static Task<IReadOnlyList<RestoreSummary>> RestoreAsync(
-            ISolutionManager solutionManager,
-            DependencyGraphCacheContext context,
-            RestoreCommandProvidersCache providerCache,
-            Action<SourceCacheContext> cacheContextModifier,
-            IEnumerable<SourceRepository> sources,
-            bool forceRestore,
-            DependencyGraphSpec dgSpec,
-            ILogger log,
-            CancellationToken token)
-        {
-            return RestoreAsync(
-                solutionManager,
-                context,
-                providerCache,
-                cacheContextModifier,
-                sources,
-                userPackagesPath: null,
-                log: log,
-                forceRestore: forceRestore,
-                dgSpec: dgSpec,
-                token: token);
-        }
-
-        /// <summary>
-        /// Restore a solution and cache the dg spec to context.
-        /// </summary>
         public static async Task<IReadOnlyList<RestoreSummary>> RestoreAsync(
             ISolutionManager solutionManager,
             DependencyGraphCacheContext context,
             RestoreCommandProvidersCache providerCache,
             Action<SourceCacheContext> cacheContextModifier,
             IEnumerable<SourceRepository> sources,
-            string userPackagesPath,
             bool forceRestore,
             DependencyGraphSpec dgSpec,
             ILogger log,
@@ -84,7 +57,6 @@ namespace NuGet.PackageManagement
                         sourceCacheContext,
                         sources,
                         dgSpec,
-                        userPackagesPath,
                         forceRestore);
 
                     var restoreSummaries = await RestoreRunner.RunAsync(restoreContext, token);
@@ -125,7 +97,6 @@ namespace NuGet.PackageManagement
                         sourceCacheContext,
                         sources,
                         dgSpec,
-                        userPackagesPath: null,
                         forceRestore: forceRestore);
 
                     var restoreSummaries = await RestoreRunner.RunAsync(restoreContext, token);
@@ -142,33 +113,6 @@ namespace NuGet.PackageManagement
         /// <summary>
         /// Restore without writing the lock file
         /// </summary>
-        internal static Task<RestoreResultPair> PreviewRestoreAsync(
-            ISolutionManager solutionManager,
-            BuildIntegratedNuGetProject project,
-            PackageSpec packageSpec,
-            DependencyGraphCacheContext context,
-            RestoreCommandProvidersCache providerCache,
-            Action<SourceCacheContext> cacheContextModifier,
-            IEnumerable<SourceRepository> sources,
-            ILogger log,
-            CancellationToken token)
-        {
-            return PreviewRestoreAsync(
-                solutionManager,
-                project,
-                packageSpec,
-                context,
-                providerCache,
-                cacheContextModifier,
-                sources,
-                userPackagesPath: null,
-                log: log,
-                token: token);
-        }
-
-        /// <summary>
-        /// Restore without writing the lock file
-        /// </summary>
         internal static async Task<RestoreResultPair> PreviewRestoreAsync(
             ISolutionManager solutionManager,
             BuildIntegratedNuGetProject project,
@@ -177,7 +121,6 @@ namespace NuGet.PackageManagement
             RestoreCommandProvidersCache providerCache,
             Action<SourceCacheContext> cacheContextModifier,
             IEnumerable<SourceRepository> sources,
-            string userPackagesPath,
             ILogger log,
             CancellationToken token)
         {
@@ -198,7 +141,7 @@ namespace NuGet.PackageManagement
                 cacheContextModifier(sourceCacheContext);
 
                 // Settings passed here will be used to populate the restore requests.
-                var restoreContext = GetRestoreContext(context, providerCache, sourceCacheContext, sources, dgFile, userPackagesPath, false); // We don't force in preview 
+                var restoreContext = GetRestoreContext(context, providerCache, sourceCacheContext, sources, dgFile, false); // We don't force in preview 
 
                 var requests = await RestoreRunner.GetRequests(restoreContext);
                 var results = await RestoreRunner.RunWithoutCommit(requests, restoreContext);
@@ -307,9 +250,14 @@ namespace NuGet.PackageManagement
             SourceCacheContext sourceCacheContext,
             IEnumerable<SourceRepository> sources,
             DependencyGraphSpec dgFile,
-            string userPackagesPath,
             bool forceRestore)
         {
+            var caching = new CachingSourceProvider(new PackageSourceProvider(context.Settings));
+            foreach( var source in sources)
+            {
+                caching.AddSourceRepository(source);
+            }
+
             var dgProvider = new DependencyGraphSpecRequestProvider(providerCache, dgFile);
 
             var restoreContext = new RestoreArgs()
@@ -317,9 +265,8 @@ namespace NuGet.PackageManagement
                 CacheContext = sourceCacheContext,
                 PreLoadedRequestProviders = new List<IPreLoadedRestoreRequestProvider>() { dgProvider },
                 Log = context.Logger,
-                SourceRepositories = sources.ToList(),
-                GlobalPackagesFolder = userPackagesPath, // Optional, this will load from settings if null
-                AllowNoOp = !forceRestore
+                AllowNoOp = !forceRestore,
+                CachingSourceProvider = caching
             };
 
             return restoreContext;
