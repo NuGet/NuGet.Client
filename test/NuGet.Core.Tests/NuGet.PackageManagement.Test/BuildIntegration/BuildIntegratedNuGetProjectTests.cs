@@ -74,6 +74,7 @@ namespace NuGet.PackageManagement.Test
                     sources,
                     packagesFolder,
                     false,
+                    await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(solutionManager, restoreContext),
                     testLogger,
                     CancellationToken.None);
 
@@ -145,6 +146,7 @@ namespace NuGet.PackageManagement.Test
                     sources,
                     packagesFolder,
                     false,
+                    await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(solutionManager, restoreContext),
                     testLogger,
                     CancellationToken.None);
 
@@ -213,6 +215,7 @@ namespace NuGet.PackageManagement.Test
                     (c) => { },
                     sources,
                     false,
+                    await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(solutionManager, restoreContext),
                     testLogger,
                     CancellationToken.None);
 
@@ -276,6 +279,7 @@ namespace NuGet.PackageManagement.Test
                     (c) => { },
                     sources,
                     false,
+                    await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(solutionManager, restoreContext),
                     testLogger,
                     CancellationToken.None);
 
@@ -340,6 +344,7 @@ namespace NuGet.PackageManagement.Test
                     (c) => { },
                     sources,
                     false,
+                    await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(solutionManager, restoreContext),
                     testLogger,
                     CancellationToken.None);
 

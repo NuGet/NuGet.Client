@@ -462,7 +462,6 @@ namespace NuGet.Test
         [Fact]
         public async Task TestPacManBuildIntegratedInstallAndRollbackPackage()
         {
-            Debugger.Launch();
             // Arrange
             var packageIdentity = new PackageIdentity("nuget.core", NuGetVersion.Parse("91.0.0"));
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV2OnlySourceRepositoryProvider();

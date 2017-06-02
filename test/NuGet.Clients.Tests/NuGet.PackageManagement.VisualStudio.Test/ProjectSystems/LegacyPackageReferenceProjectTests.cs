@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -12,6 +13,8 @@ using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Threading;
 using Moq;
 using NuGet.Commands;
+using NuGet.Common;
+using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.Packaging.Core;
@@ -175,6 +178,141 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 // Verify
                 Mock.Get(projectAdapter)
                     .Verify(x => x.Version, Times.AtLeastOnce);
+            }
+        }
+
+        [Theory]
+        [InlineData("RestorePackagesPath", "Source1;Source2", "Fallback1,Fallback2")]
+        [InlineData("RestorePackagesPath", "Source2", "Fallback2")]
+        [InlineData(null, "Source2", "Fallback2")]
+        [InlineData("RestorePackagesPath", null, "Fallback2")]
+        [InlineData("RestorePackagesPath", "Source1;Source2", null)]
+        public async Task GetPackageSpecsAsync_ReadSettingsWithRelativePaths(string restorePackagesPath, string sources, string fallbackFolders)
+        {
+            // Arrange
+            using (var testDirectory = TestDirectory.Create())
+            {
+                var projectAdapter = CreateProjectAdapter(testDirectory);
+                Mock.Get(projectAdapter)
+                    .SetupGet(x => x.RestorePackagesPath)
+                    .Returns(restorePackagesPath);
+
+                Mock.Get(projectAdapter)
+                    .SetupGet(x => x.RestoreSources)
+                    .Returns(sources);
+
+                Mock.Get(projectAdapter)
+                    .SetupGet(x => x.RestoreFallbackFolders)
+                    .Returns(fallbackFolders);
+
+                var projectServices = new TestProjectSystemServices();
+
+                var testProject = new LegacyPackageReferenceProject(
+                    projectAdapter,
+                    Guid.NewGuid().ToString(),
+                    projectServices,
+                    _threadingService);
+
+                var settings = NullSettings.Instance;
+                var testDependencyGraphCacheContext = new DependencyGraphCacheContext(NullLogger.Instance, settings);
+
+                await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                // Act
+                var packageSpecs = await testProject.GetPackageSpecsAsync(testDependencyGraphCacheContext);
+
+                // Assert
+                Assert.NotNull(packageSpecs);
+                var actualRestoreSpec = packageSpecs.Single();
+                SpecValidationUtility.ValidateProjectSpec(actualRestoreSpec);
+
+                // Assert packagespath
+                Assert.Equal(restorePackagesPath != null? Path.Combine(testDirectory, restorePackagesPath) : SettingsUtility.GetGlobalPackagesFolder(settings),  actualRestoreSpec.RestoreMetadata.PackagesPath);
+                
+                // assert sources
+                var specSources = actualRestoreSpec.RestoreMetadata.Sources.Select(e => e.Source);
+                var expectedSources = sources != null ? MSBuildStringUtility.Split(sources).Select(e => Path.Combine(testDirectory, e)) : SettingsUtility.GetEnabledSources(settings).Select(e => e.Source);
+                Assert.True(Enumerable.SequenceEqual(expectedSources.OrderBy(t => t), specSources.OrderBy(t => t)));
+
+                // assert fallbackfolders
+                var specFallback = actualRestoreSpec.RestoreMetadata.FallbackFolders;
+                var expectedFolders = fallbackFolders != null ? MSBuildStringUtility.Split(fallbackFolders).Select(e => Path.Combine(testDirectory, e)) : SettingsUtility.GetFallbackPackageFolders(settings);
+                Assert.True(Enumerable.SequenceEqual(expectedFolders.OrderBy(t => t), specFallback.OrderBy(t => t)));
+
+                // Verify
+                Mock.Get(projectAdapter)
+                    .Verify(x => x.RestorePackagesPath, Times.Once);
+                Mock.Get(projectAdapter)
+                    .Verify(x => x.RestoreSources, Times.Once);
+                Mock.Get(projectAdapter)
+                    .Verify(x => x.RestoreFallbackFolders, Times.Once);
+            }
+        }
+
+        [Theory]
+        [InlineData(@"C:\RestorePackagesPath", @"C:\Source1;C:\Source2", @"C:\Fallback1;C:\Fallback2")]
+        [InlineData(null, @"C:\Source1;C:\Source2", @"C:\Fallback1;C:\Fallback2")]
+        [InlineData(@"C:\RestorePackagesPath", null , @"C:\Fallback1;C:\Fallback2")]
+        [InlineData(@"C:\RestorePackagesPath", @"C:\Source1;C:\Source2",null)]
+        public async Task GetPackageSpecsAsync_ReadSettingsWithFullPaths(string restorePackagesPath, string sources, string fallbackFolders)
+        {
+            // Arrange
+            using (var testDirectory = TestDirectory.Create())
+            {
+                var projectAdapter = CreateProjectAdapter(testDirectory);
+                Mock.Get(projectAdapter)
+                    .SetupGet(x => x.RestorePackagesPath)
+                    .Returns(restorePackagesPath);
+
+                Mock.Get(projectAdapter)
+                    .SetupGet(x => x.RestoreSources)
+                    .Returns(sources);
+
+                Mock.Get(projectAdapter)
+                    .SetupGet(x => x.RestoreFallbackFolders)
+                    .Returns(fallbackFolders);
+
+                var projectServices = new TestProjectSystemServices();
+
+                var testProject = new LegacyPackageReferenceProject(
+                    projectAdapter,
+                    Guid.NewGuid().ToString(),
+                    projectServices,
+                    _threadingService);
+
+                var settings = NullSettings.Instance;
+                var testDependencyGraphCacheContext = new DependencyGraphCacheContext(NullLogger.Instance, settings);
+
+                await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                // Act
+                var packageSpecs = await testProject.GetPackageSpecsAsync(testDependencyGraphCacheContext);
+
+                // Assert
+                Assert.NotNull(packageSpecs);
+                var actualRestoreSpec = packageSpecs.Single();
+                SpecValidationUtility.ValidateProjectSpec(actualRestoreSpec);
+
+                // Assert packagespath
+                Assert.Equal(restorePackagesPath != null ? restorePackagesPath : SettingsUtility.GetGlobalPackagesFolder(settings), actualRestoreSpec.RestoreMetadata.PackagesPath);
+
+                // assert sources
+                var specSources = actualRestoreSpec.RestoreMetadata.Sources.Select(e => e.Source);
+                var expectedSources = sources != null ? MSBuildStringUtility.Split(sources) : SettingsUtility.GetEnabledSources(settings).Select(e => e.Source);
+                Assert.True(Enumerable.SequenceEqual(expectedSources.OrderBy(t => t), specSources.OrderBy(t => t)));
+
+                // assert fallbackfolders
+                var specFallback = actualRestoreSpec.RestoreMetadata.FallbackFolders;
+                var expectedFolders = fallbackFolders != null ? MSBuildStringUtility.Split(fallbackFolders) : SettingsUtility.GetFallbackPackageFolders(settings);
+                Assert.True(Enumerable.SequenceEqual(expectedFolders.OrderBy(t => t), specFallback.OrderBy(t => t)));
+
+                // Verify
+                Mock.Get(projectAdapter)
+                    .Verify(x => x.RestorePackagesPath, Times.Once);
+                Mock.Get(projectAdapter)
+                    .Verify(x => x.RestoreSources, Times.Once);
+                Mock.Get(projectAdapter)
+                    .Verify(x => x.RestoreFallbackFolders, Times.Once);
             }
         }
 

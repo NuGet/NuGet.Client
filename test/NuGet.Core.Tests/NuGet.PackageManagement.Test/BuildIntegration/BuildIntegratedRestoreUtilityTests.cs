@@ -64,6 +64,7 @@ namespace NuGet.Test
                     (c) => { },
                     sources,
                     false,
+                    await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(solutionManager, restoreContext),
                     testLogger,
                     CancellationToken.None);
 
@@ -114,6 +115,7 @@ namespace NuGet.Test
                     (c) => { },
                     sources,
                     false,
+                    await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(solutionManager, restoreContext),
                     testLogger,
                     CancellationToken.None);
 
@@ -162,7 +164,7 @@ namespace NuGet.Test
 
                 File.WriteAllText(Path.Combine(configFolder, "sub", "nuget.config"), configContents);
 
-                var settings = new Configuration.Settings(configSubFolder); // TODO NK - Fix this test
+                var settings = new Configuration.Settings(configSubFolder);
 
                 var solutionFolder = new DirectoryInfo(Path.Combine(solutionFolderParent, "solutionFolder"));
                 solutionFolder.Create();
@@ -182,6 +184,7 @@ namespace NuGet.Test
                     (c) => { },
                     sources,
                     false,
+                    await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(solutionManager, restoreContext),
                     testLogger,
                     CancellationToken.None);
 

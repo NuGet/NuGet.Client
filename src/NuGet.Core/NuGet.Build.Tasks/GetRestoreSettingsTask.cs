@@ -19,7 +19,6 @@ namespace NuGet.Build.Tasks
     /// </summary>
     public class GetRestoreSettingsTask : Task
     {
-
         public static string CLEAR = "CLEAR";
 
         [Required]
@@ -52,65 +51,9 @@ namespace NuGet.Build.Tasks
 
         private static Lazy<IMachineWideSettings> _machineWideSettings = new Lazy<IMachineWideSettings>(() => new XPlatMachineWideSetting());
 
-        public ISettings GetSettings(string projectDirectory, string restoreConfigFile)
-        {
-            if (string.IsNullOrEmpty(restoreConfigFile))
-            {
-                return Settings.LoadDefaultSettings(projectDirectory,
-                    configFileName: null,
-                    machineWideSettings: _machineWideSettings.Value);
-            }
-            else
-            {
-                var configFileFullPath = Path.GetFullPath(restoreConfigFile);
-                var configFileName = Path.GetFileName(configFileFullPath);
-                var configDirPath = Path.GetDirectoryName(restoreConfigFile);
-                return Settings.LoadSpecificSettings(configDirPath, configFileName: configFileName);
-            }
-        }
-
-        private ISettings ReadSettings(string solutionDirectory, string restoreDirectory, string restoreConfigFile)
-        {
-            if (!string.IsNullOrEmpty(solutionDirectory))
-            {
-                // Read the solution-level settings
-                var solutionSettingsFile = Path.Combine(
-                    solutionDirectory,
-                    NuGetConstants.NuGetSolutionSettingsFolder);
-
-                if (restoreConfigFile != null)
-                {
-                    restoreConfigFile = Path.GetFullPath(restoreConfigFile);
-                }
-
-                return Configuration.Settings.LoadDefaultSettings(
-                    solutionSettingsFile,
-                    configFileName: restoreConfigFile,
-                    machineWideSettings: _machineWideSettings.Value);
-            }
-
-            if (string.IsNullOrEmpty(restoreConfigFile))
-            {
-                return Configuration.Settings.LoadDefaultSettings(
-                    restoreDirectory,
-                    configFileName: null,
-                    machineWideSettings: _machineWideSettings.Value);
-            }
-            else
-            {
-                var configFileFullPath = Path.GetFullPath(restoreConfigFile);
-                var directory = Path.GetDirectoryName(configFileFullPath);
-                var configFileName = Path.GetFileName(configFileFullPath);
-                return Configuration.Settings.LoadDefaultSettings(
-                    directory,
-                    configFileName,
-                    null);
-            }
-        }
-
         public override bool Execute()
         {
-            // log inputs
+            // Log Inputs
             var log = new MSBuildLogger(Log);
             log.LogDebug($"(in) ProjectUniqueName '{ProjectUniqueName}'");
             if (RestoreSources != null)
@@ -137,21 +80,9 @@ namespace NuGet.Build.Tasks
 
             try
             {
-                var settings = ReadSettings(RestoreSolutionDirectory, Path.GetDirectoryName(ProjectUniqueName), RestoreConfigFile);
+                var settings = RestoreSettingsUtils.ReadSettings(RestoreSolutionDirectory, Path.GetDirectoryName(ProjectUniqueName), RestoreConfigFile, _machineWideSettings);
 
-                if (string.IsNullOrEmpty(RestorePackagesPath))
-                {
-                    OutputPackagesPath = SettingsUtility.GetGlobalPackagesFolder(settings);
-                }
-                else if (StringComparer.OrdinalIgnoreCase.Compare(RestorePackagesPath, CLEAR) == 0)
-                {
-                    RestorePackagesPath = string.Empty;
-                }
-                else
-                {
-                    // Relative -> Absolute path
-                    OutputPackagesPath = UriUtility.GetAbsolutePathFromFile(ProjectUniqueName, RestorePackagesPath);
-                }
+                OutputPackagesPath = RestoreSettingsUtils.GetPackagesPath(ProjectUniqueName, settings, RestorePackagesPath);
 
                 if (RestoreSources == null)
                 {
@@ -195,12 +126,7 @@ namespace NuGet.Build.Tasks
                     OutputFallbackFolders = RestoreFallbackFolders.Select(e => UriUtility.GetAbsolutePathFromFile(ProjectUniqueName, e)).ToArray();
                 }
 
-                var configFilePaths = new List<string>();
-                foreach (var config in settings.Priority)
-                {
-                    configFilePaths.Add(Path.GetFullPath(Path.Combine(config.Root, config.FileName)));
-                }
-                OutputConfigFilePaths = configFilePaths.ToArray();
+                OutputConfigFilePaths = SettingsUtility.GetConfigFilePaths(settings).ToArray();
             }
             catch (Exception ex)
             {
@@ -209,6 +135,7 @@ namespace NuGet.Build.Tasks
                 return false;
             }
 
+            // Log Outputs
             log.LogDebug($"(out) OutputPackagesPath '{OutputPackagesPath}'");
             log.LogDebug($"(out) OutputSources '{string.Join(";", OutputSources.Select(p => p))}'");
             log.LogDebug($"(out) OutputFallbackFolders '{string.Join(";", OutputFallbackFolders.Select(p => p))}'");

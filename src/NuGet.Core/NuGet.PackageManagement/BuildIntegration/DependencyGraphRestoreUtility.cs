@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -38,6 +38,7 @@ namespace NuGet.PackageManagement
             Action<SourceCacheContext> cacheContextModifier,
             IEnumerable<SourceRepository> sources,
             bool forceRestore,
+            DependencyGraphSpec dgSpec,
             ILogger log,
             CancellationToken token)
         {
@@ -50,6 +51,7 @@ namespace NuGet.PackageManagement
                 userPackagesPath: null,
                 log: log,
                 forceRestore: forceRestore,
+                dgSpec: dgSpec,
                 token: token);
         }
 
@@ -64,15 +66,10 @@ namespace NuGet.PackageManagement
             IEnumerable<SourceRepository> sources,
             string userPackagesPath,
             bool forceRestore,
+            DependencyGraphSpec dgSpec,
             ILogger log,
             CancellationToken token)
         {
-            // Get full dg spec
-            var dgSpec = await GetSolutionRestoreSpec(solutionManager, context);
-
-            // Cache spec TODO NK - Why do we cache the spec?
-            context.SolutionSpec = dgSpec;
-
             // Check if there are actual projects to restore before running.
             if (dgSpec.Restore.Count > 0)
             {
@@ -102,7 +99,7 @@ namespace NuGet.PackageManagement
         }
 
         /// <summary>
-        /// Restore a dg spec. This will not update the context cache. // TODO NK - Why? :D 
+        /// Restore a dg spec. This will not update the context cache.
         /// </summary>
         public static async Task<IReadOnlyList<RestoreSummary>> RestoreAsync(
             DependencyGraphSpec dgSpec,
@@ -201,7 +198,7 @@ namespace NuGet.PackageManagement
                 cacheContextModifier(sourceCacheContext);
 
                 // Settings passed here will be used to populate the restore requests.
-                var restoreContext = GetRestoreContext(context, providerCache, sourceCacheContext, sources, dgFile, userPackagesPath, false); // TODO NK - Do we want to force in preview? 
+                var restoreContext = GetRestoreContext(context, providerCache, sourceCacheContext, sources, dgFile, userPackagesPath, false); // We don't force in preview 
 
                 var requests = await RestoreRunner.GetRequests(restoreContext);
                 var results = await RestoreRunner.RunWithoutCommit(requests, restoreContext);
