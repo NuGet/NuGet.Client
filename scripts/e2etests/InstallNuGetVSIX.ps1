@@ -48,6 +48,7 @@ else
 {
         #We don't care for the downgrade result...we should be able to install on top anyways.
         $success = DowngradeVSIX $NuGetVSIXID $VSVersion $VSIXInstallerWaitTimeInSecs
+        
         if ($success -eq $false)
 	{
 		exit 1
