@@ -1,8 +1,8 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using NuGet.Protocol.Core.Types;
+using NuGet.Test.Utility;
 
 namespace NuGet.Protocol.Test
 {
@@ -14,12 +14,18 @@ namespace NuGet.Protocol.Test
     /// </summary>
     public class TestSourceCacheContext : SourceCacheContext
     {
+        private string _testDirectory;
+
         public override string GeneratedTempFolder
         {
             get
             {
-                throw new NotSupportedException(
-                    "The test source cache context does not support building a generated temp folder.");
+                if (_testDirectory == null)
+                {
+                    _testDirectory = TestDirectory.Create();
+                }
+
+                return _testDirectory;
             }
         }
     }
