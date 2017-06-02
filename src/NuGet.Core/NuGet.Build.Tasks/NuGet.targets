@@ -433,6 +433,8 @@ Copyright (c) .NET Foundation. All rights reserved.
      RestoreFallbackFolders="$(RestoreFallbackFolders)"
      RestoreConfigFile="$(RestoreConfigFile)"
      RestoreSolutionDirectory="$(RestoreSolutionDirectory)"
+     RestoreAdditionalProjectFallbackFolders="$(RestoreAdditionalProjectFallbackFolders)"
+     RestoreAdditionalProjectSources="$(RestoreAdditionalProjectSources)"
      >
       <Output
         TaskParameter="OutputSources"
@@ -525,6 +527,9 @@ Copyright (c) .NET Foundation. All rights reserved.
         <ValidateRuntimeAssets>$(ValidateRuntimeIdentifierCompatibility)</ValidateRuntimeAssets>
         <SkipContentFileWrite>$(_RestoreSkipContentFileWrite)</SkipContentFileWrite>
         <ConfigFilePaths>$(_OutputConfigFilePaths)</ConfigFilePaths>
+        <TreatWarningsAsErrors>$(TreatWarningsAsErrors)</TreatWarningsAsErrors>
+        <WarningsAsErrors>$(WarningsAsErrors)</WarningsAsErrors>
+        <NoWarn>$(NoWarn)</NoWarn>
       </_RestoreGraphEntry>
     </ItemGroup>
 

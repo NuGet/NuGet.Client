@@ -109,7 +109,7 @@ namespace NuGet.ProjectModel
         /// <summary>
         /// Contains Project wide properties for Warnings.
         /// </summary>
-        public WarningProperties ProjectWideWarningProperties { get; set; }
+        public WarningProperties ProjectWideWarningProperties { get; set; } = new WarningProperties();
 
         public override int GetHashCode()
         {

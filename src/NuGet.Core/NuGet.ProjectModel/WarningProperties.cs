@@ -26,9 +26,14 @@ namespace NuGet.ProjectModel
         /// <summary>
         /// Indicates if all warnings should be ignored.
         /// </summary>
-        public bool AllWarningsAsErrors { get; } = false;
+        public bool AllWarningsAsErrors { get; set; } = false;
+
+        public WarningProperties()
+        {
+        }
 
         public WarningProperties(ISet<NuGetLogCode> warningsAsErrorsSet, ISet<NuGetLogCode> noWarnSet, bool allWarningsAsErrors)
+            : base()
         {
             WarningsAsErrors = warningsAsErrorsSet;
             NoWarn = noWarnSet;

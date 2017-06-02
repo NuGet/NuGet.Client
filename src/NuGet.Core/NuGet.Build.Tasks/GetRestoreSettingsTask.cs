@@ -34,6 +34,10 @@ namespace NuGet.Build.Tasks
 
         public string RestoreSolutionDirectory { get; set; }
 
+        public string[] RestoreAdditionalProjectSources { get; set; }
+
+        public string[] RestoreAdditionalProjectFallbackFolders { get; set; }
+
         /// <summary>
         /// Output items
         /// </summary>
@@ -78,6 +82,16 @@ namespace NuGet.Build.Tasks
                 log.LogDebug($"(in) RestoreSolutionDirectory '{RestoreSolutionDirectory}'");
             }
 
+            if (RestoreAdditionalProjectSources != null)
+            {
+                log.LogDebug($"(in) RestoreAdditionalProjectSources '{RestoreAdditionalProjectSources}'");
+            }
+
+            if (RestoreAdditionalProjectFallbackFolders != null)
+            {
+                log.LogDebug($"(in) RestoreAdditionalProjectFallbackFolders '{RestoreAdditionalProjectFallbackFolders}'");
+            }
+
             try
             {
                 var settings = RestoreSettingsUtils.ReadSettings(RestoreSolutionDirectory, Path.GetDirectoryName(ProjectUniqueName), RestoreConfigFile, _machineWideSettings);
@@ -106,6 +120,9 @@ namespace NuGet.Build.Tasks
                     OutputSources = RestoreSources.Select(e => UriUtility.GetAbsolutePathFromFile(ProjectUniqueName, e)).ToArray();
                 }
 
+                // Append additional sources
+                OutputSources = AppendItems(OutputSources, RestoreAdditionalProjectSources);
+
                 if (RestoreFallbackFolders == null)
                 {
                     OutputFallbackFolders = SettingsUtility.GetFallbackPackageFolders(settings).ToArray();
@@ -126,6 +143,9 @@ namespace NuGet.Build.Tasks
                     OutputFallbackFolders = RestoreFallbackFolders.Select(e => UriUtility.GetAbsolutePathFromFile(ProjectUniqueName, e)).ToArray();
                 }
 
+                // Append additional fallback folders
+                OutputFallbackFolders = AppendItems(OutputFallbackFolders, RestoreAdditionalProjectFallbackFolders);
+
                 OutputConfigFilePaths = SettingsUtility.GetConfigFilePaths(settings).ToArray();
             }
             catch (Exception ex)
@@ -142,6 +162,19 @@ namespace NuGet.Build.Tasks
             log.LogDebug($"(out) OutputConfigFilePaths '{string.Join(";", OutputConfigFilePaths.Select(p => p))}'");
 
             return true;
+        }
+
+        private string[] AppendItems(string[] current, string[] additional)
+        {
+            if (additional == null || additional.Length == 0)
+            {
+                // noop
+                return current;
+            }
+
+            var additionalAbsolute = additional.Select(e => UriUtility.GetAbsolutePathFromFile(ProjectUniqueName, e));
+
+            return current.Concat(additionalAbsolute).ToArray();
         }
     }
 }
