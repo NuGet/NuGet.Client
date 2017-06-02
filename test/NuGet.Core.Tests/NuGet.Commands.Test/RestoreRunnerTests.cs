@@ -97,7 +97,7 @@ namespace NuGet.Commands.Test
                     Assert.True(summary.Success, "Failed: " + string.Join(Environment.NewLine, logger.Messages));
                     Assert.Equal(1, summary.FeedsUsed.Count);
                     Assert.True(File.Exists(lockPath), lockPath);
-                    Assert.False(File.Exists(Path.Combine(project1.FullName, "project1.nuget.targets"))); // TODO NK - Why are we doing this? The name of the targets has changed!
+                    Assert.False(File.Exists(Path.Combine(project1.FullName, "project1.nuget.targets")));
                     Assert.False(File.Exists(Path.Combine(project1.FullName, "project1.nuget.props")));
                 }
             }

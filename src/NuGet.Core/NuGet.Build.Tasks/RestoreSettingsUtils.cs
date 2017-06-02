@@ -10,6 +10,10 @@ using System.Linq;
 
 namespace NuGet.Build.Tasks
 {
+    /// <summary>
+    /// This class contains the logic for the settings using during restore. 
+    /// It contains methods with the settings precedence logic as well.
+    /// </summary>
     public class RestoreSettingsUtils
     {
         public static readonly string Clear = nameof(Clear);
