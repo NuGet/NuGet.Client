@@ -2100,67 +2100,82 @@ namespace NuGet.PackageManagement
                             logger);
                     }
 
-                    if (msbuildProject != null)
+                    try
                     {
-                        // raise Nuget batch start event
-                        var batchId = Guid.NewGuid().ToString();
-                        string name;
-                        nuGetProject.TryGetMetadata(NuGetProjectMetadataKeys.Name, out name);
-                        packageProjectEventArgs = new PackageProjectEventArgs(batchId, name);
-                        BatchStart?.Invoke(this, packageProjectEventArgs);
-                        PackageProjectEventsProvider.Instance.NotifyBatchStart(packageProjectEventArgs);
-                    }
-
-                    foreach (var nuGetProjectAction in actionsList)
-                    {
-                        executedNuGetProjectActions.Push(nuGetProjectAction);
-                        if (nuGetProjectAction.NuGetProjectActionType == NuGetProjectActionType.Uninstall)
+                        if (msbuildProject != null)
                         {
-                            await ExecuteUninstallAsync(nuGetProject,
-                                nuGetProjectAction.PackageIdentity,
-                                packageWithDirectoriesToBeDeleted,
-                                nuGetProjectContext, token);
+                            //start batch processing for msbuild
+                            msbuildProject.ProjectSystem.BeginProcessing();
+
+                            // raise Nuget batch start event
+                            var batchId = Guid.NewGuid().ToString();
+                            string name;
+                            nuGetProject.TryGetMetadata(NuGetProjectMetadataKeys.Name, out name);
+                            packageProjectEventArgs = new PackageProjectEventArgs(batchId, name);
+                            BatchStart?.Invoke(this, packageProjectEventArgs);
+                            PackageProjectEventsProvider.Instance.NotifyBatchStart(packageProjectEventArgs);
                         }
-                        else
-                        {
-                            // Retrieve the downloaded package
-                            // This will wait on the package if it is still downloading
-                            var preFetchResult = downloadTasks[nuGetProjectAction.PackageIdentity];
-                            using (var downloadPackageResult = await preFetchResult.GetResultAsync())
-                            {
-                                // use the version exactly as specified in the nuspec file
-                                var packageIdentity = await downloadPackageResult.PackageReader.GetIdentityAsync(token);
 
-                                await ExecuteInstallAsync(
-                                    nuGetProject,
-                                    packageIdentity,
-                                    downloadPackageResult,
+                        foreach (var nuGetProjectAction in actionsList)
+                        {
+                            executedNuGetProjectActions.Push(nuGetProjectAction);
+                            if (nuGetProjectAction.NuGetProjectActionType == NuGetProjectActionType.Uninstall)
+                            {
+                                await ExecuteUninstallAsync(nuGetProject,
+                                    nuGetProjectAction.PackageIdentity,
                                     packageWithDirectoriesToBeDeleted,
-                                    nuGetProjectContext,
-                                    token);
+                                    nuGetProjectContext, token);
+                            }
+                            else
+                            {
+                                // Retrieve the downloaded package
+                                // This will wait on the package if it is still downloading
+                                var preFetchResult = downloadTasks[nuGetProjectAction.PackageIdentity];
+                                using (var downloadPackageResult = await preFetchResult.GetResultAsync())
+                                {
+                                    // use the version exactly as specified in the nuspec file
+                                    var packageIdentity = await downloadPackageResult.PackageReader.GetIdentityAsync(token);
+
+                                    await ExecuteInstallAsync(
+                                        nuGetProject,
+                                        packageIdentity,
+                                        downloadPackageResult,
+                                        packageWithDirectoriesToBeDeleted,
+                                        nuGetProjectContext,
+                                        token);
+                                }
+                            }
+
+                            if (nuGetProjectAction.NuGetProjectActionType == NuGetProjectActionType.Install)
+                            {
+                                var identityString = string.Format(CultureInfo.InvariantCulture, "{0} {1}",
+                                    nuGetProjectAction.PackageIdentity.Id,
+                                    nuGetProjectAction.PackageIdentity.Version.ToNormalizedString());
+
+                                nuGetProjectContext.Log(
+                                    ProjectManagement.MessageLevel.Info,
+                                    Strings.SuccessfullyInstalled,
+                                    identityString,
+                                    nuGetProject.GetMetadata<string>(NuGetProjectMetadataKeys.Name));
+                            }
+                            else
+                            {
+                                // uninstall
+                                nuGetProjectContext.Log(
+                                    ProjectManagement.MessageLevel.Info,
+                                    Strings.SuccessfullyUninstalled,
+                                    nuGetProjectAction.PackageIdentity,
+                                    nuGetProject.GetMetadata<string>(NuGetProjectMetadataKeys.Name));
                             }
                         }
-
-                        if (nuGetProjectAction.NuGetProjectActionType == NuGetProjectActionType.Install)
+                    }
+                    finally
+                    {
+                        if (msbuildProject != null)
                         {
-                            var identityString = string.Format(CultureInfo.InvariantCulture, "{0} {1}",
-                                nuGetProjectAction.PackageIdentity.Id,
-                                nuGetProjectAction.PackageIdentity.Version.ToNormalizedString());
-
-                            nuGetProjectContext.Log(
-                                ProjectManagement.MessageLevel.Info,
-                                Strings.SuccessfullyInstalled,
-                                identityString,
-                                nuGetProject.GetMetadata<string>(NuGetProjectMetadataKeys.Name));
-                        }
-                        else
-                        {
-                            // uninstall
-                            nuGetProjectContext.Log(
-                                ProjectManagement.MessageLevel.Info,
-                                Strings.SuccessfullyUninstalled,
-                                nuGetProjectAction.PackageIdentity,
-                                nuGetProject.GetMetadata<string>(NuGetProjectMetadataKeys.Name));
+                            // end batch for msbuild and let it save everything.
+                            // always calls it before PostProcessAsync or binding redirects
+                            msbuildProject.ProjectSystem.EndProcessing();
                         }
                     }
 
