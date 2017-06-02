@@ -575,6 +575,15 @@ namespace NuGet.Protocol {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Terminating plugin &apos;{0}&apos; due to an unrecoverable fault:  {1}.
+        /// </summary>
+        internal static string Plugin_Fault {
+            get {
+                return ResourceManager.GetString("Plugin_Fault", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to A plugin was not found at path &apos;{0}&apos;..
         /// </summary>
         internal static string Plugin_FileNotFound {
