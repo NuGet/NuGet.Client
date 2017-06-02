@@ -295,16 +295,26 @@ namespace NuGet.Commands
         {
             // A package is compatible if it has...
             return
-                compatibilityData.TargetLibrary.RuntimeAssemblies.Count > 0 ||                          // Runtime Assemblies, or
-                compatibilityData.TargetLibrary.CompileTimeAssemblies.Count > 0 ||                      // Compile-time Assemblies, or
-                compatibilityData.TargetLibrary.FrameworkAssemblies.Count > 0 ||                        // Framework Assemblies, or
-                compatibilityData.TargetLibrary.ContentFiles.Count > 0 ||                               // Shared content
-                compatibilityData.TargetLibrary.ResourceAssemblies.Count > 0 ||                         // Resources (satellite package)
-                compatibilityData.TargetLibrary.Build.Count > 0 ||                                      // Build
-                compatibilityData.TargetLibrary.BuildMultiTargeting.Count > 0 ||                        // Cross targeting build
+                HasCompatibleAssets(compatibilityData.TargetLibrary) ||
                 !compatibilityData.Files.Any(p =>
                     p.StartsWith("ref/", StringComparison.OrdinalIgnoreCase)
                     || p.StartsWith("lib/", StringComparison.OrdinalIgnoreCase));                       // No assemblies at all (for any TxM)
+        }
+
+        /// <summary>
+        /// Check if the library contains assets.
+        /// </summary>
+        internal static bool HasCompatibleAssets(LockFileTargetLibrary targetLibrary)
+        {
+            // A package is compatible if it has...
+            return
+                targetLibrary.RuntimeAssemblies.Count > 0 ||                          // Runtime Assemblies, or
+                targetLibrary.CompileTimeAssemblies.Count > 0 ||                      // Compile-time Assemblies, or
+                targetLibrary.FrameworkAssemblies.Count > 0 ||                        // Framework Assemblies, or
+                targetLibrary.ContentFiles.Count > 0 ||                               // Shared content
+                targetLibrary.ResourceAssemblies.Count > 0 ||                         // Resources (satellite package)
+                targetLibrary.Build.Count > 0 ||                                      // Build
+                targetLibrary.BuildMultiTargeting.Count > 0;                          // Cross targeting build
         }
 
         private CompatibilityData GetCompatibilityData(RestoreTargetGraph graph, LibraryIdentity libraryId)

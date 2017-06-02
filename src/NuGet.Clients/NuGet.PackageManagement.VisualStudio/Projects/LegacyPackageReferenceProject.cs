@@ -295,21 +295,26 @@ namespace NuGet.PackageManagement.VisualStudio
                 .GetPackageReferencesAsync(targetFramework, CancellationToken.None))
                 .ToList();
 
-            var packageTargetFallback = _vsProjectAdapter.PackageTargetFallback?.Split(new[] { ';' })
+            var splitChars = new[] { ';' };
+
+            var packageTargetFallback = _vsProjectAdapter.PackageTargetFallback?.Split(splitChars)
                 .Select(NuGetFramework.Parse)
-                .ToList();
+                .ToList()
+                ?? new List<NuGetFramework>();
+
+            var assetTargetFallback = _vsProjectAdapter.AssetTargetFallback?.Split(splitChars)
+                .Select(NuGetFramework.Parse)
+                .ToList()
+                ?? new List<NuGetFramework>();
 
             var projectTfi = new TargetFrameworkInformation
             {
                 FrameworkName = targetFramework,
                 Dependencies = packageReferences,
-                Imports = packageTargetFallback ?? new List<NuGetFramework>()
             };
 
-            if ((projectTfi.Imports?.Count ?? 0) > 0)
-            {
-                projectTfi.FrameworkName = new FallbackFramework(projectTfi.FrameworkName, packageTargetFallback);
-            }
+            // Apply fallback settings
+            AssetTargetFallbackUtility.ApplyFramework(projectTfi, packageTargetFallback, assetTargetFallback);
 
             // Build up runtime information.
             var runtimes = await _vsProjectAdapter.GetRuntimeIdentifiersAsync();

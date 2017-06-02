@@ -391,6 +391,8 @@ namespace NuGet.ProjectModel
 
                     SetDependencies(writer, framework.Dependencies);
                     SetImports(writer, framework.Imports);
+                    SetValueIfTrue(writer, "assetTargetFallback", framework.AssetTargetFallback);
+                    SetValueIfTrue(writer, "warn", framework.Warn);
 
                     writer.WriteObjectEnd();
                 }
