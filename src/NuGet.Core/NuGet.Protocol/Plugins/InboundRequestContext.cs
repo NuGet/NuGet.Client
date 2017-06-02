@@ -193,9 +193,6 @@ namespace NuGet.Protocol.Plugins
             {
                 _cancellationTokenSource.Cancel();
             }
-            catch (AggregateException)
-            {
-            }
             catch (ObjectDisposedException)
             {
             }
