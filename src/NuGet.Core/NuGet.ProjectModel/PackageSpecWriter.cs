@@ -240,7 +240,44 @@ namespace NuGet.ProjectModel
                 writer.WriteObjectEnd();
             }
 
+            SetWarningProperties(writer, msbuildMetadata);
+
             writer.WriteObjectEnd();
+        }
+
+        private static void SetWarningProperties(IObjectWriter writer, ProjectRestoreMetadata msbuildMetadata)
+        {
+            if (msbuildMetadata.ProjectWideWarningProperties != null &&
+                (msbuildMetadata.ProjectWideWarningProperties.AllWarningsAsErrors ||
+                 msbuildMetadata.ProjectWideWarningProperties.NoWarn.Count > 0 ||
+                 msbuildMetadata.ProjectWideWarningProperties.WarningsAsErrors.Count > 0))
+            {
+                writer.WriteObjectStart("warningProperties");
+
+                SetValueIfTrue(writer, "allWarningsAsErrors", msbuildMetadata.ProjectWideWarningProperties.AllWarningsAsErrors);
+
+                if (msbuildMetadata.ProjectWideWarningProperties.NoWarn.Count > 0)
+                {
+                    SetArrayValue(writer, "noWarn", msbuildMetadata
+                       .ProjectWideWarningProperties
+                       .NoWarn
+                       .ToArray()
+                       .OrderBy(c => c)
+                       .Select(c => c.GetName()));
+                }
+
+                if (msbuildMetadata.ProjectWideWarningProperties.WarningsAsErrors.Count > 0)
+                {
+                    SetArrayValue(writer, "warnAsError", msbuildMetadata
+                        .ProjectWideWarningProperties
+                        .WarningsAsErrors
+                        .ToArray()
+                        .OrderBy(c => c)
+                        .Select(c => c.GetName()));
+                }
+
+                writer.WriteObjectEnd();
+            }
         }
 
         private static void SetPackOptions(IObjectWriter writer, PackageSpec packageSpec)

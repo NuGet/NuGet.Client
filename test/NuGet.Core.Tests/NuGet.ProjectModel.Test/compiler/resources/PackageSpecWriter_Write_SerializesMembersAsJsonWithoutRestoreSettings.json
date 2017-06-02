@@ -46,12 +46,12 @@
     "outputPath": "outputPath",
     "projectStyle": "PackageReference",
     "crossTargeting": true,
-    "fallbackFolders": [
+    "configFilePaths": [
       "b",
       "a",
       "c"
     ],
-    "configFilePaths": [
+    "fallbackFolders": [
       "b",
       "a",
       "c"
@@ -123,7 +123,8 @@
       },
       "imports": [
         "frameworkidentifierwithnowarn125-frameworkprofilewithnowarn"
-      ]
+      ],
+      "warn": true
     }
   },
   "runtimes": {

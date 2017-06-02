@@ -322,6 +322,16 @@ namespace NuGet.ProjectModel
                 }
             }
 
+            var warningPropertiesObj = rawMSBuildMetadata.GetValue<JObject>("warningProperties");
+            if (warningPropertiesObj != null)
+            {
+                var allWarningsAsErrors = warningPropertiesObj.GetValue<bool>("allWarningsAsErrors");
+                var warnAsError = new HashSet<NuGetLogCode>(GetNuGetLogCodeEnumerableFromJArray(warningPropertiesObj["warnAsError"]));
+                var noWarn = new HashSet<NuGetLogCode>(GetNuGetLogCodeEnumerableFromJArray(warningPropertiesObj["noWarn"]));
+
+                msbuildMetadata.ProjectWideWarningProperties = new WarningProperties(warnAsError, noWarn, allWarningsAsErrors);
+            }
+
             return msbuildMetadata;
         }
 
