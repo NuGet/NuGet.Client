@@ -47,6 +47,8 @@ namespace NuGet.Commands
 
         public string Name { get; }
 
+        public string TargetGraphName { get; }
+
         // TODO: Move conflicts to AnalyzeResult
         public IEnumerable<ResolverConflict> Conflicts { get; internal set; }
 
@@ -71,6 +73,8 @@ namespace NuGet.Commands
             Framework = framework;
             Graphs = graphs;
             Name = FrameworkRuntimePair.GetName(Framework, RuntimeIdentifier);
+            TargetGraphName = FrameworkRuntimePair.GetTargetGraphName(Framework, RuntimeIdentifier);
+
 
             Conventions = new ManagedCodeConventions(runtimeGraph);
 

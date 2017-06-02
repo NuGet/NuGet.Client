@@ -8,6 +8,7 @@ using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.ProjectModel;
 using NuGet.Versioning;
+using Test.Utility;
 using Xunit;
 
 namespace NuGet.Commands.Test
@@ -272,6 +273,7 @@ namespace NuGet.Commands.Test
         [Fact]
         public void SpecValidationUtility_UAP_VerifyNoOutputPath()
         {
+
             // Arrange
             var spec = new DependencyGraphSpec();
             spec.AddRestore("a");

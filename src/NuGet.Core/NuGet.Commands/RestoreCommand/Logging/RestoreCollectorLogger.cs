@@ -5,10 +5,11 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using NuGet.Common;
 
-namespace NuGet.Common
+namespace NuGet.Commands
 {
-    public class CollectorLogger : LoggerBase, ICollectorLogger
+    public class RestoreCollectorLogger : LoggerBase, ICollectorLogger
     {
         private readonly ILogger _innerLogger;
         private readonly ConcurrentQueue<IRestoreLogMessage> _errors;
@@ -16,25 +17,16 @@ namespace NuGet.Common
 
         public IEnumerable<IRestoreLogMessage> Errors => _errors.ToArray();
 
-         /// <summary>
-        /// Contains Project wide properties for Warnings.
-        /// </summary>
-        public WarningProperties ProjectWideWarningProperties { get; set; }
+        public WarningPropertiesCollection WarningPropertiesCollection;
 
         /// <summary>
-        /// Contains Package specific properties for Warnings.
-        /// NuGetLogCode -> LibraryId -> Set of TargerGraphs.
-        /// </summary>
-        public PackageSpecificWarningProperties PackageSpecificWarningProperties { get; set; }
-
-        /// <summary>
-        /// Initializes an instance of the <see cref="CollectorLogger"/>, while still
+        /// Initializes an instance of the <see cref="RestoreCollectorLogger"/>, while still
         /// delegating all log messages to the inner logger.
         /// </summary>
         /// <param name="innerLogger">The inner logger used to delegate the logging.</param>
         /// <param name="verbosity">Minimum verbosity below which no logs will be passed to the inner logger.</param>
         /// <param name="hideWarningsAndErrors">If this is true, then errors and warnings will not be passed to inner logger.</param>
-        public CollectorLogger(ILogger innerLogger, LogLevel verbosity, bool hideWarningsAndErrors)
+        public RestoreCollectorLogger(ILogger innerLogger, LogLevel verbosity, bool hideWarningsAndErrors)
             : base(verbosity)
         {
             _innerLogger = innerLogger;
@@ -43,33 +35,33 @@ namespace NuGet.Common
         }
 
         /// <summary>
-        /// Initializes an instance of the <see cref="CollectorLogger"/>, while still
+        /// Initializes an instance of the <see cref="RestoreCollectorLogger"/>, while still
         /// delegating all log messages to the inner logger.
         /// </summary>
         /// <param name="innerLogger">The inner logger used to delegate the logging.</param>
         /// <param name="hideWarningsAndErrors">If this is false, then errors and warnings will not be passed to inner logger.</param>
-        public CollectorLogger(ILogger innerLogger, bool hideWarningsAndErrors)
+        public RestoreCollectorLogger(ILogger innerLogger, bool hideWarningsAndErrors)
             : this(innerLogger, LogLevel.Debug, hideWarningsAndErrors)
         {
         }
 
         /// <summary>
-        /// Initializes an instance of the <see cref="CollectorLogger"/>, while still
+        /// Initializes an instance of the <see cref="RestoreCollectorLogger"/>, while still
         /// delegating all log messages to the inner logger.
         /// </summary>
         /// <param name="innerLogger">The inner logger used to delegate the logging.</param>
         /// <param name="verbosity">Minimum verbosity below which no logs will be passed to the inner logger.</param>
-        public CollectorLogger(ILogger innerLogger, LogLevel verbosity)
+        public RestoreCollectorLogger(ILogger innerLogger, LogLevel verbosity)
             : this(innerLogger, verbosity, hideWarningsAndErrors: false)
         {
         }
 
         /// <summary>
-        /// Initializes an instance of the <see cref="CollectorLogger"/>, while still
+        /// Initializes an instance of the <see cref="RestoreCollectorLogger"/>, while still
         /// delegating all log messages to the inner logger.
         /// </summary>
         /// <param name="innerLogger">The inner logger used to delegate the logging.</param>
-        public CollectorLogger(ILogger innerLogger)
+        public RestoreCollectorLogger(ILogger innerLogger)
             : this(innerLogger, LogLevel.Debug, hideWarningsAndErrors: false)
         {
         }
@@ -77,7 +69,7 @@ namespace NuGet.Common
         public void Log(IRestoreLogMessage message)
         {
             // This will be true only when the Message is a Warning and should be suppressed.
-            if (!TrySuppressOrUpgradeToErrorWarning(message))
+            if (WarningPropertiesCollection == null || !WarningPropertiesCollection.ApplyWarningProperties(message))
             {
 
                 if (CollectMessage(message.Level))
@@ -96,7 +88,7 @@ namespace NuGet.Common
         {
 
             // This will be true only when the Message is a Warning and should be suppressed.
-            if (!TrySuppressOrUpgradeToErrorWarning(message))
+            if (WarningPropertiesCollection == null || !WarningPropertiesCollection.ApplyWarningProperties(message))
             {
 
                 if (CollectMessage(message.Level))
@@ -150,53 +142,6 @@ namespace NuGet.Common
             }
 
             return restoreLogMessage;
-        }
-
-        /// <summary>
-        /// Attempts to suppress a warning log message or upgrade it to error log message.
-        /// The decision is made based on the Package Specific or Project wide warning properties.
-        /// </summary>
-        /// <param name="message">Message that should be suppressed or upgraded to an error.</param>
-        /// <returns>Bool indicating is the warning should be suppressed or not. 
-        /// If not then the param message sould have been mutated to an error</returns>
-        private bool TrySuppressOrUpgradeToErrorWarning(IRestoreLogMessage message)
-        {
-            if (message.Level != LogLevel.Warning)
-            {
-                return false;
-            }
-
-            if (!string.IsNullOrEmpty(message.LibraryId) && PackageSpecificWarningProperties != null)
-            {
-                // The message contains a LibraryId
-                // First look at PackageSpecificWarningProperties and then at ProjectWideWarningProperties
-                if (message.TargetGraphs.Count == 0) 
-                {
-                    return PackageSpecificWarningProperties.Contains(message.Code, message.LibraryId);
-                }
-                else 
-                {
-                    var newTargetGraphList = new List<string>();
-                    foreach (var targetGraph in message.TargetGraphs)
-                    {
-                        if(!PackageSpecificWarningProperties.Contains(message.Code, message.LibraryId, targetGraph))
-                        {
-                            newTargetGraphList.Add(targetGraph);
-                        }
-                    }
-
-                    message.TargetGraphs = newTargetGraphList;
-
-                    if (message.TargetGraphs.Count == 0)
-                    {
-                        return true;
-                    }
-                }
-            }
-
-            // The message does not contain a LibraryId or it is not suppressed in package specific settings
-            // Use ProjectWideWarningProperties
-            return ProjectWideWarningProperties != null && ProjectWideWarningProperties.TrySuppressWarning(message);
         }
     }
 }

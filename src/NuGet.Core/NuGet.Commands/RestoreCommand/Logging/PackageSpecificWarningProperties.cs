@@ -1,9 +1,12 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
+using NuGet.Common;
+using NuGet.Frameworks;
 
-namespace NuGet.Common
+namespace NuGet.Commands
 {
 
     /// <summary>
@@ -11,39 +14,39 @@ namespace NuGet.Common
     /// </summary>
     public class PackageSpecificWarningProperties
     {
-        private const string _globalTFM = "Global";
+        private static readonly NuGetFramework _globalTFM = NuGetFramework.AnyFramework;
 
         /// <summary>
         /// Contains Package specific No warn properties.
         /// NuGetLogCode -> LibraryId -> Set of TargerGraphs.
         /// </summary>
-        private IDictionary<NuGetLogCode, IDictionary<string, ISet<string>>> Properties;
+        private IDictionary<NuGetLogCode, IDictionary<string, ISet<NuGetFramework>>> Properties;
 
         /// <summary>
         /// Adds a NuGetLogCode into the NoWarn Set for the specified library Id and target graph.
         /// </summary>
         /// <param name="code">NuGetLogCode for which no warning should be thrown.</param>
         /// <param name="libraryId">Library for which no warning should be thrown.</param>
-        /// <param name="targetGraph">Target graph for which no warning should be thrown.</param>
-        public void Add(NuGetLogCode code, string libraryId, string targetGraph)
+        /// <param name="framework">Target graph for which no warning should be thrown.</param>
+        public void Add(NuGetLogCode code, string libraryId, NuGetFramework framework)
         {
             if (Properties == null)
             {
-                Properties = new Dictionary<NuGetLogCode, IDictionary<string, ISet<string>>>();
+                Properties = new Dictionary<NuGetLogCode, IDictionary<string, ISet<NuGetFramework>>>();
             }
 
             if (!Properties.ContainsKey(code))
             {
-                Properties.Add(code, new Dictionary<string, ISet<string>>());
+                Properties.Add(code, new Dictionary<string, ISet<NuGetFramework>>(StringComparer.OrdinalIgnoreCase));
             }
 
             if (Properties[code].ContainsKey(libraryId))
             {
-                Properties[code][libraryId].Add(targetGraph);
+                Properties[code][libraryId].Add(framework);
             }
             else
             {
-                Properties[code].Add(libraryId, new HashSet<string> { targetGraph });
+                Properties[code].Add(libraryId, new HashSet<NuGetFramework> { framework });
             }
         }
 
@@ -62,12 +65,12 @@ namespace NuGet.Common
         /// </summary>
         /// <param name="codes">IEnumerable of NuGetLogCode for which no warning should be thrown.</param>
         /// <param name="libraryId">Library for which no warning should be thrown.</param>
-        /// <param name="targetGraph">Target graph for which no warning should be thrown.</param>
-        public void AddRange(IEnumerable<NuGetLogCode> codes, string libraryId, string targetGraph)
+        /// <param name="framework">Target graph for which no warning should be thrown.</param>
+        public void AddRange(IEnumerable<NuGetLogCode> codes, string libraryId, NuGetFramework framework)
         {
             foreach (var code in codes)
             {
-                Add(code, libraryId, targetGraph);
+                Add(code, libraryId, framework);
             }
         }
 
@@ -90,14 +93,14 @@ namespace NuGet.Common
         /// </summary>
         /// <param name="code">NugetLogCode to be checked.</param>
         /// <param name="libraryId">library Id to be checked.</param>
-        /// <param name="targetGraph">target graph to be checked.</param>
+        /// <param name="framework">target graph to be checked.</param>
         /// <returns>True iff the NugetLogCode is part of the NoWarn list for the specified libraryId and Target Graph.</returns>
-        public bool Contains(NuGetLogCode code, string libraryId, string targetGraph)
+        public bool Contains(NuGetLogCode code, string libraryId, NuGetFramework framework)
         {
             return Properties != null &&
                 Properties.ContainsKey(code) &&
                 Properties[code].ContainsKey(libraryId) &&
-                Properties[code][libraryId].Contains(targetGraph);
+                Properties[code][libraryId].Contains(framework);
         }
 
         /// <summary>

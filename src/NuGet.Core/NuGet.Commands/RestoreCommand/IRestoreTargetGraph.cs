@@ -14,6 +14,8 @@ namespace NuGet.Commands
     {
         string Name { get; }
 
+        string TargetGraphName { get; }
+
         /// <summary>
         /// Gets the runtime identifier used during the restore operation on this graph
         /// </summary>

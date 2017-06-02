@@ -36,8 +36,6 @@ namespace NuGet.LibraryModel
             sb.Append(Type);
             sb.Append(" ");
             sb.Append(LibraryIncludeFlagUtils.GetFlagString(IncludeType));
-            sb.Append(" ");
-            sb.Append(NoWarn);
             return sb.ToString();
         }
 

@@ -3,6 +3,9 @@
 
 using System;
 using System.Collections.Generic;
+using NuGet.Commands;
+using NuGet.Frameworks;
+using Test.Utility;
 using Xunit;
 
 namespace NuGet.Common.Test
@@ -28,32 +31,31 @@ namespace NuGet.Common.Test
             // Arrange
             var code = NuGetLogCode.NU1500;
             var libraryId = "test_libraryId";
-            var targetGraph = "test_targetGraph";
+            var targetFramework = NuGetFramework.Parse("net45");
             var properties = new PackageSpecificWarningProperties();
-            properties.Add(code, libraryId, targetGraph);
+            properties.Add(code, libraryId, targetFramework);
 
             // Assert
-            Assert.True(properties.Contains(code, libraryId, targetGraph));
-            Assert.False(properties.Contains(code, libraryId, "random_target_graph"));
+            Assert.True(properties.Contains(code, libraryId, targetFramework));
+            Assert.False(properties.Contains(code, libraryId, NuGetFramework.Parse("random_target_graph")));
             Assert.False(properties.Contains(code, libraryId));
         }
 
         [Fact]
         public void PackageSpecificWanringProperties_AddsRangeValue()
         {
-
             // Arrange
             var codes = new List<NuGetLogCode> { NuGetLogCode.NU1500, NuGetLogCode.NU1601, NuGetLogCode.NU1701 };
             var libraryId = "test_libraryId";
-            var targetGraph = "test_targetGraph";
+            var targetFramework = NuGetFramework.Parse("net45");
             var properties = new PackageSpecificWarningProperties();
-            properties.AddRange(codes, libraryId, targetGraph);
+            properties.AddRange(codes, libraryId, targetFramework);
 
             // Assert
             foreach (var code in codes)
             {
-                Assert.True(properties.Contains(code, libraryId, targetGraph));
-                Assert.False(properties.Contains(code, libraryId, "random_target_graph"));
+                Assert.True(properties.Contains(code, libraryId, targetFramework));
+                Assert.False(properties.Contains(code, libraryId, NuGetFramework.Parse("random_target_graph")));
                 Assert.False(properties.Contains(code, libraryId));
             }
         }
@@ -69,7 +71,7 @@ namespace NuGet.Common.Test
             properties.Add(code, libraryId);
 
             // Assert
-            Assert.False(properties.Contains(code, libraryId, "random_target_graph"));
+            Assert.False(properties.Contains(code, libraryId, NuGetFramework.Parse("random_target_graph")));
             Assert.True(properties.Contains(code, libraryId));
         }
 
@@ -86,7 +88,7 @@ namespace NuGet.Common.Test
             // Assert
             foreach (var code in codes)
             {
-                Assert.False(properties.Contains(code, libraryId, "random_target_graph"));
+                Assert.False(properties.Contains(code, libraryId, NuGetFramework.Parse("random_target_graph")));
                 Assert.True(properties.Contains(code, libraryId));
             }
         }

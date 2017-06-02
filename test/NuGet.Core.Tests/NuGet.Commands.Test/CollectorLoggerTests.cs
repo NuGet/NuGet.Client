@@ -4,12 +4,16 @@
 using System.Collections.Generic;
 using System.Linq;
 using Moq;
+using NuGet.Commands;
+using NuGet.Common;
+using NuGet.Frameworks;
+using NuGet.ProjectModel;
 using Test.Utility;
 using Xunit;
 
-namespace NuGet.Common.Test
+namespace NuGet.Commands.Test
 {
-    public class CollectorLoggerTests
+    public class RestoreCollectorLoggerTests
     {
 
         [Fact]
@@ -18,7 +22,7 @@ namespace NuGet.Common.Test
 
             // Arrange
             var innerLogger = new Mock<ILogger>();
-            var collector = new CollectorLogger(innerLogger.Object, LogLevel.Debug, hideWarningsAndErrors: true);
+            var collector = new RestoreCollectorLogger(innerLogger.Object, LogLevel.Debug, hideWarningsAndErrors: true);
 
             // Act
             collector.Log(new RestoreLogMessage(LogLevel.Debug, "Debug"));
@@ -40,7 +44,7 @@ namespace NuGet.Common.Test
         {
             // Arrange
             var innerLogger = new Mock<ILogger>();
-            var collector = new CollectorLogger(innerLogger.Object, LogLevel.Debug, hideWarningsAndErrors: true);
+            var collector = new RestoreCollectorLogger(innerLogger.Object, LogLevel.Debug, hideWarningsAndErrors: true);
 
             // Act
             collector.Log(LogLevel.Debug, "Debug");
@@ -63,7 +67,7 @@ namespace NuGet.Common.Test
 
             // Arrange
             var innerLogger = new Mock<ILogger>();
-            var collector = new CollectorLogger(innerLogger.Object, LogLevel.Debug, hideWarningsAndErrors: true);
+            var collector = new RestoreCollectorLogger(innerLogger.Object, LogLevel.Debug, hideWarningsAndErrors: true);
 
             // Act
             collector.Log(new RestoreLogMessage(LogLevel.Debug, "Debug") { ShouldDisplay = true });
@@ -86,7 +90,7 @@ namespace NuGet.Common.Test
 
             // Arrange
             var innerLogger = new Mock<ILogger>();
-            var collector = new CollectorLogger(innerLogger.Object, LogLevel.Debug, hideWarningsAndErrors: true);
+            var collector = new RestoreCollectorLogger(innerLogger.Object, LogLevel.Debug, hideWarningsAndErrors: true);
 
             // Act
             collector.Log(new RestoreLogMessage(LogLevel.Debug, "Debug") { ShouldDisplay = true });
@@ -109,7 +113,7 @@ namespace NuGet.Common.Test
 
             // Arrange
             var innerLogger = new Mock<ILogger>();
-            var collector = new CollectorLogger(innerLogger.Object, LogLevel.Debug, hideWarningsAndErrors: false);
+            var collector = new RestoreCollectorLogger(innerLogger.Object, LogLevel.Debug, hideWarningsAndErrors: false);
 
             // Act
             collector.Log(new RestoreLogMessage(LogLevel.Debug, "Debug") { ShouldDisplay = true });
@@ -132,7 +136,7 @@ namespace NuGet.Common.Test
 
             // Arrange
             var innerLogger = new Mock<ILogger>();
-            var collector = new CollectorLogger(innerLogger.Object, LogLevel.Debug, hideWarningsAndErrors: false);
+            var collector = new RestoreCollectorLogger(innerLogger.Object, LogLevel.Debug, hideWarningsAndErrors: false);
 
             // Act
             collector.Log(new RestoreLogMessage(LogLevel.Debug, "Debug") { ShouldDisplay = true });
@@ -154,7 +158,7 @@ namespace NuGet.Common.Test
         {
             // Arrange
             var innerLogger = new Mock<ILogger>();
-            var collector = new CollectorLogger(innerLogger.Object, LogLevel.Verbose, hideWarningsAndErrors: true);
+            var collector = new RestoreCollectorLogger(innerLogger.Object, LogLevel.Verbose, hideWarningsAndErrors: true);
 
             // Act
             collector.Log(new RestoreLogMessage(LogLevel.Debug, "Debug") { ShouldDisplay = true });
@@ -176,7 +180,7 @@ namespace NuGet.Common.Test
         {
             // Arrange
             var innerLogger = new Mock<ILogger>();
-            var collector = new CollectorLogger(innerLogger.Object, LogLevel.Error, hideWarningsAndErrors: false);
+            var collector = new RestoreCollectorLogger(innerLogger.Object, LogLevel.Error, hideWarningsAndErrors: false);
 
             // Act
             collector.Log(new RestoreLogMessage(LogLevel.Debug, "Debug") { ShouldDisplay = true });
@@ -199,7 +203,7 @@ namespace NuGet.Common.Test
         {
             // Arrange
             var innerLogger = new Mock<ILogger>();
-            var collector = new CollectorLogger(innerLogger.Object);
+            var collector = new RestoreCollectorLogger(innerLogger.Object);
 
             // Act
             var errorsStart = collector.Errors.ToArray();
@@ -222,7 +226,7 @@ namespace NuGet.Common.Test
         {
             // Arrange
             var innerLogger = new Mock<ILogger>();
-            var collector = new CollectorLogger(innerLogger.Object);
+            var collector = new RestoreCollectorLogger(innerLogger.Object);
 
             // Act
             var warningsStart = collector.Errors.ToArray();
@@ -245,7 +249,7 @@ namespace NuGet.Common.Test
         {
             // Arrange
             var innerLogger = new Mock<ILogger>();
-            var collector = new CollectorLogger(innerLogger.Object);
+            var collector = new RestoreCollectorLogger(innerLogger.Object);
 
             // Act
             var warningsStart = collector.Errors.ToArray();
@@ -270,7 +274,7 @@ namespace NuGet.Common.Test
         {
             // Arrange
             var innerLogger = new Mock<ILogger>();
-            var collector = new CollectorLogger(innerLogger.Object);
+            var collector = new RestoreCollectorLogger(innerLogger.Object);
 
             // Act
             collector.LogDebug("Debug");
@@ -291,9 +295,12 @@ namespace NuGet.Common.Test
             var warnAsErrorSet = new HashSet<NuGetLogCode> { NuGetLogCode.NU1500 };
             var allWarningsAsErrors = false;
             var innerLogger = new Mock<ILogger>();
-            var collector = new CollectorLogger(innerLogger.Object)
+            var collector = new RestoreCollectorLogger(innerLogger.Object)
             {
-                ProjectWideWarningProperties = new WarningProperties(warnAsErrorSet, noWarnSet, allWarningsAsErrors)
+                WarningPropertiesCollection = new WarningPropertiesCollection()
+                {
+                    ProjectWideWarningProperties = new WarningProperties(warnAsErrorSet, noWarnSet, allWarningsAsErrors)
+                }
             };
 
             // Act
@@ -322,9 +329,12 @@ namespace NuGet.Common.Test
             var warnAsErrorSet = new HashSet<NuGetLogCode> { };
             var allWarningsAsErrors = true;
             var innerLogger = new Mock<ILogger>();
-            var collector = new CollectorLogger(innerLogger.Object)
+            var collector = new RestoreCollectorLogger(innerLogger.Object)
             {
-                ProjectWideWarningProperties = new WarningProperties(warnAsErrorSet, noWarnSet, allWarningsAsErrors)
+                WarningPropertiesCollection = new WarningPropertiesCollection()
+                {
+                    ProjectWideWarningProperties = new WarningProperties(warnAsErrorSet, noWarnSet, allWarningsAsErrors)
+                }
             };
 
             // Act
@@ -351,9 +361,12 @@ namespace NuGet.Common.Test
             var warnAsErrorSet = new HashSet<NuGetLogCode> { NuGetLogCode.NU1500 };
             var allWarningsAsErrors = true;
             var innerLogger = new Mock<ILogger>();
-            var collector = new CollectorLogger(innerLogger.Object)
+            var collector = new RestoreCollectorLogger(innerLogger.Object)
             {
-                ProjectWideWarningProperties = new WarningProperties(warnAsErrorSet, noWarnSet, allWarningsAsErrors)
+                WarningPropertiesCollection = new WarningPropertiesCollection()
+                {
+                    ProjectWideWarningProperties = new WarningProperties(warnAsErrorSet, noWarnSet, allWarningsAsErrors)
+                }
             };
 
             // Act
@@ -382,9 +395,12 @@ namespace NuGet.Common.Test
             var warnAsErrorSet = new HashSet<NuGetLogCode> { };
             var allWarningsAsErrors = false;
             var innerLogger = new Mock<ILogger>();
-            var collector = new CollectorLogger(innerLogger.Object)
+            var collector = new RestoreCollectorLogger(innerLogger.Object)
             {
-                ProjectWideWarningProperties = new WarningProperties(warnAsErrorSet, noWarnSet, allWarningsAsErrors)
+                WarningPropertiesCollection = new WarningPropertiesCollection()
+                {
+                    ProjectWideWarningProperties = new WarningProperties(warnAsErrorSet, noWarnSet, allWarningsAsErrors)
+                }
             };
 
             // Act
@@ -408,25 +424,29 @@ namespace NuGet.Common.Test
         {
             // Arrange
             var libraryId = "test_library";
-            var targetGraph = "test_targetGraph";
+            var frameworkString = "net45";
+            var targetFramework = NuGetFramework.Parse(frameworkString);
             var noWarnSet = new HashSet<NuGetLogCode> { };
             var warnAsErrorSet = new HashSet<NuGetLogCode> { };
             var allWarningsAsErrors = false;
             var packageSpecificWarningProperties = new PackageSpecificWarningProperties();
-            packageSpecificWarningProperties.Add(NuGetLogCode.NU1500, libraryId, targetGraph);
+            packageSpecificWarningProperties.Add(NuGetLogCode.NU1500, libraryId, targetFramework);
 
             var innerLogger = new Mock<ILogger>();
-            var collector = new CollectorLogger(innerLogger.Object)
+            var collector = new RestoreCollectorLogger(innerLogger.Object)
             {
-                ProjectWideWarningProperties = new WarningProperties(warnAsErrorSet, noWarnSet, allWarningsAsErrors),
-                PackageSpecificWarningProperties = packageSpecificWarningProperties
+                WarningPropertiesCollection = new WarningPropertiesCollection()
+                {
+                    ProjectWideWarningProperties = new WarningProperties(warnAsErrorSet, noWarnSet, allWarningsAsErrors),
+                    PackageSpecificWarningProperties = packageSpecificWarningProperties
+                }
             };
 
             // Act
             collector.Log(new RestoreLogMessage(LogLevel.Debug, "Debug") { ShouldDisplay = true });
             collector.Log(new RestoreLogMessage(LogLevel.Verbose, "Verbose") { ShouldDisplay = true });
             collector.Log(new RestoreLogMessage(LogLevel.Information, "Information") { ShouldDisplay = true });
-            collector.Log(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1500, "Warning", libraryId, targetGraph));
+            collector.Log(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1500, "Warning", libraryId, frameworkString));
             collector.Log(new RestoreLogMessage(LogLevel.Error, NuGetLogCode.NU1000, "Error") { ShouldDisplay = true });
 
             // Assert
@@ -443,18 +463,22 @@ namespace NuGet.Common.Test
         {
             // Arrange
             var libraryId = "test_library";
-            var targetGraph = "test_targetGraph";
+            var frameworkString = "net45";
+            var targetFramework = NuGetFramework.Parse(frameworkString);
             var noWarnSet = new HashSet<NuGetLogCode> { };
             var warnAsErrorSet = new HashSet<NuGetLogCode> { };
             var allWarningsAsErrors = false;
             var packageSpecificWarningProperties = new PackageSpecificWarningProperties();
-            packageSpecificWarningProperties.Add(NuGetLogCode.NU1500, libraryId, targetGraph);
+            packageSpecificWarningProperties.Add(NuGetLogCode.NU1500, libraryId, targetFramework);
 
             var innerLogger = new Mock<ILogger>();
-            var collector = new CollectorLogger(innerLogger.Object)
+            var collector = new RestoreCollectorLogger(innerLogger.Object)
             {
-                ProjectWideWarningProperties = new WarningProperties(warnAsErrorSet, noWarnSet, allWarningsAsErrors),
-                PackageSpecificWarningProperties = packageSpecificWarningProperties
+                WarningPropertiesCollection = new WarningPropertiesCollection()
+                {
+                    ProjectWideWarningProperties = new WarningProperties(warnAsErrorSet, noWarnSet, allWarningsAsErrors),
+                    PackageSpecificWarningProperties = packageSpecificWarningProperties
+                }
             };
 
             // Act
@@ -478,29 +502,33 @@ namespace NuGet.Common.Test
         {
             // Arrange
             var libraryId = "test_library";
-            var targetGraph = "test_targetGraph";
+            var frameworkString = "net45";
+            var targetFramework = NuGetFramework.Parse(frameworkString);
             var noWarnSet = new HashSet<NuGetLogCode> { };
             var warnAsErrorSet = new HashSet<NuGetLogCode> { };
             var allWarningsAsErrors = false;
             var packageSpecificWarningProperties = new PackageSpecificWarningProperties();
-            packageSpecificWarningProperties.Add(NuGetLogCode.NU1500, libraryId, targetGraph);
-            packageSpecificWarningProperties.Add(NuGetLogCode.NU1601, libraryId, targetGraph);
-            packageSpecificWarningProperties.Add(NuGetLogCode.NU1605, libraryId, targetGraph);
+            packageSpecificWarningProperties.Add(NuGetLogCode.NU1500, libraryId, targetFramework);
+            packageSpecificWarningProperties.Add(NuGetLogCode.NU1601, libraryId, targetFramework);
+            packageSpecificWarningProperties.Add(NuGetLogCode.NU1605, libraryId, targetFramework);
 
             var innerLogger = new Mock<ILogger>();
-            var collector = new CollectorLogger(innerLogger.Object)
+            var collector = new RestoreCollectorLogger(innerLogger.Object)
             {
-                ProjectWideWarningProperties = new WarningProperties(warnAsErrorSet, noWarnSet, allWarningsAsErrors),
-                PackageSpecificWarningProperties = packageSpecificWarningProperties
+                WarningPropertiesCollection = new WarningPropertiesCollection()
+                {
+                    ProjectWideWarningProperties = new WarningProperties(warnAsErrorSet, noWarnSet, allWarningsAsErrors),
+                    PackageSpecificWarningProperties = packageSpecificWarningProperties
+                }
             };
 
             // Act
             collector.Log(new RestoreLogMessage(LogLevel.Debug, "Debug") { ShouldDisplay = true });
             collector.Log(new RestoreLogMessage(LogLevel.Verbose, "Verbose") { ShouldDisplay = true });
             collector.Log(new RestoreLogMessage(LogLevel.Information, "Information") { ShouldDisplay = true });
-            collector.Log(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1500, "Warning", libraryId, targetGraph));
-            collector.Log(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1601, "Warning", libraryId, targetGraph));
-            collector.Log(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1605, "Warning", libraryId, targetGraph));
+            collector.Log(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1500, "Warning", libraryId, frameworkString));
+            collector.Log(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1601, "Warning", libraryId, frameworkString));
+            collector.Log(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1605, "Warning", libraryId, frameworkString));
             collector.Log(new RestoreLogMessage(LogLevel.Error, NuGetLogCode.NU1000, "Error") { ShouldDisplay = true });
 
             // Assert
@@ -517,27 +545,31 @@ namespace NuGet.Common.Test
         {
             // Arrange
             var libraryId = "test_library";
-            var targetGraph = "test_targetGraph";
+            var frameworkString = "net45";
+            var targetFramework = NuGetFramework.Parse(frameworkString);
             var noWarnSet = new HashSet<NuGetLogCode> { };
             var warnAsErrorSet = new HashSet<NuGetLogCode> { };
             var allWarningsAsErrors = false;
             var packageSpecificWarningProperties = new PackageSpecificWarningProperties();
-            packageSpecificWarningProperties.AddRange(new List<NuGetLogCode> { NuGetLogCode.NU1500, NuGetLogCode.NU1601, NuGetLogCode.NU1605}, libraryId, targetGraph);
+            packageSpecificWarningProperties.AddRange(new List<NuGetLogCode> { NuGetLogCode.NU1500, NuGetLogCode.NU1601, NuGetLogCode.NU1605}, libraryId, targetFramework);
 
             var innerLogger = new Mock<ILogger>();
-            var collector = new CollectorLogger(innerLogger.Object)
+            var collector = new RestoreCollectorLogger(innerLogger.Object)
             {
-                ProjectWideWarningProperties = new WarningProperties(warnAsErrorSet, noWarnSet, allWarningsAsErrors),
-                PackageSpecificWarningProperties = packageSpecificWarningProperties
+                WarningPropertiesCollection = new WarningPropertiesCollection()
+                {
+                    ProjectWideWarningProperties = new WarningProperties(warnAsErrorSet, noWarnSet, allWarningsAsErrors),
+                    PackageSpecificWarningProperties = packageSpecificWarningProperties
+                }
             };
 
             // Act
             collector.Log(new RestoreLogMessage(LogLevel.Debug, "Debug") { ShouldDisplay = true });
             collector.Log(new RestoreLogMessage(LogLevel.Verbose, "Verbose") { ShouldDisplay = true });
             collector.Log(new RestoreLogMessage(LogLevel.Information, "Information") { ShouldDisplay = true });
-            collector.Log(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1500, "Warning", libraryId, targetGraph));
-            collector.Log(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1601, "Warning", libraryId, targetGraph));
-            collector.Log(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1605, "Warning", libraryId, targetGraph));
+            collector.Log(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1500, "Warning", libraryId, frameworkString));
+            collector.Log(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1601, "Warning", libraryId, frameworkString));
+            collector.Log(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1605, "Warning", libraryId, frameworkString));
             collector.Log(new RestoreLogMessage(LogLevel.Error, NuGetLogCode.NU1000, "Error") { ShouldDisplay = true });
 
             // Assert
@@ -554,27 +586,31 @@ namespace NuGet.Common.Test
         {
             // Arrange
             var libraryId = "test_library";
-            var targetGraph = "test_targetGraph";
+            var frameworkString = "net45";
+            var targetFramework = NuGetFramework.Parse(frameworkString);
             var noWarnSet = new HashSet<NuGetLogCode> { };
             var warnAsErrorSet = new HashSet<NuGetLogCode> { };
             var allWarningsAsErrors = false;
             var packageSpecificWarningProperties = new PackageSpecificWarningProperties();
-            packageSpecificWarningProperties.AddRange(new List<NuGetLogCode> { NuGetLogCode.NU1500 }, libraryId, targetGraph);
+            packageSpecificWarningProperties.AddRange(new List<NuGetLogCode> { NuGetLogCode.NU1500 }, libraryId, targetFramework);
 
             var innerLogger = new Mock<ILogger>();
-            var collector = new CollectorLogger(innerLogger.Object)
+            var collector = new RestoreCollectorLogger(innerLogger.Object)
             {
-                ProjectWideWarningProperties = new WarningProperties(warnAsErrorSet, noWarnSet, allWarningsAsErrors),
-                PackageSpecificWarningProperties = packageSpecificWarningProperties
+                WarningPropertiesCollection = new WarningPropertiesCollection()
+                {
+                    ProjectWideWarningProperties = new WarningProperties(warnAsErrorSet, noWarnSet, allWarningsAsErrors),
+                    PackageSpecificWarningProperties = packageSpecificWarningProperties
+                }
             };
 
             // Act
             collector.Log(new RestoreLogMessage(LogLevel.Debug, "Debug") { ShouldDisplay = true });
             collector.Log(new RestoreLogMessage(LogLevel.Verbose, "Verbose") { ShouldDisplay = true });
             collector.Log(new RestoreLogMessage(LogLevel.Information, "Information") { ShouldDisplay = true });
-            collector.Log(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1500, "Warning", libraryId, targetGraph));
-            collector.Log(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1601, "Warning", libraryId, targetGraph));
-            collector.Log(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1605, "Warning", libraryId, targetGraph));
+            collector.Log(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1500, "Warning", libraryId, frameworkString));
+            collector.Log(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1601, "Warning", libraryId, frameworkString));
+            collector.Log(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1605, "Warning", libraryId, frameworkString));
             collector.Log(new RestoreLogMessage(LogLevel.Error, NuGetLogCode.NU1000, "Error") { ShouldDisplay = true });
 
             // Assert
@@ -600,10 +636,13 @@ namespace NuGet.Common.Test
             packageSpecificWarningProperties.Add(NuGetLogCode.NU1500, libraryId);
 
             var innerLogger = new Mock<ILogger>();
-            var collector = new CollectorLogger(innerLogger.Object)
+            var collector = new RestoreCollectorLogger(innerLogger.Object)
             {
-                ProjectWideWarningProperties = new WarningProperties(warnAsErrorSet, noWarnSet, allWarningsAsErrors),
-                PackageSpecificWarningProperties = packageSpecificWarningProperties
+                WarningPropertiesCollection = new WarningPropertiesCollection()
+                {
+                    ProjectWideWarningProperties = new WarningProperties(warnAsErrorSet, noWarnSet, allWarningsAsErrors),
+                    PackageSpecificWarningProperties = packageSpecificWarningProperties
+                }
             };
 
             // Act
@@ -636,10 +675,13 @@ namespace NuGet.Common.Test
             packageSpecificWarningProperties.Add(NuGetLogCode.NU1605, libraryId);
 
             var innerLogger = new Mock<ILogger>();
-            var collector = new CollectorLogger(innerLogger.Object)
+            var collector = new RestoreCollectorLogger(innerLogger.Object)
             {
-                ProjectWideWarningProperties = new WarningProperties(warnAsErrorSet, noWarnSet, allWarningsAsErrors),
-                PackageSpecificWarningProperties = packageSpecificWarningProperties
+                WarningPropertiesCollection = new WarningPropertiesCollection()
+                {
+                    ProjectWideWarningProperties = new WarningProperties(warnAsErrorSet, noWarnSet, allWarningsAsErrors),
+                    PackageSpecificWarningProperties = packageSpecificWarningProperties
+                }
             };
 
             // Act
@@ -668,9 +710,12 @@ namespace NuGet.Common.Test
             var warnAsErrorSet = new HashSet<NuGetLogCode> { };
             var allWarningsAsErrors = true;
             var innerLogger = new Mock<ILogger>();
-            var collector = new CollectorLogger(innerLogger.Object)
+            var collector = new RestoreCollectorLogger(innerLogger.Object)
             {
-                ProjectWideWarningProperties = new WarningProperties(warnAsErrorSet, noWarnSet, allWarningsAsErrors)
+                WarningPropertiesCollection = new WarningPropertiesCollection()
+                {
+                    ProjectWideWarningProperties = new WarningProperties(warnAsErrorSet, noWarnSet, allWarningsAsErrors)
+                }
             };
 
             // Act
@@ -697,9 +742,12 @@ namespace NuGet.Common.Test
             var warnAsErrorSet = new HashSet<NuGetLogCode> { NuGetLogCode.NU1500 };
             var allWarningsAsErrors = false;
             var innerLogger = new Mock<ILogger>();
-            var collector = new CollectorLogger(innerLogger.Object)
+            var collector = new RestoreCollectorLogger(innerLogger.Object)
             {
-                ProjectWideWarningProperties = new WarningProperties(warnAsErrorSet, noWarnSet, allWarningsAsErrors)
+                WarningPropertiesCollection = new WarningPropertiesCollection()
+                {
+                    ProjectWideWarningProperties = new WarningProperties(warnAsErrorSet, noWarnSet, allWarningsAsErrors)
+                }
             };
 
             // Act
@@ -726,9 +774,12 @@ namespace NuGet.Common.Test
             var warnAsErrorSet = new HashSet<NuGetLogCode> { NuGetLogCode.NU1500 };
             var allWarningsAsErrors = false;
             var innerLogger = new Mock<ILogger>();
-            var collector = new CollectorLogger(innerLogger.Object)
+            var collector = new RestoreCollectorLogger(innerLogger.Object)
             {
-                ProjectWideWarningProperties = new WarningProperties(warnAsErrorSet, noWarnSet, allWarningsAsErrors)
+                WarningPropertiesCollection = new WarningPropertiesCollection()
+                {
+                    ProjectWideWarningProperties = new WarningProperties(warnAsErrorSet, noWarnSet, allWarningsAsErrors)
+                }
             };
 
             // Act
@@ -752,29 +803,33 @@ namespace NuGet.Common.Test
         {
             // Arrange
             var libraryId = "test_library";
-            var targetGraph = "test_targetGraph";
+            var frameworkString = "net45";
+            var targetFramework = NuGetFramework.Parse(frameworkString);
             var noWarnSet = new HashSet<NuGetLogCode> { };
             var warnAsErrorSet = new HashSet<NuGetLogCode> { NuGetLogCode.NU1500 };
             var allWarningsAsErrors = false;
             var packageSpecificWarningProperties = new PackageSpecificWarningProperties();
-            packageSpecificWarningProperties.Add(NuGetLogCode.NU1500, libraryId, targetGraph);
-            packageSpecificWarningProperties.Add(NuGetLogCode.NU1601, libraryId, targetGraph);
-            packageSpecificWarningProperties.Add(NuGetLogCode.NU1605, libraryId, targetGraph);
+            packageSpecificWarningProperties.Add(NuGetLogCode.NU1500, libraryId, targetFramework);
+            packageSpecificWarningProperties.Add(NuGetLogCode.NU1601, libraryId, targetFramework);
+            packageSpecificWarningProperties.Add(NuGetLogCode.NU1605, libraryId, targetFramework);
 
             var innerLogger = new Mock<ILogger>();
-            var collector = new CollectorLogger(innerLogger.Object)
+            var collector = new RestoreCollectorLogger(innerLogger.Object)
             {
-                ProjectWideWarningProperties = new WarningProperties(warnAsErrorSet, noWarnSet, allWarningsAsErrors),
-                PackageSpecificWarningProperties = packageSpecificWarningProperties
+                WarningPropertiesCollection = new WarningPropertiesCollection()
+                {
+                    ProjectWideWarningProperties = new WarningProperties(warnAsErrorSet, noWarnSet, allWarningsAsErrors),
+                    PackageSpecificWarningProperties = packageSpecificWarningProperties
+                }
             };
 
             // Act
             collector.Log(new RestoreLogMessage(LogLevel.Debug, "Debug") { ShouldDisplay = true });
             collector.Log(new RestoreLogMessage(LogLevel.Verbose, "Verbose") { ShouldDisplay = true });
             collector.Log(new RestoreLogMessage(LogLevel.Information, "Information") { ShouldDisplay = true });
-            collector.Log(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1500, "Warning", libraryId, targetGraph));
-            collector.Log(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1601, "Warning", libraryId, targetGraph));
-            collector.Log(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1605, "Warning", libraryId, targetGraph));
+            collector.Log(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1500, "Warning", libraryId, frameworkString));
+            collector.Log(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1601, "Warning", libraryId, frameworkString));
+            collector.Log(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1605, "Warning", libraryId, frameworkString));
             collector.Log(new RestoreLogMessage(LogLevel.Error, NuGetLogCode.NU1000, "Error") { ShouldDisplay = true });
 
             // Assert
@@ -791,30 +846,34 @@ namespace NuGet.Common.Test
         {
             // Arrange
             var libraryId = "test_library";
-            var targetGraph = "test_targetGraph";
+            var frameworkString = "net45";
+            var targetFramework = NuGetFramework.Parse(frameworkString);
             var noWarnSet = new HashSet<NuGetLogCode> { };
             var warnAsErrorSet = new HashSet<NuGetLogCode> { NuGetLogCode.NU1500 };
             var allWarningsAsErrors = true;
             var packageSpecificWarningProperties = new PackageSpecificWarningProperties();
-            packageSpecificWarningProperties.Add(NuGetLogCode.NU1500, libraryId, targetGraph);
-            packageSpecificWarningProperties.Add(NuGetLogCode.NU1601, libraryId, targetGraph);
-            packageSpecificWarningProperties.Add(NuGetLogCode.NU1605, libraryId, targetGraph);
+            packageSpecificWarningProperties.Add(NuGetLogCode.NU1500, libraryId, targetFramework);
+            packageSpecificWarningProperties.Add(NuGetLogCode.NU1601, libraryId, targetFramework);
+            packageSpecificWarningProperties.Add(NuGetLogCode.NU1605, libraryId, targetFramework);
 
             var innerLogger = new Mock<ILogger>();
-            var collector = new CollectorLogger(innerLogger.Object)
+            var collector = new RestoreCollectorLogger(innerLogger.Object)
             {
-                ProjectWideWarningProperties = new WarningProperties(warnAsErrorSet, noWarnSet, allWarningsAsErrors),
-                PackageSpecificWarningProperties = packageSpecificWarningProperties
+                WarningPropertiesCollection = new WarningPropertiesCollection()
+                {
+                    ProjectWideWarningProperties = new WarningProperties(warnAsErrorSet, noWarnSet, allWarningsAsErrors),
+                    PackageSpecificWarningProperties = packageSpecificWarningProperties
+                }
             };
 
             // Act
             collector.Log(new RestoreLogMessage(LogLevel.Debug, "Debug") { ShouldDisplay = true });
             collector.Log(new RestoreLogMessage(LogLevel.Verbose, "Verbose") { ShouldDisplay = true });
             collector.Log(new RestoreLogMessage(LogLevel.Information, "Information") { ShouldDisplay = true });
-            collector.Log(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1500, "Warning", libraryId, targetGraph));
-            collector.Log(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1601, "Warning", libraryId, targetGraph));
-            collector.Log(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1605, "Warning", libraryId, targetGraph));
-            collector.Log(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1607, "Warning", libraryId, targetGraph));
+            collector.Log(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1500, "Warning", libraryId, frameworkString));
+            collector.Log(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1601, "Warning", libraryId, frameworkString));
+            collector.Log(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1605, "Warning", libraryId, frameworkString));
+            collector.Log(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1607, "Warning", libraryId, frameworkString));
             collector.Log(new RestoreLogMessage(LogLevel.Error, NuGetLogCode.NU1000, "Error") { ShouldDisplay = true });
 
             // Assert

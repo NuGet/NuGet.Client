@@ -137,7 +137,7 @@ namespace NuGet.Commands.Test
             remoteWalkContext.RemoteLibraryProviders.Add(provider1.Object);
             remoteWalkContext.RemoteLibraryProviders.Add(provider2.Object);
             var graph = new Mock<IRestoreTargetGraph>();
-            graph.SetupGet(e => e.Name).Returns("abc");
+            graph.SetupGet(e => e.TargetGraphName).Returns("abc");
 
             var message = await UnresolvedMessages.GetMessageAsync(graph.Object, range, remoteWalkContext, logger, token);
 
@@ -419,7 +419,7 @@ namespace NuGet.Commands.Test
             var remoteWalkContext = new RemoteWalkContext(cacheContext.Object, NullLogger.Instance);
             remoteWalkContext.RemoteLibraryProviders.Add(provider.Object);
             var graph = new Mock<IRestoreTargetGraph>();
-            graph.SetupGet(e => e.Name).Returns("abc");
+            graph.SetupGet(e => e.TargetGraphName).Returns("abc");
 
             var message = await UnresolvedMessages.GetMessageAsync(graph.Object, range, remoteWalkContext, logger, token);
             return message;

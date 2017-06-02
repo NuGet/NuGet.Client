@@ -53,34 +53,16 @@ namespace NuGet.Commands
             var collectorLoggerHideWarningsAndErrors = request.Project.RestoreSettings.HideWarningsAndErrors
                 || request.HideWarningsAndErrors;
 
-            var collectorLogger = new CollectorLogger(_request.Log, collectorLoggerHideWarningsAndErrors)
+            var collectorLogger = new RestoreCollectorLogger(_request.Log, collectorLoggerHideWarningsAndErrors)
             {
-                ProjectWideWarningProperties = request.Project?.RestoreMetadata?.ProjectWideWarningProperties,
-                PackageSpecificWarningProperties = GetPackageSpecificWarningProperties(request.Project)
+                WarningPropertiesCollection =  new WarningPropertiesCollection()
+                {
+                    ProjectWideWarningProperties = request.Project?.RestoreMetadata?.ProjectWideWarningProperties,
+                    PackageSpecificWarningProperties = WarningPropertiesCollection.GetPackageSpecificWarningProperties(request.Project)
+                }
             };
 
             _logger = collectorLogger;
-        }
-
-        private PackageSpecificWarningProperties GetPackageSpecificWarningProperties(PackageSpec packageSpec)
-        {
-            // NuGetLogCode -> LibraryId -> Set of TargerGraphs.
-            var warningProperties = new PackageSpecificWarningProperties();
-
-            foreach (var dependency in packageSpec.Dependencies)
-            {
-                warningProperties.AddRange(dependency.NoWarn, dependency.Name);
-            }
-
-            foreach (var framework in packageSpec.TargetFrameworks)
-            {
-                foreach (var dependency in framework.Dependencies)
-                {
-                    warningProperties.AddRange(dependency.NoWarn, dependency.Name, framework.FrameworkName.Framework);
-                }
-            }
-
-            return warningProperties;
         }
 
         public Task<RestoreResult> ExecuteAsync()
@@ -198,7 +180,7 @@ namespace NuGet.Commands
             }
             
             // Write the logs into the assets file
-            var logs = (_logger as CollectorLogger).Errors
+            var logs = (_logger as RestoreCollectorLogger).Errors
                 .Select(l => AssetsLogMessage.Create(l))
                 .ToList();
 

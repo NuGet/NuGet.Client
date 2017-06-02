@@ -26,6 +26,10 @@
     <PackageReference Include="System.Diagnostics.Process" Version="4.1.0" />
     <PackageReference Include="System.Threading.Thread" Version="4.0.0" />
   </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\NuGet.Frameworks\NuGet.Frameworks.csproj" />
+  </ItemGroup>
   
   <ItemGroup>
     <Compile Update="Strings.Designer.cs">
