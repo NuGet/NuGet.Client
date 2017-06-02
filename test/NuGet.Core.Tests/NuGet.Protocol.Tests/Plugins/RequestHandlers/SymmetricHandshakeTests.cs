@@ -154,20 +154,6 @@ namespace NuGet.Protocol.Plugins.Tests
         }
 
         [Fact]
-        public async Task HandleCancelAsync_Throws()
-        {
-            using (var handshake = CreateHandshake())
-            {
-                await Assert.ThrowsAsync<ProtocolException>(
-                    () => handshake.HandleCancelAsync(
-                        Mock.Of<IConnection>(),
-                        request: null,
-                        responseHandler: Mock.Of<IResponseHandler>(),
-                        cancellationToken: CancellationToken.None));
-            }
-        }
-
-        [Fact]
         public async Task HandleRequestAsync_ThrowsForNullConnection()
         {
             using (var handshake = CreateHandshake())

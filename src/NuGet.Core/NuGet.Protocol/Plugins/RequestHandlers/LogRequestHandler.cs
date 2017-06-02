@@ -37,25 +37,6 @@ namespace NuGet.Protocol.Plugins
         }
 
         /// <summary>
-        /// Asynchronously handles progress notifications for a request.
-        /// </summary>
-        /// <param name="connection">The connection.</param>
-        /// <param name="request">A request message.</param>
-        /// <param name="responseHandler">A response handler.</param>
-        /// <param name="cancellationToken">A cancellation token.</param>
-        /// <returns>A task that represents the asynchronous operation.</returns>
-        /// <exception cref="NotSupportedException">Cancellation requests are not supported
-        /// by this request handler.</exception>
-        public Task HandleCancelAsync(
-            IConnection connection,
-            Message request,
-            IResponseHandler responseHandler,
-            CancellationToken cancellationToken)
-        {
-            throw new NotSupportedException();
-        }
-
-        /// <summary>
         /// Asynchronously handles responding to a request.
         /// </summary>
         /// <param name="connection">The connection.</param>
