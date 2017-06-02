@@ -107,6 +107,15 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to PackageTargetFallback and AssetTargetFallback cannot be used together. Remove PackageTargetFallback(deprecated) references from the project environment..
+        /// </summary>
+        internal static string Error_InvalidATF {
+            get {
+                return ResourceManager.GetString("Error_InvalidATF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Invalid input &apos;{0}&apos;. The file type was not recognized..
         /// </summary>
         internal static string Error_InvalidCommandLineInput {

@@ -159,7 +159,6 @@ namespace NuGet.Commands
 
             var libraries = lockFile.Libraries.ToDictionary(lib => Tuple.Create(lib.Name, lib.Version));
 
-            var warnForImports = project.TargetFrameworks.Any(framework => framework.Warn);
             var librariesWithWarnings = new HashSet<LibraryIdentity>();
 
             var rootProjectStyle = project.RestoreMetadata?.ProjectStyle ?? ProjectStyle.Unknown;
@@ -175,8 +174,12 @@ namespace NuGet.Commands
 
                 var flattenedFlags = IncludeFlagUtils.FlattenDependencyTypes(_includeFlagGraphs, project, targetGraph);
 
-                var fallbackFramework = target.TargetFramework as FallbackFramework;
-                var warnForImportsOnGraph = warnForImports && fallbackFramework != null;
+                // Check if warnings should be displayed for the current framework.
+                var tfi = project.GetTargetFramework(targetGraph.Framework);
+
+                var warnForImportsOnGraph = tfi.Warn
+                    && (target.TargetFramework is FallbackFramework
+                        || target.TargetFramework is AssetTargetFallbackFramework);
 
                 foreach (var graphItem in targetGraph.Flattened.OrderBy(x => x.Key))
                 {
@@ -231,7 +234,7 @@ namespace NuGet.Commands
                         // Log warnings if the target library used the fallback framework
                         if (warnForImportsOnGraph && !librariesWithWarnings.Contains(library))
                         {
-                            var nonFallbackFramework = new NuGetFramework(fallbackFramework);
+                            var nonFallbackFramework = new NuGetFramework(target.TargetFramework);
 
                             var targetLibraryWithoutFallback = LockFileUtils.CreateLockFileTargetLibrary(
                                 libraries[Tuple.Create(library.Name, library.Version)],
@@ -248,7 +251,7 @@ namespace NuGet.Commands
                                 var message = string.Format(CultureInfo.CurrentCulture,
                                     Strings.Log_ImportsFallbackWarning,
                                     libraryName,
-                                    string.Join(", ", fallbackFramework.Fallback),
+                                    GetFallbackFrameworkString(target.TargetFramework),
                                     nonFallbackFramework);
 
                                 var logMessage = RestoreLogMessage.CreateWarning(
@@ -275,6 +278,15 @@ namespace NuGet.Commands
             lockFile.PackageSpec = project;
 
             return lockFile;
+        }
+
+        private static string GetFallbackFrameworkString(NuGetFramework framework)
+        {
+            var frameworks = (framework as AssetTargetFallbackFramework)?.Fallback
+                ?? (framework as FallbackFramework)?.Fallback
+                ?? new List<NuGetFramework>();
+
+            return string.Join(", ", frameworks);
         }
 
         private static void AddProjectFileDependenciesForSpec(PackageSpec project, LockFile lockFile)

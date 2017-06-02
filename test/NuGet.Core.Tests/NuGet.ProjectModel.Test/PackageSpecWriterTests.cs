@@ -288,7 +288,6 @@ namespace NuGet.ProjectModel.Test
                 Dependencies = new List<LibraryDependency>() { libraryDependency },
                 FrameworkName = nugetFramework,
                 Imports = new List<NuGetFramework>() { nugetFramework },
-                Warn = true
             });
 
             return packageSpec;
