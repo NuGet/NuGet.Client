@@ -64,15 +64,6 @@ namespace NuGet.Test.TestExtensions.TestablePlugin
             await Task.Delay(Timeout.InfiniteTimeSpan, CancellationToken);
         }
 
-        public Task HandleCancelAsync(
-            IConnection connection,
-            Message message,
-            IResponseHandler responseHandler,
-            CancellationToken cancellationToken)
-        {
-            throw new NotImplementedException();
-        }
-
         public async Task HandleResponseAsync(
             IConnection connection,
             Message message,

@@ -448,15 +448,33 @@ namespace NuGet.Protocol.Plugins
                 case MessageType.Request:
                 case MessageType.Response:
                 case MessageType.Fault:
+                    var removeRequestContext = true;
+
                     try
                     {
                         await connection.SendAsync(message, cancellationToken);
 
                         return await requestContext.CompletionTask;
                     }
+                    catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+                    {
+                        // Keep the request context around if cancellation was requested.
+                        // A race condition exists where after sending a cancellation request,
+                        // we could receive a response (which was in flight) or a cancellation
+                        // response.
+                        // If a normal response (success/failure) and not a cancellation response
+                        // is received after a cancellation request, we need to have an active
+                        // request context to avoid a protocol exception.
+                        removeRequestContext = false;
+
+                        throw;
+                    }
                     finally
                     {
-                        RemoveOutboundRequestContext(message.RequestId);
+                        if (removeRequestContext)
+                        {
+                            RemoveOutboundRequestContext(message.RequestId);
+                        }
                     }
 
                 default:
@@ -495,7 +513,7 @@ namespace NuGet.Protocol.Plugins
                         break;
 
                     case MessageType.Cancel:
-                        requestContext.HandleCancel();
+                        requestContext.HandleCancelResponse();
                         break;
 
                     default:
@@ -534,29 +552,11 @@ namespace NuGet.Protocol.Plugins
 
         private void HandleInboundCancel(IConnection connection, Message message)
         {
-            var cancellationToken = CancellationToken.None;
-            IRequestHandler requestHandler = null;
-            ProtocolException exception = null;
+            InboundRequestContext requestContext;
 
-            try
+            if (_inboundRequestContexts.TryGetValue(message.RequestId, out requestContext))
             {
-                requestHandler = GetInboundRequestHandler(message.Method);
-                cancellationToken = requestHandler.CancellationToken;
-            }
-            catch (ProtocolException ex)
-            {
-                exception = ex;
-            }
-
-            var requestContext = GetInboundRequestContext(message.RequestId);
-
-            if (exception == null && requestHandler != null)
-            {
-                requestContext.BeginCancelAsync(message, requestHandler, this);
-            }
-            else
-            {
-                requestContext.BeginFaultAsync(message, exception);
+                requestContext.Cancel();
             }
         }
 
