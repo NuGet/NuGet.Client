@@ -633,5 +633,363 @@ namespace NuGet.ProjectModel.Test
             Assert.NotNull(dep.NoWarn);
             Assert.Equal(dep.NoWarn.Count, 0);
         }
+
+        [Fact]
+        public void PackageSpecReader_ReadsRestoreMetadataWithWarningProperties()
+        {
+            // Arrange
+            var json = @"{  
+                            ""restore"": {
+    ""projectUniqueName"": ""projectUniqueName"",
+    ""projectName"": ""projectName"",
+    ""projectPath"": ""projectPath"",
+    ""projectJsonPath"": ""projectJsonPath"",
+    ""packagesPath"": ""packagesPath"",
+    ""outputPath"": ""outputPath"",
+    ""projectStyle"": ""PackageReference"",
+    ""crossTargeting"": true,
+    ""configFilePaths"": [
+      ""b"",
+      ""a"",
+      ""c""
+    ],
+    ""fallbackFolders"": [
+      ""b"",
+      ""a"",
+      ""c""
+    ],
+    ""originalTargetFrameworks"": [
+      ""b"",
+      ""a"",
+      ""c""
+    ],
+    ""sources"": {
+      ""source"": {}
+    },
+    ""frameworks"": {
+      ""frameworkidentifier123-frameworkprofile"": {
+        ""projectReferences"": {}
+      }
+    },
+    ""warningProperties"": {
+      ""allWarningsAsErrors"": true,
+      ""noWarn"": [
+        ""NU1601"",
+      ],
+      ""warnAsError"": [
+        ""NU1500"",
+        ""NU1501""
+      ]
+    }
+  }
+}";
+
+            var actual = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
+
+            // Assert
+            var metadata = actual.RestoreMetadata;
+            var warningProperties = actual.RestoreMetadata.ProjectWideWarningProperties;
+
+            Assert.NotNull(metadata);
+            Assert.NotNull(warningProperties);
+            Assert.True(warningProperties.AllWarningsAsErrors);
+            Assert.Equal(1, warningProperties.NoWarn.Count);
+            Assert.True(warningProperties.NoWarn.Contains(NuGetLogCode.NU1601));
+            Assert.Equal(2, warningProperties.WarningsAsErrors.Count);
+            Assert.True(warningProperties.WarningsAsErrors.Contains(NuGetLogCode.NU1500));
+            Assert.True(warningProperties.WarningsAsErrors.Contains(NuGetLogCode.NU1501));
+        }
+
+        [Fact]
+        public void PackageSpecReader_ReadsRestoreMetadataWithWarningPropertiesAndNo_NoWarn()
+        {
+            // Arrange
+            var json = @"{  
+                            ""restore"": {
+    ""projectUniqueName"": ""projectUniqueName"",
+    ""projectName"": ""projectName"",
+    ""projectPath"": ""projectPath"",
+    ""projectJsonPath"": ""projectJsonPath"",
+    ""packagesPath"": ""packagesPath"",
+    ""outputPath"": ""outputPath"",
+    ""projectStyle"": ""PackageReference"",
+    ""crossTargeting"": true,
+    ""configFilePaths"": [
+      ""b"",
+      ""a"",
+      ""c""
+    ],
+    ""fallbackFolders"": [
+      ""b"",
+      ""a"",
+      ""c""
+    ],
+    ""originalTargetFrameworks"": [
+      ""b"",
+      ""a"",
+      ""c""
+    ],
+    ""sources"": {
+      ""source"": {}
+    },
+    ""frameworks"": {
+      ""frameworkidentifier123-frameworkprofile"": {
+        ""projectReferences"": {}
+      }
+    },
+    ""warningProperties"": {
+      ""allWarningsAsErrors"": true,
+      ""warnAsError"": [
+        ""NU1500"",
+        ""NU1501""
+      ]
+    }
+  }
+}";
+
+            var actual = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
+
+            // Assert
+            var metadata = actual.RestoreMetadata;
+            var warningProperties = actual.RestoreMetadata.ProjectWideWarningProperties;
+
+            Assert.NotNull(metadata);
+            Assert.NotNull(warningProperties);
+            Assert.True(warningProperties.AllWarningsAsErrors);
+            Assert.Equal(0, warningProperties.NoWarn.Count);
+            Assert.Equal(2, warningProperties.WarningsAsErrors.Count);
+            Assert.True(warningProperties.WarningsAsErrors.Contains(NuGetLogCode.NU1500));
+            Assert.True(warningProperties.WarningsAsErrors.Contains(NuGetLogCode.NU1501));
+        }
+
+        [Fact]
+        public void PackageSpecReader_ReadsRestoreMetadataWithWarningPropertiesAndNo_WarnAsError()
+        {
+            // Arrange
+            var json = @"{  
+                            ""restore"": {
+    ""projectUniqueName"": ""projectUniqueName"",
+    ""projectName"": ""projectName"",
+    ""projectPath"": ""projectPath"",
+    ""projectJsonPath"": ""projectJsonPath"",
+    ""packagesPath"": ""packagesPath"",
+    ""outputPath"": ""outputPath"",
+    ""projectStyle"": ""PackageReference"",
+    ""crossTargeting"": true,
+    ""configFilePaths"": [
+      ""b"",
+      ""a"",
+      ""c""
+    ],
+    ""fallbackFolders"": [
+      ""b"",
+      ""a"",
+      ""c""
+    ],
+    ""originalTargetFrameworks"": [
+      ""b"",
+      ""a"",
+      ""c""
+    ],
+    ""sources"": {
+      ""source"": {}
+    },
+    ""frameworks"": {
+      ""frameworkidentifier123-frameworkprofile"": {
+        ""projectReferences"": {}
+      }
+    },
+    ""warningProperties"": {
+      ""allWarningsAsErrors"": true,
+      ""noWarn"": [
+        ""NU1601"",
+      ]
+    }
+  }
+}";
+
+            var actual = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
+
+            // Assert
+            var metadata = actual.RestoreMetadata;
+            var warningProperties = actual.RestoreMetadata.ProjectWideWarningProperties;
+
+            Assert.NotNull(metadata);
+            Assert.NotNull(warningProperties);
+            Assert.True(warningProperties.AllWarningsAsErrors);
+            Assert.Equal(1, warningProperties.NoWarn.Count);
+            Assert.True(warningProperties.NoWarn.Contains(NuGetLogCode.NU1601));
+            Assert.Equal(0, warningProperties.WarningsAsErrors.Count);
+        }
+
+        [Fact]
+        public void PackageSpecReader_ReadsRestoreMetadataWithWarningPropertiesAndNo_AllWarningsAsErrors()
+        {
+            // Arrange
+            var json = @"{  
+                            ""restore"": {
+    ""projectUniqueName"": ""projectUniqueName"",
+    ""projectName"": ""projectName"",
+    ""projectPath"": ""projectPath"",
+    ""projectJsonPath"": ""projectJsonPath"",
+    ""packagesPath"": ""packagesPath"",
+    ""outputPath"": ""outputPath"",
+    ""projectStyle"": ""PackageReference"",
+    ""crossTargeting"": true,
+    ""configFilePaths"": [
+      ""b"",
+      ""a"",
+      ""c""
+    ],
+    ""fallbackFolders"": [
+      ""b"",
+      ""a"",
+      ""c""
+    ],
+    ""originalTargetFrameworks"": [
+      ""b"",
+      ""a"",
+      ""c""
+    ],
+    ""sources"": {
+      ""source"": {}
+    },
+    ""frameworks"": {
+      ""frameworkidentifier123-frameworkprofile"": {
+        ""projectReferences"": {}
+      }
+    },
+    ""warningProperties"": {
+      ""noWarn"": [
+        ""NU1601"",
+      ],
+      ""warnAsError"": [
+        ""NU1500"",
+        ""NU1501""
+      ]
+    }
+  }
+}";
+
+            var actual = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
+
+            // Assert
+            var metadata = actual.RestoreMetadata;
+            var warningProperties = actual.RestoreMetadata.ProjectWideWarningProperties;
+
+            Assert.NotNull(metadata);
+            Assert.NotNull(warningProperties);
+            Assert.False(warningProperties.AllWarningsAsErrors);
+            Assert.Equal(1, warningProperties.NoWarn.Count);
+            Assert.True(warningProperties.NoWarn.Contains(NuGetLogCode.NU1601));
+            Assert.Equal(2, warningProperties.WarningsAsErrors.Count);
+            Assert.True(warningProperties.WarningsAsErrors.Contains(NuGetLogCode.NU1500));
+            Assert.True(warningProperties.WarningsAsErrors.Contains(NuGetLogCode.NU1501));
+        }
+
+        [Fact]
+        public void PackageSpecReader_ReadsRestoreMetadataWithEmptyWarningPropertiesAnd()
+        {
+            // Arrange
+            var json = @"{  
+                            ""restore"": {
+    ""projectUniqueName"": ""projectUniqueName"",
+    ""projectName"": ""projectName"",
+    ""projectPath"": ""projectPath"",
+    ""projectJsonPath"": ""projectJsonPath"",
+    ""packagesPath"": ""packagesPath"",
+    ""outputPath"": ""outputPath"",
+    ""projectStyle"": ""PackageReference"",
+    ""crossTargeting"": true,
+    ""configFilePaths"": [
+      ""b"",
+      ""a"",
+      ""c""
+    ],
+    ""fallbackFolders"": [
+      ""b"",
+      ""a"",
+      ""c""
+    ],
+    ""originalTargetFrameworks"": [
+      ""b"",
+      ""a"",
+      ""c""
+    ],
+    ""sources"": {
+      ""source"": {}
+    },
+    ""frameworks"": {
+      ""frameworkidentifier123-frameworkprofile"": {
+        ""projectReferences"": {}
+      }
+    },
+    ""warningProperties"": {
+    }
+  }
+}";
+
+            var actual = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
+
+            // Assert
+            var metadata = actual.RestoreMetadata;
+            var warningProperties = actual.RestoreMetadata.ProjectWideWarningProperties;
+
+            Assert.NotNull(metadata);
+            Assert.NotNull(warningProperties);
+            Assert.False(warningProperties.AllWarningsAsErrors);
+            Assert.Equal(0, warningProperties.NoWarn.Count);
+            Assert.Equal(0, warningProperties.WarningsAsErrors.Count);
+        }
+
+        [Fact]
+        public void PackageSpecReader_ReadsRestoreMetadataWithNoWarningProperties()
+        {
+            // Arrange
+            var json = @"{  
+                            ""restore"": {
+    ""projectUniqueName"": ""projectUniqueName"",
+    ""projectName"": ""projectName"",
+    ""projectPath"": ""projectPath"",
+    ""projectJsonPath"": ""projectJsonPath"",
+    ""packagesPath"": ""packagesPath"",
+    ""outputPath"": ""outputPath"",
+    ""projectStyle"": ""PackageReference"",
+    ""crossTargeting"": true,
+    ""configFilePaths"": [
+      ""b"",
+      ""a"",
+      ""c""
+    ],
+    ""fallbackFolders"": [
+      ""b"",
+      ""a"",
+      ""c""
+    ],
+    ""originalTargetFrameworks"": [
+      ""b"",
+      ""a"",
+      ""c""
+    ],
+    ""sources"": {
+      ""source"": {}
+    },
+    ""frameworks"": {
+      ""frameworkidentifier123-frameworkprofile"": {
+        ""projectReferences"": {}
+      }
+    }
+  }
+}";
+
+            var actual = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
+
+            // Assert
+            var metadata = actual.RestoreMetadata;
+            var warningProperties = actual.RestoreMetadata.ProjectWideWarningProperties;
+
+            Assert.NotNull(metadata);
+            Assert.Null(warningProperties);
+        }
     }
 }

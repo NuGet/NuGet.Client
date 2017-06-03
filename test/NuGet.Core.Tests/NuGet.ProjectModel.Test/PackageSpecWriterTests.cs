@@ -146,6 +146,59 @@ namespace NuGet.ProjectModel.Test
         }
 
         [Fact]
+        public void Write_ReadWriteWarningProperties()
+        {
+            // Arrange
+            var json = @"{  
+                            ""restore"": {
+    ""projectUniqueName"": ""projectUniqueName"",
+    ""projectName"": ""projectName"",
+    ""projectPath"": ""projectPath"",
+    ""projectJsonPath"": ""projectJsonPath"",
+    ""packagesPath"": ""packagesPath"",
+    ""outputPath"": ""outputPath"",
+    ""projectStyle"": ""PackageReference"",
+    ""crossTargeting"": true,
+    ""configFilePaths"": [
+      ""b"",
+      ""a"",
+      ""c""
+    ],
+    ""fallbackFolders"": [
+      ""b"",
+      ""a"",
+      ""c""
+    ],
+    ""originalTargetFrameworks"": [
+      ""b"",
+      ""a"",
+      ""c""
+    ],
+    ""sources"": {
+      ""source"": {}
+    },
+    ""frameworks"": {
+      ""net45"": {
+        ""projectReferences"": {}
+      }
+    },
+    ""warningProperties"": {
+      ""allWarningsAsErrors"": true,
+      ""noWarn"": [
+        ""NU1601"",
+      ],
+      ""warnAsError"": [
+        ""NU1500"",
+        ""NU1501""
+      ]
+    }
+  }
+}";
+            // Act & Assert
+            VerifyJsonPackageSpecRoundTrip(json);
+        }
+
+        [Fact]
         public void WriteToFile_ThrowsForNullPackageSpec()
         {
             // Assert
