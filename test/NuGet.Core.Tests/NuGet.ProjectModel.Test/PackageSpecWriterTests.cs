@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using Newtonsoft.Json.Linq;
 using NuGet.Common;
 using NuGet.Configuration;
@@ -53,12 +52,14 @@ namespace NuGet.ProjectModel.Test
         {
             var writer = new JsonObjectWriter();
 
+            // Assert
             Assert.Throws<ArgumentNullException>(() => PackageSpecWriter.Write(packageSpec: null, writer: writer));
         }
 
         [Fact]
         public void Write_ThrowsForNullWriter()
         {
+            // Assert
             Assert.Throws<ArgumentNullException>(() => PackageSpecWriter.Write(_emptyPackageSpec, writer: null));
         }
 
@@ -145,45 +146,223 @@ namespace NuGet.ProjectModel.Test
         }
 
         [Fact]
+        public void Write_ReadWriteWarningProperties()
+        {
+            // Arrange
+            var json = @"{  
+                            ""restore"": {
+    ""projectUniqueName"": ""projectUniqueName"",
+    ""projectName"": ""projectName"",
+    ""projectPath"": ""projectPath"",
+    ""projectJsonPath"": ""projectJsonPath"",
+    ""packagesPath"": ""packagesPath"",
+    ""outputPath"": ""outputPath"",
+    ""projectStyle"": ""PackageReference"",
+    ""crossTargeting"": true,
+    ""configFilePaths"": [
+      ""b"",
+      ""a"",
+      ""c""
+    ],
+    ""fallbackFolders"": [
+      ""b"",
+      ""a"",
+      ""c""
+    ],
+    ""originalTargetFrameworks"": [
+      ""b"",
+      ""a"",
+      ""c""
+    ],
+    ""sources"": {
+      ""source"": {}
+    },
+    ""frameworks"": {
+      ""net45"": {
+        ""projectReferences"": {}
+      }
+    },
+    ""warningProperties"": {
+      ""allWarningsAsErrors"": true,
+      ""noWarn"": [
+        ""NU1601"",
+      ],
+      ""warnAsError"": [
+        ""NU1500"",
+        ""NU1501""
+      ]
+    }
+  }
+}";
+            // Act & Assert
+            VerifyJsonPackageSpecRoundTrip(json);
+        }
+
+        [Fact]
         public void WriteToFile_ThrowsForNullPackageSpec()
         {
+            // Assert
             Assert.Throws<ArgumentNullException>(() => PackageSpecWriter.WriteToFile(packageSpec: null, filePath: @"C:\a.json"));
         }
 
         [Fact]
         public void WriteToFile_ThrowsForNullFilePath()
         {
+            // Assert
             Assert.Throws<ArgumentException>(() => PackageSpecWriter.WriteToFile(_emptyPackageSpec, filePath: null));
         }
 
         [Fact]
         public void WriteToFile_ThrowsForEmptyFilePath()
         {
+            // Assert
             Assert.Throws<ArgumentException>(() => PackageSpecWriter.WriteToFile(_emptyPackageSpec, filePath: null));
         }
 
         [Fact]
         public void Write_SerializesMembersAsJson()
         {
+            // Arrange && Act
             var expectedJson = ResourceTestUtility.GetResource("NuGet.ProjectModel.Test.compiler.resources.PackageSpecWriter_Write_SerializesMembersAsJson.json", typeof(PackageSpecWriterTests));
             var packageSpec = CreatePackageSpec(withRestoreSettings: true);
-            var actualJson = GetJson(packageSpec);
+            var actualJson = GetJsonString(packageSpec);
 
+            // Assert
             Assert.Equal(expectedJson, actualJson);
         }
 
         [Fact]
         public void Write_SerializesMembersAsJsonWithoutRestoreSettings()
         {
+            // Arrange && Act
             var expectedJson = ResourceTestUtility.GetResource("NuGet.ProjectModel.Test.compiler.resources.PackageSpecWriter_Write_SerializesMembersAsJsonWithoutRestoreSettings.json", typeof(PackageSpecWriterTests));
             var packageSpec = CreatePackageSpec(withRestoreSettings: false);
-            var actualJson = GetJson(packageSpec);
+            var actualJson = GetJsonString(packageSpec);
 
+            // Assert
             Assert.Equal(expectedJson, actualJson);
         }
 
+        [Fact]
+        public void Write_SerializesMembersAsJsonWithWarningProperties()
+        {
+            // Arrange && Act
+            var expectedWarningPropertiesJson = @"{
+  ""allWarningsAsErrors"": true,
+  ""noWarn"": [
+    ""NU1601"",
+    ""NU1602""
+  ],
+  ""warnAsError"": [
+    ""NU1500"",
+    ""NU1501""
+  ]
+}";
+            var allWarningsAsErrors = true;
+            var warningsAsErrors = new HashSet<NuGetLogCode> { NuGetLogCode.NU1500, NuGetLogCode.NU1501 };
+            var noWarn = new HashSet<NuGetLogCode> { NuGetLogCode.NU1602, NuGetLogCode.NU1601 };
+            var warningProperties = new WarningProperties(warningsAsErrors, noWarn, allWarningsAsErrors);
+            var packageSpec = CreatePackageSpec(withRestoreSettings: true, warningProperties: warningProperties);
+            var actualJson = GetJsonObject(packageSpec);
+            var actualWarningPropertiesJson = actualJson["restore"]["warningProperties"].ToString();
 
-        private static string GetJson(PackageSpec packageSpec)
+            // Assert
+            Assert.NotNull(actualWarningPropertiesJson);
+            Assert.Equal(expectedWarningPropertiesJson, actualWarningPropertiesJson);
+        }
+
+        [Fact]
+        public void Write_SerializesMembersAsJsonWithWarningPropertiesAndNoAllWarningsAsErrors()
+        {
+            // Arrange && Act
+            var expectedWarningPropertiesJson = @"{
+  ""noWarn"": [
+    ""NU1601"",
+    ""NU1602""
+  ],
+  ""warnAsError"": [
+    ""NU1500"",
+    ""NU1501""
+  ]
+}";
+            var allWarningsAsErrors = false;
+            var warningsAsErrors = new HashSet<NuGetLogCode> { NuGetLogCode.NU1500, NuGetLogCode.NU1501 };
+            var noWarn = new HashSet<NuGetLogCode> { NuGetLogCode.NU1602, NuGetLogCode.NU1601 };
+            var warningProperties = new WarningProperties(warningsAsErrors, noWarn, allWarningsAsErrors);
+            var packageSpec = CreatePackageSpec(withRestoreSettings: true, warningProperties: warningProperties);
+            var actualJson = GetJsonObject(packageSpec);
+            var actualWarningPropertiesJson = actualJson["restore"]["warningProperties"].ToString();
+
+            // Assert
+            Assert.NotNull(actualWarningPropertiesJson);
+            Assert.Equal(expectedWarningPropertiesJson, actualWarningPropertiesJson);
+        }
+
+        [Fact]
+        public void Write_SerializesMembersAsJsonWithWarningPropertiesAndNo_WarnAsError()
+        {
+            // Arrange && Act
+            var expectedWarningPropertiesJson = @"{
+  ""allWarningsAsErrors"": true,
+  ""noWarn"": [
+    ""NU1601"",
+    ""NU1602""
+  ]
+}";
+            var allWarningsAsErrors = true;
+            var warningsAsErrors = new HashSet<NuGetLogCode> { };
+            var noWarn = new HashSet<NuGetLogCode> { NuGetLogCode.NU1602, NuGetLogCode.NU1601 };
+            var warningProperties = new WarningProperties(warningsAsErrors, noWarn, allWarningsAsErrors);
+            var packageSpec = CreatePackageSpec(withRestoreSettings: true, warningProperties: warningProperties);
+            var actualJson = GetJsonObject(packageSpec);
+            var actualWarningPropertiesJson = actualJson["restore"]["warningProperties"].ToString();
+
+            // Assert
+            Assert.NotNull(actualWarningPropertiesJson);
+            Assert.Equal(expectedWarningPropertiesJson, actualWarningPropertiesJson);
+        }
+
+        [Fact]
+        public void Write_SerializesMembersAsJsonWithEmptyWarningProperties()
+        {
+            // Arrange && Act
+            var allWarningsAsErrors = false;
+            var warningsAsErrors = new HashSet<NuGetLogCode> { };
+            var noWarn = new HashSet<NuGetLogCode> { };
+            var warningProperties = new WarningProperties(warningsAsErrors, noWarn, allWarningsAsErrors);
+            var packageSpec = CreatePackageSpec(withRestoreSettings: true, warningProperties: warningProperties);
+            var actualJson = GetJsonObject(packageSpec);
+            var actualWarningPropertiesJson = actualJson["restore"]["warningProperties"];
+
+            // Assert
+            Assert.Null(actualWarningPropertiesJson);
+        }
+
+        [Fact]
+        public void Write_SerializesMembersAsJsonWithWarningPropertiesAndNo_NoWarn()
+        {
+            // Arrange && Act
+            var expectedWarningPropertiesJson = @"{
+  ""allWarningsAsErrors"": true,
+  ""warnAsError"": [
+    ""NU1500"",
+    ""NU1501""
+  ]
+}";
+            var allWarningsAsErrors = true;
+            var warningsAsErrors = new HashSet<NuGetLogCode> { NuGetLogCode.NU1500, NuGetLogCode.NU1501 };
+            var noWarn = new HashSet<NuGetLogCode> { };
+            var warningProperties = new WarningProperties(warningsAsErrors, noWarn, allWarningsAsErrors);
+            var packageSpec = CreatePackageSpec(withRestoreSettings: true, warningProperties: warningProperties);
+            var actualJson = GetJsonObject(packageSpec);
+            var actualWarningPropertiesJson = actualJson["restore"]["warningProperties"].ToString();
+
+            // Assert
+            Assert.NotNull(actualWarningPropertiesJson);
+            Assert.Equal(expectedWarningPropertiesJson, actualWarningPropertiesJson);
+        }
+
+        private static string GetJsonString(PackageSpec packageSpec)
         {
             var writer = new JsonObjectWriter();
 
@@ -192,7 +371,16 @@ namespace NuGet.ProjectModel.Test
             return writer.GetJson();
         }
 
-        private static PackageSpec CreatePackageSpec(bool withRestoreSettings)
+        private static JObject GetJsonObject(PackageSpec packageSpec)
+        {
+            var writer = new JsonObjectWriter();
+
+            PackageSpecWriter.Write(packageSpec, writer);
+
+            return writer.GetJObject();
+        }
+
+        private static PackageSpec CreatePackageSpec(bool withRestoreSettings, WarningProperties warningProperties = null)
         {
             var unsortedArray = new[] { "b", "a", "c" };
             var unsortedReadOnlyList = new List<string>(unsortedArray).AsReadOnly();
@@ -283,6 +471,11 @@ namespace NuGet.ProjectModel.Test
             if (withRestoreSettings)
             {
                 packageSpec.RestoreSettings = new ProjectRestoreSettings() { HideWarningsAndErrors = true };
+            }
+
+            if (warningProperties != null)
+            {
+                packageSpec.RestoreMetadata.ProjectWideWarningProperties = warningProperties;
             }
 
             packageSpec.PackInclude.Add("b", "d");
