@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -151,7 +151,7 @@ namespace NuGet.Commands
             RemoteWalkContext context,
             CancellationToken token)
         {
-            var name = FrameworkRuntimePair.GetName(framework, runtimeIdentifier);
+            var name = FrameworkRuntimePair.GetTargetGraphName(framework, runtimeIdentifier);
             var graphs = new List<GraphNode<RemoteResolveResult>>
             {
                 await walker.WalkAsync(
@@ -269,7 +269,7 @@ namespace NuGet.Commands
             var resultGraphs = new List<Task<RestoreTargetGraph>>();
             foreach (var runtimeName in runtimeIds)
             {
-                _logger.LogVerbose(string.Format(CultureInfo.CurrentCulture, Strings.Log_RestoringPackages, FrameworkRuntimePair.GetName(graph.Framework, runtimeName)));
+                _logger.LogVerbose(string.Format(CultureInfo.CurrentCulture, Strings.Log_RestoringPackages, FrameworkRuntimePair.GetTargetGraphName(graph.Framework, runtimeName)));
 
                 resultGraphs.Add(WalkDependenciesAsync(projectRange,
                     graph.Framework,
