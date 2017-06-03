@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
@@ -58,6 +58,31 @@ namespace NuGet.VisualStudio
         /// RestoreFallbackFolders DTE property
         /// </summary>
         string RestoreFallbackFolders { get; }
+
+        /// <summary>
+        /// Additional Sources DTE property
+        /// </summary>
+        string RestoreAdditionalProjectSources { get; }
+
+        /// <summary>
+        /// Additional fallback folders DTE property
+        /// </summary>
+        string RestoreAdditionalProjectFallbackFolders { get; }
+
+        /// <summary>
+        /// Comma or Semicolon separated list of NU* diagnostic codes e.g. NU1000,NU1001
+        /// </summary>
+        string NoWarn { get; }
+
+        /// <summary>
+        /// Comma or Semicolon separated list of NU* diagnostic codes e.g. NU1000,NU1001
+        /// </summary>
+        string WarningsAsErrors { get; }
+
+        /// <summary>
+        /// TreatWarningsAsErrors true/false
+        /// </summary>
+        string TreatWarningsAsErrors { get; }
 
         /// <summary>
         /// In unavoidable circumstances where we need to DTE object, it's exposed here

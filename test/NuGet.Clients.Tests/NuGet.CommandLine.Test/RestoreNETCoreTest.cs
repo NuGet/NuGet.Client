@@ -3571,5 +3571,90 @@ namespace NuGet.CommandLine.Test
                 r.AllOutput.Should().Contain("PackageTargetFallback and AssetTargetFallback cannot be used together.");
             }
         }
+
+        [Fact]
+        public async Task RestoreNetCore_VerifyAdditionalSourcesApplied()
+        {
+            // Arrange
+            using (var extraSource = TestDirectory.Create())
+            using (var extraFallback = TestDirectory.Create())
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var netcoreapp2 = NuGetFramework.Parse("netcoreapp2.0");
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                    "a",
+                    pathContext.SolutionRoot,
+                    netcoreapp2);
+
+                projectA.Properties.Add("RestoreAdditionalProjectSources", extraSource.Path);
+                projectA.Properties.Add("RestoreAdditionalProjectFallbackFolders", extraFallback.Path);
+
+                var packageM = new SimpleTestPackageContext()
+                {
+                    Id = "m",
+                    Version = "1.0.0"
+                };
+
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+
+                var packageY = new SimpleTestPackageContext()
+                {
+                    Id = "y",
+                    Version = "1.0.0"
+                };
+
+                var packageZ = new SimpleTestPackageContext()
+                {
+                    Id = "z",
+                    Version = "1.0.0"
+                };
+
+                projectA.AddPackageToAllFrameworks(packageM);
+                projectA.AddPackageToAllFrameworks(packageX);
+                projectA.AddPackageToAllFrameworks(packageY);
+                projectA.AddPackageToAllFrameworks(packageZ);
+
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+
+                // M is only in the fallback folder
+                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                    pathContext.FallbackFolder,
+                    PackageSaveMode.Defaultv3,
+                    packageM);
+
+                // X is only in the source
+                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX);
+
+                // Y is only in the extra source
+                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                    extraSource,
+                    PackageSaveMode.Defaultv3,
+                    packageY);
+
+                // Z is only in the extra fallback
+                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                    extraFallback,
+                    PackageSaveMode.Defaultv3,
+                    packageZ);
+
+                // Act
+                var r = Util.RestoreSolution(pathContext);
+
+                // Assert
+                projectA.AssetsFile.Libraries.Select(e => e.Name).OrderBy(e => e).ShouldBeEquivalentTo(new[] { "m", "x", "y", "z" });
+            }
+        }
     }
 }

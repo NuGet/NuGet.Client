@@ -12,5 +12,7 @@ namespace NuGet.ProjectManagement
         public const string IncludeAssets = "IncludeAssets";
         public const string ExcludeAssets = "ExcludeAssets";
         public const string PrivateAssets = "PrivateAssets";
+        public const string IsImplicitlyDefined = nameof(IsImplicitlyDefined);
+        public const string NoWarn = nameof(NoWarn);
     }
 }

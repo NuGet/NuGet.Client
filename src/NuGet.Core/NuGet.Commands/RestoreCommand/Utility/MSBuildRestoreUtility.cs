@@ -172,7 +172,8 @@ namespace NuGet.Commands
                 if (restoreType == ProjectStyle.PackageReference
                     || restoreType == ProjectStyle.Standalone
                     || restoreType == ProjectStyle.DotnetCliTool
-                    || restoreType == ProjectStyle.ProjectJson) {
+                    || restoreType == ProjectStyle.ProjectJson)
+                {
 
                     foreach (var source in MSBuildStringUtility.Split(specItem.GetProperty("Sources")))
                     {
@@ -193,7 +194,7 @@ namespace NuGet.Commands
 
                     result.RestoreMetadata.OutputPath = specItem.GetProperty("OutputPath");
                 }
-                
+
                 // Read package references for netcore, tools, and standalone
                 if (restoreType == ProjectStyle.PackageReference
                     || restoreType == ProjectStyle.Standalone
@@ -234,6 +235,9 @@ namespace NuGet.Commands
 
                     // True for .NETCore projects.
                     result.RestoreMetadata.SkipContentFileWrite = IsPropertyTrue(specItem, "SkipContentFileWrite");
+
+                    // Warning properties
+                    result.RestoreMetadata.ProjectWideWarningProperties = GetWarningProperties(specItem);
                 }
 
                 if (restoreType == ProjectStyle.ProjectJson)
@@ -302,7 +306,7 @@ namespace NuGet.Commands
         /// <remarks>CLEAR;CLEAR is considered valid.</remarks>
         public static bool HasInvalidClear(IEnumerable<string> values)
         {
-            return ContainsClearKeyword(values) 
+            return ContainsClearKeyword(values)
                     && (values?.Any(e => !StringComparer.OrdinalIgnoreCase.Equals(e, Clear)) == true);
         }
 
@@ -477,6 +481,14 @@ namespace NuGet.Commands
                     name: item.GetProperty("Id"),
                     versionRange: GetVersionRange(item),
                     typeConstraint: LibraryDependencyTarget.Package);
+
+                dependency.AutoReferenced = IsPropertyTrue(item, "IsImplicitlyDefined");
+
+                // Add warning suppressions
+                foreach (var code in GetNuGetLogCodes(item.GetProperty("NoWarn")))
+                {
+                    dependency.NoWarn.Add(code);
+                }
 
                 ApplyIncludeFlags(dependency, item);
 
@@ -699,6 +711,30 @@ namespace NuGet.Commands
             }
         }
 
+        private static WarningProperties GetWarningProperties(IMSBuildItem specItem)
+        {
+            return GetWarningProperties(
+                treatWarningsAsErrors: specItem.GetProperty("TreatWarningsAsErrors"),
+                warningsAsErrors: specItem.GetProperty("WarningsAsErrors"),
+                noWarn: specItem.GetProperty("NoWarn"));
+        }
+
+        /// <summary>
+        /// Create warning properties from the msbuild property strings.
+        /// </summary>
+        public static WarningProperties GetWarningProperties(string treatWarningsAsErrors, string warningsAsErrors, string noWarn)
+        {
+            var props = new WarningProperties()
+            {
+                AllWarningsAsErrors = MSBuildStringUtility.IsTrue(treatWarningsAsErrors)
+            };
+
+            props.WarningsAsErrors.UnionWith(GetNuGetLogCodes(warningsAsErrors));
+            props.NoWarn.UnionWith(GetNuGetLogCodes(noWarn));
+
+            return props;
+        }
+
         private static bool IsPropertyTrue(IMSBuildItem item, string propertyName)
         {
             return StringComparer.OrdinalIgnoreCase.Equals(item.GetProperty(propertyName), Boolean.TrueString);
@@ -715,12 +751,27 @@ namespace NuGet.Commands
 
             bool val;
             if (!string.IsNullOrEmpty(settingValue)
-                && Boolean.TryParse(settingValue, out val))
+                && bool.TryParse(settingValue, out val))
             {
                 return val;
             }
 
             return false;
+        }
+
+        /// <summary>
+        /// Splits and parses a ; or , delimited list of log codes.
+        /// Ignores codes that are unknown.
+        /// </summary>
+        public static IEnumerable<NuGetLogCode> GetNuGetLogCodes(string s)
+        {
+            foreach (var item in MSBuildStringUtility.Split(s, ';', ','))
+            {
+                if (Enum.TryParse<NuGetLogCode>(item, out var result))
+                {
+                    yield return result;
+                }
+            }
         }
     }
 }

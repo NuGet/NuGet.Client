@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -208,6 +208,9 @@ namespace NuGet.PackageManagement.VisualStudio
                 sources = HandleClear(sources);
             }
 
+            // Add additional sources
+            sources = sources.Concat(MSBuildStringUtility.Split(_vsProjectAdapter.RestoreAdditionalProjectSources));
+
             return sources.Select(e => new PackageSource(UriUtility.GetAbsolutePathFromFile(_projectFullPath, e))).ToList();
         }
 
@@ -225,6 +228,9 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 fallbackFolders = HandleClear(fallbackFolders);
             }
+
+            // Add additional fallback folders
+            fallbackFolders = fallbackFolders.Concat(MSBuildStringUtility.Split(_vsProjectAdapter.RestoreAdditionalProjectFallbackFolders));
 
             return fallbackFolders.Select(e => UriUtility.GetAbsolutePathFromFile(_projectFullPath, e)).ToList();
         }
@@ -295,17 +301,13 @@ namespace NuGet.PackageManagement.VisualStudio
                 .GetPackageReferencesAsync(targetFramework, CancellationToken.None))
                 .ToList();
 
-            var splitChars = new[] { ';' };
-
-            var packageTargetFallback = _vsProjectAdapter.PackageTargetFallback?.Split(splitChars)
+            var packageTargetFallback = MSBuildStringUtility.Split(_vsProjectAdapter.PackageTargetFallback)
                 .Select(NuGetFramework.Parse)
-                .ToList()
-                ?? new List<NuGetFramework>();
+                .ToList();
 
-            var assetTargetFallback = _vsProjectAdapter.AssetTargetFallback?.Split(splitChars)
+            var assetTargetFallback = MSBuildStringUtility.Split(_vsProjectAdapter.AssetTargetFallback)
                 .Select(NuGetFramework.Parse)
-                .ToList()
-                ?? new List<NuGetFramework>();
+                .ToList();
 
             var projectTfi = new TargetFrameworkInformation
             {
@@ -355,7 +357,12 @@ namespace NuGet.PackageManagement.VisualStudio
                     PackagesPath = GetPackagesPath(settings),
                     Sources = GetSources(settings),
                     FallbackFolders = GetFallbackFolders(settings),
-                    ConfigFilePaths = GetConfigFilePaths(settings)
+                    ConfigFilePaths = GetConfigFilePaths(settings),
+
+                    ProjectWideWarningProperties = MSBuildRestoreUtility.GetWarningProperties(
+                        treatWarningsAsErrors: _vsProjectAdapter.TreatWarningsAsErrors, 
+                        noWarn: _vsProjectAdapter.NoWarn,
+                        warningsAsErrors: _vsProjectAdapter.WarningsAsErrors)
                 }
             };
         }

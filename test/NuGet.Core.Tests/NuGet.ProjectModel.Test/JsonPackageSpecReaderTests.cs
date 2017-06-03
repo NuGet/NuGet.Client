@@ -989,7 +989,7 @@ namespace NuGet.ProjectModel.Test
             var warningProperties = actual.RestoreMetadata.ProjectWideWarningProperties;
 
             Assert.NotNull(metadata);
-            Assert.Null(warningProperties);
+            Assert.NotNull(warningProperties);
         }
     }
 }
