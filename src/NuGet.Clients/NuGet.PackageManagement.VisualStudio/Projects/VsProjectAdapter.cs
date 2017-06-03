@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -230,7 +230,17 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public IVsHierarchy VsHierarchy => _vsHierarchyItem.VsHierarchy;
 
-#endregion Properties
+        public string RestoreAdditionalProjectSources => BuildProperties.GetPropertyValue(ProjectBuildProperties.AssetTargetFallback);
+
+        public string RestoreAdditionalProjectFallbackFolders => BuildProperties.GetPropertyValue(ProjectBuildProperties.RestoreAdditionalProjectFallbackFolders);
+
+        public string NoWarn => BuildProperties.GetPropertyValue(ProjectBuildProperties.NoWarn);
+
+        public string WarningsAsErrors => BuildProperties.GetPropertyValue(ProjectBuildProperties.WarningsAsErrors);
+
+        public string TreatWarningsAsErrors => BuildProperties.GetPropertyValue(ProjectBuildProperties.TreatWarningsAsErrors);
+
+        #endregion Properties
 
         #region Constructors
 
