@@ -236,13 +236,8 @@ namespace NuGet.Commands
                     // True for .NETCore projects.
                     result.RestoreMetadata.SkipContentFileWrite = IsPropertyTrue(specItem, "SkipContentFileWrite");
 
-                    result.RestoreMetadata.ProjectWideWarningProperties.AllWarningsAsErrors = IsPropertyTrue(specItem, "TreatWarningsAsErrors");
-
-                    var warningsAsErrors = GetNuGetLogCodes(specItem.GetProperty("WarningsAsErrors"));
-                    result.RestoreMetadata.ProjectWideWarningProperties.WarningsAsErrors.UnionWith(warningsAsErrors);
-
-                    var noWarn = GetNuGetLogCodes(specItem.GetProperty("NoWarn"));
-                    result.RestoreMetadata.ProjectWideWarningProperties.NoWarn.UnionWith(noWarn);
+                    // Warning properties
+                    result.RestoreMetadata.ProjectWideWarningProperties = GetWarningProperties(specItem);
                 }
 
                 if (restoreType == ProjectStyle.ProjectJson)
@@ -716,6 +711,30 @@ namespace NuGet.Commands
             }
         }
 
+        private static WarningProperties GetWarningProperties(IMSBuildItem specItem)
+        {
+            return GetWarningProperties(
+                treatWarningsAsErrors: specItem.GetProperty("TreatWarningsAsErrors"),
+                warningsAsErrors: specItem.GetProperty("WarningsAsErrors"),
+                noWarn: specItem.GetProperty("NoWarn"));
+        }
+
+        /// <summary>
+        /// Create warning properties from the msbuild property strings.
+        /// </summary>
+        public static WarningProperties GetWarningProperties(string treatWarningsAsErrors, string warningsAsErrors, string noWarn)
+        {
+            var props = new WarningProperties()
+            {
+                AllWarningsAsErrors = MSBuildStringUtility.IsTrue(treatWarningsAsErrors)
+            };
+
+            props.WarningsAsErrors.UnionWith(GetNuGetLogCodes(warningsAsErrors));
+            props.NoWarn.UnionWith(GetNuGetLogCodes(noWarn));
+
+            return props;
+        }
+
         private static bool IsPropertyTrue(IMSBuildItem item, string propertyName)
         {
             return StringComparer.OrdinalIgnoreCase.Equals(item.GetProperty(propertyName), Boolean.TrueString);
@@ -744,7 +763,7 @@ namespace NuGet.Commands
         /// Splits and parses a ; or , delimited list of log codes.
         /// Ignores codes that are unknown.
         /// </summary>
-        private static IEnumerable<NuGetLogCode> GetNuGetLogCodes(string s)
+        public static IEnumerable<NuGetLogCode> GetNuGetLogCodes(string s)
         {
             foreach (var item in MSBuildStringUtility.Split(s, ';', ','))
             {

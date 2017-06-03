@@ -48,6 +48,11 @@ namespace NuGet.SolutionRestoreManager
         private const string RestoreSources = nameof(RestoreSources);
         private const string RestoreFallbackFolders = nameof(RestoreFallbackFolders);
         private const string AssetTargetFallback = nameof(AssetTargetFallback);
+        private const string RestoreAdditionalProjectFallbackFolders = nameof(RestoreAdditionalProjectFallbackFolders);
+        private const string RestoreAdditionalProjectSources = nameof(RestoreAdditionalProjectSources);
+        private const string TreatWarningsAsErrors = nameof(TreatWarningsAsErrors);
+        private const string WarningsAsErrors = nameof(WarningsAsErrors);
+        private const string NoWarn = nameof(NoWarn);
 
 
         private static readonly Version Version20 = new Version(2, 0, 0, 0);
@@ -267,6 +272,10 @@ namespace NuGet.SolutionRestoreManager
                     Sources = GetRestoreSources(projectRestoreInfo.TargetFrameworks)
                                     .Select(e => new PackageSource(e))
                                     .ToList(),
+                    ProjectWideWarningProperties = MSBuildRestoreUtility.GetWarningProperties(
+                        treatWarningsAsErrors: GetNonEvaluatedPropertyOrNull(projectRestoreInfo.TargetFrameworks, TreatWarningsAsErrors, e => e),
+                        warningsAsErrors: GetNonEvaluatedPropertyOrNull(projectRestoreInfo.TargetFrameworks, WarningsAsErrors, e => e),
+                        noWarn: GetNonEvaluatedPropertyOrNull(projectRestoreInfo.TargetFrameworks, NoWarn, e => e))
                 },
                 RuntimeGraph = GetRuntimeGraph(projectRestoreInfo),
                 RestoreSettings = new ProjectRestoreSettings() { HideWarningsAndErrors = true }
@@ -300,14 +309,24 @@ namespace NuGet.SolutionRestoreManager
         {
             var sources = MSBuildStringUtility.Split(GetNonEvaluatedPropertyOrNull(tfms, RestoreSources, e => e));
 
-            return HandleClear(sources);
+            sources = HandleClear(sources);
+
+            var additional = MSBuildStringUtility.Split(GetNonEvaluatedPropertyOrNull(tfms, RestoreAdditionalProjectSources, e => e));
+            sources = sources.Concat(additional).ToArray();
+
+            return sources;
         }
 
         private static string[] GetRestoreFallbackFolders(IVsTargetFrameworks tfms)
         {
             var folders = MSBuildStringUtility.Split(GetNonEvaluatedPropertyOrNull(tfms, RestoreFallbackFolders, e => e));
 
-            return HandleClear(folders);
+            folders = HandleClear(folders);
+
+            var additional = MSBuildStringUtility.Split(GetNonEvaluatedPropertyOrNull(tfms, RestoreAdditionalProjectFallbackFolders, e => e));
+            folders = folders.Concat(additional).ToArray();
+
+            return folders;
         }
 
         private static string[] HandleClear(string[] input)
@@ -426,8 +445,14 @@ namespace NuGet.SolutionRestoreManager
                     typeConstraint: LibraryDependencyTarget.Package),
 
                 // Mark packages coming from the SDK as AutoReferenced
-                AutoReferenced = GetPropertyBoolOrFalse(item, "IsImplicitlyDefined")
+                AutoReferenced = GetPropertyBoolOrFalse(item, "IsImplicitlyDefined"),
             };
+
+            // Add warning suppressions
+            foreach (var code in MSBuildRestoreUtility.GetNuGetLogCodes(GetPropertyValueOrNull(item, NoWarn)))
+            {
+                dependency.NoWarn.Add(code);
+            }
 
             MSBuildRestoreUtility.ApplyIncludeFlags(
                 dependency,
