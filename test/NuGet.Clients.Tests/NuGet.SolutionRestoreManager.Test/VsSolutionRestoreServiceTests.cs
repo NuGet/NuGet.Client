@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Moq;
 using NuGet.Commands;
+using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.PackageManagement.VisualStudio;
@@ -336,6 +337,84 @@ namespace NuGet.SolutionRestoreManager.Test
             Assert.NotNull(actualProjectSpec);
             Assert.Equal(version1, actualProjectSpec.Version.ToString());
         }
+
+        // The data in the restore settings should be unprocessed meaning the paths should stay relative.
+        // The processing of the paths will be done later in the netcorepackagereferenceproject
+        [Theory]
+        [InlineData(@"..\packages", @"..\source1;..\source2", @"..\fallback1;..\fallback2")]
+        [InlineData(@"C:\packagesPath", @"..\source1;..\source2", @"C:\fallback1;C:\fallback2")]
+        [InlineData(null, null, null)]
+        public async Task NominateProjectAsync_RestoreSettings(string restorePackagesPath, string restoreSources, string fallbackFolders)
+        {
+            var cps = NewCpsProject("{ }");
+            var projectFullPath = cps.ProjectFullPath;
+            var pri = cps.Builder
+                .WithTargetFrameworkInfo(
+                    new VsTargetFrameworkInfo(
+                        "netcoreapp1.0",
+                        Enumerable.Empty<IVsReferenceItem>(),
+                        Enumerable.Empty<IVsReferenceItem>(),
+                        new[] {new VsProjectProperty("RestorePackagesPath", restorePackagesPath),
+                               new VsProjectProperty("RestoreSources", restoreSources),
+                               new VsProjectProperty("RestoreFallbackFolders", fallbackFolders)}))
+                .Build();
+
+            // Act
+            var actualRestoreSpec = await CaptureNominateResultAsync(projectFullPath, cps.ProjectRestoreInfo);
+
+            // Assert
+            SpecValidationUtility.ValidateDependencySpec(actualRestoreSpec);
+
+            var actualProjectSpec = actualRestoreSpec.GetProjectSpec(projectFullPath);
+            Assert.NotNull(actualProjectSpec);
+            Assert.Equal(restorePackagesPath, actualProjectSpec.RestoreMetadata.PackagesPath);
+
+            var specSources = actualProjectSpec.RestoreMetadata.Sources?.Select(e => e.Source);
+            var expectedSources = MSBuildStringUtility.Split(restoreSources);
+            Assert.True(Enumerable.SequenceEqual(expectedSources.OrderBy(t => t), specSources.OrderBy(t => t)));
+
+            var specFallback = actualProjectSpec.RestoreMetadata.FallbackFolders;
+            var expectedFallback = MSBuildStringUtility.Split(fallbackFolders);
+            Assert.True(Enumerable.SequenceEqual(expectedFallback.OrderBy(t => t), specFallback.OrderBy(t => t)));
+        }
+
+        [Theory]
+        [InlineData(@"..\packages", @"..\source1;..\source2", @"..\fallback1;Clear;..\fallback2")]
+        [InlineData(@"C:\packagesPath", @"Clear;..\source1;..\source2", @"C:\fallback1;C:\fallback2")]
+        public async Task NominateProjectAsync_RestoreSettingsClear(string restorePackagesPath, string restoreSources, string fallbackFolders)
+        {
+            var cps = NewCpsProject("{ }");
+            var projectFullPath = cps.ProjectFullPath;
+            var pri = cps.Builder
+                .WithTargetFrameworkInfo(
+                    new VsTargetFrameworkInfo(
+                        "netcoreapp1.0",
+                        Enumerable.Empty<IVsReferenceItem>(),
+                        Enumerable.Empty<IVsReferenceItem>(),
+                        new[] {new VsProjectProperty("RestorePackagesPath", restorePackagesPath),
+                               new VsProjectProperty("RestoreSources", restoreSources),
+                               new VsProjectProperty("RestoreFallbackFolders", fallbackFolders)}))
+                .Build();
+
+            // Act
+            var actualRestoreSpec = await CaptureNominateResultAsync(projectFullPath, cps.ProjectRestoreInfo);
+
+            // Assert
+            SpecValidationUtility.ValidateDependencySpec(actualRestoreSpec);
+
+            var actualProjectSpec = actualRestoreSpec.GetProjectSpec(projectFullPath);
+            Assert.NotNull(actualProjectSpec);
+            Assert.Equal(restorePackagesPath, actualProjectSpec.RestoreMetadata.PackagesPath);
+
+            var specSources = actualProjectSpec.RestoreMetadata.Sources?.Select(e => e.Source);
+            var expectedSources = MSBuildStringUtility.Split(restoreSources).Any(e => StringComparer.OrdinalIgnoreCase.Equals("clear", e)) ? new string[] { "Clear" } : MSBuildStringUtility.Split(restoreSources);
+            Assert.True(Enumerable.SequenceEqual(expectedSources.OrderBy(t => t), specSources.OrderBy(t => t)));
+
+            var specFallback = actualProjectSpec.RestoreMetadata.FallbackFolders;
+            var expectedFallback = MSBuildStringUtility.Split(fallbackFolders).Any(e => StringComparer.OrdinalIgnoreCase.Equals("clear", e)) ? new string[] { "Clear" } : MSBuildStringUtility.Split(fallbackFolders);
+            Assert.True(Enumerable.SequenceEqual(expectedFallback.OrderBy(t => t), specFallback.OrderBy(t => t)));
+        }
+
 
         [Theory]
         [InlineData("1.0.0", "1.2.3")]
