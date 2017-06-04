@@ -168,7 +168,7 @@ namespace NuGet.ProjectModel
             {
                 writer.WriteObjectStart("sources");
 
-                foreach (var source in msbuildMetadata.Sources)
+                foreach (var source in msbuildMetadata.Sources.OrderBy(e => e.Source, StringComparer.Ordinal))
                 {
                     // "source": {}
                     writer.WriteObjectStart(source.Source);

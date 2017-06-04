@@ -121,7 +121,9 @@ namespace NuGet.Build.Tasks
                 }
 
                 // Append additional sources
-                OutputSources = AppendItems(OutputSources, RestoreAdditionalProjectSources);
+                OutputSources = AppendItems(OutputSources, RestoreAdditionalProjectSources)
+                    .OrderBy(s => s, new SourceTypeComparer())
+                    .ToArray();
 
                 if (RestoreFallbackFolders == null)
                 {
