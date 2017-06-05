@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
@@ -113,7 +114,6 @@ namespace NuGet.Protocol.FuncTest
             {
                 Assert.Equal(PluginProtocolConstants.CurrentVersion, test.Plugin.Connection.ProtocolVersion);
 
-                // Send canned response
                 var serviceIndex = JObject.Parse("{}");
                 var payload = new GetOperationClaimsRequest(packageSourceRepository: "a", serviceIndex: serviceIndex);
 
@@ -121,7 +121,7 @@ namespace NuGet.Protocol.FuncTest
 
                 await Assert.ThrowsAsync<TaskCanceledException>(
                     () => test.Plugin.Connection.SendRequestAndReceiveResponseAsync<GetOperationClaimsRequest, GetOperationClaimsResponse>(
-                        MessageMethod.Initialize,
+                        MessageMethod.GetOperationClaims,
                         payload,
                         test.CancellationToken));
 
@@ -131,6 +131,51 @@ namespace NuGet.Protocol.FuncTest
                 var high = TimeSpan.FromSeconds(requestTimeout.TotalSeconds * 2);
 
                 Assert.InRange(stopwatch.Elapsed, low, high);
+            }
+        }
+
+        [PlatformFact(Platform.Windows)]
+        public async Task Fault_WritesExceptionToConsole()
+        {
+            using (var test = await PluginTest.CreateAsync())
+            using (var closedEvent = new ManualResetEventSlim(initialState: false))
+            {
+                Assert.Equal(PluginProtocolConstants.CurrentVersion, test.Plugin.Connection.ProtocolVersion);
+
+                test.Plugin.Closed += (object sender, EventArgs e) =>
+                    {
+                        closedEvent.Set();
+                    };
+
+                // Send canned response
+                // This response is unexpected and will generate a protocol error.
+                var responseSenderTask = Task.Run(() => test.ResponseSender.StartSendingAsync(test.CancellationToken));
+                await test.ResponseSender.SendAsync(
+                    MessageType.Response,
+                    MessageMethod.Initialize,
+                    new InitializeResponse(MessageResponseCode.Success));
+
+                var serviceIndex = JObject.Parse("{}");
+                var payload = new GetOperationClaimsRequest(packageSourceRepository: "a", serviceIndex: serviceIndex);
+
+                string consoleOutput;
+
+                using (var spy = new ConsoleOutputSpy())
+                {
+                    var requestTask = Task.Run(
+                        () => test.Plugin.Connection.SendRequestAndReceiveResponseAsync<GetOperationClaimsRequest, GetOperationClaimsResponse>(
+                            MessageMethod.GetOperationClaims,
+                            payload,
+                            test.CancellationToken));
+
+                    closedEvent.Wait();
+
+                    consoleOutput = spy.GetOutput();
+                }
+
+                Assert.Contains(
+                    $"Terminating plugin '{test.Plugin.Name}' due to an unrecoverable fault:  NuGet.Protocol.Plugins.ProtocolException: A plugin protocol exception occurred.",
+                    consoleOutput);
             }
         }
 
@@ -196,6 +241,111 @@ namespace NuGet.Protocol.FuncTest
                 var responseSender = new ResponseSender(_portNumber);
 
                 return new PluginTest(pluginFactory, plugin, responseSender, cancellationTokenSource);
+            }
+        }
+
+        private sealed class ConsoleOutputSpy : TextWriter
+        {
+            private readonly TextWriter _original;
+            private readonly StringWriter _spy;
+
+            public override Encoding Encoding => _original.Encoding;
+
+            internal ConsoleOutputSpy()
+            {
+                _original = Console.Out;
+                _spy = new StringWriter();
+
+                Console.SetOut(this);
+            }
+
+            protected override void Dispose(bool disposing)
+            {
+                Console.SetOut(_original);
+            }
+
+#if IS_DESKTOP
+            public override void Close()
+            {
+                _original.Close();
+            }
+#endif
+
+            public override void Write(char value)
+            {
+                _original.Write(value);
+                _spy.Write(value);
+            }
+
+            public override void Write(char[] buffer)
+            {
+                _original.Write(buffer);
+                _spy.Write(buffer);
+            }
+
+            public override void Write(char[] buffer, int index, int count)
+            {
+                _original.Write(buffer, index, count);
+                _spy.Write(buffer, index, count);
+            }
+
+            public override void Write(string value)
+            {
+                _original.Write(value);
+                _spy.Write(value);
+            }
+
+            public override async Task WriteAsync(char value)
+            {
+                await _original.WriteAsync(value);
+                await _spy.WriteAsync(value);
+            }
+
+            public override async Task WriteAsync(char[] buffer, int index, int count)
+            {
+                await _original.WriteAsync(buffer, index, count);
+                await _spy.WriteAsync(buffer, index, count);
+            }
+
+            public override async Task WriteAsync(string value)
+            {
+                await _original.WriteAsync(value);
+                await _spy.WriteAsync(value);
+            }
+
+            public override async Task WriteLineAsync()
+            {
+                await _original.WriteLineAsync();
+                await _spy.WriteLineAsync();
+            }
+
+            public override async Task WriteLineAsync(char value)
+            {
+                await _original.WriteLineAsync(value);
+                await _spy.WriteLineAsync(value);
+            }
+
+            public override async Task WriteLineAsync(char[] buffer, int index, int count)
+            {
+                await _original.WriteLineAsync(buffer, index, count);
+                await _spy.WriteLineAsync(buffer, index, count);
+            }
+
+            public override async Task WriteLineAsync(string value)
+            {
+                await _original.WriteLineAsync(value);
+                await _spy.WriteLineAsync(value);
+            }
+
+            public override async Task FlushAsync()
+            {
+                await _original.FlushAsync();
+                await _spy.FlushAsync();
+            }
+
+            internal string GetOutput()
+            {
+                return _spy.ToString();
             }
         }
     }

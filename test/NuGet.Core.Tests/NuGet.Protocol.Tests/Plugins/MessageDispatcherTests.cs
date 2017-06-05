@@ -325,7 +325,7 @@ namespace NuGet.Protocol.Plugins.Tests
                 var requestTask = dispatcher.DispatchRequestAsync<Request, Response>(
                     request.Method,
                     new Request(),
-                    cancellationToken: CancellationToken.None);
+                    CancellationToken.None);
 
                 await dispatcher.DispatchCancelAsync(request, CancellationToken.None);
 
@@ -434,7 +434,7 @@ namespace NuGet.Protocol.Plugins.Tests
                 var requestTask = dispatcher.DispatchRequestAsync<Request, Response>(
                     request.Method,
                     new Request(),
-                    cancellationToken: CancellationToken.None);
+                    CancellationToken.None);
 
                 var fault = new Fault(message: "a");
 
@@ -549,7 +549,7 @@ namespace NuGet.Protocol.Plugins.Tests
                 var requestTask = dispatcher.DispatchRequestAsync<Request, Response>(
                     request.Method,
                     new Request(),
-                    cancellationToken: CancellationToken.None);
+                    CancellationToken.None);
 
                 await dispatcher.DispatchProgressAsync(request, progress, CancellationToken.None);
 
@@ -570,7 +570,7 @@ namespace NuGet.Protocol.Plugins.Tests
                 var result = await dispatcher.DispatchRequestAsync<HandshakeRequest, HandshakeResponse>(
                     MessageMethod.Handshake,
                     new HandshakeRequest(version, version),
-                    cancellationToken: CancellationToken.None);
+                    CancellationToken.None);
 
                 Assert.Null(result);
             }
@@ -608,7 +608,7 @@ namespace NuGet.Protocol.Plugins.Tests
                 var requestTask = dispatcher.DispatchRequestAsync<Request, Response>(
                     _method,
                     new Request(),
-                    cancellationToken: CancellationToken.None);
+                    CancellationToken.None);
 
                 connection.SimulateResponse(response);
 
