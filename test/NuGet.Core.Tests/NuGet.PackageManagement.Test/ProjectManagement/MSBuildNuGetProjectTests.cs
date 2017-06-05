@@ -43,7 +43,7 @@ namespace ProjectManagement.Test
                     msBuildNuGetProjectSystem,
                     randomPackagesFolderPath,
                     randomPackagesConfigFolderPath);
-                
+
                 var referenceContext = new DependencyGraphCacheContext(new TestLogger(), NullSettings.Instance);
 
                 // Act
@@ -298,7 +298,6 @@ namespace ProjectManagement.Test
 
                 // Assert
                 Assert.Equal(2, msBuildNuGetProjectSystem.References.Count);
-                Assert.Equal(1, msBuildNuGetProjectSystem.BatchCount);
                 Assert.Equal("a.dll", msBuildNuGetProjectSystem.References.First().Key);
                 Assert.Equal("b.dll", msBuildNuGetProjectSystem.References.Skip(1).First().Key);
                 Assert.Equal(Path.Combine(msBuildNuGetProject.FolderNuGetProject.GetInstalledPath(packageIdentity),
@@ -344,7 +343,6 @@ namespace ProjectManagement.Test
 
                 // Assert
                 Assert.Equal(0, msBuildNuGetProjectSystem.References.Count);
-                Assert.Equal(1, msBuildNuGetProjectSystem.BatchCount);
             }
         }
 
@@ -374,14 +372,12 @@ namespace ProjectManagement.Test
                 }
 
                 Assert.Equal(2, msBuildNuGetProjectSystem.References.Count);
-                Assert.Equal(1, msBuildNuGetProjectSystem.BatchCount);
 
                 // Act
                 await msBuildNuGetProject.UninstallPackageAsync(packageIdentity, testNuGetProjectContext, token);
 
                 // Assert
                 Assert.Equal(0, msBuildNuGetProjectSystem.References.Count);
-                Assert.Equal(2, msBuildNuGetProjectSystem.BatchCount);
             }
         }
 
@@ -413,7 +409,6 @@ namespace ProjectManagement.Test
                 }
 
                 Assert.Equal(2, msBuildNuGetProjectSystem.References.Count);
-                Assert.Equal(1, msBuildNuGetProjectSystem.BatchCount);
 
                 // Act
                 await Assert.ThrowsAsync<InvalidOperationException>(async () =>
@@ -423,7 +418,6 @@ namespace ProjectManagement.Test
 
                 // Assert
                 Assert.Equal(2, msBuildNuGetProjectSystem.References.Count);
-                Assert.Equal(2, msBuildNuGetProjectSystem.BatchCount);
             }
         }
 
@@ -631,11 +625,6 @@ namespace ProjectManagement.Test
                 Assert.Equal("Scripts\\test2.js", filesList[1]);
                 Assert.Equal("Scripts\\test1.js", filesList[2]);
                 Assert.Equal("packages.config", filesList[3]);
-                var processedFilesList = msBuildNuGetProjectSystem.ProcessedFiles.ToList();
-                Assert.Equal(3, processedFilesList.Count);
-                Assert.Equal("Scripts\\test3.js", processedFilesList[0]);
-                Assert.Equal("Scripts\\test2.js", processedFilesList[1]);
-                Assert.Equal("Scripts\\test1.js", processedFilesList[2]);
             }
         }
 
@@ -688,11 +677,6 @@ namespace ProjectManagement.Test
                 Assert.Equal("Scripts\\net45test2.js", filesList[1]);
                 Assert.Equal("Scripts\\net45test1.js", filesList[2]);
                 Assert.Equal("packages.config", filesList[3]);
-                var processedFilesList = msBuildNuGetProjectSystem.ProcessedFiles.ToList();
-                Assert.Equal(3, processedFilesList.Count);
-                Assert.Equal("Scripts\\net45test3.js", processedFilesList[0]);
-                Assert.Equal("Scripts\\net45test2.js", processedFilesList[1]);
-                Assert.Equal("Scripts\\net45test1.js", processedFilesList[2]);
             }
         }
 
@@ -808,10 +792,6 @@ namespace ProjectManagement.Test
                 Assert.Equal("Foo.cs", filesList[0]);
                 Assert.Equal("Bar.cs", filesList[1]);
                 Assert.Equal("packages.config", filesList[2]);
-                var processedFilesList = msBuildNuGetProjectSystem.ProcessedFiles.ToList();
-                Assert.Equal(2, processedFilesList.Count);
-                Assert.Equal("Foo.cs", processedFilesList[0]);
-                Assert.Equal("Bar.cs", processedFilesList[1]);
             }
         }
 
@@ -863,10 +843,6 @@ namespace ProjectManagement.Test
                 Assert.Equal("Foo.cs", filesList[0]);
                 Assert.Equal("Bar.cs", filesList[1]);
                 Assert.Equal("packages.config", filesList[2]);
-                var processedFilesList = msBuildNuGetProjectSystem.ProcessedFiles.ToList();
-                Assert.Equal(2, processedFilesList.Count);
-                Assert.Equal("Foo.cs", processedFilesList[0]);
-                Assert.Equal("Bar.cs", processedFilesList[1]);
 
                 // Main Act
                 await msBuildNuGetProject.UninstallPackageAsync(packageIdentity, testNuGetProjectContext, token);
@@ -2021,7 +1997,7 @@ namespace ProjectManagement.Test
             return new DownloadResourceResult(fileInfo.OpenRead());
         }
 
-        private class TestMSBuildNuGetProject 
+        private class TestMSBuildNuGetProject
             : MSBuildNuGetProject
             , INuGetProjectServices
             , IProjectScriptHostService
