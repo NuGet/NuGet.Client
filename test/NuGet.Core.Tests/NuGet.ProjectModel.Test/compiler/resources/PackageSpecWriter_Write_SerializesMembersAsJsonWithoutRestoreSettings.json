@@ -46,11 +46,6 @@
     "outputPath": "outputPath",
     "projectStyle": "PackageReference",
     "crossTargeting": true,
-    "configFilePaths": [
-      "b",
-      "a",
-      "c"
-    ],
     "fallbackFolders": [
       "b",
       "a",

@@ -160,12 +160,12 @@ namespace NuGet.ProjectModel.Test
     ""outputPath"": ""outputPath"",
     ""projectStyle"": ""PackageReference"",
     ""crossTargeting"": true,
-    ""configFilePaths"": [
+    ""fallbackFolders"": [
       ""b"",
       ""a"",
       ""c""
     ],
-    ""fallbackFolders"": [
+    ""configFilePaths"": [
       ""b"",
       ""a"",
       ""c""
