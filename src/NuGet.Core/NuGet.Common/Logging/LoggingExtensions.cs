@@ -7,11 +7,17 @@ namespace NuGet.Common
 {
     public static class LoggingExtensions
     {
+        /// <summary>
+        /// Formats a ILogMessage into a string representation containg the log code and message.
+        /// The log code is added only if it is a valid NuGetLogCode and is greater than NuGetLogCode.Undefined.
+        /// </summary>
+        /// <param name="message">ILogMessage to be formatted.</param>
+        /// <returns>string representation of the ILogMessage.</returns>
         public static string FormatWithCode(this ILogMessage message)
         {
-            if (message.Code > NuGetLogCode.Undefined)
+            if (message.Code > NuGetLogCode.Undefined && message.Code.TryGetName(out var codeString))
             {
-                return $"{message.Code.GetName()}: {message.Message}";
+                return $"{codeString}: {message.Message}";
             }
             else
             {
@@ -19,9 +25,26 @@ namespace NuGet.Common
             }
         }
 
+        /// <summary>
+        /// Formats a NuGetLogCode into a string representation.
+        /// </summary>
+        /// <param name="code">NuGetLogCode to be formatted.</param>
+        /// <returns>strings representation of the NuGetLogCode.</returns>
         public static string GetName(this NuGetLogCode code)
         {
             return Enum.GetName(typeof(NuGetLogCode), code);
+        }
+
+        /// <summary>
+        /// Tries to get the string from the NuGetLogCode enum.
+        /// </summary>
+        /// <param name="code">NuGetLogCode</param>
+        /// <param name="codeString">strings representation of the NuGetLogCode if the result is true else null.</param>
+        /// <returns>bool indcating if the GetName operation was successfull or not.</returns>
+        public static bool TryGetName(this NuGetLogCode code, out string codeString)
+        {
+            codeString = code.GetName();
+            return codeString == null ? false : true; 
         }
     }
 }

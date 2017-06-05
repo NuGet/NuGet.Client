@@ -767,7 +767,7 @@ namespace NuGet.Commands
         {
             foreach (var item in MSBuildStringUtility.Split(s, ';', ','))
             {
-                if (Enum.TryParse<NuGetLogCode>(item, out var result))
+                if (s.StartsWith("NU") && Enum.TryParse<NuGetLogCode>(item, out var result))
                 {
                     yield return result;
                 }

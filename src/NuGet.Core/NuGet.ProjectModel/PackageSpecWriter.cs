@@ -262,7 +262,8 @@ namespace NuGet.ProjectModel
                        .NoWarn
                        .ToArray()
                        .OrderBy(c => c)
-                       .Select(c => c.GetName()));
+                       .Select(c => c.GetName())
+                       .Where(c => !string.IsNullOrEmpty(c)));
                 }
 
                 if (msbuildMetadata.ProjectWideWarningProperties.WarningsAsErrors.Count > 0)
@@ -272,7 +273,9 @@ namespace NuGet.ProjectModel
                         .WarningsAsErrors
                         .ToArray()
                         .OrderBy(c => c)
-                        .Select(c => c.GetName()));
+                        .Select(c => c.GetName())
+                        .Where(c => !string.IsNullOrEmpty(c)));
+
                 }
 
                 writer.WriteObjectEnd();
@@ -398,7 +401,7 @@ namespace NuGet.ProjectModel
 
                     if (dependency.NoWarn.Count > 0)
                     {
-                        SetArrayValue(writer, "noWarn", dependency.NoWarn.Select(code => code.GetName()));
+                        SetArrayValue(writer, "noWarn", dependency.NoWarn.OrderBy(c => c).Select(code => code.GetName()).Where(s => !string.IsNullOrEmpty(s)));
                     }
 
                     writer.WriteObjectEnd();

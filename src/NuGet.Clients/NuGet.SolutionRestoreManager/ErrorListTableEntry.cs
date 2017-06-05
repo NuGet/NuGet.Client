@@ -51,15 +51,15 @@ namespace NuGet.SolutionRestoreManager
                     content = ErrorSouce;
                     return true;
                 case StandardTableColumnDefinitions.ErrorCode:
+                    var result = false;
+
                     if (Message.Code > NuGetLogCode.Undefined)
                     {
-                        content = Message.Code.GetName();
-                        return true;
+                        result = Message.Code.TryGetName(out var codeString);
+                        content = codeString;
                     }
-                    else
-                    {
-                        return false;
-                    }
+
+                    return result;
                 case StandardTableColumnDefinitions.DocumentName:
                     if (Message.ProjectPath != null)
                     {
