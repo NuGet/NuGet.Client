@@ -24,7 +24,6 @@ namespace NuGet.PackageManagement.Test
         [Fact (Skip ="To be replaced by the newer APIs NK")]
         public async Task DependencyGraphRestoreUtility_NoopIsRestoreRequiredAsyncTest()
         {
-            Debugger.Launch();
             // Arrange
             var projectName = "testproj";
             var logger = new TestLogger();

@@ -307,7 +307,6 @@ namespace NuGet.Commands.Test
 
                 var items = new List<IDictionary<string, string>>();
 
-                
                 items.Add(new Dictionary<string, string>()
                 {
                     { "Type", "ProjectSpec" },

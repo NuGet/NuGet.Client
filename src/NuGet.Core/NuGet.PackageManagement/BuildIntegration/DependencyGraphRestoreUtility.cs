@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -71,7 +71,7 @@ namespace NuGet.PackageManagement
         }
 
         /// <summary>
-        /// Restore a dg spec. This will not update the context cache. // TODO NK - Why? :D 
+        /// Restore a dg spec. This will not update the context cache.
         /// </summary>
         public static async Task<IReadOnlyList<RestoreSummary>> RestoreAsync(
             DependencyGraphSpec dgSpec,

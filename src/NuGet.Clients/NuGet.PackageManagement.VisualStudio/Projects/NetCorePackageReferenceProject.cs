@@ -111,7 +111,6 @@ namespace NuGet.PackageManagement.VisualStudio
         private PackageSpec GetPackageSpec()
         {
             DependencyGraphSpec projectRestoreInfo;
-            //TODO NK - We need the Project System team to plumb through extra details
             if (_projectSystemCache.TryGetProjectRestoreInfo(_projectFullPath, out projectRestoreInfo))
             {
                 return projectRestoreInfo.GetProjectSpec(_projectFullPath);

@@ -27,7 +27,7 @@ namespace NuGet.PackageManagement.Test
 {
     public class BuildIntegratedNuGetProjectTests
     {
-        [Fact (Skip ="This test is now obsolete, it needs to be replaced by tests in the new world. TODO NK")]
+        [Fact]
         public async Task BuildIntegratedNuGetProject_IsRestoreRequiredChangedSha512()
         {
             // Arrange
@@ -123,7 +123,7 @@ namespace NuGet.PackageManagement.Test
             }
         }
 
-        [Fact(Skip = "This test is now obsolete, it needs to be replaced by tests in the new world. TODO NK")]
+        [Fact]
         public async Task BuildIntegratedNuGetProject_IsRestoreRequiredMissingPackage()
         {
             // Arrange
@@ -215,7 +215,7 @@ namespace NuGet.PackageManagement.Test
             }
         }
 
-        [Fact(Skip = "This test is now obsolete, it needs to be replaced by tests in the new world. TODO NK")]
+        [Fact]
         public async Task BuildIntegratedNuGetProject_IsRestoreNotRequiredWithFloatingVersion()
         {
             // Arrange
@@ -287,7 +287,7 @@ namespace NuGet.PackageManagement.Test
             }
         }
 
-        [Fact(Skip = "This test is now obsolete, it needs to be replaced by tests in the new world. TODO NK")]
+        [Fact]
         public async Task BuildIntegratedNuGetProject_IsRestoreRequiredWithNoChanges()
         {
             // Arrange
