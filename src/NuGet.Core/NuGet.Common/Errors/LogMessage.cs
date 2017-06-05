@@ -11,7 +11,7 @@ namespace NuGet.Common
     public class LogMessage : ILogMessage
     {
         public LogLevel Level { get; set; }
-        public WarningLevel WarningLevel { get; set; }
+        public WarningLevel WarningLevel { get; set; } = WarningLevel.Severe; //setting default to Severe as 0 implies show no warnings
         public NuGetLogCode Code { get; set; }
         public string Message { get; set; }
         public string ProjectPath { get; set; }

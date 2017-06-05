@@ -15,7 +15,7 @@ namespace NuGet.Common
         public string Message { get; set; }
         public DateTimeOffset Time { get; set; }
         public string ProjectPath { get; set; }
-        public WarningLevel WarningLevel { get; set; }
+        public WarningLevel WarningLevel { get; set; } = WarningLevel.Severe; //setting default to Severe as 0 implies show no warnings
         public string FilePath { get; set; }
         public int StartLineNumber { get; set; } = -1;
         public int StartColumnNumber { get; set; } = -1;
