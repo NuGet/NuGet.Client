@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -7,7 +7,6 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using NuGet.Frameworks;
-using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.Test.Utility;
 
@@ -158,8 +157,9 @@ namespace Test.Utility
             BindingRedirectsCallCount++;
         }
 
-        public void BeginProcessing()
+        public Task BeginProcessingAsync()
         {
+            return Task.FromResult(0);
         }
 
         public void RegisterProcessedFiles(IEnumerable<string> files)
@@ -175,11 +175,13 @@ namespace Test.Utility
             }
         }
 
-        public void EndProcessing()
+        public Task EndProcessingAsync()
         {
             ++BatchCount;
             ProcessedFiles = FilesInProcessing;
             FilesInProcessing = null;
+
+            return Task.FromResult(0);
         }
 
         public void DeleteDirectory(string path, bool recursive)

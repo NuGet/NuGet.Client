@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
@@ -46,13 +46,15 @@ namespace NuGet.ProjectManagement
         bool IsSupportedFile(string path);
         void AddBindingRedirects();
 
-        void BeginProcessing();
+        Task BeginProcessingAsync();
+
         /// <summary>
-        /// This method can be called multiple times during a batch operation in between a single BeginProcessing/EndProcessing calls.
+        /// This method can be called multiple times during a batch operation in between a single BeginProcessingAsync/EndProcessingAsync calls.
         /// </summary>
         /// <param name="files">a list of files being changed.</param>
         void RegisterProcessedFiles(IEnumerable<string> files);
-        void EndProcessing();
+
+        Task EndProcessingAsync();
 
         void DeleteDirectory(string path, bool recursive);
 
