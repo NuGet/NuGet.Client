@@ -51,11 +51,10 @@ ExecuteCommand $dte2 "View.PackageManagerConsole" "Set-ExecutionPolicy Bypass -S
 Write-Host "Remove any NuGet.Tests module that may have been loaded already and wait for a second. This operation is very fast"
 ExecuteCommand $dte2 "View.PackageManagerConsole" "Get-Module NuGet.Tests | Remove-Module" "Running command: 'Get-Module NuGet.Tests | Remove-Module' ..." 1
 
-$NuGetTestsModulePath = Join-Path $NuGetTestPath "NuGet.Tests.psm1"
-$NuGetTestsModulePath = Join-Path $PSScriptRoot "NuGet.Tests.psm1"
-if ((Test-Path $NuGetTestsModulePath) -eq $false)
+$NuGetTestsModulePath = Join-Path $PSScriptRoot "NuGet.Tests.psd1"
+if (-not (Test-Path $NuGetTestsModulePath))
 {
-    $NuGetTestsModulePath = Join-Path $NuGetTestPath "NuGet.Tests.psm1"
+    $NuGetTestsModulePath = Join-Path $NuGetTestPath "NuGet.Tests.psd1"
 }
 
 Write-Host "Import NuGet.Tests module from $NuGetTestPath and wait for 5 seconds."

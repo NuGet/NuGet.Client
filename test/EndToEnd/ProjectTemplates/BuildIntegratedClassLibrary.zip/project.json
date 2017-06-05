@@ -3,6 +3,8 @@
     "net45": {}
   },
   "runtimes": {
-    "win-anycpu": {}
+    "win-anycpu": {},
+    "win": {},
+    "win-x86": {}
   }
 }

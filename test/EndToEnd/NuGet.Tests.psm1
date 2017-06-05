@@ -1,18 +1,18 @@
 $currentPath = Split-Path $MyInvocation.MyCommand.Definition
 
 # Directory where the projects and solutions are created
-$testOutputPath = Join-Path $currentPath bin
+$TestOutputPath = Join-Path $currentPath bin
 
 # Directory where vs templates are located
-$templatePath = Join-Path $currentPath ProjectTemplates
+$TemplatePath = Join-Path $currentPath ProjectTemplates
 
 # Directory where test scripts are located
-$testPath = Join-Path $currentPath tests
+$TestPath = Join-Path $currentPath tests
 
 $utilityPath = Join-Path $currentPath utility.ps1
 
 # Directory where the test packages are (This is passed to each test method)
-$testRepositoryPath = Join-Path $currentPath Packages
+$TestRepositoryPath = Join-Path $currentPath Packages
 
 $nugetRoot = Join-Path $currentPath "..\.."
 
@@ -105,7 +105,7 @@ function Rearrange-Tests {
     $tests
 }
 
-function global:Run-Test {
+function Run-Test {
     [CmdletBinding(DefaultParameterSetName="Test")]
     param(
         [parameter(ParameterSetName="Test", Position=0)]
@@ -188,6 +188,8 @@ function global:Run-Test {
             throw "The test `"$Test`" doesn't exist"
         }
     }
+
+    $tests = $tests | ?{ ShouldRunTest $_ }
 
     $results = @{}
 
@@ -280,7 +282,7 @@ function global:Run-Test {
                     # Generate any packages that might be in the repository dir
                     Get-ChildItem $repositoryPath\* -Include *.dgml,*.nuspec | %{
                         Write-Host 'Running GenerateTestPackages.exe on ' $_.FullName '...'
-                        $p = Start-Process $generatePackagesExePath -wait -NoNewWindow -PassThru -ArgumentList $_.FullName
+                        $p = Start-Process $generatePackagesExePath -Wait -WindowStyle Hidden -PassThru -ArgumentList $_.FullName
                         if($p.ExitCode -ne 0)
                         {
                             $generatePackagesExitCode = $p.ExitCode
@@ -349,7 +351,7 @@ function global:Run-Test {
                             # The type might not be loaded so don't fail if it isn't
                         }
 
-                        if ($tests.Count -gt 1 -or (!$testSucceeded -and $counter -eq 0)) {
+                        if ($tests.Count -gt 1 -or $testCases.Count -gt 1 -or (!$testSucceeded -and $counter -eq 0)) {
                             [API.Test.VSSolutionHelper]::CloseSolution()
                         }
 
@@ -643,3 +645,5 @@ function Get-PackageRepository
 	$packageSource = New-Object -TypeName NuGet.Configuration.PackageSource -ArgumentList @([System.String]::$source)
     $repositoryProvider.CreateRepository($packageSource)
 }
+
+Export-ModuleMember -Variable VSVersion, TemplatePath, TestPath, TestOutputPath, TestRepositoryPath -Cmdlet '*' -Function '*'

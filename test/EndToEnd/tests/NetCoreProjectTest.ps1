@@ -430,26 +430,31 @@ function Test-NetCoreWebAppExecuteInitScriptsOnlyOnce
 function Test-NetCoreProjectSystemCacheUpdateEvent {
 
     # Arrange
-    $projectA = New-NetCoreConsoleApp ConsoleAppA
+    $projectA = New-NetCoreConsoleApp
     Assert-NetCoreProjectCreation $projectA
 
-    # Act
+    $componentModel = Get-VSComponentModel
+    $solutionManager = $componentModel.GetService([NuGet.PackageManagement.ISolutionManager])
+
+    $cacheEvent = $null
+
+    Get-Event | Remove-Event
+    Register-ObjectEvent -InputObject $solutionManager -EventName AfterNuGetCacheUpdated -SourceIdentifier SolutionManagerCacheUpdated
+
     Try
     {
-        [API.Test.InternalAPITestHook]::ProjectCacheEventApi_AttachHandler()
-        [API.Test.InternalAPITestHook]::CacheUpdateEventCount = 0
-        [API.Test.InternalAPITestHook]::ProjectCacheEventApi_InstallPackage("Newtonsoft.Json", "9.0.1")
-        $projectA.Save($projectA.FullName)
-        Build-Solution
+        # Act
+        $projectA | Install-Package Newtonsoft.Json -Version '9.0.1'
+
+        $cacheEvent = Wait-Event -SourceIdentifier SolutionManagerCacheUpdated -TimeoutSec 10
     }
     Finally
     {
-        [API.Test.InternalAPITestHook]::ProjectCacheEventApi_DetachHandler()
-        $result = [API.Test.InternalAPITestHook]::CacheUpdateEventCount
+        Unregister-Event -SourceIdentifier SolutionManagerCacheUpdated
     }
 
     # Assert
-    Assert-True $result -eq 1
+    Assert-NotNull $cacheEvent -Message "Cache update event should've been raised"
 }
 
 
