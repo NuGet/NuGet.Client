@@ -23,7 +23,7 @@ namespace NuGet.Commands
         /// </summary>
         internal static bool IsNoOpSupported(RestoreRequest request)
         {
-            return request.DependencyGraphSpec != null && request.ProjectStyle != ProjectStyle.DotnetCliTool;
+            return request.DependencyGraphSpec != null;
         }
 
         /// <summary>
@@ -49,7 +49,7 @@ namespace NuGet.Commands
         internal static string GetToolCacheFilePath(RestoreRequest request, LockFile lockFile)
         {
 
-            if (request.ProjectStyle != ProjectStyle.DotnetCliTool)
+            if (request.ProjectStyle == ProjectStyle.DotnetCliTool && lockFile != null)
             {
                 var toolName = ToolRestoreUtility.GetToolIdOrNullFromSpec(request.Project);
                 var lockFileLibrary = ToolRestoreUtility.GetToolTargetLibrary(lockFile, toolName);
@@ -59,11 +59,10 @@ namespace NuGet.Commands
                     var version = lockFileLibrary.Version;
 
                     var toolPathResolver = new ToolPathResolver(request.PackagesDirectory);
-                    var projFileName = Path.GetFileName(request.Project.RestoreMetadata.ProjectPath);
-                    return PathUtility.GetDirectoryName(toolPathResolver.GetLockFilePath(
+                    return toolPathResolver.GetCacheFilePath(
                         toolName,
                         version,
-                        lockFile.Targets.First().TargetFramework)) + $"{projFileName}.nuget.cache";
+                        lockFile.Targets.First().TargetFramework) + $".nuget.cache";
                 }
             }
             return null;
@@ -71,7 +70,7 @@ namespace NuGet.Commands
         /// <summary>
         /// Evaluate the location of the cache file path, based on ProjectStyle.
         /// </summary>
-        internal static string GetCacheFilePath(RestoreRequest request)
+        internal static string GetCacheFilePath(RestoreRequest request, LockFile lockFile)
         {
             var projectCacheFilePath = request.Project.RestoreMetadata?.CacheFilePath;
 
@@ -82,6 +81,10 @@ namespace NuGet.Commands
                     || request.ProjectStyle == ProjectStyle.ProjectJson)
                 {
                     projectCacheFilePath = GetPJorPRCacheFilePath(request);
+                }
+                else if(request.ProjectStyle == ProjectStyle.DotnetCliTool)
+                {
+                    projectCacheFilePath = GetToolCacheFilePath(request, lockFile);
                 }
             }
             return projectCacheFilePath != null ? Path.GetFullPath(projectCacheFilePath) : null;

@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.IO;
@@ -45,7 +45,28 @@ namespace NuGet.ProjectModel
                 LockFileFormat.AssetsFileName);
         }
 
-        public string GetToolsBasePath()
+            public string GetCacheFilePath(string packageId, NuGetVersion version, NuGetFramework framework)
+            {
+                var versionString = version.ToNormalizedString();
+                var frameworkString = framework.GetShortFolderName();
+
+                if (_isLowercase)
+                {
+                    packageId = packageId.ToLowerInvariant();
+                    versionString = versionString.ToLowerInvariant();
+                    frameworkString = frameworkString.ToLowerInvariant();
+                }
+
+                var basePath = GetToolsBasePath();
+
+                return Path.Combine(
+                    basePath,
+                    packageId,
+                    versionString,
+                    frameworkString);
+            }
+
+            public string GetToolsBasePath()
         {
             return Path.Combine(
                 _packagesDirectory,

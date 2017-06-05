@@ -142,7 +142,7 @@ namespace NuGet.Commands
             // Determine the lock file output path
             var assetsFilePath = GetAssetsFilePath(assetsFile);
             // Determine the cache file output path
-            var cacheFilePath = NoOpRestoreUtilities.GetCacheFilePath(_request);
+            var cacheFilePath = NoOpRestoreUtilities.GetCacheFilePath(_request, assetsFile);
 
             // Tool restores are unique since the output path is not known until after restore
             if (_request.LockFilePath == null
@@ -208,6 +208,11 @@ namespace NuGet.Commands
             CacheFile cacheFile;
             var newDgSpecHash = _request.DependencyGraphSpec.GetHash();
             var noOp = false;
+            if(_request.ProjectStyle == ProjectStyle.DotnetCliTool)
+            {
+                _request.Project.RestoreMetadata.CacheFilePath = NoOpRestoreUtilities.GetCacheFilePath(_request, _request.ExistingLockFile);
+            }
+
             if (_request.AllowNoOp && File.Exists(_request.Project.RestoreMetadata.CacheFilePath))
             {
                 cacheFile = CacheFileFormat.Load(_request.Project.RestoreMetadata.CacheFilePath, _logger);

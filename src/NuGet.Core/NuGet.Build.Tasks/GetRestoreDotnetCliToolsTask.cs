@@ -86,7 +86,7 @@ namespace NuGet.Build.Tasks
                     throw new InvalidDataException($"Invalid DotnetCliToolReference in {ProjectPath}");
                 }
 
-                var uniqueName = $"{msbuildItem.ItemSpec}-{Guid.NewGuid().ToString()}";
+                var uniqueName = $"{msbuildItem.ItemSpec}-{msbuildItem.ItemSpec.GetHashCode()}";
 
                 // Create top level project
                 var properties = new Dictionary<string, string>();
