@@ -184,6 +184,8 @@ namespace NuGet.Commands
                 .Select(l => AssetsLogMessage.Create(l))
                 .ToList();
 
+            _success &= !logs.Any(l => l.Level == LogLevel.Error);
+
             assetsFile.LogMessages = logs;
 
             restoreTime.Stop();
