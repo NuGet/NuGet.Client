@@ -109,7 +109,7 @@ namespace NuGet.Frameworks
         // profiles that also support monotouch1+monoandroid1
         private static int[] _profilesWithOptionalFrameworks = new int[]
             {
-                5, 6, 7, 14, 19, 24, 37, 42, 47, 49, 78, 92, 102, 111, 136, 147, 158, 225, 255, 259, 328, 336, 344
+                5, 6, 7, 14, 19, 24, 37, 42, 44, 47, 49, 78, 92, 102, 111, 136, 147, 151, 158, 225, 255, 259, 328, 336, 344
             };
 
         private List<KeyValuePair<int, NuGetFramework[]>> _profileOptionalFrameworks;
