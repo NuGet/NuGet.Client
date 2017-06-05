@@ -1,0 +1,26 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.props" />
+
+  <PropertyGroup>
+    <TargetFrameworks>net46</TargetFrameworks>
+    <RuntimeIdentifier>win7-x64</RuntimeIdentifier>
+    <OutputType>Exe</OutputType>
+    <AssemblyName>PackageDownloadPlugin</AssemblyName>
+  </PropertyGroup>
+
+  <Import Project="$(BuildCommonDirectory)common.targets" />
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\src\NuGet.Core\NuGet.PackageManagement\NuGet.PackageManagement.csproj" />
+    <ProjectReference Include="..\..\..\src\NuGet.Core\NuGet.Protocol\NuGet.Protocol.csproj" />
+    <ProjectReference Include="..\..\..\src\NuGet.Core\NuGet.Resolver\NuGet.Resolver.csproj" />
+    <ProjectReference Include="..\..\..\src\NuGet.Core\NuGet.Versioning\NuGet.Versioning.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.IO.Compression" />
+    <Reference Include="System.Net.Http" />
+  </ItemGroup>
+</Project>
