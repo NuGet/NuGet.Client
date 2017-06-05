@@ -336,26 +336,26 @@ namespace NuGet.Protocol
             // If 'Id' element exist, use its value as accurate package Id
             // Otherwise, use the value of 'title' if it exist
             // Use the given Id as final fallback if all elements above don't exist
-            string identityId = metadataCache.GetString(idElement?.Value ?? titleElement?.Value ?? id);
-            string versionString = properties.Element(_xnameVersion).Value;
-            NuGetVersion version = metadataCache.GetVersion(metadataCache.GetString(versionString));
-            string downloadUrl = metadataCache.GetString(element.Element(_xnameContent).Attribute("src").Value);
+            var identityId = metadataCache.GetString(idElement?.Value ?? titleElement?.Value ?? id);
+            var versionString = properties.Element(_xnameVersion).Value;
+            var version = metadataCache.GetVersion(metadataCache.GetString(versionString));
+            var downloadUrl = metadataCache.GetString(element.Element(_xnameContent).Attribute("src").Value);
 
-            string title = metadataCache.GetString(titleElement?.Value);
-            string summary = metadataCache.GetString(GetString(element, _xnameSummary));
-            string description = metadataCache.GetString(GetString(properties, _xnameDescription));
-            string iconUrl = metadataCache.GetString(GetString(properties, _xnameIconUrl));
-            string licenseUrl = metadataCache.GetString(GetString(properties, _xnameLicenseUrl));
-            string projectUrl = metadataCache.GetString(GetString(properties, _xnameProjectUrl));
-            string reportAbuseUrl = metadataCache.GetString(GetString(properties, _xnameReportAbuseUrl));
-            string tags = metadataCache.GetString(GetString(properties, _xnameTags));
-            string dependencies = metadataCache.GetString(GetString(properties, _xnameDependencies));
+            var title = metadataCache.GetString(titleElement?.Value);
+            var summary = metadataCache.GetString(GetString(element, _xnameSummary));
+            var description = metadataCache.GetString(GetString(properties, _xnameDescription));
+            var iconUrl = metadataCache.GetString(GetString(properties, _xnameIconUrl));
+            var licenseUrl = metadataCache.GetString(GetString(properties, _xnameLicenseUrl));
+            var projectUrl = metadataCache.GetString(GetString(properties, _xnameProjectUrl));
+            var reportAbuseUrl = metadataCache.GetString(GetString(properties, _xnameReportAbuseUrl));
+            var tags = metadataCache.GetString(GetString(properties, _xnameTags));
+            var dependencies = metadataCache.GetString(GetString(properties, _xnameDependencies));
 
-            string downloadCount = metadataCache.GetString(GetString(properties, _xnameDownloadCount));
-            bool requireLicenseAcceptance = StringComparer.OrdinalIgnoreCase.Equals(bool.TrueString, GetString(properties, _xnameRequireLicenseAcceptance));
+            var downloadCount = metadataCache.GetString(GetString(properties, _xnameDownloadCount));
+            var requireLicenseAcceptance = StringComparer.OrdinalIgnoreCase.Equals(bool.TrueString, GetString(properties, _xnameRequireLicenseAcceptance));
 
-            string packageHash = metadataCache.GetString(GetString(properties, _xnamePackageHash));
-            string packageHashAlgorithm = metadataCache.GetString(GetString(properties, _xnamePackageHashAlgorithm));
+            var packageHash = metadataCache.GetString(GetString(properties, _xnamePackageHash));
+            var packageHashAlgorithm = metadataCache.GetString(GetString(properties, _xnamePackageHashAlgorithm));
 
             NuGetVersion minClientVersion = null;
 
@@ -368,9 +368,9 @@ namespace NuGet.Protocol
                 }
             }
 
-            DateTimeOffset? created = GetDate(properties, _xnameCreated);
-            DateTimeOffset? lastEdited = GetDate(properties, _xnameLastEdited);
-            DateTimeOffset? published = GetDate(properties, _xnamePublished);
+            var created = GetDate(properties, _xnameCreated);
+            var lastEdited = GetDate(properties, _xnameLastEdited);
+            var published = GetDate(properties, _xnamePublished);
 
             IEnumerable<string> owners = null;
             IEnumerable<string> authors = null;
@@ -396,7 +396,7 @@ namespace NuGet.Protocol
 
             if (parent != null)
             {
-                XElement child = parent.Element(childName);
+                var child = parent.Element(childName);
 
                 if (child != null)
                 {
@@ -440,7 +440,7 @@ namespace NuGet.Protocol
             uris.Add(uri);
 
             // first request
-            Task<XDocument> docRequest = LoadXmlAsync(uri, ignoreNotFounds, log, token);
+            var docRequest = LoadXmlAsync(uri, ignoreNotFounds, log, token);
 
             // TODO: re-implement caching at a higher level for both v2 and v3
             string nextUri = null;
@@ -503,44 +503,65 @@ namespace NuGet.Protocol
             ILogger log,
             CancellationToken token)
         {
-            return await _httpSource.ProcessResponseAsync(
-                new HttpSourceRequest(
-                    () =>
-                    {
-                        var request = HttpRequestMessageFactory.Create(HttpMethod.Get, uri, log);
-                        request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/atom+xml"));
-                        request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/xml"));
-                        return request;
-                    }),
-                async response =>
+            // Try the call up to 3 times.
+            for (var retry = 0; retry < 3; ++retry)
+            {
+                try
                 {
-                    if (response.StatusCode == HttpStatusCode.OK)
-                    {
-                        var networkStream = await response.Content.ReadAsStreamAsync();
-                        return await LoadXmlAsync(networkStream);
-                    }
-                    else if (ignoreNotFounds && response.StatusCode == HttpStatusCode.NotFound)
-                    {
-                        // Treat "404 Not Found" as an empty response.
-                        return null;
-                    }
-                    else if (response.StatusCode == HttpStatusCode.NoContent)
-                    {
-                        // Always treat "204 No Content" as exactly that.
-                        return null;
-                    }
-                    else
-                    {
-                        throw new FatalProtocolException(string.Format(
-                            CultureInfo.CurrentCulture,
-                            Strings.Log_FailedToFetchV2Feed,
-                            uri,
-                            (int)response.StatusCode,
-                            response.ReasonPhrase));
-                    }
-                },
-                log,
-                token);
+                    return await _httpSource.ProcessResponseAsync(
+                        request: new HttpSourceRequest(() => CreateRequest(uri, log)),
+                        processAsync: response => ProcessResponseAsync(response, uri, ignoreNotFounds, token),
+                        log: log,
+                        token: token);
+                }
+                catch (Exception ex) when (retry < 2)
+                {
+                    var message = string.Format(CultureInfo.CurrentCulture, Strings.Log_RetryFetchV2Feed, uri)
+                        + Environment.NewLine
+                        + ExceptionUtilities.DisplayMessage(ex);
+
+                    await log.LogAsync(LogLevel.Debug, message);
+                }
+            }
+
+            // This is not possible to hit, it will throw on the 3rd try.
+            return null;
+        }
+
+        private static HttpRequestMessage CreateRequest(string uri, ILogger log)
+        {
+            var request = HttpRequestMessageFactory.Create(HttpMethod.Get, uri, log);
+            request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/atom+xml"));
+            request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/xml"));
+            return request;
+        }
+
+        private static async Task<XDocument> ProcessResponseAsync(HttpResponseMessage response, string uri, bool ignoreNotFounds, CancellationToken token)
+        {
+            if (response.StatusCode == HttpStatusCode.OK)
+            {
+                var networkStream = await response.Content.ReadAsStreamAsync();
+                return await LoadXmlAsync(networkStream);
+            }
+            else if (ignoreNotFounds && response.StatusCode == HttpStatusCode.NotFound)
+            {
+                // Treat "404 Not Found" as an empty response.
+                return null;
+            }
+            else if (response.StatusCode == HttpStatusCode.NoContent)
+            {
+                // Always treat "204 No Content" as exactly that.
+                return null;
+            }
+            else
+            {
+                throw new FatalProtocolException(string.Format(
+                    CultureInfo.CurrentCulture,
+                    Strings.Log_FailedToFetchV2Feed,
+                    uri,
+                    (int)response.StatusCode,
+                    response.ReasonPhrase));
+            }
         }
 
         internal static string GetNextUrl(XDocument doc)
