@@ -14,7 +14,7 @@ using NuGet.ProjectModel;
 
 namespace NuGet.Commands
 {
-    internal class NoOpRestoreUtilities
+    public class NoOpRestoreUtilities
     {
 
         /// <summary>

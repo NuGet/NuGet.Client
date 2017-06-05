@@ -199,6 +199,229 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
+        public async Task RestoreNetCore_VerifyProjectConfigChangeTriggersARestoreAsync()
+        {
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                    "a",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("net45"));
+
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+
+                projectA.AddPackageToAllFrameworks(packageX);
+
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX);
+
+                //Act
+                var r1 = Util.RestoreSolution(pathContext);
+
+                //Assert.
+                Assert.Equal(0, r1.Item1);
+                Assert.Contains("Writing cache file", r1.Item2);
+
+                // Act
+                var r2 = Util.RestoreSolution(pathContext);
+
+                //Assert.
+                Assert.Equal(0, r2.Item1);
+                Assert.DoesNotContain("Writing cache file", r2.Item2);
+
+                // create a config file
+                var projectDir = Path.GetDirectoryName(projectA.ProjectPath);
+
+                var configPath = Path.Combine(projectDir, "NuGet.Config");
+
+                var doc = new XDocument();
+                var configuration = new XElement(XName.Get("configuration"));
+                doc.Add(configuration);
+
+                var config = new XElement(XName.Get("config"));
+                configuration.Add(config);
+
+                var packageSources = new XElement(XName.Get("packageSources"));
+                configuration.Add(packageSources);
+
+                var sourceEntry = new XElement(XName.Get("add"));
+                sourceEntry.Add(new XAttribute(XName.Get("key"), "projectSource"));
+                sourceEntry.Add(new XAttribute(XName.Get("value"), "https://www.nuget.org/api/v2"));
+                packageSources.Add(sourceEntry);
+
+                File.WriteAllText(configPath, doc.ToString());
+
+                // Act
+                var r3 = Util.RestoreSolution(pathContext, 0, "-configFile", "NuGet.Config");
+
+
+                //Assert.
+                Assert.Equal(0, r3.Item1);
+                Assert.Contains("Writing cache file", r3.Item2);
+            }
+        }
+
+
+        [Fact]
+        public async Task RestoreNetCore_VerifyFallbackFoldersChangeTriggersARestoreAsync()
+        {
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                    "a",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("net45"));
+
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+
+                projectA.AddPackageToAllFrameworks(packageX);
+
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX);
+
+                //Act
+                var r1 = Util.RestoreSolution(pathContext);
+
+                //Assert.
+                Assert.Equal(0, r1.Item1);
+                Assert.Contains("Writing cache file", r1.Item2);
+
+                // Act
+                var r2 = Util.RestoreSolution(pathContext);
+
+                //Assert.
+                Assert.Equal(0, r2.Item1);
+                Assert.DoesNotContain("Writing cache file", r2.Item2);
+
+                // create a config file
+                var projectDir = Path.GetDirectoryName(projectA.ProjectPath);
+
+                var configPath = Path.Combine(projectDir, "NuGet.Config");
+
+                var doc = new XDocument();
+                var configuration = new XElement(XName.Get("configuration"));
+                doc.Add(configuration);
+
+                var config = new XElement(XName.Get("config"));
+                configuration.Add(config);
+
+                var packageSources = new XElement(XName.Get("fallbackFolders"));
+                configuration.Add(packageSources);
+
+                var sourceEntry = new XElement(XName.Get("add"));
+                sourceEntry.Add(new XAttribute(XName.Get("key"), "folder"));
+                sourceEntry.Add(new XAttribute(XName.Get("value"), "blaa"));
+                packageSources.Add(sourceEntry);
+
+                File.WriteAllText(configPath, doc.ToString());
+
+                // Act
+                var r3 = Util.RestoreSolution(pathContext, 0, "-configFile", "NuGet.Config");
+
+
+                //Assert.
+                Assert.Equal(0, r3.Item1);
+                Assert.Contains("Writing cache file", r3.Item2);
+            }
+        }
+
+        [Fact]
+        public async Task RestoreNetCore_VerifyGlobalPackagesPathChangeTriggersARestoreAsync()
+        {
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                    "a",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("net45"));
+
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+
+                projectA.AddPackageToAllFrameworks(packageX);
+
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX);
+
+                //Act
+                var r1 = Util.RestoreSolution(pathContext);
+
+                //Assert.
+                Assert.Equal(0, r1.Item1);
+                Assert.Contains("Writing cache file", r1.Item2);
+
+                // Act
+                var r2 = Util.RestoreSolution(pathContext);
+
+                //Assert.
+                Assert.Equal(0, r2.Item1);
+                Assert.DoesNotContain("Writing cache file", r2.Item2);
+
+                // create a config file
+                var projectDir = Path.GetDirectoryName(projectA.ProjectPath);
+
+                var configPath = Path.Combine(projectDir, "NuGet.Config");
+
+                var doc = new XDocument();
+                var configuration = new XElement(XName.Get("configuration"));
+                doc.Add(configuration);
+
+                var config = new XElement(XName.Get("config"));
+                configuration.Add(config);
+
+                var sourceEntry = new XElement(XName.Get("add"));
+                sourceEntry.Add(new XAttribute(XName.Get("key"), "globalPackagesPath"));
+                sourceEntry.Add(new XAttribute(XName.Get("value"), "blaa"));
+                configuration.Add(sourceEntry);
+
+                File.WriteAllText(configPath, doc.ToString());
+
+                // Act
+                var r3 = Util.RestoreSolution(pathContext, 0, "-configFile", "NuGet.Config");
+
+
+                //Assert.
+                Assert.Equal(0, r3.Item1);
+                Assert.Contains("Writing cache file", r3.Item2);
+            }
+        }
+
+        [Fact]
         public async Task RestoreNetCore_VerifyPackageReference_WithoutRestoreProjectStyle()
         {
             // Arrange
@@ -962,6 +1185,132 @@ namespace NuGet.CommandLine.Test
 
                 // Each project should have its own tool verion
                 Assert.Equal(testCount, Directory.GetDirectories(zPath).Length);
+            }
+        }
+
+        [Fact]
+        public async Task RestoreNetCore_NoOp_AddingNewPackageRestores()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+
+                var packageZ = new SimpleTestPackageContext()
+                {
+                    Id = "z",
+                    Version = "20.0.0"
+                };
+
+                var projects = new List<SimpleTestProjectContext>();
+
+                var project = SimpleTestProjectContext.CreateNETCore(
+                    $"proj",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("net45"));
+
+                project.AddPackageToAllFrameworks(packageX);
+                solution.Projects.Add(project);
+                solution.Create(pathContext.SolutionRoot);
+
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX,
+                    packageZ);
+
+                // Act
+                var r = Util.RestoreSolution(pathContext);
+
+                // Assert
+                Assert.Equal(0,r.Item1);
+                Assert.Contains("Writing cache file", r.Item2);
+
+                //re-arrange again
+                project.AddPackageToAllFrameworks(packageZ);
+                project.Save();
+                
+                //assert
+                Assert.Contains("Writing cache file", r.Item2);
+                Assert.Equal(0, r.Item1);
+
+
+            }
+        }
+
+        [Fact]
+        public async Task RestoreNetCore_NoOp_AddingANewProjectRestoresOnlyThatProject()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+
+                var packageZ = new SimpleTestPackageContext()
+                {
+                    Id = "z",
+                    Version = "20.0.0"
+                };
+
+                var projects = new List<SimpleTestProjectContext>();
+
+                var project = SimpleTestProjectContext.CreateNETCore(
+                    $"proj",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("net45"));
+
+                project.AddPackageToAllFrameworks(packageX);
+                solution.Projects.Add(project);
+                solution.Create(pathContext.SolutionRoot);
+
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX,
+                    packageZ);
+
+                // Act
+                var r = Util.RestoreSolution(pathContext);
+
+                // Assert
+                Assert.Equal(0, r.Item1);
+                Assert.Contains("Writing cache file", r.Item2);
+                
+                // build project
+                var project2 = SimpleTestProjectContext.CreateNETCore(
+                    $"proj2",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("net45"));
+
+                project2.AddPackageToAllFrameworks(packageZ);
+                solution.Projects.Add(project2);
+                solution.Save();
+                project2.Save();
+
+                // Act
+                var r2 = Util.RestoreSolution(pathContext);
+
+                // Assert
+                Assert.Equal(0, r2.Item1);
+                Assert.Contains("Writing cache file", r2.Item2);
+                Assert.Contains("No further actions are required to complete", r2.Item2);
+
             }
         }
 
