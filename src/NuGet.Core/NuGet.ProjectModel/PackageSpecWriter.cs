@@ -401,7 +401,12 @@ namespace NuGet.ProjectModel
 
                     if (dependency.NoWarn.Count > 0)
                     {
-                        SetArrayValue(writer, "noWarn", dependency.NoWarn.OrderBy(c => c).Select(code => code.GetName()).Where(s => !string.IsNullOrEmpty(s)));
+                        SetArrayValue(writer, "noWarn", dependency
+                            .NoWarn
+                            .OrderBy(c => c)
+                            .Distinct()
+                            .Select(code => code.GetName())
+                            .Where(s => !string.IsNullOrEmpty(s)));
                     }
 
                     writer.WriteObjectEnd();

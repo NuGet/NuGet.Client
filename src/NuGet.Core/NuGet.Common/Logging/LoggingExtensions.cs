@@ -28,7 +28,7 @@ namespace NuGet.Common
         /// <summary>
         /// Formats a NuGetLogCode into a string representation.
         /// </summary>
-        /// <param name="code">NuGetLogCode to be formatted.</param>
+        /// <param name="code">NuGetLogCode to be formatted into string.</param>
         /// <returns>strings representation of the NuGetLogCode.</returns>
         public static string GetName(this NuGetLogCode code)
         {
@@ -38,13 +38,13 @@ namespace NuGet.Common
         /// <summary>
         /// Tries to get the string from the NuGetLogCode enum.
         /// </summary>
-        /// <param name="code">NuGetLogCode</param>
+        /// <param name="code">NuGetLogCode to be formatted into string.</param>
         /// <param name="codeString">strings representation of the NuGetLogCode if the result is true else null.</param>
         /// <returns>bool indcating if the GetName operation was successfull or not.</returns>
         public static bool TryGetName(this NuGetLogCode code, out string codeString)
         {
             codeString = code.GetName();
-            return codeString == null ? false : true; 
+            return codeString != null; 
         }
     }
 }
