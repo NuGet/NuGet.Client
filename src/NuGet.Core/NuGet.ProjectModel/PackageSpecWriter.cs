@@ -159,7 +159,6 @@ namespace NuGet.ProjectModel
                     "skipContentFileWrite",
                     msbuildMetadata.SkipContentFileWrite);
 
-            SetArrayValue(writer, "configFilePaths", msbuildMetadata.ConfigFilePaths);
             SetArrayValue(writer, "fallbackFolders", msbuildMetadata.FallbackFolders);
             SetArrayValue(writer, "configFilePaths", msbuildMetadata.ConfigFilePaths);
             SetArrayValue(writer, "originalTargetFrameworks", msbuildMetadata.OriginalTargetFrameworks);

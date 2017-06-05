@@ -59,6 +59,11 @@
       "a",
       "c"
     ],
+    "configFilePaths": [
+      "b",
+      "a",
+      "c"
+    ],
     "originalTargetFrameworks": [
       "b",
       "a",
