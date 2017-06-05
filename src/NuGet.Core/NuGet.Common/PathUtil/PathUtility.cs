@@ -50,9 +50,18 @@ namespace NuGet.Common
             yield break;
         }
 
+        /// <summary>
+        /// Replace all back slashes with forward slashes.
+        /// </summary>
         public static string GetPathWithForwardSlashes(string path)
         {
-            return path.Replace('\\', '/');
+            if (path != null && path.IndexOf('\\') >= -1)
+            {
+                return path.Replace('\\', '/');
+            }
+
+            // Leave the path unchanged.
+            return path;
         }
 
         public static string EnsureTrailingSlash(string path)

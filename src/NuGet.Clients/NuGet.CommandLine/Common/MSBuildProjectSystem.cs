@@ -116,10 +116,10 @@ namespace NuGet.Common
 
             var targetRelativePath = PathUtility.GetRelativePath(PathUtility.EnsureTrailingSlash(ProjectFullPath), targetFullPath);
             var imports = Project.Xml.Imports;
-            bool notImported = true;
+            var notImported = true;
             if (imports != null)
             {
-                foreach (dynamic import in imports)
+                foreach (var import in imports)
                 {
                     if (targetRelativePath.Equals(import.Project, StringComparison.OrdinalIgnoreCase))
                     {
@@ -202,15 +202,15 @@ namespace NuGet.Common
         {
             // some ItemTypes which starts with _ are added by various MSBuild tasks for their own purposes
             // and they do not represent content files of the projects. Therefore, we exclude them when checking for file existence.
-            foreach (dynamic item in Project.Items)
+            foreach (var item in Project.Items)
             {
                 // even though the type of Project.Items is ICollection<ProjectItem>, when dynamic is used
                 // the type of item is Dictionary.KeyValuePair, instead of ProjectItem. So another foreach
                 // is needed to iterate through all project items.
-                foreach (dynamic i in item.Value)
+                foreach (var i in item.Value)
                 {
                     if (i.EvaluatedInclude.Equals(path, StringComparison.OrdinalIgnoreCase) &&
-                         (String.IsNullOrEmpty(i.ItemType) || i.ItemType[0] != '_'))
+                         (string.IsNullOrEmpty(i.ItemType) || i.ItemType[0] != '_'))
                     {
                         return true;
                     }
@@ -234,7 +234,7 @@ namespace NuGet.Common
 
         public IEnumerable<string> GetFullPaths(string fileName)
         {
-            foreach (dynamic projectItem in Project.Items)
+            foreach (var projectItem in Project.Items)
             {
                 var itemFileName = Path.GetFileName(projectItem.EvaluatedInclude);
                 if (string.Equals(fileName, itemFileName, StringComparison.OrdinalIgnoreCase))
@@ -272,14 +272,19 @@ namespace NuGet.Common
                 throw new ArgumentNullException(nameof(targetFullPath));
             }
 
-            var targetRelativePath = PathUtility.GetRelativePath(PathUtility.EnsureTrailingSlash(ProjectFullPath), targetFullPath);
+            var targetRelativePath = PathUtility.GetPathWithForwardSlashes(
+                PathUtility.GetRelativePath(
+                    PathUtility.EnsureTrailingSlash(ProjectFullPath), targetFullPath));
+
             if (Project.Xml.Imports != null)
             {
                 // search for this import statement and remove it
                 dynamic importElement = null;
-                foreach (dynamic import in Project.Xml.Imports)
+                foreach (var import in Project.Xml.Imports)
                 {
-                    if (targetRelativePath.Equals(import.Project, StringComparison.OrdinalIgnoreCase))
+                    var currentPath = PathUtility.GetPathWithForwardSlashes(import.Project);
+
+                    if (StringComparer.OrdinalIgnoreCase.Equals(targetRelativePath, currentPath))
                     {
                         importElement = import;
                         break;
@@ -320,7 +325,7 @@ namespace NuGet.Common
 
         private IEnumerable<dynamic> GetItems(string itemType, string name)
         {
-            foreach (dynamic i in Project.GetItems(itemType))
+            foreach (var i in Project.GetItems(itemType))
             {
                 if (i.EvaluatedInclude.StartsWith(name, StringComparison.OrdinalIgnoreCase))
                 {
@@ -342,7 +347,7 @@ namespace NuGet.Common
         {
             // get the target
             dynamic targetElement = null;
-            foreach (dynamic target in Project.Xml.Targets)
+            foreach (var target in Project.Xml.Targets)
             {
                 if (target.Name.Equals(TargetName, StringComparison.OrdinalIgnoreCase))
                 {
@@ -378,7 +383,7 @@ namespace NuGet.Common
         private void RemoveEnsureImportedTarget(string targetsPath)
         {
             dynamic targetElement = null;
-            foreach (dynamic target in Project.Xml.Targets)
+            foreach (var target in Project.Xml.Targets)
             {
                 if (string.Equals(target.Name, TargetName, StringComparison.OrdinalIgnoreCase))
                 {
@@ -391,11 +396,14 @@ namespace NuGet.Common
                 return;
             }
 
-            string errorCondition = "!Exists('" + targetsPath + "')";
+            var errorCondition = "!Exists('" + PathUtility.GetPathWithForwardSlashes(targetsPath) + "')";
             dynamic taskElement = null;
-            foreach (dynamic task in targetElement.Tasks)
+            foreach (var task in targetElement.Tasks)
             {
-                if (string.Equals(task.Condition, errorCondition, StringComparison.OrdinalIgnoreCase))
+                // Compare using / for both paths for mono compat.
+                var currentCondition = PathUtility.GetPathWithForwardSlashes(task.Condition);
+
+                if (string.Equals(currentCondition, errorCondition, StringComparison.OrdinalIgnoreCase))
                 {
                     taskElement = task;
                     break;
