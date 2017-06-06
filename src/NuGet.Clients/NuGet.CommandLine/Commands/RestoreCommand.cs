@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
@@ -71,17 +71,25 @@ namespace NuGet.CommandLine
 
             _msbuildDirectory = MsBuildUtility.GetMsBuildDirectoryFromMsBuildPath(MSBuildPath, MSBuildVersion, Console);
 
-            if (!string.IsNullOrEmpty(PackagesDirectory))
-            {
-                PackagesDirectory = Path.GetFullPath(PackagesDirectory);
-            }
-
             if (!string.IsNullOrEmpty(SolutionDirectory))
             {
                 SolutionDirectory = Path.GetFullPath(SolutionDirectory);
             }
 
             var restoreInputs = await DetermineRestoreInputsAsync();
+
+            if (!string.IsNullOrEmpty(PackagesDirectory))
+            {
+                // Default global folder
+                var globalPackagesFolder = SettingsUtility.GetGlobalPackagesFolder(Settings);
+
+                // Override packages folder
+                PackagesDirectory = GetEffectiveGlobalPackagesFolder(
+                                    Path.GetFullPath(PackagesDirectory),
+                                    SolutionDirectory,
+                                    restoreInputs,
+                                    globalPackagesFolder);
+            }
 
             var hasPackagesConfigFiles = restoreInputs.PackagesConfigFiles.Count > 0;
             var hasProjectJsonOrPackageReferences = restoreInputs.RestoreV3Context.Inputs.Any();
@@ -126,20 +134,13 @@ namespace NuGet.CommandLine
                     restoreContext.Sources = Source.ToList();
                     restoreContext.Log = Console;
                     restoreContext.CachingSourceProvider = GetSourceRepositoryProvider();
+                    restoreContext.GlobalPackagesFolder = PackagesDirectory;
 
                     var packageSaveMode = EffectivePackageSaveMode;
                     if (packageSaveMode != Packaging.PackageSaveMode.None)
                     {
                         restoreContext.PackageSaveMode = EffectivePackageSaveMode;
                     }
-
-                    // Override packages folder
-                    var globalPackagesFolder = SettingsUtility.GetGlobalPackagesFolder(Settings);
-                    restoreContext.GlobalPackagesFolder = GetEffectiveGlobalPackagesFolder(
-                                        PackagesDirectory,
-                                        SolutionDirectory,
-                                        restoreInputs,
-                                        globalPackagesFolder);
 
                     // Providers
                     // Use the settings loaded above in ReadSettings(restoreInputs)

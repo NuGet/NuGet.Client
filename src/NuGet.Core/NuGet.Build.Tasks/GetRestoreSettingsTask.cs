@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Microsoft.Build.Framework;
@@ -19,8 +18,6 @@ namespace NuGet.Build.Tasks
     /// </summary>
     public class GetRestoreSettingsTask : Task
     {
-        public static string CLEAR = "CLEAR";
-
         [Required]
         public string ProjectUniqueName { get; set; }
 
@@ -37,6 +34,27 @@ namespace NuGet.Build.Tasks
         public string[] RestoreAdditionalProjectSources { get; set; }
 
         public string[] RestoreAdditionalProjectFallbackFolders { get; set; }
+
+        /// <summary>
+        /// Command line value of RestorePackagesPath
+        /// </summary>
+        public string RestorePackagesPathOverride { get; set; }
+
+        /// <summary>
+        /// Command line value of RestoreSources
+        /// </summary>
+        public string[] RestoreSourcesOverride { get; set; }
+
+        /// <summary>
+        /// Command line value of RestoreFallbackFolders
+        /// </summary>
+        public string[] RestoreFallbackFoldersOverride { get; set; }
+
+        /// <summary>
+        /// Original working directory
+        /// </summary>
+        [Required]
+        public string MSBuildStartupDirectory { get; set; }
 
         /// <summary>
         /// Output items
@@ -57,98 +75,69 @@ namespace NuGet.Build.Tasks
 
         public override bool Execute()
         {
-            // Log Inputs
             var log = new MSBuildLogger(Log);
-            log.LogDebug($"(in) ProjectUniqueName '{ProjectUniqueName}'");
-            if (RestoreSources != null)
-            {
-                log.LogDebug($"(in) RestoreSources '{string.Join(";", RestoreSources.Select(p => p))}'");
-            }
-            if (RestorePackagesPath != null)
-            {
-                log.LogDebug($"(in) RestorePackagesPath '{RestorePackagesPath}'");
-            }
-            if (RestoreFallbackFolders != null)
-            {
-                log.LogDebug($"(in) RestoreFallbackFolders '{string.Join(";", RestoreFallbackFolders.Select(p => p))}'");
-            }
-            if (RestoreConfigFile != null)
-            {
-                log.LogDebug($"(in) RestoreConfigFile '{RestoreConfigFile}'");
-            }
 
-            if (RestoreSolutionDirectory != null)
-            {
-                log.LogDebug($"(in) RestoreSolutionDirectory '{RestoreSolutionDirectory}'");
-            }
-
-            if (RestoreAdditionalProjectSources != null)
-            {
-                log.LogDebug($"(in) RestoreAdditionalProjectSources '{RestoreAdditionalProjectSources}'");
-            }
-
-            if (RestoreAdditionalProjectFallbackFolders != null)
-            {
-                log.LogDebug($"(in) RestoreAdditionalProjectFallbackFolders '{RestoreAdditionalProjectFallbackFolders}'");
-            }
+            // Log Inputs
+            BuildTasksUtility.LogInputParam(log, nameof(ProjectUniqueName), ProjectUniqueName);
+            BuildTasksUtility.LogInputParam(log, nameof(RestoreSources), RestoreSources);
+            BuildTasksUtility.LogInputParam(log, nameof(RestorePackagesPath), RestorePackagesPath);
+            BuildTasksUtility.LogInputParam(log, nameof(RestoreFallbackFolders), RestoreFallbackFolders);
+            BuildTasksUtility.LogInputParam(log, nameof(RestoreConfigFile), RestoreConfigFile);
+            BuildTasksUtility.LogInputParam(log, nameof(RestoreSolutionDirectory), RestoreSolutionDirectory);
+            BuildTasksUtility.LogInputParam(log, nameof(RestoreAdditionalProjectSources), RestoreAdditionalProjectSources);
+            BuildTasksUtility.LogInputParam(log, nameof(RestoreAdditionalProjectFallbackFolders), RestoreAdditionalProjectFallbackFolders);
+            BuildTasksUtility.LogInputParam(log, nameof(RestorePackagesPathOverride), RestorePackagesPathOverride);
+            BuildTasksUtility.LogInputParam(log, nameof(RestoreSourcesOverride), RestoreSourcesOverride);
+            BuildTasksUtility.LogInputParam(log, nameof(RestoreFallbackFoldersOverride), RestoreFallbackFoldersOverride);
 
             try
             {
+                // Validate inputs
+                if (RestoreSourcesOverride == null
+                    && MSBuildRestoreUtility.LogErrorForClearIfInvalid(RestoreSources, ProjectUniqueName, log))
+                {
+                    // Fail due to invalid source combination
+                    return false;
+                }
+
+                if (RestoreFallbackFoldersOverride == null
+                    && MSBuildRestoreUtility.LogErrorForClearIfInvalid(RestoreFallbackFolders, ProjectUniqueName, log))
+                {
+                    // Fail due to invalid fallback combination
+                    return false;
+                }
+
+                // Settings
                 var settings = RestoreSettingsUtils.ReadSettings(RestoreSolutionDirectory, Path.GetDirectoryName(ProjectUniqueName), RestoreConfigFile, _machineWideSettings);
+                OutputConfigFilePaths = SettingsUtility.GetConfigFilePaths(settings).ToArray();
 
-                OutputPackagesPath = RestoreSettingsUtils.GetPackagesPath(ProjectUniqueName, settings, RestorePackagesPath);
+                // PackagesPath
+                OutputPackagesPath = RestoreSettingsUtils.GetValue(
+                    () => string.IsNullOrEmpty(RestorePackagesPathOverride) ? null : UriUtility.GetAbsolutePath(MSBuildStartupDirectory, RestorePackagesPathOverride),
+                    () => string.IsNullOrEmpty(RestorePackagesPath) ? null : UriUtility.GetAbsolutePathFromFile(ProjectUniqueName, RestorePackagesPath),
+                    () => SettingsUtility.GetGlobalPackagesFolder(settings));
 
-                if (RestoreSources == null)
-                {
-                    var packageSourceProvider = new PackageSourceProvider(settings);
-                    var packageSourcesFromProvider = packageSourceProvider.LoadPackageSources();
-                    OutputSources = packageSourcesFromProvider.Select(e => e.Source).ToArray();
-                }
-                else if (MSBuildRestoreUtility.ContainsClearKeyword(RestoreSources))
-                {
-                    if (MSBuildRestoreUtility.LogErrorForClearIfInvalid(RestoreSources, ProjectUniqueName, log))
-                    {
-                        // Fail due to invalid combination
-                        return false;
-                    }
-
-                    OutputSources = new string[] { };
-                }
-                else
-                {
-                    // Relative -> Absolute paths
-                    OutputSources = RestoreSources.Select(e => UriUtility.GetAbsolutePathFromFile(ProjectUniqueName, e)).ToArray();
-                }
+                // Sources
+                var currentSources = RestoreSettingsUtils.GetValue(
+                    () => RestoreSourcesOverride?.Select(e => UriUtility.GetAbsolutePath(MSBuildStartupDirectory, e)).ToArray(),
+                    () => MSBuildRestoreUtility.ContainsClearKeyword(RestoreSources) ? new string[0] : null,
+                    () => RestoreSources?.Select(e => UriUtility.GetAbsolutePathFromFile(ProjectUniqueName, e)).ToArray(),
+                    () => (new PackageSourceProvider(settings)).LoadPackageSources().Select(e => e.Source).ToArray());
 
                 // Append additional sources
-                OutputSources = AppendItems(OutputSources, RestoreAdditionalProjectSources)
+                OutputSources = AppendItems(currentSources, RestoreAdditionalProjectSources)
                     .OrderBy(s => s, new SourceTypeComparer())
                     .ToArray();
 
-                if (RestoreFallbackFolders == null)
-                {
-                    OutputFallbackFolders = SettingsUtility.GetFallbackPackageFolders(settings).ToArray();
-                }
-                else if (MSBuildRestoreUtility.ContainsClearKeyword(RestoreFallbackFolders))
-                {
-                    if (MSBuildRestoreUtility.LogErrorForClearIfInvalid(RestoreFallbackFolders, ProjectUniqueName, log))
-                    {
-                        // Fail due to invalid combination
-                        return false;
-                    }
-
-                    OutputFallbackFolders = new string[] { };
-                }
-                else
-                {
-                    // Relative -> Absolute paths
-                    OutputFallbackFolders = RestoreFallbackFolders.Select(e => UriUtility.GetAbsolutePathFromFile(ProjectUniqueName, e)).ToArray();
-                }
+                // Fallback folders
+                var currentFallbackFolders = RestoreSettingsUtils.GetValue(
+                    () => RestoreFallbackFoldersOverride?.Select(e => UriUtility.GetAbsolutePath(MSBuildStartupDirectory, e)).ToArray(),
+                    () => MSBuildRestoreUtility.ContainsClearKeyword(RestoreFallbackFolders) ? new string[0] : null,
+                    () => RestoreFallbackFolders?.Select(e => UriUtility.GetAbsolutePathFromFile(ProjectUniqueName, e)).ToArray(),
+                    () => SettingsUtility.GetFallbackPackageFolders(settings).ToArray());
 
                 // Append additional fallback folders
-                OutputFallbackFolders = AppendItems(OutputFallbackFolders, RestoreAdditionalProjectFallbackFolders);
-
-                OutputConfigFilePaths = SettingsUtility.GetConfigFilePaths(settings).ToArray();
+                OutputFallbackFolders = AppendItems(currentFallbackFolders, RestoreAdditionalProjectFallbackFolders);
             }
             catch (Exception ex)
             {
@@ -158,10 +147,10 @@ namespace NuGet.Build.Tasks
             }
 
             // Log Outputs
-            log.LogDebug($"(out) OutputPackagesPath '{OutputPackagesPath}'");
-            log.LogDebug($"(out) OutputSources '{string.Join(";", OutputSources.Select(p => p))}'");
-            log.LogDebug($"(out) OutputFallbackFolders '{string.Join(";", OutputFallbackFolders.Select(p => p))}'");
-            log.LogDebug($"(out) OutputConfigFilePaths '{string.Join(";", OutputConfigFilePaths.Select(p => p))}'");
+            BuildTasksUtility.LogOutputParam(log, nameof(OutputPackagesPath), OutputPackagesPath);
+            BuildTasksUtility.LogOutputParam(log, nameof(OutputSources), OutputSources);
+            BuildTasksUtility.LogOutputParam(log, nameof(OutputFallbackFolders), OutputFallbackFolders);
+            BuildTasksUtility.LogOutputParam(log, nameof(OutputConfigFilePaths), OutputConfigFilePaths);
 
             return true;
         }

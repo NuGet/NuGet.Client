@@ -101,10 +101,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <!-- Call restore -->
     <RestoreTask
       RestoreGraphItems="@(_RestoreGraphEntryFiltered)"
-      RestoreSources="$(RestoreSources)"
-      RestorePackagesPath="$(RestorePackagesPath)"
       RestoreDisableParallel="$(RestoreDisableParallel)"
-      RestoreConfigFile="$(RestoreConfigFile)"
       RestoreNoCache="$(RestoreNoCache)"
       RestoreIgnoreFailedSources="$(RestoreIgnoreFailedSources)"
       RestoreRecursive="$(RestoreRecursive)"
@@ -424,7 +421,10 @@ Copyright (c) .NET Foundation. All rights reserved.
     _GetRestoreSettings
     ============================================================
   -->
-  <Target Name="_GetRestoreSettings" DependsOnTargets="_GetRestoreProjectStyle" Returns="$(_OutputSources);$(_OutputPackagesPath);$(_OutputFallbackFolders);$(_OutputConfigFilePaths)">
+  <Target Name="_GetRestoreSettings"
+          DependsOnTargets="_GetRestoreProjectStyle;_GetRestoreSettingsOverrides"
+          Returns="$(_OutputSources);$(_OutputPackagesPath);$(_OutputFallbackFolders);$(_OutputConfigFilePaths)">
+
     <!-- For transitive project styles, we rely on evaluating all the settings and including them in the dg spec to faciliate no-op restore-->
     <GetRestoreSettingsTask Condition=" '$(RestoreProjectStyle)' == 'PackageReference' OR '$(RestoreProjectStyle)' == 'ProjectJson' "
      ProjectUniqueName="$(MSBuildProjectFullPath)"
@@ -435,7 +435,10 @@ Copyright (c) .NET Foundation. All rights reserved.
      RestoreSolutionDirectory="$(RestoreSolutionDirectory)"
      RestoreAdditionalProjectFallbackFolders="$(RestoreAdditionalProjectFallbackFolders)"
      RestoreAdditionalProjectSources="$(RestoreAdditionalProjectSources)"
-     >
+     RestorePackagesPathOverride="$(_RestorePackagesPathOverride)"
+     RestoreSourcesOverride="$(_RestoreSourcesOverride)"
+     RestoreFallbackFoldersOverride="$(_RestoreFallbackFoldersOverride)"
+     MSBuildStartupDirectory="$(MSBuildStartupDirectory)">
       <Output
         TaskParameter="OutputSources"
         PropertyName="_OutputSources" />
@@ -640,11 +643,11 @@ Copyright (c) .NET Foundation. All rights reserved.
         TaskParameter="RestoreGraphItems"
         ItemName="_RestoreGraphEntry" />
     </GetRestorePackageReferencesTask>
-    
+
     <PropertyGroup>
       <_CombinedFallbacks>$(PackageTargetFallback);$(AssetTargetFallback)</_CombinedFallbacks>
     </PropertyGroup>
-    
+
     <!-- Write out target framework information -->
     <ItemGroup Condition="  '$(RestoreProjectStyle)' == 'PackageReference' AND '$(_CombinedFallbacks)' != '' ">
       <_RestoreGraphEntry Include="$([System.Guid]::NewGuid())">
@@ -784,5 +787,96 @@ Copyright (c) .NET Foundation. All rights reserved.
           TaskParameter="Filtered"
           ItemName="_RestoreProjectPathItems" />
     </RemoveDuplicates>
+  </Target>
+
+  <!--
+    ============================================================
+    _GetRestoreSettingsOverrides
+    Get global property overrides that should be resolved
+    against the current working directory instead of the project.
+    This is done by calling into NuGet.targets in a new scope,
+    project properties will not be returned by the calls below.
+    ============================================================
+  -->
+  <Target Name="_GetRestoreSettingsOverrides"
+          Returns="$(_RestorePackagesPathOverride);$(_GetRestoreSourcesOverride);$(_GetRestoreFallbackFoldersOverride)">
+
+    <!-- RestorePackagesPathOverride -->
+    <MsBuild
+        Condition=" '$(RestorePackagesPath)' != '' "
+        Projects="$(MSBuildThisFileFullPath)"
+        Targets="_GetRestorePackagesPathOverride"
+        Properties="%(_MSBuildProjectReferenceExistent.SetConfiguration);
+                    %(_MSBuildProjectReferenceExistent.SetPlatform);"
+        RemoveProperties="%(_MSBuildProjectReferenceExistent.GlobalPropertiesToRemove)">
+
+      <Output
+          TaskParameter="TargetOutputs"
+          PropertyName="_RestorePackagesPathOverride" />
+    </MsBuild>
+
+    <!-- RestoreSourcesOverride -->
+    <MsBuild
+        Condition=" '$(RestoreSources)' != '' "
+        Projects="$(MSBuildThisFileFullPath)"
+        Targets="_GetRestoreSourcesOverride"
+        Properties="%(_MSBuildProjectReferenceExistent.SetConfiguration);
+                    %(_MSBuildProjectReferenceExistent.SetPlatform);"
+        RemoveProperties="%(_MSBuildProjectReferenceExistent.GlobalPropertiesToRemove)">
+
+      <Output
+          TaskParameter="TargetOutputs"
+          PropertyName="_RestoreSourcesOverride" />
+    </MsBuild>
+
+    <!-- RestoreFallbackFoldersOverride -->
+    <MsBuild
+        Condition=" '$(RestoreFallbackFolders)' != '' "
+        Projects="$(MSBuildThisFileFullPath)"
+        Targets="_GetRestoreFallbackFoldersOverride"
+        Properties="%(_MSBuildProjectReferenceExistent.SetConfiguration);
+                    %(_MSBuildProjectReferenceExistent.SetPlatform);"
+        RemoveProperties="%(_MSBuildProjectReferenceExistent.GlobalPropertiesToRemove)">
+
+      <Output
+          TaskParameter="TargetOutputs"
+          PropertyName="_RestoreFallbackFoldersOverride" />
+    </MsBuild>
+  </Target>
+
+  <!--
+    ============================================================
+    _GetRestorePackagesPathOverride
+    ============================================================
+  -->
+  <Target Name="_GetRestorePackagesPathOverride"
+          Returns="$(_RestorePackagesPathOverride)">
+    <PropertyGroup>
+      <_RestorePackagesPathOverride>$(RestorePackagesPath)</_RestorePackagesPathOverride>
+    </PropertyGroup>
+  </Target>
+
+  <!--
+    ============================================================
+    _GetRestoreSourcesOverride
+    ============================================================
+  -->
+  <Target Name="_GetRestoreSourcesOverride"
+          Returns="$(_RestoreSourcesOverride)">
+    <PropertyGroup>
+      <_RestoreSourcesOverride>$(RestoreSources)</_RestoreSourcesOverride>
+    </PropertyGroup>
+  </Target>
+
+  <!--
+    ============================================================
+    _GetRestoreFallbackFoldersOverride
+    ============================================================
+  -->
+  <Target Name="_GetRestoreFallbackFoldersOverride"
+          Returns="$(_RestoreFallbackFoldersOverride)">
+    <PropertyGroup>
+      <_RestoreFallbackFoldersOverride>$(RestoreFallbackFolders)</_RestoreFallbackFoldersOverride>
+    </PropertyGroup>
   </Target>
 </Project>

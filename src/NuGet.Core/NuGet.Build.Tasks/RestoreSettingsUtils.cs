@@ -1,12 +1,10 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using NuGet.Common;
 using NuGet.Configuration;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 
 namespace NuGet.Build.Tasks
 {
@@ -18,7 +16,7 @@ namespace NuGet.Build.Tasks
     {
         public static readonly string Clear = nameof(Clear);
 
-        public static ISettings ReadSettings(string solutionDirectory, string restoreDirectory, string restoreConfigFile, Lazy<IMachineWideSettings> machineWideSettings) 
+        public static ISettings ReadSettings(string solutionDirectory, string restoreDirectory, string restoreConfigFile, Lazy<IMachineWideSettings> machineWideSettings)
         {
             if (!string.IsNullOrEmpty(solutionDirectory))
             {
@@ -57,59 +55,20 @@ namespace NuGet.Build.Tasks
             }
         }
 
-        public static IList<string> GetFallbackFolders(string projectFullPath, ISettings settings, IEnumerable<string> fallbackFolders)
+        /// <summary>
+        /// Return the value from the first function that returns non-null.
+        /// </summary>
+        public static T GetValue<T>(params Func<T>[] funcs)
         {
-            if (ShouldReadFromSettings(fallbackFolders))
+            var result = default(T);
+
+            // Run until a value is returned from a function.
+            for (var i = 0; EqualityComparer<T>.Default.Equals(result, default(T)) && i < funcs.Length; i++)
             {
-                fallbackFolders = SettingsUtility.GetFallbackPackageFolders(settings);
-            }
-            else
-            {
-                fallbackFolders = HandleClear(fallbackFolders);
+                result = funcs[i]();
             }
 
-            return fallbackFolders.Select(e => UriUtility.GetAbsolutePathFromFile(projectFullPath, e)).ToList();
+            return result;
         }
-
-        public static IList<PackageSource> GetSources(string projectFullPath, ISettings settings, IEnumerable<string> sources)
-        {
-
-            if (ShouldReadFromSettings(sources))
-            {
-                sources = SettingsUtility.GetEnabledSources(settings).Select(e => e.Source);
-            }
-            else
-            {
-                sources = HandleClear(sources);
-            }
-
-            return sources.Select(e => new PackageSource(UriUtility.GetAbsolutePathFromFile(projectFullPath, e))).ToList();
-        }
-
-        public static string GetPackagesPath(string projectFullPath, ISettings settings, string packagePath)
-        {
-            if (string.IsNullOrEmpty(packagePath))
-            {
-                return SettingsUtility.GetGlobalPackagesFolder(settings);
-            }
-
-            return UriUtility.GetAbsolutePathFromFile(projectFullPath, packagePath);
-        }
-
-
-        private static bool ShouldReadFromSettings(IEnumerable<string> values)
-        {
-            return !values.Any() && values.All(e => !StringComparer.OrdinalIgnoreCase.Equals(Clear, e));
-        }
-
-        private static IEnumerable<string> HandleClear(IEnumerable<string> values)
-        {
-            if (values.Any(e => StringComparer.OrdinalIgnoreCase.Equals(Clear, e)))
-            {
-                return Enumerable.Empty<string>();
-            }
-            return values;
-        }
-
     }
 }
