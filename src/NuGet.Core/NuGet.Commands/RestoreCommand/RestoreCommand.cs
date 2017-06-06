@@ -40,7 +40,6 @@ namespace NuGet.Commands
 
         public RestoreCommand(RestoreRequest request)
         {
-
             _request = request ?? throw new ArgumentNullException(nameof(request));
 
             // Validate the lock file version requested
@@ -178,7 +177,7 @@ namespace NuGet.Commands
             {
                 cacheFile.Success = _success;
             }
-            
+
             // Write the logs into the assets file
             var logs = _logger.Errors
                 .Select(l => AssetsLogMessage.Create(l))
