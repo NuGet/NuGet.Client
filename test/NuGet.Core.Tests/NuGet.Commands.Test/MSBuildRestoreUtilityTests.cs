@@ -1667,6 +1667,56 @@ namespace NuGet.Commands.Test
             }
         }
 
+        [Theory]
+        [InlineData("/tmp/test/", "/tmp/test/")]
+        [InlineData("/tmp/test", "/tmp/test")]
+        [InlineData("tmp/test", "tmp/test")]
+        [InlineData("tmp", "tmp")]
+        [InlineData("http:", "http:")]
+        [InlineData("https:", "https:")]
+        [InlineData("file:", "file:")]
+        [InlineData("http:/", "http:/")]
+        [InlineData("https:/", "https:/")]
+        [InlineData("file:/", "file:/")]
+        [InlineData("http://", "http://")]
+        [InlineData("https://", "https://")]
+        [InlineData("file://", "file://")]
+        [InlineData("http://a", "http://a")]
+        [InlineData("https://a", "https://a")]
+        [InlineData("file://a", "file://a")]
+        [InlineData("http:/a", "http://a")]
+        [InlineData("https:/a", "https://a")]
+        [InlineData("file:/a", "file://a")]
+        [InlineData("HTtP:/a", "HTtP://a")]
+        [InlineData("HTTPs:/a", "HTTPs://a")]
+        [InlineData("fiLe:/a", "fiLe://a")]
+        [InlineData("http:///", "http:///")]
+        [InlineData("https:///", "https:///")]
+        [InlineData("file:///", "file:///")]
+        [InlineData("HTTPS:/api.NUGET.org/v3/index.json", "HTTPS://api.NUGET.org/v3/index.json")]
+        [InlineData(@"C:\source\", @"C:\source\")]
+        [InlineData(@"\\share\", @"\\share\")]
+        public void MSBuildRestoreUtility_FixSourcePath(string input, string expected)
+        {
+            MSBuildRestoreUtility.FixSourcePath(input).Should().Be(expected);
+        }
+
+        [PlatformFact(Platform.Windows)]
+        public void MSBuildRestoreUtility_FixSourcePath_VerifyDoubleSlashWindows()
+        {
+            var input = "file:/C:\tmp";
+
+            MSBuildRestoreUtility.FixSourcePath(input).Should().Be("file://C:\tmp");
+        }
+
+        [PlatformFact(Platform.Linux, Platform.Darwin)]
+        public void MSBuildRestoreUtility_FixSourcePath_VerifyTripleSlashOnNonWindows()
+        {
+            var input = "file:/tmp/test/";
+
+            MSBuildRestoreUtility.FixSourcePath(input).Should().Be("file:///tmp/test/");
+        }
+
         private static IDictionary<string, string> CreateProject(string root, string uniqueName)
         {
             var project1Path = Path.Combine(root, "a.csproj");

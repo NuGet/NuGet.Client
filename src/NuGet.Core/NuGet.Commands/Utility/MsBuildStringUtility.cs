@@ -72,7 +72,7 @@ namespace NuGet.Commands
         /// </summary>
         public static bool IsTrue(string value)
         {
-            return Boolean.TrueString.Equals(TrimAndGetNullForEmpty(value), StringComparison.OrdinalIgnoreCase);
+            return bool.TrueString.Equals(TrimAndGetNullForEmpty(value), StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>
