@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -93,26 +93,6 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             return resultantEnvDTEProjects;
-        }
-
-        public static Task<Dictionary<string, EnvDTE.Project>> GetPathToDTEProjectLookupAsync(EnvDTE.DTE dte)
-        {
-            var pathToProject = new Dictionary<string, EnvDTE.Project>(StringComparer.OrdinalIgnoreCase);
-
-            var supportedProjects = dte.Solution.Projects.Cast<EnvDTE.Project>();
-
-            foreach (var solutionProject in supportedProjects)
-            {
-                var solutionProjectPath = EnvDTEProjectInfoUtility.GetFullProjectPath(solutionProject);
-
-                if (!string.IsNullOrEmpty(solutionProjectPath) &&
-                    !pathToProject.ContainsKey(solutionProjectPath))
-                {
-                    pathToProject.Add(solutionProjectPath, solutionProject);
-                }
-            }
-
-            return Task.FromResult(pathToProject);
         }
     }
 }
