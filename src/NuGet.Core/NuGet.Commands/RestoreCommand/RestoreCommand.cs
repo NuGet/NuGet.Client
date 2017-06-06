@@ -173,11 +173,6 @@ namespace NuGet.Commands
             // Revert to the original case if needed
             await FixCaseForLegacyReaders(graphs, assetsFile, token);
 
-            if (cacheFile != null)
-            {
-                cacheFile.Success = _success;
-            }
-
             // Write the logs into the assets file
             var logs = _logger.Errors
                 .Select(l => AssetsLogMessage.Create(l))
@@ -186,6 +181,11 @@ namespace NuGet.Commands
             _success &= !logs.Any(l => l.Level == LogLevel.Error);
 
             assetsFile.LogMessages = logs;
+
+            if (cacheFile != null)
+            {
+                cacheFile.Success = _success;
+            }
 
             restoreTime.Stop();
             // Create result
