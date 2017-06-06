@@ -19,7 +19,7 @@ namespace NuGet.PackageManagement.VisualStudio
     [Export(typeof(IVsProjectAdapterProvider))]
     internal class VsProjectAdapterProvider : IVsProjectAdapterProvider
     {
-        private readonly Lazy<IDeferredProjectWorkspaceService> _workspaceService;
+        private readonly Lazy<IDeferredProjectWorkspaceService> _workspaceService = null;
         private readonly IVsProjectThreadingService _threadingService;
 
         private readonly Lazy<IVsSolution> _vsSolution;
@@ -28,14 +28,18 @@ namespace NuGet.PackageManagement.VisualStudio
         public VsProjectAdapterProvider(
             [Import(typeof(SVsServiceProvider))]
             IServiceProvider serviceProvider,
+#if !VS14
             Lazy<IDeferredProjectWorkspaceService> workspaceService,
+#endif
             IVsProjectThreadingService threadingService)
         {
             Assumes.Present(serviceProvider);
-            Assumes.Present(workspaceService);
             Assumes.Present(threadingService);
+#if !VS14
+            Assumes.Present(workspaceService);
 
             _workspaceService = workspaceService;
+#endif
             _threadingService = threadingService;
 
             _vsSolution = new Lazy<IVsSolution>(() => serviceProvider.GetService<SVsSolution, IVsSolution>());
