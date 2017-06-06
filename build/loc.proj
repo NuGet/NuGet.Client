@@ -27,7 +27,7 @@
     <Copy SourceFiles="@(NonProjectFilesToMove)" DestinationFiles="@(NonProjectFilesToMove->'%(DestinationDir)')"/>
     <ItemGroup>
       <FilesToLocalize Include="@(NonProjectFilesToMove->'%(DestinationDir)')">
-        <TranslationFile Condition="'%(Extension)' == '.dll'">$(LocalizationRootDirectory)\{Lang}\15\%(Filename).resources.dll.lcl</TranslationFile>    <!--Required: translation file-->
+        <TranslationFile Condition="'%(Extension)' == '.dll'">$(LocalizationRootDirectory)\{Lang}\15\%(Filename).dll.lcl</TranslationFile>    <!--Required: translation file-->
 	      <LciCommentFile Condition="'%(Extension)' == '.dll'">$(LocalizationRootDirectory)\comments\15\%(Filename).resources.dll.lci</LciCommentFile>
         <TranslationFile Condition="'%(Extension)' != '.dll'">$(LocalizationRootDirectory)\{Lang}\15\%(Filename)%(Extension).lcl</TranslationFile>    <!--Required: translation file-->
 	      <LciCommentFile Condition="'%(Extension)' != '.dll'">$(LocalizationRootDirectory)\comments\15\%(Filename)%(Extension).lci</LciCommentFile>
