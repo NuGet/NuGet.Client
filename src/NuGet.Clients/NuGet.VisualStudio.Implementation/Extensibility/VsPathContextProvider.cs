@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -119,19 +119,10 @@ namespace NuGet.VisualStudio
             outputPathContext = NuGetUIThreadHelper.JoinableTaskFactory.Run(
                 async () =>
                 {
-                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
                     var dte = await _dte.GetValueAsync();
+                    var lookup = await GetPathToDTEProjectLookupAsync(dte);
 
-                    EnvDTE.Project dteProject = null;
-                    var lookup = await EnvDTESolutionUtility.GetPathToDTEProjectLookupAsync(dte);
-
-                    if (lookup.ContainsKey(projectUniqueName))
-                    {
-                        dteProject = lookup[projectUniqueName];
-                    }
-
-                    if (dteProject == null)
+                    if (!lookup.TryGetValue(projectUniqueName, out var dteProject))
                     {
                         return null;
                     }
@@ -144,12 +135,32 @@ namespace NuGet.VisualStudio
                         return null;
                     }
 
-                    await TaskScheduler.Default;
-
                     return await CreatePathContextAsync(nuGetProject, CancellationToken.None);
                 });
 
             return outputPathContext != null;
+        }
+
+        private static async Task<Dictionary<string, EnvDTE.Project>> GetPathToDTEProjectLookupAsync(EnvDTE.DTE dte)
+        {
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+            var pathToProject = new Dictionary<string, EnvDTE.Project>(StringComparer.OrdinalIgnoreCase);
+
+            var supportedProjects = dte.Solution.Projects.Cast<EnvDTE.Project>();
+
+            foreach (var solutionProject in supportedProjects)
+            {
+                var solutionProjectPath = EnvDTEProjectInfoUtility.GetFullProjectPath(solutionProject);
+
+                if (!string.IsNullOrEmpty(solutionProjectPath) &&
+                    !pathToProject.ContainsKey(solutionProjectPath))
+                {
+                    pathToProject.Add(solutionProjectPath, solutionProject);
+                }
+            }
+
+            return pathToProject;
         }
 
         public async Task<IVsPathContext> CreatePathContextAsync(NuGetProject nuGetProject, CancellationToken token)
@@ -202,6 +213,9 @@ namespace NuGet.VisualStudio
                 throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, VsResources.PathContext_LockFileError));
             }
 
+            // switch to a background thread to process packages data
+            await TaskScheduler.Default;
+
             // The user packages folder is always the first package folder. Subsequent package folders are always
             // fallback package folders.
             var packageFolders = lockFile
@@ -251,9 +265,13 @@ namespace NuGet.VisualStudio
                 return null;
             }
 
+            var packageReferences = await msbuildNuGetProject.GetInstalledPackagesAsync(token);
+
+            // switch to a background thread to process packages data
+            await TaskScheduler.Default;
+
             var trie = new PathLookupTrie<string>();
 
-            var packageReferences = await msbuildNuGetProject.GetInstalledPackagesAsync(token);
             foreach (var pid in packageReferences.Select(pr => pr.PackageIdentity))
             {
                 var packageInstallPath = msbuildNuGetProject.FolderNuGetProject.GetInstalledPath(pid);
