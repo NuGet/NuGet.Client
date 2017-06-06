@@ -3,8 +3,10 @@
 using System;
 using System.Drawing;
 using System.Drawing.Text;
+using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using System.Windows.Forms.VisualStyles;
+using NuGet.PackageManagement.UI;
 
 namespace NuGet.Options
 {
@@ -114,6 +116,29 @@ namespace NuGet.Options
                     e.DrawFocusRectangle();
                 }
             }
+        }
+
+        protected override AccessibleObject CreateAccessibilityInstance()
+        {
+            return new CheckedListBoxAccessibleObject(this);
+        }
+
+        internal int FocusedIndex
+        {
+            get
+            {
+                if (IsHandleCreated)
+                {
+                    return unchecked((int)(long)SendMessage(NativeMethods.LB_GETCARETINDEX, 0, 0));
+                }
+
+                return -1;
+            }
+        }
+
+        internal IntPtr SendMessage(int msg, int wparam, int lparam)
+        {
+            return NativeMethods.SendMessage(new HandleRef(this, Handle), msg, wparam, lparam);
         }
     }
 }
