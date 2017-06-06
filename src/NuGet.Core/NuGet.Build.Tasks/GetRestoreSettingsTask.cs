@@ -125,8 +125,9 @@ namespace NuGet.Build.Tasks
                     () => (new PackageSourceProvider(settings)).LoadPackageSources().Select(e => e.Source).ToArray());
 
                 // Append additional sources
+                // Escape strings to avoid xplat path issues with msbuild.
                 OutputSources = AppendItems(currentSources, RestoreAdditionalProjectSources)
-                    .OrderBy(s => s, new SourceTypeComparer())
+                    .Select(MSBuildStringUtility.EscapeForwardSlashes)
                     .ToArray();
 
                 // Fallback folders

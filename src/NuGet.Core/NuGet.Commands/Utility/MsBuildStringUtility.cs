@@ -8,6 +8,9 @@ namespace NuGet.Commands
 {
     public static class MSBuildStringUtility
     {
+        private const string ForwardSlash = "/";
+        private const string ForwardSlashEscaped = "%2F";
+
         /// <summary>
         /// Split on ; and trim. Null or empty inputs will return an
         /// empty array.
@@ -72,7 +75,7 @@ namespace NuGet.Commands
         /// </summary>
         public static bool IsTrue(string value)
         {
-            return Boolean.TrueString.Equals(TrimAndGetNullForEmpty(value), StringComparison.OrdinalIgnoreCase);
+            return bool.TrueString.Equals(TrimAndGetNullForEmpty(value), StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>
@@ -81,6 +84,22 @@ namespace NuGet.Commands
         public static bool IsTrueOrEmpty(string value)
         {
             return TrimAndGetNullForEmpty(value) == null || IsTrue(value);
+        }
+
+        /// <summary>
+        /// Escape forward slashes to avoid xplat path issues.
+        /// </summary>
+        public static string EscapeForwardSlashes(string s)
+        {
+            return s?.Replace(ForwardSlash, ForwardSlashEscaped);
+        }
+
+        /// <summary>
+        /// Unescape forward slashes.
+        /// </summary>
+        public static string UnEscapeForwardSlashes(string s)
+        {
+            return s?.Replace(ForwardSlashEscaped, ForwardSlash);
         }
     }
 }

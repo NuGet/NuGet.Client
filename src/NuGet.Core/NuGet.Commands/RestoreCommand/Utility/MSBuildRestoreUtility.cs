@@ -177,7 +177,9 @@ namespace NuGet.Commands
 
                     foreach (var source in MSBuildStringUtility.Split(specItem.GetProperty("Sources")))
                     {
-                        result.RestoreMetadata.Sources.Add(new PackageSource(source));
+                        // Unescape slashes that were escaped in GetRestoreSettingsTask
+                        var pkgSource = new PackageSource(MSBuildStringUtility.UnEscapeForwardSlashes(source));
+                        result.RestoreMetadata.Sources.Add(pkgSource);
                     }
 
                     foreach (var configFilePath in MSBuildStringUtility.Split(specItem.GetProperty("ConfigFilePaths")))
