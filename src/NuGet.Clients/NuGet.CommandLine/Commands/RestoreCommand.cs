@@ -78,19 +78,6 @@ namespace NuGet.CommandLine
 
             var restoreInputs = await DetermineRestoreInputsAsync();
 
-            if (!string.IsNullOrEmpty(PackagesDirectory))
-            {
-                // Default global folder
-                var globalPackagesFolder = SettingsUtility.GetGlobalPackagesFolder(Settings);
-
-                // Override packages folder
-                PackagesDirectory = GetEffectiveGlobalPackagesFolder(
-                                    Path.GetFullPath(PackagesDirectory),
-                                    SolutionDirectory,
-                                    restoreInputs,
-                                    globalPackagesFolder);
-            }
-
             var hasPackagesConfigFiles = restoreInputs.PackagesConfigFiles.Count > 0;
             var hasProjectJsonOrPackageReferences = restoreInputs.RestoreV3Context.Inputs.Any();
             if (!hasPackagesConfigFiles && !hasProjectJsonOrPackageReferences)
@@ -131,10 +118,8 @@ namespace NuGet.CommandLine
                     restoreContext.AllowNoOp = !Force; // if force, no-op is not allowed
                     restoreContext.ConfigFile = ConfigFile;
                     restoreContext.MachineWideSettings = MachineWideSettings;
-                    restoreContext.Sources = Source.ToList();
                     restoreContext.Log = Console;
                     restoreContext.CachingSourceProvider = GetSourceRepositoryProvider();
-                    restoreContext.GlobalPackagesFolder = PackagesDirectory;
 
                     var packageSaveMode = EffectivePackageSaveMode;
                     if (packageSaveMode != Packaging.PackageSaveMode.None)
@@ -172,44 +157,6 @@ namespace NuGet.CommandLine
             {
                 throw new ExitCodeException(exitCode: 1);
             }
-        }
-
-        private static string GetEffectiveGlobalPackagesFolder(
-            string packagesDirectoryParameter,
-            string solutionDirectoryParameter,
-            PackageRestoreInputs packageRestoreInputs,
-            string globalPackagesFolder)
-        {
-            // Return the -PackagesDirectory parameter if specified
-            if (!string.IsNullOrEmpty(packagesDirectoryParameter))
-            {
-                return packagesDirectoryParameter;
-            }
-
-            // Return the globalPackagesFolder as-is if it is a full path
-            if (Path.IsPathRooted(globalPackagesFolder))
-            {
-                return globalPackagesFolder;
-            }
-            else if (!string.IsNullOrEmpty(solutionDirectoryParameter)
-                || packageRestoreInputs.RestoringWithSolutionFile)
-            {
-                var solutionDirectory = packageRestoreInputs.RestoringWithSolutionFile ?
-                    packageRestoreInputs.DirectoryOfSolutionFile :
-                    solutionDirectoryParameter;
-
-                // -PackagesDirectory parameter was not provided and globalPackagesFolder is a relative path.
-                // Use the solutionDirectory to construct the full path
-                return Path.Combine(solutionDirectory, globalPackagesFolder);
-            }
-
-            // -PackagesDirectory parameter was not provided and globalPackagesFolder is a relative path.
-            // solution directory is not available either. Throw
-            var message = string.Format(
-                CultureInfo.CurrentCulture,
-                LocalizedResourceManager.GetString("RestoreCommandCannotDetermineGlobalPackagesFolder"));
-
-            throw new CommandLineException(message);
         }
 
         private static CachingSourceProvider _sourceProvider;
