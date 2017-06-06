@@ -1,14 +1,14 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using FluentAssertions;
 using NuGet.Configuration;
 using NuGet.Configuration.Test;
 using NuGet.Test.Utility;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
 using Xunit;
 
 namespace NuGet.Build.Tasks.Test
@@ -25,6 +25,31 @@ namespace NuGet.Build.Tasks.Test
             }
         }
 
+        [Fact]
+        public void GetRestoreSettingsTask_GetValueGetFirstValue()
+        {
+            RestoreSettingsUtils.GetValue(
+                () => "a",
+                () => "b",
+                () => null).Should().Be("a");
+        }
+
+        [Fact]
+        public void GetRestoreSettingsTask_GetValueGetLastValue()
+        {
+            RestoreSettingsUtils.GetValue(
+                () => null,
+                () => null,
+                () => new string[0]).ShouldBeEquivalentTo(new string[0]);
+        }
+
+        [Fact]
+        public void GetRestoreSettingsTask_GetValueAllNull()
+        {
+            RestoreSettingsUtils.GetValue<string[]>(
+                () => null,
+                () => null).Should().BeNull();
+        }
 
         [Fact]
         public void TestSolutionSettings()

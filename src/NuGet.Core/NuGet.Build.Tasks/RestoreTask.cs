@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -23,6 +23,7 @@ namespace NuGet.Build.Tasks
     /// </summary>
     public class RestoreTask : Microsoft.Build.Utilities.Task, ICancelableTask, IDisposable
     {
+        private const string HttpUserAgent = "NuGet MSBuild Task";
         private readonly CancellationTokenSource _cts = new CancellationTokenSource();
 
         /// <summary>
@@ -32,29 +33,9 @@ namespace NuGet.Build.Tasks
         public ITaskItem[] RestoreGraphItems { get; set; }
 
         /// <summary>
-        /// NuGet sources, ; delimited
-        /// </summary>
-        public string RestoreSources { get; set; }
-
-        /// <summary>
-        /// NuGet fallback folders
-        /// </summary>
-        public string RestoreFallbackFolders { get; set; }
-
-        /// <summary>
-        /// User packages folder
-        /// </summary>
-        public string RestorePackagesPath { get; set; }
-
-        /// <summary>
         /// Disable parallel project restores and downloads
         /// </summary>
         public bool RestoreDisableParallel { get; set; }
-
-        /// <summary>
-        /// NuGet.Config path
-        /// </summary>
-        public string RestoreConfigFile { get; set; }
 
         /// <summary>
         /// Disable the web cache
@@ -88,11 +69,7 @@ namespace NuGet.Build.Tasks
 
             // Log inputs
             log.LogDebug($"(in) RestoreGraphItems Count '{RestoreGraphItems?.Count() ?? 0}'");
-            log.LogDebug($"(in) RestoreSources '{RestoreSources}'");
-            log.LogDebug($"(in) RestorePackagesPath '{RestorePackagesPath}'");
-            log.LogDebug($"(in) RestoreFallbackFolders '{RestoreFallbackFolders}'");
             log.LogDebug($"(in) RestoreDisableParallel '{RestoreDisableParallel}'");
-            log.LogDebug($"(in) RestoreConfigFile '{RestoreConfigFile}'");
             log.LogDebug($"(in) RestoreNoCache '{RestoreNoCache}'");
             log.LogDebug($"(in) RestoreIgnoreFailedSources '{RestoreIgnoreFailedSources}'");
             log.LogDebug($"(in) RestoreRecursive '{RestoreRecursive}'");
@@ -165,9 +142,7 @@ namespace NuGet.Build.Tasks
                 {
                     CacheContext = cacheContext,
                     LockFileVersion = LockFileFormat.Version,
-                    ConfigFile = MSBuildStringUtility.TrimAndGetNullForEmpty(RestoreConfigFile),
                     DisableParallel = RestoreDisableParallel,
-                    GlobalPackagesFolder = RestorePackagesPath,
                     Log = log,
                     MachineWideSettings = new XPlatMachineWideSetting(),
                     PreLoadedRequestProviders = providers,
@@ -175,12 +150,6 @@ namespace NuGet.Build.Tasks
                     AllowNoOp = !RestoreForce,
                     HideWarningsAndErrors = HideWarningsAndErrors
                 };
-
-                if (!string.IsNullOrEmpty(RestoreSources))
-                {
-                    var sources = MSBuildStringUtility.Split(RestoreSources);
-                    restoreContext.Sources.AddRange(sources);
-                }
 
                 if (restoreContext.DisableParallel)
                 {
@@ -212,14 +181,12 @@ namespace NuGet.Build.Tasks
 
         private static void SetUserAgent()
         {
-            var agent = "NuGet MSBuild Task";
-
 #if IS_CORECLR
-            UserAgent.SetUserAgentString(new UserAgentStringBuilder(agent)
+            UserAgent.SetUserAgentString(new UserAgentStringBuilder(HttpUserAgent)
                 .WithOSDescription(RuntimeInformation.OSDescription));
 #else
             // OS description is set by default on Desktop
-            UserAgent.SetUserAgentString(new UserAgentStringBuilder(agent));
+            UserAgent.SetUserAgentString(new UserAgentStringBuilder(HttpUserAgent));
 #endif
         }
 
