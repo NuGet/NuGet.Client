@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -178,9 +178,10 @@ namespace NuGet.Common
             return Task.FromResult(0);
         }
 
-        public void BeginProcessing()
+        public Task BeginProcessingAsync()
         {
             // No-op outside of visual studio, this is implemented in other project systems, like vsmsbuild & website.
+            return Task.FromResult(0);
         }
 
         public void RegisterProcessedFiles(IEnumerable<string> files)
@@ -188,9 +189,10 @@ namespace NuGet.Common
             // No-op outside of visual studio, this is implemented in other project systems, like vsmsbuild & website.
         }
 
-        public void EndProcessing()
+        public Task EndProcessingAsync()
         {
             // No-op outside of visual studio, this is implemented in other project systems, like vsmsbuild & website.
+            return Task.FromResult(0);
         }
 
         public void DeleteDirectory(string path, bool recursive)

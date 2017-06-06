@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -189,8 +189,9 @@ namespace NuGet.PackageManagement.VisualStudio
             return base.GetDirectories(path);
         }
 
-        public override void BeginProcessing()
+        public override Task BeginProcessingAsync()
         {
+            return Task.FromResult(0);
         }
 
         public override void RegisterProcessedFiles(IEnumerable<string> files)
@@ -218,9 +219,11 @@ namespace NuGet.PackageManagement.VisualStudio
             }
         }
 
-        public override void EndProcessing()
+        public override Task EndProcessingAsync()
         {
             _excludedCodeFiles.Clear();
+
+            return Task.FromResult(0);
         }
     }
 }

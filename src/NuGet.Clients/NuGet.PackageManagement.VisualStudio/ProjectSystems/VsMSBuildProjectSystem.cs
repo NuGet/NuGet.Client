@@ -1,10 +1,9 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -589,9 +588,10 @@ namespace NuGet.PackageManagement.VisualStudio
 
         #endregion Binding Redirects Stuff
 
-        [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD010", Justification = "NuGet/Home#4833 Baseline")]
-        public virtual void BeginProcessing()
+        public virtual async Task BeginProcessingAsync()
         {
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
             ProjectBuildSystem?.StartBatchEdit();
         }
 
@@ -600,9 +600,10 @@ namespace NuGet.PackageManagement.VisualStudio
             // No-op, this is implemented in other project systems, like website.
         }
 
-        [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD010", Justification = "NuGet/Home#4833 Baseline")]
-        public virtual void EndProcessing()
+        public virtual async Task EndProcessingAsync()
         {
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
             ProjectBuildSystem?.EndBatchEdit();
         }
 

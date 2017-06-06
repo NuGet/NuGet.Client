@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -2105,7 +2105,7 @@ namespace NuGet.PackageManagement
                         if (msbuildProject != null)
                         {
                             //start batch processing for msbuild
-                            msbuildProject.ProjectSystem.BeginProcessing();
+                            await msbuildProject.ProjectSystem.BeginProcessingAsync();
 
                             // raise Nuget batch start event
                             var batchId = Guid.NewGuid().ToString();
@@ -2175,7 +2175,7 @@ namespace NuGet.PackageManagement
                         {
                             // end batch for msbuild and let it save everything.
                             // always calls it before PostProcessAsync or binding redirects
-                            msbuildProject.ProjectSystem.EndProcessing();
+                            await msbuildProject.ProjectSystem.EndProcessingAsync();
                         }
                     }
 
