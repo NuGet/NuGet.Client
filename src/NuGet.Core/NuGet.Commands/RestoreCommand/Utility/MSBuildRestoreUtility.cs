@@ -179,8 +179,8 @@ namespace NuGet.Commands
 
                     foreach (var source in MSBuildStringUtility.Split(specItem.GetProperty("Sources")))
                     {
-                        // Unescape slashes that were escaped in GetRestoreSettingsTask
-                        var pkgSource = new PackageSource(MSBuildStringUtility.UnEscapeForwardSlashes(source));
+                        // Fix slashes incorrectly removed by MSBuild 
+                        var pkgSource = new PackageSource(FixSourcePath(source));
                         result.RestoreMetadata.Sources.Add(pkgSource);
                     }
 
@@ -778,7 +778,7 @@ namespace NuGet.Commands
 
         private static bool IsPropertyTrue(IMSBuildItem item, string propertyName)
         {
-            return StringComparer.OrdinalIgnoreCase.Equals(item.GetProperty(propertyName), Boolean.TrueString);
+            return StringComparer.OrdinalIgnoreCase.Equals(item.GetProperty(propertyName), bool.TrueString);
         }
 
         private static readonly Lazy<bool> _isPersistDGSet = new Lazy<bool>(() => IsPersistDGSet());

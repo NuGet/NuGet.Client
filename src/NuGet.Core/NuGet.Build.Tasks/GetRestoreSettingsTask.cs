@@ -126,9 +126,7 @@ namespace NuGet.Build.Tasks
 
                 // Append additional sources
                 // Escape strings to avoid xplat path issues with msbuild.
-                OutputSources = AppendItems(currentSources, RestoreAdditionalProjectSources?.Select(MSBuildRestoreUtility.FixSourcePath).ToArray())
-                    .Select(MSBuildStringUtility.EscapeForwardSlashes)
-                    .ToArray();
+                OutputSources = AppendItems(currentSources, RestoreAdditionalProjectSources?.Select(MSBuildRestoreUtility.FixSourcePath).ToArray());
 
                 // Fallback folders
                 var currentFallbackFolders = RestoreSettingsUtils.GetValue(
