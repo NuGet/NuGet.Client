@@ -205,8 +205,16 @@ function DowngradeVSIX
 
     if ($p.ExitCode -ne 0)
     {
+        if($p.ExitCode -eq 2001)
+        {
+            Write-Host "This VS2017 version does not support downgrade. Moving on to installing the VSIX! Exit code: $($p.ExitCode)" 
+            return $true
+        }
+        else 
+        {
             Write-Error "Error downgrading the VSIX! Exit code: $($p.ExitCode)"
             return $false
+        }
     }
 
     start-sleep -Seconds $VSIXInstallerWaitTimeInSecs

@@ -46,16 +46,16 @@ if($VSVersion -eq '14.0')
 }
 else 
 {
-        #We don't care for the downgrade result...we should be able to install on top anyways.
-        $success = DowngradeVSIX $NuGetVSIXID $VSVersion $VSIXInstallerWaitTimeInSecs
+    #We don't care for the downgrade result...we should be able to install on top anyways.
+    $success = DowngradeVSIX $NuGetVSIXID $VSVersion $VSIXInstallerWaitTimeInSecs
+    
+    if ($success -eq $false)
+    {
+        exit 1
+    }
         
-        if ($success -eq $false)
-	{
-		exit 1
-	}
-        
-	# Clearing MEF cache helps load the right dlls for vsix
-	ClearDev15MEFCache
+    # Clearing MEF cache helps load the right dlls for vsix
+    ClearDev15MEFCache
 }
 
 $success = InstallVSIX $VSIXPath $VSVersion $VSIXInstallerWaitTimeInSecs
