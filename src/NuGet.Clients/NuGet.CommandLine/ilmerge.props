@@ -28,7 +28,6 @@
     <MergeExclude Include="$(OutputPath)System.dll"/>
     <MergeExclude Include="$(OutputPath)System.Globalization.dll"/>
     <MergeExclude Include="$(OutputPath)System.IdentityModel.dll"/>
-    <MergeExclude Include="$(OutputPath)System.IO.Compression.dll"/>
     <MergeExclude Include="$(OutputPath)System.Net.Http.dll"/>
     <MergeExclude Include="$(OutputPath)System.Net.Http.WebRequest.dll"/>
     <MergeExclude Include="$(OutputPath)System.Runtime.dll"/>
