@@ -140,6 +140,7 @@
       <PowerShellCmdletsHelpFiles Include="@(_PowerShellCmdletsHelpFiles)">
         <TranslationFile>$(LocalizationRootDirectory)\{Lang}\15\%(_PowerShellCmdletsHelpFiles.Filename)%(_PowerShellCmdletsHelpFiles.Extension).lcl</TranslationFile>    <!--Required: translation file-->
 	      <LciCommentFile>$(LocalizationRootDirectory)\comments\15\%(_PowerShellCmdletsHelpFiles.Filename)%(_PowerShellCmdletsHelpFiles.Extension).lci</LciCommentFile>
+        <Parser>210</Parser>
       </PowerShellCmdletsHelpFiles>
     </ItemGroup>
   </Target>
