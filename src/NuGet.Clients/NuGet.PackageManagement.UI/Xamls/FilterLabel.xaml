@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="NuGet.PackageManagement.UI.FilterLabel"
+<UserControl x:Class="NuGet.PackageManagement.UI.FilterLabel"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -19,17 +19,17 @@
       <RowDefinition Height="auto" />
       <RowDefinition Height="auto" />
     </Grid.RowDefinitions>
-    <Button x:Name="_labelButton"
+    <nuget:TabItemButton x:Name="_labelButton"
       Grid.Row="0"
       Click="ButtonClicked"
       AutomationProperties.AutomationId="{Binding ElementName=_labelText, Path=Text}"
       AutomationProperties.Name="{Binding ElementName=_labelText, Path=Text}"
       FocusVisualStyle="{DynamicResource ControlsFocusVisualStyle}">
-      <Button.Template>
+      <nuget:TabItemButton.Template>
         <ControlTemplate TargetType="{x:Type Button}">
           <ContentPresenter />
         </ControlTemplate>
-      </Button.Template>
+      </nuget:TabItemButton.Template>
       <StackPanel Orientation="Horizontal">
         <TextBlock
           x:Name="_labelText"
@@ -58,7 +58,7 @@
             Foreground="{DynamicResource {x:Static nuget:Brushes.ContentSelectedTextBrushKey}}"/>
         </Border>
       </StackPanel>
-    </Button>
+    </nuget:TabItemButton>
 
     <!-- the line under the text to indicate that this label is selected -->
     <Rectangle
