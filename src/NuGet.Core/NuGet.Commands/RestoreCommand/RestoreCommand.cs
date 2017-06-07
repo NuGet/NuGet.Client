@@ -54,6 +54,7 @@ namespace NuGet.Commands
 
             var collectorLogger = new RestoreCollectorLogger(_request.Log, collectorLoggerHideWarningsAndErrors)
             {
+                ProjectPath = _request.Project.RestoreMetadata.ProjectPath,
                 WarningPropertiesCollection =  new WarningPropertiesCollection()
                 {
                     ProjectWideWarningProperties = request.Project?.RestoreMetadata?.ProjectWideWarningProperties,
