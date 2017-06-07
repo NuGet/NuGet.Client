@@ -1685,7 +1685,6 @@ namespace NuGet.Commands.Test
         [InlineData("https://a", "https://a")]
         [InlineData("http:/a", "http://a")]
         [InlineData("https:/a", "https://a")]
-        [InlineData("file:/a", "file://a")]
         [InlineData("HTtP:/a", "HTtP://a")]
         [InlineData("HTTPs:/a", "HTTPs://a")]
         [InlineData("http:///", "http:///")]
