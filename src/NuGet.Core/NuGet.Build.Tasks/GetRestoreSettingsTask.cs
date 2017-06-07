@@ -119,14 +119,14 @@ namespace NuGet.Build.Tasks
 
                 // Sources
                 var currentSources = RestoreSettingsUtils.GetValue(
-                    () => RestoreSourcesOverride?.Select(e => UriUtility.GetAbsolutePath(MSBuildStartupDirectory, e)).ToArray(),
+                    () => RestoreSourcesOverride?.Select(MSBuildRestoreUtility.FixSourcePath).Select(e => UriUtility.GetAbsolutePath(MSBuildStartupDirectory, e)).ToArray(),
                     () => MSBuildRestoreUtility.ContainsClearKeyword(RestoreSources) ? new string[0] : null,
-                    () => RestoreSources?.Select(e => UriUtility.GetAbsolutePathFromFile(ProjectUniqueName, e)).ToArray(),
+                    () => RestoreSources?.Select(MSBuildRestoreUtility.FixSourcePath).Select(e => UriUtility.GetAbsolutePathFromFile(ProjectUniqueName, e)).ToArray(),
                     () => (new PackageSourceProvider(settings)).LoadPackageSources().Select(e => e.Source).ToArray());
 
                 // Append additional sources
                 // Escape strings to avoid xplat path issues with msbuild.
-                OutputSources = AppendItems(currentSources, RestoreAdditionalProjectSources)
+                OutputSources = AppendItems(currentSources, RestoreAdditionalProjectSources?.Select(MSBuildRestoreUtility.FixSourcePath).ToArray())
                     .Select(MSBuildStringUtility.EscapeForwardSlashes)
                     .ToArray();
 

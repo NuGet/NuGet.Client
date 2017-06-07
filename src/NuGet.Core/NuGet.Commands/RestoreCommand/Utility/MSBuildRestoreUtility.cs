@@ -24,6 +24,8 @@ namespace NuGet.Commands
     {
         // Clear keyword for properties.
         public static readonly string Clear = nameof(Clear);
+        private static readonly string[] _httpPrefixes = new string[] { "http:", "https:" };
+        private const string DoubleSlash = "//";
 
         /// <summary>
         /// Convert MSBuild items to a DependencyGraphSpec.
@@ -735,6 +737,43 @@ namespace NuGet.Commands
             props.NoWarn.UnionWith(GetNuGetLogCodes(noWarn));
 
             return props;
+        }
+
+        /// <summary>
+        /// Convert http:/url to http://url 
+        /// If not needed the same path is returned. This is to work around
+        /// issues with msbuild dropping slashes from paths on linux and osx.
+        /// </summary>
+        public static string FixSourcePath(string s)
+        {
+            var result = s;
+
+            if (result.IndexOf('/') >= -1 && result.IndexOf(DoubleSlash) == -1)
+            {
+                for (var i = 0; i < _httpPrefixes.Length; i++)
+                {
+                    result = FixSourcePath(result, _httpPrefixes[i], DoubleSlash);
+                }
+
+                // For non-windows machines use file:///
+                var fileSlashes = RuntimeEnvironmentHelper.IsWindows ? DoubleSlash : "///";
+                result = FixSourcePath(result, "file:", fileSlashes);
+            }
+
+            return result;
+        }
+
+        private static string FixSourcePath(string s, string prefixWithoutSlashes, string slashes)
+        {
+            if (s.Length >= (prefixWithoutSlashes.Length + 2)
+                && s.StartsWith($"{prefixWithoutSlashes}/", StringComparison.OrdinalIgnoreCase)
+                && !s.StartsWith($"{prefixWithoutSlashes}{DoubleSlash}", StringComparison.OrdinalIgnoreCase))
+            {
+                // original prefix casing + // + rest of the path
+                return s.Substring(0, prefixWithoutSlashes.Length) + slashes + s.Substring(prefixWithoutSlashes.Length + 1);
+            }
+
+            return s;
         }
 
         private static bool IsPropertyTrue(IMSBuildItem item, string propertyName)
