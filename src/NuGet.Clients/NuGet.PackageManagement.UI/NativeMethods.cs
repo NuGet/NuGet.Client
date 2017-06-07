@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 
 namespace NuGet.PackageManagement.UI
 {
-    internal class NativeMethods
+    internal static class NativeMethods
     {
         public const int LB_GETCARETINDEX = 0x019F;
 

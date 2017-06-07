@@ -4,19 +4,22 @@
 using System.Drawing;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
+using Microsoft;
 using NuGet.PackageManagement.UI;
 
 namespace NuGet.Options
 {
     internal class CheckedListBoxItemAccessibleObject : AccessibleObject
     {
-        private string _helpText;
+        private readonly string _helpText;
+        private readonly int _index;
+        private readonly CheckedListBoxAccessibleObject _parent;
         private string _name;
-        private int _index;
-        private CheckedListBoxAccessibleObject _parent;
 
         public CheckedListBoxItemAccessibleObject(CheckedListBoxAccessibleObject parent, string name, int index, string helpText) : base()
         {
+            Assumes.Present(parent);
+
             _name = name;
             _parent = parent;
             _index = index;
