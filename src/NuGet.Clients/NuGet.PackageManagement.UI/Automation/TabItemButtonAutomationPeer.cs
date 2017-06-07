@@ -34,7 +34,7 @@ namespace NuGet.PackageManagement.UI.Automation
         {
             get
             {
-                return this.tabItemButton.IsPressed;
+                return this.tabItemButton.IsFocused;
             }
         }
 

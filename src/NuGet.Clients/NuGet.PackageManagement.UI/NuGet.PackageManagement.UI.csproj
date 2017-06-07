@@ -46,7 +46,7 @@
   <ItemGroup>
     <Compile Include="Actions\UIActionEngine.cs" />
     <Compile Include="Actions\UpdatePreviewResult.cs" />
-    <Compile Include="Automation\TabItemAutomationPeer.cs" />
+    <Compile Include="Automation\TabItemButtonAutomationPeer.cs" />
     <Compile Include="Common\ErrorFloodGate.cs" />
     <Compile Include="Common\NuGetEvent.cs" />
     <Compile Include="Common\NuGetEventTrigger.cs" />
