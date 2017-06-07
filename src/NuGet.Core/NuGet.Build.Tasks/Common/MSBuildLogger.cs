@@ -68,11 +68,7 @@ namespace NuGet.Build
                         logMessage = new RestoreLogMessage(message.Level, message.Message)
                         {
                             Code = message.Code,
-                            FilePath = message.ProjectPath,
-                            StartLineNumber = -1,
-                            EndLineNumber = -1,
-                            StartColumnNumber = -1,
-                            EndColumnNumber = -1
+                            FilePath = message.ProjectPath
                         };
                     }
                     LogForNonMono(logMessage);
