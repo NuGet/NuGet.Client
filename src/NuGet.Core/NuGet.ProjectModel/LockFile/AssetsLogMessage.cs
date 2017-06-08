@@ -20,10 +20,10 @@ namespace NuGet.ProjectModel
         public string FilePath { get; set; }
         public string LibraryId { get; set; }
         public IReadOnlyList<string> TargetGraphs { get; set; }
-        public int StartLineNumber { get; set; } = -1;
-        public int StartColumnNumber { get; set; } = -1;
-        public int EndLineNumber { get; set; } = -1;
-        public int EndColumnNumber { get; set; } = -1;
+        public int StartLineNumber { get; set; }
+        public int StartColumnNumber { get; set; }
+        public int EndLineNumber { get; set; }
+        public int EndColumnNumber { get; set; }
 
         public static IAssetsLogMessage Create(IRestoreLogMessage logMessage)
         {
