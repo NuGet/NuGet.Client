@@ -50,7 +50,7 @@ $RunTests = (-not $SkipTests) -and (-not $Fast)
 $VS14Installed = Test-MSBuildVersionPresent -MSBuildVersion "14"
 $SkipVS14 = $SkipVS14 -or -not $VS14Installed
 
-$VS15Installed = Test-MSBuildVersionPresent -MSBuildVersion "15"
+$VS15Installed = (Test-MSBuildVersionPresent -MSBuildVersion "15") -Or (Test-Path 'C:\Windows\Microsoft.NET\Framework64\v4.0.30319')
 $SkipVS15 = $SkipVS15 -or -not $VS15Installed
 
 Write-Host ("`r`n" * 3)
