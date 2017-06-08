@@ -545,7 +545,7 @@ Function Get-MSBuildExe {
 
     if ($MSBuildVersion -eq "15") {
         $path = [System.Runtime.InteropServices.RuntimeEnvironment]::GetRuntimeDirectory()
-        JoinPath $path "msbuild.exe"
+        Join-Path $path "msbuild.exe"
     }
 
     $MSBuildExe = Join-Path $MSBuildRoot ($MSBuildVersion + ".0")
