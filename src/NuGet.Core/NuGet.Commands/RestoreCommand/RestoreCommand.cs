@@ -210,25 +210,22 @@ namespace NuGet.Commands
         {
             var logMessages = _request.ExistingLockFile?.LogMessages ?? Enumerable.Empty<IAssetsLogMessage>();
 
-            if (logMessages != null)
+            foreach (var logMessage in logMessages)
             {
-                foreach (var logMessage in logMessages)
+                var restoreLogMessage = new RestoreLogMessage(logMessage.Level, logMessage.Code, logMessage.Message)
                 {
-                    var restoreLogMessage = new RestoreLogMessage(logMessage.Level, logMessage.Code, logMessage.Message)
-                    {
-                        ProjectPath = logMessage.ProjectPath,
-                        WarningLevel = logMessage.WarningLevel,
-                        FilePath = logMessage.FilePath,
-                        LibraryId = logMessage.LibraryId,
-                        TargetGraphs = logMessage.TargetGraphs,
-                        StartLineNumber = logMessage.StartLineNumber,
-                        StartColumnNumber = logMessage.StartColumnNumber,
-                        EndLineNumber = logMessage.EndLineNumber,
-                        EndColumnNumber = logMessage.EndColumnNumber
-                    };
+                    ProjectPath = logMessage.ProjectPath,
+                    WarningLevel = logMessage.WarningLevel,
+                    FilePath = logMessage.FilePath,
+                    LibraryId = logMessage.LibraryId,
+                    TargetGraphs = logMessage.TargetGraphs,
+                    StartLineNumber = logMessage.StartLineNumber,
+                    StartColumnNumber = logMessage.StartColumnNumber,
+                    EndLineNumber = logMessage.EndLineNumber,
+                    EndColumnNumber = logMessage.EndColumnNumber
+                };
 
-                    _request.Log.LogAsync(restoreLogMessage);
-                }
+                _request.Log.LogAsync(restoreLogMessage);
             }
         }
 
