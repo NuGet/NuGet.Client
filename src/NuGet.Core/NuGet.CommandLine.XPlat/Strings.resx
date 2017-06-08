@@ -130,7 +130,7 @@
     <value>y</value>
   </data>
   <data name="Delete_Description" xml:space="preserve">
-    <value>Deletes a package from the server.</value>
+    <value>Deletes/Unlists a package (local or from the server).</value>
   </data>
   <data name="Delete_MissingArguments" xml:space="preserve">
     <value>Please provide arguments for package id and package version.</value>
