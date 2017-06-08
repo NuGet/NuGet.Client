@@ -452,6 +452,7 @@ namespace NuGet.Packaging
                 PackageIdValidator.ValidatePackageId(dep.Id);
             }
 
+            /*
             if (!version.IsPrerelease)
             {
                 // If we are creating a production package, do not allow any of the dependencies to be a prerelease version.
@@ -461,6 +462,7 @@ namespace NuGet.Packaging
                     throw new InvalidDataException(String.Format(CultureInfo.CurrentCulture, NuGetResources.Manifest_InvalidPrereleaseDependency, prereleaseDependency.ToString()));
                 }
             }
+            */
         }
 
         public static void ValidateReferenceAssemblies(IEnumerable<IPackageFile> files, IEnumerable<PackageReferenceSet> packageAssemblyReferences)
