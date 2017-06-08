@@ -46,9 +46,11 @@
   <ItemGroup>
     <Compile Include="Actions\UIActionEngine.cs" />
     <Compile Include="Actions\UpdatePreviewResult.cs" />
+    <Compile Include="Automation\TabItemButtonAutomationPeer.cs" />
     <Compile Include="Common\ErrorFloodGate.cs" />
     <Compile Include="Common\NuGetEvent.cs" />
     <Compile Include="Common\NuGetEventTrigger.cs" />
+    <Compile Include="Controls\TabItemButton.cs" />
     <Compile Include="Converters\RadioBoolToIntConverter.cs" />
     <Compile Include="Converters\TooltipConverter.cs" />
     <Compile Include="Converters\BooleanToFontWeightConverter.cs" />
