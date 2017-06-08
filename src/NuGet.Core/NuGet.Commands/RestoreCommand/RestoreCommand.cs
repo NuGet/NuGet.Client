@@ -208,7 +208,7 @@ namespace NuGet.Commands
 
         private void ReplayWarningsAndErrors()
         {
-            var logMessages = _request?.ExistingLockFile?.LogMessages;
+            var logMessages = _request.ExistingLockFile?.LogMessages ?? Enumerable.Empty<IAssetsLogMessage>();
 
             if (logMessages != null)
             {
@@ -227,7 +227,7 @@ namespace NuGet.Commands
                         EndColumnNumber = logMessage.EndColumnNumber
                     };
 
-                    _request.Log.Log(restoreLogMessage);
+                    _request.Log.LogAsync(restoreLogMessage);
                 }
             }
         }
