@@ -58,7 +58,7 @@ namespace NuGet.ProjectModel
         public string GetBestLockFilePath(string packageId, VersionRange versionRange, NuGetFramework framework)
         {
             var availableToolVersions = GetAvailableToolVersions(packageId);
-
+            
             var bestVersion = versionRange.FindBestMatch(availableToolVersions);
             if (bestVersion == null)
             {

@@ -20,7 +20,7 @@ namespace NuGet.Commands
         /// </summary>
         public static PackageSpec GetSpec(string projectFilePath, string id, VersionRange versionRange, NuGetFramework framework)
         {
-            var name = $"{id}-{id.GetHashCode()}";
+            var name = $"{id}-{framework.Framework}-{versionRange.ToNormalizedString()}";
 
             return new PackageSpec()
             {

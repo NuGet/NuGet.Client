@@ -9,6 +9,7 @@ using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using Newtonsoft.Json;
 using NuGet.ProjectModel;
+using NuGet.Versioning;
 
 namespace NuGet.Build.Tasks
 {
@@ -86,11 +87,9 @@ namespace NuGet.Build.Tasks
                     throw new InvalidDataException($"Invalid DotnetCliToolReference in {ProjectPath}");
                 }
 
-                var uniqueName = $"{msbuildItem.ItemSpec}-{msbuildItem.ItemSpec.GetHashCode()}";
 
                 // Create top level project
                 var properties = new Dictionary<string, string>();
-                properties.Add("ProjectUniqueName", uniqueName);
                 properties.Add("Type", "ProjectSpec");
                 properties.Add("ProjectPath", ProjectPath);
                 properties.Add("ProjectName", $"DotnetCliToolReference-{msbuildItem.ItemSpec}");
@@ -101,6 +100,11 @@ namespace NuGet.Build.Tasks
                 properties.Add("TargetFrameworks", ToolFramework);
                 properties.Add("ProjectStyle", ProjectStyle.DotnetCliTool.ToString());
                 BuildTasksUtility.CopyPropertyIfExists(msbuildItem, properties, "Version");
+
+                string value;
+                properties.TryGetValue("Version", out value);
+                var uniqueName = $"{msbuildItem.ItemSpec}-{ToolFramework}-{VersionRange.Parse(value).ToNormalizedString()}";
+                properties.Add("ProjectUniqueName", uniqueName);
 
                 entries.Add(new TaskItem(Guid.NewGuid().ToString(), properties));
 

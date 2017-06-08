@@ -261,6 +261,12 @@ namespace NuGet.CommandLine.Test
                 sourceEntry.Add(new XAttribute(XName.Get("value"), "https://www.nuget.org/api/v2"));
                 packageSources.Add(sourceEntry);
 
+                var localSource = new XElement(XName.Get("add"));
+                localSource.Add(new XAttribute(XName.Get("key"), "localSource"));
+                localSource.Add(new XAttribute(XName.Get("value"), pathContext.PackageSource));
+                packageSources.Add(localSource);
+
+
                 File.WriteAllText(configPath, doc.ToString());
 
                 // Act
@@ -337,6 +343,13 @@ namespace NuGet.CommandLine.Test
                 sourceEntry.Add(new XAttribute(XName.Get("value"), "blaa"));
                 packageSources.Add(sourceEntry);
 
+                var sources = new XElement(XName.Get("packageSources"));
+                configuration.Add(sources);
+                var localSource = new XElement(XName.Get("add"));
+                localSource.Add(new XAttribute(XName.Get("key"), "localSource"));
+                localSource.Add(new XAttribute(XName.Get("value"), pathContext.PackageSource));
+                sources.Add(localSource);
+
                 File.WriteAllText(configPath, doc.ToString());
 
                 // Act
@@ -408,6 +421,13 @@ namespace NuGet.CommandLine.Test
                 sourceEntry.Add(new XAttribute(XName.Get("key"), "globalPackagesPath"));
                 sourceEntry.Add(new XAttribute(XName.Get("value"), "blaa"));
                 configuration.Add(sourceEntry);
+
+                var packageSources = new XElement(XName.Get("packageSources"));
+                configuration.Add(packageSources);
+                var localSource = new XElement(XName.Get("add"));
+                localSource.Add(new XAttribute(XName.Get("key"), "localSource"));
+                localSource.Add(new XAttribute(XName.Get("value"), pathContext.PackageSource));
+                packageSources.Add(localSource);
 
                 File.WriteAllText(configPath, doc.ToString());
 
@@ -1189,6 +1209,96 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
+        public async Task RestoreNetCore_MultipleProjects_SameToolDifferentVersionsWithMultipleHits_NoOp()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Create this many different tool versions and projects
+                var testCount = 10;
+
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+
+                var avoidVersion = $"{testCount + 100}.0.0";
+
+                var packageZ = new SimpleTestPackageContext()
+                {
+                    Id = "z",
+                    Version = avoidVersion
+                };
+
+                var projects = new List<SimpleTestProjectContext>();
+
+                for (var i = 0; i < testCount; i++)
+                {
+                    var project = SimpleTestProjectContext.CreateNETCore(
+                        $"proj{i}",
+                        pathContext.SolutionRoot,
+                        NuGetFramework.Parse("net45"));
+
+                    project.AddPackageToAllFrameworks(packageX);
+
+                    var packageZSub = new SimpleTestPackageContext()
+                    {
+                        Id = "z",
+                        Version = $"{i + 1}.0.0"
+                    };
+
+                    project.DotnetCLIToolReferences.Add(packageZSub);
+
+                    await SimpleTestPackageUtility.CreateFolderFeedV3(
+                        pathContext.PackageSource,
+                        PackageSaveMode.Defaultv3,
+                        packageZSub);
+
+                    solution.Projects.Add(project);
+                    solution.Create(pathContext.SolutionRoot);
+                }
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX,
+                    packageZ);
+
+                var path = Path.Combine(pathContext.UserPackagesFolder, ".tools", "z", avoidVersion, "netcoreapp1.0", "project.assets.json");
+                var cacheFile = Path.Combine(pathContext.UserPackagesFolder, ".tools", "z", avoidVersion, "netcoreapp1.0", "z.nuget.cache");
+                var zPath = Path.Combine(pathContext.UserPackagesFolder, ".tools", "z");
+
+                // Act
+                var r = Util.RestoreSolution(pathContext);
+
+                // Assert
+                // Version should not be used
+                Assert.False(File.Exists(path), r.Item2);
+                Assert.False(File.Exists(cacheFile), r.Item2);
+
+                // Each project should have its own tool verion
+                Assert.Equal(testCount, Directory.GetDirectories(zPath).Length);
+
+                // Act
+                var r2 = Util.RestoreSolution(pathContext);
+
+                // Assert
+                // Version should not be used
+                Assert.False(File.Exists(path), r2.Item2);
+                Assert.False(File.Exists(cacheFile), r2.Item2);
+                Assert.DoesNotContain("NU1603", r2.Item2);
+                Assert.Contains($"The restore inputs for 'DotnetCliToolReference-z' have not changed. No further actions are required to complete the restore.", r2.Item2);
+
+                // Each project should have its own tool verion
+                Assert.Equal(testCount, Directory.GetDirectories(zPath).Length);
+            }
+        }
+
+        [Fact]
         public async Task RestoreNetCore_NoOp_AddingNewPackageRestores()
         {
             // Arrange
@@ -1374,6 +1484,79 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
+        public async Task RestoreNetCore_MultipleProjects_SameToolDifferentVersions_NoOp_Fails()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+
+                var packageZ = new SimpleTestPackageContext()
+                {
+                    Id = "z",
+                    Version = "20.0.0"
+                };
+
+                var projects = new List<SimpleTestProjectContext>();
+
+                for (var i = 0; i < 10; i++)
+                {
+                    var project = SimpleTestProjectContext.CreateNETCore(
+                        $"proj{i}",
+                        pathContext.SolutionRoot,
+                        NuGetFramework.Parse("net45"));
+
+                    project.AddPackageToAllFrameworks(packageX);
+                    project.DotnetCLIToolReferences.Add(new SimpleTestPackageContext()
+                    {
+                        Id = "z",
+                        Version = $"{i}.0.0"
+                    });
+
+                    solution.Projects.Add(project);
+                    solution.Create(pathContext.SolutionRoot);
+                }
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX,
+                    packageZ);
+
+                var path = Path.Combine(pathContext.UserPackagesFolder, ".tools", "z", "20.0.0", "netcoreapp1.0", "project.assets.json");
+                var cachePath = Path.Combine(pathContext.UserPackagesFolder, ".tools", "z", "20.0.0", "netcoreapp1.0", "z.nuget.cache");
+                var zPath = Path.Combine(pathContext.UserPackagesFolder, ".tools", "z");
+
+                // Act
+                var r = Util.RestoreSolution(pathContext);
+
+                // Assert
+                Assert.True(File.Exists(path), r.Item2);
+                Assert.Equal(1, Directory.GetDirectories(zPath).Length);
+                Assert.True(File.Exists(cachePath));
+                Assert.True(File.Exists(path));
+
+                // Act
+                var r2 = Util.RestoreSolution(pathContext);
+                // Assert
+                Assert.True(File.Exists(path), r2.Item2);
+                Assert.True(File.Exists(cachePath), r2.Item2);
+                Assert.Equal(1, Directory.GetDirectories(zPath).Length);
+                // This is expected because all the projects keep overwriting the cache file for the tool.
+                // TODO NK - This is a scenario in which we explode and no-op does not work!
+                Assert.DoesNotContain($"The restore inputs for 'DotnetCliToolReference-z' have not changed. No further actions are required to complete the restore.", r2.Item2);
+
+            }
+        }
+
+        [Fact]
         public async Task RestoreNetCore_MultipleProjects_SameTool()
         {
             // Arrange
@@ -1427,6 +1610,74 @@ namespace NuGet.CommandLine.Test
 
                 // Assert
                 Assert.True(File.Exists(path), r.Item2);
+            }
+        }
+
+        [Fact]
+        public async Task RestoreNetCore_MultipleProjects_SameTool_NoOp() 
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+
+                var packageZ = new SimpleTestPackageContext()
+                {
+                    Id = "z",
+                    Version = "1.0.0"
+                };
+
+                var projects = new List<SimpleTestProjectContext>();
+
+                for (var i = 0; i < 10; i++)
+                {
+                    var project = SimpleTestProjectContext.CreateNETCore(
+                        $"proj{i}",
+                        pathContext.SolutionRoot,
+                        NuGetFramework.Parse("net45"));
+
+                    project.AddPackageToAllFrameworks(packageX);
+                    project.DotnetCLIToolReferences.Add(new SimpleTestPackageContext()
+                    {
+                        Id = "z",
+                        Version = "1.0.0"
+                    });
+
+                    solution.Projects.Add(project);
+                    solution.Create(pathContext.SolutionRoot);
+                }
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX,
+                    packageZ);
+
+                var assetsPath = Path.Combine(pathContext.UserPackagesFolder, ".tools", "z", "1.0.0", "netcoreapp1.0", "project.assets.json");
+                var cachePath = Path.Combine(pathContext.UserPackagesFolder, ".tools", "z", "1.0.0", "netcoreapp1.0", "z.nuget.cache");
+
+                // Act
+                var r = Util.RestoreSolution(pathContext);
+                // Assert
+                Assert.True(File.Exists(assetsPath));
+                Assert.True(File.Exists(cachePath));
+
+                // Act
+                var r2 = Util.RestoreSolution(pathContext);
+                // Assert
+                Assert.True(File.Exists(assetsPath));
+                Assert.True(File.Exists(cachePath));
+                Assert.Contains($"The restore inputs for 'DotnetCliToolReference-z' have not changed. No further actions are required to complete the restore.", r2.Item2);
+
+                r = Util.RestoreSolution(pathContext);
+
             }
         }
 
@@ -1492,7 +1743,7 @@ namespace NuGet.CommandLine.Test
             }
         }
 
-        [Fact(Skip = "Not supported")]
+        [Fact]
         public async Task RestoreNetCore_SingleToolRestore_Noop()
         {
             // Arrange
@@ -1544,20 +1795,83 @@ namespace NuGet.CommandLine.Test
                     packageZ,
                     packageY);
 
-                var path = Path.Combine(pathContext.UserPackagesFolder, ".tools", "z", "1.0.0", "netcoreapp1.0", "project.assets.json");
+                var assetsPath = Path.Combine(pathContext.UserPackagesFolder, ".tools", "z", "1.0.0", "netcoreapp1.0", "project.assets.json");
+                var cachePath = Path.Combine(pathContext.UserPackagesFolder, ".tools", "z", "1.0.0", "netcoreapp1.0", "z.nuget.cache");
 
                 // Act
                 var r = Util.RestoreSolution(pathContext);
+                // Assert
+                Assert.True(File.Exists(assetsPath));
+                Assert.True(File.Exists(cachePath));
 
-                File.AppendAllText(path, "\n\n\n\n\n");
+                // Act
+                var r2 = Util.RestoreSolution(pathContext);
+                // Assert
+                Assert.True(File.Exists(assetsPath));
+                Assert.True(File.Exists(cachePath));
+                Assert.Contains($"The restore inputs for 'DotnetCliToolReference-z' have not changed. No further actions are required to complete the restore.", r2.Item2);
 
                 r = Util.RestoreSolution(pathContext);
+            }
+        }
 
-                var text = File.ReadAllText(path);
+        [Fact]
+        public async Task RestoreNetCore_RestoreToolInChildProjectWithRecursive_NoOp()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
 
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                    "a",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("net45"));
+
+                var projectB = SimpleTestProjectContext.CreateNETCore(
+                    "b",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("net45"));
+
+                // A -> B
+                projectA.AddProjectToAllFrameworks(projectB);
+
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+
+                projectB.DotnetCLIToolReferences.Add(packageX);
+
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX);
+
+                var assetsPath = Path.Combine(pathContext.UserPackagesFolder, ".tools", "x", "1.0.0", "netcoreapp1.0", "project.assets.json");
+                var cachePath = Path.Combine(pathContext.UserPackagesFolder, ".tools", "x", "1.0.0", "netcoreapp1.0", "x.nuget.cache");
+
+                // Act
+                var r = Util.RestoreSolution(pathContext, expectedExitCode: 0, additionalArgs: "-Recursive");
                 // Assert
-                Assert.True(File.Exists(path), r.Item2);
-                Assert.EndsWith("\n\n\n\n\n", text);
+                Assert.True(File.Exists(assetsPath));
+                Assert.True(File.Exists(cachePath));
+
+                // Act
+                var r2 = Util.RestoreSolution(pathContext, expectedExitCode: 0, additionalArgs: "-Recursive");
+                // Assert
+                Assert.True(File.Exists(assetsPath));
+                Assert.True(File.Exists(cachePath));
+                Assert.Contains($"The restore inputs for 'DotnetCliToolReference-x' have not changed. No further actions are required to complete the restore.", r2.Item2);
+                Assert.Contains($"The restore inputs for 'a' have not changed. No further actions are required to complete the restore.", r2.Item2);
+                Assert.Contains($"The restore inputs for 'b' have not changed. No further actions are required to complete the restore.", r2.Item2);
+
+                r = Util.RestoreSolution(pathContext);
             }
         }
 

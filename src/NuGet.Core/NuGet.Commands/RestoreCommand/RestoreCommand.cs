@@ -210,7 +210,8 @@ namespace NuGet.Commands
             var noOp = false;
 
             if(_request.ProjectStyle == ProjectStyle.DotnetCliTool)
-            {
+            { 
+                // Resolve the lock file path if it exists
                 var toolPathResolver = new ToolPathResolver(_request.PackagesDirectory);
                 _request.LockFilePath =  toolPathResolver.GetBestLockFilePath(ToolRestoreUtility.GetToolIdOrNullFromSpec(_request.Project), _request.Project.TargetFrameworks.First().Dependencies.First().LibraryRange.VersionRange, _request.Project.TargetFrameworks.SingleOrDefault().FrameworkName);
                 _request.ExistingLockFile = LockFileUtilities.GetLockFile(_request.LockFilePath, _request.Log);
@@ -238,7 +239,14 @@ namespace NuGet.Commands
                 cacheFile = new CacheFile(newDgSpecHash);
 
             }
-            return new KeyValuePair<CacheFile,bool>(cacheFile, noOp) ;
+
+            if (_request.ProjectStyle == ProjectStyle.DotnetCliTool && !noOp)
+            {
+                _request.ExistingLockFile = null;
+                _request.Project.RestoreMetadata.CacheFilePath = null;
+            }
+
+                return new KeyValuePair<CacheFile,bool>(cacheFile, noOp) ;
         }
 
         private string GetAssetsFilePath(LockFile lockFile)

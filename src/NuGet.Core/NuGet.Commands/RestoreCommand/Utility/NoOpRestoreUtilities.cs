@@ -59,14 +59,22 @@ namespace NuGet.Commands
                     var version = lockFileLibrary.Version;
 
                     var toolPathResolver = new ToolPathResolver(request.PackagesDirectory);
-                    return toolPathResolver.GetCacheFilePath(
+                    return Path.Combine(toolPathResolver.GetCacheFilePath(
                         toolName,
                         version,
-                        lockFile.Targets.First().TargetFramework) + $".nuget.cache";
+                        lockFile.Targets.First().TargetFramework), $"{toolName}.nuget.cache");
                 }
             }
             return null;
         }
+        /// <summary>
+        /// Evaluate the location of the cache file path, based on ProjectStyle.
+        /// </summary>
+        internal static string GetCacheFilePath(RestoreRequest request)
+        {
+            return GetCacheFilePath(request, null);
+        }
+
         /// <summary>
         /// Evaluate the location of the cache file path, based on ProjectStyle.
         /// </summary>
