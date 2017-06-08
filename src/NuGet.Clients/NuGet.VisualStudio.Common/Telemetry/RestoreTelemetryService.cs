@@ -39,7 +39,9 @@ namespace NuGet.VisualStudio
                     { TelemetryConstants.OperationStatusPropertyName, restoreTelemetryData.Status },
                     { TelemetryConstants.StartTimePropertyName, restoreTelemetryData.StartTime.ToString() },
                     { TelemetryConstants.EndTimePropertyName, restoreTelemetryData.EndTime.ToString() },
-                    { TelemetryConstants.DurationPropertyName, restoreTelemetryData.Duration }
+                    { TelemetryConstants.DurationPropertyName, restoreTelemetryData.Duration },
+                    { TelemetryConstants.ProjectsCountPropertyName, restoreTelemetryData.ProjectsCount },
+                    { TelemetryConstants.NoOpProjectsCountPropertyName, restoreTelemetryData.NoOpProjectsCount }
                 }
             );
 

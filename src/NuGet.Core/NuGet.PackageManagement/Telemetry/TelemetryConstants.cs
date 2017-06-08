@@ -37,6 +37,8 @@ namespace NuGet.ProjectManagement
         public static readonly string StartTimePropertyName = PropertyNamePrefix + "StartTime";
         public static readonly string EndTimePropertyName = PropertyNamePrefix + "EndTime";
         public static readonly string DurationPropertyName = PropertyNamePrefix + "Duration";
+        public static readonly string ProjectsCountPropertyName = PropertyNamePrefix + "ProjectsCount";
+        public static readonly string NoOpProjectsCountPropertyName = PropertyNamePrefix + "NoOpProjectsCount";
 
         // nuget action step event data
         public static readonly string StepNamePropertyName = PropertyNamePrefix + "StepName";

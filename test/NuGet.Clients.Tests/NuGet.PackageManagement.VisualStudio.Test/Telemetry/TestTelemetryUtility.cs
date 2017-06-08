@@ -13,6 +13,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         public static void VerifyTelemetryEventData(ActionEventBase expected, TelemetryEvent actual)
         {
             Assert.Equal(expected.OperationId, actual.Properties[TelemetryConstants.OperationIdPropertyName].ToString());
+            Assert.Equal(expected.ProjectsCount, (int)actual.Properties[TelemetryConstants.ProjectsCountPropertyName]);
             Assert.Equal(string.Join(",", expected.ProjectIds), actual.Properties[TelemetryConstants.ProjectIdsPropertyName].ToString());
             Assert.Equal(expected.PackagesCount, (int)actual.Properties[TelemetryConstants.PackagesCountPropertyName]);
             Assert.Equal(expected.Status.ToString(), actual.Properties[TelemetryConstants.OperationStatusPropertyName].ToString());
