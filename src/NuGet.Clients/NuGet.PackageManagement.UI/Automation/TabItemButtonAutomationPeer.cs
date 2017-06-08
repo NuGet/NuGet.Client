@@ -1,7 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Diagnostics;
+using System;
 using System.Windows.Automation.Peers;
 using System.Windows.Automation.Provider;
 
@@ -15,11 +15,15 @@ namespace NuGet.PackageManagement.UI
     /// </summary>
     internal class TabItemButtonAutomationPeer : FrameworkElementAutomationPeer, ISelectionItemProvider
     {
-        private TabItemButton _tabItemButton;
+        private readonly TabItemButton _tabItemButton;
 
         public TabItemButtonAutomationPeer(TabItemButton owner) : base(owner)
         {
-            Debug.Assert(owner != null);
+            if (owner == null)
+            {
+                throw new ArgumentNullException(nameof(owner));
+            }
+
             _tabItemButton = owner;
         }
 
