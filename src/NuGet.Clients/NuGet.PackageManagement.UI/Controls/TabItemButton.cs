@@ -3,11 +3,14 @@
 
 using System.Windows.Automation.Peers;
 using System.Windows.Controls;
-using NuGet.PackageManagement.UI.Automation;
 
 namespace NuGet.PackageManagement.UI
 {
-    public class TabItemButton: Button
+    /// <summary>
+    /// Represents Button controls which are used as Clickable Tab Items.
+    /// Example: Browse, Installed, Update Tab items in the Nuget Package Manager tab
+    /// </summary>
+    internal class TabItemButton : Button
     {
         protected override AutomationPeer OnCreateAutomationPeer()
         {
@@ -16,7 +19,7 @@ namespace NuGet.PackageManagement.UI
 
         public void Select()
         {
-            this.OnClick();
+            OnClick();
         }
     }
 }
