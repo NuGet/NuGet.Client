@@ -808,7 +808,8 @@ namespace NuGet.Commands
         {
             foreach (var item in MSBuildStringUtility.Split(s, ';', ','))
             {
-                if (s.StartsWith("NU", StringComparison.OrdinalIgnoreCase) && Enum.TryParse<NuGetLogCode>(item, out var result))
+                if (item.StartsWith("NU", StringComparison.OrdinalIgnoreCase) && 
+                    Enum.TryParse<NuGetLogCode>(item, out var result))
                 {
                     yield return result;
                 }
