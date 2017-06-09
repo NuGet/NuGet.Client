@@ -1,8 +1,10 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using FluentAssertions;
+using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.Packaging;
 using NuGet.Test.Utility;
@@ -14,7 +16,7 @@ namespace NuGet.CommandLine.Test
     public class RestoreLoggingTests
     {
         [Fact]
-        public async Task RestoreLogging_VerifyWarningsAsErrorsFailsRestore()
+        public async Task RestoreLogging_WarningsAsErrorsFailsRestore()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -64,7 +66,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public async Task RestoreLogging_VerifyNoWarnRemovesWarning()
+        public async Task RestoreLogging_NoWarnRemovesWarning()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -115,7 +117,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public async Task RestoreLogging_VerifyWarningsAsErrorsForSpecificWarningFails()
+        public async Task RestoreLogging_WarningsAsErrorsForSpecificWarningFails()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -166,7 +168,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public async Task RestoreLogging_VerifyWarningsAsErrorsForSpecificWarningOfAnotherTypeIgnored()
+        public async Task RestoreLogging_WarningsAsErrorsForSpecificWarningOfAnotherTypeIgnored()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -214,6 +216,58 @@ namespace NuGet.CommandLine.Test
                 r.Success.Should().BeTrue();
                 r.Output.Should().Contain("NU1603");
                 r.Output.Should().NotContain("NU1607");
+            }
+        }
+
+        [Fact]
+        public async Task RestoreLogging_PackageSPecificNoWarnRemovesWarning()
+        {
+            DebuggerUtils.WaitForDebugger();
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var netcoreapp2 = NuGetFramework.Parse("netcoreapp2.0");
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                    "a",
+                    pathContext.SolutionRoot,
+                    netcoreapp2);
+
+                projectA.Properties.Add("TreatWarningsAsErrors", "true");
+
+                // Referenced but not created
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0",
+                    NoWarn = "NU1607"
+                };
+
+                // Created in the source
+                var packageX9 = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "9.0.0"
+                };
+
+                projectA.AddPackageToAllFrameworks(packageX);
+
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                    pathContext.PackageSource,
+                    packageX9);
+
+                // Act
+                var r = Util.RestoreSolution(pathContext, expectedExitCode: 1);
+
+                // Assert
+                r.Success.Should().BeTrue();
+                r.AllOutput.Should().NotContain("NU1603");
             }
         }
     }

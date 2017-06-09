@@ -61,11 +61,6 @@ namespace NuGet.Common
         {
         }
 
-        public RestoreLogMessage(LogLevel logLevel, string errorString, bool logToInnerLogger)
-            : this(logLevel, LogLevel.Error == logLevel ? NuGetLogCode.NU1000 : NuGetLogCode.NU1500, errorString, string.Empty, logToInnerLogger)
-        {
-        }
-
         /// <summary>
         /// Create a log message for a target graph library.
         /// </summary>
