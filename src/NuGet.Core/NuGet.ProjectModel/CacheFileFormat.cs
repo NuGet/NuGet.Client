@@ -24,7 +24,7 @@ namespace NuGet.ProjectModel
             return Load(filePath, NullLogger.Instance);
         }
 
-        public CacheFile SafeLoad(string filePath, ILogger log)
+        public static CacheFile SafeLoad(string filePath, ILogger log)
         {
             if (filePath == null)
             {
