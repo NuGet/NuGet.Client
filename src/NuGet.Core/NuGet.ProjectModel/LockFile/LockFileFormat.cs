@@ -6,6 +6,8 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NuGet.Common;
@@ -67,6 +69,27 @@ namespace NuGet.ProjectModel
             {
                 return Read(reader, log, path);
             }
+        }
+
+        public async Task<LockFile> ReadWithLock(string filePath, ILogger log)
+        {
+            if (filePath == null)
+            {
+                throw new ArgumentNullException(nameof(filePath));
+            }
+
+            LockFile result = null; // This will retry 3000 times...is this good?
+            await ConcurrencyUtilities.ExecuteWithFileLockedAsync(filePath,
+                lockedToken =>
+                {
+                    result = Read(filePath, log);
+
+                    return Task.FromResult(0);
+                },
+                // Do not allow this to be cancelled
+                CancellationToken.None);
+
+            return result;
         }
 
         public LockFile Read(string filePath)

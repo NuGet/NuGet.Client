@@ -85,7 +85,7 @@ namespace NuGet.Commands
 
             CacheFile cacheFile = null;
             if (NoOpRestoreUtilities.IsNoOpSupported(_request)) {
-                var cacheFileAndStatus = EvaluateCacheFile();
+                var cacheFileAndStatus = await EvaluateCacheFile();
                 cacheFile = cacheFileAndStatus.Key;
                 if (cacheFileAndStatus.Value)
                 {
@@ -203,7 +203,7 @@ namespace NuGet.Commands
                 restoreTime.Elapsed);
         }
 
-        private KeyValuePair<CacheFile,bool> EvaluateCacheFile()
+        private async Task<KeyValuePair<CacheFile,bool>> EvaluateCacheFile()
         {
             CacheFile cacheFile;
             var newDgSpecHash = _request.DependencyGraphSpec.GetHash();
@@ -213,10 +213,15 @@ namespace NuGet.Commands
             { 
                 // Resolve the lock file path if it exists
                 var toolPathResolver = new ToolPathResolver(_request.PackagesDirectory);
-                _request.LockFilePath =  toolPathResolver.GetBestLockFilePath(ToolRestoreUtility.GetToolIdOrNullFromSpec(_request.Project), _request.Project.TargetFrameworks.First().Dependencies.First().LibraryRange.VersionRange, _request.Project.TargetFrameworks.SingleOrDefault().FrameworkName);
-                _request.ExistingLockFile = LockFileUtilities.GetLockFile(_request.LockFilePath, _request.Log);
-               
-                _request.Project.RestoreMetadata.CacheFilePath = NoOpRestoreUtilities.GetCacheFilePath(_request, _request.ExistingLockFile);
+                var toolDirectory =  toolPathResolver.GetBestToolDirectory(ToolRestoreUtility.GetToolIdOrNullFromSpec(_request.Project),
+                    _request.Project.TargetFrameworks.First().Dependencies.First().LibraryRange.VersionRange, 
+                    _request.Project.TargetFrameworks.SingleOrDefault().FrameworkName);
+
+                if(toolDirectory != null) // Only set the paths if a good enough match was found. 
+                {
+                    _request.Project.RestoreMetadata.CacheFilePath = NoOpRestoreUtilities.GetToolCacheFilePath(toolDirectory, ToolRestoreUtility.GetToolIdOrNullFromSpec(_request.Project));
+                    _request.LockFilePath = toolPathResolver.GetLockFilePath(toolDirectory);
+                }
             }
 
             if (_request.AllowNoOp && File.Exists(_request.Project.RestoreMetadata.CacheFilePath))
@@ -241,14 +246,20 @@ namespace NuGet.Commands
 
             }
 
-            if (_request.ProjectStyle == ProjectStyle.DotnetCliTool && !noOp)
+            if (_request.ProjectStyle == ProjectStyle.DotnetCliTool)
             {
-                _request.LockFilePath = null;
-                _request.ExistingLockFile = null;
-                _request.Project.RestoreMetadata.CacheFilePath = null;
+                if (noOp) // Only if the hash matches, then load the lock file. This is a performance hit, so we need to delay it as much as possible.
+                { 
+                    _request.ExistingLockFile = await LockFileUtilities.GetLockFileAsync(_request.LockFilePath, _request.Log);
+                }
+                else
+                {
+                    _request.LockFilePath = null;
+                    _request.ExistingLockFile = null;
+                    _request.Project.RestoreMetadata.CacheFilePath = null;
+                }
             }
-
-                return new KeyValuePair<CacheFile,bool>(cacheFile, noOp) ;
+            return new KeyValuePair<CacheFile,bool>(cacheFile, noOp) ;
         }
 
         private string GetAssetsFilePath(LockFile lockFile)

@@ -67,6 +67,14 @@ namespace NuGet.Commands
             }
             return null;
         }
+
+        internal static string GetToolCacheFilePath(string toolDirectory, string toolName)
+        {
+            return Path.Combine(
+                toolDirectory,
+                 $"{toolName}.nuget.cache");
+        }
+
         /// <summary>
         /// Evaluate the location of the cache file path, based on ProjectStyle.
         /// </summary>
