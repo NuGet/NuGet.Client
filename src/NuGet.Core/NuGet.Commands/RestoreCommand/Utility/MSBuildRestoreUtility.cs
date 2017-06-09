@@ -809,7 +809,7 @@ namespace NuGet.Commands
             foreach (var item in MSBuildStringUtility.Split(s, ';', ','))
             {
                 if (item.StartsWith("NU", StringComparison.OrdinalIgnoreCase) && 
-                    Enum.TryParse<NuGetLogCode>(item, out var result))
+                    Enum.TryParse<NuGetLogCode>(value: item, ignoreCase: true , result: out var result))
                 {
                     yield return result;
                 }
