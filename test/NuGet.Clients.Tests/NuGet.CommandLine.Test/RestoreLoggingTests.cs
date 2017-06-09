@@ -81,7 +81,6 @@ namespace NuGet.CommandLine.Test
                     pathContext.SolutionRoot,
                     netcoreapp2);
 
-                projectA.Properties.Add("TreatWarningsAsErrors", "true");
                 projectA.Properties.Add("NoWarn", "NU1603");
 
                 // Referenced but not created
@@ -220,9 +219,8 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public async Task RestoreLogging_PackageSpecificNoWarnRemovesWarning()
+        public async Task RestoreLogging_NoWarnWithWarnAsErrorRemovesWarning()
         {
-            DebuggerUtils.WaitForDebugger();
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
             {
@@ -237,6 +235,258 @@ namespace NuGet.CommandLine.Test
                     netcoreapp2);
 
                 projectA.Properties.Add("TreatWarningsAsErrors", "true");
+                projectA.Properties.Add("NoWarn", "NU1603");
+
+                // Referenced but not created
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+
+                // Created in the source
+                var packageX9 = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "9.0.0"
+                };
+
+                projectA.AddPackageToAllFrameworks(packageX);
+
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                    pathContext.PackageSource,
+                    packageX9);
+
+                // Act
+                var r = Util.RestoreSolution(pathContext, expectedExitCode: 0);
+
+                // Assert
+                r.Success.Should().BeTrue();
+                r.Output.Should().NotContain("NU1603");
+            }
+        }
+
+        [Fact]
+        public async Task RestoreLogging_NoWarnWithWarnSpecificAsErrorRemovesWarning()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var netcoreapp2 = NuGetFramework.Parse("netcoreapp2.0");
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                    "a",
+                    pathContext.SolutionRoot,
+                    netcoreapp2);
+
+                projectA.Properties.Add("WarningsAsErrors", "NU1603");
+                projectA.Properties.Add("NoWarn", "NU1603");
+
+                // Referenced but not created
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+
+                // Created in the source
+                var packageX9 = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "9.0.0"
+                };
+
+                projectA.AddPackageToAllFrameworks(packageX);
+
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                    pathContext.PackageSource,
+                    packageX9);
+
+                // Act
+                var r = Util.RestoreSolution(pathContext, expectedExitCode: 0);
+
+                // Assert
+                r.Success.Should().BeTrue();
+                r.Output.Should().NotContain("NU1603");
+            }
+        }
+
+        [Fact]
+        public async Task RestoreLogging_PackageSpecificNoWarnRemovesWarning()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var netcoreapp2 = NuGetFramework.Parse("netcoreapp2.0");
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                    "a",
+                    pathContext.SolutionRoot,
+                    netcoreapp2);                
+
+                // Referenced but not created
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0",
+                    NoWarn = "NU1603"
+                };
+
+                // Created in the source
+                var packageX9 = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "9.0.0"
+                };
+
+                projectA.AddPackageToAllFrameworks(packageX);
+
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                    pathContext.PackageSource,
+                    packageX9);
+
+                // Act
+                var r = Util.RestoreSolution(pathContext, expectedExitCode: 0);
+
+                // Assert
+                r.Success.Should().BeTrue();
+                r.AllOutput.Should().NotContain("NU1603");
+            }
+        }
+
+        [Fact]
+        public async Task RestoreLogging_PackageSpecificDifferentNoWarnDonesNotRemoveWarning()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var netcoreapp2 = NuGetFramework.Parse("netcoreapp2.0");
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                    "a",
+                    pathContext.SolutionRoot,
+                    netcoreapp2);
+
+                // Referenced but not created
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0",
+                    NoWarn = "NU1607"
+                };
+
+                // Created in the source
+                var packageX9 = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "9.0.0"
+                };
+
+                projectA.AddPackageToAllFrameworks(packageX);
+
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                    pathContext.PackageSource,
+                    packageX9);
+
+                // Act
+                var r = Util.RestoreSolution(pathContext, expectedExitCode: 0);
+
+                // Assert
+                r.Success.Should().BeTrue();
+                r.AllOutput.Should().Contain("NU1603");
+            }
+        }
+
+
+        [Fact]
+        public async Task RestoreLogging_PackageSpecificNoWarnAndTreatWarningsAsErrors()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var netcoreapp2 = NuGetFramework.Parse("netcoreapp2.0");
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                    "a",
+                    pathContext.SolutionRoot,
+                    netcoreapp2);
+
+                projectA.Properties.Add("TreatWarningsAsErrors", "true");
+
+                // Referenced but not created
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0",
+                    NoWarn = "NU1603"
+                };
+
+                // Created in the source
+                var packageX9 = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "9.0.0"
+                };
+
+                projectA.AddPackageToAllFrameworks(packageX);
+
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                    pathContext.PackageSource,
+                    packageX9);
+
+                // Act
+                var r = Util.RestoreSolution(pathContext, expectedExitCode: 0);
+
+                // Assert
+                r.Success.Should().BeTrue();
+                r.AllOutput.Should().NotContain("NU1603");
+            }
+        }
+
+        [Fact]
+        public async Task RestoreLogging_PackageSpecificNoWarnAndTreatSpecificWarningsAsErrors()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var netcoreapp2 = NuGetFramework.Parse("netcoreapp2.0");
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                    "a",
+                    pathContext.SolutionRoot,
+                    netcoreapp2);
+
+                projectA.Properties.Add("WarningsAsErrors", "NU1603");
 
                 // Referenced but not created
                 var packageX = new SimpleTestPackageContext()

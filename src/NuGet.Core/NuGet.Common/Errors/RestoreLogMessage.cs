@@ -52,7 +52,7 @@ namespace NuGet.Common
         }
 
         public RestoreLogMessage(LogLevel logLevel, NuGetLogCode errorCode, string errorString)
-            : this(logLevel, errorCode, errorString, string.Empty, logToInnerLogger : false)
+            : this(logLevel, errorCode, errorString, string.Empty, logToInnerLogger: false)
         {
         }
 

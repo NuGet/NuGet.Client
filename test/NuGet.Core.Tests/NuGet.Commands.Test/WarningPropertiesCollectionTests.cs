@@ -105,7 +105,6 @@ namespace NuGet.Commands.Test
         [Fact]
         public void WarningPropertiesCollection_ProjectPropertiesWithAllWarningsAsErrorsAndWarningWithUndefinedCode()
         {
-            DebuggerUtils.WaitForDebugger();
             // Arrange
             var noWarnSet = new HashSet<NuGetLogCode> { };
             var warnAsErrorSet = new HashSet<NuGetLogCode> { };
