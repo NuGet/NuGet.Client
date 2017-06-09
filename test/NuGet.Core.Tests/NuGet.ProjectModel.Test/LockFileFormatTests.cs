@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using Newtonsoft.Json.Linq;
 using NuGet.Common;
+using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.Versioning;
@@ -1177,6 +1178,91 @@ namespace NuGet.ProjectModel.Test
             Assert.Equal(3, logMessage.TargetGraphs.Count);
             Assert.Equal("test log message", logMessage.Message);
         }
+
+        [Fact]
+        public void LockFileFormat_SafeRead()
+        {
+            // Arrange
+            var lockFileContent = @"{
+  ""version"": 3,
+  ""targets"": {
+    "".NETPlatform,Version=v5.0"": {
+      ""System.Runtime/4.0.20-beta-22927"": {
+        ""type"": ""package"",
+        ""dependencies"": {
+          ""Frob"": ""4.0.20""
+        },
+        ""compile"": {
+          ""ref/dotnet/System.Runtime.dll"": {}
+        }
+      }
+    }
+  },
+  ""libraries"": {
+    ""System.Runtime/4.0.20-beta-22927"": {
+      ""sha512"": ""sup3rs3cur3"",
+      ""type"": ""package"",
+      ""files"": [
+        ""System.Runtime.nuspec""
+      ]
+    }
+  },
+  ""projectFileDependencyGroups"": {
+    """": [
+      ""System.Runtime [4.0.10-beta-*, )""
+    ],
+    "".NETPlatform,Version=v5.0"": []
+  },
+  ""logs"": [
+    {
+      ""code"": ""NU1000"",
+      ""level"": ""Warning"",
+      ""warningLevel"": 2,
+      ""filePath"": ""kung\\fu\\fighting.targets"",
+      ""startLineNumber"": 11,
+      ""startColumnNumber"": 2,
+      ""endLineNumber"": 11,
+      ""endColumnNumber"": 10,
+      ""message"": ""test log message"",
+      ""targetGraphs"": [
+        ""net46"",
+        ""netcoreapp1.0"",
+        ""netstandard1.6""
+      ]
+    }
+  ]
+}";
+            LockFile lockFileObj = null;
+            IAssetsLogMessage logMessage = null;
+            using (var lockFile = new TempFile())
+            {
+
+                File.WriteAllText(lockFile, lockFileContent);
+
+                // Act
+                var reader = new LockFileFormat();
+                lockFileObj = reader.SafeRead(lockFile, NullLogger.Instance);
+                logMessage = lockFileObj?.LogMessages?.First();
+            }
+
+
+            // Assert
+            Assert.NotNull(lockFileObj);
+            Assert.NotNull(logMessage);
+            Assert.Equal(1, lockFileObj.LogMessages.Count());
+            Assert.Equal(LogLevel.Warning, logMessage.Level);
+            Assert.Equal(WarningLevel.Important, logMessage.WarningLevel);
+            Assert.Equal(NuGetLogCode.NU1000, logMessage.Code);
+            Assert.Equal("kung\\fu\\fighting.targets", logMessage.FilePath);
+            Assert.Equal(11, logMessage.StartLineNumber);
+            Assert.Equal(11, logMessage.EndLineNumber);
+            Assert.Equal(2, logMessage.StartColumnNumber);
+            Assert.Equal(10, logMessage.EndColumnNumber);
+            Assert.NotNull(logMessage.TargetGraphs);
+            Assert.Equal(3, logMessage.TargetGraphs.Count);
+            Assert.Equal("test log message", logMessage.Message);
+        }
+
 
         [Fact]
         public void LockFileFormat_ReadsWarningMessage()
