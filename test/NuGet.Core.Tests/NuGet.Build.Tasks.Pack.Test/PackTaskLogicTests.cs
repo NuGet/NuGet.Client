@@ -361,6 +361,96 @@ namespace NuGet.Build.Tasks.Pack.Test
             }
         }
 
+        [Fact]
+        public void PackTaskLogic_SupportsContentFiles_WithPackageCopyToOutput()
+        {
+            // Arrange
+            using (var testDir = TestDirectory.Create())
+            {
+                var tc = new TestContext(testDir);
+
+                var metadata = new Dictionary<string, string>()
+                {
+                    {"BuildAction", "None"},
+                    {"PackageCopyToOutput", "true" },
+                };
+
+                var msbuildItem = tc.AddContentToProject("", "abc.txt", "hello world", metadata);
+                tc.Request.PackageFiles = new MSBuildItem[] { msbuildItem };
+                tc.Request.ContentTargetFolders = new string[] { "content", "contentFiles" };
+                // Act
+                tc.BuildPackage();
+
+                // Assert
+                Assert.True(File.Exists(tc.NuspecPath), "The intermediate .nuspec file is not in the expected place.");
+                Assert.True(File.Exists(tc.NupkgPath), "The output .nupkg file is not in the expected place.");
+                using (var nupkgReader = new PackageArchiveReader(tc.NupkgPath))
+                {
+                    var nuspecReader = nupkgReader.NuspecReader;
+
+                    var contentFiles = nuspecReader.GetContentFiles().ToList();
+
+                    Assert.Equal(contentFiles.Count, 1);
+                    Assert.Equal(contentFiles[0].BuildAction, "None", StringComparer.Ordinal);
+                    Assert.Equal(contentFiles[0].Include, "any/net45/abc.txt", StringComparer.Ordinal);
+                    Assert.Equal(contentFiles[0].CopyToOutput, true);
+
+                    // Validate the content items
+                    var contentItems = nupkgReader.GetFiles("content").ToList();
+                    var contentFileItems = nupkgReader.GetFiles("contentFiles").ToList();
+                    Assert.Equal(contentItems.Count, 1);
+                    Assert.Equal(contentFileItems.Count, 1);
+                    Assert.Contains("content/abc.txt", contentItems, StringComparer.Ordinal);
+                    Assert.Contains("contentFiles/any/net45/abc.txt", contentFileItems, StringComparer.Ordinal);
+                }
+            }
+        }
+
+        [Fact]
+        public void PackTaskLogic_SupportsContentFiles_WithPackageFlatten()
+        {
+            // Arrange
+            using (var testDir = TestDirectory.Create())
+            {
+                var tc = new TestContext(testDir);
+
+                var metadata = new Dictionary<string, string>()
+                {
+                    {"BuildAction", "None"},
+                    {"PackageFlatten", "true" },
+                };
+
+                var msbuildItem = tc.AddContentToProject("", "abc.txt", "hello world", metadata);
+                tc.Request.PackageFiles = new MSBuildItem[] { msbuildItem };
+                tc.Request.ContentTargetFolders = new string[] { "content", "contentFiles" };
+                // Act
+                tc.BuildPackage();
+
+                // Assert
+                Assert.True(File.Exists(tc.NuspecPath), "The intermediate .nuspec file is not in the expected place.");
+                Assert.True(File.Exists(tc.NupkgPath), "The output .nupkg file is not in the expected place.");
+                using (var nupkgReader = new PackageArchiveReader(tc.NupkgPath))
+                {
+                    var nuspecReader = nupkgReader.NuspecReader;
+
+                    var contentFiles = nuspecReader.GetContentFiles().ToList();
+
+                    Assert.Equal(contentFiles.Count, 1);
+                    Assert.Equal(contentFiles[0].BuildAction, "None", StringComparer.Ordinal);
+                    Assert.Equal(contentFiles[0].Include, "any/net45/abc.txt", StringComparer.Ordinal);
+                    Assert.Equal(contentFiles[0].Flatten, true);
+
+                    // Validate the content items
+                    var contentItems = nupkgReader.GetFiles("content").ToList();
+                    var contentFileItems = nupkgReader.GetFiles("contentFiles").ToList();
+                    Assert.Equal(contentItems.Count, 1);
+                    Assert.Equal(contentFileItems.Count, 1);
+                    Assert.Contains("content/abc.txt", contentItems, StringComparer.Ordinal);
+                    Assert.Contains("contentFiles/any/net45/abc.txt", contentFileItems, StringComparer.Ordinal);
+                }
+            }
+        }
+
         private class TestContext
         {
             public TestContext(TestDirectory testDir)

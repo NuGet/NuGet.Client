@@ -226,6 +226,8 @@ namespace NuGet.Commands
                         {
                             BuildAction = contentMetadata.BuildAction,
                             Include = includePath,
+                            CopyToOutput = contentMetadata.CopyToOutput,
+                            Flatten = contentMetadata.Flatten
                         };
                         
                         builder.ContentFiles.Add(manifestContentFile);
