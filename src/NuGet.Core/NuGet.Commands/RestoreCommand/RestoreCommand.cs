@@ -215,6 +215,7 @@ namespace NuGet.Commands
                 var toolPathResolver = new ToolPathResolver(_request.PackagesDirectory);
                 _request.LockFilePath =  toolPathResolver.GetBestLockFilePath(ToolRestoreUtility.GetToolIdOrNullFromSpec(_request.Project), _request.Project.TargetFrameworks.First().Dependencies.First().LibraryRange.VersionRange, _request.Project.TargetFrameworks.SingleOrDefault().FrameworkName);
                 _request.ExistingLockFile = LockFileUtilities.GetLockFile(_request.LockFilePath, _request.Log);
+               
                 _request.Project.RestoreMetadata.CacheFilePath = NoOpRestoreUtilities.GetCacheFilePath(_request, _request.ExistingLockFile);
             }
 
@@ -242,6 +243,7 @@ namespace NuGet.Commands
 
             if (_request.ProjectStyle == ProjectStyle.DotnetCliTool && !noOp)
             {
+                _request.LockFilePath = null;
                 _request.ExistingLockFile = null;
                 _request.Project.RestoreMetadata.CacheFilePath = null;
             }

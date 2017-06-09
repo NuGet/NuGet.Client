@@ -179,9 +179,11 @@ namespace NuGet.Commands.Test
         [Fact]
         public async Task DotnetCliTool_BasicToolRestore_DifferentVersionRanges()
         {
+
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
             {
+//                Debugger.Launch();
                 var logger = new TestLogger();
                 var dgFile = new DependencyGraphSpec();
 
@@ -229,7 +231,7 @@ namespace NuGet.Commands.Test
                         version.MinVersion,
                         NuGetFramework.Parse("netcoreapp1.0"));
 
-                    Assert.True(File.Exists(path));
+                    Assert.True(File.Exists(path), $"{path} does not exist!");
                 }
             }
         }
