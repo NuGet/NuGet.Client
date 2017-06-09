@@ -210,6 +210,7 @@ namespace NuGet.Commands
                 var uniqueName = request.DependencyGraphSpec.Restore.First();
                 var dgSpec = request.DependencyGraphSpec.WithProjectClosure(uniqueName);
                 dgSpec.GetProjectSpec(uniqueName).RestoreMetadata.ProjectPath = null;
+                dgSpec.GetProjectSpec(uniqueName).FilePath = null;
                 return dgSpec.GetHash();
             }
 
