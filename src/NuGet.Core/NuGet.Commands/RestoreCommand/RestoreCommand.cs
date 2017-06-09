@@ -85,7 +85,7 @@ namespace NuGet.Commands
 
             CacheFile cacheFile = null;
             if (NoOpRestoreUtilities.IsNoOpSupported(_request)) {
-                var cacheFileAndStatus = await EvaluateCacheFile();
+                var cacheFileAndStatus = EvaluateCacheFile();
                 cacheFile = cacheFileAndStatus.Key;
                 if (cacheFileAndStatus.Value)
                 {
@@ -203,10 +203,23 @@ namespace NuGet.Commands
                 restoreTime.Elapsed);
         }
 
-        private async Task<KeyValuePair<CacheFile,bool>> EvaluateCacheFile()
+        public static string GetHash(RestoreRequest request)
+        {
+            if(request.Project.RestoreMetadata.ProjectStyle == ProjectStyle.DotnetCliTool)
+            {
+                var uniqueName = request.DependencyGraphSpec.Restore.First();
+                var dgSpec = request.DependencyGraphSpec.WithProjectClosure(uniqueName);
+                dgSpec.GetProjectSpec(uniqueName).RestoreMetadata.ProjectPath = null;
+                return dgSpec.GetHash();
+            }
+
+            return request.DependencyGraphSpec.GetHash();
+        }
+
+        private KeyValuePair<CacheFile,bool> EvaluateCacheFile()
         {
             CacheFile cacheFile;
-            var newDgSpecHash = _request.DependencyGraphSpec.GetHash();
+            var newDgSpecHash = GetHash(_request);
             var noOp = false;
 
             if(_request.ProjectStyle == ProjectStyle.DotnetCliTool)
