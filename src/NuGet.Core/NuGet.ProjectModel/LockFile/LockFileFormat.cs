@@ -71,25 +71,28 @@ namespace NuGet.ProjectModel
             }
         }
 
-        public async Task<LockFile> ReadWithLock(string filePath, ILogger log)
+        public LockFile SafeRead(string filePath, ILogger log)
         {
             if (filePath == null)
             {
                 throw new ArgumentNullException(nameof(filePath));
             }
 
-            LockFile result = null; // This will retry 3000 times...is this good?
-            await ConcurrencyUtilities.ExecuteWithFileLockedAsync(filePath,
-                lockedToken =>
+            var retries = 3;
+            for (var i = 1; i <= retries; i++)
+            {
+                // Ignore exceptions for the first attempts
+                try
                 {
-                    result = Read(filePath, log);
-
-                    return Task.FromResult(0);
-                },
-                // Do not allow this to be cancelled
-                CancellationToken.None);
-
-            return result;
+                    return Read(filePath, log);
+                }
+                catch (Exception ex) when ((i < retries) && (ex is UnauthorizedAccessException || ex is IOException))
+                {
+                    Thread.Sleep(100);
+                }
+            }
+            // This will never reached, but the compiler can't detect that 
+            return null;
         }
 
         public LockFile Read(string filePath)

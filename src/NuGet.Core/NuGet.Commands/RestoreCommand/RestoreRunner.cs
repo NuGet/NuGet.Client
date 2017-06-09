@@ -255,7 +255,7 @@ namespace NuGet.Commands
             // how long it takes to load the lock file.
             if (request.ExistingLockFile == null)
             {
-                request.ExistingLockFile = LockFileUtilities.GetLockFile(request.LockFilePath, log);
+                request.ExistingLockFile = LockFileUtilities.SafeGetLockFile(request.LockFilePath, log);
             }
 
             var command = new RestoreCommand(request);

@@ -28,7 +28,7 @@ namespace NuGet.ProjectModel
             return lockFile;
         }
 
-        public static async Task<LockFile> GetLockFileAsync(string lockFilePath, Common.ILogger logger)
+        public static LockFile SafeGetLockFile(string lockFilePath, Common.ILogger logger)
         {
             LockFile lockFile = null;
 
@@ -37,7 +37,7 @@ namespace NuGet.ProjectModel
                 var format = new LockFileFormat();
 
                 // A corrupt lock file will log errors and return null
-                lockFile = await format.ReadWithLock(lockFilePath, logger);
+                lockFile =  format.SafeRead(lockFilePath, logger);
             }
 
             return lockFile;

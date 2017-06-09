@@ -226,7 +226,7 @@ namespace NuGet.Commands
 
             if (_request.AllowNoOp && File.Exists(_request.Project.RestoreMetadata.CacheFilePath))
             {
-                cacheFile = CacheFileFormat.Load(_request.Project.RestoreMetadata.CacheFilePath, _logger);
+                cacheFile = CacheFileFormat.SafeLoad(_request.Project.RestoreMetadata.CacheFilePath, _logger);
 
                 if (cacheFile.IsValid && StringComparer.Ordinal.Equals(cacheFile.DgSpecHash, newDgSpecHash))
                 {
@@ -250,7 +250,7 @@ namespace NuGet.Commands
             {
                 if (noOp) // Only if the hash matches, then load the lock file. This is a performance hit, so we need to delay it as much as possible.
                 { 
-                    _request.ExistingLockFile = await LockFileUtilities.GetLockFileAsync(_request.LockFilePath, _request.Log);
+                    _request.ExistingLockFile = LockFileUtilities.SafeGetLockFile(_request.LockFilePath, _request.Log);
                 }
                 else
                 {
