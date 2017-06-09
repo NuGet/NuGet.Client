@@ -4,6 +4,7 @@
 using System;
 using System.ComponentModel.Composition;
 using Microsoft;
+using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.ProjectSystem;
 using Microsoft.VisualStudio.ProjectSystem.Properties;
 using Microsoft.VisualStudio.Shell;
@@ -26,6 +27,8 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private readonly IProjectSystemCache _projectSystemCache;
 
+        private readonly Lazy<IComponentModel> _componentModel;
+
         // Reason it's lazy<object> is because we don't want to load any CPS assemblies untill
         // we're really going to use any of CPS api. Which is why we also don't use nameof or typeof apis.
         [Import("Microsoft.VisualStudio.ProjectSystem.IProjectServiceAccessor")]
@@ -34,11 +37,18 @@ namespace NuGet.PackageManagement.VisualStudio
         public RuntimeTypeHandle ProjectType => typeof(NetCorePackageReferenceProject).TypeHandle;
 
         [ImportingConstructor]
-        public NetCorePackageReferenceProjectProvider(IProjectSystemCache projectSystemCache)
+        public NetCorePackageReferenceProjectProvider(
+            [Import(typeof(SVsServiceProvider))]
+            IServiceProvider vsServiceProvider,
+            IProjectSystemCache projectSystemCache)
         {
+            Assumes.Present(vsServiceProvider);
             Assumes.Present(projectSystemCache);
 
             _projectSystemCache = projectSystemCache;
+
+            _componentModel = new Lazy<IComponentModel>(
+                () => vsServiceProvider.GetService<SComponentModel, IComponentModel>());
         }
 
         public bool TryCreateNuGetProject(
@@ -94,6 +104,8 @@ namespace NuGet.PackageManagement.VisualStudio
             var fullProjectPath = vsProject.FullProjectPath;
             var unconfiguredProject = GetUnconfiguredProject(vsProject.Project);
 
+            var projectServices = new NetCoreProjectSystemServices(vsProject, _componentModel.Value);
+
             result = new NetCorePackageReferenceProject(
                 vsProject.ProjectName,
                 vsProject.CustomUniqueName,
@@ -101,6 +113,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 _projectSystemCache,
                 vsProject,
                 unconfiguredProject,
+                projectServices,
                 vsProject.ProjectId);
 
             return true;

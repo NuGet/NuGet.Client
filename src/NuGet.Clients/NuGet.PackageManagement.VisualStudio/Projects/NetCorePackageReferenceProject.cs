@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft;
 using Microsoft.VisualStudio.ProjectSystem;
 using Microsoft.VisualStudio.ProjectSystem.References;
 using NuGet.Commands;
@@ -49,17 +50,12 @@ namespace NuGet.PackageManagement.VisualStudio
             IProjectSystemCache projectSystemCache,
             IVsProjectAdapter vsProjectAdapter,
             UnconfiguredProject unconfiguredProject,
+            INuGetProjectServices projectServices,
             string projectId)
         {
-            if (projectFullPath == null)
-            {
-                throw new ArgumentNullException(nameof(projectFullPath));
-            }
-
-            if (projectSystemCache == null)
-            {
-                throw new ArgumentNullException(nameof(projectSystemCache));
-            }
+            Assumes.Present(projectFullPath);
+            Assumes.Present(projectSystemCache);
+            Assumes.Present(projectServices);
 
             _projectName = projectName;
             _projectUniqueName = projectUniqueName;
@@ -70,6 +66,7 @@ namespace NuGet.PackageManagement.VisualStudio
             _projectSystemCache = projectSystemCache;
             _vsProjectAdapter = vsProjectAdapter;
             _unconfiguredProject = unconfiguredProject;
+            ProjectServices = projectServices;
 
             InternalMetadata.Add(NuGetProjectMetadataKeys.Name, _projectName);
             InternalMetadata.Add(NuGetProjectMetadataKeys.UniqueName, _projectUniqueName);
