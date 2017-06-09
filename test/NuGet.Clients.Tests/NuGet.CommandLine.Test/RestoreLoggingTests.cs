@@ -4,9 +4,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using FluentAssertions;
-using NuGet.Common;
 using NuGet.Frameworks;
-using NuGet.Packaging;
 using NuGet.Test.Utility;
 using Test.Utility;
 using Xunit;
@@ -15,6 +13,54 @@ namespace NuGet.CommandLine.Test
 {
     public class RestoreLoggingTests
     {
+        [Fact]
+        public async Task RestoreLogging_WarningsContainNuGetLogCodes()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var netcoreapp2 = NuGetFramework.Parse("netcoreapp2.0");
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                    "a",
+                    pathContext.SolutionRoot,
+                    netcoreapp2);
+
+                // Referenced but not created
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+
+                // Created in the source
+                var packageX9 = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "9.0.0"
+                };
+
+                projectA.AddPackageToAllFrameworks(packageX);
+
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                    pathContext.PackageSource,
+                    packageX9);
+
+                // Act
+                var r = Util.RestoreSolution(pathContext, expectedExitCode: 0);
+
+                // Assert
+                r.Success.Should().BeTrue();
+                r.AllOutput.Should().Contain("WARNING: NU1603:");
+            }
+        }
+
         [Fact]
         public async Task RestoreLogging_WarningsAsErrorsFailsRestore()
         {
@@ -65,8 +111,13 @@ namespace NuGet.CommandLine.Test
             }
         }
 
-        [Fact]
-        public async Task RestoreLogging_NoWarnRemovesWarning()
+        [Theory]
+        [InlineData("NU1603")]
+        [InlineData("$(NoWarn);NU1603")]
+        [InlineData("NU1603;$(NoWarn);")]
+        [InlineData("NU1603;NU1701")]
+        [InlineData("NU1603,NU1701")]
+        public async Task RestoreLogging_NoWarnRemovesWarning(string noWarn)
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -81,7 +132,7 @@ namespace NuGet.CommandLine.Test
                     pathContext.SolutionRoot,
                     netcoreapp2);
 
-                projectA.Properties.Add("NoWarn", "NU1603");
+                projectA.Properties.Add("NoWarn", noWarn);
 
                 // Referenced but not created
                 var packageX = new SimpleTestPackageContext()
@@ -115,8 +166,13 @@ namespace NuGet.CommandLine.Test
             }
         }
 
-        [Fact]
-        public async Task RestoreLogging_WarningsAsErrorsForSpecificWarningFails()
+        [Theory]
+        [InlineData("NU1603")]
+        [InlineData("$(NoWarn);NU1603")]
+        [InlineData("NU1603;$(NoWarn);")]
+        [InlineData("NU1603;NU1701")]
+        [InlineData("NU1603,NU1701")]
+        public async Task RestoreLogging_WarningsAsErrorsForSpecificWarningFails(string warnAsError)
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -132,7 +188,7 @@ namespace NuGet.CommandLine.Test
                     netcoreapp2);
 
                 projectA.Properties.Add("TreatWarningsAsErrors", "false");
-                projectA.Properties.Add("WarningsAsErrors", "NU1603");
+                projectA.Properties.Add("WarningsAsErrors", warnAsError);
 
                 // Referenced but not created
                 var packageX = new SimpleTestPackageContext()
@@ -183,7 +239,7 @@ namespace NuGet.CommandLine.Test
                     netcoreapp2);
 
                 projectA.Properties.Add("TreatWarningsAsErrors", "false");
-                projectA.Properties.Add("WarningsAsErrors", "NU1602");
+                projectA.Properties.Add("WarningsAsErrors", "NU1602;NU1701");
 
                 // Referenced but not created
                 var packageX = new SimpleTestPackageContext()
@@ -214,7 +270,8 @@ namespace NuGet.CommandLine.Test
                 // Assert
                 r.Success.Should().BeTrue();
                 r.Output.Should().Contain("NU1603");
-                r.Output.Should().NotContain("NU1607");
+                r.Output.Should().NotContain("NU1602");
+                r.Output.Should().NotContain("NU1701");
             }
         }
 
