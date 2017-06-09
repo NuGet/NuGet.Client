@@ -10,8 +10,6 @@ param (
     [string]$MSPFXPath,
     [string]$NuGetPFXPath,
     [switch]$SkipXProj,
-    [switch]$SkipVS14,
-    [switch]$SkipVS15,
     [Parameter(ParameterSetName='RegularBuild')]
     [switch]$SkipSubModules,
     [Parameter(ParameterSetName='RegularBuild')]
@@ -45,13 +43,6 @@ $env:DOTNET_INSTALL_DIR=$CLIRoot
 . "$PSScriptRoot\build\common.ps1"
 
 $RunTests = (-not $SkipTests) -and (-not $Fast)
-
-# Adjust version skipping if only one version installed - if VS15 is not installed, no need to specify SkipVS15
-$VS14Installed = Test-MSBuildVersionPresent -MSBuildVersion "14"
-$SkipVS14 = $SkipVS14 -or -not $VS14Installed
-
-$VS15Installed = (Test-MSBuildVersionPresent -MSBuildVersion "15") -Or (Test-Path 'C:\Windows\Microsoft.NET\Framework64\v4.0.30319')
-$SkipVS15 = $SkipVS15 -or -not $VS15Installed
 
 Write-Host ("`r`n" * 3)
 Trace-Log ('=' * 60)
@@ -116,27 +107,17 @@ Invoke-BuildStep 'Building NuGet.Core projects' {
 ## Building the VS15 Tooling solution
 Invoke-BuildStep 'Building NuGet.Clients projects - VS15 dependencies' {
         param($Configuration, $ReleaseLabel, $BuildNumber, $SkipRestore, $Fast)
-        Build-ClientsProjects $Configuration $ReleaseLabel $BuildNumber -MSBuildVersion "15" -SkipRestore:$SkipRestore -Fast:$Fast
+        Build-ClientsProjects $Configuration $ReleaseLabel $BuildNumber -SkipRestore:$SkipRestore -Fast:$Fast
     } `
     -args $Configuration, $ReleaseLabel, $BuildNumber, $SkipRestore, $Fast `
-    -skip:$SkipVS15 `
     -ev +BuildErrors
 
-## Building the VS14 Tooling solution
-Invoke-BuildStep 'Building NuGet.Clients projects - VS14 dependencies' {
-        param($Configuration, $ReleaseLabel, $BuildNumber, $SkipRestore, $Fast)
-        Build-ClientsProjects $Configuration $ReleaseLabel $BuildNumber -MSBuildVersion "14" -SkipRestore:$SkipRestore -Fast:$Fast
-    } `
-    -args $Configuration, $ReleaseLabel, $BuildNumber, $SkipRestore, $Fast `
-    -skip:$SkipVS14 `
-    -ev +BuildErrors
-
-Invoke-BuildStep 'Creating NuGet.Clients packages - VS14 Toolset' {
+Invoke-BuildStep 'Creating NuGet.Clients packages - VS15 Toolset' {
         param($Configuration, $ReleaseLabel, $BuildNumber, $MSPFXPath)
-        Build-ClientsPackages $Configuration $ReleaseLabel $BuildNumber -MSBuildVersion "14" -KeyFile $MSPFXPath
+        Build-ClientsPackages $Configuration $ReleaseLabel $BuildNumber -KeyFile $MSPFXPath
     } `
     -args $Configuration, $ReleaseLabel, $BuildNumber, $MSPFXPath `
-    -skip:($SkipILMerge -or $Fast -or $SkipVS14) `
+    -skip:($SkipILMerge -or $Fast) `
     -ev +BuildErrors
 
 Invoke-BuildStep 'Running NuGet.Core tests' {
@@ -149,18 +130,10 @@ Invoke-BuildStep 'Running NuGet.Core tests' {
 
 Invoke-BuildStep 'Running NuGet.Clients tests - VS15 dependencies' {
         param($Configuration)
-        Test-ClientsProjects -Configuration $Configuration -MSBuildVersion "15"
+        Test-ClientsProjects -Configuration $Configuration
     } `
     -args $Configuration `
     -skip:((-not $RunTests) -or $SkipVS15) `
-    -ev +BuildErrors
-
-Invoke-BuildStep 'Running NuGet.Clients tests - VS14 dependencies' {
-        param($Configuration)
-        Test-ClientsProjects -Configuration $Configuration -MSBuildVersion "14"
-    } `
-    -args $Configuration `
-    -skip:((-not $RunTests) -or $SkipVS14) `
     -ev +BuildErrors
 
 Trace-Log ('-' * 60)

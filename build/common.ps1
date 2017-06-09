@@ -1,7 +1,6 @@
 ### Constants ###
 $DefaultConfiguration = 'debug'
 $DefaultReleaseLabel = 'zlocal'
-$DefaultMSBuildVersion = '15'
 
 # The pack version can be inferred from the .nuspec files on disk. This is only necessary as long
 # as the following issue is open: https://github.com/NuGet/Home/issues/3530
@@ -20,8 +19,6 @@ $Artifacts = Join-Path $NuGetClientRoot artifacts
 $ReleaseNupkgs = Join-Path $Artifacts ReleaseNupkgs
 
 $DotNetExe = Join-Path $CLIRoot 'dotnet.exe'
-$MSBuildRoot = Join-Path ${env:ProgramFiles(x86)} 'MSBuild\'
-$MSBuildExeRelPath = 'bin\msbuild.exe'
 $NuGetExe = Join-Path $NuGetClientRoot '.nuget\nuget.exe'
 $XunitConsole = Join-Path $NuGetClientRoot 'packages\xunit.runner.console.2.1.0\tools\xunit.console.exe'
 $ILMerge = Join-Path $NuGetClientRoot 'tools\ILRepack.exe'
@@ -299,9 +296,7 @@ Function Restore-SolutionPackages{
     [CmdletBinding()]
     param(
         [Alias('path')]
-        [string]$SolutionPath,
-        [ValidateSet(4, 12, 14, 15)]
-        [int]$MSBuildVersion
+        [string]$SolutionPath
     )
     $opts = , 'restore'
     if (-not $SolutionPath) {
@@ -309,9 +304,6 @@ Function Restore-SolutionPackages{
     }
     else {
         $opts += $SolutionPath
-    }
-    if ($MSBuildVersion) {
-        $opts += '-MSBuildVersion', $MSBuildVersion
     }
 
     if (-not $VerbosePreference) {
@@ -527,29 +519,16 @@ Function Test-CoreProjects {
     $xtests | Test-XProject -Configuration $Configuration
 }
 
-Function Test-MSBuildVersionPresent {
-    [CmdletBinding()]
-    param(
-        [string]$MSBuildVersion
-    )
-
-   	$MSBuildExe = Get-MSBuildExe $MSBuildVersion
-
-    Test-Path $MSBuildExe
-}
-
 Function Get-MSBuildExe {
-    param(
-        [string]$MSBuildVersion
-    )
-
-    if ($MSBuildVersion -eq "15") {
-        $path = [System.Runtime.InteropServices.RuntimeEnvironment]::GetRuntimeDirectory()
-        Join-Path $path "msbuild.exe"
-    }
-
-    $MSBuildExe = Join-Path $MSBuildRoot ($MSBuildVersion + ".0")
-    Join-Path $MSBuildExe $MSBuildExeRelPath
+    $path = & "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -requires Microsoft.Component.MSBuild -property installationPath
+    if ($path) {
+        $path = join-path $path 'MSBuild\15.0\Bin\MSBuild.exe'
+        if (test-path $path) {
+            return $path
+        } else {
+            throw "Cannot find the path for MSBuild.exe as part of your Visual Studio 2017+ installation"
+        }
+    }    
 }
 
 Function Build-ClientsProjects {
@@ -558,7 +537,6 @@ Function Build-ClientsProjects {
         [string]$Configuration = $DefaultConfiguration,
         [string]$ReleaseLabel = $DefaultReleaseLabel,
         [int]$BuildNumber = (Get-BuildNumber),
-        [string]$MSBuildVersion = $DefaultMSBuildVersion,
         [switch]$SkipRestore,
         [switch]$Fast
     )
@@ -566,7 +544,7 @@ Function Build-ClientsProjects {
     $solutionPath = Join-Path $NuGetClientRoot NuGet.CommandLine.sln
     if (-not $SkipRestore) {
         # Restore packages for NuGet.Tooling solution
-        Restore-SolutionPackages -path $solutionPath -MSBuildVersion $MSBuildVersion
+        Restore-SolutionPackages -path $solutionPath
     }
 
     # Build the solution
@@ -575,7 +553,6 @@ Function Build-ClientsProjects {
         -Configuration $Configuration `
         -ReleaseLabel $ReleaseLabel `
         -BuildNumber $BuildNumber `
-        -MSBuildVersion $MSBuildVersion `
         -IsSolution
 }
 
@@ -585,15 +562,14 @@ Function Build-ClientsPackages {
         [string]$Configuration = $DefaultConfiguration,
         [string]$ReleaseLabel = $DefaultReleaseLabel,
         [int]$BuildNumber = (Get-BuildNumber),
-        [int]$MSBuildVersion = $DefaultMSBuildVersion,
         [string]$KeyFile
     )
 
     $exeProjectDir = [io.path]::combine($NuGetClientRoot, "src", "NuGet.Clients", "NuGet.CommandLine")
     $exeProject = Join-Path $exeProjectDir "NuGet.CommandLine.csproj"
     $exeNuspec = Join-Path $exeProjectDir "NuGet.CommandLine.nuspec"
-    $exeInputDir = [io.path]::combine($Artifacts, "NuGet.CommandLine", "${MSBuildVersion}.0", $Configuration)
-    $exeOutputDir = Join-Path $Artifacts "VS${MSBuildVersion}"
+    $exeInputDir = [io.path]::combine($Artifacts, "NuGet.CommandLine", "15.0", $Configuration)
+    $exeOutputDir = Join-Path $Artifacts "VS"
 
     # Build and pack the NuGet.CommandLine project with the build number and release label.
     Build-ClientsProjectHelper `
@@ -601,7 +577,6 @@ Function Build-ClientsPackages {
         -Configuration $Configuration `
         -ReleaseLabel $ReleaseLabel `
         -BuildNumber $BuildNumber `
-        -MSBuildVersion $MSBuildVersion `
         -Rebuild
 
     Invoke-ILMerge `
@@ -623,7 +598,6 @@ Function Build-ClientsPackages {
         -Configuration $Configuration `
         -ReleaseLabel $ReleaseLabel `
         -BuildNumber $BuildNumber `
-        -MSBuildVersion $MSBuildVersion `
         -ExcludeBuildNumber `
         -Rebuild
 
@@ -651,7 +625,6 @@ Function Build-ClientsProjectHelper {
         [string]$Configuration = $DefaultConfiguration,
         [string]$ReleaseLabel = $DefaultReleaseLabel,
         [int]$BuildNumber = (Get-BuildNumber),
-        [int]$MSBuildVersion = $DefaultMSBuildVersion,
         [switch]$IsSolution,
         [switch]$ExcludeBuildNumber,
         [switch]$Rebuild
@@ -672,7 +645,7 @@ Function Build-ClientsProjectHelper {
         $opts += '/verbosity:minimal'
     }
 
-    $MSBuildExe = Get-MSBuildExe $MSBuildVersion
+    $MSBuildExe = Get-MSBuildExe
 
     Trace-Log "$MSBuildExe $opts"
     & $MSBuildExe $opts
@@ -684,8 +657,7 @@ Function Build-ClientsProjectHelper {
 Function Test-ClientsProjects {
     [CmdletBinding()]
     param(
-        [string]$Configuration = $DefaultConfiguration,
-        [string]$MSBuildVersion = $DefaultMSBuildVersion
+        [string]$Configuration = $DefaultConfiguration
     )
 
     # We don't run command line tests on VS15 as we don't build a nuget.exe for this version
@@ -693,9 +665,9 @@ Function Test-ClientsProjects {
     $testProjects = Get-ChildItem $testProjectsLocation -Recurse -Filter '*.csproj' |
         %{ $_.FullName } |
         ?{ -not $_.EndsWith('WebAppTest.csproj') -and
-           -not ($_.EndsWith('NuGet.CommandLine.Test.csproj') -and ($MSBuildVersion -eq '15'))}
+           -not ($_.EndsWith('NuGet.CommandLine.Test.csproj'))}
 
-    $testProjects | Test-ClientProject -Configuration $Configuration -MSBuildVersion $MSBuildVersion
+    $testProjects | Test-ClientProject -Configuration $Configuration
 }
 
 Function Test-ClientProject {
@@ -703,8 +675,7 @@ Function Test-ClientProject {
     param(
         [parameter(ValueFromPipeline=$True, Mandatory=$True, Position=0)]
         [string[]]$TestProjects,
-        [string]$Configuration = $DefaultConfiguration,
-        [string]$MSBuildVersion = $DefaultMSBuildVersion
+        [string]$Configuration = $DefaultConfiguration
     )
     Begin {}
     Process{
@@ -714,7 +685,7 @@ Function Test-ClientProject {
                 $opts += '/verbosity:minimal'
             }
 
-            $MSBuildExe = Get-MSBuildExe $MSBuildVersion
+            $MSBuildExe = Get-MSBuildExe
 
             Trace-Log "$MSBuildExe $opts"
             & $MSBuildExe $opts
