@@ -196,13 +196,24 @@ namespace NuGet.SolutionRestoreManager
                     .Any(tfm => tfm.Version >= Version20);
                 var toolFramework = isNetCore20 ? CommonFrameworks.NetCoreApp20 : CommonFrameworks.NetCoreApp10;
 
+                var packagesPath = GetRestoreProjectPath(projectRestoreInfo.TargetFrameworks);
+                var fallbackFolders = GetRestoreFallbackFolders(projectRestoreInfo.TargetFrameworks).ToList();
+                var sources = GetRestoreSources(projectRestoreInfo.TargetFrameworks)
+                             .Select(e => new PackageSource(e))
+                             .ToList();
+                var projectWideWarningProperties = MSBuildRestoreUtility.GetWarningProperties(
+                treatWarningsAsErrors: GetNonEvaluatedPropertyOrNull(projectRestoreInfo.TargetFrameworks, TreatWarningsAsErrors, e => e),
+                    warningsAsErrors: GetNonEvaluatedPropertyOrNull(projectRestoreInfo.TargetFrameworks, WarningsAsErrors, e => e),
+                    noWarn: GetNonEvaluatedPropertyOrNull(projectRestoreInfo.TargetFrameworks, NoWarn, e => e));
+
                 projectRestoreInfo
                     .ToolReferences
                     .Cast<IVsReferenceItem>()
-                    .Select(r => ToToolPackageSpec(projectNames, r, toolFramework))
+                    .Select(r => ToToolPackageSpec(projectNames, r, toolFramework, packagesPath, fallbackFolders, sources, projectWideWarningProperties))
                     .ToList()
                     .ForEach(ts =>
                     {
+                       
                         dgSpec.AddRestore(ts.RestoreMetadata.ProjectUniqueName);
                         dgSpec.AddProject(ts);
                     });
@@ -211,9 +222,9 @@ namespace NuGet.SolutionRestoreManager
             return dgSpec;
         }
 
-        private static PackageSpec ToToolPackageSpec(ProjectNames projectNames, IVsReferenceItem item, NuGetFramework toolFramework)
+        private static PackageSpec ToToolPackageSpec(ProjectNames projectNames, IVsReferenceItem item, NuGetFramework toolFramework, string packagesPath, List<string> fallbackFolders, List<PackageSource> sources, WarningProperties projectWideWarningProperties)
         {
-            return ToolRestoreUtility.GetSpec(projectNames.FullName, item.Name, GetVersionRange(item), toolFramework);
+            return ToolRestoreUtility.GetSpec(projectNames.FullName, item.Name, GetVersionRange(item), toolFramework, packagesPath, fallbackFolders, sources, projectWideWarningProperties);
         }
 
         private static PackageSpec ToPackageSpec(ProjectNames projectNames, IVsProjectRestoreInfo projectRestoreInfo)

@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.ProjectModel;
@@ -18,7 +19,8 @@ namespace NuGet.Commands
         /// its own project. For now, we always restore for a null runtime and a single
         /// constant framework.
         /// </summary>
-        public static PackageSpec GetSpec(string projectFilePath, string id, VersionRange versionRange, NuGetFramework framework)
+        public static PackageSpec GetSpec(string projectFilePath, string id, VersionRange versionRange, NuGetFramework framework, string packagesPath, List<string> fallbackFolders, List<PackageSource> sources, WarningProperties projectWideWarningProperties)
+
         {
             var name = $"{id}-{framework.Framework}-{versionRange.ToNormalizedString()}";
 
@@ -46,7 +48,11 @@ namespace NuGet.Commands
                     ProjectStyle = ProjectStyle.DotnetCliTool,
                     ProjectName = name,
                     ProjectUniqueName = name,
-                    ProjectPath = projectFilePath
+                    ProjectPath = projectFilePath,
+                    PackagesPath = packagesPath,
+                    FallbackFolders = fallbackFolders,
+                    Sources = sources,
+                    ProjectWideWarningProperties = projectWideWarningProperties
                 }
             };
         }

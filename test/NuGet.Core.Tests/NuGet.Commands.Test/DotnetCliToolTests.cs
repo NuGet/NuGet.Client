@@ -38,7 +38,11 @@ namespace NuGet.Commands.Test
                     Path.Combine(pathContext.SolutionRoot, "tool", "fake.csproj"),
                     "a",
                     VersionRange.Parse("1.0.0"),
-                    NuGetFramework.Parse("netcoreapp1.0"));
+                    NuGetFramework.Parse("netcoreapp1.0"),
+                    pathContext.UserPackagesFolder,
+                    new List<string>() { pathContext.FallbackFolder},
+                    new List<PackageSource>() { new PackageSource(pathContext.PackageSource) },
+                    new WarningProperties());
 
                 dgFile.AddProject(spec);
                 dgFile.AddRestore(spec.Name);
@@ -112,7 +116,11 @@ namespace NuGet.Commands.Test
                     Path.Combine(pathContext.SolutionRoot, "fake.csproj"),
                     "a",
                     VersionRange.Parse("1.0.0"),
-                    NuGetFramework.Parse("netcoreapp1.0"));
+                    NuGetFramework.Parse("netcoreapp1.0"),
+                    pathContext.UserPackagesFolder,
+                    new List<string>() { pathContext.FallbackFolder },
+                    new List<PackageSource>() { new PackageSource(pathContext.PackageSource) },
+                    new WarningProperties());
 
                 dgFile.AddProject(spec);
                 dgFile.AddRestore(spec.Name);
@@ -147,13 +155,21 @@ namespace NuGet.Commands.Test
                     Path.Combine(pathContext.SolutionRoot, "fake1.csproj"),
                     "a",
                     VersionRange.Parse("1.0.0"),
-                    NuGetFramework.Parse("netcoreapp1.0"));
+                    NuGetFramework.Parse("netcoreapp1.0"),
+                                        pathContext.UserPackagesFolder,
+                    new List<string>() { pathContext.FallbackFolder },
+                    new List<PackageSource>() { new PackageSource(pathContext.PackageSource) },
+                    new WarningProperties());
 
                 var spec2 = ToolRestoreUtility.GetSpec(
                     Path.Combine(pathContext.SolutionRoot, "fake2.csproj"),
                     "a",
                     VersionRange.Parse("1.0.0"),
-                    NuGetFramework.Parse("netcoreapp1.0"));
+                    NuGetFramework.Parse("netcoreapp1.0"),
+                                        pathContext.UserPackagesFolder,
+                    new List<string>() { pathContext.FallbackFolder },
+                    new List<PackageSource>() { new PackageSource(pathContext.PackageSource) },
+                    new WarningProperties());
 
                 var dgFile1 = new DependencyGraphSpec();
                 dgFile1.AddProject(spec1);
@@ -210,7 +226,11 @@ namespace NuGet.Commands.Test
                         Path.Combine(pathContext.SolutionRoot, "fake.csproj"),
                         "a",
                         VersionRange.Parse("1.0.0"),
-                        NuGetFramework.Parse("netcoreapp1.0"));
+                        NuGetFramework.Parse("netcoreapp1.0"),
+                                            pathContext.UserPackagesFolder,
+                    new List<string>() { pathContext.FallbackFolder },
+                    new List<PackageSource>() { new PackageSource(pathContext.PackageSource) },
+                    new WarningProperties());
 
                     dgFile.AddProject(spec);
                     dgFile.AddRestore(spec.Name);
@@ -261,7 +281,11 @@ namespace NuGet.Commands.Test
                         Path.Combine(pathContext.SolutionRoot, $"fake{i}.csproj"),
                         "a",
                         version,
-                        NuGetFramework.Parse("netcoreapp1.0"));
+                        NuGetFramework.Parse("netcoreapp1.0"),
+                                            pathContext.UserPackagesFolder,
+                    new List<string>() { pathContext.FallbackFolder },
+                    new List<PackageSource>() { new PackageSource(pathContext.PackageSource) },
+                    new WarningProperties());
 
                     dgFile.AddProject(spec);
                     dgFile.AddRestore(spec.Name);
