@@ -57,7 +57,11 @@ namespace NuGet.Common
         }
 
         public RestoreLogMessage(LogLevel logLevel, string errorString)
-            : this(logLevel, LogLevel.Error == logLevel ? NuGetLogCode.NU1000 : NuGetLogCode.NU1500, errorString, string.Empty, false)
+            : this(logLevel, 
+                  LogLevel.Error == logLevel ? NuGetLogCode.NU1000 : (LogLevel.Warning == logLevel ? NuGetLogCode.NU1500: NuGetLogCode.Undefined),
+                  errorString, 
+                  string.Empty, 
+                  false)
         {
         }
 
