@@ -1,15 +1,12 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using FluentAssertions;
 using NuGet.Frameworks;
 using NuGet.Packaging;
 using NuGet.Test.Utility;
+using Test.Utility;
 using Xunit;
 
 namespace NuGet.CommandLine.Test
@@ -62,7 +59,7 @@ namespace NuGet.CommandLine.Test
 
                 // Assert
                 r.Success.Should().BeFalse();
-                r.Output.Should().Contain("NU1603");
+                r.AllOutput.Should().Contain("NU1603");
             }
         }
 
@@ -109,7 +106,7 @@ namespace NuGet.CommandLine.Test
                     packageX9);
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, expectedExitCode: 1);
+                var r = Util.RestoreSolution(pathContext, expectedExitCode: 0);
 
                 // Assert
                 r.Success.Should().BeTrue();
@@ -164,7 +161,7 @@ namespace NuGet.CommandLine.Test
 
                 // Assert
                 r.Success.Should().BeFalse();
-                r.Output.Should().Contain("NU1603");
+                r.AllOutput.Should().Contain("NU1603");
             }
         }
 
@@ -211,11 +208,12 @@ namespace NuGet.CommandLine.Test
                     packageX9);
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, expectedExitCode: 1);
+                var r = Util.RestoreSolution(pathContext, expectedExitCode: 0);
 
                 // Assert
                 r.Success.Should().BeTrue();
                 r.Output.Should().Contain("NU1603");
+                r.Output.Should().NotContain("NU1607");
             }
         }
     }

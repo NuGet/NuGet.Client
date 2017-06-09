@@ -391,35 +391,11 @@ namespace NuGet.CommandLine
                 }
                 else if (message.Level == LogLevel.Warning)
                 {
-                    if (message.Code >= NuGetLogCode.NU1000)
-                    {
-                        WriteWarning(message.FormatWithCode());
-                    }
-                    else
-                    {
-                        // Write warnings without codes otherwise.
-                        WriteWarning(message.Message);
-                    }
+                    WriteWarning(message.FormatWithCode());
                 }
                 else if (message.Level == LogLevel.Error)
                 {
-                    if (message is RestoreLogMessage)
-                    {
-                        WriteLine(ConsoleColor.Red, message.Message);
-                    }
-                    else
-                    {
-                        // Write out codes for messages that have codes.
-                        if (message.Code >= NuGetLogCode.NU1000)
-                        {
-                            WriteError(message.FormatWithCode());
-                        }
-                        else
-                        {
-                            // Write errors without codes otherwise.
-                            WriteError(message.Message);
-                        }
-                    }
+                    WriteError(message.FormatWithCode());
                 }
                 else
                 {
