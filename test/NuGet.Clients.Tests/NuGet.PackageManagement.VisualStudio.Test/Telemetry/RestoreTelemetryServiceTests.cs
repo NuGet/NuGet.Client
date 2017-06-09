@@ -61,7 +61,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         {
             Assert.NotNull(actual);
             Assert.Equal(TelemetryConstants.RestoreActionEventName, actual.Name);
-            Assert.Equal(8, actual.Properties.Count);
+            Assert.Equal(10, actual.Properties.Count);
 
             Assert.Equal(expected.Source.ToString(), actual.Properties[TelemetryConstants.OperationSourcePropertyName].ToString());
 
