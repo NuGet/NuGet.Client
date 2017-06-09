@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.ProjectModel;
+using Test.Utility;
 using Xunit;
 
 namespace NuGet.Commands.Test
@@ -57,6 +58,29 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
+        public void WarningPropertiesCollection_ProjectPropertiesWithWarnAsErrorAndUndefinedWarningCode()
+        {
+            // Arrange
+            var noWarnSet = new HashSet<NuGetLogCode> { };
+            var warnAsErrorSet = new HashSet<NuGetLogCode> { NuGetLogCode.Undefined };
+            var allWarningsAsErrors = false;
+            var warningPropertiesCollection = new WarningPropertiesCollection()
+            {
+                ProjectWideWarningProperties = new WarningProperties(warnAsErrorSet, noWarnSet, allWarningsAsErrors)
+            };
+
+            var nonSuppressedMessage = new RestoreLogMessage(LogLevel.Warning, NuGetLogCode.Undefined, "Warning");
+            var nonSuppressedMessage2 = new RestoreLogMessage(LogLevel.Warning, NuGetLogCode.NU1601, "Warning");
+
+            // Act && Assert
+            // WarningPropertiesCollection should not Upgrade Warnings with Undefined code.
+            Assert.False(warningPropertiesCollection.ApplyWarningProperties(nonSuppressedMessage));
+            Assert.Equal(LogLevel.Error, nonSuppressedMessage.Level);
+            Assert.False(warningPropertiesCollection.ApplyWarningProperties(nonSuppressedMessage2));
+            Assert.Equal(LogLevel.Warning, nonSuppressedMessage2.Level);
+        }
+
+        [Fact]
         public void WarningPropertiesCollection_ProjectPropertiesWithAllWarningsAsErrors()
         {
             // Arrange
@@ -74,6 +98,30 @@ namespace NuGet.Commands.Test
             // Act && Assert
             Assert.False(warningPropertiesCollection.ApplyWarningProperties(upgradedMessage));
             Assert.Equal(LogLevel.Error, upgradedMessage.Level);
+            Assert.False(warningPropertiesCollection.ApplyWarningProperties(upgradedMessage2));
+            Assert.Equal(LogLevel.Error, upgradedMessage2.Level);
+        }
+
+        [Fact]
+        public void WarningPropertiesCollection_ProjectPropertiesWithAllWarningsAsErrorsAndWarningWithUndefinedCode()
+        {
+            DebuggerUtils.WaitForDebugger();
+            // Arrange
+            var noWarnSet = new HashSet<NuGetLogCode> { };
+            var warnAsErrorSet = new HashSet<NuGetLogCode> { };
+            var allWarningsAsErrors = true;
+            var warningPropertiesCollection = new WarningPropertiesCollection()
+            {
+                ProjectWideWarningProperties = new WarningProperties(warnAsErrorSet, noWarnSet, allWarningsAsErrors)
+            };
+
+            var upgradedMessage = new RestoreLogMessage(LogLevel.Warning, NuGetLogCode.Undefined, "Warning");
+            var upgradedMessage2 = new RestoreLogMessage(LogLevel.Warning, NuGetLogCode.NU1601, "Warning");
+
+            // Act && Assert
+            // WarningPropertiesCollection should not Upgrade Warnings with Undefined code.
+            Assert.False(warningPropertiesCollection.ApplyWarningProperties(upgradedMessage));
+            Assert.Equal(LogLevel.Warning, upgradedMessage.Level);
             Assert.False(warningPropertiesCollection.ApplyWarningProperties(upgradedMessage2));
             Assert.Equal(LogLevel.Error, upgradedMessage2.Level);
         }
