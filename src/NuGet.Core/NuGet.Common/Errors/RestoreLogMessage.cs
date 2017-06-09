@@ -47,21 +47,17 @@ namespace NuGet.Common
 
         public RestoreLogMessage(LogLevel logLevel, NuGetLogCode errorCode, 
             string errorString, string targetGraph)
-            : this(logLevel, errorCode, errorString, targetGraph, false)
+            : this(logLevel, errorCode, errorString, targetGraph, logToInnerLogger: false)
         {
         }
 
         public RestoreLogMessage(LogLevel logLevel, NuGetLogCode errorCode, string errorString)
-            : this(logLevel, errorCode, errorString, string.Empty, false)
+            : this(logLevel, errorCode, errorString, string.Empty, logToInnerLogger : false)
         {
         }
 
         public RestoreLogMessage(LogLevel logLevel, string errorString)
-            : this(logLevel, 
-                  LogLevel.Error == logLevel ? NuGetLogCode.NU1000 : (LogLevel.Warning == logLevel ? NuGetLogCode.NU1500: NuGetLogCode.Undefined),
-                  errorString, 
-                  string.Empty, 
-                  false)
+            : this(logLevel, GetDefaultLogCode(logLevel), errorString, string.Empty, logToInnerLogger: false)
         {
         }
 
@@ -117,6 +113,23 @@ namespace NuGet.Common
                 LibraryId = libraryId,
                 TargetGraphs = targetGraphs.ToList()
             };
+        }
+
+
+        /// <summary>
+        /// Get default LogCode based on the log level
+        /// </summary>
+        private static NuGetLogCode GetDefaultLogCode(LogLevel logLevel)
+        {
+            switch (logLevel)
+            {
+                case LogLevel.Error:
+                    return NuGetLogCode.NU1000;
+                case LogLevel.Warning:
+                    return NuGetLogCode.NU1500;
+                default:
+                    return NuGetLogCode.Undefined;
+            }
         }
     }
 }

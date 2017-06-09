@@ -243,7 +243,7 @@ namespace NuGet.CommandLine.Test
                 {
                     Id = "x",
                     Version = "1.0.0",
-                    NoWarn = "NU1607"
+                    NoWarn = "NU1603"
                 };
 
                 // Created in the source
@@ -263,7 +263,7 @@ namespace NuGet.CommandLine.Test
                     packageX9);
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, expectedExitCode: 1);
+                var r = Util.RestoreSolution(pathContext, expectedExitCode: 0);
 
                 // Assert
                 r.Success.Should().BeTrue();
