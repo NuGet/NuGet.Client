@@ -135,6 +135,67 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
+        public async Task DotnetCliTool_ToolRestoreNoOpsRegardlessOfProject()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                var logger1 = new TestLogger();
+                var logger2 = new TestLogger();
+
+                var spec1 = ToolRestoreUtility.GetSpec(
+                    Path.Combine(pathContext.SolutionRoot, "fake1.csproj"),
+                    "a",
+                    VersionRange.Parse("1.0.0"),
+                    NuGetFramework.Parse("netcoreapp1.0"));
+
+                var spec2 = ToolRestoreUtility.GetSpec(
+                    Path.Combine(pathContext.SolutionRoot, "fake2.csproj"),
+                    "a",
+                    VersionRange.Parse("1.0.0"),
+                    NuGetFramework.Parse("netcoreapp1.0"));
+
+                var dgFile1 = new DependencyGraphSpec();
+                dgFile1.AddProject(spec1);
+                dgFile1.AddRestore(spec1.Name);
+
+                var dgFile2 = new DependencyGraphSpec();
+                dgFile2.AddProject(spec2);
+                dgFile2.AddRestore(spec2.Name);
+
+                var pathResolver = new ToolPathResolver(pathContext.UserPackagesFolder);
+                var path = pathResolver.GetLockFilePath(
+                    "a",
+                    NuGetVersion.Parse("1.0.0"),
+                    NuGetFramework.Parse("netcoreapp1.0"));
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3(pathContext.PackageSource, new PackageIdentity("a", NuGetVersion.Parse("1.0.0")));
+
+                // Act
+                var results1 = await CommandsTestUtility.RunRestore(dgFile1, pathContext, logger1);
+
+                // Assert
+                Assert.Equal(1, results1.Count);
+                var result1 = results1.Single();
+
+                Assert.True(result1.Success, "Failed: " + string.Join(Environment.NewLine, logger1.Messages));
+                Assert.False(result1.NoOpRestore, "Should not no-op: " + string.Join(Environment.NewLine, logger1.Messages));
+                Assert.True(File.Exists(path));
+
+                // Act
+                var results2 = await CommandsTestUtility.RunRestore(dgFile2, pathContext, logger2);
+
+                // Assert
+                Assert.Equal(1, results2.Count);
+                var result2 = results2.Single();
+
+                Assert.True(result2.Success, "Failed: " + string.Join(Environment.NewLine, logger2.Messages));
+                Assert.True(result2.NoOpRestore, "Should no-op: " + string.Join(Environment.NewLine, logger2.Messages));
+                Assert.True(File.Exists(path));
+            }
+        }
+
+        [Fact]
         public async Task DotnetCliTool_BasicToolRestore_WithDuplicates()
         {
             // Arrange
