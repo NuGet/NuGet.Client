@@ -220,7 +220,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public async Task RestoreLogging_PackageSPecificNoWarnRemovesWarning()
+        public async Task RestoreLogging_PackageSpecificNoWarnRemovesWarning()
         {
             DebuggerUtils.WaitForDebugger();
             // Arrange

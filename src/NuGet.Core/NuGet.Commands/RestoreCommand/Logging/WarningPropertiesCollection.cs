@@ -121,7 +121,8 @@ namespace NuGet.Commands
                 {
                     return true;
                 }
-                else if (ProjectWideWarningProperties.AllWarningsAsErrors || ProjectWideWarningProperties.WarningsAsErrors.Contains(logMessage.Code))
+                else if (ProjectWideWarningProperties.AllWarningsAsErrors && logMessage.Code > NuGetLogCode.Undefined || 
+                    ProjectWideWarningProperties.WarningsAsErrors.Contains(logMessage.Code))
                 {
                     logMessage.Level = LogLevel.Error;
                     return false;
