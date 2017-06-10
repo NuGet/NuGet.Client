@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -1550,9 +1550,7 @@ namespace NuGet.CommandLine.Test
                 Assert.True(File.Exists(cachePath), r2.Item2);
                 Assert.Equal(1, Directory.GetDirectories(zPath).Length);
                 // This is expected because all the projects keep overwriting the cache file for the tool.
-                // TODO NK - This is a scenario in which we explode and no-op does not work!
                 Assert.DoesNotContain($"The restore inputs for 'DotnetCliToolReference-z' have not changed. No further actions are required to complete the restore.", r2.Item2);
-
             }
         }
 
@@ -1612,6 +1610,267 @@ namespace NuGet.CommandLine.Test
                 Assert.True(File.Exists(path), r.Item2);
             }
         }
+
+        [Fact]
+        public async Task RestoreNetCore_MultipleProjects_SameTool_DifferentVersionRanges_DoesNotNoOp()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+
+                var packageZ = new SimpleTestPackageContext()
+                {
+                    Id = "z",
+                    Version = "2.0.0"
+                };
+
+                var projects = new List<SimpleTestProjectContext>();
+
+
+                var project = SimpleTestProjectContext.CreateNETCore(
+                    $"proj1",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("net45"));
+
+                project.AddPackageToAllFrameworks(packageX);
+                project.DotnetCLIToolReferences.Add(new SimpleTestPackageContext()
+                {
+                    Id = "z",
+                    Version = "2.0.0"
+                });
+
+                var project2 = SimpleTestProjectContext.CreateNETCore(
+                    $"proj2",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("net45"));
+
+                project2.AddPackageToAllFrameworks(packageX);
+                project2.DotnetCLIToolReferences.Add(new SimpleTestPackageContext()
+                {
+                    Id = "z",
+                    Version = "1.5.*"
+                });
+
+                solution.Projects.Add(project2);
+                solution.Projects.Add(project);
+
+                solution.Create(pathContext.SolutionRoot);
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX,
+                    packageZ);
+
+                var assetsPath = Path.Combine(pathContext.UserPackagesFolder, ".tools", "z", "2.0.0", "netcoreapp1.0", "project.assets.json");
+                var cachePath = Path.Combine(pathContext.UserPackagesFolder, ".tools", "z", "2.0.0", "netcoreapp1.0", "z.nuget.cache");
+
+                // Act
+                var r = Util.RestoreSolution(pathContext);
+                // Assert
+                Assert.True(File.Exists(assetsPath));
+                Assert.True(File.Exists(cachePath));
+
+                // Act
+                var r2 = Util.RestoreSolution(pathContext);
+                // Assert
+                Assert.True(File.Exists(assetsPath));
+                Assert.True(File.Exists(cachePath));
+                // This is expected, because despite the fact that both projects resolve to the same tool, the version range they request is different so they will keep overwriting each other
+                Assert.DoesNotContain($"The restore inputs for 'DotnetCliToolReference-z' have not changed. No further actions are required to complete the restore.", r2.Item2);
+
+                r = Util.RestoreSolution(pathContext);
+
+            }
+        }
+
+        [Fact]
+        public async Task RestoreNetCore_MultipleProjects_SameTool_OverlappingVersionRanges_DoesNoOp()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+
+                var packageZ = new SimpleTestPackageContext()
+                {
+                    Id = "z",
+                    Version = "2.0.0"
+                };
+
+                var projects = new List<SimpleTestProjectContext>();
+
+
+                var project = SimpleTestProjectContext.CreateNETCore(
+                    $"proj1",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("net45"));
+
+                project.AddPackageToAllFrameworks(packageX);
+                project.DotnetCLIToolReferences.Add(new SimpleTestPackageContext()
+                {
+                    Id = "z",
+                    Version = "2.0.0"
+                });
+
+                var project2 = SimpleTestProjectContext.CreateNETCore(
+                    $"proj2",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("net45"));
+
+                project2.AddPackageToAllFrameworks(packageX);
+                project2.DotnetCLIToolReferences.Add(new SimpleTestPackageContext()
+                {
+                    Id = "z",
+                    Version = "2.0.*"
+                });
+
+                solution.Projects.Add(project2);
+                solution.Projects.Add(project);
+
+                solution.Create(pathContext.SolutionRoot);
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX,
+                    packageZ);
+
+                var assetsPath = Path.Combine(pathContext.UserPackagesFolder, ".tools", "z", "2.0.0", "netcoreapp1.0", "project.assets.json");
+                var cachePath = Path.Combine(pathContext.UserPackagesFolder, ".tools", "z", "2.0.0", "netcoreapp1.0", "z.nuget.cache");
+
+                // Act
+                var r = Util.RestoreSolution(pathContext);
+                // Assert
+                Assert.True(File.Exists(assetsPath));
+                Assert.True(File.Exists(cachePath));
+
+                // Act
+                var r2 = Util.RestoreSolution(pathContext);
+                // Assert
+                Assert.True(File.Exists(assetsPath));
+                Assert.True(File.Exists(cachePath));
+                // This is a more complex scenario, since when we dedup 2.0.0 and 2.0.* we only look for 2.0.*...if 2.0.0 package exists, the 2.0.* would resolve to 2.0.0 so both cases would be covered
+                // The issue is ofc when you have 2.5 package in your local, and a package with 2.0.0 was added remotely. Then we re-download
+                Assert.Contains($"The restore inputs for 'DotnetCliToolReference-z' have not changed. No further actions are required to complete the restore.", r2.Item2);
+            }
+        }
+
+        [Fact]
+        public async Task RestoreNetCore_MultipleProjects_SameTool_OverlappingVersionRanges_OnlyOneMatchesPackage_DoesNoOp()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+
+                var packageZ = new SimpleTestPackageContext()
+                {
+                    Id = "z",
+                    Version = "2.5.0"
+                };
+
+
+                var packageZ20 = new SimpleTestPackageContext()
+                {
+                    Id = "z",
+                    Version = "2.0.0"
+                };
+
+
+                var projects = new List<SimpleTestProjectContext>();
+
+
+                var project = SimpleTestProjectContext.CreateNETCore(
+                    $"proj1",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("net45"));
+
+                project.AddPackageToAllFrameworks(packageX);
+                project.DotnetCLIToolReferences.Add(new SimpleTestPackageContext()
+                {
+                    Id = "z",
+                    Version = "2.0.0"
+                });
+
+                var project2 = SimpleTestProjectContext.CreateNETCore(
+                    $"proj2",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("net45"));
+
+                project2.AddPackageToAllFrameworks(packageX);
+                project2.DotnetCLIToolReferences.Add(new SimpleTestPackageContext()
+                {
+                    Id = "z",
+                    Version = "2.0.*"
+                });
+
+                solution.Projects.Add(project2);
+                solution.Projects.Add(project);
+
+                solution.Create(pathContext.SolutionRoot);
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX,
+                    packageZ);
+
+                var assetsPath = Path.Combine(pathContext.UserPackagesFolder, ".tools", "z", "2.5.0", "netcoreapp1.0", "project.assets.json");
+                var cachePath = Path.Combine(pathContext.UserPackagesFolder, ".tools", "z", "2.5.0", "netcoreapp1.0", "z.nuget.cache");
+
+                // Act
+                var r = Util.RestoreSolution(pathContext);
+                // Assert
+                Assert.True(File.Exists(assetsPath));
+                Assert.True(File.Exists(cachePath));
+
+
+                // Setup Again. Add the new package....should not be picked up though
+                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                   pathContext.PackageSource,
+                   PackageSaveMode.Defaultv3,
+                   packageZ20);
+
+                var assetsPath20 = Path.Combine(pathContext.UserPackagesFolder, ".tools", "z", "2.0.0", "netcoreapp1.0", "project.assets.json");
+                var cachePath20 = Path.Combine(pathContext.UserPackagesFolder, ".tools", "z", "2.0.0", "netcoreapp1.0", "z.nuget.cache");
+
+                // Act
+                var r2 = Util.RestoreSolution(pathContext);
+                // Assert
+                Assert.True(File.Exists(assetsPath));
+                Assert.True(File.Exists(cachePath));
+                // This is a more complex scenario, since when we dedup 2.0.0 and 2.0.* we only look for 2.0.*...if 2.0.0 package exists, the 2.0.* would resolve to 2.0.0 so both cases would be covered
+                // The issue is ofc when you have 2.5 package in your local, and a package with 2.0.0 was added remotely. Then we won't redownload
+                Assert.False(File.Exists(assetsPath20));
+                Assert.False(File.Exists(cachePath20));
+                Assert.Contains($"The restore inputs for 'DotnetCliToolReference-z' have not changed. No further actions are required to complete the restore.", r2.Item2);
+                r = Util.RestoreSolution(pathContext);
+            }
+        }
+
 
         [Fact]
         public async Task RestoreNetCore_MultipleProjects_SameTool_NoOp() 
