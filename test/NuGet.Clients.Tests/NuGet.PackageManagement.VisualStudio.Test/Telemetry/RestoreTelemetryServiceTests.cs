@@ -30,6 +30,13 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
             string operationId = Guid.NewGuid().ToString();
 
+            var noopProjectsCount = 0;
+
+            if (status == NuGetOperationStatus.NoOp)
+            {
+                noopProjectsCount = 1;
+            }
+
             var stausMessage = status == NuGetOperationStatus.Failed ? "Operation Failed" : string.Empty;
             var restoreTelemetryData = new RestoreTelemetryEvent(
                 operationId: operationId,
@@ -38,6 +45,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 startTime: DateTimeOffset.Now.AddSeconds(-3),
                 status: status,
                 packageCount: 2,
+                noOpProjectsCount: noopProjectsCount,
                 endTime: DateTimeOffset.Now,
                 duration: 2.10);
             var service = new RestoreTelemetryService(telemetrySession.Object);
@@ -53,9 +61,11 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         {
             Assert.NotNull(actual);
             Assert.Equal(TelemetryConstants.RestoreActionEventName, actual.Name);
-            Assert.Equal(8, actual.Properties.Count);
+            Assert.Equal(10, actual.Properties.Count);
 
             Assert.Equal(expected.Source.ToString(), actual.Properties[TelemetryConstants.OperationSourcePropertyName].ToString());
+
+            Assert.Equal(expected.NoOpProjectsCount, (int)actual.Properties[TelemetryConstants.NoOpProjectsCountPropertyName]);
 
             TestTelemetryUtility.VerifyTelemetryEventData(expected, actual);
         }

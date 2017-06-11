@@ -12,6 +12,7 @@ using NuGet.LibraryModel;
 using NuGet.ProjectModel;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
+using Test.Utility;
 using Xunit;
 
 namespace NuGet.Commands.Test
@@ -1665,6 +1666,136 @@ namespace NuGet.Commands.Test
                 // Assert
                 packageDependency.AutoReferenced.Should().BeTrue();
             }
+        }
+
+        [Theory]
+        [InlineData("NU1607")]
+        [InlineData(";NU1607")]
+        [InlineData(";NU1607;")]
+        [InlineData("nu1607")]
+        [InlineData("$(AnotherProperty);NU1607;")]
+        [InlineData("$(AnotherProperty);nu1607;")]
+        [InlineData("NU1607;1607")]
+        [InlineData("NU1607;random;values;are;here")]
+        [InlineData("NU1607;CSC1607")]
+        [InlineData("NU1607;MSB1607")]
+        [InlineData("NU1607;1607;600")]
+        [InlineData("NU1607;1607;0;-1;abc123")]
+        [InlineData(",NU1607")]
+        [InlineData(",NU1607,")]
+        [InlineData("nu1607")]
+        [InlineData("$(AnotherProperty),NU1607,")]
+        [InlineData("$(AnotherProperty),nu1607,")]
+        [InlineData("NU1607,1607")]
+        [InlineData("NU1607,random,values,are,here")]
+        [InlineData("NU1607,CSC1607")]
+        [InlineData("NU1607,MSB1607")]
+        [InlineData("NU1607,1607,600")]
+        [InlineData("NU1607,1607,0,-1,abc123")]
+        [InlineData(", NU1607   ,")]
+        [InlineData(" NU1607   ")]
+        [InlineData("$(AnotherProperty), NU1607   ,")]
+        [InlineData("$(AnotherProperty), NU1607   ,")]
+        [InlineData(" NU1607   ,1607")]
+        [InlineData(" NU1607   ,random,values,are,here")]
+        [InlineData(" NU1607   ,CSC1607")]
+        [InlineData(" NU1607   ,MSB1607")]
+        [InlineData(" NU1607   ,1607,600")]
+        [InlineData(" NU1607   ,1607,0,-1,abc123")]
+        [InlineData("; NU1607   ;")]
+        [InlineData(" NU1607   ")]
+        [InlineData("$(AnotherProperty); NU1607   ;")]
+        [InlineData("$(AnotherProperty); NU1607   ;")]
+        [InlineData(" NU1607   ;1607")]
+        [InlineData(" NU1607   ;random;values;are;here")]
+        [InlineData(" NU1607   ;CSC1607")]
+        [InlineData(" NU1607   ;MSB1607")]
+        [InlineData(" NU1607   ;1607;600")]
+        [InlineData(" NU1607   ;1607;0;-1;abc123")]
+        [InlineData(" NU1607   ,1607;0;-1,abc123")]
+        [InlineData(" NU1607  \t ;1607;0;-1;abc123")]
+        [InlineData(" NU1607  \t\r\n ,\t1607;0;-1,abc123")]
+        public void MSBuildRestoreUtility_GetNuGetLogCodes_ParsesPropertyWithOneCode(string property)
+        {
+            // Arrange && Act
+            var codes = MSBuildRestoreUtility.GetNuGetLogCodes(property);
+
+            // Assert
+            codes.Should().NotBeNull();
+            codes.ShouldBeEquivalentTo(new[] { NuGetLogCode.NU1607 });
+        }
+
+        [Theory]
+        [InlineData("NU1607;NU1701")]
+        [InlineData(";NU1607;NU1701")]
+        [InlineData(";NU1607;;NU1701")]
+        [InlineData("nu1607;nu1701")]
+        [InlineData(";NU1701;$(AnotherProperty);NU1607;")]
+        [InlineData("$(AnotherProperty);NU1701;nu1607;")]
+        [InlineData("NU1607;1607;NU1701")]
+        [InlineData("NU1607;random;values;are;here;NU1701")]
+        [InlineData("NU1607;CSC1607;NU1701")]
+        [InlineData("NU1607;MSB1607;NU1701")]
+        [InlineData("NU1607;1607;600;NU1701")]
+        [InlineData("NU1607;1607;0;-1;abc123;NU1701")]
+        [InlineData("NU1607,NU1701")]
+        [InlineData(",NU1607,NU1701")]
+        [InlineData(",NU1607,,NU1701")]
+        [InlineData("nu1607,nu1701")]
+        [InlineData(",NU1701,$(AnotherProperty),NU1607,")]
+        [InlineData("$(AnotherProperty),NU1701,nu1607,")]
+        [InlineData("NU1607,1607,NU1701")]
+        [InlineData("NU1607,random,values,are,here,NU1701")]
+        [InlineData("NU1607,CSC1607,NU1701")]
+        [InlineData("NU1607,MSB1607,NU1701")]
+        [InlineData("NU1607,1607,600,NU1701")]
+        [InlineData("NU1607,1607,0,-1,abc123,NU1701")]
+        [InlineData("         NU1607     	,NU1701")]
+        [InlineData(",         NU1607     	,NU1701")]
+        [InlineData(",         NU1607     	,,NU1701")]
+        [InlineData("         NU1607     	,nu1701")]
+        [InlineData(",NU1701,$(AnotherProperty),         NU1607     	,")]
+        [InlineData("$(AnotherProperty),NU1701,         NU1607     	,")]
+        [InlineData("         NU1607     	,1607,NU1701")]
+        [InlineData("         NU1607   \t  	,random,values,are,here,NU1701")]
+        [InlineData("         NU1607     	,CSC1607,NU1701")]
+        [InlineData("         NU1607     	,MSB1607,NU1701")]
+        [InlineData("         NU1607    \t 	,1607,600,NU1701")]
+        [InlineData("         NU1607    \t 	,1607,0,-1,abc123,NU1701")]
+        [InlineData("         NU1607    \n\t 	,1607,0,-1,abc123,NU1701")]
+        [InlineData("         NU1607    \n\t\r 	,1607,0,-1,abc123,NU1701")]
+        [InlineData("         NU1607    \n\t\r 	,1607,0,-1;abc123,NU1701")]
+        public void MSBuildRestoreUtility_GetNuGetLogCodes_ParsesPropertyWithMultipleCodes(string property)
+        {
+            // Arrange && Act
+            var codes = MSBuildRestoreUtility.GetNuGetLogCodes(property);
+
+            // Assert
+            codes.Should().NotBeNull();
+            codes.ShouldBeEquivalentTo(new[] { NuGetLogCode.NU1607, NuGetLogCode.NU1701 });
+        }
+
+        [Theory]
+        [InlineData("NU9999")]
+        [InlineData("NU 1607")]
+        [InlineData("NU1 607")]
+        [InlineData("NU1607a")]
+        [InlineData("1607")]
+        [InlineData("random;values;are;here")]
+        [InlineData("CSC1607")]
+        [InlineData("MSB1607")]
+        [InlineData("1607;600")]
+        [InlineData("1607;0;-1;abc123")]
+        [InlineData("$(NoWarn);0;-1;abc123")]
+        [InlineData("")]
+        public void MSBuildRestoreUtility_GetNuGetLogCodes_DoesNotParseInvalidCodes(string property)
+        {
+            // Arrange && Act
+            var codes = MSBuildRestoreUtility.GetNuGetLogCodes(property);
+
+            // Assert
+            codes.Should().NotBeNull();
+            codes.Should().BeEmpty();
         }
 
         [Theory]

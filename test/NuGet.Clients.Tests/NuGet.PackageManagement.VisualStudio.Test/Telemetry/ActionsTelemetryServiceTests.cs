@@ -163,7 +163,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         {
             Assert.NotNull(actual);
             Assert.Equal(TelemetryConstants.NugetActionEventName, actual.Name);
-            Assert.Equal(9, actual.Properties.Count);
+            Assert.Equal(10, actual.Properties.Count);
 
             Assert.Equal(expected.OperationType.ToString(), actual.Properties[TelemetryConstants.OperationTypePropertyName].ToString());
             Assert.Equal(expected.Source.ToString(), actual.Properties[TelemetryConstants.OperationSourcePropertyName].ToString());

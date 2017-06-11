@@ -46,6 +46,7 @@ namespace NuGet.SolutionRestoreManager
 
         private NuGetOperationStatus _status;
         private int _packageCount;
+        private int _noOpProjectsCount;
 
         // relevant to packages.config restore only
         private int _missingPackagesCount;
@@ -214,17 +215,13 @@ namespace NuGet.SolutionRestoreManager
                     projects,
                     restoreSource,
                     startTime,
-                    _status,
-                    _packageCount,
                     duration.TotalSeconds);
             }
         }
 
-        private static void EmitRestoreTelemetryEvent(IEnumerable<NuGetProject> projects,
+        private void EmitRestoreTelemetryEvent(IEnumerable<NuGetProject> projects,
             RestoreOperationSource source,
             DateTimeOffset startTime,
-            NuGetOperationStatus status,
-            int packageCount,
             double duration)
         {
             var sortedProjects = projects.OrderBy(
@@ -237,8 +234,9 @@ namespace NuGet.SolutionRestoreManager
                 projectIds,
                 source,
                 startTime,
-                status,
-                packageCount,
+                _status,
+                _packageCount,
+                _noOpProjectsCount,
                 DateTimeOffset.Now,
                 duration);
 
@@ -320,9 +318,15 @@ namespace NuGet.SolutionRestoreManager
 
                             _packageCount += restoreSummaries.Select(summary => summary.InstallCount).Sum();
                             var isRestoreFailed = restoreSummaries.Any(summary => summary.Success == false);
+                            _noOpProjectsCount = restoreSummaries.Where(summary => summary.NoOpRestore == true).Count();
+
                             if (isRestoreFailed)
                             {
                                 _status = NuGetOperationStatus.Failed;
+                            }
+                            else if (_noOpProjectsCount < restoreSummaries.Count)
+                            {
+                                _status = NuGetOperationStatus.Succeeded;
                             }
                         },
                         token);

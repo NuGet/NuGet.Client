@@ -17,10 +17,10 @@ namespace NuGet.Common
         public string ProjectPath { get; set; }
         public WarningLevel WarningLevel { get; set; } = WarningLevel.Severe; //setting default to Severe as 0 implies show no warnings
         public string FilePath { get; set; }
-        public int StartLineNumber { get; set; } = -1;
-        public int StartColumnNumber { get; set; } = -1;
-        public int EndLineNumber { get; set; } = -1;
-        public int EndColumnNumber { get; set; } = -1;
+        public int StartLineNumber { get; set; }
+        public int StartColumnNumber { get; set; }
+        public int EndLineNumber { get; set; }
+        public int EndColumnNumber { get; set; }
         public string LibraryId { get; set; }
         public IReadOnlyList<string> TargetGraphs { get; set; }
         public bool ShouldDisplay { get; set; }

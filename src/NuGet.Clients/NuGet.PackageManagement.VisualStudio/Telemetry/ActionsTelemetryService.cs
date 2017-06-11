@@ -50,7 +50,8 @@ namespace NuGet.PackageManagement.VisualStudio
                     { TelemetryConstants.OperationStatusPropertyName, actionTelemetryData.Status },
                     { TelemetryConstants.StartTimePropertyName, actionTelemetryData.StartTime.ToString() },
                     { TelemetryConstants.EndTimePropertyName, actionTelemetryData.EndTime.ToString() },
-                    { TelemetryConstants.DurationPropertyName, actionTelemetryData.Duration }
+                    { TelemetryConstants.DurationPropertyName, actionTelemetryData.Duration },
+                    { TelemetryConstants.ProjectsCountPropertyName, actionTelemetryData.ProjectsCount }
                 }
             );
             _telemetrySession.PostEvent(telemetryEvent);

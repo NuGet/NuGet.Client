@@ -17,7 +17,9 @@ namespace NuGet.Commands
 
         public IEnumerable<IRestoreLogMessage> Errors => _errors.ToArray();
 
-        public WarningPropertiesCollection WarningPropertiesCollection;
+        public WarningPropertiesCollection WarningPropertiesCollection { get; set; }
+        
+        public string ProjectPath { get; set; }
 
         /// <summary>
         /// Initializes an instance of the <see cref="RestoreCollectorLogger"/>, while still
@@ -71,6 +73,10 @@ namespace NuGet.Commands
             // This will be true only when the Message is a Warning and should be suppressed.
             if (WarningPropertiesCollection == null || !WarningPropertiesCollection.ApplyWarningProperties(message))
             {
+                if (string.IsNullOrEmpty(message.FilePath))
+                {
+                    message.FilePath = message.ProjectPath ?? ProjectPath;
+                }
 
                 if (CollectMessage(message.Level))
                 {
@@ -90,6 +96,10 @@ namespace NuGet.Commands
             // This will be true only when the Message is a Warning and should be suppressed.
             if (WarningPropertiesCollection == null || !WarningPropertiesCollection.ApplyWarningProperties(message))
             {
+                if (string.IsNullOrEmpty(message.FilePath))
+                {
+                    message.FilePath = message.ProjectPath ?? ProjectPath;
+                }
 
                 if (CollectMessage(message.Level))
                 {

@@ -54,6 +54,7 @@ namespace NuGet.Commands
 
             var collectorLogger = new RestoreCollectorLogger(_request.Log, collectorLoggerHideWarningsAndErrors)
             {
+                ProjectPath = _request.Project?.RestoreMetadata?.ProjectPath,
                 WarningPropertiesCollection =  new WarningPropertiesCollection()
                 {
                     ProjectWideWarningProperties = request.Project?.RestoreMetadata?.ProjectWideWarningProperties,
@@ -91,6 +92,9 @@ namespace NuGet.Commands
                 {
                     if (NoOpRestoreUtilities.VerifyAssetsAndMSBuildFilesAndPackagesArePresent(_request))
                     {
+                        // Replay Warnings and Errors from an existing lock file in case of a no-op.
+                        ReplayWarningsAndErrors();
+
                         restoreTime.Stop();
 
                         return new NoOpRestoreResult(
@@ -215,6 +219,29 @@ namespace NuGet.Commands
             }
 
             return request.DependencyGraphSpec.GetHash();
+        }
+        
+        private void ReplayWarningsAndErrors()
+        {
+            var logMessages = _request.ExistingLockFile?.LogMessages ?? Enumerable.Empty<IAssetsLogMessage>();
+
+            foreach (var logMessage in logMessages)
+            {
+                var restoreLogMessage = new RestoreLogMessage(logMessage.Level, logMessage.Code, logMessage.Message)
+                {
+                    ProjectPath = logMessage.ProjectPath,
+                    WarningLevel = logMessage.WarningLevel,
+                    FilePath = logMessage.FilePath,
+                    LibraryId = logMessage.LibraryId,
+                    TargetGraphs = logMessage.TargetGraphs,
+                    StartLineNumber = logMessage.StartLineNumber,
+                    StartColumnNumber = logMessage.StartColumnNumber,
+                    EndLineNumber = logMessage.EndLineNumber,
+                    EndColumnNumber = logMessage.EndColumnNumber
+                };
+
+                _request.Log.LogAsync(restoreLogMessage);
+            }
         }
 
         private KeyValuePair<CacheFile,bool> EvaluateCacheFile()

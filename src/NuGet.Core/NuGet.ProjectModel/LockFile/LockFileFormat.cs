@@ -360,22 +360,22 @@ namespace NuGet.ProjectModel
                 logJObject[LogMessageProperties.FILE_PATH] = logMessage.FilePath;
             }
 
-            if (logMessage.StartLineNumber >= 0)
+            if (logMessage.StartLineNumber > 0)
             {
                 logJObject[LogMessageProperties.START_LINE_NUMBER] = logMessage.StartLineNumber;
             }
 
-            if (logMessage.StartColumnNumber >= 0)
+            if (logMessage.StartColumnNumber > 0)
             {
                 logJObject[LogMessageProperties.START_COLUMN_NUMBER] = logMessage.StartColumnNumber;
             }
 
-            if (logMessage.EndLineNumber >= 0)
+            if (logMessage.EndLineNumber > 0)
             {
                 logJObject[LogMessageProperties.END_LINE_NUMBER] = logMessage.EndLineNumber;
             }
 
-            if (logMessage.EndColumnNumber >= 0)
+            if (logMessage.EndColumnNumber > 0)
             {
                 logJObject[LogMessageProperties.END_COLUMN_NUMBER] = logMessage.EndColumnNumber;
             }

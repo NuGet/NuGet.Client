@@ -17,12 +17,16 @@ namespace NuGet.VisualStudio
             DateTimeOffset startTime,
             NuGetOperationStatus status,
             int packageCount,
+            int noOpProjectsCount,
             DateTimeOffset endTime,
             double duration) : base(operationId, projectIds, startTime, status, packageCount, endTime, duration)
         {
             Source = source;
+            NoOpProjectsCount = noOpProjectsCount;
         }
 
         public RestoreOperationSource Source { get; }
+
+        public int NoOpProjectsCount { get; }
     }
 }

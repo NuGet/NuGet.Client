@@ -24,10 +24,10 @@ namespace NuGet.Common.Test
             Assert.Equal(level, logMessage.Level);
             Assert.Equal(code, logMessage.Code);
             Assert.Equal(message, logMessage.Message);
-            Assert.Equal(-1, logMessage.StartLineNumber);
-            Assert.Equal(-1, logMessage.EndLineNumber);
-            Assert.Equal(-1, logMessage.StartColumnNumber);
-            Assert.Equal(-1, logMessage.EndColumnNumber);
+            Assert.Equal(0, logMessage.StartLineNumber);
+            Assert.Equal(0, logMessage.EndLineNumber);
+            Assert.Equal(0, logMessage.StartColumnNumber);
+            Assert.Equal(0, logMessage.EndColumnNumber);
             if (string.IsNullOrEmpty(targetGraph))
             {
                 Assert.Equal(0, logMessage.TargetGraphs.Count);
@@ -83,10 +83,10 @@ namespace NuGet.Common.Test
             Assert.Equal(level, logMessage.Level);
             Assert.Equal(code, logMessage.Code);
             Assert.Equal(message, logMessage.Message);
-            Assert.Equal(-1, logMessage.StartLineNumber);
-            Assert.Equal(-1, logMessage.EndLineNumber);
-            Assert.Equal(-1, logMessage.StartColumnNumber);
-            Assert.Equal(-1, logMessage.EndColumnNumber);
+            Assert.Equal(0, logMessage.StartLineNumber);
+            Assert.Equal(0, logMessage.EndLineNumber);
+            Assert.Equal(0, logMessage.StartColumnNumber);
+            Assert.Equal(0, logMessage.EndColumnNumber);
             Assert.Equal(0, logMessage.TargetGraphs.Count);
         }
 
@@ -103,10 +103,10 @@ namespace NuGet.Common.Test
             Assert.Equal(level, logMessage.Level);
             Assert.Equal(expectedCode, logMessage.Code);
             Assert.Equal(message, logMessage.Message);
-            Assert.Equal(-1, logMessage.StartLineNumber);
-            Assert.Equal(-1, logMessage.EndLineNumber);
-            Assert.Equal(-1, logMessage.StartColumnNumber);
-            Assert.Equal(-1, logMessage.EndColumnNumber);
+            Assert.Equal(0, logMessage.StartLineNumber);
+            Assert.Equal(0, logMessage.EndLineNumber);
+            Assert.Equal(0, logMessage.StartColumnNumber);
+            Assert.Equal(0, logMessage.EndColumnNumber);
             Assert.Equal(0, logMessage.TargetGraphs.Count);
         }
 
@@ -123,10 +123,10 @@ namespace NuGet.Common.Test
             Assert.Equal(LogLevel.Warning, logMessage.Level);
             Assert.Equal(code, logMessage.Code);
             Assert.Equal(message, logMessage.Message);
-            Assert.Equal(-1, logMessage.StartLineNumber);
-            Assert.Equal(-1, logMessage.EndLineNumber);
-            Assert.Equal(-1, logMessage.StartColumnNumber);
-            Assert.Equal(-1, logMessage.EndColumnNumber);
+            Assert.Equal(0, logMessage.StartLineNumber);
+            Assert.Equal(0, logMessage.EndLineNumber);
+            Assert.Equal(0, logMessage.StartColumnNumber);
+            Assert.Equal(0, logMessage.EndColumnNumber);
             targetGraphs.SequenceEqual(logMessage.TargetGraphs);
         }
 
@@ -142,10 +142,10 @@ namespace NuGet.Common.Test
             Assert.Equal(LogLevel.Error, logMessage.Level);
             Assert.Equal(code, logMessage.Code);
             Assert.Equal(message, logMessage.Message);
-            Assert.Equal(-1, logMessage.StartLineNumber);
-            Assert.Equal(-1, logMessage.EndLineNumber);
-            Assert.Equal(-1, logMessage.StartColumnNumber);
-            Assert.Equal(-1, logMessage.EndColumnNumber);
+            Assert.Equal(0, logMessage.StartLineNumber);
+            Assert.Equal(0, logMessage.EndLineNumber);
+            Assert.Equal(0, logMessage.StartColumnNumber);
+            Assert.Equal(0, logMessage.EndColumnNumber);
             targetGraphs.SequenceEqual(logMessage.TargetGraphs);
         }
     }

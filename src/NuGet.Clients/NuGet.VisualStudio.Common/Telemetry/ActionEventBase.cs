@@ -26,6 +26,7 @@ namespace NuGet.VisualStudio
             StartTime = startTime;
             EndTime = endTime;
             Duration = duration;
+            ProjectsCount = projectIds.Length;
         }
 
         public string OperationId { get; }
@@ -41,5 +42,7 @@ namespace NuGet.VisualStudio
         public DateTimeOffset EndTime { get; }
 
         public double Duration { get; }
+
+        public int ProjectsCount { get; }
     }
 }
