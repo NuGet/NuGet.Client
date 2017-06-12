@@ -29,7 +29,7 @@ namespace NuGet.Commands
         /// <summary>
         /// The cache file path is $(BaseIntermediateOutputPath)\$(project).nuget.cache
         /// </summary>
-        internal static string GetPJorPRCacheFilePath(RestoreRequest request)
+        private static string GetPJorPRCacheFilePath(RestoreRequest request)
         {
             string cacheFilePath = null;
 
@@ -195,6 +195,26 @@ namespace NuGet.Commands
                 }
             }
             return true;
+        }
+
+        /// <summary>
+        /// Calculates the hash value for the request.
+        /// This methods handles the deduping of tools
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        public static string GetHash(RestoreRequest request)
+        {
+            if (request.Project.RestoreMetadata.ProjectStyle == ProjectStyle.DotnetCliTool)
+            {
+                var uniqueName = request.DependencyGraphSpec.Restore.First();
+                var dgSpec = request.DependencyGraphSpec.WithProjectClosure(uniqueName);
+                dgSpec.GetProjectSpec(uniqueName).RestoreMetadata.ProjectPath = null;
+                dgSpec.GetProjectSpec(uniqueName).FilePath = null;
+                return dgSpec.GetHash();
+            }
+
+            return request.DependencyGraphSpec.GetHash();
         }
     }
 }

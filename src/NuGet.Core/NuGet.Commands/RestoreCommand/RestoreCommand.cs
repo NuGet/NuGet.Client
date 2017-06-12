@@ -206,20 +206,6 @@ namespace NuGet.Commands
                 _request.ProjectStyle,
                 restoreTime.Elapsed);
         }
-
-        public static string GetHash(RestoreRequest request)
-        {
-            if(request.Project.RestoreMetadata.ProjectStyle == ProjectStyle.DotnetCliTool)
-            {
-                var uniqueName = request.DependencyGraphSpec.Restore.First();
-                var dgSpec = request.DependencyGraphSpec.WithProjectClosure(uniqueName);
-                dgSpec.GetProjectSpec(uniqueName).RestoreMetadata.ProjectPath = null;
-                dgSpec.GetProjectSpec(uniqueName).FilePath = null;
-                return dgSpec.GetHash();
-            }
-
-            return request.DependencyGraphSpec.GetHash();
-        }
         
         private void ReplayWarningsAndErrors()
         {
@@ -247,7 +233,7 @@ namespace NuGet.Commands
         private KeyValuePair<CacheFile,bool> EvaluateCacheFile()
         {
             CacheFile cacheFile;
-            var newDgSpecHash = GetHash(_request);
+            var newDgSpecHash = NoOpRestoreUtilities.GetHash(_request);
             var noOp = false;
 
             if(_request.ProjectStyle == ProjectStyle.DotnetCliTool)
