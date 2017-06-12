@@ -105,7 +105,7 @@ namespace NuGet.Commands
                     logger.LogError(string.Format(CultureInfo.CurrentCulture, Strings.Log_ErrorSummary, restoreSummary.InputPath));
                     foreach (var error in errors)
                     {
-                        foreach (var line in IndentLines(error.Message))
+                        foreach (var line in IndentLines(error.FormatWithCode()))
                         {
                             logger.LogError(line);
                         }

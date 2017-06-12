@@ -446,6 +446,11 @@ namespace NuGet.Test.Utility
                             props.Add("PrivateAssets", package.PrivateAssets);
                         }
 
+                        if (!string.IsNullOrEmpty(package.NoWarn))
+                        {
+                            props.Add("NoWarn", package.NoWarn);
+                        }
+
                         ProjectFileUtils.AddItem(
                             xml,
                             "PackageReference",

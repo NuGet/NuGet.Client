@@ -313,6 +313,22 @@ namespace NuGet.Test.Utility
         }
 
         /// <summary>
+        /// Create a v3 folder of nupkgs.
+        /// Does not write out extracted files.
+        /// </summary>
+        public static async Task CreateFolderFeedV3(string root, params SimpleTestPackageContext[] contexts)
+        {
+            using (var tempRoot = TestDirectory.Create())
+            {
+                CreatePackages(tempRoot, contexts);
+
+                var saveMode = PackageSaveMode.Nupkg | PackageSaveMode.Nuspec;
+
+                await CreateFolderFeedV3(root, saveMode, Directory.GetFiles(tempRoot));
+            }
+        }
+
+        /// <summary>
         /// Create a v3 folder of nupkgs
         /// </summary>
         public static async Task CreateFolderFeedV3(string root, PackageSaveMode saveMode, params SimpleTestPackageContext[] contexts)

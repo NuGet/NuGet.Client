@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Xml.Linq;
+using NuGet.Common;
 using NuGet.Packaging.Core;
 using NuGet.Versioning;
 
@@ -44,6 +45,7 @@ namespace NuGet.Test.Utility
         public XDocument Nuspec { get; set; }
         public List<PackageType> PackageTypes { get; set; } = new List<PackageType>();
         public PackageType PackageType { get; set; }
+        public string NoWarn { get; set; }
 
         /// <summary>
         /// runtime.json
