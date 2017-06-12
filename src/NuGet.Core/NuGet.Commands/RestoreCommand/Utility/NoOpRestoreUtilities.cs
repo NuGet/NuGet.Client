@@ -57,9 +57,9 @@ namespace NuGet.Commands
                 if (lockFileLibrary != null)
                 {
                     var version = lockFileLibrary.Version;
-
                     var toolPathResolver = new ToolPathResolver(request.PackagesDirectory);
-                    return Path.Combine(toolPathResolver.GetCacheFilePath(
+
+                    return Path.Combine(toolPathResolver.GetToolDirectoryPath(
                         toolName,
                         version,
                         lockFile.Targets.First().TargetFramework), $"{toolName}.nuget.cache");
@@ -215,6 +215,29 @@ namespace NuGet.Commands
             }
 
             return request.DependencyGraphSpec.GetHash();
+        }
+
+        /// <summary>
+        /// This method will resolve the cache/lock file paths for the tool if available in the cache
+        /// </summary>
+        /// <param name="request"></param>
+        public static void ResolveBestMatchingToolPathIfAvailable(RestoreRequest request)
+        {
+            if (request.ProjectStyle == ProjectStyle.DotnetCliTool)
+            {
+                // Resolve the lock file path if it exists
+                var toolPathResolver = new ToolPathResolver(request.PackagesDirectory);
+                var toolDirectory = toolPathResolver.GetBestToolDirectoryPath(
+                    ToolRestoreUtility.GetToolIdOrNullFromSpec(request.Project),
+                    request.Project.TargetFrameworks.First().Dependencies.First().LibraryRange.VersionRange,
+                    request.Project.TargetFrameworks.SingleOrDefault().FrameworkName);
+
+                if (toolDirectory != null) // Only set the paths if a good enough match was found. 
+                {
+                    request.Project.RestoreMetadata.CacheFilePath = NoOpRestoreUtilities.GetToolCacheFilePath(toolDirectory, ToolRestoreUtility.GetToolIdOrNullFromSpec(request.Project));
+                    request.LockFilePath = toolPathResolver.GetLockFilePath(toolDirectory);
+                }
+            }
         }
     }
 }

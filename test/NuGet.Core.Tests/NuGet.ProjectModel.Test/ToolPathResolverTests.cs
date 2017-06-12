@@ -1,8 +1,11 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.IO;
+using System.Threading.Tasks;
 using NuGet.Frameworks;
+using NuGet.Packaging;
+using NuGet.Test.Utility;
 using NuGet.Versioning;
 using Xunit;
 
@@ -28,6 +31,44 @@ namespace NuGet.ProjectModel.Test
                 "PackageA",
                 NuGetVersion.Parse("3.1.4-BETA"),
                 FrameworkConstants.CommonFrameworks.NetStandard13);
+
+            // Assert
+            Assert.Equal(expected, actual);
+        }
+
+        [Fact]
+        public void ToolPathResolver_BuildsLowercaseCacheFileDirectoryPath()
+        {
+            // Arrange
+            var target = new ToolPathResolver("packages", isLowercase: true);
+            var expected = Path.Combine(
+                "packages",
+                ".tools",
+                "packagea",
+                "3.1.4-beta",
+                "netstandard1.3");
+            // Act
+
+            var actual  = target.GetToolDirectoryPath("packagea", NuGetVersion.Parse("3.1.4-beta"), NuGetFramework.Parse("netstandard1.3"));
+
+            // Assert
+            Assert.Equal(expected, actual);
+        }
+
+        [Fact]
+        public void ToolPathResolver_BuildsOriginalcaseCacheFileDirectoryPath()
+        {
+            // Arrange
+            var target = new ToolPathResolver("packages", isLowercase: false);
+            var expected = Path.Combine(
+                "packages",
+                ".tools",
+                "packagea",
+                "3.1.4-BETA",
+                "netstandard1.3");
+            // Act
+
+            var actual = target.GetToolDirectoryPath("packagea", NuGetVersion.Parse("3.1.4-BETA"), NuGetFramework.Parse("netstandard1.3"));
 
             // Assert
             Assert.Equal(expected, actual);

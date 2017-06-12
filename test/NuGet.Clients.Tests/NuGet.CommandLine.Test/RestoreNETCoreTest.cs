@@ -1,7 +1,8 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using FluentAssertions;
@@ -10,6 +11,7 @@ using NuGet.Frameworks;
 using NuGet.Packaging;
 using NuGet.ProjectModel;
 using NuGet.Test.Utility;
+using NuGet.Versioning;
 using Xunit;
 
 namespace NuGet.CommandLine.Test
@@ -1550,7 +1552,10 @@ namespace NuGet.CommandLine.Test
                 Assert.True(File.Exists(cachePath), r2.Item2);
                 Assert.Equal(1, Directory.GetDirectories(zPath).Length);
                 // This is expected because all the projects keep overwriting the cache file for the tool.
-                Assert.DoesNotContain($"The restore inputs for 'DotnetCliToolReference-z' have not changed. No further actions are required to complete the restore.", r2.Item2);
+
+                Assert.Contains("The restore inputs for 'DotnetCliToolReference-z' have changed. Continuing restore.", r2.Item2);
+                var count = Regex.Matches(r2.Item2, ("The restore inputs for 'DotnetCliToolReference-z' have changed. Continuing restore.")).Count;
+                Assert.True(count == 9 || count == 10, $"{ count } needs to be 9 or 10 in \n: { r2.Item2 }");
             }
         }
 
@@ -1687,7 +1692,6 @@ namespace NuGet.CommandLine.Test
                 // This is expected, because despite the fact that both projects resolve to the same tool, the version range they request is different so they will keep overwriting each other
                 // Basically, it is impossible for both tools to no-op.
                 Assert.Contains($"The restore inputs for 'DotnetCliToolReference-z' have changed. Continuing restore.", r2.Item2);
-
                 r = Util.RestoreSolution(pathContext);
 
             }
@@ -2072,6 +2076,71 @@ namespace NuGet.CommandLine.Test
                 Assert.Contains($"The restore inputs for 'DotnetCliToolReference-z' have not changed. No further actions are required to complete the restore.", r2.Item2);
 
                 r = Util.RestoreSolution(pathContext);
+            }
+        }
+
+        // Just utlizing the infrastracture that we have here, rather than trying to create my own directory structure to test this :)
+        [Theory]
+        [InlineData("[1.0.0]", "1.0.0")]
+        [InlineData("[5.0.0]", "5.0.0")]
+        [InlineData("[1.5.0]", null)]
+        [InlineData("1.1.*", "2.0.0")]
+        public async Task ToolPathResolver_FindsBestMatchingToolVersion(string requestedVersion, string expectedVersion)
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+
+                for (var i = 0; i < 10; i++)
+                {
+                    var project = SimpleTestProjectContext.CreateNETCore(
+                        $"proj{i}",
+                        pathContext.SolutionRoot,
+                        NuGetFramework.Parse("net45"));
+
+                    var packageZ = new SimpleTestPackageContext()
+                    {
+                        Id = "z",
+                        Version = $"{i}.0.0"
+                    };
+
+                    project.DotnetCLIToolReferences.Add(new SimpleTestPackageContext()
+                    {
+                        Id = "z",
+                        Version = $"{i}.0.0"
+                    });
+
+                    await SimpleTestPackageUtility.CreateFolderFeedV3(
+                        pathContext.PackageSource,
+                        PackageSaveMode.Defaultv3,
+                        packageZ);
+                    solution.Projects.Add(project);
+                }
+
+                solution.Create(pathContext.SolutionRoot);
+
+                var r = Util.RestoreSolution(pathContext);
+
+
+                // Arrange
+                var target = new ToolPathResolver(pathContext.UserPackagesFolder, isLowercase: true);
+
+                var expected = expectedVersion != null ?
+                    Path.Combine(
+                    pathContext.UserPackagesFolder,
+                    ".tools",
+                    "z",
+                    expectedVersion,
+                    "netcoreapp1.0")
+                    : null;
+                // Act
+                var actual = target.GetBestToolDirectoryPath("z", VersionRange.Parse(requestedVersion), NuGetFramework.Parse("netcoreapp1.0"));
+
+                // Assert
+                Assert.True(StringComparer.Ordinal.Equals(expected, actual), $"{expected} : {actual}");
             }
         }
 

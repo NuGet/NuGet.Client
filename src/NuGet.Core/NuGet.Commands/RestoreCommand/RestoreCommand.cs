@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -233,22 +233,12 @@ namespace NuGet.Commands
         private KeyValuePair<CacheFile,bool> EvaluateCacheFile()
         {
             CacheFile cacheFile;
-            var newDgSpecHash = NoOpRestoreUtilities.GetHash(_request);
             var noOp = false;
 
-            if(_request.ProjectStyle == ProjectStyle.DotnetCliTool)
-            { 
-                // Resolve the lock file path if it exists
-                var toolPathResolver = new ToolPathResolver(_request.PackagesDirectory);
-                var toolDirectory =  toolPathResolver.GetBestToolDirectory(ToolRestoreUtility.GetToolIdOrNullFromSpec(_request.Project),
-                    _request.Project.TargetFrameworks.First().Dependencies.First().LibraryRange.VersionRange, 
-                    _request.Project.TargetFrameworks.SingleOrDefault().FrameworkName);
+            var newDgSpecHash = NoOpRestoreUtilities.GetHash(_request);
 
-                if(toolDirectory != null) // Only set the paths if a good enough match was found. 
-                {
-                    _request.Project.RestoreMetadata.CacheFilePath = NoOpRestoreUtilities.GetToolCacheFilePath(toolDirectory, ToolRestoreUtility.GetToolIdOrNullFromSpec(_request.Project));
-                    _request.LockFilePath = toolPathResolver.GetLockFilePath(toolDirectory);
-                }
+            if(_request.ProjectStyle == ProjectStyle.DotnetCliTool && _request.AllowNoOp) { // No need to attempt to resolve the tool if no-op is not allowed.
+                NoOpRestoreUtilities.ResolveBestMatchingToolPathIfAvailable(_request);
             }
 
             if (_request.AllowNoOp && File.Exists(_request.Project.RestoreMetadata.CacheFilePath))
@@ -281,8 +271,8 @@ namespace NuGet.Commands
                 }
                 else
                 {
+                    // Clean up to preserve the pre no-op behavior. This should not be used, but we want to be cautious. 
                     _request.LockFilePath = null;
-                    _request.ExistingLockFile = null;
                     _request.Project.RestoreMetadata.CacheFilePath = null;
                 }
             }
