@@ -433,7 +433,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 return;
             }
 
-            NuGetUIThreadHelper.JoinableTaskFactory.Run(EnsureNuGetAndVsProjectAdapterCacheAsync);
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(() => EnsureNuGetAndVsProjectAdapterCacheAsync());
 
             SolutionOpened?.Invoke(this, EventArgs.Empty);
 
@@ -574,21 +574,29 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            // when a new solution opens, we set its startup project as the default project in NuGet Console
-            var dte = _serviceProvider.GetDTE();
-            var solutionBuild = (SolutionBuild2)dte.Solution.SolutionBuild;
-            if (solutionBuild.StartupProjects != null)
+            IEnumerable<object> startupProjects;
+
+            try
             {
-                var startupProjects = (IEnumerable<object>)solutionBuild.StartupProjects;
-                var startupProjectName = startupProjects.Cast<string>().FirstOrDefault();
-                if (!string.IsNullOrEmpty(startupProjectName))
+                // when a new solution opens, we set its startup project as the default project in NuGet Console
+                var dte = _serviceProvider.GetDTE();
+                var solutionBuild = dte.Solution.SolutionBuild as SolutionBuild2;
+                startupProjects = solutionBuild?.StartupProjects as IEnumerable<object>;
+            }
+            catch (COMException)
+            {
+                // get_StartupProjects misbehaves for certain project types, so ignore this failure
+                return;
+            }
+
+            var startupProjectName = startupProjects?.Cast<string>().FirstOrDefault();
+            if (!string.IsNullOrEmpty(startupProjectName))
+            {
+                if (_projectSystemCache.TryGetProjectNames(startupProjectName, out var projectName))
                 {
-                    if (_projectSystemCache.TryGetProjectNames(startupProjectName, out ProjectNames projectName))
-                    {
-                        DefaultNuGetProjectName = _projectSystemCache.IsAmbiguous(projectName.ShortName) ?
-                            projectName.CustomUniqueName :
-                            projectName.ShortName;
-                    }
+                    DefaultNuGetProjectName = _projectSystemCache.IsAmbiguous(projectName.ShortName) ?
+                        projectName.CustomUniqueName :
+                        projectName.ShortName;
                 }
             }
         }

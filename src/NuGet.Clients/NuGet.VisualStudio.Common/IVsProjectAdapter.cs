@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
@@ -105,8 +105,6 @@ namespace NuGet.VisualStudio
         string Version { get; }
 
         IVsHierarchy VsHierarchy { get; }
-
-        Task<bool> EntityExistsAsync(string filePath);
 
         Task<IEnumerable<string>> GetReferencedProjectsAsync();
 
