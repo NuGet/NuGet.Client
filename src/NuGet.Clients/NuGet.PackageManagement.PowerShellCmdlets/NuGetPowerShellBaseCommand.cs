@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -488,7 +488,6 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         protected IEnumerable<IVsProjectAdapter> GetProjectsByName(string[] projectNames)
         {
             var allValidProjectNames = GetAllValidProjectNames().ToList();
-            var allVsProjectAdapters = VsSolutionManager.GetAllVsProjectAdapters();
 
             foreach (var projectName in projectNames)
             {
@@ -501,27 +500,21 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 // Treat every name as a wildcard; results in simpler code
                 var pattern = new WildcardPattern(projectName, WildcardOptions.IgnoreCase);
 
-                var matches = from s in allValidProjectNames
-                              where pattern.IsMatch(s)
-                              select VsSolutionManager.GetNuGetProject(s);
+                var matches = allValidProjectNames
+                    .Where(s => pattern.IsMatch(s))
+                    .Select(s => VsSolutionManager.GetNuGetProject(s))
+                    .Where(p => p != null)
+                    .ToList();
 
-                var count = 0;
                 foreach (var project in matches)
                 {
-                    if (project != null)
-                    {
-                        count++;
-                        var name = project.GetMetadata<string>(NuGetProjectMetadataKeys.UniqueName);
-                        var vsProjectAdapter = allVsProjectAdapters
-                            .FirstOrDefault(p => StringComparer.OrdinalIgnoreCase.Equals(p.CustomUniqueName, name));
-                        yield return vsProjectAdapter;
-                    }
+                    yield return VsSolutionManager.GetVsProjectAdapter(project);
                 }
 
                 // We only emit non-terminating error record if a non-wildcarded name was not found.
                 // This is consistent with built-in cmdlets that support wildcarded search.
                 // A search with a wildcard that returns nothing should not be considered an error.
-                if ((count == 0)
+                if ((matches.Count == 0)
                     && !WildcardPattern.ContainsWildcardCharacters(projectName))
                 {
                     ErrorHandler.WriteProjectNotFoundError(projectName, terminating: false);
