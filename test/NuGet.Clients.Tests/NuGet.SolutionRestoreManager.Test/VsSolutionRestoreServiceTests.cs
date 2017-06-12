@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -169,6 +169,68 @@ namespace NuGet.SolutionRestoreManager.Test
                 .Single();
             Assert.Equal("Foo.Test.Tools", actualToolLibrary.Name);
             Assert.Equal("2.0.0", actualToolLibrary.LibraryRange.VersionRange.OriginalString);
+        }
+
+        [Theory]
+        [InlineData(@"..\packages", @"..\source1;..\source2", @"..\fallback1;..\fallback2")]
+        [InlineData(@"C:\packagesPath", @"..\source1;..\source2", @"C:\fallback1;C:\fallback2")]
+        [InlineData(null, null, null)]
+        public async Task NominateProjectAsync_WithCliTool_RestoreSettings(string restorePackagesPath, string restoreSources, string fallbackFolders)
+        {
+            const string toolProjectJson = @"{ }";
+            var cps = NewCpsProject(toolProjectJson);
+            var pri = cps.Builder.WithTool("Foo.Test.Tools", "2.0.0").WithTargetFrameworkInfo(
+                    new VsTargetFrameworkInfo(
+                        "netcoreapp1.0",
+                        Enumerable.Empty<IVsReferenceItem>(),
+                        Enumerable.Empty<IVsReferenceItem>(),
+                        new[] {new VsProjectProperty("RestorePackagesPath", restorePackagesPath),
+                               new VsProjectProperty("RestoreSources", restoreSources),
+                               new VsProjectProperty("RestoreFallbackFolders", fallbackFolders)})).Build();
+            var projectFullPath = cps.ProjectFullPath;
+
+            // Act
+            var actualRestoreSpec = await CaptureNominateResultAsync(projectFullPath, pri);
+
+            // Assert
+            SpecValidationUtility.ValidateDependencySpec(actualRestoreSpec);
+
+            var actualProjectSpec = actualRestoreSpec.GetProjectSpec(projectFullPath);
+            Assert.NotNull(actualProjectSpec);
+
+            var actualToolSpec = actualRestoreSpec
+                .Projects
+                .Where(p => !object.ReferenceEquals(p, actualProjectSpec))
+                .Single();
+            var actualMetadata = actualToolSpec.RestoreMetadata;
+            Assert.NotNull(actualMetadata);
+            Assert.Equal(projectFullPath, actualMetadata.ProjectPath);
+            Assert.Equal(ProjectStyle.DotnetCliTool, actualMetadata.ProjectStyle);
+            Assert.Null(actualMetadata.OutputPath);
+
+            var actualToolFramework = actualToolSpec
+                .TargetFrameworks
+                .Single()
+                .FrameworkName;
+            Assert.Equal(CommonFrameworks.NetCoreApp10, actualToolFramework);
+
+            var actualToolLibrary = actualToolSpec
+                .TargetFrameworks
+                .Single()
+                .Dependencies
+                .Single();
+            Assert.Equal("Foo.Test.Tools", actualToolLibrary.Name);
+            Assert.Equal("2.0.0", actualToolLibrary.LibraryRange.VersionRange.OriginalString);
+
+            Assert.Equal(restorePackagesPath, actualToolSpec.RestoreMetadata.PackagesPath);
+
+            var specSources = actualToolSpec.RestoreMetadata.Sources?.Select(e => e.Source);
+            var expectedSources = MSBuildStringUtility.Split(restoreSources);
+            Assert.True(Enumerable.SequenceEqual(expectedSources.OrderBy(t => t), specSources.OrderBy(t => t)));
+
+            var specFallback = actualToolSpec.RestoreMetadata.FallbackFolders;
+            var expectedFallback = MSBuildStringUtility.Split(fallbackFolders);
+            Assert.True(Enumerable.SequenceEqual(expectedFallback.OrderBy(t => t), specFallback.OrderBy(t => t)));
         }
 
         [Fact]

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -198,7 +198,7 @@ namespace NuGet.Commands
         }
 
         /// <summary>
-        /// Calculates the hash value for the request.
+        /// Calculates the hash value, used for the no-op optimization, for the request
         /// This methods handles the deduping of tools
         /// </summary>
         /// <param name="request"></param>
