@@ -213,7 +213,6 @@ namespace NuGet.SolutionRestoreManager
                     .ToList()
                     .ForEach(ts =>
                     {
-                       
                         dgSpec.AddRestore(ts.RestoreMetadata.ProjectUniqueName);
                         dgSpec.AddProject(ts);
                     });

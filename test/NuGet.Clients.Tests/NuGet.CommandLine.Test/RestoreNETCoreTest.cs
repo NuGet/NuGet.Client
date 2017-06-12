@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -1685,7 +1685,8 @@ namespace NuGet.CommandLine.Test
                 Assert.True(File.Exists(assetsPath));
                 Assert.True(File.Exists(cachePath));
                 // This is expected, because despite the fact that both projects resolve to the same tool, the version range they request is different so they will keep overwriting each other
-                Assert.DoesNotContain($"The restore inputs for 'DotnetCliToolReference-z' have not changed. No further actions are required to complete the restore.", r2.Item2);
+                // Basically, it is impossible for both tools to no-op.
+                Assert.Contains($"The restore inputs for 'DotnetCliToolReference-z' have changed. Continuing restore.", r2.Item2);
 
                 r = Util.RestoreSolution(pathContext);
 
