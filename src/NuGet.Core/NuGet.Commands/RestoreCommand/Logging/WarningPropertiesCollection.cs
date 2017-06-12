@@ -11,11 +11,17 @@ using NuGet.ProjectModel;
 namespace NuGet.Commands
 {
     /// <summary>
-    /// Class to hold ProjectWIde and PackageSpecific WarningProperties
+    /// Class to hold ProjectWide and PackageSpecific WarningProperties.
     /// </summary>
     public class WarningPropertiesCollection
     {
         private readonly ConcurrentDictionary<string, NuGetFramework> _getFrameworkCache = new ConcurrentDictionary<string, NuGetFramework>();
+
+        /// <summary>
+        /// Contains the target frameworks for the project.
+        /// These are used for no warn filtering in case of a log message without a target graph.
+        /// </summary>
+        public IEnumerable<NuGetFramework> ProjectFrameworks { get; set; } = new List<NuGetFramework>();
 
         /// <summary>
         /// Contains Project wide properties for Warnings.
@@ -27,7 +33,6 @@ namespace NuGet.Commands
         /// NuGetLogCode -> LibraryId -> Set of Frameworks.
         /// </summary>
         public PackageSpecificWarningProperties PackageSpecificWarningProperties { get; set; }
-
 
         /// <summary>
         /// Attempts to suppress a warning log message or upgrade it to error log message.
@@ -93,7 +98,10 @@ namespace NuGet.Commands
 
             foreach (var dependency in packageSpec.Dependencies)
             {
-                warningProperties.AddRange(dependency.NoWarn, dependency.Name);
+                foreach (var framework in packageSpec.TargetFrameworks)
+                {
+                    warningProperties.AddRange(dependency.NoWarn, dependency.Name, framework.FrameworkName);
+                }
             }
 
             foreach (var framework in packageSpec.TargetFrameworks)

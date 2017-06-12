@@ -55,10 +55,11 @@ namespace NuGet.Commands
             var collectorLogger = new RestoreCollectorLogger(_request.Log, collectorLoggerHideWarningsAndErrors)
             {
                 ProjectPath = _request.Project?.RestoreMetadata?.ProjectPath,
-                WarningPropertiesCollection =  new WarningPropertiesCollection()
+                WarningPropertiesCollection = new WarningPropertiesCollection()
                 {
                     ProjectWideWarningProperties = request.Project?.RestoreMetadata?.ProjectWideWarningProperties,
-                    PackageSpecificWarningProperties = WarningPropertiesCollection.GetPackageSpecificWarningProperties(request.Project)
+                    PackageSpecificWarningProperties = WarningPropertiesCollection.GetPackageSpecificWarningProperties(request.Project),
+                    ProjectFrameworks = request.Project.TargetFrameworks.Select(f => f.FrameworkName)
                 }
             };
 
