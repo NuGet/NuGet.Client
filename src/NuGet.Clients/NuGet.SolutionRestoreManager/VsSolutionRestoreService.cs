@@ -198,7 +198,7 @@ namespace NuGet.SolutionRestoreManager
                 var toolFramework = isNetCore20 ? CommonFrameworks.NetCoreApp20 : CommonFrameworks.NetCoreApp10;
 
                 var packagesPath = GetRestoreProjectPath(projectRestoreInfo.TargetFrameworks);
-                var fallbackFolders = GetRestoreFallbackFolders(projectRestoreInfo.TargetFrameworks);
+                var fallbackFolders = GetRestoreFallbackFolders(projectRestoreInfo.TargetFrameworks).AsList();
                 var sources = GetRestoreSources(projectRestoreInfo.TargetFrameworks)
                              .Select(e => new PackageSource(e)).ToList();
 
@@ -273,7 +273,7 @@ namespace NuGet.SolutionRestoreManager
                     // Read project properties for settings. ISettings values will be applied later since
                     // this value is put in the nomination cache and ISettings could change.
                     PackagesPath = GetRestoreProjectPath(projectRestoreInfo.TargetFrameworks),
-                    FallbackFolders = GetRestoreFallbackFolders(projectRestoreInfo.TargetFrameworks),
+                    FallbackFolders = GetRestoreFallbackFolders(projectRestoreInfo.TargetFrameworks).AsList(),
                     Sources = GetRestoreSources(projectRestoreInfo.TargetFrameworks)
                                     .Select(e => new PackageSource(e))
                                     .ToList(),
@@ -322,16 +322,14 @@ namespace NuGet.SolutionRestoreManager
             return sources;
         }
 
-        private static IList<string> GetRestoreFallbackFolders(IVsTargetFrameworks tfms)
+        private static IEnumerable<string> GetRestoreFallbackFolders(IVsTargetFrameworks tfms)
         {
             var folders = MSBuildStringUtility.Split(GetNonEvaluatedPropertyOrNull(tfms, RestoreFallbackFolders, e => e));
 
             folders = HandleClear(folders);
 
             var additional = MSBuildStringUtility.Split(GetNonEvaluatedPropertyOrNull(tfms, RestoreAdditionalProjectFallbackFolders, e => e));
-            folders = folders.Concat(additional).ToArray();
-
-            return folders.ToList();
+            return folders.Concat(additional);
         }
 
         private static string[] HandleClear(string[] input)

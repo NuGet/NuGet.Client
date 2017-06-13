@@ -1241,7 +1241,7 @@ namespace NuGet.ProjectModel.Test
 
                 // Act
                 var reader = new LockFileFormat();
-                lockFileObj = FileUtility.SafeRead(lockFile, NullLogger.Instance, (stream,path,logger) => reader.Read(stream, path, logger));
+                lockFileObj = FileUtility.SafeRead(lockFile, (stream,path) => reader.Read(stream, NullLogger.Instance, path));
                 logMessage = lockFileObj?.LogMessages?.First();
             }
 

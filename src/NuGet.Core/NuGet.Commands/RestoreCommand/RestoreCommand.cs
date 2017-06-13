@@ -137,6 +137,7 @@ namespace NuGet.Commands
                 _request.ValidateRuntimeAssets,
                 _logger);
 
+
             if (checkResults.Any(r => !r.Success))
             {
                 _success = false;
@@ -243,7 +244,7 @@ namespace NuGet.Commands
 
             if (_request.AllowNoOp && File.Exists(_request.Project.RestoreMetadata.CacheFilePath))
             {
-                cacheFile = FileUtility.SafeRead(_request.Project.RestoreMetadata.CacheFilePath, _logger, (stream, log, path) => CacheFileFormat.Read(stream, log, path));
+                cacheFile = FileUtility.SafeRead(_request.Project.RestoreMetadata.CacheFilePath, (stream, path) => CacheFileFormat.Read(stream, _logger, path));
 
                 if (cacheFile.IsValid && StringComparer.Ordinal.Equals(cacheFile.DgSpecHash, newDgSpecHash))
                 {

@@ -25,16 +25,25 @@ namespace NuGet.ProjectModel
             _isLowercase = isLowercase;
         }
 
+        /// <summary>
+        /// Given a toolDirectory path, it returns the full assets file path
+        /// </summary>
         public string GetLockFilePath(string toolDirectory)
         {
             return Path.Combine(toolDirectory, LockFileFormat.AssetsFileName);
         }
 
+        /// <summary>
+        /// Given a package id, version and framework, returns the full assets file path
+        /// </summary>
         public string GetLockFilePath(string packageId, NuGetVersion version, NuGetFramework framework)
         {
             return GetLockFilePath(GetToolDirectoryPath(packageId, version, framework));
         }
 
+        /// <summary>
+        /// Given a package id, version and framework, returns the tool directory path where the assets/cache file are located for tools
+        /// </summary>
         public string GetToolDirectoryPath(string packageId, NuGetVersion version, NuGetFramework framework)
         {
             var versionString = version.ToNormalizedString();
@@ -56,6 +65,9 @@ namespace NuGet.ProjectModel
                 frameworkString);
         }
 
+        /// <summary>
+        /// The base path for all restored tools
+        /// </summary>
         private string GetPackagesToolsBasePath()
         {
             return Path.Combine(
@@ -80,6 +92,9 @@ namespace NuGet.ProjectModel
             return GetToolDirectoryPath(packageId, bestVersion, framework);
         }
 
+        /// <summary>
+        /// Given a package id, looks in the base tools folder and returns all the version available on disk, possibly none
+        /// </summary>
         private IEnumerable<NuGetVersion> GetAvailableToolVersions(string packageId)
         {
             var availableVersions = new List<NuGetVersion>();
