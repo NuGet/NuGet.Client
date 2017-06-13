@@ -24,32 +24,13 @@ namespace NuGet.ProjectModel
             return Load(filePath, NullLogger.Instance);
         }
 
-        public static CacheFile SafeLoad(string filePath, ILogger log)
+        public static CacheFile Load(string filePath, ILogger log)
         {
-            if (filePath == null)
+            if (string.IsNullOrEmpty(filePath))
             {
                 throw new ArgumentNullException(nameof(filePath));
             }
 
-            var retries = 3;
-            for (var i = 1; i <= retries; i++)
-            {
-                // Ignore exceptions for the first attempts
-                try
-                {
-                    return Load(filePath, log);
-                }
-                catch (Exception ex) when ((i < retries) && (ex is UnauthorizedAccessException || ex is IOException))
-                {
-                    Thread.Sleep(100);
-                }
-            }
-            // This will never reached, but the compiler can't detect that 
-            return null;
-        }
-
-        public static CacheFile Load(string filePath, ILogger log)
-        {
             var share = FileShare.ReadWrite | FileShare.Delete;
             using (var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, share))
             {

@@ -71,30 +71,6 @@ namespace NuGet.ProjectModel
             }
         }
 
-        public LockFile SafeRead(string filePath, ILogger log)
-        {
-            if (string.IsNullOrEmpty(filePath))
-            {
-                throw new ArgumentNullException(nameof(filePath));
-            }
-
-            var retries = 3;
-            for (var i = 1; i <= retries; i++)
-            {
-                // Ignore exceptions for the first attempts
-                try
-                {
-                    return Read(filePath, log);
-                }
-                catch (Exception ex) when ((i < retries) && (ex is UnauthorizedAccessException || ex is IOException))
-                {
-                    Thread.Sleep(100);
-                }
-            }
-            // This will never reached, but the compiler can't detect that 
-            return null;
-        }
-
         public LockFile Read(string filePath)
         {
             return Read(filePath, NullLogger.Instance);
