@@ -19,25 +19,6 @@ namespace NuGet.ProjectModel
         private const string DGSpecHashProperty = "dgSpecHash";
         private const string SuccessProperty = "success";
 
-        public static CacheFile Load(string filePath)
-        {
-            return Load(filePath, NullLogger.Instance);
-        }
-
-        public static CacheFile Load(string filePath, ILogger log)
-        {
-            if (string.IsNullOrEmpty(filePath))
-            {
-                throw new ArgumentNullException(nameof(filePath));
-            }
-
-            var share = FileShare.ReadWrite | FileShare.Delete;
-            using (var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, share))
-            {
-                return Read(stream, log, filePath);
-            }
-        }
-
         public static CacheFile Read(Stream stream, ILogger log, string path)
         {
             using (var textReader = new StreamReader(stream))

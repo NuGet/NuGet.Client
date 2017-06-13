@@ -188,7 +188,7 @@ namespace NuGet.Common
             }
         }
 
-        public static T SafeRead<T>(ILogger log, Func<T> Read)
+        public static T SafeRead<T>(string filePath, ILogger log, Func<FileStream, ILogger, string, T> read)
         {
             var retries = MaxTries;
             for (var i = 1; i <= retries; i++)
@@ -196,7 +196,11 @@ namespace NuGet.Common
                 // Ignore exceptions for the first attempts
                 try
                 {
-                    return Read();
+                    var share = FileShare.ReadWrite | FileShare.Delete;
+                    using (var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, share))
+                    {
+                        return read(stream, log, filePath);
+                    }
                 }
                 catch (Exception ex) when ((i < retries) && (ex is UnauthorizedAccessException || ex is IOException))
                 {

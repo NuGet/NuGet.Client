@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -1241,7 +1241,7 @@ namespace NuGet.ProjectModel.Test
 
                 // Act
                 var reader = new LockFileFormat();
-                lockFileObj = reader.SafeRead(lockFile, NullLogger.Instance);
+                lockFileObj = FileUtility.SafeRead(lockFile, NullLogger.Instance, (stream,path,logger) => reader.Read(stream, path, logger));
                 logMessage = lockFileObj?.LogMessages?.First();
             }
 

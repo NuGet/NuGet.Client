@@ -243,7 +243,7 @@ namespace NuGet.Commands
 
             if (_request.AllowNoOp && File.Exists(_request.Project.RestoreMetadata.CacheFilePath))
             {
-                cacheFile = FileUtility.SafeRead(_logger, () => CacheFileFormat.Load(_request.Project.RestoreMetadata.CacheFilePath,_logger));
+                cacheFile = FileUtility.SafeRead(_request.Project.RestoreMetadata.CacheFilePath, _logger, (stream, log, path) => CacheFileFormat.Read(stream, log, path));
 
                 if (cacheFile.IsValid && StringComparer.Ordinal.Equals(cacheFile.DgSpecHash, newDgSpecHash))
                 {
