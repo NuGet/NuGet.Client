@@ -187,7 +187,7 @@ namespace NuGet.Commands
                             string.Join(", ", conflict.Requests),
                             graphName);
 
-                        _logger.Log(RestoreLogMessage.CreateError(NuGetLogCode.NU1106, message));
+                        _logger.Log(RestoreLogMessage.CreateError(NuGetLogCode.NU1106, message, conflict.Name, graph.TargetGraphName));
                     }
                 }
 
