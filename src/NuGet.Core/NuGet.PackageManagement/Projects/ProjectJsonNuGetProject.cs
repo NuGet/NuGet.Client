@@ -282,10 +282,13 @@ namespace NuGet.ProjectManagement.Projects
         {
             try
             {
-                using (var streamReader = new StreamReader(_jsonConfig.OpenRead()))
+                return FileUtility.SafeRead(JsonConfigPath, (stream, filePath) =>
                 {
-                    return JObject.Parse(streamReader.ReadToEnd());
-                }
+                    using (var reader = new StreamReader(stream))
+                    {
+                        return JObject.Parse(reader.ReadToEnd());
+                    }
+                });
             }
             catch (Exception ex)
             {
@@ -298,10 +301,13 @@ namespace NuGet.ProjectManagement.Projects
         {
             try
             {
-                using (var streamReader = new StreamReader(_jsonConfig.OpenRead()))
+                return await FileUtility.SafeReadAsync(JsonConfigPath, async (stream, filePath) =>
                 {
-                    return JObject.Parse(await streamReader.ReadToEndAsync());
-                }
+                    using (var reader = new StreamReader(stream))
+                    {
+                        return JObject.Parse(await reader.ReadToEndAsync());
+                    }
+                });
             }
             catch (Exception ex)
             {
@@ -312,10 +318,14 @@ namespace NuGet.ProjectManagement.Projects
 
         private async Task SaveJsonAsync(JObject json)
         {
-            using (var writer = new StreamWriter(_jsonConfig.FullName, false, Encoding.UTF8))
+            await FileUtility.ReplaceAsync(async (outputPath) =>
             {
-                await writer.WriteAsync(json.ToString());
-            }
+                using (var writer = new StreamWriter(outputPath, false, Encoding.UTF8))
+                {
+                    await writer.WriteAsync(json.ToString());
+                }
+            },
+            JsonConfigPath);
         }
 
         private async Task UpdateFrameworkAsync(JObject json)

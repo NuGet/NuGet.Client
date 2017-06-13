@@ -35,10 +35,7 @@ namespace NuGet.ProjectModel
         /// <param name="packageSpecPath">file path</param>
         public static PackageSpec GetPackageSpec(string name, string packageSpecPath)
         {
-            using (var stream = new FileStream(packageSpecPath, FileMode.Open, FileAccess.Read, FileShare.Read))
-            {
-                return GetPackageSpec(stream, name, packageSpecPath, null);
-            }
+            return FileUtility.SafeRead(filePath: packageSpecPath, read: (stream, filePath) => GetPackageSpec(stream, name, filePath, null));
         }
 
         public static PackageSpec GetPackageSpec(string json, string name, string packageSpecPath)
