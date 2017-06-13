@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -50,7 +50,8 @@ namespace NuGet.ProjectModel
 
         public static CacheFile Load(string filePath, ILogger log)
         {
-            using (var stream = File.OpenRead(filePath))
+            var share = FileShare.ReadWrite | FileShare.Delete;
+            using (var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, share))
             {
                 return Read(stream, log, filePath);
             }

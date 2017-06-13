@@ -198,16 +198,14 @@ namespace NuGet.SolutionRestoreManager
                 var toolFramework = isNetCore20 ? CommonFrameworks.NetCoreApp20 : CommonFrameworks.NetCoreApp10;
 
                 var packagesPath = GetRestoreProjectPath(projectRestoreInfo.TargetFrameworks);
-                var fallbackFolders = GetRestoreFallbackFolders(projectRestoreInfo.TargetFrameworks).ToList();
+                var fallbackFolders = GetRestoreFallbackFolders(projectRestoreInfo.TargetFrameworks);
                 var sources = GetRestoreSources(projectRestoreInfo.TargetFrameworks)
-                             .Select(e => new PackageSource(e))
-                             .ToList();
+                             .Select(e => new PackageSource(e)).ToList();
 
                 projectRestoreInfo
                     .ToolReferences
                     .Cast<IVsReferenceItem>()
                     .Select(r => ToToolPackageSpec(projectNames, r, toolFramework, packagesPath, fallbackFolders, sources, null))
-                    .ToList()
                     .ForEach(ts =>
                     {
                         dgSpec.AddRestore(ts.RestoreMetadata.ProjectUniqueName);
@@ -275,7 +273,7 @@ namespace NuGet.SolutionRestoreManager
                     // Read project properties for settings. ISettings values will be applied later since
                     // this value is put in the nomination cache and ISettings could change.
                     PackagesPath = GetRestoreProjectPath(projectRestoreInfo.TargetFrameworks),
-                    FallbackFolders = GetRestoreFallbackFolders(projectRestoreInfo.TargetFrameworks).ToList(),
+                    FallbackFolders = GetRestoreFallbackFolders(projectRestoreInfo.TargetFrameworks),
                     Sources = GetRestoreSources(projectRestoreInfo.TargetFrameworks)
                                     .Select(e => new PackageSource(e))
                                     .ToList(),
@@ -324,7 +322,7 @@ namespace NuGet.SolutionRestoreManager
             return sources;
         }
 
-        private static string[] GetRestoreFallbackFolders(IVsTargetFrameworks tfms)
+        private static IList<string> GetRestoreFallbackFolders(IVsTargetFrameworks tfms)
         {
             var folders = MSBuildStringUtility.Split(GetNonEvaluatedPropertyOrNull(tfms, RestoreFallbackFolders, e => e));
 
@@ -333,7 +331,7 @@ namespace NuGet.SolutionRestoreManager
             var additional = MSBuildStringUtility.Split(GetNonEvaluatedPropertyOrNull(tfms, RestoreAdditionalProjectFallbackFolders, e => e));
             folders = folders.Concat(additional).ToArray();
 
-            return folders;
+            return folders.ToList();
         }
 
         private static string[] HandleClear(string[] input)

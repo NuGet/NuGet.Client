@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -8,6 +8,7 @@ using System.Linq;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using Newtonsoft.Json;
+using NuGet.Commands;
 using NuGet.ProjectModel;
 using NuGet.Versioning;
 
@@ -103,7 +104,7 @@ namespace NuGet.Build.Tasks
 
                 string value;
                 properties.TryGetValue("Version", out value);
-                var uniqueName = $"{msbuildItem.ItemSpec}-{ToolFramework}-{VersionRange.Parse(value).ToNormalizedString()}";
+                var uniqueName = ToolRestoreUtility.GetUniqueName(msbuildItem.ItemSpec, ToolFramework, VersionRange.Parse(value));
                 properties.Add("ProjectUniqueName", uniqueName);
 
                 entries.Add(new TaskItem(Guid.NewGuid().ToString(), properties));

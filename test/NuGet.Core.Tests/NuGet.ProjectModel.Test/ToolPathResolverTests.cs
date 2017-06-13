@@ -3,6 +3,7 @@
 
 using System.IO;
 using System.Threading.Tasks;
+using NuGet.Commands;
 using NuGet.Frameworks;
 using NuGet.Packaging;
 using NuGet.Test.Utility;
@@ -92,6 +93,31 @@ namespace NuGet.ProjectModel.Test
                 "PackageA",
                 NuGetVersion.Parse("3.1.4-BETA"),
                 FrameworkConstants.CommonFrameworks.NetStandard13);
+
+            // Assert
+            Assert.Equal(expected, actual);
+        }
+
+        [Fact]
+        public void NoOpRestoreUtility_CacheFileToolNameIsLowercase()
+        {
+            var package = "PackageA";
+            // Arrange
+            var target = new ToolPathResolver("packages", isLowercase: true);
+            var expected = Path.Combine(
+                "packages",
+                ".tools",
+                package,
+                "3.1.4-beta",
+                "netstandard1.3",
+                "packagea.cache.json");
+
+            // Act
+            var actual = NoOpRestoreUtilities.GetToolCacheFilePath(
+                target.GetToolDirectoryPath(
+                package,
+                NuGetVersion.Parse("3.1.4-beta"),
+                FrameworkConstants.CommonFrameworks.NetStandard13), package);
 
             // Assert
             Assert.Equal(expected, actual);

@@ -48,7 +48,6 @@ namespace NuGet.Commands
 
         internal static string GetToolCacheFilePath(RestoreRequest request, LockFile lockFile)
         {
-
             if (request.ProjectStyle == ProjectStyle.DotnetCliTool && lockFile != null)
             {
                 var toolName = ToolRestoreUtility.GetToolIdOrNullFromSpec(request.Project);
@@ -59,20 +58,20 @@ namespace NuGet.Commands
                     var version = lockFileLibrary.Version;
                     var toolPathResolver = new ToolPathResolver(request.PackagesDirectory);
 
-                    return Path.Combine(toolPathResolver.GetToolDirectoryPath(
+                    return GetToolCacheFilePath(toolPathResolver.GetToolDirectoryPath(
                         toolName,
                         version,
-                        lockFile.Targets.First().TargetFramework), $"{toolName}.nuget.cache");
+                        lockFile.Targets.First().TargetFramework), toolName);
                 }
             }
             return null;
         }
 
-        internal static string GetToolCacheFilePath(string toolDirectory, string toolName)
+        public static string GetToolCacheFilePath(string toolDirectory, string toolName)
         {
             return Path.Combine(
                 toolDirectory,
-                 $"{toolName}.nuget.cache");
+                 $"{toolName.ToLowerInvariant()}.nuget.cache"); // TODO NK - Add a test for this
         }
 
         /// <summary>
@@ -80,7 +79,7 @@ namespace NuGet.Commands
         /// </summary>
         internal static string GetCacheFilePath(RestoreRequest request)
         {
-            return GetCacheFilePath(request, null);
+            return GetCacheFilePath(request, lockFile: null);
         }
 
         /// <summary>
