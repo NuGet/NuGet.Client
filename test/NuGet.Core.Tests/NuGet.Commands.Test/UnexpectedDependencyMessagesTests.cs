@@ -368,6 +368,56 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
+        public void GivenAProjectWithATopLevelDependencyVerifyAllFrameworksInTargetGraphs()
+        {
+            var range = VersionRange.Parse("(, 2.0.0)");
+            var tfi = new List<TargetFrameworkInformation>
+            {
+                new TargetFrameworkInformation()
+                {
+                    FrameworkName = NuGetFramework.Parse("netstandard2.0")
+                },
+                new TargetFrameworkInformation()
+                {
+                    FrameworkName = NuGetFramework.Parse("net46")
+                }
+            };
+
+            var project = new PackageSpec(tfi)
+            {
+                Name = "proj"
+            };
+
+            project.Dependencies.Add(new LibraryDependency() { LibraryRange = new LibraryRange("x", range, LibraryDependencyTarget.Package) });
+
+            var log = UnexpectedDependencyMessages.GetProjectDependenciesMissingLowerBounds(project).Single();
+
+            log.Code.Should().Be(NuGetLogCode.NU1604);
+            log.TargetGraphs.ShouldBeEquivalentTo(new[] { NuGetFramework.Parse("netstandard2.0").DotNetFrameworkName, NuGetFramework.Parse("net46").DotNetFrameworkName });
+        }
+
+        [Fact]
+        public void GivenAProjectWithAFrameworkSpecificDependencyVerifySingleTargetGraph()
+        {
+            var badRange = VersionRange.Parse("(, 2.0.0)");
+            var goodRange = VersionRange.Parse("[2.0.0]");
+            var badTfi = GetTFI(NuGetFramework.Parse("netstandard2.0"), new LibraryRange("x", badRange, LibraryDependencyTarget.Package));
+            var goodTfi = GetTFI(NuGetFramework.Parse("net46"), new LibraryRange("x", goodRange, LibraryDependencyTarget.Package));
+
+            var project = new PackageSpec(badTfi.Concat(goodTfi).ToList())
+            {
+                Name = "proj"
+            };
+
+            var log = UnexpectedDependencyMessages.GetProjectDependenciesMissingLowerBounds(project).Single();
+
+            log.Code.Should().Be(NuGetLogCode.NU1604);
+            log.TargetGraphs.ShouldBeEquivalentTo(
+                new[] { NuGetFramework.Parse("netstandard2.0").DotNetFrameworkName },
+                "net46 contains a valid range that should be filtered out");
+        }
+
+        [Fact]
         public void GivenAProjectWithADependencyOnAPackageWithANullRanageVerifyWarningMessage()
         {
             var tfi = GetTFI(NuGetFramework.Parse("net46"), new LibraryRange("x", null, LibraryDependencyTarget.Package));

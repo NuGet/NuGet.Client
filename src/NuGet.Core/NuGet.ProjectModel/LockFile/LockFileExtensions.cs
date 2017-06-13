@@ -12,6 +12,8 @@ namespace NuGet.ProjectModel
         /// <summary>
         /// Get target graphs for the current log message.
         /// </summary>
+        /// <remarks>If the message does not contain target graphs all graphs in the file
+        /// will be returned.</remarks>
         public static IEnumerable<LockFileTarget> GetTargetGraphs(this IAssetsLogMessage message, LockFile assetsFile)
         {
             if (message == null)
@@ -22,6 +24,12 @@ namespace NuGet.ProjectModel
             if (assetsFile == null)
             {
                 throw new ArgumentNullException(nameof(assetsFile));
+            }
+
+            // If the message does not contain any target graph it should apply to all graphs.
+            if (message.TargetGraphs == null || message.TargetGraphs.Count == 0)
+            {
+                return assetsFile.Targets;
             }
 
             return assetsFile.Targets.Where(target => message.TargetGraphs.Contains(target.Name, StringComparer.OrdinalIgnoreCase));

@@ -7,6 +7,7 @@ using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using NuGet.Common;
+using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.ProjectModel;
 using NuGet.Shared;
@@ -165,7 +166,8 @@ namespace NuGet.Commands
                        code: NuGetLogCode.NU1604,
                        message: string.Format(CultureInfo.CurrentCulture, Strings.Warning_ProjectDependencyMissingLowerBound,
                                               DiagnosticUtility.FormatDependency(e.Name, e.LibraryRange.VersionRange)),
-                       libraryId: e.Name));
+                       libraryId: e.Name,
+                       targetGraphs: GetDependencyTargetGraphs(project, e)));
         }
 
         /// <summary>
@@ -212,5 +214,28 @@ namespace NuGet.Commands
             return (dependency.LibraryRange.TypeConstraintAllows(LibraryDependencyTarget.Package)
                 && dependency.LibraryRange.VersionRange != null && !dependency.LibraryRange.VersionRange.IsFloating);
         }
+
+        /// <summary>
+        /// Create target graph names for each framework the dependency exists under.
+        /// </summary>
+        private static string[] GetDependencyTargetGraphs(PackageSpec spec, LibraryDependency dependency)
+        {
+            var infos = new List<TargetFrameworkInformation>();
+
+            if (spec.Dependencies.Contains(dependency))
+            {
+                // If the dependency is top level add it for all tfms
+                infos.AddRange(spec.TargetFrameworks);
+            }
+            else
+            {
+                // Add all tfms where the dependency is found
+                infos.AddRange(spec.TargetFrameworks.Where(e => e.Dependencies.Contains(dependency)));
+            }
+
+            // Convert framework to target graph name.
+            return infos.Select(e => e.FrameworkName.DotNetFrameworkName).ToArray();
+        }
+
     }
 }

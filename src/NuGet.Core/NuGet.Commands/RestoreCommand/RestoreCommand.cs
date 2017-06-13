@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -55,7 +55,7 @@ namespace NuGet.Commands
             var collectorLogger = new RestoreCollectorLogger(_request.Log, collectorLoggerHideWarningsAndErrors)
             {
                 ProjectPath = _request.Project?.RestoreMetadata?.ProjectPath,
-                WarningPropertiesCollection =  new WarningPropertiesCollection()
+                WarningPropertiesCollection = new WarningPropertiesCollection()
                 {
                     ProjectWideWarningProperties = request.Project?.RestoreMetadata?.ProjectWideWarningProperties,
                     PackageSpecificWarningProperties = WarningPropertiesCollection.GetPackageSpecificWarningProperties(request.Project)
@@ -81,11 +81,12 @@ namespace NuGet.Commands
             };
 
             localRepositories.AddRange(_request.DependencyProviders.FallbackPackageFolders);
-            
+
             var contextForProject = CreateRemoteWalkContext(_request, _logger);
 
             CacheFile cacheFile = null;
-            if (NoOpRestoreUtilities.IsNoOpSupported(_request)) {
+            if (NoOpRestoreUtilities.IsNoOpSupported(_request))
+            {
                 var cacheFileAndStatus = EvaluateCacheFile();
                 cacheFile = cacheFileAndStatus.Key;
                 if (cacheFileAndStatus.Value)
@@ -128,7 +129,7 @@ namespace NuGet.Commands
             _success &= await ValidateRestoreGraphsAsync(graphs, _logger);
 
             // Check package compatibility
-            var checkResults = VerifyCompatibility(
+            var checkResults = await VerifyCompatibilityAsync(
                 _request.Project,
                 _includeFlagGraphs,
                 localRepositories,
@@ -231,7 +232,7 @@ namespace NuGet.Commands
             }
         }
 
-        private KeyValuePair<CacheFile,bool> EvaluateCacheFile()
+        private KeyValuePair<CacheFile, bool> EvaluateCacheFile()
         {
             CacheFile cacheFile;
             var noOp = false;
@@ -277,7 +278,7 @@ namespace NuGet.Commands
                     _request.Project.RestoreMetadata.CacheFilePath = null;
                 }
             }
-            return new KeyValuePair<CacheFile,bool>(cacheFile, noOp) ;
+            return new KeyValuePair<CacheFile, bool>(cacheFile, noOp);
         }
 
         private string GetAssetsFilePath(LockFile lockFile)
@@ -483,7 +484,7 @@ namespace NuGet.Commands
             return logger.LogMessagesAsync(mergedMessages);
         }
 
-        private static IList<CompatibilityCheckResult> VerifyCompatibility(
+        private static async Task<IList<CompatibilityCheckResult>> VerifyCompatibilityAsync(
                 PackageSpec project,
                 Dictionary<RestoreTargetGraph, Dictionary<string, LibraryIncludeFlags>> includeFlagGraphs,
                 IReadOnlyList<NuGetv3LocalRepository> localRepositories,
@@ -499,15 +500,15 @@ namespace NuGet.Commands
                 var checker = new CompatibilityChecker(localRepositories, lockFile, validateRuntimeAssets, logger);
                 foreach (var graph in graphs)
                 {
-                    logger.LogVerbose(string.Format(CultureInfo.CurrentCulture, Strings.Log_CheckingCompatibility, graph.Name));
+                    await logger.LogAsync(LogLevel.Verbose, string.Format(CultureInfo.CurrentCulture, Strings.Log_CheckingCompatibility, graph.Name));
 
                     var includeFlags = IncludeFlagUtils.FlattenDependencyTypes(includeFlagGraphs, project, graph);
 
-                    var res = checker.Check(graph, includeFlags);
+                    var res = await checker.CheckAsync(graph, includeFlags);
                     checkResults.Add(res);
                     if (res.Success)
                     {
-                        logger.LogVerbose(string.Format(CultureInfo.CurrentCulture, Strings.Log_PackagesAndProjectsAreCompatible, graph.Name));
+                        await logger.LogAsync(LogLevel.Verbose, string.Format(CultureInfo.CurrentCulture, Strings.Log_PackagesAndProjectsAreCompatible, graph.Name));
                     }
                     else
                     {
@@ -518,12 +519,12 @@ namespace NuGet.Commands
                         // Log a summary with compatibility error counts
                         if (projectCount > 0)
                         {
-                            logger.LogDebug($"Incompatible projects: {projectCount}");
+                            await logger.LogAsync(LogLevel.Debug, $"Incompatible projects: {projectCount}");
                         }
 
                         if (packageCount > 0)
                         {
-                            logger.LogDebug($"Incompatible packages: {packageCount}");
+                            await logger.LogAsync(LogLevel.Debug, $"Incompatible packages: {packageCount}");
                         }
                     }
                 }

@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using NuGet.Client;
 using NuGet.Common;
 using NuGet.ContentModel;
@@ -34,7 +35,7 @@ namespace NuGet.Commands
             _validateRuntimeAssets = validateRuntimeAssets;
         }
 
-        internal CompatibilityCheckResult Check(
+        internal async Task<CompatibilityCheckResult> CheckAsync(
             RestoreTargetGraph graph,
             Dictionary<string, LibraryIncludeFlags> includeFlags)
         {
@@ -67,7 +68,7 @@ namespace NuGet.Commands
             // Verify framework assets also as part of runtime assets validation.
             foreach (var node in graph.Flattened)
             {
-                _log.LogDebug(string.Format(CultureInfo.CurrentCulture, Strings.Log_CheckingPackageCompatibility, node.Key.Name, node.Key.Version, graph.Name));
+                await _log.LogAsync(LogLevel.Debug, string.Format(CultureInfo.CurrentCulture, Strings.Log_CheckingPackageCompatibility, node.Key.Name, node.Key.Version, graph.Name));
 
                 // Check project compatibility
                 if (node.Key.Type == LibraryType.Project)
@@ -92,8 +93,7 @@ namespace NuGet.Commands
                             available);
 
                         issues.Add(issue);
-
-                        _log.Log(RestoreLogMessage.CreateError(NuGetLogCode.NU1201, issue.Format()));
+                        await _log.LogAsync(GetErrorMessage(NuGetLogCode.NU1201, issue, graph));
                     }
 
                     // Skip further checks on projects
@@ -134,8 +134,7 @@ namespace NuGet.Commands
                         available);
 
                     issues.Add(issue);
-
-                    _log.Log(RestoreLogMessage.CreateError(NuGetLogCode.NU1202, issue.Format()));
+                    await _log.LogAsync(GetErrorMessage(NuGetLogCode.NU1202, issue, graph));
                 }
 
                 // Check for matching ref/libs if we're checking a runtime-specific graph
@@ -208,12 +207,19 @@ namespace NuGet.Commands
                         graph.RuntimeIdentifier);
 
                     issues.Add(issue);
-
-                    _log.Log(RestoreLogMessage.CreateError(NuGetLogCode.NU1203, issue.Format()));
+                    await _log.LogAsync(GetErrorMessage(NuGetLogCode.NU1203, issue, graph));
                 }
             }
 
             return new CompatibilityCheckResult(graph, issues);
+        }
+
+        /// <summary>
+        /// Create an error message for the given issue.
+        /// </summary>
+        private static RestoreLogMessage GetErrorMessage(NuGetLogCode logCode, CompatibilityIssue issue, RestoreTargetGraph graph)
+        {
+            return RestoreLogMessage.CreateError(logCode, issue.Format(), issue.Package.Id, graph.TargetGraphName);
         }
 
         private static List<NuGetFramework> GetPackageFrameworks(
@@ -242,7 +248,7 @@ namespace NuGet.Commands
                     group.Properties.TryGetValue(ManagedCodeConventions.PropertyNames.RuntimeIdentifier, out ridObj);
                     group.Properties.TryGetValue(ManagedCodeConventions.PropertyNames.TargetFrameworkMoniker, out tfmObj);
 
-                    NuGetFramework tfm = tfmObj as NuGetFramework;
+                    var tfm = tfmObj as NuGetFramework;
 
                     // RID specific items should be ignored here since they are only used in the runtime assem check
                     if (ridObj == null && tfm?.IsSpecificFramework == true)
