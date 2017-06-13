@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using NuGet.Common;
 using NuGet.Frameworks;
+using NuGet.ProjectModel;
 
 namespace NuGet.Commands
 {
@@ -14,13 +15,41 @@ namespace NuGet.Commands
     /// </summary>
     public class PackageSpecificWarningProperties
     {
-        private static readonly NuGetFramework _globalFramework = NuGetFramework.AnyFramework;
 
         /// <summary>
         /// Contains Package specific No warn properties.
         /// NuGetLogCode -> LibraryId -> Set of Frameworks.
         /// </summary>
         private IDictionary<NuGetLogCode, IDictionary<string, ISet<NuGetFramework>>> Properties;
+
+        /// <summary>
+        /// Extracts PackageSpecific WarningProperties from a PackageSpec
+        /// </summary>
+        /// <param name="packageSpec">PackageSpec containing the Dependencies with WarningProperties</param>
+        /// <returns>PackageSpecific WarningProperties extracted from a PackageSpec</returns>
+        public static PackageSpecificWarningProperties CreatePackageSpecificWarningProperties(PackageSpec packageSpec)
+        {
+            // NuGetLogCode -> LibraryId -> Set of Frameworks.
+            var warningProperties = new PackageSpecificWarningProperties();
+
+            foreach (var dependency in packageSpec.Dependencies)
+            {
+                foreach (var framework in packageSpec.TargetFrameworks)
+                {
+                    warningProperties.AddRange(dependency.NoWarn, dependency.Name, framework.FrameworkName);
+                }
+            }
+
+            foreach (var framework in packageSpec.TargetFrameworks)
+            {
+                foreach (var dependency in framework.Dependencies)
+                {
+                    warningProperties.AddRange(dependency.NoWarn, dependency.Name, framework.FrameworkName);
+                }
+            }
+
+            return warningProperties;
+        }
 
         /// <summary>
         /// Adds a NuGetLogCode into the NoWarn Set for the specified library Id and target graph.
@@ -51,16 +80,6 @@ namespace NuGet.Commands
         }
 
         /// <summary>
-        /// Adds a NuGetLogCode into the NoWarn Set for the specified library Id with unconditional reference.
-        /// </summary>
-        /// <param name="code">NuGetLogCode for which no warning should be thrown.</param>
-        /// <param name="libraryId">Library for which no warning should be thrown.</param>
-        public void Add(NuGetLogCode code, string libraryId)
-        {
-            Add(code, libraryId, _globalFramework);
-        }
-
-        /// <summary>
         /// Adds a list of NuGetLogCode into the NoWarn Set for the specified library Id and target graph.
         /// </summary>
         /// <param name="codes">IEnumerable of NuGetLogCode for which no warning should be thrown.</param>
@@ -75,20 +94,6 @@ namespace NuGet.Commands
         }
 
         /// <summary>
-        /// Adds a list of NuGetLogCode into the NoWarn Set for the specified library Id with unconditional reference.
-        /// </summary>
-        /// <param name="codes">IEnumerable of NuGetLogCode for which no warning should be thrown.</param>
-        /// <param name="libraryId">Library for which no warning should be thrown.</param>
-        public void AddRange(IEnumerable<NuGetLogCode> codes, string libraryId)
-        {
-            foreach (var code in codes)
-            {
-                Add(code, libraryId, _globalFramework);
-            }
-        }
-
-
-        /// <summary>
         /// Checks if a NugetLogCode is part of the NoWarn list for the specified library Id and target graph.
         /// </summary>
         /// <param name="code">NugetLogCode to be checked.</param>
@@ -101,17 +106,6 @@ namespace NuGet.Commands
                 Properties.TryGetValue(code, out var libraryIdsAndFrameworks) &&
                 libraryIdsAndFrameworks.TryGetValue(libraryId, out var frameworkSet) &&
                 frameworkSet.Contains(framework);
-        }
-
-        /// <summary>
-        /// Checks if a NugetLogCode is part of the NoWarn list for the specified library Id with uncoditional reference.
-        /// </summary>
-        /// <param name="code">NugetLogCode to be checked.</param>
-        /// <param name="libraryId">library Id to be checked.</param>
-        /// <returns>True iff the NugetLogCode is part of the NoWarn list for the specified libraryId with uncoditional reference.</returns>
-        public bool Contains(NuGetLogCode code, string libraryId)
-        {
-            return Contains(code, libraryId, _globalFramework);
         }
     }
 }

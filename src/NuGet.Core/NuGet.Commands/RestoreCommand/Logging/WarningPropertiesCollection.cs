@@ -4,9 +4,11 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.ProjectModel;
+using NuGet.Shared;
 
 namespace NuGet.Commands
 {
@@ -21,7 +23,7 @@ namespace NuGet.Commands
         /// Contains the target frameworks for the project.
         /// These are used for no warn filtering in case of a log message without a target graph.
         /// </summary>
-        public IEnumerable<NuGetFramework> ProjectFrameworks { get; set; } = new List<NuGetFramework>();
+        public IReadOnlyList<NuGetFramework> ProjectFrameworks { get; set; } = new List<NuGetFramework>();
 
         /// <summary>
         /// Contains Project wide properties for Warnings.
@@ -49,35 +51,30 @@ namespace NuGet.Commands
             }
             else
             {
+                // First look at PackageSpecificWarningProperties and then at ProjectWideWarningProperties
+
                 if (!string.IsNullOrEmpty(message.LibraryId) && PackageSpecificWarningProperties != null)
                 {
-                    // The message contains a LibraryId
-                    // First look at PackageSpecificWarningProperties and then at ProjectWideWarningProperties
-                    if (message.TargetGraphs.Count == 0)
+                    var messageTargetFrameworks = message.TargetGraphs.Select(GetNuGetFramework).ToList();
+
+                    // The message does not contain a LibraryId then assign all the project frameworks to it.
+                    if (messageTargetFrameworks.Count == 0)
                     {
-                        if (PackageSpecificWarningProperties.Contains(message.Code, message.LibraryId))
-                        {
-                            return true;
-                        }
+                        return ProjectFrameworks
+                            .All(e => PackageSpecificWarningProperties.Contains(message.Code, message.LibraryId, e));
                     }
                     else
                     {
-                        var newTargetGraphList = new List<string>();
-                        foreach (var targetGraph in message.TargetGraphs)
-                        {
-                            if (!PackageSpecificWarningProperties.Contains(message.Code, message.LibraryId, GetNuGetFramework(targetGraph)))
-                            {
-                                newTargetGraphList.Add(targetGraph);
-                            }
-                        }
-
-                        message.TargetGraphs = newTargetGraphList;
+                        message.TargetGraphs = message.TargetGraphs.Where(e => !PackageSpecificWarningProperties.Contains(message.Code, message.LibraryId, GetNuGetFramework(e))).ToList();
 
                         if (message.TargetGraphs.Count == 0)
                         {
                             return true;
                         }
                     }
+
+                   
+
                 }
 
                 // The message does not contain a LibraryId or it is not suppressed in package specific settings
@@ -85,36 +82,6 @@ namespace NuGet.Commands
                 return ProjectWideWarningProperties != null && ApplyProjectWideWarningProperties(message);
             }
         }
-
-        /// <summary>
-        /// Extracts PackageSpecific WarningProperties from a PackageSpec
-        /// </summary>
-        /// <param name="packageSpec">PackageSpec containing the Dependencies with WarningProperties</param>
-        /// <returns>PackageSpecific WarningProperties extracted from a PackageSpec</returns>
-        public static PackageSpecificWarningProperties GetPackageSpecificWarningProperties(PackageSpec packageSpec)
-        {
-            // NuGetLogCode -> LibraryId -> Set of Frameworks.
-            var warningProperties = new PackageSpecificWarningProperties();
-
-            foreach (var dependency in packageSpec.Dependencies)
-            {
-                foreach (var framework in packageSpec.TargetFrameworks)
-                {
-                    warningProperties.AddRange(dependency.NoWarn, dependency.Name, framework.FrameworkName);
-                }
-            }
-
-            foreach (var framework in packageSpec.TargetFrameworks)
-            {
-                foreach (var dependency in framework.Dependencies)
-                {
-                    warningProperties.AddRange(dependency.NoWarn, dependency.Name, framework.FrameworkName);
-                }
-            }
-
-            return warningProperties;
-        }
-
 
         /// <summary>
         /// Method is used to check is a warning should be suppressed and if not then if it should be treated as an error.
