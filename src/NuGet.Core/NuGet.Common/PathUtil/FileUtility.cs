@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -14,6 +14,7 @@ namespace NuGet.Common
     public static class FileUtility
     {
         public static readonly int MaxTries = 3;
+        public static readonly FileShare FileSharePermissions = FileShare.ReadWrite | FileShare.Delete;
 
         /// <summary>
         /// Get the full path to a new temp file
@@ -97,6 +98,39 @@ namespace NuGet.Common
             {
                 // Write to temp path
                 writeSourceFile(tempPath);
+
+                // Delete the previous file and move the temporary file
+                // This will throw if there is a failure
+                Replace(tempPath, destFilePath);
+            }
+            catch
+            {
+                // Clean up the temporary file
+                Delete(tempPath);
+
+                // Throw since this failed
+                throw;
+            }
+        }
+
+        public static async Task ReplaceAsync(Func<string, Task> writeSourceFile, string destFilePath)
+        {
+            if (writeSourceFile == null)
+            {
+                throw new ArgumentNullException(nameof(writeSourceFile));
+            }
+
+            if (destFilePath == null)
+            {
+                throw new ArgumentNullException(nameof(destFilePath));
+            }
+
+            var tempPath = GetTempFilePath(Path.GetDirectoryName(destFilePath));
+
+            try
+            {
+                // Write to temp path
+                await writeSourceFile(tempPath);
 
                 // Delete the previous file and move the temporary file
                 // This will throw if there is a failure
@@ -196,10 +230,31 @@ namespace NuGet.Common
                 // Ignore exceptions for the first attempts
                 try
                 {
-                    var share = FileShare.ReadWrite | FileShare.Delete;
-                    using (var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, share))
+                    using (var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileSharePermissions))
                     {
                         return read(stream, filePath);
+                    }
+                }
+                catch (Exception ex) when ((i < retries) && (ex is UnauthorizedAccessException || ex is IOException))
+                {
+                    Sleep(100);
+                }
+            }
+            // This will never reached, but the compiler can't detect that 
+            return default(T);
+        }
+
+        public static async Task<T> SafeReadAsync<T>(string filePath, Func<FileStream, string, Task<T>> read)
+        {
+            var retries = MaxTries;
+            for (var i = 1; i <= retries; i++)
+            {
+                // Ignore exceptions for the first attempts
+                try
+                {
+                    using (var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileSharePermissions))
+                    {
+                        return await read(stream, filePath);
                     }
                 }
                 catch (Exception ex) when ((i < retries) && (ex is UnauthorizedAccessException || ex is IOException))
