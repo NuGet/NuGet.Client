@@ -60,7 +60,8 @@ namespace NuGet.Commands
                     if (messageTargetFrameworks.Count == 0)
                     {
                         // Suppress the warning if the code + libraryId combination is suppressed for all project frameworks.
-                        if (ProjectFrameworks.All(e => PackageSpecificWarningProperties.Contains(message.Code, message.LibraryId, e)))
+                        if (ProjectFrameworks.Count > 0 &&
+                            ProjectFrameworks.All(e => PackageSpecificWarningProperties.Contains(message.Code, message.LibraryId, e)))
                         {
                             return true;
                         }

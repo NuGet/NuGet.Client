@@ -696,7 +696,7 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
-        public void CollectorLogger_DoesNotLogsWarningsForPackageSpecificNoWarnSetForGlobalTFM()
+        public void CollectorLogger_DoesNotLogsWarningsForPackageSpecificNoWarnSetForGlobalTfmWithFullTfmMatch()
         {
             // Arrange
             var libraryId = "test_library";
@@ -714,7 +714,8 @@ namespace NuGet.Commands.Test
                 WarningPropertiesCollection = new WarningPropertiesCollection()
                 {
                     ProjectWideWarningProperties = new WarningProperties(warnAsErrorSet, noWarnSet, allWarningsAsErrors),
-                    PackageSpecificWarningProperties = packageSpecificWarningProperties
+                    PackageSpecificWarningProperties = packageSpecificWarningProperties,
+                    ProjectFrameworks = new List<NuGetFramework> { targetFramework }
                 }
             };
 
@@ -735,7 +736,49 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
-        public void CollectorLogger_DoesNotLogsWarningsForPackageSpecificNoWarnSetWithMultipleEntriesForGlobalTFM()
+        public void CollectorLogger_DoesNotLogsWarningsForPackageSpecificNoWarnSetForGlobalTfmWithPartialTfmMatch()
+        {
+            // Arrange
+            var libraryId = "test_library";
+            var frameworkString = "net45";
+            var targetFramework = NuGetFramework.Parse(frameworkString);
+            var netcoreFrameworkString = "netcoreapp1.0";
+            var netcoreTargetFramework = NuGetFramework.Parse(netcoreFrameworkString);
+            var noWarnSet = new HashSet<NuGetLogCode> { };
+            var warnAsErrorSet = new HashSet<NuGetLogCode> { };
+            var allWarningsAsErrors = false;
+            var packageSpecificWarningProperties = new PackageSpecificWarningProperties();
+            packageSpecificWarningProperties.Add(NuGetLogCode.NU1500, libraryId, targetFramework);
+
+            var innerLogger = new Mock<ILogger>();
+            var collector = new RestoreCollectorLogger(innerLogger.Object)
+            {
+                WarningPropertiesCollection = new WarningPropertiesCollection()
+                {
+                    ProjectWideWarningProperties = new WarningProperties(warnAsErrorSet, noWarnSet, allWarningsAsErrors),
+                    PackageSpecificWarningProperties = packageSpecificWarningProperties,
+                    ProjectFrameworks = new List<NuGetFramework> { targetFramework, netcoreTargetFramework }
+                }
+            };
+
+            // Act
+            collector.Log(new RestoreLogMessage(LogLevel.Debug, "Debug") { ShouldDisplay = true });
+            collector.Log(new RestoreLogMessage(LogLevel.Verbose, "Verbose") { ShouldDisplay = true });
+            collector.Log(new RestoreLogMessage(LogLevel.Information, "Information") { ShouldDisplay = true });
+            collector.Log(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1500, "Warning", libraryId));
+            collector.Log(new RestoreLogMessage(LogLevel.Error, NuGetLogCode.NU1000, "Error") { ShouldDisplay = true });
+
+            // Assert
+            VerifyInnerLoggerCalls(innerLogger, LogLevel.Debug, "Debug", Times.Once());
+            VerifyInnerLoggerCalls(innerLogger, LogLevel.Verbose, "Verbose", Times.Once());
+            VerifyInnerLoggerCalls(innerLogger, LogLevel.Information, "Information", Times.Once());
+            VerifyInnerLoggerCalls(innerLogger, LogLevel.Warning, "Warning", Times.Once());
+            VerifyInnerLoggerCalls(innerLogger, LogLevel.Error, "Warning", Times.Never());
+            VerifyInnerLoggerCalls(innerLogger, LogLevel.Error, "Error", Times.Once());
+        }
+
+        [Fact]
+        public void CollectorLogger_DoesNotLogsWarningsForPackageSpecificNoWarnSetWithMultipleEntriesForGlobalTfmWithFullTfmMatch()
         {
             // Arrange
             var libraryId = "test_library";
@@ -755,7 +798,8 @@ namespace NuGet.Commands.Test
                 WarningPropertiesCollection = new WarningPropertiesCollection()
                 {
                     ProjectWideWarningProperties = new WarningProperties(warnAsErrorSet, noWarnSet, allWarningsAsErrors),
-                    PackageSpecificWarningProperties = packageSpecificWarningProperties
+                    PackageSpecificWarningProperties = packageSpecificWarningProperties,
+                    ProjectFrameworks = new List<NuGetFramework> { targetFramework }
                 }
             };
 
@@ -773,6 +817,54 @@ namespace NuGet.Commands.Test
             VerifyInnerLoggerCalls(innerLogger, LogLevel.Verbose, "Verbose", Times.Once());
             VerifyInnerLoggerCalls(innerLogger, LogLevel.Information, "Information", Times.Once());
             VerifyInnerLoggerCalls(innerLogger, LogLevel.Warning, "Warning", Times.Never());
+            VerifyInnerLoggerCalls(innerLogger, LogLevel.Error, "Warning", Times.Never());
+            VerifyInnerLoggerCalls(innerLogger, LogLevel.Error, "Error", Times.Once());
+        }
+
+        [Fact]
+        public void CollectorLogger_DoesNotLogsWarningsForPackageSpecificNoWarnSetWithMultipleEntriesForGlobalTfmWithPartialTfmMatch()
+        {
+            // Arrange
+            var libraryId = "test_library";
+            var frameworkString = "net45";
+            var targetFramework = NuGetFramework.Parse(frameworkString);
+            var netcoreFrameworkString = "netcoreapp1.0";
+            var netcoreTargetFramework = NuGetFramework.Parse(netcoreFrameworkString);
+            var noWarnSet = new HashSet<NuGetLogCode> { };
+            var warnAsErrorSet = new HashSet<NuGetLogCode> { };
+            var allWarningsAsErrors = false;
+            var packageSpecificWarningProperties = new PackageSpecificWarningProperties();
+            packageSpecificWarningProperties.Add(NuGetLogCode.NU1500, libraryId, targetFramework);
+            packageSpecificWarningProperties.Add(NuGetLogCode.NU1601, libraryId, targetFramework);
+            packageSpecificWarningProperties.Add(NuGetLogCode.NU1605, libraryId, targetFramework);
+
+            var innerLogger = new Mock<ILogger>();
+            var collector = new RestoreCollectorLogger(innerLogger.Object)
+            {
+                WarningPropertiesCollection = new WarningPropertiesCollection()
+                {
+                    ProjectWideWarningProperties = new WarningProperties(warnAsErrorSet, noWarnSet, allWarningsAsErrors),
+                    PackageSpecificWarningProperties = packageSpecificWarningProperties,
+                    ProjectFrameworks = new List<NuGetFramework> { targetFramework, netcoreTargetFramework }
+                }
+            };
+
+            // Act
+            collector.Log(new RestoreLogMessage(LogLevel.Debug, "Debug") { ShouldDisplay = true });
+            collector.Log(new RestoreLogMessage(LogLevel.Verbose, "Verbose") { ShouldDisplay = true });
+            collector.Log(new RestoreLogMessage(LogLevel.Information, "Information") { ShouldDisplay = true });
+            collector.Log(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1500, "Warning", libraryId));
+            collector.Log(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1601, "Warning", libraryId));
+            collector.Log(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1605, "Warning", libraryId));
+            collector.Log(new RestoreLogMessage(LogLevel.Error, NuGetLogCode.NU1000, "Error") { ShouldDisplay = true });
+
+            // Assert
+            VerifyInnerLoggerCalls(innerLogger, LogLevel.Debug, "Debug", Times.Once());
+            VerifyInnerLoggerCalls(innerLogger, LogLevel.Verbose, "Verbose", Times.Once());
+            VerifyInnerLoggerCalls(innerLogger, LogLevel.Information, "Information", Times.Once());
+            VerifyInnerLoggerCalls(innerLogger, LogLevel.Warning, "Warning", Times.Once(), NuGetLogCode.NU1500);
+            VerifyInnerLoggerCalls(innerLogger, LogLevel.Warning, "Warning", Times.Once(), NuGetLogCode.NU1601);
+            VerifyInnerLoggerCalls(innerLogger, LogLevel.Warning, "Warning", Times.Once(), NuGetLogCode.NU1605);
             VerifyInnerLoggerCalls(innerLogger, LogLevel.Error, "Warning", Times.Never());
             VerifyInnerLoggerCalls(innerLogger, LogLevel.Error, "Error", Times.Once());
         }
