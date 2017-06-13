@@ -267,7 +267,7 @@ namespace NuGet.Commands
             {
                 if (noOp) // Only if the hash matches, then load the lock file. This is a performance hit, so we need to delay it as much as possible.
                 { 
-                    _request.ExistingLockFile = LockFileUtilities.SafeGetLockFile(_request.LockFilePath, _request.Log);
+                    _request.ExistingLockFile = LockFileUtilities.GetLockFile(_request.LockFilePath, _request.Log);
                 }
                 else
                 {

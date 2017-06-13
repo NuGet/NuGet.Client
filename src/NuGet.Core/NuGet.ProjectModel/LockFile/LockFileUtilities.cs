@@ -11,7 +11,7 @@ namespace NuGet.ProjectModel
 {
     public static class LockFileUtilities
     {
-        public static LockFile SafeGetLockFile(string lockFilePath, Common.ILogger logger)
+        public static LockFile GetLockFile(string lockFilePath, Common.ILogger logger)
         {
             LockFile lockFile = null;
 
