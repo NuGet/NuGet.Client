@@ -9,6 +9,7 @@ using FluentAssertions;
 using Newtonsoft.Json.Linq;
 using NuGet.Frameworks;
 using NuGet.Packaging;
+using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
@@ -4694,6 +4695,100 @@ namespace NuGet.CommandLine.Test
                 Directory.GetDirectories(expectedFolder).Should().NotBeEmpty();
                 Directory.Exists(unexpectedFolder).Should().BeFalse();
                 Directory.GetDirectories(pathContext.UserPackagesFolder).Should().BeEmpty();
+            }
+        }
+
+        [Fact]
+        public async Task RestoreNetCore_VerifyAdditionalSourcesAppliedToTools()
+        {
+            // Arrange
+            using (var extraSource = TestDirectory.Create())
+            using (var extraFallback = TestDirectory.Create())
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var netcoreapp2 = NuGetFramework.Parse("netcoreapp2.0");
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                    "a",
+                    pathContext.SolutionRoot,
+                    netcoreapp2);
+
+                projectA.Properties.Add("RestoreAdditionalProjectSources", extraSource.Path);
+                projectA.Properties.Add("RestoreAdditionalProjectFallbackFolders", extraFallback.Path);
+
+                var packageM = new SimpleTestPackageContext()
+                {
+                    Id = "m",
+                    Version = "1.0.0",
+                    PackageType = PackageType.DotnetCliTool
+                };
+
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0",
+                    PackageType = PackageType.DotnetCliTool
+                };
+
+                var packageY = new SimpleTestPackageContext()
+                {
+                    Id = "y",
+                    Version = "1.0.0",
+                    PackageType = PackageType.DotnetCliTool
+                };
+
+                var packageZ = new SimpleTestPackageContext()
+                {
+                    Id = "z",
+                    Version = "1.0.0",
+                    PackageType = PackageType.DotnetCliTool
+                };
+
+                projectA.DotnetCLIToolReferences.Add(packageM);
+                projectA.DotnetCLIToolReferences.Add(packageX);
+                projectA.DotnetCLIToolReferences.Add(packageY);
+                projectA.DotnetCLIToolReferences.Add(packageZ);
+
+
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+
+                // M is only in the fallback folder
+                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                    pathContext.FallbackFolder,
+                    PackageSaveMode.Defaultv3,
+                    packageM);
+
+                // X is only in the source
+                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX);
+
+                // Y is only in the extra source
+                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                    extraSource,
+                    PackageSaveMode.Defaultv3,
+                    packageY);
+
+                // Z is only in the extra fallback
+                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                    extraFallback,
+                    PackageSaveMode.Defaultv3,
+                    packageZ);
+
+                // Act
+                var r = Util.RestoreSolution(pathContext);
+
+                // Assert
+                Directory.Exists(new ToolPathResolver(pathContext.UserPackagesFolder).GetToolDirectoryPath(packageM.Id, NuGetVersion.Parse(packageM.Version), netcoreapp2));
+                Directory.Exists(new ToolPathResolver(pathContext.UserPackagesFolder).GetToolDirectoryPath(packageX.Id, NuGetVersion.Parse(packageX.Version), netcoreapp2));
+                Directory.Exists(new ToolPathResolver(pathContext.UserPackagesFolder).GetToolDirectoryPath(packageY.Id, NuGetVersion.Parse(packageY.Version), netcoreapp2));
+                Directory.Exists(new ToolPathResolver(pathContext.UserPackagesFolder).GetToolDirectoryPath(packageZ.Id, NuGetVersion.Parse(packageZ.Version), netcoreapp2));
+
             }
         }
 

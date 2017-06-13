@@ -201,15 +201,11 @@ namespace NuGet.SolutionRestoreManager
                 var sources = GetRestoreSources(projectRestoreInfo.TargetFrameworks)
                              .Select(e => new PackageSource(e))
                              .ToList();
-                var projectWideWarningProperties = MSBuildRestoreUtility.GetWarningProperties(
-                treatWarningsAsErrors: GetNonEvaluatedPropertyOrNull(projectRestoreInfo.TargetFrameworks, TreatWarningsAsErrors, e => e),
-                    warningsAsErrors: GetNonEvaluatedPropertyOrNull(projectRestoreInfo.TargetFrameworks, WarningsAsErrors, e => e),
-                    noWarn: GetNonEvaluatedPropertyOrNull(projectRestoreInfo.TargetFrameworks, NoWarn, e => e));
 
                 projectRestoreInfo
                     .ToolReferences
                     .Cast<IVsReferenceItem>()
-                    .Select(r => ToToolPackageSpec(projectNames, r, toolFramework, packagesPath, fallbackFolders, sources, projectWideWarningProperties))
+                    .Select(r => ToToolPackageSpec(projectNames, r, toolFramework, packagesPath, fallbackFolders, sources, null))
                     .ToList()
                     .ForEach(ts =>
                     {
