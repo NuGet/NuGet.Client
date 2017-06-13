@@ -107,7 +107,7 @@ namespace NuGet.ProjectModel.Test
             var expected = Path.Combine(
                 "packages",
                 ".tools",
-                package,
+                "packagea",
                 "3.1.4-beta",
                 "netstandard1.3",
                 "packagea.cache.json");
