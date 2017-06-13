@@ -218,7 +218,7 @@ namespace NuGet.Commands
         /// This method will resolve the cache/lock file paths for the tool if available in the cache
         /// This method will set the CacheFilePath and the LockFilePath in the RestoreMetadat if a matching tool is available
         /// </summary>
-        public static void ResolveBestMatchingToolPathIfAvailable(RestoreRequest request)
+        public static void UpdateRequestBestMatchingToolPathsIfAvailable(RestoreRequest request)
         {
             if (request.ProjectStyle == ProjectStyle.DotnetCliTool)
             {

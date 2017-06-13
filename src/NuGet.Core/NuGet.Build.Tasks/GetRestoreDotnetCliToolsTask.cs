@@ -102,8 +102,7 @@ namespace NuGet.Build.Tasks
                 properties.Add("ProjectStyle", ProjectStyle.DotnetCliTool.ToString());
                 BuildTasksUtility.CopyPropertyIfExists(msbuildItem, properties, "Version");
 
-                string value;
-                properties.TryGetValue("Version", out value);
+                properties.TryGetValue("Version", out string value);
                 var uniqueName = ToolRestoreUtility.GetUniqueName(msbuildItem.ItemSpec, ToolFramework, VersionRange.Parse(value));
                 properties.Add("ProjectUniqueName", uniqueName);
 

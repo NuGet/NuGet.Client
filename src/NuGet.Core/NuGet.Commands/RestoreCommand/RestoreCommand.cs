@@ -239,7 +239,7 @@ namespace NuGet.Commands
             var newDgSpecHash = NoOpRestoreUtilities.GetHash(_request);
 
             if(_request.ProjectStyle == ProjectStyle.DotnetCliTool && _request.AllowNoOp) { // No need to attempt to resolve the tool if no-op is not allowed.
-                NoOpRestoreUtilities.ResolveBestMatchingToolPathIfAvailable(_request);
+                NoOpRestoreUtilities.UpdateRequestBestMatchingToolPathsIfAvailable(_request);
             }
 
             if (_request.AllowNoOp && File.Exists(_request.Project.RestoreMetadata.CacheFilePath))
