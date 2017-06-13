@@ -71,7 +71,7 @@ namespace NuGet.Commands
         {
             return Path.Combine(
                 toolDirectory,
-                 $"{toolName.ToLowerInvariant()}.nuget.cache"); // TODO NK - Add a test for this
+                 $"{toolName.ToLowerInvariant()}.nuget.cache");
         }
 
         /// <summary>
