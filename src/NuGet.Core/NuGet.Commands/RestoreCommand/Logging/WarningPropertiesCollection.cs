@@ -65,15 +65,14 @@ namespace NuGet.Commands
                     }
                     else
                     {
-                        message.TargetGraphs = message.TargetGraphs.Where(e => !PackageSpecificWarningProperties.Contains(message.Code, message.LibraryId, GetNuGetFramework(e))).ToList();
+                        message.TargetGraphs = message.TargetGraphs
+                            .Where(e => !PackageSpecificWarningProperties.Contains(message.Code, message.LibraryId, GetNuGetFramework(e))).ToList();
 
                         if (message.TargetGraphs.Count == 0)
                         {
                             return true;
                         }
                     }
-
-                   
 
                 }
 

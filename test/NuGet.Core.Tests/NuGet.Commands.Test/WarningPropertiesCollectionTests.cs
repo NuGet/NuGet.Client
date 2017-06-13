@@ -331,9 +331,9 @@ namespace NuGet.Commands.Test
             {
                 ProjectWideWarningProperties = new WarningProperties(warnAsErrorSet, noWarnSet, allWarningsAsErrors),
                 PackageSpecificWarningProperties = packageSpecificWarningProperties,
-                ProjectFrameworks = new List<string>
+                ProjectFrameworks = new List<NuGetFramework>
                 {
-                    frameworkString
+                    targetFramework
                 }
             };
 
@@ -368,9 +368,9 @@ namespace NuGet.Commands.Test
             {
                 ProjectWideWarningProperties = new WarningProperties(warnAsErrorSet, noWarnSet, allWarningsAsErrors),
                 PackageSpecificWarningProperties = packageSpecificWarningProperties,
-                ProjectFrameworks = new List<string>
+                ProjectFrameworks = new List<NuGetFramework>
                 {
-                    frameworkString
+                    targetFramework
                 }
             };
 
