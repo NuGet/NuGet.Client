@@ -148,7 +148,7 @@ Invoke-BuildStep 'Running Restore for VS 15.0' {
 Invoke-BuildStep $VS15Message {
 
     # Build and (If not $SkipUnitTest) Pack, Core unit tests, and Unit tests for VS 15.0
-    Trace-Log ". `"$MSBuildExe`" build\build.proj /t:$VS15Target /p:Configuration=$Configuration /p:ReleaseLabel=$ReleaseLabel /p:BuildNumber=$BuildNumber /v:m /m:1"
+Trace-Log ". `"$MSBuildExe`" build\build.proj /t:$VS15Target /p:Configuration=$Configuration /p:ReleaseLabel=$ReleaseLabel /p:BuildNumber=$BuildNumber /v:m /m:1"
     & $MSBuildExe build\build.proj /t:$VS15Target /p:Configuration=$Configuration /p:ReleaseLabel=$ReleaseLabel /p:BuildNumber=$BuildNumber /v:m /m:1
 
     if (-not $?)
@@ -159,24 +159,6 @@ Invoke-BuildStep $VS15Message {
 } `
 -skip:$SkipVS15 `
 -ev +BuildErrors
-
-# building the vs15 nuget.tools.vsix for vs insertion
-# This step relies on the earlier restore for VS15
-Invoke-BuildStep 'Building nuget.tools.vsix for Insertion' {
-
-    # Build and (If not $SkipUnitTest) Pack, Core unit tests, and Unit tests for VS 15.0
-    Trace-Log ". `"$MSBuildExe`" build\build.proj /t:BuildVS15 /p:Configuration=$Configuration /p:ReleaseLabel=$ReleaseLabel /p:BuildNumber=$BuildNumber /p:ExcludeTestProjects=true /p:IsInsertable=true /v:m /m:1"
-    & $MSBuildExe build\build.proj /t:BuildVS15 /p:Configuration=$Configuration /p:ReleaseLabel=$ReleaseLabel /p:BuildNumber=$BuildNumber /p:ExcludeTestProjects=true /p:IsInsertable=true /v:m /m:1
-
-    if (-not $?)
-    {
-        Write-Error "Packing VS15 RTM build failed!"
-        exit 1
-    }
-} `
--skip:($SkipVS15 -or (-not $CI))`
--ev +BuildErrors
-
 
 Invoke-BuildStep 'Running Restore for VS 14.0' {
 
