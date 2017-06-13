@@ -93,7 +93,7 @@ namespace NuGet.Common.Test
         [Theory]
         [InlineData(LogLevel.Error, NuGetLogCode.NU1000, "Error string")]
         [InlineData(LogLevel.Warning, NuGetLogCode.NU1500, "Warning string")]
-        [InlineData(LogLevel.Debug, NuGetLogCode.NU1500, "Debug string")]
+        [InlineData(LogLevel.Debug, NuGetLogCode.Undefined, "Debug string")]
         public void RestoreLogMessage_TestConstructorWithoutCode(LogLevel level, NuGetLogCode expectedCode, string message)
         {
             // Arrange & Act
