@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -73,7 +73,7 @@ namespace NuGet.ProjectModel
 
         public LockFile SafeRead(string filePath, ILogger log)
         {
-            if (filePath == null)
+            if (string.IsNullOrEmpty(filePath))
             {
                 throw new ArgumentNullException(nameof(filePath));
             }

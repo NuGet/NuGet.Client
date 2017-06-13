@@ -29,7 +29,7 @@ namespace NuGet.Commands
         /// <summary>
         /// The cache file path is $(BaseIntermediateOutputPath)\$(project).nuget.cache
         /// </summary>
-        private static string GetPJorPRCacheFilePath(RestoreRequest request)
+        private static string GetBuildIntegratedProjectCacheFile(RestoreRequest request)
         {
             string cacheFilePath = null;
 
@@ -96,7 +96,7 @@ namespace NuGet.Commands
                     || request.ProjectStyle == ProjectStyle.Standalone
                     || request.ProjectStyle == ProjectStyle.ProjectJson)
                 {
-                    projectCacheFilePath = GetPJorPRCacheFilePath(request);
+                    projectCacheFilePath = GetBuildIntegratedProjectCacheFile(request);
                 }
                 else if(request.ProjectStyle == ProjectStyle.DotnetCliTool)
                 {
@@ -201,8 +201,6 @@ namespace NuGet.Commands
         /// Calculates the hash value, used for the no-op optimization, for the request
         /// This methods handles the deduping of tools
         /// </summary>
-        /// <param name="request"></param>
-        /// <returns></returns>
         public static string GetHash(RestoreRequest request)
         {
             if (request.Project.RestoreMetadata.ProjectStyle == ProjectStyle.DotnetCliTool)
@@ -219,8 +217,8 @@ namespace NuGet.Commands
 
         /// <summary>
         /// This method will resolve the cache/lock file paths for the tool if available in the cache
+        /// This method will set the CacheFilePath and the LockFilePath in the RestoreMetadat if a matching tool is available
         /// </summary>
-        /// <param name="request"></param>
         public static void ResolveBestMatchingToolPathIfAvailable(RestoreRequest request)
         {
             if (request.ProjectStyle == ProjectStyle.DotnetCliTool)

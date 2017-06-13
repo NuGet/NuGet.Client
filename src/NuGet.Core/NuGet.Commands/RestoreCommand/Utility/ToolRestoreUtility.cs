@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -19,7 +19,7 @@ namespace NuGet.Commands
         /// its own project. For now, we always restore for a null runtime and a single
         /// constant framework.
         /// </summary>
-        public static PackageSpec GetSpec(string projectFilePath, string id, VersionRange versionRange, NuGetFramework framework, string packagesPath, List<string> fallbackFolders, List<PackageSource> sources, WarningProperties projectWideWarningProperties)
+        public static PackageSpec GetSpec(string projectFilePath, string id, VersionRange versionRange, NuGetFramework framework, string packagesPath, IList<string> fallbackFolders, IList<PackageSource> sources, WarningProperties projectWideWarningProperties)
 
         {
             var name = $"{id}-{framework.Framework}-{versionRange.ToNormalizedString()}";

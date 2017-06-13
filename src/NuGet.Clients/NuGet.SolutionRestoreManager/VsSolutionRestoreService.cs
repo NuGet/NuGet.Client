@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -19,6 +19,7 @@ using NuGet.ProjectModel;
 using NuGet.RuntimeModel;
 using NuGet.Versioning;
 using NuGet.VisualStudio;
+using NuGet.Shared;
 using static NuGet.Frameworks.FrameworkConstants;
 
 namespace NuGet.SolutionRestoreManager
@@ -217,7 +218,7 @@ namespace NuGet.SolutionRestoreManager
             return dgSpec;
         }
 
-        private static PackageSpec ToToolPackageSpec(ProjectNames projectNames, IVsReferenceItem item, NuGetFramework toolFramework, string packagesPath, List<string> fallbackFolders, List<PackageSource> sources, WarningProperties projectWideWarningProperties)
+        private static PackageSpec ToToolPackageSpec(ProjectNames projectNames, IVsReferenceItem item, NuGetFramework toolFramework, string packagesPath, IList<string> fallbackFolders, IList<PackageSource> sources, WarningProperties projectWideWarningProperties)
         {
             return ToolRestoreUtility.GetSpec(projectNames.FullName, item.Name, GetVersionRange(item), toolFramework, packagesPath, fallbackFolders, sources, projectWideWarningProperties);
         }
