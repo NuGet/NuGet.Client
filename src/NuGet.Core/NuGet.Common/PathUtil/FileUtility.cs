@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -187,6 +187,30 @@ namespace NuGet.Common
                 }
             }
         }
+
+        public static T SafeRead<T>(string filePath, Func<FileStream, string, T> read)
+        {
+            var retries = MaxTries;
+            for (var i = 1; i <= retries; i++)
+            {
+                // Ignore exceptions for the first attempts
+                try
+                {
+                    var share = FileShare.ReadWrite | FileShare.Delete;
+                    using (var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, share))
+                    {
+                        return read(stream, filePath);
+                    }
+                }
+                catch (Exception ex) when ((i < retries) && (ex is UnauthorizedAccessException || ex is IOException))
+                {
+                    Sleep(100);
+                }
+            }
+            // This will never reached, but the compiler can't detect that 
+            return default(T);
+        }
+
 
         private static void Sleep(int ms)
         {

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -19,6 +19,7 @@ using NuGet.ProjectModel;
 using NuGet.RuntimeModel;
 using NuGet.Versioning;
 using NuGet.VisualStudio;
+using NuGet.Shared;
 using static NuGet.Frameworks.FrameworkConstants;
 
 namespace NuGet.SolutionRestoreManager
@@ -196,11 +197,15 @@ namespace NuGet.SolutionRestoreManager
                     .Any(tfm => tfm.Version >= Version20);
                 var toolFramework = isNetCore20 ? CommonFrameworks.NetCoreApp20 : CommonFrameworks.NetCoreApp10;
 
+                var packagesPath = GetRestoreProjectPath(projectRestoreInfo.TargetFrameworks);
+                var fallbackFolders = GetRestoreFallbackFolders(projectRestoreInfo.TargetFrameworks).AsList();
+                var sources = GetRestoreSources(projectRestoreInfo.TargetFrameworks)
+                             .Select(e => new PackageSource(e)).ToList();
+
                 projectRestoreInfo
                     .ToolReferences
                     .Cast<IVsReferenceItem>()
-                    .Select(r => ToToolPackageSpec(projectNames, r, toolFramework))
-                    .ToList()
+                    .Select(r => ToToolPackageSpec(projectNames, r, toolFramework, packagesPath, fallbackFolders, sources, null))
                     .ForEach(ts =>
                     {
                         dgSpec.AddRestore(ts.RestoreMetadata.ProjectUniqueName);
@@ -211,9 +216,9 @@ namespace NuGet.SolutionRestoreManager
             return dgSpec;
         }
 
-        private static PackageSpec ToToolPackageSpec(ProjectNames projectNames, IVsReferenceItem item, NuGetFramework toolFramework)
+        private static PackageSpec ToToolPackageSpec(ProjectNames projectNames, IVsReferenceItem item, NuGetFramework toolFramework, string packagesPath, IList<string> fallbackFolders, IList<PackageSource> sources, WarningProperties projectWideWarningProperties)
         {
-            return ToolRestoreUtility.GetSpec(projectNames.FullName, item.Name, GetVersionRange(item), toolFramework);
+            return ToolRestoreUtility.GetSpec(projectNames.FullName, item.Name, GetVersionRange(item), toolFramework, packagesPath, fallbackFolders, sources, projectWideWarningProperties);
         }
 
         private static PackageSpec ToPackageSpec(ProjectNames projectNames, IVsProjectRestoreInfo projectRestoreInfo)
@@ -268,7 +273,7 @@ namespace NuGet.SolutionRestoreManager
                     // Read project properties for settings. ISettings values will be applied later since
                     // this value is put in the nomination cache and ISettings could change.
                     PackagesPath = GetRestoreProjectPath(projectRestoreInfo.TargetFrameworks),
-                    FallbackFolders = GetRestoreFallbackFolders(projectRestoreInfo.TargetFrameworks).ToList(),
+                    FallbackFolders = GetRestoreFallbackFolders(projectRestoreInfo.TargetFrameworks).AsList(),
                     Sources = GetRestoreSources(projectRestoreInfo.TargetFrameworks)
                                     .Select(e => new PackageSource(e))
                                     .ToList(),
@@ -317,16 +322,14 @@ namespace NuGet.SolutionRestoreManager
             return sources;
         }
 
-        private static string[] GetRestoreFallbackFolders(IVsTargetFrameworks tfms)
+        private static IEnumerable<string> GetRestoreFallbackFolders(IVsTargetFrameworks tfms)
         {
             var folders = MSBuildStringUtility.Split(GetNonEvaluatedPropertyOrNull(tfms, RestoreFallbackFolders, e => e));
 
             folders = HandleClear(folders);
 
             var additional = MSBuildStringUtility.Split(GetNonEvaluatedPropertyOrNull(tfms, RestoreAdditionalProjectFallbackFolders, e => e));
-            folders = folders.Concat(additional).ToArray();
-
-            return folders;
+            return folders.Concat(additional);
         }
 
         private static string[] HandleClear(string[] input)

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -465,7 +465,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
                     waitForExit: true);
 
                 // Assert
-                Assert.Equal(0, r.Item1);
+                Assert.True(0 == r.Item1, r.Item2);
                 var packageFileA = Path.Combine(workingPath, @"packages", "packageA.1.1.0", "packageA.1.1.0.nupkg");
                 var packageFileB = Path.Combine(workingPath, @"packages", "packageB.2.2.0", "packageB.2.2.0.nupkg");
                 Assert.True(File.Exists(packageFileA));
@@ -498,7 +498,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
                     waitForExit: true);
 
                 // Assert
-                Assert.Equal(0, r.Item1);
+                Assert.True(0 == r.Item1, r.Item2);
                 Assert.True(r.Item2.Contains($"Using Msbuild from '{msbuildPath}'."));
                 var packageFileA = Path.Combine(workingPath, @"packages", "packageA.1.1.0", "packageA.1.1.0.nupkg");
                 var packageFileB = Path.Combine(workingPath, @"packages", "packageB.2.2.0", "packageB.2.2.0.nupkg");

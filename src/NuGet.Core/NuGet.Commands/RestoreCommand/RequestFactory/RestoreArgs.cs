@@ -137,7 +137,7 @@ namespace NuGet.Commands
                 //DGSpecSources should always match the Sources
                 if (!sourceObjects.ContainsKey(sourceUri))
                 {
-                    Log.LogDebug($"{sourceUri} is in the RestoreArgs Sources but in the passed in dgSpecSources");
+                    Log.LogDebug($"{sourceUri} is in the RestoreArgs Sources but not in the passed in dgSpecSources");
                     sourceObjects[sourceUri] = new PackageSource(sourceUri);
                 }
             }

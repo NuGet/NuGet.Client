@@ -127,11 +127,12 @@ namespace NuGet.Commands
             RestoreArgs restoreArgs,
             DependencyGraphSpec projectDgSpec)
         {
+            var projectPackageSpec = projectDgSpec.GetProjectSpec(projectNameToRestore);
             //fallback paths, global packages path and sources need to all be passed in the dg spec
-            var fallbackPaths = projectDgSpec.GetProjectSpec(projectNameToRestore).RestoreMetadata.FallbackFolders;
-            var globalPath = GetPackagesPath(restoreArgs, projectDgSpec.GetProjectSpec(projectNameToRestore));
-            var settings = Settings.LoadSettingsGivenConfigPaths(projectDgSpec.GetProjectSpec(projectNameToRestore).RestoreMetadata.ConfigFilePaths);
-            var sources = restoreArgs.GetEffectiveSources(settings, projectDgSpec.GetProjectSpec(projectNameToRestore).RestoreMetadata.Sources);
+            var fallbackPaths = projectPackageSpec.RestoreMetadata.FallbackFolders;
+            var globalPath = GetPackagesPath(restoreArgs, projectPackageSpec);
+            var settings = Settings.LoadSettingsGivenConfigPaths(projectPackageSpec.RestoreMetadata.ConfigFilePaths);
+            var sources = restoreArgs.GetEffectiveSources(settings, projectPackageSpec.RestoreMetadata.Sources);
 
             var sharedCache = _providerCache.GetOrCreate(
                 globalPath,
@@ -153,7 +154,7 @@ namespace NuGet.Commands
                 ProjectStyle = project.PackageSpec.RestoreMetadata.ProjectStyle, 
                 RestoreOutputPath = project.PackageSpec.RestoreMetadata.ProjectStyle == ProjectStyle.ProjectJson ? rootPath : project.PackageSpec.RestoreMetadata.OutputPath,
                 DependencyGraphSpec = projectDgSpec,
-                BaseIntermediateOutputPath = project.PackageSpec.RestoreMetadata.OutputPath
+                BaseIntermediateOutputPath = projectPackageSpec.RestoreMetadata.OutputPath
             };
             
             var restoreLegacyPackagesDirectory = project.PackageSpec?.RestoreMetadata?.LegacyPackagesDirectory

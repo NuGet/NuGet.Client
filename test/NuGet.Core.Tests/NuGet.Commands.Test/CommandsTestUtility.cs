@@ -46,7 +46,8 @@ namespace NuGet.Commands.Test
                     PreLoadedRequestProviders = new List<IPreLoadedRestoreRequestProvider>()
                     {
                         new DependencyGraphSpecRequestProvider(providerCache, input)
-                    }
+                    },
+                    AllowNoOp = true
                 };
 
                 var summaries = await RestoreRunner.RunAsync(restoreContext);

@@ -1,11 +1,9 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
-using System.Text;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NuGet.Common;
@@ -17,19 +15,6 @@ namespace NuGet.ProjectModel
         private const string VersionProperty = "version";
         private const string DGSpecHashProperty = "dgSpecHash";
         private const string SuccessProperty = "success";
-
-        public static CacheFile Load(string filePath)
-        {
-            return Load(filePath, NullLogger.Instance);
-        }
-
-        public static CacheFile Load(string filePath, ILogger log)
-        {
-            using (var stream = File.OpenRead(filePath))
-            {
-                return Read(stream, log, filePath);
-            }
-        }
 
         public static CacheFile Read(Stream stream, ILogger log, string path)
         {

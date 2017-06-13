@@ -1,9 +1,10 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.ProjectModel;
@@ -18,9 +19,10 @@ namespace NuGet.Commands
         /// its own project. For now, we always restore for a null runtime and a single
         /// constant framework.
         /// </summary>
-        public static PackageSpec GetSpec(string projectFilePath, string id, VersionRange versionRange, NuGetFramework framework)
+        public static PackageSpec GetSpec(string projectFilePath, string id, VersionRange versionRange, NuGetFramework framework, string packagesPath, IList<string> fallbackFolders, IList<PackageSource> sources, WarningProperties projectWideWarningProperties)
+
         {
-            var name = $"{id}-{Guid.NewGuid().ToString()}";
+            var name = GetUniqueName(id,framework,versionRange);
 
             return new PackageSpec()
             {
@@ -46,11 +48,26 @@ namespace NuGet.Commands
                     ProjectStyle = ProjectStyle.DotnetCliTool,
                     ProjectName = name,
                     ProjectUniqueName = name,
-                    ProjectPath = projectFilePath
+                    ProjectPath = projectFilePath,
+                    PackagesPath = packagesPath,
+                    FallbackFolders = fallbackFolders,
+                    Sources = sources,
+                    ProjectWideWarningProperties = projectWideWarningProperties
                 }
             };
         }
 
+        public static string GetUniqueName(string id, NuGetFramework framework, VersionRange versionRange)
+        {
+            return GetUniqueName(id, framework.Framework, versionRange);
+        }
+
+        public static string GetUniqueName(string id, string framework, VersionRange versionRange)
+        {
+            return $"{id}-{framework}-{versionRange.ToNormalizedString()}".ToLowerInvariant();
+        }
+
+        
         /// <summary>
         /// Only one output can win per packages folder/version range. Between colliding requests take
         /// the intersection of the inputs used.

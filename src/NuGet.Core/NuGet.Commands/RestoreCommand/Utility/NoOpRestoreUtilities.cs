@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -14,7 +14,7 @@ using NuGet.ProjectModel;
 
 namespace NuGet.Commands
 {
-    internal class NoOpRestoreUtilities
+    public class NoOpRestoreUtilities
     {
 
         /// <summary>
@@ -23,13 +23,13 @@ namespace NuGet.Commands
         /// </summary>
         internal static bool IsNoOpSupported(RestoreRequest request)
         {
-            return request.DependencyGraphSpec != null && request.ProjectStyle != ProjectStyle.DotnetCliTool;
+            return request.DependencyGraphSpec != null;
         }
 
         /// <summary>
         /// The cache file path is $(BaseIntermediateOutputPath)\$(project).nuget.cache
         /// </summary>
-        internal static string GetPJorPRCacheFilePath(RestoreRequest request)
+        private static string GetBuildIntegratedProjectCacheFile(RestoreRequest request)
         {
             string cacheFilePath = null;
 
@@ -48,8 +48,7 @@ namespace NuGet.Commands
 
         internal static string GetToolCacheFilePath(RestoreRequest request, LockFile lockFile)
         {
-
-            if (request.ProjectStyle != ProjectStyle.DotnetCliTool)
+            if (request.ProjectStyle == ProjectStyle.DotnetCliTool && lockFile != null)
             {
                 var toolName = ToolRestoreUtility.GetToolIdOrNullFromSpec(request.Project);
                 var lockFileLibrary = ToolRestoreUtility.GetToolTargetLibrary(lockFile, toolName);
@@ -57,21 +56,36 @@ namespace NuGet.Commands
                 if (lockFileLibrary != null)
                 {
                     var version = lockFileLibrary.Version;
-
                     var toolPathResolver = new ToolPathResolver(request.PackagesDirectory);
-                    var projFileName = Path.GetFileName(request.Project.RestoreMetadata.ProjectPath);
-                    return PathUtility.GetDirectoryName(toolPathResolver.GetLockFilePath(
+
+                    return GetToolCacheFilePath(toolPathResolver.GetToolDirectoryPath(
                         toolName,
                         version,
-                        lockFile.Targets.First().TargetFramework)) + $"{projFileName}.nuget.cache";
+                        lockFile.Targets.First().TargetFramework), toolName);
                 }
             }
             return null;
         }
+
+        public static string GetToolCacheFilePath(string toolDirectory, string toolName)
+        {
+            return Path.Combine(
+                toolDirectory,
+                 $"{toolName.ToLowerInvariant()}.nuget.cache");
+        }
+
         /// <summary>
         /// Evaluate the location of the cache file path, based on ProjectStyle.
         /// </summary>
         internal static string GetCacheFilePath(RestoreRequest request)
+        {
+            return GetCacheFilePath(request, lockFile: null);
+        }
+
+        /// <summary>
+        /// Evaluate the location of the cache file path, based on ProjectStyle.
+        /// </summary>
+        internal static string GetCacheFilePath(RestoreRequest request, LockFile lockFile)
         {
             var projectCacheFilePath = request.Project.RestoreMetadata?.CacheFilePath;
 
@@ -81,7 +95,11 @@ namespace NuGet.Commands
                     || request.ProjectStyle == ProjectStyle.Standalone
                     || request.ProjectStyle == ProjectStyle.ProjectJson)
                 {
-                    projectCacheFilePath = GetPJorPRCacheFilePath(request);
+                    projectCacheFilePath = GetBuildIntegratedProjectCacheFile(request);
+                }
+                else if(request.ProjectStyle == ProjectStyle.DotnetCliTool)
+                {
+                    projectCacheFilePath = GetToolCacheFilePath(request, lockFile);
                 }
             }
             return projectCacheFilePath != null ? Path.GetFullPath(projectCacheFilePath) : null;
@@ -176,6 +194,47 @@ namespace NuGet.Commands
                 }
             }
             return true;
+        }
+
+        /// <summary>
+        /// Calculates the hash value, used for the no-op optimization, for the request
+        /// This methods handles the deduping of tools
+        /// </summary>
+        public static string GetHash(RestoreRequest request)
+        {
+            if (request.Project.RestoreMetadata.ProjectStyle == ProjectStyle.DotnetCliTool)
+            {
+                var uniqueName = request.DependencyGraphSpec.Restore.First();
+                var dgSpec = request.DependencyGraphSpec.WithProjectClosure(uniqueName);
+                dgSpec.GetProjectSpec(uniqueName).RestoreMetadata.ProjectPath = null;
+                dgSpec.GetProjectSpec(uniqueName).FilePath = null;
+                return dgSpec.GetHash();
+            }
+
+            return request.DependencyGraphSpec.GetHash();
+        }
+
+        /// <summary>
+        /// This method will resolve the cache/lock file paths for the tool if available in the cache
+        /// This method will set the CacheFilePath and the LockFilePath in the RestoreMetadat if a matching tool is available
+        /// </summary>
+        public static void UpdateRequestBestMatchingToolPathsIfAvailable(RestoreRequest request)
+        {
+            if (request.ProjectStyle == ProjectStyle.DotnetCliTool)
+            {
+                // Resolve the lock file path if it exists
+                var toolPathResolver = new ToolPathResolver(request.PackagesDirectory);
+                var toolDirectory = toolPathResolver.GetBestToolDirectoryPath(
+                    ToolRestoreUtility.GetToolIdOrNullFromSpec(request.Project),
+                    request.Project.TargetFrameworks.First().Dependencies.First().LibraryRange.VersionRange,
+                    request.Project.TargetFrameworks.SingleOrDefault().FrameworkName);
+
+                if (toolDirectory != null) // Only set the paths if a good enough match was found. 
+                {
+                    request.Project.RestoreMetadata.CacheFilePath = NoOpRestoreUtilities.GetToolCacheFilePath(toolDirectory, ToolRestoreUtility.GetToolIdOrNullFromSpec(request.Project));
+                    request.LockFilePath = toolPathResolver.GetLockFilePath(toolDirectory);
+                }
+            }
         }
     }
 }
