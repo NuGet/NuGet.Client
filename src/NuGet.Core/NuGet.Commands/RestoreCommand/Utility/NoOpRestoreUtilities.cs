@@ -208,16 +208,21 @@ namespace NuGet.Commands
 
                 var uniqueName = request.DependencyGraphSpec.Restore.First();
                 var dgSpec = request.DependencyGraphSpec.WithProjectClosure(uniqueName);
+                var projectSpec = dgSpec.GetProjectSpec(uniqueName);
 
+                // The project path where the tool is declared does not affect restore and is only used for logging and transparency.
                 if (request.Project.RestoreMetadata.ProjectStyle == ProjectStyle.DotnetCliTool)
                 {
-                    dgSpec.GetProjectSpec(uniqueName).RestoreMetadata.ProjectPath = null;
-                    dgSpec.GetProjectSpec(uniqueName).FilePath = null;
+                    projectSpec.RestoreMetadata.ProjectPath = null;
+                    projectSpec.FilePath = null;
                 }
 
+                //Ignore the restore settings for net core projects.
+                //This is set by default in VS while it's not set in commandline.
+                //This causes a discrepancy and the project does not cross-client no - op.MSBuild / NuGet.exe vs VS.
                 if (request.Project.RestoreMetadata.ProjectStyle == ProjectStyle.PackageReference)
                 {
-                    dgSpec.GetProjectSpec(uniqueName).RestoreSettings = null;
+                    projectSpec.RestoreSettings = null;
                 }
                 return dgSpec.GetHash();
             }
