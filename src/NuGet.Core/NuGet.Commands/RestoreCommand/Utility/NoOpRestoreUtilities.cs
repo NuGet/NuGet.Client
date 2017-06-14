@@ -199,15 +199,26 @@ namespace NuGet.Commands
         /// <summary>
         /// Calculates the hash value, used for the no-op optimization, for the request
         /// This methods handles the deduping of tools
+        /// Handles the ignoring of RestoreSettings
         /// </summary>
         public static string GetHash(RestoreRequest request)
         {
-            if (request.Project.RestoreMetadata.ProjectStyle == ProjectStyle.DotnetCliTool)
+            if (request.Project.RestoreMetadata.ProjectStyle == ProjectStyle.DotnetCliTool || request.Project.RestoreMetadata.ProjectStyle == ProjectStyle.PackageReference)
             {
+
                 var uniqueName = request.DependencyGraphSpec.Restore.First();
                 var dgSpec = request.DependencyGraphSpec.WithProjectClosure(uniqueName);
-                dgSpec.GetProjectSpec(uniqueName).RestoreMetadata.ProjectPath = null;
-                dgSpec.GetProjectSpec(uniqueName).FilePath = null;
+
+                if (request.Project.RestoreMetadata.ProjectStyle == ProjectStyle.DotnetCliTool)
+                {
+                    dgSpec.GetProjectSpec(uniqueName).RestoreMetadata.ProjectPath = null;
+                    dgSpec.GetProjectSpec(uniqueName).FilePath = null;
+                }
+
+                if (request.Project.RestoreMetadata.ProjectStyle == ProjectStyle.PackageReference)
+                {
+                    dgSpec.GetProjectSpec(uniqueName).RestoreSettings = null;
+                }
                 return dgSpec.GetHash();
             }
 
