@@ -217,8 +217,8 @@ namespace NuGet.Commands
                     projectSpec.FilePath = null;
                 }
 
-                //Ignore the restore settings for net core projects.
-                //This is set by default in VS while it's not set in commandline.
+                //Ignore the restore settings for package ref projects.
+                //This is set by default for net core projects in VS while it's not set in commandline.
                 //This causes a discrepancy and the project does not cross-client no - op.MSBuild / NuGet.exe vs VS.
                 else if (request.Project.RestoreMetadata.ProjectStyle == ProjectStyle.PackageReference)
                 {
