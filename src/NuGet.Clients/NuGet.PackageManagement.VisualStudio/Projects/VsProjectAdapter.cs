@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -43,9 +43,7 @@ namespace NuGet.PackageManagement.VisualStudio
                     return null;
                 }
 
-                var projectDirectory = Path.GetDirectoryName(FullPath);
-
-                return Path.Combine(projectDirectory, baseIntermediateOutputPath);
+                return Path.Combine(FullPath, baseIntermediateOutputPath);
             }
         }
 
@@ -268,18 +266,6 @@ namespace NuGet.PackageManagement.VisualStudio
         #endregion Constructors
 
         #region Getters
-
-        public async Task<bool> EntityExistsAsync(string filePath)
-        {
-            if (IsDeferred)
-            {
-                return await _workspaceService.EntityExists(filePath);
-            }
-            else
-            {
-                return File.Exists(filePath);
-            }
-        }
 
         public async Task<IEnumerable<string>> GetReferencedProjectsAsync()
         {

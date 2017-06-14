@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -42,14 +42,6 @@ namespace NuGet.PackageManagement.VisualStudio
                     return (IVsSolutionWorkspaceService)serviceProvider.GetService(typeof(SVsSolutionWorkspaceService));
                 },
                 NuGetUIThreadHelper.JoinableTaskFactory);
-        }
-
-        public async Task<bool> EntityExists(string filePath)
-        {
-            var workspace = SolutionWorkspaceService.CurrentWorkspace;
-            var indexService = workspace.GetIndexWorkspaceService();
-            var filePathExists = await indexService.EntityExists(filePath);
-            return filePathExists;
         }
 
         public async Task<IEnumerable<string>> GetProjectReferencesAsync(string projectFilePath)

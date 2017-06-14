@@ -1,16 +1,15 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.ComponentModel.Composition;
-using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft;
 using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Threading;
 using Microsoft.VisualStudio.Utilities;
-using NuGet.Configuration;
 using NuGet.ProjectManagement;
 using NuGet.ProjectModel;
 using NuGet.VisualStudio;
@@ -26,6 +25,7 @@ namespace NuGet.PackageManagement.VisualStudio
     {
         private static readonly string PackageReference = ProjectStyle.PackageReference.ToString();
 
+        private readonly IDeferredProjectWorkspaceService _workspaceService;
         private readonly IVsProjectThreadingService _threadingService;
         private readonly AsyncLazy<IComponentModel> _componentModel;
 
@@ -40,11 +40,14 @@ namespace NuGet.PackageManagement.VisualStudio
         public LegacyPackageReferenceProjectProvider(
             [Import(typeof(SVsServiceProvider))]
             IServiceProvider vsServiceProvider,
+            IDeferredProjectWorkspaceService workspaceService,
             IVsProjectThreadingService threadingService)
         {
             Assumes.Present(vsServiceProvider);
+            Assumes.Present(workspaceService);
             Assumes.Present(threadingService);
 
+            _workspaceService = workspaceService;
             _threadingService = threadingService;
 
             _componentModel = new AsyncLazy<IComponentModel>(
@@ -105,14 +108,13 @@ namespace NuGet.PackageManagement.VisualStudio
                 if (!forceCreate &&
                     !PackageReference.Equals(restoreProjectStyle, StringComparison.OrdinalIgnoreCase))
                 {
-                    var packagesConfigFilePath = Path.Combine(vsProjectAdapter.FullPath, NuGetConstants.PackageReferenceFile);
-                    if (await vsProjectAdapter.EntityExistsAsync(packagesConfigFilePath))
-                    {
-                        return null;
-                    }
+                    var buildProjectDataService = await _workspaceService.GetMSBuildProjectDataServiceAsync(
+                        vsProjectAdapter.FullProjectPath);
+                    Assumes.Present(buildProjectDataService);
 
-                    var projectJsonFilePath = Path.Combine(vsProjectAdapter.FullPath, NuGetConstants.PackageSpecFileName);
-                    if (await vsProjectAdapter.EntityExistsAsync(projectJsonFilePath))
+                    var referenceItems = await buildProjectDataService.GetProjectItems(
+                        ProjectItems.PackageReference, CancellationToken.None);
+                    if (referenceItems == null || referenceItems.Count == 0)
                     {
                         return null;
                     }
