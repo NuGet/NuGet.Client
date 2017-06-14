@@ -60,7 +60,7 @@ namespace NuGet.Commands
                 {
                     ProjectWideWarningProperties = request.Project.RestoreMetadata?.ProjectWideWarningProperties,
                     PackageSpecificWarningProperties = PackageSpecificWarningProperties.CreatePackageSpecificWarningProperties(request.Project),
-                    ProjectFrameworks = request.Project.TargetFrameworks.Select(f => f.FrameworkName).ToList()
+                    ProjectFrameworks = request.Project.TargetFrameworks.Select(f => f.FrameworkName).AsList().AsReadOnly()
                 }
             };
 

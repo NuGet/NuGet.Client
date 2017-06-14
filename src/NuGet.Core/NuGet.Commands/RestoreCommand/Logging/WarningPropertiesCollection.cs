@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using NuGet.Common;
 using NuGet.Frameworks;
@@ -23,7 +24,7 @@ namespace NuGet.Commands
         /// Contains the target frameworks for the project.
         /// These are used for no warn filtering in case of a log message without a target graph.
         /// </summary>
-        public IReadOnlyList<NuGetFramework> ProjectFrameworks { get; set; } = new List<NuGetFramework>();
+        public IReadOnlyList<NuGetFramework> ProjectFrameworks { get; set; } = new ReadOnlyCollection<NuGetFramework>(new List<NuGetFramework>());
 
         /// <summary>
         /// Contains Project wide properties for Warnings.
