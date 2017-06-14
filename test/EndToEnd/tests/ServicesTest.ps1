@@ -364,7 +364,9 @@ function Test-InstallPackageAPIUnreachableSource
     $p = New-ClassLibrary
 
     # Act&Assert
-    Assert-Throws {[API.Test.InternalAPITestHook]::InstallPackageApiBadSource("owin","1.0.0") } "Exception calling `"InstallPackageApiBadSource`" with `"2`" argument(s): `"Unable to load the service index for source http://packagesource.`""
+    Assert-Throws {
+        [API.Test.InternalAPITestHook]::InstallPackageApi("http://packagesource", "owin", "1.0.0", $false)
+    } "Exception calling `"InstallPackageApi`" with `"4`" argument(s): `"Unable to load the service index for source http://packagesource.`""
     Assert-NoPackage $p "owin"
 }
 

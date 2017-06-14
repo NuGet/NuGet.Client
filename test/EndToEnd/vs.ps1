@@ -67,11 +67,12 @@ function New-BuildIntegratedProj
 function Wait-OnNetCoreRestoreCompletion{
      param(
         [parameter(Mandatory = $true)]
-        $Project
+        $Project,
+        [int]$TimoutSeconds = 20
     )
 
     $NetCoreLockFilePath = Get-NetCoreLockFilePath $Project
-    $timeout = New-Timespan -Minutes 2
+    $timeout = New-Timespan -Seconds $TimoutSeconds
     $sw = [Diagnostics.Stopwatch]::StartNew()
     while (!(Test-Path $NetCoreLockFilePath)) {
         if ($sw.elapsed -ge $timeout) {
@@ -819,7 +820,7 @@ function Get-ProjectItem {
 
 function Add-ProjectReference {
     param (
-        [parameter(Mandatory = $true)]
+        [parameter(Mandatory = $true, ValueFromPipeline = $true)]
         $ProjectFrom,
         [parameter(Mandatory = $true)]
         $ProjectTo
