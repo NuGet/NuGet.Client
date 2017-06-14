@@ -220,7 +220,7 @@ namespace NuGet.Commands
                 //Ignore the restore settings for net core projects.
                 //This is set by default in VS while it's not set in commandline.
                 //This causes a discrepancy and the project does not cross-client no - op.MSBuild / NuGet.exe vs VS.
-                if (request.Project.RestoreMetadata.ProjectStyle == ProjectStyle.PackageReference)
+                else if (request.Project.RestoreMetadata.ProjectStyle == ProjectStyle.PackageReference)
                 {
                     projectSpec.RestoreSettings = null;
                 }
