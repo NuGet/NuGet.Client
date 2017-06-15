@@ -144,7 +144,7 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;skipBindingRedirects.ZOrder" xml:space="preserve">
-    <value>5</value>
+    <value>4</value>
   </data>
   <data name="PackageRestoreHeader.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -178,7 +178,7 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;PackageRestoreHeader.ZOrder" xml:space="preserve">
-    <value>2</value>
+    <value>1</value>
   </data>
   <data name="packageRestoreConsentCheckBox.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -208,7 +208,7 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;packageRestoreConsentCheckBox.ZOrder" xml:space="preserve">
-    <value>3</value>
+    <value>2</value>
   </data>
   <data name="packageRestoreAutomaticCheckBox.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
     <value>NoControl</value>
@@ -238,7 +238,7 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;packageRestoreAutomaticCheckBox.ZOrder" xml:space="preserve">
-    <value>4</value>
+    <value>3</value>
   </data>
   <data name="BindingRedirectsHeader.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -274,25 +274,25 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;BindingRedirectsHeader.ZOrder" xml:space="preserve">
-    <value>1</value>
+    <value>0</value>
   </data>
   <data name="localsCommandButton.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
-  <data name="localsCommandButton.FlatStyle" type="System.Windows.Forms.FlatStyle, System.Windows.Forms"> 
-    <value>System</value> 
-  </data> 
+  <data name="localsCommandButton.FlatStyle" type="System.Windows.Forms.FlatStyle, System.Windows.Forms">
+    <value>System</value>
+  </data>
   <data name="localsCommandButton.Location" type="System.Drawing.Point, System.Drawing">
     <value>5, 247</value>
   </data>
   <data name="localsCommandButton.Size" type="System.Drawing.Size, System.Drawing">
-    <value>134, 23</value>
+    <value>138, 23</value>
   </data>
   <data name="localsCommandButton.TabIndex" type="System.Int32, mscorlib">
     <value>7</value>
   </data>
   <data name="localsCommandButton.Text" xml:space="preserve">
-    <value>Clear All NuGet Cache(s)</value>
+    <value>&amp;Clear All NuGet Cache(s)</value>
   </data>
   <data name="&gt;&gt;localsCommandButton.Name" xml:space="preserve">
     <value>localsCommandButton</value>
@@ -370,7 +370,7 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;PackageManagementHeader.ZOrder" xml:space="preserve">
-    <value>0</value>
+    <value>5</value>
   </data>
   <data name="defaultPackageManagementFormatLabel.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -388,7 +388,7 @@
     <value>0</value>
   </data>
   <data name="defaultPackageManagementFormatLabel.Text" xml:space="preserve">
-    <value>&amp;Default package management format:</value>
+    <value>Default package management format:</value>
   </data>
   <data name="defaultPackageManagementFormatLabel.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
     <value>MiddleLeft</value>
@@ -496,7 +496,7 @@
     <value>6</value>
   </data>
   <data name="tableLayoutPanel1.LayoutSettings" type="System.Windows.Forms.TableLayoutSettings, System.Windows.Forms">
-    <value>&lt;?xml version="1.0" encoding="utf-16"?&gt;&lt;TableLayoutSettings&gt;&lt;Controls&gt;&lt;Control Name="defaultPackageManagementFormatItems" Row="0" RowSpan="1" Column="1" ColumnSpan="1" /&gt;&lt;Control Name="defaultPackageManagementFormatLabel" Row="0" RowSpan="1" Column="0" ColumnSpan="1" /&gt;&lt;/Controls&gt;&lt;Columns Styles="AutoSize,0,Percent,100" /&gt;&lt;Rows Styles="Percent,100,Absolute,20" /&gt;&lt;/TableLayoutSettings&gt;</value>
+    <value>&lt;?xml version="1.0" encoding="utf-16"?&gt;&lt;TableLayoutSettings&gt;&lt;Controls&gt;&lt;Control Name="defaultPackageManagementFormatItems" Row="0" RowSpan="1" Column="1" ColumnSpan="1" /&gt;&lt;Control Name="defaultPackageManagementFormatLabel" Row="0" RowSpan="1" Column="0" ColumnSpan="1" /&gt;&lt;/Controls&gt;&lt;Columns Styles="AutoSize,0,Percent,100" /&gt;&lt;Rows Styles="Percent,100,Absolute,27" /&gt;&lt;/TableLayoutSettings&gt;</value>
   </data>
   <metadata name="$this.Localizable" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
     <value>True</value>
