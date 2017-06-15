@@ -63,6 +63,38 @@ namespace NuGet.ProjectModel.Test
         }
 
         [Fact]
+        public void GivenALogMessageWithNoTargetGraphsVerifyAllGraphsAreReturned()
+        {
+            var assetsFile = new LockFile();
+            assetsFile.Targets.Add(new LockFileTarget()
+            {
+                TargetFramework = NuGetFramework.Parse("net45"),
+            });
+
+            assetsFile.Targets.Add(new LockFileTarget()
+            {
+                TargetFramework = NuGetFramework.Parse("net46"),
+                RuntimeIdentifier = "win8"
+            });
+
+            assetsFile.Targets.Add(new LockFileTarget()
+            {
+                TargetFramework = NuGetFramework.Parse("netstandard2.0")
+            });
+
+            var expected1 = NuGetFramework.Parse("net45").DotNetFrameworkName;
+            var expected2 = NuGetFramework.Parse("net46").DotNetFrameworkName + "/win8";
+            var expected3 = NuGetFramework.Parse("netstandard2.0").DotNetFrameworkName;
+
+            // Create a message with no target graphs
+            var message = new AssetsLogMessage(LogLevel.Warning, NuGetLogCode.NU1103, "test");
+
+            var graphs = message.GetTargetGraphs(assetsFile);
+
+            graphs.Select(e => e.Name).ShouldBeEquivalentTo(new[] { expected1, expected2, expected3 });
+        }
+
+        [Fact]
         public void GivenATargetGraphVerifyLibraryReturned()
         {
             var graph = new LockFileTarget()

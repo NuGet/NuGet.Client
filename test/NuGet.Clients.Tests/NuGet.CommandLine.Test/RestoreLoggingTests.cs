@@ -1,9 +1,13 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 using FluentAssertions;
+using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.Test.Utility;
 using Test.Utility;
@@ -13,6 +17,324 @@ namespace NuGet.CommandLine.Test
 {
     public class RestoreLoggingTests
     {
+        [Fact]
+        public void RestoreLogging_VerifyCompatErrorNU1201Properties()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var netcoreapp1 = NuGetFramework.Parse("netcoreapp1.0");
+                var netcoreapp2 = NuGetFramework.Parse("netcoreapp2.0");
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                    "a",
+                    pathContext.SolutionRoot,
+                    netcoreapp1);
+
+                var projectB = SimpleTestProjectContext.CreateNETCore(
+                    "b",
+                    pathContext.SolutionRoot,
+                    netcoreapp2);
+
+                projectA.AddProjectToAllFrameworks(projectB);
+
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+
+                // Act
+                var r = Util.RestoreSolution(pathContext, expectedExitCode: 1);
+                var log = projectA.AssetsFile.LogMessages.SingleOrDefault(e => e.Code == Common.NuGetLogCode.NU1201 && e.TargetGraphs.All(g => !g.Contains("/")));
+
+                // Assert
+                r.Success.Should().BeFalse();
+                r.AllOutput.Should().Contain("NU1201");
+                log.FilePath.Should().Be(projectA.ProjectPath);
+                log.LibraryId.Should().Be("b");
+                log.Level.Should().Be(LogLevel.Error);
+                log.TargetGraphs.ShouldBeEquivalentTo(new[] { netcoreapp1.DotNetFrameworkName });
+                log.Message.Should().Be("Project b is not compatible with netcoreapp1.0 (.NETCoreApp,Version=v1.0). Project b supports: netcoreapp2.0 (.NETCoreApp,Version=v2.0)");
+            }
+        }
+
+        [Fact]
+        public async Task RestoreLogging_VerifyCompatErrorNU1202Properties()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var netcoreapp1 = NuGetFramework.Parse("netcoreapp1.0");
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                    "a",
+                    pathContext.SolutionRoot,
+                    netcoreapp1);
+
+                var packageX = new SimpleTestPackageContext("x", "1.0.0");
+                packageX.Files.Clear();
+                packageX.AddFile("lib/netcoreapp2.0/a.dll");
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3(pathContext.PackageSource, packageX);
+
+                projectA.AddPackageToAllFrameworks(packageX);
+
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+
+                // Act
+                var r = Util.RestoreSolution(pathContext, expectedExitCode: 1);
+                var log = projectA.AssetsFile.LogMessages.SingleOrDefault(e => e.Code == Common.NuGetLogCode.NU1202 && e.TargetGraphs.All(g => !g.Contains("/")));
+
+                // Assert
+                r.Success.Should().BeFalse();
+                r.AllOutput.Should().Contain("NU1202");
+                log.FilePath.Should().Be(projectA.ProjectPath);
+                log.LibraryId.Should().Be("x");
+                log.Level.Should().Be(LogLevel.Error);
+                log.TargetGraphs.ShouldBeEquivalentTo(new[] { netcoreapp1.DotNetFrameworkName });
+                log.Message.Should().Be("Package x 1.0.0 is not compatible with netcoreapp1.0 (.NETCoreApp,Version=v1.0). Package x 1.0.0 supports: netcoreapp2.0 (.NETCoreApp,Version=v2.0)");
+            }
+        }
+
+        [Fact]
+        public async Task RestoreLogging_VerifyCompatErrorNU1203Properties()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var netcoreapp1 = NuGetFramework.Parse("netcoreapp1.0");
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                    "a",
+                    pathContext.SolutionRoot,
+                    netcoreapp1);
+                projectA.Properties.Add("ValidateRuntimeIdentifierCompatibility", "true");
+
+                var packageX = new SimpleTestPackageContext("x", "1.0.0");
+                packageX.Files.Clear();
+                packageX.AddFile("ref/netcoreapp1.0/a.dll"); // ref with a missing runtime
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3(pathContext.PackageSource, packageX);
+
+                projectA.AddPackageToAllFrameworks(packageX);
+
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+
+                // Act
+                var r = Util.RestoreSolution(pathContext, expectedExitCode: 1);
+                var log = projectA.AssetsFile.LogMessages.OrderBy(e => e.Message, StringComparer.Ordinal).FirstOrDefault(e => e.Code == Common.NuGetLogCode.NU1203);
+
+                // Assert
+                r.Success.Should().BeFalse();
+                r.AllOutput.Should().Contain("NU1203");
+                log.FilePath.Should().Be(projectA.ProjectPath);
+                log.LibraryId.Should().Be("x");
+                log.Level.Should().Be(LogLevel.Error);
+                log.TargetGraphs.Single().Should().Contain(netcoreapp1.DotNetFrameworkName);
+                log.Message.Should().Contain("x 1.0.0 provides a compile-time reference assembly for a on .NETCoreApp,Version=v1.0, but there is no run-time assembly compatible with");
+            }
+        }
+
+        [Fact]
+        public async Task RestoreLogging_VerifyCircularDependencyErrorNU1106Properties()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var netcoreapp1 = NuGetFramework.Parse("netcoreapp1.0");
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                    "a",
+                    pathContext.SolutionRoot,
+                    netcoreapp1);
+
+                var packageX = new SimpleTestPackageContext("x", "1.0.0");
+                var packageY = new SimpleTestPackageContext("y", "1.0.0");
+                packageX.Dependencies.Add(packageY);
+                packageY.Dependencies.Add(packageX);
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3(pathContext.PackageSource, packageX, packageY);
+
+                projectA.AddPackageToAllFrameworks(packageX);
+
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+
+                // Act
+                var r = Util.RestoreSolution(pathContext, expectedExitCode: 1);
+                var log = projectA.AssetsFile.LogMessages.SingleOrDefault(e => e.Code == NuGetLogCode.NU1606 && e.TargetGraphs.All(g => !g.Contains("/")));
+
+                // Assert
+                r.Success.Should().BeFalse();
+                r.AllOutput.Should().Contain("NU1606");
+                log.FilePath.Should().Be(projectA.ProjectPath);
+                log.LibraryId.Should().Be("x");
+                log.Level.Should().Be(LogLevel.Error);
+                log.TargetGraphs.Single().Should().Contain(netcoreapp1.DotNetFrameworkName);
+                log.Message.Should().Contain("Cycle detected.");
+            }
+        }
+
+        [Fact]
+        public async Task RestoreLogging_VerifyConflictErrorNU1107Properties()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var netcoreapp1 = NuGetFramework.Parse("netcoreapp1.0");
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                    "a",
+                    pathContext.SolutionRoot,
+                    netcoreapp1);
+
+                var packageX = new SimpleTestPackageContext("x", "1.0.0")
+                {
+                    Nuspec = XDocument.Parse($@"<?xml version=""1.0"" encoding=""utf-8""?>
+                        <package>
+                        <metadata>
+                            <id>x</id>
+                            <version>1.0.0</version>
+                            <title />
+                            <dependencies>
+                                <group>
+                                    <dependency id=""z"" version=""[1.0.0]"" />
+                                </group>
+                            </dependencies>
+                        </metadata>
+                        </package>")
+                };
+
+                var packageY = new SimpleTestPackageContext("y", "1.0.0")
+                {
+                    Nuspec = XDocument.Parse($@"<?xml version=""1.0"" encoding=""utf-8""?>
+                        <package>
+                        <metadata>
+                            <id>y</id>
+                            <version>1.0.0</version>
+                            <title />
+                            <dependencies>
+                                <group>
+                                    <dependency id=""z"" version=""[2.0.0]"" />
+                                </group>
+                            </dependencies>
+                        </metadata>
+                        </package>")
+                };
+
+                var packageZ1 = new SimpleTestPackageContext("z", "1.0.0");
+                var packageZ2 = new SimpleTestPackageContext("z", "2.0.0");
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3(pathContext.PackageSource, packageX, packageY, packageZ1, packageZ2);
+
+                projectA.AddPackageToAllFrameworks(packageX);
+                projectA.AddPackageToAllFrameworks(packageY);
+
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+
+                // Act
+                var r = Util.RestoreSolution(pathContext, expectedExitCode: 1);
+                var log = projectA.AssetsFile.LogMessages.SingleOrDefault(e => e.Code == NuGetLogCode.NU1607 && e.TargetGraphs.All(g => !g.Contains("/")));
+
+                // Assert
+                r.Success.Should().BeFalse();
+                r.AllOutput.Should().Contain("NU1607");
+                log.FilePath.Should().Be(projectA.ProjectPath);
+                log.LibraryId.Should().Be("z");
+                log.Level.Should().Be(LogLevel.Error);
+                log.TargetGraphs.Single().Should().Contain(netcoreapp1.DotNetFrameworkName);
+                log.Message.Should().Contain("Version conflict detected for z");
+            }
+        }
+
+        [Fact]
+        public async Task RestoreLogging_VerifyConflictErrorNU1107IsResolvedByTopLevelReference()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var netcoreapp1 = NuGetFramework.Parse("netcoreapp1.0");
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                    "a",
+                    pathContext.SolutionRoot,
+                    netcoreapp1);
+
+                var packageX = new SimpleTestPackageContext("x", "1.0.0")
+                {
+                    Nuspec = XDocument.Parse($@"<?xml version=""1.0"" encoding=""utf-8""?>
+                        <package>
+                        <metadata>
+                            <id>x</id>
+                            <version>1.0.0</version>
+                            <title />
+                            <dependencies>
+                                <group>
+                                    <dependency id=""z"" version=""[1.0.0]"" />
+                                </group>
+                            </dependencies>
+                        </metadata>
+                        </package>")
+                };
+
+                var packageY = new SimpleTestPackageContext("y", "1.0.0")
+                {
+                    Nuspec = XDocument.Parse($@"<?xml version=""1.0"" encoding=""utf-8""?>
+                        <package>
+                        <metadata>
+                            <id>y</id>
+                            <version>1.0.0</version>
+                            <title />
+                            <dependencies>
+                                <group>
+                                    <dependency id=""z"" version=""[2.0.0]"" />
+                                </group>
+                            </dependencies>
+                        </metadata>
+                        </package>")
+                };
+
+                var packageZ1 = new SimpleTestPackageContext("z", "1.0.0");
+                var packageZ2 = new SimpleTestPackageContext("z", "2.0.0");
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3(pathContext.PackageSource, packageX, packageY, packageZ1, packageZ2);
+
+                projectA.AddPackageToAllFrameworks(packageX);
+                projectA.AddPackageToAllFrameworks(packageY);
+                
+                // This reference solves the conflict
+                projectA.AddPackageToAllFrameworks(packageZ1);
+
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+
+                // Act
+                var r = Util.RestoreSolution(pathContext, expectedExitCode: 0);
+
+                // Assert
+                r.Success.Should().BeTrue();
+            }
+        }
+
         [Fact]
         public async Task RestoreLogging_WarningsContainNuGetLogCodes()
         {
@@ -391,7 +713,7 @@ namespace NuGet.CommandLine.Test
                 var projectA = SimpleTestProjectContext.CreateNETCore(
                     "a",
                     pathContext.SolutionRoot,
-                    netcoreapp2);                
+                    netcoreapp2);
 
                 // Referenced but not created
                 var packageX = new SimpleTestPackageContext()
