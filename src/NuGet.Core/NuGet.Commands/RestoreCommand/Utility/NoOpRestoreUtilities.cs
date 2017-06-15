@@ -199,15 +199,31 @@ namespace NuGet.Commands
         /// <summary>
         /// Calculates the hash value, used for the no-op optimization, for the request
         /// This methods handles the deduping of tools
+        /// Handles the ignoring of RestoreSettings
         /// </summary>
         public static string GetHash(RestoreRequest request)
         {
-            if (request.Project.RestoreMetadata.ProjectStyle == ProjectStyle.DotnetCliTool)
+            if (request.Project.RestoreMetadata.ProjectStyle == ProjectStyle.DotnetCliTool || request.Project.RestoreMetadata.ProjectStyle == ProjectStyle.PackageReference)
             {
+
                 var uniqueName = request.DependencyGraphSpec.Restore.First();
                 var dgSpec = request.DependencyGraphSpec.WithProjectClosure(uniqueName);
-                dgSpec.GetProjectSpec(uniqueName).RestoreMetadata.ProjectPath = null;
-                dgSpec.GetProjectSpec(uniqueName).FilePath = null;
+                var projectSpec = dgSpec.GetProjectSpec(uniqueName);
+
+                // The project path where the tool is declared does not affect restore and is only used for logging and transparency.
+                if (request.Project.RestoreMetadata.ProjectStyle == ProjectStyle.DotnetCliTool)
+                {
+                    projectSpec.RestoreMetadata.ProjectPath = null;
+                    projectSpec.FilePath = null;
+                }
+
+                //Ignore the restore settings for package ref projects.
+                //This is set by default for net core projects in VS while it's not set in commandline.
+                //This causes a discrepancy and the project does not cross-client no - op.MSBuild / NuGet.exe vs VS.
+                else if (request.Project.RestoreMetadata.ProjectStyle == ProjectStyle.PackageReference)
+                {
+                    projectSpec.RestoreSettings = null;
+                }
                 return dgSpec.GetHash();
             }
 

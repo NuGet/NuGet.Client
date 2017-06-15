@@ -1428,6 +1428,61 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
+        public async Task RestoreNetCore_NoOp_WarningsAndErrorsDontAffectHash()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+
+                var projects = new List<SimpleTestProjectContext>();
+
+                var project = SimpleTestProjectContext.CreateNETCore(
+                    $"proj",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("net45"));
+
+                project.AddPackageToAllFrameworks(packageX);
+                // Setup - set warnings As Errors
+                project.WarningsAsErrors = true;
+
+                solution.Projects.Add(project);
+                solution.Create(pathContext.SolutionRoot);
+
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX);
+
+                // Act
+                var r = Util.RestoreSolution(pathContext);
+
+                // Assert
+                Assert.Equal(0, r.Item1);
+                Assert.Contains("Writing cache file", r.Item2);
+
+                //Setup - remove the warnings and errors
+                project.WarningsAsErrors = false;
+                project.Save();
+
+                // Act
+                var r2 = Util.RestoreSolution(pathContext);
+
+                // Assert
+                Assert.Equal(0, r2.Item1);
+                Assert.Contains("No further actions are required to complete", r2.Item2);
+            }
+        }
+
+        [Fact]
         public async Task RestoreNetCore_MultipleProjects_SameToolDifferentVersions()
         {
             // Arrange

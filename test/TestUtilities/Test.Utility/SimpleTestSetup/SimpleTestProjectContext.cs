@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -117,6 +117,7 @@ namespace NuGet.Test.Utility
 
         public string GlobalPackagesFolder { get; set; }
 
+        public bool WarningsAsErrors { get; set; }
         /// <summary>
         /// project.lock.json or project.assets.json
         /// </summary>
@@ -384,6 +385,14 @@ namespace NuGet.Test.Utility
 
             if (Type == ProjectStyle.PackageReference)
             {
+                if (WarningsAsErrors)
+                {
+                    ProjectFileUtils.AddProperties(xml, new Dictionary<string, string>()
+                    {
+                        { "WarningsAsErrors", "true" }
+                    });
+                }
+
                 ProjectFileUtils.AddProperties(xml, new Dictionary<string, string>()
                 {
                     { "Version", Version },
