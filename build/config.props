@@ -3,7 +3,7 @@
   <!-- Version -->
   <PropertyGroup>
     <SemanticVersion Condition=" '$(SemanticVersion)' == '' ">4.3.0</SemanticVersion>
-    <!-- We need to update this netcoreassembly build number with every milestone to workaround any breaking api
+    <!-- We need to update this netcore assembly build number with every milestone to workaround any breaking api
     changes we might have made-->
     <NetCoreAssemblyBuildNumber Condition=" '$(NetCoreAssemblyBuildNumber)' == '' ">5</NetCoreAssemblyBuildNumber>
     <ReleaseLabel Condition=" '$(ReleaseLabel)' == '' ">rtm</ReleaseLabel>
