@@ -58,10 +58,11 @@ namespace NuGet.PackageManagement.VisualStudio
 
         static VsManagedLanguagesProjectSystemServices()
         {
-            _referenceMetadata = Array.CreateInstance(typeof(string), 3);
+            _referenceMetadata = Array.CreateInstance(typeof(string), 4);
             _referenceMetadata.SetValue(ProjectItemProperties.IncludeAssets, 0);
             _referenceMetadata.SetValue(ProjectItemProperties.ExcludeAssets, 1);
             _referenceMetadata.SetValue(ProjectItemProperties.PrivateAssets, 2);
+            _referenceMetadata.SetValue(ProjectItemProperties.NoWarn, 3);
         }
 
         public VsManagedLanguagesProjectSystemServices(

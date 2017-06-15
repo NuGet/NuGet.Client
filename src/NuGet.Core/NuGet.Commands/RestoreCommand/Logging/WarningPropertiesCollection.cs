@@ -4,18 +4,27 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
 using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.ProjectModel;
+using NuGet.Shared;
 
 namespace NuGet.Commands
 {
     /// <summary>
-    /// Class to hold ProjectWIde and PackageSpecific WarningProperties
+    /// Class to hold ProjectWide and PackageSpecific WarningProperties.
     /// </summary>
     public class WarningPropertiesCollection
     {
         private readonly ConcurrentDictionary<string, NuGetFramework> _getFrameworkCache = new ConcurrentDictionary<string, NuGetFramework>();
+
+        /// <summary>
+        /// Contains the target frameworks for the project.
+        /// These are used for no warn filtering in case of a log message without a target graph.
+        /// </summary>
+        public IReadOnlyList<NuGetFramework> ProjectFrameworks { get; set; } = new ReadOnlyCollection<NuGetFramework>(new List<NuGetFramework>());
 
         /// <summary>
         /// Contains Project wide properties for Warnings.
@@ -27,7 +36,6 @@ namespace NuGet.Commands
         /// NuGetLogCode -> LibraryId -> Set of Frameworks.
         /// </summary>
         public PackageSpecificWarningProperties PackageSpecificWarningProperties { get; set; }
-
 
         /// <summary>
         /// Attempts to suppress a warning log message or upgrade it to error log message.
@@ -44,30 +52,30 @@ namespace NuGet.Commands
             }
             else
             {
+                // First look at PackageSpecificWarningProperties and then at ProjectWideWarningProperties.
                 if (!string.IsNullOrEmpty(message.LibraryId) && PackageSpecificWarningProperties != null)
                 {
-                    // The message contains a LibraryId
-                    // First look at PackageSpecificWarningProperties and then at ProjectWideWarningProperties
-                    if (message.TargetGraphs.Count == 0)
+                    var messageTargetFrameworks = message.TargetGraphs.Select(GetNuGetFramework).ToList();
+
+                    // If the message does not contain a target graph, assume that it is applicable for all project frameworks.
+                    if (messageTargetFrameworks.Count == 0)
                     {
-                        if (PackageSpecificWarningProperties.Contains(message.Code, message.LibraryId))
+                        // Suppress the warning if the code + libraryId combination is suppressed for all project frameworks.
+                        if (ProjectFrameworks.Count > 0 &&
+                            ProjectFrameworks.All(e => PackageSpecificWarningProperties.Contains(message.Code, message.LibraryId, e)))
                         {
                             return true;
                         }
                     }
                     else
                     {
-                        var newTargetGraphList = new List<string>();
-                        foreach (var targetGraph in message.TargetGraphs)
-                        {
-                            if (!PackageSpecificWarningProperties.Contains(message.Code, message.LibraryId, GetNuGetFramework(targetGraph)))
-                            {
-                                newTargetGraphList.Add(targetGraph);
-                            }
-                        }
+                        // Get all the target graphs for which code + libraryId combination is not suppressed.
+                        message.TargetGraphs = message
+                            .TargetGraphs
+                            .Where(e => !PackageSpecificWarningProperties.Contains(message.Code, message.LibraryId, GetNuGetFramework(e)))
+                            .ToList();
 
-                        message.TargetGraphs = newTargetGraphList;
-
+                        // If the message is left with no target graphs then suppress it.
                         if (message.TargetGraphs.Count == 0)
                         {
                             return true;
@@ -75,38 +83,11 @@ namespace NuGet.Commands
                     }
                 }
 
-                // The message does not contain a LibraryId or it is not suppressed in package specific settings
-                // Use ProjectWideWarningProperties
+                // The message does not contain a LibraryId or it is not suppressed in package specific settings.
+                // Apply ProjectWideWarningProperties.
                 return ProjectWideWarningProperties != null && ApplyProjectWideWarningProperties(message);
             }
         }
-
-        /// <summary>
-        /// Extracts PackageSpecific WarningProperties from a PackageSpec
-        /// </summary>
-        /// <param name="packageSpec">PackageSpec containing the Dependencies with WarningProperties</param>
-        /// <returns>PackageSpecific WarningProperties extracted from a PackageSpec</returns>
-        public static PackageSpecificWarningProperties GetPackageSpecificWarningProperties(PackageSpec packageSpec)
-        {
-            // NuGetLogCode -> LibraryId -> Set of Frameworks.
-            var warningProperties = new PackageSpecificWarningProperties();
-
-            foreach (var dependency in packageSpec.Dependencies)
-            {
-                warningProperties.AddRange(dependency.NoWarn, dependency.Name);
-            }
-
-            foreach (var framework in packageSpec.TargetFrameworks)
-            {
-                foreach (var dependency in framework.Dependencies)
-                {
-                    warningProperties.AddRange(dependency.NoWarn, dependency.Name, framework.FrameworkName);
-                }
-            }
-
-            return warningProperties;
-        }
-
 
         /// <summary>
         /// Method is used to check is a warning should be suppressed and if not then if it should be treated as an error.
@@ -119,15 +100,20 @@ namespace NuGet.Commands
             {
                 if (ProjectWideWarningProperties.NoWarn.Contains(logMessage.Code))
                 {
+                    // If the project wide NoWarn contains the message code then suppress it.
                     return true;
                 }
-                else if (ProjectWideWarningProperties.AllWarningsAsErrors && logMessage.Code > NuGetLogCode.Undefined || 
+                else if ((ProjectWideWarningProperties.AllWarningsAsErrors && logMessage.Code > NuGetLogCode.Undefined) || 
                     ProjectWideWarningProperties.WarningsAsErrors.Contains(logMessage.Code))
                 {
+                    // If the project wide AllWarningsAsErrors is true and the message has a valid code or
+                    // project wide WarningsAsErrors contains the message code then pgrade to error and do not suppress it.
                     logMessage.Level = LogLevel.Error;
                     return false;
                 }
             }
+
+            // Finally do not suppress or modify the message.
             return false;
         }
 

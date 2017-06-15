@@ -18,6 +18,7 @@ using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
 using NuGet.Repositories;
 using NuGet.RuntimeModel;
+using NuGet.Shared;
 using NuGet.Versioning;
 
 namespace NuGet.Commands
@@ -54,11 +55,12 @@ namespace NuGet.Commands
 
             var collectorLogger = new RestoreCollectorLogger(_request.Log, collectorLoggerHideWarningsAndErrors)
             {
-                ProjectPath = _request.Project?.RestoreMetadata?.ProjectPath,
-                WarningPropertiesCollection =  new WarningPropertiesCollection()
+                ProjectPath = _request.Project.RestoreMetadata?.ProjectPath,
+                WarningPropertiesCollection = new WarningPropertiesCollection()
                 {
-                    ProjectWideWarningProperties = request.Project?.RestoreMetadata?.ProjectWideWarningProperties,
-                    PackageSpecificWarningProperties = WarningPropertiesCollection.GetPackageSpecificWarningProperties(request.Project)
+                    ProjectWideWarningProperties = request.Project.RestoreMetadata?.ProjectWideWarningProperties,
+                    PackageSpecificWarningProperties = PackageSpecificWarningProperties.CreatePackageSpecificWarningProperties(request.Project),
+                    ProjectFrameworks = request.Project.TargetFrameworks.Select(f => f.FrameworkName).AsList().AsReadOnly()
                 }
             };
 
