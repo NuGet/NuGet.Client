@@ -645,7 +645,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             }
         }
 
-                [Fact]
+        [Fact]
         public async Task GetPackageSpecsAsync_SkipContentFilesAlwaysTrue()
         {
             // Arrange
