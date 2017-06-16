@@ -316,7 +316,7 @@ namespace NuGet.PackageManagement.VisualStudio
             };
 
             // Apply fallback settings
-            AssetTargetFallbackUtility.ApplyFramework(projectTfi, packageTargetFallback, assetTargetFallback);
+            PackageSpecUtility.ApplyFallbackFramework(projectTfi, packageTargetFallback, assetTargetFallback);
 
             // Build up runtime information.
             var runtimes = await _vsProjectAdapter.GetRuntimeIdentifiersAsync();
