@@ -173,21 +173,28 @@ namespace NuGet.SolutionRestoreManager.Test
         }
 
         [Theory]
-        [InlineData(@"..\packages", @"..\source1;..\source2", @"..\fallback1;..\fallback2")]
-        [InlineData(@"C:\packagesPath", @"..\source1;..\source2", @"C:\fallback1;C:\fallback2")]
-        [InlineData(null, null, null)]
-        public async Task NominateProjectAsync_WithCliTool_RestoreSettings(string restorePackagesPath, string restoreSources, string fallbackFolders)
+        [InlineData("netcoreapp2.0", @"..\packages", @"..\source1;..\source2", @"..\fallback1;..\fallback2")]
+        [InlineData("netcoreapp2.0", @"C:\packagesPath", @"..\source1;..\source2", @"C:\fallback1;C:\fallback2")]
+        [InlineData("netcoreapp2.0", null, null, null)]
+        [InlineData("netcoreapp1.0", null, null, null)]
+        public async Task NominateProjectAsync_WithCliTool_RestoreSettings(
+            string toolFramework, string restorePackagesPath, string restoreSources, string fallbackFolders)
         {
-            const string toolProjectJson = @"{ }";
-            var cps = NewCpsProject(toolProjectJson);
-            var pri = cps.Builder.WithTool("Foo.Test.Tools", "2.0.0").WithTargetFrameworkInfo(
+            var expectedToolFramework = NuGetFramework.Parse(toolFramework);
+
+            var cps = NewCpsProject(@"{ }");
+            var pri = cps.Builder
+                .WithTool("Foo.Test.Tools", "2.0.0")
+                .WithTargetFrameworkInfo(
                     new VsTargetFrameworkInfo(
-                        "netcoreapp1.0",
+                        "netcoreapp2.0",
                         Enumerable.Empty<IVsReferenceItem>(),
                         Enumerable.Empty<IVsReferenceItem>(),
-                        new[] {new VsProjectProperty("RestorePackagesPath", restorePackagesPath),
-                               new VsProjectProperty("RestoreSources", restoreSources),
-                               new VsProjectProperty("RestoreFallbackFolders", fallbackFolders)})).Build();
+                        new[] { new VsProjectProperty("RestorePackagesPath", restorePackagesPath),
+                                new VsProjectProperty("RestoreSources", restoreSources),
+                                new VsProjectProperty("RestoreFallbackFolders", fallbackFolders),
+                                new VsProjectProperty("DotnetCliToolTargetFramework", toolFramework) }))
+                .Build();
             var projectFullPath = cps.ProjectFullPath;
 
             // Act
@@ -213,7 +220,7 @@ namespace NuGet.SolutionRestoreManager.Test
                 .TargetFrameworks
                 .Single()
                 .FrameworkName;
-            Assert.Equal(CommonFrameworks.NetCoreApp10, actualToolFramework);
+            Assert.Equal(expectedToolFramework, actualToolFramework);
 
             var actualToolLibrary = actualToolSpec
                 .TargetFrameworks
@@ -232,39 +239,6 @@ namespace NuGet.SolutionRestoreManager.Test
             var specFallback = actualToolSpec.RestoreMetadata.FallbackFolders;
             var expectedFallback = MSBuildStringUtility.Split(fallbackFolders);
             Assert.True(Enumerable.SequenceEqual(expectedFallback.OrderBy(t => t), specFallback.OrderBy(t => t)));
-        }
-
-        [Fact]
-        public async Task NominateProjectAsync_WithCliTool20_InfersToolFramework()
-        {
-            const string toolProjectJson = @"{
-    ""frameworks"": {
-        ""net46"": { },
-        ""netcoreapp2.0"": { }
-    }
-}";
-            var cps = NewCpsProject(toolProjectJson);
-            var pri = cps.Builder.WithTool("Foo.Test.Tools", "2.0.0").Build();
-            var projectFullPath = cps.ProjectFullPath;
-
-            // Act
-            var actualRestoreSpec = await CaptureNominateResultAsync(projectFullPath, pri);
-
-            // Assert
-            SpecValidationUtility.ValidateDependencySpec(actualRestoreSpec);
-
-            var actualProjectSpec = actualRestoreSpec.GetProjectSpec(projectFullPath);
-            Assert.NotNull(actualProjectSpec);
-
-            var actualToolSpec = actualRestoreSpec
-                .Projects
-                .Where(p => !object.ReferenceEquals(p, actualProjectSpec))
-                .Single();
-            var actualToolFramework = actualToolSpec
-                .TargetFrameworks
-                .Single()
-                .FrameworkName;
-            Assert.Equal(CommonFrameworks.NetCoreApp20, actualToolFramework);
         }
 
         [Theory]
@@ -345,7 +319,7 @@ namespace NuGet.SolutionRestoreManager.Test
         }
 
         [Fact]
-        public async Task NominateProjectAsync_WithValidPackageVersion_Passes()
+        public async Task NominateProjectAsync_WithValidPackageVersion()
         {
             const string projectJson = @"{
     ""version"": ""1.2.0-beta1"",
@@ -371,7 +345,7 @@ namespace NuGet.SolutionRestoreManager.Test
         [InlineData("1.2.3", "1.2.3")]
         [InlineData("1.2.0-beta1", "1.2.0-beta1")]
         [InlineData("1.0.0", "1.0.0.0")]
-        public async Task NominateProjectAsync_WithIdenticalPackageVersions_Passes(string version1, string version2)
+        public async Task NominateProjectAsync_WithIdenticalPackageVersions(string version1, string version2)
         {
             var cps = NewCpsProject("{ }");
             var projectFullPath = cps.ProjectFullPath;
