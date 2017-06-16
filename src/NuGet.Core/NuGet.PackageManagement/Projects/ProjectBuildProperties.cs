@@ -32,5 +32,6 @@ namespace NuGet.ProjectManagement
         public const string NoWarn = nameof(NoWarn);
         public const string WarningsAsErrors = nameof(WarningsAsErrors);
         public const string TreatWarningsAsErrors = nameof(TreatWarningsAsErrors);
+        public const string DotnetCliToolTargetFramework = nameof(DotnetCliToolTargetFramework);
     }
 }
