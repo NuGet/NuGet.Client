@@ -732,32 +732,17 @@ namespace NuGet.ProjectModel
             var frameworkName = GetFramework(targetFramework.Key);
 
             var properties = targetFramework.Value.Value<JObject>();
-            var assetTargetFallback = GetBoolOrFalse(properties, "assetTargetFallback", filePath);
 
-            var importFrameworks = GetImports(properties, packageSpec);
-
-            // If a fallback framework exists, update the framework to contain both.
-            var updatedFramework = frameworkName;
-
-            if (importFrameworks.Count != 0)
-            {
-                if (assetTargetFallback)
-                {
-                    updatedFramework = new AssetTargetFallbackFramework(frameworkName, importFrameworks);
-                }
-                else
-                {
-                    updatedFramework = new FallbackFramework(frameworkName, importFrameworks);
-                }
-            }
+            var importFrameworks = GetFrameworksFromArray(properties["imports"], packageSpec);
+            var assetTargetFallbackFrameworks = GetFrameworksFromArray(properties["assetTargetFallback"], packageSpec);
 
             var targetFrameworkInformation = new TargetFrameworkInformation
             {
-                FrameworkName = updatedFramework,
+                FrameworkName = PackageSpecUtility.GetFallbackFramework(frameworkName, importFrameworks, assetTargetFallbackFrameworks),
                 Dependencies = new List<LibraryDependency>(),
                 Imports = importFrameworks,
-                Warn = GetWarnSetting(properties),
-                AssetTargetFallback = assetTargetFallback
+                AssetTargetFallback = assetTargetFallbackFrameworks,
+                Warn = GetWarnSetting(properties)
             };
 
             PopulateDependencies(
@@ -782,16 +767,14 @@ namespace NuGet.ProjectModel
             return true;
         }
 
-        private static List<NuGetFramework> GetImports(JObject properties, PackageSpec packageSpec)
+        private static List<NuGetFramework> GetFrameworksFromArray(JToken property, PackageSpec packageSpec)
         {
             var frameworks = new List<NuGetFramework>();
 
-            var importsProperty = properties["imports"];
-
-            if (importsProperty != null)
+            if (property != null)
             {
                 IEnumerable<string> importArray = new List<string>();
-                if (TryGetStringEnumerableFromJArray(importsProperty, out importArray))
+                if (TryGetStringEnumerableFromJArray(property, out importArray))
                 {
                     frameworks = importArray.Where(p => !string.IsNullOrEmpty(p)).Select(p => NuGetFramework.Parse(p)).ToList();
                 }
@@ -802,9 +785,9 @@ namespace NuGet.ProjectModel
                 throw FileFormatException.Create(
                            string.Format(
                                Strings.Log_InvalidImportFramework,
-                               importsProperty.ToString().Replace(Environment.NewLine, string.Empty),
+                               property.ToString().Replace(Environment.NewLine, string.Empty),
                                PackageSpec.PackageSpecFileName),
-                           importsProperty,
+                           property,
                            packageSpec.FilePath);
             }
 
