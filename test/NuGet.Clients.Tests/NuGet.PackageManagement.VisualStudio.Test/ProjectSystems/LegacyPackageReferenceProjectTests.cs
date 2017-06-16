@@ -646,6 +646,50 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         }
 
         [Fact]
+        public async Task GetPackageSpecsAsync_SkipContentFilesAlwaysTrue()
+        {
+            // Arrange
+            using (var randomTestFolder = TestDirectory.Create())
+            {
+                var framework = NuGetFramework.Parse("netstandard13");
+
+                var projectAdapter = CreateProjectAdapter(randomTestFolder);
+
+                var projectServices = new TestProjectSystemServices();
+                projectServices.SetupInstalledPackages(
+                    framework,
+                    new LibraryDependency
+                    {
+                        LibraryRange = new LibraryRange(
+                            "packageA",
+                            VersionRange.Parse("1.*"),
+                            LibraryDependencyTarget.Package)
+                    });
+
+                var testProject = new LegacyPackageReferenceProject(
+                    projectAdapter,
+                    Guid.NewGuid().ToString(),
+                    projectServices,
+                    _threadingService);
+
+                var testDependencyGraphCacheContext = new DependencyGraphCacheContext();
+
+                await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                // Act
+                var packageSpecs = await testProject.GetPackageSpecsAsync(testDependencyGraphCacheContext);
+
+                // Assert
+                Assert.NotNull(packageSpecs);
+
+                var actualRestoreSpec = packageSpecs.Single();
+                SpecValidationUtility.ValidateProjectSpec(actualRestoreSpec);
+
+                Assert.True(actualRestoreSpec.RestoreMetadata.SkipContentFileWrite);
+            }
+        }
+
+        [Fact]
         public async Task GetPackageSpecsAsync_WithNoFallbackFrameworks_Succeeds()
         {
             // Arrange

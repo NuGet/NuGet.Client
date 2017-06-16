@@ -354,11 +354,11 @@ namespace NuGet.PackageManagement.VisualStudio
                             ProjectReferences = projectReferences?.ToList()
                         }
                     },
+                    SkipContentFileWrite = true,
                     PackagesPath = GetPackagesPath(settings),
                     Sources = GetSources(settings),
                     FallbackFolders = GetFallbackFolders(settings),
                     ConfigFilePaths = GetConfigFilePaths(settings),
-
                     ProjectWideWarningProperties = MSBuildRestoreUtility.GetWarningProperties(
                         treatWarningsAsErrors: _vsProjectAdapter.TreatWarningsAsErrors, 
                         noWarn: _vsProjectAdapter.NoWarn,
