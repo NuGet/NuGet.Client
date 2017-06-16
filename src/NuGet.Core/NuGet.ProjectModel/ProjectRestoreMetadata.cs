@@ -102,7 +102,7 @@ namespace NuGet.ProjectModel
         public bool ValidateRuntimeAssets { get; set; }
 
         /// <summary>
-        /// True if this is an XPlat PackageReference project.
+        /// True if this is a Legacy Package Reference project
         /// </summary>
         public bool SkipContentFileWrite { get; set; }
 
