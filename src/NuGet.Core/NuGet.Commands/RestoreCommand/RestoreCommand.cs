@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -112,6 +112,9 @@ namespace NuGet.Commands
                     }
                 }
             }
+
+            // Validate, for noop this will be replayed from the assets file.
+            _success &= await ValidateProjectAsync(_request.Project, _logger);
 
             // Restore
             var graphs = await ExecuteRestoreAsync(
@@ -792,6 +795,14 @@ namespace NuGet.Commands
                 project,
                 msbuildProjectPath: null,
                 projectReferences: Enumerable.Empty<string>());
+        }
+
+        private static async Task<bool> ValidateProjectAsync(PackageSpec project, ILogger log)
+        {
+            // Verify fallback framework, restore will still occur to avoid a large number of errors
+            // due to missing packages, but an error telling the user to fix their project will be logged
+            // and restore will fail.
+            return await AssetTargetFallbackUtility.ValidateFallbackFrameworkAsync(project, log);
         }
     }
 }

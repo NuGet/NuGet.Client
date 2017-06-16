@@ -107,7 +107,7 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to PackageTargetFallback and AssetTargetFallback cannot be used together. Remove PackageTargetFallback(deprecated) references from the project environment..
+        ///   Looks up a localized string similar to PackageTargetFallback is deprecated. Replace PackageTargetFallback references with AssetTargetFallback in the project environment..
         /// </summary>
         internal static string Error_InvalidATF {
             get {

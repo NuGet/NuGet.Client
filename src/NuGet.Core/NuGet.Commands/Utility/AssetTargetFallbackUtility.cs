@@ -2,32 +2,51 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
+using System.Threading.Tasks;
 using NuGet.Common;
-using NuGet.Frameworks;
 using NuGet.ProjectModel;
-using NuGet.Shared;
 
 namespace NuGet.Commands
 {
     public static class AssetTargetFallbackUtility
     {
+        /// <summary>
+        /// AssetTargetFallback property name.
+        /// </summary>
         public static readonly string AssetTargetFallback = nameof(AssetTargetFallback);
 
         /// <summary>
-        /// Throw if an invalid combination exists.
+        /// Logs an error and returns false if an invalid combination of fallback frameworks
+        /// exists in the project.
         /// </summary>
-        public static void EnsureValidFallback(IEnumerable<NuGetFramework> packageTargetFallback, IEnumerable<NuGetFramework> assetTargetFallback, string filePath)
+        /// <returns>False if an invalid combination exists.</returns>
+        public static async Task<bool> ValidateFallbackFrameworkAsync(PackageSpec spec, ILogger log)
         {
-            if (packageTargetFallback?.Any() == true && assetTargetFallback?.Any() == true)
+            if (spec == null)
             {
-                var error = GetInvalidFallbackCombinationMessage(filePath);
-                throw new RestoreCommandException(error);
+                throw new ArgumentNullException(nameof(spec));
             }
+
+            if (log == null)
+            {
+                throw new ArgumentNullException(nameof(log));
+            }
+
+            if (HasInvalidFallbackCombination(spec))
+            {
+                var error = GetInvalidFallbackCombinationMessage(spec.FilePath);
+                await log.LogAsync(error);
+                return false;
+            }
+
+            return true;
         }
 
+        /// <summary>
+        /// Create NU1003 error message.
+        /// </summary>
+        /// <param name="path">Optional file path.</param>
         public static RestoreLogMessage GetInvalidFallbackCombinationMessage(string path)
         {
             var error = RestoreLogMessage.CreateError(NuGetLogCode.NU1003, Strings.Error_InvalidATF);
@@ -38,47 +57,17 @@ namespace NuGet.Commands
         }
 
         /// <summary>
-        /// Returns the fallback framework or the original.
+        /// Verify all frameworks have only ATF or PTF.
         /// </summary>
-        public static NuGetFramework GetFallbackFramework(NuGetFramework projectFramework, IEnumerable<NuGetFramework> packageTargetFallback, IEnumerable<NuGetFramework> assetTargetFallback)
+        /// <returns>False if ATF and PTF are both used.</returns>
+        public static bool HasInvalidFallbackCombination(PackageSpec spec)
         {
-            if (assetTargetFallback?.Any() == true)
+            if (spec == null)
             {
-                // AssetTargetFallback
-                return new AssetTargetFallbackFramework(projectFramework, assetTargetFallback.AsList());
-            }
-            else if (packageTargetFallback?.Any() == true)
-            {
-                // PackageTargetFallback
-                return new FallbackFramework(projectFramework, packageTargetFallback.AsList());
+                throw new ArgumentNullException(nameof(spec));
             }
 
-            return projectFramework;
-        }
-
-        /// <summary>
-        /// Update TargetFrameworkInformation properties.
-        /// </summary>
-        public static void ApplyFramework(TargetFrameworkInformation targetFrameworkInfo, IEnumerable<NuGetFramework> packageTargetFallback, IEnumerable<NuGetFramework> assetTargetFallback)
-        {
-            // Update the framework appropriately
-            targetFrameworkInfo.FrameworkName = GetFallbackFramework(
-                targetFrameworkInfo.FrameworkName,
-                packageTargetFallback,
-                assetTargetFallback);
-
-            if (assetTargetFallback?.Any() == true)
-            {
-                // AssetTargetFallback
-                targetFrameworkInfo.Imports = assetTargetFallback.AsList();
-                targetFrameworkInfo.AssetTargetFallback = true;
-                targetFrameworkInfo.Warn = true;
-            }
-            else if (packageTargetFallback?.Any() == true)
-            {
-                // PackageTargetFallback
-                targetFrameworkInfo.Imports = packageTargetFallback.AsList();
-            }
+            return spec.TargetFrameworks.Any(e => e.Imports.Count > 0 && e.AssetTargetFallback.Count > 0);
         }
     }
 }
