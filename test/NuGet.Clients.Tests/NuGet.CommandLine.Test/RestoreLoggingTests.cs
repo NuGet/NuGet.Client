@@ -115,6 +115,7 @@ namespace NuGet.CommandLine.Test
                     pathContext.SolutionRoot,
                     netcoreapp1);
                 projectA.Properties.Add("ValidateRuntimeIdentifierCompatibility", "true");
+                projectA.Properties.Add("RuntimeIdentifiers", "win10-x64");
 
                 var packageX = new SimpleTestPackageContext("x", "1.0.0");
                 packageX.Files.Clear();
