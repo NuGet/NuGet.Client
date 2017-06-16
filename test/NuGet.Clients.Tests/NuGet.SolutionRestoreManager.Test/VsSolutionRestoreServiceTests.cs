@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using FluentAssertions;
 using Moq;
 using NuGet.Commands;
 using NuGet.Common;
@@ -537,6 +538,53 @@ namespace NuGet.SolutionRestoreManager.Test
             var actualProjectSpec = actualRestoreSpec.GetProjectSpec(projectFullPath);
             Assert.NotNull(actualProjectSpec);
             Assert.Equal("TestPackage", actualProjectSpec.Name);
+        }
+
+        [Fact]
+        public async Task NominateProjectAsync_FallbackFrameworks()
+        {
+            var cps = NewCpsProject("{ }");
+            var projectFullPath = cps.ProjectFullPath;
+            var pri = cps.Builder
+                .WithTargetFrameworkInfo(
+                    new VsTargetFrameworkInfo(
+                        "netcoreapp1.0",
+                        Enumerable.Empty<IVsReferenceItem>(),
+                        Enumerable.Empty<IVsReferenceItem>(),
+                        new[] {new VsProjectProperty("PackageTargetFallback", "net45;net451"),
+                               new VsProjectProperty("AssetTargetFallback", "net461;net462")}))
+                .Build();
+
+            // Act
+            var actualRestoreSpec = await CaptureNominateResultAsync(projectFullPath, cps.ProjectRestoreInfo);
+            var project = actualRestoreSpec.Projects.Single();
+
+            // Assert
+            project.TargetFrameworks[0].Imports.ShouldBeEquivalentTo(new[] { NuGetFramework.Parse("net45"), NuGetFramework.Parse("net451") });
+            project.TargetFrameworks[0].AssetTargetFallback.ShouldBeEquivalentTo(new[] { NuGetFramework.Parse("net461"), NuGetFramework.Parse("net462") });
+        }
+
+        [Fact]
+        public async Task NominateProjectAsync_EmptyFallbackFrameworks()
+        {
+            var cps = NewCpsProject("{ }");
+            var projectFullPath = cps.ProjectFullPath;
+            var pri = cps.Builder
+                .WithTargetFrameworkInfo(
+                    new VsTargetFrameworkInfo(
+                        "netcoreapp1.0",
+                        Enumerable.Empty<IVsReferenceItem>(),
+                        Enumerable.Empty<IVsReferenceItem>(),
+                        Enumerable.Empty<IVsProjectProperty>()))
+                .Build();
+
+            // Act
+            var actualRestoreSpec = await CaptureNominateResultAsync(projectFullPath, cps.ProjectRestoreInfo);
+            var project = actualRestoreSpec.Projects.Single();
+
+            // Assert
+            project.TargetFrameworks[0].Imports.Should().BeEmpty();
+            project.TargetFrameworks[0].AssetTargetFallback.Should().BeEmpty();
         }
 
         private async Task<DependencyGraphSpec> CaptureNominateResultAsync(

@@ -2,12 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using FluentAssertions;
 using Microsoft;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Threading;
@@ -227,8 +226,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 SpecValidationUtility.ValidateProjectSpec(actualRestoreSpec);
 
                 // Assert packagespath
-                Assert.Equal(restorePackagesPath != null? Path.Combine(testDirectory, restorePackagesPath) : SettingsUtility.GetGlobalPackagesFolder(settings),  actualRestoreSpec.RestoreMetadata.PackagesPath);
-                
+                Assert.Equal(restorePackagesPath != null ? Path.Combine(testDirectory, restorePackagesPath) : SettingsUtility.GetGlobalPackagesFolder(settings), actualRestoreSpec.RestoreMetadata.PackagesPath);
+
                 // assert sources
                 var specSources = actualRestoreSpec.RestoreMetadata.Sources.Select(e => e.Source);
                 var expectedSources = sources != null ? MSBuildStringUtility.Split(sources).Select(e => Path.Combine(testDirectory, e)) : SettingsUtility.GetEnabledSources(settings).Select(e => e.Source);
@@ -252,8 +251,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         [Theory]
         [InlineData(@"C:\RestorePackagesPath", @"C:\Source1;C:\Source2", @"C:\Fallback1;C:\Fallback2")]
         [InlineData(null, @"C:\Source1;C:\Source2", @"C:\Fallback1;C:\Fallback2")]
-        [InlineData(@"C:\RestorePackagesPath", null , @"C:\Fallback1;C:\Fallback2")]
-        [InlineData(@"C:\RestorePackagesPath", @"C:\Source1;C:\Source2",null)]
+        [InlineData(@"C:\RestorePackagesPath", null, @"C:\Fallback1;C:\Fallback2")]
+        [InlineData(@"C:\RestorePackagesPath", @"C:\Source1;C:\Source2", null)]
         public async Task GetPackageSpecsAsync_ReadSettingsWithFullPaths(string restorePackagesPath, string sources, string fallbackFolders)
         {
             // Arrange
@@ -600,6 +599,92 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     .Verify(
                         x => x.RemovePackageReferenceAsync(It.IsAny<string>()),
                         Times.Once);
+            }
+        }
+
+        [Fact]
+        public async Task GetPackageSpecsAsync_WithFallbackFrameworks_Succeeds()
+        {
+            // Arrange
+            using (var randomTestFolder = TestDirectory.Create())
+            {
+                var framework = NuGetFramework.Parse("netcoreapp2.0");
+
+                var projectAdapter = CreateProjectAdapter(randomTestFolder);
+
+                Mock.Get(projectAdapter)
+                    .SetupGet(x => x.PackageTargetFallback)
+                    .Returns("net45;net451");
+
+                Mock.Get(projectAdapter)
+                    .SetupGet(x => x.AssetTargetFallback)
+                    .Returns("net461;net462");
+
+                var projectServices = new TestProjectSystemServices();
+
+                var testProject = new LegacyPackageReferenceProject(
+                    projectAdapter,
+                    Guid.NewGuid().ToString(),
+                    projectServices,
+                    _threadingService);
+
+                var testDependencyGraphCacheContext = new DependencyGraphCacheContext();
+
+                await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                // Act
+                var packageSpecs = await testProject.GetPackageSpecsAsync(testDependencyGraphCacheContext);
+
+                // Assert
+                Assert.NotNull(packageSpecs);
+
+                var actualRestoreSpec = packageSpecs.Single();
+
+                actualRestoreSpec.TargetFrameworks[0].Imports.ShouldBeEquivalentTo(new[] { NuGetFramework.Parse("net45"), NuGetFramework.Parse("net451") });
+                actualRestoreSpec.TargetFrameworks[0].AssetTargetFallback.ShouldBeEquivalentTo(new[] { NuGetFramework.Parse("net461"), NuGetFramework.Parse("net462") });
+            }
+        }
+
+        [Fact]
+        public async Task GetPackageSpecsAsync_WithNoFallbackFrameworks_Succeeds()
+        {
+            // Arrange
+            using (var randomTestFolder = TestDirectory.Create())
+            {
+                var framework = NuGetFramework.Parse("netcoreapp2.0");
+
+                var projectAdapter = CreateProjectAdapter(randomTestFolder);
+
+                Mock.Get(projectAdapter)
+                    .SetupGet(x => x.PackageTargetFallback)
+                    .Returns("");
+
+                Mock.Get(projectAdapter)
+                    .SetupGet(x => x.AssetTargetFallback)
+                    .Returns("");
+
+                var projectServices = new TestProjectSystemServices();
+
+                var testProject = new LegacyPackageReferenceProject(
+                    projectAdapter,
+                    Guid.NewGuid().ToString(),
+                    projectServices,
+                    _threadingService);
+
+                var testDependencyGraphCacheContext = new DependencyGraphCacheContext();
+
+                await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                // Act
+                var packageSpecs = await testProject.GetPackageSpecsAsync(testDependencyGraphCacheContext);
+
+                // Assert
+                Assert.NotNull(packageSpecs);
+
+                var actualRestoreSpec = packageSpecs.Single();
+
+                actualRestoreSpec.TargetFrameworks[0].Imports.Should().BeEmpty();
+                actualRestoreSpec.TargetFrameworks[0].AssetTargetFallback.Should().BeEmpty();
             }
         }
 

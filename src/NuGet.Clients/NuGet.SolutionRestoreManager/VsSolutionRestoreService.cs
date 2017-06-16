@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -404,7 +404,7 @@ namespace NuGet.SolutionRestoreManager
                                           .ToList();
 
             // Update TFI with fallback properties
-            AssetTargetFallbackUtility.ApplyFramework(tfi, ptf, atf);
+            PackageSpecUtility.ApplyFallbackFramework(tfi, ptf, atf);
 
             if (targetFrameworkInfo.PackageReferences != null)
             {
