@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -4561,8 +4561,7 @@ namespace NuGet.CommandLine.Test
                 var r = Util.RestoreSolution(pathContext, expectedExitCode: 1);
 
                 // Assert
-                r.AllOutput.Should().Contain("PackageTargetFallback is deprecated. Replace PackageTargetFallback references with AssetTargetFallback in the project environment.");
-                r.AllOutput.Should().Contain("NU1003");
+                r.AllOutput.Should().Contain("PackageTargetFallback and AssetTargetFallback cannot be used together.");
             }
         }
 

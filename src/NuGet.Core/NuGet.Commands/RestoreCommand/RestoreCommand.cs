@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -81,12 +81,11 @@ namespace NuGet.Commands
             };
 
             localRepositories.AddRange(_request.DependencyProviders.FallbackPackageFolders);
-
+            
             var contextForProject = CreateRemoteWalkContext(_request, _logger);
 
             CacheFile cacheFile = null;
-            if (NoOpRestoreUtilities.IsNoOpSupported(_request))
-            {
+            if (NoOpRestoreUtilities.IsNoOpSupported(_request)) {
                 var cacheFileAndStatus = EvaluateCacheFile();
                 cacheFile = cacheFileAndStatus.Key;
                 if (cacheFileAndStatus.Value)
@@ -110,9 +109,6 @@ namespace NuGet.Commands
                     }
                 }
             }
-
-            // Validate, for noop this will be replayed from the assets file.
-            _success &= await ValidateProjectAsync(_request.Project, _logger);
 
             // Restore
             var graphs = await ExecuteRestoreAsync(
@@ -211,7 +207,7 @@ namespace NuGet.Commands
                 _request.ProjectStyle,
                 restoreTime.Elapsed);
         }
-
+        
         private void ReplayWarningsAndErrors()
         {
             var logMessages = _request.ExistingLockFile?.LogMessages ?? Enumerable.Empty<IAssetsLogMessage>();
@@ -816,14 +812,6 @@ namespace NuGet.Commands
                 project,
                 msbuildProjectPath: null,
                 projectReferences: Enumerable.Empty<string>());
-        }
-
-        private static async Task<bool> ValidateProjectAsync(PackageSpec project, ILogger log)
-        {
-            // Verify fallback framework, restore will still occur to avoid a large number of errors
-            // due to missing packages, but an error telling the user to fix their project will be logged
-            // and restore will fail.
-            return await AssetTargetFallbackUtility.ValidateFallbackFrameworkAsync(project, log);
         }
     }
 }
