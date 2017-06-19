@@ -39,6 +39,8 @@ namespace NuGet.Commands.Test
                 }
             };
             tfis[0].Imports.Add(NuGetFramework.Parse("net461"));
+            tfis[0].AssetTargetFallback = true;
+            tfis[0].PackageTargetFallbacks.Add(NuGetFramework.Parse("net461"));
             tfis[0].AssetTargetFallbacks.Add(NuGetFramework.Parse("net461"));
 
             var project = new PackageSpec(tfis);
@@ -65,6 +67,8 @@ namespace NuGet.Commands.Test
                 }
             };
             tfis[0].Imports.Add(NuGetFramework.Parse("net461"));
+            tfis[0].AssetTargetFallback = true;
+            tfis[0].PackageTargetFallbacks.Add(NuGetFramework.Parse("net461"));
             tfis[0].AssetTargetFallbacks.Add(NuGetFramework.Parse("net461"));
 
             var project = new PackageSpec(tfis);
@@ -146,6 +150,8 @@ namespace NuGet.Commands.Test
                 }
             };
             tfis[0].AssetTargetFallbacks.Add(NuGetFramework.Parse("net461"));
+            tfis[0].PackageTargetFallbacks.Add(NuGetFramework.Parse("net461"));
+            tfis[0].AssetTargetFallback = true;
             tfis[0].Imports.Add(NuGetFramework.Parse("net461"));
 
             var project = new PackageSpec(tfis);

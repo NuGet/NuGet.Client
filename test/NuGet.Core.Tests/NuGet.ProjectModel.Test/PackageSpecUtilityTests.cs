@@ -206,8 +206,10 @@ namespace NuGet.ProjectModel.Test
 
             PackageSpecUtility.ApplyFallbackFramework(frameworkInfo, ptf, atf);
 
-            frameworkInfo.Imports.Should().BeEmpty();
+            frameworkInfo.PackageTargetFallbacks.Should().BeEmpty();
+            frameworkInfo.Imports.ShouldBeEquivalentTo(new[] { NuGetFramework.Parse("net461") });
             frameworkInfo.AssetTargetFallbacks.ShouldBeEquivalentTo(new[] { NuGetFramework.Parse("net461") });
+            frameworkInfo.AssetTargetFallback.ShouldBeEquivalentTo(true);
 
             frameworkInfo.FrameworkName.Should().NotBeOfType(typeof(FallbackFramework));
             frameworkInfo.FrameworkName.Should().BeOfType(typeof(AssetTargetFallbackFramework));
