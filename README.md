@@ -9,6 +9,12 @@ This repo contains the following clients:
   * [NuGet Package Manager for Visual Studio 2015/2017](https://docs.nuget.org/ndocs/tools/package-manager-ui)
   * [PowerShell CmdLets](https://docs.nuget.org/ndocs/tools/powershell-reference)
 
+## Build Status
+
+|Windows x64 |
+|:------:|
+|[![](https://devdiv.visualstudio.com/_apis/public/build/definitions/0bdbc590-a062-4c3f-b0f6-9383f67865ee/3736/badge)](https://devdiv.visualstudio.com/DevDiv/_build?_a=completed&definitionId=3736)|
+
 ## Open Source Code of Conduct
 
 This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/). For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.
