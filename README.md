@@ -11,9 +11,9 @@ This repo contains the following clients:
 
 ## Build Status
 
-|Windows x64 |
+| VSTS Build |
 |:------:|
-|[![](https://devdiv.visualstudio.com/_apis/public/build/definitions/0bdbc590-a062-4c3f-b0f6-9383f67865ee/3736/badge)](https://devdiv.visualstudio.com/DevDiv/_build?_a=completed&definitionId=3736)|
+|[![](https://devdiv.visualstudio.com/_apis/public/build/definitions/0bdbc590-a062-4c3f-b0f6-9383f67865ee/5868/badge)](https://devdiv.visualstudio.com/DevDiv/_build?_a=completed&definitionId=5868)|
 
 ## Open Source Code of Conduct
 
