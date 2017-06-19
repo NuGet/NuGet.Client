@@ -647,11 +647,11 @@ namespace NuGet.Commands.Test
                 var netTFM = project1Spec.GetTargetFramework(NuGetFramework.Parse("net46"));
 
                 // Assert
-                Assert.Equal(2, nsTFM.AssetTargetFallback.Count);
-                Assert.Equal(0, netTFM.AssetTargetFallback.Count);
+                Assert.Equal(2, nsTFM.AssetTargetFallbacks.Count);
+                Assert.Equal(0, netTFM.AssetTargetFallbacks.Count);
 
-                Assert.Equal(NuGetFramework.Parse("portable-net45+win8"), nsTFM.AssetTargetFallback[0]);
-                Assert.Equal(NuGetFramework.Parse("dnxcore50"), nsTFM.AssetTargetFallback[1]);
+                Assert.Equal(NuGetFramework.Parse("portable-net45+win8"), nsTFM.AssetTargetFallbacks[0]);
+                Assert.Equal(NuGetFramework.Parse("dnxcore50"), nsTFM.AssetTargetFallbacks[1]);
 
                 // Verify fallback framework
                 var assetTargetFallbackFramewrk = (AssetTargetFallbackFramework)project1Spec.TargetFrameworks

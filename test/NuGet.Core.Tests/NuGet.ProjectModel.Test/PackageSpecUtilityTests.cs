@@ -143,7 +143,7 @@ namespace NuGet.ProjectModel.Test
 
             PackageSpecUtility.ApplyFallbackFramework(frameworkInfo, ptf, atf);
 
-            frameworkInfo.AssetTargetFallback.ShouldBeEquivalentTo(new[] { NuGetFramework.Parse("net45") });
+            frameworkInfo.AssetTargetFallbacks.ShouldBeEquivalentTo(new[] { NuGetFramework.Parse("net45") });
             frameworkInfo.Imports.ShouldBeEquivalentTo(new[] { NuGetFramework.Parse("net461") });
 
             frameworkInfo.FrameworkName.Should().NotBeOfType(typeof(FallbackFramework));
@@ -162,7 +162,7 @@ namespace NuGet.ProjectModel.Test
 
             PackageSpecUtility.ApplyFallbackFramework(frameworkInfo, ptf, atf);
 
-            frameworkInfo.AssetTargetFallback.Should().BeEmpty();
+            frameworkInfo.AssetTargetFallbacks.Should().BeEmpty();
             frameworkInfo.Imports.Should().BeEmpty();
 
             frameworkInfo.FrameworkName.Should().NotBeOfType(typeof(FallbackFramework));
@@ -184,7 +184,7 @@ namespace NuGet.ProjectModel.Test
 
             PackageSpecUtility.ApplyFallbackFramework(frameworkInfo, ptf, atf);
 
-            frameworkInfo.AssetTargetFallback.Should().BeEmpty();
+            frameworkInfo.AssetTargetFallbacks.Should().BeEmpty();
             frameworkInfo.Imports.ShouldBeEquivalentTo(new[] { NuGetFramework.Parse("net461") });
 
             frameworkInfo.FrameworkName.Should().BeOfType(typeof(FallbackFramework));
@@ -207,7 +207,7 @@ namespace NuGet.ProjectModel.Test
             PackageSpecUtility.ApplyFallbackFramework(frameworkInfo, ptf, atf);
 
             frameworkInfo.Imports.Should().BeEmpty();
-            frameworkInfo.AssetTargetFallback.ShouldBeEquivalentTo(new[] { NuGetFramework.Parse("net461") });
+            frameworkInfo.AssetTargetFallbacks.ShouldBeEquivalentTo(new[] { NuGetFramework.Parse("net461") });
 
             frameworkInfo.FrameworkName.Should().NotBeOfType(typeof(FallbackFramework));
             frameworkInfo.FrameworkName.Should().BeOfType(typeof(AssetTargetFallbackFramework));

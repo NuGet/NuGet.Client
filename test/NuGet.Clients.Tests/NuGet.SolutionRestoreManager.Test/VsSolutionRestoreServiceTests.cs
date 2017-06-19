@@ -535,7 +535,7 @@ namespace NuGet.SolutionRestoreManager.Test
 
             // Assert
             project.TargetFrameworks[0].Imports.ShouldBeEquivalentTo(new[] { NuGetFramework.Parse("net45"), NuGetFramework.Parse("net451") });
-            project.TargetFrameworks[0].AssetTargetFallback.ShouldBeEquivalentTo(new[] { NuGetFramework.Parse("net461"), NuGetFramework.Parse("net462") });
+            project.TargetFrameworks[0].AssetTargetFallbacks.ShouldBeEquivalentTo(new[] { NuGetFramework.Parse("net461"), NuGetFramework.Parse("net462") });
         }
 
         [Fact]
@@ -558,7 +558,7 @@ namespace NuGet.SolutionRestoreManager.Test
 
             // Assert
             project.TargetFrameworks[0].Imports.Should().BeEmpty();
-            project.TargetFrameworks[0].AssetTargetFallback.Should().BeEmpty();
+            project.TargetFrameworks[0].AssetTargetFallbacks.Should().BeEmpty();
         }
 
         private async Task<DependencyGraphSpec> CaptureNominateResultAsync(

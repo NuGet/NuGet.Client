@@ -39,7 +39,7 @@ namespace NuGet.Commands.Test
                 }
             };
             tfis[0].Imports.Add(NuGetFramework.Parse("net461"));
-            tfis[0].AssetTargetFallback.Add(NuGetFramework.Parse("net461"));
+            tfis[0].AssetTargetFallbacks.Add(NuGetFramework.Parse("net461"));
 
             var project = new PackageSpec(tfis);
 
@@ -65,7 +65,7 @@ namespace NuGet.Commands.Test
                 }
             };
             tfis[0].Imports.Add(NuGetFramework.Parse("net461"));
-            tfis[0].AssetTargetFallback.Add(NuGetFramework.Parse("net461"));
+            tfis[0].AssetTargetFallbacks.Add(NuGetFramework.Parse("net461"));
 
             var project = new PackageSpec(tfis);
 
@@ -93,7 +93,7 @@ namespace NuGet.Commands.Test
 
             // Add PTF to one framework, and ATF to another
             tfis[0].Imports.Add(NuGetFramework.Parse("net461"));
-            tfis[1].AssetTargetFallback.Add(NuGetFramework.Parse("net461"));
+            tfis[1].AssetTargetFallbacks.Add(NuGetFramework.Parse("net461"));
 
             var project = new PackageSpec(tfis);
 
@@ -127,7 +127,7 @@ namespace NuGet.Commands.Test
                     FrameworkName = NuGetFramework.Parse("netcoreapp2.0")
                 }
             };
-            tfis[0].AssetTargetFallback.Add(NuGetFramework.Parse("net461"));
+            tfis[0].AssetTargetFallbacks.Add(NuGetFramework.Parse("net461"));
 
             var project = new PackageSpec(tfis);
 
@@ -145,7 +145,7 @@ namespace NuGet.Commands.Test
                     FrameworkName = NuGetFramework.Parse("netcoreapp2.0")
                 }
             };
-            tfis[0].AssetTargetFallback.Add(NuGetFramework.Parse("net461"));
+            tfis[0].AssetTargetFallbacks.Add(NuGetFramework.Parse("net461"));
             tfis[0].Imports.Add(NuGetFramework.Parse("net461"));
 
             var project = new PackageSpec(tfis);
@@ -167,7 +167,7 @@ namespace NuGet.Commands.Test
                     FrameworkName = NuGetFramework.Parse("netcoreapp2.0")
                 }
             };
-            tfis[0].AssetTargetFallback.Add(NuGetFramework.Parse("net461"));
+            tfis[0].AssetTargetFallbacks.Add(NuGetFramework.Parse("net461"));
 
             var project = new PackageSpec(tfis);
 

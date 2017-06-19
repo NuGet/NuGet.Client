@@ -441,8 +441,12 @@ namespace NuGet.ProjectModel
                     writer.WriteObjectStart(framework.FrameworkName.GetShortFolderName());
 
                     SetDependencies(writer, framework.Dependencies);
+                    // legacy behavior
                     SetFrameworkArrayToProperty(writer, framework.Imports, "imports");
-                    SetFrameworkArrayToProperty(writer, framework.AssetTargetFallback, "assetTargetFallback");
+                    SetValueIfTrue(writer, "assetTargetFallback", framework.AssetTargetFallback);
+                    // atf vs. ptf warnings hack
+                    SetFrameworkArrayToProperty(writer, framework.AssetTargetFallbacks, "assetTargetFallbacks");
+                    SetFrameworkArrayToProperty(writer, framework.PackageTargetFallbacks, "packageTargetFallbacks");
                     SetValueIfTrue(writer, "warn", framework.Warn);
 
                     writer.WriteObjectEnd();

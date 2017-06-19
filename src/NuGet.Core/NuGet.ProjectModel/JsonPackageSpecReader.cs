@@ -732,16 +732,23 @@ namespace NuGet.ProjectModel
             var frameworkName = GetFramework(targetFramework.Key);
 
             var properties = targetFramework.Value.Value<JObject>();
-
+            
+            // Legacy behavior
             var importFrameworks = GetFrameworksFromArray(properties["imports"], packageSpec);
-            var assetTargetFallbackFrameworks = GetFrameworksFromArray(properties["assetTargetFallback"], packageSpec);
+            var assetTargetFallback = GetBoolOrFalse(properties, "assetTargetFallback", filePath);
+
+            // atf vs. ptf warnings hack
+            var assetTargetFallbackFrameworks = GetFrameworksFromArray(properties["assetTargetFallbacks"], packageSpec);
+            var packageTargetFallbackFrameworks = GetFrameworksFromArray(properties["packageTargetFallbacks"], packageSpec);
 
             var targetFrameworkInformation = new TargetFrameworkInformation
             {
                 FrameworkName = PackageSpecUtility.GetFallbackFramework(frameworkName, importFrameworks, assetTargetFallbackFrameworks),
                 Dependencies = new List<LibraryDependency>(),
                 Imports = importFrameworks,
-                AssetTargetFallback = assetTargetFallbackFrameworks,
+                AssetTargetFallback = assetTargetFallback,
+                AssetTargetFallbacks = assetTargetFallbackFrameworks,
+                PackageTargetFallbacks = packageTargetFallbackFrameworks,
                 Warn = GetWarnSetting(properties)
             };
 

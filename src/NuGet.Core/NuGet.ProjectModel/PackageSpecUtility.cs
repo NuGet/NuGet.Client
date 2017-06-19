@@ -76,7 +76,11 @@ namespace NuGet.ProjectModel
             if (assetTargetFallback?.Any() == true)
             {
                 // AssetTargetFallback
-                targetFrameworkInfo.AssetTargetFallback = assetTargetFallback.AsList();
+                // Legacy readers
+                targetFrameworkInfo.Imports = assetTargetFallback.AsList();
+                targetFrameworkInfo.AssetTargetFallback = true;
+
+                targetFrameworkInfo.AssetTargetFallbacks = assetTargetFallback.AsList();
                 targetFrameworkInfo.Warn = true;
             }
 
@@ -84,6 +88,7 @@ namespace NuGet.ProjectModel
             {
                 // PackageTargetFallback
                 targetFrameworkInfo.Imports = packageTargetFallback.AsList();
+                targetFrameworkInfo.PackageTargetFallbacks = packageTargetFallback.AsList();
             }
         }
 
