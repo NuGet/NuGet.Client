@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -19,6 +19,7 @@ using NuGet.Configuration;
 using NuGet.PackageManagement.Telemetry;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
+using NuGet.ProjectModel;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using NuGet.VisualStudio;
@@ -228,6 +229,31 @@ namespace NuGet.PackageManagement.VisualStudio
                 .ToList();
 
             return projects;
+        }
+
+        public bool IsAllProjectsNominated()
+        {
+#if VS14
+            // for VS14, always return true since nominations don't apply there.
+            return true;
+#else
+            var netCoreProjects = GetNuGetProjects().OfType<NetCorePackageReferenceProject>().ToList();
+
+            foreach (var project in netCoreProjects)
+            {
+                // check if this .Net core project is nominated or not.
+                DependencyGraphSpec projectRestoreInfo;
+                if (!_projectSystemCache.TryGetProjectRestoreInfo(project.MSBuildProjectPath, out projectRestoreInfo) ||
+                    projectRestoreInfo == null)
+                {
+                    // there are projects still to be nominated.
+                    return false;
+                }
+            }
+
+            // return true if all the net core projects have been nominated.
+            return true;
+#endif
         }
 
         /// <summary>
