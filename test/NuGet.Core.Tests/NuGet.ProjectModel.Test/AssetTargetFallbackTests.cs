@@ -13,10 +13,10 @@ namespace NuGet.ProjectModel.Test
         public void GivenAssetTargetFallbackHasAValueVerifyValuePersisted()
         {
             var spec = PackageSpecTestUtility.GetSpec(NuGetFramework.Parse("netcoreapp2.0"));
-            spec.TargetFrameworks[0].AssetTargetFallback.Add(NuGetFramework.Parse("net45"));
+            spec.TargetFrameworks[0].AssetTargetFallbacks.Add(NuGetFramework.Parse("net45"));
 
             var outSpec = spec.RoundTrip();
-            outSpec.TargetFrameworks[0].AssetTargetFallback.ShouldBeEquivalentTo(new[] { NuGetFramework.Parse("net45") });
+            outSpec.TargetFrameworks[0].AssetTargetFallbacks.ShouldBeEquivalentTo(new[] { NuGetFramework.Parse("net45") });
             outSpec.TargetFrameworks[0].Imports.Should().BeEmpty();
         }
 
@@ -26,7 +26,7 @@ namespace NuGet.ProjectModel.Test
             var spec = PackageSpecTestUtility.GetSpec(NuGetFramework.Parse("netcoreapp2.0"));
 
             var outSpec = spec.RoundTrip();
-            outSpec.TargetFrameworks[0].AssetTargetFallback.Should().BeEmpty();
+            outSpec.TargetFrameworks[0].AssetTargetFallbacks.Should().BeEmpty();
             outSpec.TargetFrameworks[0].Imports.Should().BeEmpty();
         }
 
@@ -39,7 +39,7 @@ namespace NuGet.ProjectModel.Test
 
             var outSpec = spec.RoundTrip();
             outSpec.TargetFrameworks[0].Imports.ShouldBeEquivalentTo(new[] { net461 });
-            outSpec.TargetFrameworks[0].AssetTargetFallback.Should().BeEmpty();
+            outSpec.TargetFrameworks[0].AssetTargetFallbacks.Should().BeEmpty();
         }
 
         [Fact]
@@ -48,7 +48,7 @@ namespace NuGet.ProjectModel.Test
             var net461 = NuGetFramework.Parse("net461");
             var projectFramework = NuGetFramework.Parse("netcoreapp2.0");
             var spec = PackageSpecTestUtility.GetSpec(projectFramework);
-            spec.TargetFrameworks[0].AssetTargetFallback.Add(net461);
+            spec.TargetFrameworks[0].AssetTargetFallbacks.Add(net461);
 
             var outSpec = spec.RoundTrip();
 
@@ -62,7 +62,7 @@ namespace NuGet.ProjectModel.Test
         {
             var net461 = NuGetFramework.Parse("net461");
             var spec1 = PackageSpecTestUtility.GetSpec("netcoreapp2.0");
-            spec1.TargetFrameworks[0].AssetTargetFallback.Add(net461);
+            spec1.TargetFrameworks[0].AssetTargetFallbacks.Add(net461);
             var spec2 = PackageSpecTestUtility.GetSpec("netcoreapp2.0");
             spec2.TargetFrameworks[0].Imports.Add(net461);
 

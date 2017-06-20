@@ -62,7 +62,7 @@ namespace NuGet.ProjectModel.Test
             var atf = new List<NuGetFramework>();
             var ptf = new List<NuGetFramework>();
 
-            var result = PackageSpecUtility.GetFallbackFramework(project, ptf, atf);
+            var result = PackageSpecUtility.GetFallbackFramework(project, false, null, ptf, atf);
 
             result.Should().Be(project, "no atf or ptf frameworks exist");
         }
@@ -72,7 +72,7 @@ namespace NuGet.ProjectModel.Test
         {
             var project = NuGetFramework.Parse("netcoreapp2.0");
 
-            var result = PackageSpecUtility.GetFallbackFramework(project, packageTargetFallback: null, assetTargetFallback: null);
+            var result = PackageSpecUtility.GetFallbackFramework(project, isAssetTargetFallback : false, imports : null, packageTargetFallback: null, assetTargetFallback: null);
 
             result.Should().Be(project, "no atf or ptf frameworks exist");
         }
@@ -87,7 +87,7 @@ namespace NuGet.ProjectModel.Test
                 NuGetFramework.Parse("net461")
             };
 
-            var result = PackageSpecUtility.GetFallbackFramework(project, ptf, atf) as FallbackFramework;
+            var result = PackageSpecUtility.GetFallbackFramework(project, false, null, ptf, atf) as FallbackFramework;
 
             result.Fallback.ShouldBeEquivalentTo(ptf);
         }
@@ -102,7 +102,7 @@ namespace NuGet.ProjectModel.Test
                 NuGetFramework.Parse("net461")
             };
 
-            var result = PackageSpecUtility.GetFallbackFramework(project, ptf, atf) as AssetTargetFallbackFramework;
+            var result = PackageSpecUtility.GetFallbackFramework(project, true, null, ptf, atf) as AssetTargetFallbackFramework;
 
             result.Fallback.ShouldBeEquivalentTo(atf);
         }
@@ -120,9 +120,77 @@ namespace NuGet.ProjectModel.Test
                 NuGetFramework.Parse("net461")
             };
 
-            var result = PackageSpecUtility.GetFallbackFramework(project, ptf, atf);
+            var result = PackageSpecUtility.GetFallbackFramework(project, false, null, ptf, atf);
 
             result.Should().Be(project, "both atf and ptf will be ignored");
+        }
+
+        [Fact]
+        public void PackageSpecUtility_GetFallbackFrameworWithImportsOnlyVerifyResult()
+        {
+            var project = NuGetFramework.Parse("netcoreapp2.0");
+            var imports = new List<NuGetFramework>()
+            {
+                NuGetFramework.Parse("net461")
+            };
+
+            var result = PackageSpecUtility.GetFallbackFramework(project, false, imports, null, null) as FallbackFramework;
+
+            result.Fallback.ShouldBeEquivalentTo(imports, "When there is no ATF/PTF the imports is used. this is the project.json scenario");
+        }
+
+        [Fact]
+        public void PackageSpecUtility_GetFallbackFrameworWithImportsAndATFFlagOnlyVerifyResult()
+        {
+            var project = NuGetFramework.Parse("netcoreapp2.0");
+            var imports = new List<NuGetFramework>()
+            {
+                NuGetFramework.Parse("net461")
+            };
+
+            var result = PackageSpecUtility.GetFallbackFramework(project,true, imports, null, null) as AssetTargetFallbackFramework;
+
+            result.Fallback.ShouldBeEquivalentTo(imports, "When there is no ATF/PTF the imports is used. this is the project.json scenario");
+        }
+
+        [Fact]
+        public void PackageSpecUtility_GetFallbackFrameworWithImportsAndPTFVerifyResult()
+        {
+            var project = NuGetFramework.Parse("netcoreapp2.0");
+            var imports = new List<NuGetFramework>()
+            {
+                NuGetFramework.Parse("net461")
+            };
+
+            var ptf = new List<NuGetFramework>()
+            {
+                NuGetFramework.Parse("net461")
+            };
+
+
+            var result = PackageSpecUtility.GetFallbackFramework(project, false, imports, ptf, null) as FallbackFramework;
+
+            result.Fallback.ShouldBeEquivalentTo(ptf, "When there is ptf and imports, ptf is favored");
+        }
+
+        [Fact]
+        public void PackageSpecUtility_GetFallbackFrameworWithImportsAndATFVerifyResult()
+        {
+            var project = NuGetFramework.Parse("netcoreapp2.0");
+            var imports = new List<NuGetFramework>()
+            {
+                NuGetFramework.Parse("net461")
+            };
+
+            var atf = new List<NuGetFramework>()
+            {
+                NuGetFramework.Parse("net461")
+            };
+
+
+            var result = PackageSpecUtility.GetFallbackFramework(project, true, imports, null, atf) as AssetTargetFallbackFramework;
+
+            result.Fallback.ShouldBeEquivalentTo(atf, "When there is ptf and imports, ptf is favored");
         }
 
         [Fact]
@@ -143,8 +211,8 @@ namespace NuGet.ProjectModel.Test
 
             PackageSpecUtility.ApplyFallbackFramework(frameworkInfo, ptf, atf);
 
-            frameworkInfo.AssetTargetFallback.ShouldBeEquivalentTo(new[] { NuGetFramework.Parse("net45") });
-            frameworkInfo.Imports.ShouldBeEquivalentTo(new[] { NuGetFramework.Parse("net461") });
+            frameworkInfo.AssetTargetFallbacks.ShouldBeEquivalentTo(new[] { NuGetFramework.Parse("net45") });
+            frameworkInfo.Imports.ShouldBeEquivalentTo(new[] { NuGetFramework.Parse("net45") });
 
             frameworkInfo.FrameworkName.Should().NotBeOfType(typeof(FallbackFramework));
             frameworkInfo.FrameworkName.Should().NotBeOfType(typeof(AssetTargetFallbackFramework));
@@ -162,7 +230,7 @@ namespace NuGet.ProjectModel.Test
 
             PackageSpecUtility.ApplyFallbackFramework(frameworkInfo, ptf, atf);
 
-            frameworkInfo.AssetTargetFallback.Should().BeEmpty();
+            frameworkInfo.AssetTargetFallbacks.Should().BeEmpty();
             frameworkInfo.Imports.Should().BeEmpty();
 
             frameworkInfo.FrameworkName.Should().NotBeOfType(typeof(FallbackFramework));
@@ -184,7 +252,7 @@ namespace NuGet.ProjectModel.Test
 
             PackageSpecUtility.ApplyFallbackFramework(frameworkInfo, ptf, atf);
 
-            frameworkInfo.AssetTargetFallback.Should().BeEmpty();
+            frameworkInfo.AssetTargetFallbacks.Should().BeEmpty();
             frameworkInfo.Imports.ShouldBeEquivalentTo(new[] { NuGetFramework.Parse("net461") });
 
             frameworkInfo.FrameworkName.Should().BeOfType(typeof(FallbackFramework));
@@ -206,8 +274,10 @@ namespace NuGet.ProjectModel.Test
 
             PackageSpecUtility.ApplyFallbackFramework(frameworkInfo, ptf, atf);
 
-            frameworkInfo.Imports.Should().BeEmpty();
-            frameworkInfo.AssetTargetFallback.ShouldBeEquivalentTo(new[] { NuGetFramework.Parse("net461") });
+            frameworkInfo.PackageTargetFallbacks.Should().BeEmpty();
+            frameworkInfo.Imports.ShouldBeEquivalentTo(new[] { NuGetFramework.Parse("net461") });
+            frameworkInfo.AssetTargetFallbacks.ShouldBeEquivalentTo(new[] { NuGetFramework.Parse("net461") });
+            frameworkInfo.AssetTargetFallback.ShouldBeEquivalentTo(true);
 
             frameworkInfo.FrameworkName.Should().NotBeOfType(typeof(FallbackFramework));
             frameworkInfo.FrameworkName.Should().BeOfType(typeof(AssetTargetFallbackFramework));

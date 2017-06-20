@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -19,21 +19,37 @@ namespace NuGet.ProjectModel
         /// A fallback PCL framework to use when no compatible items
         /// were found for <see cref="FrameworkName"/>. This check is done
         /// per asset type.
+        /// Imports will contain either ATF or PTF, whichever one is being used.
         /// </summary>
-        /// <remarks>Deprecated. Use <see cref="AssetTargetFallback" /> instead.</remarks>
-        /// <see cref="Imports" /> cannot be used with <see cref="AssetTargetFallback" />.
+        /// <remarks>Deprecated. Use <see cref="AssetTargetFallbacks" /> instead.</remarks>
+        /// <see cref="Imports" /> cannot be used with <see cref="AssetTargetFallbacks" />.
         public IList<NuGetFramework> Imports { get; set; } = new List<NuGetFramework>();
+
+        /// <summary>
+        /// This is just kept for legacy readers.
+        /// </summary>
+        public bool AssetTargetFallback { get; set; }
 
         /// <summary>
         /// A fallback framework to use when no compatible items
         /// were found for <see cref="FrameworkName"/>. 
-        /// <see cref="AssetTargetFallback" /> will only fallback if the package
+        /// <see cref="AssetTargetFallbacks" /> will only fallback if the package
         /// does not contain any assets compatible with <see cref="FrameworkName"/>.
         /// </summary>
         /// <remarks>
-        /// <see cref="AssetTargetFallback" /> cannot be used with <see cref="Imports" />.
+        /// <see cref="AssetTargetFallbacks" /> cannot be used with <see cref="Imports" />.
         /// </remarks>
-        public IList<NuGetFramework> AssetTargetFallback { get; set; } = new List<NuGetFramework>();
+        public IList<NuGetFramework> AssetTargetFallbacks { get; set; } = new List<NuGetFramework>();
+
+        /// <summary>
+        /// A fallback framework to use when no compatible items
+        /// were found for <see cref="FrameworkName"/>. 
+        /// This is only used in order to preserve the behavior for legacy readers
+        /// </summary>
+        /// <remarks>
+        /// <see cref="PackageTargetFallbacks" /> cannot be used with <see cref="AssetTargetFallbacks" />.
+        /// </remarks>
+        public IList<NuGetFramework> PackageTargetFallbacks { get; set; } = new List<NuGetFramework>();
 
         /// <summary>
         /// Display warnings when the Imports framework is used.
@@ -56,8 +72,13 @@ namespace NuGet.ProjectModel
             hashCode.AddObject(nameof(Imports));
             hashCode.AddSequence(Imports);
 
-            hashCode.AddObject(nameof(AssetTargetFallback));
-            hashCode.AddSequence(AssetTargetFallback);
+            hashCode.AddObject(nameof(AssetTargetFallbacks));
+            hashCode.AddSequence(AssetTargetFallbacks);
+
+            hashCode.AddObject(nameof(PackageTargetFallbacks ));
+            hashCode.AddSequence(PackageTargetFallbacks);
+
+            hashCode.AddObject(AssetTargetFallback);
 
             return hashCode.CombinedHash;
         }
@@ -82,7 +103,9 @@ namespace NuGet.ProjectModel
             return EqualityUtility.EqualsWithNullCheck(FrameworkName, other.FrameworkName) &&
                    Dependencies.SequenceEqualWithNullCheck(other.Dependencies) &&
                    Imports.SequenceEqualWithNullCheck(other.Imports) &&
-                   AssetTargetFallback.SequenceEqualWithNullCheck(other.AssetTargetFallback);
+                   PackageTargetFallbacks.SequenceEqualWithNullCheck(other.PackageTargetFallbacks) &&
+                   AssetTargetFallback == other.AssetTargetFallback &&
+                   AssetTargetFallbacks.SequenceEqualWithNullCheck(other.AssetTargetFallbacks);
         }
     }
 }

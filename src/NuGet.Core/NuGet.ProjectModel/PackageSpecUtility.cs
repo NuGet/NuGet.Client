@@ -70,20 +70,31 @@ namespace NuGet.ProjectModel
             // Update the framework appropriately
             targetFrameworkInfo.FrameworkName = GetFallbackFramework(
                 targetFrameworkInfo.FrameworkName,
+                false, // Imports is null, so doesn't really matter what we have here
+                null, // There are no imports here. This utility is used in pack ref scenarios
                 packageTargetFallback,
                 assetTargetFallback);
 
-            if (assetTargetFallback?.Any() == true)
+            var hasAssetTargetFallback = assetTargetFallback?.Any() == true;
+            var hasPackageTargetFallback = packageTargetFallback?.Any() == true;
+
+            if (hasAssetTargetFallback)
             {
                 // AssetTargetFallback
-                targetFrameworkInfo.AssetTargetFallback = assetTargetFallback.AsList();
+                // Legacy readers
+                targetFrameworkInfo.Imports = assetTargetFallback.AsList();
+                targetFrameworkInfo.AssetTargetFallback = true;
+                targetFrameworkInfo.AssetTargetFallbacks = assetTargetFallback.AsList();
                 targetFrameworkInfo.Warn = true;
             }
 
-            if (packageTargetFallback?.Any() == true)
+            if (hasPackageTargetFallback)
             {
                 // PackageTargetFallback
-                targetFrameworkInfo.Imports = packageTargetFallback.AsList();
+                if (!hasAssetTargetFallback) {  // Only override if there's no asset target fallback
+                    targetFrameworkInfo.Imports =  packageTargetFallback.AsList();
+                }
+                targetFrameworkInfo.PackageTargetFallbacks = packageTargetFallback.AsList();
             }
         }
 
@@ -93,6 +104,8 @@ namespace NuGet.ProjectModel
         /// </summary>
         public static NuGetFramework GetFallbackFramework(
             NuGetFramework projectFramework,
+            bool isAssetTargetFallback,
+            IEnumerable<NuGetFramework> imports,
             IEnumerable<NuGetFramework> packageTargetFallback,
             IEnumerable<NuGetFramework> assetTargetFallback)
         {
@@ -101,8 +114,23 @@ namespace NuGet.ProjectModel
                 throw new ArgumentNullException(nameof(projectFramework));
             }
 
+            var hasImports = imports?.Any() == true;
             var hasATF = assetTargetFallback?.Any() == true;
             var hasPTF = packageTargetFallback?.Any() == true;
+
+            if (hasImports && !hasATF && !hasPTF)
+            {
+                if (isAssetTargetFallback)
+                {
+                    // Case where an older version of the package spec is being read
+                    return new AssetTargetFallbackFramework(projectFramework, imports.AsList());
+                }
+                else
+                {
+                    // Legacy Project.Json case
+                    return new FallbackFramework(projectFramework, imports.AsList());
+                }
+            }
 
             if (hasATF && !hasPTF)
             {

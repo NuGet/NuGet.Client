@@ -67,7 +67,7 @@ namespace NuGet.Commands
                 throw new ArgumentNullException(nameof(spec));
             }
 
-            return spec.TargetFrameworks.Any(e => e.Imports.Count > 0 && e.AssetTargetFallback.Count > 0);
+            return spec.TargetFrameworks.Any(e => e.PackageTargetFallbacks.Count > 0 && e.AssetTargetFallbacks.Count > 0);
         }
     }
 }
