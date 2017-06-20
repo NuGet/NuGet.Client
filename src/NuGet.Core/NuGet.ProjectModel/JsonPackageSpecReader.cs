@@ -743,7 +743,7 @@ namespace NuGet.ProjectModel
 
             var targetFrameworkInformation = new TargetFrameworkInformation
             {
-                FrameworkName = PackageSpecUtility.GetFallbackFramework(frameworkName, importFrameworks, assetTargetFallbackFrameworks),
+                FrameworkName = PackageSpecUtility.GetFallbackFramework(frameworkName, packageTargetFallbackFrameworks, assetTargetFallbackFrameworks),
                 Dependencies = new List<LibraryDependency>(),
                 Imports = importFrameworks,
                 AssetTargetFallback = assetTargetFallback,
