@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -640,8 +640,11 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
                 var actualRestoreSpec = packageSpecs.Single();
 
-                actualRestoreSpec.TargetFrameworks[0].Imports.ShouldBeEquivalentTo(new[] { NuGetFramework.Parse("net45"), NuGetFramework.Parse("net451") });
+                actualRestoreSpec.TargetFrameworks[0].PackageTargetFallbacks.ShouldBeEquivalentTo(new[] { NuGetFramework.Parse("net45"), NuGetFramework.Parse("net451") });
                 actualRestoreSpec.TargetFrameworks[0].AssetTargetFallbacks.ShouldBeEquivalentTo(new[] { NuGetFramework.Parse("net461"), NuGetFramework.Parse("net462") });
+                actualRestoreSpec.TargetFrameworks[0].Imports.ShouldBeEquivalentTo(new[] { NuGetFramework.Parse("net461"), NuGetFramework.Parse("net462") });
+                actualRestoreSpec.TargetFrameworks[0].AssetTargetFallback.Should().Be(true);
+
             }
         }
 

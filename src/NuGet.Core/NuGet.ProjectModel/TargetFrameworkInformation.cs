@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -75,6 +75,11 @@ namespace NuGet.ProjectModel
             hashCode.AddObject(nameof(AssetTargetFallbacks));
             hashCode.AddSequence(AssetTargetFallbacks);
 
+            hashCode.AddObject(nameof(PackageTargetFallbacks ));
+            hashCode.AddSequence(PackageTargetFallbacks);
+
+            hashCode.AddObject(AssetTargetFallback);
+
             return hashCode.CombinedHash;
         }
 
@@ -98,6 +103,8 @@ namespace NuGet.ProjectModel
             return EqualityUtility.EqualsWithNullCheck(FrameworkName, other.FrameworkName) &&
                    Dependencies.SequenceEqualWithNullCheck(other.Dependencies) &&
                    Imports.SequenceEqualWithNullCheck(other.Imports) &&
+                   PackageTargetFallbacks.SequenceEqualWithNullCheck(other.PackageTargetFallbacks) &&
+                   AssetTargetFallback == other.AssetTargetFallback &&
                    AssetTargetFallbacks.SequenceEqualWithNullCheck(other.AssetTargetFallbacks);
         }
     }
