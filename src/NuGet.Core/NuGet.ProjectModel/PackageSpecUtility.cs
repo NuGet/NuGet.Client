@@ -73,21 +73,25 @@ namespace NuGet.ProjectModel
                 packageTargetFallback,
                 assetTargetFallback);
 
-            if (assetTargetFallback?.Any() == true)
+            var hasAssetTargetFallback = assetTargetFallback?.Any() == true;
+            var hasPackageTargetFallback = packageTargetFallback?.Any() == true;
+
+            if (hasAssetTargetFallback)
             {
                 // AssetTargetFallback
                 // Legacy readers
                 targetFrameworkInfo.Imports = assetTargetFallback.AsList();
                 targetFrameworkInfo.AssetTargetFallback = true;
-
                 targetFrameworkInfo.AssetTargetFallbacks = assetTargetFallback.AsList();
                 targetFrameworkInfo.Warn = true;
             }
 
-            if (packageTargetFallback?.Any() == true)
+            if (hasPackageTargetFallback)
             {
                 // PackageTargetFallback
-                targetFrameworkInfo.Imports = packageTargetFallback.AsList();
+                if (!hasAssetTargetFallback) {  // Only override if there's no asset target fallback
+                    targetFrameworkInfo.Imports =  packageTargetFallback.AsList();
+                }
                 targetFrameworkInfo.PackageTargetFallbacks = packageTargetFallback.AsList();
             }
         }
