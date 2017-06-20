@@ -359,11 +359,8 @@ namespace NuGet.Commands
                         .Select(NuGetFramework.Parse)
                         .ToList();
 
-                    // Throw if an invalid combination was used.
-                    AssetTargetFallbackUtility.EnsureValidFallback(packageTargetFallback, assetTargetFallback, spec.FilePath);
-
                     // Update the framework appropriately
-                    AssetTargetFallbackUtility.ApplyFramework(targetFrameworkInfo, packageTargetFallback, assetTargetFallback);
+                    PackageSpecUtility.ApplyFallbackFramework(targetFrameworkInfo, packageTargetFallback, assetTargetFallback);
                 }
             }
         }
