@@ -319,6 +319,40 @@ namespace NuGet.Build.Tasks.Pack.Test
         }
 
         [Fact]
+        public void PackTaskLogic_BuildOutputWithoutFinalOutputPath_FallbackToIdentity()
+        {
+            // Arrange
+            using (var testDir = TestDirectory.Create())
+            {
+                var tc = new TestContext(testDir);
+
+                var metadata = new Dictionary<string, string>()
+                {
+                    { "BuildAction", "None" },
+                    { "Identity", Path.Combine(testDir.Path, "abc.dll") },
+                    { "TargetFramework", "net45" }
+                };
+
+                var msbuildItem = tc.AddContentToProject("", "abc.dll", "hello world", metadata);
+                tc.Request.BuildOutputInPackage = new MSBuildItem[] { msbuildItem };
+                tc.Request.ContentTargetFolders = new string[] { "content", "contentFiles" };
+                // Act
+                tc.BuildPackage();
+
+                // Assert
+                Assert.True(File.Exists(tc.NuspecPath), "The intermediate .nuspec file is not in the expected place.");
+                Assert.True(File.Exists(tc.NupkgPath), "The output .nupkg file is not in the expected place.");
+                using (var nupkgReader = new PackageArchiveReader(tc.NupkgPath))
+                {
+                    var libItems = nupkgReader.GetLibItems().ToList();
+                    Assert.Equal(1, libItems.Count);
+                    Assert.Equal(FrameworkConstants.CommonFrameworks.Net45, libItems[0].TargetFramework);
+                    Assert.Equal(new[] { "lib/net45/abc.dll" }, libItems[0].Items);
+                }
+            }
+        }
+
+        [Fact]
         public void PackTaskLogic_SupportsContentFiles_WithPackagePath()
         {
             // Arrange
@@ -546,8 +580,13 @@ namespace NuGet.Build.Tasks.Pack.Test
                 }
 
                 var metadata = itemMetadata ?? new Dictionary<string, string>();
-                metadata["Identity"] = relativePathToFile;
+                if (!metadata.ContainsKey("Identity"))
+                {
+                    metadata["Identity"] = relativePathToFile;
+                }
+
                 metadata["FullPath"] = fullpath;
+
                 if (!metadata.ContainsKey("BuildAction"))
                 {
                     metadata["BuildAction"] = "Content";

@@ -245,6 +245,14 @@ namespace NuGet.Build.Tasks.Pack
             foreach (var assembly in libFiles)
             {
                 var finalOutputPath = assembly.GetProperty("FinalOutputPath");
+
+                // Fallback to using Identity if FinalOutputPath is not set.
+                // See bug https://github.com/NuGet/Home/issues/5408 
+                if (string.IsNullOrEmpty(finalOutputPath))
+                {
+                    finalOutputPath = assembly.GetProperty(IdentityProperty);
+                }
+
                 var targetPath = assembly.GetProperty("TargetPath");
                 var targetFramework = assembly.GetProperty("TargetFramework");
 
