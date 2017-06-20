@@ -70,6 +70,7 @@ namespace NuGet.ProjectModel
             // Update the framework appropriately
             targetFrameworkInfo.FrameworkName = GetFallbackFramework(
                 targetFrameworkInfo.FrameworkName,
+                null, // There are no imports here. This utility is used in pack ref scenarios
                 packageTargetFallback,
                 assetTargetFallback);
 
@@ -102,6 +103,7 @@ namespace NuGet.ProjectModel
         /// </summary>
         public static NuGetFramework GetFallbackFramework(
             NuGetFramework projectFramework,
+            IEnumerable<NuGetFramework> imports,
             IEnumerable<NuGetFramework> packageTargetFallback,
             IEnumerable<NuGetFramework> assetTargetFallback)
         {
@@ -110,8 +112,15 @@ namespace NuGet.ProjectModel
                 throw new ArgumentNullException(nameof(projectFramework));
             }
 
+            var hasImports = imports?.Any() == true;
             var hasATF = assetTargetFallback?.Any() == true;
             var hasPTF = packageTargetFallback?.Any() == true;
+
+            // Legacy Project.Json case
+            if (hasImports && !hasATF && !hasPTF)
+            {
+                return new FallbackFramework(projectFramework, imports.AsList());
+            }
 
             if (hasATF && !hasPTF)
             {
