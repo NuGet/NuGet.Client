@@ -62,7 +62,7 @@ namespace NuGet.ProjectModel.Test
             var atf = new List<NuGetFramework>();
             var ptf = new List<NuGetFramework>();
 
-            var result = PackageSpecUtility.GetFallbackFramework(project, null,  ptf, atf);
+            var result = PackageSpecUtility.GetFallbackFramework(project, false, null, ptf, atf);
 
             result.Should().Be(project, "no atf or ptf frameworks exist");
         }
@@ -72,7 +72,7 @@ namespace NuGet.ProjectModel.Test
         {
             var project = NuGetFramework.Parse("netcoreapp2.0");
 
-            var result = PackageSpecUtility.GetFallbackFramework(project, null, packageTargetFallback: null, assetTargetFallback: null);
+            var result = PackageSpecUtility.GetFallbackFramework(project, false, null, packageTargetFallback: null, assetTargetFallback: null);
 
             result.Should().Be(project, "no atf or ptf frameworks exist");
         }
@@ -87,7 +87,7 @@ namespace NuGet.ProjectModel.Test
                 NuGetFramework.Parse("net461")
             };
 
-            var result = PackageSpecUtility.GetFallbackFramework(project, null, ptf, atf) as FallbackFramework;
+            var result = PackageSpecUtility.GetFallbackFramework(project, false, null, ptf, atf) as FallbackFramework;
 
             result.Fallback.ShouldBeEquivalentTo(ptf);
         }
@@ -102,7 +102,7 @@ namespace NuGet.ProjectModel.Test
                 NuGetFramework.Parse("net461")
             };
 
-            var result = PackageSpecUtility.GetFallbackFramework(project, null, ptf, atf) as AssetTargetFallbackFramework;
+            var result = PackageSpecUtility.GetFallbackFramework(project, true, null, ptf, atf) as AssetTargetFallbackFramework;
 
             result.Fallback.ShouldBeEquivalentTo(atf);
         }
@@ -120,7 +120,7 @@ namespace NuGet.ProjectModel.Test
                 NuGetFramework.Parse("net461")
             };
 
-            var result = PackageSpecUtility.GetFallbackFramework(project, null, ptf, atf);
+            var result = PackageSpecUtility.GetFallbackFramework(project, false, null, ptf, atf);
 
             result.Should().Be(project, "both atf and ptf will be ignored");
         }
@@ -134,7 +134,21 @@ namespace NuGet.ProjectModel.Test
                 NuGetFramework.Parse("net461")
             };
 
-            var result = PackageSpecUtility.GetFallbackFramework(project, imports, null, null) as FallbackFramework;
+            var result = PackageSpecUtility.GetFallbackFramework(project, false, imports, null, null) as FallbackFramework;
+
+            result.Fallback.ShouldBeEquivalentTo(imports, "When there is no ATF/PTF the imports is used. this is the project.json scenario");
+        }
+
+        [Fact]
+        public void PackageSpecUtility_GetFallbackFrameworWithImportsAndATFFlagOnlyVerifyResult()
+        {
+            var project = NuGetFramework.Parse("netcoreapp2.0");
+            var imports = new List<NuGetFramework>()
+            {
+                NuGetFramework.Parse("net461")
+            };
+
+            var result = PackageSpecUtility.GetFallbackFramework(project,true, imports, null, null) as AssetTargetFallbackFramework;
 
             result.Fallback.ShouldBeEquivalentTo(imports, "When there is no ATF/PTF the imports is used. this is the project.json scenario");
         }
@@ -154,7 +168,7 @@ namespace NuGet.ProjectModel.Test
             };
 
 
-            var result = PackageSpecUtility.GetFallbackFramework(project, imports, ptf, null) as FallbackFramework;
+            var result = PackageSpecUtility.GetFallbackFramework(project, false, imports, ptf, null) as FallbackFramework;
 
             result.Fallback.ShouldBeEquivalentTo(ptf, "When there is ptf and imports, ptf is favored");
         }
@@ -174,7 +188,7 @@ namespace NuGet.ProjectModel.Test
             };
 
 
-            var result = PackageSpecUtility.GetFallbackFramework(project, imports, null, atf) as AssetTargetFallbackFramework;
+            var result = PackageSpecUtility.GetFallbackFramework(project, true, imports, null, atf) as AssetTargetFallbackFramework;
 
             result.Fallback.ShouldBeEquivalentTo(atf, "When there is ptf and imports, ptf is favored");
         }
