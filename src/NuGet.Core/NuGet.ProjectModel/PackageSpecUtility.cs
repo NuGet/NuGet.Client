@@ -118,15 +118,16 @@ namespace NuGet.ProjectModel
             var hasATF = assetTargetFallback?.Any() == true;
             var hasPTF = packageTargetFallback?.Any() == true;
 
-            // Legacy Project.Json case
             if (hasImports && !hasATF && !hasPTF)
             {
                 if (isAssetTargetFallback)
                 {
+                    // Case where an older version of the package spec is being read
                     return new AssetTargetFallbackFramework(projectFramework, imports.AsList());
                 }
                 else
                 {
+                    // Legacy Project.Json case
                     return new FallbackFramework(projectFramework, imports.AsList());
                 }
             }
