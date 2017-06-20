@@ -72,7 +72,7 @@ namespace NuGet.ProjectModel.Test
         {
             var project = NuGetFramework.Parse("netcoreapp2.0");
 
-            var result = PackageSpecUtility.GetFallbackFramework(project, false, null, packageTargetFallback: null, assetTargetFallback: null);
+            var result = PackageSpecUtility.GetFallbackFramework(project, isAssetTargetFallback : false, imports : null, packageTargetFallback: null, assetTargetFallback: null);
 
             result.Should().Be(project, "no atf or ptf frameworks exist");
         }
