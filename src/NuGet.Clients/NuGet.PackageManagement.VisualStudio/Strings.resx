@@ -279,7 +279,7 @@
     <value>Some NuGet packages were installed using a target framework different from the current target framework and may need to be reinstalled. Visit http://docs.nuget.org/docs/workflows/reinstalling-packages for more information.  Packages affected: {0}</value>
   </data>
   <data name="Debug_AddedReferenceToProject" xml:space="preserve">
-    <value>Added reference '{0}' to project:'{1}'. Was the Reference Resolved To Package (resolvedToPackage):'{2}', where Reference Path from DTE(dteOriginalPath):'{3}' and Reference Path from package reference(assemblyFullPath):'{4}'.</value>
+    <value>Added reference '{0}' to project:'{1}'. The Reference was Resolved To Package (resolvedToPackage):'{2}', where Reference Path from DTE(dteOriginalPath):'{3}' and Reference Path from package reference(assemblyFullPath):'{4}'.</value>
     <comment>{0} is the reference name
 {1} is the project name
 {2} is boolean flag (true or false)

@@ -279,7 +279,7 @@
     <value>Determines if the output files of the project should be in the tool folder.</value>
   </data>
   <data name="Restore_Switch_IgnoreFailedSource_Description" xml:space="preserve">
-    <value>Only warning failed sources if there are packages meeting version requirement</value>
+    <value>Only warn about failed sources if there are packages meeting version requirement.</value>
   </data>
   <data name="Exclude_Description" xml:space="preserve">
     <value>Specifies one or more wildcard patterns to exclude when creating a package.</value>
@@ -292,6 +292,8 @@
   </data>
   <data name="OutputNuGetVersion" xml:space="preserve">
     <value>{0} Version: {1}</value>
+    <comment>{0}: App full name
+{1}: App version</comment>
   </data>
   <data name="Serviceable_Description" xml:space="preserve">
     <value>Sets the nuspec serviceable element to true.</value>
@@ -410,7 +412,7 @@ For more information, visit http://docs.nuget.org/docs/reference/command-line-re
     <value>Error while performing {0} for package '{1}'. Cannot edit items in imported files - {2}{3}</value>
     <comment>{0} - Operation Name
 {1} - packageId
-{2} - New line
+{2} - New line (this is just to hold a new line between sentences. does not need any translation)
 {3} - Error string</comment>
   </data>
   <data name="Info_AddPkgAdded" xml:space="preserve">
