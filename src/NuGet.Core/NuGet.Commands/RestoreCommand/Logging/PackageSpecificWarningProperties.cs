@@ -75,7 +75,7 @@ namespace NuGet.Commands
             }
             else
             {
-                Properties[code].Add(libraryId, new HashSet<NuGetFramework> { framework });
+                Properties[code].Add(libraryId, new HashSet<NuGetFramework>(new NuGetFrameworkFullComparer()) { framework });
             }
         }
 

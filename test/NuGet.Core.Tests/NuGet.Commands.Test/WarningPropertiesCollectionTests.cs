@@ -189,13 +189,16 @@ namespace NuGet.Commands.Test
             Assert.Equal(LogLevel.Error, upgradedMessage2.Level);
         }
 
-        [Fact]
-        public void WarningPropertiesCollection_PackagePropertiesWithFrameworkAndWarningWithFramework()
+        [Theory]
+        [InlineData("net461")]
+        [InlineData("netcoreapp1.0")]
+        [InlineData("netcoreapp1.1")]
+        [InlineData("netstandard2.0")]
+        [InlineData("netcoreapp2.0")]
+        public void WarningPropertiesCollection_PackagePropertiesWithFrameworkAndWarningWithFramework(string frameworkString)
         {
             // Arrange
-            // Arrange
             var libraryId = "test_library";
-            var frameworkString = "net45";
             var targetFramework = NuGetFramework.Parse(frameworkString);
 
             var packageSpecificWarningProperties = new PackageSpecificWarningProperties();
@@ -215,12 +218,68 @@ namespace NuGet.Commands.Test
             Assert.Equal(LogLevel.Warning, nonSuppressedMessage.Level);
         }
 
-        [Fact]
-        public void WarningPropertiesCollection_PackagePropertiesWithoutFrameworkAndWarningWithoutFramework()
+        [Theory]
+        [InlineData("net461")]
+        [InlineData("netcoreapp1.0")]
+        [InlineData("netcoreapp1.1")]
+        [InlineData("netstandard2.0")]
+        [InlineData("netcoreapp2.0")]
+        public void WarningPropertiesCollection_PackagePropertiesWithATFFrameworkAndWarningWithFramework(string frameworkString)
         {
             // Arrange
             var libraryId = "test_library";
-            var frameworkString = "net45";
+            var targetFramework = new AssetTargetFallbackFramework(NuGetFramework.Parse(frameworkString), new List<NuGetFramework>() { NuGetFramework.AnyFramework });
+
+            var packageSpecificWarningProperties = new PackageSpecificWarningProperties();
+            packageSpecificWarningProperties.Add(NuGetLogCode.NU1500, libraryId, targetFramework);
+
+            var warningPropertiesCollection = new WarningPropertiesCollection()
+            {
+                PackageSpecificWarningProperties = packageSpecificWarningProperties
+            };
+
+            var suppressedMessage = RestoreLogMessage.CreateWarning(NuGetLogCode.NU1500, "Warning", libraryId, frameworkString);
+
+            // Act && Assert
+            Assert.True(warningPropertiesCollection.ApplyWarningProperties(suppressedMessage));
+        }
+
+        [Theory]
+        [InlineData("net461")]
+        [InlineData("netcoreapp1.0")]
+        [InlineData("netcoreapp1.1")]
+        [InlineData("netstandard2.0")]
+        [InlineData("netcoreapp2.0")]
+        public void WarningPropertiesCollection_PackagePropertiesWithPTFFrameworkAndWarningWithFramework(string frameworkString)
+        {
+            // Arrange
+            var libraryId = "test_library";
+            var targetFramework = new FallbackFramework(NuGetFramework.Parse(frameworkString), new List<NuGetFramework>() { NuGetFramework.AnyFramework });
+
+            var packageSpecificWarningProperties = new PackageSpecificWarningProperties();
+            packageSpecificWarningProperties.Add(NuGetLogCode.NU1500, libraryId, targetFramework);
+
+            var warningPropertiesCollection = new WarningPropertiesCollection()
+            {
+                PackageSpecificWarningProperties = packageSpecificWarningProperties
+            };
+
+            var suppressedMessage = RestoreLogMessage.CreateWarning(NuGetLogCode.NU1500, "Warning", libraryId, frameworkString);
+
+            // Act && Assert
+            Assert.True(warningPropertiesCollection.ApplyWarningProperties(suppressedMessage));
+        }
+
+        [Theory]
+        [InlineData("net461")]
+        [InlineData("netcoreapp1.0")]
+        [InlineData("netcoreapp1.1")]
+        [InlineData("netstandard2.0")]
+        [InlineData("netcoreapp2.0")]
+        public void WarningPropertiesCollection_PackagePropertiesWithoutFrameworkAndWarningWithoutFramework(string frameworkString)
+        {
+            // Arrange
+            var libraryId = "test_library";
             var targetFramework = NuGetFramework.Parse(frameworkString);
 
             var packageSpecificWarningProperties = new PackageSpecificWarningProperties();
@@ -238,12 +297,16 @@ namespace NuGet.Commands.Test
             Assert.True(warningPropertiesCollection.ApplyWarningProperties(suppressedMessage));
         }
 
-        [Fact]
-        public void WarningPropertiesCollection_PackagePropertiesWithoutFrameworkAndWarningWithDifferentFramework()
+        [Theory]
+        [InlineData("net461")]
+        [InlineData("netcoreapp1.0")]
+        [InlineData("netcoreapp1.1")]
+        [InlineData("netstandard2.0")]
+        [InlineData("netcoreapp2.0")]
+        public void WarningPropertiesCollection_PackagePropertiesWithoutFrameworkAndWarningWithDifferentFramework(string frameworkString)
         {
             // Arrange
             var libraryId = "test_library";
-            var frameworkString = "net45";
             var targetFramework = NuGetFramework.Parse(frameworkString);
 
             var packageSpecificWarningProperties = new PackageSpecificWarningProperties();
@@ -254,19 +317,23 @@ namespace NuGet.Commands.Test
                 PackageSpecificWarningProperties = packageSpecificWarningProperties
             };
 
-            var suppressedMessage = RestoreLogMessage.CreateWarning(NuGetLogCode.NU1500, "Warning", libraryId, "netcoreapp1.0");
+            var suppressedMessage = RestoreLogMessage.CreateWarning(NuGetLogCode.NU1500, "Warning", libraryId, "net45");
 
             // Act && Assert
             Assert.False(warningPropertiesCollection.ApplyWarningProperties(suppressedMessage));
         }
 
-        [Fact]
-        public void WarningPropertiesCollection_PackagePropertiesWithNoWarnAndProjectProperties()
+        [Theory]
+        [InlineData("net461")]
+        [InlineData("netcoreapp1.0")]
+        [InlineData("netcoreapp1.1")]
+        [InlineData("netstandard2.0")]
+        [InlineData("netcoreapp2.0")]
+        public void WarningPropertiesCollection_PackagePropertiesWithNoWarnAndProjectProperties(string frameworkString)
         {
             // Arrange
             // Arrange
             var libraryId = "test_library";
-            var frameworkString = "net45";
             var targetFramework = NuGetFramework.Parse(frameworkString);
             var noWarnSet = new HashSet<NuGetLogCode> { };
             var warnAsErrorSet = new HashSet<NuGetLogCode> { };
@@ -287,13 +354,17 @@ namespace NuGet.Commands.Test
             Assert.True(warningPropertiesCollection.ApplyWarningProperties(suppressedMessage));
         }
 
-        [Fact]
-        public void WarningPropertiesCollection_PackagePropertiesAndProjectPropertiesWithNoWarn()
+        [Theory]
+        [InlineData("net461")]
+        [InlineData("netcoreapp1.0")]
+        [InlineData("netcoreapp1.1")]
+        [InlineData("netstandard2.0")]
+        [InlineData("netcoreapp2.0")]
+        public void WarningPropertiesCollection_PackagePropertiesAndProjectPropertiesWithNoWarn(string frameworkString)
         {
             // Arrange
             // Arrange
             var libraryId = "test_library";
-            var frameworkString = "net45";
             var targetFramework = NuGetFramework.Parse(frameworkString);
             var noWarnSet = new HashSet<NuGetLogCode> { NuGetLogCode.NU1500 };
             var warnAsErrorSet = new HashSet<NuGetLogCode> { };
@@ -313,13 +384,17 @@ namespace NuGet.Commands.Test
             Assert.True(warningPropertiesCollection.ApplyWarningProperties(suppressedMessage));
         }
 
-        [Fact]
-        public void WarningPropertiesCollection_PackagePropertiesWithNoWarnAndProjectPropertiesWithWarnAsError()
+        [Theory]
+        [InlineData("net461")]
+        [InlineData("netcoreapp1.0")]
+        [InlineData("netcoreapp1.1")]
+        [InlineData("netstandard2.0")]
+        [InlineData("netcoreapp2.0")]
+        public void WarningPropertiesCollection_PackagePropertiesWithNoWarnAndProjectPropertiesWithWarnAsError(string frameworkString)
         {
 
             // Arrange
             var libraryId = "test_library";
-            var frameworkString = "net45";
             var targetFramework = NuGetFramework.Parse(frameworkString);
             var noWarnSet = new HashSet<NuGetLogCode> { };
             var warnAsErrorSet = new HashSet<NuGetLogCode> { NuGetLogCode.NU1500 };
@@ -350,12 +425,16 @@ namespace NuGet.Commands.Test
             Assert.Equal(1, unaffectedMessage.TargetGraphs.Count);
         }
 
-        [Fact]
-        public void WarningPropertiesCollection_PackagePropertiesWithNoWarnAndProjectPropertiesWithAllWarnAsError()
+        [Theory]
+        [InlineData("net461")]
+        [InlineData("netcoreapp1.0")]
+        [InlineData("netcoreapp1.1")]
+        [InlineData("netstandard2.0")]
+        [InlineData("netcoreapp2.0")]
+        public void WarningPropertiesCollection_PackagePropertiesWithNoWarnAndProjectPropertiesWithAllWarnAsError(string frameworkString)
         {
             // Arrange
             var libraryId = "test_library";
-            var frameworkString = "net45";
             var targetFramework = NuGetFramework.Parse(frameworkString);
             var noWarnSet = new HashSet<NuGetLogCode> { };
             var warnAsErrorSet = new HashSet<NuGetLogCode> { };
@@ -387,13 +466,17 @@ namespace NuGet.Commands.Test
         }
 
 
-        [Fact]
-        public void WarningPropertiesCollection_PackagePropertiesWithNoWarnAndProjectPropertiesWithWarnAsErrorAndProjectWithoutTargetFramework()
+        [Theory]
+        [InlineData("net461")]
+        [InlineData("netcoreapp1.0")]
+        [InlineData("netcoreapp1.1")]
+        [InlineData("netstandard2.0")]
+        [InlineData("netcoreapp2.0")]
+        public void WarningPropertiesCollection_PackagePropertiesWithNoWarnAndProjectPropertiesWithWarnAsErrorAndProjectWithoutTargetFramework(string frameworkString)
         {
 
             // Arrange
             var libraryId = "test_library";
-            var frameworkString = "net45";
             var targetFramework = NuGetFramework.Parse(frameworkString);
             var noWarnSet = new HashSet<NuGetLogCode> { };
             var warnAsErrorSet = new HashSet<NuGetLogCode> { NuGetLogCode.NU1500 };
@@ -422,33 +505,37 @@ namespace NuGet.Commands.Test
             Assert.Equal(0, unaffectedMessage.TargetGraphs.Count);
         }
 
-        [Fact]
-        public void WarningPropertiesCollection_MessageWithNoTargetGraphAndDependencyWithNoWarnForSomeTfm()
+        [Theory]
+        [InlineData("net461", "netcoreapp1.0")]
+        [InlineData("net461", "netcoreapp1.1")]
+        [InlineData("net461", "netstandard2.0")]
+        [InlineData("net461", "netcoreapp2.0")]
+        [InlineData("netcoreapp1.0", "netstandard2.0")]
+        [InlineData("netcoreapp2.0", "netstandard2.0")]
+        public void WarningPropertiesCollection_MessageWithNoTargetGraphAndDependencyWithNoWarnForSomeTfm(string firstFrameworkString, string secondFrameworkString)
         {
 
             // Arrange
             var libraryId = "test_library";
-            var net45FrameworkString = "net45";
-            var net45TargetFramework = NuGetFramework.Parse(net45FrameworkString);
-            var netcoreFrameworkString = "netcoreapp1.0";
-            var netcoreTargetFramework = NuGetFramework.Parse(netcoreFrameworkString);
+            var firstTargetFramework = NuGetFramework.Parse(firstFrameworkString);
+            var secondTargetFramework = NuGetFramework.Parse(secondFrameworkString);
 
             var noWarnSet = new HashSet<NuGetLogCode> { };
             var warnAsErrorSet = new HashSet<NuGetLogCode> { };
             var allWarningsAsErrors = false;
 
             var packageSpecificWarningProperties = new PackageSpecificWarningProperties();
-            packageSpecificWarningProperties.Add(NuGetLogCode.NU1500, libraryId, net45TargetFramework);
+            packageSpecificWarningProperties.Add(NuGetLogCode.NU1500, libraryId, firstTargetFramework);
 
             var warningPropertiesCollection = new WarningPropertiesCollection()
             {
                 ProjectWideWarningProperties = new WarningProperties(warnAsErrorSet, noWarnSet, allWarningsAsErrors),
                 PackageSpecificWarningProperties = packageSpecificWarningProperties,
-                ProjectFrameworks = new List<NuGetFramework> { net45TargetFramework, netcoreTargetFramework }
+                ProjectFrameworks = new List<NuGetFramework> { firstTargetFramework, secondTargetFramework }
             };
 
             var nonSuppressedMessage = RestoreLogMessage.CreateWarning(NuGetLogCode.NU1500, "Warning", libraryId);
-            var suppressedMessage = RestoreLogMessage.CreateWarning(NuGetLogCode.NU1500, "Warning", libraryId, net45FrameworkString);
+            var suppressedMessage = RestoreLogMessage.CreateWarning(NuGetLogCode.NU1500, "Warning", libraryId, firstFrameworkString);
 
             // Act && Assert
             Assert.False(warningPropertiesCollection.ApplyWarningProperties(nonSuppressedMessage));
@@ -457,30 +544,34 @@ namespace NuGet.Commands.Test
             Assert.Equal(0, suppressedMessage.TargetGraphs.Count);
         }
 
-        [Fact]
-        public void WarningPropertiesCollection_MessageWithNoTargetGraphAndDependencyWithNoWarnForAllTfm()
+        [Theory]
+        [InlineData("net461", "netcoreapp1.0")]
+        [InlineData("net461", "netcoreapp1.1")]
+        [InlineData("net461", "netstandard2.0")]
+        [InlineData("net461", "netcoreapp2.0")]
+        [InlineData("netcoreapp1.0", "netstandard2.0")]
+        [InlineData("netcoreapp2.0", "netstandard2.0")]
+        public void WarningPropertiesCollection_MessageWithNoTargetGraphAndDependencyWithNoWarnForAllTfm(string firstFrameworkString, string secondFrameworkString)
         {
 
             // Arrange
             var libraryId = "test_library";
-            var net45FrameworkString = "net45";
-            var net45TargetFramework = NuGetFramework.Parse(net45FrameworkString);
-            var netcoreFrameworkString = "netcoreapp1.0";
-            var netcoreTargetFramework = NuGetFramework.Parse(netcoreFrameworkString);
+            var firstTargetFramework = NuGetFramework.Parse(firstFrameworkString);
+            var secondTargetFramework = NuGetFramework.Parse(secondFrameworkString);
 
             var noWarnSet = new HashSet<NuGetLogCode> { };
             var warnAsErrorSet = new HashSet<NuGetLogCode> { };
             var allWarningsAsErrors = false;
 
             var packageSpecificWarningProperties = new PackageSpecificWarningProperties();
-            packageSpecificWarningProperties.Add(NuGetLogCode.NU1500, libraryId, net45TargetFramework);
-            packageSpecificWarningProperties.Add(NuGetLogCode.NU1500, libraryId, netcoreTargetFramework);
+            packageSpecificWarningProperties.Add(NuGetLogCode.NU1500, libraryId, firstTargetFramework);
+            packageSpecificWarningProperties.Add(NuGetLogCode.NU1500, libraryId, secondTargetFramework);
 
             var warningPropertiesCollection = new WarningPropertiesCollection()
             {
                 ProjectWideWarningProperties = new WarningProperties(warnAsErrorSet, noWarnSet, allWarningsAsErrors),
                 PackageSpecificWarningProperties = packageSpecificWarningProperties,
-                ProjectFrameworks = new List<NuGetFramework> { net45TargetFramework, netcoreTargetFramework }
+                ProjectFrameworks = new List<NuGetFramework> { firstTargetFramework, secondTargetFramework }
             };
 
             var suppressedMessage = RestoreLogMessage.CreateWarning(NuGetLogCode.NU1500, "Warning", libraryId);
@@ -490,116 +581,132 @@ namespace NuGet.Commands.Test
             Assert.Equal(0, suppressedMessage.TargetGraphs.Count);
         }
 
-        [Fact]
-        public void WarningPropertiesCollection_MessageWithTargetGraphAndDependencyWithNoWarnForSomeTfm()
+        [Theory]
+        [InlineData("net461", "netcoreapp1.0")]
+        [InlineData("net461", "netcoreapp1.1")]
+        [InlineData("net461", "netstandard2.0")]
+        [InlineData("net461", "netcoreapp2.0")]
+        [InlineData("netcoreapp1.0", "netstandard2.0")]
+        [InlineData("netcoreapp2.0", "netstandard2.0")]
+        public void WarningPropertiesCollection_MessageWithTargetGraphAndDependencyWithNoWarnForSomeTfm(string firstFrameworkString, string secondFrameworkString)
         {
 
             // Arrange
             var libraryId = "test_library";
-            var net45FrameworkString = "net45";
-            var net45TargetFramework = NuGetFramework.Parse(net45FrameworkString);
-            var netcoreFrameworkString = "netcoreapp1.0";
-            var netcoreTargetFramework = NuGetFramework.Parse(netcoreFrameworkString);
+            var firstTargetFramework = NuGetFramework.Parse(firstFrameworkString);
+            var secondTargetFramework = NuGetFramework.Parse(secondFrameworkString);
 
             var noWarnSet = new HashSet<NuGetLogCode> { };
             var warnAsErrorSet = new HashSet<NuGetLogCode> { };
             var allWarningsAsErrors = false;
 
             var packageSpecificWarningProperties = new PackageSpecificWarningProperties();
-            packageSpecificWarningProperties.Add(NuGetLogCode.NU1500, libraryId, net45TargetFramework);
+            packageSpecificWarningProperties.Add(NuGetLogCode.NU1500, libraryId, firstTargetFramework);
 
             var warningPropertiesCollection = new WarningPropertiesCollection()
             {
                 ProjectWideWarningProperties = new WarningProperties(warnAsErrorSet, noWarnSet, allWarningsAsErrors),
                 PackageSpecificWarningProperties = packageSpecificWarningProperties,
-                ProjectFrameworks = new List<NuGetFramework> { net45TargetFramework, netcoreTargetFramework }
+                ProjectFrameworks = new List<NuGetFramework> { firstTargetFramework, secondTargetFramework }
             };
 
-            var nonSuppressedMessage = RestoreLogMessage.CreateWarning(NuGetLogCode.NU1500, "Warning", libraryId, new string[] { net45FrameworkString, netcoreFrameworkString });
+            var nonSuppressedMessage = RestoreLogMessage.CreateWarning(NuGetLogCode.NU1500, "Warning", libraryId, new string[] { firstFrameworkString, secondFrameworkString });
 
             // Act && Assert
             Assert.False(warningPropertiesCollection.ApplyWarningProperties(nonSuppressedMessage));
             Assert.Equal(1, nonSuppressedMessage.TargetGraphs.Count);
         }
 
-        [Fact]
-        public void WarningPropertiesCollection_MessageWithTargetGraphAndDependencyWithNoWarnForAllTfm()
+        [Theory]
+        [InlineData("net461", "netcoreapp1.0")]
+        [InlineData("net461", "netcoreapp1.1")]
+        [InlineData("net461", "netstandard2.0")]
+        [InlineData("net461", "netcoreapp2.0")]
+        [InlineData("netcoreapp1.0", "netstandard2.0")]
+        [InlineData("netcoreapp2.0", "netstandard2.0")]
+        public void WarningPropertiesCollection_MessageWithTargetGraphAndDependencyWithNoWarnForAllTfm(string firstFrameworkString, string secondFrameworkString)
         {
             // Arrange
             var libraryId = "test_library";
-            var net45FrameworkString = "net45";
-            var net45TargetFramework = NuGetFramework.Parse(net45FrameworkString);
-            var netcoreFrameworkString = "netcoreapp1.0";
-            var netcoreTargetFramework = NuGetFramework.Parse(netcoreFrameworkString);
+            var firstTargetFramework = NuGetFramework.Parse(firstFrameworkString);
+            var secondTargetFramework = NuGetFramework.Parse(secondFrameworkString);
 
             var noWarnSet = new HashSet<NuGetLogCode> { };
             var warnAsErrorSet = new HashSet<NuGetLogCode> { };
             var allWarningsAsErrors = false;
 
             var packageSpecificWarningProperties = new PackageSpecificWarningProperties();
-            packageSpecificWarningProperties.Add(NuGetLogCode.NU1500, libraryId, net45TargetFramework);
-            packageSpecificWarningProperties.Add(NuGetLogCode.NU1500, libraryId, netcoreTargetFramework);
+            packageSpecificWarningProperties.Add(NuGetLogCode.NU1500, libraryId, firstTargetFramework);
+            packageSpecificWarningProperties.Add(NuGetLogCode.NU1500, libraryId, secondTargetFramework);
 
             var warningPropertiesCollection = new WarningPropertiesCollection()
             {
                 ProjectWideWarningProperties = new WarningProperties(warnAsErrorSet, noWarnSet, allWarningsAsErrors),
                 PackageSpecificWarningProperties = packageSpecificWarningProperties,
-                ProjectFrameworks = new List<NuGetFramework> { net45TargetFramework, netcoreTargetFramework }
+                ProjectFrameworks = new List<NuGetFramework> { firstTargetFramework, secondTargetFramework }
             };
 
-            var suppressedMessage = RestoreLogMessage.CreateWarning(NuGetLogCode.NU1500, "Warning", libraryId, new string[] { net45FrameworkString, netcoreFrameworkString });
+            var suppressedMessage = RestoreLogMessage.CreateWarning(NuGetLogCode.NU1500, "Warning", libraryId, new string[] { firstFrameworkString, secondFrameworkString });
 
             // Act && Assert
             Assert.True(warningPropertiesCollection.ApplyWarningProperties(suppressedMessage));
             Assert.Equal(0, suppressedMessage.TargetGraphs.Count);
         }
 
-        [Fact]
-        public void WarningPropertiesCollection_MessageWithTargetGraphAndDependencyWithNoWarnForAllTfm_2()
+        [Theory]
+        [InlineData("net461")]
+        [InlineData("netcoreapp1.0")]
+        [InlineData("netcoreapp1.1")]
+        [InlineData("netstandard2.0")]
+        [InlineData("netcoreapp2.0")]
+        public void WarningPropertiesCollection_MessageWithTargetGraphAndDependencyWithNoWarnForAllTfm_2(string frameworkString)
         {
             // Arrange
             var libraryId = "test_library";
-            var net45FrameworkString = "net45";
-            var net45TargetFramework = NuGetFramework.Parse(net45FrameworkString);
+            var targetFramework = NuGetFramework.Parse(frameworkString);
 
             var noWarnSet = new HashSet<NuGetLogCode> { };
             var warnAsErrorSet = new HashSet<NuGetLogCode> { };
             var allWarningsAsErrors = false;
 
             var packageSpecificWarningProperties = new PackageSpecificWarningProperties();
-            packageSpecificWarningProperties.Add(NuGetLogCode.NU1500, libraryId, net45TargetFramework);
+            packageSpecificWarningProperties.Add(NuGetLogCode.NU1500, libraryId, targetFramework);
 
             var warningPropertiesCollection = new WarningPropertiesCollection()
             {
                 ProjectWideWarningProperties = new WarningProperties(warnAsErrorSet, noWarnSet, allWarningsAsErrors),
                 PackageSpecificWarningProperties = packageSpecificWarningProperties,
-                ProjectFrameworks = new List<NuGetFramework> { net45TargetFramework }
+                ProjectFrameworks = new List<NuGetFramework> { targetFramework }
             };
 
-            var suppressedMessage = RestoreLogMessage.CreateWarning(NuGetLogCode.NU1500, "Warning", libraryId, new string[] { net45FrameworkString });
+            var suppressedMessage = RestoreLogMessage.CreateWarning(NuGetLogCode.NU1500, "Warning", libraryId, new string[] { frameworkString });
 
             // Act && Assert
             Assert.True(warningPropertiesCollection.ApplyWarningProperties(suppressedMessage));
             Assert.Equal(0, suppressedMessage.TargetGraphs.Count);
         }
 
-        [Fact]
-        public void WarningPropertiesCollection_MessageWithTargetGraphAndDependencyWithNoWarnForSomeTfmAndNoProjectFrameworks()
+        [Theory]
+        [InlineData("net461", "netcoreapp1.0")]
+        [InlineData("net461", "netcoreapp1.1")]
+        [InlineData("net461", "netstandard2.0")]
+        [InlineData("net461", "netcoreapp2.0")]
+        [InlineData("netcoreapp1.0", "netstandard2.0")]
+        [InlineData("netcoreapp2.0", "netstandard2.0")]
+        public void WarningPropertiesCollection_MessageWithTargetGraphAndDependencyWithNoWarnForSomeTfmAndNoProjectFrameworks(string firstFrameworkString, string secondFrameworkString)
         {
 
             // Arrange
             var libraryId = "test_library";
-            var net45FrameworkString = "net45";
-            var net45TargetFramework = NuGetFramework.Parse(net45FrameworkString);
-            var netcoreFrameworkString = "netcoreapp1.0";
-            var netcoreTargetFramework = NuGetFramework.Parse(netcoreFrameworkString);
+            var firstTargetFramework = NuGetFramework.Parse(firstFrameworkString);
+            var secondTargetFramework = NuGetFramework.Parse(secondFrameworkString);
 
             var noWarnSet = new HashSet<NuGetLogCode> { };
             var warnAsErrorSet = new HashSet<NuGetLogCode> { };
             var allWarningsAsErrors = false;
 
             var packageSpecificWarningProperties = new PackageSpecificWarningProperties();
-            packageSpecificWarningProperties.Add(NuGetLogCode.NU1500, libraryId, net45TargetFramework);
+            packageSpecificWarningProperties.Add(NuGetLogCode.NU1500, libraryId, firstTargetFramework);
 
             var warningPropertiesCollection = new WarningPropertiesCollection()
             {
@@ -607,30 +714,34 @@ namespace NuGet.Commands.Test
                 PackageSpecificWarningProperties = packageSpecificWarningProperties
             };
 
-            var nonSuppressedMessage = RestoreLogMessage.CreateWarning(NuGetLogCode.NU1500, "Warning", libraryId, new string[] { net45FrameworkString, netcoreFrameworkString });
+            var nonSuppressedMessage = RestoreLogMessage.CreateWarning(NuGetLogCode.NU1500, "Warning", libraryId, new string[] { firstFrameworkString, secondFrameworkString });
 
             // Act && Assert
             Assert.False(warningPropertiesCollection.ApplyWarningProperties(nonSuppressedMessage));
             Assert.Equal(1, nonSuppressedMessage.TargetGraphs.Count);
         }
 
-        [Fact]
-        public void WarningPropertiesCollection_MessageWithTargetGraphAndDependencyWithNoWarnForAllTfmAndNoProjectFrameworks()
+        [Theory]
+        [InlineData("net461", "netcoreapp1.0")]
+        [InlineData("net461", "netcoreapp1.1")]
+        [InlineData("net461", "netstandard2.0")]
+        [InlineData("net461", "netcoreapp2.0")]
+        [InlineData("netcoreapp1.0", "netstandard2.0")]
+        [InlineData("netcoreapp2.0", "netstandard2.0")]
+        public void WarningPropertiesCollection_MessageWithTargetGraphAndDependencyWithNoWarnForAllTfmAndNoProjectFrameworks(string firstFrameworkString, string secondFrameworkString)
         {
             // Arrange
             var libraryId = "test_library";
-            var net45FrameworkString = "net45";
-            var net45TargetFramework = NuGetFramework.Parse(net45FrameworkString);
-            var netcoreFrameworkString = "netcoreapp1.0";
-            var netcoreTargetFramework = NuGetFramework.Parse(netcoreFrameworkString);
+            var firstTargetFramework = NuGetFramework.Parse(firstFrameworkString);
+            var secondTargetFramework = NuGetFramework.Parse(secondFrameworkString);
 
             var noWarnSet = new HashSet<NuGetLogCode> { };
             var warnAsErrorSet = new HashSet<NuGetLogCode> { };
             var allWarningsAsErrors = false;
 
             var packageSpecificWarningProperties = new PackageSpecificWarningProperties();
-            packageSpecificWarningProperties.Add(NuGetLogCode.NU1500, libraryId, net45TargetFramework);
-            packageSpecificWarningProperties.Add(NuGetLogCode.NU1500, libraryId, netcoreTargetFramework);
+            packageSpecificWarningProperties.Add(NuGetLogCode.NU1500, libraryId, firstTargetFramework);
+            packageSpecificWarningProperties.Add(NuGetLogCode.NU1500, libraryId, secondTargetFramework);
 
             var warningPropertiesCollection = new WarningPropertiesCollection()
             {
@@ -638,27 +749,31 @@ namespace NuGet.Commands.Test
                 PackageSpecificWarningProperties = packageSpecificWarningProperties
             };
 
-            var suppressedMessage = RestoreLogMessage.CreateWarning(NuGetLogCode.NU1500, "Warning", libraryId, new string[] { net45FrameworkString, netcoreFrameworkString });
+            var suppressedMessage = RestoreLogMessage.CreateWarning(NuGetLogCode.NU1500, "Warning", libraryId, new string[] { firstFrameworkString, secondFrameworkString });
 
             // Act && Assert
             Assert.True(warningPropertiesCollection.ApplyWarningProperties(suppressedMessage));
             Assert.Equal(0, suppressedMessage.TargetGraphs.Count);
         }
 
-        [Fact]
-        public void WarningPropertiesCollection_MessageWithTargetGraphAndDependencyWithNoWarnForAllTfmAndNoProjectFrameworks_2()
+        [Theory]
+        [InlineData("net461")]
+        [InlineData("netcoreapp1.0")]
+        [InlineData("netcoreapp1.1")]
+        [InlineData("netstandard2.0")]
+        [InlineData("netcoreapp2.0")]
+        public void WarningPropertiesCollection_MessageWithTargetGraphAndDependencyWithNoWarnForAllTfmAndNoProjectFrameworks_2(string frameworkString)
         {
             // Arrange
             var libraryId = "test_library";
-            var net45FrameworkString = "net45";
-            var net45TargetFramework = NuGetFramework.Parse(net45FrameworkString);
+            var targetFramework = NuGetFramework.Parse(frameworkString);
 
             var noWarnSet = new HashSet<NuGetLogCode> { };
             var warnAsErrorSet = new HashSet<NuGetLogCode> { };
             var allWarningsAsErrors = false;
 
             var packageSpecificWarningProperties = new PackageSpecificWarningProperties();
-            packageSpecificWarningProperties.Add(NuGetLogCode.NU1500, libraryId, net45TargetFramework);
+            packageSpecificWarningProperties.Add(NuGetLogCode.NU1500, libraryId, targetFramework);
 
             var warningPropertiesCollection = new WarningPropertiesCollection()
             {
@@ -666,7 +781,7 @@ namespace NuGet.Commands.Test
                 PackageSpecificWarningProperties = packageSpecificWarningProperties
             };
 
-            var suppressedMessage = RestoreLogMessage.CreateWarning(NuGetLogCode.NU1500, "Warning", libraryId, new string[] { net45FrameworkString });
+            var suppressedMessage = RestoreLogMessage.CreateWarning(NuGetLogCode.NU1500, "Warning", libraryId, new string[] { frameworkString });
 
             // Act && Assert
             Assert.True(warningPropertiesCollection.ApplyWarningProperties(suppressedMessage));
