@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using System.Runtime.Versioning;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.Frameworks;
@@ -16,6 +17,11 @@ namespace NuGet.VisualStudio
     public interface IVsProjectAdapter
     {
         /// <summary>
+        /// AssetTargetFallback project property
+        /// </summary>
+        string AssetTargetFallback { get; }
+
+        /// <summary>
         /// BaseIntermediateOutputPath project property (e.g. c:\projFoo\obj)
         /// </summary>
         string BaseIntermediateOutputPath { get; }
@@ -26,8 +32,6 @@ namespace NuGet.VisualStudio
 
         string FullName { get; }
 
-        string FullPath { get; }
-
         string FullProjectPath { get; }
 
         bool IsDeferred { get; }
@@ -35,14 +39,47 @@ namespace NuGet.VisualStudio
         bool IsSupported { get; }
 
         /// <summary>
+        /// Comma or Semicolon separated list of NU* diagnostic codes e.g. NU1000,NU1001
+        /// </summary>
+        string NoWarn { get; }
+
+        /// <summary>
         /// PackageTargetFallback project property
         /// </summary>
         string PackageTargetFallback { get; }
 
         /// <summary>
-        /// AssetTargetFallback project property
+        /// In unavoidable circumstances where we need to DTE object, it's exposed here
         /// </summary>
-        string AssetTargetFallback { get; }
+        EnvDTE.Project Project { get; }
+
+        string ProjectId { get; }
+
+        /// <summary>
+        /// Full path to a parent directory containing project file.
+        /// </summary>
+        string ProjectDirectory { get; }
+
+        string ProjectName { get; }
+
+        ProjectNames ProjectNames { get; }
+
+        string[] ProjectTypeGuids { get; }
+
+        /// <summary>
+        /// Additional fallback folders DTE property
+        /// </summary>
+        string RestoreAdditionalProjectFallbackFolders { get; }
+
+        /// <summary>
+        /// Additional Sources DTE property
+        /// </summary>
+        string RestoreAdditionalProjectSources { get; }
+
+        /// <summary>
+        /// RestoreFallbackFolders DTE property
+        /// </summary>
+        string RestoreFallbackFolders { get; }
 
         /// <summary>
         /// Restore Packages Path DTE property
@@ -55,47 +92,9 @@ namespace NuGet.VisualStudio
         string RestoreSources { get; }
 
         /// <summary>
-        /// RestoreFallbackFolders DTE property
-        /// </summary>
-        string RestoreFallbackFolders { get; }
-
-        /// <summary>
-        /// Additional Sources DTE property
-        /// </summary>
-        string RestoreAdditionalProjectSources { get; }
-
-        /// <summary>
-        /// Additional fallback folders DTE property
-        /// </summary>
-        string RestoreAdditionalProjectFallbackFolders { get; }
-
-        /// <summary>
-        /// Comma or Semicolon separated list of NU* diagnostic codes e.g. NU1000,NU1001
-        /// </summary>
-        string NoWarn { get; }
-
-        /// <summary>
-        /// Comma or Semicolon separated list of NU* diagnostic codes e.g. NU1000,NU1001
-        /// </summary>
-        string WarningsAsErrors { get; }
-
-        /// <summary>
         /// TreatWarningsAsErrors true/false
         /// </summary>
         string TreatWarningsAsErrors { get; }
-
-        /// <summary>
-        /// In unavoidable circumstances where we need to DTE object, it's exposed here
-        /// </summary>
-        EnvDTE.Project Project { get; }
-
-        string ProjectId { get; }
-
-        string ProjectName { get; }
-
-        ProjectNames ProjectNames { get; }
-
-        string[] ProjectTypeGuids { get; }
 
         string UniqueName { get; }
 
@@ -105,6 +104,13 @@ namespace NuGet.VisualStudio
         string Version { get; }
 
         IVsHierarchy VsHierarchy { get; }
+
+        /// <summary>
+        /// Comma or Semicolon separated list of NU* diagnostic codes e.g. NU1000,NU1001
+        /// </summary>
+        string WarningsAsErrors { get; }
+
+        Task<FrameworkName> GetDotNetFrameworkNameAsync();
 
         Task<IEnumerable<string>> GetReferencedProjectsAsync();
 

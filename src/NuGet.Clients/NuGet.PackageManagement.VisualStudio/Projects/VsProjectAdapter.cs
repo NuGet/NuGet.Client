@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Runtime.Versioning;
 using System.Threading.Tasks;
 using Microsoft;
 using Microsoft.VisualStudio;
@@ -43,7 +44,7 @@ namespace NuGet.PackageManagement.VisualStudio
                     return null;
                 }
 
-                return Path.Combine(FullPath, baseIntermediateOutputPath);
+                return Path.Combine(ProjectDirectory, baseIntermediateOutputPath);
             }
         }
 
@@ -98,7 +99,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public string FullName => ProjectNames.FullName;
 
-        public string FullPath
+        public string ProjectDirectory
         {
             get
             {
@@ -267,6 +268,18 @@ namespace NuGet.PackageManagement.VisualStudio
 
         #region Getters
 
+        public async Task<FrameworkName> GetDotNetFrameworkNameAsync()
+        {
+            var targetFrameworkMoniker = await GetTargetFrameworkStringAsync();
+
+            if (!string.IsNullOrEmpty(targetFrameworkMoniker))
+            {
+                return new FrameworkName(targetFrameworkMoniker);
+            }
+
+            return null;
+        }
+
         public async Task<IEnumerable<string>> GetReferencedProjectsAsync()
         {
             if (!IsDeferred)
@@ -340,11 +353,21 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public async Task<NuGetFramework> GetTargetFrameworkAsync()
         {
+            var frameworkString = await GetTargetFrameworkStringAsync();
+
+            if (!string.IsNullOrEmpty(frameworkString))
+            {
+                return NuGetFramework.Parse(frameworkString);
+            }
+
+            return NuGetFramework.UnsupportedFramework;
+        }
+
+        private async Task<string> GetTargetFrameworkStringAsync()
+        {
             await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            var nugetFramework = NuGetFramework.UnsupportedFramework;
-
-            var projectPath = FullPath;
+            var projectPath = FullName;
             var platformIdentifier = await BuildProperties.GetPropertyValueAsync(
                 ProjectBuildProperties.TargetPlatformIdentifier);
             var platformVersion = await BuildProperties.GetPropertyValueAsync(
@@ -365,14 +388,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 targetPlatformVersion: platformVersion,
                 targetPlatformMinVersion: platformMinVersion);
 
-            var frameworkString = frameworkStrings.FirstOrDefault();
-
-            if (!string.IsNullOrEmpty(frameworkString))
-            {
-                nugetFramework = NuGetFramework.Parse(frameworkString);
-            }
-
-            return nugetFramework;
+            return frameworkStrings.FirstOrDefault();
         }
 
         #endregion Getters
