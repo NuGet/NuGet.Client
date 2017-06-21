@@ -2,10 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using NuGet.Frameworks;
-using NuGet.Shared;
 using NuGet.Versioning;
 
 namespace NuGet.ProjectModel
@@ -52,70 +48,6 @@ namespace NuGet.ProjectModel
             }
 
             return false;
-        }
-
-        /// <summary>
-        /// Apply a fallback framework to <see cref="TargetFrameworkInformation"/>.
-        /// </summary>
-        public static void ApplyFallbackFramework(
-            TargetFrameworkInformation targetFrameworkInfo,
-            IEnumerable<NuGetFramework> packageTargetFallback,
-            IEnumerable<NuGetFramework> assetTargetFallback)
-        {
-            if (targetFrameworkInfo == null)
-            {
-                throw new ArgumentNullException(nameof(targetFrameworkInfo));
-            }
-
-            // Update the framework appropriately
-            targetFrameworkInfo.FrameworkName = GetFallbackFramework(
-                targetFrameworkInfo.FrameworkName,
-                packageTargetFallback,
-                assetTargetFallback);
-
-            if (assetTargetFallback?.Any() == true)
-            {
-                // AssetTargetFallback
-                targetFrameworkInfo.AssetTargetFallback = assetTargetFallback.AsList();
-                targetFrameworkInfo.Warn = true;
-            }
-
-            if (packageTargetFallback?.Any() == true)
-            {
-                // PackageTargetFallback
-                targetFrameworkInfo.Imports = packageTargetFallback.AsList();
-            }
-        }
-
-        /// <summary>
-        /// Returns the fallback framework or the original.
-        /// If both PTF and ATF are set the original is returned.
-        /// </summary>
-        public static NuGetFramework GetFallbackFramework(
-            NuGetFramework projectFramework,
-            IEnumerable<NuGetFramework> packageTargetFallback,
-            IEnumerable<NuGetFramework> assetTargetFallback)
-        {
-            if (projectFramework == null)
-            {
-                throw new ArgumentNullException(nameof(projectFramework));
-            }
-
-            var hasATF = assetTargetFallback?.Any() == true;
-            var hasPTF = packageTargetFallback?.Any() == true;
-
-            if (hasATF && !hasPTF)
-            {
-                // AssetTargetFallback
-                return new AssetTargetFallbackFramework(projectFramework, assetTargetFallback.AsList());
-            }
-            else if (hasPTF && !hasATF)
-            {
-                // PackageTargetFallback
-                return new FallbackFramework(projectFramework, packageTargetFallback.AsList());
-            }
-
-            return projectFramework;
         }
     }
 }

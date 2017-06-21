@@ -420,13 +420,13 @@ namespace NuGet.ProjectModel
             writer.WriteObjectEnd();
         }
 
-        private static void SetFrameworkArrayToProperty(IObjectWriter writer, IList<NuGetFramework> frameworks, string propertyName)
+        private static void SetImports(IObjectWriter writer, IList<NuGetFramework> frameworks)
         {
             if (frameworks?.Any() == true)
             {
-                var shortNames = frameworks.Select(framework => framework.GetShortFolderName());
+                var imports = frameworks.Select(framework => framework.GetShortFolderName());
 
-                writer.WriteNameArray(propertyName, shortNames);
+                writer.WriteNameArray("imports", imports);
             }
         }
 
@@ -441,8 +441,8 @@ namespace NuGet.ProjectModel
                     writer.WriteObjectStart(framework.FrameworkName.GetShortFolderName());
 
                     SetDependencies(writer, framework.Dependencies);
-                    SetFrameworkArrayToProperty(writer, framework.Imports, "imports");
-                    SetFrameworkArrayToProperty(writer, framework.AssetTargetFallback, "assetTargetFallback");
+                    SetImports(writer, framework.Imports);
+                    SetValueIfTrue(writer, "assetTargetFallback", framework.AssetTargetFallback);
                     SetValueIfTrue(writer, "warn", framework.Warn);
 
                     writer.WriteObjectEnd();
