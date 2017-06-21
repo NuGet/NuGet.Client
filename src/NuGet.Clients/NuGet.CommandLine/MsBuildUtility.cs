@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -366,7 +366,7 @@ namespace NuGet.CommandLine
             try
             {
                 var assembly = Assembly.Load(
-                    "Microsoft.Build.Engine, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f1d50a3a");
+                    "Microsoft.Build.Engine, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a");
                 var solutionParserType = assembly.GetType("Mono.XBuild.CommandLine.SolutionParser");
                 if (solutionParserType == null)
                 {
