@@ -1,6 +1,6 @@
 [submodule "submodules/FileSystem"]
 	path = submodules/FileSystem
-	url = https://github.com/aspnet/FileSystem.git
+	url = https://github.com/NuGet/FileSystem.git
 	branch = NuGet/SubModuleIntegration
 [submodule "submodules/Common"]
 	path = submodules/Common
