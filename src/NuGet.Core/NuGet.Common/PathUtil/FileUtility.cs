@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -176,7 +176,7 @@ namespace NuGet.Common
             }
 
             // Run up to 3 times
-            for (int i = 0; i < MaxTries; i++)
+            for (var i = 0; i < MaxTries; i++)
             {
                 // Ignore exceptions for the first attempts
                 try
@@ -203,7 +203,7 @@ namespace NuGet.Common
             }
 
             // Run up to 3 times
-            for (int i = 0; i < MaxTries; i++)
+            for (var i = 0; i < MaxTries; i++)
             {
                 // Ignore exceptions for the first attempts
                 try

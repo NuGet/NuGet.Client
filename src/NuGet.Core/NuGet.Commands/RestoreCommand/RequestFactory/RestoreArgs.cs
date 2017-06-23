@@ -174,7 +174,7 @@ namespace NuGet.Commands
                 request.LockFilePath = ProjectJsonPathUtilities.GetLockFilePath(request.Project.FilePath);
             }
 
-            if (request.Project.RestoreMetadata != null) {
+            if (request.Project.RestoreMetadata?.CacheFilePath == null) {
                 request.Project.RestoreMetadata.CacheFilePath = NoOpRestoreUtilities.GetCacheFilePath(request);
             }
 

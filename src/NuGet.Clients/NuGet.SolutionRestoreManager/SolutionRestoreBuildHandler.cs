@@ -132,7 +132,7 @@ namespace NuGet.SolutionRestoreManager
                 (buildAction & (uint)VSSOLNBUILDUPDATEFLAGS3.SBF_FLAGS_UPTODATE_CHECK) == 0)
             {
                 // Clear the project.json restore cache on clean to ensure that the next build restores again
-                SolutionRestoreWorker.Value.CleanCache();
+                await SolutionRestoreWorker.Value.CleanCacheAsync();
             }
             else if ((buildAction & (uint)VSSOLNBUILDUPDATEFLAGS.SBF_OPERATION_BUILD) != 0 &&
                     (buildAction & (uint)VSSOLNBUILDUPDATEFLAGS3.SBF_FLAGS_UPTODATE_CHECK) == 0 &&

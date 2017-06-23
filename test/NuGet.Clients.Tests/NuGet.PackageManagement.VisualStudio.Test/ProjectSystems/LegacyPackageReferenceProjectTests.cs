@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -92,6 +92,100 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 // Act & Assert
                 await Assert.ThrowsAsync<InvalidDataException>(
                     () => testProject.GetAssetsFilePathAsync());
+            }
+        }
+
+        [Fact]
+        public async Task GetCacheFilePathAsync_WithValidBaseIntermediateOutputPath_Succeeds()
+        {
+            // Arrange
+            using (var testDirectory = TestDirectory.Create())
+            {
+                var testProj = "project.csproj";
+                var testBaseIntermediateOutputPath = Path.Combine(testDirectory, "obj");
+                TestDirectory.Create(testBaseIntermediateOutputPath);
+                var projectAdapter = Mock.Of<IVsProjectAdapter>();
+                Mock.Get(projectAdapter)
+                    .SetupGet(x => x.BaseIntermediateOutputPath)
+                    .Returns(testBaseIntermediateOutputPath);
+
+                Mock.Get(projectAdapter)
+                    .SetupGet(x => x.FullProjectPath)
+                    .Returns(Path.Combine(testDirectory, testProj));
+
+                var testProject = new LegacyPackageReferenceProject(
+                    projectAdapter,
+                    Guid.NewGuid().ToString(),
+                    new TestProjectSystemServices(),
+                    _threadingService);
+
+                await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                // Act
+                var cachePath = await testProject.GetCacheFilePathAsync();
+
+                // Assert
+                Assert.Equal(Path.Combine(testBaseIntermediateOutputPath, $"{testProj}.nuget.cache"), cachePath);
+
+                // Verify
+                Mock.Get(projectAdapter)
+                    .VerifyGet(x => x.BaseIntermediateOutputPath, Times.AtLeastOnce);
+            }
+        }
+
+        [Fact]
+        public async Task GetCacheFilePathAsync_WithNoBaseIntermediateOutputPath_Throws()
+        {
+            // Arrange
+            using (TestDirectory.Create())
+            {
+                var testProject = new LegacyPackageReferenceProject(
+                    Mock.Of<IVsProjectAdapter>(),
+                    Guid.NewGuid().ToString(),
+                    new TestProjectSystemServices(),
+                    _threadingService);
+
+                await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                // Act & Assert
+                await Assert.ThrowsAsync<InvalidDataException>(
+                    () => testProject.GetCacheFilePathAsync());
+            }
+        }
+
+        [Fact]
+        public async Task GetCacheFilePathAsync_SwitchesToMainThread_Succeeds()
+        {
+            // Arrange
+            using (var testDirectory = TestDirectory.Create())
+            {
+                var testProj = "project.csproj";
+                var testBaseIntermediateOutputPath = Path.Combine(testDirectory, "obj");
+                TestDirectory.Create(testBaseIntermediateOutputPath);
+                var projectAdapter = Mock.Of<IVsProjectAdapter>();
+                Mock.Get(projectAdapter)
+                    .SetupGet(x => x.BaseIntermediateOutputPath)
+                    .Returns(testBaseIntermediateOutputPath);
+
+                Mock.Get(projectAdapter)
+                    .SetupGet(x => x.FullProjectPath)
+                    .Returns(Path.Combine(testDirectory, testProj));
+
+                var testProject = new LegacyPackageReferenceProject(
+                    projectAdapter,
+                    Guid.NewGuid().ToString(),
+                    new TestProjectSystemServices(),
+                    _threadingService);
+
+                // Act
+                var assetsPath = await testProject.GetCacheFilePathAsync();
+
+                // Assert
+                Assert.Equal(Path.Combine(testBaseIntermediateOutputPath, $"{testProj}.nuget.cache"), assetsPath);
+
+                // Verify
+                Mock.Get(projectAdapter)
+                    .VerifyGet(x => x.BaseIntermediateOutputPath, Times.AtLeastOnce);
             }
         }
 

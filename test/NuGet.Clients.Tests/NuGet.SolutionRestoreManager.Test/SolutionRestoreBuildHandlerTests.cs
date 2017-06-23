@@ -45,7 +45,7 @@ namespace NuGet.SolutionRestoreManager.Test
             }
 
             Mock.Get(restoreWorker)
-                .Verify(x => x.CleanCache(), Times.Once);
+                .Verify(x => x.CleanCacheAsync(), Times.Once);
  
             Mock.Get(restoreWorker)
                 .Verify(x => x.ScheduleRestoreAsync(It.IsAny<SolutionRestoreRequest>(), It.IsAny<CancellationToken>()), Times.Never);

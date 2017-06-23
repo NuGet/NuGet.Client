@@ -451,6 +451,30 @@ namespace NuGet.SolutionRestoreManager.Test
             Assert.True(Enumerable.SequenceEqual(expectedFallback.OrderBy(t => t), specFallback.OrderBy(t => t)));
         }
 
+        [Fact]
+        public async Task NominateProjectAsync_CacheFilePathInPackageSpec_Succeeds()
+        {
+            var cps = NewCpsProject("{ }");
+            var projectFullPath = cps.ProjectFullPath;
+            var pri = cps.Builder
+                .WithTargetFrameworkInfo(
+                    new VsTargetFrameworkInfo(
+                        "netcoreapp1.0",
+                        Enumerable.Empty<IVsReferenceItem>(),
+                        Enumerable.Empty<IVsReferenceItem>(),
+                        new IVsProjectProperty[] {}))
+                .Build();
+
+            // Act
+            var actualRestoreSpec = await CaptureNominateResultAsync(projectFullPath, cps.ProjectRestoreInfo);
+
+            // Assert
+            SpecValidationUtility.ValidateDependencySpec(actualRestoreSpec);
+
+            var actualProjectSpec = actualRestoreSpec.GetProjectSpec(projectFullPath);
+            Assert.NotNull(actualProjectSpec);
+            Assert.Equal(Path.Combine(actualProjectSpec.RestoreMetadata.OutputPath,$"{Path.GetFileName(projectFullPath)}.nuget.cache"), actualProjectSpec.RestoreMetadata.CacheFilePath);
+        }
 
         [Theory]
         [InlineData("1.0.0", "1.2.3")]

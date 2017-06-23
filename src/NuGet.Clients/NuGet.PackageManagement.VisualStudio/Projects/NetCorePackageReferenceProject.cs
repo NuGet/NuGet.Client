@@ -291,6 +291,18 @@ namespace NuGet.PackageManagement.VisualStudio
             return true;
         }
 
+        public override Task<string> GetCacheFilePathAsync()
+        {
+            var spec = GetPackageSpec();
+            if (spec == null)
+            {
+                throw new InvalidOperationException(
+                    string.Format(Strings.ProjectNotLoaded_RestoreFailed, ProjectName));
+            }
+
+            return Task.FromResult(NoOpRestoreUtilities.GetProjectCacheFilePath(cacheRoot: spec.RestoreMetadata.OutputPath, projectPath: spec.RestoreMetadata.ProjectPath));
+        }
+
         #endregion
     }
 }

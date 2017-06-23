@@ -5,6 +5,7 @@ using System;
 using System.Collections.Concurrent;
 using System.ComponentModel.Composition;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft;
@@ -14,6 +15,7 @@ using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Threading;
 using NuGet.PackageManagement.VisualStudio;
+using NuGet.ProjectManagement.Projects;
 using NuGet.VisualStudio;
 using Task = System.Threading.Tasks.Task;
 
@@ -304,8 +306,13 @@ namespace NuGet.SolutionRestoreManager
             }
         }
 
-        public void CleanCache()
+        public async Task CleanCacheAsync()
         {
+            // get all build integrated based nuget projects and delete the cache file.
+            await Task.WhenAll(
+                SolutionManager.GetNuGetProjects().OfType<BuildIntegratedNuGetProject>().Select(async e =>
+                    Common.FileUtility.Delete(await e.GetCacheFilePathAsync())));
+
             Interlocked.Exchange(ref _restoreJobContext, new SolutionRestoreJobContext());
         }
 

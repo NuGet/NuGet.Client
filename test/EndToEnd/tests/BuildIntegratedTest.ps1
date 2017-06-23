@@ -478,7 +478,7 @@ function Test-BuildIntegratedParentProjectIsRestoredAfterInstallWithClassLibInTr
     Assert-ProjectJsonLockFilePackage $project1 NuGet.Versioning 1.0.7
 }
 
-function Test-BuildIntegratedClean {
+function Test-BuildIntegratedCleanDeleteCacheFile {
     # Arrange
     $project = New-BuildIntegratedProj UAPApp
 
@@ -536,4 +536,56 @@ function Remove-PackageReference {
     $node.ParentNode.RemoveChild($node)
 
     $doc.Save($projectPath)
+}
+
+function Test-BuildIntegratedLegacyCleanDeleteCacheFile {
+    # Arrange
+    $project = New-Project PackageReferenceClassLibrary
+    $project | Install-Package Newtonsoft.Json -Version 9.0.1
+    Build-Solution
+    Assert-ProjectCacheFileExists $project
+
+    #Act
+    Clean-Solution
+
+    #Assert
+    Assert-ProjectCacheFileNotExists $project
+}
+
+function Test-BuildIntegratedRebuildDoesNotDeleteCacheFile {
+    # Arrange
+    $project = New-BuildIntegratedProj UAPApp
+    Install-Package NuGet.Versioning -ProjectName $project.Name -version 1.0.7
+    Build-Solution
+    Assert-ProjectCacheFileExists $project
+
+    AdviseSolutionEvents
+
+    #Act
+    Rebuild-Solution
+
+    WaitUntilRebuildCompleted
+    UnadviseSolutionEvents
+
+    #Assert
+    Assert-ProjectCacheFileExists $project
+}
+
+function Test-BuildIntegratedLegacyRebuildDoesNotDeleteCacheFile {
+    # Arrange
+    $project = New-Project PackageReferenceClassLibrary
+    $project | Install-Package Newtonsoft.Json -Version 9.0.1
+    Build-Solution
+    Assert-ProjectCacheFileExists $project
+
+    AdviseSolutionEvents
+
+    #Act
+    Rebuild-Solution
+
+    WaitUntilRebuildCompleted
+    UnadviseSolutionEvents
+
+    #Assert
+    Assert-ProjectCacheFileExists $project
 }

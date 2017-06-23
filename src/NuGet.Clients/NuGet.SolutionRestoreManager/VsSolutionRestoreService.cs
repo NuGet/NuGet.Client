@@ -245,7 +245,10 @@ namespace NuGet.SolutionRestoreManager
                 // cross-targeting is always ON even in case of a single tfm in the list.
                 crossTargeting = true;
             }
-
+            var outputPath = Path.GetFullPath(
+                        Path.Combine(
+                            projectDirectory,
+                            projectRestoreInfo.BaseIntermediatePath));
             var packageSpec = new PackageSpec(tfis)
             {
                 Name = GetPackageId(projectNames, projectRestoreInfo.TargetFrameworks),
@@ -256,10 +259,7 @@ namespace NuGet.SolutionRestoreManager
                     ProjectName = projectNames.ShortName,
                     ProjectUniqueName = projectFullPath,
                     ProjectPath = projectFullPath,
-                    OutputPath = Path.GetFullPath(
-                        Path.Combine(
-                            projectDirectory,
-                            projectRestoreInfo.BaseIntermediatePath)),
+                    OutputPath = outputPath,
                     ProjectStyle = ProjectStyle.PackageReference,
                     TargetFrameworks = projectRestoreInfo.TargetFrameworks
                         .Cast<IVsTargetFrameworkInfo>()
@@ -278,7 +278,8 @@ namespace NuGet.SolutionRestoreManager
                     ProjectWideWarningProperties = MSBuildRestoreUtility.GetWarningProperties(
                         treatWarningsAsErrors: GetNonEvaluatedPropertyOrNull(projectRestoreInfo.TargetFrameworks, TreatWarningsAsErrors, e => e),
                         warningsAsErrors: GetNonEvaluatedPropertyOrNull(projectRestoreInfo.TargetFrameworks, WarningsAsErrors, e => e),
-                        noWarn: GetNonEvaluatedPropertyOrNull(projectRestoreInfo.TargetFrameworks, NoWarn, e => e))
+                        noWarn: GetNonEvaluatedPropertyOrNull(projectRestoreInfo.TargetFrameworks, NoWarn, e => e)),
+                    CacheFilePath = NoOpRestoreUtilities.GetProjectCacheFilePath(cacheRoot: outputPath, projectPath: projectFullPath)
                 },
                 RuntimeGraph = GetRuntimeGraph(projectRestoreInfo),
                 RestoreSettings = new ProjectRestoreSettings() { HideWarningsAndErrors = true }

@@ -19,7 +19,6 @@ namespace NuGet.Commands
 
         /// <summary>
         /// If the dependencyGraphSpec is not set, we cannot no-op on this project restore. 
-        /// No-Op restore is not supported for CLI Tools at this point
         /// </summary>
         internal static bool IsNoOpSupported(RestoreRequest request)
         {
@@ -29,22 +28,25 @@ namespace NuGet.Commands
         /// <summary>
         /// The cache file path is $(BaseIntermediateOutputPath)\$(project).nuget.cache
         /// </summary>
-        private static string GetBuildIntegratedProjectCacheFile(RestoreRequest request)
+        private static string GetBuildIntegratedProjectCacheFilePath(RestoreRequest request)
         {
-            string cacheFilePath = null;
 
             if (request.ProjectStyle == ProjectStyle.ProjectJson
                 || request.ProjectStyle == ProjectStyle.PackageReference
-               || request.ProjectStyle == ProjectStyle.Standalone)
+                || request.ProjectStyle == ProjectStyle.Standalone)
             {
-                var projFileName = Path.GetFileName(request.Project.RestoreMetadata.ProjectPath);
                 var cacheRoot = request.BaseIntermediateOutputPath ?? request.RestoreOutputPath;
-                cacheFilePath = request.Project.RestoreMetadata.CacheFilePath = Path.Combine(cacheRoot, $"{projFileName}.nuget.cache");
+                return request.Project.RestoreMetadata.CacheFilePath = GetProjectCacheFilePath(cacheRoot, request.Project.RestoreMetadata.ProjectPath);
             }
 
-            return cacheFilePath;
+            return null;
         }
 
+        public static string GetProjectCacheFilePath(string cacheRoot, string projectPath)
+        {
+            var projFileName = Path.GetFileName(projectPath);
+            return Path.Combine(cacheRoot, $"{projFileName}.nuget.cache");
+        }
 
         internal static string GetToolCacheFilePath(RestoreRequest request, LockFile lockFile)
         {
@@ -95,7 +97,7 @@ namespace NuGet.Commands
                     || request.ProjectStyle == ProjectStyle.Standalone
                     || request.ProjectStyle == ProjectStyle.ProjectJson)
                 {
-                    projectCacheFilePath = GetBuildIntegratedProjectCacheFile(request);
+                    projectCacheFilePath = GetBuildIntegratedProjectCacheFilePath(request);
                 }
                 else if(request.ProjectStyle == ProjectStyle.DotnetCliTool)
                 {

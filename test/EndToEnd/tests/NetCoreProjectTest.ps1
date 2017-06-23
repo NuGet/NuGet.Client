@@ -777,3 +777,22 @@ function Test-NetCoreConsoleAppClean {
     #Assert
     Assert-ProjectCacheFileNotExists $project
 }
+
+function Test-NetCoreConsoleAppRebuildDoesNotDeleteCacheFile {
+    # Arrange & Act
+    $project = New-NetCoreConsoleApp ConsoleApp
+    Build-Solution
+
+    Assert-ProjectCacheFileExists $project
+
+    AdviseSolutionEvents
+
+    #Act
+    Rebuild-Solution
+
+    WaitUntilRebuildCompleted
+    UnadviseSolutionEvents
+
+    #Assert
+    Assert-ProjectCacheFileExists $project
+}
