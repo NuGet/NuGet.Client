@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -36,6 +36,9 @@ namespace NuGet.PackageManagement.UI
 
         public delegate void UpdateButtonCllickEventHandler(PackageItemListViewModel[] selectedPackages);
         public event UpdateButtonCllickEventHandler UpdateButtonClicked;
+
+        // This exists only to facilitate unit testing.
+        public event EventHandler LoadItemsCompleted;
 
         private CancellationTokenSource _loadCts;
         private IPackageItemLoader _loader;
@@ -84,18 +87,36 @@ namespace NuGet.PackageManagement.UI
         private readonly SemaphoreSlim _itemsLock = new SemaphoreSlim(1, 1);
 
         public ObservableCollection<object> Items { get; } = new ObservableCollection<object>();
+
         public IEnumerable<PackageItemListViewModel> PackageItems => Items.OfType<PackageItemListViewModel>().ToArray();
 
         public PackageItemListViewModel SelectedPackageItem => _list.SelectedItem as PackageItemListViewModel;
 
         // Load items using the specified loader
-        internal void LoadItems(
+        public void LoadItems(
             IPackageItemLoader loader,
             string loadingMessage,
             INuGetUILogger logger,
             Task<SearchResult<IPackageSearchMetadata>> searchResultTask,
             CancellationToken token)
         {
+            if (loader == null)
+            {
+                throw new ArgumentNullException(nameof(loader));
+            }
+
+            if (string.IsNullOrEmpty(loadingMessage))
+            {
+                throw new ArgumentException(Strings.Argument_Cannot_Be_Null_Or_Empty, nameof(loadingMessage));
+            }
+
+            if (searchResultTask == null)
+            {
+                throw new ArgumentNullException(nameof(searchResultTask));
+            }
+
+            token.ThrowIfCancellationRequested();
+
             _loader = loader;
             _logger = logger;
             _initialSearchResultTask = searchResultTask;
@@ -114,7 +135,6 @@ namespace NuGet.PackageManagement.UI
             {
                 _itemsLock.Release();
             }
-
 
             _selectedCount = 0;
 
@@ -197,6 +217,8 @@ namespace NuGet.PackageManagement.UI
                 }
 
                 UpdateCheckBoxStatus();
+
+                LoadItemsCompleted?.Invoke(this, EventArgs.Empty);
             });
         }
 
@@ -268,15 +290,9 @@ namespace NuGet.PackageManagement.UI
             {
                 // trigger loading
                 await currentLoader.LoadNextAsync(progress, token);
-
-                // run till first results are ready
-                while (currentLoader.State.LoadingStatus == LoadingStatus.Loading &&
-                    currentLoader.State.ItemsCount == 0)
-                {
-                    token.ThrowIfCancellationRequested();
-                    await currentLoader.UpdateStateAsync(progress, token);
-                }
             }
+
+            await WaitForInitialResultsAsync(currentLoader, progress, token);
 
             return currentLoader.GetCurrent();
         }
@@ -288,6 +304,19 @@ namespace NuGet.PackageManagement.UI
 
             // run to completion
             while (currentLoader.State.LoadingStatus == LoadingStatus.Loading)
+            {
+                token.ThrowIfCancellationRequested();
+                await currentLoader.UpdateStateAsync(progress, token);
+            }
+        }
+
+        private async Task WaitForInitialResultsAsync(
+            IItemLoader<PackageItemListViewModel> currentLoader,
+            IProgress<IItemLoaderState> progress,
+            CancellationToken token)
+        {
+            while (currentLoader.State.LoadingStatus == LoadingStatus.Loading &&
+                currentLoader.State.ItemsCount == 0)
             {
                 token.ThrowIfCancellationRequested();
                 await currentLoader.UpdateStateAsync(progress, token);
@@ -344,7 +373,7 @@ namespace NuGet.PackageManagement.UI
 
             if (loader.IsMultiSource)
             {
-                bool hasMore = _loadingStatusBar.ItemsLoaded != 0 && state.ItemsCount > _loadingStatusBar.ItemsLoaded;
+                var hasMore = _loadingStatusBar.ItemsLoaded != 0 && state.ItemsCount > _loadingStatusBar.ItemsLoaded;
                 if (hasMore)
                 {
                     statusBarVisibility = Visibility.Visible;
@@ -386,7 +415,6 @@ namespace NuGet.PackageManagement.UI
 
                     Items.Add(_loadingStatusIndicator);
                 }
-
                 finally
                 {
                     _itemsLock.Release();

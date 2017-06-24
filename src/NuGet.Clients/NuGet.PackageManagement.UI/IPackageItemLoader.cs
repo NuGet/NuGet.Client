@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -12,7 +12,7 @@ namespace NuGet.PackageManagement.UI
     /// <summary>
     /// This enhance IItemLoader by adding package specific methods.
     /// </summary>
-    internal interface IPackageItemLoader : IItemLoader<PackageItemListViewModel>
+    public interface IPackageItemLoader : IItemLoader<PackageItemListViewModel>
     {
         Task<SearchResult<IPackageSearchMetadata>> SearchAsync(ContinuationToken continuationToken,
             CancellationToken cancellationToken);

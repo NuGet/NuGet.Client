@@ -9,6 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Reference Include="PresentationFramework" />
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
@@ -29,6 +30,12 @@
     <Compile Include="PackageItemLoaderTests.cs" />
     <Compile Include="PackageManagerProviderTest.cs" />
     <Compile Include="TestPackageManagerProviders.cs" />
+    <Compile Include="WpfFactAttribute.cs" />
+    <Compile Include="WpfFactDiscoverer.cs" />
+    <Compile Include="WpfTestCase.cs" />
+    <Compile Include="WpfTheoryAttribute.cs" />
+    <Compile Include="WpfTheoryDiscoverer.cs" />
+    <Compile Include="Xamls\InfiniteScrollListTests.cs" />
   </ItemGroup>
 
   <ItemGroup>
