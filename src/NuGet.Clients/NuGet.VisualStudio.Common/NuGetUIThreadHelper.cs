@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -85,6 +85,16 @@ namespace NuGet.VisualStudio
                 var joinableTaskContext = new JoinableTaskContext(mainThread, synchronizationContext);
                 return joinableTaskContext.Factory;
             });
+        }
+
+        public static void SetCustomJoinableTaskFactory(JoinableTaskFactory joinableTaskFactory)
+        {
+            if (joinableTaskFactory == null)
+            {
+                throw new ArgumentNullException(nameof(joinableTaskFactory));
+            }
+
+            _joinableTaskFactory = new Lazy<JoinableTaskFactory>(() => joinableTaskFactory);
         }
 
         private static JoinableTaskFactory GetThreadHelperJoinableTaskFactorySafe()

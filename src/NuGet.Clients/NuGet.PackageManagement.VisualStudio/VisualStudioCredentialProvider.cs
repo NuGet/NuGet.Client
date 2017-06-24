@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -105,10 +105,10 @@ namespace NuGet.PackageManagement.VisualStudio
         /// </summary>
         private async Task<CredentialResponse> PromptForCredentialsAsync(Uri uri, CancellationToken cancellationToken)
         {
-            const __VsWebProxyState oldState = __VsWebProxyState.VsWebProxyState_PromptForCredentials;
+            const __VsWebProxyState oldState = __VsWebProxyState.VsWebProxyState_DefaultCredentials;
 
             var newState = (uint)__VsWebProxyState.VsWebProxyState_NoCredentials;
-            int result = 0;
+            var result = 0;
 
             cancellationToken.ThrowIfCancellationRequested();
 

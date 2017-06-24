@@ -35,6 +35,7 @@
     <Compile Include="Telemetry\RestoreTelemetryServiceTests.cs" />
     <Compile Include="Telemetry\TestTelemetryUtility.cs" />
     <Compile Include="VisualStudioAccountProviderTests.cs" />
+    <Compile Include="VisualStudioCredentialProviderTests.cs" />
     <Compile Include="VsCredentialProviderAdapterTests.cs" />
     <Compile Include="VsCredentialProviderImporterTests.cs" />
   </ItemGroup>
