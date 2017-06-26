@@ -34,16 +34,17 @@ namespace NuGet.PackageManagement.UI
 
         public event SelectionChangedEventHandler SelectionChanged;
 
-        public delegate void UpdateButtonCllickEventHandler(PackageItemListViewModel[] selectedPackages);
-        public event UpdateButtonCllickEventHandler UpdateButtonClicked;
+        public delegate void UpdateButtonClickEventHandler(PackageItemListViewModel[] selectedPackages);
+        public event UpdateButtonClickEventHandler UpdateButtonClicked;
 
         // This exists only to facilitate unit testing.
-        public event EventHandler LoadItemsCompleted;
+        internal event EventHandler LoadItemsCompleted;
 
         private CancellationTokenSource _loadCts;
         private IPackageItemLoader _loader;
         private INuGetUILogger _logger;
         private Task<SearchResult<IPackageSearchMetadata>> _initialSearchResultTask;
+        private readonly Lazy<JoinableTaskFactory> _joinableTaskFactory;
 
         private const string LogEntrySource = "NuGet Package Manager";
 
@@ -51,7 +52,19 @@ namespace NuGet.PackageManagement.UI
         private int _selectedCount;
 
         public InfiniteScrollList()
+            : this(new Lazy<JoinableTaskFactory>(() => NuGetUIThreadHelper.JoinableTaskFactory))
         {
+        }
+
+        internal InfiniteScrollList(Lazy<JoinableTaskFactory> joinableTaskFactory)
+        {
+            if (joinableTaskFactory == null)
+            {
+                throw new ArgumentNullException(nameof(joinableTaskFactory));
+            }
+
+            _joinableTaskFactory = joinableTaskFactory;
+
             InitializeComponent();
 
             BindingOperations.EnableCollectionSynchronization(Items, _itemsLock);
@@ -93,7 +106,7 @@ namespace NuGet.PackageManagement.UI
         public PackageItemListViewModel SelectedPackageItem => _list.SelectedItem as PackageItemListViewModel;
 
         // Load items using the specified loader
-        public void LoadItems(
+        internal void LoadItems(
             IPackageItemLoader loader,
             string loadingMessage,
             INuGetUILogger logger,
@@ -163,7 +176,7 @@ namespace NuGet.PackageManagement.UI
 
             var currentLoader = _loader;
 
-            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+            _joinableTaskFactory.Value.RunAsync(async () =>
             {
                 await TaskScheduler.Default;
 
@@ -171,7 +184,7 @@ namespace NuGet.PackageManagement.UI
                 {
                     await LoadItemsCoreAsync(currentLoader, loadCts.Token);
 
-                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                    await _joinableTaskFactory.Value.SwitchToMainThreadAsync();
 
                     if (selectedPackageItem != null)
                     {
@@ -184,7 +197,7 @@ namespace NuGet.PackageManagement.UI
                     loadCts.Dispose();
                     currentLoader.Reset();
 
-                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                    await _joinableTaskFactory.Value.SwitchToMainThreadAsync();
 
                     // The user cancelled the login, but treat as a load error in UI
                     // So the retry button and message is displayed
@@ -205,7 +218,7 @@ namespace NuGet.PackageManagement.UI
                     // Write stack to activity log
                     Mvs.ActivityLog.LogError(LogEntrySource, ex.ToString());
 
-                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                    await _joinableTaskFactory.Value.SwitchToMainThreadAsync();
 
                     var errorMessage = ExceptionUtilities.DisplayMessage(ex);
                     _logger.Log(ProjectManagement.MessageLevel.Error, errorMessage);
@@ -238,9 +251,9 @@ namespace NuGet.PackageManagement.UI
 
             token.ThrowIfCancellationRequested();
 
-            await NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+            await _joinableTaskFactory.Value.RunAsync(async () =>
             {
-                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                await _joinableTaskFactory.Value.SwitchToMainThreadAsync();
 
                 _loadingStatusBar.ItemsLoaded = currentLoader.State.ItemsCount;
             });
@@ -325,9 +338,9 @@ namespace NuGet.PackageManagement.UI
 
         private void HandleItemLoaderStateChange(IItemLoader<PackageItemListViewModel> loader, IItemLoaderState state)
         {
-            NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
+            _joinableTaskFactory.Value.Run(async () =>
             {
-                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                await _joinableTaskFactory.Value.SwitchToMainThreadAsync();
 
                 if (loader == _loader)
                 {
@@ -390,7 +403,7 @@ namespace NuGet.PackageManagement.UI
 
         private void UpdatePackageList(IEnumerable<PackageItemListViewModel> packages, bool refresh)
         {
-            NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
+            _joinableTaskFactory.Value.Run(async () =>
             {
                 // Synchronize updating Items list
                 await _itemsLock.WaitAsync();

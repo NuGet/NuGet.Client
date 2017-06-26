@@ -5,65 +5,81 @@ using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.VisualStudio.Threading;
 using Moq;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
-using NuGet.VisualStudio;
 using Xunit;
 
 namespace NuGet.PackageManagement.UI.Test
 {
     public class InfiniteScrollListTests
     {
-        private InfiniteScrollList _list;
-
-        public InfiniteScrollListTests()
-        {
-            _list = new InfiniteScrollList();
-        }
-
         [WpfFact]
-        public void CheckBoxesEnabled_DefaultIsFalse()
-        {
-            Assert.False(_list.CheckBoxesEnabled);
-        }
-
-        [WpfFact]
-        public void DataContext_DefaultIsItems()
-        {
-            Assert.Same(_list.DataContext, _list.Items);
-        }
-
-        [WpfFact]
-        public void IsSolution_DefaultIsFalse()
-        {
-            Assert.False(_list.IsSolution);
-        }
-
-        [WpfFact]
-        public void Items_DefaultIsEmpty()
-        {
-            Assert.Empty(_list.Items);
-        }
-
-        [WpfFact]
-        public void PackageItems_DefaultIsEmpty()
-        {
-            Assert.Empty(_list.PackageItems);
-        }
-
-        [WpfFact]
-        public void SelectedPackageItem_DefaultIsNull()
-        {
-            Assert.Null(_list.SelectedPackageItem);
-        }
-
-        [WpfFact]
-        public void LoadItems_ThrowsForNullLoader()
+        public void Constructor_JoinableTaskFactoryIsNull_Throws()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => _list.LoadItems(
+                () => new InfiniteScrollList(joinableTaskFactory: null));
+
+            Assert.Equal("joinableTaskFactory", exception.ParamName);
+        }
+
+        [WpfFact]
+        public void CheckBoxesEnabled_Initialized_DefaultIsFalse()
+        {
+            var list = new InfiniteScrollList();
+
+            Assert.False(list.CheckBoxesEnabled);
+        }
+
+        [WpfFact]
+        public void DataContext_Initialized_DefaultIsItems()
+        {
+            var list = new InfiniteScrollList();
+
+            Assert.Same(list.DataContext, list.Items);
+        }
+
+        [WpfFact]
+        public void IsSolution_Initialized_DefaultIsFalse()
+        {
+            var list = new InfiniteScrollList();
+
+            Assert.False(list.IsSolution);
+        }
+
+        [WpfFact]
+        public void Items_Initialized_DefaultIsEmpty()
+        {
+            var list = new InfiniteScrollList();
+
+            Assert.Empty(list.Items);
+        }
+
+        [WpfFact]
+        public void PackageItems_Initialized_DefaultIsEmpty()
+        {
+            var list = new InfiniteScrollList();
+
+            Assert.Empty(list.PackageItems);
+        }
+
+        [WpfFact]
+        public void SelectedPackageItem_Initialized_DefaultIsNull()
+        {
+            var list = new InfiniteScrollList();
+
+            Assert.Null(list.SelectedPackageItem);
+        }
+
+        [WpfFact]
+        public void LoadItems_LoaderIsNull_Throws()
+        {
+            var list = new InfiniteScrollList();
+
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => list.LoadItems(
                     loader: null,
                     loadingMessage: "a",
                     logger: null,
@@ -76,10 +92,12 @@ namespace NuGet.PackageManagement.UI.Test
         [WpfTheory]
         [InlineData(null)]
         [InlineData("")]
-        public void LoadItems_ThrowsForNullOrEmptyLoadingMessage(string loadingMessage)
+        public void LoadItems_LoadingMessageIsNullOrEmpty_Throws(string loadingMessage)
         {
+            var list = new InfiniteScrollList();
+
             var exception = Assert.Throws<ArgumentException>(
-                () => _list.LoadItems(
+                () => list.LoadItems(
                     Mock.Of<IPackageItemLoader>(),
                     loadingMessage,
                     logger: null,
@@ -90,10 +108,12 @@ namespace NuGet.PackageManagement.UI.Test
         }
 
         [WpfFact]
-        public void LoadItems_ThrowsForNullSearchResultTask()
+        public void LoadItems_SearchResultTaskIsNull_Throws()
         {
+            var list = new InfiniteScrollList();
+
             var exception = Assert.Throws<ArgumentNullException>(
-                () => _list.LoadItems(
+                () => list.LoadItems(
                     Mock.Of<IPackageItemLoader>(),
                     loadingMessage: "a",
                     logger: null,
@@ -104,10 +124,12 @@ namespace NuGet.PackageManagement.UI.Test
         }
 
         [WpfFact]
-        public void LoadItems_ThrowsIfCancelled()
+        public void LoadItems_IfCancelled_Throws()
         {
+            var list = new InfiniteScrollList();
+
             Assert.Throws<OperationCanceledException>(
-                () => _list.LoadItems(
+                () => list.LoadItems(
                     Mock.Of<IPackageItemLoader>(),
                     loadingMessage: "a",
                     logger: null,
@@ -116,7 +138,7 @@ namespace NuGet.PackageManagement.UI.Test
         }
 
         [WpfFact]
-        public async Task LoadItems_WaitsForInitialResultsBeforeGettingCurrent()
+        public async Task LoadItems_BeforeGettingCurrent_WaitsForInitialResults()
         {
             var loader = new Mock<IPackageItemLoader>(MockBehavior.Strict);
             var state = new Mock<IItemLoaderState>();
@@ -172,48 +194,50 @@ namespace NuGet.PackageManagement.UI.Test
             var logger = new Mock<INuGetUILogger>();
             var searchResultTask = Task.FromResult(new SearchResult<IPackageSearchMetadata>());
 
-            NuGetUIThreadHelper.SetCustomJoinableTaskFactory(Thread.CurrentThread, SynchronizationContext.Current);
+            using (var joinableTaskContext = new JoinableTaskContext(Thread.CurrentThread, SynchronizationContext.Current))
+            {
+                var list = new InfiniteScrollList(new Lazy<JoinableTaskFactory>(() => joinableTaskContext.Factory));
+                var taskCompletionSource = new TaskCompletionSource<string>();
 
-            var taskCompletionSource = new TaskCompletionSource<string>();
+                // Despite LoadItems(...) being a synchronous method, the method internally fires an asynchronous task.
+                // We'll know when that task completes successfully when the LoadItemsCompleted event fires,
+                // and to avoid infinite waits in exceptional cases, we'll interpret a call to reset as a failure.
+                list.LoadItemsCompleted += (sender, args) => taskCompletionSource.TrySetResult(null);
 
-            // Despite LoadItems(...) being a synchronous method, the method internally fires an asynchronous task.
-            // We'll know when that task completes successfully when the LoadItemsCompleted event fires,
-            // and to avoid infinite waits in exceptional cases, we'll interpret a call to reset as a failure.
-            _list.LoadItemsCompleted += (sender, args) => taskCompletionSource.TrySetResult(null);
-
-            loader.Setup(x => x.Reset());
-            logger.Setup(x => x.Log(
-                    It.Is<MessageLevel>(m => m == MessageLevel.Error),
-                    It.IsNotNull<string>(),
-                    It.IsAny<object[]>()))
-                .Callback<MessageLevel, string, object[]>(
-                    (messageLevel, message, args) =>
-                        {
-                            taskCompletionSource.TrySetResult(message);
-                        });
-            loader.Setup(x => x.GetCurrent())
-                .Returns(() =>
-                {
-                    if (!hasWaited)
+                loader.Setup(x => x.Reset());
+                logger.Setup(x => x.Log(
+                        It.Is<MessageLevel>(m => m == MessageLevel.Error),
+                        It.IsNotNull<string>(),
+                        It.IsAny<object[]>()))
+                    .Callback<MessageLevel, string, object[]>(
+                        (messageLevel, message, args) =>
+                            {
+                                taskCompletionSource.TrySetResult(message);
+                            });
+                loader.Setup(x => x.GetCurrent())
+                    .Returns(() =>
                     {
-                        taskCompletionSource.TrySetResult("GetCurrent() was called before waiting for initial results.");
-                    }
+                        if (!hasWaited)
+                        {
+                            taskCompletionSource.TrySetResult("GetCurrent() was called before waiting for initial results.");
+                        }
 
-                    return Enumerable.Empty<PackageItemListViewModel>();
-                });
+                        return Enumerable.Empty<PackageItemListViewModel>();
+                    });
 
-            _list.LoadItems(
-                loader.Object,
-                loadingMessage: "a",
-                logger: logger.Object,
-                searchResultTask: searchResultTask,
-                token: CancellationToken.None);
+                list.LoadItems(
+                    loader.Object,
+                    loadingMessage: "a",
+                    logger: logger.Object,
+                    searchResultTask: searchResultTask,
+                    token: CancellationToken.None);
 
-            var errorMessage = await taskCompletionSource.Task;
+                var errorMessage = await taskCompletionSource.Task;
 
-            Assert.Null(errorMessage);
+                Assert.Null(errorMessage);
 
-            loader.Verify();
+                loader.Verify();
+            }
         }
     }
 }
