@@ -7,10 +7,10 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.Shell.Interop;
+using Microsoft.VisualStudio.Threading;
 using Moq;
 using NuGet.Configuration;
 using NuGet.Credentials;
-using NuGet.VisualStudio;
 using Test.Utility.Threading;
 using Xunit;
 
@@ -29,7 +29,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         }
 
         [Fact]
-        public void Constructor_ThrowsForNullWebProxyService()
+        public void Constructor_WebProxyServiceIsNull_Throws()
         {
             var exception = Assert.Throws<ArgumentNullException>(() => new VisualStudioCredentialProvider(null));
 
@@ -37,7 +37,18 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         }
 
         [Fact]
-        public void Id_IsRandomPerInstance()
+        public void Constructor_JoinableTaskFactoryIsNull_Throws()
+        {
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => new VisualStudioCredentialProvider(
+                    Mock.Of<IVsWebProxy>(),
+                    joinableTaskFactory: null));
+
+            Assert.Equal("joinableTaskFactory", exception.ParamName);
+        }
+
+        [Fact]
+        public void Id_Initialized_IsRandomPerInstance()
         {
             const int trials = 3;
             var hashset = new HashSet<string>();
@@ -51,7 +62,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         }
 
         [Fact]
-        public async Task GetAsync_ThrowsForNullUri()
+        public async Task GetAsync_UriIsNull_Throws()
         {
             var provider = new VisualStudioCredentialProvider(Mock.Of<IVsWebProxy>());
 
@@ -69,7 +80,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         }
 
         [Fact]
-        public async Task GetAsync_ThrowsIfCancelled()
+        public async Task GetAsync_IfCancelled_Throws()
         {
             var provider = new VisualStudioCredentialProvider(Mock.Of<IVsWebProxy>());
 
@@ -85,13 +96,11 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         }
 
         [Fact]
-        public async Task GetAsync_CallsWebProxyWithDefaultCredentialsState()
+        public async Task GetAsync_CallsWebProxy_PassesDefaultCredentialsState()
         {
             var vsWebProxy = new Mock<IVsWebProxy>(MockBehavior.Strict);
             var newState = (uint)__VsWebProxyState.VsWebProxyState_NoCredentials;
             var expectedCredentials = new NetworkCredential();
-
-            NuGetUIThreadHelper.SetCustomJoinableTaskFactory(_fixture.JoinableTaskFactory);
 
             vsWebProxy.Setup(x => x.PrepareWebProxy(
                     It.Is<string>(u => u == _uri.OriginalString),
@@ -107,7 +116,9 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 .Returns(0)
                 .Verifiable();
 
-            var provider = new VisualStudioCredentialProvider(vsWebProxy.Object);
+            var provider = new VisualStudioCredentialProvider(
+                vsWebProxy.Object,
+                new Lazy<JoinableTaskFactory>(() => _fixture.JoinableTaskFactory));
 
             var response = await provider.GetAsync(
                 _uri,

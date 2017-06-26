@@ -1,5 +1,6 @@
-﻿{
+{
   "dependencies": {
+    "Microsoft.VisualStudio.Threading": "15.0.240",
     "Microsoft.VisualStudio.Workspace.VSIntegration": "15.0.198-pre",
     "VSLangProj110": "11.0.61030",
     "VSLangProj2": "7.0.5000",
