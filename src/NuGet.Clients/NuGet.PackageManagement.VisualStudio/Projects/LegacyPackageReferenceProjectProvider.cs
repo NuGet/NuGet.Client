@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -25,7 +25,7 @@ namespace NuGet.PackageManagement.VisualStudio
     {
         private static readonly string PackageReference = ProjectStyle.PackageReference.ToString();
 
-        private readonly IDeferredProjectWorkspaceService _workspaceService;
+        private readonly Lazy<IDeferredProjectWorkspaceService> _workspaceService;
         private readonly IVsProjectThreadingService _threadingService;
         private readonly AsyncLazy<IComponentModel> _componentModel;
 
@@ -40,7 +40,7 @@ namespace NuGet.PackageManagement.VisualStudio
         public LegacyPackageReferenceProjectProvider(
             [Import(typeof(SVsServiceProvider))]
             IServiceProvider vsServiceProvider,
-            IDeferredProjectWorkspaceService workspaceService,
+            Lazy<IDeferredProjectWorkspaceService> workspaceService,
             IVsProjectThreadingService threadingService)
         {
             Assumes.Present(vsServiceProvider);
@@ -108,7 +108,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 if (!forceCreate &&
                     !PackageReference.Equals(restoreProjectStyle, StringComparison.OrdinalIgnoreCase))
                 {
-                    var buildProjectDataService = await _workspaceService.GetMSBuildProjectDataServiceAsync(
+                    var buildProjectDataService = await _workspaceService.Value.GetMSBuildProjectDataServiceAsync(
                         vsProjectAdapter.FullProjectPath);
                     Assumes.Present(buildProjectDataService);
 
