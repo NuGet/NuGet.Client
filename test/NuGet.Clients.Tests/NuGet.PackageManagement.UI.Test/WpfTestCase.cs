@@ -86,6 +86,10 @@ namespace NuGet.PackageManagement.UI.Test
                     {
                         taskCompletionSource.SetException(e);
                     }
+                    finally
+                    {
+                        Dispatcher.CurrentDispatcher.InvokeShutdown();
+                    }
                 });
 
             thread.SetApartmentState(ApartmentState.STA);
