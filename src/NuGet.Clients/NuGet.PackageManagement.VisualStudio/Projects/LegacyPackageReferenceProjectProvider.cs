@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -108,13 +108,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 if (!forceCreate &&
                     !PackageReference.Equals(restoreProjectStyle, StringComparison.OrdinalIgnoreCase))
                 {
-                    var buildProjectDataService = await _workspaceService.Value.GetMSBuildProjectDataServiceAsync(
-                        vsProjectAdapter.FullProjectPath);
-                    Assumes.Present(buildProjectDataService);
-
-                    var referenceItems = await buildProjectDataService.GetProjectItems(
-                        ProjectItems.PackageReference, CancellationToken.None);
-                    if (referenceItems == null || referenceItems.Count == 0)
+                    if (!await ProjectHasPackageReferencesAsync(vsProjectAdapter))
                     {
                         return null;
                     }
@@ -149,8 +143,24 @@ namespace NuGet.PackageManagement.VisualStudio
             return null;
         }
 
+        private async Task<bool> ProjectHasPackageReferencesAsync(IVsProjectAdapter vsProjectAdapter)
+        {
+            var buildProjectDataService = await _workspaceService.Value.GetMSBuildProjectDataServiceAsync(
+                vsProjectAdapter.FullProjectPath);
+            Assumes.Present(buildProjectDataService);
+
+            var referenceItems = await buildProjectDataService.GetProjectItems(
+                ProjectItems.PackageReference, CancellationToken.None);
+            if (referenceItems == null || referenceItems.Count == 0)
+            {
+                return false;
+            }
+
+            return true;
+        }
+
         private INuGetProjectServices CreateCoreProjectSystemServices(
-            IVsProjectAdapter vsProjectAdapter, IComponentModel componentModel)
+                IVsProjectAdapter vsProjectAdapter, IComponentModel componentModel)
         {
             // Lazy load the CPS enabled JoinableTaskFactory for the UI.
             NuGetUIThreadHelper.SetJoinableTaskFactoryFromService(ProjectServiceAccessor.Value as ProjectSystem.IProjectServiceAccessor);
