@@ -1,4 +1,7 @@
-﻿using System;
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
@@ -31,7 +34,7 @@ namespace NuGet.PackageManagement.UI
                 0xE6, 0xCD, 0xB3, 0x9A, 0x80, 0x67, 0x4D, 0x34, 0x1A, 0xFF
             };
 
-        private static readonly SolidColorBrush IndicatorFill = (SolidColorBrush)(new BrushConverter().ConvertFrom("#007ACC"));
+        private readonly SolidColorBrush IndicatorFill = (SolidColorBrush)(new BrushConverter().ConvertFrom("#007ACC"));
 
         public EllipseData() : base()
         {
@@ -66,8 +69,8 @@ namespace NuGet.PackageManagement.UI
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            double canvasWidthOrHeight = (double)parameter;
-            double gridWidthOrHeight = (double)value;
+            var canvasWidthOrHeight = (double)parameter;
+            var gridWidthOrHeight = (double)value;
             return gridWidthOrHeight / canvasWidthOrHeight;
         }
 
