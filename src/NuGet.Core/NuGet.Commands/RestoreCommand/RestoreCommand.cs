@@ -230,7 +230,7 @@ namespace NuGet.Commands
                     EndColumnNumber = logMessage.EndColumnNumber
                 };
 
-                _request.Log.LogAsync(restoreLogMessage);
+                _logger.LogAsync(restoreLogMessage);
             }
         }
 
