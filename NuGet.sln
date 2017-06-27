@@ -95,7 +95,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NuGet.XPlat.FuncTest", "tes
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NuGet.Build.Tasks.Pack.Test", "test\NuGet.Core.Tests\NuGet.Build.Tasks.Pack.Test\NuGet.Build.Tasks.Pack.Test.csproj", "{8BF8279D-196F-481A-9659-488864D93D2D}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NuGet.Build.Tasks.Pack.Library", "src\NuGet.Core\NuGet.Build.Tasks.Pack.Library\NuGet.Build.Tasks.Pack.Library.csproj", "{16863138-7C0E-49ED-A1C8-B9165FED9920}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NuGet.Build.Tasks.Pack", "src\NuGet.Core\NuGet.Build.Tasks.Pack\NuGet.Build.Tasks.Pack.csproj", "{16863138-7C0E-49ED-A1C8-B9165FED9920}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Dotnet.Integration.Test", "test\NuGet.Core.FuncTests\Dotnet.Integration.Test\Dotnet.Integration.Test.csproj", "{AFC86608-9F7C-4474-9D26-186905C33E4E}"
 EndProject
