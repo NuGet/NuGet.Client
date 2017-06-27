@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
@@ -96,6 +97,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         }
 
         [Fact]
+        [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD010", Justification = "The IVsWebProxy implementation is mocked.")]
         public async Task GetAsync_CallsWebProxy_PassesDefaultCredentialsState()
         {
             var vsWebProxy = new Mock<IVsWebProxy>(MockBehavior.Strict);
