@@ -178,7 +178,7 @@ namespace NuGet.PackageManagement.VisualStudio {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Added reference &apos;{0}&apos; to project:&apos;{1}&apos;. Was the Reference Resolved To Package (resolvedToPackage):&apos;{2}&apos;, where Reference Path from DTE(dteOriginalPath):&apos;{3}&apos; and Reference Path from package reference(assemblyFullPath):&apos;{4}&apos;..
+        ///   Looks up a localized string similar to Added reference &apos;{0}&apos; to project:&apos;{1}&apos;. The Reference was Resolved To Package (resolvedToPackage):&apos;{2}&apos;, where Reference Path from DTE(dteOriginalPath):&apos;{3}&apos; and Reference Path from package reference(assemblyFullPath):&apos;{4}&apos;..
         /// </summary>
         public static string Debug_AddedReferenceToProject {
             get {

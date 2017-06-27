@@ -862,7 +862,7 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Only warning failed sources if there are packages meeting version requirement.
+        ///   Looks up a localized string similar to Only warn about failed sources if there are packages meeting version requirement..
         /// </summary>
         internal static string Restore_Switch_IgnoreFailedSource_Description {
             get {

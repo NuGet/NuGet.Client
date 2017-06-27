@@ -205,6 +205,9 @@
   </data>
   <data name="Log_DowngradeWarning" xml:space="preserve">
     <value>Detected package downgrade: {0} from {1} to {2}. Reference the package directly from the project to select a different version.</value>
+    <comment>{0}: package id
+{1}: requested version
+{2}: resolved version</comment>
   </data>
   <data name="Log_VersionConflict" xml:space="preserve">
     <value>Version conflict detected for {0}. Reference the package directly from the project to resolve this issue.</value>
@@ -538,6 +541,7 @@ For more information, visit http://docs.nuget.org/docs/reference/command-line-re
   </data>
   <data name="Log_SkippingCacheFile" xml:space="preserve">
     <value>No-Op restore. The cache will not be updated. Path: {0}</value>
+    <comment>{0}: Path to cache file</comment>
   </data>
   <data name="Log_AssetsFileNotOnDisk" xml:space="preserve">
     <value>The expected assets file for {0} does not exist, no-op is not possible. Continuing restore.</value>
