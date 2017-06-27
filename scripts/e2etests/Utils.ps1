@@ -1,4 +1,4 @@
-﻿function CleanTempFolder()
+function CleanTempFolder()
 {
     if (Test-Path $env:temp)
     {
@@ -98,4 +98,29 @@ function DisableCrashDialog()
     }
 
     Write-Host -ForegroundColor Cyan 'Windows crash dialog has been disabled'
+}
+
+function WaitForProcessExit
+{
+    param
+    (
+        [Parameter(Mandatory=$true)]
+        [string]$ProcessName,
+        [Parameter(Mandatory=$true)]
+        [int]$TimeoutInSeconds
+    )
+
+    try
+    {
+        Wait-Process -Name "$ProcessName" -Timeout $TimeoutInSeconds -ErrorAction Stop
+    }
+    catch [System.Management.Automation.ActionPreferenceStopException]
+    {
+        if ($_.Exception -is [System.TimeoutException])
+        {
+            throw;
+        }
+
+        # Otherwise, the process could not be found.
+    }
 }
