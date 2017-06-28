@@ -143,6 +143,7 @@ namespace NuGet.PackageManagement.VisualStudio
             return null;
         }
 
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
         private async Task<bool> ProjectHasPackageReferencesAsync(IVsProjectAdapter vsProjectAdapter)
         {
             var buildProjectDataService = await _workspaceService.Value.GetMSBuildProjectDataServiceAsync(
