@@ -70,19 +70,6 @@ Copyright (c) .NET Foundation. All rights reserved.
     </_GenerateRestoreGraphProjectEntryInputProperties>
   </PropertyGroup>
 
-  <Target Name="_CleanCacheFiles"
-          DependsOnTargets="_GetRestoreProjectStyle"
-          Condition=" '$(RestoreProjectStyle)' == 'ProjectJson' OR '$(RestoreProjectStyle)' == 'PackageReference' "
-          AfterTargets="Clean">
-    <PropertyGroup>
-      <RestoreOutputPath Condition=" '$(RestoreOutputPath)' == '' " >$(BaseIntermediateOutputPath)</RestoreOutputPath>
-    </PropertyGroup>
-    <ItemGroup>
-      <_PackageFilesToDelete Include="$(RestoreOutputPath)*.nuget.cache"/>
-    </ItemGroup>
-    <Delete Files="@(_PackageFilesToDelete)"/>
-  </Target>
-
   <!-- Tasks -->
   <UsingTask TaskName="NuGet.Build.Tasks.RestoreTask" AssemblyFile="$(RestoreTaskAssemblyFile)" />
   <UsingTask TaskName="NuGet.Build.Tasks.WriteRestoreGraphTask" AssemblyFile="$(RestoreTaskAssemblyFile)" />
@@ -892,4 +879,21 @@ Copyright (c) .NET Foundation. All rights reserved.
       <_RestoreFallbackFoldersOverride>$(RestoreFallbackFolders)</_RestoreFallbackFoldersOverride>
     </PropertyGroup>
   </Target>
+
+  <!--
+    ============================================================
+    _CleanCacheFiles
+    Deletes all the *.nuget.cache files in the obj directory
+    ============================================================
+  -->
+  <Target Name="_CleanCacheFiles" DependsOnTargets="_GetRestoreProjectStyle" Condition=" '$(RestoreProjectStyle)' == 'ProjectJson' OR '$(RestoreProjectStyle)' == 'PackageReference' " AfterTargets="Clean">
+    <PropertyGroup>
+        <RestoreOutputPath Condition=" '$(RestoreOutputPath)' == '' ">$(BaseIntermediateOutputPath)</RestoreOutputPath>
+    </PropertyGroup>
+    <ItemGroup>
+        <_PackageFilesToDelete Include="$(RestoreOutputPath)*.nuget.cache" />
+    </ItemGroup>
+    <Delete Files="@(_PackageFilesToDelete)" />
+  </Target>
+
 </Project>
