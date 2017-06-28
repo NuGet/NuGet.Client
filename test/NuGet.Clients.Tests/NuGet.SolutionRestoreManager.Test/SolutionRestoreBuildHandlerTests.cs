@@ -135,7 +135,7 @@ namespace NuGet.SolutionRestoreManager.Test
             }
 
             Mock.Get(restoreWorker)
-                .Verify(x => x.ScheduleRestoreAsync(It.IsAny<SolutionRestoreRequest>(), It.IsAny<CancellationToken>()), Times.Once);
+                .Verify(x => x.RestoreAsync(It.IsAny<SolutionRestoreRequest>(), It.IsAny<CancellationToken>()), Times.Once);
         }
 
     }
