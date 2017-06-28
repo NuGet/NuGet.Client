@@ -886,7 +886,8 @@ Copyright (c) .NET Foundation. All rights reserved.
     Deletes all the *.nuget.cache files in the obj directory
     ============================================================
   -->
-  <Target Name="_CleanCacheFiles" DependsOnTargets="_GetRestoreProjectStyle" Condition=" '$(RestoreProjectStyle)' == 'ProjectJson' OR '$(RestoreProjectStyle)' == 'PackageReference' " AfterTargets="Clean">
+  <Target Name="_CleanCacheFiles" 
+          AfterTargets="Clean">
     <PropertyGroup>
         <RestoreOutputPath Condition=" '$(RestoreOutputPath)' == '' ">$(BaseIntermediateOutputPath)</RestoreOutputPath>
     </PropertyGroup>

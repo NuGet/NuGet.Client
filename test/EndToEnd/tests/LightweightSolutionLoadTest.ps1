@@ -324,3 +324,29 @@ function Test-DeferredBuildIntegratedProjectGetPackageTransitive {
 function TestCases-DeferredBuildIntegratedProjectGetPackageTransitive{
     BuildProjectTemplateTestCases 'PackageReferenceClassLibrary', 'BuildIntegratedClassLibrary'
 }
+
+function Test-DeferredProjectClean {
+
+    [SkipTestForVS14()]
+    param(
+        $context
+    )
+
+    $project = New-Project BuildIntegratedClassLibrary Project1
+    $project | Install-Package NuGet.Versioning -Version 1.0.7
+
+    Build-Solution
+
+    # Act
+    $cacheFile = Get-CacheFilePathFromProjectPath $project.FullName
+
+    Assert-PathExists $cacheFile
+
+    Enable-LightweightSolutionLoad -Reload
+
+    #Act
+    Clean-Solution
+
+    #Assert
+    Assert-PathNotExists $cacheFile
+}

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 namespace NuGet.VisualStudio
@@ -47,7 +47,7 @@ namespace NuGet.VisualStudio
         public static SolutionRestoreRequest ByMenu()
         {
             return new SolutionRestoreRequest(
-                forceRestore: true,
+                forceRestore: false,
                 restoreSource: RestoreOperationSource.Explicit);
         }
 
