@@ -18,19 +18,39 @@ param
     [Parameter(Mandatory=$True)]
     [string]$BuildOutputTargetPath,
     [Parameter(Mandatory=$True)]
-    [string]$BuildRTM
+    [string]$BuildRTM,
+    [switch]$ValidateVsix
 )
 
 
 if ($BuildRTM -eq 'false')
-{    
+{   
+
     $NuGetClientRoot = $env:BUILD_REPOSITORY_LOCALPATH
-    $LocValidator = [System.IO.Path]::Combine($NuGetClientRoot, 'packages', 'NuGetValidator.Localization.1.2.0', 'tools', 'NuGetValidator.Localization.exe')
-    $VsixLocation = [System.IO.Path]::Combine($BuildOutputTargetPath, 'artifacts', 'VS15', 'Insertable', 'NuGet.Tools.vsix' ) 
-    $VsixExtractLocation = Join-Path $env:SYSTEM_DEFAULTWORKINGDIRECTORY "extractedVsix"
-    $LogOutputDir = Join-Path $BuildOutputTargetPath "LocalizationValidation"
+    $NuGetValidator = [System.IO.Path]::Combine($NuGetClientRoot, 'packages', 'NuGetValidator.1.3.3', 'tools', 'NuGetValidator.exe')
+    $VsixLogOutputDir = [System.IO.Path]::Combine($BuildOutputTargetPath, 'LocalizationValidation', 'vsix' )
     $LocalizationRepository = [System.IO.Path]::Combine($NuGetClientRoot, 'submodules', 'NuGet.Build.Localization', 'localize', 'comments', '15')
-    & $LocValidator $VsixLocation $VsixExtractLocation $LogOutputDir $LocalizationRepository
+    
+    if ($ValidateVsix) 
+    {
+        $VsixLocation = [System.IO.Path]::Combine($BuildOutputTargetPath, 'artifacts', 'VS15', 'Insertable', 'NuGet.Tools.vsix' )
+        $VsixExtractLocation = [System.IO.Path]::Combine($env:SYSTEM_DEFAULTWORKINGDIRECTORY, 'extractedVsix' ) 
+        $VsixLogOutputDir = [System.IO.Path]::Combine($BuildOutputTargetPath, 'LocalizationValidation', 'vsix' )
+
+        Write-Host "Validating NuGet.Tools.Vsix localization..."
+        Write-Host "Running: $NuGetValidator localization --vsix --vsix-path $VsixLocation --vsix-extract-path $VsixExtractLocation --output-path $VsixLogOutputDir --comments-path $LocalizationRepository"
+        & $NuGetValidator localization --vsix --vsix-path $VsixLocation --vsix-extract-path $VsixExtractLocation --output-path $VsixLogOutputDir --comments-path $LocalizationRepository
+    }
+    else 
+    {
+        $ArtifactsLocation = [System.IO.Path]::Combine($NuGetClientRoot, 'artifacts')
+        $ArtifactsLogOutputDir = [System.IO.Path]::Combine($BuildOutputTargetPath, 'LocalizationValidation', 'artifacts' )
+
+        Write-Host "Validating NuGet.Client repository localization..."
+        Write-Host "Running: $NuGetValidator localization --artifacts-path $ArtifactsLocation --output-path $ArtifactsLogOutputDir --comments-path $LocalizationRepository"
+        & $NuGetValidator localization --artifacts-path $ArtifactsLocation --output-path $ArtifactsLogOutputDir --comments-path $LocalizationRepository
+    }
+
     # We want to exit the process with success even if there are errors.
     exit 0
 }

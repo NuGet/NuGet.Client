@@ -64,5 +64,10 @@ namespace NuGet.PackageManagement.VisualStudio
         /// <param name="project">Existing project to upgrade.</param>
         /// <returns>New project instance.</returns>
         Task<NuGetProject> UpgradeProjectToPackageReferenceAsync(NuGetProject project);
+
+        /// <summary>
+        /// Return true if all the .net core projects are nominated.
+        /// </summary>
+        bool IsAllProjectsNominated();
     }
 }

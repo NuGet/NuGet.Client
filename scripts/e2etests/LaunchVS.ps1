@@ -1,4 +1,4 @@
-﻿param (
+param (
 [Parameter(Mandatory=$true)]
 [ValidateSet("15.0", "14.0", "12.0", "11.0", "10.0")]
 [string]$VSVersion,
@@ -18,8 +18,6 @@ trap
 function LaunchVSAndWaitForDTE
 {
     KillRunningInstancesOfVS
-    Write-Host 'Waiting for 5 seconds after killing VS'
-    start-sleep 5
 
     LaunchVS $VSVersion
 
@@ -38,7 +36,7 @@ function LaunchVSAndWaitForDTE
         {
             Write-Host 'Obtained DTE. Wait for 5 seconds...'
             start-sleep 5
-	        return $true
+            return $true
         }
 
         $count++
