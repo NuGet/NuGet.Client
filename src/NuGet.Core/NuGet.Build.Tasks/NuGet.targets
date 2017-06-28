@@ -71,6 +71,8 @@ Copyright (c) .NET Foundation. All rights reserved.
   </PropertyGroup>
 
   <Target Name="_CleanCacheFiles"
+          DependsOnTargets="_GetRestoreProjectStyle"
+          Condition=" '$(RestoreProjectStyle)' == 'ProjectJson' OR '$(RestoreProjectStyle)' == 'PackageReference' "
           AfterTargets="Clean">
     <PropertyGroup>
       <RestoreOutputPath Condition=" '$(RestoreOutputPath)' == '' " >$(BaseIntermediateOutputPath)</RestoreOutputPath>
