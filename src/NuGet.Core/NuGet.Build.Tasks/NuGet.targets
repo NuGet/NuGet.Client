@@ -70,6 +70,17 @@ Copyright (c) .NET Foundation. All rights reserved.
     </_GenerateRestoreGraphProjectEntryInputProperties>
   </PropertyGroup>
 
+  <Target Name="_CleanCacheFiles"
+          AfterTargets="Clean">
+    <PropertyGroup>
+      <RestoreOutputPath Condition=" '$(RestoreOutputPath)' == '' " >$(BaseIntermediateOutputPath)</RestoreOutputPath>
+    </PropertyGroup>
+    <ItemGroup>
+      <_PackageFilesToDelete Include="$(RestoreOutputPath)*.nuget.cache"/>
+    </ItemGroup>
+    <Delete Files="@(_PackageFilesToDelete)"/>
+  </Target>
+
   <!-- Tasks -->
   <UsingTask TaskName="NuGet.Build.Tasks.RestoreTask" AssemblyFile="$(RestoreTaskAssemblyFile)" />
   <UsingTask TaskName="NuGet.Build.Tasks.WriteRestoreGraphTask" AssemblyFile="$(RestoreTaskAssemblyFile)" />
