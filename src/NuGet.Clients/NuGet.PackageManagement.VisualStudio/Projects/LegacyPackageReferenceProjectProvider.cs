@@ -25,7 +25,7 @@ namespace NuGet.PackageManagement.VisualStudio
     {
         private static readonly string PackageReference = ProjectStyle.PackageReference.ToString();
 
-        private readonly IDeferredProjectWorkspaceService _workspaceService;
+        private readonly Lazy<IDeferredProjectWorkspaceService> _workspaceService;
         private readonly IVsProjectThreadingService _threadingService;
         private readonly AsyncLazy<IComponentModel> _componentModel;
 
@@ -40,7 +40,7 @@ namespace NuGet.PackageManagement.VisualStudio
         public LegacyPackageReferenceProjectProvider(
             [Import(typeof(SVsServiceProvider))]
             IServiceProvider vsServiceProvider,
-            IDeferredProjectWorkspaceService workspaceService,
+            Lazy<IDeferredProjectWorkspaceService> workspaceService,
             IVsProjectThreadingService threadingService)
         {
             Assumes.Present(vsServiceProvider);
@@ -108,13 +108,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 if (!forceCreate &&
                     !PackageReference.Equals(restoreProjectStyle, StringComparison.OrdinalIgnoreCase))
                 {
-                    var buildProjectDataService = await _workspaceService.GetMSBuildProjectDataServiceAsync(
-                        vsProjectAdapter.FullProjectPath);
-                    Assumes.Present(buildProjectDataService);
-
-                    var referenceItems = await buildProjectDataService.GetProjectItems(
-                        ProjectItems.PackageReference, CancellationToken.None);
-                    if (referenceItems == null || referenceItems.Count == 0)
+                    if (!await ProjectHasPackageReferencesAsync(vsProjectAdapter))
                     {
                         return null;
                     }
@@ -149,8 +143,25 @@ namespace NuGet.PackageManagement.VisualStudio
             return null;
         }
 
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+        private async Task<bool> ProjectHasPackageReferencesAsync(IVsProjectAdapter vsProjectAdapter)
+        {
+            var buildProjectDataService = await _workspaceService.Value.GetMSBuildProjectDataServiceAsync(
+                vsProjectAdapter.FullProjectPath);
+            Assumes.Present(buildProjectDataService);
+
+            var referenceItems = await buildProjectDataService.GetProjectItems(
+                ProjectItems.PackageReference, CancellationToken.None);
+            if (referenceItems == null || referenceItems.Count == 0)
+            {
+                return false;
+            }
+
+            return true;
+        }
+
         private INuGetProjectServices CreateCoreProjectSystemServices(
-            IVsProjectAdapter vsProjectAdapter, IComponentModel componentModel)
+                IVsProjectAdapter vsProjectAdapter, IComponentModel componentModel)
         {
             // Lazy load the CPS enabled JoinableTaskFactory for the UI.
             NuGetUIThreadHelper.SetJoinableTaskFactoryFromService(ProjectServiceAccessor.Value as ProjectSystem.IProjectServiceAccessor);
