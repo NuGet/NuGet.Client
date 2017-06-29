@@ -21,6 +21,7 @@ namespace NuGet.Commands {
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "4.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "15.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class Strings {
@@ -603,7 +604,7 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Package &apos;{0}&apos; was restored using &apos;{1}&apos; instead the project target framework &apos;{2}&apos;. This may cause compatibility problems..
+        ///   Looks up a localized string similar to Package &apos;{0}&apos; was restored using &apos;{1}&apos; instead of the project target framework &apos;{2}&apos;. This may cause compatibility problems..
         /// </summary>
         internal static string Log_ImportsFallbackWarning {
             get {

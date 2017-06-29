@@ -198,7 +198,7 @@
     <value>Dependency specified was {0} {1} but ended up with {2} {3}.</value>
   </data>
   <data name="Log_ImportsFallbackWarning" xml:space="preserve">
-    <value>Package '{0}' was restored using '{1}' instead the project target framework '{2}'. This may cause compatibility problems.</value>
+    <value>Package '{0}' was restored using '{1}' instead of the project target framework '{2}'. This may cause compatibility problems.</value>
   </data>
   <data name="Log_CycleDetected" xml:space="preserve">
     <value>Cycle detected.</value>
