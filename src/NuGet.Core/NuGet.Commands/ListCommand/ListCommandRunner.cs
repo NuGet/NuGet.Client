@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -11,6 +11,7 @@ using NuGet.Configuration;
 using NuGet.Packaging.Core;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
+using NuGet.Versioning;
 
 namespace NuGet.Commands
 {
@@ -31,7 +32,7 @@ namespace NuGet.Commands
             // this is to avoid duplicate remote calls in case of duplicate final endpoints (Ex. api/index.json and /api/v2/ point to the same target)
             var sources = new HashSet<string>();
 
-            foreach (PackageSource packageSource in listArgs.ListEndpoints)
+            foreach (var packageSource in listArgs.ListEndpoints)
             {
                 var sourceRepository = Repository.Factory.GetCoreV3(packageSource.Source);
                 var feed = await sourceRepository.GetResourceAsync<ListResource>(listArgs.CancellationToken);
@@ -58,13 +59,13 @@ namespace NuGet.Commands
                         listArgs.IncludeDelisted, log, listArgs.CancellationToken);
                 allPackages.Add(packagesFromSource);
             }
-            ComparePackageSearchMetadata comparer = new ComparePackageSearchMetadata();
-            await PrintPackages(listArgs, new AggregateEnumerableAsync<IPackageSearchMetadata>(allPackages, comparer, comparer).GetEnumeratorAsync());
+            var idComparer = new CompareIdPackageSearchMetadata();
+            var versionComparer = new VersionComparer();
+            await PrintPackages(listArgs, new AggregatePackageSearchResultsEnumerableAsync(allPackages, idComparer, versionComparer, idComparer).GetEnumeratorAsync());
         }
 
-        private class ComparePackageSearchMetadata : IComparer<IPackageSearchMetadata>, IEqualityComparer<IPackageSearchMetadata>
+        private class CompareIdPackageSearchMetadata : IComparer<IPackageSearchMetadata>, IEqualityComparer<IPackageSearchMetadata>
         {
-            public PackageIdentityComparer _comparer { get; set; } = PackageIdentityComparer.Default;
             public int Compare(IPackageSearchMetadata x, IPackageSearchMetadata y)
             {
                 if (ReferenceEquals(x, y))
@@ -81,7 +82,7 @@ namespace NuGet.Commands
                 {
                     return 1;
                 }
-                return _comparer.Compare(x.Identity, y.Identity);
+                return StringComparer.OrdinalIgnoreCase.Compare(x.Identity.Id, y.Identity.Id);
             }
 
             public bool Equals(IPackageSearchMetadata x, IPackageSearchMetadata y)
@@ -95,7 +96,7 @@ namespace NuGet.Commands
                 {
                     return false;
                 }
-                return _comparer.Equals(x.Identity, y.Identity);
+                return StringComparer.OrdinalIgnoreCase.Equals(x.Identity.Id, y.Identity.Id);
             }
 
             public int GetHashCode(IPackageSearchMetadata obj)
@@ -104,7 +105,7 @@ namespace NuGet.Commands
                 {
                     return 0;
                 }
-                return _comparer.GetHashCode(obj.Identity);
+                return StringComparer.OrdinalIgnoreCase.GetHashCode(obj.Identity.Id);
             }
         }
 
@@ -139,6 +140,25 @@ namespace NuGet.Commands
                                     p.LicenseUrl.OriginalString));
                         }
                         Console.WriteLine();
+                        if (listArgs.AllVersions)
+                        {
+                            foreach (var versionInfo in await p.GetVersionsAsync())
+                            {
+                                listArgs.PrintJustified(0, p.Identity.Id);
+                                listArgs.PrintJustified(1, versionInfo.Version.ToFullString());
+                                listArgs.PrintJustified(1, p.Description);
+                                if (!string.IsNullOrEmpty(p.LicenseUrl?.OriginalString))
+                                {
+                                    listArgs.PrintJustified(1,
+                                        string.Format(
+                                            CultureInfo.InvariantCulture,
+                                            listArgs.ListCommandLicenseUrl,
+                                            p.LicenseUrl.OriginalString));
+                                }
+                                Console.WriteLine();
+                            }
+
+                        }
                         hasPackages = true;
                     }
                 }
@@ -151,7 +171,9 @@ namespace NuGet.Commands
                     while (await asyncEnumerator.MoveNextAsync())
                     {
                         var p = asyncEnumerator.Current;
-                        listArgs.PrintJustified(0, p.Identity.Id + " " + p.Identity.Version.ToFullString());
+                        foreach (var versionInfo in await p.GetVersionsAsync())
+                            listArgs.PrintJustified(0, p.Identity.Id + " " + versionInfo.Version.ToFullString());
+
                         hasPackages = true;
                     }
                 }

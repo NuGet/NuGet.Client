@@ -194,22 +194,10 @@ internal class EnumeratorAsync : IEnumeratorAsync<IPackageSearchMetadata>
                 ? await _feedParser.GetSearchPageAsync(_searchTerm, _filter, _skip, _take, _logger, _token)
                 : await _feedParser.GetPackagesPageAsync(_searchTerm, _filter, _skip, _take, _logger, _token);
 
-            
-            var results = _allVersions?
-                _currentPage.Items.GroupBy(p => p.Id)
+            var results = _currentPage.Items.GroupBy(p => p.Id)
                  .Select(group => group.OrderByDescending(p => p.Version)).SelectMany(pg => pg)
-                 .Select(
-                     package =>
-                         V2FeedUtilities.CreatePackageSearchResult(package, metadataCache, _filter,
-                             (V2FeedParser)_feedParser, _logger, _token)).Where(p => _filter.IncludeDelisted || p.IsListed)
-            :
-            _currentPage.Items.GroupBy(p => p.Id)
-                 .Select(group => group.OrderByDescending(p => p.Version).First())
-                 .Select(
-                     package =>
-                         V2FeedUtilities.CreatePackageSearchResult(package, metadataCache, _filter,
-                             (V2FeedParser)_feedParser, _logger, _token)).Where(p => _filter.IncludeDelisted || p.IsListed);
-
+                 .Select( package =>
+                     V2FeedUtilities.CreatePackageSearchResult(package, _currentPage.Items, _filter, _token)).Where(p => _filter.IncludeDelisted || p.IsListed);
 
             var enumerator = results.GetEnumerator();
             _currentEnumerator = enumerator;
@@ -228,20 +216,11 @@ internal class EnumeratorAsync : IEnumeratorAsync<IPackageSearchMetadata>
                                     ? await _feedParser.GetSearchPageAsync(_searchTerm, _filter, _skip, _take, _logger, _token)
                                     : await _feedParser.GetPackagesPageAsync(_searchTerm, _filter, _skip, _take, _logger, _token);
 
-                var results = _allVersions ?
-               _currentPage.Items.GroupBy(p => p.Id)
+                var results = _currentPage.Items.GroupBy(p => p.Id)
                 .Select(group => group.OrderByDescending(p => p.Version)).SelectMany(pg => pg)
                 .Select(
                     package =>
-                        V2FeedUtilities.CreatePackageSearchResult(package, metadataCache, _filter,
-                            (V2FeedParser)_feedParser, _logger, _token)).Where(p => _filter.IncludeDelisted || p.IsListed)
-                :
-                _currentPage.Items.GroupBy(p => p.Id)
-                 .Select(group => group.OrderByDescending(p => p.Version).First())
-                 .Select(
-                     package =>
-                         V2FeedUtilities.CreatePackageSearchResult(package, metadataCache, _filter,
-                             (V2FeedParser)_feedParser, _logger, _token)).Where(p => _filter.IncludeDelisted || p.IsListed);
+                        V2FeedUtilities.CreatePackageSearchResult(package, _currentPage.Items, _filter, _token)).Where(p => _filter.IncludeDelisted || p.IsListed);
 
                 var enumerator = results.GetEnumerator();
                 _currentEnumerator = enumerator;

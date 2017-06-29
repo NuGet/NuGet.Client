@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -23,16 +23,15 @@ namespace NuGet.Commands
 
         private bool firstPass = true;
 
-        public AggregatePackageSearchResultsEnumeratorAsync(IList<IEnumerableAsync<IPackageSearchMetadata>> _asyncEnumerables, IComparer<IPackageSearchMetadata> _idOrderingComparer, IComparer<NuGetVersion> _versionOrderingComparer, IEqualityComparer<IPackageSearchMetadata> _idEqualityComparer)
+        public AggregatePackageSearchResultsEnumeratorAsync(IList<IEnumerableAsync<IPackageSearchMetadata>> asyncEnumerables, IComparer<IPackageSearchMetadata> idOrderingComparer, IComparer<NuGetVersion> versionOrderingComparer, IEqualityComparer<IPackageSearchMetadata> idEqualityComparer)
         {
-            this._idOrderingComparer = _idOrderingComparer;
-            this._versionOrderingComparer = _versionOrderingComparer;
-            _seen = _idEqualityComparer == null ? new HashSet<IPackageSearchMetadata>() : new HashSet<IPackageSearchMetadata>(_idEqualityComparer);
-            foreach (var enumerable in _asyncEnumerables)
+            _idOrderingComparer = idOrderingComparer;
+            _versionOrderingComparer = versionOrderingComparer;
+            _seen = idEqualityComparer == null ? new HashSet<IPackageSearchMetadata>() : new HashSet<IPackageSearchMetadata>(idEqualityComparer);
+            foreach (var enumerable in asyncEnumerables)
             {
                 _asyncEnumerators.Add(enumerable.GetEnumeratorAsync());
             }
-
         }
 
         IPackageSearchMetadata IEnumeratorAsync<IPackageSearchMetadata>.Current

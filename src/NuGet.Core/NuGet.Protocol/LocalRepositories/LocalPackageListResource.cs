@@ -126,6 +126,11 @@ namespace NuGet.Protocol
                             break;
                     }
                 }
+                else
+                {
+                    var versionInfos = await _currentEnumerator?.Current.GetVersionsAsync();
+                }
+
                 return _currentEnumerator.MoveNext();
             }
         }

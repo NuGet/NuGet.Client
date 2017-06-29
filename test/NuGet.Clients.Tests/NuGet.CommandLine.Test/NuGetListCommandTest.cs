@@ -464,9 +464,13 @@ namespace NuGet.CommandLine.Test
             {
                 // Arrange
                 var packageFileName1 = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
-                var packageFileName2 = Util.CreateTestPackage("testPackage2", "2.1", packageDirectory);
+                var packageFileName2 = Util.CreateTestPackage("testPackage1", "1.0.5", packageDirectory);
+                var packageFileName3 = Util.CreateTestPackage("testPackage2", "2.1", packageDirectory);
+                var packageFileName4 = Util.CreateTestPackage("testPackage2", "2.0", packageDirectory);
                 var package1 = new ZipPackage(packageFileName1);
                 var package2 = new ZipPackage(packageFileName2);
+                var package3 = new ZipPackage(packageFileName3);
+                var package4 = new ZipPackage(packageFileName4);
 
                 using (var server = new MockServer())
                 {
@@ -479,7 +483,7 @@ namespace NuGet.CommandLine.Test
                         {
                             searchRequest = r.Url.ToString();
                             response.ContentType = "application/atom+xml;type=feed;charset=utf-8";
-                            string feed = server.ToODataFeed(new[] { package1, package2 }, "Search");
+                            string feed = server.ToODataFeed(new[] { package1, package2, package3, package4 }, "Search");
                             MockServer.SetResponseContent(response, feed);
                         }));
                     server.Get.Add("/nuget", r => "OK");
@@ -499,8 +503,7 @@ namespace NuGet.CommandLine.Test
                     Assert.Equal(0, r1.Item1);
 
                     // verify that the output is detailed
-                    var expectedOutput = "testPackage1 1.1.0" + Environment.NewLine +
-                        "testPackage2 2.1.0" + Environment.NewLine;
+                    var expectedOutput = "testPackage1 1.1.0" + Environment.NewLine + "testPackage1 1.0.5" + Environment.NewLine + "testPackage2 2.1.0" + Environment.NewLine + "testPackage2 2.0.0" + Environment.NewLine;
                     Assert.Equal(expectedOutput, r1.Item2);
 
                     Assert.DoesNotContain("$filter", searchRequest);
