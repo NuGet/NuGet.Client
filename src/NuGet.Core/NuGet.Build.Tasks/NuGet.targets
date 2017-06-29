@@ -879,4 +879,23 @@ Copyright (c) .NET Foundation. All rights reserved.
       <_RestoreFallbackFoldersOverride>$(RestoreFallbackFolders)</_RestoreFallbackFoldersOverride>
     </PropertyGroup>
   </Target>
+
+  <!--
+    ============================================================
+    _CleanRestoreCacheFiles
+    Deletes all the *.nuget.cache files in the obj directory
+    ============================================================
+  -->
+  <Target Name="_CleanRestoreCacheFiles" 
+          AfterTargets="Clean">
+    <PropertyGroup>
+        <CacheFileOutputPath Condition=" '$(RestoreOutputPath)' != '' ">$(RestoreOutputPath)</CacheFileOutputPath>
+        <CacheFileOutputPath Condition=" '$(RestoreOutputPath)' == '' ">$(BaseIntermediateOutputPath)</CacheFileOutputPath>
+    </PropertyGroup>
+    <ItemGroup>
+        <_CacheFilesToDelete Include="$(CacheFileOutputPath)*.nuget.cache" />
+    </ItemGroup>
+    <Delete Files="@(_CacheFilesToDelete)" />
+  </Target>
+
 </Project>
