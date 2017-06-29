@@ -170,7 +170,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 {
                     throw new InvalidDataException(string.Format(
                         Strings.BaseIntermediateOutputPathNotFound,
-                        _vsProjectAdapter.FullPath));
+                        _vsProjectAdapter.ProjectDirectory));
                 }
 
                 return null;

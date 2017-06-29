@@ -34,7 +34,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 {
                     await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                    var root = VsProjectAdapter.FullPath;
+                    var root = VsProjectAdapter.ProjectDirectory;
                     var relativeTargetPath = PathUtility.GetRelativePath(PathUtility.EnsureTrailingSlash(root), targetFullPath);
                     await AddImportStatementAsync(location, relativeTargetPath);
                 });
@@ -65,7 +65,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 {
                     await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                    var root = VsProjectAdapter.FullPath;
+                    var root = VsProjectAdapter.ProjectDirectory;
                     // For VS 2012 or above, the operation has to be done inside the Writer lock
                     var relativeTargetPath = PathUtility.GetRelativePath(PathUtility.EnsureTrailingSlash(root), targetFullPath);
                     await RemoveImportStatementAsync(relativeTargetPath);

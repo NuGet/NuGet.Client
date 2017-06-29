@@ -70,7 +70,7 @@ namespace NuGet.PackageManagement.VisualStudio
                     NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
                     {
                         await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                        _projectFullPath = VsProjectAdapter.FullPath;
+                        _projectFullPath = VsProjectAdapter.ProjectDirectory;
                     });
                 }
 
@@ -552,7 +552,7 @@ namespace NuGet.PackageManagement.VisualStudio
                     }
                     catch (Exception ex)
                     {
-                        var fileName = VsProjectAdapter.FullPath;
+                        var fileName = VsProjectAdapter.UniqueName;
 
                         var level = behavior.FailOperations ?
                             ProjectManagement.MessageLevel.Error :
@@ -729,7 +729,7 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 if (IsReferenceUnavailableException(e))
                 {
-                    var frameworkName = EnvDTEProjectInfoUtility.GetDotNetFrameworkName(VsProjectAdapter.Project);
+                    var frameworkName = await VsProjectAdapter.GetDotNetFrameworkNameAsync();
 
                     if (FrameworkAssemblyResolver.IsFrameworkFacade(name, frameworkName))
                     {

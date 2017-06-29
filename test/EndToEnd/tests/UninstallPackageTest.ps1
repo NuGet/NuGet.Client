@@ -2,15 +2,15 @@ function Test-RemovingPackageFromProjectDoesNotRemoveIfInUse {
     # Arrange
     $p1 = New-ClassLibrary
     $p2 = New-ClassLibrary
-    
+
     Install-Package Ninject -ProjectName $p1.Name
     Assert-Reference $p1 Ninject
-    
+
     Install-Package Ninject -ProjectName $p2.Name
     Assert-Reference $p2 Ninject
-    
+
     Uninstall-Package Ninject -ProjectName $p1.Name
-    
+
     Assert-Null (Get-ProjectPackage $p1 Ninject)
     Assert-Null (Get-AssemblyReference $p1 Ninject)
     Assert-SolutionPackage Ninject
@@ -19,10 +19,10 @@ function Test-RemovingPackageFromProjectDoesNotRemoveIfInUse {
 function Test-UninstallPackageWhatIf {
     # Arrange
     $p1 = New-ClassLibrary
-    
+
     Install-Package Ninject -ProjectName $p1.Name
     Assert-Reference $p1 Ninject
-    
+
 	# Act
     Uninstall-Package Ninject -ProjectName $p1.Name -What
 
@@ -35,18 +35,18 @@ function Test-RemovingPackageWithDependencyFromProjectDoesNotRemoveIfInUse {
     # Arrange
     $p1 = New-WebApplication
     $p2 = New-WebApplication
-    
+
     $p1 | Install-Package jquery.Validation
     Assert-Package $p1 jquery.Validation
     Assert-Package $p1 jquery
-    
+
     $p2 | Install-Package jquery.Validation
     Assert-Package $p1 jquery.Validation
     Assert-Package $p1 jquery
-    
+
     $p1 | Uninstall-Package jquery.Validation
     $p1 | Uninstall-Package jquery
-    
+
     Assert-Null (Get-ProjectPackage $p1 jquery.Validation)
     Assert-Null (Get-ProjectPackage $p1 jquery)
     Assert-SolutionPackage jquery.Validation
@@ -56,11 +56,11 @@ function Test-RemovingPackageWithDependencyFromProjectDoesNotRemoveIfInUse {
 function Test-RemovePackageRemovesPackageFromSolutionIfNotInUse {
     # Arrange
     $p1 = New-WebApplication
-    
+
     Install-Package elmah -ProjectName $p1.Name -Version 1.1
     Assert-Reference $p1 elmah
     Assert-SolutionPackage elmah
-    
+
     Uninstall-Package elmah -ProjectName $p1.Name
     Assert-Null (Get-AssemblyReference $p1 elmah)
     Assert-Null (Get-ProjectPackage $p1 elmah)
@@ -70,12 +70,12 @@ function Test-RemovePackageRemovesPackageFromSolutionIfNotInUse {
 function Test-UninstallingPackageWithConfigTransformWhenConfigReadOnly {
     # Arrange
     $p1 = New-WebApplication
-    
+
     Install-Package elmah -ProjectName $p1.Name -Version 1.1
     Assert-Reference $p1 elmah
     Assert-SolutionPackage elmah
     attrib +R (Get-ProjectItemPath $p1 web.config)
-    
+
     Uninstall-Package elmah -ProjectName $p1.Name
     Assert-Null (Get-AssemblyReference $p1 elmah)
     Assert-Null (Get-ProjectPackage $p1 elmah)
@@ -86,7 +86,7 @@ function Test-VariablesPassedToUninstallScriptsAreValidWithWebSite {
     param(
         $context
     )
-    
+
     # Arrange
     $p = New-WebSite
 
@@ -109,7 +109,7 @@ function Test-UninstallPackageWithNestedContentFiles {
     $p = New-WebApplication
     Install-Package NestedFolders -ProjectName $p.Name -Source $context.RepositoryPath
 
-    # Act    
+    # Act
     Uninstall-Package NestedFolders -ProjectName $p.Name
 
     # Assert
@@ -122,14 +122,14 @@ function Test-UninstallPackageWithNestedContentFiles {
 function Test-SimpleFSharpUninstall {
     # Arrange
     $p = New-FSharpLibrary
-    
+
     # Act
     Install-Package Ninject -ProjectName $p.Name -Source $context.RepositoryPath
     Assert-NotNull (Get-ProjectItem $p two.txt)
     Assert-Package $p Ninject
     Assert-SolutionPackage Ninject
     Uninstall-Package Ninject -ProjectName $p.Name
-    
+
     # Assert
     Assert-Null (Get-ProjectPackage $p Ninject)
     Assert-Null (Get-SolutionPackage Ninject)
@@ -180,7 +180,7 @@ function UninstallSolutionOnlyPackage {
     Assert-Null (Get-SolutionPackage SolutionOnlyPackage 2.0)
 }
 
-function Test-UninstallPackageMissingPackage {	
+function Test-UninstallPackageMissingPackage {
 	# Arrange
 	# create project and install package
 	$proj = New-ClassLibrary
@@ -254,7 +254,7 @@ function Test-UninstallSpecificVersionOfPackage {
 }
 
 #function Test-UninstallSolutionOnlyPackageWhenAmbiguous {
-function UninstallSolutionOnlyPackageWhenAmbiguous {    
+function UninstallSolutionOnlyPackageWhenAmbiguous {
     param(
         $context
     )
@@ -338,11 +338,11 @@ function Test-UninstallPackageAfterRenaming {
     $p2 = New-ClassLibrary 'ProjectB' 'Folder1\Folder2'
 
     # Act
-    $p1 | Install-Package NestedFolders -Source $context.RepositoryPath 
+    $p1 | Install-Package NestedFolders -Source $context.RepositoryPath
     $p1.Name = "ProjectX"
     Uninstall-Package NestedFolders -ProjectName Folder1\Folder2\ProjectX
 
-    $p2 | Install-Package NestedFolders -Source $context.RepositoryPath 
+    $p2 | Install-Package NestedFolders -Source $context.RepositoryPath
     Rename-SolutionFolder "Folder1\Folder2" "Folder3"
     Uninstall-Package NestedFolders -ProjectName Folder1\Folder3\ProjectB
 
@@ -377,9 +377,9 @@ function Test-WebSiteUninstallPackageWithPPCSSourceFiles {
     )
     # Arrange
     $p = New-WebSite
-    
+
     # Act
-    $p | Install-Package PackageWithPPCSSourceFiles -Source $context.RepositoryRoot    
+    $p | Install-Package PackageWithPPCSSourceFiles -Source $context.RepositoryRoot
     Assert-Package $p PackageWithPPCSSourceFiles
     Assert-SolutionPackage PackageWithPPCSSourceFiles
     Assert-NotNull (Get-ProjectItem $p App_Code\Foo.cs)
@@ -398,9 +398,9 @@ function Test-WebSiteUninstallPackageWithPPVBSourceFiles {
     )
     # Arrange
     $p = New-WebSite
-    
+
     # Act
-    $p | Install-Package PackageWithPPVBSourceFiles -Source $context.RepositoryRoot    
+    $p | Install-Package PackageWithPPVBSourceFiles -Source $context.RepositoryRoot
     Assert-Package $p PackageWithPPVBSourceFiles
     Assert-SolutionPackage PackageWithPPVBSourceFiles
     Assert-NotNull (Get-ProjectItem $p App_Code\Foo.vb)
@@ -419,13 +419,13 @@ function Test-WebSiteUninstallPackageWithNestedSourceFiles {
     )
     # Arrange
     $p = New-WebSite
-    
+
     # Act
     $p | Install-Package netfx-Guard -Source $context.RepositoryRoot
     Assert-Package $p netfx-Guard
     Assert-SolutionPackage netfx-Guard
     Assert-NotNull (Get-ProjectItem $p App_Code\netfx\System\Guard.cs)
-    
+
     # Assert
     $p | Uninstall-Package netfx-Guard
     Assert-Null (Get-ProjectPackage $p netfx-Guard)
@@ -442,11 +442,11 @@ function Test-WebSiteUninstallWithNestedAspxPPFiles {
     )
 
     # Arrange
-    $p = New-WebSite    
+    $p = New-WebSite
     $files = @('About.aspx')
     $p | Install-Package PackageWithNestedAspxPPFiles -Source $context.RepositoryRoot
 
-    $files | %{ 
+    $files | %{
         $item = Get-ProjectItem $p $_
         Assert-NotNull $item
         $codeItem = Get-ProjectItem $p "$_.cs"
@@ -460,7 +460,7 @@ function Test-WebSiteUninstallWithNestedAspxPPFiles {
     $p | Uninstall-Package PackageWithNestedAspxPPFiles
 
     # Assert
-    $files | %{ 
+    $files | %{
         $item = Get-ProjectItem $p $_
         Assert-Null $item
         $codeItem = Get-ProjectItem $p "$_.cs"
@@ -477,11 +477,11 @@ function Test-WebsiteUninstallPackageWithNestedAspxFiles {
     )
 
     # Arrange
-    $p = New-WebSite    
+    $p = New-WebSite
     $files = @('Global.asax', 'Site.master', 'About.aspx')
     $p | Install-Package PackageWithNestedAspxFiles -Source $context.RepositoryRoot
 
-    $files | %{ 
+    $files | %{
         $item = Get-ProjectItem $p $_
         Assert-NotNull $item
         $codeItem = Get-ProjectItem $p "$_.cs"
@@ -495,7 +495,7 @@ function Test-WebsiteUninstallPackageWithNestedAspxFiles {
     $p | Uninstall-Package PackageWithNestedAspxFiles
 
     # Assert
-    $files | %{ 
+    $files | %{
         $item = Get-ProjectItem $p $_
         Assert-Null $item
         $codeItem = Get-ProjectItem $p "$_.cs"
@@ -512,7 +512,7 @@ function Test-WebSiteUninstallPackageWithNestedSourceFilesAndAnotherProject {
     # Arrange
     $p1 = New-WebSite
     $p2 = New-WebApplication
-    
+
     # Act
     $p1 | Install-Package netfx-Guard -Source $context.RepositoryRoot
     Assert-Package $p1 netfx-Guard
@@ -523,7 +523,7 @@ function Test-WebSiteUninstallPackageWithNestedSourceFilesAndAnotherProject {
     Assert-Package $p2 netfx-Guard
     Assert-SolutionPackage netfx-Guard
     Assert-NotNull (Get-ProjectItem $p2 netfx\System\Guard.cs)
-    
+
     # Assert
     $p1 | Uninstall-Package netfx-Guard
     Assert-NotNull (Get-SolutionPackage netfx-Guard)
@@ -556,7 +556,7 @@ function Test-UninstallPackageInvokeInstallScriptWhenProjectNameHasApostrophe {
     param(
         $context
     )
-    
+
     # Arrange
     New-Solution "Gun 'n Roses"
     $p = New-ConsoleApplication
@@ -582,7 +582,7 @@ function Test-UninstallPackageInvokeInstallScriptWhenProjectNameHasBrackets {
     param(
         $context
     )
-    
+
     # Arrange
     New-Solution "Gun [] Roses 2"
     $p = New-ConsoleApplication
@@ -615,12 +615,12 @@ function UninstallPackageRemoveSolutionPackagesConfig
     $a = New-ClassLibrary
 
     $a | Install-Package SolutionOnlyPackage -version 1.0 -source $context.RepositoryRoot
-    
+
     $solutionFile = Get-SolutionFullName
     $solutionDir = Split-Path $solutionFile -Parent
 
     $configFile = "$solutionDir\.nuget\packages.config"
-    
+
     Assert-True (Test-Path $configFile)
 
     $content = Get-Content $configFile
@@ -648,12 +648,12 @@ function Test-UninstallSolutionPackageRemoveEntryFromProjectPackagesConfig
 
     $a | Install-Package SolutionLevelPkg -version 1.0.0 -source $context.RepositoryRoot
     $a | Install-Package RazorGenerator.MsBuild -version 1.3.2
-    
+
     $solutionFile = Get-SolutionFullName
     $solutionDir = Split-Path $solutionFile -Parent
 
     $configFile = "$solutionDir\" + $a.Name + "\packages.config"
-    
+
     Assert-True (Test-Path $configFile)
 
     $content = Get-Content $configFile
@@ -712,7 +712,7 @@ function Test-UninstallSatellitePackageDoNotRemoveCollidingRuntimeFilesWhenConte
     $p | Install-Package PackageWithStrongNamedLib -Source $context.RepositoryPath
     $p | Install-Package PackageWithStrongNamedLib.ja-jp -Source $context.RepositoryPath
 
-    $p | Uninstall-Package PackageWithStrongNamedLib.ja-jp 
+    $p | Uninstall-Package PackageWithStrongNamedLib.ja-jp
 
     # Assert (the resources from the satellite package are copied into the runtime package's folder)
     Assert-PathExists (Join-Path $solutionDir packages\PackageWithStrongNamedLib.1.1\lib\ja-jp\collision-differences.txt)
@@ -767,7 +767,7 @@ function Test-WebSiteSimpleUninstall
 
     # Arrange
     $p = New-Website
-    
+
     # Act
     $p | Install-Package MyAwesomeLibrary -Source $context.RepositoryPath
     $p | Uninstall-Package MyAwesomeLibrary
@@ -784,7 +784,7 @@ function Test-UninstallPackageUseTargetFxPersistedInPackagesConfigToRemoveConten
     $p = New-ClassLibrary
 
     $p | Install-Package PackageA -Source $context.RepositoryPath
-    
+
     Assert-Package $p 'packageA'
     Assert-Package $p 'packageB'
 
@@ -799,11 +799,11 @@ function Test-UninstallPackageUseTargetFxPersistedInPackagesConfigToRemoveConten
     $p = Get-Project $projectName
 
     Uninstall-Package 'PackageA' -ProjectName $projectName -RemoveDependencies
-    
+
     # Assert
     Assert-NoPackage $p 'PackageA'
     Assert-NoPackage $p 'PackageB'
-    
+
     Assert-Null (Get-ProjectItem $p testA4.txt)
     Assert-Null (Get-ProjectItem $p testB4.txt)
 }
@@ -816,7 +816,7 @@ function Test-UninstallPackageUseTargetFxPersistedInPackagesConfigToRemoveAssemb
     $p = New-ClassLibrary
 
     $p | Install-Package PackageA -Source $context.RepositoryPath
-    
+
     Assert-Package $p 'packageA'
     Assert-Package $p 'packageB'
 
@@ -831,11 +831,11 @@ function Test-UninstallPackageUseTargetFxPersistedInPackagesConfigToRemoveAssemb
     $p = Get-Project $projectName
 
     Uninstall-Package 'PackageA' -ProjectName $projectName -RemoveDependencies
-    
+
     # Assert
     Assert-NoPackage $p 'PackageA'
     Assert-NoPackage $p 'PackageB'
-    
+
     Assert-Null (Get-AssemblyReference $p testA4.dll)
     Assert-Null (Get-AssemblyReference $p testB4.dll)
 }
@@ -848,7 +848,7 @@ function Test-UninstallPackageUseTargetFxPersistedInPackagesConfigToInvokeUninst
     $p = New-ClassLibrary
 
     $p | Install-Package PackageA -Source $context.RepositoryPath
-    
+
     Assert-Package $p 'packageA'
 
     # Act (change the target framework of the project to 3.5 and verifies that it invokes the correct uninstall.ps1 file in 'net40' folder )
@@ -860,10 +860,10 @@ function Test-UninstallPackageUseTargetFxPersistedInPackagesConfigToInvokeUninst
 
     $p = Get-Project $projectName
     Uninstall-Package 'PackageA' -ProjectName $projectName
-    
+
     # Assert
     Assert-NoPackage $p 'PackageA'
-    
+
     Assert-AreEqual 1 $global:UninstallVar
 
     Remove-Variable UninstallVar -Scope Global
@@ -960,7 +960,7 @@ function Test-UnInstallPackageWithXdtTransformUnTransformsTheFile
 function UninstallPackageHonorPackageReferencesAccordingToProjectFramework
 {
     param ($context)
-    
+
     # Arrange
     $p = New-ClassLibrary
 
@@ -1002,8 +1002,10 @@ function UninstallPackageRemoveImportStatement
     Assert-NoProjectImport $p "..\packages\PackageWithImport.2.0.0\build\PackageWithImport.props"
 }
 
-function Test-UninstallPackageFromNativeWinStoreApplication
-{
+function Test-UninstallPackageFromNativeWinStoreApplication {
+    [SkipTestForVS15()]
+    param()
+
     if ((Get-VSVersion) -eq "10.0")
     {
         return
@@ -1059,8 +1061,8 @@ function Test-UninstallPackageWithContentInLicenseBlocks
 
 	$name = 'PackageWithFooContentFile'
 
-	Install-Package $name -Version 1.0 -Source $context.RepositoryRoot 
-	
+	Install-Package $name -Version 1.0 -Source $context.RepositoryRoot
+
 	$packages = Get-PackagesDir
 	$fooFilePath = Join-Path $packages "$name.1.0\content\foo"
 
