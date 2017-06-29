@@ -889,12 +889,13 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Target Name="_CleanCacheFiles" 
           AfterTargets="Clean">
     <PropertyGroup>
-        <RestoreOutputPath Condition=" '$(RestoreOutputPath)' == '' ">$(BaseIntermediateOutputPath)</RestoreOutputPath>
+        <CacheFileOutputPath Condition=" '$(RestoreOutputPath)' != '' ">$(RestoreOutputPath)</CacheFileOutputPath>
+        <CacheFileOutputPath Condition=" '$(RestoreOutputPath)' == '' ">$(BaseIntermediateOutputPath)</CacheFileOutputPath>
     </PropertyGroup>
     <ItemGroup>
-        <_PackageFilesToDelete Include="$(RestoreOutputPath)*.nuget.cache" />
+        <_CacheFilesToDelete Include="$(CacheFileOutputPath)*.nuget.cache" />
     </ItemGroup>
-    <Delete Files="@(_PackageFilesToDelete)" />
+    <Delete Files="@(_CacheFilesToDelete)" />
   </Target>
 
 </Project>
