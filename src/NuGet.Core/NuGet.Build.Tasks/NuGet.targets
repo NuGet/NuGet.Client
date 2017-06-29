@@ -882,11 +882,11 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <!--
     ============================================================
-    _CleanCacheFiles
+    _CleanRestoreCacheFiles
     Deletes all the *.nuget.cache files in the obj directory
     ============================================================
   -->
-  <Target Name="_CleanCacheFiles" 
+  <Target Name="_CleanRestoreCacheFiles" 
           AfterTargets="Clean">
     <PropertyGroup>
         <CacheFileOutputPath Condition=" '$(RestoreOutputPath)' != '' ">$(RestoreOutputPath)</CacheFileOutputPath>
