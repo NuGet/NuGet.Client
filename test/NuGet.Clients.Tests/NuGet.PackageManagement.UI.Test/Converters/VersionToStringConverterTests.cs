@@ -22,7 +22,7 @@ namespace NuGet.PackageManagement.UI.Test.Converters
                 null,
                 Thread.CurrentThread.CurrentCulture);
 
-            Assert.Same(value.ToNormalizedString(), converted);
+            Assert.Equal(value.ToNormalizedString(), converted);
         }
 
         [Theory]
@@ -40,7 +40,7 @@ namespace NuGet.PackageManagement.UI.Test.Converters
                 converterParameter,
                 Thread.CurrentThread.CurrentCulture);
 
-            Assert.Same(value.ToString(converterParameter, VersionFormatter.Instance), converted);
+            Assert.Equal(value.ToString(converterParameter, VersionFormatter.Instance), converted);
         }
     }
 }
