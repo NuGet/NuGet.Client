@@ -97,7 +97,7 @@ $NuGetClientRoot = $env:BUILD_REPOSITORY_LOCALPATH
 $Submodules = Join-Path $NuGetClientRoot submodules -Resolve
 
 $NuGetLocalization = Join-Path $Submodules NuGet.Build.Localization -Resolve
-$updateOpts = 'pull', 'origin', 'master'
+$updateOpts = 'pull', 'origin', 'dev-anmishr-comments'
            
 Write-Host "git update NuGet.Build.Localization at $NuGetLocalization"
 & git -C $NuGetLocalization $updateOpts 2>&1 | Write-Host
