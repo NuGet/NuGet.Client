@@ -307,6 +307,10 @@ namespace NuGet.SolutionRestoreManager
             return GetNonEvaluatedPropertyOrNull(tfms, RestorePackagesPath, e => e);
         }
 
+        /// <summary>
+        /// The result will contain CLEAR and no sources specified in RestoreSources if the clear keyword is in it.
+        /// If there are additional sources specified, the value RestoreAdditionalProjectSources will be set in the result and then all the additional sources will follow
+        /// </summary>
         private static string[] GetRestoreSources(IVsTargetFrameworks tfms)
         {
             var sources = MSBuildStringUtility.Split(GetNonEvaluatedPropertyOrNull(tfms, RestoreSources, e => e));
@@ -314,11 +318,17 @@ namespace NuGet.SolutionRestoreManager
             sources = HandleClear(sources);
 
             var additional = MSBuildStringUtility.Split(GetNonEvaluatedPropertyOrNull(tfms, RestoreAdditionalProjectSources, e => e));
-            sources = sources.Concat(additional).ToArray();
-
+            if (additional.Length != 0)
+            {
+                sources = sources.Concat(additional.Concat(new string[] { RestoreAdditionalProjectSources })).ToArray();
+            }
             return sources;
         }
 
+        /// <summary>
+        /// The result will contain CLEAR and no sources specified in RestoreFallbackFolders if the clear keyword is in it.
+        /// If there are additional fallback folders specified, the value RestoreAdditionalProjectFallbackFolders will be set in the result and then all the additional fallback folders will follow
+        /// </summary>
         private static IEnumerable<string> GetRestoreFallbackFolders(IVsTargetFrameworks tfms)
         {
             var folders = MSBuildStringUtility.Split(GetNonEvaluatedPropertyOrNull(tfms, RestoreFallbackFolders, e => e));
@@ -326,6 +336,10 @@ namespace NuGet.SolutionRestoreManager
             folders = HandleClear(folders);
 
             var additional = MSBuildStringUtility.Split(GetNonEvaluatedPropertyOrNull(tfms, RestoreAdditionalProjectFallbackFolders, e => e));
+            if (additional.Length != 0)
+            {
+                folders = folders.Concat(additional.Concat(new string[] { RestoreAdditionalProjectFallbackFolders })).ToArray();
+            }
             return folders.Concat(additional);
         }
 

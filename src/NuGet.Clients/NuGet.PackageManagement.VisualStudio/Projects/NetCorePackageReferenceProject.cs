@@ -34,6 +34,8 @@ namespace NuGet.PackageManagement.VisualStudio
     public class NetCorePackageReferenceProject : BuildIntegratedNuGetProject
     {
         private const string TargetFrameworkCondition = "TargetFramework";
+        private const string RestoreAdditionalProjectFallbackFolders = nameof(RestoreAdditionalProjectFallbackFolders);
+        private const string RestoreAdditionalProjectSources = nameof(RestoreAdditionalProjectSources);
 
         private readonly string _projectName;
         private readonly string _projectUniqueName;
@@ -194,19 +196,37 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private static List<PackageSource> GetSources(ISettings settings, PackageSpec project)
         {
-            var sources = project.RestoreMetadata.Sources.Select(e => e.Source);
+            var sources = new List<string>();
+            var additionalSources = new List<string>();
 
-            if (ShouldReadFromSettings(sources))
+            var readingAdditionalSources = false;
+            foreach (var source in project.RestoreMetadata.Sources)
             {
-                sources = SettingsUtility.GetEnabledSources(settings).Select(e => e.Source);
+                if (RestoreAdditionalProjectSources.Equals(source.Source))
+                {
+                    readingAdditionalSources = true;
+                }
+                else
+                {
+                    if (readingAdditionalSources)
+                    {
+                        additionalSources.Add(source.Source);
+                    }
+                    else
+                    {
+                        sources.Add(source.Source);
+                    }
+                }
             }
-            else
-            {
-                sources = HandleClear(sources);
-            }
+
+            var processedSources = (
+                        ShouldReadFromSettings(sources) ?
+                            SettingsUtility.GetEnabledSources(settings).Select(e => e.Source) :
+                            HandleClear(sources))
+                        .Concat(additionalSources);
 
             // Resolve relative paths
-            return sources.Select(e => new PackageSource(
+            return processedSources.Select(e => new PackageSource(
                 UriUtility.GetAbsolutePathFromFile(
                     sourceFile: project.RestoreMetadata.ProjectPath,
                     path: e)))
@@ -215,19 +235,38 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private static List<string> GetFallbackFolders(ISettings settings, PackageSpec project)
         {
-            IEnumerable<string> fallbackFolders = project.RestoreMetadata.FallbackFolders;
+            var fallbackFolders = new List<string>();
+            var additionalFallbackFolders = new List<string>();
 
-            if (ShouldReadFromSettings(fallbackFolders))
+            var readingAdditionalFallbackFolders = false;
+            foreach (var fallbackFolder in project.RestoreMetadata.FallbackFolders)
             {
-                fallbackFolders = SettingsUtility.GetFallbackPackageFolders(settings);
+                if (RestoreAdditionalProjectSources.Equals(fallbackFolder))
+                {
+                    readingAdditionalFallbackFolders = true;
+                }
+                else
+                {
+                    if (readingAdditionalFallbackFolders)
+                    {
+                        additionalFallbackFolders.Add(fallbackFolder);
+                    }
+                    else
+                    {
+                        fallbackFolders.Add(fallbackFolder);
+                    }
+                }
             }
-            else
-            {
-                fallbackFolders = HandleClear(fallbackFolders);
-            }
+
+            var processedFallbackFolders = (
+                        ShouldReadFromSettings(fallbackFolders)) ?
+                            SettingsUtility.GetFallbackPackageFolders(settings) :
+                            HandleClear(fallbackFolders)
+                        .Concat(additionalFallbackFolders);
+
 
             // Resolve relative paths
-            return fallbackFolders.Select(e => 
+            return processedFallbackFolders.Select(e =>
                 UriUtility.GetAbsolutePathFromFile(
                     sourceFile: project.RestoreMetadata.ProjectPath,
                     path: e))
