@@ -340,7 +340,7 @@ namespace NuGet.SolutionRestoreManager
             {
                 folders = (folders.Concat(new string[] { RestoreAdditionalProjectFallbackFolders }).Concat(additional)).ToArray();
             }
-            return folders.Concat(additional);
+            return folders;
         }
 
         private static string[] HandleClear(string[] input)
