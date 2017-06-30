@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -151,10 +151,11 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 var project = originalProject.Clone();
 
-                // Read restore settings from ISettings if it doesn't exist in the project.
-                project.RestoreMetadata.PackagesPath = GetPackagesPath(settings, project);
-                project.RestoreMetadata.Sources = GetSources(settings, project);
-                project.RestoreMetadata.FallbackFolders = GetFallbackFolders(settings, project);
+                // Read restore settings from ISettings if it doesn't exist in the project
+                // NOTE: Very important that the original project is used in the arguments, because cloning sorts the sources and compromises how the sources will be evaluated
+                project.RestoreMetadata.PackagesPath = GetPackagesPath(settings, originalProject);
+                project.RestoreMetadata.Sources = GetSources(settings, originalProject);
+                project.RestoreMetadata.FallbackFolders = GetFallbackFolders(settings, originalProject);
                 project.RestoreMetadata.ConfigFilePaths = GetConfigFilePaths(settings);
                 projects.Add(project);
             }
