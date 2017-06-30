@@ -78,7 +78,7 @@ namespace NuGet.PackageManagement.VisualStudio
             var readingAdditionalFallbackFolders = false;
             foreach (var fallbackFolder in project.RestoreMetadata.FallbackFolders)
             {
-                if (RestoreAdditionalProjectSources.Equals(fallbackFolder))
+                if (RestoreAdditionalProjectFallbackFolders.Equals(fallbackFolder))
                 {
                     readingAdditionalFallbackFolders = true;
                 }
@@ -96,9 +96,9 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             var processedFallbackFolders = (
-                        ShouldReadFromSettings(fallbackFolders)) ?
+                        ShouldReadFromSettings(fallbackFolders) ?
                             SettingsUtility.GetFallbackPackageFolders(settings) :
-                            HandleClear(fallbackFolders)
+                            HandleClear(fallbackFolders))
                         .Concat(additionalFallbackFolders);
 
 
