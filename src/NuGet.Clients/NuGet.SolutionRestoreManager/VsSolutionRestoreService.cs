@@ -320,7 +320,7 @@ namespace NuGet.SolutionRestoreManager
             var additional = MSBuildStringUtility.Split(GetNonEvaluatedPropertyOrNull(tfms, RestoreAdditionalProjectSources, e => e));
             if (additional.Length != 0)
             {
-                sources = sources.Concat(additional.Concat(new string[] { RestoreAdditionalProjectSources })).ToArray();
+                sources = (sources.Concat(new string[] { RestoreAdditionalProjectSources }).Concat(additional)).ToArray();
             }
             return sources;
         }
@@ -338,7 +338,7 @@ namespace NuGet.SolutionRestoreManager
             var additional = MSBuildStringUtility.Split(GetNonEvaluatedPropertyOrNull(tfms, RestoreAdditionalProjectFallbackFolders, e => e));
             if (additional.Length != 0)
             {
-                folders = folders.Concat(additional.Concat(new string[] { RestoreAdditionalProjectFallbackFolders })).ToArray();
+                folders = (folders.Concat(new string[] { RestoreAdditionalProjectFallbackFolders }).Concat(additional)).ToArray();
             }
             return folders.Concat(additional);
         }
