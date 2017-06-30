@@ -189,7 +189,7 @@
     <ItemGroup>
       <DllsToLocalizeWithMetadata Include="@(BuiltProjectOutputGroupOutput->'%(FinalOutputPath)')" Condition="'%(Extension)' == '.dll' OR '%(Filename)' == 'NuGet.CommandLine.XPlat'" KeepDuplicates="false">
         <TranslationFile>$(LocalizationRootDirectory)\{Lang}\15\%(Filename).dll.lcl</TranslationFile>    <!--Required: translation file-->
-	      <LciCommentFile>$(LocalizationRootDirectory)\comments\15\%(Filename).resources.dll.lci</LciCommentFile>
+	      <LciCommentFile>$(LocalizationRootDirectory)\comments\15\%(Filename).dll.lci</LciCommentFile>
       </DllsToLocalizeWithMetadata>
     </ItemGroup>
   </Target>
