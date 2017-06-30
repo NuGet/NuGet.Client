@@ -28,7 +28,7 @@
     <ItemGroup>
       <FilesToLocalize Include="@(NonProjectFilesToMove->'%(DestinationDir)')">
         <TranslationFile Condition="'%(Extension)' == '.dll'">$(LocalizationRootDirectory)\{Lang}\15\%(Filename).dll.lcl</TranslationFile>    <!--Required: translation file-->
-	      <LciCommentFile Condition="'%(Extension)' == '.dll'">$(LocalizationRootDirectory)\comments\15\%(Filename).resources.dll.lci</LciCommentFile>
+	      <LciCommentFile Condition="'%(Extension)' == '.dll'">$(LocalizationRootDirectory)\comments\15\%(Filename).dll.lci</LciCommentFile>
         <TranslationFile Condition="'%(Extension)' != '.dll'">$(LocalizationRootDirectory)\{Lang}\15\%(Filename)%(Extension).lcl</TranslationFile>    <!--Required: translation file-->
 	      <LciCommentFile Condition="'%(Extension)' != '.dll'">$(LocalizationRootDirectory)\comments\15\%(Filename)%(Extension).lci</LciCommentFile>
         <Parser Condition="'%(Extension)' == '.vsixlangpack'">210</Parser>
