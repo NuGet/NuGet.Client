@@ -34,8 +34,6 @@ namespace NuGet.PackageManagement.VisualStudio
     public class NetCorePackageReferenceProject : BuildIntegratedNuGetProject
     {
         private const string TargetFrameworkCondition = "TargetFramework";
-        private const string RestoreAdditionalProjectFallbackFolders = nameof(RestoreAdditionalProjectFallbackFolders);
-        private const string RestoreAdditionalProjectSources = nameof(RestoreAdditionalProjectSources);
 
         private readonly string _projectName;
         private readonly string _projectUniqueName;
@@ -153,9 +151,9 @@ namespace NuGet.PackageManagement.VisualStudio
 
                 // Read restore settings from ISettings if it doesn't exist in the project
                 // NOTE: Very important that the original project is used in the arguments, because cloning sorts the sources and compromises how the sources will be evaluated
-                project.RestoreMetadata.PackagesPath = GetPackagesPath(settings, originalProject);
-                project.RestoreMetadata.Sources = GetSources(settings, originalProject);
-                project.RestoreMetadata.FallbackFolders = GetFallbackFolders(settings, originalProject);
+                project.RestoreMetadata.PackagesPath = VSRestoreSettingsUtilities.GetPackagesPath(settings, originalProject);
+                project.RestoreMetadata.Sources = VSRestoreSettingsUtilities.GetSources(settings, originalProject);
+                project.RestoreMetadata.FallbackFolders = VSRestoreSettingsUtilities.GetFallbackFolders(settings, originalProject);
                 project.RestoreMetadata.ConfigFilePaths = GetConfigFilePaths(settings);
                 projects.Add(project);
             }
@@ -179,114 +177,6 @@ namespace NuGet.PackageManagement.VisualStudio
         private IList<string> GetConfigFilePaths(ISettings settings)
         {
             return SettingsUtility.GetConfigFilePaths(settings).ToList();
-        }
-
-        private static string GetPackagesPath(ISettings settings, PackageSpec project)
-        {
-            // Set from Settings if not given. Clear is not an option here.
-            if (string.IsNullOrEmpty(project.RestoreMetadata.PackagesPath))
-            {
-                return SettingsUtility.GetGlobalPackagesFolder(settings);
-            }
-
-            // Resolve relative paths
-            return UriUtility.GetAbsolutePathFromFile(
-                sourceFile: project.RestoreMetadata.ProjectPath,
-                path: project.RestoreMetadata.PackagesPath);
-        }
-
-        private static List<PackageSource> GetSources(ISettings settings, PackageSpec project)
-        {
-            var sources = new List<string>();
-            var additionalSources = new List<string>();
-
-            var readingAdditionalSources = false;
-            foreach (var source in project.RestoreMetadata.Sources)
-            {
-                if (RestoreAdditionalProjectSources.Equals(source.Source))
-                {
-                    readingAdditionalSources = true;
-                }
-                else
-                {
-                    if (readingAdditionalSources)
-                    {
-                        additionalSources.Add(source.Source);
-                    }
-                    else
-                    {
-                        sources.Add(source.Source);
-                    }
-                }
-            }
-
-            var processedSources = (
-                        ShouldReadFromSettings(sources) ?
-                            SettingsUtility.GetEnabledSources(settings).Select(e => e.Source) :
-                            HandleClear(sources))
-                        .Concat(additionalSources);
-
-            // Resolve relative paths
-            return processedSources.Select(e => new PackageSource(
-                UriUtility.GetAbsolutePathFromFile(
-                    sourceFile: project.RestoreMetadata.ProjectPath,
-                    path: e)))
-                .ToList();
-        }
-
-        private static List<string> GetFallbackFolders(ISettings settings, PackageSpec project)
-        {
-            var fallbackFolders = new List<string>();
-            var additionalFallbackFolders = new List<string>();
-
-            var readingAdditionalFallbackFolders = false;
-            foreach (var fallbackFolder in project.RestoreMetadata.FallbackFolders)
-            {
-                if (RestoreAdditionalProjectSources.Equals(fallbackFolder))
-                {
-                    readingAdditionalFallbackFolders = true;
-                }
-                else
-                {
-                    if (readingAdditionalFallbackFolders)
-                    {
-                        additionalFallbackFolders.Add(fallbackFolder);
-                    }
-                    else
-                    {
-                        fallbackFolders.Add(fallbackFolder);
-                    }
-                }
-            }
-
-            var processedFallbackFolders = (
-                        ShouldReadFromSettings(fallbackFolders)) ?
-                            SettingsUtility.GetFallbackPackageFolders(settings) :
-                            HandleClear(fallbackFolders)
-                        .Concat(additionalFallbackFolders);
-
-
-            // Resolve relative paths
-            return processedFallbackFolders.Select(e =>
-                UriUtility.GetAbsolutePathFromFile(
-                    sourceFile: project.RestoreMetadata.ProjectPath,
-                    path: e))
-                .ToList();
-        }
-
-        private static bool ShouldReadFromSettings(IEnumerable<string> values)
-        {
-            return !values.Any() && values.All(e => !StringComparer.OrdinalIgnoreCase.Equals("CLEAR", e));
-        }
-
-        private static IEnumerable<string> HandleClear(IEnumerable<string> values)
-        {
-            if (values.Any(e => StringComparer.OrdinalIgnoreCase.Equals("CLEAR", e)))
-            {
-                return Enumerable.Empty<string>();
-            }
-
-            return values;
         }
 
         #endregion
