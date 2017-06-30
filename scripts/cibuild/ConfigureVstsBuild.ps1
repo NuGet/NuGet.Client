@@ -97,10 +97,13 @@ $NuGetClientRoot = $env:BUILD_REPOSITORY_LOCALPATH
 $Submodules = Join-Path $NuGetClientRoot submodules -Resolve
 
 $NuGetLocalization = Join-Path $Submodules NuGet.Build.Localization -Resolve
-$updateOpts = 'pull', 'origin', 'master'
-           
+$NuGetLocalizationRepoBranch = 'master'
+$updateOpts = 'pull', 'origin', $NuGetLocalizationRepoBranch
+
 Write-Host "git update NuGet.Build.Localization at $NuGetLocalization"
 & git -C $NuGetLocalization $updateOpts 2>&1 | Write-Host
+# Get the commit of the localization repository that will be used for this build.
+$LocalizationRepoCommitHash = & git -C $NuGetLocalization log --pretty=format:'%H' -n 1
 
 if (-not (Test-Path $regKey) -or ($has32bitNode -and -not (Test-Path $regKey32)))
 {
@@ -169,6 +172,8 @@ else
         BuildNumber = $newBuildCounter
         CommitHash = $env:BUILD_SOURCEVERSION
         BuildBranch = $env:BUILD_SOURCEBRANCHNAME
+        LocalizationRepositoryBranch = $NuGetLocalizationRepoBranch
+        LocalizationRepositoryCommitHash = $LocalizationRepoCommitHash
     }   
 
     New-Item $BuildInfoJsonFile -Force
