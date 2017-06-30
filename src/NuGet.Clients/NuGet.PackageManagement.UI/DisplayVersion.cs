@@ -19,8 +19,9 @@ namespace NuGet.PackageManagement.UI
             string additionalInfo,
             bool isValidVersion = true,
             bool isCurrentInstalled = false,
-            bool autoReferenced = false)
-            : this(GetRange(version), additionalInfo, isValidVersion, isCurrentInstalled, autoReferenced)
+            bool autoReferenced = false,
+            string versionFormat = "N")
+            : this(GetRange(version), additionalInfo, isValidVersion, isCurrentInstalled, autoReferenced, versionFormat)
         {
         }
 
@@ -29,8 +30,15 @@ namespace NuGet.PackageManagement.UI
             string additionalInfo,
             bool isValidVersion = true,
             bool isCurrentInstalled = false,
-            bool autoReferenced = false)
+            bool autoReferenced = false,
+            string versionFormat = "N")
         {
+            if (versionFormat == null)
+            {
+                // default to normalized version
+                versionFormat = "N";
+            }
+
             Range = range;
             _additionalInfo = additionalInfo;
 
@@ -43,9 +51,11 @@ namespace NuGet.PackageManagement.UI
             // Display a single version if the range is locked
             if (range.HasLowerAndUpperBounds && range.MinVersion == range.MaxVersion)
             {
+                var formattedVersionString = Version.ToString(versionFormat, VersionFormatter.Instance);
+
                 _toString = string.IsNullOrEmpty(_additionalInfo) ?
-                    Version.ToNormalizedString() :
-                    _additionalInfo + " " + Version.ToNormalizedString();
+                    formattedVersionString :
+                    _additionalInfo + " " + formattedVersionString;
             }
             else
             {
