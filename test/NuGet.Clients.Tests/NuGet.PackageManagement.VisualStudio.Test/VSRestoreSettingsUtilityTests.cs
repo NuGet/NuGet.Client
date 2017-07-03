@@ -15,16 +15,11 @@ namespace NuGet.PackageManagement.VisualStudio.Test
     public class VSRestoreSettingsUtilityTests
     {
         [Theory]
-        [MemberData(nameof(VSRestoreSettingsUtilities_RestoreSourceData1))]
-        //[MemberData(nameof(VSRestoreSettingsUtilities_RestoreSourceData2))]
-        //[MemberData(nameof(VSRestoreSettingsUtilities_RestoreSourceData3))]
-        //[MemberData(nameof(VSRestoreSettingsUtilities_RestoreSourceData4))]
-        //[MemberData(nameof(VSRestoreSettingsUtilities_RestoreSourceData5))]
+        [MemberData(nameof(GetVSRestoreSettingsUtilities_RestoreSourceData))]
         public void VSRestoreSettingsUtilities_RestoreSource(string[] restoreSources, string[] expectedRestoreSources)
         {
             using (var mockBaseDirectory = TestDirectory.Create())
             {
-
                 var spec = new PackageSpec();
                 spec.RestoreMetadata = new ProjectRestoreMetadata();
                 spec.RestoreMetadata.ProjectPath = @"C:\project\projectPath";
@@ -37,51 +32,36 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                        "expected: " + string.Join(",", expectedRestoreSources.ToArray()) + "\nactual: " + string.Join(",", actualSources.Select(e => e.Source).ToArray()));
             }
         }
-        public static IEnumerable<object[]> VSRestoreSettingsUtilities_RestoreSourceData1
-        {
-            get
-            {
-                yield return new object[] {
-                   new object[] { @"C:\source1" },
-                   new object[] { @"C:\source1" }
-                };
-            }
-       }
 
-    public static IEnumerable<object[]> VSRestoreSettingsUtilities_RestoreSourceData2
+        public static IEnumerable<object[]> GetVSRestoreSettingsUtilities_RestoreSourceData()
         {
-            get
-            {
-                yield return new object[] { @"Clear" };
-                yield return new object[] { };
-            }
-        }
+            yield return new object[] {
+                new string[] { @"C:\source1" },
+                new string[] { @"C:\source1" }
+            };
 
-        public static IEnumerable<object[]> VSRestoreSettingsUtilities_RestoreSourceData3
-        {
-            get
+            yield return new object[]
             {
-                yield return new object[] { @"Clear;RestoreAdditionalProjectSources;C:\additionalSource" };
-                yield return new object[] { @"C:\additionalSource" };
-            }
-        }
+                new string[] { @"Clear" },
+                new string[] { }
+            };
 
-        public static IEnumerable<object[]> VSRestoreSettingsUtilities_RestoreSourceData4
-        {
-            get
+            yield return new object[]
             {
-                yield return new object[] { @"C:\source1;RestoreAdditionalProjectSources;C:\additionalSource" };
-                yield return new object[] { @"C:\source1;C:\additionalSource" };
-            }
-        }
+                new string[] { @"Clear", "RestoreAdditionalProjectSources", @"C:\additionalSource" },
+                new string[] { @"C:\additionalSource" }
+            };
 
-        public static IEnumerable<object[]> VSRestoreSettingsUtilities_RestoreSourceData5
-        {
-            get
+            yield return new object[] {
+                new string[] { @"C:\source1", "RestoreAdditionalProjectSources",@"C:\additionalSource" },
+                new string[] { @"C:\source1" ,@"C:\additionalSource" }
+            };
+
+            yield return new object[]
             {
-                yield return new object[] { @"RestoreAdditionalProjectSources;C:\additionalSource" };
-                yield return new object[] { NuGetConstants.V3FeedUrl + @"; C:\additionalSource" };
-            }
+                new string[] { "RestoreAdditionalProjectSources", @"C:\additionalSource" },
+                new string[] { NuGetConstants.V3FeedUrl, @"C:\additionalSource" }
+            };
         }
     }
 }
