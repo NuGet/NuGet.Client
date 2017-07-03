@@ -31,7 +31,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 path: project.RestoreMetadata.PackagesPath);
         }
 
-        public static List<PackageSource> GetSources(ISettings settings, PackageSpec project)
+        public static IList<PackageSource> GetSources(ISettings settings, PackageSpec project)
         {
             var sources = new List<string>();
             var additionalSources = new List<string>();
@@ -70,7 +70,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 .ToList();
         }
 
-        public static List<string> GetFallbackFolders(ISettings settings, PackageSpec project)
+        public static IList<string> GetFallbackFolders(ISettings settings, PackageSpec project)
         {
             var fallbackFolders = new List<string>();
             var additionalFallbackFolders = new List<string>();
