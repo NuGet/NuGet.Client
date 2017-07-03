@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -29,11 +29,6 @@ namespace NuGet.PackageManagement.VisualStudio
     public static class EnvDTEProjectUtility
     {
         #region Constants and Statics
-
-        private static readonly HashSet<string> UnsupportedProjectCapabilities = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-            {
-                "SharedAssetsProject", // This is true for shared projects in universal apps
-            };
 
         private static readonly Dictionary<string, string> KnownNestedFiles = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
             {
@@ -417,7 +412,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             var hierarchy = VsHierarchyUtility.ToVsHierarchy(envDTEProject);
 
-            return hierarchy.IsCapabilityMatch("AssemblyReferences + DeclaredSourceItems + UserSourceItems");
+            return VsHierarchyUtility.IsProjectCapabilityCompliant(hierarchy);
         }
 
         public static NuGetProject GetNuGetProject(EnvDTE.Project project, ISolutionManager solutionManager)
@@ -751,15 +746,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             var hier = VsHierarchyUtility.ToVsHierarchy(envDTEProject);
 
-            foreach (var unsupportedProjectCapability in UnsupportedProjectCapabilities)
-            {
-                if (hier.IsCapabilityMatch(unsupportedProjectCapability))
-                {
-                    return true;
-                }
-            }
-
-            return false;
+            return VsHierarchyUtility.HasUnsupportedProjectCapability(hier);
         }
 
         #endregion // Check Project Types

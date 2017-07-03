@@ -76,5 +76,27 @@ namespace NuGet.PackageManagement.VisualStudio
                     projectFilePath, projectProperties: projectProperties);
             }
         }
+
+        public async Task<string> GetProjectTypeGuidAsync(string projectFilePath)
+        {
+            var workspace = SolutionWorkspaceService.CurrentWorkspace;
+            var solutionPath = SolutionWorkspaceService.SolutionFile;
+            var indexService = workspace.GetIndexWorkspaceService();
+            var indexedSolutionProjectTypes = (await indexService.GetFileDataValuesAsync<ProjectBaseTypesInSolution>(solutionPath,
+                ProjectBaseTypesInSolution.TypeGuid, refreshOption: true)).FirstOrDefault();
+
+            if (indexedSolutionProjectTypes != null)
+            {
+                var relativeProjectPath = Common.PathUtility.GetRelativePath(solutionPath, projectFilePath);
+
+                if (!string.IsNullOrEmpty(relativeProjectPath)
+                    && indexedSolutionProjectTypes.Value.Types.TryGetValue(relativeProjectPath, out Guid projectTypeGuid))
+                {
+                    return projectTypeGuid.ToString("B");
+                }
+            }
+
+            return string.Empty;
+        }
     }
 }

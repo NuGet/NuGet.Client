@@ -104,7 +104,6 @@
     <Compile Include="ProjectServices\VsCoreProjectSystemReferenceReader.cs" />
     <Compile Include="ProjectSystems\VsCoreProjectSystem.cs" />
     <Compile Include="Projects\VsMSBuildProjectSystemServices.cs" />
-    <Compile Include="Utility\SupportedProjectTypes.cs" />
     <Compile Include="Common\VersionCollectionExtensions.cs" />
     <Compile Include="DefaultVSCredentialServiceProvider.cs" />
     <Compile Include="Handlers\ProjectRetargetingHandler.cs" />
