@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.ProjectModel;
@@ -112,12 +113,13 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private static bool ShouldReadFromSettings(IEnumerable<string> values)
         {
-            return !values.Any() && values.All(e => !StringComparer.OrdinalIgnoreCase.Equals("CLEAR", e));
+            return !values.Any() && !MSBuildRestoreUtility.ContainsClearKeyword(values);
         }
 
         public static IEnumerable<string> HandleClear(IEnumerable<string> values)
         {
-            if (values.Any(e => StringComparer.OrdinalIgnoreCase.Equals("CLEAR", e)))
+            
+            if ((MSBuildRestoreUtility.ContainsClearKeyword(values)))
             {
                 return Enumerable.Empty<string>();
             }
