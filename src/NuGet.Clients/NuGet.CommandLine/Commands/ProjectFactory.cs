@@ -796,7 +796,8 @@ namespace NuGet.CommandLine
                 $"{targetFileName}.dll",
                 $"{targetFileName}.exe",
                 $"{targetFileName}.xml",
-                $"{targetFileName}.winmd"
+                $"{targetFileName}.winmd",
+                $"{targetFileName}.resources.dll"
             };
 
             if (IncludeSymbols)
@@ -833,7 +834,7 @@ namespace NuGet.CommandLine
                 var packageFile = new Packaging.PhysicalPackageFile
                 {
                     SourcePath = file,
-                    TargetPath = Path.Combine(targetFolder, Path.GetFileName(file))
+                    TargetPath = Path.Combine(targetFolder, FileSystemUtility.MakeRelativePath(projectOutputDirectory, file))
                 };
                 AddFileToBuilder(builder, packageFile);
             }
