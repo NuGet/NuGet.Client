@@ -348,13 +348,10 @@ namespace NuGet.SolutionRestoreManager
                             // check if there are pending nominations
                             var isAllProjectsNominated = _solutionManager.Value.IsAllProjectsNominated();
 
-                            if (!_pendingRequests.Value.TryTake(out next, IdleTimeoutMs, token))
+                            if (!_pendingRequests.Value.TryTake(out next, IdleTimeoutMs, token) && isAllProjectsNominated)
                             {
-                                if (isAllProjectsNominated)
-                                {
-                                    // if we've got all the nominations then continue with the auto restore
-                                    break;
-                                }
+                                // if we've got all the nominations then continue with the auto restore
+                                break;
                             }
 
                             // Upgrade request if necessary
@@ -370,18 +367,11 @@ namespace NuGet.SolutionRestoreManager
                                 break;
                             }
 
-                            if (!isAllProjectsNominated)
+                            if (!isAllProjectsNominated && retries++ >= DelayAutoRestoreRetries)
                             {
-                                if (retries >= DelayAutoRestoreRetries)
-                                {
-                                    // we're still missing some nominations but don't delay it indefinitely and let auto restore fail.
-                                    // we wait until 20 secs for all the projects to be nominated at solution load.
-                                    break;
-                                }
-
-                                // if we're still expecting some nominations and also haven't reached our max timeout
-                                // then increase the retries count.
-                                retries++;
+                                // we're still missing some nominations but don't delay it indefinitely and let auto restore fail.
+                                // we wait until 20 secs for all the projects to be nominated at solution load.
+                                break;
                             }
                         }
 
