@@ -40,7 +40,7 @@ namespace NuGet.PackageManagement.VisualStudio
             var readingAdditionalSources = false;
             foreach (var source in project.RestoreMetadata.Sources)
             {
-                if (RestoreAdditionalProjectSources.Equals(source.Source))
+                if (StringComparer.OrdinalIgnoreCase.Equals(RestoreAdditionalProjectSources,source.Source))
                 {
                     readingAdditionalSources = true;
                 }
@@ -79,7 +79,7 @@ namespace NuGet.PackageManagement.VisualStudio
             var readingAdditionalFallbackFolders = false;
             foreach (var fallbackFolder in project.RestoreMetadata.FallbackFolders)
             {
-                if (RestoreAdditionalProjectFallbackFolders.Equals(fallbackFolder))
+                if (StringComparer.OrdinalIgnoreCase.Equals(RestoreAdditionalProjectFallbackFolders,fallbackFolder))
                 {
                     readingAdditionalFallbackFolders = true;
                 }
