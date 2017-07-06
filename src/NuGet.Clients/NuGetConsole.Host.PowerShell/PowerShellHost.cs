@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -473,7 +473,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                 // build integrated projects
                 if (sortedGlobalPackages.Count > 0)
                 {
-                    ExecuteInitPs1ForBuildIntegrated(
+                    await ExecuteInitPs1ForBuildIntegratedAsync(
                         sortedGlobalPackages,
                         finishedPackages);
                 }
@@ -540,12 +540,12 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                         continue;  
                     }
 
-                    ExecuteInitPs1(installPath, package);
+                    await ExecuteInitPs1Async(installPath, package);
                 }
             }
         }
 
-        private void ExecuteInitPs1ForBuildIntegrated(
+        private async Task ExecuteInitPs1ForBuildIntegratedAsync(
             List<PackageIdentity> sortedGlobalPackages,
             HashSet<PackageIdentity> finishedPackages)
         {
@@ -563,12 +563,12 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                         continue;
                     }
 
-                    ExecuteInitPs1(installPath, package);
+                    await ExecuteInitPs1Async(installPath, package);
                 }
             }
         }
 
-        private void ExecuteInitPs1(string installPath, PackageIdentity identity)
+        private async Task ExecuteInitPs1Async(string installPath, PackageIdentity identity)
         {
             try
             {
@@ -581,6 +581,9 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                     if (File.Exists(scriptPath) &&
                         _scriptExecutor.TryMarkVisited(identity, PackageInitPS1State.FoundAndExecuted))
                     {
+                        // always execute init script on a background thread
+                        await TaskScheduler.Default;
+
                         var request = new ScriptExecutionRequest(scriptPath, installPath, identity, project: null);
 
                         Runspace.Invoke(
