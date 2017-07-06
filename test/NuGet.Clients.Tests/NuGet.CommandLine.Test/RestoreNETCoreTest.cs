@@ -4509,7 +4509,7 @@ namespace NuGet.CommandLine.Test
                     .ShouldBeEquivalentTo(new[] { "lib/net45/a.dll" },
                     "no compatible assets were found for ns2.0");
 
-                r.AllOutput.Should().Contain("This may cause compatibility problems");
+                r.AllOutput.Should().Contain("This package may not be fully compatible with your project.");
             }
         }
 

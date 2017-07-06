@@ -603,7 +603,7 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Package &apos;{0}&apos; was restored using &apos;{1}&apos; instead of the project target framework &apos;{2}&apos;. This may cause compatibility problems..
+        ///   Looks up a localized string similar to Package &apos;{0}&apos; was restored using &apos;{1}&apos; instead of the project target framework &apos;{2}&apos;. This package may not be fully compatible with your project..
         /// </summary>
         internal static string Log_ImportsFallbackWarning {
             get {
