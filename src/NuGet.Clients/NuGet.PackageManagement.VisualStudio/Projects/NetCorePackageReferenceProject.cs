@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -149,10 +149,11 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 var project = originalProject.Clone();
 
-                // Read restore settings from ISettings if it doesn't exist in the project.
-                project.RestoreMetadata.PackagesPath = GetPackagesPath(settings, project);
-                project.RestoreMetadata.Sources = GetSources(settings, project);
-                project.RestoreMetadata.FallbackFolders = GetFallbackFolders(settings, project);
+                // Read restore settings from ISettings if it doesn't exist in the project
+                // NOTE: Very important that the original project is used in the arguments, because cloning sorts the sources and compromises how the sources will be evaluated
+                project.RestoreMetadata.PackagesPath = VSRestoreSettingsUtilities.GetPackagesPath(settings, originalProject);
+                project.RestoreMetadata.Sources = VSRestoreSettingsUtilities.GetSources(settings, originalProject);
+                project.RestoreMetadata.FallbackFolders = VSRestoreSettingsUtilities.GetFallbackFolders(settings, originalProject);
                 project.RestoreMetadata.ConfigFilePaths = GetConfigFilePaths(settings);
                 projects.Add(project);
             }
@@ -176,77 +177,6 @@ namespace NuGet.PackageManagement.VisualStudio
         private IList<string> GetConfigFilePaths(ISettings settings)
         {
             return SettingsUtility.GetConfigFilePaths(settings).ToList();
-        }
-
-        private static string GetPackagesPath(ISettings settings, PackageSpec project)
-        {
-            // Set from Settings if not given. Clear is not an option here.
-            if (string.IsNullOrEmpty(project.RestoreMetadata.PackagesPath))
-            {
-                return SettingsUtility.GetGlobalPackagesFolder(settings);
-            }
-
-            // Resolve relative paths
-            return UriUtility.GetAbsolutePathFromFile(
-                sourceFile: project.RestoreMetadata.ProjectPath,
-                path: project.RestoreMetadata.PackagesPath);
-        }
-
-        private static List<PackageSource> GetSources(ISettings settings, PackageSpec project)
-        {
-            var sources = project.RestoreMetadata.Sources.Select(e => e.Source);
-
-            if (ShouldReadFromSettings(sources))
-            {
-                sources = SettingsUtility.GetEnabledSources(settings).Select(e => e.Source);
-            }
-            else
-            {
-                sources = HandleClear(sources);
-            }
-
-            // Resolve relative paths
-            return sources.Select(e => new PackageSource(
-                UriUtility.GetAbsolutePathFromFile(
-                    sourceFile: project.RestoreMetadata.ProjectPath,
-                    path: e)))
-                .ToList();
-        }
-
-        private static List<string> GetFallbackFolders(ISettings settings, PackageSpec project)
-        {
-            IEnumerable<string> fallbackFolders = project.RestoreMetadata.FallbackFolders;
-
-            if (ShouldReadFromSettings(fallbackFolders))
-            {
-                fallbackFolders = SettingsUtility.GetFallbackPackageFolders(settings);
-            }
-            else
-            {
-                fallbackFolders = HandleClear(fallbackFolders);
-            }
-
-            // Resolve relative paths
-            return fallbackFolders.Select(e => 
-                UriUtility.GetAbsolutePathFromFile(
-                    sourceFile: project.RestoreMetadata.ProjectPath,
-                    path: e))
-                .ToList();
-        }
-
-        private static bool ShouldReadFromSettings(IEnumerable<string> values)
-        {
-            return !values.Any() && values.All(e => !StringComparer.OrdinalIgnoreCase.Equals("CLEAR", e));
-        }
-
-        private static IEnumerable<string> HandleClear(IEnumerable<string> values)
-        {
-            if (values.Any(e => StringComparer.OrdinalIgnoreCase.Equals("CLEAR", e)))
-            {
-                return Enumerable.Empty<string>();
-            }
-
-            return values;
         }
 
         #endregion

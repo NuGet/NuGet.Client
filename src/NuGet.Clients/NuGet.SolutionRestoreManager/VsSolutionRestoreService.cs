@@ -13,6 +13,7 @@ using NuGet.Commands;
 using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
+using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging;
 using NuGet.ProjectManagement;
 using NuGet.ProjectModel;
@@ -307,26 +308,31 @@ namespace NuGet.SolutionRestoreManager
             return GetNonEvaluatedPropertyOrNull(tfms, RestorePackagesPath, e => e);
         }
 
-        private static string[] GetRestoreSources(IVsTargetFrameworks tfms)
+        /// <summary>
+        /// The result will contain CLEAR and no sources specified in RestoreSources if the clear keyword is in it.
+        /// If there are additional sources specified, the value AdditionalValue will be set in the result and then all the additional sources will follow
+        /// </summary>
+        private static IEnumerable<string> GetRestoreSources(IVsTargetFrameworks tfms)
         {
-            var sources = MSBuildStringUtility.Split(GetNonEvaluatedPropertyOrNull(tfms, RestoreSources, e => e));
-
-            sources = HandleClear(sources);
+            var sources = HandleClear(MSBuildStringUtility.Split(GetNonEvaluatedPropertyOrNull(tfms, RestoreSources, e => e)));
 
             var additional = MSBuildStringUtility.Split(GetNonEvaluatedPropertyOrNull(tfms, RestoreAdditionalProjectSources, e => e));
-            sources = sources.Concat(additional).ToArray();
 
-            return sources;
+            return VSRestoreSettingsUtilities.GetEntriesWithAdditional(sources, additional);
         }
 
+        /// <summary>
+        /// The result will contain CLEAR and no sources specified in RestoreFallbackFolders if the clear keyword is in it.
+        /// If there are additional fallback folders specified, the value AdditionalValue will be set in the result and then all the additional fallback folders will follow
+        /// </summary>
         private static IEnumerable<string> GetRestoreFallbackFolders(IVsTargetFrameworks tfms)
         {
-            var folders = MSBuildStringUtility.Split(GetNonEvaluatedPropertyOrNull(tfms, RestoreFallbackFolders, e => e));
-
-            folders = HandleClear(folders);
+            var folders = HandleClear(MSBuildStringUtility.Split(GetNonEvaluatedPropertyOrNull(tfms, RestoreFallbackFolders, e => e)));
 
             var additional = MSBuildStringUtility.Split(GetNonEvaluatedPropertyOrNull(tfms, RestoreAdditionalProjectFallbackFolders, e => e));
-            return folders.Concat(additional);
+
+            return VSRestoreSettingsUtilities.GetEntriesWithAdditional(folders, additional);
+         
         }
 
         private static string[] HandleClear(string[] input)
