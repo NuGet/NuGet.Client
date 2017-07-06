@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -2343,6 +2343,9 @@ namespace NuGet.PackageManagement
 
             // Create a copy to avoid modifying the original spec which may be shared.
             var updatedPackageSpec = originalPackageSpec.Clone();
+
+            // During an install we should display all warnings and errors as we do not generate an assets file and sdk cannot pick it up
+            updatedPackageSpec.RestoreSettings.HideWarningsAndErrors = false;
 
             var pathContext = NuGetPathContext.Create(Settings);
             var providerCache = new RestoreCommandProvidersCache();
