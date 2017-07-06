@@ -38,6 +38,7 @@
     <Compile Include="VisualStudioCredentialProviderTests.cs" />
     <Compile Include="VsCredentialProviderAdapterTests.cs" />
     <Compile Include="VsCredentialProviderImporterTests.cs" />
+    <Compile Include="VSRestoreSettingsUtilityTests.cs" />
   </ItemGroup>
 
   <ItemGroup>

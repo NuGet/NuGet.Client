@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -9,8 +10,10 @@ using System.Threading.Tasks;
 using Moq;
 using NuGet.Commands;
 using NuGet.Common;
+using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
+using NuGet.PackageManagement.VisualStudio;
 using NuGet.ProjectModel;
 using NuGet.Test.Utility;
 using NuGet.VisualStudio;
@@ -508,6 +511,117 @@ namespace NuGet.SolutionRestoreManager.Test
             var actualProjectSpec = actualRestoreSpec.GetProjectSpec(projectFullPath);
             Assert.NotNull(actualProjectSpec);
             Assert.Equal("TestPackage", actualProjectSpec.Name);
+        }
+
+        [Theory]
+        [InlineData(@"..\source1", @"..\additionalsource", @"..\fallback1", @"..\additionalFallback1")]
+        [InlineData(@"..\source1", null, @"..\fallback1", null)]
+        [InlineData(null, @"..\additionalsource", null, @"..\additionalFallback1")]
+        [InlineData(@"Clear;C:\source1", @"C:\additionalsource", @"C:\fallback1;Clear", @"C:\additionalFallback1")]
+        [InlineData(@"C:\source1;Clear", @"C:\additionalsource", @"Clear;C:\fallback1", @"C:\additionalFallback1")]
+        public async Task NominateProjectAsync_WithRestoreAdditionalSourcesAndFallbackFolders(string restoreSources, string restoreAdditionalProjectSources, string restoreFallbackFolders, string restoreAdditionalFallbackFolders)
+        {
+            var cps = NewCpsProject(@"{ }");
+            var pri = cps.Builder
+                .WithTool("Foo.Test", "2.0.0")
+                .WithTargetFrameworkInfo(
+                    new VsTargetFrameworkInfo(
+                        "netcoreapp2.0",
+                        Enumerable.Empty<IVsReferenceItem>(),
+                        Enumerable.Empty<IVsReferenceItem>(),
+                        new[] { new VsProjectProperty("RestoreSources", restoreSources),
+                                new VsProjectProperty("RestoreFallbackFolders", restoreFallbackFolders),
+                                new VsProjectProperty("RestoreAdditionalProjectSources", restoreAdditionalProjectSources),
+                                new VsProjectProperty("RestoreAdditionalProjectFallbackFolders", restoreAdditionalFallbackFolders)}))
+                .Build();
+            var projectFullPath = cps.ProjectFullPath;
+
+            // Act
+            var actualRestoreSpec = await CaptureNominateResultAsync(projectFullPath, pri);
+
+            // Assert
+            SpecValidationUtility.ValidateDependencySpec(actualRestoreSpec);
+
+            var actualProjectSpec = actualRestoreSpec.GetProjectSpec(projectFullPath);
+            Assert.NotNull(actualProjectSpec);
+
+           var specSources = actualProjectSpec.RestoreMetadata.Sources?.Select(e => e.Source);
+
+            var expectedSources = 
+                (MSBuildStringUtility.Split(restoreSources).Any(e => StringComparer.OrdinalIgnoreCase.Equals("clear", e)) ?
+                    new string[] { "Clear" } :
+                    MSBuildStringUtility.Split(restoreSources)).
+                Concat(
+                restoreAdditionalProjectSources != null ?
+                    new List<string>() { VSRestoreSettingsUtilities.AdditionalValue }.Concat(MSBuildStringUtility.Split(restoreAdditionalProjectSources)):
+                    new string[] { }
+                );
+
+            Assert.True(Enumerable.SequenceEqual(expectedSources.OrderBy(t => t), specSources.OrderBy(t => t)));
+
+            var specFallback = actualProjectSpec.RestoreMetadata.FallbackFolders;
+
+            var expectedFallback =
+                (MSBuildStringUtility.Split(restoreFallbackFolders).Any(e => StringComparer.OrdinalIgnoreCase.Equals("clear", e)) ?
+                    new string[] { "Clear" } :
+                    MSBuildStringUtility.Split(restoreFallbackFolders)).
+                Concat(
+                restoreAdditionalFallbackFolders != null ?
+                    new List<string>() { VSRestoreSettingsUtilities.AdditionalValue }.Concat(MSBuildStringUtility.Split(restoreAdditionalFallbackFolders)) :
+                    new string[] { }
+                );
+
+            Assert.True(
+                Enumerable.SequenceEqual(expectedFallback.OrderBy(t => t), specFallback.OrderBy(t => t)),
+                "expected: " + string.Join(",", expectedFallback.ToArray()) + "\nactual: " + string.Join(",", specFallback.ToArray()));
+        }
+
+
+        [Theory]
+        [InlineData(@"C:\source1", @"C:\additionalsource",@"C:\source1;C:\additionalsource", @"C:\fallback1", @"C:\additionalFallback1", @"C:\fallback1;C:\additionalFallback1")]
+        [InlineData(@"C:\source1", null, @"C:\source1", @"C:\fallback1", null, @"C:\fallback1")]
+        [InlineData(null, @"C:\additionalsource", @"C:\additionalsource",  null, @"C:\additionalFallback1", @"C:\additionalFallback1")]
+        [InlineData(@"Clear;C:\source1", @"C:\additionalsource", @"C:\additionalsource",  @"C:\fallback1;Clear", @"C:\additionalFallback1", @"C:\additionalFallback1")]
+        [InlineData(@"C:\source1;Clear", @"C:\additionalsource", @"C:\additionalsource", @"Clear;C:\fallback1", @"C:\additionalFallback1", @"C:\additionalFallback1")]
+        public async Task VSSolutionRestoreService_VSRestoreSettingsUtilities_Integration(string restoreSources, string restoreAdditionalProjectSources, string expectedRestoreSources, string restoreFallbackFolders, string restoreAdditionalFallbackFolders, string expectedFallbackFolders)
+        {
+            var cps = NewCpsProject(@"{ }");
+            var pri = cps.Builder
+                .WithTool("Foo.Test", "2.0.0")
+                .WithTargetFrameworkInfo(
+                    new VsTargetFrameworkInfo(
+                        "netcoreapp2.0",
+                        Enumerable.Empty<IVsReferenceItem>(),
+                        Enumerable.Empty<IVsReferenceItem>(),
+                        new[] { new VsProjectProperty("RestoreSources", restoreSources),
+                                new VsProjectProperty("RestoreFallbackFolders", restoreFallbackFolders),
+                                new VsProjectProperty("RestoreAdditionalProjectSources", restoreAdditionalProjectSources),
+                                new VsProjectProperty("RestoreAdditionalProjectFallbackFolders", restoreAdditionalFallbackFolders)}))
+                .Build();
+            var projectFullPath = cps.ProjectFullPath;
+
+            // Act
+            var actualRestoreSpec = await CaptureNominateResultAsync(projectFullPath, pri);
+
+            // Assert
+            SpecValidationUtility.ValidateDependencySpec(actualRestoreSpec);
+
+            var actualProjectSpec = actualRestoreSpec.GetProjectSpec(projectFullPath);
+            Assert.NotNull(actualProjectSpec);
+
+           var specSources = VSRestoreSettingsUtilities.GetSources(NullSettings.Instance, actualProjectSpec).Select(e => e.Source);
+
+            var expectedSources = MSBuildStringUtility.Split(expectedRestoreSources);
+
+            Assert.True(Enumerable.SequenceEqual(expectedSources.OrderBy(t => t), specSources.OrderBy(t => t)));
+
+            var specFallback = VSRestoreSettingsUtilities.GetFallbackFolders(NullSettings.Instance, actualProjectSpec);
+
+            var expectedFallback = MSBuildStringUtility.Split(expectedFallbackFolders);
+
+            Assert.True(
+                Enumerable.SequenceEqual(expectedFallback.OrderBy(t => t), specFallback.OrderBy(t => t)),
+                "expected: " + string.Join(",", expectedFallback.ToArray()) + "\nactual: " + string.Join(",", specFallback.ToArray()));
         }
 
         private async Task<DependencyGraphSpec> CaptureNominateResultAsync(

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -205,7 +205,7 @@ namespace NuGet.PackageManagement.VisualStudio
             }
             else
             {
-                sources = HandleClear(sources);
+                sources = VSRestoreSettingsUtilities.HandleClear(sources);
             }
 
             // Add additional sources
@@ -226,7 +226,7 @@ namespace NuGet.PackageManagement.VisualStudio
             }
             else
             {
-                fallbackFolders = HandleClear(fallbackFolders);
+                fallbackFolders = VSRestoreSettingsUtilities.HandleClear(fallbackFolders);
             }
 
             // Add additional fallback folders
@@ -238,16 +238,6 @@ namespace NuGet.PackageManagement.VisualStudio
         private static bool ShouldReadFromSettings(IEnumerable<string> values)
         {
             return !values.Any() && values.All(e => !StringComparer.OrdinalIgnoreCase.Equals("CLEAR", e));
-        }
-
-        private static IEnumerable<string> HandleClear(IEnumerable<string> values)
-        {
-            if (values.Any(e => StringComparer.OrdinalIgnoreCase.Equals("CLEAR", e)))
-            {
-                return Enumerable.Empty<string>();
-            }
-
-            return values;
         }
 
         private IList<string> GetConfigFilePaths(ISettings settings)
