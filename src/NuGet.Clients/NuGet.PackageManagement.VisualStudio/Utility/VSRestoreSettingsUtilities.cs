@@ -46,7 +46,7 @@ namespace NuGet.PackageManagement.VisualStudio
             var readingAdditional = false;
             foreach (var entry in entries)
             {
-                if (StringComparer.OrdinalIgnoreCase.Equals(AdditionalValue, entry))
+                if (StringComparer.Ordinal.Equals(AdditionalValue, entry))
                 {
                     readingAdditional = true;
                 }
