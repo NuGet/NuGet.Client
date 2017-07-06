@@ -310,7 +310,7 @@ namespace NuGet.SolutionRestoreManager
 
         /// <summary>
         /// The result will contain CLEAR and no sources specified in RestoreSources if the clear keyword is in it.
-        /// If there are additional sources specified, the value RestoreAdditionalProjectSources will be set in the result and then all the additional sources will follow
+        /// If there are additional sources specified, the value AdditionalValue will be set in the result and then all the additional sources will follow
         /// </summary>
         private static IEnumerable<string> GetRestoreSources(IVsTargetFrameworks tfms)
         {
@@ -323,7 +323,7 @@ namespace NuGet.SolutionRestoreManager
 
         /// <summary>
         /// The result will contain CLEAR and no sources specified in RestoreFallbackFolders if the clear keyword is in it.
-        /// If there are additional fallback folders specified, the value RestoreAdditionalProjectFallbackFolders will be set in the result and then all the additional fallback folders will follow
+        /// If there are additional fallback folders specified, the value AdditionalValue will be set in the result and then all the additional fallback folders will follow
         /// </summary>
         private static IEnumerable<string> GetRestoreFallbackFolders(IVsTargetFrameworks tfms)
         {
