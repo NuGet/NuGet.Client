@@ -52,18 +52,18 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
             yield return new object[]
             {
-                new string[] { @"Clear", "RestoreAdditionalProjectSources", @"C:\additionalSource" },
+                new string[] { @"Clear", VSRestoreSettingsUtilities.AdditionalValue, @"C:\additionalSource" },
                 new string[] { @"C:\additionalSource" }
             };
 
             yield return new object[] {
-                new string[] { @"C:\source1", "RestoreAdditionalProjectSources",@"C:\additionalSource" },
+                new string[] { @"C:\source1", VSRestoreSettingsUtilities.AdditionalValue, @"C:\additionalSource" },
                 new string[] { @"C:\source1" ,@"C:\additionalSource" }
             };
 
             yield return new object[]
             {
-                new string[] { "RestoreAdditionalProjectSources", @"C:\additionalSource" },
+                new string[] { VSRestoreSettingsUtilities.AdditionalValue, @"C:\additionalSource" },
                 new string[] { NuGetConstants.V3FeedUrl, @"C:\additionalSource" }
             };
         }
@@ -107,18 +107,18 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
             yield return new object[]
             {
-                new string[] { @"Clear", "RestoreAdditionalProjectFallbackFolders", @"C:\additionalFallback" },
+                new string[] { @"Clear", VSRestoreSettingsUtilities.AdditionalValue, @"C:\additionalFallback" },
                 new string[] { @"C:\additionalFallback" }
             };
 
             yield return new object[] {
-                new string[] { @"C:\fallback1", "RestoreAdditionalProjectFallbackFolders", @"C:\additionalFallback" },
+                new string[] { @"C:\fallback1", VSRestoreSettingsUtilities.AdditionalValue, @"C:\additionalFallback" },
                 new string[] { @"C:\fallback1", @"C:\additionalFallback" }
             };
 
             yield return new object[]
             {
-                new string[] { "RestoreAdditionalProjectFallbackFolders", @"C:\additionalFallback" },
+                new string[] { VSRestoreSettingsUtilities.AdditionalValue, @"C:\additionalFallback" },
                 new string[] { @"C:\defaultFallback", @"C:\additionalFallback" }
             };
         }

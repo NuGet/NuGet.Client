@@ -15,8 +15,7 @@ namespace NuGet.PackageManagement.VisualStudio
 {
     public class VSRestoreSettingsUtilities
     {
-        private static string RestoreAdditionalProjectFallbackFolders = nameof(RestoreAdditionalProjectFallbackFolders);
-        private static string RestoreAdditionalProjectSources = nameof(RestoreAdditionalProjectSources);
+        public static string AdditionalValue = "$Additional$";
 
         public static string GetPackagesPath(ISettings settings, PackageSpec project)
         {
@@ -32,30 +31,46 @@ namespace NuGet.PackageManagement.VisualStudio
                 path: project.RestoreMetadata.PackagesPath);
         }
 
-        public static IList<PackageSource> GetSources(ISettings settings, PackageSpec project)
+        /// <summary>
+        /// This method receives the entries in the following format
+        /// [ [ [values..] AdditionalValue ] additionalValues..]
+        /// It then outputs a tuple where the entries before AdditionalValue are in Item1 and the additionalValues are in item2.
+        /// All values are optional.
+        /// For correctness the input to this method should have been created by calling <see cref="GetEntriesWithAdditional(string[], string[])"/>
+        /// </summary>
+        private static Tuple<IList<string>, IList<string>> ProcessEntriesWithAdditional(IEnumerable<string> entries)
         {
-            var sources = new List<string>();
-            var additionalSources = new List<string>();
+            var actualEntries = new List<string>();
+            var additionalEntries = new List<string>();
 
-            var readingAdditionalSources = false;
-            foreach (var source in project.RestoreMetadata.Sources)
+            var readingAdditional = false;
+            foreach (var entry in entries)
             {
-                if (StringComparer.OrdinalIgnoreCase.Equals(RestoreAdditionalProjectSources,source.Source))
+                if (StringComparer.OrdinalIgnoreCase.Equals(AdditionalValue, entry))
                 {
-                    readingAdditionalSources = true;
+                    readingAdditional = true;
                 }
                 else
                 {
-                    if (readingAdditionalSources)
+                    if (readingAdditional)
                     {
-                        additionalSources.Add(source.Source);
+                        additionalEntries.Add(entry);
                     }
                     else
                     {
-                        sources.Add(source.Source);
+                        actualEntries.Add(entry);
                     }
                 }
             }
+
+            return new Tuple<IList<string>, IList<string>>(actualEntries, additionalEntries);
+        }
+
+        public static IList<PackageSource> GetSources(ISettings settings, PackageSpec project)
+        {
+            var results = ProcessEntriesWithAdditional(project.RestoreMetadata.Sources.Select(e => e.Source).ToList());
+            var sources = results.Item1;
+            var additionalSources = results.Item2;
 
             var processedSources = (
                         ShouldReadFromSettings(sources) ?
@@ -73,28 +88,10 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public static IList<string> GetFallbackFolders(ISettings settings, PackageSpec project)
         {
-            var fallbackFolders = new List<string>();
-            var additionalFallbackFolders = new List<string>();
+            var results = ProcessEntriesWithAdditional(project.RestoreMetadata.FallbackFolders);
+            var fallbackFolders = results.Item1;
+            var additionalFallbackFolders = results.Item2;
 
-            var readingAdditionalFallbackFolders = false;
-            foreach (var fallbackFolder in project.RestoreMetadata.FallbackFolders)
-            {
-                if (StringComparer.OrdinalIgnoreCase.Equals(RestoreAdditionalProjectFallbackFolders,fallbackFolder))
-                {
-                    readingAdditionalFallbackFolders = true;
-                }
-                else
-                {
-                    if (readingAdditionalFallbackFolders)
-                    {
-                        additionalFallbackFolders.Add(fallbackFolder);
-                    }
-                    else
-                    {
-                        fallbackFolders.Add(fallbackFolder);
-                    }
-                }
-            }
 
             var processedFallbackFolders = (
                         ShouldReadFromSettings(fallbackFolders) ?
@@ -125,6 +122,20 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             return values;
+        }
+
+
+        /// <summary>
+        /// This method combine the values and additionalValues into a format as below
+        /// [ [ [values..] AdditionalValue ] additionalValues..]
+        /// IF additionalValues does not have any elements then the additionalValue keyword will not be added, the return value will be equivalent to the first element, whatever it may be.
+        /// The <see cref="ProcessEntriesWithAdditional(IEnumerable{string})"/>does the reverse.
+        /// </summary>
+        public static IEnumerable<string> GetEntriesWithAdditional(string[] values, string[] additional)
+        {
+            return additional.Length != 0 ?
+                (values.Concat(new string[] { AdditionalValue }).Concat(additional)) :
+                values;
         }
     }
 }

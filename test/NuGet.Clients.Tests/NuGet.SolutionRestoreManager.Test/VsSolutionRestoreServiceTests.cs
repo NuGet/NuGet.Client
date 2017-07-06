@@ -553,7 +553,7 @@ namespace NuGet.SolutionRestoreManager.Test
                     MSBuildStringUtility.Split(restoreSources)).
                 Concat(
                 restoreAdditionalProjectSources != null ?
-                    new List<string>() { "RestoreAdditionalProjectSources" }.Concat(MSBuildStringUtility.Split(restoreAdditionalProjectSources)):
+                    new List<string>() { VSRestoreSettingsUtilities.AdditionalValue }.Concat(MSBuildStringUtility.Split(restoreAdditionalProjectSources)):
                     new string[] { }
                 );
 
@@ -567,7 +567,7 @@ namespace NuGet.SolutionRestoreManager.Test
                     MSBuildStringUtility.Split(restoreFallbackFolders)).
                 Concat(
                 restoreAdditionalFallbackFolders != null ?
-                    new List<string>() { "RestoreAdditionalProjectFallbackFolders" }.Concat(MSBuildStringUtility.Split(restoreAdditionalFallbackFolders)) :
+                    new List<string>() { VSRestoreSettingsUtilities.AdditionalValue }.Concat(MSBuildStringUtility.Split(restoreAdditionalFallbackFolders)) :
                     new string[] { }
                 );
 
