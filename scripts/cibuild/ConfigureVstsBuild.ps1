@@ -37,13 +37,13 @@ Function Get-Version {
         [string]$build
     )
         Write-Host "Evaluating the new VSIX Version : ProductVersion $ProductVersion, build $build"
-        # Generate the new minor version: 4.0.0 => 40000, 4.11.5 => 41105. 
-        # This assumes we only get to NuGet major/minor 99 at worst, otherwise the logic breaks. 
+        # Generate the new minor version: 4.0.0 => 40000, 4.11.5 => 41105.
+        # This assumes we only get to NuGet major/minor 99 at worst, otherwise the logic breaks.
         #The final version for NuGet 4.0.0, build number 3128 would be 15.0.40000.3128
-        $finalVersion = "15.0.$((-join ($ProductVersion -split '\.' | %{ '{0:D2}' -f ($_ -as [int]) } )).TrimStart("0")).$build"    
-    
+        $finalVersion = "15.0.$((-join ($ProductVersion -split '\.' | %{ '{0:D2}' -f ($_ -as [int]) } )).TrimStart("0")).$build"
+
         Write-Host "The new VSIX Version is: $finalVersion"
-        return $finalVersion    
+        return $finalVersion
 }
 
 Function Update-VsixVersion {
@@ -76,7 +76,7 @@ Function Print-GitLog {
     $mdFolder = [System.IO.Path]::Combine($env:SYSTEM_DEFAULTWORKINGDIRECTORY, 'MicroBuild', 'Output')
     New-Item -ItemType Directory -Force -Path $mdFolder | Out-Null
     $mdFile = Join-Path $mdFolder 'GitLog.md'
-    & git log -1 --pretty=format:' Author: %an%n Commit: [%H](https://github.com/NuGet/NuGet.Client/commit/%H)%n Message: %s' 2>&1  | Set-Content $mdFile 
+    & git log -1 --pretty=format:' Author: %an%n Commit: [%H](https://github.com/NuGet/NuGet.Client/commit/%H)%n Message: %s' 2>&1  | Set-Content $mdFile
     Write-Host "##vso[task.addattachment type=Distributedtask.Core.Summary;name=Associated changes;]$mdFile"
 }
 
@@ -97,7 +97,7 @@ $NuGetClientRoot = $env:BUILD_REPOSITORY_LOCALPATH
 $Submodules = Join-Path $NuGetClientRoot submodules -Resolve
 
 $NuGetLocalization = Join-Path $Submodules NuGet.Build.Localization -Resolve
-$NuGetLocalizationRepoBranch = 'master'
+$NuGetLocalizationRepoBranch = 'release-4.3.0-preview4'
 $updateOpts = 'pull', 'origin', $NuGetLocalizationRepoBranch
 
 Write-Host "git update NuGet.Build.Localization at $NuGetLocalization"
@@ -144,7 +144,7 @@ if ($BuildRTM -eq 'true')
     $currentBuild = [System.Decimal]::Parse($json.BuildNumber)
     # Set the $(Revision) build variable in VSTS build
     Write-Host "##vso[task.setvariable variable=Revision;]$currentBuild"
-    Write-Host "##vso[build.updatebuildnumber]$currentBuild" 
+    Write-Host "##vso[build.updatebuildnumber]$currentBuild"
     $oldBuildOutputDirectory = Split-Path -Path $BuildInfoJsonFile
     $branchDirectory = Split-Path -Path $oldBuildOutputDirectory
     $newBuildOutputFolder =  Join-Path $branchDirectory $currentBuild
@@ -157,7 +157,7 @@ if ($BuildRTM -eq 'true')
     {
         Rename-Item $oldBuildOutputDirectory $currentBuild
     }
-    
+
 }
 else
 {
@@ -174,7 +174,7 @@ else
         BuildBranch = $env:BUILD_SOURCEBRANCHNAME
         LocalizationRepositoryBranch = $NuGetLocalizationRepoBranch
         LocalizationRepositoryCommitHash = $LocalizationRepoCommitHash
-    }   
+    }
 
     New-Item $BuildInfoJsonFile -Force
     $jsonRepresentation | ConvertTo-Json | Set-Content $BuildInfoJsonFile
