@@ -817,7 +817,6 @@ namespace NuGet.Commands
             }
         }
 
-
         /// <summary>
         /// Function used to display errors and warnings at the end of restore operation.
         /// The errors and warnings are read from the assets file based on restore result.
@@ -828,6 +827,7 @@ namespace NuGet.Commands
         {
             var logMessages = (lockFile?.LogMessages ?? Enumerable.Empty<IAssetsLogMessage>())
                 .Select(m => m.AsRestoreLogMessage());
+
             return logger.LogMessagesAsync(logMessages);
         }
     }
