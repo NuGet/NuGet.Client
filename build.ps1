@@ -47,10 +47,10 @@ To troubleshoot build issues
 #>
 [CmdletBinding()]
 param (
-    [ValidateSet("debug", "release")]
+    [ValidateSet('debug', 'release')]
     [Alias('c')]
     [string]$Configuration,
-    [ValidateSet("release","rtm", "rc", "rc1", "rc2", "rc3", "rc4", "beta", "beta1", "beta2", "final", "preview1", "preview2", "preview3", "xprivate", "zlocal")]
+    [ValidatePattern('^(beta|final|preview|rc|release|rtm|xprivate|zlocal)([0-9]*)$')]
     [Alias('l')]
     [string]$ReleaseLabel = 'zlocal',
     [Alias('n')]
@@ -166,7 +166,7 @@ Invoke-BuildStep 'Building nuget.tools.vsix for Insertion' {
 
     # Build and (If not $SkipUnitTest) Pack, Core unit tests, and Unit tests for VS 15.0
     Trace-Log ". `"$MSBuildExe`" build\build.proj /t:BuildVS15 /p:Configuration=$Configuration /p:ReleaseLabel=$ReleaseLabel /p:BuildNumber=$BuildNumber /p:ExcludeTestProjects=true /p:IsInsertable=true /v:m /m:1"
-    & $MSBuildExe build\build.proj /t:BuildVS15 /p:Configuration=$Configuration /p:ReleaseLabel=$ReleaseLabel /p:BuildNumber=$BuildNumber /p:ExcludeTestProjects=true /p:IsInsertable=true /v:m /m:1 
+    & $MSBuildExe build\build.proj /t:BuildVS15 /p:Configuration=$Configuration /p:ReleaseLabel=$ReleaseLabel /p:BuildNumber=$BuildNumber /p:ExcludeTestProjects=true /p:IsInsertable=true /v:m /m:1
 
     if (-not $?)
     {
@@ -250,7 +250,7 @@ Invoke-BuildStep 'Packing VS15 RTM' {
 
     # Build and (If not $SkipUnitTest) Pack, Core unit tests, and Unit tests for VS 15.0
     Trace-Log ". `"$MSBuildExe`" build\build.proj /t:BuildVS15`;Pack /p:Configuration=$Configuration /p:BuildRTM=true /p:ReleaseLabel=$ReleaseLabel /p:BuildNumber=$BuildNumber /p:ExcludeTestProjects=true /v:m /m:1"
-    & $MSBuildExe build\build.proj /t:BuildVS15`;Pack /p:Configuration=$Configuration /p:BuildRTM=true  /p:ReleaseLabel=$ReleaseLabel /p:BuildNumber=$BuildNumber /p:ExcludeTestProjects=true /v:m /m:1 
+    & $MSBuildExe build\build.proj /t:BuildVS15`;Pack /p:Configuration=$Configuration /p:BuildRTM=true  /p:ReleaseLabel=$ReleaseLabel /p:BuildNumber=$BuildNumber /p:ExcludeTestProjects=true /v:m /m:1
 
     if (-not $?)
     {
