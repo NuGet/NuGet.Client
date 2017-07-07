@@ -96,7 +96,7 @@ namespace NuGet.Commands
                     if (NoOpRestoreUtilities.VerifyAssetsAndMSBuildFilesAndPackagesArePresent(_request))
                     {
                         // Replay Warnings and Errors from an existing lock file in case of a no-op.
-                        await MSBuildRestoreUtility.ReplayWarningsAndErrors(_request.ExistingLockFile, _logger);
+                        await MSBuildRestoreUtility.ReplayWarningsAndErrorsAsync(_request.ExistingLockFile, _logger);
 
                         restoreTime.Stop();
 

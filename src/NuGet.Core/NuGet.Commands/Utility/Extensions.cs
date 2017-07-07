@@ -61,6 +61,12 @@ namespace NuGet.Commands
             }
         }
 
+        /// <summary>
+        /// Converts an IAssetsLogMessage into a RestoreLogMessage.
+        /// This is needed when an IAssetsLogMessage needs to be logged and loggers do not have visibility to IAssetsLogMessage.
+        /// </summary>
+        /// <param name="logMessage">IAssetsLogMessage to be converted.</param>
+        /// <returns>RestoreLogMessage equivalent to the IAssetsLogMessage.</returns>
         public static RestoreLogMessage AsRestoreLogMessage(this IAssetsLogMessage logMessage)
         {
             return new RestoreLogMessage(logMessage.Level, logMessage.Code, logMessage.Message)

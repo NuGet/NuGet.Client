@@ -1831,7 +1831,7 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
-        public void MSBuildRestoreUtility_ReplayWarningsAndErrors_Minimal(string property)
+        public void MSBuildRestoreUtility_ReplayWarningsAndErrors_Minimal()
         {
             // Arrange
             var logger = new Mock<ILogger>();
@@ -1845,7 +1845,7 @@ namespace NuGet.Commands.Test
             };
 
             // Act
-            var codes = MSBuildRestoreUtility.ReplayWarningsAndErrors(lockFile, logger.Object);
+            var codes = MSBuildRestoreUtility.ReplayWarningsAndErrorsAsync(lockFile, logger.Object);
 
             // Assert
             logger.Verify(x => x.Log(It.Is<RestoreLogMessage>(l => l.Level == LogLevel.Warning && l.Message == "Test Warning" && l.Code == NuGetLogCode.NU1500)), 
@@ -1859,7 +1859,7 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
-        public void MSBuildRestoreUtility_ReplayWarningsAndErrors_Full(string property)
+        public void MSBuildRestoreUtility_ReplayWarningsAndErrors_Full()
         {
             // Arrange
             var logger = new Mock<ILogger>();
@@ -1897,7 +1897,7 @@ namespace NuGet.Commands.Test
             };
 
             // Act
-            var codes = MSBuildRestoreUtility.ReplayWarningsAndErrors(lockFile, logger.Object);
+            var codes = MSBuildRestoreUtility.ReplayWarningsAndErrorsAsync(lockFile, logger.Object);
 
             // Assert
             logger.Verify(x => x.Log(It.Is<RestoreLogMessage>(l => l.Level == LogLevel.Warning && 
