@@ -96,7 +96,7 @@ namespace NuGet.Commands
                     if (NoOpRestoreUtilities.VerifyAssetsAndMSBuildFilesAndPackagesArePresent(_request))
                     {
                         // Replay Warnings and Errors from an existing lock file in case of a no-op.
-                        ReplayWarningsAndErrors();
+                        await MSBuildRestoreUtility.ReplayWarningsAndErrors(_request.ExistingLockFile, _logger);
 
                         restoreTime.Stop();
 
@@ -209,29 +209,6 @@ namespace NuGet.Commands
                 cacheFilePath,
                 _request.ProjectStyle,
                 restoreTime.Elapsed);
-        }
-        
-        private void ReplayWarningsAndErrors()
-        {
-            var logMessages = _request.ExistingLockFile?.LogMessages ?? Enumerable.Empty<IAssetsLogMessage>();
-
-            foreach (var logMessage in logMessages)
-            {
-                var restoreLogMessage = new RestoreLogMessage(logMessage.Level, logMessage.Code, logMessage.Message)
-                {
-                    ProjectPath = logMessage.ProjectPath,
-                    WarningLevel = logMessage.WarningLevel,
-                    FilePath = logMessage.FilePath,
-                    LibraryId = logMessage.LibraryId,
-                    TargetGraphs = logMessage.TargetGraphs,
-                    StartLineNumber = logMessage.StartLineNumber,
-                    StartColumnNumber = logMessage.StartColumnNumber,
-                    EndLineNumber = logMessage.EndLineNumber,
-                    EndColumnNumber = logMessage.EndColumnNumber
-                };
-
-                _logger.LogAsync(restoreLogMessage);
-            }
         }
 
         private KeyValuePair<CacheFile, bool> EvaluateCacheFile()
