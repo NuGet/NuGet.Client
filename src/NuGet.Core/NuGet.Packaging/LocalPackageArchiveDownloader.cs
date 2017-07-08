@@ -154,7 +154,7 @@ namespace NuGet.Packaging
             {
                 await _sourceStream.Value.CopyToAsync(
                     destination,
-                    bufferSize: 4096,
+                    bufferSize: 8192,
                     cancellationToken: cancellationToken);
             }
 
