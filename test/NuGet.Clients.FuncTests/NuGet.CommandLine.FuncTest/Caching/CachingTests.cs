@@ -458,7 +458,6 @@ namespace NuGet.CommandLine.Test.Caching
             // Assert
             foreach (var validation in validations)
             {
-
                 validation.Assert(CachingValidationType.CommandSucceeded, true);
                 validation.Assert(CachingValidationType.DirectDownloadFilesDoNotExist, success);
             }
