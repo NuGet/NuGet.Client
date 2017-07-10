@@ -1,4 +1,4 @@
-﻿using System.Threading.Tasks;
+using System.Threading.Tasks;
 using NuGet.Test.Utility;
 
 namespace NuGet.CommandLine.Test.Caching
@@ -6,6 +6,8 @@ namespace NuGet.CommandLine.Test.Caching
     public class AllowsMissingPackageOnSourceTest : ICachingTest
     {
         public string Description => "Allows the requested package to be missing package on the source";
+
+        public int IterationCount => 1;
 
         public async Task<string> PrepareTestAsync(CachingTestContext context, ICachingCommand command)
         {

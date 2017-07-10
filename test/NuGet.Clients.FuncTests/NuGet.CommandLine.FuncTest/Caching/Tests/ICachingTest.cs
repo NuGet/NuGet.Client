@@ -1,4 +1,4 @@
-﻿using System.Threading.Tasks;
+using System.Threading.Tasks;
 using NuGet.Test.Utility;
 
 namespace NuGet.CommandLine.Test.Caching
@@ -13,6 +13,12 @@ namespace NuGet.CommandLine.Test.Caching
         /// Gets the display name for this test.
         /// </summary>
         string Description { get; }
+
+        /// <summary>
+        /// Iteration count. How many times should the same commmand be executed.
+        /// </summary>
+        /// 
+        int IterationCount { get;  }
 
         /// <summary>
         /// Prepares the test context or file system for the nuget.exe command.

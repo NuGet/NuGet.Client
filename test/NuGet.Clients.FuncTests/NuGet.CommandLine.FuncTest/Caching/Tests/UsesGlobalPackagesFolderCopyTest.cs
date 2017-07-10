@@ -1,4 +1,4 @@
-﻿using System.Threading.Tasks;
+using System.Threading.Tasks;
 using NuGet.Test.Utility;
 
 namespace NuGet.CommandLine.Test.Caching
@@ -6,6 +6,8 @@ namespace NuGet.CommandLine.Test.Caching
     public class UsesGlobalPackagesFolderCopyTest : ICachingTest
     {
         public string Description => "Uses the copy of the package from the global packages folder instead of the source";
+
+        public int IterationCount => 1;
 
         public async Task<string> PrepareTestAsync(CachingTestContext context, ICachingCommand command)
         {

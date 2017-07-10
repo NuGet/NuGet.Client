@@ -1,4 +1,4 @@
-﻿using System.Threading.Tasks;
+using System.Threading.Tasks;
 using NuGet.Test.Utility;
 
 namespace NuGet.CommandLine.Test.Caching
@@ -6,6 +6,8 @@ namespace NuGet.CommandLine.Test.Caching
     public class WritesToHttpCacheTest : ICachingTest
     {
         public string Description => "Writes the installed package to the HTTP cache";
+
+        public int IterationCount => 1;
 
         public Task<string> PrepareTestAsync(CachingTestContext context, ICachingCommand command)
         {

@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using NuGet.Test.Utility;
@@ -8,6 +8,8 @@ namespace NuGet.CommandLine.Test.Caching
     public class CleansUpDirectDownloadTest : ICachingTest
     {
         public string Description => "Cleans up leftover .nugetdirectdownload files in the destination directory";
+
+        public int IterationCount => 1;
 
         public Task<string> PrepareTestAsync(CachingTestContext context, ICachingCommand command)
         {

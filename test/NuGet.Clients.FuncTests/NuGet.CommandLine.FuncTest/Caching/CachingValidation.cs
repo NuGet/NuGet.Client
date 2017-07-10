@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 namespace NuGet.CommandLine.Test.Caching
@@ -77,6 +77,14 @@ namespace NuGet.CommandLine.Test.Caching
                 {
                     True = "The direct download files were cleaned up.",
                     False = "The direct download files were not cleaned up."
+                }
+            },
+            {
+                CachingValidationType.RestoreDoesNotNoOp,
+                new Messages
+                {
+                    True = "Restore did not no-op.",
+                    False = "Restore no-oped."
                 }
             }
         };

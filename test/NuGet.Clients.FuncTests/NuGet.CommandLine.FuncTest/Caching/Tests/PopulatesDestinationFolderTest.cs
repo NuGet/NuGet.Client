@@ -1,4 +1,4 @@
-﻿using System.Threading.Tasks;
+using System.Threading.Tasks;
 using NuGet.Test.Utility;
 
 namespace NuGet.CommandLine.Test.Caching
@@ -6,6 +6,8 @@ namespace NuGet.CommandLine.Test.Caching
     public class InstallsToDestinationFolderTest : ICachingTest
     {
         public string Description => "Installs the requested package to the destination folder";
+
+        public int IterationCount => 1;
 
         public Task<string> PrepareTestAsync(CachingTestContext context, ICachingCommand command)
         {

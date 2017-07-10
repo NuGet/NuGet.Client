@@ -1,4 +1,4 @@
-﻿using System.Threading.Tasks;
+using System.Threading.Tasks;
 using NuGet.Test.Utility;
 
 namespace NuGet.CommandLine.Test.Caching
@@ -6,6 +6,8 @@ namespace NuGet.CommandLine.Test.Caching
     public class UsesHttpCacheCopyTest : ICachingTest
     {
         public string Description => "Use the copy of the package in the HTTP cache instead of the source";
+
+        public int IterationCount => 1;
 
         public Task<string> PrepareTestAsync(CachingTestContext context, ICachingCommand command)
         {
