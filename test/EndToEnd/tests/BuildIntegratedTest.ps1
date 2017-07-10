@@ -499,11 +499,10 @@ function Test-InconsistencyBetweenAssetsAndProjectFile{
     [SkipTestForVS14()]
     param()
 
-    $projectT = New-Project PackageReferenceClassLibrary #| Select-Object UniqueName, ProjectName, FullName
+    $projectT = New-Project PackageReferenceClassLibrary
     $projectT | Install-Package Newtonsoft.Json -Version 9.0.1
     $solutionFile = Get-SolutionFullName
     $projectFullName = $projectT.FullName
-    
     $projectT.Save();
     
     #Pre-conditions
@@ -512,36 +511,31 @@ function Test-InconsistencyBetweenAssetsAndProjectFile{
     $solutionFile = Get-SolutionFullName
     SaveAs-Solution($solutionFile)
 
-    Write-Host $projectFullName
     Close-Solution
 
-    #Act
-    Remove-PackageReferences $projectFullName
-    Write-Host $solutionFile
+    Remove-PackageReference $projectFullName Newtonsoft.Json
     Open-Solution $solutionFile
     
     $project = Get-Project
+    #Act
+    
     $project | Install-Package Newtonsoft.Json -Version 9.0.1
 
     #Assert
     Assert-True ($project | Test-InstalledPackage -Id Newtonsoft.Json -Version 9.0.1) -Message 'Test package should be installed'
 } 
 
-function Remove-PackageReferences {
+function Remove-PackageReference {
     param(
         [parameter(Mandatory = $true)]
-        $projectPath
+        $projectPath,
+        [parameter(Mandatory = $true)]
+        $packageReference
     )
-
-    Write-Host "ProjectPath: $projectPath"
-
     $doc = [xml](Get-Content $projectPath)
-    
     $ns = New-Object System.Xml.XmlNamespaceManager($doc.NameTable)
     $ns.AddNamespace("ns", $doc.DocumentElement.NamespaceURI)
-    
-    $node = $doc.SelectSingleNode("//ns:PackageReference[@Include='Newtonsoft.Json']",$ns)
-    Write-Host $node
+    $node = $doc.SelectSingleNode("//ns:PackageReference[@Include='$packageReference']",$ns)
     $node.ParentNode.RemoveChild($node)
 
     $doc.Save($projectPath)
