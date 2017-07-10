@@ -493,55 +493,46 @@ function Test-BuildIntegratedClean {
     #Assert
     Assert-ProjectCacheFileNotExists $project
 }
-
-
 function Test-InconsistencyBetweenAssetsAndProjectFile{
     [SkipTestForVS14()]
     param()
 
-    $projectT = New-Project PackageReferenceClassLibrary #| Select-Object UniqueName, ProjectName, FullName
+    $projectT = New-Project PackageReferenceClassLibrary
     $projectT | Install-Package Newtonsoft.Json -Version 9.0.1
     $solutionFile = Get-SolutionFullName
     $projectFullName = $projectT.FullName
-    
     $projectT.Save();
     
-    #Pre-conditions
+    #Pre-condition
     Assert-True ($projectT | Test-InstalledPackage -Id Newtonsoft.Json -Version 9.0.1) -Message 'Test package should be installed'
     
-    $solutionFile = Get-SolutionFullName
     SaveAs-Solution($solutionFile)
-
-    Write-Host $projectFullName
     Close-Solution
+    Remove-PackageReference $projectFullName Newtonsoft.Json
+    Open-Solution $solutionFile    
+    $project = Get-Project
+
+    #Pre-condition
+    Assert-False ($project | Test-InstalledPackage -Id Newtonsoft.Json -Version 9.0.1) -Message 'Test package should not be installed'
 
     #Act
-    Remove-PackageReferences $projectFullName
-    Write-Host $solutionFile
-    Open-Solution $solutionFile
-    
-    $project = Get-Project
     $project | Install-Package Newtonsoft.Json -Version 9.0.1
 
     #Assert
     Assert-True ($project | Test-InstalledPackage -Id Newtonsoft.Json -Version 9.0.1) -Message 'Test package should be installed'
-} 
+}
 
-function Remove-PackageReferences {
+function Remove-PackageReference {
     param(
         [parameter(Mandatory = $true)]
-        $projectPath
+        $projectPath,
+        [parameter(Mandatory = $true)]
+        $packageReference
     )
-
-    Write-Host "ProjectPath: $projectPath"
-
     $doc = [xml](Get-Content $projectPath)
-    
     $ns = New-Object System.Xml.XmlNamespaceManager($doc.NameTable)
     $ns.AddNamespace("ns", $doc.DocumentElement.NamespaceURI)
-    
-    $node = $doc.SelectSingleNode("//ns:PackageReference[@Include='Newtonsoft.Json']",$ns)
-    Write-Host $node
+    $node = $doc.SelectSingleNode("//ns:PackageReference[@Include='$packageReference']",$ns)
     $node.ParentNode.RemoveChild($node)
 
     $doc.Save($projectPath)
