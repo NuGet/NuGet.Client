@@ -152,5 +152,15 @@ namespace API.Test
                            batchStartIds[0].Equals(batchEndIds[0], StringComparison.Ordinal);
                 });
         }
+
+        public static IVsProjectJsonToPackageReferenceMigrateResult MigrateJsonProject(string projectName)
+        {
+            var migrator = ServiceLocator.GetComponent<IVsProjectJsonToPackageReferenceMigrator>();
+            return ThreadHelper.JoinableTaskFactory.Run(async () =>
+            {
+                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                return (IVsProjectJsonToPackageReferenceMigrateResult) await migrator.MigrateProjectJsonToPackageReferenceAsync(projectName);
+            });
+        }
     }
 }
