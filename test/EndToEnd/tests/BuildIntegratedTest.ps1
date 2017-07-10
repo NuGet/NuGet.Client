@@ -493,8 +493,6 @@ function Test-BuildIntegratedClean {
     #Assert
     Assert-ProjectCacheFileNotExists $project
 }
-
-
 function Test-InconsistencyBetweenAssetsAndProjectFile{
     [SkipTestForVS14()]
     param()
@@ -505,25 +503,24 @@ function Test-InconsistencyBetweenAssetsAndProjectFile{
     $projectFullName = $projectT.FullName
     $projectT.Save();
     
-    #Pre-conditions
+    #Pre-condition
     Assert-True ($projectT | Test-InstalledPackage -Id Newtonsoft.Json -Version 9.0.1) -Message 'Test package should be installed'
     
-    $solutionFile = Get-SolutionFullName
     SaveAs-Solution($solutionFile)
-
     Close-Solution
-
     Remove-PackageReference $projectFullName Newtonsoft.Json
-    Open-Solution $solutionFile
-    
+    Open-Solution $solutionFile    
     $project = Get-Project
+
+    #Pre-condition
+    Assert-False ($project | Test-InstalledPackage -Id Newtonsoft.Json -Version 9.0.1) -Message 'Test package should not be installed'
+
     #Act
-    
     $project | Install-Package Newtonsoft.Json -Version 9.0.1
 
     #Assert
     Assert-True ($project | Test-InstalledPackage -Id Newtonsoft.Json -Version 9.0.1) -Message 'Test package should be installed'
-} 
+}
 
 function Remove-PackageReference {
     param(
