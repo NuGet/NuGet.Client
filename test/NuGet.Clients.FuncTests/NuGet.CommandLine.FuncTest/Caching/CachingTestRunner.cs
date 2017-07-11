@@ -29,11 +29,10 @@ namespace NuGet.CommandLine.Test.Caching
 
                 tc.ClearHttpCache();
                 var validations = new List<CachingValidations>();
-                for(var i = 0; i < test.IterationCount; i++) { 
+                for (var i = 0; i < test.IterationCount; i++)
+                {
                     var args = await test.PrepareTestAsync(tc, command);
-
                     var result = tc.Execute(args);
-
                     validations.Add(test.Validate(tc, command, result));
                 }
 
@@ -44,8 +43,8 @@ namespace NuGet.CommandLine.Test.Caching
 
         public static async Task<IEnumerable<CachingValidations>> ExecuteAsync(Type testType, Type commandType, INuGetExe nuGetExe, CachingType caching, ServerType server)
         {
-            var test = (ICachingTest)Activator.CreateInstance(testType);
-            var command = (ICachingCommand)Activator.CreateInstance(commandType);
+            var test = (ICachingTest) Activator.CreateInstance(testType);
+            var command = (ICachingCommand) Activator.CreateInstance(commandType);
 
             return await ExecuteAsync(
                 test,
