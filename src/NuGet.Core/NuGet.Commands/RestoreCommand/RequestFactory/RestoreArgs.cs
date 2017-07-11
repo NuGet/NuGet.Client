@@ -212,7 +212,7 @@ namespace NuGet.Commands
                 request.ValidateRuntimeAssets = ValidateRuntimeAssets.Value;
             }
 
-            request.AllowNoOp = request.CacheContext.NoCache ? true : AllowNoOp;
+            request.AllowNoOp = (request.CacheContext.NoCache || request.CacheContext.DirectDownload) ? false : AllowNoOp;
             request.HideWarningsAndErrors = HideWarningsAndErrors;
         }
     }

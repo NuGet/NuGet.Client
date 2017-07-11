@@ -252,15 +252,15 @@ namespace NuGet.CommandLine.Test.Caching
         }
 
         [Theory]
-        [InlineData(typeof(RestoreProjectJsonCommand), CachingType.Default, ServerType.V2, true)]
-        [InlineData(typeof(RestoreProjectJsonCommand), CachingType.Default, ServerType.V3, true)]
-        [InlineData(typeof(RestoreProjectJsonCommand), CachingType.NoCache, ServerType.V2, true)]
-        [InlineData(typeof(RestoreProjectJsonCommand), CachingType.NoCache, ServerType.V3, true)]
-        [InlineData(typeof(RestoreProjectJsonCommand), CachingType.DirectDownload, ServerType.V2, true)]
-        [InlineData(typeof(RestoreProjectJsonCommand), CachingType.DirectDownload, ServerType.V3, true)]
-        [InlineData(typeof(RestoreProjectJsonCommand), CachingType.NoCache | CachingType.DirectDownload, ServerType.V2, true)]
-        [InlineData(typeof(RestoreProjectJsonCommand), CachingType.NoCache | CachingType.DirectDownload, ServerType.V3, true)]
-        public async Task NuGetExe_Caching_DoesNotNoOp(Type type, CachingType caching, ServerType server, bool success)
+        [InlineData(typeof(RestoreProjectJsonCommand), CachingType.Default, ServerType.V2, true, false)]
+        [InlineData(typeof(RestoreProjectJsonCommand), CachingType.Default, ServerType.V3, true, false)]
+        [InlineData(typeof(RestoreProjectJsonCommand), CachingType.NoCache, ServerType.V2, true, true)]
+        [InlineData(typeof(RestoreProjectJsonCommand), CachingType.NoCache, ServerType.V3, true, true)]
+        [InlineData(typeof(RestoreProjectJsonCommand), CachingType.DirectDownload, ServerType.V2, true, true)]
+        [InlineData(typeof(RestoreProjectJsonCommand), CachingType.DirectDownload, ServerType.V3, true, true)]
+        [InlineData(typeof(RestoreProjectJsonCommand), CachingType.NoCache | CachingType.DirectDownload, ServerType.V2, true, true)]
+        [InlineData(typeof(RestoreProjectJsonCommand), CachingType.NoCache | CachingType.DirectDownload, ServerType.V3, true, true)]
+        public async Task NuGetExe_Caching_DoesNotNoOp(Type type, CachingType caching, ServerType server, bool success, bool doesNotNoOp)
         {
             // Arrange
             var nuGetExe = await GetNuGetExeAsync();
@@ -274,14 +274,22 @@ namespace NuGet.CommandLine.Test.Caching
                 server);
 
             // Assert
-
+            var firstPass = true;
             foreach (var validation in validations)
             {
                 validation.Assert(CachingValidationType.CommandSucceeded, true);
                 validation.Assert(CachingValidationType.PackageInstalled, true);
                 validation.Assert(CachingValidationType.PackageFromGlobalPackagesFolderUsed, success);
                 validation.Assert(CachingValidationType.PackageFromSourceNotUsed, success);
-                validation.Assert(CachingValidationType.RestoreDoesNotNoOp, true);
+                if (firstPass)
+                {
+                    firstPass = false;
+                    validation.Assert(CachingValidationType.RestoreDoesNotNoOp, true);
+                }
+                else
+                {
+                    validation.Assert(CachingValidationType.RestoreDoesNotNoOp, doesNotNoOp);
+                }
             }
         }
 
