@@ -40,15 +40,11 @@ namespace API.Test
                 FormatAndCopyTemplateFiles("packagerefbaseduwpproject.csproj", projectName, solutionDir, targetPlatformVersion, targetPlatformMinVersion, projectName + ".csproj");
             }
             else
-            {                
+            {
                 FormatAndCopyTemplateFiles("project.json", projectName, solutionDir, targetPlatformVersion, targetPlatformMinVersion, "project.json");
                 FormatAndCopyTemplateFiles("projectjsonbaseduwpproject.csproj", projectName, solutionDir, targetPlatformVersion, targetPlatformMinVersion, projectName + ".csproj");
-                
-                
             }
 
-            
-            
             return Path.Combine(solutionDir, projectName + ".sln");
         }
 
@@ -74,6 +70,7 @@ namespace API.Test
             }
             File.WriteAllText(Path.Combine(finalDestinationDir, destFileName), contents);
         }
+
         public static string GetResourceAsString(string name)
         {
             var stream = typeof(UwpProjectTestsUtil).GetTypeInfo().Assembly.GetManifestResourceStream(name);

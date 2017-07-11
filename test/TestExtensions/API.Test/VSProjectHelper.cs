@@ -9,7 +9,6 @@ using EnvDTE;
 using EnvDTE80;
 using Microsoft.VisualStudio.Shell;
 using Task = System.Threading.Tasks.Task;
-using NuGet.Test.Utility;
 
 namespace API.Test
 {
@@ -55,7 +54,7 @@ namespace API.Test
             return ThreadHelper.JoinableTaskFactory.Run(async delegate
             {
                 await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                var pathToSln = UwpProjectTestsUtil.CreateUwpClassLibrary(projectName, targetPlatformVersion, targtetPlatformMinVersion);
+                var pathToSln = UwpProjectTestsUtil.CreateUwpClassLibrary(projectName, outputPath, targetPlatformVersion, targtetPlatformMinVersion);
                 VSSolutionHelper.OpenSolution(pathToSln);
                 var dte = ServiceLocator.GetDTE();
                 var dte2 = (DTE2)dte;
