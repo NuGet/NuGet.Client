@@ -256,8 +256,8 @@ namespace NuGet.CommandLine.Test.Caching
         [InlineData(typeof(RestoreProjectJsonCommand), CachingType.Default, ServerType.V3, true, false)]
         [InlineData(typeof(RestoreProjectJsonCommand), CachingType.NoCache, ServerType.V2, true, true)]
         [InlineData(typeof(RestoreProjectJsonCommand), CachingType.NoCache, ServerType.V3, true, true)]
-        [InlineData(typeof(RestoreProjectJsonCommand), CachingType.DirectDownload, ServerType.V2, true, true)]
-        [InlineData(typeof(RestoreProjectJsonCommand), CachingType.DirectDownload, ServerType.V3, true, true)]
+        [InlineData(typeof(RestoreProjectJsonCommand), CachingType.DirectDownload, ServerType.V2, true, false)]
+        [InlineData(typeof(RestoreProjectJsonCommand), CachingType.DirectDownload, ServerType.V3, true, false)]
         [InlineData(typeof(RestoreProjectJsonCommand), CachingType.NoCache | CachingType.DirectDownload, ServerType.V2, true, true)]
         [InlineData(typeof(RestoreProjectJsonCommand), CachingType.NoCache | CachingType.DirectDownload, ServerType.V3, true, true)]
         public async Task NuGetExe_Caching_DoesNotNoOp(Type type, CachingType caching, ServerType server, bool success, bool doesNotNoOp)
