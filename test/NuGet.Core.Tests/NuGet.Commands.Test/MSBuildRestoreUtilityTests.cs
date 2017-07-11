@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using FluentAssertions;
@@ -1848,14 +1849,14 @@ namespace NuGet.Commands.Test
             var codes = MSBuildRestoreUtility.ReplayWarningsAndErrorsAsync(lockFile, logger.Object);
 
             // Assert
-            logger.Verify(x => x.Log(It.Is<RestoreLogMessage>(l => l.Level == LogLevel.Warning && l.Message == "Test Warning" && l.Code == NuGetLogCode.NU1500)), 
+            logger.Verify(x => x.LogAsync(It.Is<RestoreLogMessage>(l => l.Level == LogLevel.Warning && l.Message == "Test Warning" && l.Code == NuGetLogCode.NU1500)), 
                 Times.Once);
-            logger.Verify(x => x.Log(It.Is<RestoreLogMessage>(l => l.Level == LogLevel.Error && l.Message == "Test Error" && l.Code == NuGetLogCode.NU1000)),
+            logger.Verify(x => x.LogAsync(It.Is<RestoreLogMessage>(l => l.Level == LogLevel.Error && l.Message == "Test Error" && l.Code == NuGetLogCode.NU1000)),
                 Times.Once);
-            logger.Verify(x => x.Log(It.Is<RestoreLogMessage>(l => l.Level == LogLevel.Debug)), Times.Never);
-            logger.Verify(x => x.Log(It.Is<RestoreLogMessage>(l => l.Level == LogLevel.Information)), Times.Never);
-            logger.Verify(x => x.Log(It.Is<RestoreLogMessage>(l => l.Level == LogLevel.Minimal)), Times.Never);
-            logger.Verify(x => x.Log(It.Is<RestoreLogMessage>(l => l.Level == LogLevel.Verbose)), Times.Never);
+            logger.Verify(x => x.LogAsync(It.Is<RestoreLogMessage>(l => l.Level == LogLevel.Debug)), Times.Never);
+            logger.Verify(x => x.LogAsync(It.Is<RestoreLogMessage>(l => l.Level == LogLevel.Information)), Times.Never);
+            logger.Verify(x => x.LogAsync(It.Is<RestoreLogMessage>(l => l.Level == LogLevel.Minimal)), Times.Never);
+            logger.Verify(x => x.LogAsync(It.Is<RestoreLogMessage>(l => l.Level == LogLevel.Verbose)), Times.Never);
         }
 
         [Fact]
@@ -1900,7 +1901,7 @@ namespace NuGet.Commands.Test
             var codes = MSBuildRestoreUtility.ReplayWarningsAndErrorsAsync(lockFile, logger.Object);
 
             // Assert
-            logger.Verify(x => x.Log(It.Is<RestoreLogMessage>(l => l.Level == LogLevel.Warning && 
+            logger.Verify(x => x.LogAsync(It.Is<RestoreLogMessage>(l => l.Level == LogLevel.Warning && 
             l.Message == "Test Warning" && 
             l.Code == NuGetLogCode.NU1500 &&
             l.EndColumnNumber == number &&
@@ -1914,7 +1915,7 @@ namespace NuGet.Commands.Test
             l.WarningLevel == WarningLevel.Important)),
                 Times.Once);
 
-            logger.Verify(x => x.Log(It.Is<RestoreLogMessage>(l => l.Level == LogLevel.Error &&
+            logger.Verify(x => x.LogAsync(It.Is<RestoreLogMessage>(l => l.Level == LogLevel.Error &&
             l.Message == "Test Error" &&
             l.Code == NuGetLogCode.NU1000 &&
             l.EndColumnNumber == number &&
@@ -1927,10 +1928,10 @@ namespace NuGet.Commands.Test
             l.TargetGraphs.SequenceEqual(targetGraphs))),
                 Times.Once);
 
-            logger.Verify(x => x.Log(It.Is<RestoreLogMessage>(l => l.Level == LogLevel.Debug)), Times.Never);
-            logger.Verify(x => x.Log(It.Is<RestoreLogMessage>(l => l.Level == LogLevel.Information)), Times.Never);
-            logger.Verify(x => x.Log(It.Is<RestoreLogMessage>(l => l.Level == LogLevel.Minimal)), Times.Never);
-            logger.Verify(x => x.Log(It.Is<RestoreLogMessage>(l => l.Level == LogLevel.Verbose)), Times.Never);
+            logger.Verify(x => x.LogAsync(It.Is<RestoreLogMessage>(l => l.Level == LogLevel.Debug)), Times.Never);
+            logger.Verify(x => x.LogAsync(It.Is<RestoreLogMessage>(l => l.Level == LogLevel.Information)), Times.Never);
+            logger.Verify(x => x.LogAsync(It.Is<RestoreLogMessage>(l => l.Level == LogLevel.Minimal)), Times.Never);
+            logger.Verify(x => x.LogAsync(It.Is<RestoreLogMessage>(l => l.Level == LogLevel.Verbose)), Times.Never);
         }
 
         [PlatformFact(Platform.Windows)]
