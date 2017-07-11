@@ -7,7 +7,7 @@ namespace NuGet.CommandLine.Test.Caching
     {
         public string Description => "Uses the copy of the package from the global packages folder instead of the source on every iteration";
 
-        public int IterationCount => 5;
+        public int IterationCount => 3;
 
         public async Task<string> PrepareTestAsync(CachingTestContext context, ICachingCommand command)
         {
