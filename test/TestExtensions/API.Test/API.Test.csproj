@@ -22,7 +22,6 @@
     <ProjectReference Include="$(NuGetClientsSrcDirectory)NuGet.VisualStudio\NuGet.VisualStudio.csproj">
       <EmbedInteropTypes>true</EmbedInteropTypes>
     </ProjectReference>
-    <ProjectReference Include="$(TestUtilitiesDirectory)\Test.Utility\Test.Utility.csproj" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(VisualStudioVersion)' == '15.0'">
