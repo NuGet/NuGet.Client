@@ -15,6 +15,7 @@
     <ResolveNuGetPackages>true</ResolveNuGetPackages>
     <SkipValidatePackageReferences>true</SkipValidatePackageReferences>
     <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
+    <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
   </PropertyGroup>
   <ItemGroup Condition="'$(VisualStudioVersion)' == '14.0'">
     <Reference Include="Microsoft.VisualStudio.VCProjectEngine, Version=14.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
@@ -222,9 +223,6 @@
     <Compile Include="VSSettings.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="project.json" />
-  </ItemGroup>
-  <ItemGroup>
     <EmbeddedResource Include="CommonResources.resx">
       <DependentUpon>CommonResources.cs</DependentUpon>
     </EmbeddedResource>
@@ -235,16 +233,22 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\NuGet.Core\NuGet.Indexing\NuGet.Indexing.csproj" />
+    <ProjectReference Include="..\..\NuGet.Core\NuGet.Indexing\NuGet.Indexing.csproj">
+      <Project>{a2b06fa8-bdbc-4459-a92a-161862b2aa97}</Project>
+      <Name>NuGet.Indexing</Name>
+    </ProjectReference>
     <ProjectReference Include="..\NuGet.Credentials\NuGet.Credentials.csproj">
       <Project>{32a23995-14c7-483b-98c3-0ae4185373ea}</Project>
       <Name>NuGet.Credentials</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\NuGet.VisualStudio.Common\NuGet.VisualStudio.Common.csproj">
+      <Project>{eea49a74-6efc-410e-9745-bad367ac151d}</Project>
+      <Name>NuGet.VisualStudio.Common</Name>
     </ProjectReference>
     <ProjectReference Include="..\NuGet.VisualStudio\NuGet.VisualStudio.csproj">
       <Project>{e5556bc6-a7fd-4d8e-8a7d-7648df1d7471}</Project>
       <Name>NuGet.VisualStudio</Name>
     </ProjectReference>
-    <ProjectReference Include="..\NuGet.VisualStudio.Common\NuGet.VisualStudio.Common.csproj" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\NuGet.Core\NuGet.Commands\NuGet.Commands.csproj">
@@ -296,6 +300,17 @@
     <Compile Include="$(SharedDirectory)\HashCodeCombiner.cs">
       <Link>HashCodeCombiner.cs</Link>
     </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.VisualStudio.Workspace.VSIntegration">
+      <Version>15.0.198-pre</Version>
+    </PackageReference>
+    <PackageReference Include="VSLangProj110">
+      <Version>11.0.61030</Version>
+    </PackageReference>
+    <PackageReference Include="VSLangProj2">
+      <Version>7.0.5000</Version>
+    </PackageReference>
   </ItemGroup>
   <Import Project="$(BuildCommonDirectory)common.targets" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
