@@ -13,9 +13,9 @@ using NuGet.VisualStudio;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
-    class VsCoreProjectSystem : IProjectSystemService
+    internal class VsCoreProjectSystem : IProjectSystemService
     {
-        public IVsProjectAdapter VsProjectAdapter { get; private set; }
+        private IVsProjectAdapter VsProjectAdapter { get; }
 
         public async Task SaveProjectAsync(CancellationToken token)
         {

@@ -13,15 +13,14 @@
     Assert-NotNull $installerEvents
 }
 ## Skipping the Test below, because current E2E machines (Win2016 Server) do not allow creating new UWP projects.
-
 function Test-MigrateVanilaUwpProjectJsonToPackageReference {
+    [SkipTestForVS14()]
     param(
         $context
     )
 
     # Arrange
     $p = New-UwpClassLibrary UwpClassLibrary1
-    $cm = Get-VsComponentModel
     $projectDir = Get-ProjectDir $p
     $result = [API.Test.InternalAPITestHook]::MigrateJsonProject($p.FullName)
 
@@ -34,7 +33,7 @@ function Test-MigrateVanilaUwpProjectJsonToPackageReference {
     Assert-AreEqual $expectRuntimeIds $actualRuntimes
 
     # Check if project.json file was deleted
-    Assert-True !(Test-Path (Join-Path $projectDir project.json))
+    Assert-False (Test-Path (Join-Path $projectDir project.json))
 
     # Check if backup was created
     Assert-True (Test-Path (Join-Path $projectDir (Join-Path Backup project.json)))

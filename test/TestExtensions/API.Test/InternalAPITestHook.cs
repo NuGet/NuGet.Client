@@ -158,7 +158,6 @@ namespace API.Test
             var migrator = ServiceLocator.GetComponent<IVsProjectJsonToPackageReferenceMigrator>();
             return ThreadHelper.JoinableTaskFactory.Run(async () =>
             {
-                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
                 return (IVsProjectJsonToPackageReferenceMigrateResult) await migrator.MigrateProjectJsonToPackageReferenceAsync(projectName);
             });
         }

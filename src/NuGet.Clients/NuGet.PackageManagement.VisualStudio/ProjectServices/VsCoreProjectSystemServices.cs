@@ -32,7 +32,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public IProjectSystemReferencesService References => throw new NotSupportedException();
 
-        public IProjectSystemService ProjectSystem { get; private set; }
+        public IProjectSystemService ProjectSystem { get; }
 
         public IProjectScriptHostService ScriptService { get; }
 

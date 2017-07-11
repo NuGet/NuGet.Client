@@ -10,8 +10,6 @@ namespace API.Test
     public class UwpProjectTestsUtil
     {
         private static readonly Version RS2 = new Version(10, 0, 15063, 0);
-        // TODO: Handle creating the right project template for TPV > RS2
-        // Returns the path to the solution file
         public static string CreateUwpClassLibrary(string projectName,
             string outputPath,
             string targetPlatformVersion = "10.0.14393.0",
