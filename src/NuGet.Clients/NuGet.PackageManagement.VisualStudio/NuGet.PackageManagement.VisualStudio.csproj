@@ -101,6 +101,7 @@
     <Compile Include="ProjectServices\GlobalProjectServiceProvider.cs" />
     <Compile Include="ProjectServices\NetCoreProjectSystemServices.cs" />
     <Compile Include="ProjectServices\VsCoreProjectSystemReferenceReader.cs" />
+    <Compile Include="ProjectSystems\VsCoreProjectSystem.cs" />
     <Compile Include="Projects\VsMSBuildProjectSystemServices.cs" />
     <Compile Include="Utility\SupportedProjectTypes.cs" />
     <Compile Include="Common\VersionCollectionExtensions.cs" />

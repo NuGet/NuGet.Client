@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -32,7 +32,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public IProjectSystemReferencesService References => throw new NotSupportedException();
 
-        public IProjectSystemService ProjectSystem => throw new NotSupportedException();
+        public IProjectSystemService ProjectSystem { get; }
 
         public IProjectScriptHostService ScriptService { get; }
 
@@ -49,6 +49,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             _threadingService = GetGlobalService<IVsProjectThreadingService>();
             Assumes.Present(_threadingService);
+            ProjectSystem = new VsCoreProjectSystem(_vsProjectAdapter);
 
             ReferencesReader = new VsCoreProjectSystemReferenceReader(vsProjectAdapter, this);
             ScriptService = new VsProjectScriptHostService(vsProjectAdapter, this);
