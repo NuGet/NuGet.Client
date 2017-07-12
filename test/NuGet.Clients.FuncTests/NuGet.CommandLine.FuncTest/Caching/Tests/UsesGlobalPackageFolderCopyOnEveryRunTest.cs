@@ -33,8 +33,7 @@ namespace NuGet.CommandLine.Test.Caching
                 result.Item1 == 0);
 
 
-            validations.Add(CachingValidationType.RestoreDoesNotNoOp,
-                !result.AllOutput.Contains("No further actions are required to complete the restore"));
+            validations.Add(CachingValidationType.RestoreNoOp, result.AllOutput.Contains("No further actions are required to complete the restore"));
 
             validations.Add(
                 CachingValidationType.PackageInstalled,

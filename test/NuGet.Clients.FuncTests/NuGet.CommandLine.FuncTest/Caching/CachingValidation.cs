@@ -80,11 +80,11 @@ namespace NuGet.CommandLine.Test.Caching
                 }
             },
             {
-                CachingValidationType.RestoreDoesNotNoOp,
+                CachingValidationType.RestoreNoOp,
                 new Messages
                 {
-                    True = "Restore did not no-op.",
-                    False = "Restore no-oped."
+                    True = "NoOp Restore",
+                    False = "Restore did not no-op."
                 }
             }
         };
