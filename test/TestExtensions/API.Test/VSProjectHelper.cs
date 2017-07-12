@@ -45,6 +45,30 @@ namespace API.Test
             });
         }
 
+        public static object NewUwpClassLibrary(string projectName,
+            string outputPath,
+            string targetPlatformVersion = "10.0.14393.0",
+            string targtetPlatformMinVersion = "10.0.10586.0")
+        {
+            
+            return ThreadHelper.JoinableTaskFactory.Run(async delegate
+            {
+                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                var pathToSln = UwpProjectTestsUtil.CreateUwpClassLibrary(projectName, outputPath, targetPlatformVersion, targtetPlatformMinVersion);
+                VSSolutionHelper.OpenSolution(pathToSln);
+                var dte = ServiceLocator.GetDTE();
+                var dte2 = (DTE2)dte;
+                var solution2 = dte2.Solution as Solution2;
+                var window = dte2.ActiveWindow as Window2;
+                await CloseOpenDocumentsAsync(dte2);
+
+                await Activatex86ConfigurationsAsync(dte2);
+
+                window.SetFocus();
+                return await VSSolutionHelper.GetProjectAsync(solution2, projectName);
+            });
+        }
+
         private static async Task<object> NewProjectAsync(
             string templatePath,
             string outputPath,

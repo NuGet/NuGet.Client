@@ -41,6 +41,14 @@
     <PackageReference Include="Microsoft.VisualStudio.Threading" Version="14.1.131" />
   </ItemGroup>
 
+  <ItemGroup>
+    <EmbeddedResource Include="compiler\resources\**\*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="compiler\resources\UWP\AssemblyInfo.cs" />
+    <Compile Remove="compiler\resources\UWP\Class1.cs" />
+  </ItemGroup>
   <Import Project="$(BuildCommonDirectory)common.targets" />
 
   <Target Name="DeployToArtifacts" AfterTargets="Build;Rebuild">

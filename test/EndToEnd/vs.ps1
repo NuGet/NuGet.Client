@@ -13,23 +13,6 @@ function Get-VSVersion
     return $version
 }
 
-function New-UwpClassLibrary
-{
-    param(
-        [string]$ProjectName,
-        [string]$SolutionFolder
-    )
-
-    if ((Get-VSVersion) -ge '15.0')
-    {
-        New-Project UwpClassLibrary $ProjectName $SolutionFolder
-    }
-    else
-    {
-        throw "SKIP: $($_)"
-    }
-}
-
 function New-UwpPackageRefClassLibrary
 {
     param(
@@ -249,6 +232,21 @@ function New-Project {
     Write-Verbose "New-Project function"
     $p = [API.Test.VSProjectHelper]::NewProject($TemplatePath, $OutputPath, $TemplateName, $ProjectName, $SolutionFolder)
     Write-Verbose "New-Project function end"
+
+    return $p
+}
+
+function New-UwpClassLibrary {
+    param(
+         [parameter(Mandatory = $true)]
+         [string]$ProjectName,
+         [string]$TargetPlatformVersion,
+         [string]$TargetPlatformMinVersion
+    )
+
+    Write-Verbose "New-UwpClassLibrary function"
+    $p = [API.Test.VSProjectHelper]::NewUwpClassLibrary($ProjectName, $OutputPath, $TargetPlatformVersion, $TargetPlatformMinVersion)
+    Write-Verbose "New-UwpClassLibrary function end"
 
     return $p
 }
