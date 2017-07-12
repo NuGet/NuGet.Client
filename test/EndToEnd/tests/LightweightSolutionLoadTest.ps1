@@ -186,7 +186,7 @@ function Test-DeferredProjectJsonProjectUpdatePackage {
 }
 
 function Test-DeferredNativeProjectInstallPackage {
-    [SkipTestForVS14()]
+    [SkipTest('Hang on open solution. Internal bug 456357.')]
     param()
 
     $projectT = New-Project NativeConsoleApplication | Select-Object UniqueName, ProjectName
@@ -201,7 +201,7 @@ function Test-DeferredNativeProjectInstallPackage {
 }
 
 function Test-DeferredNativeProjectUninstallPackage {
-    [SkipTestForVS14()]
+    [SkipTest('Hang on open solution. Internal bug 456357.')]
     param()
 
     $projectT = New-Project NativeConsoleApplication | Select-Object UniqueName, ProjectName
