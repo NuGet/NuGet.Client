@@ -11,6 +11,6 @@ namespace NuGet.CommandLine.Test.Caching
         PackageFromSourceNotUsed,
         PackageFromGlobalPackagesFolderUsed,
         DirectDownloadFilesDoNotExist,
-        RestoreDoesNotNoOp
+        RestoreDoesNotNoOp,
     }
 }
