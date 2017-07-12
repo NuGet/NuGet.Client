@@ -28,7 +28,7 @@ if ($BuildRTM -eq 'false')
 {   
 
     $NuGetClientRoot = $env:BUILD_REPOSITORY_LOCALPATH
-    $NuGetValidator = [System.IO.Path]::Combine($NuGetClientRoot, 'packages', 'NuGetValidator.1.3.9', 'tools', 'NuGetValidator.exe')
+    $NuGetValidator = [System.IO.Path]::Combine($NuGetClientRoot, 'packages', 'NuGetValidator.1.4.0', 'tools', 'NuGetValidator.exe')
     
     if ($ValidateSigning)
     {
