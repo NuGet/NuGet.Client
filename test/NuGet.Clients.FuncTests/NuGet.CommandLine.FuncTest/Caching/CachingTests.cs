@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -67,8 +67,11 @@ namespace NuGet.CommandLine.Test.Caching
                 server);
 
             // Assert
-            validations.Assert(CachingValidationType.CommandSucceeded, true);
-            validations.Assert(CachingValidationType.PackageInstalled, true);
+            foreach (var validation in validations)
+            {
+                validation.Assert(CachingValidationType.CommandSucceeded, true);
+                validation.Assert(CachingValidationType.PackageInstalled, true);
+            }
         }
 
         /// <summary>
@@ -122,8 +125,11 @@ namespace NuGet.CommandLine.Test.Caching
                 server);
 
             // Assert
-            validations.Assert(CachingValidationType.CommandSucceeded, success);
-            validations.Assert(CachingValidationType.PackageInstalled, installed);
+            foreach (var validation in validations)
+            {
+                validation.Assert(CachingValidationType.CommandSucceeded, success);
+                validation.Assert(CachingValidationType.PackageInstalled, installed);
+            }
         }
 
         /// <summary>
@@ -178,8 +184,12 @@ namespace NuGet.CommandLine.Test.Caching
                 server);
 
             // Assert
-            validations.Assert(CachingValidationType.CommandSucceeded, true);
-            validations.Assert(CachingValidationType.PackageInGlobalPackagesFolder, success);
+
+            foreach (var validation in validations)
+            {
+                validation.Assert(CachingValidationType.CommandSucceeded, true);
+                validation.Assert(CachingValidationType.PackageInGlobalPackagesFolder, success);
+            }
         }
 
         /// <summary>
@@ -232,10 +242,55 @@ namespace NuGet.CommandLine.Test.Caching
                 server);
 
             // Assert
-            validations.Assert(CachingValidationType.CommandSucceeded, true);
-            validations.Assert(CachingValidationType.PackageInstalled, true);
-            validations.Assert(CachingValidationType.PackageFromGlobalPackagesFolderUsed, success);
-            validations.Assert(CachingValidationType.PackageFromSourceNotUsed, success);
+            foreach (var validation in validations)
+            {
+                validation.Assert(CachingValidationType.CommandSucceeded, true);
+                validation.Assert(CachingValidationType.PackageInstalled, true);
+                validation.Assert(CachingValidationType.PackageFromGlobalPackagesFolderUsed, success);
+                validation.Assert(CachingValidationType.PackageFromSourceNotUsed, success);
+            }
+        }
+
+        [Theory]
+        [InlineData(typeof(RestoreProjectJsonCommand), CachingType.Default, ServerType.V2, true, true)]
+        [InlineData(typeof(RestoreProjectJsonCommand), CachingType.Default, ServerType.V3, true, true)]
+        [InlineData(typeof(RestoreProjectJsonCommand), CachingType.NoCache, ServerType.V2, true, false)]
+        [InlineData(typeof(RestoreProjectJsonCommand), CachingType.NoCache, ServerType.V3, true, false)]
+        [InlineData(typeof(RestoreProjectJsonCommand), CachingType.DirectDownload, ServerType.V2, true, true)]
+        [InlineData(typeof(RestoreProjectJsonCommand), CachingType.DirectDownload, ServerType.V3, true, true)]
+        [InlineData(typeof(RestoreProjectJsonCommand), CachingType.NoCache | CachingType.DirectDownload, ServerType.V2, true, false)]
+        [InlineData(typeof(RestoreProjectJsonCommand), CachingType.NoCache | CachingType.DirectDownload, ServerType.V3, true, false)]
+        public async Task NuGetExe_Caching_DoesNotNoOp(Type type, CachingType caching, ServerType server, bool success, bool noOp)
+        {
+            // Arrange
+            var nuGetExe = await GetNuGetExeAsync();
+
+            // Act
+            var validations = await CachingTestRunner.ExecuteAsync(
+                typeof(UsesGlobalPackageFolderCopyOnEveryRunTest),
+                type,
+                nuGetExe,
+                caching,
+                server);
+
+            // Assert
+            var firstPass = true;
+            foreach (var validation in validations)
+            {
+                validation.Assert(CachingValidationType.CommandSucceeded, true);
+                validation.Assert(CachingValidationType.PackageInstalled, true);
+                validation.Assert(CachingValidationType.PackageFromGlobalPackagesFolderUsed, success);
+                validation.Assert(CachingValidationType.PackageFromSourceNotUsed, success);
+                if (firstPass)
+                {
+                    firstPass = false;
+                    validation.Assert(CachingValidationType.RestoreNoOp, false);
+                }
+                else
+                {
+                    validation.Assert(CachingValidationType.RestoreNoOp, noOp);
+                }
+            }
         }
 
         /// <summary>
@@ -290,10 +345,13 @@ namespace NuGet.CommandLine.Test.Caching
                 server);
 
             // Assert
-            validations.Assert(CachingValidationType.CommandSucceeded, true);
-            validations.Assert(CachingValidationType.PackageInstalled, true);
-            validations.Assert(CachingValidationType.PackageFromHttpCacheUsed, success);
-            validations.Assert(CachingValidationType.PackageFromSourceNotUsed, success);
+            foreach (var validation in validations)
+            {
+                validation.Assert(CachingValidationType.CommandSucceeded, true);
+                validation.Assert(CachingValidationType.PackageInstalled, true);
+                validation.Assert(CachingValidationType.PackageFromHttpCacheUsed, success);
+                validation.Assert(CachingValidationType.PackageFromSourceNotUsed, success);
+            }
         }
 
         /// <summary>
@@ -348,8 +406,11 @@ namespace NuGet.CommandLine.Test.Caching
                 server);
 
             // Assert
-            validations.Assert(CachingValidationType.CommandSucceeded, true);
-            validations.Assert(CachingValidationType.PackageInHttpCache, success);
+            foreach (var validation in validations)
+            {
+                validation.Assert(CachingValidationType.CommandSucceeded, true);
+                validation.Assert(CachingValidationType.PackageInHttpCache, success);
+            }
         }
 
         /// <summary>
@@ -403,8 +464,11 @@ namespace NuGet.CommandLine.Test.Caching
                 server);
 
             // Assert
-            validations.Assert(CachingValidationType.CommandSucceeded, true);
-            validations.Assert(CachingValidationType.DirectDownloadFilesDoNotExist, success);
+            foreach (var validation in validations)
+            {
+                validation.Assert(CachingValidationType.CommandSucceeded, true);
+                validation.Assert(CachingValidationType.DirectDownloadFilesDoNotExist, success);
+            }
         }
 
         private static async Task<INuGetExe> GetNuGetExeAsync()

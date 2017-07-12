@@ -6,11 +6,11 @@ using NuGet.Test.Utility;
 
 namespace NuGet.CommandLine.Test.Caching
 {
-    public class UsesGlobalPackagesFolderCopyTest : ICachingTest
+    public class UsesGlobalPackageFolderCopyOnEveryRunTest : ICachingTest
     {
-        public string Description => "Uses the copy of the package from the global packages folder instead of the source";
+        public string Description => "Uses the copy of the package from the global packages folder instead of the source on every iteration";
 
-        public int IterationCount => 1;
+        public int IterationCount => 3;
 
         public async Task<string> PrepareTestAsync(CachingTestContext context, ICachingCommand command)
         {
@@ -31,6 +31,9 @@ namespace NuGet.CommandLine.Test.Caching
             validations.Add(
                 CachingValidationType.CommandSucceeded,
                 result.Item1 == 0);
+
+
+            validations.Add(CachingValidationType.RestoreNoOp, result.AllOutput.Contains("No further actions are required to complete the restore"));
 
             validations.Add(
                 CachingValidationType.PackageInstalled,

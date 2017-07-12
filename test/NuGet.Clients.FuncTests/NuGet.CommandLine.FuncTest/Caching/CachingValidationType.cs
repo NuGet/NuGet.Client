@@ -1,4 +1,4 @@
-﻿namespace NuGet.CommandLine.Test.Caching
+namespace NuGet.CommandLine.Test.Caching
 {
     public enum CachingValidationType
     {
@@ -11,5 +11,6 @@
         PackageFromSourceNotUsed,
         PackageFromGlobalPackagesFolderUsed,
         DirectDownloadFilesDoNotExist,
+        RestoreNoOp,
     }
 }
