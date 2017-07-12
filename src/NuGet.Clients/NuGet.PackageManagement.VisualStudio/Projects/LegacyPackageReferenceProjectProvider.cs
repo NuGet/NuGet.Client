@@ -61,12 +61,11 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public bool TryCreateNuGetProject(
             IVsProjectAdapter vsProjectAdapter,
-            ProjectProviderContext context,
+            ProjectProviderContext _,
             bool forceProjectType,
             out NuGetProject result)
         {
             Assumes.Present(vsProjectAdapter);
-            Assumes.Present(context);
 
             _threadingService.ThrowIfNotOnUIThread();
 
