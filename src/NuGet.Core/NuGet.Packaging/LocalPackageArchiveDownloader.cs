@@ -152,10 +152,15 @@ namespace NuGet.Packaging
                 bufferSize: 4096,
                 useAsync: true))
             {
+                // This value comes from NuGet.Protocol.StreamExtensions.CopyToAsync(...).
+                // While 8K may or may not be the optimal buffer size for copy performance,
+                // it is better than 4K.
+                const int bufferSize = 8192;
+
                 await _sourceStream.Value.CopyToAsync(
                     destination,
-                    bufferSize: 8192,
-                    cancellationToken: cancellationToken);
+                    bufferSize,
+                    cancellationToken);
             }
 
             return true;
