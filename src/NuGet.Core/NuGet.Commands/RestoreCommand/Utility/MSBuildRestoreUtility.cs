@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -332,6 +332,18 @@ namespace NuGet.Commands
             }
 
             return false;
+        }
+
+        /// <summary>
+        /// Log warning NU1503
+        /// </summary>
+        public static RestoreLogMessage GetWarningForUnsupportedProject(string path)
+        {
+            var text = string.Format(CultureInfo.CurrentCulture, Strings.UnsupportedProject, path);
+            var message = RestoreLogMessage.CreateWarning(NuGetLogCode.NU1503, text);
+            message.FilePath = path;
+
+            return message;
         }
 
         private static void AddPackageTargetFallbacks(PackageSpec spec, IEnumerable<IMSBuildItem> items)
