@@ -19,6 +19,77 @@ namespace NuGet.CommandLine.Test
 {
     public class RestoreNetCoreTest
     {
+        [PlatformFact(Platform.Windows)]
+        public void RestoreNetCore_IfProjectsWitAndWithoutRestoreTargetsExistVerifyValidProjectsRestore()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                    "a",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("net45"));
+
+                var projectB = SimpleTestProjectContext.CreateNETCore(
+                    "b",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("net45"));
+
+                solution.Projects.Add(projectA);
+                solution.Projects.Add(projectB);
+                solution.Create(pathContext.SolutionRoot);
+
+                // Remove all contents from B to make it invalid for restore.
+                File.Delete(projectB.ProjectPath);
+                File.WriteAllText(projectB.ProjectPath, "<Project ToolsVersion=\"15.0\"></Project>");
+
+                // Act
+                var r = Util.RestoreSolution(pathContext);
+
+                // Assert
+                r.Success.Should().BeTrue();
+                File.Exists(projectA.AssetsFileOutputPath).Should().BeTrue();
+                File.Exists(projectB.AssetsFileOutputPath).Should().BeFalse();
+                r.AllOutput.Should().Contain("NU1503");
+                r.AllOutput.Should().Contain("The project file may be invalid or missing targets required for restore.");
+            }
+        }
+
+        [PlatformFact(Platform.Windows)]
+        public void RestoreNetCore_IfAllProjectsAreWithoutRestoreTargetsVerifySuccess()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                    "a",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("net45"));
+
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+
+                // Remove all contents from A to make it invalid for restore.
+                File.Delete(projectA.ProjectPath);
+                File.WriteAllText(projectA.ProjectPath, "<Project ToolsVersion=\"15.0\"></Project>");
+
+                // Act
+                var r = Util.RestoreSolution(pathContext);
+
+                // Assert
+                r.Success.Should().BeTrue();
+                File.Exists(projectA.AssetsFileOutputPath).Should().BeFalse();
+                r.AllOutput.Should().Contain("NU1503");
+                r.AllOutput.Should().Contain("The project file may be invalid or missing targets required for restore.");
+            }
+        }
+
         /// <summary>
         /// Create 3 projects, each with their own nuget.config file and source.
         /// When restoring without a solution settings should be found from the project folder.
@@ -3838,6 +3909,7 @@ namespace NuGet.CommandLine.Test
                 Assert.True(File.Exists(projectA.AssetsFileOutputPath), r.Item2);
                 Assert.True(File.Exists(projectA.TargetsOutput), r.Item2);
                 Assert.True(File.Exists(projectA.PropsOutput), r.Item2);
+                r.AllOutput.Should().NotContain("NU1503");
             }
         }
 
