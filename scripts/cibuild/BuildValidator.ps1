@@ -19,6 +19,8 @@ param
     [string]$BuildOutputTargetPath,
     [Parameter(Mandatory=$True)]
     [string]$BuildRTM,
+    [Parameter(Mandatory=$True)]
+    [string]$BuildConfiguration,
     [switch]$ValidateVsix,
     [switch]$ValidateSigning
 )
@@ -29,7 +31,7 @@ if ($BuildRTM -eq 'false')
 
     $result = 0
     $NuGetClientRoot = $env:BUILD_REPOSITORY_LOCALPATH
-    $NuGetValidator = [System.IO.Path]::Combine($NuGetClientRoot, 'packages', 'NuGetValidator.1.4.0.2', 'tools', 'NuGetValidator.exe')
+    $NuGetValidator = [System.IO.Path]::Combine($NuGetClientRoot, 'temp', 'NuGetValidator.1.4.0.3', 'tools', 'NuGetValidator.exe')
     $msbuildExe = 'C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\MSBuild\15.0\bin\msbuild.exe'
     
     if ($ValidateSigning)
@@ -49,21 +51,21 @@ if ($BuildRTM -eq 'false')
         }
         else 
         {
-            Write-Host "Validating NuGet.Client repository signing..."
-            Write-Host "Running: $msbuildExe $env:BUILD_REPOSITORY_LOCALPATH\build\sign.proj /v:m /nologo /t:BatchSign"
-            $Files = & $msbuildExe $env:BUILD_REPOSITORY_LOCALPATH\build\sign.proj /v:m /nologo /t:BatchSign
-            $FileString = ($files -split "\n") -join ","
+            $FilesListLocation = [System.IO.Path]::Combine($env:SYSTEM_DEFAULTWORKINGDIRECTORY, 'filesListSigning.txt' ) 
             $ArtifactsLogOutputDir = [System.IO.Path]::Combine($BuildOutputTargetPath, 'ArtifactValidation', 'artifacts' )
 
+            Write-Host "Validating NuGet.Client repository signing..."
+            Write-Host "Running: $msbuildExe $NuGetClientRoot\build\sign.proj /v:m /nologo /t:BatchSign /p:Configuration=$BuildConfiguration"
+            & $msbuildExe $NuGetClientRoot\build\sign.proj /v:m /nologo /t:BatchSign /p:Configuration=$BuildConfiguration > $FilesListLocation
             
-            Write-Host "Running: $NuGetValidator artifact --files @""$FileString"" --output-path $ArtifactsLogOutputDir"
-            & $NuGetValidator artifact --files "$FileString" --output-path $ArtifactsLogOutputDir
+            Write-Host "Running: $NuGetValidator artifact --files $FilesListLocation --output-path $ArtifactsLogOutputDir"
+            & $NuGetValidator artifact --files-in-file $FilesListLocation --output-path $ArtifactsLogOutputDir
             if (-not $?) {
                 $result = 1
             }
         }
     }
-    else 
+    else
     {
         $LocalizationRepository = [System.IO.Path]::Combine($NuGetClientRoot, 'submodules', 'NuGet.Build.Localization', 'localize', 'comments', '15')
         if ($ValidateVsix) 
@@ -80,16 +82,17 @@ if ($BuildRTM -eq 'false')
         }
         else 
         {
-            Write-Host "Validating NuGet.Client repository localization..."
-            Write-Host "Running: $msbuildExe $env:BUILD_REPOSITORY_LOCALPATH\build\loc.proj /v:m /nologo /t:BatchLocalize"
-            $Files = & $msbuildExe $env:BUILD_REPOSITORY_LOCALPATH\build\loc.proj /v:m /nologo /t:BatchLocalize
-            $FileString = ($files -split "\n") -join ","
+            $FilesListLocation = [System.IO.Path]::Combine($env:SYSTEM_DEFAULTWORKINGDIRECTORY, 'filesListLocalization.txt' ) 
             $ArtifactsLogOutputDir = [System.IO.Path]::Combine($BuildOutputTargetPath, 'LocalizationValidation', 'artifacts' )
 
-            Write-Host "Running: $NuGetValidator localization --files @""$FileString"" --output-path $ArtifactsLogOutputDir --comments-path $LocalizationRepository"
+            Write-Host "Validating NuGet.Client repository localization..."
+            Write-Host "Running: $msbuildExe $NuGetClientRoot\build\loc.proj /v:m /nologo /t:BatchLocalize /p:Configuration=$BuildConfiguration"
+            $Files = & $msbuildExe $NuGetClientRoot\build\loc.proj /v:m /nologo /t:BatchLocalize /p:Configuration=$BuildConfiguration > $FilesListLocation
+
+            Write-Host "Running: $NuGetValidator localization --files $FilesListLocation --output-path $ArtifactsLogOutputDir --comments-path $LocalizationRepository"
 
             # We want to exit the process with success even if there are errors.
-            & $NuGetValidator localization --files "$FileString" --output-path $ArtifactsLogOutputDir --comments-path $LocalizationRepository
+            & $NuGetValidator localization --files-in-file $FilesListLocation --output-path $ArtifactsLogOutputDir --comments-path $LocalizationRepository
         }
     }
 

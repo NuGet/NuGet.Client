@@ -1,0 +1,26 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
+  <metadata>
+    <id>NuGetValidator</id>
+    <version>1.4.0.3</version>
+    <authors>Ankit Mishra</authors>
+    <owners>Ankit Mishra</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <projectUrl>https://github.com/mishra14/NuGetBuildValidators</projectUrl>
+    <description>Package used internally in NuGet team's localization validation pipeline.</description>
+    <repository type="git" url="https://github.com/mishra14/NuGetBuildValidators" />
+    <dependencies>
+      <group targetFramework=".NETFramework4.6.1">
+        <dependency id="NuGetValidators.Artifact" version="1.2.1" exclude="Build,Analyzers" />
+        <dependency id="NuGetValidators.Localization" version="1.3.9" exclude="Build,Analyzers" />
+        <dependency id="Microsoft.Extensions.CommandLineUtils" version="1.1.1" exclude="Build,Analyzers" />
+      </group>
+    </dependencies>
+    <frameworkAssemblies>
+      <frameworkAssembly assemblyName="Microsoft.CSharp" targetFramework=".NETFramework4.6.1" />
+      <frameworkAssembly assemblyName="System.Core" targetFramework=".NETFramework4.6.1" />
+      <frameworkAssembly assemblyName="System" targetFramework=".NETFramework4.6.1" />
+      <frameworkAssembly assemblyName="System.IO.Compression" targetFramework=".NETFramework4.6.1" />
+    </frameworkAssemblies>
+  </metadata>
+</package>
