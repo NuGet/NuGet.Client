@@ -72,14 +72,6 @@ Function Update-VsixVersion {
     Write-Host "Updated the VSIX version [$oldVersion] => [$($root.Metadata.Identity.Version)]"
 }
 
-Function Print-GitLog {
-    $mdFolder = [System.IO.Path]::Combine($env:SYSTEM_DEFAULTWORKINGDIRECTORY, 'MicroBuild', 'Output')
-    New-Item -ItemType Directory -Force -Path $mdFolder | Out-Null
-    $mdFile = Join-Path $mdFolder 'GitLog.md'
-    & git log -1 --pretty=format:' Author: %an%n Commit: [%H](https://github.com/NuGet/NuGet.Client/commit/%H)%n Message: %s' 2>&1  | Set-Content $mdFile 
-    Write-Host "##vso[task.addattachment type=Distributedtask.Core.Summary;name=Associated changes;]$mdFile"
-}
-
 $msbuildExe = 'C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\MSBuild\15.0\bin\msbuild.exe'
 
 # Turn off strong name verification for common DevDiv public keys so that people can execute things against
@@ -130,7 +122,6 @@ if (-not (Test-Path $regKeyNuGet) -or ($has32bitNode -and -not (Test-Path $regKe
 
 if ($BuildRTM -eq 'true')
 {
-    Print-GitLog
     # Set the $(NupkgOutputDir) build variable in VSTS build
     Write-Host "##vso[task.setvariable variable=NupkgOutputDir;]ReleaseNupkgs"
     $numberOfTries = 0
