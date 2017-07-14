@@ -356,7 +356,7 @@ namespace NuGet.PackageManagement.VisualStudio
         {
 #if VS14
             // Not applicable for Dev14 so always return empty list.
-            return Enumerable.Empty<IVsHierarchy>();
+            return await Task.Run(() => Enumerable.Empty<IVsHierarchy>());
 #else
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
