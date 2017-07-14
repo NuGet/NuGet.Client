@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -35,9 +35,6 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private void OnSolutionOpenedOrClosed(object sender, EventArgs e)
         {
-            // This is a solution event. Should be on the UI thread
-            ThreadHelper.ThrowIfNotOnUIThread();
-
             NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
                 {
                     // We need to do the check even on Solution Closed because, let's say if the yellow Update bar

@@ -1,13 +1,15 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.ComponentModel.Composition;
+using System.Threading.Tasks;
 using Microsoft;
 using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.ProjectSystem;
 using Microsoft.VisualStudio.ProjectSystem.Properties;
 using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Threading;
 using Microsoft.VisualStudio.Utilities;
 using NuGet.ProjectManagement;
 using NuGet.ProjectModel;
@@ -27,7 +29,9 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private readonly IProjectSystemCache _projectSystemCache;
 
-        private readonly Lazy<IComponentModel> _componentModel;
+        private readonly AsyncLazy<IComponentModel> _componentModel;
+
+        private readonly IVsProjectThreadingService _threadingService;
 
         // Reason it's lazy<object> is because we don't want to load any CPS assemblies untill
         // we're really going to use any of CPS api. Which is why we also don't use nameof or typeof apis.
@@ -40,15 +44,23 @@ namespace NuGet.PackageManagement.VisualStudio
         public NetCorePackageReferenceProjectProvider(
             [Import(typeof(SVsServiceProvider))]
             IServiceProvider vsServiceProvider,
-            IProjectSystemCache projectSystemCache)
+            IProjectSystemCache projectSystemCache,
+            IVsProjectThreadingService threadingService)
         {
             Assumes.Present(vsServiceProvider);
             Assumes.Present(projectSystemCache);
+            Assumes.Present(threadingService);
 
             _projectSystemCache = projectSystemCache;
+            _threadingService = threadingService;
 
-            _componentModel = new Lazy<IComponentModel>(
-                () => vsServiceProvider.GetService<SComponentModel, IComponentModel>());
+            _componentModel = new AsyncLazy<IComponentModel>(
+                async () =>
+                {
+                    await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
+                    return vsServiceProvider.GetService<SComponentModel, IComponentModel>();
+                },
+                _threadingService.JoinableTaskFactory);
         }
 
         public bool TryCreateNuGetProject(
@@ -59,8 +71,6 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             Assumes.Present(vsProject);
             Assumes.Present(context);
-
-            ThreadHelper.ThrowIfNotOnUIThread();
 
             result = null;
 
@@ -73,7 +83,14 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             // Check if the project is not CPS capable or if it is CPS capable then it does not have TargetFramework(s), if so then return false
-            if (!hierarchy.IsCapabilityMatch("CPS"))
+            var isCapabilityMatchCPS = _threadingService.ExecuteSynchronously(
+                async () =>
+                {
+                    await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
+                    return hierarchy.IsCapabilityMatch("CPS");
+                });
+
+            if (!isCapabilityMatchCPS)
             {
                 return false;
             }
@@ -102,9 +119,9 @@ namespace NuGet.PackageManagement.VisualStudio
 
             var projectNames = vsProject.ProjectNames;
             var fullProjectPath = vsProject.FullProjectPath;
-            var unconfiguredProject = GetUnconfiguredProject(vsProject.Project);
+            var unconfiguredProject = _threadingService.ExecuteSynchronously(() => GetUnconfiguredProjectAsync(vsProject.Project));
 
-            var projectServices = new NetCoreProjectSystemServices(vsProject, _componentModel.Value);
+            var projectServices = _threadingService.ExecuteSynchronously(() => CreateProjectServicesAsync(vsProject));
 
             result = new NetCorePackageReferenceProject(
                 vsProject.ProjectName,
@@ -119,8 +136,17 @@ namespace NuGet.PackageManagement.VisualStudio
             return true;
         }
 
-        private static UnconfiguredProject GetUnconfiguredProject(EnvDTE.Project project)
+        private async Task<INuGetProjectServices> CreateProjectServicesAsync(IVsProjectAdapter vsProjectAdapter)
         {
+            var componentModel = await _componentModel.GetValueAsync();
+
+            return new NetCoreProjectSystemServices(vsProjectAdapter, componentModel);
+        }
+
+        private async Task<UnconfiguredProject> GetUnconfiguredProjectAsync(EnvDTE.Project project)
+        {
+            await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
+
             var context = project as IVsBrowseObjectContext;
             if (context == null)
             {

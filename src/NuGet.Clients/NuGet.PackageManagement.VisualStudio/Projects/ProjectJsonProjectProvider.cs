@@ -1,13 +1,15 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.ComponentModel.Composition;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft;
 using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Threading;
 using Microsoft.VisualStudio.Utilities;
 using NuGet.ProjectManagement;
 using NuGet.VisualStudio;
@@ -24,7 +26,7 @@ namespace NuGet.PackageManagement.VisualStudio
     internal class ProjectJsonProjectProvider : INuGetProjectProvider
     {
         private readonly IVsProjectThreadingService _threadingService;
-        private readonly Lazy<IComponentModel> _componentModel;
+        private readonly AsyncLazy<IComponentModel> _componentModel;
 
         public RuntimeTypeHandle ProjectType => typeof(VsProjectJsonNuGetProject).TypeHandle;
 
@@ -39,8 +41,13 @@ namespace NuGet.PackageManagement.VisualStudio
 
             _threadingService = threadingService;
 
-            _componentModel = new Lazy<IComponentModel>(
-                () => vsServiceProvider.GetService<SComponentModel, IComponentModel>());
+            _componentModel = new AsyncLazy<IComponentModel>(
+                 async () =>
+                 {
+                     await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
+                     return vsServiceProvider.GetService<SComponentModel, IComponentModel>();
+                 },
+                 _threadingService.JoinableTaskFactory);
         }
 
         public bool TryCreateNuGetProject(
@@ -53,8 +60,6 @@ namespace NuGet.PackageManagement.VisualStudio
             Assumes.Present(context);
 
             result = null;
-
-            _threadingService.ThrowIfNotOnUIThread();
 
             var guids = vsProjectAdapter.ProjectTypeGuids;
 
@@ -90,7 +95,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
                 if (File.Exists(projectJsonPath))
                 {
-                    var projectServices = CreateProjectServicesAsync(vsProjectAdapter);
+                    var projectServices = _threadingService.ExecuteSynchronously(() => CreateProjectServicesAsync(vsProjectAdapter));
 
                     result = new VsProjectJsonNuGetProject(
                         projectJsonPath,
@@ -103,9 +108,9 @@ namespace NuGet.PackageManagement.VisualStudio
             return result != null;
         }
 
-        private INuGetProjectServices CreateProjectServicesAsync(IVsProjectAdapter vsProjectAdapter)
+        private async Task<INuGetProjectServices> CreateProjectServicesAsync(IVsProjectAdapter vsProjectAdapter)
         {
-            var componentModel = _componentModel.Value;
+            var componentModel = await _componentModel.GetValueAsync();
 
             if (vsProjectAdapter.IsDeferred)
             {
