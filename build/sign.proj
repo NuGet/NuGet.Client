@@ -38,7 +38,7 @@
           TaskParameter="TargetOutputs"
           ItemName="FilesToSign" />
     </MSBuild>
-    <Message Text="Files to sign: @(FilesToSign, '%0a')" Importance="High"/>
+    <Message Text="@(FilesToSign, '%0a')" Importance="High"/>
   </Target>
 
   <Target Name="GetOutputVsix">

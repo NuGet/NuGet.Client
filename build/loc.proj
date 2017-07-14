@@ -47,7 +47,7 @@
           TaskParameter="TargetOutputs"
           ItemName="FilesToLocalize" />
     </MSBuild>
-    <Message Text="Files to localize : @(FilesToLocalize, '%0a')" Importance="High"/>
+    <Message Text="@(FilesToLocalize, '%0a')" Importance="High"/>
   </Target>
 
   <Target Name="MoveLocalizedFilesToProjectSpecificArtifacts" AfterTargets="Localize" Condition="'$(BuildRTM)' != 'true'">
