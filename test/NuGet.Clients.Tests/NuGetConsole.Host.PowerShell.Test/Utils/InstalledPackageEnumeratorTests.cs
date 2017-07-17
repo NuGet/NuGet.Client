@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
@@ -149,7 +149,7 @@ namespace NuGetConsole.Host.PowerShell.Test
                 var userPackageFolder = Path.Combine(testDirectory.Path, "packagesA");
                 Directory.CreateDirectory(userPackageFolder);
 
-                testSettings.SetValue("config", "globalPackagesFolder", userPackageFolder);
+                testSettings.SetValue("config", "repositoryPath", userPackageFolder);
 
                 var packagesFolderPath = PackagesFolderPathUtility.GetPackagesFolderPath(
                     solutionDirectory, testSettings);
