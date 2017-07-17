@@ -21,6 +21,7 @@
     <FileAlignment>512</FileAlignment>
     <NuGetPackageImportStamp>3b445626</NuGetPackageImportStamp>
     <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
+    <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
     <DefineConstants>TRACE;DEBUG;VS15</DefineConstants>
@@ -387,9 +388,6 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\packageicon.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="project.json" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Options\GeneralOptionControl.resx">
