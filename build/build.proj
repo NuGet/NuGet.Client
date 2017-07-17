@@ -12,7 +12,6 @@
     </CommonMSBuildProperties>
   </PropertyGroup>
 
-    <ApexTestProjects Include="$(RepositoryRootDirectory)test\NuGet.Tests.Apex\*\*.csproj" />
   <!--
     ============================================================
     Run core functional tests (non-VS specific)
@@ -97,6 +96,10 @@
     ============================================================
   -->
   <Target Name="ApexTestsVS15">
+    <ItemGroup>
+      <ApexTestProjects Include="$(RepositoryRootDirectory)test\NuGet.Tests.Apex\*\*.csproj" />
+    </ItemGroup>
+    
     <!-- Test inputs -->
     <PropertyGroup>
       <TestProjectPaths>@(ApexTestProjects)</TestProjectPaths>
