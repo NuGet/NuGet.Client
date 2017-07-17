@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -31,6 +31,9 @@ namespace NuGetConsole.Host.PowerShell
         private readonly ISettings _settings;
         private readonly Func<BuildIntegratedNuGetProject, Task<LockFile>> _getLockFileOrNullAsync;
 
+        /// <summary>
+        /// Represents an installed package item.
+        /// </summary>
         public class PackageItem : IEquatable<PackageItem>
         {
             public PackageIdentity Identity { get; }
@@ -39,6 +42,7 @@ namespace NuGetConsole.Host.PowerShell
             public PackageItem(PackageIdentity identity, string installPath)
             {
                 Assumes.NotNull(identity);
+                Assumes.NotNullOrEmpty(installPath);
 
                 Identity = identity;
                 InstallPath = installPath;
@@ -116,6 +120,8 @@ namespace NuGetConsole.Host.PowerShell
             NuGetPackageManager packageManager,
             CancellationToken token)
         {
+            Assumes.Present(packageManager);
+
             // invoke init.ps1 files in the order of package dependency.
             // if A -> B, we invoke B's init.ps1 before A's.
             var installedPackages = new List<PackageItem>();
@@ -234,7 +240,7 @@ namespace NuGetConsole.Host.PowerShell
 
             // Order by the highest framework first to make this deterministic
             // Process each framework/id/version once to avoid duplicate work
-            // Packages may have different dependendcy orders depending on the framework, but there is 
+            // Packages may have different dependency orders depending on the framework, but there is 
             // no way to fully solve this across an entire solution so we make a best effort here.
             foreach (var framework in packagesConfigInstalled.Keys.OrderByDescending(fw => fw, new NuGetFrameworkSorter()))
             {
