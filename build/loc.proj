@@ -54,30 +54,24 @@
     <ItemGroup>
       <_MoveLocalizedFiles Include="@(LocalizedUserFiles)">
         <DestinationDir>$(ArtifactsDirectory)$([MSBuild]::MakeRelative($(ArtifactsDirectory)localize\%(LocalizedUserFiles.lang), %(LocalizedUserFiles.RootDir)%(LocalizedUserFiles.Directory)))%(LocalizedUserFiles.Culture)\%(LocalizedUserFiles.Filename)%(LocalizedUserFiles.Extension)</DestinationDir>
-        <Message Importance="High" Text="LocalizedUserFiles.lang %(LocalizedUserFiles.lang)">
-        <Message Importance="High" Text="LocalizedUserFiles.RootDir %(LocalizedUserFiles.RootDir)">
-        <Message Importance="High" Text="LocalizedUserFiles.Directory %(LocalizedUserFiles.Directory)">
       </_MoveLocalizedFiles>
     </ItemGroup>
     <Move SourceFiles="@(_MoveLocalizedFiles->'%(Identity)')" DestinationFiles="@(_MoveLocalizedFiles->'%(DestinationDir)')"/>
     <Delete Files="$(ArtifactsDirectory)vsixlangpack\extension.vsixlangpack"/>
   </Target>
 
-  <!--<Target Name="MoveLocalizedFilesToLocalizationArtifacts" AfterTargets="Localize" Condition="'$(BuildRTM)' != 'true'">
-    <ItemGroup>
-      <_MoveLocalizedFiles Include="@(LocalizedUserFiles)">
-        <DestinationDir>$(ArtifactsDirectory)$([MSBuild]::MakeRelative($(ArtifactsDirectory)localize\%(LocalizedUserFiles.lang), %(LocalizedUserFiles.RootDir)%(LocalizedUserFiles.Directory)))%(LocalizedUserFiles.Culture)\%(LocalizedUserFiles.Filename)%(LocalizedUserFiles.Extension)</DestinationDir>
-      </_MoveLocalizedFiles>
-    </ItemGroup>
-    <Message Importance="High" Text="1 $(ArtifactsDirectory)">
-    <Message Importance="High" Text="1 $(ArtifactsDirectory)">
-    <Message Importance="High" Text="1 $(ArtifactsDirectory)">
-    <Message Importance="High" Text="1 $(ArtifactsDirectory)">
-    <Message Importance="High" Text="1 $(ArtifactsDirectory)">
-    <Message Importance="High" Text="1 $(ArtifactsDirectory)">
-    <Message Importance="High" Text="1 $(ArtifactsDirectory)">
-    <Move SourceFiles="@(_MoveLocalizedFiles->'%(Identity)')" DestinationFiles="@(_MoveLocalizedFiles->'%(DestinationDir)')"/>
-  </Target>-->
+    <Target Name="MoveLocalizedFilesToLocalizedArtifacts" AfterTargets="Localize" Condition="'$(BuildRTM)' != 'true'">
+    <MSBuild
+      Projects="@(SolutionProjectsWithoutVSIX)"
+      Properties="BuildProjectReferences=false;"
+      Targets="GetLocalizedFiles">
+
+      <Output
+          TaskParameter="TargetOutputs"
+          ItemName="LocalizedFiles" />
+    </MSBuild>
+    <Message Text="Localized Files: @(LocalizedFiles, '%0a')" Importance="High"/>
+  </Target>
 
   <Target Name="MoveEulasToArtifacts" AfterTargets="Localize" Condition="'$(BuildRTM)' != 'true'">
     <ItemGroup>

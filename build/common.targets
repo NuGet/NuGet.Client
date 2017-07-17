@@ -194,6 +194,34 @@
     </ItemGroup>
   </Target>
 
+    <!--
+    ============================================================
+    GetLocalizedFiles - gathers the list of files that have been
+    localized from each project
+    ============================================================
+  -->
+  <Target Name="GetLocalizedFiles" DependsOnTargets="GetTargetFrameworkSet" Returns="@(LocalizedFiles)" Condition="'$(Shipping)' == 'true'">
+    <MSBuild
+      Projects="$(MSBuildProjectFullPath)"
+      Targets="$(GetLocalizedFilesFromProject)"
+      Properties="TargetFramework=%(ProjectTargetFrameworkEntries.Identity);
+                  BuildProjectReferences=false;">
+
+      <Output
+          TaskParameter="TargetOutputs"
+          ItemName="LocalizedFiles" />
+    </MSBuild>
+  </Target>
+
+  <Target Name="GetLocalizedFilesFromProject" Returns="@(LocalizedFilesFromProject)">
+    <ItemGroup>
+      <_AllResourceDlls Include="$(OutputPath)**\$(AssemblyName).resources.*"/>
+      <LocalizedFilesFromProject Include="@(_AllResourceDlls)">
+        <TargetPath>$([MSBuild]::MakeRelative($(OutputPath), %(_AllResourceDlls.Identity)))</TargetPath>
+      </LocalizedFilesFromProject>
+    </ItemGroup>
+  </Target>
+
   <!--
     ============================================================
     GetLocalizedFilesForVsix - gathers the list of localized DLLs 
