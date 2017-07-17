@@ -74,24 +74,14 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         private string _currentSolutionDirectory;
 
         /// <summary>
-        /// An initial restore event used to compare against future (real) restore events. This value endures on
-        /// <see cref="_latestRestore"/> and <see cref="_currentRestore"/> as long as no restore occurs. Note that the
-        /// hash mentioned here cannot collide with a real hash.
-        /// </summary>
-        private static readonly SolutionRestoredEventArgs InitialRestore = new SolutionRestoredEventArgs(
-            isSuccess: true,
-            solutionSpecHash: "initial");
-
-        /// <summary>
         /// This field tracks information about the latest restore.
         /// </summary>
-        private SolutionRestoredEventArgs _latestRestore = InitialRestore;
+        private SolutionRestoredEventArgs _latestRestore;
 
         /// <summary>
         /// This field tracks information about the most recent restore that had scripts executed for it.
         /// </summary>
-        private SolutionRestoredEventArgs _currentRestore = InitialRestore;
-
+        private SolutionRestoredEventArgs _currentRestore;
 
         protected PowerShellHost(string name, IRestoreEvents restoreEvents, IRunspaceManager runspaceManager)
         {
@@ -612,10 +602,8 @@ namespace NuGetConsole.Host.PowerShell.Implementation
 
         private bool ShouldNoOpDueToRestore(SolutionRestoredEventArgs latestRestore)
         {
-            return latestRestore != null &&
-                   _currentRestore != null &&
-                   latestRestore.SolutionSpecHash == _currentRestore.SolutionSpecHash &&
-                   latestRestore.IsSuccess == _currentRestore.IsSuccess;
+            return _currentRestore != null &&
+                   latestRestore?.RestoreStatus == NuGetOperationStatus.Succeeded;
         }
 
         private bool ShouldNoOpDueToSolutionDirectory(string latestSolutionDirectory)
