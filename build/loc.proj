@@ -70,6 +70,7 @@
           TaskParameter="TargetOutputs"
           ItemName="LocalizedFiles" />
     </MSBuild>
+    <Move SourceFiles="@(LocalizedFiles->'%(Identity)')" DestinationFiles="@(LocalizedFiles->'%(TargetPath)')"/>
     <Message Text="Localized Files: $(ArtifactsDirectory)LocalizedFiles\%(LocalizedFiles.TargetPath)" Importance="High"/>
   </Target>
 

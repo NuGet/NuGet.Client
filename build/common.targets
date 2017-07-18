@@ -213,7 +213,7 @@
     </MSBuild>
   </Target>
 
-  <Target Name="GetLocalizedFilesFromProject" Returns="@(LocalizedFilesFromProject)" Condition=" '$(PackProject)' == 'true' '">
+  <Target Name="GetLocalizedFilesFromProject" Returns="@(LocalizedFilesFromProject)" Condition=" '$(PackProject)' == 'true' ">
     <ItemGroup>
       <_AllResourceDlls Include="$(OutputPath)**\*.resources.*"/>
       <LocalizedFilesFromProject Include="@(_AllResourceDlls)" Condition="'@(_AllResourceDlls)'!=''">
