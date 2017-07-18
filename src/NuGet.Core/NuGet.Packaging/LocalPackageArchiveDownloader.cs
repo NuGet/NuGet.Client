@@ -144,23 +144,20 @@ namespace NuGet.Packaging
 
             cancellationToken.ThrowIfCancellationRequested();
 
+            // This value is copied from System.IO.Stream.
+            // It is the largest multiple of 4096 that is smaller than the large object heap (LOH)
+            // threshold of 85K and offers better copy performance than a 4K buffer.
+            const int bufferSize = 81920;
+
             using (var destination = new FileStream(
                 destinationFilePath,
                 FileMode.Create,
-                FileAccess.ReadWrite,
-                FileShare.ReadWrite | FileShare.Delete,
-                bufferSize: 4096,
+                FileAccess.Write,
+                FileShare.Write,
+                bufferSize,
                 useAsync: true))
             {
-                // This value comes from NuGet.Protocol.StreamExtensions.CopyToAsync(...).
-                // While 8K may or may not be the optimal buffer size for copy performance,
-                // it is better than 4K.
-                const int bufferSize = 8192;
-
-                await _sourceStream.Value.CopyToAsync(
-                    destination,
-                    bufferSize,
-                    cancellationToken);
+                await _sourceStream.Value.CopyToAsync(destination, bufferSize, cancellationToken);
             }
 
             return true;
