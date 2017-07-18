@@ -365,7 +365,7 @@ namespace NuGet.SolutionRestoreManager
                             }
 
                             // Upgrade request if necessary
-                            if (next?.RestoreSource != request.RestoreSource)
+                            if (next != null && next.RestoreSource != request.RestoreSource)
                             {
                                 // there could be requests of two types: Auto-Restore or Explicit
                                 // Explicit is always preferred.
