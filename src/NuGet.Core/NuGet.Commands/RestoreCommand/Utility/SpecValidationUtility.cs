@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.ProjectModel;
 
@@ -129,7 +130,7 @@ namespace NuGet.Commands
             var frameworks = spec.TargetFrameworks.Select(f => f.FrameworkName).ToArray();
 
             // Verify frameworks are valid
-            foreach (var framework in frameworks.Where(f => !f.IsSpecificFramework))
+            foreach (var framework in frameworks.Where(IsInvalidFramework))
             {
                 var message = string.Format(
                     CultureInfo.CurrentCulture,
@@ -155,6 +156,21 @@ namespace NuGet.Commands
 
                 throw RestoreSpecException.Create(message, files);
             }
+        }
+
+        private static bool IsInvalidFramework(NuGetFramework framework)
+        {
+            // When framework is a real framework, it is not invalid
+            if (framework.IsSpecificFramework)
+                return false;
+
+            // When framework is not a real framework and does not have a fallback, it is invalid
+            var fallbackFramework = framework as FallbackFramework;
+            if (fallbackFramework == null)
+                return true;
+            
+            // When all fallbacks are not known, then this is invalid
+            return fallbackFramework.Fallback.All(f => !f.IsSpecificFramework);
         }
 
         private static void ValidateProjectSpecNetCore(PackageSpec spec, IEnumerable<string> files)
