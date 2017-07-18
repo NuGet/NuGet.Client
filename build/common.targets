@@ -203,7 +203,7 @@
   <Target Name="GetLocalizedFiles" DependsOnTargets="GetTargetFrameworkSet" Returns="@(LocalizedFiles)" Condition="'$(Shipping)' == 'true'">
     <MSBuild
       Projects="$(MSBuildProjectFullPath)"
-      Targets="$(GetLocalizedFilesFromProject)"
+      Targets="GetLocalizedFilesFromProject"
       Properties="TargetFramework=%(ProjectTargetFrameworkEntries.Identity);
                   BuildProjectReferences=false;">
 
@@ -215,8 +215,8 @@
 
   <Target Name="GetLocalizedFilesFromProject" Returns="@(LocalizedFilesFromProject)">
     <ItemGroup>
-      <_AllResourceDlls Include="$(OutputPath)**\$(AssemblyName).resources.*"/>
-      <LocalizedFilesFromProject Include="@(_AllResourceDlls)">
+      <_AllResourceDlls Include="$(OutputPath)**\*.resources.*"/>
+      <LocalizedFilesFromProject Include="@(_AllResourceDlls)" Condition="'@(_AllResourceDlls)'!=''">
         <TargetPath>$([MSBuild]::MakeRelative($(OutputPath), %(_AllResourceDlls.Identity)))</TargetPath>
       </LocalizedFilesFromProject>
     </ItemGroup>
