@@ -60,7 +60,7 @@
           ItemName="LocalizedFiles" />
     </MSBuild>
     <Move SourceFiles="@(LocalizedFiles->'%(Identity)')" DestinationFiles="@(LocalizedFiles->'%(TargetPath)')"/>
-    <Message Text="Projects: %(SolutionProjectsWithoutVSIX)" Importance="High"/>
+    <Message Text="Projects: @(SolutionProjectsWithoutVSIX, '%0a'" Importance="High"/>
     <Message Text="Localized Files: $(ArtifactsDirectory)LocalizedFiles\%(LocalizedFiles.TargetPath)" Importance="High"/>
   </Target>
 

@@ -60,7 +60,7 @@
     <Delete Files="$(ArtifactsDirectory)vsixlangpack\extension.vsixlangpack"/>
   </Target>
 
-  <!--<Target Name="MoveLocalizedFilesToLocalizedArtifacts" Condition="'$(BuildRTM)' != 'true'">
+  <Target Name="MoveLocalizedFilesToLocalizedArtifacts" Condition="'$(BuildRTM)' != 'true'">
     <MSBuild
       Projects="@(SolutionProjectsWithoutVSIX)"
       Properties="BuildProjectReferences=false;"
@@ -71,9 +71,9 @@
           ItemName="LocalizedFiles" />
     </MSBuild>
     <Move SourceFiles="@(LocalizedFiles->'%(Identity)')" DestinationFiles="@(LocalizedFiles->'%(TargetPath)')"/>
-    <Message Text="Projects: %(SolutionProjectsWithoutVSIX)" Importance="High"/>
+    <Message Text="Projects: @(SolutionProjectsWithoutVSIX, '%0a')" Importance="High"/>
     <Message Text="Localized Files: $(ArtifactsDirectory)LocalizedFiles\%(LocalizedFiles.TargetPath)" Importance="High"/>
-  </Target>-->
+  </Target>
 
   <Target Name="MoveEulasToArtifacts" AfterTargets="Localize" Condition="'$(BuildRTM)' != 'true'">
     <ItemGroup>
