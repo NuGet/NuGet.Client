@@ -205,7 +205,8 @@
       Projects="$(MSBuildProjectFullPath)"
       Targets="GetLocalizedFilesFromProject"
       Properties="TargetFramework=%(ProjectTargetFrameworkEntries.Identity);
-                  BuildProjectReferences=false;">
+                  BuildProjectReferences=false;
+                  Configuration=$(Configuration)">
 
       <Output
           TaskParameter="TargetOutputs"

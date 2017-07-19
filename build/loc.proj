@@ -63,7 +63,8 @@
   <Target Name="MoveLocalizedFilesToLocalizedArtifacts">
     <MSBuild
       Projects="@(SolutionProjectsWithoutVSIX)"
-      Properties="BuildProjectReferences=false;"
+      Properties="BuildProjectReferences=false;
+                  Configuration=$(Configuration)"
       Targets="GetLocalizedFiles">
 
       <Output
