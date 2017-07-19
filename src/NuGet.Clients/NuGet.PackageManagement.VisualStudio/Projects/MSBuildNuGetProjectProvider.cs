@@ -1,11 +1,13 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.ComponentModel.Composition;
+using System.Threading.Tasks;
 using Microsoft;
 using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Threading;
 using Microsoft.VisualStudio.Utilities;
 using NuGet.ProjectManagement;
 using NuGet.VisualStudio;
@@ -18,7 +20,7 @@ namespace NuGet.PackageManagement.VisualStudio
     internal class MSBuildNuGetProjectProvider : INuGetProjectProvider
     {
         private readonly IVsProjectThreadingService _threadingService;
-        private readonly Lazy<IComponentModel> _componentModel;
+        private readonly AsyncLazy<IComponentModel> _componentModel;
 
         public RuntimeTypeHandle ProjectType => typeof(VsMSBuildNuGetProject).TypeHandle;
 
@@ -33,8 +35,13 @@ namespace NuGet.PackageManagement.VisualStudio
 
             _threadingService = threadingService;
 
-            _componentModel = new Lazy<IComponentModel>(
-                () => vsServiceProvider.GetService<SComponentModel, IComponentModel>());
+            _componentModel = new AsyncLazy<IComponentModel>(
+                async () =>
+                {
+                    await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
+                    return vsServiceProvider.GetService<SComponentModel, IComponentModel>();
+                },
+                _threadingService.JoinableTaskFactory);
         }
 
         public bool TryCreateNuGetProject(
@@ -46,15 +53,13 @@ namespace NuGet.PackageManagement.VisualStudio
             Assumes.Present(vsProjectAdapter);
             Assumes.Present(context);
 
-            _threadingService.ThrowIfNotOnUIThread();
-
             result = null;
 
             var projectSystem = MSBuildNuGetProjectSystemFactory.CreateMSBuildNuGetProjectSystem(
                 vsProjectAdapter,
                 context.ProjectContext);
 
-            var projectServices = CreateProjectServices(vsProjectAdapter, projectSystem);
+            var projectServices = _threadingService.ExecuteSynchronously(() => CreateProjectServices(vsProjectAdapter, projectSystem));
 
             var folderNuGetProjectFullPath = context.PackagesPathFactory();
 
@@ -71,10 +76,10 @@ namespace NuGet.PackageManagement.VisualStudio
             return result != null;
         }
 
-        private INuGetProjectServices CreateProjectServices(
+        private async Task<INuGetProjectServices> CreateProjectServices(
             IVsProjectAdapter vsProjectAdapter, VsMSBuildProjectSystem projectSystem)
         {
-            var componentModel = _componentModel.Value;
+            var componentModel = await _componentModel.GetValueAsync();
 
             if (vsProjectAdapter.IsDeferred)
             {

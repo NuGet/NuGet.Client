@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -394,19 +394,22 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             Assumes.Present(envDTEProject);
 
-            ThreadHelper.ThrowIfNotOnUIThread();
-
-            if (SupportsProjectKPackageManager(envDTEProject))
+            return NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
             {
-                return true;
-            }
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            if (IsProjectCapabilityCompliant(envDTEProject))
-            {
-                return true;
-            }
+                if (SupportsProjectKPackageManager(envDTEProject))
+                {
+                    return true;
+                }
 
-            return envDTEProject.Kind != null && SupportedProjectTypes.IsSupported(envDTEProject.Kind) && !HasUnsupportedProjectCapability(envDTEProject);
+                if (IsProjectCapabilityCompliant(envDTEProject))
+                {
+                    return true;
+                }
+
+                return envDTEProject.Kind != null && SupportedProjectTypes.IsSupported(envDTEProject.Kind) && !HasUnsupportedProjectCapability(envDTEProject);
+            });
         }
 
         private static bool IsProjectCapabilityCompliant(EnvDTE.Project envDTEProject)
@@ -679,51 +682,52 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public static bool SupportsProjectKPackageManager(EnvDTE.Project envDTEProject)
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
-
             var projectKProject = GetProjectKPackageManager(envDTEProject);
             return projectKProject != null;
         }
 
         public static INuGetPackageManager GetProjectKPackageManager(EnvDTE.Project project)
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
-
-            var vsProject = project as IVsProject;
-            if (vsProject == null)
+            return NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
             {
-                return null;
-            }
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            Microsoft.VisualStudio.OLE.Interop.IServiceProvider serviceProvider = null;
-            vsProject.GetItemContext(
-                (uint)VSConstants.VSITEMID.Root,
-                out serviceProvider);
-            if (serviceProvider == null)
-            {
-                return null;
-            }
-
-            using (var sp = new ServiceProvider(serviceProvider))
-            {
-                var retValue = sp.GetService(typeof(INuGetPackageManager));
-                if (retValue == null)
+                var vsProject = project as IVsProject;
+                if (vsProject == null)
                 {
                     return null;
                 }
 
-                if (!(retValue is INuGetPackageManager))
+                Microsoft.VisualStudio.OLE.Interop.IServiceProvider serviceProvider = null;
+                vsProject.GetItemContext(
+                    (uint)VSConstants.VSITEMID.Root,
+                    out serviceProvider);
+                if (serviceProvider == null)
                 {
-                    // Workaround a bug in Dev14 prereleases where Lazy<INuGetPackageManager> was returned.
-                    var properties = retValue.GetType().GetProperties().Where(p => p.Name == "Value");
-                    if (properties.Count() == 1)
-                    {
-                        retValue = properties.First().GetValue(retValue);
-                    }
+                    return null;
                 }
 
-                return retValue as INuGetPackageManager;
-            }
+                using (var sp = new ServiceProvider(serviceProvider))
+                {
+                    var retValue = sp.GetService(typeof(INuGetPackageManager));
+                    if (retValue == null)
+                    {
+                        return null;
+                    }
+
+                    if (!(retValue is INuGetPackageManager))
+                    {
+                        // Workaround a bug in Dev14 prereleases where Lazy<INuGetPackageManager> was returned.
+                        var properties = retValue.GetType().GetProperties().Where(p => p.Name == "Value");
+                        if (properties.Count() == 1)
+                        {
+                            retValue = properties.First().GetValue(retValue);
+                        }
+                    }
+
+                    return retValue as INuGetPackageManager;
+                }
+            });
         }
 
         /// <summary>

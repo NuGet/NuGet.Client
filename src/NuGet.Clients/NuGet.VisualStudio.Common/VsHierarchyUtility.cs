@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -47,35 +47,41 @@ namespace NuGet.VisualStudio
 
         public static string[] GetProjectTypeGuids(EnvDTE.Project project)
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
+            return NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
+            {
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            // Get the vs hierarchy as an IVsAggregatableProject to get the project type guids
-            var hierarchy = ToVsHierarchy(project);
-            var projectTypeGuids = GetProjectTypeGuids(hierarchy, project.Kind);
+                // Get the vs hierarchy as an IVsAggregatableProject to get the project type guids
+                var hierarchy = ToVsHierarchy(project);
+                var projectTypeGuids = GetProjectTypeGuids(hierarchy, project.Kind);
 
-            return projectTypeGuids;
+                return projectTypeGuids;
+            });
         }
 
         public static string[] GetProjectTypeGuids(IVsHierarchy hierarchy, string defaultType = "")
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
-
-            var aggregatableProject = hierarchy as IVsAggregatableProject;
-            if (aggregatableProject != null)
+            return NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
             {
-                string projectTypeGuids;
-                var hr = aggregatableProject.GetAggregateProjectTypeGuids(out projectTypeGuids);
-                ErrorHandler.ThrowOnFailure(hr);
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                return projectTypeGuids.Split(';');
-            }
+                var aggregatableProject = hierarchy as IVsAggregatableProject;
+                if (aggregatableProject != null)
+                {
+                    string projectTypeGuids;
+                    var hr = aggregatableProject.GetAggregateProjectTypeGuids(out projectTypeGuids);
+                    ErrorHandler.ThrowOnFailure(hr);
 
-            if (!string.IsNullOrEmpty(defaultType))
-            {
-                return new[] { defaultType };
-            }
+                    return projectTypeGuids.Split(';');
+                }
 
-            return new string[0];
+                if (!string.IsNullOrEmpty(defaultType))
+                {
+                    return new[] { defaultType };
+                }
+
+                return new string[0];
+            });
         }
 
         /// <summary>

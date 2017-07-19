@@ -123,18 +123,21 @@ namespace NuGet.PackageManagement.VisualStudio
 #if VS14
                 return false;
 #else
-                _threadingService.ThrowIfNotOnUIThread();
-
-                object isDeferred;
-                if (ErrorHandler.Failed(VsHierarchy.GetProperty(
-                    (uint)VSConstants.VSITEMID.Root,
-                    (int)__VSHPROPID9.VSHPROPID_IsDeferred,
-                    out isDeferred)))
+                return _threadingService.ExecuteSynchronously(async () =>
                 {
-                    return false;
-                }
+                    await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                return object.Equals(true, isDeferred);
+                    object isDeferred;
+                    if (ErrorHandler.Failed(VsHierarchy.GetProperty(
+                        (uint)VSConstants.VSITEMID.Root,
+                        (int)__VSHPROPID9.VSHPROPID_IsDeferred,
+                        out isDeferred)))
+                    {
+                        return false;
+                    }
+
+                    return object.Equals(true, isDeferred);
+                });
 #endif
             }
         }
@@ -174,13 +177,17 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             get
             {
-                Guid id;
-                if (!_vsHierarchyItem.TryGetProjectId(out id))
+                return _threadingService.ExecuteSynchronously(async () =>
                 {
-                    id = Guid.Empty;
-                }
+                    await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                return id.ToString();
+                    if (!_vsHierarchyItem.TryGetProjectId(out Guid id))
+                    {
+                        id = Guid.Empty;
+                    }
+
+                    return id.ToString();
+                });
             }
         }
 
@@ -209,8 +216,6 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             get
             {
-                _threadingService.ThrowIfNotOnUIThread();
-
                 var packageVersion = BuildProperties.GetPropertyValue(ProjectBuildProperties.PackageVersion);
 
                 if (string.IsNullOrEmpty(packageVersion))

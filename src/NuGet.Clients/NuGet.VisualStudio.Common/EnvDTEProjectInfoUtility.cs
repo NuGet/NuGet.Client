@@ -74,55 +74,58 @@ namespace NuGet.VisualStudio
         /// <returns>The full path of the project directory.</returns>
         public static string GetFullPath(EnvDTE.Project envDTEProject)
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
-
-            Debug.Assert(envDTEProject != null);
-            if (IsUnloaded(envDTEProject))
+            return NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
             {
-                // To get the directory of an unloaded project, we use the UniqueName property,
-                // which is the path of the project file relative to the solution directory.
-                var solutionDirectory = Path.GetDirectoryName(envDTEProject.DTE.Solution.FullName);
-                var projectFileFullPath = Path.Combine(solutionDirectory, envDTEProject.UniqueName);
-                return Path.GetDirectoryName(projectFileFullPath);
-            }
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            // Attempt to determine the project path using the available EnvDTE.Project properties.
-            // Project systems using async load such as CPS may not have all properties populated 
-            // for start up scenarios such as VS Templates. In these cases we need to fallback 
-            // until we can find one containing the full path.
-
-            // FullPath
-            string fullPath = GetPropertyValue<string>(envDTEProject, FullPath);
-
-            if (!String.IsNullOrEmpty(fullPath))
-            {
-                // Some Project System implementations (JS metro app) return the project 
-                // file as FullPath. We only need the parent directory
-                if (File.Exists(fullPath))
+                Debug.Assert(envDTEProject != null);
+                if (IsUnloaded(envDTEProject))
                 {
-                    return Path.GetDirectoryName(fullPath);
+                    // To get the directory of an unloaded project, we use the UniqueName property,
+                    // which is the path of the project file relative to the solution directory.
+                    var solutionDirectory = Path.GetDirectoryName(envDTEProject.DTE.Solution.FullName);
+                    var projectFileFullPath = Path.Combine(solutionDirectory, envDTEProject.UniqueName);
+                    return Path.GetDirectoryName(projectFileFullPath);
                 }
 
-                return fullPath;
-            }
+                // Attempt to determine the project path using the available EnvDTE.Project properties.
+                // Project systems using async load such as CPS may not have all properties populated 
+                // for start up scenarios such as VS Templates. In these cases we need to fallback 
+                // until we can find one containing the full path.
 
-            // C++ projects do not have FullPath property, but do have ProjectDirectory one.
-            string projectDirectory = GetPropertyValue<string>(envDTEProject, ProjectDirectory);
+                // FullPath
+                string fullPath = GetPropertyValue<string>(envDTEProject, FullPath);
 
-            if (!String.IsNullOrEmpty(projectDirectory))
-            {
-                return projectDirectory;
-            }
+                if (!String.IsNullOrEmpty(fullPath))
+                {
+                    // Some Project System implementations (JS metro app) return the project 
+                    // file as FullPath. We only need the parent directory
+                    if (File.Exists(fullPath))
+                    {
+                        return Path.GetDirectoryName(fullPath);
+                    }
 
-            // FullName
-            if (!String.IsNullOrEmpty(envDTEProject.FullName))
-            {
-                return Path.GetDirectoryName(envDTEProject.FullName);
-            }
+                    return fullPath;
+                }
 
-            Debug.Fail("Unable to find the project path");
+                // C++ projects do not have FullPath property, but do have ProjectDirectory one.
+                string projectDirectory = GetPropertyValue<string>(envDTEProject, ProjectDirectory);
 
-            return null;
+                if (!String.IsNullOrEmpty(projectDirectory))
+                {
+                    return projectDirectory;
+                }
+
+                // FullName
+                if (!String.IsNullOrEmpty(envDTEProject.FullName))
+                {
+                    return Path.GetDirectoryName(envDTEProject.FullName);
+                }
+
+                Debug.Fail("Unable to find the project path");
+
+                return null;
+            });
         }
 
         public static bool IsUnloaded(EnvDTE.Project envDTEProject)

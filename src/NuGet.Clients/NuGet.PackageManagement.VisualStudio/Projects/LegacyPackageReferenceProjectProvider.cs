@@ -67,14 +67,12 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             Assumes.Present(vsProjectAdapter);
 
-            _threadingService.ThrowIfNotOnUIThread();
-
             result = null;
 
             var projectServices = _threadingService.ExecuteSynchronously(
-                () => TryCreateProjectServicesAsync(
-                    vsProjectAdapter,
-                    forceCreate: forceProjectType));
+                    () => TryCreateProjectServicesAsync(
+                        vsProjectAdapter,
+                        forceCreate: forceProjectType));
 
             if (projectServices == null)
             {
@@ -121,6 +119,7 @@ namespace NuGet.PackageManagement.VisualStudio
             }
             else
             {
+                await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
                 var asVSProject4 = vsProjectAdapter.Project.Object as VSProject4;
 
                 // A legacy CSProj must cast to VSProject4 to manipulate package references
@@ -148,7 +147,7 @@ namespace NuGet.PackageManagement.VisualStudio
             var buildProjectDataService = await _workspaceService.Value.GetMSBuildProjectDataServiceAsync(
                 vsProjectAdapter.FullProjectPath);
             Assumes.Present(buildProjectDataService);
-
+            await TaskScheduler.Default;
             var referenceItems = await buildProjectDataService.GetProjectItems(
                 ProjectItems.PackageReference, CancellationToken.None);
             if (referenceItems == null || referenceItems.Count == 0)
