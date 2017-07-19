@@ -44,9 +44,10 @@ $Headers= @{
     Authorization='Basic {0}' -f $Base64Token;
 }
 
+$Build = ${env:BUILD_BUILDNUMBER}
+$Branch = ${env:BUILD_SOURCEBRANCHNAME}
 $NuGetExePath = [System.IO.Path]::Combine($BuildOutputPath, $Branch, $Build, 'artifacts', 'VS15', "NuGet.exe")
 
-$Build = ${env:BUILD_BUILDNUMBER}
 $ProductVersion = [System.Diagnostics.FileVersionInfo]::GetVersionInfo($NuGetExePath).ProductVersion
 $CreatedBranchName = "nuget-insertbuild$Build"
 

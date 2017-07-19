@@ -40,7 +40,7 @@ $TagName = [System.Diagnostics.FileVersionInfo]::GetVersionInfo($NuGetExePath).F
 $ProductVersion = [System.Diagnostics.FileVersionInfo]::GetVersionInfo($NuGetExePath).ProductVersion
 $Date = Get-Date
 $Message = "Insert $ProductVersion into $VsTargetBranch on $Date"
-$BuildInfoJsonFile = [System.IO.Path]::Combine($OutputPath, $Branch, $Build, 'buildinfo.json')
+$BuildInfoJsonFile = [System.IO.Path]::Combine($BuildOutputPath, $Branch, $Build, 'buildinfo.json')
 $buildInfoJson = (Get-Content $BuildInfoJsonFile -Raw) | ConvertFrom-Json
 $LocRepoCommitHash = $buildInfoJson.LocalizationRepositoryCommitHash
 
