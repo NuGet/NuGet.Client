@@ -41,6 +41,9 @@ $MSBuildExe = 'C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\MS
 Write-Host "Running: $MSBuildExe $LocProjPath /t:MoveLocalizedFilesToLocalizedArtifacts"
 & $MSBuildExe $LocProjPath /t:MoveLocalizedFilesToLocalizedArtifacts
 
-# 2. Pack the localization package nuspec
-Write-Host "Running: $NuGetExe pack $LocalizationNuspec -properties Version=3.0.0`;LocalizationFilesDirectory=$LocalizedFiles -OutputDirectory $OutputPath"
-& $NuGetExe pack $LocalizationNuspec -properties Version=$Version`;LocalizationFilesDirectory=$LocalizedFiles -OutputDirectory $OutputPath
+if ( Test-Path $LocalizedFiles ) 
+{
+    # 2. If any localized paths exist then Pack the localization package nuspec
+    Write-Host "Running: $NuGetExe pack $LocalizationNuspec -properties Version=$Version`;LocalizationFilesDirectory=$LocalizedFiles -OutputDirectory $OutputPath"
+    & $NuGetExe pack $LocalizationNuspec -properties Version=$Version`;LocalizationFilesDirectory=$LocalizedFiles -OutputDirectory $OutputPath
+}
