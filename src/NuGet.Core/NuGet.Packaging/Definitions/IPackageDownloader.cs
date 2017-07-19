@@ -54,5 +54,11 @@ namespace NuGet.Packaging
         /// <exception cref="OperationCanceledException">Thrown if <paramref name="cancellationToken" />
         /// is cancelled.</exception>
         Task<string> GetPackageHashAsync(string hashAlgorithm, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Sets a throttle for package downloads.
+        /// </summary>
+        /// <param name="throttle">A throttle.  Can be <c>null</c>.</param>
+        void SetThrottle(SemaphoreSlim throttle);
     }
 }
