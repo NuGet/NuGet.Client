@@ -14,6 +14,6 @@
   </metadata>
 
   <files>
-    <file src="$localizationArtifacts$\**\*.resources.dll" target="lib\"/>
+    <file src="$LocalizationFilesDirectory$\**\*.resources.dll" target="lib\"/>
   </files>
 </package>

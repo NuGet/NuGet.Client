@@ -24,7 +24,7 @@ param
 
 
 if ($BuildRTM -eq 'false')
-{   
+{
 
     $NuGetClientRoot = $env:BUILD_REPOSITORY_LOCALPATH
     $NuGetValidator = [System.IO.Path]::Combine($NuGetClientRoot, 'packages', 'NuGetValidator.1.3.7', 'tools', 'NuGetValidator.exe')
