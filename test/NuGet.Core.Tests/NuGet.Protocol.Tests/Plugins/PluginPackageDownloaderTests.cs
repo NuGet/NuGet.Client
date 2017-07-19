@@ -201,6 +201,36 @@ namespace NuGet.Protocol.Plugins.Tests
         }
 
         [Fact]
+        public async Task CopyNupkgFileToAsync_ReturnsFalseIfExceptionHandled()
+        {
+            var destinationFilePath = "a";
+            var connection = new Mock<IConnection>(MockBehavior.Strict);
+
+            connection.Setup(x => x.SendRequestAndReceiveResponseAsync<CopyNupkgFileRequest, CopyNupkgFileResponse>(
+                    It.Is<MessageMethod>(m => m == MessageMethod.CopyNupkgFile),
+                    It.Is<CopyNupkgFileRequest>(c => c.PackageId == _packageIdentity.Id &&
+                        c.PackageVersion == _packageIdentity.Version.ToNormalizedString() &&
+                        c.PackageSourceRepository == _packageSourceRepository &&
+                        c.DestinationFilePath == destinationFilePath),
+                    It.IsAny<CancellationToken>()))
+                .ThrowsAsync(new Exception("simulated failure"));
+
+            using (var test = PluginPackageDownloaderTest.Create())
+            {
+                test.Plugin.SetupGet(x => x.Connection)
+                    .Returns(connection.Object);
+
+                test.Downloader.SetExceptionHandler(exception => Task.FromResult(true));
+
+                var wasCopied = await test.Downloader.CopyNupkgFileToAsync(
+                    destinationFilePath,
+                    CancellationToken.None);
+
+                Assert.False(wasCopied);
+            }
+        }
+
+        [Fact]
         public async Task CopyNupkgFileToAsync_ReturnsFalseIfNupkgFileNotCopied()
         {
             var destinationFilePath = "a";
@@ -389,6 +419,18 @@ namespace NuGet.Protocol.Plugins.Tests
                     CancellationToken.None);
 
                 Assert.Equal(response.Hash, packageHash);
+            }
+        }
+
+        [Fact]
+        public void SetExceptionHandler_ThrowsForNullHandler()
+        {
+            using (var test = PluginPackageDownloaderTest.Create())
+            {
+                var exception = Assert.Throws<ArgumentNullException>(
+                    () => test.Downloader.SetExceptionHandler(handleExceptionAsync: null));
+
+                Assert.Equal("handleExceptionAsync", exception.ParamName);
             }
         }
 

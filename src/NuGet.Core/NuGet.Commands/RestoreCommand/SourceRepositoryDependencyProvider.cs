@@ -381,6 +381,24 @@ namespace NuGet.Commands
                     cancellationToken);
 
                 packageDownloader.SetThrottle(_throttle);
+                packageDownloader.SetExceptionHandler(async exception =>
+                {
+                    if (exception is FatalProtocolException && _ignoreFailedSources)
+                    {
+                        if (!_ignoreWarning)
+                        {
+                            await _logger.LogAsync(
+                                RestoreLogMessage.CreateWarning(
+                                    NuGetLogCode.NU1801,
+                                    exception.Message,
+                                    packageIdentity.Id));
+                        }
+
+                        return true;
+                    }
+
+                    return false;
+                });
 
                 return packageDownloader;
             }

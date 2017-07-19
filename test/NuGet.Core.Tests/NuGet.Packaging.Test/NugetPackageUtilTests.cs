@@ -812,6 +812,10 @@ namespace Commands.Test
                 return Task.FromResult(packageHash);
             }
 
+            public void SetExceptionHandler(Func<Exception, Task<bool>> handleExceptionAsync)
+            {
+            }
+
             public void SetThrottle(SemaphoreSlim throttle)
             {
             }

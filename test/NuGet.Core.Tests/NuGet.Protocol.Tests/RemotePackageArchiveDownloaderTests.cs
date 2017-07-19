@@ -236,6 +236,32 @@ namespace NuGet.Protocol.Tests
             }
         }
 
+        [Fact]
+        public async Task CopyNupkgFileToAsync_ReturnsFalseIfExceptionHandled()
+        {
+            using (var test = RemotePackageArchiveDownloaderTest.Create())
+            {
+                test.Resource.Setup(x => x.CopyNupkgToStreamAsync(
+                        It.IsNotNull<string>(),
+                        It.IsNotNull<NuGetVersion>(),
+                        It.IsNotNull<Stream>(),
+                        It.IsNotNull<SourceCacheContext>(),
+                        It.IsNotNull<ILogger>(),
+                        It.IsAny<CancellationToken>()))
+                    .ThrowsAsync(new FatalProtocolException("simulated failure"));
+
+                var destinationFilePath = Path.Combine(test.TestDirectory.Path, "a");
+
+                test.Downloader.SetExceptionHandler(exception => Task.FromResult(true));
+
+                var wasCopied = await test.Downloader.CopyNupkgFileToAsync(
+                    destinationFilePath,
+                    CancellationToken.None);
+
+                Assert.False(wasCopied);
+            }
+        }
+
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
@@ -416,6 +442,18 @@ namespace NuGet.Protocol.Tests
                     cancellationToken: CancellationToken.None);
 
                 Assert.Equal("z4PhNX7vuL3xVChQ1m2AB9Yg5AULVxXcg/SpIdNs6c5H0NE8XYXysP+DGNKHfuwvY7kxvUdBeoGlODJ6+SfaPg==", actualResult);
+            }
+        }
+
+        [Fact]
+        public void SetExceptionHandler_ThrowsForNullHandler()
+        {
+            using (var test = RemotePackageArchiveDownloaderTest.Create())
+            {
+                var exception = Assert.Throws<ArgumentNullException>(
+                    () => test.Downloader.SetExceptionHandler(handleExceptionAsync: null));
+
+                Assert.Equal("handleExceptionAsync", exception.ParamName);
             }
         }
 

@@ -618,15 +618,27 @@ namespace NuGet.Commands.Test
         {
             using (var test = SourceRepositoryDependencyProviderTest.Create())
             {
-                var expectedPackageDownloader = Mock.Of<IPackageDownloader>();
+                var expectedPackageDownloader = new Mock<IPackageDownloader>(MockBehavior.Strict);
                 var resource = new Mock<FindPackageByIdResource>();
+
+                if (RuntimeEnvironmentHelper.IsMacOSX)
+                {
+                    expectedPackageDownloader.Setup(x => x.SetThrottle(It.IsNotNull<SemaphoreSlim>()));
+                }
+                else
+                {
+                    expectedPackageDownloader.Setup(x => x.SetThrottle(It.Is<SemaphoreSlim>(s => s == null)));
+                }
+
+                expectedPackageDownloader.Setup(
+                    x => x.SetExceptionHandler(It.IsNotNull<Func<Exception, Task<bool>>>()));
 
                 resource.Setup(x => x.GetPackageDownloaderAsync(
                         It.IsNotNull<PackageIdentity>(),
                         It.IsNotNull<SourceCacheContext>(),
                         It.IsNotNull<ILogger>(),
                         It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(expectedPackageDownloader);
+                    .ReturnsAsync(expectedPackageDownloader.Object);
 
                 test.SourceRepository.Setup(s => s.GetResourceAsync<FindPackageByIdResource>())
                     .ReturnsAsync(resource.Object);
@@ -637,7 +649,9 @@ namespace NuGet.Commands.Test
                     NullLogger.Instance,
                     CancellationToken.None);
 
-                Assert.Same(expectedPackageDownloader, actualPackageDownloader);
+                Assert.Same(expectedPackageDownloader.Object, actualPackageDownloader);
+
+                expectedPackageDownloader.VerifyAll();
             }
         }
 

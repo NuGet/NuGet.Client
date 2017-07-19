@@ -14,6 +14,7 @@ namespace NuGet.Protocol.Plugins
     /// </summary>
     public sealed class PluginPackageDownloader : IPackageDownloader
     {
+        private Func<Exception, Task<bool>> _handleExceptionAsync;
         private bool _isDisposed;
         private readonly PackageIdentity _packageIdentity;
         private readonly PluginPackageReader _packageReader;
@@ -135,7 +136,19 @@ namespace NuGet.Protocol.Plugins
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            var filePath = await _packageReader.CopyNupkgAsync(destinationFilePath, cancellationToken);
+            string filePath = null;
+
+            try
+            {
+                filePath = await _packageReader.CopyNupkgAsync(destinationFilePath, cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                if (_handleExceptionAsync == null || !await _handleExceptionAsync(ex))
+                {
+                    throw;
+                }
+            }
 
             return !string.IsNullOrEmpty(filePath);
         }
@@ -181,6 +194,22 @@ namespace NuGet.Protocol.Plugins
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Sets an exception handler for package downloads.
+        /// </summary>
+        /// <param name="handleExceptionAsync">An exception handler.</param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="handleExceptionAsync" />
+        /// is <c>null</c>.</exception>
+        public void SetExceptionHandler(Func<Exception, Task<bool>> handleExceptionAsync)
+        {
+            if (handleExceptionAsync == null)
+            {
+                throw new ArgumentNullException(nameof(handleExceptionAsync));
+            }
+
+            _handleExceptionAsync = handleExceptionAsync;
         }
 
         /// <summary>

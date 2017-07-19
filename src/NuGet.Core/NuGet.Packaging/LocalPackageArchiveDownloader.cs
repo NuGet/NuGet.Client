@@ -16,6 +16,7 @@ namespace NuGet.Packaging
     /// </summary>
     public sealed class LocalPackageArchiveDownloader : IPackageDownloader
     {
+        private Func<Exception, Task<bool>> _handleExceptionAsync;
         private bool _isDisposed;
         private readonly ILogger _logger;
         private readonly string _packageFilePath;
@@ -167,6 +168,15 @@ namespace NuGet.Packaging
                     const int bufferSize = 8192;
 
                     await source.CopyToAsync(destination, bufferSize, cancellationToken);
+
+                    return true;
+                }
+            }
+            catch (Exception ex)
+            {
+                if (_handleExceptionAsync == null || !await _handleExceptionAsync(ex))
+                {
+                    throw;
                 }
             }
             finally
@@ -174,7 +184,7 @@ namespace NuGet.Packaging
                 _throttle?.Release();
             }
 
-            return true;
+            return false;
         }
 
         /// <summary>
@@ -209,6 +219,22 @@ namespace NuGet.Packaging
             var packageHash = Convert.ToBase64String(bytes);
 
             return Task.FromResult(packageHash);
+        }
+
+        /// <summary>
+        /// Sets an exception handler for package downloads.
+        /// </summary>
+        /// <param name="handleExceptionAsync">An exception handler.</param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="handleExceptionAsync" />
+        /// is <c>null</c>.</exception>
+        public void SetExceptionHandler(Func<Exception, Task<bool>> handleExceptionAsync)
+        {
+            if (handleExceptionAsync == null)
+            {
+                throw new ArgumentNullException(nameof(handleExceptionAsync));
+            }
+
+            _handleExceptionAsync = handleExceptionAsync;
         }
 
         /// <summary>

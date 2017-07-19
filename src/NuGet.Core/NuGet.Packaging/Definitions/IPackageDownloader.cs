@@ -56,6 +56,14 @@ namespace NuGet.Packaging
         Task<string> GetPackageHashAsync(string hashAlgorithm, CancellationToken cancellationToken);
 
         /// <summary>
+        /// Sets an exception handler for package downloads.
+        /// </summary>
+        /// <param name="handleExceptionAsync">An exception handler.</param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="handleExceptionAsync" />
+        /// is <c>null</c>.</exception>
+        void SetExceptionHandler(Func<Exception, Task<bool>> handleExceptionAsync);
+
+        /// <summary>
         /// Sets a throttle for package downloads.
         /// </summary>
         /// <param name="throttle">A throttle.  Can be <c>null</c>.</param>
