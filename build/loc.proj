@@ -60,7 +60,7 @@
     <Delete Files="$(ArtifactsDirectory)vsixlangpack\extension.vsixlangpack"/>
   </Target>
 
-  <Target Name="MoveLocalizedFilesToLocalizedArtifacts" Condition="'$(BuildRTM)' != 'true'">
+  <Target Name="MoveLocalizedFilesToLocalizedArtifacts">
     <MSBuild
       Projects="@(SolutionProjectsWithoutVSIX)"
       Properties="BuildProjectReferences=false;"
