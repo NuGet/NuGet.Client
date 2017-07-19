@@ -144,23 +144,21 @@ namespace NuGet.Packaging
 
             cancellationToken.ThrowIfCancellationRequested();
 
+            using (var source = File.OpenRead(_packageFilePath))
             using (var destination = new FileStream(
                 destinationFilePath,
                 FileMode.Create,
                 FileAccess.ReadWrite,
                 FileShare.ReadWrite | FileShare.Delete,
                 bufferSize: 4096,
-                useAsync: true))
+                useAsync: false))
             {
                 // This value comes from NuGet.Protocol.StreamExtensions.CopyToAsync(...).
                 // While 8K may or may not be the optimal buffer size for copy performance,
                 // it is better than 4K.
                 const int bufferSize = 8192;
 
-                await _sourceStream.Value.CopyToAsync(
-                    destination,
-                    bufferSize,
-                    cancellationToken);
+                await source.CopyToAsync(destination, bufferSize, cancellationToken);
             }
 
             return true;
