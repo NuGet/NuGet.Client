@@ -40,7 +40,7 @@ $MSBuildExe = 'C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\MS
 
 
 # 1. Move the localized files into a common location.
-Write-Host "Running: $MSBuildExe $LocProjPath /t:MoveLocalizedFilesToLocalizedArtifacts /p:BuildConfiguration=$BuildConfiguration"
+Write-Host "Running: $MSBuildExe $LocProjPath /t:MoveLocalizedFilesToLocalizedArtifacts /p:Configuration=$BuildConfiguration"
 & $MSBuildExe $LocProjPath /t:MoveLocalizedFilesToLocalizedArtifacts
 
 if ( Test-Path $LocalizedFiles ) 
