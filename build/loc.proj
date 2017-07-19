@@ -70,9 +70,15 @@
           TaskParameter="TargetOutputs"
           ItemName="LocalizedFiles" />
     </MSBuild>
-    <Move SourceFiles="@(LocalizedFiles->'%(Identity)')" DestinationFiles="@(LocalizedFiles->'%(TargetPath)')"/>
-    <Message Text="Projects: @(SolutionProjectsWithoutVSIX, '%0a')" Importance="High"/>
-    <Message Text="Localized Files: $(ArtifactsDirectory)LocalizedFiles\%(LocalizedFiles.TargetPath)" Importance="High"/>
+
+    <ItemGroup>
+      <LocalizedFilePaths Include="@(LocalizedFiles)">
+        <TargetPath>$(ArtifactsDirectory)LocalizedFiles\%(LocalizedFiles.RelativeTargetPath)</TargetPath>
+      </LocalizedFilePaths>
+    </ItemGroup>
+
+    <Copy SourceFiles="@(LocalizedFilePaths->'%(Identity)')" DestinationFiles="@(LocalizedFilePaths->'%(TargetPath)')"/>
+    <Message Text="Localized Files Moved: %(LocalizedFilePaths.TargetPath)" Importance="High"/>
   </Target>
 
   <Target Name="MoveEulasToArtifacts" AfterTargets="Localize" Condition="'$(BuildRTM)' != 'true'">
