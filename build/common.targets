@@ -211,16 +211,16 @@
           TaskParameter="TargetOutputs"
           ItemName="LocalizedFiles" />
     </MSBuild>
-    <Message Text="LocalizedFiles: @(LocalizedFiles, '%0a')" Importance="High"/>
   </Target>
 
   <Target Name="GetLocalizedFilesFromProject" Returns="@(LocalizedFilesFromProject)" Condition=" '$(PackProject)' == 'true' ">
     <ItemGroup>
-      <_AllResourceDlls Include="$(OutputPath)**\*.resources.*"/>
+      <_AllResourceDlls Include="$(OutputPath)**\$(AssemblyName).resources.dll"/>
       <LocalizedFilesFromProject Include="@(_AllResourceDlls)" Condition="'@(_AllResourceDlls)'!=''">
         <RelativeTargetPath>$(MSBuildProjectName)\$(TargetFramework)\$([MSBuild]::MakeRelative($(OutputPath), %(_AllResourceDlls.Identity)))</RelativeTargetPath>
       </LocalizedFilesFromProject>
     </ItemGroup>
+    <Message Text="Outputpath: $(OutputPath)" Importance="High"/>
     <Message Text="LocalizedFilesFromProject: @(LocalizedFilesFromProject, '%0a')" Importance="High"/>
   </Target>
 
