@@ -59,35 +59,29 @@ namespace NuGet.PackageManagement.VisualStudio
                 _threadingService.JoinableTaskFactory);
         }
 
-        public bool TryCreateNuGetProject(
+        public async Task<NuGetProject> TryCreateNuGetProjectAsync(
             IVsProjectAdapter vsProjectAdapter,
             ProjectProviderContext _,
-            bool forceProjectType,
-            out NuGetProject result)
+            bool forceProjectType)
         {
             Assumes.Present(vsProjectAdapter);
 
             _threadingService.ThrowIfNotOnUIThread();
 
-            result = null;
-
-            var projectServices = _threadingService.ExecuteSynchronously(
-                () => TryCreateProjectServicesAsync(
+            var projectServices = await TryCreateProjectServicesAsync(
                     vsProjectAdapter,
-                    forceCreate: forceProjectType));
+                    forceCreate: forceProjectType);
 
             if (projectServices == null)
             {
-                return false;
+                return null;
             }
 
-            result = new LegacyPackageReferenceProject(
+            return new LegacyPackageReferenceProject(
                 vsProjectAdapter,
                 vsProjectAdapter.ProjectId,
                 projectServices,
                 _threadingService);
-
-            return true;
         }
 
         /// <summary>

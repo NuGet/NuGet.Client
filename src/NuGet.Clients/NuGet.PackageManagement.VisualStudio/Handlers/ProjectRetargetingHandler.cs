@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -110,7 +110,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private void SolutionEvents_AfterClosing()
         {
-            NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async delegate
             {
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
@@ -123,7 +123,7 @@ namespace NuGet.PackageManagement.VisualStudio
             // Clear the error list upon the first build action
             // Note that the retargeting error message is shown on the errorlistprovider this class creates
             // Hence, explicit clearing of the error list is required
-            NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async delegate
             {
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
@@ -131,18 +131,18 @@ namespace NuGet.PackageManagement.VisualStudio
 
                 if (Action != vsBuildAction.vsBuildActionClean)
                 {
-                    ShowWarningsForPackageReinstallation(_dte.Solution);
+                    await ShowWarningsForPackageReinstallationAsync(_dte.Solution);
                 }
             });
         }
 
-        private void ShowWarningsForPackageReinstallation(Solution solution)
+        private async System.Threading.Tasks.Task ShowWarningsForPackageReinstallationAsync(Solution solution)
         {
             Debug.Assert(solution != null);
 
             foreach (Project project in solution.Projects)
             {
-                var nuGetProject = EnvDTEProjectUtility.GetNuGetProject(project, _solutionManager);
+                var nuGetProject = await EnvDTEProjectUtility.GetNuGetProjectAsync(project, _solutionManager);
                 if (ProjectRetargetingUtility.IsProjectRetargetable(nuGetProject))
                 {
                     var packageReferencesToBeReinstalled = ProjectRetargetingUtility.GetPackageReferencesMarkedForReinstallation(nuGetProject);
@@ -169,13 +169,13 @@ namespace NuGet.PackageManagement.VisualStudio
         int IVsTrackProjectRetargetingEvents.OnRetargetingAfterChange(string projRef, IVsHierarchy pAfterChangeHier, string fromTargetFramework, string toTargetFramework)
         {
             NuGetProject retargetedProject = null;
-            NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async delegate
             {
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                 _errorListProvider.Tasks.Clear();
                 var project = VsHierarchyUtility.GetProjectFromHierarchy(pAfterChangeHier);
-                retargetedProject = EnvDTEProjectUtility.GetNuGetProject(project, _solutionManager);
+                retargetedProject = await EnvDTEProjectUtility.GetNuGetProjectAsync(project, _solutionManager);
 
                 if (ProjectRetargetingUtility.IsProjectRetargetable(retargetedProject))
                 {
@@ -251,7 +251,7 @@ namespace NuGet.PackageManagement.VisualStudio
         int IVsTrackBatchRetargetingEvents.OnBatchRetargetingEnd()
         {
             NuGetProject nuGetProject = null;
-            NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async delegate
             {
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
@@ -264,7 +264,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
                         if (project != null)
                         {
-                            nuGetProject = EnvDTEProjectUtility.GetNuGetProject(project, _solutionManager);
+                            nuGetProject = await EnvDTEProjectUtility.GetNuGetProjectAsync(project, _solutionManager);
 
                             if (ProjectRetargetingUtility.IsProjectRetargetable(nuGetProject))
                             {

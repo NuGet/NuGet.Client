@@ -1,10 +1,11 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.ComponentModel.Composition;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft;
 using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.Shell;
@@ -43,16 +44,13 @@ namespace NuGet.PackageManagement.VisualStudio
                 () => vsServiceProvider.GetService<SComponentModel, IComponentModel>());
         }
 
-        public bool TryCreateNuGetProject(
+        public async Task<NuGetProject> TryCreateNuGetProjectAsync(
             IVsProjectAdapter vsProjectAdapter,
             ProjectProviderContext context,
-            bool forceProjectType,
-            out NuGetProject result)
+            bool forceProjectType)
         {
             Assumes.Present(vsProjectAdapter);
             Assumes.Present(context);
-
-            result = null;
 
             _threadingService.ThrowIfNotOnUIThread();
 
@@ -61,7 +59,7 @@ namespace NuGet.PackageManagement.VisualStudio
             // Web sites cannot have project.json
             if (guids.Contains(VsProjectTypes.WebSiteProjectTypeGuid, StringComparer.OrdinalIgnoreCase))
             {
-                return false;
+                return null;
             }
 
             // Find the project file path
@@ -92,15 +90,15 @@ namespace NuGet.PackageManagement.VisualStudio
                 {
                     var projectServices = CreateProjectServicesAsync(vsProjectAdapter);
 
-                    result = new VsProjectJsonNuGetProject(
+                    return await System.Threading.Tasks.Task.FromResult(new VsProjectJsonNuGetProject(
                         projectJsonPath,
                         msbuildProjectFile.FullName,
                         vsProjectAdapter,
-                        projectServices);
+                        projectServices));
                 }
             }
 
-            return result != null;
+            return null;
         }
 
         private INuGetProjectServices CreateProjectServicesAsync(IVsProjectAdapter vsProjectAdapter)

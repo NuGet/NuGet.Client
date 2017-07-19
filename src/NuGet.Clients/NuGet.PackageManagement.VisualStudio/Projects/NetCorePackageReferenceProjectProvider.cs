@@ -1,8 +1,9 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.ComponentModel.Composition;
+using System.Threading.Tasks;
 using Microsoft;
 using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.ProjectSystem;
@@ -51,50 +52,47 @@ namespace NuGet.PackageManagement.VisualStudio
                 () => vsServiceProvider.GetService<SComponentModel, IComponentModel>());
         }
 
-        public bool TryCreateNuGetProject(
+        public async Task<NuGetProject> TryCreateNuGetProjectAsync(
             IVsProjectAdapter vsProject, 
             ProjectProviderContext context, 
-            bool forceProjectType,
-            out NuGetProject result)
+            bool forceProjectType)
         {
             Assumes.Present(vsProject);
             Assumes.Present(context);
 
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            result = null;
-
             // The project must be an IVsHierarchy.
             var hierarchy = vsProject.VsHierarchy;
             
             if (hierarchy == null)
             {
-                return false;
+                return null;
             }
 
             // Check if the project is not CPS capable or if it is CPS capable then it does not have TargetFramework(s), if so then return false
             if (!hierarchy.IsCapabilityMatch("CPS"))
             {
-                return false;
+                return null;
             }
 
             var buildProperties = vsProject.BuildProperties;
 
             // read MSBuild property RestoreProjectStyle, TargetFramework, and TargetFrameworks
-            var restoreProjectStyle = buildProperties.GetPropertyValue(ProjectBuildProperties.RestoreProjectStyle);
-            var targetFramework = buildProperties.GetPropertyValue(ProjectBuildProperties.TargetFramework);
-            var targetFrameworks = buildProperties.GetPropertyValue(ProjectBuildProperties.TargetFrameworks);
+            var restoreProjectStyle = await buildProperties.GetPropertyValueAsync(ProjectBuildProperties.RestoreProjectStyle);
+            var targetFramework = await buildProperties.GetPropertyValueAsync(ProjectBuildProperties.TargetFramework);
+            var targetFrameworks = await buildProperties.GetPropertyValueAsync(ProjectBuildProperties.TargetFrameworks);
 
             // check for RestoreProjectStyle property is set and if not set to PackageReference then return false
             if (!(string.IsNullOrEmpty(restoreProjectStyle) ||
                 restoreProjectStyle.Equals(PackageReference, StringComparison.OrdinalIgnoreCase)))
             {
-                return false;
+                return null;
             }
             // check whether TargetFramework or TargetFrameworks property is set, else return false
             else if (string.IsNullOrEmpty(targetFramework) && string.IsNullOrEmpty(targetFrameworks))
             {
-                return false;
+                return null;
             }
 
             // Lazy load the CPS enabled JoinableTaskFactory for the UI.
@@ -106,7 +104,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             var projectServices = new NetCoreProjectSystemServices(vsProject, _componentModel.Value);
 
-            result = new NetCorePackageReferenceProject(
+           return new NetCorePackageReferenceProject(
                 vsProject.ProjectName,
                 vsProject.CustomUniqueName,
                 fullProjectPath,
@@ -115,8 +113,6 @@ namespace NuGet.PackageManagement.VisualStudio
                 unconfiguredProject,
                 projectServices,
                 vsProject.ProjectId);
-
-            return true;
         }
 
         private static UnconfiguredProject GetUnconfiguredProject(EnvDTE.Project project)

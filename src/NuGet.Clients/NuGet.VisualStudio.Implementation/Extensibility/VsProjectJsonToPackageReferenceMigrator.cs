@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -50,7 +50,7 @@ namespace NuGet.VisualStudio
         private async Task<object> MigrateProjectToPackageRefAsync(string projectUniqueName)
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-            var project = _solutionManager.Value.GetVsProjectAdapter(projectUniqueName);
+            var project = await _solutionManager.Value.GetVsProjectAdapterAsync(projectUniqueName);
 
             if (project == null)
             {
@@ -59,7 +59,7 @@ namespace NuGet.VisualStudio
 
             var projectSafeName = project.CustomUniqueName;
 
-            var nuGetProject = _solutionManager.Value.GetNuGetProject(projectSafeName);
+            var nuGetProject = await _solutionManager.Value.GetNuGetProjectAsync(projectSafeName);
 
             // If the project already has PackageReference, do nothing.
             if (nuGetProject is LegacyPackageReferenceProject)
@@ -89,14 +89,14 @@ namespace NuGet.VisualStudio
             {
                 // reload the project in memory from the file on disk, discarding any changes that might have
                 // been made as a result of an incomplete migration.
-                ReloadProject(project);
+                await ReloadProjectAsync(project);
                 return new VsProjectJsonToPackageReferenceMigrateResult(success: false, errorMessage: ex.Message);
             }
         }
 
-        private void ReloadProject(IVsProjectAdapter project)
+        private async Task ReloadProjectAsync(IVsProjectAdapter project)
         {
-            project = _solutionManager.Value.GetVsProjectAdapter(project.FullName);
+            project = await _solutionManager.Value.GetVsProjectAdapterAsync(project.FullName);
         }
     }
 }

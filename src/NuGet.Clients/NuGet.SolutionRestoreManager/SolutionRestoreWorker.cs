@@ -353,7 +353,7 @@ namespace NuGet.SolutionRestoreManager
                             SolutionRestoreRequest next;
 
                             // check if there are pending nominations
-                            var isAllProjectsNominated = _solutionManager.Value.IsAllProjectsNominated();
+                            var isAllProjectsNominated = await _solutionManager.Value.IsAllProjectsNominatedAsync();
 
                             if (!_pendingRequests.Value.TryTake(out next, IdleTimeoutMs, token))
                             {

@@ -1,8 +1,9 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.ComponentModel.Composition;
+using System.Threading.Tasks;
 using Microsoft;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Utilities;
@@ -17,37 +18,32 @@ namespace NuGet.PackageManagement.VisualStudio
     {
         public RuntimeTypeHandle ProjectType => typeof(ProjectKNuGetProject).TypeHandle;
 
-        public bool TryCreateNuGetProject(
+        public async Task<NuGetProject> TryCreateNuGetProjectAsync(
             IVsProjectAdapter project, 
             ProjectProviderContext context, 
-            bool forceProjectType,
-            out NuGetProject result)
+            bool forceProjectType)
         {
             Assumes.Present(project);
             Assumes.Present(context);
-
-            result = null;
 
             ThreadHelper.ThrowIfNotOnUIThread();
 
             if (project.IsDeferred)
             {
-                return false;
+                return null;
             }
 
             var projectK = EnvDTEProjectUtility.GetProjectKPackageManager(project.Project);
             if (projectK == null)
             {
-                return false;
+                return null;
             }
 
-            result = new ProjectKNuGetProject(
+            return await System.Threading.Tasks.Task.FromResult(new ProjectKNuGetProject(
                 projectK,
                 project.ProjectName,
                 project.CustomUniqueName,
-                project.ProjectId);
-
-            return true;
+                project.ProjectId));
         }
     }
 }

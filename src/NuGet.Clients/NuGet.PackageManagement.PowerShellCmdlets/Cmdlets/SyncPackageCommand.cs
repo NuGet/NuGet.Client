@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -35,10 +35,14 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             {
                 ProjectName = VsSolutionManager.DefaultNuGetProjectName;
             }
-            // Get the projects in the solution that's not the current default or specified project to sync the package identity to.
-            _projects = VsSolutionManager.GetNuGetProjects()
-                .Where(p => !StringComparer.OrdinalIgnoreCase.Equals(p.GetMetadata<string>(NuGetProjectMetadataKeys.Name), ProjectName))
-                .ToList();
+
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
+            {
+                // Get the projects in the solution that's not the current default or specified project to sync the package identity to.
+                _projects = (await VsSolutionManager.GetNuGetProjectsAsync())
+                    .Where(p => !StringComparer.OrdinalIgnoreCase.Equals(p.GetMetadata<string>(NuGetProjectMetadataKeys.Name), ProjectName))
+                    .ToList();
+            });
         }
 
         protected override void ProcessRecordCore()

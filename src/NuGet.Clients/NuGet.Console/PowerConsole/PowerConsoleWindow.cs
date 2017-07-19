@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
@@ -92,20 +93,17 @@ namespace NuGetConsole.Implementation.PowerConsole
             get { return ActiveHostInfo.WpfConsole.Host.GetPackageSources(); }
         }
 
-        public string[] AvailableProjects
+        public async Task<string[]> GetAvailableProjectsAsync()
         {
-            get { return ActiveHostInfo.WpfConsole.Host.GetAvailableProjects(); }
+            return await ActiveHostInfo.WpfConsole.Host.GetAvailableProjectsAsync(); 
         }
 
-        public string DefaultProject
+        public async Task<string> GetDefaultProjectAsync()
         {
-            get
-            {
-                HostInfo hi = ActiveHostInfo;
-                return (hi != null && hi.WpfConsole != null && hi.WpfConsole.Host != null) ?
-                    ActiveHostInfo.WpfConsole.Host.DefaultProject :
-                    String.Empty;
-            }
+            HostInfo hi = ActiveHostInfo;
+            return (hi != null && hi.WpfConsole != null && hi.WpfConsole.Host != null) ?
+                await ActiveHostInfo.WpfConsole.Host.GetDefaultProjectAsync() :
+                String.Empty;
         }
 
         public void SetDefaultProjectIndex(int selectedIndex)

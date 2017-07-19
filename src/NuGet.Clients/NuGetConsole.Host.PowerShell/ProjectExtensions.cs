@@ -1,9 +1,10 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Management.Automation;
+using System.Threading.Tasks;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.VisualStudio;
 
@@ -29,7 +30,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         /// <summary>
         /// DO NOT delete this. This method is only called from PowerShell functional test.
         /// </summary>
-        public static void RemoveProject(string projectName)
+        public static async Task RemoveProject(string projectName)
         {
             if (string.IsNullOrEmpty(projectName))
             {
@@ -39,7 +40,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             var solutionManager = ServiceLocator.GetInstance<IVsSolutionManager>();
             if (solutionManager != null)
             {
-                var project = solutionManager.GetVsProjectAdapter(projectName);
+                var project = await solutionManager.GetVsProjectAdapterAsync(projectName);
                 if (project == null)
                 {
                     throw new InvalidOperationException();

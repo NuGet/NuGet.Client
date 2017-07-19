@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -142,6 +142,8 @@ namespace NuGetConsole.Implementation
             var windowFrame = (IVsWindowFrame)Frame;
             Guid cmdUi = VSConstants.GUID_TextEditorFactory;
             windowFrame.SetGuidProperty((int)__VSFPROPID.VSFPROPID_InheritKeyBindings, ref cmdUi);
+
+            SolutionManager.SolutionOpened += (o, e) => VsUIShell.UpdateCommandUI(0);
 
             // pause for a tiny moment to let the tool window open before initializing the host
             var timer = new DispatcherTimer();
@@ -318,18 +320,22 @@ namespace NuGetConsole.Implementation
 
         private void ProjectsList_Exec(object sender, EventArgs e)
         {
-            OleMenuCmdEventArgs args = e as OleMenuCmdEventArgs;
-            if (args != null)
-            {
-                if (args.InValue != null
-                    || args.OutValue == IntPtr.Zero)
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(
+                async () =>
                 {
-                    throw new ArgumentException("Invalid argument", "e");
-                }
+                    OleMenuCmdEventArgs args = e as OleMenuCmdEventArgs;
+                    if (args != null)
+                    {
+                        if (args.InValue != null
+                            || args.OutValue == IntPtr.Zero)
+                        {
+                            throw new ArgumentException("Invalid argument", "e");
+                        }
 
-                // get project list here
-                Marshal.GetNativeVariantForObject(PowerConsoleWindow.AvailableProjects, args.OutValue);
-            }
+                        // get project list here
+                        Marshal.GetNativeVariantForObject(await PowerConsoleWindow.GetAvailableProjectsAsync(), args.OutValue);
+                    }
+                });
         }
 
         /// <summary>
@@ -337,26 +343,32 @@ namespace NuGetConsole.Implementation
         /// </summary>
         private void Projects_Exec(object sender, EventArgs e)
         {
-            OleMenuCmdEventArgs args = e as OleMenuCmdEventArgs;
-            if (args != null)
-            {
-                if (args.InValue != null
-                    && args.InValue is int)
-                {
-                    // Selected a default projects
-                    int index = (int)args.InValue;
-                    if (index >= 0
-                        && index < PowerConsoleWindow.AvailableProjects.Length)
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(
+                    async () =>
                     {
-                        PowerConsoleWindow.SetDefaultProjectIndex(index);
-                    }
-                }
-                else if (args.OutValue != IntPtr.Zero)
-                {
-                    string displayName = PowerConsoleWindow.DefaultProject ?? string.Empty;
-                    Marshal.GetNativeVariantForObject(displayName, args.OutValue);
-                }
-            }
+                        await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                        OleMenuCmdEventArgs args = e as OleMenuCmdEventArgs;
+                        if (args != null)
+                        {
+                            if (args.InValue != null
+                                && args.InValue is int)
+                            {
+                                // Selected a default projects
+                                int index = (int)args.InValue;
+                                if (index >= 0
+                                    && index < (await PowerConsoleWindow.GetAvailableProjectsAsync()).Length)
+                                {
+                                    PowerConsoleWindow.SetDefaultProjectIndex(index);
+                                }
+                            }
+                            else if (args.OutValue != IntPtr.Zero)
+                            {
+                                string displayName = await PowerConsoleWindow.GetDefaultProjectAsync() ?? string.Empty;
+                                Marshal.GetNativeVariantForObject(displayName, args.OutValue);
+                            }
+                        }
+                    });
         }
 
         /// <summary>

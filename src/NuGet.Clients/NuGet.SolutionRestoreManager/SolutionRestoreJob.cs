@@ -140,7 +140,7 @@ namespace NuGet.SolutionRestoreManager
             try
             {
                 var solutionDirectory = _solutionManager.SolutionDirectory;
-                var isSolutionAvailable = _solutionManager.IsSolutionAvailable;
+                var isSolutionAvailable = await _solutionManager.IsSolutionAvailableAsync();
 
                 if (solutionDirectory == null)
                 {
@@ -155,7 +155,7 @@ namespace NuGet.SolutionRestoreManager
 
                 // Get the projects from the SolutionManager
                 // Note that projects that are not supported by NuGet, will not show up in this list
-                projects = _solutionManager.GetNuGetProjects();
+                projects = await _solutionManager.GetNuGetProjectsAsync();
 
                 // Check if there are any projects that are not INuGetIntegratedProject, that is,
                 // projects with packages.config. OR 
