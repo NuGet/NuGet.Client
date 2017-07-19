@@ -34,6 +34,7 @@ $LocProjPath = [System.IO.Path]::Combine($NuGetClientRoot, 'build', 'loc.proj')
 $NuGetExe = [System.IO.Path]::Combine($NuGetClientRoot, '.nuget', 'nuget.exe')
 $LocalizationNuspec = [System.IO.Path]::Combine($NuGetClientRoot, 'build', 'Nuspec', 'NuGet.Localization.nuspec')
 $LocalizedFiles = [System.IO.Path]::Combine($NuGetClientRoot, 'artifacts', 'LocalizedFiles')
+$MSBuildExe = 'C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\MSBuild\15.0\bin\msbuild.exe'
 
 
 # 1. Move the localized files into a common location.
