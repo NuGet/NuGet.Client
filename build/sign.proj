@@ -49,6 +49,21 @@
     </ItemGroup>
   </Target>
 
+  <Target Name="MoveLocalizedFilesToLocalizedArtifacts"  AfterTargets="Sign" Condition="'$(BuildRTM)' != 'true'">
+    <MSBuild
+      Projects="@(SolutionProjectsWithoutVSIX)"
+      Properties="BuildProjectReferences=false;"
+      Targets="GetLocalizedFiles">
+
+      <Output
+          TaskParameter="TargetOutputs"
+          ItemName="LocalizedFiles" />
+    </MSBuild>
+    <Move SourceFiles="@(LocalizedFiles->'%(Identity)')" DestinationFiles="@(LocalizedFiles->'%(TargetPath)')"/>
+    <Message Text="Projects: %(SolutionProjectsWithoutVSIX)" Importance="High"/>
+    <Message Text="Localized Files: $(ArtifactsDirectory)LocalizedFiles\%(LocalizedFiles.TargetPath)" Importance="High"/>
+  </Target>
+
   <Target Name="AfterBuild" DependsOnTargets="$(SignTargetsDependOn)"/>
   <Import Project="$(SolutionPackagesFolder)microbuild.core.0.2.0\build\MicroBuild.Core.targets" />
 </Project>
