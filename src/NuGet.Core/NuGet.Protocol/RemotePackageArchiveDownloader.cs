@@ -24,6 +24,7 @@ namespace NuGet.Protocol
         private readonly PackageIdentity _packageIdentity;
         private Lazy<PackageArchiveReader> _packageReader;
         private readonly FindPackageByIdResource _resource;
+        private SemaphoreSlim _throttle;
 
         /// <summary>
         /// Gets an asynchronous package content reader.
@@ -139,27 +140,39 @@ namespace NuGet.Protocol
                 throw new ArgumentException(Strings.ArgumentCannotBeNullOrEmpty, nameof(destinationFilePath));
             }
 
-            cancellationToken.ThrowIfCancellationRequested();
-
-            using (var destination = new FileStream(
-                destinationFilePath,
-                FileMode.Create,
-                FileAccess.ReadWrite,
-                FileShare.ReadWrite | FileShare.Delete,
-                bufferSize: 4096,
-                useAsync: true))
+            try
             {
-                var result = await _resource.CopyNupkgToStreamAsync(
-                    _packageIdentity.Id,
-                    _packageIdentity.Version,
-                    destination,
-                    _cacheContext,
-                    _logger,
-                    cancellationToken);
+                if (_throttle != null)
+                {
+                    await _throttle.WaitAsync();
+                }
 
-                _destinationFilePath = destinationFilePath;
+                cancellationToken.ThrowIfCancellationRequested();
 
-                return result;
+                using (var destination = new FileStream(
+                    destinationFilePath,
+                    FileMode.Create,
+                    FileAccess.ReadWrite,
+                    FileShare.ReadWrite | FileShare.Delete,
+                    bufferSize: 4096,
+                    useAsync: true))
+                {
+                    var result = await _resource.CopyNupkgToStreamAsync(
+                        _packageIdentity.Id,
+                        _packageIdentity.Version,
+                        destination,
+                        _cacheContext,
+                        _logger,
+                        cancellationToken);
+
+                    _destinationFilePath = destinationFilePath;
+
+                    return result;
+                }
+            }
+            finally
+            {
+                _throttle?.Release();
             }
         }
 
@@ -194,6 +207,15 @@ namespace NuGet.Protocol
 
                 return Task.FromResult(packageHash);
             }
+        }
+
+        /// <summary>
+        /// Sets a throttle for package downloads.
+        /// </summary>
+        /// <param name="throttle">A throttle.  Can be <c>null</c>.</param>
+        public void SetThrottle(SemaphoreSlim throttle)
+        {
+            _throttle = throttle;
         }
 
         private PackageArchiveReader GetPackageReader()
