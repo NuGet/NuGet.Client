@@ -94,6 +94,7 @@ namespace NuGet.Protocol.Plugins
             _packageIdentity = packageIdentity;
             _packageReader = packageReader;
             _packageSourceRepository = packageSourceRepository;
+            _handleExceptionAsync = exception => Task.FromResult(false);
         }
 
         /// <summary>
@@ -144,7 +145,7 @@ namespace NuGet.Protocol.Plugins
             }
             catch (Exception ex)
             {
-                if (_handleExceptionAsync == null || !await _handleExceptionAsync(ex))
+                if (!await _handleExceptionAsync(ex))
                 {
                     throw;
                 }
@@ -199,6 +200,10 @@ namespace NuGet.Protocol.Plugins
         /// <summary>
         /// Sets an exception handler for package downloads.
         /// </summary>
+        /// <remarks>The exception handler returns a task that represents the asynchronous operation.
+        /// The task result (<see cref="Task{TResult}.Result" />) returns a <see cref="bool" />
+        /// indicating whether or not the exception was handled.  To handle an exception and stop its
+        /// propagation, the task should return <c>true</c>.  Otherwise, the exception will be rethrown.</remarks>
         /// <param name="handleExceptionAsync">An exception handler.</param>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="handleExceptionAsync" />
         /// is <c>null</c>.</exception>
