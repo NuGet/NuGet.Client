@@ -263,6 +263,91 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
+        public async Task CopyNupkgFileToAsync_RespectsThrottle()
+        {
+            using (var test = RemotePackageArchiveDownloaderTest.Create())
+            using (var throttle = new SemaphoreSlim(initialCount: 0, maxCount: 1))
+            using (var copyEvent = new ManualResetEventSlim())
+            {
+                test.Resource.Setup(x => x.CopyNupkgToStreamAsync(
+                        It.IsNotNull<string>(),
+                        It.IsNotNull<NuGetVersion>(),
+                        It.IsNotNull<Stream>(),
+                        It.IsNotNull<SourceCacheContext>(),
+                        It.IsNotNull<ILogger>(),
+                        It.IsAny<CancellationToken>()))
+                    .Callback<string, NuGetVersion, Stream, SourceCacheContext, ILogger, CancellationToken>(
+                        (id, version, destination, sourceCacheContext, logger, cancellationToken) =>
+                        {
+                            copyEvent.Set();
+                        })
+                    .ReturnsAsync(true);
+
+                var destinationFilePath = Path.Combine(test.TestDirectory.Path, "a");
+
+                test.Downloader.SetThrottle(throttle);
+
+                var wasCopied = false;
+
+                var copyTask = Task.Run(async () =>
+                {
+                    wasCopied = await test.Downloader.CopyNupkgFileToAsync(
+                        destinationFilePath,
+                        CancellationToken.None);
+                });
+
+                await Task.Delay(100);
+
+                Assert.False(copyEvent.IsSet);
+
+                throttle.Release();
+
+                await copyTask;
+
+                Assert.True(copyEvent.IsSet);
+                Assert.True(wasCopied);
+            }
+        }
+
+        [Fact]
+        public async Task CopyNupkgFileToAsync_ReleasesThrottleOnException()
+        {
+            using (var test = RemotePackageArchiveDownloaderTest.Create())
+            using (var throttle = new SemaphoreSlim(initialCount: 1, maxCount: 1))
+            {
+                test.Resource.Setup(x => x.CopyNupkgToStreamAsync(
+                        It.IsNotNull<string>(),
+                        It.IsNotNull<NuGetVersion>(),
+                        It.IsNotNull<Stream>(),
+                        It.IsNotNull<SourceCacheContext>(),
+                        It.IsNotNull<ILogger>(),
+                        It.IsAny<CancellationToken>()))
+                    .ThrowsAsync(new FatalProtocolException("simulated failure"));
+
+                var destinationFilePath = Path.Combine(test.TestDirectory.Path, "a");
+
+                test.Downloader.SetThrottle(throttle);
+
+                var copyTask = Task.Run(async () =>
+                {
+                    try
+                    {
+                        await test.Downloader.CopyNupkgFileToAsync(
+                            destinationFilePath,
+                            CancellationToken.None);
+                    }
+                    catch (Exception)
+                    {
+                    }
+                });
+
+                await copyTask;
+
+                Assert.Equal(1, throttle.CurrentCount);
+            }
+        }
+
+        [Fact]
         public async Task GetPackageHashAsync_ThrowsIfDisposed()
         {
             using (var test = RemotePackageArchiveDownloaderTest.Create())
@@ -331,6 +416,15 @@ namespace NuGet.Protocol.Tests
                     cancellationToken: CancellationToken.None);
 
                 Assert.Equal("z4PhNX7vuL3xVChQ1m2AB9Yg5AULVxXcg/SpIdNs6c5H0NE8XYXysP+DGNKHfuwvY7kxvUdBeoGlODJ6+SfaPg==", actualResult);
+            }
+        }
+
+        [Fact]
+        public void SetThrottle_AcceptsNullThrottle()
+        {
+            using (var test = RemotePackageArchiveDownloaderTest.Create())
+            {
+                test.Downloader.SetThrottle(throttle: null);
             }
         }
 

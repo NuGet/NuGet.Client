@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -74,6 +74,12 @@ namespace NuGet.PackageManagement.VisualStudio
         public override async Task<string> GetAssetsFilePathAsync()
         {
             return await GetAssetsFilePathAsync(shouldThrow: true);
+        }
+
+        public override async Task<string> GetCacheFilePathAsync()
+        {
+            await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
+            return NoOpRestoreUtilities.GetProjectCacheFilePath(cacheRoot: GetBaseIntermediatePath(), projectPath: _projectFullPath);
         }
 
         public override async Task<string> GetAssetsFilePathOrNullAsync()
@@ -170,7 +176,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 {
                     throw new InvalidDataException(string.Format(
                         Strings.BaseIntermediateOutputPathNotFound,
-                        _vsProjectAdapter.FullPath));
+                        _vsProjectAdapter.ProjectDirectory));
                 }
 
                 return null;
@@ -205,7 +211,7 @@ namespace NuGet.PackageManagement.VisualStudio
             }
             else
             {
-                sources = HandleClear(sources);
+                sources = VSRestoreSettingsUtilities.HandleClear(sources);
             }
 
             // Add additional sources
@@ -226,7 +232,7 @@ namespace NuGet.PackageManagement.VisualStudio
             }
             else
             {
-                fallbackFolders = HandleClear(fallbackFolders);
+                fallbackFolders = VSRestoreSettingsUtilities.HandleClear(fallbackFolders);
             }
 
             // Add additional fallback folders
@@ -238,16 +244,6 @@ namespace NuGet.PackageManagement.VisualStudio
         private static bool ShouldReadFromSettings(IEnumerable<string> values)
         {
             return !values.Any() && values.All(e => !StringComparer.OrdinalIgnoreCase.Equals("CLEAR", e));
-        }
-
-        private static IEnumerable<string> HandleClear(IEnumerable<string> values)
-        {
-            if (values.Any(e => StringComparer.OrdinalIgnoreCase.Equals("CLEAR", e)))
-            {
-                return Enumerable.Empty<string>();
-            }
-
-            return values;
         }
 
         private IList<string> GetConfigFilePaths(ISettings settings)
@@ -355,6 +351,7 @@ namespace NuGet.PackageManagement.VisualStudio
                         }
                     },
                     SkipContentFileWrite = true,
+                    CacheFilePath = await GetCacheFilePathAsync(),
                     PackagesPath = GetPackagesPath(settings),
                     Sources = GetSources(settings),
                     FallbackFolders = GetFallbackFolders(settings),

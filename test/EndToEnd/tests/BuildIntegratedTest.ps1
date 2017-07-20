@@ -477,3 +477,115 @@ function Test-BuildIntegratedParentProjectIsRestoredAfterInstallWithClassLibInTr
     # Assert
     Assert-ProjectJsonLockFilePackage $project1 NuGet.Versioning 1.0.7
 }
+
+function Test-BuildIntegratedCleanDeleteCacheFile {
+    # Arrange
+    $project = New-BuildIntegratedProj UAPApp
+
+    Install-Package NuGet.Versioning -ProjectName $project.Name -version 1.0.7
+    Build-Solution
+    
+    Assert-ProjectCacheFileExists $project
+
+    #Act
+    Clean-Solution
+
+    #Assert
+    Assert-ProjectCacheFileNotExists $project
+}
+function Test-InconsistencyBetweenAssetsAndProjectFile{
+    [SkipTestForVS14()]
+    param()
+
+    $projectT = New-Project PackageReferenceClassLibrary
+    $projectT | Install-Package Newtonsoft.Json -Version 9.0.1
+    $solutionFile = Get-SolutionFullName
+    $projectFullName = $projectT.FullName
+    $projectT.Save();
+    
+    #Pre-condition
+    Assert-True ($projectT | Test-InstalledPackage -Id Newtonsoft.Json -Version 9.0.1) -Message 'Test package should be installed'
+    
+    SaveAs-Solution($solutionFile)
+    Close-Solution
+    Remove-PackageReference $projectFullName Newtonsoft.Json
+    Open-Solution $solutionFile    
+    $project = Get-Project
+
+    #Pre-condition
+    Assert-False ($project | Test-InstalledPackage -Id Newtonsoft.Json -Version 9.0.1) -Message 'Test package should not be installed'
+
+    #Act
+    $project | Install-Package Newtonsoft.Json -Version 9.0.1
+
+    #Assert
+    Assert-True ($project | Test-InstalledPackage -Id Newtonsoft.Json -Version 9.0.1) -Message 'Test package should be installed'
+}
+
+function Remove-PackageReference {
+    param(
+        [parameter(Mandatory = $true)]
+        $projectPath,
+        [parameter(Mandatory = $true)]
+        $packageReference
+    )
+    $doc = [xml](Get-Content $projectPath)
+    $ns = New-Object System.Xml.XmlNamespaceManager($doc.NameTable)
+    $ns.AddNamespace("ns", $doc.DocumentElement.NamespaceURI)
+    $node = $doc.SelectSingleNode("//ns:PackageReference[@Include='$packageReference']",$ns)
+    $node.ParentNode.RemoveChild($node)
+
+    $doc.Save($projectPath)
+}
+
+function Test-BuildIntegratedLegacyCleanDeleteCacheFile {
+    # Arrange
+    $project = New-Project PackageReferenceClassLibrary
+    $project | Install-Package Newtonsoft.Json -Version 9.0.1
+    Build-Solution
+    Assert-ProjectCacheFileExists $project
+
+    #Act
+    Clean-Solution
+
+    #Assert
+    Assert-ProjectCacheFileNotExists $project
+}
+
+function Test-BuildIntegratedRebuildDoesNotDeleteCacheFile {
+    # Arrange
+    $project = New-BuildIntegratedProj UAPApp
+    Install-Package NuGet.Versioning -ProjectName $project.Name -version 1.0.7
+    Build-Solution
+    Assert-ProjectCacheFileExists $project
+
+    AdviseSolutionEvents
+
+    #Act
+    Rebuild-Solution
+
+    WaitUntilRebuildCompleted
+    UnadviseSolutionEvents
+
+    #Assert
+    Assert-ProjectCacheFileExists $project
+}
+
+function Test-BuildIntegratedLegacyRebuildDoesNotDeleteCacheFile {
+    # Arrange
+    $project = New-Project PackageReferenceClassLibrary
+    $project | Install-Package Newtonsoft.Json -Version 9.0.1
+    Build-Solution
+    Assert-ProjectCacheFileExists $project
+
+    AdviseSolutionEvents
+
+    #Act
+    Rebuild-Solution
+
+    WaitUntilRebuildCompleted
+    UnadviseSolutionEvents
+
+    #Assert
+    Assert-ProjectCacheFileExists $project
+}

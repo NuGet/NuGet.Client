@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
@@ -674,7 +674,7 @@ namespace NuGet.CommandLine
 
         private static bool IsSolutionOrProjectFile(string fileName)
         {
-            if (!String.IsNullOrEmpty(fileName))
+            if (!string.IsNullOrEmpty(fileName))
             {
                 var extension = Path.GetExtension(fileName);
                 var lastFourCharacters = string.Empty;

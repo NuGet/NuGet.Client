@@ -374,11 +374,15 @@ namespace NuGet.Commands
 
                 cancellationToken.ThrowIfCancellationRequested();
 
-                return await _findPackagesByIdResource.GetPackageDownloaderAsync(
+                var packageDownloader = await _findPackagesByIdResource.GetPackageDownloaderAsync(
                     packageIdentity,
                     cacheContext,
                     logger,
                     cancellationToken);
+
+                packageDownloader.SetThrottle(_throttle);
+
+                return packageDownloader;
             }
             catch (FatalProtocolException e) when (_ignoreFailedSources)
             {

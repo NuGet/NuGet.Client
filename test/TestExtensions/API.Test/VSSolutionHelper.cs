@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
@@ -17,6 +18,12 @@ namespace API.Test
 {
     public static class VSSolutionHelper
     {
+        private static UpdateSolutionEventHandler _solutionEventHandler = new UpdateSolutionEventHandler();
+
+        private static uint _updateSolutionEventsCookie;
+
+        private static IVsSolutionBuildManager _solutionBuildManager;
+
         internal static async Task<EnvDTE80.Solution2> GetDTESolutionAsync()
         {
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
@@ -247,6 +254,70 @@ namespace API.Test
             solutionBuild.Clean(WaitForCleanToFinish: true);
         }
 
+        public static void RebuildSolution()
+        {
+            ThreadHelper.JoinableTaskFactory.Run(async delegate
+            {
+                await RebuildSolutionAsync();
+            });
+        }
+
+        private static async Task RebuildSolutionAsync()
+        {
+            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+            Assumes.Present(_solutionBuildManager);
+
+            var buildFlags = (uint)(VSSOLNBUILDUPDATEFLAGS.SBF_OPERATION_BUILD | VSSOLNBUILDUPDATEFLAGS.SBF_OPERATION_CLEAN);
+
+            _solutionBuildManager.StartSimpleUpdateSolutionConfiguration(buildFlags, (uint)VSSOLNBUILDQUERYRESULTS.VSSBQR_CONTDEPLOYONERROR_QUERY_NO, 1);
+        }
+
+        public static void AdviseSolutionEvents()
+        {
+            ThreadHelper.JoinableTaskFactory.Run(async delegate
+            {
+                await AdviseSolutionEventsAsync();
+            });
+        }
+
+        private static async Task AdviseSolutionEventsAsync()
+        {
+            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+            _solutionBuildManager = ServiceLocator.GetService<SVsSolutionBuildManager, IVsSolutionBuildManager>();
+            Assumes.Present(_solutionBuildManager);
+
+            _solutionBuildManager.AdviseUpdateSolutionEvents(_solutionEventHandler, out _updateSolutionEventsCookie);
+        }
+
+        public static void UnadviseSolutionEvents()
+        {
+            ThreadHelper.JoinableTaskFactory.Run(async delegate
+            {
+                await UnadviseSolutionEventsAsync();
+            });
+        }
+
+        private static async Task UnadviseSolutionEventsAsync()
+        {
+            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+            if (_updateSolutionEventsCookie != 0)
+            {
+                _solutionBuildManager?.UnadviseUpdateSolutionEvents(_updateSolutionEventsCookie);
+                _updateSolutionEventsCookie = 0;
+            }
+        }
+
+        public static void WaitUntilRebuildCompleted()
+        {
+            while (!_solutionEventHandler.isOperationCompleted)
+            {
+                Thread.Sleep(100);
+            }
+        }
+
         public static async Task<EnvDTE.Project> GetSolutionFolderProjectAsync(EnvDTE80.Solution2 solution2, string solutionFolderName)
         {
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
@@ -466,6 +537,39 @@ namespace API.Test
             }
 
             return null;
+        }
+    }
+
+    public sealed class UpdateSolutionEventHandler: IVsUpdateSolutionEvents
+    {
+        public bool isOperationCompleted;
+
+        public int UpdateSolution_Begin(ref int pfCancelUpdate)
+        {
+            isOperationCompleted = false;
+            return VSConstants.S_OK;
+        }
+
+        public int UpdateSolution_Done(int fSucceeded, int fModified, int fCancelCommand)
+        {
+            isOperationCompleted = true;
+            return VSConstants.S_OK;
+        }
+
+        public int UpdateSolution_StartUpdate(ref int pfCancelUpdate)
+        {
+            return VSConstants.S_OK;
+        }
+
+        public int UpdateSolution_Cancel()
+        {
+            isOperationCompleted = true;
+            return VSConstants.S_OK;
+        }
+
+        public int OnActiveProjectCfgChange(IVsHierarchy pIVsHierarchy)
+        {
+            return VSConstants.S_OK;
         }
     }
 }

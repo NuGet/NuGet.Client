@@ -59,7 +59,7 @@ namespace NuGet.PackageManagement.VisualStudio
             var folderNuGetProjectFullPath = context.PackagesPathFactory();
 
             // Project folder path is the packages config folder path
-            var packagesConfigFolderPath = vsProjectAdapter.FullPath;
+            var packagesConfigFolderPath = vsProjectAdapter.ProjectDirectory;
 
             result = new VsMSBuildNuGetProject(
                 vsProjectAdapter,

@@ -1,7 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.legacy.props" />
-
   <PropertyGroup>
     <Shipping>true</Shipping>
     <IncludeInVSIX>true</IncludeInVSIX>
@@ -10,6 +9,7 @@
     <SkipValidatePackageReferences>true</SkipValidatePackageReferences>
     <TargetFrameworkProfile />
     <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
+    <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
   </PropertyGroup>
   <PropertyGroup>
     <ProjectGuid>{5A79EEF3-51C0-4A14-8D37-50EF38AD835D}</ProjectGuid>
@@ -20,12 +20,6 @@
     <NuGetPackageImportStamp>d946fd5a</NuGetPackageImportStamp>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="EnvDTE, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-      <EmbedInteropTypes>False</EmbedInteropTypes>
-    </Reference>
-    <Reference Include="envdte80, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-      <EmbedInteropTypes>False</EmbedInteropTypes>
-    </Reference>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="PresentationCore" />
     <Reference Include="System" />
@@ -44,6 +38,7 @@
       <DependentUpon>CommonResources.cs</DependentUpon>
     </Compile>
     <Compile Include="Common\GlobalSuppressions.cs" />
+    <Compile Include="Utils\InstalledPackageEnumerator.cs" />
     <Compile Include="IRunspaceManager.cs" />
     <Compile Include="NativeMethods.cs" />
     <Compile Include="ProjectExtensions.cs" />
@@ -86,7 +81,6 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <None Include="project.json" />
     <None Include="Scripts\Add-WrapperMembers.ps1" />
     <None Include="Scripts\NuGet.Types.ps1xml" />
     <None Include="Scripts\NuGet.psd1" />
@@ -95,37 +89,71 @@
     <None Include="Scripts\NuGet.Format.ps1xml" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\NuGet.Core\NuGet.Common\NuGet.Common.csproj" />
-    <ProjectReference Include="..\..\NuGet.Core\NuGet.Configuration\NuGet.Configuration.csproj" />
-    <ProjectReference Include="..\..\NuGet.Core\NuGet.Frameworks\NuGet.Frameworks.csproj" />
-    <ProjectReference Include="..\..\NuGet.Core\NuGet.PackageManagement\NuGet.PackageManagement.csproj" />
-    <ProjectReference Include="..\..\NuGet.Core\NuGet.Packaging.Core\NuGet.Packaging.Core.csproj" />
-    <ProjectReference Include="..\..\NuGet.Core\NuGet.Packaging\NuGet.Packaging.csproj" />
-    <ProjectReference Include="..\..\NuGet.Core\NuGet.Protocol\NuGet.Protocol.csproj" />
-    <ProjectReference Include="..\..\NuGet.Core\NuGet.Resolver\NuGet.Resolver.csproj" />
-    <ProjectReference Include="..\..\NuGet.Core\NuGet.Versioning\NuGet.Versioning.csproj" />
-    <ProjectReference Include="..\NuGet.VisualStudio.Common\NuGet.VisualStudio.Common.csproj" />
-    <ProjectReference Include="..\NuGet.Console\NuGet.Console.csproj" />
+    <ProjectReference Include="..\..\NuGet.Core\NuGet.Common\NuGet.Common.csproj">
+      <Project>{98bee375-a5a0-4fc2-9b7a-25db41c8045d}</Project>
+      <Name>NuGet.Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\NuGet.Core\NuGet.Configuration\NuGet.Configuration.csproj">
+      <Project>{e3ef26e1-80a7-4573-b3a4-1d4b0042616e}</Project>
+      <Name>NuGet.Configuration</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\NuGet.Core\NuGet.Frameworks\NuGet.Frameworks.csproj">
+      <Project>{9a9a9f26-597a-4fa6-a4f1-415063484d9c}</Project>
+      <Name>NuGet.Frameworks</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\NuGet.Core\NuGet.PackageManagement\NuGet.PackageManagement.csproj">
+      <Project>{394aeb96-493c-4839-a5ac-8d93cd2fad40}</Project>
+      <Name>NuGet.PackageManagement</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\NuGet.Core\NuGet.Packaging.Core\NuGet.Packaging.Core.csproj">
+      <Project>{d65583e4-8084-466a-ba4b-55a797ea047b}</Project>
+      <Name>NuGet.Packaging.Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\NuGet.Core\NuGet.Packaging\NuGet.Packaging.csproj">
+      <Project>{bd6bbc90-60be-4e7d-8458-91e9cda66abe}</Project>
+      <Name>NuGet.Packaging</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\NuGet.Core\NuGet.ProjectModel\NuGet.ProjectModel.csproj">
+      <Project>{f013e43f-b6d5-4f59-acf0-eecec2c794f5}</Project>
+      <Name>NuGet.ProjectModel</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\NuGet.Core\NuGet.Protocol\NuGet.Protocol.csproj">
+      <Project>{020f4c88-3a5c-4b89-9868-089e867cc223}</Project>
+      <Name>NuGet.Protocol</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\NuGet.Core\NuGet.Resolver\NuGet.Resolver.csproj">
+      <Project>{51aa27a9-b8b4-458f-9211-e6889b441573}</Project>
+      <Name>NuGet.Resolver</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\NuGet.Core\NuGet.Versioning\NuGet.Versioning.csproj">
+      <Project>{24e62ab7-64e4-4975-9417-883559d1bc19}</Project>
+      <Name>NuGet.Versioning</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\NuGet.Console\NuGet.Console.csproj">
+      <Project>{50e33da2-af14-486d-81b8-bd8409744a38}</Project>
+      <Name>NuGet.Console</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\NuGet.VisualStudio.Common\NuGet.VisualStudio.Common.csproj">
+      <Project>{eea49a74-6efc-410e-9745-bad367ac151d}</Project>
+      <Name>NuGet.VisualStudio.Common</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Scripts\about_NuGet.PackageManagement.PowerShellCmdlets.help.txt"/>
+    <None Include="Scripts\about_NuGet.PackageManagement.PowerShellCmdlets.help.txt" />
     <!-- We copy this xml file to output directory so CI can pick it for localization from artifacts directory
-    However, we condition it to only be copied when building the project itself and not the vsix to prevent VSIX 
+    However, we condition it to only be copied when building the project itself and not the vsix to prevent VSIX
     from including this file -->
     <None Include="Scripts\NuGet.PackageManagement.PowerShellCmdlets.dll-Help.xml">
       <CopyToOutputDirectory Condition="$(IsVsixBuild) != 'true'">PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
-
   <Import Project="$(BuildCommonDirectory)common.targets" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-
   <PropertyGroup>
     <SignTargetsForRealSigning>$(SignTargetsForRealSigning);GetScriptsForSigning</SignTargetsForRealSigning>
     <LocTargets>$(LocTargets);GetPowerShellCmdletsHelpFile</LocTargets>
     <GetLocalizedFilesForVsixDependsOn>GetLocalizedPowerShellCmdletHelpFile</GetLocalizedFilesForVsixDependsOn>
   </PropertyGroup>
-
   <Target Name="GetScriptsForSigning" Returns="@(ScriptsToSign)">
     <ItemGroup>
       <ScriptsToSign Include="$(MSBuildProjectDirectory)\Scripts\*.ps*">
@@ -133,18 +161,17 @@
       </ScriptsToSign>
     </ItemGroup>
   </Target>
-
   <Target Name="GetPowerShellCmdletsHelpFile" Returns="@(PowerShellCmdletsHelpFiles)">
     <ItemGroup>
-      <_PowerShellCmdletsHelpFiles Include="$(OutputPath)Scripts\NuGet.PackageManagement.PowerShellCmdlets.dll-Help.xml"/>
+      <_PowerShellCmdletsHelpFiles Include="$(OutputPath)Scripts\NuGet.PackageManagement.PowerShellCmdlets.dll-Help.xml" />
       <PowerShellCmdletsHelpFiles Include="@(_PowerShellCmdletsHelpFiles)">
-        <TranslationFile>$(LocalizationRootDirectory)\{Lang}\15\%(_PowerShellCmdletsHelpFiles.Filename)%(_PowerShellCmdletsHelpFiles.Extension).lcl</TranslationFile>    <!--Required: translation file-->
-	      <LciCommentFile>$(LocalizationRootDirectory)\comments\15\%(_PowerShellCmdletsHelpFiles.Filename)%(_PowerShellCmdletsHelpFiles.Extension).lci</LciCommentFile>
+        <!--Required: translation file-->
+        <TranslationFile>$(LocalizationRootDirectory)\{Lang}\15\%(_PowerShellCmdletsHelpFiles.Filename)%(_PowerShellCmdletsHelpFiles.Extension).lcl</TranslationFile>
+        <LciCommentFile>$(LocalizationRootDirectory)\comments\15\%(_PowerShellCmdletsHelpFiles.Filename)%(_PowerShellCmdletsHelpFiles.Extension).lci</LciCommentFile>
         <Parser>210</Parser>
       </PowerShellCmdletsHelpFiles>
     </ItemGroup>
   </Target>
-
   <Target Name="GetLocalizedPowerShellCmdletHelpFile">
     <ItemGroup>
       <_AllLocalizedXmlFiles Include="$(OutputPath)Scripts\**\NuGet.PackageManagement.PowerShellCmdlets.dll-Help.xml" />
@@ -153,5 +180,4 @@
       </LocalizedFilesForVsix>
     </ItemGroup>
   </Target>
-
 </Project>

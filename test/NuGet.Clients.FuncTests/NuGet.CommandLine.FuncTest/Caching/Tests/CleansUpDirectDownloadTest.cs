@@ -1,4 +1,7 @@
-﻿using System.IO;
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using NuGet.Test.Utility;
@@ -8,6 +11,8 @@ namespace NuGet.CommandLine.Test.Caching
     public class CleansUpDirectDownloadTest : ICachingTest
     {
         public string Description => "Cleans up leftover .nugetdirectdownload files in the destination directory";
+
+        public int IterationCount => 1;
 
         public Task<string> PrepareTestAsync(CachingTestContext context, ICachingCommand command)
         {

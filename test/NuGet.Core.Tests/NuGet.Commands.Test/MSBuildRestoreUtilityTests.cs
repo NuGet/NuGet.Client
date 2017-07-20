@@ -3,9 +3,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using FluentAssertions;
+using Moq;
 using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
@@ -1827,6 +1829,109 @@ namespace NuGet.Commands.Test
         public void MSBuildRestoreUtility_FixSourcePath(string input, string expected)
         {
             MSBuildRestoreUtility.FixSourcePath(input).Should().Be(expected);
+        }
+
+        [Fact]
+        public void MSBuildRestoreUtility_ReplayWarningsAndErrors_Minimal()
+        {
+            // Arrange
+            var logger = new Mock<ILogger>();
+            var lockFile = new LockFile()
+            {
+                LogMessages = new List<IAssetsLogMessage>()
+                {
+                    new AssetsLogMessage(LogLevel.Warning, NuGetLogCode.NU1500, "Test Warning"),
+                    new AssetsLogMessage(LogLevel.Error, NuGetLogCode.NU1000, "Test Error")
+                }
+            };
+
+            // Act
+            var codes = MSBuildRestoreUtility.ReplayWarningsAndErrorsAsync(lockFile, logger.Object);
+
+            // Assert
+            logger.Verify(x => x.LogAsync(It.Is<RestoreLogMessage>(l => l.Level == LogLevel.Warning && l.Message == "Test Warning" && l.Code == NuGetLogCode.NU1500)), 
+                Times.Once);
+            logger.Verify(x => x.LogAsync(It.Is<RestoreLogMessage>(l => l.Level == LogLevel.Error && l.Message == "Test Error" && l.Code == NuGetLogCode.NU1000)),
+                Times.Once);
+            logger.Verify(x => x.LogAsync(It.Is<RestoreLogMessage>(l => l.Level == LogLevel.Debug)), Times.Never);
+            logger.Verify(x => x.LogAsync(It.Is<RestoreLogMessage>(l => l.Level == LogLevel.Information)), Times.Never);
+            logger.Verify(x => x.LogAsync(It.Is<RestoreLogMessage>(l => l.Level == LogLevel.Minimal)), Times.Never);
+            logger.Verify(x => x.LogAsync(It.Is<RestoreLogMessage>(l => l.Level == LogLevel.Verbose)), Times.Never);
+        }
+
+        [Fact]
+        public void MSBuildRestoreUtility_ReplayWarningsAndErrors_Full()
+        {
+            // Arrange
+            var logger = new Mock<ILogger>();
+            var number = 10;
+            var targetGraphs = new List<string>() { "target1", "target2" };
+            var lockFile = new LockFile()
+            {
+                LogMessages = new List<IAssetsLogMessage>()
+                {
+                    new AssetsLogMessage(LogLevel.Warning, NuGetLogCode.NU1500, "Test Warning")
+                    {
+                        EndColumnNumber = number,
+                        EndLineNumber = number,
+                        StartColumnNumber = number,
+                        StartLineNumber = number, 
+                        FilePath = "Warning File Path",
+                        LibraryId = "Warning Package",
+                        ProjectPath = "Warning Project Path",
+                        TargetGraphs = targetGraphs,
+                        WarningLevel = WarningLevel.Important
+                    },
+                    new AssetsLogMessage(LogLevel.Error, NuGetLogCode.NU1000, "Test Error")
+                    {
+                        EndColumnNumber = number,
+                        EndLineNumber = number,
+                        StartColumnNumber = number,
+                        StartLineNumber = number,
+                        FilePath = "Error File Path",
+                        LibraryId = "Error Package",
+                        ProjectPath = "Error Project Path",
+                        TargetGraphs = targetGraphs,
+                        WarningLevel = WarningLevel.Important
+                    },
+                }
+            };
+
+            // Act
+            var codes = MSBuildRestoreUtility.ReplayWarningsAndErrorsAsync(lockFile, logger.Object);
+
+            // Assert
+            logger.Verify(x => x.LogAsync(It.Is<RestoreLogMessage>(l => l.Level == LogLevel.Warning && 
+            l.Message == "Test Warning" && 
+            l.Code == NuGetLogCode.NU1500 &&
+            l.EndColumnNumber == number &&
+            l.StartColumnNumber == number &&
+            l.EndLineNumber == number &&
+            l.StartLineNumber == number &&
+            l.FilePath == "Warning File Path" &&
+            l.LibraryId == "Warning Package" &&
+            l.ProjectPath == "Warning Project Path" &&
+            l.TargetGraphs.SequenceEqual(targetGraphs) &&
+            l.WarningLevel == WarningLevel.Important)),
+                Times.Once);
+
+            logger.Verify(x => x.LogAsync(It.Is<RestoreLogMessage>(l => l.Level == LogLevel.Error &&
+            l.Message == "Test Error" &&
+            l.Code == NuGetLogCode.NU1000 &&
+            l.EndColumnNumber == number &&
+            l.StartColumnNumber == number &&
+            l.EndLineNumber == number &&
+            l.StartLineNumber == number &&
+            l.FilePath == "Error File Path" &&
+            l.LibraryId == "Error Package" &&
+            l.ProjectPath == "Error Project Path" &&
+            l.TargetGraphs.SequenceEqual(targetGraphs))),
+                Times.Once);
+
+            logger.Verify(x => x.LogAsync(It.Is<RestoreLogMessage>(l => l.Level == LogLevel.Debug)), Times.Never);
+            logger.Verify(x => x.LogAsync(It.Is<RestoreLogMessage>(l => l.Level == LogLevel.Information)), Times.Never);
+            logger.Verify(x => x.LogAsync(It.Is<RestoreLogMessage>(l => l.Level == LogLevel.Minimal)), Times.Never);
+            logger.Verify(x => x.LogAsync(It.Is<RestoreLogMessage>(l => l.Level == LogLevel.Verbose)), Times.Never);
         }
 
         [PlatformFact(Platform.Windows)]

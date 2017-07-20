@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 namespace NuGet.Common
@@ -127,6 +127,11 @@ namespace NuGet.Common
         /// Unknown compatibility profile
         /// </summary>
         NU1502 = 1502,
+
+        /// <summary>
+        /// Skipping project that does not support restore.
+        /// </summary>
+        NU1503 = 1503,
 
         /// <summary>
         /// Dependency bumped up

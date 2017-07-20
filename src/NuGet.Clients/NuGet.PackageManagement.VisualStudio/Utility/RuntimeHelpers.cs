@@ -142,16 +142,13 @@ namespace NuGet.PackageManagement.VisualStudio
                 return redirects;
             }
 
-            // Get the full path from envDTEProject
-            var root = vsProjectAdapter.FullPath;
-
             IEnumerable<string> assemblies = EnvDTEProjectUtility.GetAssemblyClosure(vsProjectAdapter.Project, projectAssembliesCache);
             redirects = BindingRedirectResolver.GetBindingRedirects(assemblies, domain);
 
             if (frameworkMultiTargeting != null)
             {
                 // filter out assemblies that already exist in the target framework (CodePlex issue #3072)
-                var targetFrameworkName = EnvDTEProjectInfoUtility.GetDotNetFrameworkName(vsProjectAdapter.Project);
+                var targetFrameworkName = await vsProjectAdapter.GetDotNetFrameworkNameAsync();
                 redirects = redirects.Where(p => !FrameworkAssemblyResolver.IsHigherAssemblyVersionInFramework(p.Name, p.AssemblyNewVersion, targetFrameworkName));
             }
 

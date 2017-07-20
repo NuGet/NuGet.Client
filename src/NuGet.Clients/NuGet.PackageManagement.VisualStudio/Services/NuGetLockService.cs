@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -22,12 +22,21 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public bool IsLockHeld => _semaphore.CurrentCount == 0;
 
+        public int LockCount => _lockCount.Value;
+
+        /// <summary>
+        /// This method guarantees that only one operation executes at a time globally;
+        /// however, once an asynchronous call context has acquired the semaphore,
+        /// reentrancy for that call context is allowed without having to wait again on the semaphore.
+        /// </summary>
         public async Task<T> ExecuteNuGetOperationAsync<T>(Func<Task<T>> action, CancellationToken token)
         {
             if (_lockCount.Value == 0)
             {
-                _lockCount.Value++;
                 await _semaphore.WaitAsync(token);
+
+                // Once this thread acquired the lock then increment lockCount
+                _lockCount.Value++;
 
                 try
                 {

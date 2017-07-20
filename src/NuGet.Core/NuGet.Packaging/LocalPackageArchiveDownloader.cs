@@ -22,6 +22,7 @@ namespace NuGet.Packaging
         private readonly PackageIdentity _packageIdentity;
         private Lazy<PackageArchiveReader> _packageReader;
         private Lazy<FileStream> _sourceStream;
+        private SemaphoreSlim _throttle;
 
         /// <summary>
         /// Gets an asynchronous package content reader.
@@ -142,20 +143,35 @@ namespace NuGet.Packaging
                     nameof(destinationFilePath));
             }
 
-            cancellationToken.ThrowIfCancellationRequested();
-
-            using (var destination = new FileStream(
-                destinationFilePath,
-                FileMode.Create,
-                FileAccess.ReadWrite,
-                FileShare.ReadWrite | FileShare.Delete,
-                bufferSize: 4096,
-                useAsync: true))
+            try
             {
-                await _sourceStream.Value.CopyToAsync(
-                    destination,
+                if (_throttle != null)
+                {
+                    await _throttle.WaitAsync();
+                }
+
+                cancellationToken.ThrowIfCancellationRequested();
+
+                using (var source = File.OpenRead(_packageFilePath))
+                using (var destination = new FileStream(
+                    destinationFilePath,
+                    FileMode.Create,
+                    FileAccess.ReadWrite,
+                    FileShare.ReadWrite | FileShare.Delete,
                     bufferSize: 4096,
-                    cancellationToken: cancellationToken);
+                    useAsync: false))
+                {
+                    // This value comes from NuGet.Protocol.StreamExtensions.CopyToAsync(...).
+                    // While 8K may or may not be the optimal buffer size for copy performance,
+                    // it is better than 4K.
+                    const int bufferSize = 8192;
+
+                    await source.CopyToAsync(destination, bufferSize, cancellationToken);
+                }
+            }
+            finally
+            {
+                _throttle?.Release();
             }
 
             return true;
@@ -193,6 +209,15 @@ namespace NuGet.Packaging
             var packageHash = Convert.ToBase64String(bytes);
 
             return Task.FromResult(packageHash);
+        }
+
+        /// <summary>
+        /// Sets a throttle for package downloads.
+        /// </summary>
+        /// <param name="throttle">A throttle.  Can be <c>null</c>.</param>
+        public void SetThrottle(SemaphoreSlim throttle)
+        {
+            _throttle = throttle;
         }
 
         private PackageArchiveReader GetPackageReader()

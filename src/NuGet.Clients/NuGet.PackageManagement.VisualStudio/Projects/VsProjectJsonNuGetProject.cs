@@ -5,6 +5,7 @@ using System;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft;
+using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.ProjectManagement;
@@ -50,6 +51,11 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             return UriUtility.GetAbsolutePathFromFile(MSBuildProjectPath, baseIntermediatePath);
+        }
+
+        public override async Task<string> GetCacheFilePathAsync()
+        {
+            return NoOpRestoreUtilities.GetProjectCacheFilePath(await GetBaseIntermediatePathAsync(), MSBuildProjectPath);
         }
 
         protected override async Task UpdateInternalTargetFrameworkAsync()

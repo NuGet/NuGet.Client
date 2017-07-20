@@ -761,3 +761,38 @@ function Test-NetStandardClassLibraryTransitivePackageLimit {
     Assert-NetCoreNoPackageReference $projectX $id
     Assert-NetCorePackageNotInLockFile $projectX $id
 }
+
+function Test-NetCoreConsoleAppClean {
+
+    # Arrange & Act
+    $project = New-NetCoreConsoleApp ConsoleApp
+
+    Build-Solution
+    
+    Assert-ProjectCacheFileExists $project
+
+    #Act
+    Clean-Solution
+
+    #Assert
+    Assert-ProjectCacheFileNotExists $project
+}
+
+function Test-NetCoreConsoleAppRebuildDoesNotDeleteCacheFile {
+    # Arrange & Act
+    $project = New-NetCoreConsoleApp ConsoleApp
+    Build-Solution
+
+    Assert-ProjectCacheFileExists $project
+
+    AdviseSolutionEvents
+
+    #Act
+    Rebuild-Solution
+
+    WaitUntilRebuildCompleted
+    UnadviseSolutionEvents
+
+    #Assert
+    Assert-ProjectCacheFileExists $project
+}

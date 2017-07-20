@@ -1,4 +1,4 @@
-﻿param([parameter(Mandatory = $true)]
+param([parameter(Mandatory = $true)]
       [string]$OutputPath,
       [parameter(Mandatory = $true)]
       [string]$TemplatePath)
@@ -605,6 +605,12 @@ function Build-Solution {
     [API.Test.VSSolutionHelper]::BuildSolution()
 }
 
+function Rebuild-Solution {
+    Write-Verbose "Rebuild and wait for it to complete"
+
+    [API.Test.VSSolutionHelper]::RebuildSolution()
+}
+
 function Get-AssemblyReference {
     param(
         [parameter(Mandatory = $true)]
@@ -873,4 +879,20 @@ function Check-NuGetConfig {
 
 function Get-BuildOutput {
     return [API.Test.VSHelper]::GetBuildOutput()
+}
+
+function AdviseSolutionEvents {
+    Write-Verbose "Advise for Solution build events"
+
+    [API.Test.VSSolutionHelper]::AdviseSolutionEvents()
+}
+
+function UnadviseSolutionEvents {
+    Write-Verbose "Unadvise for solution build events"
+
+    [API.Test.VSSolutionHelper]::UnadviseSolutionEvents()
+}
+
+function WaitUntilRebuildCompleted {
+    [API.Test.VSSolutionHelper]::WaitUntilRebuildCompleted()
 }

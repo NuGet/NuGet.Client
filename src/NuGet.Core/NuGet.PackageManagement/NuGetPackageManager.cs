@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -2446,6 +2446,15 @@ namespace NuGet.PackageManagement
                     sources,
                     logger,
                     token);
+            }
+
+            // If HideWarningsAndErrors is true then restore will not display the warnings and errors.
+            // Further, replay errors and warnings only if restore failed because the assets file will not be committed.
+            // If there were only warnings then those are written to assets file and committed. The design time build will replay them.
+            if (updatedPackageSpec.RestoreSettings.HideWarningsAndErrors &&
+                !restoreResult.Result.Success)
+            {
+                await MSBuildRestoreUtility.ReplayWarningsAndErrorsAsync(restoreResult.Result.LockFile, logger);
             }
 
             // Build the installation context

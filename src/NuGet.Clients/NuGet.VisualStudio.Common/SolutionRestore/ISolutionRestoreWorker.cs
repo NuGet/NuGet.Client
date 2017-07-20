@@ -46,6 +46,6 @@ namespace NuGet.VisualStudio
         /// <summary>
         /// Cleans incremental restore cache.
         /// </summary>
-        void CleanCache();
+        Task CleanCacheAsync();
     }
 }

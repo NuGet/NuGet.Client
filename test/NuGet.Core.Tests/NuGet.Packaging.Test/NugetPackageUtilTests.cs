@@ -812,6 +812,10 @@ namespace Commands.Test
                 return Task.FromResult(packageHash);
             }
 
+            public void SetThrottle(SemaphoreSlim throttle)
+            {
+            }
+
             private PackageArchiveReader GetPackageReader()
             {
                 _sourceStream.Value.Seek(0, SeekOrigin.Begin);

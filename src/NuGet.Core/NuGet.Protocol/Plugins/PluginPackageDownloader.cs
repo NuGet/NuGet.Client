@@ -183,6 +183,15 @@ namespace NuGet.Protocol.Plugins
             return null;
         }
 
+        /// <summary>
+        /// Sets a throttle for package downloads.
+        /// </summary>
+        /// <param name="throttle">A throttle.  Can be <c>null</c>.</param>
+        public void SetThrottle(SemaphoreSlim throttle)
+        {
+            // Do nothing.  Plugins are not implemented on macOS.
+        }
+
         private void ThrowIfDisposed()
         {
             if (_isDisposed)
