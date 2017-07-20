@@ -245,6 +245,14 @@ namespace NuGet.Protocol.Tests
    ""@type"": ""RegistrationsBaseUrl/3.0.0-beta""
   },
   {
+   ""@id"": ""https://api.nuget.org/v3/registration2-gz-semver2/"",
+   ""@type"": ""RegistrationsBaseUrl/3.6.0""
+  },
+  {
+   ""@id"": ""https://api.nuget.org/v3/registration2-gz-semver2/"",
+   ""@type"": ""RegistrationsBaseUrl/3.6.0""
+  },
+  {
    ""@id"": ""https://www.nuget.org/packages/{id}/{version}/ReportAbuse"",
    ""@type"": ""ReportAbuseUriTemplate/3.0.0-beta""
   },

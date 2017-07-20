@@ -297,6 +297,10 @@ namespace NuGet.Protocol.VisualStudio.Tests
    ""@type"": ""ReportAbuseUriTemplate/3.0.0-rc""
   },
   {
+   ""@id"": ""https://api.nuget.org/v3/registration2-gz-semver2/"",
+   ""@type"": ""RegistrationsBaseUrl/3.6.0""
+  },
+  {
    ""@id"": ""https://api.nuget.org/v3/registration0/{id-lower}/index.json"",
    ""@type"": ""PackageDisplayMetadataUriTemplate/3.0.0-rc""
   },
