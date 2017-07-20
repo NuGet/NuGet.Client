@@ -198,6 +198,8 @@ Write-Host "##vso[task.addattachment type=Distributedtask.Core.Summary;name=$Rep
 }
 
 $xml = GetDependencyVersionPropsFile -RepositoryName $RepositoryName -BranchName $BranchName -FilePath build/DependencyVersions.props
+Write-Host $xml
+
 $updatedXml = UpdateNuGetVersionInXmlFile -XmlContents $xml -NuGetVersion $ProductVersion -NuGetTag $NuGetTag
 
 CreateBranchForPullRequest -RepositoryName $RepositoryName -Headers $Headers -BranchName $BranchName
