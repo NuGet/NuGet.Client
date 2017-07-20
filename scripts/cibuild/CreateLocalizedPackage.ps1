@@ -24,28 +24,26 @@ param
 if ($BuildRTM -eq 'false')
 {
     $OutputPath = [System.IO.Path]::Combine($NuGetClientRoot, 'artifacts', 'nupkgs')
-}
-else
-{
-    $OutputPath = [System.IO.Path]::Combine($NuGetClientRoot, 'artifacts', 'ReleaseNupkgs')
-}
 
-# Declare common variables
-$NuGetClientRoot = $env:BUILD_REPOSITORY_LOCALPATH
-$LocProjPath = [System.IO.Path]::Combine($NuGetClientRoot, 'build', 'loc.proj')
-$NuGetExe = [System.IO.Path]::Combine($NuGetClientRoot, '.nuget', 'nuget.exe')
-$LocalizationNuspec = [System.IO.Path]::Combine($NuGetClientRoot, 'build', 'Nuspec', 'NuGet.Localization.nuspec')
-$LocalizedFiles = [System.IO.Path]::Combine($NuGetClientRoot, 'artifacts', 'LocalizedFiles')
-$MSBuildExe = 'C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\MSBuild\15.0\bin\msbuild.exe'
+    # Declare common variables
+    $NuGetClientRoot = $env:BUILD_REPOSITORY_LOCALPATH
+    $LocProjPath = [System.IO.Path]::Combine($NuGetClientRoot, 'build', 'loc.proj')
+    $NuGetExe = [System.IO.Path]::Combine($NuGetClientRoot, '.nuget', 'nuget.exe')
+    $LocalizationNuspec = [System.IO.Path]::Combine($NuGetClientRoot, 'build', 'Nuspec', 'NuGet.Localization.nuspec')
+    $LocalizedFiles = [System.IO.Path]::Combine($NuGetClientRoot, 'artifacts', 'LocalizedFiles')
+    $MSBuildExe = 'C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\MSBuild\15.0\bin\msbuild.exe'
 
 
-# 1. Move the localized files into a common location.
-Write-Host "Running: $MSBuildExe $LocProjPath /t:MoveLocalizedFilesToLocalizedArtifacts /p:Configuration=$BuildConfiguration"
-& $MSBuildExe $LocProjPath /t:MoveLocalizedFilesToLocalizedArtifacts
+    # 1. Move the localized files into a common location.
+    Write-Host "Running: $MSBuildExe $LocProjPath /t:MoveLocalizedFilesToLocalizedArtifacts /p:Configuration=$BuildConfiguration"
+    & $MSBuildExe $LocProjPath /t:MoveLocalizedFilesToLocalizedArtifacts /p:Configuration=$BuildConfiguration
 
-if ( Test-Path $LocalizedFiles ) 
-{
-    # 2. If any localized paths exist then Pack the localization package nuspec
-    Write-Host "Running: $NuGetExe pack $LocalizationNuspec -properties Version=$Version`;LocalizationFilesDirectory=$LocalizedFiles -OutputDirectory $OutputPath"
-    & $NuGetExe pack $LocalizationNuspec -properties Version=$Version`;LocalizationFilesDirectory=$LocalizedFiles -OutputDirectory $OutputPath
+    if ( Test-Path $LocalizedFiles ) 
+    {
+        # 2. If any localized paths exist then Pack the localization package nuspec
+        Write-Host "Running: $NuGetExe pack $LocalizationNuspec -properties Version=$Version`;LocalizationFilesDirectory=$LocalizedFiles -OutputDirectory $OutputPath"
+        & $NuGetExe pack $LocalizationNuspec -properties Version=$Version`;LocalizationFilesDirectory=$LocalizedFiles -OutputDirectory $OutputPath
+
+        Copy-Item $OutputPath\* "\\nuget\nuget\Share\Users\anmishr"
+    }
 }
