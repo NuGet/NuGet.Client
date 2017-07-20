@@ -83,7 +83,7 @@ sha = $r1.sha;
 
 Write-Host $Body2
 
-$r2 = Invoke-RestMethod -Headers $Headers -Method Post -Uri "https://api.github.com/repos/rohit21agrawal/$NuGetRepository/git/refs" -Body $Body2
+$r2 = Invoke-RestMethod -Headers $Headers -Method Post -Uri "https://api.github.com/repos/NuGet/$NuGetRepository/git/refs" -Body $Body2
 
 Write-Host $r2
 
@@ -91,4 +91,4 @@ Write-Host $r2
 
 Tag-GitCommit -NuGetRepository 'NuGet.Client' -PersonalAccessToken $PersonalAccessToken -CommitHash $Commit -TagName $TagName -TagMessage $Message
 
-#Tag-GitCommit -NuGetRepository 'NuGet.Build.Localization' -PersonalAccessToken $PersonalAccessToken -CommitHash $LocRepoCommitHash -TagName $TagName -TagMessage $Message
+Tag-GitCommit -NuGetRepository 'NuGet.Build.Localization' -PersonalAccessToken $PersonalAccessToken -CommitHash $LocRepoCommitHash -TagName $TagName -TagMessage $Message
