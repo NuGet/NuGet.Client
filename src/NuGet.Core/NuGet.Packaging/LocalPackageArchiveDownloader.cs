@@ -16,6 +16,7 @@ namespace NuGet.Packaging
     /// </summary>
     public sealed class LocalPackageArchiveDownloader : IPackageDownloader
     {
+        private Func<Exception, Task<bool>> _handleExceptionAsync;
         private bool _isDisposed;
         private readonly ILogger _logger;
         private readonly string _packageFilePath;
@@ -91,6 +92,7 @@ namespace NuGet.Packaging
             _logger = logger;
             _packageReader = new Lazy<PackageArchiveReader>(GetPackageReader);
             _sourceStream = new Lazy<FileStream>(GetSourceStream);
+            _handleExceptionAsync = exception => Task.FromResult(false);
         }
 
         /// <summary>
@@ -167,6 +169,15 @@ namespace NuGet.Packaging
                     const int bufferSize = 8192;
 
                     await source.CopyToAsync(destination, bufferSize, cancellationToken);
+
+                    return true;
+                }
+            }
+            catch (Exception ex)
+            {
+                if (!await _handleExceptionAsync(ex))
+                {
+                    throw;
                 }
             }
             finally
@@ -174,7 +185,7 @@ namespace NuGet.Packaging
                 _throttle?.Release();
             }
 
-            return true;
+            return false;
         }
 
         /// <summary>
@@ -209,6 +220,26 @@ namespace NuGet.Packaging
             var packageHash = Convert.ToBase64String(bytes);
 
             return Task.FromResult(packageHash);
+        }
+
+        /// <summary>
+        /// Sets an exception handler for package downloads.
+        /// </summary>
+        /// <remarks>The exception handler returns a task that represents the asynchronous operation.
+        /// The task result (<see cref="Task{TResult}.Result" />) returns a <see cref="bool" />
+        /// indicating whether or not the exception was handled.  To handle an exception and stop its
+        /// propagation, the task should return <c>true</c>.  Otherwise, the exception will be rethrown.</remarks>
+        /// <param name="handleExceptionAsync">An exception handler.</param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="handleExceptionAsync" />
+        /// is <c>null</c>.</exception>
+        public void SetExceptionHandler(Func<Exception, Task<bool>> handleExceptionAsync)
+        {
+            if (handleExceptionAsync == null)
+            {
+                throw new ArgumentNullException(nameof(handleExceptionAsync));
+            }
+
+            _handleExceptionAsync = handleExceptionAsync;
         }
 
         /// <summary>

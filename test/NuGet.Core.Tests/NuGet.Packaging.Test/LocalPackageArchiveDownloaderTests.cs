@@ -145,6 +145,31 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
+        public async Task CopyNupkgFileToAsync_ReturnsFalseIfExceptionHandled()
+        {
+            using (var test = LocalPackageArchiveDownloaderTest.Create())
+            {
+                var destinationFilePath = Path.Combine(test.TestDirectory.Path, "a");
+
+                // Locking the destination file path will cause the copy operation to throw.
+                using (var fileLock = new FileStream(
+                    destinationFilePath,
+                    FileMode.Create,
+                    FileAccess.Write,
+                    FileShare.None))
+                {
+                    test.Downloader.SetExceptionHandler(exception => Task.FromResult(true));
+
+                    var wasCopied = await test.Downloader.CopyNupkgFileToAsync(
+                        destinationFilePath,
+                        CancellationToken.None);
+
+                    Assert.False(wasCopied);
+                }
+            }
+        }
+
+        [Fact]
         public async Task CopyNupkgFileToAsync_ReturnsTrueOnSuccess()
         {
             using (var test = LocalPackageArchiveDownloaderTest.Create())
@@ -290,6 +315,18 @@ namespace NuGet.Packaging.Test
                     CancellationToken.None);
 
                 Assert.Equal(expectedPackageHash, actualPackageHash);
+            }
+        }
+
+        [Fact]
+        public void SetExceptionHandler_ThrowsForNullHandler()
+        {
+            using (var test = LocalPackageArchiveDownloaderTest.Create())
+            {
+                var exception = Assert.Throws<ArgumentNullException>(
+                    () => test.Downloader.SetExceptionHandler(handleExceptionAsync: null));
+
+                Assert.Equal("handleExceptionAsync", exception.ParamName);
             }
         }
 
