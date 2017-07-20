@@ -79,12 +79,11 @@ param
     [string]$FilePath
 )
 
-$wc = New-Object System.Net.WebClient
-$wc.Encoding = [System.Text.Encoding]::UTF8
-
 $url = "https://raw.githubusercontent.com/$repoOwner/$RepositoryName/$BranchName/$FilePath"
+Write-Host $url
+$xmlContent = Invoke-WebRequest -Uri $url -UseBasicParsing
 
-return $wc.DownloadString("$url")
+return $xmlContent
 
 }
 
