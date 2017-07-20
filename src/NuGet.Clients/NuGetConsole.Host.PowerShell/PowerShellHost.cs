@@ -603,7 +603,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         private bool ShouldNoOpDueToRestore(SolutionRestoredEventArgs latestRestore)
         {
             return _currentRestore != null &&
-                   latestRestore?.RestoreStatus == NuGetOperationStatus.Succeeded;
+                   latestRestore?.RestoreStatus == NuGetOperationStatus.NoOp;
         }
 
         private bool ShouldNoOpDueToSolutionDirectory(string latestSolutionDirectory)
