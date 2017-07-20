@@ -58,10 +58,10 @@ Function UpdateNuGetVersionInXmlFile {
         [string]$NuGetTag
     )
 
-$xmlString = $XmlContents.Split([environment]::NewLine) | where { $_ -cmatch "$NuGetTag"}
-
+$xmlString = $XmlContents.Split([environment]::NewLine) | where { $_ -cmatch $NuGetTag }
+Write-Host $xmlString
 $newXmlString = "<$NuGetTag>$NuGetVersion</$NuGetTag>"
-
+Write-Host $newXmlString
 $updatedXml = $XmlContents.Replace($xmlString.Trim(), $newXmlString) 
 Write-Host $updatedXml
 return $updatedXml
@@ -79,12 +79,11 @@ param
     [string]$FilePath
 )
 
-$wc = New-Object System.Net.WebClient
-$wc.Encoding = [System.Text.Encoding]::UTF8
-
 $url = "https://raw.githubusercontent.com/$repoOwner/$RepositoryName/$BranchName/$FilePath"
+Write-Host $url
+$xmlContent = Invoke-WebRequest -Uri $url -UseBasicParsing
 
-return $wc.DownloadString("$url")
+return $xmlContent
 
 }
 
@@ -198,6 +197,8 @@ Write-Host "##vso[task.addattachment type=Distributedtask.Core.Summary;name=$Rep
 }
 
 $xml = GetDependencyVersionPropsFile -RepositoryName $RepositoryName -BranchName $BranchName -FilePath build/DependencyVersions.props
+Write-Host $xml
+
 $updatedXml = UpdateNuGetVersionInXmlFile -XmlContents $xml -NuGetVersion $ProductVersion -NuGetTag $NuGetTag
 
 CreateBranchForPullRequest -RepositoryName $RepositoryName -Headers $Headers -BranchName $BranchName
