@@ -801,9 +801,29 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     .Returns("");
 
                 var projectServices = new TestProjectSystemServices();
-                
+
+
+                var testProject = new LegacyPackageReferenceProject(
+                    projectAdapter,
+                    Guid.NewGuid().ToString(),
+                    projectServices,
+                    _threadingService);
+
+                var testDependencyGraphCacheContext = new DependencyGraphCacheContext();
+
+                await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                // Act
+                var packageSpecs = await testProject.GetPackageSpecsAsync(testDependencyGraphCacheContext);
+
+                // Assert
+                Assert.NotNull(packageSpecs);
+
+                var actualRestoreSpec = packageSpecs.Single();
+
                 actualRestoreSpec.TargetFrameworks[0].Imports.Should().BeEmpty();
                 actualRestoreSpec.TargetFrameworks[0].AssetTargetFallback.Should().BeEmpty();
+            }
         }
 
         private static Mock<IVsProjectAdapter> CreateProjectAdapter()
