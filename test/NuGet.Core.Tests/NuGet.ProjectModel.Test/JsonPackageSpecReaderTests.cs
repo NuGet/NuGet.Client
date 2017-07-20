@@ -1,9 +1,11 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Linq;
+using FluentAssertions;
 using NuGet.Common;
+using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.Packaging.Core;
 using NuGet.Versioning;
@@ -43,6 +45,41 @@ namespace NuGet.ProjectModel.Test
 
             // Assert
             Assert.Contains("specify a version range", exception.Message);
+        }
+
+        [Fact]
+        public void PackageSpecReader_ReadImports()
+        {
+            // Arrange
+            var json = @"{
+              ""supports"": {
+                ""net46.app"": { },
+                ""uwp.10.0.app"": { },
+                ""dnxcore50.app"": { }
+                    },
+              ""dependencies"": {
+                ""Microsoft.NETCore"": ""5.0.0"",
+                ""Microsoft.NETCore.Portable.Compatibility"": ""1.0.0""
+              },
+              ""frameworks"": {
+                ""dotnet"": {
+                ""imports"": ""portable-net452+win81""
+                }
+              }
+            }";
+
+            // Act
+            var spec = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
+
+            // Assert
+            var framework = spec.TargetFrameworks[0].Imports.Single();
+            Assert.Equal(".NETPortable", framework.Framework);
+            var fallback = spec.TargetFrameworks[0].FrameworkName as FallbackFramework;
+            Assert.Equal(".NETPlatform", fallback.Framework);
+            Assert.Equal(".NETPortable", fallback.Fallback.Single().Framework);
+
+            spec.TargetFrameworks[0].AssetTargetFallback.ShouldBeEquivalentTo(new NuGetFramework[] {});
+            spec.TargetFrameworks[0].Imports.ShouldBeEquivalentTo(new[] { NuGetFramework.Parse("portable-net452+win81")});
         }
 
         [Fact]

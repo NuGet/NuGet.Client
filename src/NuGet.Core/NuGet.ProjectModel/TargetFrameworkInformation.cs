@@ -17,14 +17,23 @@ namespace NuGet.ProjectModel
 
         /// <summary>
         /// A fallback PCL framework to use when no compatible items
-        /// were found for <see cref="FrameworkName"/>.
+        /// were found for <see cref="FrameworkName"/>. This check is done
+        /// per asset type.
         /// </summary>
+        /// <remarks>Deprecated. Use <see cref="AssetTargetFallback" /> instead.</remarks>
+        /// <see cref="Imports" /> cannot be used with <see cref="AssetTargetFallback" />.
         public IList<NuGetFramework> Imports { get; set; } = new List<NuGetFramework>();
 
         /// <summary>
-        /// If True AssetTargetFallback behavior will be used for Imports.
+        /// A fallback framework to use when no compatible items
+        /// were found for <see cref="FrameworkName"/>. 
+        /// <see cref="AssetTargetFallback" /> will only fallback if the package
+        /// does not contain any assets compatible with <see cref="FrameworkName"/>.
         /// </summary>
-        public bool AssetTargetFallback { get; set; }
+        /// <remarks>
+        /// <see cref="AssetTargetFallback" /> cannot be used with <see cref="Imports" />.
+        /// </remarks>
+        public IList<NuGetFramework> AssetTargetFallback { get; set; } = new List<NuGetFramework>();
 
         /// <summary>
         /// Display warnings when the Imports framework is used.
@@ -41,9 +50,14 @@ namespace NuGet.ProjectModel
             var hashCode = new HashCodeCombiner();
 
             hashCode.AddObject(FrameworkName);
-            hashCode.AddObject(AssetTargetFallback);
             hashCode.AddSequence(Dependencies);
+
+            // Add markers between NuGetFramework objects
+            hashCode.AddObject(nameof(Imports));
             hashCode.AddSequence(Imports);
+
+            hashCode.AddObject(nameof(AssetTargetFallback));
+            hashCode.AddSequence(AssetTargetFallback);
 
             return hashCode.CombinedHash;
         }
@@ -68,7 +82,7 @@ namespace NuGet.ProjectModel
             return EqualityUtility.EqualsWithNullCheck(FrameworkName, other.FrameworkName) &&
                    Dependencies.SequenceEqualWithNullCheck(other.Dependencies) &&
                    Imports.SequenceEqualWithNullCheck(other.Imports) &&
-                   AssetTargetFallback == other.AssetTargetFallback;
+                   AssetTargetFallback.SequenceEqualWithNullCheck(other.AssetTargetFallback);
         }
     }
 }
