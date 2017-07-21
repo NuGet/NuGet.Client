@@ -26,7 +26,6 @@ param
 )
 
 # Localization is not done for $BuildRTM = 'true'
-# Here we pack for relelase and prerelease
 if ($BuildRTM -eq 'false')
 {
     #Same as config.props
@@ -43,7 +42,7 @@ if ($BuildRTM -eq 'false')
     # Safe for VSTS CI machines
     $MSBuildExe = 'C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\MSBuild\15.0\bin\msbuild.exe'
 
-    # Define package versions for pre release and release
+    # Define package version
     $PackageVersion = "$PackageReleaseVersion-$ReleaseLabel-$BuildNumber"
 
     # 1. Move the localized files into a common location.
