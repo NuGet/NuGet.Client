@@ -577,21 +577,26 @@ namespace NuGet.CommandLine
             {
                 return null;
             }
-
+            //Use mscorlib to find mono and msbuild directory
+            var systemLibLocation = Path.GetDirectoryName(typeof(System.Object).Assembly.Location);
+            var msbuildBasePathOnMono = Path.GetFullPath(Path.Combine(systemLibLocation,"..","msbuild"));
+            //Combine msbuild version paths
+            var msBuildPathOnMono14 = Path.Combine(msbuildBasePathOnMono, "14.1", "bin");
+            var msBuildPathOnMono15 = Path.Combine(msbuildBasePathOnMono, "15.0", "bin");
             if (string.IsNullOrEmpty(userVersion))
             {
                 return new[] {
-                        new MsBuildToolset(version: "15.0", path: CommandLineConstants.MsBuildPathOnMac15),
-                        new MsBuildToolset(version: "14.1", path: CommandLineConstants.MsBuildPathOnMac14)}
+                        new MsBuildToolset(version: "15.0", path: msBuildPathOnMono15),
+                        new MsBuildToolset(version: "14.1", path: msBuildPathOnMono14)}
                     .FirstOrDefault(t => Directory.Exists(t.Path));
             }
             else
             {
                 switch (userVersion)
                 {
-                    case "14.1": return new MsBuildToolset(version: "14.1", path: CommandLineConstants.MsBuildPathOnMac14);
+                    case "14.1": return new MsBuildToolset(version: "14.1", path: msBuildPathOnMono14);
                     case "15":
-                    case "15.0": return new MsBuildToolset(version: userVersion, path: CommandLineConstants.MsBuildPathOnMac15);
+                    case "15.0": return new MsBuildToolset(version: userVersion, path: msBuildPathOnMono15);
                 }
             }
 
