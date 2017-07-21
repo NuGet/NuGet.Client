@@ -250,7 +250,7 @@ namespace NuGet.Protocol.Plugins.Tests
                 new Lazy<IPluginDiscoverer>(() => Mock.Of<IPluginDiscoverer>()),
                 Mock.Of<IPluginFactory>());
 
-            Assert.Same(reader, PluginResourceProvider.EnvironmentVariableReader);
+            Assert.Same(reader, provider.EnvironmentVariableReader);
         }
 
         private static SourceRepository CreateSourceRepository(
