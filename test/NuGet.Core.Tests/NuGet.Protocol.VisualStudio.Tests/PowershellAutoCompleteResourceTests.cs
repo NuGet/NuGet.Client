@@ -31,7 +31,7 @@ namespace NuGet.Protocol.VisualStudio.Tests
                 "https://api-v3search-0.nuget.org/autocomplete?q=elm&includePrerelease=true&semVerLevel=2.0.0",
                 JsonData.AutoCompleteV3Example);
             ResponsesDict.Add(
-                "https://api.nuget.org/v3/registration0/nuget.versioning/index.json",
+                "https://api.nuget.org/v3/registration2-gz-semver2/nuget.versioning/index.json",
                 JsonData.VersionAutocompleteRegistrationExample);
             ResponsesDict.Add(
                 "https://nuget.org/api/v2/package-ids?partialId=elm&includePrerelease=True&semVerLevel=2.0.0",
