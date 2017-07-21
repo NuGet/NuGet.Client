@@ -118,6 +118,12 @@ namespace NuGet.Test.Utility
         public string GlobalPackagesFolder { get; set; }
 
         public bool WarningsAsErrors { get; set; }
+
+        /// <summary>
+        /// If true TargetFramework will be used instead of TargetFrameworks
+        /// </summary>
+        public bool SingleTargetFramework { get; set; }
+
         /// <summary>
         /// project.lock.json or project.assets.json
         /// </summary>
@@ -401,9 +407,11 @@ namespace NuGet.Test.Utility
 
                 if (!IsLegacyPackageReference)
                 {
+                    var tfPropName = SingleTargetFramework ? "TargetFramework" : "TargetFrameworks";
+
                     ProjectFileUtils.AddProperties(xml, new Dictionary<string, string>()
                     {
-                        { "TargetFrameworks", string.Join(";", Frameworks.Select(f => f.Framework.GetShortFolderName())) },
+                        { tfPropName, string.Join(";", Frameworks.Select(f => f.Framework.GetShortFolderName())) },
                     });
                 }
 
@@ -412,6 +420,9 @@ namespace NuGet.Test.Utility
 
                 foreach (var frameworkInfo in Frameworks)
                 {
+                    // Add properties with a TFM condition
+                    ProjectFileUtils.AddProperties(xml, frameworkInfo.Properties, $" '$(TargetFramework)' == '{frameworkInfo.Framework.GetShortFolderName()}' ");
+
                     foreach (var package in frameworkInfo.PackageReferences)
                     {
                         var referenceFramework = frameworkInfo.Framework;

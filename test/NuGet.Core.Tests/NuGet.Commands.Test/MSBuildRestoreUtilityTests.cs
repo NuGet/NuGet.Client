@@ -1,9 +1,8 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using FluentAssertions;
@@ -14,13 +13,29 @@ using NuGet.LibraryModel;
 using NuGet.ProjectModel;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
-using Test.Utility;
 using Xunit;
 
 namespace NuGet.Commands.Test
 {
     public class MSBuildRestoreUtilityTests
     {
+        [Theory]
+        [InlineData("a", "", "a")]
+        [InlineData("a|b", "", "a|b")]
+        [InlineData("a|b", "a|b", "")]
+        [InlineData("a|b", "a|b|c", "")]
+        [InlineData("", "a", "")]
+        [InlineData("a", "A", "a")]
+        public void MSBuildRestoreUtility_AggregateSources(string values, string exclude, string expected)
+        {
+            var inputValues = values.Split(new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries);
+            var excludeValues = exclude.Split(new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries);
+            var expectedValues = expected.Split(new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries);
+
+            MSBuildRestoreUtility.AggregateSources(inputValues, excludeValues)
+                .ShouldBeEquivalentTo(expectedValues);
+        }
+
         [Fact]
         public void MSBuildRestoreUtility_GetPackageSpec_VerifyInvalidProjectReferencesAreIgnored()
         {
@@ -1478,7 +1493,7 @@ namespace NuGet.Commands.Test
 
                 var items = new List<IDictionary<string, string>>();
 
-                
+
                 items.Add(new Dictionary<string, string>()
                 {
                     { "Type", "ProjectSpec" },
@@ -1527,7 +1542,7 @@ namespace NuGet.Commands.Test
 
                 var items = new List<IDictionary<string, string>>();
 
-                
+
                 items.Add(new Dictionary<string, string>()
                 {
                     { "Type", "ProjectSpec" },
@@ -1849,7 +1864,7 @@ namespace NuGet.Commands.Test
             var codes = MSBuildRestoreUtility.ReplayWarningsAndErrorsAsync(lockFile, logger.Object);
 
             // Assert
-            logger.Verify(x => x.LogAsync(It.Is<RestoreLogMessage>(l => l.Level == LogLevel.Warning && l.Message == "Test Warning" && l.Code == NuGetLogCode.NU1500)), 
+            logger.Verify(x => x.LogAsync(It.Is<RestoreLogMessage>(l => l.Level == LogLevel.Warning && l.Message == "Test Warning" && l.Code == NuGetLogCode.NU1500)),
                 Times.Once);
             logger.Verify(x => x.LogAsync(It.Is<RestoreLogMessage>(l => l.Level == LogLevel.Error && l.Message == "Test Error" && l.Code == NuGetLogCode.NU1000)),
                 Times.Once);
@@ -1875,7 +1890,7 @@ namespace NuGet.Commands.Test
                         EndColumnNumber = number,
                         EndLineNumber = number,
                         StartColumnNumber = number,
-                        StartLineNumber = number, 
+                        StartLineNumber = number,
                         FilePath = "Warning File Path",
                         LibraryId = "Warning Package",
                         ProjectPath = "Warning Project Path",
@@ -1901,8 +1916,8 @@ namespace NuGet.Commands.Test
             var codes = MSBuildRestoreUtility.ReplayWarningsAndErrorsAsync(lockFile, logger.Object);
 
             // Assert
-            logger.Verify(x => x.LogAsync(It.Is<RestoreLogMessage>(l => l.Level == LogLevel.Warning && 
-            l.Message == "Test Warning" && 
+            logger.Verify(x => x.LogAsync(It.Is<RestoreLogMessage>(l => l.Level == LogLevel.Warning &&
+            l.Message == "Test Warning" &&
             l.Code == NuGetLogCode.NU1500 &&
             l.EndColumnNumber == number &&
             l.StartColumnNumber == number &&

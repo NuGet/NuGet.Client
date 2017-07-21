@@ -1,7 +1,8 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Microsoft.Build.Framework;
@@ -31,9 +32,10 @@ namespace NuGet.Build.Tasks
 
         public string RestoreSolutionDirectory { get; set; }
 
-        public string[] RestoreAdditionalProjectSources { get; set; }
-
-        public string[] RestoreAdditionalProjectFallbackFolders { get; set; }
+        /// <summary>
+        /// Settings read with TargetFramework set
+        /// </summary>
+        public ITaskItem[] RestoreSettingsPerFramework { get; set; }
 
         /// <summary>
         /// Command line value of RestorePackagesPath
@@ -84,8 +86,6 @@ namespace NuGet.Build.Tasks
             BuildTasksUtility.LogInputParam(log, nameof(RestoreFallbackFolders), RestoreFallbackFolders);
             BuildTasksUtility.LogInputParam(log, nameof(RestoreConfigFile), RestoreConfigFile);
             BuildTasksUtility.LogInputParam(log, nameof(RestoreSolutionDirectory), RestoreSolutionDirectory);
-            BuildTasksUtility.LogInputParam(log, nameof(RestoreAdditionalProjectSources), RestoreAdditionalProjectSources);
-            BuildTasksUtility.LogInputParam(log, nameof(RestoreAdditionalProjectFallbackFolders), RestoreAdditionalProjectFallbackFolders);
             BuildTasksUtility.LogInputParam(log, nameof(RestorePackagesPathOverride), RestorePackagesPathOverride);
             BuildTasksUtility.LogInputParam(log, nameof(RestoreSourcesOverride), RestoreSourcesOverride);
             BuildTasksUtility.LogInputParam(log, nameof(RestoreFallbackFoldersOverride), RestoreFallbackFoldersOverride);
@@ -126,7 +126,13 @@ namespace NuGet.Build.Tasks
 
                 // Append additional sources
                 // Escape strings to avoid xplat path issues with msbuild.
-                OutputSources = AppendItems(currentSources, RestoreAdditionalProjectSources?.Select(MSBuildRestoreUtility.FixSourcePath).ToArray());
+                var additionalProjectSources = MSBuildRestoreUtility.AggregateSources(
+                        values: GetPropertyValues(RestoreSettingsPerFramework, "RestoreAdditionalProjectSources"),
+                        excludeValues: Enumerable.Empty<string>())
+                    .Select(MSBuildRestoreUtility.FixSourcePath)
+                    .ToArray();
+
+                OutputSources = AppendItems(currentSources, additionalProjectSources);
 
                 // Fallback folders
                 var currentFallbackFolders = RestoreSettingsUtils.GetValue(
@@ -135,8 +141,13 @@ namespace NuGet.Build.Tasks
                     () => RestoreFallbackFolders?.Select(e => UriUtility.GetAbsolutePathFromFile(ProjectUniqueName, e)).ToArray(),
                     () => SettingsUtility.GetFallbackPackageFolders(settings).ToArray());
 
-                // Append additional fallback folders
-                OutputFallbackFolders = AppendItems(currentFallbackFolders, RestoreAdditionalProjectFallbackFolders);
+                // Append additional fallback folders after removing excluded folders
+                var additionalProjectFallbackFolders = MSBuildRestoreUtility.AggregateSources(
+                        values: GetPropertyValues(RestoreSettingsPerFramework, "RestoreAdditionalProjectFallbackFolders"),
+                        excludeValues: GetPropertyValues(RestoreSettingsPerFramework, "RestoreAdditionalProjectFallbackFoldersExcludes"))
+                    .ToArray();
+
+                OutputFallbackFolders = AppendItems(currentFallbackFolders, additionalProjectFallbackFolders);
             }
             catch (Exception ex)
             {
@@ -165,6 +176,20 @@ namespace NuGet.Build.Tasks
             var additionalAbsolute = additional.Select(e => UriUtility.GetAbsolutePathFromFile(ProjectUniqueName, e));
 
             return current.Concat(additionalAbsolute).ToArray();
+        }
+
+        /// <summary>
+        /// Read a metadata property from each item and split the values.
+        /// Nulls and empty values are ignored.
+        /// </summary>
+        private static IEnumerable<string> GetPropertyValues(ITaskItem[] items, string key)
+        {
+            if (items == null)
+            {
+                return Enumerable.Empty<string>();
+            }
+
+            return items.SelectMany(e => MSBuildStringUtility.Split(BuildTasksUtility.GetPropertyIfExists(e, key)));
         }
     }
 }

@@ -443,8 +443,24 @@ Copyright (c) .NET Foundation. All rights reserved.
     ============================================================
   -->
   <Target Name="_GetRestoreSettings"
-          DependsOnTargets="_GetRestoreProjectStyle;_GetRestoreSettingsOverrides"
+          DependsOnTargets="_GetRestoreProjectStyle;_GetRestoreSettingsOverrides;_GetRestoreTargetFrameworksAsItems"
           Returns="$(_OutputSources);$(_OutputPackagesPath);$(_OutputFallbackFolders);$(_OutputConfigFilePaths)">
+
+    <!-- Read additional sources and fallback folders for each framework  -->
+    <MSBuild
+      Condition=" '$(RestoreProjectStyle)' == 'PackageReference' "
+      Projects="$(MSBuildProjectFullPath)"
+      Targets="_GetRestoreSettingsPerFramework"
+      Properties="TargetFramework=%(_RestoreTargetFrameworkItems.Identity);
+                  %(_MSBuildProjectReferenceExistent.SetConfiguration);
+                  %(_MSBuildProjectReferenceExistent.SetPlatform);
+                  $(_GenerateRestoreGraphProjectEntryInputProperties)"
+      RemoveProperties="%(_MSBuildProjectReferenceExistent.GlobalPropertiesToRemove)">
+
+      <Output
+          TaskParameter="TargetOutputs"
+          ItemName="_RestoreSettingsPerFramework" />
+    </MSBuild>
 
     <!-- For transitive project styles, we rely on evaluating all the settings and including them in the dg spec to faciliate no-op restore-->
     <GetRestoreSettingsTask Condition=" '$(RestoreProjectStyle)' == 'PackageReference' OR '$(RestoreProjectStyle)' == 'ProjectJson' "
@@ -454,8 +470,7 @@ Copyright (c) .NET Foundation. All rights reserved.
      RestoreFallbackFolders="$(RestoreFallbackFolders)"
      RestoreConfigFile="$(RestoreConfigFile)"
      RestoreSolutionDirectory="$(RestoreSolutionDirectory)"
-     RestoreAdditionalProjectFallbackFolders="$(RestoreAdditionalProjectFallbackFolders)"
-     RestoreAdditionalProjectSources="$(RestoreAdditionalProjectSources)"
+     RestoreSettingsPerFramework="@(_RestoreSettingsPerFramework)"
      RestorePackagesPathOverride="$(_RestorePackagesPathOverride)"
      RestoreSourcesOverride="$(_RestoreSourcesOverride)"
      RestoreFallbackFoldersOverride="$(_RestoreFallbackFoldersOverride)"
@@ -473,6 +488,24 @@ Copyright (c) .NET Foundation. All rights reserved.
         TaskParameter="OutputConfigFilePaths"
         PropertyName="_OutputConfigFilePaths" />
     </GetRestoreSettingsTask>
+  </Target>
+
+  <!--
+    ============================================================
+    _GetRestoreSettingsPerFramework
+    Generate items with framework specific settings.
+    ============================================================
+  -->
+  <Target Name="_GetRestoreSettingsPerFramework"
+    Returns="@(_RestoreSettingsPerFramework)">
+
+    <ItemGroup>
+      <_RestoreSettingsPerFramework Include="$([System.Guid]::NewGuid())">
+        <RestoreAdditionalProjectSources>$(RestoreAdditionalProjectSources)</RestoreAdditionalProjectSources>
+        <RestoreAdditionalProjectFallbackFolders>$(RestoreAdditionalProjectFallbackFolders)</RestoreAdditionalProjectFallbackFolders>
+        <RestoreAdditionalProjectFallbackFoldersExcludes>$(RestoreAdditionalProjectFallbackFoldersExcludes)</RestoreAdditionalProjectFallbackFoldersExcludes>
+      </_RestoreSettingsPerFramework>
+    </ItemGroup>
   </Target>
 
   <!--
