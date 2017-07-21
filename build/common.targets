@@ -222,8 +222,6 @@
         <RelativeTargetPath>$(MSBuildProjectName)\$(TargetFramework)\$([MSBuild]::MakeRelative($(OutputPath), %(_AllResourceDlls.Identity)))</RelativeTargetPath>
       </LocalizedFilesFromProject>
     </ItemGroup>
-    <!--<Message Text="Outputpath: $(OutputPath)" Importance="High"/>
-    <Message Text="LocalizedFilesFromProject: @(LocalizedFilesFromProject, '%0a')" Importance="High"/>-->
   </Target>
 
   <!--
