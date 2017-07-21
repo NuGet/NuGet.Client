@@ -40,7 +40,7 @@ namespace NuGet.Protocol.Core.Types
         /// Gets an environment variable reader.
         /// </summary>
         /// <remarks>This is non-private only to facilitate testing.</remarks>
-        public static IEnvironmentVariableReader EnvironmentVariableReader { get; private set; }
+        public IEnvironmentVariableReader EnvironmentVariableReader { get; private set; }
 
         /// <summary>
         /// Initializes a new <see cref="PluginResourceProvider" /> class.
