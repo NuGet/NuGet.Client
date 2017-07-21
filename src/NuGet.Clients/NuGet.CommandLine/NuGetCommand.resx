@@ -3871,7 +3871,7 @@ nuget spec -a MyAssembly.dll</value>
     <value>Aktualizuje balíčky na nejnovější dostupné verze. Tento příkaz rovněž aktualizuje vlastní soubor NuGet.exe.</value>
   </data>
   <data name="UpdateCommandDescription_deu" xml:space="preserve">
-    <value>Pakete auf die aktuellsten verfügbaren Versionen aktualisieren. Dieser Befehl aktualisiert auch sie Datei "NuGet.exe" selbst.</value>
+    <value>Pakete auf die aktuellsten verfügbaren Versionen aktualisieren. Dieser Befehl aktualisiert auch die Datei "NuGet.exe" selbst.</value>
   </data>
   <data name="UpdateCommandDescription_esp" xml:space="preserve">
     <value>Actualizar paquetes a las últimas versiones disponibles. Este comando también actualiza NuGet.exe.</value>
