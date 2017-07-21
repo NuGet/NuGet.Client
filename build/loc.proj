@@ -60,6 +60,7 @@
     <Delete Files="$(ArtifactsDirectory)vsixlangpack\extension.vsixlangpack"/>
   </Target>
 
+  <!--Target is invoked by scripts\cibuild\CreateLocalizedPackage.ps1 to move all the localized files into a common location-->
   <Target Name="MoveLocalizedFilesToLocalizedArtifacts">
     <MSBuild
       Projects="@(SolutionProjectsWithoutVSIX)"
