@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft;
 
 namespace NuGet.VisualStudio
 {
@@ -11,10 +12,16 @@ namespace NuGet.VisualStudio
     public class SolutionRestoredEventArgs : EventArgs
     {
         public NuGetOperationStatus RestoreStatus { get; }
+        public string SolutionDirectory { get; }
 
-        public SolutionRestoredEventArgs(NuGetOperationStatus restoreStatus)
+        public SolutionRestoredEventArgs(
+            NuGetOperationStatus restoreStatus,
+            string solutionDirectory)
         {
+            Assumes.NotNullOrEmpty(solutionDirectory);
+
             RestoreStatus = restoreStatus;
+            SolutionDirectory = solutionDirectory;
         }
     }
 }

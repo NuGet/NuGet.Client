@@ -1,4 +1,5 @@
 function Test-NetCoreProjectExecuteInitScriptOnInstall {
+    [SkipTestForVS14()]
     param($context)
 
     Remove-Variable PackageInitPS1Var -Scope Global -Force -ErrorAction Ignore
@@ -33,6 +34,7 @@ function Test-NetCoreProjectExecuteInitScriptOnInstall {
 }
 
 function Test-NetCoreProjectExecuteInitScriptOnlyOnce {
+    [SkipTestForVS14()]
     param($context)
 
     Remove-Variable PackageInitPS1Var -Scope Global -Force -ErrorAction Ignore
@@ -68,6 +70,7 @@ function Test-NetCoreProjectExecuteInitScriptOnlyOnce {
 }
 
 function Test-NetCoreProjectExecuteInitScriptAfterReopen {
+    [SkipTest('Needs diagnostics event. NuGet/Home#5625')]
     param($context)
 
     $componentModel = Get-VSComponentModel
@@ -87,6 +90,8 @@ function Test-NetCoreProjectExecuteInitScriptAfterReopen {
         $p | Install-Package PackageInitPS1
         Wait-Event -SourceIdentifier RestoreEventSource -TimeoutSec 20
 
+        $p.Save($p.FullName)
+
         $solutionFile = Get-SolutionFullName
         SaveAs-Solution $solutionFile
         Close-Solution
@@ -94,8 +99,7 @@ function Test-NetCoreProjectExecuteInitScriptAfterReopen {
         Remove-Variable PackageInitPS1Var -Scope Global -Force -ErrorAction Ignore
 
         # Reset script execution cache
-        $p2 = New-NetCoreConsoleApp
-        $p2 | Install-Package NuGet.Versioning -Version 3.5.0
+        New-NetCoreConsoleApp
         Wait-Event -SourceIdentifier RestoreEventSource -TimeoutSec 20
         Close-Solution
 
@@ -106,6 +110,9 @@ function Test-NetCoreProjectExecuteInitScriptAfterReopen {
         $restoreEvent = Wait-Event -SourceIdentifier RestoreEventSource -TimeoutSec 20
         Assert-NotNull $restoreEvent
         Assert-AreEqual 'Succeeded' $restoreEvent.SourceEventArgs.RestoreStatus
+
+        Write-Verbose "Sleeping to let the host execute init scripts..."
+        Start-Sleep -s 10
         Assert-AreEqual 1 $global:PackageInitPS1Var
     }
     Finally {
@@ -114,6 +121,7 @@ function Test-NetCoreProjectExecuteInitScriptAfterReopen {
 }
 
 function Test-NetCoreProjectExecuteInitScriptOnSolutionRestore {
+    [SkipTest('Needs diagnostics event. NuGet/Home#5625')]
     param($context)
 
     $componentModel = Get-VSComponentModel
@@ -136,7 +144,6 @@ function Test-NetCoreProjectExecuteInitScriptOnSolutionRestore {
         Remove-Variable PackageInitPS1Var -Scope Global -Force -ErrorAction Ignore
 
         # Act
-        #Invoke-ShellCommand 'ProjectandSolutionContextMenus.Solution.RestoreNuGetPackages'
         Build-Solution
 
         $restoreEvent = Wait-Event -SourceIdentifier RestoreEventSource -TimeoutSec 20

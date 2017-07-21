@@ -31,6 +31,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
     internal abstract class PowerShellHost : IHost, IPathExpansion, IDisposable
     {
         private static readonly string AggregateSourceName = Resources.AggregateSourceName;
+        private static readonly TimeSpan ExecuteInitScriptsRetryDelay = TimeSpan.FromMilliseconds(400);
 
         private readonly AsyncSemaphore _initScriptsLock = new AsyncSemaphore(1);
         private readonly string _name;
@@ -48,6 +49,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         private const string PackageManagementContextKey = "PackageManagementContext";
         private const string DTEKey = "DTE";
         private const string CancellationTokenKey = "CancellationTokenKey";
+        private const int ExecuteInitScriptsRetriesLimit = 50;
         private string _activePackageSource;
         private string[] _packageSources;
         private readonly DTE _dte;
@@ -290,19 +292,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                             if (console is IWpfConsole)
                             {
                                 // Hook up solution events
-                                _solutionManager.SolutionOpened += (o, e) =>
-                                    {
-                                        _scriptExecutor.Reset();
-
-                                    // Solution opened event is raised on the UI thread
-                                    // Go off the UI thread before calling likely expensive call of ExecuteInitScriptsAsync
-                                    // Also, it uses semaphores, do not call it from the UI thread
-                                    Task.Run(delegate
-                                            {
-                                                UpdateWorkingDirectory();
-                                                return ExecuteInitScriptsAsync();
-                                            });
-                                    };
+                                _solutionManager.SolutionOpened += (_, __) => HandleSolutionOpened();
                                 _solutionManager.SolutionClosed += (o, e) => UpdateWorkingDirectory();
                             }
                             _solutionManager.NuGetProjectAdded += (o, e) => UpdateWorkingDirectoryAndAvailableProjects();
@@ -332,6 +322,33 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                         }
                     }
                 });
+        }
+
+        private void HandleSolutionOpened()
+        {
+            _scriptExecutor.Reset();
+
+            // Solution opened event is raised on the UI thread
+            // Go off the UI thread before calling likely expensive call of ExecuteInitScriptsAsync
+            // Also, it uses semaphores, do not call it from the UI thread
+            Task.Run(async () =>
+            {
+                UpdateWorkingDirectory();
+
+                var retries = 0;
+
+                while (retries < ExecuteInitScriptsRetriesLimit)
+                {
+                    if (_solutionManager.IsAllProjectsNominated())
+                    {
+                        await ExecuteInitScriptsAsync();
+                        break;
+                    }
+
+                    await Task.Delay(ExecuteInitScriptsRetryDelay);
+                    retries++;
+                }
+            });
         }
 
         private void UpdateWorkingDirectoryAndAvailableProjects()
@@ -602,8 +619,13 @@ namespace NuGetConsole.Host.PowerShell.Implementation
 
         private bool ShouldNoOpDueToRestore(SolutionRestoredEventArgs latestRestore)
         {
-            return _currentRestore != null &&
-                   latestRestore?.RestoreStatus == NuGetOperationStatus.NoOp;
+            return
+                _currentRestore != null &&
+                latestRestore != null &&
+                (
+                    latestRestore.RestoreStatus == NuGetOperationStatus.NoOp ||
+                    object.ReferenceEquals(_currentRestore, latestRestore)
+                );
         }
 
         private bool ShouldNoOpDueToSolutionDirectory(string latestSolutionDirectory)
