@@ -59,8 +59,8 @@
   
   <PropertyGroup>
     <PostBuildEvent>
-      xcopy /diy $(ArtifactsDirectory)TestableCredentialProvider\$(VisualStudioVersion)\bin\$(Configuration)\net46\CredentialProvider.Testable.exe $(OutputPath)TestableCredentialProvider\
-      xcopy /diy $(ArtifactsDirectory)TestableCredentialProvider\$(VisualStudioVersion)\bin\$(Configuration)\net46\*.dll $(OutputPath)TestableCredentialProvider\
-      xcopy /diy $(ArtifactsDirectory)SampleCommandLineExtensions\$(VisualStudioVersion)\bin\$(Configuration)\net46\SampleCommandLineExtensions.dll $(OutputPath)</PostBuildEvent>
+      xcopy /diy $(ArtifactsDirectory)TestableCredentialProvider\$(BuildVariationFolder)\bin\$(Configuration)\net46\CredentialProvider.Testable.exe $(OutputPath)TestableCredentialProvider\
+      xcopy /diy $(ArtifactsDirectory)TestableCredentialProvider\$(BuildVariationFolder)\bin\$(Configuration)\net46\*.dll $(OutputPath)TestableCredentialProvider\
+      xcopy /diy $(ArtifactsDirectory)SampleCommandLineExtensions\$(BuildVariationFolder)\bin\$(Configuration)\net46\SampleCommandLineExtensions.dll $(OutputPath)</PostBuildEvent>
   </PropertyGroup>
 </Project>

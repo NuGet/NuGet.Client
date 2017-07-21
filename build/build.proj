@@ -343,11 +343,12 @@
       <CoreInputTestAssemblies>@(TestAssemblyPath->WithMetadataValue("IsCore", "true"))</CoreInputTestAssemblies>
       <CoreInputTestAssembliesSpaced>$(CoreInputTestAssemblies.Replace(';', ' '))</CoreInputTestAssembliesSpaced>
       
+      <TestResultOutputFormat Condition="'$(TestResultOutputFormat' == ''">html</TestResultOutputFormat>
       <!-- Build exe commands -->
-      <TestResultsHtml Condition=" '$(TestResultsFileName)' != '' ">$(TestResultsDirectory)$(TestResultsFileName).html</TestResultsHtml>
-      <VSTestCommand>$(DotnetExePath) vstest $(CoreInputTestAssembliesSpaced)</VSTestCommand>
+      <TestResultsHtml Condition=" '$(TestResultsFileName)' != '' ">$(TestResultsDirectory)$(TestResultsFileName).$(TestResultOutputFormat)</TestResultsHtml>
+      <VSTestCommand>$(DotnetExePath) vstest $(CoreInputTestAssembliesSpaced) /logger:trx;LogFileName=$(TestResultsDirectory)$(TestResultsFileName).trx</VSTestCommand>
       <DesktopTestCommand>$(XunitConsoleExePath) $(DesktopInputTestAssembliesSpaced)</DesktopTestCommand>
-      <DesktopTestCommand Condition=" '$(TestResultsHtml)' != '' ">$(DesktopTestCommand) -html $(TestResultsHtml)</DesktopTestCommand>
+      <DesktopTestCommand Condition=" '$(TestResultsHtml)' != '' ">$(DesktopTestCommand) -$(TestResultOutputFormat) $(TestResultsHtml)</DesktopTestCommand>
     </PropertyGroup>
 
     <!-- Desktop -->
