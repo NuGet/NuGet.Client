@@ -60,29 +60,6 @@
     <Delete Files="$(ArtifactsDirectory)vsixlangpack\extension.vsixlangpack"/>
   </Target>
 
-  <!--Target is invoked by scripts\cibuild\CreateLocalizedPackage.ps1 to move all the localized files into a common location-->
-  <Target Name="MoveLocalizedFilesToLocalizedArtifacts">
-    <MSBuild
-      Projects="@(SolutionProjectsWithoutVSIX)"
-      Properties="BuildProjectReferences=false;
-                  Configuration=$(Configuration)"
-      Targets="GetLocalizedFiles">
-
-      <Output
-          TaskParameter="TargetOutputs"
-          ItemName="LocalizedFiles" />
-    </MSBuild>
-
-    <ItemGroup>
-      <LocalizedFilePaths Include="@(LocalizedFiles)">
-        <TargetPath>$(ArtifactsDirectory)LocalizedFiles\%(LocalizedFiles.RelativeTargetPath)</TargetPath>
-      </LocalizedFilePaths>
-    </ItemGroup>
-
-    <Copy SourceFiles="@(LocalizedFilePaths->'%(Identity)')" DestinationFiles="@(LocalizedFilePaths->'%(TargetPath)')"/>
-    <Message Text="Localized Files Moved: %(LocalizedFilePaths.TargetPath)" Importance="High"/>
-  </Target>
-
   <Target Name="MoveEulasToArtifacts" AfterTargets="Localize" Condition="'$(BuildRTM)' != 'true'">
     <ItemGroup>
       <!-- SupportedCultures is defined in MicroBuild.Plugins.Localization.targets which is installed as a plugin

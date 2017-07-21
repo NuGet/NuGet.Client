@@ -152,7 +152,7 @@
     <Message Text="Building for VS15" Importance="high" />
   </Target>
 
-    <!--
+  <!--
     ============================================================
     Build for VS14
     ============================================================
@@ -163,6 +163,46 @@
              Targets="Build"
              Properties="$(CommonMSBuildProperties);
                          VisualStudioVersion=14.0;" />
+  </Target>
+
+  <!--
+    ============================================================
+    Get localized files from all projects and move them to a common location.
+    ============================================================
+  -->
+
+  <Target Name="MoveLocalizedFilesToLocalizedArtifacts">
+    <MSBuild
+      Projects="@(SolutionProjectsWithoutVSIX)"
+      Properties="BuildProjectReferences=false;
+                  Configuration=$(Configuration)"
+      Targets="GetLocalizedFiles">
+
+      <Output
+          TaskParameter="TargetOutputs"
+          ItemName="LocalizedFiles" />
+    </MSBuild>
+
+    <ItemGroup>
+      <LocalizedFilePaths Include="@(LocalizedFiles)">
+        <TargetPath>$(ArtifactsDirectory)LocalizedFiles\%(LocalizedFiles.RelativeTargetPath)</TargetPath>
+      </LocalizedFilePaths>
+    </ItemGroup>
+
+    <Copy SourceFiles="@(LocalizedFilePaths->'%(Identity)')" DestinationFiles="@(LocalizedFilePaths->'%(TargetPath)')"/>
+    <Message Text="Localized Files Moved: %(LocalizedFilePaths.TargetPath)" Importance="High"/>
+  </Target>
+
+  <!--
+    ============================================================
+    Generate NuGet.Localized.nupkg.
+    ============================================================
+  -->
+  <Target Name="GenerateLocalizedPackage" DependsOnTargets="MoveLocalizedFilesToLocalizedArtifacts" Condition=" '$(IsXPlat)' != 'true' ">
+    <Message Text="Generating NuGet.Localization.nupkg" Importance="high" />
+
+    <Exec Command="$(NuGetExePath) pack $(BuildCommonDirectory)\nuspec\NuGet.Localization.nuspec -properties Version=$(Version);LocalizationFilesDirectory=$(LocalizationFilesDirectory) -OutputDirectory $(NupkgOutputDirectory)" 
+          Condition="Exists($(LocalizationFilesDirectory))"/>
   </Target>
 
   <!--

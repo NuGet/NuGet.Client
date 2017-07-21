@@ -217,9 +217,9 @@
 
   <Target Name="GetLocalizedFilesFromProject" Returns="@(LocalizedFilesFromProject)" Condition=" '$(PackProject)' == 'true' ">
     <ItemGroup>
-      <_AllResourceDlls Include="$(OutputPath)**\$(AssemblyName).resources.dll"/>
-      <LocalizedFilesFromProject Include="@(_AllResourceDlls)" Condition="'@(_AllResourceDlls)'!=''">
-        <RelativeTargetPath>$(MSBuildProjectName)\$(TargetFramework)\$([MSBuild]::MakeRelative($(OutputPath), %(_AllResourceDlls.Identity)))</RelativeTargetPath>
+      <LocalizedFiles Include="$(OutputPath)**\$(AssemblyName).resources.dll"/>
+      <LocalizedFilesFromProject Include="@(LocalizedFiles)" Condition="'@(LocalizedFiles)'!=''">
+        <RelativeTargetPath>$(MSBuildProjectName)\$(TargetFramework)\$([MSBuild]::MakeRelative($(OutputPath), %(LocalizedFiles.Identity)))</RelativeTargetPath>
       </LocalizedFilesFromProject>
     </ItemGroup>
   </Target>
