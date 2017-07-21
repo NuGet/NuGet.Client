@@ -39,21 +39,12 @@ if ($BuildRTM -eq 'false')
     $LocalizationNuspec = [System.IO.Path]::Combine($NuGetClientRoot, 'build', 'Nuspec', 'NuGet.Localization.nuspec')
     $LocalizedFiles = [System.IO.Path]::Combine($NuGetClientRoot, 'artifacts', 'LocalizedFiles')
     $NupkgsOutputPath = [System.IO.Path]::Combine($NuGetClientRoot, 'artifacts', 'nupkgs')
-    $ReleaseNupkgsOutputPath = [System.IO.Path]::Combine($NuGetClientRoot, 'artifacts', 'releasenupkgs')
 
     # Safe for VSTS CI machines
     $MSBuildExe = 'C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\MSBuild\15.0\bin\msbuild.exe'
 
     # Define package versions for pre release and release
     $PackageVersion = "$PackageReleaseVersion-$ReleaseLabel-$BuildNumber"
-    if ($ReleaseLabel -Ne 'rtm') 
-    {
-        $ReleasePackageVersion = "$PackageReleaseVersion-$ReleaseLabel"
-    } 
-    else 
-    {
-        $ReleasePackageVersion = "$PackageReleaseVersion"
-    }
 
     # 1. Move the localized files into a common location.
     Write-Host "Running: $MSBuildExe $LocProjPath /t:MoveLocalizedFilesToLocalizedArtifacts /p:Configuration=$BuildConfiguration"
@@ -65,9 +56,5 @@ if ($BuildRTM -eq 'false')
         # Build pre release version
         Write-Host "Running: $NuGetExe pack $LocalizationNuspec -properties Version=$PackageVersion`;LocalizationFilesDirectory=$LocalizedFiles -OutputDirectory $NupkgsOutputPath"
         & $NuGetExe pack $LocalizationNuspec -properties Version=$PackageVersion`;LocalizationFilesDirectory=$LocalizedFiles -OutputDirectory $NupkgsOutputPath
-
-        # Build release version
-        Write-Host "Running: $NuGetExe pack $LocalizationNuspec -properties Version=$ReleasePackageVersion`;LocalizationFilesDirectory=$LocalizedFiles -OutputDirectory $ReleaseNupkgsOutputPath"
-        & $NuGetExe pack $LocalizationNuspec -properties Version=$ReleasePackageVersion`;LocalizationFilesDirectory=$LocalizedFiles -OutputDirectory $ReleaseNupkgsOutputPath
     }
 }
