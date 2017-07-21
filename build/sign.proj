@@ -48,7 +48,7 @@
       </FilesToSign>
     </ItemGroup>
   </Target>
-  
+
   <Target Name="AfterBuild" DependsOnTargets="$(SignTargetsDependOn)"/>
   <Import Project="$(SolutionPackagesFolder)microbuild.core.0.2.0\build\MicroBuild.Core.targets" />
 </Project>
