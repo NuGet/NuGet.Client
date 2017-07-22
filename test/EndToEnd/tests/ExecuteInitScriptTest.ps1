@@ -1,3 +1,5 @@
+Set-Variable DefaultRestoreTimeoutInSeconds 20 -Option Constant
+
 function Test-NetCoreProjectExecuteInitScriptOnInstall {
     [SkipTestForVS14()]
     param($context)
@@ -16,14 +18,14 @@ function Test-NetCoreProjectExecuteInitScriptOnInstall {
         $p = New-NetCoreConsoleApp
 
         # Wait for initial restore
-        $restoreEvent = Wait-Event -SourceIdentifier RestoreEventSource -TimeoutSec 20
+        $restoreEvent = Wait-Event -SourceIdentifier RestoreEventSource -TimeoutSec $DefaultRestoreTimeoutInSeconds
         Assert-NotNull $restoreEvent
         Assert-AreEqual 'Succeeded' $restoreEvent.SourceEventArgs.RestoreStatus
 
         # Act
         $p | Install-Package PackageInitPS1
 
-        $restoreEvent = Wait-Event -SourceIdentifier RestoreEventSource -TimeoutSec 20
+        $restoreEvent = Wait-Event -SourceIdentifier RestoreEventSource -TimeoutSec $DefaultRestoreTimeoutInSeconds
         Assert-NotNull $restoreEvent
         Assert-AreEqual 'Succeeded' $restoreEvent.SourceEventArgs.RestoreStatus
         Assert-AreEqual 1 $global:PackageInitPS1Var
@@ -51,15 +53,15 @@ function Test-NetCoreProjectExecuteInitScriptOnlyOnce {
         $p = New-NetCoreConsoleApp
 
         # Wait for initial restore
-        Wait-Event -SourceIdentifier RestoreEventSource -TimeoutSec 20
+        Wait-Event -SourceIdentifier RestoreEventSource -TimeoutSec $DefaultRestoreTimeoutInSeconds
 
         $p | Install-Package PackageInitPS1
-        Wait-Event -SourceIdentifier RestoreEventSource -TimeoutSec 20
+        Wait-Event -SourceIdentifier RestoreEventSource -TimeoutSec $DefaultRestoreTimeoutInSeconds
 
         # Act
         $p | Install-Package NuGet.Versioning -Version 3.5.0
 
-        $restoreEvent = Wait-Event -SourceIdentifier RestoreEventSource -TimeoutSec 20
+        $restoreEvent = Wait-Event -SourceIdentifier RestoreEventSource -TimeoutSec $DefaultRestoreTimeoutInSeconds
         Assert-NotNull $restoreEvent
         Assert-AreEqual 'Succeeded' $restoreEvent.SourceEventArgs.RestoreStatus
         Assert-AreEqual 1 $global:PackageInitPS1Var
@@ -85,10 +87,10 @@ function Test-NetCoreProjectExecuteInitScriptAfterReopen {
         $p = New-NetCoreConsoleApp
 
         # Wait for initial restore
-        Wait-Event -SourceIdentifier RestoreEventSource -TimeoutSec 20
+        Wait-Event -SourceIdentifier RestoreEventSource -TimeoutSec $DefaultRestoreTimeoutInSeconds
 
         $p | Install-Package PackageInitPS1
-        Wait-Event -SourceIdentifier RestoreEventSource -TimeoutSec 20
+        Wait-Event -SourceIdentifier RestoreEventSource -TimeoutSec $DefaultRestoreTimeoutInSeconds
 
         $p.Save($p.FullName)
 
@@ -100,14 +102,14 @@ function Test-NetCoreProjectExecuteInitScriptAfterReopen {
 
         # Reset script execution cache
         New-NetCoreConsoleApp
-        Wait-Event -SourceIdentifier RestoreEventSource -TimeoutSec 20
+        Wait-Event -SourceIdentifier RestoreEventSource -TimeoutSec $DefaultRestoreTimeoutInSeconds
         Close-Solution
 
         # Act
         Open-Solution $solutionFile
         Wait-ForSolutionLoad
 
-        $restoreEvent = Wait-Event -SourceIdentifier RestoreEventSource -TimeoutSec 20
+        $restoreEvent = Wait-Event -SourceIdentifier RestoreEventSource -TimeoutSec $DefaultRestoreTimeoutInSeconds
         Assert-NotNull $restoreEvent
         Assert-AreEqual 'Succeeded' $restoreEvent.SourceEventArgs.RestoreStatus
 
@@ -136,17 +138,17 @@ function Test-NetCoreProjectExecuteInitScriptOnSolutionRestore {
         $p = New-NetCoreConsoleApp
 
         # Wait for initial restore
-        Wait-Event -SourceIdentifier RestoreEventSource -TimeoutSec 20
+        Wait-Event -SourceIdentifier RestoreEventSource -TimeoutSec $DefaultRestoreTimeoutInSeconds
 
         $p | Install-Package PackageInitPS1
-        Wait-Event -SourceIdentifier RestoreEventSource -TimeoutSec 20
+        Wait-Event -SourceIdentifier RestoreEventSource -TimeoutSec $DefaultRestoreTimeoutInSeconds
 
         Remove-Variable PackageInitPS1Var -Scope Global -Force -ErrorAction Ignore
 
         # Act
         Build-Solution
 
-        $restoreEvent = Wait-Event -SourceIdentifier RestoreEventSource -TimeoutSec 20
+        $restoreEvent = Wait-Event -SourceIdentifier RestoreEventSource -TimeoutSec $DefaultRestoreTimeoutInSeconds
         Assert-NotNull $restoreEvent
         Assert-AreEqual 'Succeeded' $restoreEvent.SourceEventArgs.RestoreStatus
         Assert-Null $global:PackageInitPS1Var
