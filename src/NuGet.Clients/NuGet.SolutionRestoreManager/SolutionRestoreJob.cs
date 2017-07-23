@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -41,7 +41,6 @@ namespace NuGet.SolutionRestoreManager
         private readonly IRestoreEventsPublisher _restoreEventsPublisher;
 
         private RestoreOperationLogger _logger;
-        private string _dependencyGraphProjectCacheHash;
         private INuGetProjectContext _nuGetProjectContext;
 
         private NuGetOperationStatus _status;
@@ -104,7 +103,6 @@ namespace NuGet.SolutionRestoreManager
             _logger = logger;
 
             // update instance attributes with the shared context values
-            _dependencyGraphProjectCacheHash = jobContext.DependencyGraphProjectCacheHash;
             _nuGetProjectContext = jobContext.NuGetProjectContext;
 
             using (var ctr1 = token.Register(() => _status = NuGetOperationStatus.Cancelled))
@@ -120,11 +118,6 @@ namespace NuGet.SolutionRestoreManager
                 {
                     // Log the exception to the console and activity log
                     await _logger.LogExceptionAsync(e);
-                }
-                finally
-                {
-                    // update shared context values with instance attributes
-                    jobContext.DependencyGraphProjectCacheHash = _dependencyGraphProjectCacheHash;
                 }
             }
 
@@ -185,18 +178,14 @@ namespace NuGet.SolutionRestoreManager
                     isSolutionAvailable,
                     token);
 
+#if !VS14
                 // TODO: To limit risk, we only publish the event when there is a cross-platform PackageReference
                 // project in the solution. Extending this behavior to all solutions is tracked here:
                 // NuGet/Home#4478
-#if !VS14
-                if (projects.OfType<NetCorePackageReferenceProject>().Any() &&
-                    !string.IsNullOrEmpty(_dependencyGraphProjectCacheHash))
+                if (projects.OfType<NetCorePackageReferenceProject>().Any())
                 {
-                    // A no-op restore is considered successful. A cancellation is considered unsuccessful.
-                    var args = new SolutionRestoredEventArgs(
-                        isSuccess: _status == NuGetOperationStatus.Succeeded || _status == NuGetOperationStatus.NoOp,
-                        solutionSpecHash: _dependencyGraphProjectCacheHash);
-                    _restoreEventsPublisher.OnSolutionRestoreCompleted(args);
+                    _restoreEventsPublisher.OnSolutionRestoreCompleted(
+                        new SolutionRestoredEventArgs(_status, solutionDirectory));
                 }
 #endif
             }

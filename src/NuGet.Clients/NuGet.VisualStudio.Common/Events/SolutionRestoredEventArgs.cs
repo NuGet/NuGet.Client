@@ -1,7 +1,8 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft;
 
 namespace NuGet.VisualStudio
 {
@@ -10,19 +11,17 @@ namespace NuGet.VisualStudio
     /// </summary>
     public class SolutionRestoredEventArgs : EventArgs
     {
-        public SolutionRestoredEventArgs(bool isSuccess, string solutionSpecHash)
+        public NuGetOperationStatus RestoreStatus { get; }
+        public string SolutionDirectory { get; }
+
+        public SolutionRestoredEventArgs(
+            NuGetOperationStatus restoreStatus,
+            string solutionDirectory)
         {
-            if (string.IsNullOrEmpty(solutionSpecHash))
-            {
-                throw new ArgumentNullException(nameof(solutionSpecHash));
-            }
+            Assumes.NotNullOrEmpty(solutionDirectory);
 
-            IsSuccess = isSuccess;
-            SolutionSpecHash = solutionSpecHash;
+            RestoreStatus = restoreStatus;
+            SolutionDirectory = solutionDirectory;
         }
-
-        public bool IsSuccess { get; }
-
-        public string SolutionSpecHash { get; }
     }
 }
