@@ -176,16 +176,16 @@
       Projects="@(SolutionProjectsWithoutVSIX)"
       Properties="BuildProjectReferences=false;
                   Configuration=$(Configuration)"
-      Targets="GetLocalizedFiles">
+      Targets="GetLocalizedFilesForLocalizationPackage">
 
       <Output
           TaskParameter="TargetOutputs"
-          ItemName="LocalizedFiles" />
+          ItemName="LocalizedFilesForLocalizationPackage" />
     </MSBuild>
 
     <ItemGroup>
-      <LocalizedFilePaths Include="@(LocalizedFiles)">
-        <TargetPath>$(ArtifactsDirectory)LocalizedFiles\%(LocalizedFiles.RelativeTargetPath)</TargetPath>
+      <LocalizedFilePaths Include="@(_LocalizedFilesForLocalizationPackage)">
+        <TargetPath>$(LocalizationFilesDirectory)\%(LocalizedFiles.RelativeTargetPath)</TargetPath>
       </LocalizedFilePaths>
     </ItemGroup>
 
@@ -198,7 +198,7 @@
     Generate NuGet.Localized.nupkg.
     ============================================================
   -->
-  <Target Name="GenerateLocalizedPackage" DependsOnTargets="MoveLocalizedFilesToLocalizedArtifacts" Condition=" '$(IsXPlat)' != 'true' ">
+  <Target Name="GenerateLocalizedPackage" DependsOnTargets="MoveLocalizedFilesToLocalizedArtifacts">
     <Message Text="Generating NuGet.Localization.nupkg" Importance="high" />
 
     <Exec Command="$(NuGetExePath) pack $(BuildCommonDirectory)\nuspec\NuGet.Localization.nuspec -properties Version=$(Version);LocalizationFilesDirectory=$(LocalizationFilesDirectory) -OutputDirectory $(NupkgOutputDirectory)" 

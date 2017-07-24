@@ -201,26 +201,25 @@
     ============================================================
   -->
   <!--Target is invoked by build\loc.proj\MoveLocalizedFilesToLocalizedArtifacts to get all the localized files from all projects-->
-  <Target Name="GetLocalizedFiles" DependsOnTargets="GetTargetFrameworkSet" Returns="@(LocalizedFiles)" Condition=" '$(Shipping)' == 'true' ">
+  <Target Name="GetLocalizedFilesForLocalizationPackage" Returns="@(_LocalizedFilesForLocalizationPackage)" Condition=" '$(Shipping)' == 'true' ">
     <MSBuild
       Projects="$(MSBuildProjectFullPath)"
-      Targets="GetLocalizedFilesFromProject"
-      Properties="TargetFramework=%(ProjectTargetFrameworkEntries.Identity);
-                  BuildProjectReferences=false;
+      Targets="GetLocalizedFilesInProjectOutputPath"
+      Properties="BuildProjectReferences=false;
                   Configuration=$(Configuration)">
 
       <Output
           TaskParameter="TargetOutputs"
-          ItemName="LocalizedFiles" />
+          ItemName="_LocalizedFilesForLocalizationPackage" />
     </MSBuild>
   </Target>
 
-  <Target Name="GetLocalizedFilesFromProject" Returns="@(LocalizedFilesFromProject)" Condition=" '$(PackProject)' == 'true' ">
+  <Target Name="GetLocalizedFilesInProjectOutputPath" Returns="@(_LocalizedFilesInProjectOutputPath)" Condition=" '$(PackProject)' == 'true' ">
     <ItemGroup>
-      <LocalizedFiles Include="$(OutputPath)**\$(AssemblyName).resources.dll"/>
-      <LocalizedFilesFromProject Include="@(LocalizedFiles)" Condition="'@(LocalizedFiles)'!=''">
-        <RelativeTargetPath>$(MSBuildProjectName)\$(TargetFramework)\$([MSBuild]::MakeRelative($(OutputPath), %(LocalizedFiles.Identity)))</RelativeTargetPath>
-      </LocalizedFilesFromProject>
+      <_LocalizedFilesInProjectOutputPathWithoutRelativePath Include="$(OutputPath)**\$(AssemblyName).resources.dll"/>
+      <_LocalizedFilesInProjectOutputPath Include="@(_LocalizedFilesInProjectOutputPathWithoutRelativePath)" Condition=" '@(_LocalizedFilesInProjectOutputPathWithoutRelativePath)' != '' ">
+        <RelativeTargetPath>$(MSBuildProjectName)\$([MSBuild]::MakeRelative($(OutputPath), %(_LocalizedFilesInProjectOutputPathWithoutRelativePath.Identity)))</RelativeTargetPath>
+      </_LocalizedFilesInProjectOutputPath>
     </ItemGroup>
   </Target>
 
