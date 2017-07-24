@@ -176,7 +176,7 @@
       Projects="@(SolutionProjectsWithoutVSIX)"
       Properties="BuildProjectReferences=false;
                   Configuration=$(Configuration)"
-      Targets="GetLocalizedFilesForLocalizationPackage">
+      Targets="GetLocalizedFilesInProjectOutputPath">
 
       <Output
           TaskParameter="TargetOutputs"
@@ -198,10 +198,10 @@
     Generate NuGet.Localized.nupkg.
     ============================================================
   -->
-  <Target Name="GenerateLocalizedPackage" DependsOnTargets="MoveLocalizedFilesToLocalizedArtifacts">
+  <Target Name="GenerateLocalizedPackage" DependsOnTargets="MoveLocalizedFilesToLocalizedArtifacts" AfterTargets="Pack">
     <Message Text="Generating NuGet.Localization.nupkg" Importance="high" />
 
-    <Exec Command="$(NuGetExePath) pack $(BuildCommonDirectory)\nuspec\NuGet.Localization.nuspec -properties Version=$(Version);LocalizationFilesDirectory=$(LocalizationFilesDirectory) -OutputDirectory $(NupkgOutputDirectory)" 
+    <Exec Command="$(NuGetExePath) pack $(NuGetClientsSrcDirectory)NuGet.Localization\NuGet.Localization.nuspec -properties Version=$(Version);LocalizationFilesDirectory=$(LocalizationFilesDirectory) -OutputDirectory $(NupkgOutputDirectory)" 
           Condition="Exists($(LocalizationFilesDirectory))"/>
   </Target>
 

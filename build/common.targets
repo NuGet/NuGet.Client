@@ -200,25 +200,12 @@
     localized from each project
     ============================================================
   -->
-  <!--Target is invoked by build\loc.proj\MoveLocalizedFilesToLocalizedArtifacts to get all the localized files from all projects-->
-  <Target Name="GetLocalizedFilesForLocalizationPackage" Returns="@(_LocalizedFilesForLocalizationPackage)" Condition=" '$(Shipping)' == 'true' ">
-    <MSBuild
-      Projects="$(MSBuildProjectFullPath)"
-      Targets="GetLocalizedFilesInProjectOutputPath"
-      Properties="BuildProjectReferences=false;
-                  Configuration=$(Configuration)">
-
-      <Output
-          TaskParameter="TargetOutputs"
-          ItemName="_LocalizedFilesForLocalizationPackage" />
-    </MSBuild>
-  </Target>
-
+  <!--Target is invoked by build\build.proj\MoveLocalizedFilesToLocalizedArtifacts to get all the localized files from all projects-->
   <Target Name="GetLocalizedFilesInProjectOutputPath" Returns="@(_LocalizedDllsWithRelativePath)" Condition=" '$(PackProject)' == 'true' ">
     <ItemGroup>
       <_LocalizedDlls Include="$(OutputPath)**\$(AssemblyName).resources.dll"/>
       <_LocalizedDllsWithRelativePath Include="@(_LocalizedDlls)" Condition=" '@(_LocalizedDlls)' != '' ">
-        <RelativeTargetPath>$(MSBuildProjectName)\$([MSBuild]::MakeRelative($(OutputPath), %(_LocalizedDlls.Identity)))</RelativeTargetPath>
+        <RelativeTargetPath>$([MSBuild]::MakeRelative($(OutputPath), %(_LocalizedDlls.Identity)))</RelativeTargetPath>
       </_LocalizedDllsWithRelativePath>
     </ItemGroup>
   </Target>
