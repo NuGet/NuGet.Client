@@ -851,6 +851,8 @@ namespace Proj1
                     proj1Directory,
                     "restore ",
                     waitForExit: true);
+                // Preconditions
+                Assert.True(0 == t.Item1, t.Item2 + " " + t.Item3);
 
                 // Act
                 var r = CommandRunner.Run(
