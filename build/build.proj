@@ -180,12 +180,12 @@
 
       <Output
           TaskParameter="TargetOutputs"
-          ItemName="LocalizedFilesForLocalizationPackage" />
+          ItemName="_LocalizedFilesForLocalizationPackage" />
     </MSBuild>
 
     <ItemGroup>
       <LocalizedFilePaths Include="@(_LocalizedFilesForLocalizationPackage)">
-        <TargetPath>$(LocalizationFilesDirectory)\%(LocalizedFiles.RelativeTargetPath)</TargetPath>
+        <TargetPath>$(LocalizationFilesDirectory)\%(_LocalizedFilesForLocalizationPackage.RelativeTargetPath)</TargetPath>
       </LocalizedFilePaths>
     </ItemGroup>
 
