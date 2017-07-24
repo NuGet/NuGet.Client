@@ -35,16 +35,6 @@ namespace NuGet.SolutionRestoreManager
             CancellationToken cancellationToken,
             IProgress<ServiceProgressData> progress)
         {
-            // Don't use CPS thread helper because of RPS perf regression
-            await ThreadHelper.JoinableTaskFactory.RunAsync(async () =>
-            {
-                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                var dte = (EnvDTE.DTE)await GetServiceAsync(typeof(SDTE));
-
-                UserAgent.SetUserAgentString(
-                    new UserAgentStringBuilder().WithVisualStudioSKU(dte.GetFullVsVersionString()));
-            });
-
             _handler = await SolutionRestoreBuildHandler.InitializeAsync(this);
 
             await SolutionRestoreCommand.InitializeAsync(this);
