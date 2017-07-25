@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
+using Microsoft;
 using Microsoft.Build.Construction;
 using Microsoft.Build.Evaluation;
 using NuGet.ProjectManagement;
@@ -39,6 +40,22 @@ namespace NuGet.PackageManagement.VisualStudio
                     yield return Tuple.Create(referenceProjectItem, assemblyName);
                 }
             }
+        }
+
+        internal static string GetPropertyValue(MicrosoftBuildEvaluationProject msBuildProject, string propertyName)
+        {
+            Assumes.NotNull(msBuildProject);
+
+            string value = null;
+
+            var property = msBuildProject.GetProperty(propertyName);
+
+            if (property != null)
+            {
+                value = property.EvaluatedValue;
+            }
+
+            return value;
         }
 
         internal static void AddImportStatement(MicrosoftBuildEvaluationProject msBuildProject, string targetsPath, ImportLocation location)

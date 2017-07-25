@@ -175,6 +175,11 @@ namespace Test.Utility
         {
         }
 
+        public bool IsNetStandardMSINeeded()
+        {
+            return true;
+        }
+
         public void RegisterProcessedFiles(IEnumerable<string> files)
         {
             if (FilesInProcessing == null)

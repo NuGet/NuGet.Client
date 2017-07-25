@@ -103,6 +103,11 @@ namespace NuGet.ProjectManagement
             MSBuildNuGetProjectSystem.AddBindingRedirects();
         }
 
+        public bool IsNetStandardMSINeeded()
+        {
+            return MSBuildNuGetProjectSystem.IsNetStandardMSINeeded();
+        }
+
         private static bool IsBindingRedirectsDisabled(INuGetProjectContext nuGetProjectContext)
         {
             var msBuildNuGetProjectContext = nuGetProjectContext as IMSBuildNuGetProjectContext;

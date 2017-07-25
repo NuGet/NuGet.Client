@@ -222,6 +222,15 @@ namespace NuGet.PackageManagement {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to To reference a library that targets .NET Standard 1.5 or higher, you need to install the .NET Standard Build Support extension for the .NET Framework from https://aka.ms/netstandard-build-support-netfx.
+        /// </summary>
+        public static string MissingNetStandard20MSI {
+            get {
+                return ResourceManager.GetString("MissingNetStandard20MSI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to When updating multiple packages, dependency behavior has to be DependencyBehavior.Highest.
         /// </summary>
         public static string MultiplePackageInstallOrUpdateHasToBeAnUpdate {

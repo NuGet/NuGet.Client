@@ -72,6 +72,12 @@ namespace NuGet.ProjectManagement
         /// <returns>The list of subdirectories in relative path.</returns>
         IEnumerable<string> GetDirectories(string path);
 
+        /// <summary>
+        /// Check if MSI to support net standard 2.0 is installed from build evaluated project.
+        /// </summary>
+        /// <returns>true, if MSI is installed</returns>
+        bool IsNetStandardMSINeeded();
+
         // LIKELY, THERE HAS TO MORE STUFF HERE like 'IsSupportedFile' and 'IsBindingRedirectsEnabled'
         // IMO, there are hacks introduced to special case based on project systems like 'websites' and 'silverlight'
     }

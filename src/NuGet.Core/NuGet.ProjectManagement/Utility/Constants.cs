@@ -42,5 +42,6 @@ namespace NuGet.ProjectManagement
         public static readonly string TargetPlatformIdentifier = "TargetPlatformIdentifier";
         public static readonly string TargetPlatformVersion = "TargetPlatformVersion";
         public static readonly string TargetFrameworkMoniker = "TargetFrameworkMoniker";
+        public static readonly string ImplicitlyExpandNETStandardFacades = "ImplicitlyExpandNETStandardFacades";
     }
 }

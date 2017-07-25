@@ -929,5 +929,26 @@ namespace NuGet.PackageManagement.VisualStudio
                        select p.Name;
             });
         }
+
+        public bool IsNetStandardMSINeeded()
+        {
+            var result = false;
+
+            // Get the msbuild project for this project
+            var buildProject = EnvDTEProjectUtility.AsMicrosoftBuildEvaluationProject(EnvDTEProject.FullName);
+
+            if (buildProject != null)
+            {
+                // check for ImplicitlyExpandNETStandardFacades build property, if this exists, then it means, MSI is already installed.
+                var propertyValue = MicrosoftBuildEvaluationProjectUtility.GetPropertyValue(buildProject, Constants.ImplicitlyExpandNETStandardFacades);
+
+                if (string.IsNullOrEmpty(propertyValue))
+                {
+                    result = true;
+                }
+            }
+
+            return result;
+        }
     }
 }

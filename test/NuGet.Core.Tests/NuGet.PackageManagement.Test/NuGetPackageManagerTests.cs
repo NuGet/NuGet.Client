@@ -5521,6 +5521,58 @@ namespace NuGet.Test
             }
         }
 
+        [Fact]
+        public async Task TestPacMan_InstallPackageWithNetStandard20_ForNET461Project_Throw()
+        {
+            // Arrange
+            using (var packageSource = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                // Arrange
+                var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(
+                    new List<Configuration.PackageSource>()
+                    {
+                        new Configuration.PackageSource(packageSource.Path)
+                    });
+
+                using (var testSolutionManager = new TestSolutionManager(true))
+                {
+                    var testSettings = new Configuration.NullSettings();
+                    var token = CancellationToken.None;
+                    var deleteOnRestartManager = new TestDeleteOnRestartManager();
+                    var nuGetPackageManager = new NuGetPackageManager(
+                        sourceRepositoryProvider,
+                        testSettings,
+                        testSolutionManager,
+                        deleteOnRestartManager);
+                    var projectA = testSolutionManager.AddNewMSBuildProject("testA");
+
+                    // Add package
+                    var target = new PackageIdentity("packageA", NuGetVersion.Parse("1.0.0"));
+                    AddToPackagesFolderAsNetStandard(target, packageSource);
+
+                    var projectActions = new List<NuGetProjectAction>();
+                    projectActions.Add(
+                        NuGetProjectAction.CreateInstallProjectAction(target, null));
+
+                    Exception exception = null;
+                    try
+                    {
+                        // Act
+                        await nuGetPackageManager.ExecuteNuGetProjectActionsAsync(projectA, projectActions,
+                            new TestNuGetProjectContext(), token);
+                    }
+                    catch (Exception ex)
+                    {
+                        exception = ex;
+                    }
+
+                    // Assert
+                    Assert.NotNull(exception);
+                    Assert.Contains("To reference a library that targets .NET Standard 1.5 or higher, you need to install the .NET Standard Build Support extension for the .NET Framework", exception.Message);
+                }
+            }
+        }
+
         private static void AddToPackagesFolder(PackageIdentity package, string root)
         {
             var dir = Path.Combine(root, $"{package.Id}.{package.Version.ToString()}");
@@ -5533,6 +5585,21 @@ namespace NuGet.Test
             };
 
             context.AddFile("lib/net45/a.dll");
+            SimpleTestPackageUtility.CreateOPCPackage(context, dir);
+        }
+
+        private static void AddToPackagesFolderAsNetStandard(PackageIdentity package, string root)
+        {
+            var dir = Path.Combine(root, $"{package.Id}.{package.Version.ToString()}");
+            Directory.CreateDirectory(dir);
+
+            var context = new SimpleTestPackageContext()
+            {
+                Id = package.Id,
+                Version = package.Version.ToString()
+            };
+
+            context.AddFile("lib/netstandard2.0/a.dll");
             SimpleTestPackageUtility.CreateOPCPackage(context, dir);
         }
 
