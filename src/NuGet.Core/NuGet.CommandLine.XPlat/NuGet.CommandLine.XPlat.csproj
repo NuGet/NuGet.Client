@@ -10,7 +10,7 @@
     <!-- <PackageTargetFallback Condition=" '$(TargetFramework)' == 'netcoreapp1.0' ">$(PackageTargetFallback);dotnet5.6</PackageTargetFallback> -->
     <RuntimeFrameworkVersion Condition=" '$(TargetFramework)' == 'netcoreapp1.0' ">1.0.3</RuntimeFrameworkVersion>
     <Shipping>true</Shipping>
-    <PackProject>true</PackProject>
+    <PackProject Condition=" '$(TargetFramework)' == 'netcoreapp1.0' ">true</PackProject>
   </PropertyGroup>
 
   <ItemGroup>
@@ -41,4 +41,5 @@
   </ItemGroup>
   
   <Import Project="$(BuildCommonDirectory)common.targets" />
+
 </Project>
