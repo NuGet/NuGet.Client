@@ -176,8 +176,7 @@
       Projects="@(SolutionProjectsWithoutVSIX)"
       Properties="BuildProjectReferences=false;
                   Configuration=$(Configuration);
-                  AppendTargetFrameworkToOutputPath=false;
-                  AppendRuntimeIdentifierToOutputPath=false"
+                  AppendTargetFrameworkToOutputPath=false"
       Targets="GetLocalizedFilesInProjectOutputPath">
 
       <Output
