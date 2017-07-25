@@ -196,6 +196,33 @@
 
   <!--
     ============================================================
+    GetLocalizedFiles - gathers the list of files that have been
+    localized from each project
+    ============================================================
+  -->
+  <!--Target is invoked by build\build.proj\MoveLocalizedFilesToLocalizedArtifacts to get all the localized files from all projects-->
+  <Target Name="GetLocalizedFilesInProjectOutputPath" Returns="@(_LocalizedDllsWithRelativePath)" Condition=" '$(PackProject)' == 'true' ">
+    <ItemGroup>
+      <_LocalizedDllsNetCoreApp Include="$(OutputPath)netcoreapp1.0\**\$(AssemblyName).resources.dll"/>
+      <_LocalizedDllsNetStandard13 Include="$(OutputPath)netstandard1.3\**\$(AssemblyName).resources.dll"/>
+      <_LocalizedDllsNetStandard10 Include="$(OutputPath)netstandard1.0\**\$(AssemblyName).resources.dll"/>
+
+      <_LocalizedDllsWithRelativePath Include="@(_LocalizedDllsNetCoreApp)" Condition=" '@(_LocalizedDllsNetCoreApp)' != '' ">
+        <RelativeTargetPath>netstandard1.3\%(_LocalizedDllsNetCoreApp.RecursiveDir)\%(_LocalizedDllsNetCoreApp.FileName)%(_LocalizedDllsNetCoreApp.Extension)</RelativeTargetPath>
+      </_LocalizedDllsWithRelativePath>
+
+      <_LocalizedDllsWithRelativePath Include="@(_LocalizedDllsNetStandard10)" Condition=" '@(_LocalizedDllsNetStandard10)' != '' ">
+        <RelativeTargetPath>netstandard1.3\%(_LocalizedDllsNetStandard10.RecursiveDir)\%(_LocalizedDllsNetStandard10.FileName)%(_LocalizedDllsNetStandard10.Extension)</RelativeTargetPath>
+      </_LocalizedDllsWithRelativePath>
+
+      <_LocalizedDllsWithRelativePath Include="@(_LocalizedDllsNetStandard13)" Condition=" '@(_LocalizedDllsNetStandard13)' != '' ">
+        <RelativeTargetPath>netstandard1.3\%(_LocalizedDllsNetStandard13.RecursiveDir)\%(_LocalizedDllsNetStandard13.FileName)%(_LocalizedDllsNetStandard13.Extension)</RelativeTargetPath>
+      </_LocalizedDllsWithRelativePath>
+    </ItemGroup>
+  </Target>
+
+  <!--
+    ============================================================
     GetLocalizedFilesForVsix - gathers the list of localized DLLs 
     from each project
     ============================================================
