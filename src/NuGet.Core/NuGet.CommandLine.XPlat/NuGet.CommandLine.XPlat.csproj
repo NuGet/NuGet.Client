@@ -10,7 +10,7 @@
     <!-- <PackageTargetFallback Condition=" '$(TargetFramework)' == 'netcoreapp1.0' ">$(PackageTargetFallback);dotnet5.6</PackageTargetFallback> -->
     <RuntimeFrameworkVersion Condition=" '$(TargetFramework)' == 'netcoreapp1.0' ">1.0.3</RuntimeFrameworkVersion>
     <Shipping>true</Shipping>
-    <PackProject Condition=" '$(TargetFramework)' == 'netcoreapp1.0' ">true</PackProject>
+    <PackProject>true</PackProject>
   </PropertyGroup>
 
   <ItemGroup>
