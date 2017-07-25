@@ -41,22 +41,5 @@
   </ItemGroup>
   
   <Import Project="$(BuildCommonDirectory)common.targets" />
-
-  <!--Target is invoked by build\build.proj\MoveLocalizedFilesToLocalizedArtifacts to get all the localized files from all projects-->
-  <Target Name="GetLocalizedFilesInProjectOutputPath" Returns="@(_LocalizedDllsWithRelativePath)" Condition=" '$(PackProject)' == 'true' ">
-    <ItemGroup>
-      <_LocalizedDllsNet46 Include="$(OutputPath)net46\**\$(AssemblyName).resources.dll"/>
-      <_LocalizedDllsNetcoreapp Include="$(OutputPath)netcoreapp1.0\**\$(AssemblyName).resources.dll"/>
-
-      <_LocalizedDllsWithRelativePath Include="@(_LocalizedDllsNet46)" Condition=" '@(_LocalizedDllsNet46)' != '' ">
-        <RelativeTargetPath>$([MSBuild]::MakeRelative($(OutputPath)win7-x86, %(_LocalizedDllsNet46.Identity)))</RelativeTargetPath>
-      </_LocalizedDllsWithRelativePath>
-
-      <_LocalizedDllsWithRelativePath Include="@(_LocalizedDllsNetcoreapp)" Condition=" '@(_LocalizedDllsNetcoreapp)' != '' ">
-        <RelativeTargetPath>$([MSBuild]::MakeRelative($(OutputPath), %(_LocalizedDllsNetcoreapp.Identity)))</RelativeTargetPath>
-      </_LocalizedDllsWithRelativePath>
-    </ItemGroup>
-  </Target>
-
-
+  
 </Project>
