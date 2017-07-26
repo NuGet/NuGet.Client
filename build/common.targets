@@ -227,7 +227,7 @@
       <_LocalizedDllsDesktop Include="$(OutputPath)net40\**\$(AssemblyName).resources.dll"/>
       <_LocalizedDllsDesktop Include="$(OutputPath)net46\**\$(AssemblyName).resources.dll"/>
       <_LocalizedDesktopDllsWithRelativeTargetPath Include="@(_LocalizedDllsDesktop)" Condition=" '@(_LocalizedDllsDesktop)' != '' ">
-        <RelativeTargetPath>net45\%(_LocalizedDllsDesktop.RecursiveDir)\%(_LocalizedDllsDesktop.FileName)%(_LocalizedDllsDesktop.Extension)</RelativeTargetPath>
+        <RelativeTargetPath>net45\%(_LocalizedDllsDesktop.RecursiveDir)%(_LocalizedDllsDesktop.FileName)%(_LocalizedDllsDesktop.Extension)</RelativeTargetPath>
       </_LocalizedDesktopDllsWithRelativeTargetPath>
     </ItemGroup>
   </Target>

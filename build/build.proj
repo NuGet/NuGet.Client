@@ -199,7 +199,7 @@
     Generate NuGet.Localized.nupkg.
     ============================================================
   -->
-  <Target Name="GenerateLocalizedPackage" DependsOnTargets="MoveLocalizedFilesToLocalizedArtifacts" AfterTargets="Pack">
+  <Target Name="GenerateLocalizedPackage" DependsOnTargets="MoveLocalizedFilesToLocalizedArtifacts" BeforeTargets="Pack">
     <Message Text="Generating NuGet.Localization.nupkg" Importance="high" />
 
     <Exec Command="$(NuGetExePath) pack $(NuGetClientsSrcDirectory)NuGet.Localization\NuGet.Localization.nuspec -properties Version=$(Version);LocalizationFilesDirectory=$(LocalizationFilesDirectory) -OutputDirectory $(NupkgOutputDirectory)" 
