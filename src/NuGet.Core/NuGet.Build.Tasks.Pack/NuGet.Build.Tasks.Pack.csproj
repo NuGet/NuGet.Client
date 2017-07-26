@@ -51,19 +51,22 @@
     </EmbeddedResource>
   </ItemGroup>
 
-  <Target Name="PublishAndMergePackNupkg" AfterTargets="AfterBuild" Condition="'$(TargetFramework)' != '' AND '$(IsXPlat)' == 'false' AND '$(BuildingInsideVisualStudio)' != 'true'">
+  <Target Name="PublishAndMergePackNupkg" DependsOnTargets="GetTargetFrameworkSet"  BeforeTargets="GenerateNuspec" Condition="'$(IsXPlat)' == 'false' AND '$(BuildingInsideVisualStudio)' != 'true'">
     <MSBuild
+      Properties="TargetFramework=%(ProjectTargetFrameworkEntries.Identity);
+                  BuildProjectReferences=false;"
       Projects="$(MSBuildProjectFullPath)"
       Targets="Publish;ILMergeNuGetPack"/>
   </Target>
 
-  <Target Name="ILMergeNuGetPack"  Condition="'$(TargetFramework)' != ''">
+  <Target Name="ILMergeNuGetPack" DependsOnTargets="_GetDependentDllsLocalizedResourceDlls" Condition="'$(TargetFramework)' != ''">
     <PropertyGroup>
       <ILMergeResultDir>$(OutputPath)ilmerge</ILMergeResultDir>
     </PropertyGroup>
     <MakeDir Directories="$(ILMergeResultDir)"/>
     <ItemGroup>
       <BuildArtifacts Include="$(OutputPath)*.dll" Exclude="$(OutputPath)*Pack.dll" />
+      <BuildArtifacts Include="@(DependentSatelliteAssemblies)" Exclude="$(OutputPath)*Pack.dll" />
     </ItemGroup>
     <PropertyGroup>
       <PathToMergedNuGetPack>$(ILMergeResultDir)\NuGet.Build.Tasks.Pack.dll</PathToMergedNuGetPack>
@@ -73,15 +76,12 @@
     <Exec Command="$(IlmergeCommand)" ContinueOnError="false" />
   </Target>
 
-  <Target Name="_GetDependentDllsLocalizedResourceDlls" Condition="Exists($(LocalizationFilesDirectory))">
+  <Target Name="_GetDependentDllsLocalizedResourceDlls" Returns="@(DependentSatelliteAssemblies)" Condition="Exists($(LocalizationFilesDirectory))">
     <ItemGroup>
-      <_NetCoreDependentDlls Include="$(OutputPath)netstandard1.3\NuGet*.dll"/>
-      <_DesktopDependentDlls Include="$(OutputPath)net45\NuGet*.dll"/>
-      <_NetCoreDependentDllsResourceDlls Include="$(LocalizationFilesDirectory)\netstandard1.3\**\%(_NetCoreDependentDlls.FileName).resources.dll"/>
-      <_DesktopDependentDllsResourceDlls Include="$(LocalizationFilesDirectory)\net45\**\%(_DesktopDependentDlls.FileName).resources.dll"/>
+      <_NetCoreDependentDlls Include="$(OutputPath)NuGet*.dll"/>
+      <DependentSatelliteAssemblies Include="$(LocalizationFilesDirectory)\$(TargetFramework)\**\%(_NetCoreDependentDlls.FileName).resources.dll"/>
     </ItemGroup>
-    <Message Text="NetCore Pack Dll resources : @(_NetCoreDependentDllsResourceDlls, '%0a')" Importance="High"/>
-    <Message Text="Desktop Pack Dll resoruces : @(_DesktopDependentDllsResourceDlls, '%0a')" Importance="High"/>
+    <Message Text="For Target Framework $(TargetFramework) : @(DependentSatelliteAssemblies, '%0a')" Importance="High"/>
   </Target>
 
   <Import Project="$(BuildCommonDirectory)common.targets" />
