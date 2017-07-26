@@ -59,14 +59,13 @@
       Targets="Publish;ILMergeNuGetPack"/>
   </Target>
 
-  <Target Name="ILMergeNuGetPack" DependsOnTargets="_GetDependentDllsLocalizedResourceDlls" Condition="'$(TargetFramework)' != ''">
+  <Target Name="ILMergeNuGetPack" Condition="'$(TargetFramework)' != ''">
     <PropertyGroup>
       <ILMergeResultDir>$(OutputPath)ilmerge</ILMergeResultDir>
     </PropertyGroup>
     <MakeDir Directories="$(ILMergeResultDir)"/>
     <ItemGroup>
       <BuildArtifacts Include="$(OutputPath)*.dll" Exclude="$(OutputPath)*Pack.dll" />
-      <BuildArtifacts Include="@(DependentSatelliteAssemblies)" />
     </ItemGroup>
     <PropertyGroup>
       <PathToMergedNuGetPack>$(ILMergeResultDir)\NuGet.Build.Tasks.Pack.dll</PathToMergedNuGetPack>
