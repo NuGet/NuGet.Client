@@ -34,6 +34,7 @@ namespace NuGet.PackageManagement.VisualStudio
     public sealed class VSSolutionManager : IVsSolutionManager, IVsSelectionEvents
     {
         private static readonly INuGetProjectContext EmptyNuGetProjectContext = new EmptyNuGetProjectContext();
+        private readonly VSSolutionInitLock _initLock = new VSSolutionInitLock();
 
         private SolutionEvents _solutionEvents;
         private CommandEvents _solutionSaveEvent;
@@ -49,7 +50,6 @@ namespace NuGet.PackageManagement.VisualStudio
         private readonly IVsProjectAdapterProvider _vsProjectAdapterProvider;
         private readonly Common.ILogger _logger;
         private readonly Lazy<ISettings> _settings;
-        private readonly INuGetLockService _nuGetLockService;
 
         private bool _initialized;
         private bool _cacheInitialized;
@@ -110,7 +110,6 @@ namespace NuGet.PackageManagement.VisualStudio
             NuGetProjectFactory projectSystemFactory,
             ICredentialServiceProvider credentialServiceProvider,
             IVsProjectAdapterProvider vsProjectAdapterProvider,
-            INuGetLockService nuGetLockService,
             [Import("VisualStudioActivityLogger")]
             Common.ILogger logger,
             Lazy<ISettings> settings)
@@ -130,7 +129,6 @@ namespace NuGet.PackageManagement.VisualStudio
             _vsProjectAdapterProvider = vsProjectAdapterProvider;
             _logger = logger;
             _settings = settings;
-            _nuGetLockService = nuGetLockService;
         }
 
         private async Task InitializeAsync()
@@ -625,7 +623,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private async Task EnsureNuGetAndVsProjectAdapterCacheAsync()
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             if (!_cacheInitialized && IsSolutionOpen)
             {
@@ -755,7 +753,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private async Task EnsureInitializeAsync(VSSolutionManagerInitContext context = VSSolutionManagerInitContext.Default)
         {
-            await _nuGetLockService.ExecuteNuGetOperationAsync(
+            await _initLock.ExecuteInitAsync(
                 async () =>
                 {
                     try
@@ -767,7 +765,6 @@ namespace NuGet.PackageManagement.VisualStudio
                         }
                         else if (context == VSSolutionManagerInitContext.SolutionChange)
                         {
-                            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
                             await EnsureNuGetAndVsProjectAdapterCacheAsync();
                         }
                         else
@@ -794,7 +791,6 @@ namespace NuGet.PackageManagement.VisualStudio
                                 // the solution was not saved and/or there were no projects in the solution
                                 if (!_cacheInitialized && _solutionOpenedRaised)
                                 {
-                                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
                                     await EnsureNuGetAndVsProjectAdapterCacheAsync();
                                 }
                             }
@@ -806,8 +802,7 @@ namespace NuGet.PackageManagement.VisualStudio
                         Debug.Fail(e.ToString());
                         _logger.LogError(e.ToString());
                     }
-                },
-            token: CancellationToken.None);
+                });
         }
 
         private async Task<NuGetProject> CreateNuGetProjectAsync(IVsProjectAdapter project, INuGetProjectContext projectContext = null)
@@ -1028,6 +1023,43 @@ namespace NuGet.PackageManagement.VisualStudio
         }
 
         #endregion
+
+        private sealed class VSSolutionInitLock
+        {
+            private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
+
+            private readonly AsyncLocal<int> _lockCount = new AsyncLocal<int>();
+
+            public async Task ExecuteInitAsync(Func<Task> action)
+            {
+                if (_lockCount.Value == 0)
+                {
+                    await _semaphore.WaitAsync();
+
+                    // Once this thread acquired the lock then increment lockCount
+                    _lockCount.Value++;
+
+                    try
+                    {
+                        await action();
+                    }
+                    finally
+                    {
+                        try
+                        {
+                            _semaphore.Release();
+                        }
+                        catch (ObjectDisposedException) { }
+
+                        _lockCount.Value--;
+                    }
+                }
+                else
+                {
+                    await action();
+                }
+            }
+        }
     }
 
     public enum VSSolutionManagerInitContext
