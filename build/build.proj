@@ -177,7 +177,7 @@
       Properties="BuildProjectReferences=false;
                   Configuration=$(Configuration);
                   AppendTargetFrameworkToOutputPath=false"
-      Targets="GetLocalizedFilesInProjectOutputPath">
+      Targets="GetNetCoreLocalizedFilesInProjectOutputPath;GetDesktopLocalizedFilesInProjectOutputPath">
 
       <Output
           TaskParameter="TargetOutputs"
@@ -185,13 +185,13 @@
     </MSBuild>
 
     <ItemGroup>
-      <LocalizedFilePaths Include="@(_LocalizedFilesForLocalizationPackage)">
+      <_LocalizedFilePaths Include="@(_LocalizedFilesForLocalizationPackage)">
         <TargetPath>$(LocalizationFilesDirectory)\%(_LocalizedFilesForLocalizationPackage.RelativeTargetPath)</TargetPath>
-      </LocalizedFilePaths>
+      </_LocalizedFilePaths>
     </ItemGroup>
 
-    <Copy SourceFiles="@(LocalizedFilePaths->'%(Identity)')" DestinationFiles="@(LocalizedFilePaths->'%(TargetPath)')"/>
-    <Message Text="Localized Files Moved: %(LocalizedFilePaths.TargetPath)" Importance="High"/>
+    <Copy SourceFiles="@(_LocalizedFilePaths->'%(Identity)')" DestinationFiles="@(_LocalizedFilePaths->'%(TargetPath)')"/>
+    <Message Text="Localized Files Moved: %(_LocalizedFilePaths.TargetPath)" Importance="High"/>
   </Target>
 
   <!--

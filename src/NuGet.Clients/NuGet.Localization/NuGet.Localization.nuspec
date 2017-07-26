@@ -14,6 +14,6 @@
   </metadata>
 
   <files>
-    <file src="$LocalizationFilesDirectory$\**\*.resources.dll" target="lib\"/>
+    <file src="$LocalizationFilesDirectory$\netstandard1.3\**\*.resources.dll" target="lib\netstandard1.3"/>
   </files>
 </package>
