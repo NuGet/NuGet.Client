@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -9,6 +9,7 @@ using System.Linq;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Protocol.Core.Types;
+using NuGet.Shared;
 
 namespace NuGet.Commands
 {
@@ -42,18 +43,14 @@ namespace NuGet.Commands
         public RestoreSummary(
             RestoreResult result,
             string inputPath,
-            ISettings settings,
+            IEnumerable<string> configFiles,
             IEnumerable<SourceRepository> sourceRepositories,
             IEnumerable<RestoreLogMessage> errors)
         {
             Success = result.Success;
             NoOpRestore = result is NoOpRestoreResult;
             InputPath = inputPath;
-            ConfigFiles = settings
-                .Priority
-                .Select(childSettings => Path.Combine(childSettings.Root, childSettings.FileName))
-                .ToList()
-                .AsReadOnly();
+            ConfigFiles = configFiles.AsList().AsReadOnly();
             FeedsUsed = sourceRepositories
                 .Select(source => source.PackageSource.Source)
                 .ToList()
