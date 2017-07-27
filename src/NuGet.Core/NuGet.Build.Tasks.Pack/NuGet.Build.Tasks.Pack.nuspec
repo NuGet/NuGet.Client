@@ -12,6 +12,8 @@
     <file src="net45\ilmerge\NuGet.Build.Tasks.Pack.xml" target="Desktop\" />
     <file src="netstandard1.3\ilmerge\NuGet.Build.Tasks.Pack.dll" target="CoreCLR\" />
     <file src="netstandard1.3\ilmerge\NuGet.Build.Tasks.Pack.xml" target="CoreCLR\" />
+    <file src="netstandard1.3\ilmerge\**\NuGet.Build.Tasks.Pack.resources.dll" target="CoreCLR\" />
+    <file src="net45\ilmerge\**\NuGet.Build.Tasks.Pack.resources.dll" target="Desktop\" />
     <file src="net45\Pack.targets" target="buildCrossTargeting\NuGet.Build.Tasks.Pack.targets" />
     <file src="net45\Pack.targets" target="build\NuGet.Build.Tasks.Pack.targets" />
   </files>

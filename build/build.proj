@@ -177,7 +177,7 @@
       Properties="BuildProjectReferences=false;
                   Configuration=$(Configuration);
                   AppendTargetFrameworkToOutputPath=false"
-      Targets="GetNetCoreLocalizedFilesInProjectOutputPath;GetDesktopLocalizedFilesInProjectOutputPath">
+      Targets="GetNetCoreLocalizedFilesInProjectOutputPath">
 
       <Output
           TaskParameter="TargetOutputs"

@@ -221,17 +221,6 @@
     </ItemGroup>
   </Target>
 
-  <Target Name="GetDesktopLocalizedFilesInProjectOutputPath" Returns="@(_LocalizedDesktopDllsWithRelativeTargetPath)" Condition=" '$(PackProject)' == 'true' ">
-    <ItemGroup>
-      <_LocalizedDllsDesktop Include="$(OutputPath)net45\**\$(AssemblyName).resources.dll"/>
-      <_LocalizedDllsDesktop Include="$(OutputPath)net40\**\$(AssemblyName).resources.dll"/>
-      <_LocalizedDllsDesktop Include="$(OutputPath)net46\**\$(AssemblyName).resources.dll"/>
-      <_LocalizedDesktopDllsWithRelativeTargetPath Include="@(_LocalizedDllsDesktop)" Condition=" '@(_LocalizedDllsDesktop)' != '' ">
-        <RelativeTargetPath>net45\%(_LocalizedDllsDesktop.RecursiveDir)%(_LocalizedDllsDesktop.FileName)%(_LocalizedDllsDesktop.Extension)</RelativeTargetPath>
-      </_LocalizedDesktopDllsWithRelativeTargetPath>
-    </ItemGroup>
-  </Target>
-
   <!--
     ============================================================
     GetLocalizedFilesForVsix - gathers the list of localized DLLs 
