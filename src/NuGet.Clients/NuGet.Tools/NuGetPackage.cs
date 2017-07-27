@@ -57,7 +57,7 @@ namespace NuGetVSExtension
     public sealed class NuGetPackage : AsyncPackage, IVsPackageExtensionProvider, IVsPersistSolutionOpts
     {
         // It is displayed in the Help - About box of Visual Studio
-        public const string ProductVersion = "4.3.0";
+        public const string ProductVersion = "4.4.0";
 
         private static readonly object _credentialsPromptLock = new object();
 
@@ -739,9 +739,9 @@ namespace NuGetVSExtension
                 // - if the solution exists and not debugging and not building AND
                 // - if the console is NOT busy executing a command, AND
                 // - if the active project is loaded and supported
-                command.Enabled = 
-                    IsSolutionExistsAndNotDebuggingAndNotBuilding() && 
-                    !ConsoleStatus.Value.IsBusy && 
+                command.Enabled =
+                    IsSolutionExistsAndNotDebuggingAndNotBuilding() &&
+                    !ConsoleStatus.Value.IsBusy &&
                     HasActiveLoadedSupportedProject;
             });
         }
