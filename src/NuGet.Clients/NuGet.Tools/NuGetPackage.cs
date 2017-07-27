@@ -480,7 +480,7 @@ namespace NuGetVSExtension
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(
                    async () =>
                    {
-                       NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                       await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                        string parameterString = null;
                        var args = e as OleMenuCmdEventArgs;
