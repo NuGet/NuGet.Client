@@ -167,47 +167,6 @@
 
   <!--
     ============================================================
-    Get localized files from all projects and move them to a common location.
-    ============================================================
-  -->
-
-  <Target Name="MoveLocalizedFilesToLocalizedArtifacts">
-    <MSBuild
-      Projects="@(SolutionProjectsWithoutVSIX)"
-      Properties="BuildProjectReferences=false;
-                  Configuration=$(Configuration);
-                  AppendTargetFrameworkToOutputPath=false"
-      Targets="GetNetCoreLocalizedFilesInProjectOutputPath">
-
-      <Output
-          TaskParameter="TargetOutputs"
-          ItemName="_LocalizedFilesForLocalizationPackage" />
-    </MSBuild>
-
-    <ItemGroup>
-      <_LocalizedFilePaths Include="@(_LocalizedFilesForLocalizationPackage)">
-        <TargetPath>$(LocalizationFilesDirectory)\%(_LocalizedFilesForLocalizationPackage.RelativeTargetPath)</TargetPath>
-      </_LocalizedFilePaths>
-    </ItemGroup>
-
-    <Copy SourceFiles="@(_LocalizedFilePaths->'%(Identity)')" DestinationFiles="@(_LocalizedFilePaths->'%(TargetPath)')"/>
-    <Message Text="Localized Files Moved: %(_LocalizedFilePaths.TargetPath)" Importance="High"/>
-  </Target>
-
-  <!--
-    ============================================================
-    Generate NuGet.Localized.nupkg.
-    ============================================================
-  -->
-  <Target Name="GenerateLocalizedPackage" DependsOnTargets="MoveLocalizedFilesToLocalizedArtifacts" BeforeTargets="Pack">
-    <Message Text="Generating NuGet.Localization.nupkg" Importance="high" />
-
-    <Exec Command="$(NuGetExePath) pack $(NuGetClientsSrcDirectory)NuGet.Localization\NuGet.Localization.nuspec -properties Version=$(Version);LocalizationFilesDirectory=$(LocalizationFilesDirectory) -OutputDirectory $(NupkgOutputDirectory)" 
-          Condition="Exists($(LocalizationFilesDirectory))"/>
-  </Target>
-
-  <!--
-    ============================================================
     Build for VS15
     ============================================================
   -->
