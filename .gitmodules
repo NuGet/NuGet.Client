@@ -13,3 +13,4 @@
 [submodule "submodules/NuGet.Build.Localization"]
 	path = submodules/NuGet.Build.Localization
 	url = https://github.com/NuGet/NuGet.Build.Localization.git
+	branch = release-4.3.0-rtm
