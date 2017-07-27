@@ -635,26 +635,6 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 try
                 {
-                    var deferedProjects = GetDeferredProjects();
-
-                    foreach (var project in deferedProjects)
-                    {
-                        try
-                        {
-                            var vsProjectAdapter = await _vsProjectAdapterProvider.CreateAdapterForDeferredProjectAsync(project);
-                            AddVsProjectAdapterToCache(vsProjectAdapter);
-                        }
-                        catch (Exception e)
-                        {
-                            // Ignore failed projects.
-                            _logger.LogWarning($"The project {project} failed to initialize as a NuGet project.");
-                            _logger.LogError(e.ToString());
-                        }
-
-                        // Consider that the cache is initialized only when there are any projects to add.
-                        _cacheInitialized = true;
-                    }
-
                     var dte = _serviceProvider.GetDTE();
 
                     var supportedProjects = EnvDTESolutionUtility

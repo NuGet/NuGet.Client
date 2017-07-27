@@ -403,6 +403,10 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                     return;
                 }
 
+                // make sure all projects are loaded before start to execute init scripts. Since
+                // projects might not be loaded when DPL is enabled.
+                _solutionManager.EnsureSolutionIsLoaded();
+
                 var packageManager = new NuGetPackageManager(
                     _sourceRepositoryProvider,
                     _settings,
