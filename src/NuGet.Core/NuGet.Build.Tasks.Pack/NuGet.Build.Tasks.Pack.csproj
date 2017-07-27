@@ -51,15 +51,13 @@
     </EmbeddedResource>
   </ItemGroup>
 
-  <Target Name="PublishAndMergePackNupkg" DependsOnTargets="GetTargetFrameworkSet"  BeforeTargets="GenerateNuspec" Condition="'$(IsXPlat)' == 'false' AND '$(BuildingInsideVisualStudio)' != 'true'">
+  <Target Name="PublishAndMergePackNupkg"  AfterTargets="AfterBuild" Condition="'$(TargetFramework)' != '' AND '$(IsXPlat)' == 'false' AND '$(BuildingInsideVisualStudio)' != 'true'">
     <MSBuild
-      Properties="TargetFramework=%(ProjectTargetFrameworkEntries.Identity);
-                  BuildProjectReferences=false;"
       Projects="$(MSBuildProjectFullPath)"
-      Targets="Publish;ILMergeNuGetPack;ILMergeNuGetPackResourcesPerCulture"/>
+      Targets="Publish;ILMergeNuGetPack"/>
   </Target>
 
-  <Target Name="ILMergeNuGetPackResourcesPerCulture">
+  <Target Name="ILMergeNuGetPackResourcesPerCulture" DependsOnTargets="Publish">
     <ItemGroup>
       <_PackResourceDlls Include="$(OutputPath)**\$(AssemblyName).resources.dll"/>
     </ItemGroup>
@@ -111,7 +109,7 @@
   </PropertyGroup>
   
   <!--These targets help get all the DLLs that are packed in the nuspec to be sent for signing.-->
-  <Target Name="GetIlmergeBuildOutput" DependsOnTargets="_GetDllsInOutputDirectory" Returns="@(DllsToSign)">
+  <Target Name="GetIlmergeBuildOutput" DependsOnTargets="ILMergeNuGetPackResourcesPerCulture;_GetDllsInOutputDirectory" Returns="@(DllsToSign)">
     <ItemGroup>
       <DllsToSign Include="@(DllsInOutputDir)" KeepDuplicates="false" />
     </ItemGroup>
