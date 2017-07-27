@@ -160,7 +160,11 @@ namespace NuGet.PackageManagement
                 return packageReferencesDict;
             }
 
-            foreach (var nuGetProject in await SolutionManager.GetNuGetProjectsAsync())
+            var projects = (await SolutionManager.GetNuGetProjectsAsync()).ToList();
+
+            projects.AddRange(await SolutionManager.GetNuGetProjectsFromDeferredProject());
+
+            foreach (var nuGetProject in projects)
             {
                 // skip project k projects and build aware projects
                 if (nuGetProject is INuGetIntegratedProject)

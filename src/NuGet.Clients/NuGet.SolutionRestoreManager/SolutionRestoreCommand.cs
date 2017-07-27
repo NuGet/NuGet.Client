@@ -122,7 +122,8 @@ namespace NuGet.SolutionRestoreManager
                     _restoreTask.IsCompleted &&
                     !ConsoleStatus.Value.IsBusy &&
                     !SolutionRestoreWorker.Value.IsBusy &&
-                    (await SolutionManager.Value.GetNuGetProjectsAsync()).Any();
+                    (SolutionManager.Value.IsSolutionDPLEnabled ||
+                    (await SolutionManager.Value.GetNuGetProjectsAsync()).Any());
             });
         }
 

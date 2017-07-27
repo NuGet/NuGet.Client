@@ -274,6 +274,33 @@ namespace NuGet.PackageManagement.VisualStudio
             }
         }
 
+        public bool IsSolutionDPLEnabled
+        {
+            get
+            {
+#if VS14
+                // for Dev14 always return false since DPL not exists there.
+                return false;
+#else
+                return NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
+                {
+                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                    await EnsureInitializeAsync();
+                    var vsSolution7 = _vsSolution as IVsSolution7;
+
+                    if (vsSolution7 != null && vsSolution7.IsSolutionLoadDeferred())
+                    {
+                        return true;
+                    }
+
+                    return false;
+                });
+#endif
+            }
+        }
+
+
         public async Task<bool> IsSolutionAvailableAsync()
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();

@@ -91,6 +91,10 @@ namespace NuGet.PackageManagement
         /// This will only be applicable for VS15 and will do nothing for VS14.
         /// </summary>
         void EnsureSolutionIsLoaded();
+
+        Task<IEnumerable<NuGetProject>> GetNuGetProjectsFromDeferredProject();
+
+        bool IsSolutionDPLEnabled { get; }
     }
 
     public class NuGetProjectEventArgs : EventArgs

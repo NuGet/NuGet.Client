@@ -218,7 +218,8 @@ namespace NuGet.PackageManagement
         {
             var dgSpec = new DependencyGraphSpec();
 
-            var projects = (await solutionManager.GetNuGetProjectsAsync()).OfType<IDependencyGraphProject>();
+            var projects = (await solutionManager.GetNuGetProjectsAsync()).OfType<IDependencyGraphProject>().ToList();
+            projects.AddRange((await solutionManager.GetNuGetProjectsFromDeferredProject()).OfType<IDependencyGraphProject>());
 
             foreach (var project in projects)
             {
