@@ -11,6 +11,7 @@ using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.PackageManagement;
+using NuGet.PackageManagement.VisualStudio;
 using NuGet.VisualStudio;
 using Task = System.Threading.Tasks.Task;
 
@@ -147,7 +148,10 @@ namespace NuGet.SolutionRestoreManager
                     _restoreTask.IsCompleted &&
                     !ConsoleStatus.Value.IsBusy &&
                     !SolutionRestoreWorker.Value.IsBusy &&
-                    SolutionManager.Value.GetNuGetProjects().Any();
+                    (
+                        await DeferredProjectVSUtility.IsSolutionDPLEnabled() ||
+                        Enumerable.Any(SolutionManager.Value.GetNuGetProjects())
+                    );
             });
         }
 

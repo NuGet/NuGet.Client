@@ -218,6 +218,19 @@ namespace NuGet.PackageManagement
         {
             var dgSpec = new DependencyGraphSpec();
 
+            foreach (var packageSpec in context.DeferredPackageSpecs)
+            {
+                dgSpec.AddProject(packageSpec);
+
+                if (packageSpec.RestoreMetadata.ProjectStyle == ProjectStyle.PackageReference ||
+                    packageSpec.RestoreMetadata.ProjectStyle == ProjectStyle.ProjectJson ||
+                    packageSpec.RestoreMetadata.ProjectStyle == ProjectStyle.DotnetCliTool ||
+                    packageSpec.RestoreMetadata.ProjectStyle == ProjectStyle.Standalone)
+                {
+                    dgSpec.AddRestore(packageSpec.RestoreMetadata.ProjectUniqueName);
+                }
+            }
+
             var projects = solutionManager.GetNuGetProjects().OfType<IDependencyGraphProject>();
 
             foreach (var project in projects)

@@ -98,6 +98,11 @@
     <Compile Include="Common\PackageCollectionExtensions.cs" />
     <Compile Include="Common\PackageCollectionItem.cs" />
     <Compile Include="Common\PackageCollectionItemExtensions.cs" />
+    <Compile Include="DeferredProjectsUtility\DeferredProjectRestoreData.cs" />
+    <Compile Include="DeferredProjectsUtility\DeferredProjectRestoreUtility.cs" />
+    <Compile Include="DeferredProjectsUtility\DeferredProjectVSUtility.cs" />
+    <Compile Include="DeferredProjectsUtility\LightWeightProjectWorkspaceService.cs" />
+    <Compile Include="DeferredProjectsUtility\ILightWeightProjectWorkspaceService.cs" />
     <Compile Include="ProjectServices\DeferredProjectCapabilities.cs" />
     <Compile Include="ProjectServices\GlobalProjectServiceProvider.cs" />
     <Compile Include="ProjectServices\NetCoreProjectSystemServices.cs" />
