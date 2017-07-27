@@ -134,7 +134,7 @@ namespace NuGet.PackageManagement.VisualStudio
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             var redirects = Enumerable.Empty<AssemblyBinding>();
-            var msBuildNuGetProjectSystem = GetMSBuildNuGetProjectSystem(solutionManager, vsProjectAdapter);
+            var msBuildNuGetProjectSystem = await GetMSBuildNuGetProjectSystemAsync(solutionManager, vsProjectAdapter);
 
             // If no msBuildNuGetProjectSystem, no binding redirects. Bail
             if (msBuildNuGetProjectSystem == null)
@@ -161,9 +161,9 @@ namespace NuGet.PackageManagement.VisualStudio
             return redirects;
         }
 
-        private static IMSBuildProjectSystem GetMSBuildNuGetProjectSystem(ISolutionManager solutionManager, IVsProjectAdapter vsProjectAdapter)
+        private static async Task<IMSBuildProjectSystem> GetMSBuildNuGetProjectSystemAsync(ISolutionManager solutionManager, IVsProjectAdapter vsProjectAdapter)
         {
-            var nuGetProject = solutionManager.GetNuGetProject(vsProjectAdapter.ProjectName);
+            var nuGetProject = await solutionManager.GetNuGetProjectAsync(vsProjectAdapter.ProjectName);
             if (nuGetProject != null)
             {
                 var msBuildNuGetProject = nuGetProject as MSBuildNuGetProject;

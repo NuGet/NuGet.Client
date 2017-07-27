@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -420,17 +420,17 @@ namespace NuGet.PackageManagement.VisualStudio
             return hierarchy.IsCapabilityMatch("AssemblyReferences + DeclaredSourceItems + UserSourceItems");
         }
 
-        public static NuGetProject GetNuGetProject(EnvDTE.Project project, ISolutionManager solutionManager)
+        public static async Task<NuGetProject> GetNuGetProjectAsync(EnvDTE.Project project, ISolutionManager solutionManager)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
             Debug.Assert(project != null);
             Debug.Assert(solutionManager != null);
 
-            var nuGetProject = solutionManager.GetNuGetProject(project.Name);
+            var nuGetProject = await solutionManager.GetNuGetProjectAsync(project.Name);
             if (nuGetProject == null)
             {
-                nuGetProject = solutionManager.GetNuGetProject(project.UniqueName);
+                nuGetProject = await solutionManager.GetNuGetProjectAsync(project.UniqueName);
             }
             return nuGetProject;
         }

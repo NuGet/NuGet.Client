@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
@@ -16,7 +16,7 @@ namespace NuGet.PackageManagement.VisualStudio
         /// <summary>
         /// Gets the default <see cref="NuGetProject" />. Default NuGetProject is the selected NuGetProject in the IDE.
         /// </summary>
-        NuGetProject DefaultNuGetProject { get; }
+        Task<NuGetProject> GetDefaultNuGetProjectAsync();
 
         /// <summary>
         /// Gets the name of the default <see cref="NuGetProject" />. Default NuGetProject is the selected NuGetProject
@@ -38,14 +38,14 @@ namespace NuGet.PackageManagement.VisualStudio
         /// </summary>
         /// <param name="name">Project name, full path or unique name.</param>
         /// <returns>Desired project object.</returns>
-        IVsProjectAdapter GetVsProjectAdapter(string name);
+        Task<IVsProjectAdapter> GetVsProjectAdapterAsync(string name);
 
         /// <summary>
         /// Retrieves instance of <see cref="EnvDTE.Project"/> associated with project name, path, or id.
         /// </summary>
         /// <param name="name">Project name, full path or unique name.</param>
         /// <returns>Desired project object.</returns>
-        IVsProjectAdapter GetVsProjectAdapter(NuGetProject project);
+        Task<IVsProjectAdapter> GetVsProjectAdapterAsync(NuGetProject project);
 
         /// <summary>
         /// Return true if all projects in the solution have been loaded in background.
@@ -56,7 +56,7 @@ namespace NuGet.PackageManagement.VisualStudio
         /// Retrieves collection of <see cref="IVsProjectAdapter"/> for all supported projects in a solution.
         /// </summary>
         /// <returns>Collection of <see cref="IVsProjectAdapter"/></returns>
-        IEnumerable<IVsProjectAdapter> GetAllVsProjectAdapters();
+        Task<IEnumerable<IVsProjectAdapter>> GetAllVsProjectAdaptersAsync();
 
         /// <summary>
         /// Creates a new instance of <see cref="NuGetProject"/> supporting package references.
@@ -68,6 +68,6 @@ namespace NuGet.PackageManagement.VisualStudio
         /// <summary>
         /// Return true if all the .net core projects are nominated.
         /// </summary>
-        bool IsAllProjectsNominated();
+        Task<bool> IsAllProjectsNominatedAsync();
     }
 }

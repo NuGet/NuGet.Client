@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -54,10 +54,9 @@ namespace NuGet.PackageManagement.VisualStudio
         /// <param name="result">New project instance when <code>true</code> is returned. 
         /// Otherwise - <code>null</code>.</param>
         /// <returns><code>true</code> when new project instance has been successfully created.</returns>
-        public bool TryCreateNuGetProject(
+        public async Task<NuGetProject> TryCreateNuGetProjectAsync(
             IVsProjectAdapter vsProjectAdapter,
-            ProjectProviderContext context,
-            out NuGetProject result)
+            ProjectProviderContext context)
         {
             Assumes.Present(vsProjectAdapter);
             Assumes.Present(context);
@@ -65,37 +64,31 @@ namespace NuGet.PackageManagement.VisualStudio
             _threadingService.ThrowIfNotOnUIThread();
 
             var exceptions = new List<Exception>();
-            result = _providers
-                .Select(p =>
-                {
-                    try
-                    {
-                        if (p.TryCreateNuGetProject(
-                            vsProjectAdapter,
-                            context,
-                            forceProjectType: false,
-                            result: out var nuGetProject))
-                        {
-                            return nuGetProject;
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        // Ignore failures. If this method returns null, the problem falls 
-                        // into one of the other NuGet project types.
-                        exceptions.Add(e);
-                    }
 
-                    return null;
-                })
-                .FirstOrDefault(p => p != null);
-
-            if (result == null)
+            foreach(var provider in _providers)
             {
-                exceptions.ForEach(e => _logger.LogError(e.ToString()));
+                try
+                {
+                    var nuGetProject = await provider.TryCreateNuGetProjectAsync(
+                        vsProjectAdapter,
+                        context,
+                        forceProjectType: false);
+                    if (nuGetProject != null)
+                    {
+                        return nuGetProject;
+                    }
+                }
+                catch (Exception e)
+                {
+                    // Ignore failures. If this method returns null, the problem falls 
+                    // into one of the other NuGet project types.
+                    exceptions.Add(e);
+                }
             }
 
-            return result != null;
+            exceptions.ForEach(e => _logger.LogError(e.ToString()));
+
+            return null;
         }
 
         /// <summary>
@@ -125,13 +118,14 @@ namespace NuGet.PackageManagement.VisualStudio
 
             try
             {
-                if (provider.TryCreateNuGetProject(
+                var project = await provider.TryCreateNuGetProjectAsync(
                     vsProjectAdapter,
                     optionalContext,
-                    forceProjectType: true,
-                    result: out NuGetProject result))
+                    forceProjectType: true);
+
+                if (project != null)
                 {
-                    return result as TProject;
+                    return project as TProject;
                 }
             }
             catch (Exception e)

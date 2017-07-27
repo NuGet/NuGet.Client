@@ -1,7 +1,8 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Threading.Tasks;
 using System.Windows.Media;
 using NuGet.PackageManagement;
 using NuGet.VisualStudio;
@@ -49,18 +50,18 @@ namespace NuGetConsole.Host
             return new string[0];
         }
 
-        public string DefaultProject
+        public async Task<string> GetDefaultProjectAsync()
         {
-            get { return String.Empty; }
+           return await Task.FromResult(String.Empty);
         }
 
         public void SetDefaultProjectIndex(int index)
         {
         }
 
-        public string[] GetAvailableProjects()
+        public async Task<string[]> GetAvailableProjectsAsync()
         {
-            return new string[0];
+            return await Task.FromResult(new string[0]);
         }
 
         public void SetDefaultRunspace()

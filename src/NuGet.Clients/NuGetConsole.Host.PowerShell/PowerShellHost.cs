@@ -203,19 +203,18 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             set { UpdateActiveSource(value); }
         }
 
-        public string DefaultProject
+        public async Task<string> GetDefaultProjectAsync()
         {
-            get
+            Assumes.Present(_solutionManager);
+
+            var project = await _solutionManager.GetDefaultNuGetProjectAsync();
+
+            if (project == null)
             {
-                Assumes.Present(_solutionManager);
-
-                if (_solutionManager.DefaultNuGetProject == null)
-                {
-                    return null;
-                }
-
-                return GetDisplayName(_solutionManager.DefaultNuGetProject);
+                return null;
             }
+
+            return await GetDisplayNameAsync(project);
         }
 
         #endregion
@@ -339,7 +338,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
 
                 while (retries < ExecuteInitScriptsRetriesLimit)
                 {
-                    if (_solutionManager.IsAllProjectsNominated())
+                    if (await _solutionManager.IsAllProjectsNominatedAsync())
                     {
                         await ExecuteInitScriptsAsync();
                         break;
@@ -354,7 +353,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         private void UpdateWorkingDirectoryAndAvailableProjects()
         {
             UpdateWorkingDirectory();
-            GetAvailableProjects();
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(async () => await GetAvailableProjectsAsync());
         }
 
         private void UpdateWorkingDirectory()
@@ -408,6 +407,8 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                     _settings,
                     _solutionManager,
                     _deleteOnRestartManager);
+
+                _solutionManager.EnsureSolutionIsLoaded();
 
                 var enumerator = new InstalledPackageEnumerator(_solutionManager, _settings);
                 var installedPackages = await enumerator.EnumeratePackagesAsync(packageManager, CancellationToken.None);
@@ -674,25 +675,38 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             }
         }
 
-        public string[] GetAvailableProjects()
+        public async Task<string[]> GetAvailableProjectsAsync()
         {
             Debug.Assert(_solutionManager != null);
 
-            return NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
-                {
-                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                    var allProjects = _solutionManager.GetNuGetProjects();
-                    _projectSafeNames = allProjects.Select(_solutionManager.GetNuGetProjectSafeName).ToArray();
-                    var displayNames = allProjects.Select(GetDisplayName).ToArray();
-                    Array.Sort(displayNames, _projectSafeNames, StringComparer.CurrentCultureIgnoreCase);
-                    return _projectSafeNames;
-                });
+            var allProjects = await _solutionManager.GetNuGetProjectsAsync();
+
+            var allProjectSafeNames = new List<string>();
+
+            foreach (var project in allProjects)
+            {
+                var safeName = await _solutionManager.GetNuGetProjectSafeNameAsync(project);
+                allProjectSafeNames.Add(safeName);
+            }
+
+            _projectSafeNames = allProjectSafeNames.ToArray();
+
+            var displayNames = new List<string>();
+
+            foreach (var project in allProjects)
+            {
+                displayNames.Add(await GetDisplayNameAsync(project));
+            }
+
+            Array.Sort(displayNames.ToArray(), _projectSafeNames, StringComparer.CurrentCultureIgnoreCase);
+            return _projectSafeNames;
         }
 
-        private string GetDisplayName(NuGetProject nuGetProject)
+        private async Task<string> GetDisplayNameAsync(NuGetProject nuGetProject)
         {
-            var vsProjectAdapter = _solutionManager.GetVsProjectAdapter(nuGetProject);
+            var vsProjectAdapter = await _solutionManager.GetVsProjectAdapterAsync(nuGetProject);
 
             var name = vsProjectAdapter.CustomUniqueName;
             if (IsWebSite(vsProjectAdapter))

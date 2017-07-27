@@ -3,6 +3,7 @@
 
 using System;
 using System.ComponentModel.Composition;
+using System.Threading.Tasks;
 using Microsoft;
 using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.Shell;
@@ -37,22 +38,19 @@ namespace NuGet.PackageManagement.VisualStudio
                 () => vsServiceProvider.GetService<SComponentModel, IComponentModel>());
         }
 
-        public bool TryCreateNuGetProject(
+        public async Task<NuGetProject> TryCreateNuGetProjectAsync(
             IVsProjectAdapter vsProjectAdapter,
             ProjectProviderContext context,
-            bool forceProjectType,
-            out NuGetProject result)
+            bool forceProjectType)
         {
             Assumes.Present(vsProjectAdapter);
             Assumes.Present(context);
 
-            _threadingService.ThrowIfNotOnUIThread();
-
-            result = null;
+            await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             var projectSystem = MSBuildNuGetProjectSystemFactory.CreateMSBuildNuGetProjectSystem(
-                vsProjectAdapter,
-                context.ProjectContext);
+            vsProjectAdapter,
+            context.ProjectContext);
 
             var projectServices = CreateProjectServices(vsProjectAdapter, projectSystem);
 
@@ -61,14 +59,12 @@ namespace NuGet.PackageManagement.VisualStudio
             // Project folder path is the packages config folder path
             var packagesConfigFolderPath = vsProjectAdapter.ProjectDirectory;
 
-            result = new VsMSBuildNuGetProject(
+            return new VsMSBuildNuGetProject(
                 vsProjectAdapter,
                 projectSystem,
                 folderNuGetProjectFullPath,
                 packagesConfigFolderPath,
                 projectServices);
-
-            return result != null;
         }
 
         private INuGetProjectServices CreateProjectServices(

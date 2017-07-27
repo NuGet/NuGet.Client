@@ -426,26 +426,29 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 ErrorHandler.ThrowSolutionNotOpenTerminatingError();
             }
 
-            if (!VsSolutionManager.IsSolutionAvailable)
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
             {
-                ErrorHandler.HandleException(
-                    new InvalidOperationException(VisualStudio.Strings.SolutionIsNotSaved),
-                    terminating: true,
-                    errorId: NuGetErrorId.UnsavedSolution,
-                    category: ErrorCategory.InvalidOperation);
-            }
+                if (!await VsSolutionManager.IsSolutionAvailableAsync())
+                {
+                    ErrorHandler.HandleException(
+                        new InvalidOperationException(VisualStudio.Strings.SolutionIsNotSaved),
+                        terminating: true,
+                        errorId: NuGetErrorId.UnsavedSolution,
+                        category: ErrorCategory.InvalidOperation);
+                }
+            });
         }
 
         /// <summary>
         /// Get the default NuGet Project
         /// </summary>
         /// <param name="projectName"></param>
-        protected void GetNuGetProject(string projectName = null)
+        protected async Task GetNuGetProjectAsync(string projectName = null)
         {
             if (string.IsNullOrEmpty(projectName))
             {
-                Project = VsSolutionManager.DefaultNuGetProject;
-                if (VsSolutionManager.IsSolutionAvailable
+                Project = await VsSolutionManager.GetDefaultNuGetProjectAsync();
+                if (await VsSolutionManager.IsSolutionAvailableAsync()
                     && Project == null)
                 {
                     ErrorHandler.WriteProjectNotFoundError("Default", terminating: true);
@@ -453,8 +456,8 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
             else
             {
-                Project = VsSolutionManager.GetNuGetProject(projectName);
-                if (VsSolutionManager.IsSolutionAvailable
+                Project = await VsSolutionManager.GetNuGetProjectAsync(projectName);
+                if (await VsSolutionManager.IsSolutionAvailableAsync()
                     && Project == null)
                 {
                     ErrorHandler.WriteProjectNotFoundError(projectName, terminating: true);
@@ -466,13 +469,13 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// Get default project in the type of <see cref="IVsProjectAdapter"/>, to keep PowerShell scripts backward-compatbility.
         /// </summary>
         /// <returns></returns>
-        protected IVsProjectAdapter GetDefaultProject()
+        protected async Task<IVsProjectAdapter> GetDefaultProjectAsync()
         {
-            var defaultNuGetProject = VsSolutionManager.DefaultNuGetProject;
+            var defaultNuGetProject = await VsSolutionManager.GetDefaultNuGetProjectAsync();
             // Solution may be open without a project in it. Then defaultNuGetProject is null.
             if (defaultNuGetProject != null)
             {
-                return VsSolutionManager.GetVsProjectAdapter(defaultNuGetProject);
+                return await VsSolutionManager.GetVsProjectAdapterAsync(defaultNuGetProject);
             }
 
             return null;
@@ -501,20 +504,36 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 var pattern = new WildcardPattern(projectName, WildcardOptions.IgnoreCase);
 
                 var matches = allValidProjectNames
-                    .Where(s => pattern.IsMatch(s))
-                    .Select(s => VsSolutionManager.GetNuGetProject(s))
-                    .Where(p => p != null)
-                    .ToList();
+                    .Where(s => pattern.IsMatch(s));
 
-                foreach (var project in matches)
+                var matchedProjects = NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
                 {
-                    yield return VsSolutionManager.GetVsProjectAdapter(project);
+                    var result = new List<IVsProjectAdapter>();
+
+                    foreach (var match in matches)
+                    {
+                        var matchedProject = await VsSolutionManager.GetNuGetProjectAsync(match);
+
+                        if (matchedProject != null)
+                        {
+                            var projectAdapter = await VsSolutionManager.GetVsProjectAdapterAsync(matchedProject);
+                            result.Add(projectAdapter);
+                        }
+                    }
+
+                    return result;
+
+                });
+
+                foreach (var project in matchedProjects)
+                {
+                    yield return project;
                 }
 
                 // We only emit non-terminating error record if a non-wildcarded name was not found.
                 // This is consistent with built-in cmdlets that support wildcarded search.
                 // A search with a wildcard that returns nothing should not be considered an error.
-                if ((matches.Count == 0)
+                if ((matchedProjects.Count == 0)
                     && !WildcardPattern.ContainsWildcardCharacters(projectName))
                 {
                     ErrorHandler.WriteProjectNotFoundError(projectName, terminating: false);
@@ -529,10 +548,22 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// <returns></returns>
         private IEnumerable<string> GetAllValidProjectNames()
         {
-            var nugetProjects = VsSolutionManager.GetNuGetProjects();
-            var safeNames = nugetProjects?.Select(p => VsSolutionManager.GetNuGetProjectSafeName(p));
-            var uniqueNames = nugetProjects?.Select(p => NuGetProject.GetUniqueNameOrName(p));
-            return uniqueNames.Concat(safeNames).Distinct();
+            return NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
+            {
+                var nugetProjects = await VsSolutionManager.GetNuGetProjectsAsync();
+                var safeNames = new List<string>();
+
+                foreach (var project in nugetProjects)
+                {
+                    if (project != null)
+                    {
+                        safeNames.Add(await VsSolutionManager.GetNuGetProjectSafeNameAsync(project));
+                    }
+                }
+
+                var uniqueNames = nugetProjects?.Select(p => NuGetProject.GetUniqueNameOrName(p));
+                return uniqueNames.Concat(safeNames).Distinct();
+            });
         }
 
         /// <summary>
