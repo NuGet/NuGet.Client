@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using NuGet.Frameworks;
@@ -69,6 +70,80 @@ namespace NuGet.Commands.Test
             project.RestoreMetadata.ProjectPath = Path.Combine(Directory.GetCurrentDirectory(), "a.csproj");
             project.RestoreMetadata.ProjectStyle = ProjectStyle.ProjectJson;
             project.RestoreMetadata.ProjectJsonPath = Path.Combine(Directory.GetCurrentDirectory(), "project.json");
+
+            spec.AddProject(project);
+
+            // Act && Assert
+            AssertError(spec, "Invalid target framework");
+        }
+
+        [Fact]
+        public void SpecValidationUtility_VerifyFrameworks_WithOneValidFallback()
+        {
+            // Arrange
+            var spec = new DependencyGraphSpec();
+            spec.AddRestore("a");
+
+            var targetNuGetFramework = NuGetFramework.Parse("unsupported");
+            var fallback1NuGetFramework = NuGetFramework.Parse("unsupported");
+            var fallback2NuGetFramework = NuGetFramework.Parse("net45");
+            var fallbackFramework = new TargetFrameworkInformation()
+            {
+                FrameworkName = new FallbackFramework(targetNuGetFramework, new List<NuGetFramework>
+                {
+                    fallback1NuGetFramework,
+                    fallback2NuGetFramework
+                }.AsReadOnly())
+            };
+            
+            var info = new[] { fallbackFramework };
+
+            var project = new PackageSpec(info);
+            project.RestoreMetadata = new ProjectRestoreMetadata();
+            project.Name = "a";
+            project.FilePath = Path.Combine(Directory.GetCurrentDirectory(), "a.csproj");
+            project.RestoreMetadata.ProjectUniqueName = "a";
+            project.RestoreMetadata.ProjectName = "a";
+            project.RestoreMetadata.ProjectPath = Path.Combine(Directory.GetCurrentDirectory(), "a.csproj");
+            project.RestoreMetadata.ProjectStyle = ProjectStyle.ProjectJson;
+            project.RestoreMetadata.ProjectJsonPath = Path.Combine(Directory.GetCurrentDirectory(), "a.csproj");
+
+            spec.AddProject(project);
+
+            // Act && Assert no errors
+            SpecValidationUtility.ValidateDependencySpec(spec);
+        }
+
+        [Fact]
+        public void SpecValidationUtility_VerifyFrameworks_WithAllInvalidFallbacks()
+        {
+            // Arrange
+            var spec = new DependencyGraphSpec();
+            spec.AddRestore("a");
+
+            var targetNuGetFramework = NuGetFramework.Parse("unsupported");
+            var fallback1NuGetFramework = NuGetFramework.Parse("unsupported");
+            var fallback2NuGetFramework = NuGetFramework.Parse("unsupported");
+            var fallbackFramework = new TargetFrameworkInformation()
+            {
+                FrameworkName = new FallbackFramework(targetNuGetFramework, new List<NuGetFramework>
+                {
+                    fallback1NuGetFramework,
+                    fallback2NuGetFramework
+                }.AsReadOnly())
+            };
+
+            var info = new[] { fallbackFramework };
+
+            var project = new PackageSpec(info);
+            project.RestoreMetadata = new ProjectRestoreMetadata();
+            project.Name = "a";
+            project.FilePath = Path.Combine(Directory.GetCurrentDirectory(), "a.csproj");
+            project.RestoreMetadata.ProjectUniqueName = "a";
+            project.RestoreMetadata.ProjectName = "a";
+            project.RestoreMetadata.ProjectPath = Path.Combine(Directory.GetCurrentDirectory(), "a.csproj");
+            project.RestoreMetadata.ProjectStyle = ProjectStyle.ProjectJson;
+            project.RestoreMetadata.ProjectJsonPath = Path.Combine(Directory.GetCurrentDirectory(), "a.csproj");
 
             spec.AddProject(project);
 
