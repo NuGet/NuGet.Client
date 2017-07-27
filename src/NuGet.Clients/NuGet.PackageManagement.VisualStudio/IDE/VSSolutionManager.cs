@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -34,7 +34,6 @@ namespace NuGet.PackageManagement.VisualStudio
     public sealed class VSSolutionManager : IVsSolutionManager, IVsSelectionEvents
     {
         private static readonly INuGetProjectContext EmptyNuGetProjectContext = new EmptyNuGetProjectContext();
-        private readonly INuGetLockService _initLock = new NuGetLockService();
 
         private SolutionEvents _solutionEvents;
         private CommandEvents _solutionSaveEvent;
@@ -348,6 +347,46 @@ namespace NuGet.PackageManagement.VisualStudio
             }
         }
 
+        public async Task<IEnumerable<NuGetProject>> GetNuGetProjectsFromDeferredProject()
+        {
+            return await NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+            {
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                var deferedProjects = GetDeferredProjects();
+
+                var nugetProjects = new List<NuGetProject>();
+
+                foreach (var project in deferedProjects)
+                {
+                    try
+                    {
+                        var vsProjectAdapter = await _vsProjectAdapterProvider.CreateAdapterForDeferredProjectAsync(project);
+
+                        if (vsProjectAdapter.IsSupported)
+                        {
+                            var nugetProject = await CreateNuGetProjectAsync(vsProjectAdapter);
+
+                            if (nugetProject != null)
+                            {
+                                nugetProjects.Add(nugetProject);
+                            }
+                        }
+
+                    }
+                    catch (Exception e)
+                    {
+                        // Ignore failed projects.
+                        _logger.LogWarning($"The project {project} failed to initialize as a NuGet project.");
+                        _logger.LogError(e.ToString());
+                    }
+
+                }
+
+                return nugetProjects;
+            });
+        }
+
         private IEnumerable<IVsHierarchy> GetDeferredProjects()
         {
 #if VS14
@@ -513,7 +552,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private void OnEnvDTEProjectRenamed(EnvDTE.Project envDTEProject, string oldName)
         {
-            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(
                 async () =>
                 {
                     if (!string.IsNullOrEmpty(oldName) && IsSolutionOpen && _solutionOpenedRaised)
@@ -569,7 +608,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private void OnEnvDTEProjectAdded(EnvDTE.Project envDTEProject)
         {
-            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(
                 async () =>
                 {
                     if (IsSolutionOpen
@@ -627,25 +666,25 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 try
                 {
-                    var deferedProjects = GetDeferredProjects();
+                //    var deferedProjects = GetDeferredProjects();
 
-                    foreach (var project in deferedProjects)
-                    {
-                        try
-                        {
-                            var vsProjectAdapter = await _vsProjectAdapterProvider.CreateAdapterForDeferredProjectAsync(project);
-                            await AddVsProjectAdapterToCacheAsync(vsProjectAdapter);
-                        }
-                        catch (Exception e)
-                        {
-                            // Ignore failed projects.
-                            _logger.LogWarning($"The project {project} failed to initialize as a NuGet project.");
-                            _logger.LogError(e.ToString());
-                        }
+                //    foreach (var project in deferedProjects)
+                //    {
+                //        try
+                //        {
+                //            var vsProjectAdapter = await _vsProjectAdapterProvider.CreateAdapterForDeferredProjectAsync(project);
+                //            await AddVsProjectAdapterToCacheAsync(vsProjectAdapter);
+                //        }
+                //        catch (Exception e)
+                //        {
+                //            // Ignore failed projects.
+                //            _logger.LogWarning($"The project {project} failed to initialize as a NuGet project.");
+                //            _logger.LogError(e.ToString());
+                //        }
 
-                        // Consider that the cache is initialized only when there are any projects to add.
-                        _cacheInitialized = true;
-                    }
+                //        // Consider that the cache is initialized only when there are any projects to add.
+                //        _cacheInitialized = true;
+                //    }
 
                     var dte = _serviceProvider.GetDTE();
 
@@ -751,57 +790,52 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private async Task EnsureInitializeAsync(VSSolutionManagerInitMode mode = VSSolutionManagerInitMode.Default)
         {
-            await _initLock.ExecuteNuGetOperationAsync(
-                async () =>
+            try
+            {
+                if (mode == VSSolutionManagerInitMode.OnSolutionOpen)
                 {
-                    try
+                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                    await OnSolutionExistsAndFullyLoadedAsync();
+                }
+                else if (mode == VSSolutionManagerInitMode.OnSolutionChange)
+                {
+                    await EnsureNuGetAndVsProjectAdapterCacheAsync();
+                }
+                else
+                {
+                    // If already initialized, need not be on the UI thread
+                    if (!_initialized)
                     {
-                        if (mode == VSSolutionManagerInitMode.OnSolutionOpen)
+                        _initialized = true;
+
+                        await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                        await InitializeAsync();
+
+                        var dte = _serviceProvider.GetDTE();
+                        if (dte.Solution.IsOpen)
                         {
-                            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
                             await OnSolutionExistsAndFullyLoadedAsync();
                         }
-                        else if (mode == VSSolutionManagerInitMode.OnSolutionChange)
+                    }
+                    else
+                    {
+                        // Check if the cache is initialized.
+                        // It is possible that the cache is not initialized, since,
+                        // the solution was not saved and/or there were no projects in the solution
+                        if (!_cacheInitialized && _solutionOpenedRaised)
                         {
                             await EnsureNuGetAndVsProjectAdapterCacheAsync();
                         }
-                        else
-                        {
-                            // If already initialized, need not be on the UI thread
-                            if (!_initialized)
-                            {
-                                _initialized = true;
-
-                                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-                                await InitializeAsync();
-
-                                var dte = _serviceProvider.GetDTE();
-                                if (dte.Solution.IsOpen)
-                                {
-                                    await OnSolutionExistsAndFullyLoadedAsync();
-                                }
-                            }
-                            else
-                            {
-                                // Check if the cache is initialized.
-                                // It is possible that the cache is not initialized, since,
-                                // the solution was not saved and/or there were no projects in the solution
-                                if (!_cacheInitialized && _solutionOpenedRaised)
-                                {
-                                    await EnsureNuGetAndVsProjectAdapterCacheAsync();
-                                }
-                            }
-                        }
                     }
-                    catch (Exception e)
-                    {
-                        // ignore errors
-                        Debug.Fail(e.ToString());
-                        _logger.LogError(e.ToString());
-                    }
-                },
-                CancellationToken.None);
+                }
+            }
+            catch (Exception e)
+            {
+                // ignore errors
+                Debug.Fail(e.ToString());
+                _logger.LogError(e.ToString());
+            }
         }
 
         private async Task<NuGetProject> CreateNuGetProjectAsync(IVsProjectAdapter project, INuGetProjectContext projectContext = null)
@@ -897,7 +931,7 @@ namespace NuGet.PackageManagement.VisualStudio
             if (dwCmdUICookie == _solutionLoadedUICookie
                 && fActive == 1)
             {
-                NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+                NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
                    await EnsureInitializeAsync(VSSolutionManagerInitMode.OnSolutionOpen));
             }
 

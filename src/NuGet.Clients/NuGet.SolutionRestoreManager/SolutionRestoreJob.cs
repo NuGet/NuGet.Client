@@ -132,7 +132,7 @@ namespace NuGet.SolutionRestoreManager
             // start timer for telemetry event
             TelemetryUtility.StartorResumeTimer();
 
-            var projects = Enumerable.Empty<NuGetProject>();
+            var projects = new List<NuGetProject>();
 
             _packageRestoreManager.PackageRestoredEvent += PackageRestoreManager_PackageRestored;
             _packageRestoreManager.PackageRestoreFailedEvent += PackageRestoreManager_PackageRestoreFailedEvent;
@@ -155,7 +155,10 @@ namespace NuGet.SolutionRestoreManager
 
                 // Get the projects from the SolutionManager
                 // Note that projects that are not supported by NuGet, will not show up in this list
-                projects = await _solutionManager.GetNuGetProjectsAsync();
+                projects = (await _solutionManager.GetNuGetProjectsAsync()).ToList();
+
+                projects.AddRange(await _solutionManager.GetNuGetProjectsFromDeferredProject());
+                
 
                 // Check if there are any projects that are not INuGetIntegratedProject, that is,
                 // projects with packages.config. OR 

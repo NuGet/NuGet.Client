@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -477,7 +477,7 @@ namespace NuGetVSExtension
 
         private void ShowManageLibraryPackageDialog(object sender, EventArgs e)
         {
-            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(
                    async () =>
                    {
                        await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
@@ -587,6 +587,8 @@ namespace NuGetVSExtension
                 throw new InvalidOperationException(Resources.SolutionIsNotSaved);
             }
 
+            SolutionManager.EnsureSolutionIsLoaded();
+
             var projects = await SolutionManager.GetNuGetProjectsAsync();
             if (!projects.Any())
             {
@@ -669,7 +671,7 @@ namespace NuGetVSExtension
 
         private void ShowManageLibraryPackageForSolutionDialog(object sender, EventArgs e)
         {
-            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async delegate
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
             {
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
@@ -751,7 +753,7 @@ namespace NuGetVSExtension
 
         private void BeforeQueryStatusForAddPackageForSolutionDialog(object sender, EventArgs args)
         {
-            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(
                    async () =>
                    {
                        var command = (OleMenuCommand)sender;

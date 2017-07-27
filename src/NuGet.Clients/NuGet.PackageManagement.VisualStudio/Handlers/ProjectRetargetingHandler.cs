@@ -110,7 +110,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private void SolutionEvents_AfterClosing()
         {
-            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async delegate
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
             {
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
@@ -123,7 +123,7 @@ namespace NuGet.PackageManagement.VisualStudio
             // Clear the error list upon the first build action
             // Note that the retargeting error message is shown on the errorlistprovider this class creates
             // Hence, explicit clearing of the error list is required
-            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async delegate
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
             {
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
@@ -169,7 +169,7 @@ namespace NuGet.PackageManagement.VisualStudio
         int IVsTrackProjectRetargetingEvents.OnRetargetingAfterChange(string projRef, IVsHierarchy pAfterChangeHier, string fromTargetFramework, string toTargetFramework)
         {
             NuGetProject retargetedProject = null;
-            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async delegate
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
             {
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
@@ -251,7 +251,7 @@ namespace NuGet.PackageManagement.VisualStudio
         int IVsTrackBatchRetargetingEvents.OnBatchRetargetingEnd()
         {
             NuGetProject nuGetProject = null;
-            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async delegate
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
             {
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 

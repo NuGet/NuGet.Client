@@ -408,6 +408,8 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                     _solutionManager,
                     _deleteOnRestartManager);
 
+                _solutionManager.EnsureSolutionIsLoaded();
+
                 var enumerator = new InstalledPackageEnumerator(_solutionManager, _settings);
                 var installedPackages = await enumerator.EnumeratePackagesAsync(packageManager, CancellationToken.None);
 

@@ -69,5 +69,7 @@ namespace NuGet.PackageManagement.VisualStudio
         /// Return true if all the .net core projects are nominated.
         /// </summary>
         Task<bool> IsAllProjectsNominatedAsync();
+
+        Task<IEnumerable<NuGetProject>> GetNuGetProjectsFromDeferredProject();
     }
 }

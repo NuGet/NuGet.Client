@@ -320,7 +320,7 @@ namespace NuGetConsole.Implementation
 
         private void ProjectsList_Exec(object sender, EventArgs e)
         {
-            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(
                 async () =>
                 {
                     OleMenuCmdEventArgs args = e as OleMenuCmdEventArgs;
@@ -343,7 +343,7 @@ namespace NuGetConsole.Implementation
         /// </summary>
         private void Projects_Exec(object sender, EventArgs e)
         {
-            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(
                     async () =>
                     {
                         await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
