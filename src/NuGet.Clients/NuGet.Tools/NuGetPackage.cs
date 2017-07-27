@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -480,7 +480,7 @@ namespace NuGetVSExtension
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(
                    async () =>
                    {
-                       ThreadHelper.ThrowIfNotOnUIThread();
+                       NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                        string parameterString = null;
                        var args = e as OleMenuCmdEventArgs;

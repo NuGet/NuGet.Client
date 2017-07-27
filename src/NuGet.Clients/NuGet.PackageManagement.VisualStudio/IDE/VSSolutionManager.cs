@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -34,7 +34,7 @@ namespace NuGet.PackageManagement.VisualStudio
     public sealed class VSSolutionManager : IVsSolutionManager, IVsSelectionEvents
     {
         private static readonly INuGetProjectContext EmptyNuGetProjectContext = new EmptyNuGetProjectContext();
-        private readonly VSSolutionInitLock _initLock = new VSSolutionInitLock();
+        private readonly INuGetLockService _initLock = new NuGetLockService();
 
         private SolutionEvents _solutionEvents;
         private CommandEvents _solutionSaveEvent;
@@ -441,7 +441,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private async Task OnSolutionExistsAndFullyLoadedAsync()
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             SolutionOpening?.Invoke(this, EventArgs.Empty);
 
@@ -506,7 +506,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
                 NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
                 {
-                    await EnsureInitializeAsync(VSSolutionManagerInitContext.SolutionOpen);
+                    await EnsureInitializeAsync(VSSolutionManagerInitMode.OnSolutionOpen);
                 });
             }
         }
@@ -520,7 +520,7 @@ namespace NuGet.PackageManagement.VisualStudio
                     {
                         await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                        await EnsureInitializeAsync(VSSolutionManagerInitContext.SolutionChange);
+                        await EnsureInitializeAsync(VSSolutionManagerInitMode.OnSolutionChange);
 
                         if (EnvDTEProjectUtility.IsSupported(envDTEProject))
                         {
@@ -577,9 +577,7 @@ namespace NuGet.PackageManagement.VisualStudio
                     && !EnvDTEProjectUtility.IsParentProjectExplicitlyUnsupported(envDTEProject)
                     && _solutionOpenedRaised)
                     {
-                        await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-                        await EnsureInitializeAsync(VSSolutionManagerInitContext.SolutionChange);
+                        await EnsureInitializeAsync(VSSolutionManagerInitMode.OnSolutionChange);
                         var vsProjectAdapter = await _vsProjectAdapterProvider.CreateAdapterForFullyLoadedProjectAsync(envDTEProject);
                         await AddVsProjectAdapterToCacheAsync(vsProjectAdapter);
                         NuGetProject nuGetProject;
@@ -751,19 +749,19 @@ namespace NuGet.PackageManagement.VisualStudio
             }
         }
 
-        private async Task EnsureInitializeAsync(VSSolutionManagerInitContext context = VSSolutionManagerInitContext.Default)
+        private async Task EnsureInitializeAsync(VSSolutionManagerInitMode mode = VSSolutionManagerInitMode.Default)
         {
-            await _initLock.ExecuteInitAsync(
+            await _initLock.ExecuteNuGetOperationAsync(
                 async () =>
                 {
                     try
                     {
-                        if (context == VSSolutionManagerInitContext.SolutionOpen)
+                        if (mode == VSSolutionManagerInitMode.OnSolutionOpen)
                         {
                             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
                             await OnSolutionExistsAndFullyLoadedAsync();
                         }
-                        else if (context == VSSolutionManagerInitContext.SolutionChange)
+                        else if (mode == VSSolutionManagerInitMode.OnSolutionChange)
                         {
                             await EnsureNuGetAndVsProjectAdapterCacheAsync();
                         }
@@ -802,7 +800,8 @@ namespace NuGet.PackageManagement.VisualStudio
                         Debug.Fail(e.ToString());
                         _logger.LogError(e.ToString());
                     }
-                });
+                },
+                CancellationToken.None);
         }
 
         private async Task<NuGetProject> CreateNuGetProjectAsync(IVsProjectAdapter project, INuGetProjectContext projectContext = null)
@@ -899,7 +898,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 && fActive == 1)
             {
                 NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
-                   await EnsureInitializeAsync(VSSolutionManagerInitContext.SolutionOpen));
+                   await EnsureInitializeAsync(VSSolutionManagerInitMode.OnSolutionOpen));
             }
 
             return VSConstants.S_OK;
@@ -1024,48 +1023,11 @@ namespace NuGet.PackageManagement.VisualStudio
 
         #endregion
 
-        private sealed class VSSolutionInitLock
+        private enum VSSolutionManagerInitMode
         {
-            private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
-
-            private readonly AsyncLocal<int> _lockCount = new AsyncLocal<int>();
-
-            public async Task ExecuteInitAsync(Func<Task> action)
-            {
-                if (_lockCount.Value == 0)
-                {
-                    await _semaphore.WaitAsync();
-
-                    // Once this thread acquired the lock then increment lockCount
-                    _lockCount.Value++;
-
-                    try
-                    {
-                        await action();
-                    }
-                    finally
-                    {
-                        try
-                        {
-                            _semaphore.Release();
-                        }
-                        catch (ObjectDisposedException) { }
-
-                        _lockCount.Value--;
-                    }
-                }
-                else
-                {
-                    await action();
-                }
-            }
+            Default,
+            OnSolutionOpen,
+            OnSolutionChange
         }
-    }
-
-    public enum VSSolutionManagerInitContext
-    {
-        Default,
-        SolutionOpen,
-        SolutionChange
     }
 }

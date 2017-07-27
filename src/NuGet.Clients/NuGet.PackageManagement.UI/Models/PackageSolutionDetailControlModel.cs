@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -269,7 +269,7 @@ namespace NuGet.PackageManagement.UI
         // Creates the project lists. Also called after a project is added/removed/renamed.
         private void CreateProjectLists()
         {
-            NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {
                 // unhook event handler
                 if (Projects != null)

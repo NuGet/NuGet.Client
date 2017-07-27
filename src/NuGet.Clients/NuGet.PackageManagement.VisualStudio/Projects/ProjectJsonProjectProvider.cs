@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -52,7 +52,7 @@ namespace NuGet.PackageManagement.VisualStudio
             Assumes.Present(vsProjectAdapter);
             Assumes.Present(context);
 
-            _threadingService.ThrowIfNotOnUIThread();
+            await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             var guids = vsProjectAdapter.ProjectTypeGuids;
 
@@ -90,11 +90,11 @@ namespace NuGet.PackageManagement.VisualStudio
                 {
                     var projectServices = CreateProjectServicesAsync(vsProjectAdapter);
 
-                    return await System.Threading.Tasks.Task.FromResult(new VsProjectJsonNuGetProject(
+                    return new VsProjectJsonNuGetProject(
                         projectJsonPath,
                         msbuildProjectFile.FullName,
                         vsProjectAdapter,
-                        projectServices));
+                        projectServices);
                 }
             }
 
