@@ -148,6 +148,8 @@ namespace Test.Utility
             get { return NuGetProjects.Count > 0; }
         }
 
+        public bool IsSolutionDPLEnabled => false;
+
         public async Task<bool> IsSolutionAvailableAsync()
         {
             return await Task.FromResult(IsSolutionOpen);
@@ -198,6 +200,11 @@ namespace Test.Utility
                 testDirectory.Dispose();
                 _testDirectory = null;
             }
+        }
+
+        public Task<IEnumerable<NuGetProject>> GetNuGetProjectsFromDeferredProject()
+        {
+            throw new NotImplementedException();
         }
 
 #pragma warning restore 0067

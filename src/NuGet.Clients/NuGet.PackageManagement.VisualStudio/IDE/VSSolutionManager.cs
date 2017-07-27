@@ -376,42 +376,39 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public async Task<IEnumerable<NuGetProject>> GetNuGetProjectsFromDeferredProject()
         {
-            return await NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+            var deferedProjects = GetDeferredProjects();
+
+            var nugetProjects = new List<NuGetProject>();
+
+            foreach (var project in deferedProjects)
             {
-                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-                var deferedProjects = GetDeferredProjects();
-
-                var nugetProjects = new List<NuGetProject>();
-
-                foreach (var project in deferedProjects)
+                try
                 {
-                    try
-                    {
-                        var vsProjectAdapter = await _vsProjectAdapterProvider.CreateAdapterForDeferredProjectAsync(project);
+                    var vsProjectAdapter = await _vsProjectAdapterProvider.CreateAdapterForDeferredProjectAsync(project);
 
-                        if (vsProjectAdapter.IsSupported)
+                    if (vsProjectAdapter.IsSupported)
+                    {
+                        var nugetProject = await CreateNuGetProjectAsync(vsProjectAdapter);
+
+                        if (nugetProject != null)
                         {
-                            var nugetProject = await CreateNuGetProjectAsync(vsProjectAdapter);
-
-                            if (nugetProject != null)
-                            {
-                                nugetProjects.Add(nugetProject);
-                            }
+                            nugetProjects.Add(nugetProject);
                         }
-
-                    }
-                    catch (Exception e)
-                    {
-                        // Ignore failed projects.
-                        _logger.LogWarning($"The project {project} failed to initialize as a NuGet project.");
-                        _logger.LogError(e.ToString());
                     }
 
                 }
+                catch (Exception e)
+                {
+                    // Ignore failed projects.
+                    _logger.LogWarning($"The project {project} failed to initialize as a NuGet project.");
+                    _logger.LogError(e.ToString());
+                }
 
-                return nugetProjects;
-            });
+            }
+
+            return nugetProjects;
         }
 
         private IEnumerable<IVsHierarchy> GetDeferredProjects()
@@ -693,25 +690,25 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 try
                 {
-                //    var deferedProjects = GetDeferredProjects();
+                    //    var deferedProjects = GetDeferredProjects();
 
-                //    foreach (var project in deferedProjects)
-                //    {
-                //        try
-                //        {
-                //            var vsProjectAdapter = await _vsProjectAdapterProvider.CreateAdapterForDeferredProjectAsync(project);
-                //            await AddVsProjectAdapterToCacheAsync(vsProjectAdapter);
-                //        }
-                //        catch (Exception e)
-                //        {
-                //            // Ignore failed projects.
-                //            _logger.LogWarning($"The project {project} failed to initialize as a NuGet project.");
-                //            _logger.LogError(e.ToString());
-                //        }
+                    //    foreach (var project in deferedProjects)
+                    //    {
+                    //        try
+                    //        {
+                    //            var vsProjectAdapter = await _vsProjectAdapterProvider.CreateAdapterForDeferredProjectAsync(project);
+                    //            await AddVsProjectAdapterToCacheAsync(vsProjectAdapter);
+                    //        }
+                    //        catch (Exception e)
+                    //        {
+                    //            // Ignore failed projects.
+                    //            _logger.LogWarning($"The project {project} failed to initialize as a NuGet project.");
+                    //            _logger.LogError(e.ToString());
+                    //        }
 
-                //        // Consider that the cache is initialized only when there are any projects to add.
-                //        _cacheInitialized = true;
-                //    }
+                    //        // Consider that the cache is initialized only when there are any projects to add.
+                    //        _cacheInitialized = true;
+                    //    }
 
                     var dte = _serviceProvider.GetDTE();
 

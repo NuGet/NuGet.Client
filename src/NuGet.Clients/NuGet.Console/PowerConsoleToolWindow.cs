@@ -143,8 +143,6 @@ namespace NuGetConsole.Implementation
             Guid cmdUi = VSConstants.GUID_TextEditorFactory;
             windowFrame.SetGuidProperty((int)__VSFPROPID.VSFPROPID_InheritKeyBindings, ref cmdUi);
 
-            SolutionManager.SolutionOpened += (o, e) => VsUIShell.UpdateCommandUI(0);
-
             // pause for a tiny moment to let the tool window open before initializing the host
             var timer = new DispatcherTimer();
             timer.Interval = TimeSpan.FromMilliseconds(10);
