@@ -43,7 +43,7 @@ namespace NuGet.Packaging
                 packages[i].ParentCount = GetParentCount(packages, package.Id, start);
             }
 
-            Array.Sort(packages, 0, 0, _comparer);
+            Array.Sort(packages, start, packages.Length - start, _comparer);
         }
 
         private static int GetParentCount(PackageInfo[] packages, string id, int start)
