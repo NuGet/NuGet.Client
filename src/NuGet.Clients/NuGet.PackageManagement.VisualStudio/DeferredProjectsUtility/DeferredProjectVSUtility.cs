@@ -41,7 +41,7 @@ namespace NuGet.PackageManagement.VisualStudio
         {
 #if VS14
             // for Dev14 always return false since DPL not exists there.
-            return Task.FromResult(false);
+            return false;
 #else
             return NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
             {
