@@ -63,7 +63,7 @@ namespace NuGet.ContentModel
             {
                 var group = new ContentItemGroup();
 
-                foreach (var property in grouping.Key.Properties)
+                foreach (var property in (Dictionary<string, object>)grouping.Key.Properties)
                 {
                     group.Properties.Add(property.Key, property.Value);
                 }
@@ -203,7 +203,7 @@ namespace NuGet.ContentModel
             public int GetHashCode(ContentItem obj)
             {
                 var hashCode = 0;
-                foreach (var property in obj.Properties)
+                foreach (var property in (Dictionary<string, object>)obj.Properties)
                 {
                     hashCode ^= property.Key.GetHashCode();
                     hashCode ^= property.Value.GetHashCode();
@@ -213,7 +213,7 @@ namespace NuGet.ContentModel
 
             public bool Equals(ContentItem x, ContentItem y)
             {
-                foreach (var xProperty in x.Properties)
+                foreach (var xProperty in (Dictionary<string, object>)x.Properties)
                 {
                     object yValue;
                     if (!y.Properties.TryGetValue(xProperty.Key, out yValue))
@@ -226,7 +226,7 @@ namespace NuGet.ContentModel
                     }
                 }
 
-                foreach (var yProperty in y.Properties)
+                foreach (var yProperty in (Dictionary<string, object>)y.Properties)
                 {
                     object xValue;
                     if (!x.Properties.TryGetValue(yProperty.Key, out xValue))
