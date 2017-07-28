@@ -44,8 +44,7 @@ namespace NuGet.ContentModel.Infrastructure
 
                 if (scanIndex != beginToken)
                 {
-                    var literal = pattern.Substring(scanIndex, beginToken - scanIndex);
-                    _segments.Add(new LiteralSegment(literal));
+                    _segments.Add(new LiteralSegment(pattern, scanIndex, beginToken - scanIndex));
                 }
                 if (beginToken != endToken)
                 {
@@ -100,11 +99,15 @@ namespace NuGet.ContentModel.Infrastructure
 
         private class LiteralSegment : Segment
         {
-            private readonly string _literal;
+            private readonly string _pattern;
+            private readonly int _start;
+            private readonly int _length;
 
-            public LiteralSegment(string literal)
+            public LiteralSegment(string pattern, int start, int length)
             {
-                _literal = literal;
+                _pattern = pattern;
+                _start = start;
+                _length = length;
             }
 
             internal override bool TryMatch(
@@ -113,12 +116,11 @@ namespace NuGet.ContentModel.Infrastructure
                 int startIndex,
                 out int endIndex)
             {
-                if (item.Path.Length >= startIndex + _literal.Length)
+                if (item.Path.Length >= startIndex + _length)
                 {
-                    var substring = item.Path.Substring(startIndex, _literal.Length);
-                    if (string.Equals(_literal, substring, StringComparison.OrdinalIgnoreCase))
+                    if (string.Compare(item.Path, startIndex, _pattern, _start, _length, StringComparison.OrdinalIgnoreCase) == 0)
                     {
-                        endIndex = startIndex + _literal.Length;
+                        endIndex = startIndex + _length;
                         return true;
                     }
                 }
