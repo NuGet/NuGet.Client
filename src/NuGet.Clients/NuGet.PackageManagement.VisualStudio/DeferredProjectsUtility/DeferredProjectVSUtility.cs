@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio;
+#if !VS14
 using Microsoft.VisualStudio.Shell;
+#endif
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.VisualStudio;
 
@@ -13,7 +13,9 @@ namespace NuGet.PackageManagement.VisualStudio
 {
     public static class DeferredProjectVSUtility
     {
+#if !VS14
         private static Lazy<IVsSolution> _vsSolution = new Lazy<IVsSolution>(() => GetVsSolution());
+#endif
 
         public static async Task<bool> SolutionHasDeferredProjectsAsync()
         {
@@ -38,8 +40,8 @@ namespace NuGet.PackageManagement.VisualStudio
         public static bool IsSolutionDPLEnabled()
         {
 #if VS14
-                // for Dev14 always return false since DPL not exists there.
-                return false;
+            // for Dev14 always return false since DPL not exists there.
+            return false;
 #else
             return NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
             {
@@ -94,6 +96,8 @@ namespace NuGet.PackageManagement.VisualStudio
 #endif
         }
 
+#if !VS14
+
         private static object GetVSSolutionProperty(int propId)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
@@ -114,5 +118,6 @@ namespace NuGet.PackageManagement.VisualStudio
 
             return serviceProvider.GetService<SVsSolution, IVsSolution>();
         }
+#endif
     }
 }
