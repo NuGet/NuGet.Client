@@ -72,7 +72,7 @@ namespace NuGet.ContentModel
             Pattern = pattern;
 
             Table = table;
-            Defaults = new ReadOnlyDictionary<string, object>(defaults.ToDictionary(p => p.Key, p => p.Value));
+            Defaults = defaults.ToDictionary(p => p.Key, p => p.Value);
         }
 
         public static implicit operator PatternDefinition(string pattern)
