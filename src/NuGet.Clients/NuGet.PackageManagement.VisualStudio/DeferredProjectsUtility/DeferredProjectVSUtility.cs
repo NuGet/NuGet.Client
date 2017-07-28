@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -24,7 +24,7 @@ namespace NuGet.PackageManagement.VisualStudio
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             // check if solution is DPL enabled or not. 
-            if (!await IsSolutionDPLEnabled())
+            if (!IsSolutionDPLEnabled())
             {
                 return false;
             }
@@ -35,22 +35,25 @@ namespace NuGet.PackageManagement.VisualStudio
 #endif
         }
 
-        public static async Task<bool> IsSolutionDPLEnabled()
+        public static bool IsSolutionDPLEnabled()
         {
 #if VS14
                 // for Dev14 always return false since DPL not exists there.
                 return false;
 #else
-            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-            var vsSolution7 = _vsSolution.Value as IVsSolution7;
-
-            if (vsSolution7 != null && vsSolution7.IsSolutionLoadDeferred())
+            return NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
             {
-                return true;
-            }
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            return false;
+                var vsSolution7 = _vsSolution.Value as IVsSolution7;
+
+                if (vsSolution7 != null && vsSolution7.IsSolutionLoadDeferred())
+                {
+                    return true;
+                }
+
+                return false;
+            });
 #endif
         }
 

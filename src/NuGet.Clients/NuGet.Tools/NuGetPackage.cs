@@ -764,7 +764,8 @@ namespace NuGetVSExtension
                 command.Enabled =
                     IsSolutionExistsAndNotDebuggingAndNotBuilding() &&
                     !ConsoleStatus.Value.IsBusy &&
-                    SolutionManager.GetNuGetProjects().Any();
+                    (SolutionManager.GetNuGetProjects().Any() ||
+                    DeferredProjectVSUtility.IsSolutionDPLEnabled());
             });
         }
 

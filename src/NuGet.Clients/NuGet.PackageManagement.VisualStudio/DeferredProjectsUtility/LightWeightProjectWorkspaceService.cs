@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -16,6 +16,7 @@ using NuGet.VisualStudio;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
+#if !VS14
     [Export(typeof(ILightWeightProjectWorkspaceService))]
     [PartCreationPolicy(CreationPolicy.Shared)]
     internal sealed class LightWeightProjectWorkspaceService : ILightWeightProjectWorkspaceService
@@ -104,4 +105,5 @@ namespace NuGet.PackageManagement.VisualStudio
             return (await dataService.GetProjectProperty(propertyName)).EvaluatedValue;
         }
     }
+#endif
 }
