@@ -10,7 +10,7 @@ namespace NuGet.Packaging
 {
     public static class TopologicalSortUtility
     {
-        private static readonly Comparer _comparer = new Comparer();
+        private static readonly PackageInfoComparer DefaultComparer = new PackageInfoComparer();
         /// <summary>
         /// Order dependencies by children first.
         /// </summary>
@@ -43,7 +43,7 @@ namespace NuGet.Packaging
                 packages[i].ParentCount = GetParentCount(packages, package.Id, start);
             }
 
-            Array.Sort(packages, start, packages.Length - start, _comparer);
+            Array.Sort(packages, start, packages.Length - start, DefaultComparer);
         }
 
         private static int GetParentCount(PackageInfo[] packages, string id, int start)
@@ -68,7 +68,7 @@ namespace NuGet.Packaging
             return parentCount;
         }
 
-        private class Comparer : IComparer<PackageInfo>
+        private class PackageInfoComparer : IComparer<PackageInfo>
         {
             public int Compare(PackageInfo x, PackageInfo y)
             {
