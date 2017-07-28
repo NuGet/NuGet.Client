@@ -40,7 +40,7 @@ namespace NuGet.Packaging.Core
         public PackageDependencyInfo(string id, NuGetVersion version, IEnumerable<PackageDependency> dependencies)
             : base(id, version)
         {
-            _dependencies = dependencies == null ? _empty : dependencies.ToArray();
+            _dependencies = dependencies?.ToArray() ?? _empty;
         }
 
         /// <summary>
