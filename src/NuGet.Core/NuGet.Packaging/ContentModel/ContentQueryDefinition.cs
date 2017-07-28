@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
 
 namespace NuGet.ContentModel
@@ -72,7 +71,7 @@ namespace NuGet.ContentModel
             Pattern = pattern;
 
             Table = table;
-            Defaults = new ReadOnlyDictionary<string, object>(defaults.ToDictionary(p => p.Key, p => p.Value));
+            Defaults = new Dictionary<string, object>(defaults.ToDictionary(p => p.Key, p => p.Value));
         }
 
         public static implicit operator PatternDefinition(string pattern)

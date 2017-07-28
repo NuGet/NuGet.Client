@@ -830,7 +830,8 @@ namespace NuGet.Commands
             PatternSet patternSet,
             string assetType)
         {
-            var groups = contentItems.FindItemGroups(patternSet).ToList();
+            var enumerableGroups = contentItems.FindItemGroups(patternSet);
+            var groups = enumerableGroups as List<ContentItemGroup> ?? enumerableGroups.ToList();
 
             var groupsForFramework = GetContentGroupsForFramework(
                 framework,

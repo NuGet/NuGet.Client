@@ -29,12 +29,13 @@ namespace NuGet.Commands
             NuGetFramework framework,
             IEnumerable<ContentItemGroup> contentGroups)
         {
+            var contentGroupsList = contentGroups as List<ContentItemGroup> ?? contentGroups.ToList();
             var groups = new List<ContentItemGroup>();
 
             // Group by content by code language and find the nearest TxM under each language.
             var groupsByLanguage = new Dictionary<string, List<ContentItemGroup>>(StringComparer.OrdinalIgnoreCase);
 
-            foreach (var group in contentGroups)
+            foreach (var group in contentGroupsList)
             {
                 var codeLanguage = (string)group.Properties[ManagedCodeConventions.PropertyNames.CodeLanguage];
 
