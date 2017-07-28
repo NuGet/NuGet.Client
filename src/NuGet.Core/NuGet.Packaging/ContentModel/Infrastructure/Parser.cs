@@ -23,8 +23,25 @@ namespace NuGet.ContentModel.Infrastructure
         {
             for (var scanIndex = 0; scanIndex < pattern.Length;)
             {
-                var beginToken = (pattern + '{').IndexOf('{', scanIndex);
-                var endToken = (pattern + '}').IndexOf('}', beginToken);
+                var beginToken = pattern.Length;
+                var endToken = pattern.Length;
+                for (var i = scanIndex; i < pattern.Length; i++)
+                {
+                    var ch = pattern[i];
+                    if (beginToken == pattern.Length)
+                    {
+                        if (ch == '{')
+                        {
+                            beginToken = i;
+                        }
+                    }
+                    else if (ch == '}')
+                    {
+                        endToken = i;
+                        break;
+                    }
+                }
+
                 if (scanIndex != beginToken)
                 {
                     var literal = pattern.Substring(scanIndex, beginToken - scanIndex);
@@ -32,7 +49,7 @@ namespace NuGet.ContentModel.Infrastructure
                 }
                 if (beginToken != endToken)
                 {
-                    var delimiter = (pattern + '\0')[endToken + 1];
+                    var delimiter = endToken + 1 < pattern.Length ? pattern[endToken + 1] : '\0';
                     var matchOnly = pattern[endToken - 1] == '?';
 
                     var beginName = beginToken + 1;
@@ -170,15 +187,26 @@ namespace NuGet.ContentModel.Infrastructure
                 {
                     throw new Exception(string.Format("Unable to find property definition for {{{0}}}", _token));
                 }
-                for (var scanIndex = startIndex; scanIndex != item.Path.Length;)
+                var path = item.Path;
+
+                for (var scanIndex = startIndex; scanIndex != path.Length;)
                 {
-                    var delimiterIndex = (item.Path + _delimiter).IndexOf(_delimiter, scanIndex + 1);
-                    if (delimiterIndex == item.Path.Length
+                    var delimiterIndex = path.Length;
+                    for (var i = scanIndex + 1; i < path.Length; i++)
+                    {
+                        if (path[i] == _delimiter)
+                        {
+                            delimiterIndex = i;
+                            break;
+                        }
+                    }
+
+                    if (delimiterIndex == path.Length
                         && _delimiter != '\0')
                     {
                         break;
                     }
-                    var substring = item.Path.Substring(startIndex, delimiterIndex - startIndex);
+                    var substring = path.Substring(startIndex, delimiterIndex - startIndex);
                     object value;
                     if (propertyDefinition.TryLookup(substring, _table, out value))
                     {
