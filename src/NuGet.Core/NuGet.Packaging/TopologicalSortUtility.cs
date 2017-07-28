@@ -38,19 +38,25 @@ namespace NuGet.Packaging
 
         private static int GetParentCount(List<PackageDependencyInfo> packages, string id)
         {
-            int count = 0;
+            var parentCount = 0;
+            var count = packages.Count;
 
-            foreach (var package in packages)
+            for (var i = 0; i < count; i++)
             {
-                if (package.Dependencies != null
-                    && package.Dependencies.Any(dependency =>
-                        string.Equals(id, dependency.Id, StringComparison.OrdinalIgnoreCase)))
+                var deps = packages[i].Dependencies;
+                var dependencies = deps as PackageDependency[] ?? deps.ToArray();
+
+                foreach (var dependency in dependencies)
                 {
-                    count++;
+                    if (string.Equals(id, dependency.Id, StringComparison.OrdinalIgnoreCase))
+                    {
+                        parentCount++;
+                        break;
+                    }
                 }
             }
 
-            return count;
+            return parentCount;
         }
     }
 }
