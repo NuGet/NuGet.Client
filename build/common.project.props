@@ -63,6 +63,7 @@
     you get exactly the same output, so the .pdb from the second build will match the .dll
      from the first build!-->
     <Deterministic>true</Deterministic>
+    <Features>strict</Features>
   </PropertyGroup>
 
   <!-- DEBUG specific configuration settings -->

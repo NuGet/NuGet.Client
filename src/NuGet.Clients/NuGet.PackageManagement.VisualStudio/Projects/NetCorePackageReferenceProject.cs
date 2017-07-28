@@ -268,16 +268,16 @@ namespace NuGet.PackageManagement.VisualStudio
                 // Install the package to all frameworks.
                 var configuredProject = await _unconfiguredProject.GetSuggestedConfiguredProjectAsync();
 
-                var result = await configuredProject?
+                var result = await configuredProject
                     .Services
                     .PackageReferences
                     .AddAsync(packageId, formattedRange);
 
                 // This is the update operation
-                if (result != null && !result.Added)
+                if (!result.Added)
                 {
                     var existingReference = result.Reference;
-                    await existingReference?.Metadata.SetPropertyValueAsync("Version", formattedRange);
+                    await existingReference.Metadata.SetPropertyValueAsync("Version", formattedRange);
                 }
             }
 

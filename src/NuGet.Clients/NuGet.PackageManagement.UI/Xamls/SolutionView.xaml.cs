@@ -77,7 +77,7 @@ namespace NuGet.PackageManagement.UI
         public void SaveSettings(UserSettings settings)
         {
             var sortDescription = _projectList.Items.SortDescriptions.FirstOrDefault();
-            if (sortDescription != null)
+            if (sortDescription != default(SortDescription))
             {
                 settings.SortPropertyName = sortDescription.PropertyName;
                 settings.SortDirection = sortDescription.Direction;

@@ -99,7 +99,7 @@ namespace NuGet.Protocol.Plugins.Tests
 
                 dispatcher.SetConnection(connection.Object);
 
-                CancellationToken actualCancellationToken;
+                var actualCancellationToken = default(CancellationToken);
 
                 requestHandler.HandleResponseAsyncFunc = (conn, message, responseHandler, cancellationToken) =>
                     {

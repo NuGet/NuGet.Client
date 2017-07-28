@@ -23,8 +23,9 @@ namespace NuGet.Commands
         }
 
         //We override this method because in the case of a no op we don't need to update anything
-        [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "CS1998", Justification = "This is intended.")]
+#pragma warning disable CS1998 // This async method lacks 'await' operators and will run synchronously.
         public override async Task CommitAsync(ILogger log, CancellationToken token)
+#pragma warning restore CS1998 // This async method lacks 'await' operators and will run synchronously.
         {
             var isTool = ProjectStyle == ProjectStyle.DotnetCliTool;
 
