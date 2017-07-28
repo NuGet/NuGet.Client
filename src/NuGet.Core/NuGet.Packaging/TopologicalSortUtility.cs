@@ -10,24 +10,21 @@ namespace NuGet.Packaging
 {
     public static class TopologicalSortUtility
     {
+        private static readonly Comparer _comparer = new Comparer();
         /// <summary>
         /// Order dependencies by children first.
         /// </summary>
         public static IReadOnlyList<PackageDependencyInfo> SortPackagesByDependencyOrder(
             IEnumerable<PackageDependencyInfo> packages)
         {
-            var sorted = new List<PackageDependencyInfo>();
-            var toSort = packages.Distinct().ToList();
+            var toSort = packages.Distinct().Select(package => new PackageInfo(package)).ToArray();
+            var sorted = new List<PackageDependencyInfo>(toSort.Length);
 
-            while (toSort.Count > 0)
+            for (var i = 0; i < toSort.Length; i++)
             {
-                // Order packages by parent count, take the child with the lowest number of parents
-                // and remove it from the list
-                var nextPackage = toSort.OrderBy(package => GetParentCount(toSort, package.Id))
-                    .ThenBy(package => package.Id, StringComparer.OrdinalIgnoreCase).First();
-
-                sorted.Add(nextPackage);
-                toSort.Remove(nextPackage);
+                Sort(toSort, i);
+                // take the child with the lowest number of parents
+                sorted.Add(toSort[i].Package);
             }
 
             // the list is ordered by parents first, reverse to run children first
@@ -36,13 +33,26 @@ namespace NuGet.Packaging
             return sorted;
         }
 
-        private static int GetParentCount(List<PackageDependencyInfo> packages, string id)
+        private static void Sort(PackageInfo[] packages, int start)
+        {
+            // Update parent counts
+            for (var i = start; i < packages.Length; i++)
+            {
+                var package = packages[i].Package;
+                // Mutating stuct in-place, need to index rather than use enumerator
+                packages[i].ParentCount = GetParentCount(packages, package.Id, start);
+            }
+
+            Array.Sort(packages, 0, 0, _comparer);
+        }
+
+        private static int GetParentCount(PackageInfo[] packages, string id, int start)
         {
             var parentCount = 0;
 
-            foreach(var package in packages)
+            for (var i = start; i < packages.Length; i++)
             {
-                var deps = package.Dependencies;
+                var deps = packages[i].Package.Dependencies;
                 var dependencies = deps as PackageDependency[] ?? deps.ToArray();
 
                 foreach (var dependency in dependencies)
@@ -56,6 +66,35 @@ namespace NuGet.Packaging
             }
 
             return parentCount;
+        }
+
+        private class Comparer : IComparer<PackageInfo>
+        {
+            public int Compare(PackageInfo x, PackageInfo y)
+            {
+                // Order packages by parent count
+                if (x.ParentCount < y.ParentCount)
+                {
+                    return -1;
+                }
+                if (x.ParentCount > y.ParentCount)
+                {
+                    return 1;
+                }
+                return StringComparer.OrdinalIgnoreCase.Compare(x.Package.Id, y.Package.Id);
+            }
+        }
+
+        private struct PackageInfo
+        {
+            public PackageInfo(PackageDependencyInfo package)
+            {
+                Package = package;
+                ParentCount = 0;
+            }
+
+            public PackageDependencyInfo Package;
+            public int ParentCount;
         }
     }
 }
