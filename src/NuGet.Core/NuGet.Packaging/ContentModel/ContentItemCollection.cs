@@ -10,29 +10,50 @@ namespace NuGet.ContentModel
 {
     public class ContentItemCollection
     {
-        private IEnumerable<Asset> _assets;
+        private static readonly GroupComparer _groupComparer = new GroupComparer();
+
+        private List<Asset> _assets;
 
         public void Load(IEnumerable<string> paths)
         {
-            _assets = paths.Select(path => new Asset { Path = path }).SelectMany(ContractBecomesRef).ToList();
+            var list = new List<Asset>();
+            foreach (var path in paths)
+            {
+                list.Add(new Asset { Path = path });
+
+                if (path.StartsWith("lib/contract"))
+                {
+                    list.Add(new Asset
+                    {
+                        Path = "ref/any" + path.Substring("lib/contract".Length),
+                        Link = path
+                    });
+                }
+            }
+
+            _assets = list;
         }
 
         public void Load(string packageDirectory)
         {
-            _assets = AssetManager.GetPackageAssets(packageDirectory).SelectMany(ContractBecomesRef).ToList();
-        }
+            var packages = AssetManager.GetPackageAssets(packageDirectory);
 
-        private IEnumerable<Asset> ContractBecomesRef(Asset asset)
-        {
-            yield return asset;
-            if (asset.Path.StartsWith("lib/contract"))
+            var list = new List<Asset>();
+            foreach (var asset in packages)
             {
-                yield return new Asset
+                list.Add(asset);
+
+                if (asset.Path.StartsWith("lib/contract"))
+                {
+                    list.Add(new Asset
                     {
                         Path = "ref/any" + asset.Path.Substring("lib/contract".Length),
                         Link = asset.Link ?? asset.Path
-                    };
+                    });
+                }
             }
+
+            _assets = list;
         }
 
         public IEnumerable<ContentItem> FindItems(PatternSet definition)
@@ -42,39 +63,7 @@ namespace NuGet.ContentModel
 
         public IEnumerable<ContentItemGroup> FindItemGroups(PatternSet definition)
         {
-            var groupPatterns = definition.GroupPatterns
-                .Select(pattern => new PatternExpression(pattern))
-                .ToList();
-
-            var groupAssets = new List<Tuple<ContentItem, Asset>>();
-            foreach (var asset in _assets)
-            {
-                foreach (var groupPattern in groupPatterns)
-                {
-                    var item = groupPattern.Match(asset.Path, definition.PropertyDefinitions);
-                    if (item != null)
-                    {
-                        groupAssets.Add(Tuple.Create(item, asset));
-                    }
-                }
-            }
-
-            foreach (var grouping in groupAssets.GroupBy(key => key.Item1, new GroupComparer()))
-            {
-                var group = new ContentItemGroup();
-
-                foreach (var property in (Dictionary<string, object>)grouping.Key.Properties)
-                {
-                    group.Properties.Add(property.Key, property.Value);
-                }
-
-                foreach (var item in FindItemsImplementation(definition, grouping.Select(match => match.Item2)))
-                {
-                    group.Items.Add(item);
-                }
-
-                yield return group;
-            }
+            return FindItemGroupsImplementation(definition);
         }
 
         public bool HasItemGroup(SelectionCriteria criteria, params PatternSet[] definitions)
@@ -86,8 +75,9 @@ namespace NuGet.ContentModel
         {
             foreach (var definition in definitions)
             {
-                var itemGroups = FindItemGroups(definition).ToList();
-                foreach (var criteriaEntry in criteria.Entries)
+                var itemGroups = FindItemGroupsImplementation(definition);
+                var criteriaEntries = criteria.Entries as List<SelectionCriteriaEntry> ?? criteria.Entries.ToList();
+                foreach (var criteriaEntry in criteriaEntries)
                 {
                     ContentItemGroup bestGroup = null;
                     var bestAmbiguity = false;
@@ -95,7 +85,8 @@ namespace NuGet.ContentModel
                     foreach (var itemGroup in itemGroups)
                     {
                         var groupIsValid = true;
-                        foreach (var criteriaProperty in criteriaEntry.Properties)
+                        var criteriaEntryProperties = criteriaEntry.Properties as Dictionary<string, object> ?? criteriaEntry.Properties.ToDictionary(s => s.Key, s => s.Value);
+                        foreach (var criteriaProperty in criteriaEntryProperties)
                         {
                             if (criteriaProperty.Value == null)
                             {
@@ -135,7 +126,7 @@ namespace NuGet.ContentModel
                             else
                             {
                                 var groupComparison = 0;
-                                foreach (var criteriaProperty in criteriaEntry.Properties)
+                                foreach (var criteriaProperty in criteriaEntryProperties)
                                 {
                                     if (criteriaProperty.Value == null)
                                     {
@@ -178,11 +169,13 @@ namespace NuGet.ContentModel
             return null;
         }
 
-        private IEnumerable<ContentItem> FindItemsImplementation(PatternSet definition, IEnumerable<Asset> assets)
+        private List<ContentItem> FindItemsImplementation(PatternSet definition, List<Asset> assets)
         {
             var pathPatterns = definition.PathPatterns
                 .Select(pattern => new PatternExpression(pattern))
                 .ToList();
+
+            var list = new List<ContentItem>();
 
             foreach (var asset in assets)
             {
@@ -191,11 +184,53 @@ namespace NuGet.ContentModel
                     var contentItem = pathPattern.Match(asset.Path, definition.PropertyDefinitions);
                     if (contentItem != null)
                     {
-                        yield return contentItem;
+                        list.Add(contentItem);
                         break;
                     }
                 }
             }
+
+            return list;
+        }
+
+        private List<ContentItemGroup> FindItemGroupsImplementation(PatternSet definition)
+        {
+            var list = new List<ContentItemGroup>();
+            var groupPatterns = definition.GroupPatterns
+                .Select(pattern => new PatternExpression(pattern))
+                .ToList();
+
+            var groupAssets = new List<Tuple<ContentItem, Asset>>();
+            foreach (var asset in _assets)
+            {
+                foreach (var groupPattern in groupPatterns)
+                {
+                    var item = groupPattern.Match(asset.Path, definition.PropertyDefinitions);
+                    if (item != null)
+                    {
+                        groupAssets.Add(Tuple.Create(item, asset));
+                    }
+                }
+            }
+
+            foreach (var grouping in groupAssets.GroupBy(key => key.Item1, _groupComparer))
+            {
+                var group = new ContentItemGroup();
+
+                foreach (var property in (Dictionary<string, object>)grouping.Key.Properties)
+                {
+                    group.Properties.Add(property.Key, property.Value);
+                }
+
+                foreach (var item in FindItemsImplementation(definition, grouping.Select(match => match.Item2).ToList()))
+                {
+                    group.Items.Add(item);
+                }
+
+                list.Add(group);
+            }
+
+            return list;
         }
 
         private class GroupComparer : IEqualityComparer<ContentItem>
