@@ -67,9 +67,21 @@ namespace NuGet.ContentModel.Infrastructure
             {
                 // Successful match!
                 // Apply defaults from the pattern
-                foreach (var pair in _defaults)
+                var defaults = _defaults as Dictionary<string, object>;
+                if (defaults != null)
                 {
-                    item.Properties[pair.Key] = pair.Value;
+                    // Use struct enum, to avoid boxing for Dictionary
+                    foreach (var pair in defaults)
+                    {
+                        item.Properties[pair.Key] = pair.Value;
+                    }
+                }
+                else
+                {
+                    foreach (var pair in _defaults)
+                    {
+                        item.Properties[pair.Key] = pair.Value;
+                    }
                 }
                 return item;
             }
