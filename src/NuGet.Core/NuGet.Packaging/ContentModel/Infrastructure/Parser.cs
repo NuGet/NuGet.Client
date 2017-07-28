@@ -47,10 +47,8 @@ namespace NuGet.ContentModel.Infrastructure
 
         public ContentItem Match(string path, IReadOnlyDictionary<string, ContentPropertyDefinition> propertyDefinitions)
         {
-            var item = new ContentItem
-                {
-                    Path = path
-                };
+            var item = CreateContentItem(path);
+
             var startIndex = 0;
             foreach (var segment in _segments)
             {
@@ -60,7 +58,7 @@ namespace NuGet.ContentModel.Infrastructure
                     startIndex = endIndex;
                     continue;
                 }
-                return null;
+                return DiscardContentItem(item);
             }
 
             if (startIndex == path.Length)
@@ -85,6 +83,34 @@ namespace NuGet.ContentModel.Infrastructure
                 }
                 return item;
             }
+            return DiscardContentItem(item);
+        }
+
+        [ThreadStatic]
+        private static ContentItem s_contentItemCache;
+
+        private static ContentItem CreateContentItem(string path)
+        {
+            var contentItem = s_contentItemCache;
+            if (contentItem == null)
+            {
+                return new ContentItem
+                {
+                    Path = path
+                };
+            }
+
+            s_contentItemCache = null;
+            contentItem.Path = path;
+            return contentItem;
+        }
+
+        private static ContentItem DiscardContentItem(ContentItem item)
+        {
+            item.Path = string.Empty;
+            item.Properties.Clear();
+            s_contentItemCache = item;
+
             return null;
         }
 
