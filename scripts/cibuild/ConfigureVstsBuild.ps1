@@ -72,6 +72,15 @@ Function Update-VsixVersion {
     Write-Host "Updated the VSIX version [$oldVersion] => [$($root.Metadata.Identity.Version)]"
 }
 
+Function Queue-FunctionalTests {
+    $url = "https://devdiv.visualstudio.com/DefaultCollection/devdiv/_apis/build/builds?api-version=2.0" 
+    $b = @{definition=@{id=6954};sourceBranch=$env:BUILD_SOURCEBRANCH} | convertto-json 
+    $build = Invoke-RestMethod -Uri $url -Method POST -Body $b -Headers @{ Authorization = "Bearer $env:SYSTEM_ACCESSTOKEN" } -ContentType "application/json" 
+    $build 
+    $funcTestId = $build.id 
+    Write-Output "##vso[task.setvariable variable=QueuedFunctionalTestId;]$funcTestId"
+}
+
 $msbuildExe = 'C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\MSBuild\15.0\bin\msbuild.exe'
 
 # Turn off strong name verification for common DevDiv public keys so that people can execute things against
@@ -177,4 +186,5 @@ else
     }
     Update-VsixVersion -manifestName source.extension.vs15.vsixmanifest -ReleaseProductVersion $productVersion -buildNumber $newBuildCounter
     Update-VsixVersion -manifestName source.extension.vs15.insertable.vsixmanifest -ReleaseProductVersion $productVersion -buildNumber $newBuildCounter
+    Queue-FunctionalTests
 }
