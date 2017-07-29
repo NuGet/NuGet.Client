@@ -147,8 +147,18 @@ namespace NuGet.DependencyResolver
         {
             foreach (var item in path)
             {
-                var childNode = node.InnerNodes.FirstOrDefault(n =>
-                    StringComparer.OrdinalIgnoreCase.Equals(n.Key.Name, item));
+                GraphNode<TItem> childNode = null;
+                var innerNodes = node.InnerNodes;
+                var count = innerNodes.Count;
+                for (var i = 0; i < count; i++)
+                {
+                    var candidateNode = innerNodes[i];
+                    if (StringComparer.OrdinalIgnoreCase.Equals(candidateNode.Key.Name, item))
+                    {
+                        childNode = candidateNode;
+                        break;
+                    }
+                }
 
                 if (childNode == null)
                 {
