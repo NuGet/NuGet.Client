@@ -341,20 +341,46 @@ namespace NuGet.DependencyResolver
         public static void ForEach<TItem>(this IEnumerable<GraphNode<TItem>> roots, Action<GraphNode<TItem>> visitor)
         {
             var graphNodes = roots.AsList();
-            for (var i = 0; i < graphNodes.Count; i++)
+            var queue = new Queue<GraphNode<TItem>>();
+
+            var count = graphNodes.Count;
+            for (var g = 0; g < count; g++)
             {
-                graphNodes[i].ForEach(visitor);
+                queue.Enqueue(graphNodes[g]);
+                while (queue.Count > 0)
+                {
+                    var node = queue.Dequeue();
+                    visitor(node);
+
+                    var innerNodes = node.InnerNodes;
+                    var innerCount = innerNodes.Count;
+                    for (var i = 0; i < innerCount; i++)
+                    {
+                        var innerNode = innerNodes[i];
+                        queue.Enqueue(innerNode);
+                    }
+                }
             }
         }
 
         public static void ForEach<TItem>(this GraphNode<TItem> root, Action<GraphNode<TItem>> visitor)
         {
-            // breadth-first walk of Node tree, without TState parameter
-            ForEach(root, 0, (node, _) =>
+            // breadth-first walk of Node tree, no state
+            var queue = new Queue<GraphNode<TItem>>();
+            queue.Enqueue(root);
+            while (queue.Count > 0)
+            {
+                var node = queue.Dequeue();
+                visitor(node);
+
+                var innerNodes = node.InnerNodes;
+                var count = innerNodes.Count;
+                for (var i = 0; i < count; i++)
                 {
-                    visitor(node);
-                    return 0;
-                });
+                    var innerNode = innerNodes[i];
+                    queue.Enqueue(innerNode);
+                }
+            }
         }
 
         // Box Drawing Unicode characters:
