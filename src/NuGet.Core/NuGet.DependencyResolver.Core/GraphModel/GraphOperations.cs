@@ -121,11 +121,23 @@ namespace NuGet.DependencyResolver
                 node.OuterNode.InnerNodes.Remove(node);
             });
 
-            downgrades.AddRange(workingDowngrades.Select(p => new DowngradeResult<RemoteResolveResult>
+
+#if NET45
+            // Increase List size for items to be added, if too small
+            var requiredCapacity = downgrades.Count + workingDowngrades.Count;
+            if (downgrades.Capacity < requiredCapacity)
             {
-                DowngradedFrom = p.Key,
-                DowngradedTo = p.Value
-            }));
+                downgrades.Capacity = requiredCapacity;
+            }
+#endif
+            foreach (var p in workingDowngrades)
+            {
+                downgrades.Add(new DowngradeResult<RemoteResolveResult>
+                {
+                    DowngradedFrom = p.Key,
+                    DowngradedTo = p.Value
+                });
+            }
         }
 
         public static string GetPath<TItem>(this GraphNode<TItem> node)
