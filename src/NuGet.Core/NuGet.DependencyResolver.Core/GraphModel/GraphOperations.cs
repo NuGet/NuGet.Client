@@ -313,8 +313,8 @@ namespace NuGet.DependencyResolver
         {
             // breadth-first walk of Node tree
 
-            var queue = new Queue<Tuple<GraphNode<TItem>, TState>>();
-            queue.Enqueue(Tuple.Create(root, state));
+            var queue = new Queue<ValueTuple<GraphNode<TItem>, TState>>();
+            queue.Enqueue(ValueTuple.Create(root, state));
             while (queue.Count > 0)
             {
                 var work = queue.Dequeue();
@@ -325,7 +325,7 @@ namespace NuGet.DependencyResolver
                 for (var i = 0; i < work.Item1.InnerNodes.Count; i++)
                 {
                     var innerNode = work.Item1.InnerNodes[i];
-                    queue.Enqueue(Tuple.Create(innerNode, innerState));
+                    queue.Enqueue(ValueTuple.Create(innerNode, innerState));
                 }
             }
         }
