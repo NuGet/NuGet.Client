@@ -32,7 +32,7 @@ namespace NuGet.Packaging
             var toSort = lookup.Values.ToArray();
             var sorted = new List<PackageDependencyInfo>(toSort.Length);
 
-            CalcuateRelationships(toSort, lookup);
+            CalculateRelationships(toSort, lookup);
 
             for (var i = 0; i < toSort.Length; i++)
             {
@@ -62,7 +62,7 @@ namespace NuGet.Packaging
             }
         }
 
-        private static void CalcuateRelationships(PackageInfo[] packages, Dictionary<string, PackageInfo> lookup)
+        private static void CalculateRelationships(PackageInfo[] packages, Dictionary<string, PackageInfo> lookup)
         {
             foreach (var package in packages)
             {
