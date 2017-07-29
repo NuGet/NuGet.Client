@@ -1,5 +1,8 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
+using NuGet.Common;
 
 namespace NuGet.Test.Utility
 {
@@ -16,5 +19,11 @@ namespace NuGet.Test.Utility
         public const string ProGet = nameof(ProGet);
         public const string TeamCity = nameof(TeamCity);
         public const string VSTS = nameof(VSTS);
+
+        public static string GetConfigFileRoot()
+        {
+            var fullPath = Environment.GetEnvironmentVariable("NuGet_Core_FuncTests_Config");
+            return string.IsNullOrEmpty(fullPath) ? NuGetEnvironment.GetFolderPath(NuGetFolderPath.UserSettingsDirectory) : fullPath;
+        }
     }
 }

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -23,7 +23,7 @@ namespace NuGet.Test.Utility
 
         public string ConfigFile { get; set; } = TestSources.ConfigFile;
 
-        public string Root { get; } = NuGetEnvironment.GetFolderPath(NuGetFolderPath.UserSettingsDirectory);
+        public string Root { get; } = TestSources.GetConfigFileRoot();
 
         public override string Skip
         {
@@ -39,8 +39,8 @@ namespace NuGet.Test.Utility
                     }
                     else
                     {
+                        
                         var fullPath = Path.Combine(Root, ConfigFile);
-
                         // Skip if a file does not exist, otherwise run the test.
                         if (!File.Exists(fullPath))
                         {
