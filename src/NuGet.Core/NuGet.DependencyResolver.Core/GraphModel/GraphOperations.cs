@@ -84,8 +84,11 @@ namespace NuGet.DependencyResolver
                 // of what is nearer as we walk down the graph (BFS)
                 for (var n = node.OuterNode; n != null; n = n.OuterNode)
                 {
-                    foreach (var sideNode in n.InnerNodes)
+                    var innerNodes = n.InnerNodes;
+                    var count = innerNodes.Count;
+                    for (var i = 0; i < count; i++)
                     {
+                        var sideNode = innerNodes[i];
                         if (sideNode != node && StringComparer.OrdinalIgnoreCase.Equals(sideNode.Key.Name, node.Key.Name))
                         {
                             // Nodes that have no version range should be ignored as potential downgrades e.g. framework reference
@@ -276,8 +279,11 @@ namespace NuGet.DependencyResolver
 
                 // For all accepted nodes, find dependencies that aren't satisfied by the version
                 // of the package that we have selected
-                foreach (var childNode in node.InnerNodes)
+                var innerNodes = node.InnerNodes;
+                var count = innerNodes.Count;
+                for (var i = 0; i < count; i++)
                 {
+                    var childNode = innerNodes[i];
                     GraphNode<TItem> acceptedNode;
                     if (acceptedLibraries.TryGetValue(childNode.Key.Name, out acceptedNode) &&
                         childNode != acceptedNode &&
@@ -322,9 +328,11 @@ namespace NuGet.DependencyResolver
 
                 // avoid Foreach here since it's inside 3 layer nested loops which might make it to
                 // be called 100 of 1000 times so GetEnumerator() might end up taking lot of memory space.
-                for (var i = 0; i < work.Item1.InnerNodes.Count; i++)
+                var innerNodes = work.Item1.InnerNodes;
+                var count = innerNodes.Count;
+                for (var i = 0; i < count; i++)
                 {
-                    var innerNode = work.Item1.InnerNodes[i];
+                    var innerNode = innerNodes[i];
                     queue.Enqueue(ValueTuple.Create(innerNode, innerState));
                 }
             }
