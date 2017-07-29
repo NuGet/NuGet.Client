@@ -20,11 +20,17 @@ namespace NuGet.Packaging
             var toSort = packages.Distinct().Select(package => new PackageInfo(package)).ToArray();
             var sorted = new List<PackageDependencyInfo>(toSort.Length);
 
+            var lookup = new Dictionary<string, PackageInfo>(StringComparer.OrdinalIgnoreCase);
+
+            CalcuateRelationships(toSort, lookup);
+
             for (var i = 0; i < toSort.Length; i++)
             {
-                Sort(toSort, i);
-                // take the child with the lowest number of parents
-                sorted.Add(toSort[i].Package);
+                Array.Sort(toSort, i, toSort.Length - i, DefaultComparer);
+                // take the child with the lowest number of children
+                var package = toSort[i];
+                sorted.Add(package.Package);
+                UpdateChildCounts(package);
             }
 
             // the list is ordered by parents first, reverse to run children first
@@ -33,39 +39,51 @@ namespace NuGet.Packaging
             return sorted;
         }
 
-        private static void Sort(PackageInfo[] packages, int start)
+        private static void UpdateChildCounts(PackageInfo package)
         {
-            // Update parent counts
-            for (var i = start; i < packages.Length; i++)
+            var children = package.Children;
+            if (children != null)
             {
-                var package = packages[i].Package;
-                // Mutating stuct in-place, need to index rather than use enumerator
-                packages[i].ParentCount = GetParentCount(packages, package.Id, start);
+                var count = children.Count;
+                for (var i = 0; i < count; i++)
+                {
+                    children[i].ActiveChildren--;
+                }
             }
-
-            Array.Sort(packages, start, packages.Length - start, DefaultComparer);
         }
 
-        private static int GetParentCount(PackageInfo[] packages, string id, int start)
+        private static void CalcuateRelationships(PackageInfo[] packages, Dictionary<string, PackageInfo> lookup)
         {
-            var parentCount = 0;
-
-            for (var i = start; i < packages.Length; i++)
+            foreach (var package in packages)
             {
-                var deps = packages[i].Package.Dependencies;
+                lookup.Add(package.Package.Id, package);
+            }
+
+            foreach (var package in packages)
+            {
+                var deps = package.Package.Dependencies;
                 var dependencies = deps as PackageDependency[] ?? deps.ToArray();
 
                 foreach (var dependency in dependencies)
                 {
-                    if (string.Equals(id, dependency.Id, StringComparison.OrdinalIgnoreCase))
+                    var id = dependency.Id;
+                    if (lookup.TryGetValue(id, out var parent))
                     {
-                        parentCount++;
-                        break;
+                        var children = parent.Children;
+                        if (children == null)
+                        {
+                            children = new List<PackageInfo>();
+                            parent.Children = children;
+                        }
+                        children.Add(package);
                     }
                 }
             }
 
-            return parentCount;
+            foreach (var package in packages)
+            {
+                package.ActiveChildren = package.Children?.Count ?? 0;
+            }
         }
 
         private class PackageInfoComparer : IComparer<PackageInfo>
@@ -73,11 +91,11 @@ namespace NuGet.Packaging
             public int Compare(PackageInfo x, PackageInfo y)
             {
                 // Order packages by parent count
-                if (x.ParentCount < y.ParentCount)
+                if (x.ActiveChildren < y.ActiveChildren)
                 {
                     return -1;
                 }
-                if (x.ParentCount > y.ParentCount)
+                if (x.ActiveChildren > y.ActiveChildren)
                 {
                     return 1;
                 }
@@ -85,16 +103,17 @@ namespace NuGet.Packaging
             }
         }
 
-        private struct PackageInfo
+        private sealed class PackageInfo
         {
             public PackageInfo(PackageDependencyInfo package)
             {
                 Package = package;
-                ParentCount = 0;
+                ActiveChildren = 0;
             }
 
             public PackageDependencyInfo Package;
-            public int ParentCount;
+            public int ActiveChildren;
+            public List<PackageInfo> Children;
         }
     }
 }
