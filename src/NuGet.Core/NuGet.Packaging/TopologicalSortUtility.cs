@@ -17,10 +17,20 @@ namespace NuGet.Packaging
         public static IReadOnlyList<PackageDependencyInfo> SortPackagesByDependencyOrder(
             IEnumerable<PackageDependencyInfo> packages)
         {
-            var toSort = packages.Distinct().Select(package => new PackageInfo(package)).ToArray();
-            var sorted = new List<PackageDependencyInfo>(toSort.Length);
-
             var lookup = new Dictionary<string, PackageInfo>(StringComparer.OrdinalIgnoreCase);
+            //Deduplicate references
+            foreach (var package in packages)
+            {
+                var id = package.Id;
+                if (!lookup.ContainsKey(id))
+                {
+                    lookup.Add(id, new PackageInfo(package));
+                }
+            }
+
+            // Extract the deduplicated values
+            var toSort = lookup.Values.ToArray();
+            var sorted = new List<PackageDependencyInfo>(toSort.Length);
 
             CalcuateRelationships(toSort, lookup);
 
@@ -54,11 +64,6 @@ namespace NuGet.Packaging
 
         private static void CalcuateRelationships(PackageInfo[] packages, Dictionary<string, PackageInfo> lookup)
         {
-            foreach (var package in packages)
-            {
-                lookup.Add(package.Package.Id, package);
-            }
-
             foreach (var package in packages)
             {
                 var deps = package.Package.Dependencies;
