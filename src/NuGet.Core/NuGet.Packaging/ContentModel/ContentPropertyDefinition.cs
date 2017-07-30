@@ -116,7 +116,7 @@ namespace NuGet.ContentModel
 
             if (FileExtensions?.Count > 0)
             {
-                if (FileExtensionAllowSubFolders || ContainsSlash(name))
+                if (FileExtensionAllowSubFolders || !ContainsSlash(name))
                 {
                     foreach (var fileExtension in FileExtensions)
                     {
