@@ -204,10 +204,12 @@ namespace NuGet.DependencyResolver
 
             var patience = 1000;
             var incomplete = true;
+            // Create a picture of what has not been rejected yet
+            var tracker = Cache<TItem>.RentTracker();
+
             while (incomplete && --patience != 0)
             {
                 // Create a picture of what has not been rejected yet
-                var tracker = new Tracker<TItem>();
 
                 root.ForEach(true, (node, state) =>
                     {
@@ -289,7 +291,9 @@ namespace NuGet.DependencyResolver
                 incomplete = false;
 
                 root.ForEach(node => incomplete |= node.Disposition == Disposition.Acceptable);
+                tracker.Clear();
             }
+            Cache<TItem>.ReleaseTracker(tracker);
 
             root.ForEach(node =>
             {
@@ -400,6 +404,33 @@ namespace NuGet.DependencyResolver
                 {
                     var innerNode = innerNodes[i];
                     queue.Enqueue(innerNode);
+                }
+            }
+        }
+
+        private static class Cache<TItem>
+        {
+            [ThreadStatic]
+            private static Tracker<TItem> _tracker;
+
+            public static Tracker<TItem> RentTracker()
+            {
+                var tracker = _tracker;
+                if (tracker != null)
+                {
+                    _tracker = null;
+                    return tracker;
+                }
+
+                return new Tracker<TItem>();
+            }
+
+            public static void ReleaseTracker(Tracker<TItem> tracker)
+            {
+                if (_tracker == null)
+                {
+                    tracker.Clear();
+                    _tracker = tracker;
                 }
             }
         }
