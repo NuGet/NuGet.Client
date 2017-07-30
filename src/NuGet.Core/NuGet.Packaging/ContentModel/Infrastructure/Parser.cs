@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 namespace NuGet.ContentModel.Infrastructure
@@ -108,6 +109,7 @@ namespace NuGet.ContentModel.Infrastructure
             internal abstract bool TryMatch(ref ContentItem item, string path, IReadOnlyDictionary<string, ContentPropertyDefinition> propertyDefinitions, int startIndex, out int endIndex);
         }
 
+        [DebuggerDisplay("{_pattern.Substring(_start, _length)}")]
         private class LiteralSegment : Segment
         {
             private readonly string _pattern;
@@ -141,6 +143,7 @@ namespace NuGet.ContentModel.Infrastructure
             }
         }
 
+        [DebuggerDisplay("Token = {_token}, Delimiter = {_delimiter}, MatchOnly = {_matchOnly}")]
         private class TokenSegment : Segment
         {
             private readonly string _token;
