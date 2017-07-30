@@ -39,7 +39,7 @@ namespace NuGet.DependencyResolver
         {
             var workingDowngrades = RentDowngradesDictionary();
 
-            root.ForEach((node, context) => WalkTreeCheckCycleAndNearestWins(context, node), ValueTuple.Create(cycles, workingDowngrades));
+            root.ForEach((node, context) => WalkTreeCheckCycleAndNearestWins(context, node), CreateState(cycles, workingDowngrades));
 
 #if NET45
             // Increase List size for items to be added, if too small
@@ -61,7 +61,7 @@ namespace NuGet.DependencyResolver
             ReleaseDowngradesDictionary(workingDowngrades);
         }
 
-        private static void WalkTreeCheckCycleAndNearestWins(ValueTuple<List<GraphNode<RemoteResolveResult>>, Dictionary<GraphNode<RemoteResolveResult>, GraphNode<RemoteResolveResult>>> context, GraphNode<RemoteResolveResult> node)
+        private static void WalkTreeCheckCycleAndNearestWins(CyclesAndDowngrades context, GraphNode<RemoteResolveResult> node)
         {
             // Cycle:
             //
@@ -85,8 +85,8 @@ namespace NuGet.DependencyResolver
             //   A -> B -> C 2.0
             //     -> C 1.0
 
-            var cycles = context.Item1;
-            var workingDowngrades = context.Item2;
+            var cycles = context.Cycles;
+            var workingDowngrades = context.Downgrades;
 
             if (node.Disposition == Disposition.Cycle)
             {
@@ -222,7 +222,7 @@ namespace NuGet.DependencyResolver
                 root.ForEach(WalkState.Walking, (node, state, context) => WalkTreeMarkAmbiguousNodes(node, state, context), tracker);
 
                 // Now mark unambiguous nodes as accepted or rejected
-                root.ForEach(true, (node, state, context) => WalkTreeAcceptOrRejectNodes(context, state, node), ValueTuple.Create(tracker, acceptedLibraries));
+                root.ForEach(true, (node, state, context) => WalkTreeAcceptOrRejectNodes(context, state, node), CreateState(tracker, acceptedLibraries));
 
                 incomplete = root.ForEachGlobalState(false, (node, state) => state || node.Disposition == Disposition.Acceptable);
 
@@ -231,22 +231,22 @@ namespace NuGet.DependencyResolver
 
             Cache<TItem>.ReleaseTracker(tracker);
 
-            root.ForEach((node, context) => WalkTreeDectectConflicts(node, context), ValueTuple.Create(versionConflicts, acceptedLibraries));
+            root.ForEach((node, context) => WalkTreeDectectConflicts(node, context), CreateState(versionConflicts, acceptedLibraries));
 
             Cache<TItem>.ReleaseDictionary(acceptedLibraries);
 
             return !incomplete;
         }
 
-        private static void WalkTreeDectectConflicts<TItem>(GraphNode<TItem> node, ValueTuple<List<VersionConflictResult<TItem>>, Dictionary<string, GraphNode<TItem>>> context)
+        private static void WalkTreeDectectConflicts<TItem>(GraphNode<TItem> node, ConflictsAndAccepted<TItem> context)
         {
             if (node.Disposition != Disposition.Accepted)
             {
                 return;
             }
 
-            var versionConflicts = context.Item1;
-            var acceptedLibraries = context.Item2;
+            var versionConflicts = context.VersionConflicts;
+            var acceptedLibraries = context.AcceptedLibraries;
 
             // For all accepted nodes, find dependencies that aren't satisfied by the version
             // of the package that we have selected
@@ -328,10 +328,10 @@ namespace NuGet.DependencyResolver
             return true;
         }
 
-        private static bool WalkTreeAcceptOrRejectNodes<TItem>(ValueTuple<Tracker<TItem>, Dictionary<string, GraphNode<TItem>>> context, bool state, GraphNode<TItem> node)
+        private static bool WalkTreeAcceptOrRejectNodes<TItem>(TrackerAndAccepted<TItem> context, bool state, GraphNode<TItem> node)
         {
-            var tracker = context.Item1;
-            var acceptedLibraries = context.Item2;
+            var tracker = context.Tracker;
+            var acceptedLibraries = context.AcceptedLibraries;
 
             if (!state
                 || node.Disposition == Disposition.Rejected)
@@ -384,13 +384,13 @@ namespace NuGet.DependencyResolver
             var queue = Cache<TItem, TState>.RentQueue();
 
             // breadth-first walk of Node tree
-            queue.Enqueue(ValueTuple.Create(root, state));
+            queue.Enqueue(NodeWithState.Create(root, state));
             while (queue.Count > 0)
             {
                 var work = queue.Dequeue();
-                state = visitor(work.Item1, work.Item2, context);
+                state = visitor(work.Node, work.State, context);
 
-                AddInnerNodesToQueue(work.Item1.InnerNodes, queue, state);
+                AddInnerNodesToQueue(work.Node.InnerNodes, queue, state);
             }
 
             Cache<TItem, TState>.ReleaseQueue(queue);
@@ -451,13 +451,13 @@ namespace NuGet.DependencyResolver
             Cache<TItem>.ReleaseQueue(queue);
         }
 
-        private static void AddInnerNodesToQueue<TItem, TState>(IList<GraphNode<TItem>> innerNodes, Queue<ValueTuple<GraphNode<TItem>, TState>> queue, TState innerState)
+        private static void AddInnerNodesToQueue<TItem, TState>(IList<GraphNode<TItem>> innerNodes, Queue<NodeWithState<TItem, TState>> queue, TState innerState)
         {
             var count = innerNodes.Count;
             for (var i = 0; i < count; i++)
             {
                 var innerNode = innerNodes[i];
-                queue.Enqueue(ValueTuple.Create(innerNode, innerState));
+                queue.Enqueue(NodeWithState.Create(innerNode, innerState));
             }
         }
 
@@ -498,10 +498,10 @@ namespace NuGet.DependencyResolver
         private static class Cache<TItem, TState>
         {
             [ThreadStatic]
-            private static Queue<ValueTuple<GraphNode<TItem>, TState>> _queue;
+            private static Queue<NodeWithState<TItem, TState>> _queue;
 
 
-            public static Queue<ValueTuple<GraphNode<TItem>, TState>> RentQueue()
+            public static Queue<NodeWithState<TItem, TState>> RentQueue()
             {
                 var queue = _queue;
                 if (queue != null)
@@ -510,10 +510,10 @@ namespace NuGet.DependencyResolver
                     return queue;
                 }
 
-                return new Queue<ValueTuple<GraphNode<TItem>, TState>>();
+                return new Queue<NodeWithState<TItem, TState>>();
             }
 
-            public static void ReleaseQueue(Queue<ValueTuple<GraphNode<TItem>, TState>> queue)
+            public static void ReleaseQueue(Queue<NodeWithState<TItem, TState>> queue)
             {
                 if (_queue == null)
                 {
@@ -596,6 +596,69 @@ namespace NuGet.DependencyResolver
                 }
             }
         }
+
+        private struct NodeWithState<TItem, TState>
+        {
+            public GraphNode<TItem> Node;
+            public TState State;
+        }
+
+        private static class NodeWithState
+        {
+            public static NodeWithState<TItem, TState> Create<TItem, TState>(GraphNode<TItem> node, TState state)
+            {
+                return new NodeWithState<TItem, TState>
+                {
+                    Node = node,
+                    State = state
+                };
+            }
+        }
+
+        private struct ConflictsAndAccepted<TItem>
+        {
+            public List<VersionConflictResult<TItem>> VersionConflicts;
+            public Dictionary<string, GraphNode<TItem>> AcceptedLibraries;
+        }
+        private static ConflictsAndAccepted<TItem> CreateState<TItem>(List<VersionConflictResult<TItem>> versionConflicts, Dictionary<string, GraphNode<TItem>> acceptedLibraries)
+        {
+            return new ConflictsAndAccepted<TItem>
+            {
+                VersionConflicts = versionConflicts,
+                AcceptedLibraries = acceptedLibraries
+            };
+        }
+
+        private struct TrackerAndAccepted<TItem>
+        {
+            public Tracker<TItem> Tracker;
+            public Dictionary<string, GraphNode<TItem>> AcceptedLibraries;
+        }
+
+        private static TrackerAndAccepted<TItem> CreateState<TItem>(Tracker<TItem> tracker, Dictionary<string, GraphNode<TItem>> acceptedLibraries)
+        {
+            return new TrackerAndAccepted<TItem>
+            {
+                Tracker = tracker,
+                AcceptedLibraries = acceptedLibraries
+            };
+        }
+
+        private struct CyclesAndDowngrades
+        {
+            public List<GraphNode<RemoteResolveResult>> Cycles;
+            public Dictionary<GraphNode<RemoteResolveResult>, GraphNode<RemoteResolveResult>> Downgrades;
+        }
+
+        private static CyclesAndDowngrades CreateState(List<GraphNode<RemoteResolveResult>> cycles, Dictionary<GraphNode<RemoteResolveResult>, GraphNode<RemoteResolveResult>> downgrades)
+        {
+            return new CyclesAndDowngrades
+            {
+                Cycles = cycles,
+                Downgrades = downgrades
+            };
+        }
+
 
         // Box Drawing Unicode characters:
         // http://www.unicode.org/charts/PDF/U2500.pdf
