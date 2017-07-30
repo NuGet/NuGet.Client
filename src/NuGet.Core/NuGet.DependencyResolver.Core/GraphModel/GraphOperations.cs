@@ -37,6 +37,32 @@ namespace NuGet.DependencyResolver
             List<DowngradeResult<RemoteResolveResult>> downgrades,
             List<GraphNode<RemoteResolveResult>> cycles)
         {
+            var workingDowngrades = RentDowngradesDictionary();
+
+            root.ForEach((node, context) => WalkTreeCheckCycleAndNearestWins(context, node), ValueTuple.Create(cycles, workingDowngrades));
+
+#if NET45
+            // Increase List size for items to be added, if too small
+            var requiredCapacity = downgrades.Count + workingDowngrades.Count;
+            if (downgrades.Capacity < requiredCapacity)
+            {
+                downgrades.Capacity = requiredCapacity;
+            }
+#endif
+            foreach (var p in workingDowngrades)
+            {
+                downgrades.Add(new DowngradeResult<RemoteResolveResult>
+                {
+                    DowngradedFrom = p.Key,
+                    DowngradedTo = p.Value
+                });
+            }
+
+            ReleaseDowngradesDictionary(workingDowngrades);
+        }
+
+        private static void WalkTreeCheckCycleAndNearestWins(ValueTuple<List<GraphNode<RemoteResolveResult>>, Dictionary<GraphNode<RemoteResolveResult>, GraphNode<RemoteResolveResult>>> context, GraphNode<RemoteResolveResult> node)
+        {
             // Cycle:
             //
             // A -> B -> A (cycle)
@@ -59,84 +85,64 @@ namespace NuGet.DependencyResolver
             //   A -> B -> C 2.0
             //     -> C 1.0
 
-            var workingDowngrades = new Dictionary<GraphNode<RemoteResolveResult>, GraphNode<RemoteResolveResult>>();
+            var cycles = context.Item1;
+            var workingDowngrades = context.Item2;
 
-            root.ForEach(node =>
+            if (node.Disposition == Disposition.Cycle)
             {
-                if (node.Disposition == Disposition.Cycle)
-                {
-                    cycles.Add(node);
-
-                    // Remove this node from the tree so the nothing else evaluates this.
-                    // This is ok since we have a parent pointer and we can still print the path
-                    node.OuterNode.InnerNodes.Remove(node);
-
-                    return;
-                }
-
-                if (node.Disposition != Disposition.PotentiallyDowngraded)
-                {
-                    return;
-                }
-
-                // REVIEW: This could probably be done in a single pass where we keep track
-                // of what is nearer as we walk down the graph (BFS)
-                for (var n = node.OuterNode; n != null; n = n.OuterNode)
-                {
-                    var innerNodes = n.InnerNodes;
-                    var count = innerNodes.Count;
-                    for (var i = 0; i < count; i++)
-                    {
-                        var sideNode = innerNodes[i];
-                        if (sideNode != node && StringComparer.OrdinalIgnoreCase.Equals(sideNode.Key.Name, node.Key.Name))
-                        {
-                            // Nodes that have no version range should be ignored as potential downgrades e.g. framework reference
-                            if (sideNode.Key.VersionRange != null &&
-                                node.Key.VersionRange != null &&
-                                !RemoteDependencyWalker.IsGreaterThanOrEqualTo(sideNode.Key.VersionRange, node.Key.VersionRange))
-                            {
-                                // Is the resolved version actually within node's version range? This happen if there
-                                // was a different request for a lower version of the library than this version range
-                                // allows but no matching library was found, so the library is bumped up into this
-                                // version range.
-                                var resolvedVersion = sideNode?.Item?.Data?.Match?.Library?.Version;
-                                if (resolvedVersion != null && node.Key.VersionRange.Satisfies(resolvedVersion))
-                                {
-                                    continue;
-                                }
-
-                                workingDowngrades[node] = sideNode;
-                            }
-                            else
-                            {
-                                workingDowngrades.Remove(node);
-                            }
-                        }
-                    }
-                }
+                cycles.Add(node);
 
                 // Remove this node from the tree so the nothing else evaluates this.
                 // This is ok since we have a parent pointer and we can still print the path
                 node.OuterNode.InnerNodes.Remove(node);
-            });
 
-
-#if NET45
-            // Increase List size for items to be added, if too small
-            var requiredCapacity = downgrades.Count + workingDowngrades.Count;
-            if (downgrades.Capacity < requiredCapacity)
-            {
-                downgrades.Capacity = requiredCapacity;
+                return;
             }
-#endif
-            foreach (var p in workingDowngrades)
+
+            if (node.Disposition != Disposition.PotentiallyDowngraded)
             {
-                downgrades.Add(new DowngradeResult<RemoteResolveResult>
+                return;
+            }
+
+            // REVIEW: This could probably be done in a single pass where we keep track
+            // of what is nearer as we walk down the graph (BFS)
+            for (var n = node.OuterNode; n != null; n = n.OuterNode)
+            {
+                var innerNodes = n.InnerNodes;
+                var count = innerNodes.Count;
+                for (var i = 0; i < count; i++)
                 {
-                    DowngradedFrom = p.Key,
-                    DowngradedTo = p.Value
-                });
+                    var sideNode = innerNodes[i];
+                    if (sideNode != node && StringComparer.OrdinalIgnoreCase.Equals(sideNode.Key.Name, node.Key.Name))
+                    {
+                        // Nodes that have no version range should be ignored as potential downgrades e.g. framework reference
+                        if (sideNode.Key.VersionRange != null &&
+                            node.Key.VersionRange != null &&
+                            !RemoteDependencyWalker.IsGreaterThanOrEqualTo(sideNode.Key.VersionRange, node.Key.VersionRange))
+                        {
+                            // Is the resolved version actually within node's version range? This happen if there
+                            // was a different request for a lower version of the library than this version range
+                            // allows but no matching library was found, so the library is bumped up into this
+                            // version range.
+                            var resolvedVersion = sideNode?.Item?.Data?.Match?.Library?.Version;
+                            if (resolvedVersion != null && node.Key.VersionRange.Satisfies(resolvedVersion))
+                            {
+                                continue;
+                            }
+
+                            workingDowngrades[node] = sideNode;
+                        }
+                        else
+                        {
+                            workingDowngrades.Remove(node);
+                        }
+                    }
+                }
             }
+
+            // Remove this node from the tree so the nothing else evaluates this.
+            // This is ok since we have a parent pointer and we can still print the path
+            node.OuterNode.InnerNodes.Remove(node);
         }
 
         public static string GetPath<TItem>(this GraphNode<TItem> node)
@@ -200,174 +206,201 @@ namespace NuGet.DependencyResolver
             // which paths are accepted or rejected, based on conflicts occuring
             // between cousin packages
 
-            var acceptedLibraries = new Dictionary<string, GraphNode<TItem>>(StringComparer.OrdinalIgnoreCase);
+            var acceptedLibraries = Cache<TItem>.RentDictionary();
 
             var patience = 1000;
             var incomplete = true;
-            // Create a picture of what has not been rejected yet
+
             var tracker = Cache<TItem>.RentTracker();
 
             while (incomplete && --patience != 0)
             {
                 // Create a picture of what has not been rejected yet
-
-                root.ForEach(true, (node, state) =>
-                    {
-                        if (!state
-                            || node.Disposition == Disposition.Rejected)
-                        {
-                            // Mark all nodes as rejected if they aren't already marked
-                            node.Disposition = Disposition.Rejected;
-                            return false;
-                        }
-
-                        tracker.Track(node.Item);
-                        return true;
-                    });
+                root.ForEach(true, (node, state, context) => WalkTreeRejectNodesOfRejectedNodes(state, node, context), tracker);
 
                 // Inform tracker of ambiguity beneath nodes that are not resolved yet
-                // between:
-                // a1->b1->d1->x1
-                // a1->c1->d2->z1
-                // first attempt
-                //  d1/d2 are considered disputed 
-                //  x1 and z1 are considered ambiguous
-                //  d1 is rejected
-                // second attempt
-                //  d1 is rejected, d2 is accepted
-                //  x1 is no longer seen, and z1 is not ambiguous
-                //  z1 is accepted
-                root.ForEach(WalkState.Walking, (node, state) =>
-                    {
-                        if (node.Disposition == Disposition.Rejected)
-                        {
-                            return WalkState.Rejected;
-                        }
-
-                        if (state == WalkState.Walking
-                            && tracker.IsDisputed(node.Item))
-                        {
-                            return WalkState.Ambiguous;
-                        }
-
-                        if (state == WalkState.Ambiguous)
-                        {
-                            tracker.MarkAmbiguous(node.Item);
-                        }
-
-                        return state;
-                    });
+                root.ForEach(WalkState.Walking, (node, state, context) => WalkTreeMarkAmbiguousNodes(node, state, context), tracker);
 
                 // Now mark unambiguous nodes as accepted or rejected
-                root.ForEach(true, (node, state) =>
-                    {
-                        if (!state
-                            || node.Disposition == Disposition.Rejected)
-                        {
-                            return false;
-                        }
+                root.ForEach(true, (node, state, context) => WalkTreeAcceptOrRejectNodes(context, state, node), ValueTuple.Create(tracker, acceptedLibraries));
 
-                        if (tracker.IsAmbiguous(node.Item))
-                        {
-                            return false;
-                        }
+                incomplete = root.ForEachGlobalState(false, (node, state) => state || node.Disposition == Disposition.Acceptable);
 
-                        if (node.Disposition == Disposition.Acceptable)
-                        {
-                            if (tracker.IsBestVersion(node.Item))
-                            {
-                                node.Disposition = Disposition.Accepted;
-                                acceptedLibraries[node.Key.Name] = node;
-                            }
-                            else
-                            {
-                                node.Disposition = Disposition.Rejected;
-                            }
-                        }
-
-                        return node.Disposition == Disposition.Accepted;
-                    });
-
-                incomplete = false;
-
-                root.ForEach(node => incomplete |= node.Disposition == Disposition.Acceptable);
                 tracker.Clear();
             }
+
             Cache<TItem>.ReleaseTracker(tracker);
 
-            root.ForEach(node =>
-            {
-                if (node.Disposition != Disposition.Accepted)
-                {
-                    return;
-                }
+            root.ForEach((node, context) => WalkTreeDectectConflicts(node, context), ValueTuple.Create(versionConflicts, acceptedLibraries));
 
-                // For all accepted nodes, find dependencies that aren't satisfied by the version
-                // of the package that we have selected
-                var innerNodes = node.InnerNodes;
-                var count = innerNodes.Count;
-                for (var i = 0; i < count; i++)
-                {
-                    var childNode = innerNodes[i];
-                    GraphNode<TItem> acceptedNode;
-                    if (acceptedLibraries.TryGetValue(childNode.Key.Name, out acceptedNode) &&
-                        childNode != acceptedNode &&
-                        childNode.Key.VersionRange != null &&
-                        acceptedNode.Item.Key.Version != null)
-                    {
-                        var acceptedType = LibraryDependencyTargetUtils.Parse(acceptedNode.Item.Key.Type);
-                        var childType = childNode.Key.TypeConstraint;
-
-                        // Check the type constraints, if there is any overlap check for conflict
-                        if ((childType & acceptedType) != LibraryDependencyTarget.None)
-                        {
-                            var versionRange = childNode.Key.VersionRange;
-                            var checkVersion = acceptedNode.Item.Key.Version;
-
-                            if (!versionRange.Satisfies(checkVersion))
-                            {
-                                versionConflicts.Add(new VersionConflictResult<TItem>
-                                {
-                                    Selected = acceptedNode,
-                                    Conflicting = childNode
-                                });
-                            }
-                        }
-                    }
-                }
-            });
+            Cache<TItem>.ReleaseDictionary(acceptedLibraries);
 
             return !incomplete;
         }
 
-        public static void ForEach<TItem, TState>(this GraphNode<TItem> root, TState state, Func<GraphNode<TItem>, TState, TState> visitor)
+        private static void WalkTreeDectectConflicts<TItem>(GraphNode<TItem> node, ValueTuple<List<VersionConflictResult<TItem>>, Dictionary<string, GraphNode<TItem>>> context)
         {
-            // breadth-first walk of Node tree
-
-            var queue = new Queue<ValueTuple<GraphNode<TItem>, TState>>();
-            queue.Enqueue(ValueTuple.Create(root, state));
-            while (queue.Count > 0)
+            if (node.Disposition != Disposition.Accepted)
             {
-                var work = queue.Dequeue();
-                var innerState = visitor(work.Item1, work.Item2);
+                return;
+            }
 
-                // avoid Foreach here since it's inside 3 layer nested loops which might make it to
-                // be called 100 of 1000 times so GetEnumerator() might end up taking lot of memory space.
-                var innerNodes = work.Item1.InnerNodes;
-                var count = innerNodes.Count;
-                for (var i = 0; i < count; i++)
+            var versionConflicts = context.Item1;
+            var acceptedLibraries = context.Item2;
+
+            // For all accepted nodes, find dependencies that aren't satisfied by the version
+            // of the package that we have selected
+            var innerNodes = node.InnerNodes;
+            var count = innerNodes.Count;
+            for (var i = 0; i < count; i++)
+            {
+                var childNode = innerNodes[i];
+                GraphNode<TItem> acceptedNode;
+                if (acceptedLibraries.TryGetValue(childNode.Key.Name, out acceptedNode) &&
+                    childNode != acceptedNode &&
+                    childNode.Key.VersionRange != null &&
+                    acceptedNode.Item.Key.Version != null)
                 {
-                    var innerNode = innerNodes[i];
-                    queue.Enqueue(ValueTuple.Create(innerNode, innerState));
+                    var acceptedType = LibraryDependencyTargetUtils.Parse(acceptedNode.Item.Key.Type);
+                    var childType = childNode.Key.TypeConstraint;
+
+                    // Check the type constraints, if there is any overlap check for conflict
+                    if ((childType & acceptedType) != LibraryDependencyTarget.None)
+                    {
+                        var versionRange = childNode.Key.VersionRange;
+                        var checkVersion = acceptedNode.Item.Key.Version;
+
+                        if (!versionRange.Satisfies(checkVersion))
+                        {
+                            versionConflicts.Add(new VersionConflictResult<TItem>
+                            {
+                                Selected = acceptedNode,
+                                Conflicting = childNode
+                            });
+                        }
+                    }
                 }
             }
         }
 
+        private static WalkState WalkTreeMarkAmbiguousNodes<TItem>(GraphNode<TItem> node, WalkState state, Tracker<TItem> context)
+        {
+            // between:
+            // a1->b1->d1->x1
+            // a1->c1->d2->z1
+            // first attempt
+            //  d1/d2 are considered disputed 
+            //  x1 and z1 are considered ambiguous
+            //  d1 is rejected
+            // second attempt
+            //  d1 is rejected, d2 is accepted
+            //  x1 is no longer seen, and z1 is not ambiguous
+            //  z1 is accepted
+            if (node.Disposition == Disposition.Rejected)
+            {
+                return WalkState.Rejected;
+            }
+
+            if (state == WalkState.Walking
+                && context.IsDisputed(node.Item))
+            {
+                return WalkState.Ambiguous;
+            }
+
+            if (state == WalkState.Ambiguous)
+            {
+                context.MarkAmbiguous(node.Item);
+            }
+
+            return state;
+        }
+
+        private static bool WalkTreeRejectNodesOfRejectedNodes<TItem>(bool state, GraphNode<TItem> node, Tracker<TItem> context)
+        {
+            if (!state || node.Disposition == Disposition.Rejected)
+            {
+                // Mark all nodes as rejected if they aren't already marked
+                node.Disposition = Disposition.Rejected;
+                return false;
+            }
+
+            context.Track(node.Item);
+            return true;
+        }
+
+        private static bool WalkTreeAcceptOrRejectNodes<TItem>(ValueTuple<Tracker<TItem>, Dictionary<string, GraphNode<TItem>>> context, bool state, GraphNode<TItem> node)
+        {
+            var tracker = context.Item1;
+            var acceptedLibraries = context.Item2;
+
+            if (!state
+                || node.Disposition == Disposition.Rejected)
+            {
+                return false;
+            }
+
+            if (tracker.IsAmbiguous(node.Item))
+            {
+                return false;
+            }
+
+            if (node.Disposition == Disposition.Acceptable)
+            {
+                if (tracker.IsBestVersion(node.Item))
+                {
+                    node.Disposition = Disposition.Accepted;
+                    acceptedLibraries[node.Key.Name] = node;
+                }
+                else
+                {
+                    node.Disposition = Disposition.Rejected;
+                }
+            }
+
+            return node.Disposition == Disposition.Accepted;
+        }
+
+        private static TState ForEachGlobalState<TItem, TState>(this GraphNode<TItem> root, TState state, Func<GraphNode<TItem>, TState, TState> visitor)
+        {
+            var queue = Cache<TItem>.RentQueue();
+            // breadth-first walk of Node tree
+
+            queue.Enqueue(root);
+            while (queue.Count > 0)
+            {
+                var work = queue.Dequeue();
+                state = visitor(work, state);
+
+                AddInnerNodesToQueue(work.InnerNodes, queue);
+            }
+
+            Cache<TItem>.ReleaseQueue(queue);
+
+            return state;
+        }
+
+        private static void ForEach<TItem, TState, TContext>(this GraphNode<TItem> root, TState state, Func<GraphNode<TItem>, TState, TContext, TState> visitor, TContext context)
+        {
+            var queue = Cache<TItem, TState>.RentQueue();
+
+            // breadth-first walk of Node tree
+            queue.Enqueue(ValueTuple.Create(root, state));
+            while (queue.Count > 0)
+            {
+                var work = queue.Dequeue();
+                state = visitor(work.Item1, work.Item2, context);
+
+                AddInnerNodesToQueue(work.Item1.InnerNodes, queue, state);
+            }
+
+            Cache<TItem, TState>.ReleaseQueue(queue);
+        }
+
         public static void ForEach<TItem>(this IEnumerable<GraphNode<TItem>> roots, Action<GraphNode<TItem>> visitor)
         {
-            var graphNodes = roots.AsList();
-            var queue = new Queue<GraphNode<TItem>>();
+            var queue = Cache<TItem>.RentQueue();
 
+            var graphNodes = roots.AsList();
             var count = graphNodes.Count;
             for (var g = 0; g < count; g++)
             {
@@ -377,41 +410,149 @@ namespace NuGet.DependencyResolver
                     var node = queue.Dequeue();
                     visitor(node);
 
-                    var innerNodes = node.InnerNodes;
-                    var innerCount = innerNodes.Count;
-                    for (var i = 0; i < innerCount; i++)
-                    {
-                        var innerNode = innerNodes[i];
-                        queue.Enqueue(innerNode);
-                    }
+                    AddInnerNodesToQueue(node.InnerNodes, queue);
                 }
             }
+
+            Cache<TItem>.ReleaseQueue(queue);
         }
 
         public static void ForEach<TItem>(this GraphNode<TItem> root, Action<GraphNode<TItem>> visitor)
         {
+            var queue = Cache<TItem>.RentQueue();
+
             // breadth-first walk of Node tree, no state
-            var queue = new Queue<GraphNode<TItem>>();
             queue.Enqueue(root);
             while (queue.Count > 0)
             {
                 var node = queue.Dequeue();
                 visitor(node);
 
-                var innerNodes = node.InnerNodes;
-                var count = innerNodes.Count;
-                for (var i = 0; i < count; i++)
+                AddInnerNodesToQueue(node.InnerNodes, queue);
+            }
+
+            Cache<TItem>.ReleaseQueue(queue);
+        }
+
+        public static void ForEach<TItem, TContext>(this GraphNode<TItem> root, Action<GraphNode<TItem>, TContext> visitor, TContext context)
+        {
+            var queue = Cache<TItem>.RentQueue();
+
+            // breadth-first walk of Node tree, no state
+            queue.Enqueue(root);
+            while (queue.Count > 0)
+            {
+                var node = queue.Dequeue();
+                visitor(node, context);
+
+                AddInnerNodesToQueue(node.InnerNodes, queue);
+            }
+
+            Cache<TItem>.ReleaseQueue(queue);
+        }
+
+        private static void AddInnerNodesToQueue<TItem, TState>(IList<GraphNode<TItem>> innerNodes, Queue<ValueTuple<GraphNode<TItem>, TState>> queue, TState innerState)
+        {
+            var count = innerNodes.Count;
+            for (var i = 0; i < count; i++)
+            {
+                var innerNode = innerNodes[i];
+                queue.Enqueue(ValueTuple.Create(innerNode, innerState));
+            }
+        }
+
+        private static void AddInnerNodesToQueue<TItem>(IList<GraphNode<TItem>> innerNodes, Queue<GraphNode<TItem>> queue)
+        {
+            var count = innerNodes.Count;
+            for (var i = 0; i < count; i++)
+            {
+                var innerNode = innerNodes[i];
+                queue.Enqueue(innerNode);
+            }
+        }
+
+        [ThreadStatic]
+        private static Dictionary<GraphNode<RemoteResolveResult>, GraphNode<RemoteResolveResult>> _tempDowngrades;
+
+        public static Dictionary<GraphNode<RemoteResolveResult>, GraphNode<RemoteResolveResult>> RentDowngradesDictionary()
+        {
+            var dictionary = _tempDowngrades;
+            if (dictionary != null)
+            {
+                _tempDowngrades = null;
+                return dictionary;
+            }
+
+            return new Dictionary<GraphNode<RemoteResolveResult>, GraphNode<RemoteResolveResult>>();
+        }
+
+        public static void ReleaseDowngradesDictionary(Dictionary<GraphNode<RemoteResolveResult>, GraphNode<RemoteResolveResult>> dictionary)
+        {
+            if (_tempDowngrades == null)
+            {
+                dictionary.Clear();
+                _tempDowngrades = dictionary;
+            }
+        }
+
+        private static class Cache<TItem, TState>
+        {
+            [ThreadStatic]
+            private static Queue<ValueTuple<GraphNode<TItem>, TState>> _queue;
+
+
+            public static Queue<ValueTuple<GraphNode<TItem>, TState>> RentQueue()
+            {
+                var queue = _queue;
+                if (queue != null)
                 {
-                    var innerNode = innerNodes[i];
-                    queue.Enqueue(innerNode);
+                    _queue = null;
+                    return queue;
+                }
+
+                return new Queue<ValueTuple<GraphNode<TItem>, TState>>();
+            }
+
+            public static void ReleaseQueue(Queue<ValueTuple<GraphNode<TItem>, TState>> queue)
+            {
+                if (_queue == null)
+                {
+                    queue.Clear();
+                    _queue = queue;
                 }
             }
+
         }
 
         private static class Cache<TItem>
         {
             [ThreadStatic]
+            private static Queue<GraphNode<TItem>> _queue;
+            [ThreadStatic]
+            private static Dictionary<string, GraphNode<TItem>> _dictionary;
+            [ThreadStatic]
             private static Tracker<TItem> _tracker;
+
+            public static Queue<GraphNode<TItem>> RentQueue()
+            {
+                var queue = _queue;
+                if (queue != null)
+                {
+                    _queue = null;
+                    return queue;
+                }
+
+                return new Queue<GraphNode<TItem>>();
+            }
+
+            public static void ReleaseQueue(Queue<GraphNode<TItem>> queue)
+            {
+                if (_queue == null)
+                {
+                    queue.Clear();
+                    _queue = queue;
+                }
+            }
 
             public static Tracker<TItem> RentTracker()
             {
@@ -431,6 +572,27 @@ namespace NuGet.DependencyResolver
                 {
                     tracker.Clear();
                     _tracker = tracker;
+                }
+            }
+
+            public static Dictionary<string, GraphNode<TItem>> RentDictionary()
+            {
+                var dictionary = _dictionary;
+                if (dictionary != null)
+                {
+                    _dictionary = null;
+                    return dictionary;
+                }
+
+                return new Dictionary<string, GraphNode<TItem>>(StringComparer.OrdinalIgnoreCase);
+            }
+
+            public static void ReleaseDictionary(Dictionary<string, GraphNode<TItem>> dictionary)
+            {
+                if (_dictionary == null)
+                {
+                    dictionary.Clear();
+                    _dictionary = dictionary;
                 }
             }
         }
