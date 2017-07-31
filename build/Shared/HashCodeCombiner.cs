@@ -72,6 +72,42 @@ namespace NuGet.Shared
             }
         }
 
+        internal void AddSequence<T>(T[] array)
+        {
+            if (array != null)
+            {
+                foreach (var item in array)
+                {
+                    AddObject(item);
+                }
+            }
+        }
+
+        internal void AddSequence<T>(IList<T> list)
+        {
+            if (list != null)
+            {
+                var count = list.Count;
+                for (var i = 0; i < count; i++)
+                {
+                    AddObject(list[i]);
+                }
+            }
+        }
+
+#if !NET40
+        internal void AddSequence<T>(IReadOnlyList<T> list)
+        {
+            if (list != null)
+            {
+                var count = list.Count;
+                for (var i = 0; i < count; i++)
+                {
+                    AddObject(list[i]);
+                }
+            }
+        }
+#endif
         internal void AddDictionary<TKey, TValue>(IEnumerable<KeyValuePair<TKey, TValue>> dictionary)
         {
             if (dictionary != null)
