@@ -171,8 +171,7 @@ namespace NuGet.Repositories
                 // Clearers must wait for all requests to complete
                 lock (GetLockObj(packageId))
                 {
-                    List<LocalPackageInfo> packages;
-                    _cache.TryRemove(packageId, out packages);
+                    _cache.TryRemove(packageId, out _);
                 }
             }
         }
