@@ -22,7 +22,11 @@ namespace NuGet.Test.Utility
 
         public static string GetConfigFileRoot()
         {
-            var fullPath = Environment.GetEnvironmentVariable("NuGet_Core_FuncTests_Config");
+            // The below environment variable is set on VSTS CI machines and the value is
+            // equal to the root of the repository where the config files are copied as part of
+            // a build step before the tests are run. If the environment variable is not set, the behavior
+            // is the same as on TeamCity - this will ensure both CI's will be happy.
+            var fullPath = Environment.GetEnvironmentVariable("NuGet_FuncTests_Config");
             return string.IsNullOrEmpty(fullPath) ? NuGetEnvironment.GetFolderPath(NuGetFolderPath.UserSettingsDirectory) : fullPath;
         }
     }
