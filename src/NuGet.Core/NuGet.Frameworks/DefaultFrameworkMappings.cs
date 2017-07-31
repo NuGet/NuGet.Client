@@ -349,6 +349,11 @@ namespace NuGet.Frameworks
                             FrameworkConstants.CommonFrameworks.Tizen4,
                             FrameworkConstants.CommonFrameworks.NetStandard20),
 
+                        // UAP 10.0.15064.0 projects support NETStandard2.0
+                        CreateStandardMapping(
+                            new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.UAP, new Version(10, 0, 15064, 0)),
+                            FrameworkConstants.CommonFrameworks.NetStandard20),
+
                         // NetCoreApp1.0 projects support NetStandard1.6
                         CreateStandardMapping(
                             FrameworkConstants.CommonFrameworks.NetCoreApp10,
