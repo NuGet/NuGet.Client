@@ -23,9 +23,8 @@ namespace NuGet.Shared
             get { return _combinedHash.GetHashCode(); }
         }
 
-        internal void AddInt32(int i)
+        private void AddInt32(int i)
         {
-            CheckInitialized();
             _combinedHash = ((_combinedHash << 5) + _combinedHash) ^ i;
         }
 
@@ -33,12 +32,6 @@ namespace NuGet.Shared
         {
             CheckInitialized();
             AddInt32(i);
-        }
-
-        internal void AddObject(bool b)
-        {
-            CheckInitialized();
-            AddInt32(b.GetHashCode());
         }
 
         internal void AddObject<TValue>(TValue o, IEqualityComparer<TValue> comparer)
@@ -50,7 +43,7 @@ namespace NuGet.Shared
             }
         }
 
-        internal void AddObject(object o)
+        internal void AddObject<T>(T o)
         {
             CheckInitialized();
             if (o != null)
@@ -83,10 +76,11 @@ namespace NuGet.Shared
         {
             if (dictionary != null)
             {
+                CheckInitialized();
                 foreach (var pair in dictionary.OrderBy(x => x.Key))
                 {
-                    AddObject(pair.Key);
-                    AddObject(pair.Value);
+                    AddInt32(pair.Key.GetHashCode());
+                    AddInt32(pair.Value.GetHashCode());
                 }
             }
         }
@@ -97,10 +91,11 @@ namespace NuGet.Shared
         internal static int GetHashCode(params object[] objects)
         {
             var combiner = new HashCodeCombiner();
+            combiner.CheckInitialized();
 
             foreach (var obj in objects)
             {
-                combiner.AddObject(obj);
+                combiner.AddInt32(obj.GetHashCode());
             }
 
             return combiner.CombinedHash;
