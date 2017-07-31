@@ -88,15 +88,28 @@ namespace NuGet.Shared
         /// <summary>
         /// Create a unique hash code for the given set of items
         /// </summary>
-        internal static int GetHashCode(params object[] objects)
+        internal static int GetHashCode<T1, T2>(T1 o1, T2 o2)
         {
             var combiner = new HashCodeCombiner();
             combiner.CheckInitialized();
 
-            foreach (var obj in objects)
-            {
-                combiner.AddInt32(obj.GetHashCode());
-            }
+            combiner.AddInt32(o1.GetHashCode());
+            combiner.AddInt32(o2.GetHashCode());
+
+            return combiner.CombinedHash;
+        }
+
+        /// <summary>
+        /// Create a unique hash code for the given set of items
+        /// </summary>
+        internal static int GetHashCode<T1, T2, T3>(T1 o1, T2 o2, T3 o3)
+        {
+            var combiner = new HashCodeCombiner();
+            combiner.CheckInitialized();
+
+            combiner.AddInt32(o1.GetHashCode());
+            combiner.AddInt32(o2.GetHashCode());
+            combiner.AddInt32(o3.GetHashCode());
 
             return combiner.CombinedHash;
         }
