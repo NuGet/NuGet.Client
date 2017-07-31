@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using NuGet.Packaging.Core;
 
@@ -51,13 +52,14 @@ namespace NuGet.Packaging
 
         private static void UpdateChildCounts(PackageInfo package)
         {
+            // Decrement the parent count for each child of this package.
             var children = package.Children;
             if (children != null)
             {
                 var count = children.Count;
                 for (var i = 0; i < count; i++)
                 {
-                    children[i].ActiveChildren--;
+                    children[i].ActiveParents--;
                 }
             }
         }
@@ -72,22 +74,32 @@ namespace NuGet.Packaging
                 foreach (var dependency in dependencies)
                 {
                     var id = dependency.Id;
-                    if (lookup.TryGetValue(id, out var parent))
+                    if (lookup.TryGetValue(id, out var dependencyPackage))
                     {
-                        var children = parent.Children;
-                        if (children == null)
+                        // Mark the current package as a parent
+                        var parents = dependencyPackage.Parents;
+                        if (parents == null)
                         {
-                            children = new List<PackageInfo>();
-                            parent.Children = children;
+                            parents = new List<PackageInfo>();
+                            dependencyPackage.Parents = parents;
                         }
-                        children.Add(package);
+                        parents.Add(package);
+
+                        // Add a child package for the current package
+                        var packageChildren = package.Children;
+                        if (packageChildren == null)
+                        {
+                            packageChildren = new List<PackageInfo>();
+                            package.Children = packageChildren;
+                        }
+                        packageChildren.Add(dependencyPackage);
                     }
                 }
             }
 
             foreach (var package in packages)
             {
-                package.ActiveChildren = package.Children?.Count ?? 0;
+                package.ActiveParents = package.Parents?.Count ?? 0;
             }
         }
 
@@ -96,11 +108,11 @@ namespace NuGet.Packaging
             public int Compare(PackageInfo x, PackageInfo y)
             {
                 // Order packages by parent count
-                if (x.ActiveChildren < y.ActiveChildren)
+                if (x.ActiveParents < y.ActiveParents)
                 {
                     return -1;
                 }
-                if (x.ActiveChildren > y.ActiveChildren)
+                if (x.ActiveParents > y.ActiveParents)
                 {
                     return 1;
                 }
@@ -108,16 +120,18 @@ namespace NuGet.Packaging
             }
         }
 
+        [DebuggerDisplay("{Package.Id} Active: {ActiveParents}")]
         private sealed class PackageInfo
         {
             public PackageInfo(PackageDependencyInfo package)
             {
                 Package = package;
-                ActiveChildren = 0;
+                ActiveParents = 0;
             }
 
             public PackageDependencyInfo Package;
-            public int ActiveChildren;
+            public int ActiveParents;
+            public List<PackageInfo> Parents;
             public List<PackageInfo> Children;
         }
     }
