@@ -59,26 +59,21 @@ namespace NuGet.Versioning
         /// <summary>
         /// True if a min range exists.
         /// </summary>
-        public bool HasMinVersion
-        {
-            get { return _minVersion != null; }
-        }
-
+        public bool HasMinVersion => _minVersion != null;
         /// <summary>
         /// The minimum version of the float range. This is null for cases such as *
         /// </summary>
-        public NuGetVersion MinVersion
-        {
-            get { return _minVersion; }
-        }
+        public NuGetVersion MinVersion => _minVersion;
 
         /// <summary>
         /// Defined float behavior
         /// </summary>
-        public NuGetVersionFloatBehavior FloatBehavior
-        {
-            get { return _floatBehavior; }
-        }
+        public NuGetVersionFloatBehavior FloatBehavior => _floatBehavior;
+
+        /// <summary>
+        /// The original release label. Invalid labels are allowed here.
+        /// </summary>
+        public string OriginalReleasePrefix => _releasePrefix;
 
         /// <summary>
         /// True if the given version falls into the floating range.
@@ -202,17 +197,16 @@ namespace NuGet.Versioning
                         {
                             releasePrefix = actualVersion.Substring(versionString.LastIndexOf('-') + 1);
 
-                            if (actualVersion.EndsWith("-"))
+                            // For numeric labels 0 is the lowest. For alpha-numeric - is the lowest.
+                            if (releasePrefix.Length == 0 || actualVersion.EndsWith("."))
                             {
-                                // remove the empty release label, the version will be release but
-                                // the behavior will have to account for this
-                                actualVersion += "-";
-                            }
-                            else if (actualVersion.EndsWith("."))
-                            {
-                                // ending with a . is not allowed
-                                // TODO: solve this better
+                                // 1.0.0-* scenario, an empty label is not a valid version.
                                 actualVersion += "0";
+                            }
+                            else if (actualVersion.EndsWith("-"))
+                            {
+                                // Append a dash to allow floating on the next character.
+                                actualVersion += "-";
                             }
                         }
                     }
@@ -251,16 +245,16 @@ namespace NuGet.Versioning
                     result = MinVersion.ToNormalizedString();
                     break;
                 case NuGetVersionFloatBehavior.Prerelease:
-                    result = String.Format(VersionFormatter.Instance, "{0:V}-{1}*", MinVersion, _releasePrefix);
+                    result = string.Format(VersionFormatter.Instance, "{0:V}-{1}*", MinVersion, _releasePrefix);
                     break;
                 case NuGetVersionFloatBehavior.Revision:
-                    result = String.Format(CultureInfo.InvariantCulture, "{0}.{1}.{2}.*", MinVersion.Major, MinVersion.Minor, MinVersion.Patch);
+                    result = string.Format(CultureInfo.InvariantCulture, "{0}.{1}.{2}.*", MinVersion.Major, MinVersion.Minor, MinVersion.Patch);
                     break;
                 case NuGetVersionFloatBehavior.Patch:
-                    result = String.Format(CultureInfo.InvariantCulture, "{0}.{1}.*", MinVersion.Major, MinVersion.Minor);
+                    result = string.Format(CultureInfo.InvariantCulture, "{0}.{1}.*", MinVersion.Major, MinVersion.Minor);
                     break;
                 case NuGetVersionFloatBehavior.Minor:
-                    result = String.Format(CultureInfo.InvariantCulture, "{0}.*", MinVersion.Major);
+                    result = string.Format(CultureInfo.InvariantCulture, "{0}.*", MinVersion.Major);
                     break;
                 case NuGetVersionFloatBehavior.Major:
                     result = "*";

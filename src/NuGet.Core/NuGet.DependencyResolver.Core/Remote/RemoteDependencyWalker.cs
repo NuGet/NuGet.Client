@@ -220,7 +220,7 @@ namespace NuGet.DependencyResolver
                     }
 
                     nearMinVersion = GetReleaseLabelFreeVersion(nearVersion);
-                    nearRelease = nearVersion.Float.MinVersion.Release;
+                    nearRelease = nearVersion.Float.OriginalReleasePrefix;
                 }
                 else
                 {
@@ -237,7 +237,7 @@ namespace NuGet.DependencyResolver
                     }
 
                     farMinVersion = GetReleaseLabelFreeVersion(farVersion);
-                    farRelease = farVersion.Float.MinVersion.Release;
+                    farRelease = farVersion.Float.OriginalReleasePrefix;
                 }
                 else
                 {
@@ -251,8 +251,6 @@ namespace NuGet.DependencyResolver
                     return result > 0;
                 }
 
-                nearRelease = nearRelease?.Trim('-');
-                farRelease = farRelease?.Trim('-');
                 if (string.IsNullOrEmpty(nearRelease))
                 {
                     // near is 1.0.0-*
