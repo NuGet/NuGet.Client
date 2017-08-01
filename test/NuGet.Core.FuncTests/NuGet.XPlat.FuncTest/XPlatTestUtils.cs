@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -78,7 +78,7 @@ namespace NuGet.XPlat.FuncTest
         /// </summary>
         public static string CopyFuncTestConfig(string destinationFolder)
         {
-            var testSettingsFolder = NuGetEnvironment.GetFolderPath(NuGetFolderPath.UserSettingsDirectory);
+            var testSettingsFolder = TestSources.GetConfigFileRoot();
             var funcTestConfigPath = Path.Combine(testSettingsFolder, TestSources.ConfigFile);
 
             var destConfigFile = Path.Combine(destinationFolder, "NuGet.Config");
@@ -90,7 +90,7 @@ namespace NuGet.XPlat.FuncTest
 
         public static string ReadApiKey(string feedName)
         {
-            var testSettingsFolder = NuGetEnvironment.GetFolderPath(NuGetFolderPath.UserSettingsDirectory);
+            var testSettingsFolder = TestSources.GetConfigFileRoot();
             var protocolConfigPath = Path.Combine(testSettingsFolder, ProtocolConfigFileName);
 
             var fullPath = NuGetEnvironment.GetFolderPath(NuGetFolderPath.UserSettingsDirectory);
