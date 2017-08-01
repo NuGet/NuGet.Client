@@ -189,34 +189,6 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public ProjectNames ProjectNames { get; private set; }
 
-        public string[] ProjectTypeGuids
-        {
-            get
-            {
-                if (!IsDeferred)
-                {
-                    return VsHierarchyUtility.GetProjectTypeGuids(Project);
-                }
-                else
-                {
-                    // Get ProjectTypeGuids from msbuild property, if it doesn't exist, fall back to projectTypeGuid.
-                    var projectTypeGuids = BuildProperties.GetPropertyValue(ProjectBuildProperties.ProjectTypeGuids);
-
-                    if (!string.IsNullOrEmpty(projectTypeGuids))
-                    {
-                        return MSBuildStringUtility.Split(projectTypeGuids);
-                    }
-
-                    if (!string.IsNullOrEmpty(_projectTypeGuid))
-                    {
-                        return new string[] { _projectTypeGuid };
-                    }
-
-                    return new string[0];
-                }
-            }
-        }
-
         public string UniqueName => ProjectNames.UniqueName;
 
         public string Version
@@ -284,6 +256,31 @@ namespace NuGet.PackageManagement.VisualStudio
 
         #region Getters
 
+        public async Task<string[]> GetProjectTypeGuidsAsync()
+        {
+            if (!IsDeferred)
+            {
+                return VsHierarchyUtility.GetProjectTypeGuids(Project);
+            }
+            else
+            {
+                // Get ProjectTypeGuids from msbuild property, if it doesn't exist, fall back to projectTypeGuid.
+                var projectTypeGuids = await BuildProperties.GetPropertyValueAsync(ProjectBuildProperties.ProjectTypeGuids);
+
+                if (!string.IsNullOrEmpty(projectTypeGuids))
+                {
+                    return MSBuildStringUtility.Split(projectTypeGuids);
+                }
+
+                if (!string.IsNullOrEmpty(_projectTypeGuid))
+                {
+                    return new string[] { _projectTypeGuid };
+                }
+
+                return new string[0];
+            }
+        }
+
         public async Task<FrameworkName> GetDotNetFrameworkNameAsync()
         {
             var targetFrameworkMoniker = await GetTargetFrameworkStringAsync();
@@ -310,7 +307,8 @@ namespace NuGet.PackageManagement.VisualStudio
             }
             else
             {
-                if (ProjectTypeGuids.All(SupportedProjectTypes.IsSupportedForAddingReferences))
+                var projectTypeGuids = await GetProjectTypeGuidsAsync();
+                if (projectTypeGuids.All(SupportedProjectTypes.IsSupportedForAddingReferences))
                 {
                     return await _workspaceService.GetProjectReferencesAsync(FullProjectPath);
                 }

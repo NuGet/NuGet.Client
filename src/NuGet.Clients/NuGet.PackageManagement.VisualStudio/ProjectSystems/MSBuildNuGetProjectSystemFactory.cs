@@ -1,10 +1,11 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.VisualStudio.Shell;
 using NuGet.ProjectManagement;
 using NuGet.VisualStudio;
@@ -28,9 +29,9 @@ namespace NuGet.PackageManagement.VisualStudio
             { VsProjectTypes.DeploymentProjectTypeGuid, (project, nuGetProjectContext) => new VsMSBuildProjectSystem(project, nuGetProjectContext) }
         };
 
-        public static VsMSBuildProjectSystem CreateMSBuildNuGetProjectSystem(IVsProjectAdapter vsProjectAdapter, INuGetProjectContext nuGetProjectContext)
+        public async static Task<VsMSBuildProjectSystem> CreateMSBuildNuGetProjectSystemAsync(IVsProjectAdapter vsProjectAdapter, INuGetProjectContext nuGetProjectContext)
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
+            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             if (vsProjectAdapter == null)
             {
@@ -51,7 +52,7 @@ namespace NuGet.PackageManagement.VisualStudio
                     string.Format(CultureInfo.CurrentCulture, Strings.DTE_ProjectUnsupported, typeof(IMSBuildProjectSystem).FullName));
             }
 
-            var guids = vsProjectAdapter.ProjectTypeGuids;
+            var guids = await vsProjectAdapter.GetProjectTypeGuidsAsync();
             if (guids.Contains(VsProjectTypes.CppProjectTypeGuid)) // Got a cpp project
             {
                 return new NativeProjectSystem(vsProjectAdapter, nuGetProjectContext);

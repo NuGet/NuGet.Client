@@ -704,7 +704,8 @@ namespace NuGetConsole.Host.PowerShell.Implementation
 
         private static bool IsWebSite(IVsProjectAdapter project)
         {
-            return project.ProjectTypeGuids.Contains(VsProjectTypes.WebSiteProjectTypeGuid);
+            return NuGetUIThreadHelper.JoinableTaskFactory.Run(
+                async () => (await project.GetProjectTypeGuidsAsync()).Contains(VsProjectTypes.WebSiteProjectTypeGuid));
         }
 
         #region ITabExpansion
