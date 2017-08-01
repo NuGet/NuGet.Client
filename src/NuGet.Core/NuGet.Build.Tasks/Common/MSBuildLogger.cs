@@ -171,6 +171,9 @@ namespace NuGet.Build
             LogErrorWithDetails logWithDetails,
             LogErrorAsString logAsString)
         {
+            // Work around for https://github.com/Microsoft/msbuild/issues/2316
+            var logMessageString = logMessage.Message.Replace("\r\n", "\n");
+
             if (logMessage.Code > NuGetLogCode.Undefined)
             {
                 // NuGet does not currently have a subcategory while throwing logs, hence string.Empty
@@ -182,11 +185,11 @@ namespace NuGet.Build
                     logMessage.StartColumnNumber,
                     logMessage.EndLineNumber,
                     logMessage.EndColumnNumber,
-                    logMessage.Message);
+                    logMessageString);
             }
             else
             {
-                logAsString(logMessage.Message);
+                logAsString(logMessageString);
             }
         }
 
