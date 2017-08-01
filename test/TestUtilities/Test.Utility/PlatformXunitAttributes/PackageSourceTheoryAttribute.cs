@@ -81,7 +81,7 @@ namespace NuGet.Test.Utility
     public sealed class PackageSourceDataDiscoverer : IDataDiscoverer
     {
         private readonly ConcurrentDictionary<string, PackageSource[]> _cachedSources = new ConcurrentDictionary<string, PackageSource[]>();
-        private readonly string _root = NuGetEnvironment.GetFolderPath(NuGetFolderPath.UserSettingsDirectory);
+        private readonly string _root = TestSources.GetConfigFileRoot();
 
         public IEnumerable<object[]> GetData(IAttributeInfo dataAttribute, IMethodInfo testMethod)
         {

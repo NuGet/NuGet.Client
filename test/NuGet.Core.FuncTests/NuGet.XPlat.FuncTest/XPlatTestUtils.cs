@@ -90,7 +90,7 @@ namespace NuGet.XPlat.FuncTest
 
         public static string ReadApiKey(string feedName)
         {
-            var testSettingsFolder = NuGetEnvironment.GetFolderPath(NuGetFolderPath.UserSettingsDirectory);
+            var testSettingsFolder = TestSources.GetConfigFileRoot();
             var protocolConfigPath = Path.Combine(testSettingsFolder, ProtocolConfigFileName);
 
             var fullPath = NuGetEnvironment.GetFolderPath(NuGetFolderPath.UserSettingsDirectory);
