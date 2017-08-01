@@ -601,17 +601,17 @@ namespace NuGet.Test
         [InlineData("netcoreapp1.0", "win8", false)]
 
         // UAP 10.0.15064.0 is compatible with netstandard2.0 
-        // Reference - https://devdiv.visualstudio.com/DevDiv/_queries?id=469873 
         [InlineData("uap10.0.15064.0", "netstandard2.0", true)]
+        [InlineData("uap10.0.15064.0", "netstandard1.9", true)]
+        [InlineData("uap10.0.15064.0", "netstandard1.5", true)]
+        [InlineData("uap10.0.15064.0", "netstandard1.0", true)]
         [InlineData("uap10.0.15064.0", "dotnet", true)]
         [InlineData("uap10.0.15064.0", "netcoreapp2.0", false)]
         [InlineData("uap10.0.15064.0", "netcoreapp1.0", false)]
         [InlineData("uap10.0.15064.0", "net45", false)]
         [InlineData("uap10.0.15064.0", "net46", false)]
         [InlineData("uap10.0.15064.0", "netstandardapp1.5", false)]
-        [InlineData("uap10.0.15064.0", "netstandardapp1.5", false)]
-        [InlineData("uap10.0.15064.0", "netstandardapp1.5", false)]
-        [InlineData("uap10.0.15064.0", "netstandardapp1.5", false)]
+        [InlineData("uap10.0.15064.0", "netstandard2.1", false)]
         public void Compatibility_FrameworksAreCompatible(string project, string package, bool compatible)
         {
             // Arrange
