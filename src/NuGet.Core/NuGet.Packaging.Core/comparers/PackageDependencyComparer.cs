@@ -91,7 +91,7 @@ namespace NuGet.Packaging.Core
             }
 
             // separate the lists
-            combiner.AddInt32(8);
+            combiner.AddObject(8);
 
             foreach (var exclude in obj.Exclude.OrderBy(s => s, StringComparer.OrdinalIgnoreCase))
             {
