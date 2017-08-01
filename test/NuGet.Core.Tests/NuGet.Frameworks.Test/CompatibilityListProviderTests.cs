@@ -91,6 +91,7 @@ namespace NuGet.Frameworks.Test
             Assert.Contains("Xamarin.Xbox360,Version=v0.0", actual);
             Assert.Contains("Xamarin.XboxOne,Version=v0.0", actual);
             Assert.Contains("Tizen,Version=v3.0", actual);
+            Assert.Contains("UAP,Version=v10.0.15064", actual);
 
             // negative
             Assert.DoesNotContain(".NETFramework,Version=v4.7", actual); // only the minimum support version is returned
@@ -98,7 +99,7 @@ namespace NuGet.Frameworks.Test
             Assert.DoesNotContain(".NETPlatform,Version=v5.6", actual); // frameworks with no relationship are not returned
 
             // count
-            Assert.Equal(19, actual.Length);
+            Assert.Equal(20, actual.Length);
         }
 
         [Fact]
@@ -133,6 +134,7 @@ namespace NuGet.Frameworks.Test
             Assert.Contains("Xamarin.Xbox360,Version=v0.0", actual);
             Assert.Contains("Xamarin.XboxOne,Version=v0.0", actual);
             Assert.Contains("Tizen,Version=v3.0", actual);
+            Assert.Contains("UAP,Version=v10.0.15064", actual);
 
             // negative
             Assert.DoesNotContain(".NETFramework,Version=v4.7", actual); // only the minimum support version is returned
@@ -141,7 +143,7 @@ namespace NuGet.Frameworks.Test
             Assert.DoesNotContain("DNXCore,Version=v5.0", actual);
 
             // count
-            Assert.Equal(18, actual.Length);
+            Assert.Equal(19, actual.Length);
         }
 
         [Fact]
@@ -176,6 +178,7 @@ namespace NuGet.Frameworks.Test
             Assert.Contains("Xamarin.Xbox360,Version=v0.0", actual);
             Assert.Contains("Xamarin.XboxOne,Version=v0.0", actual);
             Assert.Contains("Tizen,Version=v4.0", actual);
+            Assert.Contains("UAP,Version=v10.0.15064", actual);
 
             // negative
             Assert.DoesNotContain(".NETFramework,Version=v4.7", actual); // only the minimum support version is returned
@@ -184,7 +187,7 @@ namespace NuGet.Frameworks.Test
             Assert.DoesNotContain("DNXCore,Version=v5.0", actual);
 
             // count
-            Assert.Equal(18, actual.Length);
+            Assert.Equal(19, actual.Length);
         }
 
         [Fact]
@@ -218,6 +221,7 @@ namespace NuGet.Frameworks.Test
             Assert.Contains("Xamarin.Xbox360,Version=v0.0", actual);
             Assert.Contains("Xamarin.XboxOne,Version=v0.0", actual);
             Assert.Contains("Tizen,Version=v4.0", actual);
+            Assert.Contains("UAP,Version=v10.0.15064", actual);
 
             // negative
             Assert.DoesNotContain(".NETFramework,Version=v4.7", actual); // only the minimum support version is returned
@@ -226,7 +230,7 @@ namespace NuGet.Frameworks.Test
             Assert.DoesNotContain("DNXCore,Version=v5.0", actual);
 
             // count
-            Assert.Equal(18, actual.Length);
+            Assert.Equal(19, actual.Length);
         }
     }
 }
