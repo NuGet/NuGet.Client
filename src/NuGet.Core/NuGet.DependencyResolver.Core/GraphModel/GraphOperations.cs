@@ -41,7 +41,7 @@ namespace NuGet.DependencyResolver
 
             root.ForEach((node, context) => WalkTreeCheckCycleAndNearestWins(context, node), CreateState(cycles, workingDowngrades));
 
-#if NET45
+#if IS_DESKTOP || NETSTANDARD2_0
             // Increase List size for items to be added, if too small
             var requiredCapacity = downgrades.Count + workingDowngrades.Count;
             if (downgrades.Capacity < requiredCapacity)
