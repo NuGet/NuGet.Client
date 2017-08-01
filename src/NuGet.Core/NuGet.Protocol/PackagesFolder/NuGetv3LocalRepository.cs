@@ -23,8 +23,8 @@ namespace NuGet.Repositories
             = new ConcurrentDictionary<string, LocalPackageInfo>(PathUtility.GetStringComparerBasedOnOS());
 
         // Id -> Packages
-        private readonly ConcurrentDictionary<string, IEnumerable<LocalPackageInfo>> _cache
-            = new ConcurrentDictionary<string, IEnumerable<LocalPackageInfo>>(StringComparer.OrdinalIgnoreCase);
+        private readonly ConcurrentDictionary<string, List<LocalPackageInfo>> _cache
+            = new ConcurrentDictionary<string, List<LocalPackageInfo>>(StringComparer.OrdinalIgnoreCase);
 
         // Per package id locks
         private readonly ConcurrentDictionary<string, object> _idLocks
@@ -46,8 +46,19 @@ namespace NuGet.Repositories
 
         public LocalPackageInfo FindPackage(string packageId, NuGetVersion version)
         {
-            var package = FindPackagesById(packageId)
-                .FirstOrDefault(localPackage => localPackage.Version == version);
+            LocalPackageInfo package = null;
+
+            var packages = FindPackagesByIdImpl(packageId);
+            var count = packages.Count;
+            for (var i = 0; i < count; i++)
+            {
+                var candidatePackage = packages[i];
+                if (candidatePackage.Version == version)
+                {
+                    package = candidatePackage;
+                    break;
+                }
+            }
 
             if (package == null)
             {
@@ -75,6 +86,9 @@ namespace NuGet.Repositories
         }
 
         public IEnumerable<LocalPackageInfo> FindPackagesById(string packageId)
+            => FindPackagesByIdImpl(packageId);
+
+        private List<LocalPackageInfo> FindPackagesByIdImpl(string packageId)
         {
             if (string.IsNullOrEmpty(packageId))
             {
@@ -157,8 +171,7 @@ namespace NuGet.Repositories
                 // Clearers must wait for all requests to complete
                 lock (GetLockObj(packageId))
                 {
-                    IEnumerable<LocalPackageInfo> packages;
-                    _cache.TryRemove(packageId, out packages);
+                    _cache.TryRemove(packageId, out _);
                 }
             }
         }
