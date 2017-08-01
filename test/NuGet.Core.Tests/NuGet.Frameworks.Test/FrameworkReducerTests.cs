@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using NuGet.Frameworks;
 using Xunit;
@@ -35,6 +36,9 @@ namespace NuGet.Test
         [InlineData("uap10.0", "dotnet5.2,portable-win81+net45", "dotnet5.2")]
         [InlineData("uap10.0", "wpa81,dotnet5.2,portable-win81+net45", "wpa81")]
         [InlineData("uap10.0", "dotnet5.2,portable-win81+net45", "dotnet5.2")]
+        [InlineData("uap10.0.15064.0", "netcore50,win81,wpa81,dotnet5.4,portable-win81+net45,netstandard2.0", "netcore50")]
+        [InlineData("uap10.0.15064.0", "netstandard2.0, netstandard2.1, netstandard1.9, net45, net461", "netstandard2.0")]
+        [InlineData("uap10.0.15064.0", "netstandard2.0, netcoreapp1.0, netcore2.0", "netstandard2.0")]
         // Take the most specific PCL profile
         [InlineData("uap10.0", "dotnet6.0,portable-win81+net45", "portable-win81+net45")]
         [InlineData("uap10.0", "dotnet6.0,portable-win81+net45+sl5,portable-win81+net45", "portable-win81+net45")]
