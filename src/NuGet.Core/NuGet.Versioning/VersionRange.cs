@@ -317,21 +317,28 @@ namespace NuGet.Versioning
 
             var lastLabel = version.ReleaseLabels.LastOrDefault() ?? string.Empty;
 
-            if (lastLabel.EndsWith("-", StringComparison.Ordinal))
+            var endsWithZero = lastLabel == "0";
+            var endsWithDash = lastLabel.EndsWith("-", StringComparison.Ordinal);
+
+            if (endsWithZero || endsWithDash)
             {
                 var fixedReleaseLabel = string.Empty;
 
-                if (lastLabel.EndsWith("--", StringComparison.Ordinal))
+                if (endsWithDash)
                 {
-                    // For labels such as rc1-* an additional - is added by nuget
-                    fixedReleaseLabel = lastLabel.Substring(0, lastLabel.Length - 2);
-                }
-                else
-                {
-                    // Remove the - for 1.0.0-* (1.0.0--)
-                    fixedReleaseLabel = lastLabel.Substring(0, lastLabel.Length - 1);
+                    if (lastLabel.EndsWith("--", StringComparison.Ordinal))
+                    {
+                        // For labels such as rc1-* an additional - is added by nuget
+                        fixedReleaseLabel = lastLabel.Substring(0, lastLabel.Length - 2);
+                    }
+                    else
+                    {
+                        // Remove the - for 1.0.0-* (1.0.0--)
+                        fixedReleaseLabel = lastLabel.Substring(0, lastLabel.Length - 1);
+                    }
                 }
 
+                // Remove the last label and add in the fixed label if one exists.
                 var fixedLabels = version.ReleaseLabels.Take(version.ReleaseLabels.Count() - 1).ToList();
 
                 if (!string.IsNullOrEmpty(fixedReleaseLabel))

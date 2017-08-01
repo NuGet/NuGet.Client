@@ -42,7 +42,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 Assert.Equal(1, actual.Count());
                 var packageReference = actual.First();
                 Assert.Equal("foo", packageReference.PackageIdentity.Id);
-                Assert.Equal(NuGetVersion.Parse("1.0.0--"), packageReference.PackageIdentity.Version);
+                Assert.Equal(NuGetVersion.Parse("1.0.0-0"), packageReference.PackageIdentity.Version);
             }
         }
 
