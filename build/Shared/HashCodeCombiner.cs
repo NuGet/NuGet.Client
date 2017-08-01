@@ -23,7 +23,7 @@ namespace NuGet.Shared
             get { return _combinedHash.GetHashCode(); }
         }
 
-        private void AddInt32(int i)
+        private void AddHashCode(int i)
         {
             _combinedHash = ((_combinedHash << 5) + _combinedHash) ^ i;
         }
@@ -31,7 +31,7 @@ namespace NuGet.Shared
         internal void AddObject(int i)
         {
             CheckInitialized();
-            AddInt32(i);
+            AddHashCode(i);
         }
 
         internal void AddObject<TValue>(TValue o, IEqualityComparer<TValue> comparer)
@@ -39,7 +39,7 @@ namespace NuGet.Shared
             CheckInitialized();
             if (o != null)
             {
-                AddInt32(comparer.GetHashCode(o));
+                AddHashCode(comparer.GetHashCode(o));
             }
         }
 
@@ -48,7 +48,7 @@ namespace NuGet.Shared
             CheckInitialized();
             if (o != null)
             {
-                AddInt32(o.GetHashCode());
+                AddHashCode(o.GetHashCode());
             }
         }
 
@@ -57,7 +57,7 @@ namespace NuGet.Shared
             CheckInitialized();
             if (s != null)
             {
-                AddObject(s, StringComparer.OrdinalIgnoreCase);
+                AddHashCode(StringComparer.OrdinalIgnoreCase.GetHashCode(s));
             }
         }
 
@@ -65,9 +65,10 @@ namespace NuGet.Shared
         {
             if (sequence != null)
             {
+                CheckInitialized();
                 foreach (var item in sequence)
                 {
-                    AddObject(item);
+                    AddHashCode(item.GetHashCode());
                 }
             }
         }
@@ -76,9 +77,10 @@ namespace NuGet.Shared
         {
             if (array != null)
             {
+                CheckInitialized();
                 foreach (var item in array)
                 {
-                    AddObject(item);
+                    AddHashCode(item.GetHashCode());
                 }
             }
         }
@@ -87,10 +89,11 @@ namespace NuGet.Shared
         {
             if (list != null)
             {
+                CheckInitialized();
                 var count = list.Count;
                 for (var i = 0; i < count; i++)
                 {
-                    AddObject(list[i]);
+                    AddHashCode(list[i].GetHashCode());
                 }
             }
         }
@@ -100,10 +103,11 @@ namespace NuGet.Shared
         {
             if (list != null)
             {
+                CheckInitialized();
                 var count = list.Count;
                 for (var i = 0; i < count; i++)
                 {
-                    AddObject(list[i]);
+                    AddHashCode(list[i].GetHashCode());
                 }
             }
         }
@@ -115,8 +119,8 @@ namespace NuGet.Shared
                 CheckInitialized();
                 foreach (var pair in dictionary.OrderBy(x => x.Key))
                 {
-                    AddInt32(pair.Key.GetHashCode());
-                    AddInt32(pair.Value.GetHashCode());
+                    AddHashCode(pair.Key.GetHashCode());
+                    AddHashCode(pair.Value.GetHashCode());
                 }
             }
         }
@@ -129,8 +133,8 @@ namespace NuGet.Shared
             var combiner = new HashCodeCombiner();
             combiner.CheckInitialized();
 
-            combiner.AddInt32(o1.GetHashCode());
-            combiner.AddInt32(o2.GetHashCode());
+            combiner.AddHashCode(o1.GetHashCode());
+            combiner.AddHashCode(o2.GetHashCode());
 
             return combiner.CombinedHash;
         }
@@ -143,9 +147,9 @@ namespace NuGet.Shared
             var combiner = new HashCodeCombiner();
             combiner.CheckInitialized();
 
-            combiner.AddInt32(o1.GetHashCode());
-            combiner.AddInt32(o2.GetHashCode());
-            combiner.AddInt32(o3.GetHashCode());
+            combiner.AddHashCode(o1.GetHashCode());
+            combiner.AddHashCode(o2.GetHashCode());
+            combiner.AddHashCode(o3.GetHashCode());
 
             return combiner.CombinedHash;
         }
