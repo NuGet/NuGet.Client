@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -241,32 +241,41 @@ namespace NuGet.Commands
             foreach (var sourcePath in PackTargetArgs.SourceFiles.Keys)
             {
                 var projectDirectory = PackTargetArgs.SourceFiles[sourcePath];
-                if (projectDirectory.EndsWith("\\"))
-                {
-                    projectDirectory = projectDirectory.Substring(0, projectDirectory.LastIndexOf("\\"));
-                }
-                var projectName = Path.GetFileName(projectDirectory);
-                string targetPath = Path.Combine(SourcesFolder, projectName);
-                if (sourcePath.Contains(projectDirectory))
-                {
-                    var relativePath = Path.GetDirectoryName(sourcePath).Replace(projectDirectory, string.Empty);
-                    if (relativePath.StartsWith("\\"))
-                    {
-                        relativePath = relativePath.Substring(1, relativePath.Length - 1);
-                    }
-                    if (relativePath.EndsWith("\\"))
-                    {
-                        relativePath = relativePath.Substring(0, relativePath.LastIndexOf("\\"));
-                    }
-                    targetPath = Path.Combine(targetPath, relativePath);
-                }
+                var finalTargetPath = GetTargetPathForSourceFile(sourcePath, projectDirectory);
+
                 var packageFile = new ManifestFile()
                 {
                     Source = sourcePath,
-                    Target = Path.Combine(targetPath, Path.GetFileName(sourcePath))
+                    Target = finalTargetPath
                 };
                 AddFileToBuilder(packageFile);
             }
+        }
+
+        public static string GetTargetPathForSourceFile(string sourcePath, string projectDirectory)
+        {
+            if (PathUtility.HasTrailingDirectorySeparator(projectDirectory))
+            {
+                projectDirectory = projectDirectory.Substring(0, projectDirectory.Length - 1);
+            }
+            var projectName = Path.GetFileName(projectDirectory);
+            var targetPath = Path.Combine(SourcesFolder, projectName);
+            if (sourcePath.Contains(projectDirectory))
+            {
+                var relativePath = Path.GetDirectoryName(sourcePath).Replace(projectDirectory, string.Empty);
+                if (PathUtility.IsDirectorySeparatorChar(relativePath[0]))
+                {
+                    relativePath = relativePath.Substring(1, relativePath.Length - 1);
+                }
+                if (PathUtility.HasTrailingDirectorySeparator(relativePath))
+                {
+                    relativePath = relativePath.Substring(0, relativePath.Length - 1);
+                }
+                targetPath = Path.Combine(targetPath, relativePath);
+            }
+
+            var finalTargetPath = Path.Combine(targetPath, Path.GetFileName(sourcePath));
+            return finalTargetPath;
         }
 
         private static bool IsContentFile(string contentFileTargetPath)
