@@ -32,6 +32,7 @@
     <NuGetBuildLocalizationRepository>$(RepositoryRootDirectory)submodules\NuGet.Build.Localization\</NuGetBuildLocalizationRepository>
     <LocalizationRootDirectory>$(NuGetBuildLocalizationRepository)localize</LocalizationRootDirectory>
     <LocalizationFilesDirectory>$(ArtifactsDirectory)LocalizedFiles</LocalizationFilesDirectory>
+    <MicroBuildDirectory>$(SolutionPackagesFolder)MicroBuild.Core.0.2.0\build\</MicroBuildDirectory>
   </PropertyGroup>
 
   <!-- Defaults -->
@@ -60,7 +61,7 @@
     <NoWarn>$(NoWarn);1762</NoWarn>
     <!-- Code Analysis is OFF by default -->
     <RunCodeAnalysis Condition=" '$(RunCodeAnalysis)' == ''">false</RunCodeAnalysis>
-    <!--This property ensures that if you build the exact sources twice, 
+    <!--This property ensures that if you build the exact sources twice,
     you get exactly the same output, so the .pdb from the second build will match the .dll
      from the first build!-->
     <Deterministic>true</Deterministic>
@@ -93,7 +94,7 @@
   <PropertyGroup Condition="'$(VisualStudioVersion)' == '15.0'">
     <MinimumVisualStudioVersion>15.0</MinimumVisualStudioVersion>
     <DefineConstants>$(DefineConstants);VS15</DefineConstants>
-    <VSSDKRoot>$(RepositoryRootDirectory)packages\Microsoft.VSSDK.BuildTools.15.0.26201</VSSDKRoot>
+    <VSSDKRoot>$(RepositoryRootDirectory)packages\Microsoft.VSSDK.BuildTools.15.1.192</VSSDKRoot>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(VSSDKRoot)\tools</VSToolsPath>
     <VsixOutputDirName>VS15</VsixOutputDirName>
     <CodeAnalysisRuleSet Condition="'$(CodeAnalysisRuleSet)' == ''">$(BuildCommonDirectory)NuGet.ruleset</CodeAnalysisRuleSet>
@@ -145,7 +146,7 @@
   <!-- Test projects currently fail when the output dir is moved -->
   <PropertyGroup Condition=" '$(TestProject)' != 'true' ">
     <!-- Create different folders for 14.0, 15.0, 15.0-RTM -->
-    
+
     <!-- output paths -->
     <BaseIntermediateOutputPath>$(ArtifactsDirectory)$(MSBuildProjectName)\$(BuildVariationFolder)\obj\</BaseIntermediateOutputPath>
     <IntermediateOutputPath>$(BaseIntermediateOutputPath)$(Configuration)\</IntermediateOutputPath>

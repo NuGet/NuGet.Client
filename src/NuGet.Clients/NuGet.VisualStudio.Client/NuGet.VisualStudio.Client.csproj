@@ -26,6 +26,7 @@
     <FileUpgradeFlags />
     <UpgradeBackupLocation />
     <OldToolsVersion>14.0</OldToolsVersion>
+    <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
   </PropertyGroup>
   <PropertyGroup Condition="'$(VisualStudioVersion)' == '15.0'">
     <IsProductComponent>true</IsProductComponent>
@@ -97,7 +98,6 @@
       <Link>Modules\NuGet\Profile.ps1</Link>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
-    <None Include="project.json" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\NuGet.Core\NuGet.Build.Tasks\NuGet.Build.Tasks.csproj">
@@ -292,6 +292,11 @@
       <SubType>Designer</SubType>
     </None>
   </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Lucene.Net">
+      <Version>3.0.3</Version>
+    </PackageReference>
+  </ItemGroup>
   <Target Name="AfterBuild" DependsOnTargets="PublishVS14;PublishVS15;PublishVS15Insertable" />
   <Target Name="PublishVS14" Condition="'$(VisualStudioVersion)' == '14.0'">
     <Message Text="Publishing VS14 VSIX package files..." Importance="high" />
@@ -370,26 +375,20 @@
     <Warning Text="Missing @(MissingIgnoredAssemblies-&gt;Count()) ignored file(s) '@(MissingIgnoredAssemblies)'" Condition=" '@(MissingIgnoredAssemblies)' != '' " File="@(VsixIgnoreFile)" />
     <Message Text="Included @(VSIXSourceItem-&gt;Count()) file(s). Filtered @(SuppressPackaging-&gt;Count()) file(s)." Importance="high" />
   </Target>
-
   <!--The IsCIBuild property is passed on the VSTS CI-->
   <Target Name="GetLocalizedDlls" AfterTargets="GetVsixSourceItems" Condition="'$(IsCIBuild)' =='true'">
-    <MSBuild Projects="@(SolutionProjectsWithoutVSIX)"
-      Targets="GetLocalizedFilesForVsix"
-      Properties="IsVsixBuild=true;
-                BuildProjectReferences=false;">
-        <Output
-          TaskParameter="TargetOutputs"
-          ItemName="LocalizedFilesForVsix"/>
+    <MSBuild Projects="@(SolutionProjectsWithoutVSIX)" Targets="GetLocalizedFilesForVsix" Properties="IsVsixBuild=true;&#xD;&#xA;                BuildProjectReferences=false;">
+      <Output TaskParameter="TargetOutputs" ItemName="LocalizedFilesForVsix" />
     </MSBuild>
     <ItemGroup>
-      <VSIXSourceItem Include="@(LocalizedFilesForVsix)"/>
-      <_LocalizedFiles Include="$(ArtifactsDirectory)Microsoft.Web.Xdt.2.1.1\lib\net40\**\Microsoft.Web.XmlTransform.resources.dll"/>
-      <_LocalizedFiles Include="$(ArtifactsDirectory)vsixlangpack\**\extension.vsixlangpack"/>
-      <_LocalizedFiles Include="$(ArtifactsDirectory)eulas\**\eula.rtf"/>
+      <VSIXSourceItem Include="@(LocalizedFilesForVsix)" />
+      <_LocalizedFiles Include="$(ArtifactsDirectory)Microsoft.Web.Xdt.2.1.1\lib\net40\**\Microsoft.Web.XmlTransform.resources.dll" />
+      <_LocalizedFiles Include="$(ArtifactsDirectory)vsixlangpack\**\extension.vsixlangpack" />
+      <_LocalizedFiles Include="$(ArtifactsDirectory)eulas\**\eula.rtf" />
       <_VsixLocFiles Include="@(_LocalizedFiles)">
         <TargetPath>%(_LocalizedFiles.RecursiveDir)%(_LocalizedFiles.Filename)%(_LocalizedFiles.Extension)</TargetPath>
       </_VsixLocFiles>
-      <VSIXSourceItem Include="@(_VsixLocFiles)"/>
+      <VSIXSourceItem Include="@(_VsixLocFiles)" />
     </ItemGroup>
   </Target>
 </Project>
