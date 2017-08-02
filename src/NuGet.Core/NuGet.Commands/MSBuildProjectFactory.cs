@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -263,7 +263,7 @@ namespace NuGet.Commands
             if (sourcePath.Contains(projectDirectory))
             {
                 var relativePath = Path.GetDirectoryName(sourcePath).Replace(projectDirectory, string.Empty);
-                if (PathUtility.IsDirectorySeparatorChar(relativePath[0]))
+                if (!string.IsNullOrEmpty(relativePath) && PathUtility.IsDirectorySeparatorChar(relativePath[0]))
                 {
                     relativePath = relativePath.Substring(1, relativePath.Length - 1);
                 }
