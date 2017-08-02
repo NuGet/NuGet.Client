@@ -82,7 +82,7 @@ namespace NuGet.Protocol.Core.Types
 
             foreach (var hash in DependencyGroups.Select(group => group.GetHashCode()).OrderBy(x => x))
             {
-                combiner.AddObject(hash);
+                combiner.AddInt32(hash);
             }
 
             combiner.AddObject(ContentUri);
