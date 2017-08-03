@@ -594,4 +594,10 @@ For more information, visit http://docs.nuget.org/docs/reference/command-line-re
   <data name="UnsupportedProject" xml:space="preserve">
     <value>Skipping restore for project '{0}'. The project file may be invalid or missing targets required for restore.</value>
   </data>
+  <data name="Error_EmptySourceFilePath" xml:space="preserve">
+    <value>A source file was added with an empty path.</value>
+  </data>
+  <data name="Error_EmptySourceFileProjectDirectory" xml:space="preserve">
+    <value>The project directory for the source file '{0}' could not be found.</value>
+  </data>
 </root>

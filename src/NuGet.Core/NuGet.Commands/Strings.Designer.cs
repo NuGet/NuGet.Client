@@ -20,7 +20,7 @@ namespace NuGet.Commands {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "15.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "4.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class Strings {
@@ -103,6 +103,24 @@ namespace NuGet.Commands {
         internal static string Error_CannotFindMsbuild {
             get {
                 return ResourceManager.GetString("Error_CannotFindMsbuild", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to A source file was added with an empty path..
+        /// </summary>
+        internal static string Error_EmptySourceFilePath {
+            get {
+                return ResourceManager.GetString("Error_EmptySourceFilePath", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The project directory for the source file &apos;{0}&apos; could not be found..
+        /// </summary>
+        internal static string Error_EmptySourceFileProjectDirectory {
+            get {
+                return ResourceManager.GetString("Error_EmptySourceFileProjectDirectory", resourceCulture);
             }
         }
         
