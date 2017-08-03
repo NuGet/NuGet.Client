@@ -123,7 +123,7 @@ namespace NuGet.Packaging
         /// </summary>
         /// <param name="packageId">The package ID.</param>
         /// <returns>The version list directory.</returns>
-        public string GetVersionListDirectory(string packageId)
+        public virtual string GetVersionListDirectory(string packageId)
         {
             return Normalize(packageId);
         }

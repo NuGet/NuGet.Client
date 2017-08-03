@@ -34,7 +34,7 @@ namespace NuGet.Packaging
             get { return _rootDirectory; }
         }
 
-        public string GetPackageDirectoryName(PackageIdentity packageIdentity)
+        public virtual string GetPackageDirectoryName(PackageIdentity packageIdentity)
         {
             var directory = GetPathBase(packageIdentity);
 
@@ -77,7 +77,7 @@ namespace NuGet.Packaging
             return string.IsNullOrEmpty(installedPackageFilePath) ? null : Path.GetDirectoryName(installedPackageFilePath);
         }
 
-        public string GetInstalledPackageFilePath(PackageIdentity packageIdentity)
+        public virtual string GetInstalledPackageFilePath(PackageIdentity packageIdentity)
         {
             return PackagePathHelper.GetInstalledPackageFilePath(packageIdentity, this);
         }
