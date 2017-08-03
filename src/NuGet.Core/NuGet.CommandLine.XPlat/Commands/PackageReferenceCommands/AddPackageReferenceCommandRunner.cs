@@ -266,12 +266,12 @@ namespace NuGet.CommandLine.XPlat
             if (packageReferenceArgs.Frameworks?.Any() == true)
             {
                 // If the user specified frameworks then we get the flattened graphs  only from the compatible frameworks.
-                var userSpecifiedFrameworks = new HashSet<NuGetFramework>(
+                var userSpecifiedFrameworkSet = new HashSet<NuGetFramework>(
                     UserSpecifiedFrameworks, 
                     new NuGetFrameworkFullComparer());
 
                 restoreGraphs = restoreGraphs
-                    .Where(r => userSpecifiedFrameworks.Contains(r.Framework));
+                    .Where(r => userSpecifiedFrameworkSet.Contains(r.Framework));
             }
 
             foreach (var restoreGraph in restoreGraphs)
