@@ -15,7 +15,11 @@ namespace NuGet.Commands.Test
         [InlineData("D:\\temp\\project1\\folder1\\source.cs",                   "D:\\temp\\project1",                           "src\\project1\\folder1\\source.cs")]
         [InlineData("D:\\temp\\project1\\folder1\\folder2\\source.cs",          "D:\\temp\\project1",                           "src\\project1\\folder1\\folder2\\source.cs")]
         [InlineData("D:\\temp\\source.cs",                                      "D:\\temp\\project1",                           "src\\project1\\source.cs")]
-        public void MSBuildProjectFactory_GetTargetPathForSourceFiles_Windows(string sourcePath, string projectDirectory, string expectedResult)
+        [InlineData("D:/temp/project1/source.cs",                               "D:/temp/project1",                             "src\\project1\\source.cs")]
+        [InlineData("D:/temp/project1/folder1/source.cs",                       "D:/temp/project1",                             "src\\project1\\folder1\\source.cs")]
+        [InlineData("D:/temp/project1/folder1/folder2/source.cs",               "D:/temp/project1",                             "src\\project1\\folder1\\folder2\\source.cs")]
+        [InlineData("D:/temp/source.cs",                                        "D:/temp/project1",                             "src\\project1\\source.cs")]
+        public void GetTargetPathForSourceFiles_Windows(string sourcePath, string projectDirectory, string expectedResult)
         {
             var result = MSBuildProjectFactory.GetTargetPathForSourceFile(sourcePath, projectDirectory);
             Assert.Equal(expectedResult, result);
@@ -27,7 +31,7 @@ namespace NuGet.Commands.Test
         [InlineData("/mnt/d/temp/project1/folder1/folder2/source.cs",           "/mnt/d/temp/project1",                         "src/project1/folder1/folder2/source.cs")]
         [InlineData("/mnt/d/temp/source.cs",                                    "/mnt/d/temp/project1",                         "src/project1/source.cs")]
 
-        public void MSBuildProjectFactory_GetTargetPathForSourceFiles_Linux(string sourcePath, string projectDirectory, string expectedResult)
+        public void GetTargetPathForSourceFiles_Linux(string sourcePath, string projectDirectory, string expectedResult)
         {
             var result = MSBuildProjectFactory.GetTargetPathForSourceFile(sourcePath, projectDirectory);
             Assert.Equal(expectedResult, result);
@@ -38,7 +42,7 @@ namespace NuGet.Commands.Test
         [InlineData("/mnt/d/temp/project1/folder1/source.cs",                   "/mnt/d/temp/project1",                         "src/project1/folder1/source.cs")]
         [InlineData("/mnt/d/temp/project1/folder1/folder2/source.cs",           "/mnt/d/temp/project1",                         "src/project1/folder1/folder2/source.cs")]
         [InlineData("/mnt/d/temp/source.cs",                                    "/mnt/d/temp/project1",                         "src/project1/source.cs")]
-        public void MSBuildProjectFactory_GetTargetPathForSourceFiles_Darwin(string sourcePath, string projectDirectory, string expectedResult)
+        public void GetTargetPathForSourceFiles_Darwin(string sourcePath, string projectDirectory, string expectedResult)
         {
             var result = MSBuildProjectFactory.GetTargetPathForSourceFile(sourcePath, projectDirectory);
             Assert.Equal(expectedResult, result);

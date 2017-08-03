@@ -254,6 +254,16 @@ namespace NuGet.Commands
 
         public static string GetTargetPathForSourceFile(string sourcePath, string projectDirectory)
         {
+            if(string.IsNullOrEmpty(sourcePath))
+            {
+                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.Error_EmptySourcePath));
+            }
+
+            if (string.IsNullOrEmpty(projectDirectory))
+            {
+                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.Error_EmptySourceFileProjectDirectory, sourcePath));
+            }
+
             if (PathUtility.HasTrailingDirectorySeparator(projectDirectory))
             {
                 projectDirectory = projectDirectory.Substring(0, projectDirectory.Length - 1);
