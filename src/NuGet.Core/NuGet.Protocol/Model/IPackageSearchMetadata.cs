@@ -32,6 +32,7 @@ namespace NuGet.Protocol.Core.Types
         string Title { get; }
 
         bool IsListed { get; }
+        bool PrefixReserved { get; }
 
         Task<IEnumerable<VersionInfo>> GetVersionsAsync();
     }

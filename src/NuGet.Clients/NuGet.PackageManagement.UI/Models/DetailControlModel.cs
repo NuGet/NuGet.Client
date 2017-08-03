@@ -76,6 +76,7 @@ namespace NuGet.PackageManagement.UI
             _filter = filter;
             OnPropertyChanged(nameof(Id));
             OnPropertyChanged(nameof(IconUrl));
+            OnPropertyChanged(nameof(PrefixReserved));
 
             var getVersionsTask = searchResultPackage.GetVersionsAsync();
 
@@ -272,6 +273,11 @@ namespace NuGet.PackageManagement.UI
         public Uri IconUrl
         {
             get { return _searchResultPackage?.IconUrl; }
+        }
+
+        public bool PrefixReserved
+        {
+            get { return _searchResultPackage?.PrefixReserved ?? false; }
         }
 
         private DetailedPackageMetadata _packageMetadata;

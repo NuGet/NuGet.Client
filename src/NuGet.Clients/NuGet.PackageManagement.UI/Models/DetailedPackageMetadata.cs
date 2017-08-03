@@ -34,6 +34,7 @@ namespace NuGet.PackageManagement.UI
                 ?? new PackageDependencySetMetadata[] { };
             HasDependencies = DependencySets.Any(
                 dependencySet => dependencySet.Dependencies != null && dependencySet.Dependencies.Count > 0);
+            PrefixReserved = serverData.PrefixReserved;
         }
 
         public NuGetVersion Version { get; set; }
@@ -60,6 +61,8 @@ namespace NuGet.PackageManagement.UI
         public DateTimeOffset? Published { get; set; }
 
         public IEnumerable<PackageDependencySetMetadata> DependencySets { get; set; }
+
+        public bool PrefixReserved { get; set; }
 
         // This property is used by data binding to display text "No dependencies"
         public bool HasDependencies { get; set; }

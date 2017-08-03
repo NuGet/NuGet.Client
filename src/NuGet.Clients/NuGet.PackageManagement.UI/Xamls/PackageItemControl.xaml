@@ -4,6 +4,7 @@
   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
   xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+  xmlns:imaging="clr-namespace:Microsoft.VisualStudio.Imaging;assembly=Microsoft.VisualStudio.Imaging"  
   x:Name="_self"
   mc:Ignorable="d"
   xmlns:nuget="clr-namespace:NuGet.PackageManagement.UI"
@@ -110,7 +111,7 @@
                       Style="{StaticResource PackageIconImageStyle}"
                       VerticalAlignment="Top"
                       Margin="0,0,16,0" />
-                    <nuget:InstalledIndicator
+                    <imaging:CrispImage
                       x:Name="_checkMark"
                       Grid.Row="0"
                       Margin="18,20,0,0"
@@ -118,8 +119,9 @@
                       Height="16"
                       VerticalAlignment="Top"
                       Visibility="{Binding Status, Converter={StaticResource PackageStatusToInstallImageVisibilityConverter}}"
-                      ToolTip="{x:Static nuget:Resources.ToolTip_PackageInstalled}" />
-                    <nuget:UpdateAvailableIndicator
+                      ToolTip="{x:Static nuget:Resources.ToolTip_PackageInstalled}"
+                      Moniker="{x:Static nuget:PackageIconMonikers.InstalledIndicator}" />
+                    <imaging:CrispImage
                       x:Name="_updateMark"
                       Grid.Row="0"
                       Margin="18,20,0,0"
@@ -127,7 +129,8 @@
                       Height="16"
                       VerticalAlignment="Top"
                       Visibility="{Binding Status, Converter={StaticResource PackageStatusToUpdateImageVisibilityConverter}}"
-                      ToolTip="{x:Static nuget:Resources.ToolTip_UpdateAvailable}" />
+                      ToolTip="{x:Static nuget:Resources.ToolTip_UpdateAvailable}"
+                      Moniker="{x:Static nuget:PackageIconMonikers.UpdateAvailableIndicator}"/>
 
                     <TextBlock
                       Grid.Row="1"
@@ -158,6 +161,17 @@
                         AutomationProperties.AutomationId="id"
                         VerticalAlignment="Top"
                         Text="{Binding Id}" />
+                      <!-- prefix reservation indicator -->
+                      <imaging:CrispImage
+                        x:Name="_prefixReservedMark"
+                        Grid.Row="0"
+                        Margin="5,5,0,0"
+                        Width="13"
+                        Height="13"
+                        VerticalAlignment="Top"
+                        Visibility="{Binding PrefixReserved, Converter={StaticResource BooleanToVisibilityConverter}}"
+                        ToolTip="{x:Static nuget:Resources.Tooltip_PrefixReserved}"
+                        Moniker="{x:Static nuget:PackageIconMonikers.PrefixReservedIndicator}" />
                       <!-- author and download count -->
                       <nuget:AuthorAndDownloadCount
                         Margin="5,4,0,0"
@@ -224,14 +238,14 @@
                       </Grid.ColumnDefinitions>
 
                       <!-- installed indicator -->
-                      <nuget:InstalledIndicator
+                      <imaging:CrispImage
                         x:Name="_installedIndicator"
                         Grid.Column="0"
                         Width="12"
                         Height="12"
-                        IsGrayed="True"
                         Visibility="Visible"
-                        VerticalAlignment="Center" />
+                        VerticalAlignment="Center"
+                        Moniker="{x:Static nuget:PackageIconMonikers.InstalledIndicator}"/>
 
                       <!-- installed version -->
                       <TextBlock
@@ -280,9 +294,10 @@
                       AutomationProperties.Name="{x:Static nuget:Resources.Button_Uninstall}"
                       ToolTip="{x:Static nuget:Resources.ToolTip_UninstallButton}"
                       FocusVisualStyle="{DynamicResource ControlsFocusVisualStyle}">
-                      <nuget:UninstallButton
+                      <imaging:CrispImage
                         Width="16"
-                        Height="16" />
+                        Height="16"
+                        Moniker="{x:Static nuget:PackageIconMonikers.UninstallIndicator}"/>
                     </Button>
 
                     <!-- install button. It occupies the same position of the install button -->
@@ -303,9 +318,11 @@
                           <Binding Path="LatestVersion" Converter="{StaticResource VersionToStringConverter}" />
                         </MultiBinding>
                       </Button.ToolTip>
-                      <nuget:InstallButton
+                      <imaging:CrispImage
                         Width="16"
-                        Height="16" />
+                        Height="16"
+                        Moniker="{x:Static nuget:PackageIconMonikers.DownloadIndicator}"
+                        />
                     </Button>
 
                     <!-- row 1: latest version and the update button-->
@@ -346,9 +363,10 @@
                           <Binding Path="LatestVersion" Converter="{StaticResource VersionToStringConverter}" />
                         </MultiBinding>
                       </Button.ToolTip>
-                      <nuget:UpdateButton
+                      <imaging:CrispImage
                         Width="16"
-                        Height="16" />
+                        Height="16"
+                        Moniker="{x:Static nuget:PackageIconMonikers.UpdateAvailableIndicator}" />
                     </Button>
                   </Grid>
                 </Grid>

@@ -1541,6 +1541,15 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The identity of this package has been verified by nuget.org.
+        /// </summary>
+        public static string Tooltip_PrefixReserved {
+            get {
+                return ResourceManager.GetString("Tooltip_PrefixReserved", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Refresh.
         /// </summary>
         public static string ToolTip_Refresh {

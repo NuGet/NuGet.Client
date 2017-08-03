@@ -681,4 +681,7 @@ Please see https://aka.ms/troubleshoot_nuget_cache for more help.</value>
   <data name="CheckBox_DefaultAction_Uncheck" xml:space="preserve">
     <value>Uncheck</value>
   </data>
+  <data name="Tooltip_PrefixReserved" xml:space="preserve">
+    <value>The identity of this package has been verified by nuget.org</value>
+  </data>
 </root>
