@@ -417,6 +417,7 @@ namespace NuGet.Build.Tasks.Test
                 <add key=""NuGet.v2"" value=""https://nuget.org/v2/api"" />
               </packageSources>
               <disabledPackageSources>
+                 <Clear/>
                  <add key=""NuGet"" value=""true"" />
               </disabledPackageSources>
             </configuration>";
