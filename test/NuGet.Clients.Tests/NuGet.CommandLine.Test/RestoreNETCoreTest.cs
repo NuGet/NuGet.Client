@@ -5388,5 +5388,80 @@ namespace NuGet.CommandLine.Test
                 Directory.GetDirectories(pathContext.UserPackagesFolder).Should().BeEmpty();
             }
         }
+
+        [Fact]
+        public async Task RestoreNetCore_VerifyDisabledSourcesAreNotUsed()
+        {
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                    "a",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("net45"));
+
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+
+                projectA.AddPackageToAllFrameworks(packageX);
+
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX);
+
+                // create a config file, no disabled sources
+                var projectDir = Path.GetDirectoryName(projectA.ProjectPath);
+
+                var configPath = Path.Combine(pathContext.SolutionRoot, "NuGet.Config");
+
+                var doc = new XDocument();
+                var configuration = new XElement(XName.Get("configuration"));
+                doc.Add(configuration);
+
+                var packageSources = new XElement(XName.Get("packageSources"));
+                configuration.Add(packageSources);
+
+                packageSources.Add(new XElement(XName.Get("clear")));
+
+                var localSource = new XElement(XName.Get("add"));
+                localSource.Add(new XAttribute(XName.Get("key"), "localSource"));
+                localSource.Add(new XAttribute(XName.Get("value"), pathContext.PackageSource));
+                packageSources.Add(localSource);
+
+                var brokenSource = new XElement(XName.Get("add"));
+                brokenSource.Add(new XAttribute(XName.Get("key"), "brokenLocalSource"));
+                brokenSource.Add(new XAttribute(XName.Get("value"), pathContext.PackageSource + "brokenLocalSource"));
+                packageSources.Add(brokenSource);
+
+                File.WriteAllText(configPath, doc.ToString());
+
+                // Disable that config
+                var disabledPackageSources = new XElement(XName.Get("disabledPackageSources"));
+                var disabledBrokenSource = new XElement(XName.Get("add"));
+                disabledBrokenSource.Add(new XAttribute(XName.Get("key"), "brokenLocalSource"));
+                disabledBrokenSource.Add(new XAttribute(XName.Get("value"), "true"));
+                disabledPackageSources.Add(disabledBrokenSource);
+
+                configuration.Add(disabledPackageSources);
+                File.WriteAllText(configPath, doc.ToString());
+
+                // Act 
+                var r2 = Util.RestoreSolution(pathContext);
+
+                // Assert
+                r2.Success.Should().BeTrue();
+                r2.AllOutput.Should().NotContain("brokenLocalSource");
+
+            }
+        }
     }
 }
