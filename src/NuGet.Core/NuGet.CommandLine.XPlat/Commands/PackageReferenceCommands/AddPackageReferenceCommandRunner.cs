@@ -119,7 +119,7 @@ namespace NuGet.CommandLine.XPlat
                     userSpecifiedFrameworks, 
                     new NuGetFrameworkFullComparer());
 
-                compatibleFrameworks.IntersectWith(userSpecifiedFrameworks);
+                compatibleFrameworks.IntersectWith(userSpecifiedFrameworkSet);
             }
 
             // 4. Write to Project
@@ -135,7 +135,9 @@ namespace NuGet.CommandLine.XPlat
 
                 return 1;
             }
-            else if (compatibleFrameworks.Count == restorePreviewResult.Result.CompatibilityCheckResults.Count())
+            // Ignore the graphs with RID
+            else if (compatibleFrameworks.Count == 
+                restorePreviewResult.Result.CompatibilityCheckResults.Where(r => r.Graph.RuntimeIdentifier == null).Count())
             {
                 // Package is compatible with all the project TFMs
                 // Add an unconditional package reference to the project
