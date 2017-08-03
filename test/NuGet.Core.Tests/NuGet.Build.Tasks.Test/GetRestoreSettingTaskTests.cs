@@ -413,11 +413,11 @@ namespace NuGet.Build.Tasks.Test
              <configuration>
               <packageSources>
                 <Clear/>
-                <add key=""NuGet.org"" value=""https://api.nuget.org/v3/index.json"" />
-                <add key=""NuGet.org.v2"" value=""https://nuget.org/v2/api"" />
+                <add key=""NuGet"" value=""https://api.nuget.org/v3/index.json"" />
+                <add key=""NuGet.v2"" value=""https://nuget.org/v2/api"" />
               </packageSources>
               <disabledPackageSources>
-                 <add key=""NuGet.org"" value=""true"" />
+                 <add key=""NuGet"" value=""true"" />
               </disabledPackageSources>
             </configuration>";
 

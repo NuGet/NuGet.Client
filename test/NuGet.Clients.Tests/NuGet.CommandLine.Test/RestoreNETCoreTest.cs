@@ -5442,8 +5442,6 @@ namespace NuGet.CommandLine.Test
                 brokenSource.Add(new XAttribute(XName.Get("value"), pathContext.PackageSource + "brokenLocalSource"));
                 packageSources.Add(brokenSource);
 
-                File.WriteAllText(configPath, doc.ToString());
-
                 // Disable that config
                 var disabledPackageSources = new XElement(XName.Get("disabledPackageSources"));
                 var disabledBrokenSource = new XElement(XName.Get("add"));
