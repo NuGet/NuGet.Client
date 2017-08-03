@@ -256,7 +256,7 @@ namespace NuGet.Commands
         {
             if(string.IsNullOrEmpty(sourcePath))
             {
-                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.Error_EmptySourcePath));
+                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.Error_EmptySourceFilePath));
             }
 
             if (string.IsNullOrEmpty(projectDirectory))
@@ -272,7 +272,10 @@ namespace NuGet.Commands
             var targetPath = Path.Combine(SourcesFolder, projectName);
             if (sourcePath.Contains(projectDirectory))
             {
-                var relativePath = Path.GetDirectoryName(sourcePath).Replace(projectDirectory, string.Empty);
+                // This is needed because Path.GetDirectoryName returns a path with Path.DirectorySepartorChar
+                var projectDirectoryWithSeparatorChar = PathUtility.GetPathWithDirectorySeparator(projectDirectory);
+
+                var relativePath = Path.GetDirectoryName(sourcePath).Replace(projectDirectoryWithSeparatorChar, string.Empty);
                 if (!string.IsNullOrEmpty(relativePath) && PathUtility.IsDirectorySeparatorChar(relativePath[0]))
                 {
                     relativePath = relativePath.Substring(1, relativePath.Length - 1);
