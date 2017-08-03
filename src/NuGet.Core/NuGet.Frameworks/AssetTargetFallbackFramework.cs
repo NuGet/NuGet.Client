@@ -92,11 +92,11 @@ namespace NuGet.Frameworks
                 // Ensure that this is different from a FallbackFramework;
                 combiner.AddStringIgnoreCase("assettargetfallback");
 
-                combiner.AddInt32(NuGetFramework.Comparer.GetHashCode(this));
+                combiner.AddObject(Comparer.GetHashCode(this));
 
                 foreach (var each in Fallback)
                 {
-                    combiner.AddInt32(NuGetFramework.Comparer.GetHashCode(each));
+                    combiner.AddObject(Comparer.GetHashCode(each));
                 }
 
                 _hashCode = combiner.CombinedHash;
