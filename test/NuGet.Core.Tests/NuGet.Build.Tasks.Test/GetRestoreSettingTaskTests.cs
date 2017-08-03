@@ -352,6 +352,42 @@ namespace NuGet.Build.Tasks.Test
             }
         }
 
+
+        [Fact]
+        public void GetRestoreSettingsTask_VerifyDisabledSourcesAreExcluded()
+        {
+
+            using (var testDir = TestDirectory.Create())
+            {
+                // Arrange
+                var buildEngine = new TestBuildEngine();
+                var testLogger = buildEngine.TestLogger;
+
+
+                var configFile = Path.Combine(testDir, Settings.DefaultSettingsFileName);
+
+                var projectDirectory = Path.GetDirectoryName(configFile);
+                Directory.CreateDirectory(projectDirectory);
+
+                File.WriteAllText(configFile, DisableSourceConfig);
+
+                var task = new GetRestoreSettingsTask()
+                {
+                    BuildEngine = buildEngine,
+                    ProjectUniqueName = Path.Combine(testDir, "a.csproj"),
+                    RestoreFallbackFolders = new[] { Path.Combine(testDir, "base") },
+                    RestoreSettingsPerFramework = new ITaskItem[0]
+                };
+
+                // Act
+                var result = task.Execute();
+
+                // Assert
+                result.Should().BeTrue();
+                task.OutputSources.ShouldBeEquivalentTo(new[] { @"https://nuget.org/v2/api" });
+            }
+        }
+
         private static string machineWideSettingsConfig = @"<?xml version=""1.0"" encoding=""utf-8""?>
                 <configuration>
                 </configuration>";
@@ -371,5 +407,20 @@ namespace NuGet.Build.Tasks.Test
                   <add key=""outer-key"" value=""outer-value"" />
                 </SectionName>
               </configuration>";
+
+        private static string DisableSourceConfig =
+            @"<?xml version=""1.0"" encoding=""utf-8""?>
+             <configuration>
+              <packageSources>
+                <Clear/>
+                <add key=""NuGet"" value=""https://api.nuget.org/v3/index.json"" />
+                <add key=""NuGet.v2"" value=""https://nuget.org/v2/api"" />
+              </packageSources>
+              <disabledPackageSources>
+                 <Clear/>
+                 <add key=""NuGet"" value=""true"" />
+              </disabledPackageSources>
+            </configuration>";
+
     }
 }
