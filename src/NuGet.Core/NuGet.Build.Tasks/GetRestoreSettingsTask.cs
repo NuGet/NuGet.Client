@@ -108,7 +108,6 @@ namespace NuGet.Build.Tasks
                     return false;
                 }
 
-                Debugger.Launch();
                 // Settings
                 var settings = RestoreSettingsUtils.ReadSettings(RestoreSolutionDirectory, Path.GetDirectoryName(ProjectUniqueName), RestoreConfigFile, _machineWideSettings);
                 OutputConfigFilePaths = SettingsUtility.GetConfigFilePaths(settings).ToArray();
