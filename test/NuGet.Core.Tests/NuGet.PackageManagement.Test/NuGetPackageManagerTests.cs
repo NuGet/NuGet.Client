@@ -5544,7 +5544,7 @@ namespace NuGet.Test
                         testSettings,
                         testSolutionManager,
                         deleteOnRestartManager);
-                    var projectA = testSolutionManager.AddNewMSBuildProject("testA");
+                    var projectA = testSolutionManager.AddNewMSBuildProject("testA", NuGetFramework.Parse("net461"));
 
                     // Add package
                     var target = new PackageIdentity("packageA", NuGetVersion.Parse("1.0.0"));
@@ -5552,7 +5552,7 @@ namespace NuGet.Test
 
                     var projectActions = new List<NuGetProjectAction>();
                     projectActions.Add(
-                        NuGetProjectAction.CreateInstallProjectAction(target, null));
+                        NuGetProjectAction.CreateInstallProjectAction(target, sourceRepositoryProvider.GetRepositories().First()));
 
                     Exception exception = null;
                     try
