@@ -136,6 +136,16 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <!--
     ============================================================
+    CollectPackageReferences
+    Gathers all PackageReference items from the project.
+    This target may be used as an extension point to modify
+    package references before NuGet reads them.
+    ============================================================
+  -->
+  <Target Name="CollectPackageReferences" Returns="@(PackageReference)" />
+
+  <!--
+    ============================================================
     _LoadRestoreGraphEntryPoints
     Find project entry points and load them into items.
     ============================================================
@@ -369,7 +379,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     ============================================================
   -->
   <Target Name="_GetRestoreProjectStyle"
-    DependsOnTargets="_GetProjectJsonPath"
+    DependsOnTargets="_GetProjectJsonPath;CollectPackageReferences"
     Returns="$(RestoreProjectStyle)">
     <!-- This may be overridden by setting RestoreProjectStyle in the project. -->
     <PropertyGroup>
@@ -671,7 +681,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     ============================================================
   -->
   <Target Name="_GenerateProjectRestoreGraphPerFramework"
-    DependsOnTargets="_GetRestoreProjectStyle"
+    DependsOnTargets="_GetRestoreProjectStyle;CollectPackageReferences"
     Returns="@(_RestoreGraphEntry)">
 
     <!-- Write out project references -->
