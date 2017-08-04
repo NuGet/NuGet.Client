@@ -310,7 +310,7 @@ namespace NuGet.SolutionRestoreManager
         {
             // get all build integrated based nuget projects and delete the cache file.
             await Task.WhenAll(
-                SolutionManager.GetNuGetProjects().OfType<BuildIntegratedNuGetProject>().Select(async e =>
+                (await SolutionManager.GetNuGetProjectsAsync()).OfType<BuildIntegratedNuGetProject>().Select(async e =>
                     Common.FileUtility.Delete(await e.GetCacheFilePathAsync())));
 
             Interlocked.Exchange(ref _restoreJobContext, new SolutionRestoreJobContext());
@@ -353,7 +353,7 @@ namespace NuGet.SolutionRestoreManager
                             SolutionRestoreRequest next;
 
                             // check if there are pending nominations
-                            var isAllProjectsNominated = _solutionManager.Value.IsAllProjectsNominated();
+                            var isAllProjectsNominated = await _solutionManager.Value.IsAllProjectsNominatedAsync();
 
                             if (!_pendingRequests.Value.TryTake(out next, IdleTimeoutMs, token))
                             {

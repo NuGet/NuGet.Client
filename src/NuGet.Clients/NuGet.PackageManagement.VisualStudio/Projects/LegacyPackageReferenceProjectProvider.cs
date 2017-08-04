@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -59,35 +59,29 @@ namespace NuGet.PackageManagement.VisualStudio
                 _threadingService.JoinableTaskFactory);
         }
 
-        public bool TryCreateNuGetProject(
+        public async Task<NuGetProject> TryCreateNuGetProjectAsync(
             IVsProjectAdapter vsProjectAdapter,
             ProjectProviderContext _,
-            bool forceProjectType,
-            out NuGetProject result)
+            bool forceProjectType)
         {
             Assumes.Present(vsProjectAdapter);
 
-            _threadingService.ThrowIfNotOnUIThread();
+            await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            result = null;
-
-            var projectServices = _threadingService.ExecuteSynchronously(
-                () => TryCreateProjectServicesAsync(
+            var projectServices = await TryCreateProjectServicesAsync(
                     vsProjectAdapter,
-                    forceCreate: forceProjectType));
+                    forceCreate: forceProjectType);
 
             if (projectServices == null)
             {
-                return false;
+                return null;
             }
 
-            result = new LegacyPackageReferenceProject(
+            return new LegacyPackageReferenceProject(
                 vsProjectAdapter,
                 vsProjectAdapter.ProjectId,
                 projectServices,
                 _threadingService);
-
-            return true;
         }
 
         /// <summary>

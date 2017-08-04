@@ -269,30 +269,33 @@ namespace NuGet.PackageManagement.UI
         // Creates the project lists. Also called after a project is added/removed/renamed.
         private void CreateProjectLists()
         {
-            // unhook event handler
-            if (Projects != null)
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {
+                // unhook event handler
+                if (Projects != null)
+                {
+                    foreach (var project in Projects)
+                    {
+                        project.SelectedChanged -= Project_SelectedChanged;
+                    }
+                }
+
+                _nugetProjects = await _solutionManager.GetNuGetProjectsAsync();
+                Projects = _nugetProjects.Select(
+                    nugetProject => new PackageInstallationInfo(nugetProject))
+                    .ToList();
+
+                // hook up event handler
                 foreach (var project in Projects)
                 {
-                    project.SelectedChanged -= Project_SelectedChanged;
+                    project.SelectedChanged += Project_SelectedChanged;
                 }
-            }
 
-            _nugetProjects = _solutionManager.GetNuGetProjects();
-            Projects = _nugetProjects.Select(
-                nugetProject => new PackageInstallationInfo(nugetProject))
-                .ToList();
-
-            // hook up event handler
-            foreach (var project in Projects)
-            {
-                project.SelectedChanged += Project_SelectedChanged;
-            }
-
-            UpdateInstalledVersions();
-            UpdateSelectCheckBoxState();
-            CanUninstall = false;
-            CanInstall = false;
+                UpdateInstalledVersions();
+                UpdateSelectCheckBoxState();
+                CanUninstall = false;
+                CanInstall = false;
+            });
         }
 
         // Indicates whether the SelectCheckBoxState is being updated in code. True means the state is

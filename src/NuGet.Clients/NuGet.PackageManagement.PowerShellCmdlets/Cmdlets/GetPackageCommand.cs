@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -100,17 +100,21 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             UseRemoteSource = ListAvailable.IsPresent || Updates.IsPresent || !String.IsNullOrEmpty(Source);
             CollapseVersions = !AllVersions.IsPresent;
             UpdateActiveSourceRepository(Source);
-            GetNuGetProject(ProjectName);
 
-            // When ProjectName is not specified, get all of the projects in the solution
-            if (string.IsNullOrEmpty(ProjectName))
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
             {
-                Projects = VsSolutionManager.GetNuGetProjects().ToList();
-            }
-            else
-            {
-                Projects = new List<NuGetProject> { Project };
-            }
+                await GetNuGetProjectAsync(ProjectName);
+
+                // When ProjectName is not specified, get all of the projects in the solution
+                if (string.IsNullOrEmpty(ProjectName))
+                {
+                    Projects = (await VsSolutionManager.GetNuGetProjectsAsync()).ToList();
+                }
+                else
+                {
+                    Projects = new List<NuGetProject> { Project };
+                }
+            });
         }
 
         protected override void ProcessRecordCore()

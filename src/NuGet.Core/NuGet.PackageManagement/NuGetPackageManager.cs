@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -1941,7 +1941,7 @@ namespace NuGet.PackageManagement
                 // get all build integrated projects of the solution which will be used to map project references
                 // of the target projects
                 var allBuildIntegratedProjects =
-                    SolutionManager.GetNuGetProjects().OfType<BuildIntegratedNuGetProject>().ToList();
+                    (await SolutionManager.GetNuGetProjectsAsync()).OfType<BuildIntegratedNuGetProject>().ToList();
 
                 var dgFile = await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(SolutionManager, referenceContext);
                 _buildIntegratedProjectsCache = dgFile;
@@ -2648,7 +2648,7 @@ namespace NuGet.PackageManagement
                     token);
 
                 // find list of buildintegrated projects
-                var projects = SolutionManager.GetNuGetProjects().OfType<BuildIntegratedNuGetProject>().ToList();
+                var projects = (await SolutionManager.GetNuGetProjectsAsync()).OfType<BuildIntegratedNuGetProject>().ToList();
 
                 // build reference cache if not done already
                 if (_buildIntegratedProjectsCache == null)
@@ -2914,7 +2914,7 @@ namespace NuGet.PackageManagement
             }
 
             var nuGetProjectName = NuGetProject.GetUniqueNameOrName(nuGetProject);
-            foreach (var otherNuGetProject in solutionManager.GetNuGetProjects())
+            foreach (var otherNuGetProject in await solutionManager.GetNuGetProjectsAsync())
             {
                 var otherNuGetProjectName = NuGetProject.GetUniqueNameOrName(otherNuGetProject);
                 if (!otherNuGetProjectName.Equals(nuGetProjectName, StringComparison.OrdinalIgnoreCase))

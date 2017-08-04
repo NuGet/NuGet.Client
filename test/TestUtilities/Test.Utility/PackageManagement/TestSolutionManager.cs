@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -117,21 +117,30 @@ namespace Test.Utility
             }
         }
 
-        public NuGetProject GetNuGetProject(string nuGetProjectSafeName)
+        private NuGetProject GetNuGetProject(string nuGetProjectSafeName)
         {
-            return NuGetProjects.
-                Where(p => string.Equals(nuGetProjectSafeName, p.GetMetadata<string>(NuGetProjectMetadataKeys.Name), StringComparison.OrdinalIgnoreCase))
+            return NuGetProjects.Where(
+                p => string.Equals(nuGetProjectSafeName, p.GetMetadata<string>(NuGetProjectMetadataKeys.Name), StringComparison.OrdinalIgnoreCase))
                 .FirstOrDefault();
         }
 
-        public string GetNuGetProjectSafeName(NuGetProject nuGetProject)
+        public async Task<NuGetProject> GetNuGetProjectAsync(string nuGetProjectSafeName)
         {
-            return nuGetProject.GetMetadata<string>(NuGetProjectMetadataKeys.Name);
+            return await Task.FromResult(
+                NuGetProjects.Where(p => string.Equals(nuGetProjectSafeName, p.GetMetadata<string>(NuGetProjectMetadataKeys.Name), StringComparison.OrdinalIgnoreCase))
+                .FirstOrDefault());
         }
 
-        public IEnumerable<NuGetProject> GetNuGetProjects()
+
+        public async Task<string> GetNuGetProjectSafeNameAsync(NuGetProject nuGetProject)
         {
-            return NuGetProjects;
+            return await Task.FromResult(
+                nuGetProject.GetMetadata<string>(NuGetProjectMetadataKeys.Name));
+        }
+
+        public async Task<IEnumerable<NuGetProject>> GetNuGetProjectsAsync()
+        {
+            return await Task.FromResult(NuGetProjects);
         }
 
         public bool IsSolutionOpen
@@ -139,9 +148,9 @@ namespace Test.Utility
             get { return NuGetProjects.Count > 0; }
         }
 
-        public bool IsSolutionAvailable
+        public async Task<bool> IsSolutionAvailableAsync()
         {
-            get { return IsSolutionOpen; }
+            return await Task.FromResult(IsSolutionOpen);
         }
 
         public void EnsureSolutionIsLoaded()

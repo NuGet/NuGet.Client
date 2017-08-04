@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -38,7 +38,7 @@ namespace NuGet.PackageManagement.VisualStudio
             // This is a solution event. Should be on the UI thread
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async delegate
                 {
                     // We need to do the check even on Solution Closed because, let's say if the yellow Update bar
                     // is showing and the user closes the solution; in that case, we want to hide the Update bar.
@@ -52,7 +52,7 @@ namespace NuGet.PackageManagement.VisualStudio
             // This is a solution event. Should be on the UI thread
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async delegate
                 {
                     var solutionDirectory = SolutionManager.SolutionDirectory;
                     await RaisePackagesMissingEventForSolutionAsync(solutionDirectory, CancellationToken.None);
