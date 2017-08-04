@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -185,18 +185,21 @@ namespace NuGetVSExtension
 
         private void SolutionManager_NuGetProjectRenamed(object sender, NuGetProjectEventArgs e)
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
-
-            var project = SolutionManager.GetVsProjectAdapter(
-                SolutionManager.GetNuGetProjectSafeName(e.NuGetProject));
-            var windowFrame = FindExistingWindowFrame(project.Project);
-            if (windowFrame != null)
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
             {
-                windowFrame.SetProperty((int)__VSFPROPID.VSFPROPID_OwnerCaption, string.Format(
-                    CultureInfo.CurrentCulture,
-                    Resx.Label_NuGetWindowCaption,
-                    project.ProjectName));
-            }
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                var project = await SolutionManager.GetVsProjectAdapterAsync(
+                    await SolutionManager.GetNuGetProjectSafeNameAsync(e.NuGetProject));
+                var windowFrame = FindExistingWindowFrame(project.Project);
+                if (windowFrame != null)
+                {
+                    windowFrame.SetProperty((int)__VSFPROPID.VSFPROPID_OwnerCaption, string.Format(
+                        CultureInfo.CurrentCulture,
+                        Resx.Label_NuGetWindowCaption,
+                        project.ProjectName));
+                }
+            });
         }
 
         private async Task AddMenuCommandHandlersAsync()
@@ -391,13 +394,13 @@ namespace NuGetVSExtension
                 (uint)_VSRDTFLAGS.RDT_DontAddToMRU |
                 (uint)_VSRDTFLAGS.RDT_DontSaveAs;
 
-            if (!SolutionManager.IsSolutionAvailable)
+            if (!await SolutionManager.IsSolutionAvailableAsync())
             {
                 throw new InvalidOperationException(Resources.SolutionIsNotSaved);
             }
 
             var uniqueName = EnvDTEProjectInfoUtility.GetUniqueName(project);
-            var nugetProject = SolutionManager.GetNuGetProject(uniqueName);
+            var nugetProject = await SolutionManager.GetNuGetProjectAsync(uniqueName);
 
             // If we failed to generate a cache entry in the solution manager something went wrong.
             if (nugetProject == null)
@@ -579,12 +582,12 @@ namespace NuGetVSExtension
                 (uint)_VSRDTFLAGS.RDT_DontAddToMRU |
                 (uint)_VSRDTFLAGS.RDT_DontSaveAs;
 
-            if (!SolutionManager.IsSolutionAvailable)
+            if (!await SolutionManager.IsSolutionAvailableAsync())
             {
                 throw new InvalidOperationException(Resources.SolutionIsNotSaved);
             }
 
-            var projects = SolutionManager.GetNuGetProjects();
+            var projects = await SolutionManager.GetNuGetProjectsAsync();
             if (!projects.Any())
             {
                 // NOTE: The menu 'Manage NuGet Packages For Solution' will be disabled in this case.
@@ -761,7 +764,7 @@ namespace NuGetVSExtension
                 command.Enabled =
                     IsSolutionExistsAndNotDebuggingAndNotBuilding() &&
                     !ConsoleStatus.Value.IsBusy &&
-                    SolutionManager.GetNuGetProjects().Any();
+                    (await SolutionManager.GetNuGetProjectsAsync()).Any();
             });
         }
 

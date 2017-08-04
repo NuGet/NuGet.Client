@@ -126,7 +126,7 @@ namespace NuGetConsole.Host.PowerShell
             // if A -> B, we invoke B's init.ps1 before A's.
             var installedPackages = new List<PackageItem>();
 
-            var projects = _solutionManager.GetNuGetProjects().ToList();
+            var projects = (await _solutionManager.GetNuGetProjectsAsync()).ToList();
 
             // Skip project K projects.
             projects.RemoveAll(p => p is ProjectKNuGetProjectBase);

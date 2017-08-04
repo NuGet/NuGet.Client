@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -12,6 +12,7 @@ using NuGet.PackageManagement;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
 using NuGet.Test.Utility;
+using ThreadHelper = Microsoft.VisualStudio.Shell.ThreadHelper;
 
 namespace Test.Utility
 {
@@ -44,7 +45,8 @@ namespace Test.Utility
 
         public MSBuildNuGetProject AddNewMSBuildProject(string projectName = null, NuGetFramework projectTargetFramework = null, string packagesConfigName = null)
         {
-            if (GetNuGetProject(projectName) != null)
+            var existingProject = ThreadHelper.JoinableTaskFactory.Run(async () => await GetNuGetProjectAsync(projectName));
+            if (existingProject != null)
             {
                 throw new ArgumentException("Project with " + projectName + " already exists");
             }
@@ -64,7 +66,8 @@ namespace Test.Utility
 
         public NuGetProject AddBuildIntegratedProject(string projectName = null, NuGetFramework projectTargetFramework = null)
         {
-            if (GetNuGetProject(projectName) != null)
+            var existingProject = ThreadHelper.JoinableTaskFactory.Run(async () => await GetNuGetProjectAsync(projectName));
+            if (existingProject != null)
             {
                 throw new ArgumentException("Project with " + projectName + " already exists");
             }
@@ -117,21 +120,21 @@ namespace Test.Utility
             }
         }
 
-        public NuGetProject GetNuGetProject(string nuGetProjectSafeName)
+        public Task<NuGetProject> GetNuGetProjectAsync(string nuGetProjectSafeName)
         {
-            return NuGetProjects.
+            return Task.FromResult(NuGetProjects.
                 Where(p => string.Equals(nuGetProjectSafeName, p.GetMetadata<string>(NuGetProjectMetadataKeys.Name), StringComparison.OrdinalIgnoreCase))
-                .FirstOrDefault();
+                .FirstOrDefault());
         }
 
-        public string GetNuGetProjectSafeName(NuGetProject nuGetProject)
+        public Task<string> GetNuGetProjectSafeNameAsync(NuGetProject nuGetProject)
         {
-            return nuGetProject.GetMetadata<string>(NuGetProjectMetadataKeys.Name);
+            return Task.FromResult(nuGetProject.GetMetadata<string>(NuGetProjectMetadataKeys.Name));
         }
 
-        public IEnumerable<NuGetProject> GetNuGetProjects()
+        public Task<IEnumerable<NuGetProject>> GetNuGetProjectsAsync()
         {
-            return NuGetProjects;
+            return Task.FromResult(NuGetProjects.AsEnumerable());
         }
 
         public bool IsSolutionOpen
@@ -139,9 +142,9 @@ namespace Test.Utility
             get { return NuGetProjects.Count > 0; }
         }
 
-        public bool IsSolutionAvailable
+        public Task<bool> IsSolutionAvailableAsync()
         {
-            get { return IsSolutionOpen; }
+            return Task.FromResult(IsSolutionOpen);
         }
 
         public void EnsureSolutionIsLoaded()
