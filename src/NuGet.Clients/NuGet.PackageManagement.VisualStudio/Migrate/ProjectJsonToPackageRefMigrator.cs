@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -69,7 +69,7 @@ namespace NuGet.PackageManagement.VisualStudio
                         Strings.Error_MultipleFrameworks,
                         project.MSBuildProjectPath));
             }
-
+            // In the migrator we need to change whether it's top level or per tfm
             var dependencies = new List<LibraryDependency>();
             foreach (var targetFramework in packageSpec.TargetFrameworks)
             {

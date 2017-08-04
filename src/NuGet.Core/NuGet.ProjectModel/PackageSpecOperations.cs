@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -26,6 +26,7 @@ namespace NuGet.ProjectModel
 
             if (!existing.Any())
             {
+                // TODO NK - Check this one
                 AddDependency(spec.Dependencies, dependency.Id, range);
             }
         }
@@ -107,6 +108,7 @@ namespace NuGet.ProjectModel
         {
             if (includeGenericDependencies)
             {
+                // TODO NK - Check this one
                 yield return spec.Dependencies;
             }
 

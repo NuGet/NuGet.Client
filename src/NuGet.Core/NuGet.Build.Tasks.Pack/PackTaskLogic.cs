@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -666,12 +666,6 @@ namespace NuGet.Build.Tasks.Pack
             // From the package spec, we know the direct package dependencies of this project.
             foreach (var framework in assetsFile.PackageSpec.TargetFrameworks)
             {
-                // First, add each of the generic package dependencies to the framework-specific list.
-                var packageDependencies = assetsFile
-                    .PackageSpec
-                    .Dependencies
-                    .Concat(framework.Dependencies);
-
                 HashSet<LibraryDependency> dependencies;
                 if (!dependenciesByFramework.TryGetValue(framework.FrameworkName, out dependencies))
                 {
@@ -680,7 +674,7 @@ namespace NuGet.Build.Tasks.Pack
                 }
 
                 // Add each package dependency.
-                foreach (var packageDependency in packageDependencies)
+                foreach (var packageDependency in framework.Dependencies)
                 {
                     // If we have a floating package dependency like 1.2.3-xyz-*, we 
                     // use the version of the package that restore resolved it to.
