@@ -99,9 +99,10 @@ namespace NuGet.CommandLine.XPlat
 
             // 2. Run Restore Preview
             packageReferenceArgs.Logger.LogDebug("Running Restore preview");
+
             var restorePreviewResult = await PreviewAddPackageReferenceAsync(packageReferenceArgs,
-                updatedDgSpec,
-                updatedPackageSpec);
+                updatedDgSpec);
+
             packageReferenceArgs.Logger.LogDebug("Restore Review completed");
 
             // 3. Process Restore Result
@@ -177,8 +178,7 @@ namespace NuGet.CommandLine.XPlat
         }
 
         private static async Task<RestoreResultPair> PreviewAddPackageReferenceAsync(PackageReferenceArgs packageReferenceArgs,
-            DependencyGraphSpec dgSpec,
-            PackageSpec originalPackageSpec)
+            DependencyGraphSpec dgSpec)
         {
             // Set user agent and connection settings.
             XPlatUtility.ConfigureProtocol();
@@ -191,14 +191,10 @@ namespace NuGet.CommandLine.XPlat
                 cacheContext.IgnoreFailedSources = false;
 
                 // Pre-loaded request provider containing the graph file
-                var providers = new List<IPreLoadedRestoreRequestProvider>();
-
-                // Create a copy to avoid modifying the original spec which may be shared.
-                var updatedPackageSpec = originalPackageSpec.Clone();
-
-                PackageSpecOperations.AddOrUpdateDependency(updatedPackageSpec, packageReferenceArgs.PackageDependency);
-
-                providers.Add(new DependencyGraphSpecRequestProvider(providerCache, dgSpec));
+                var providers = new List<IPreLoadedRestoreRequestProvider>
+                {
+                    new DependencyGraphSpecRequestProvider(providerCache, dgSpec)
+                };
 
                 var restoreContext = new RestoreArgs()
                 {
