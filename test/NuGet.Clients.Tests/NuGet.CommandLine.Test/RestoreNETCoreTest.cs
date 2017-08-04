@@ -19,6 +19,55 @@ namespace NuGet.CommandLine.Test
 {
     public class RestoreNetCoreTest
     {
+        [Fact]
+        public void RestoreNetCore_AddExternalTargetVerifyTargetUsed()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                    "a",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("net45"));
+
+                var pkgX = new SimpleTestPackageContext("x", "1.0.0");
+                var pkgY = new SimpleTestPackageContext("y", "1.0.0");
+
+                // Add y to the project
+                projectA.AddPackageToAllFrameworks(pkgY);
+
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+
+                SimpleTestPackageUtility.CreatePackages(pathContext.PackageSource, pkgX, pkgY);
+
+                // Inject dependency x
+                var doc = XDocument.Load(projectA.ProjectPath);
+                var ns = doc.Root.GetDefaultNamespace().NamespaceName;
+                doc.Root.AddFirst(
+                    new XElement(XName.Get("Target", ns),
+                    new XAttribute(XName.Get("Name"), "RunMe"),
+                    new XAttribute(XName.Get("BeforeTargets"), "CollectPackageReferences"),
+                        new XElement(XName.Get("ItemGroup", ns),
+                            new XElement(XName.Get("PackageReference", ns),
+                                new XAttribute(XName.Get("Include"), "x"),
+                                new XAttribute(XName.Get("Version"), "1.0.0")))));
+
+                doc.Save(projectA.ProjectPath);
+
+                // Act
+                var r = Util.RestoreSolution(pathContext);
+
+                // Assert
+                r.Success.Should().BeTrue();
+                projectA.AssetsFile.GetLibrary("x", NuGetVersion.Parse("1.0.0")).Should().NotBeNull();
+                projectA.AssetsFile.GetLibrary("y", NuGetVersion.Parse("1.0.0")).Should().NotBeNull();
+            }
+        }
+
         [PlatformFact(Platform.Windows)]
         public void RestoreNetCore_IfProjectsWitAndWithoutRestoreTargetsExistVerifyValidProjectsRestore()
         {
