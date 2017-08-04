@@ -10,8 +10,6 @@ namespace NuGet.Protocol
 {
     public class HttpFileSystemBasedFindPackageByIdResourceProvider : ResourceProvider
     {
-        private const string HttpFileSystemIndexType = "PackageBaseAddress/3.0.0";
-
         public HttpFileSystemBasedFindPackageByIdResourceProvider()
             : base(typeof(FindPackageByIdResource),
                 nameof(HttpFileSystemBasedFindPackageByIdResourceProvider),
@@ -23,7 +21,7 @@ namespace NuGet.Protocol
         {
             INuGetResource resource = null;
             var serviceIndexResource = await sourceRepository.GetResourceAsync<ServiceIndexResourceV3>();
-            var packageBaseAddress = serviceIndexResource?[HttpFileSystemIndexType];
+            var packageBaseAddress = serviceIndexResource?.GetServiceEntryUris(ServiceTypes.PackageBaseAddress);
 
             if (packageBaseAddress != null
                 && packageBaseAddress.Count > 0)

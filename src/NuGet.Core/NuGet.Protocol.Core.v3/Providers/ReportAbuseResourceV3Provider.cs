@@ -24,7 +24,7 @@ namespace NuGet.Protocol
             var serviceIndex = await source.GetResourceAsync<ServiceIndexResourceV3>(token);
             if (serviceIndex != null)
             {
-                var uriTemplate = serviceIndex[ServiceTypes.ReportAbuse].FirstOrDefault()?.AbsoluteUri;
+                var uriTemplate = serviceIndex.GetServiceEntryUri(ServiceTypes.ReportAbuse)?.AbsoluteUri;
 
                 // construct a new resource
                 resource = new ReportAbuseResourceV3(uriTemplate);

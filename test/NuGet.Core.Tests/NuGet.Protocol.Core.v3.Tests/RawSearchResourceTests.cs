@@ -1,15 +1,14 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
 using NuGet.Common;
 using NuGet.Configuration;
-using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
-using NuGet.Protocol;
-using NuGet.Versioning;
 using Test.Utility;
 using Xunit;
 
@@ -24,7 +23,9 @@ namespace NuGet.Protocol.Tests
             var serviceAddress = TestUtility.CreateServiceAddress();
 
             var responses = new Dictionary<string, string>();
-            responses.Add(serviceAddress + "?q=azure%20b&skip=0&take=1&prerelease=false&supportedFramework=.NETFramework,Version=v4.5",
+            responses.Add(
+                serviceAddress + "?q=azure%20b&skip=0&take=1&prerelease=false" +
+                "&supportedFramework=.NETFramework,Version=v4.5&semVerLevel=2.0.0",
                 TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.V3Search.json", GetType()));
             responses.Add(serviceAddress, string.Empty);
 

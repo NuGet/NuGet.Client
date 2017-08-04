@@ -50,6 +50,7 @@ namespace NuGet.Protocol
                     "&skip=" + skip.ToString() +
                     "&take=" + take.ToString() +
                     "&prerelease=" + filters.IncludePrerelease.ToString().ToLowerInvariant();
+
                 if (filters.IncludeDelisted)
                 {
                     queryString += "&includeDelisted=true";
@@ -73,6 +74,8 @@ namespace NuGet.Protocol
                             s => "packageTypeFilter=" + s));
                     queryString += "&" + types;
                 }
+
+                queryString += "&semVerLevel=2.0.0";
 
                 queryUrl.Query = queryString;
 
