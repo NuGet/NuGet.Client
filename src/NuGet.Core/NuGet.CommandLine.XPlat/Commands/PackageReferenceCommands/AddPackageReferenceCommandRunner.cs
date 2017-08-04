@@ -138,7 +138,7 @@ namespace NuGet.CommandLine.XPlat
             }
             // Ignore the graphs with RID
             else if (compatibleFrameworks.Count == 
-                restorePreviewResult.Result.CompatibilityCheckResults.Where(r => r.Graph.RuntimeIdentifier == null).Count())
+                restorePreviewResult.Result.CompatibilityCheckResults.Where(r => string.IsNullOrEmpty(r.Graph.RuntimeIdentifier)).Count())
             {
                 // Package is compatible with all the project TFMs
                 // Add an unconditional package reference to the project

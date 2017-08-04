@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -42,6 +42,8 @@ namespace NuGet.Commands
         public RestoreCommand(RestoreRequest request)
         {
             _request = request ?? throw new ArgumentNullException(nameof(request));
+
+            Debugger.Launch();
 
             // Validate the lock file version requested
             if (_request.LockFileVersion < 1 || _request.LockFileVersion > LockFileFormat.Version)
@@ -119,6 +121,10 @@ namespace NuGet.Commands
                 _request.DependencyProviders.FallbackPackageFolders,
                 contextForProject,
                 token);
+
+            _logger.TransitiveWarningPropertiesCollection = TransitiveNoWarnUtils
+                .CreateTransitiveWarningPropertiesCollection(_request.DependencyGraphSpec, 
+                graphs, new LibraryIdentity(_request.Project.Name, _request.Project.Version, LibraryType.Project));
 
             // Create assets file
             var assetsFile = BuildAssetsFile(

@@ -4,8 +4,11 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using NuGet.Common;
+using NuGet.ProjectModel;
+using NuGet.Shared;
 
 namespace NuGet.Commands
 {
@@ -18,6 +21,8 @@ namespace NuGet.Commands
         public IEnumerable<IRestoreLogMessage> Errors => _errors.ToArray();
 
         public WarningPropertiesCollection WarningPropertiesCollection { get; set; }
+
+        public IDictionary<string, WarningPropertiesCollection> TransitiveWarningPropertiesCollection { get; set; }
         
         public string ProjectPath { get; set; }
 
@@ -67,7 +72,7 @@ namespace NuGet.Commands
             : this(innerLogger, LogLevel.Debug, hideWarningsAndErrors: false)
         {
         }
-
+             
         public void Log(IRestoreLogMessage message)
         {
             // This will be true only when the Message is a Warning and should be suppressed.
