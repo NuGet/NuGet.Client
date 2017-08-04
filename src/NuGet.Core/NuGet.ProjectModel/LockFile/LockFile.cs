@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -62,7 +62,7 @@ namespace NuGet.ProjectModel
             {
                 IOrderedEnumerable<string> actualDependencies;
                 var expectedDependencies = @group.Dependencies.OrderBy(x => x, StringComparer.Ordinal);
-
+                // TODO NK - Investigate this
                 // If the framework name is empty, the associated dependencies are shared by all frameworks
                 if (string.IsNullOrEmpty(@group.FrameworkName))
                 {
