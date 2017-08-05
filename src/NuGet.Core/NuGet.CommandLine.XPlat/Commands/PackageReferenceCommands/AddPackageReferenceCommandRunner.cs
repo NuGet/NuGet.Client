@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -89,8 +89,9 @@ namespace NuGet.CommandLine.XPlat
             }
             else
             {
-                PackageSpecOperations.AddOrUpdateDependency(updatedPackageSpec, 
-                    packageReferenceArgs.PackageDependency);
+                // If the user has not specified a framework, then just add it to all frameworks
+                // PERF TODO NK  - Potential optimization, don't generate another iterator.
+                PackageSpecOperations.AddOrUpdateDependency(updatedPackageSpec, packageReferenceArgs.PackageDependency, updatedPackageSpec.TargetFrameworks.Select(e => e.FrameworkName));
             }
 
 
