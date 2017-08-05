@@ -62,7 +62,7 @@ namespace NuGet.ProjectModel
             {
                 IOrderedEnumerable<string> actualDependencies;
                 var expectedDependencies = @group.Dependencies.OrderBy(x => x, StringComparer.Ordinal);
-                // TODO NK - Investigate this
+                // TODO NK - I think this should be fine, but something to look into
                 // If the framework name is empty, the associated dependencies are shared by all frameworks
                 if (string.IsNullOrEmpty(@group.FrameworkName))
                 {

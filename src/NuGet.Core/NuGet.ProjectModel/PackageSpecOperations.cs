@@ -13,6 +13,7 @@ namespace NuGet.ProjectModel
 {
     public static class PackageSpecOperations
     {
+        // TODO NK - This will be removed once Ankit merges his fix.
         public static void AddOrUpdateDependency(PackageSpec spec, PackageDependency dependency)
         {
             var existing = GetExistingDependencies(spec, dependency.Id);
@@ -26,11 +27,10 @@ namespace NuGet.ProjectModel
 
             if (!existing.Any())
             {
-                // TODO NK - Check this one
                 AddDependency(spec.Dependencies, dependency.Id, range);
             }
         }
-
+        
         public static void AddOrUpdateDependency(PackageSpec spec, PackageIdentity identity)
         {
             AddOrUpdateDependency(spec, new PackageDependency(identity.Id, new VersionRange(identity.Version)));
