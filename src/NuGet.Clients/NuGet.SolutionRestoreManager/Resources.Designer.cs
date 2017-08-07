@@ -19,7 +19,7 @@ namespace NuGet.SolutionRestoreManager {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "4.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "15.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class Resources {
@@ -122,6 +122,15 @@ namespace NuGet.SolutionRestoreManager {
         internal static string PackageNotRestoredBecauseOfNoConsent {
             get {
                 return ResourceManager.GetString("PackageNotRestoredBecauseOfNoConsent", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to NuGet restore is currently disabled. To enable it, open the Visual Studio Options dialog, click on the Package Manager node and check &apos;Allow NuGet to download missing packages during build.&apos; You can also enable it by setting the environment variable &apos;EnableNuGetPackageRestore&apos; to &apos;true&apos;..
+        /// </summary>
+        internal static string PackageRefNotRestoredBecauseOfNoConsent {
+            get {
+                return ResourceManager.GetString("PackageRefNotRestoredBecauseOfNoConsent", resourceCulture);
             }
         }
         
