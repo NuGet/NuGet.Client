@@ -18,18 +18,27 @@ namespace NuGet.PackageManagement.UI
             NuGetVersion version,
             string additionalInfo,
             bool isValidVersion = true,
-            bool isCurrentInstalled = false)
-            : this(GetRange(version), additionalInfo, isValidVersion, isCurrentInstalled)
+            bool isCurrentInstalled = false,
+            bool autoReferenced = false,
+            string versionFormat = "N")
+            : this(GetRange(version), additionalInfo, isValidVersion, isCurrentInstalled, autoReferenced, versionFormat)
         {
-
         }
 
         public DisplayVersion(
             VersionRange range,
             string additionalInfo,
             bool isValidVersion = true,
-            bool isCurrentInstalled = false)
+            bool isCurrentInstalled = false,
+            bool autoReferenced = false,
+            string versionFormat = "N")
         {
+            if (versionFormat == null)
+            {
+                // default to normalized version
+                versionFormat = "N";
+            }
+
             Range = range;
             _additionalInfo = additionalInfo;
 
@@ -37,13 +46,16 @@ namespace NuGet.PackageManagement.UI
 
             Version = range.MinVersion;
             IsCurrentInstalled = isCurrentInstalled;
+            AutoReferenced = autoReferenced;
 
             // Display a single version if the range is locked
             if (range.HasLowerAndUpperBounds && range.MinVersion == range.MaxVersion)
             {
+                var formattedVersionString = Version.ToString(versionFormat, VersionFormatter.Instance);
+
                 _toString = string.IsNullOrEmpty(_additionalInfo) ?
-                    Version.ToNormalizedString() :
-                    _additionalInfo + " " + Version.ToNormalizedString();
+                    formattedVersionString :
+                    _additionalInfo + " " + formattedVersionString;
             }
             else
             {
@@ -61,6 +73,8 @@ namespace NuGet.PackageManagement.UI
         public VersionRange Range { get; }
 
         public bool IsValidVersion { get; set; }
+
+        public bool AutoReferenced { get; set; }
 
         public override string ToString()
         {
