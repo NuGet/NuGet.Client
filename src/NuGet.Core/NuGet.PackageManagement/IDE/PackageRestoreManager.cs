@@ -168,17 +168,24 @@ namespace NuGet.PackageManagement
                     continue;
                 }
 
-                var nuGetProjectName = NuGetProject.GetUniqueNameOrName(nuGetProject);
-                var installedPackageReferences = await nuGetProject.GetInstalledPackagesAsync(token);
-                foreach (var installedPackageReference in installedPackageReferences)
+                try
                 {
-                    List<string> projectNames = null;
-                    if (!packageReferencesDict.TryGetValue(installedPackageReference, out projectNames))
+                    var nuGetProjectName = NuGetProject.GetUniqueNameOrName(nuGetProject);
+                    var installedPackageReferences = await nuGetProject.GetInstalledPackagesAsync(token);
+                    foreach (var installedPackageReference in installedPackageReferences)
                     {
-                        projectNames = new List<string>();
-                        packageReferencesDict.Add(installedPackageReference, projectNames);
+                        List<string> projectNames = null;
+                        if (!packageReferencesDict.TryGetValue(installedPackageReference, out projectNames))
+                        {
+                            projectNames = new List<string>();
+                            packageReferencesDict.Add(installedPackageReference, projectNames);
+                        }
+                        projectNames.Add(nuGetProjectName);
                     }
-                    projectNames.Add(nuGetProjectName);
+                }
+                catch (Exception)
+                {
+                    // ignore failed projects, and continue with other projects
                 }
             }
 

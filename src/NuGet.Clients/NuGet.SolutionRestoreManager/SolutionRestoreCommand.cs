@@ -147,7 +147,7 @@ namespace NuGet.SolutionRestoreManager
                     _restoreTask.IsCompleted &&
                     !ConsoleStatus.Value.IsBusy &&
                     !SolutionRestoreWorker.Value.IsBusy &&
-                    (await SolutionManager.Value.GetNuGetProjectsAsync()).Any();
+                    await SolutionManager.Value.DoesNuGetSupportsAnyProjectAsync();
             });
         }
 

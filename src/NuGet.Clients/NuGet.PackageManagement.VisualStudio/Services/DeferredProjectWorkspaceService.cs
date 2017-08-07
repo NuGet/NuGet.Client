@@ -44,6 +44,14 @@ namespace NuGet.PackageManagement.VisualStudio
                 NuGetUIThreadHelper.JoinableTaskFactory);
         }
 
+        public async Task<bool> EntityExistsAsync(string filePath)
+        {
+            var workspace = SolutionWorkspaceService.CurrentWorkspace;
+            var indexService = workspace.GetIndexWorkspaceService();
+            var filePathExists = await indexService.EntityExists(filePath);
+            return filePathExists;
+        }
+
         public async Task<IEnumerable<string>> GetProjectReferencesAsync(string projectFilePath)
         {
             var workspace = SolutionWorkspaceService.CurrentWorkspace;

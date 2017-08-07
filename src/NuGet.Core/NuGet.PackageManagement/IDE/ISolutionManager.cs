@@ -91,6 +91,12 @@ namespace NuGet.PackageManagement
         /// This will only be applicable for VS15 and will do nothing for VS14.
         /// </summary>
         void EnsureSolutionIsLoaded();
+
+        /// <summary>
+        /// It's a quick check to know if NuGet supports any prokect of current solution
+        /// without initializing whole VSSolutionManager.
+        /// </summary>
+        Task<bool> DoesNuGetSupportsAnyProjectAsync();
     }
 
     public class NuGetProjectEventArgs : EventArgs

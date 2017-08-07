@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using NuGet.ProjectManagement;
@@ -23,6 +24,16 @@ namespace NuGet.PackageManagement.VisualStudio
         /// in the IDE.
         /// </summary>
         string DefaultNuGetProjectName { get; set; }
+
+        /// <summary>
+        /// Get the initialization status of SolutionManager
+        /// </summary>
+        bool IsInitialized { get; }
+
+        /// <summary>
+        /// Gets the SolutionManager initialization task, if there is one running.
+        /// </summary>
+        Task InitializationTask { get; set; }
 
         /// <summary>
         /// Retrieves <see cref="NuGetProject"/> instance associated with VS project.
@@ -74,5 +85,17 @@ namespace NuGet.PackageManagement.VisualStudio
         /// Return collection of safe name for all supported projects in solution.
         /// </summary>
         Task<IEnumerable<string>> GetAllNuGetProjectSafeNameAsync();
+
+        /// <summary>
+        /// Check for all the pre-conditions before showing manager ui at solution level. And
+        /// return KeyValuePair, where key represents if solution is available to work. And
+        /// value represents if solution has any project which NuGet supports.
+        /// </summary>
+        Task<KeyValuePair<bool, bool>> CheckSolutionUIPreConditionsAsync();
+
+        /// <summary>
+        /// Returns true if solution has any deferred project.
+        /// </summary>
+        Task<bool> SolutionHasDeferredProjectsAsync();
     }
 }

@@ -153,6 +153,11 @@ namespace Test.Utility
             // do nothing
         }
 
+        public Task<bool> DoesNuGetSupportsAnyProjectAsync()
+        {
+            return Task.FromResult(true);
+        }
+
 #pragma warning disable 0067
 
         public event EventHandler<NuGetProjectEventArgs> NuGetProjectAdded;

@@ -999,6 +999,15 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Refresh.
+        /// </summary>
+        public static string RefreshButtonLabel {
+            get {
+                return ResourceManager.GetString("RefreshButtonLabel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Multiple packages failed to uninstall. Restart Visual Studio to finish the process..
         /// </summary>
         public static string RequestRestartToCompleteUninstallMultiplePackages {

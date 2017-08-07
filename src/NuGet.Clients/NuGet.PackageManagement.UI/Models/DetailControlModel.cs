@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -170,6 +170,11 @@ namespace NuGet.PackageManagement.UI
 
         protected virtual void OnCurrentPackageChanged()
         {
+        }
+
+        public virtual void CreateProjectLists()
+        {
+            // by default do nothing, since it's only applicable at solution level.
         }
 
         public virtual void OnFilterChanged(ItemFilter? previousFilter, ItemFilter currentFilter)

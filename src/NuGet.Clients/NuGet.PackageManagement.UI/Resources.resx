@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -680,5 +680,8 @@ Please see https://aka.ms/troubleshoot_nuget_cache for more help.</value>
   </data>
   <data name="Tooltip_PrefixReserved" xml:space="preserve">
     <value>The identity of this package has been verified by nuget.org</value>
+  </data>
+  <data name="RefreshButtonLabel" xml:space="preserve">
+    <value>Refresh</value>
   </data>
 </root>

@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
+using Microsoft.VisualStudio.Shell;
 using NuGet.ProjectManagement;
 using NuGet.Versioning;
 using NuGet.VisualStudio;
@@ -67,16 +68,28 @@ namespace NuGet.PackageManagement.UI
 
             foreach (var project in _projects)
             {
-                var installedVersion = GetInstalledPackage(project.NuGetProject, Id);
-                if (installedVersion != null)
+                try
                 {
-                    project.InstalledVersion = installedVersion.PackageIdentity.Version;
-                    hash.Add(installedVersion.PackageIdentity.Version);
-                    project.AutoReferenced = (installedVersion as BuildIntegratedPackageReference)?.Dependency?.AutoReferenced == true;
+                    var installedVersion = GetInstalledPackage(project.NuGetProject, Id);
+                    if (installedVersion != null)
+                    {
+                        project.InstalledVersion = installedVersion.PackageIdentity.Version;
+                        hash.Add(installedVersion.PackageIdentity.Version);
+                        project.AutoReferenced = (installedVersion as BuildIntegratedPackageReference)?.Dependency?.AutoReferenced == true;
+                    }
+                    else
+                    {
+                        project.InstalledVersion = null;
+                    }
                 }
-                else
+                catch(Exception ex)
                 {
                     project.InstalledVersion = null;
+
+                    // we don't expect it to throw any exception here. But in some edge case when opening manager ui at solution is the
+                    // first NuGet operation, and packages.config file is not valid for any of the project, then it will throw here which
+                    // should be ignored since we already show a error bar on manager ui to show this exact error.
+                    ActivityLog.LogError(NuGetUI.LogEntrySource, ex.ToString());
                 }
             }
 
@@ -230,8 +243,6 @@ namespace NuGet.PackageManagement.UI
             };
 
             _packageManagerProviders = packageManagerProviders;
-
-            CreateProjectLists();
         }
 
         // The event handler that is called when a project is added, removed or renamed.
@@ -267,7 +278,7 @@ namespace NuGet.PackageManagement.UI
         }
 
         // Creates the project lists. Also called after a project is added/removed/renamed.
-        private void CreateProjectLists()
+        public override void CreateProjectLists()
         {
             // unhook event handler
             if (Projects != null)

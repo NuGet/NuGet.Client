@@ -45,6 +45,11 @@ namespace NuGet.PackageManagement.VisualStudio
             _vsSolution = new Lazy<IVsSolution>(() => serviceProvider.GetService<SVsSolution, IVsSolution>());
         }
 
+        public async Task<bool> EntityExistsAsync(string filePath)
+        {
+            return await _workspaceService.Value.EntityExistsAsync(filePath);
+        }
+
         public IVsProjectAdapter CreateAdapterForFullyLoadedProject(EnvDTE.Project dteProject)
         {
             return _threadingService.ExecuteSynchronously(

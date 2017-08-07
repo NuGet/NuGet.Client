@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -23,7 +23,11 @@ namespace NuGet.PackageManagement.UI.Test
         [Fact]
         public async Task MultipleSources_Works()
         {
+            var solutionManager = Mock.Of<IVsSolutionManager>();
             var uiContext = Mock.Of<INuGetUIContext>();
+            Mock.Get(uiContext)
+                .Setup(x => x.SolutionManager)
+                .Returns(solutionManager);
 
             var source1 = new Configuration.PackageSource("https://dotnet.myget.org/F/nuget-volatile/api/v3/index.json", "NuGetVolatile");
             var source2 = new Configuration.PackageSource("https://api.nuget.org/v3/index.json", "NuGet.org");
@@ -32,6 +36,7 @@ namespace NuGet.PackageManagement.UI.Test
             var repositories = sourceRepositoryProvider.GetRepositories();
 
             var context = new PackageLoadContext(repositories, false, uiContext);
+
             var packageFeed = new MultiSourcePackageFeed(repositories, logger: null);
             var loader = new PackageItemLoader(context, packageFeed, "nuget");
 
@@ -60,7 +65,11 @@ namespace NuGet.PackageManagement.UI.Test
         [Fact]
         public async Task GetTotalCountAsync_Works()
         {
+            var solutionManager = Mock.Of<IVsSolutionManager>();
             var uiContext = Mock.Of<INuGetUIContext>();
+            Mock.Get(uiContext)
+                .Setup(x => x.SolutionManager)
+                .Returns(solutionManager);
 
             var source1 = new Configuration.PackageSource("https://dotnet.myget.org/F/nuget-volatile/api/v3/index.json", "NuGetVolatile");
             var source2 = new Configuration.PackageSource("https://api.nuget.org/v3/index.json", "NuGet.org");
@@ -69,6 +78,7 @@ namespace NuGet.PackageManagement.UI.Test
             var repositories = sourceRepositoryProvider.GetRepositories();
 
             var context = new PackageLoadContext(repositories, false, uiContext);
+
             var packageFeed = new MultiSourcePackageFeed(repositories, logger: null);
             var loader = new PackageItemLoader(context, packageFeed, "nuget");
 
@@ -80,9 +90,13 @@ namespace NuGet.PackageManagement.UI.Test
         [Fact]
         public async Task LoadNextAsync_Works()
         {
+            var solutionManager = Mock.Of<IVsSolutionManager>();
             var uiContext = Mock.Of<INuGetUIContext>();
-            var context = new PackageLoadContext(null, false, uiContext);
+            Mock.Get(uiContext)
+                .Setup(x => x.SolutionManager)
+                .Returns(solutionManager);
 
+            var context = new PackageLoadContext(null, false, uiContext);
             var packageFeed = new TestPackageFeed();
             var loader = new PackageItemLoader(context, packageFeed, TestSearchTerm, true);
 

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -23,8 +23,6 @@ namespace NuGet.PackageManagement.UI
             IEnumerable<NuGetProject> nugetProjects)
             : base(nugetProjects)
         {
-            Debug.Assert(nugetProjects.Count() == 1);
-
             _solutionManager = solutionManager;
             _solutionManager.NuGetProjectUpdated += NuGetProjectChanged;
         }
