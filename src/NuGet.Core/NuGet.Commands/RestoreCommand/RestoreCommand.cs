@@ -122,9 +122,9 @@ namespace NuGet.Commands
                 contextForProject,
                 token);
 
-            _logger.TransitiveWarningPropertiesCollection = TransitiveNoWarnUtils
-                .CreateTransitiveWarningPropertiesCollection(_request.DependencyGraphSpec, 
-                graphs, new LibraryIdentity(_request.Project.Name, _request.Project.Version, LibraryType.Project));
+            //_logger.TransitiveWarningPropertiesCollection = TransitiveNoWarnUtils
+            //    .CreateTransitiveWarningPropertiesCollection(_request.DependencyGraphSpec, 
+            //    graphs, new LibraryIdentity(_request.Project.Name, _request.Project.Version, LibraryType.Project));
 
             // Create assets file
             var assetsFile = BuildAssetsFile(

@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.ProjectModel;
@@ -20,7 +21,7 @@ namespace NuGet.Commands
         /// Contains Package specific No warn properties.
         /// NuGetLogCode -> LibraryId -> Set of Frameworks.
         /// </summary>
-        private IDictionary<NuGetLogCode, IDictionary<string, ISet<NuGetFramework>>> Properties;
+        public IDictionary<NuGetLogCode, IDictionary<string, ISet<NuGetFramework>>> Properties { get; private set; }
 
         /// <summary>
         /// Extracts PackageSpecific WarningProperties from a PackageSpec
@@ -46,6 +47,36 @@ namespace NuGet.Commands
                 {
                     warningProperties.AddRange(dependency.NoWarn, dependency.Name, framework.FrameworkName);
                 }
+            }
+
+            return warningProperties;
+        }
+
+        /// <summary>
+        /// Extracts PackageSpecific WarningProperties from a PackageSpec for a specific NuGetFramework
+        /// </summary>
+        /// <param name="packageSpec">PackageSpec containing the Dependencies with WarningProperties</param>
+        /// <param name="framework">NuGetFramework for which the properties should be assessed.</param>
+        /// <returns>PackageSpecific WarningProperties extracted from a PackageSpec for a specific NuGetFramework</returns>
+        public static PackageSpecificWarningProperties CreatePackageSpecificWarningProperties(PackageSpec packageSpec, 
+            NuGetFramework framework)
+        {
+            // NuGetLogCode -> LibraryId -> Set of Frameworks.
+            var warningProperties = new PackageSpecificWarningProperties();
+
+            foreach (var dependency in packageSpec.Dependencies)
+            {
+                warningProperties.AddRange(dependency.NoWarn, dependency.Name, framework);
+            }
+
+            var targetFrameworkInformation = packageSpec
+                .TargetFrameworks
+                .Where(tfi => tfi.FrameworkName == framework)
+                .First();
+            
+            foreach (var dependency in targetFrameworkInformation.Dependencies)
+            {
+                warningProperties.AddRange(dependency.NoWarn, dependency.Name, framework);
             }
 
             return warningProperties;
@@ -88,6 +119,20 @@ namespace NuGet.Commands
         public void AddRange(IEnumerable<NuGetLogCode> codes, string libraryId, NuGetFramework framework)
         {
             foreach (var code in codes)
+            {
+                Add(code, libraryId, framework);
+            }
+        }
+
+        /// <summary>
+        /// Adds a list of NuGetLogCode into the NoWarn Set for the specified library Id and target graph.
+        /// </summary>
+        /// <param name="code">NuGetLogCode for which no warning should be thrown.</param>
+        /// <param name="libraryId">Library for which no warning should be thrown.</param>
+        /// <param name="frameworks">IEnumerable of Target graph for which no warning should be thrown.</param>
+        public void AddRange(NuGetLogCode code, string libraryId, IEnumerable<NuGetFramework> frameworks)
+        {
+            foreach (var framework in frameworks)
             {
                 Add(code, libraryId, framework);
             }
