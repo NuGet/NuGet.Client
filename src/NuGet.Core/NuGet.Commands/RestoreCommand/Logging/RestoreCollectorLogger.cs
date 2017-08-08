@@ -22,7 +22,7 @@ namespace NuGet.Commands
 
         public WarningPropertiesCollection WarningPropertiesCollection { get; set; }
 
-        public IDictionary<string, WarningPropertiesCollection> TransitiveWarningPropertiesCollection { get; set; }
+        public PackageSpecificWarningProperties TransitiveWarningPropertiesCollection { get; set; }
         
         public string ProjectPath { get; set; }
 

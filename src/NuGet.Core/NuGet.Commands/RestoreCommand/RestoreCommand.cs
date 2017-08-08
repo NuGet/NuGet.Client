@@ -43,7 +43,7 @@ namespace NuGet.Commands
         {
             _request = request ?? throw new ArgumentNullException(nameof(request));
 
-            //Debugger.Launch();
+            Debugger.Launch();
 
             // Validate the lock file version requested
             if (_request.LockFileVersion < 1 || _request.LockFileVersion > LockFileFormat.Version)
@@ -121,9 +121,8 @@ namespace NuGet.Commands
                 contextForProject,
                 token);
 
-            //_logger.TransitiveWarningPropertiesCollection = TransitiveNoWarnUtils
-            //    .CreateTransitiveWarningPropertiesCollection(_request.DependencyGraphSpec,
-            //    graphs, new LibraryIdentity(_request.Project.Name, _request.Project.Version, LibraryType.Project));
+            _logger.TransitiveWarningPropertiesCollection = TransitiveNoWarnUtils
+                .CreateTransitiveWarningPropertiesCollection(_request.DependencyGraphSpec, graphs, _request.Project);
 
             // Create assets file
             var assetsFile = BuildAssetsFile(
