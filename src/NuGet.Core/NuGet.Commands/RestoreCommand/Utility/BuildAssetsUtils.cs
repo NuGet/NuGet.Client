@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -142,7 +142,12 @@ namespace NuGet.Commands
 
             if (firstImport != null)
             {
-                AddNuGetProperties(firstImport.Content, packageFolders, repositoryRoot, projectStyle, assetsFilePath, success);
+                // Write the assets file path relative to the props file.
+                // This allows the project to be moved and avoid a large number of project errors
+                // until restore can run again.
+                var relativeAssetsPath = PathUtility.GetRelativePath(firstImport.Path, assetsFilePath);
+
+                AddNuGetProperties(firstImport.Content, packageFolders, repositoryRoot, projectStyle, relativeAssetsPath, success);
             }
         }
 
