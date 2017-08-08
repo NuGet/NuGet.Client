@@ -7,6 +7,7 @@ using System.Linq;
 using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.ProjectModel;
+using NuGet.Shared;
 
 namespace NuGet.Commands
 {
@@ -14,7 +15,7 @@ namespace NuGet.Commands
     /// <summary>
     /// Contains Package specific properties for Warnings.
     /// </summary>
-    public class PackageSpecificWarningProperties
+    public class PackageSpecificWarningProperties : IEquatable <PackageSpecificWarningProperties>
     {
 
         /// <summary>
@@ -151,6 +152,38 @@ namespace NuGet.Commands
                 Properties.TryGetValue(code, out var libraryIdsAndFrameworks) &&
                 libraryIdsAndFrameworks.TryGetValue(libraryId, out var frameworkSet) &&
                 frameworkSet.Contains(framework);
+        }
+
+        public override int GetHashCode()
+        {
+            var hashCode = new HashCodeCombiner();
+
+            // Add a constant hash for all objects
+            hashCode.AddObject(1);
+
+            return hashCode.CombinedHash;
+        }
+
+        public override bool Equals(object obj)
+        {
+            return Equals(obj as PackageSpecificWarningProperties);
+        }
+
+        public bool Equals(PackageSpecificWarningProperties other)
+        {
+            if (other == null)
+            {
+                return false;
+            }
+
+            if (ReferenceEquals(this, other))
+            {
+                return true;
+            }
+
+            return Properties.Keys.OrderedEquals(other.Properties.Keys, (code) => code) &&
+                Properties.Keys.All(c => Properties[c].Keys.OrderedEquals(other.Properties[c].Keys, (id) => id)) &&
+                Properties.Keys.All(c => Properties[c].Keys.All(id => Properties[c][id].SetEquals(other.Properties[c][id])));
         }
     }
 }

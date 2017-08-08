@@ -6,6 +6,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using NuGet.Common;
+using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.ProjectModel;
 using NuGet.Shared;
@@ -47,7 +48,7 @@ namespace NuGet.Commands
         {
             var paths = new Dictionary<string, IEnumerable<LibraryIdentity>>();
             var dependencyMapping = new Dictionary<string, IEnumerable<LibraryDependency>>();
-            var queue = new Queue<Tuple<string, LibraryType ,WarningPropertiesCollection>>();
+            var queue = new Queue<DependencyNode>();
 
             //TODO seen should have node id and the path warningproperties
             var seen = new HashSet<string>();
@@ -57,47 +58,55 @@ namespace NuGet.Commands
             var parentPackageDependencies = new HashSet<string>(
                 targetGraph.Flattened.Where( d => d.Key.Type == LibraryType.Package).Select( d => d.Key.Name));
 
+            var parentTargetFramework = targetGraph.Framework;
+
             // Seed the queue with the original flattened graph
             // Add all dependencies into a dict for a quick transitive lookup
             foreach (var dependency in targetGraph.Flattened.OrderBy(d => d.Key.Name))
             {
                 dependencyMapping[dependency.Key.Name] = dependency.Data.Dependencies;
-                var queueTuple = Tuple.Create(dependency.Key.Name, dependency.Key.Type ,parentWarningPropertiesCollection);
+                var queueNode = new DependencyNode(dependency.Key.Name, GetType(dependency.Key.Type), parentWarningPropertiesCollection);
 
                 // Add the metadata from the parent project here.
-                queue.Enqueue(queueTuple);
+                queue.Enqueue(queueNode);
             }
 
             // start taking one node from the queue and get all of it's dependencies
             while (queue.Count > 0)
             {
                 var node = queue.Dequeue();
-                if (!seen.Contains(node.Item1))
+                if (!seen.Contains(node.Id))
                 {
-                    var nodeDependencies = dependencyMapping[node.Item1];
-                    var nodeName = node.Item1;
-                    var nodeType = node.Item2;
-                    var pathWarningProperties = node.Item3;
+                    var nodeDependencies = dependencyMapping[node.Id];
+                    var nodeName = node.Id;
+                    var nodeType = node.Type;
+                    var pathWarningProperties = node.WarningPropertiesCollection;
 
                     // If the node is a project then we need to extract the warning properties and 
                     // add those to the warning properties of the current path.
-                    if (nodeType == LibraryType.Project || nodeType == LibraryType.ExternalProject)
+                    if (nodeType == LibraryDependencyTarget.Project || nodeType == LibraryDependencyTarget.ExternalProject)
                     {
                         // Get the node PackageSpec
                         var nodeProjectSpec = GetNodePackageSpec(dgSpec, nodeName);
 
                         // Get the WarningPropertiesCollection from the PackageSpec
-                        var nodeWarningProperties = GetNodeWarningProperties(nodeProjectSpec);
+                        var nodeWarningProperties = GetNodeWarningProperties(nodeProjectSpec, parentTargetFramework);
 
                         // Merge the WarningPropertiesCollection to the one in the path
                         var mergedWarningPropertiesCollection = MergeWarningPropertiesCollection(pathWarningProperties, 
                             nodeWarningProperties);
 
                         // Add all the project's dependencies to the Queue with the merged WarningPropertiesCollection
+                        foreach (var dependency in  dependencyMapping[nodeName].OrderBy(d => d.Name))
+                        {
+                            var queueTuple = new DependencyNode(dependency.Name, dependency.LibraryRange.TypeConstraint, mergedWarningPropertiesCollection);
 
+                            // Add the metadata from the parent project here.
+                            queue.Enqueue(queueTuple);
+                        }
 
                     }
-                    else if (nodeType == LibraryType.Package)
+                    else if (nodeType == LibraryDependencyTarget.Package)
                     {
                         // Evaluate the package properties for the current path
 
@@ -115,12 +124,19 @@ namespace NuGet.Commands
         private static WarningPropertiesCollection GetNodeWarningProperties(PackageSpec nodeProjectSpec)
         {
             return _warningPropertiesCache.GetOrAdd(nodeProjectSpec.RestoreMetadata.ProjectPath, 
-                (s) => new WarningPropertiesCollection()
-                {
-                    ProjectWideWarningProperties = nodeProjectSpec.RestoreMetadata?.ProjectWideWarningProperties,
-                    PackageSpecificWarningProperties = PackageSpecificWarningProperties.CreatePackageSpecificWarningProperties(nodeProjectSpec),
-                    ProjectFrameworks = nodeProjectSpec.TargetFrameworks.Select(f => f.FrameworkName).AsList().AsReadOnly()
-                });
+                (s) => new WarningPropertiesCollection(
+                    nodeProjectSpec.RestoreMetadata?.ProjectWideWarningProperties,
+                    PackageSpecificWarningProperties.CreatePackageSpecificWarningProperties(nodeProjectSpec),
+                    nodeProjectSpec.TargetFrameworks.Select(f => f.FrameworkName).AsList().AsReadOnly()));
+        }
+
+        private static WarningPropertiesCollection GetNodeWarningProperties(PackageSpec nodeProjectSpec, NuGetFramework framework)
+        {
+            return _warningPropertiesCache.GetOrAdd(nodeProjectSpec.RestoreMetadata.ProjectPath,
+                (s) => new WarningPropertiesCollection(
+                    nodeProjectSpec.RestoreMetadata?.ProjectWideWarningProperties,
+                    PackageSpecificWarningProperties.CreatePackageSpecificWarningProperties(nodeProjectSpec, framework),
+                    nodeProjectSpec.TargetFrameworks.Select(f => f.FrameworkName).AsList().AsReadOnly()));
         }
 
         private static PackageSpec GetNodePackageSpec(DependencyGraphSpec dgSpec, string nodeId)
@@ -148,7 +164,8 @@ namespace NuGet.Commands
                     second.ProjectWideWarningProperties);
 
                 // Merge Package Specific Warning Properties
-                var mergedPackageSpecificWarnings = MergePackageSpecificWarningProperties(first.PackageSpecificWarningProperties,
+                var mergedPackageSpecificWarnings = MergePackageSpecificWarningProperties(
+                    first.PackageSpecificWarningProperties,
                     second.PackageSpecificWarningProperties);
             }
 
@@ -240,6 +257,98 @@ namespace NuGet.Commands
             }
 
             return result;
+        }
+
+        private static LibraryDependencyTarget GetType(LibraryType type)
+        {
+            if (type == LibraryType.Assembly)
+            {
+                return LibraryDependencyTarget.Assembly;
+            }
+            else if (type == LibraryType.ExternalProject)
+            {
+                return LibraryDependencyTarget.ExternalProject;
+            }
+            else if (type == LibraryType.Package)
+            {
+                return LibraryDependencyTarget.Package;
+            }
+            else if (type == LibraryType.Project)
+            {
+                return LibraryDependencyTarget.Project;
+            }
+            else if (type == LibraryType.Reference)
+            {
+                return LibraryDependencyTarget.Reference;
+            }
+            else if (type == LibraryType.WinMD)
+            {
+                return LibraryDependencyTarget.WinMD;
+            }
+            else
+            {
+                return LibraryDependencyTarget.None;
+            }
+        }
+
+        /// <summary>
+        /// A simple node class to hold the outgoing dependency edge during the graph walk.
+        /// </summary>
+        private class DependencyNode : IEquatable<DependencyNode>
+        {
+            // ID of the Node 
+            public string Id { get; }
+
+            // Type of the Node
+            public LibraryDependencyTarget Type { get; }
+
+            // WarningPropertiesCollection of the path taken to the Node
+            public WarningPropertiesCollection WarningPropertiesCollection { get; }
+
+            public DependencyNode(string id, LibraryDependencyTarget type, WarningPropertiesCollection warningPropertiesCollection)
+            {
+                Id = id ?? throw new ArgumentNullException(nameof(id));
+                WarningPropertiesCollection = warningPropertiesCollection ?? throw new ArgumentNullException(nameof(warningPropertiesCollection));
+                Type = type;
+            }
+
+            public DependencyNode(string id, LibraryDependencyTarget type)
+            {
+                Id = id ?? throw new ArgumentNullException(nameof(id));
+                Type = type;
+            }
+
+            public override int GetHashCode()
+            {
+                var hashCode = new HashCodeCombiner();
+
+                hashCode.AddStringIgnoreCase(Id);
+                hashCode.AddObject(Type);
+
+                return hashCode.CombinedHash;
+            }
+
+            public override bool Equals(object obj)
+            {
+                return Equals(obj as DependencyNode);
+            }
+
+            public bool Equals(DependencyNode other)
+            {
+                if (other == null)
+                {
+                    return false;
+                }
+
+                if (ReferenceEquals(this, other))
+                {
+                    return true;
+                }
+
+                return string.Equals(Id, other.Id, StringComparison.OrdinalIgnoreCase) &&
+                    Type == other.Type &&
+                    WarningPropertiesCollection.Equals(other.WarningPropertiesCollection);
+            }
         }
     }
 }
