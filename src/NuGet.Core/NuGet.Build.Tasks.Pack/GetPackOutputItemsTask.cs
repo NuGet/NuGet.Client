@@ -16,7 +16,7 @@ namespace NuGet.Build.Tasks.Pack
     /// <summary>
     /// Convert .metaproj paths to project paths.
     /// </summary>
-    public class GetOutputPackItemsTask : Task
+    public class GetPackOutputItemsTask : Task
     {
         [Required]
         public bool IncludeSymbols { get; set; }
