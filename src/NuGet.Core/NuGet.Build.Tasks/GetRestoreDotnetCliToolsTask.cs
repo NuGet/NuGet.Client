@@ -103,7 +103,7 @@ namespace NuGet.Build.Tasks
                 BuildTasksUtility.CopyPropertyIfExists(msbuildItem, properties, "Version");
 
                 properties.TryGetValue("Version", out string value);
-                var uniqueName = ToolRestoreUtility.GetUniqueName(msbuildItem.ItemSpec, ToolFramework, value != null ? VersionRange.Parse(value) : null);
+                var uniqueName = ToolRestoreUtility.GetUniqueName(msbuildItem.ItemSpec, ToolFramework, value != null ? VersionRange.Parse(value) : VersionRange.All);
                 properties.Add("ProjectUniqueName", uniqueName);
 
                 entries.Add(new TaskItem(Guid.NewGuid().ToString(), properties));

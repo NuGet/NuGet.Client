@@ -329,9 +329,9 @@ namespace NuGet.Commands.Test
         }
 
         [Fact] 
-        public void DotnetCliTool_TestGetUniqueName_NoVersion()
+        public void DotnetCliTool_TestGetUniqueName_VersionRangeAll()
         {
-            Assert.Equal("tool-netcoreapp1.0-noversion", ToolRestoreUtility.GetUniqueName("tool", "netcoreapp1.0", null));
+            Assert.Equal("tool-netcoreapp1.0-(, )", ToolRestoreUtility.GetUniqueName("tool", "netcoreapp1.0", VersionRange.All));
         }
     }
 }
