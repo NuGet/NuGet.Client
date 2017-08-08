@@ -14,6 +14,8 @@ namespace NuGet.Commands
 {
     public static class ToolRestoreUtility
     {
+
+        private static string NoVersion = nameof(NoVersion);
         /// <summary>
         /// Build a package spec in memory to execute the tool restore as if it were
         /// its own project. For now, we always restore for a null runtime and a single
@@ -64,9 +66,9 @@ namespace NuGet.Commands
 
         public static string GetUniqueName(string id, string framework, VersionRange versionRange)
         {
-            return $"{id}-{framework}-{versionRange.ToNormalizedString()}".ToLowerInvariant();
+            var version = versionRange!=null?versionRange.ToNormalizedString():NoVersion;
+            return $"{id}-{framework}-{version}".ToLowerInvariant(); 
         }
-
         
         /// <summary>
         /// Only one output can win per packages folder/version range. Between colliding requests take
