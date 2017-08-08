@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -978,10 +978,10 @@ namespace NuGet.Commands
         public static string GetOutputPath(PackageBuilder builder, PackArgs packArgs, bool symbols = false, NuGetVersion nugetVersion = null, string outputDirectory = null, bool isNupkg = true)
         {
             string version;
-
+            NuGetVersion versionToUse;
             if (nugetVersion != null)
             {
-                version = nugetVersion.ToNormalizedString();
+                versionToUse = nugetVersion;
             }
             else
             {
@@ -992,24 +992,36 @@ namespace NuGet.Commands
                         // If the version is null, the user will get an error later saying that a version
                         // is required. Specifying a version here just keeps it from throwing until
                         // it gets to the better error message. It won't actually get used.
-                        version = "1.0.0";
+                        versionToUse = NuGetVersion.Parse("1.0.0");
                     }
                     else
                     {
-                        version = builder.Version.ToNormalizedString();
+                        versionToUse = builder.Version;
                     }
                 }
                 else
                 {
-                    version = packArgs.Version;
+                    versionToUse = NuGetVersion.Parse(packArgs.Version);
                 }
             }
 
-            // Output file is {id}.{version}
-            string outputFile = builder.Id + "." + version;
+            var outputFile = GetOutputFileName(builder.Id, versionToUse , isNupkg: isNupkg, symbols: symbols);
+            
 
-            string extension = isNupkg ? NuGetConstants.PackageExtension : NuGetConstants.ManifestExtension;
-            string symbolsExtension = isNupkg
+            string finalOutputDirectory = packArgs.OutputDirectory ?? packArgs.CurrentDirectory;
+            finalOutputDirectory = outputDirectory ?? finalOutputDirectory;
+            return Path.Combine(finalOutputDirectory, outputFile);
+        }
+
+        public static string GetOutputFileName(string packageId, NuGetVersion version, bool isNupkg, bool symbols)
+        {
+            // Output file is {id}.{version}
+            var normalizedVersion = version.ToNormalizedString();
+            var outputFile = packageId + "." + normalizedVersion;
+            
+
+            var extension = isNupkg ? NuGetConstants.PackageExtension : NuGetConstants.ManifestExtension;
+            var symbolsExtension = isNupkg
                 ? NuGetConstants.SymbolsExtension
                 : NuGetConstants.ManifestSymbolsExtension;
 
@@ -1023,9 +1035,7 @@ namespace NuGet.Commands
                 outputFile += extension;
             }
 
-            string finalOutputDirectory = packArgs.OutputDirectory ?? packArgs.CurrentDirectory;
-            finalOutputDirectory = outputDirectory ?? finalOutputDirectory;
-            return Path.Combine(finalOutputDirectory, outputFile);
+            return outputFile;
         }
 
         public static void SetupCurrentDirectory(PackArgs packArgs)

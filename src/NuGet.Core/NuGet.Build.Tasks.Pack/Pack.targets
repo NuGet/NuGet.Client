@@ -17,6 +17,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
   </PropertyGroup>
   <UsingTask TaskName="NuGet.Build.Tasks.Pack.PackTask" AssemblyFile="$(NugetTaskAssemblyFile)" />
+  <UsingTask TaskName="NuGet.Build.Tasks.Pack.GetPackOutputItemsTask" AssemblyFile="$(NugetTaskAssemblyFile)" />
 
   <PropertyGroup>
     <PackageId Condition=" '$(PackageId)' == '' ">$(AssemblyName)</PackageId>
@@ -56,6 +57,31 @@ Copyright (c) .NET Foundation. All rights reserved.
     </TfmSpecificPackageFile>
   </ItemDefinitionGroup>
 
+  <Target Name="_GetOutputItemsFromPack"
+          Returns="@(_OutputPackItems)">
+
+    <ConvertToAbsolutePath Paths="$(PackageOutputPath)">
+        <Output TaskParameter="AbsolutePaths" PropertyName="PackageOutputAbsolutePath" />
+      </ConvertToAbsolutePath>
+
+    <ConvertToAbsolutePath Paths="$(BaseIntermediateOutputPath)">
+        <Output TaskParameter="AbsolutePaths" PropertyName="NuspecOutputAbsolutePath" />
+      </ConvertToAbsolutePath>
+
+    <GetPackOutputItemsTask
+        IncludeSymbols="$(IncludeSymbols)"
+        IncludeSource="$(IncludeSource)"
+        PackageOutputPath="$(PackageOutputPath)"
+        NuspecOutputPath="$(NuspecOutputAbsolutePath)"
+        PackageId="$(PackageId)"
+        PackageVersion="$(PackageVersion)">
+
+        <Output
+          TaskParameter="OutputPackItems"
+          ItemName="_OutputPackItems" />
+      </GetPackOutputItemsTask>
+  </Target>
+
   <!--
     ============================================================
     Pack
@@ -69,11 +95,11 @@ Copyright (c) .NET Foundation. All rights reserved.
   </Target>
 
   <Target Name="_CleanPackageFiles"
+          DependsOnTargets="_GetOutputItemsFromPack"
           AfterTargets="Clean"
           Condition="'$(GeneratePackageOnBuild)' == 'true'">
     <ItemGroup>
-      <_PackageFilesToDelete Include="$(PackageOutputPath)*.nupkg"/>
-      <_PackageFilesToDelete Include="$(BaseIntermediateOutputPath)*.nuspec"/>
+      <_PackageFilesToDelete Include="@(_OutputPackItems)"/>
     </ItemGroup>
     <Delete Files="@(_PackageFilesToDelete)"/>
   </Target>
