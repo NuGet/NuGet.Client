@@ -320,9 +320,9 @@ namespace NuGet.Commands.Test
         }
 
         [Theory]
-        [InlineData("tool","netcoreapp1.0","1.0.0", "tool-netcoreapp1.0-1.0.0")]
-        [InlineData("Tool", "netcoreapp1.0", "1.0.0", "tool-netcoreapp1.0-1.0.0")]
-        [InlineData("tOOl", "NetCoreapp1.0", "1.0.0", "tool-netcoreapp1.0-1.0.0")]
+        [InlineData("tool","netcoreapp1.0","1.0.0", "tool-netcoreapp1.0-[1.0.0, )")]
+        [InlineData("Tool", "netcoreapp1.0", "1.0.0", "tool-netcoreapp1.0-[1.0.0, )")]
+        [InlineData("tOOl", "NetCoreapp1.0", "1.0.0", "tool-netcoreapp1.0-[1.0.0, )")]
         public void DotnetCliTool_TestGetUniqueName(string name, string framework, string version, string expected)
         {
             Assert.Equal(expected, ToolRestoreUtility.GetUniqueName(name, framework, VersionRange.Parse(version)));
