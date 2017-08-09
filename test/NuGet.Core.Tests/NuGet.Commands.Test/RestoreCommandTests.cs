@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -1054,8 +1054,7 @@ namespace NuGet.Commands.Test
 
                 // Assert
                 Assert.False(result.Success);
-                Assert.Equal(1, result.GetAllUnresolved().Count);
-                Assert.True(logger.ErrorMessages.Any(s => s.Contains("Unable to resolve 'project1 (>= 1.0.0)' for '.NETFramework,Version=v4.5'.")));
+                Assert.True(logger.ErrorMessages.Any(s => s.Contains("Cycle detected")));
             }
         }
 

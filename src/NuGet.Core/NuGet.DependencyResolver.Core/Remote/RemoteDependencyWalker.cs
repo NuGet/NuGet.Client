@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -113,6 +113,13 @@ namespace NuGet.DependencyResolver
                     || dependency.SuppressParent != LibraryIncludeFlags.All)
                 {
                     var result = predicate(dependency.LibraryRange);
+
+                    // Check for a cycle, this is needed for A (project) -> A (package)
+                    // since the predicate will not be called for leaf nodes.
+                    if (StringComparer.OrdinalIgnoreCase.Equals(dependency.Name, libraryRange.Name))
+                    {
+                        result = DependencyResult.Cycle;
+                    }
 
                     if (result == DependencyResult.Acceptable)
                     {
