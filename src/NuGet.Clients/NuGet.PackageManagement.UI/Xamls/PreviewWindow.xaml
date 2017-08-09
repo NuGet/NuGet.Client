@@ -24,26 +24,18 @@
     <Grid.RowDefinitions>
       <RowDefinition
         Height="auto" />
-      <RowDefinition
-        Height="auto" />
       <RowDefinition />
       <RowDefinition
         Height="auto" />
     </Grid.RowDefinitions>
     <TextBlock
       Grid.Row="0"
-      Margin="12,8,12,0"
-      Text="{x:Static nuget:Resources.Text_ReviewChanges}"
-      FontSize="{Binding ElementName=_self,Path=FontSize,Converter={StaticResource Font122PercentSizeConverter}}" />
-
-    <TextBlock
-      Grid.Row="1"
-      Margin="12,4,12,0"
+      Margin="12,12,12,0"
       TextWrapping="Wrap"
       Text="{x:Static nuget:Resources.Text_Changes}" />
 
     <Border
-      Grid.Row="2"
+      Grid.Row="1"
       Margin="12,12"
       BorderBrush="{DynamicResource {x:Static nuget:Brushes.BorderBrush}}"
       BorderThickness="1">
@@ -111,7 +103,7 @@
     </Border>
 
     <Grid
-      Grid.Row="3">
+      Grid.Row="2">
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="auto" />
         <ColumnDefinition />

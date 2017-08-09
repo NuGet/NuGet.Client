@@ -14,7 +14,7 @@ namespace NuGet.PackageManagement.UI
         public PreviewWindowModel(IEnumerable<PreviewResult> results)
         {
             PreviewResults = results;
-            Title = Resources.WindowTitle_Preview;
+            Title = Resources.WindowTitle_PreviewChanges;
         }
     }
 }
