@@ -137,7 +137,7 @@ nuget.config HTTP_PROXY</value>
     <comment>Please don't localize this string</comment>
   </data>
   <data name="DeleteCommandDescription" xml:space="preserve">
-    <value>Deletes a package from the server.</value>
+    <value>Deletes/Unlists a package (local or from the server).</value>
   </data>
   <data name="DeleteCommandNoPromptDescription" xml:space="preserve">
     <value>Do not prompt when deleting.</value>
@@ -183,7 +183,7 @@ nuget push -?</value>
     <value>[command]</value>
   </data>
   <data name="InstallCommandDescription" xml:space="preserve">
-    <value>Installs a package using the specified sources. If no sources are specified, all sources defined in the NuGet configuration file are used. If the configuration file specifies no sources, uses the default NuGet feed.</value>
+    <value>Installs a package using the specified sources. If no sources are specified, all sources defined in the NuGet configuration file are used. If the configuration file specifies no sources, Nuget uses the default NuGet feed.</value>
   </data>
   <data name="InstallCommandExcludeVersionDescription" xml:space="preserve">
     <value>If set, the destination folder will contain only the package name, not the version number</value>
@@ -223,7 +223,7 @@ nuget install ninject -o c:\foo</value>
     <value>List all versions of a package. By default, only the latest package version is displayed.</value>
   </data>
   <data name="ListCommandDescription" xml:space="preserve">
-    <value>Displays a list of packages from a given source. If no sources are specified, all sources defined in %AppData%\NuGet\NuGet.config are used. If NuGet.config specifies no sources, uses the default NuGet feed.</value>
+    <value>Displays a list of packages from a given source. If no sources are specified, all sources defined in %AppData%\NuGet\NuGet.config are used. If NuGet.config specifies no sources, Nuget uses the default NuGet feed.</value>
     <comment>Please don't localize "%AppData%\NuGet\NuGet.config", "NuGet.config".</comment>
   </data>
   <data name="ListCommandPrerelease" xml:space="preserve">
@@ -5258,7 +5258,7 @@ nuget update -Self</value>
     <value>Specifies the version of MSBuild to be used with this command. Supported values are 4, 12, 14. By default the MSBuild in your path is picked, otherwise it defaults to the highest installed version of MSBuild.</value>
   </data>
   <data name="AddCommandDescription" xml:space="preserve">
-    <value>Adds the given package to a hierarchical source. http sources are not supported. For more info, goto https://docs.nuget.org/consume/command-line-reference#add-command.</value>
+    <value>Adds the given package to a hierarchical source. http sources are not supported. For more info, go to http://docs.nuget.org/consume/command-line-reference#add-command.</value>
   </data>
   <data name="AddCommandUsageDescription" xml:space="preserve">
     <value>Specifies the path to the package to be added and the package source, which is a folder or UNC share, to which the nupkg will be added. Http sources are not supported.</value>
@@ -5275,7 +5275,7 @@ nuget add foo.nupkg -Source \\bar\packages\</value>
     <value>Specifies the package source, which is a folder or UNC share, to which the nupkg will be added. Http sources are not supported.</value>
   </data>
   <data name="InitCommandDescription" xml:space="preserve">
-    <value>Adds all the packages from the &lt;srcPackageSourcePath&gt; to the hierarchical &lt;destPackageSourcePath&gt;. http feeds are not supported. For more info, goto https://docs.nuget.org/consume/command-line-reference#init-command.</value>
+    <value>Adds all the packages from the &lt;srcPackageSourcePath&gt; to the hierarchical &lt;destPackageSourcePath&gt;. http feeds are not supported. For more info, go to http://docs.nuget.org/consume/command-line-reference#init-command.</value>
   </data>
   <data name="InitCommandUsageDescription" xml:space="preserve">
     <value>Specify the path to source package source to be copied from and the path to the destination package source to be copied to.</value>

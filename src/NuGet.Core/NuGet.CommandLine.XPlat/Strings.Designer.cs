@@ -224,7 +224,7 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Deletes a package from the server..
+        ///   Looks up a localized string similar to Deletes/Unlists a package (local or from the server)..
         /// </summary>
         internal static string Delete_Description {
             get {
