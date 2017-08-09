@@ -40,7 +40,7 @@ namespace NuGet.Commands
                 {
                     var transitiveNoWarnFromTargetGraph = ExtractTransitiveNoWarnProperties(
                         targetGraph,
-                        parentProjectSpec.RestoreMetadata.ProjectName,
+                        parentProjectSpec.RestoreMetadata.ProjectName.ToLowerInvariant(),
                         parentWarningProperties);
 
                     projectFrameworks.Add(targetGraph.Framework);
@@ -75,11 +75,12 @@ namespace NuGet.Commands
             var seen = new HashSet<DependencyNode>();
             var frameworkReducer = new FrameworkReducer();
             var resultWarningProperties = new PackageSpecificWarningProperties();
+            var packageNoWarn = new Dictionary<string, ISet<NuGetLogCode>>();
 
             // All the packages in parent project's closure. 
             // Once we have collected data for all of these, we can exit.
             var parentPackageDependencies = new HashSet<string>(
-                targetGraph.Flattened.Where(d => d.Key.Type == LibraryType.Package).Select(d => d.Key.Name));
+                targetGraph.Flattened.Where(d => d.Key.Type == LibraryType.Package).Select(d => d.Key.Name.ToLowerInvariant()));
 
             var parentTargetFramework = targetGraph.Framework;
 
@@ -150,39 +151,37 @@ namespace NuGet.Commands
                     if (nodeIsProject)
                     {
                         // Merge the WarningPropertiesCollection to the one in the path
-                        var mergedWarningPropertiesCollection = MergeWarningPropertiesCollection(pathWarningProperties,
+                        var mergedWarningProperties = MergeWarningPropertiesCollection(pathWarningProperties,
                             nodeWarningProperties);
 
-                        // Add all the project's dependencies to the Queue with the merged WarningPropertiesCollection
-                        foreach (var dependency in dependencyMapping[nodeId].Dependencies.OrderBy(d => d.Name))
-                        {
-                            var queueNode = new DependencyNode(
-                                dependency.Name.ToLowerInvariant(), 
-                                IsProject(dependency.LibraryRange.TypeConstraint), 
-                                mergedWarningPropertiesCollection);
-
-                            if (!seen.Contains(queueNode))
-                            {
-                                // Add the metadata from the parent project here.
-                                queue.Enqueue(queueNode);
-                            }
-                        }
+                        AddDependenciesToQueue(dependencyMapping[nodeId].Dependencies, 
+                            queue, 
+                            seen, 
+                            mergedWarningProperties);
 
                     }
-                    else
-                    {
-                        // Evaluate the package properties for the current path
-                        // Check if There was any NoWarn in the path
-                        var pathNoWarnForId = ExtractPathNoWarnProperties(pathWarningProperties, nodeId);
+                    else if (parentPackageDependencies.Contains(nodeId))
+                    {                 
+                        // Evaluate the current path for package properties
+                        var packageNoWarnFromPath = ExtractPathNoWarnProperties(pathWarningProperties, nodeId);
 
-                        if (pathNoWarnForId.Count > 0)
+                        if (packageNoWarn.ContainsKey(nodeId))
                         {
-                            // If the path has a "NoWarn" for the package then save it to the result
-                            resultWarningProperties.AddRange(pathNoWarnForId.AsList(), nodeId, parentTargetFramework);
+                            // We have seen atleast one path which contained a NoWarn for the package
+                            // We need to update the 
+                            packageNoWarn[nodeId].IntersectWith(packageNoWarnFromPath);
                         }
                         else
                         {
+                            packageNoWarn[nodeId] = packageNoWarnFromPath;
+                        }
+
+                        // Check if there was any NoWarn in the path
+                        if (packageNoWarn[nodeId].Count == 0)
+                        {
                             // If the path does not "NoWarn" for this package then remove the path from parentPackageDependencies
+                            // This is done because if there are no "NoWarn" in one path, the the warnings must come through
+                            // We no longer care about this package in the graph
                             parentPackageDependencies.Remove(nodeId);
 
                             // If parentPackageDependencies is empty then exit the graph traversal
@@ -191,11 +190,43 @@ namespace NuGet.Commands
                                 break;
                             }
                         }
+
+                        AddDependenciesToQueue(dependencyMapping[nodeId].Dependencies,
+                            queue,
+                            seen,
+                            pathWarningProperties);
                     }
                 }
             }
 
+            // At the end of the graph traversal add the remaining package no warn lists into the result
+            foreach(var packageId in packageNoWarn.Keys)
+            {
+                resultWarningProperties.AddRange(packageNoWarn[packageId], packageId, parentTargetFramework);
+            }
+
             return resultWarningProperties;
+        }
+
+        private static void AddDependenciesToQueue(IEnumerable<LibraryDependency> dependencies, 
+            Queue<DependencyNode> queue, 
+            HashSet<DependencyNode> seen,
+            WarningPropertiesCollection pathWarningPropertiesCollection)
+        {
+            // Add all the project's dependencies to the Queue with the merged WarningPropertiesCollection
+            foreach (var dependency in dependencies)
+            {
+                var queueNode = new DependencyNode(
+                    dependency.Name.ToLowerInvariant(),
+                    IsProject(dependency.LibraryRange.TypeConstraint),
+                    pathWarningPropertiesCollection);
+
+                if (!seen.Contains(queueNode))
+                {
+                    // Add the metadata from the parent project here.
+                    queue.Enqueue(queueNode);
+                }
+            }
         }
 
         private static PackageSpec GetNodePackageSpec(LocalMatch localMatch)

@@ -28,7 +28,7 @@ namespace NuGet.Commands
 
         public PackageSpec ProjectSpec { get; set; }
 
-        public string ProjectPath => ProjectSpec.RestoreMetadata?.ProjectPath;
+        public string ProjectPath => ProjectSpec?.RestoreMetadata?.ProjectPath;
 
         /// <summary>
         /// Initializes an instance of the <see cref="RestoreCollectorLogger"/>, while still
