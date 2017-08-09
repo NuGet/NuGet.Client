@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.props" />
-  <Import Project="ilmerge.props" />
+  <Import Project="ilmerge.props"/>
 
   <PropertyGroup>
     <TargetFramework>net45</TargetFramework>
@@ -57,7 +57,7 @@
       <DependentUpon>NuGetCommand.resx</DependentUpon>
     </Compile>
     <EmbeddedResource Update="NuGetResources.resx">
-      <Generator>PublicResXFileCodeGenerator</Generator>
+      <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>NuGetResources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
     <Compile Update="NuGetResources.Designer.cs">
@@ -76,16 +76,19 @@
 
   <Target Name="ILMergeNuGetExe" AfterTargets="Build" Condition="'$(BuildingInsideVisualStudio)' != 'true'">
     <ItemGroup>
-      <BuildArtifacts Include="$(OutputPath)\*.dll" Exclude="@(MergeExclude)" />
+      <BuildArtifacts Include="$(OutputPath)\*.dll" Exclude="@(MergeExclude)"/>
     </ItemGroup>
-    <Error Text="Build dependencies are inconsistent with mergeinclude specified in ilmerge.props" Condition="'@(BuildArtifacts-&gt;Count())' != '@(MergeInclude-&gt;Count())'" />
+    <Error Text="Build dependencies are inconsistent with mergeinclude specified in ilmerge.props"
+             Condition="'@(BuildArtifacts->Count())' != '@(MergeInclude->Count())'"/>
     <PropertyGroup>
       <PathToBuiltNuGetExe>$(OutputPath)NuGet.exe</PathToBuiltNuGetExe>
       <IlmergeCommand>$(ILMergeExePath) $(PathToBuiltNuGetExe) /lib:$(OutputPath) @(BuildArtifacts->'%(filename)%(extension)', ' ') /out:$(ArtifactsDirectory)$(VsixOutputDirName)\NuGet.exe @(MergeAllowDup -> '/allowdup:%(Identity)', ' ')</IlmergeCommand>
       <IlmergeCommand Condition="Exists($(MS_PFX_PATH))">$(IlmergeCommand) /delaysign /keyfile:$(MS_PFX_PATH)</IlmergeCommand>
     </PropertyGroup>
-    <MakeDir Directories="$(ArtifactsDirectory)$(VsixOutputDirName)" />
-    <Exec Command="$(IlmergeCommand)" ContinueOnError="false" />
+    <MakeDir  
+            Directories="$(ArtifactsDirectory)$(VsixOutputDirName)"/>
+    <Exec Command="$(IlmergeCommand)"
+          ContinueOnError="false" />
   </Target>
   
   <PropertyGroup>
@@ -107,8 +110,8 @@
 
   <Target Name="GetSymbolsToIndex" Returns="@(SymbolsToIndex)">
     <ItemGroup>
-      <SymbolsToIndex Include="$(ArtifactsDirectory)$(VsixOutputDirName)\NuGet.exe" />
-      <SymbolsToIndex Include="$(ArtifactsDirectory)$(VsixOutputDirName)\NuGet.pdb" />
+      <SymbolsToIndex Include="$(ArtifactsDirectory)$(VsixOutputDirName)\NuGet.exe"/>
+      <SymbolsToIndex Include="$(ArtifactsDirectory)$(VsixOutputDirName)\NuGet.pdb"/>
     </ItemGroup>
   </Target>
 </Project>

@@ -210,7 +210,7 @@ namespace NuGet.CommandLine
         {
             DependencyBehavior dependencyBehavior;
 
-            if (!Enum.TryParse<DependencyBehavior>(behaviorStr, /* ignoreCase */ true, out dependencyBehavior) || !Enum.IsDefined(typeof(DependencyBehavior), dependencyBehavior))
+            if (!Enum.TryParse<DependencyBehavior>(behaviorStr, ignoreCase: true, result: out dependencyBehavior) || !Enum.IsDefined(typeof(DependencyBehavior), dependencyBehavior))
             {
                 throw new CommandLineException(string.Format(CultureInfo.CurrentCulture, LocalizedResourceManager.GetString("InstallCommandUnknownDependencyVersion"), behaviorStr));
             }
