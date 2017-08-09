@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -1230,6 +1230,50 @@ namespace Dotnet.Integration.Test
 
                 Assert.True(!File.Exists(nupkgPath), "The output .nupkg was not deleted by the Clean target");
                 Assert.True(!File.Exists(nuspecPath), "The intermediate nuspec file was not deleted by the Clean target");
+            }
+        }
+
+        // This test checks to see that when GeneratePackageOnBuild is set to true, the generated nupkg and the intermediate
+        // nuspec is deleted when the clean target is invoked and no other nupkg or nuspec file in the PackageOutputPath.
+        [PlatformFact(Platform.Windows)]
+        public void PackCommand_PackNewProject_CleanDeletesOnlyGeneratedNupkgAndNuspec()
+        {
+            using (var testDirectory = TestDirectory.Create())
+            {
+                var projectName = "ClassLibrary1";
+                var workingDirectory = Path.Combine(testDirectory, projectName);
+                var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
+
+                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib");
+
+                using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
+                {
+                    var xml = XDocument.Load(stream);
+                    ProjectFileUtils.AddProperty(xml, "GeneratePackageOnBuild", "true");
+
+                    ProjectFileUtils.WriteXmlToFile(xml, stream);
+                }
+
+                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
+                msbuildFixture.BuildProject(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory} ");
+
+                var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
+                var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
+                var extraNupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.2.0.nupkg");
+                var extraNuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.2.0.nuspec");
+                File.WriteAllBytes(extraNupkgPath, new byte[1024]);
+                File.WriteAllText(extraNuspecPath, "hello world");
+                Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the expected place");
+                Assert.True(File.Exists(nuspecPath), "The intermediate nuspec file is not in the expected place");
+
+                // Run the clean target
+                msbuildFixture.BuildProject(workingDirectory, projectName,
+                    $"/t:Clean /p:PackageOutputPath={workingDirectory}\\");
+
+                Assert.True(!File.Exists(nupkgPath), "The output .nupkg was not deleted by the Clean target");
+                Assert.True(!File.Exists(nuspecPath), "The intermediate nuspec file was not deleted by the Clean target");
+                Assert.True(File.Exists(extraNuspecPath), "All nuspec files were deleted by the clean target");
+                Assert.True(File.Exists(extraNupkgPath), "All nupkg files were deleted by the clean target");
             }
         }
 
