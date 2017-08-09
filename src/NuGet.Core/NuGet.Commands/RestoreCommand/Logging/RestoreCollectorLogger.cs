@@ -159,11 +159,13 @@ namespace NuGet.Commands
         private void PopulateTransitiveWarningPropertiesCollection(ILogMessage message)
         {
             // Populate TransitiveWarningPropertiesCollection only if it is null and we have RestoreTargetGraphs.
-            // This will happen at most once.
+            // This will happen at most once and only if we have the project spec with restore metadata.
             if (message.Level == LogLevel.Warning &&
                 TransitiveWarningPropertiesCollection == null &&
                 RestoreTargetGraphs != null &&
-                RestoreTargetGraphs.Any())
+                RestoreTargetGraphs.Any() &&
+                ProjectSpec != null &&
+                ProjectSpec.RestoreMetadata != null)
             {
                 TransitiveWarningPropertiesCollection = TransitiveNoWarnUtils.CreateTransitiveWarningPropertiesCollection(
                     RestoreTargetGraphs,
