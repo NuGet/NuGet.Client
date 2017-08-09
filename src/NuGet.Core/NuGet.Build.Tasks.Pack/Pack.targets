@@ -69,9 +69,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       </ConvertToAbsolutePath>
 
     <GetPackOutputItemsTask
-        IncludeSymbols="$(IncludeSymbols)"
-        IncludeSource="$(IncludeSource)"
-        PackageOutputPath="$(PackageOutputPath)"
+        PackageOutputPath="$(PackageOutputAbsolutePath)"
         NuspecOutputPath="$(NuspecOutputAbsolutePath)"
         PackageId="$(PackageId)"
         PackageVersion="$(PackageVersion)">
