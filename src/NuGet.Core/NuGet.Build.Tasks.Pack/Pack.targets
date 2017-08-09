@@ -1,4 +1,4 @@
-<!--
+﻿<!--
 ***********************************************************************************************
 NuGet.targets
 
@@ -61,23 +61,25 @@ Copyright (c) .NET Foundation. All rights reserved.
           Returns="@(_OutputPackItems)">
 
     <ConvertToAbsolutePath Paths="$(PackageOutputPath)">
-        <Output TaskParameter="AbsolutePaths" PropertyName="PackageOutputAbsolutePath" />
-      </ConvertToAbsolutePath>
+      <Output TaskParameter="AbsolutePaths" PropertyName="PackageOutputAbsolutePath" />
+    </ConvertToAbsolutePath>
 
     <ConvertToAbsolutePath Paths="$(BaseIntermediateOutputPath)">
-        <Output TaskParameter="AbsolutePaths" PropertyName="NuspecOutputAbsolutePath" />
-      </ConvertToAbsolutePath>
+      <Output TaskParameter="AbsolutePaths" PropertyName="NuspecOutputAbsolutePath" />
+    </ConvertToAbsolutePath>
 
     <GetPackOutputItemsTask
         PackageOutputPath="$(PackageOutputAbsolutePath)"
         NuspecOutputPath="$(NuspecOutputAbsolutePath)"
         PackageId="$(PackageId)"
-        PackageVersion="$(PackageVersion)">
+        PackageVersion="$(PackageVersion)"
+        IncludeSymbols="$(IncludeSymbols)"
+        IncludeSource="$(IncludeSource)">
 
-        <Output
-          TaskParameter="OutputPackItems"
-          ItemName="_OutputPackItems" />
-      </GetPackOutputItemsTask>
+      <Output
+        TaskParameter="OutputPackItems"
+        ItemName="_OutputPackItems" />
+    </GetPackOutputItemsTask>
   </Target>
 
   <!--
@@ -87,7 +89,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     ============================================================
   -->
   <Target Name="_PackAsBuildAfterTarget"
-          AfterTargets="Build" 
+          AfterTargets="Build"
           Condition="'$(GeneratePackageOnBuild)' == 'true' AND '$(IsInnerBuild)' != 'true'"
           DependsOnTargets="Pack">
   </Target>
@@ -110,7 +112,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       <PackageOutputPath Condition=" '$(PackageOutputPath)' == '' ">$(OutputPath)</PackageOutputPath>
       <RestoreOutputPath Condition=" '$(RestoreOutputPath)' == '' " >$(BaseIntermediateOutputPath)</RestoreOutputPath>
     </PropertyGroup>
-    
+
     <ConvertToAbsolutePath Paths="$(RestoreOutputPath)">
       <Output TaskParameter="AbsolutePaths" PropertyName="RestoreOutputAbsolutePath" />
     </ConvertToAbsolutePath>
@@ -132,7 +134,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       <NuGetPackInput Include="@(_References)"/>
       <NuGetPackOutput Include="$(RestoreOutputAbsolutePath)$(PackageId).$(PackageVersion).nuspec"/>
 
-      <NuGetPackOutput Include="$(PackageOutputAbsolutePath)$(PackageId).$(PackageVersion).nupkg" 
+      <NuGetPackOutput Include="$(PackageOutputAbsolutePath)$(PackageId).$(PackageVersion).nupkg"
                        Condition="'$(ContinuePackingAfterGeneratingNuspec)' == 'true'"/>
 
       <NuGetPackOutput Include="$(PackageOutputAbsolutePath)$(PackageId).$(PackageVersion).symbols.nupkg"
@@ -144,7 +146,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                              OR '$(IncludeSymbols)' == 'true'"/>
     </ItemGroup>
   </Target>
-  
+
   <!--
     ============================================================
     Pack
@@ -158,7 +160,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       <ContinuePackingAfterGeneratingNuspec>true</ContinuePackingAfterGeneratingNuspec>
     </PropertyGroup>
   </Target>
-  
+
   <Target Name="GenerateNuspec" DependsOnTargets="$(GenerateNuspecDependsOn);_CalculateInputsOutputsForPack" Condition="$(IsPackable) == 'true'"
           Inputs="@(NuGetPackInput)" Outputs="@(NuGetPackOutput)">
     <!-- Call Pack -->
@@ -204,7 +206,7 @@ Copyright (c) .NET Foundation. All rights reserved.
               NuspecBasePath="$(NuspecBasePath)"
               NuspecProperties="$(NuspecProperties)"/>
   </Target>
-  
+
   <!--
     ============================================================
     _LoadPackGraphEntryPoints
@@ -229,16 +231,16 @@ Copyright (c) .NET Foundation. All rights reserved.
           TaskParameter="TargetOutputs"
           ItemName="_BuildOutputInPackage" />
     </MSBuild>
-    
+
     <MSBuild
       Condition="'$(TargetsForTfmSpecificContentInPackage)' != ''"
       Projects="$(MSBuildProjectFullPath)"
       Targets="_GetTfmSpecificContentForPackage"
       Properties="TargetFramework=%(_TargetFrameworks.Identity);">
-      
-    <Output
-        TaskParameter="TargetOutputs"
-        ItemName="_PackageFiles"/>
+
+      <Output
+          TaskParameter="TargetOutputs"
+          ItemName="_PackageFiles"/>
     </MSBuild>
 
     <MSBuild
@@ -278,13 +280,13 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <Target Name ="_GetFrameworkAssemblyReferences" DependsOnTargets="ResolveReferences" Returns="@(TfmSpecificFrameworkAssemblyReferences)">
     <ItemGroup>
-      <TfmSpecificFrameworkAssemblyReferences Include="@(ReferencePath->'%(OriginalItemSpec)')" 
+      <TfmSpecificFrameworkAssemblyReferences Include="@(ReferencePath->'%(OriginalItemSpec)')"
       Condition="'%(ReferencePath.Pack)' != 'false' AND '%(ReferencePath.ResolvedFrom)' == '{TargetFrameworkDirectory}'">
         <TargetFramework>$(TargetFramework)</TargetFramework>
       </TfmSpecificFrameworkAssemblyReferences>
     </ItemGroup>
   </Target>
-  
+
   <Target Name="_GetBuildOutputFilesWithTfm"
           DependsOnTargets="BuiltProjectOutputGroup;DocumentationProjectOutputGroup;SatelliteDllsProjectOutputGroup;_AddPriFileToPackBuildOutput;$(TargetsForTfmSpecificBuildOutput)"
           Returns="@(BuildOutputInPackage)">
@@ -295,7 +297,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                             @(_PathToPriFile)"/>
     </ItemGroup>
   </Target>
-  
+
   <Target Name="_GetTfmSpecificContentForPackage"
           DependsOnTargets="$(TargetsForTfmSpecificContentInPackage)"
           Returns="@(TfmSpecificPackageFile)">
@@ -310,7 +312,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       </_TargetPathsToSymbolsWithTfm>
     </ItemGroup>
   </Target>
-  
+
   <!--Projects with target framework like UWP, Win8, wpa81 produce a Pri file
     in their bin dir. This Pri file is not included in the BuiltProjectGroupOutput, and
     has to be added manually here.-->

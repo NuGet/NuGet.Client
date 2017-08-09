@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -977,7 +977,6 @@ namespace NuGet.Commands
         // Gets the full path of the resulting nuget package including the file name
         public static string GetOutputPath(PackageBuilder builder, PackArgs packArgs, bool symbols = false, NuGetVersion nugetVersion = null, string outputDirectory = null, bool isNupkg = true)
         {
-            string version;
             NuGetVersion versionToUse;
             if (nugetVersion != null)
             {
@@ -985,7 +984,7 @@ namespace NuGet.Commands
             }
             else
             {
-                if (String.IsNullOrEmpty(packArgs.Version))
+                if (string.IsNullOrEmpty(packArgs.Version))
                 {
                     if (builder.Version == null)
                     {
@@ -1008,7 +1007,7 @@ namespace NuGet.Commands
             var outputFile = GetOutputFileName(builder.Id, versionToUse , isNupkg: isNupkg, symbols: symbols);
             
 
-            string finalOutputDirectory = packArgs.OutputDirectory ?? packArgs.CurrentDirectory;
+            var finalOutputDirectory = packArgs.OutputDirectory ?? packArgs.CurrentDirectory;
             finalOutputDirectory = outputDirectory ?? finalOutputDirectory;
             return Path.Combine(finalOutputDirectory, outputFile);
         }
