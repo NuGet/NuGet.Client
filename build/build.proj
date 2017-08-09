@@ -151,7 +151,7 @@
     Build, Pack, Core Tests, Unit tests for VS 15
     ============================================================
   -->
-  <Target Name="RunVS15"  DependsOnTargets="BuildVS15;Pack;CoreUnitTests;UnitTestsVS15">
+  <Target Name="RunVS15"  DependsOnTargets="BuildVS15;Pack;CoreUnitTests;UnitTestsVS15;ApexTestsVS15">
     <Message Text="Running NuGet Build for VS 15" Importance="high" />
   </Target>
 
