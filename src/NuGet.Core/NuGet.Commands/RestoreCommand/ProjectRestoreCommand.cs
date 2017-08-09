@@ -22,7 +22,7 @@ namespace NuGet.Commands
 {
     internal class ProjectRestoreCommand
     {
-        private readonly ILogger _logger;
+        private readonly RestoreCollectorLogger _logger;
 
         private readonly ProjectRestoreRequest _request;
 
@@ -32,7 +32,7 @@ namespace NuGet.Commands
             _request = request;
         }
 
-        public async Task<Tuple<bool, List<RestoreTargetGraph>, RuntimeGraph>> TryRestore(LibraryRange projectRange,
+        public async Task<Tuple<bool, List<RestoreTargetGraph>, RuntimeGraph>> TryRestoreAsync(LibraryRange projectRange,
             IEnumerable<FrameworkRuntimePair> frameworkRuntimePairs,
             HashSet<LibraryIdentity> allInstalledPackages,
             NuGetv3LocalRepository userPackageFolder,
@@ -118,6 +118,10 @@ namespace NuGet.Commands
                 // Clear the in-memory cache for newly installed packages
                 userPackageFolder.ClearCacheForIds(allInstalledPackages.Select(package => package.Name));
             }
+
+            // Update the logger with the restore target graphs
+            // This allows lazy initialization for the Transitive Warning Properties
+            _logger.RestoreTargetGraphs = graphs;
 
             // Warn for all dependencies that do not have exact matches or
             // versions that have been bumped up unexpectedly.

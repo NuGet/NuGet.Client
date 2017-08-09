@@ -43,8 +43,6 @@ namespace NuGet.Commands
         {
             _request = request ?? throw new ArgumentNullException(nameof(request));
 
-            Debugger.Launch();
-
             // Validate the lock file version requested
             if (_request.LockFileVersion < 1 || _request.LockFileVersion > LockFileFormat.Version)
             {
@@ -57,8 +55,8 @@ namespace NuGet.Commands
 
             var collectorLogger = new RestoreCollectorLogger(_request.Log, collectorLoggerHideWarningsAndErrors)
             {
-                ProjectPath = _request.Project.RestoreMetadata?.ProjectPath,
-                WarningPropertiesCollection = new WarningPropertiesCollection(
+                ProjectSpec = _request.Project,
+                ProjectWarningPropertiesCollection = new WarningPropertiesCollection(
                     request.Project.RestoreMetadata?.ProjectWideWarningProperties,
                     PackageSpecificWarningProperties.CreatePackageSpecificWarningProperties(request.Project),
                     request.Project.TargetFrameworks.Select(f => f.FrameworkName).AsList().AsReadOnly()
@@ -120,9 +118,6 @@ namespace NuGet.Commands
                 _request.DependencyProviders.FallbackPackageFolders,
                 contextForProject,
                 token);
-
-            _logger.TransitiveWarningPropertiesCollection = TransitiveNoWarnUtils
-                .CreateTransitiveWarningPropertiesCollection(_request.DependencyGraphSpec, graphs, _request.Project);
 
             // Create assets file
             var assetsFile = BuildAssetsFile(
@@ -572,7 +567,7 @@ namespace NuGet.Commands
 
             var projectRestoreCommand = new ProjectRestoreCommand(projectRestoreRequest);
 
-            var result = await projectRestoreCommand.TryRestore(
+            var result = await projectRestoreCommand.TryRestoreAsync(
                 projectRange,
                 projectFrameworkRuntimePairs,
                 allInstalledPackages,
@@ -619,7 +614,7 @@ namespace NuGet.Commands
             // Walk additional runtime graphs for supports checks
             if (_success && _request.CompatibilityProfiles.Any())
             {
-                var compatibilityResult = await projectRestoreCommand.TryRestore(
+                var compatibilityResult = await projectRestoreCommand.TryRestoreAsync(
                     projectRange,
                     _request.CompatibilityProfiles,
                     allInstalledPackages,

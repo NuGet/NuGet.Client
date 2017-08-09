@@ -114,7 +114,13 @@ namespace NuGet.Commands.Test
             var innerLogger = new Mock<ILogger>();
             var collector = new RestoreCollectorLogger(innerLogger.Object, LogLevel.Debug, hideWarningsAndErrors: false)
             {
-                ProjectPath = projectPath
+                ProjectSpec = new PackageSpec()
+                {
+                    RestoreMetadata = new ProjectRestoreMetadata()
+                    {
+                        ProjectPath = projectPath
+                    }
+                }
             };
 
             // Act
@@ -368,7 +374,7 @@ namespace NuGet.Commands.Test
             var innerLogger = new Mock<ILogger>();
             var collector = new RestoreCollectorLogger(innerLogger.Object)
             {
-                WarningPropertiesCollection = new WarningPropertiesCollection(
+                ProjectWarningPropertiesCollection = new WarningPropertiesCollection(
                     new WarningProperties(warnAsErrorSet, noWarnSet, allWarningsAsErrors),
                     null,
                     null)
@@ -402,7 +408,7 @@ namespace NuGet.Commands.Test
             var innerLogger = new Mock<ILogger>();
             var collector = new RestoreCollectorLogger(innerLogger.Object)
             {
-                WarningPropertiesCollection = new WarningPropertiesCollection(
+                ProjectWarningPropertiesCollection = new WarningPropertiesCollection(
                     new WarningProperties(warnAsErrorSet, noWarnSet, allWarningsAsErrors),
                     null,
                     null)
@@ -434,7 +440,7 @@ namespace NuGet.Commands.Test
             var innerLogger = new Mock<ILogger>();
             var collector = new RestoreCollectorLogger(innerLogger.Object)
             {
-                WarningPropertiesCollection = new WarningPropertiesCollection(
+                ProjectWarningPropertiesCollection = new WarningPropertiesCollection(
                     new WarningProperties(warnAsErrorSet, noWarnSet, allWarningsAsErrors),
                     null,
                     null)
@@ -468,7 +474,7 @@ namespace NuGet.Commands.Test
             var innerLogger = new Mock<ILogger>();
             var collector = new RestoreCollectorLogger(innerLogger.Object)
             {
-                WarningPropertiesCollection = new WarningPropertiesCollection(
+                ProjectWarningPropertiesCollection = new WarningPropertiesCollection(
                     new WarningProperties(warnAsErrorSet, noWarnSet, allWarningsAsErrors),
                     null,
                     null)
@@ -506,7 +512,7 @@ namespace NuGet.Commands.Test
             var innerLogger = new Mock<ILogger>();
             var collector = new RestoreCollectorLogger(innerLogger.Object)
             {
-                WarningPropertiesCollection = new WarningPropertiesCollection(
+                ProjectWarningPropertiesCollection = new WarningPropertiesCollection(
                     new WarningProperties(warnAsErrorSet, noWarnSet, allWarningsAsErrors),
                     packageSpecificWarningProperties,
                     null)
@@ -544,7 +550,7 @@ namespace NuGet.Commands.Test
             var innerLogger = new Mock<ILogger>();
             var collector = new RestoreCollectorLogger(innerLogger.Object)
             {
-                WarningPropertiesCollection = new WarningPropertiesCollection(
+                ProjectWarningPropertiesCollection = new WarningPropertiesCollection(
                     new WarningProperties(warnAsErrorSet, noWarnSet, allWarningsAsErrors),
                     packageSpecificWarningProperties,
                     null)
@@ -584,7 +590,7 @@ namespace NuGet.Commands.Test
             var innerLogger = new Mock<ILogger>();
             var collector = new RestoreCollectorLogger(innerLogger.Object)
             {
-                WarningPropertiesCollection = new WarningPropertiesCollection(
+                ProjectWarningPropertiesCollection = new WarningPropertiesCollection(
                    new WarningProperties(warnAsErrorSet, noWarnSet, allWarningsAsErrors),
                    packageSpecificWarningProperties,
                    null)
@@ -624,7 +630,7 @@ namespace NuGet.Commands.Test
             var innerLogger = new Mock<ILogger>();
             var collector = new RestoreCollectorLogger(innerLogger.Object)
             {
-                WarningPropertiesCollection = new WarningPropertiesCollection(
+                ProjectWarningPropertiesCollection = new WarningPropertiesCollection(
                     new WarningProperties(warnAsErrorSet, noWarnSet, allWarningsAsErrors),
                     packageSpecificWarningProperties,
                     null)
@@ -664,7 +670,7 @@ namespace NuGet.Commands.Test
             var innerLogger = new Mock<ILogger>();
             var collector = new RestoreCollectorLogger(innerLogger.Object)
             {
-                WarningPropertiesCollection = new WarningPropertiesCollection(
+                ProjectWarningPropertiesCollection = new WarningPropertiesCollection(
                     new WarningProperties(warnAsErrorSet, noWarnSet, allWarningsAsErrors),
                     packageSpecificWarningProperties,
                     null)
@@ -706,7 +712,7 @@ namespace NuGet.Commands.Test
             var innerLogger = new Mock<ILogger>();
             var collector = new RestoreCollectorLogger(innerLogger.Object)
             {
-                WarningPropertiesCollection = new WarningPropertiesCollection(
+                ProjectWarningPropertiesCollection = new WarningPropertiesCollection(
                     new WarningProperties(warnAsErrorSet, noWarnSet, allWarningsAsErrors),
                     packageSpecificWarningProperties,
                     new List<NuGetFramework> { targetFramework })
@@ -746,7 +752,7 @@ namespace NuGet.Commands.Test
             var innerLogger = new Mock<ILogger>();
             var collector = new RestoreCollectorLogger(innerLogger.Object)
             {
-                WarningPropertiesCollection = new WarningPropertiesCollection(
+                ProjectWarningPropertiesCollection = new WarningPropertiesCollection(
                     new WarningProperties(warnAsErrorSet, noWarnSet, allWarningsAsErrors),
                     packageSpecificWarningProperties,
                     new List<NuGetFramework> { targetFramework, netcoreTargetFramework })
@@ -786,7 +792,7 @@ namespace NuGet.Commands.Test
             var innerLogger = new Mock<ILogger>();
             var collector = new RestoreCollectorLogger(innerLogger.Object)
             {
-                WarningPropertiesCollection = new WarningPropertiesCollection(
+                ProjectWarningPropertiesCollection = new WarningPropertiesCollection(
                     new WarningProperties(warnAsErrorSet, noWarnSet, allWarningsAsErrors),
                     packageSpecificWarningProperties,
                     new List<NuGetFramework> { targetFramework })
@@ -830,7 +836,7 @@ namespace NuGet.Commands.Test
             var innerLogger = new Mock<ILogger>();
             var collector = new RestoreCollectorLogger(innerLogger.Object)
             {
-                WarningPropertiesCollection = new WarningPropertiesCollection(
+                ProjectWarningPropertiesCollection = new WarningPropertiesCollection(
                     new WarningProperties(warnAsErrorSet, noWarnSet, allWarningsAsErrors),
                     packageSpecificWarningProperties,
                     new List<NuGetFramework> { targetFramework, netcoreTargetFramework })
@@ -866,7 +872,7 @@ namespace NuGet.Commands.Test
             var innerLogger = new Mock<ILogger>();
             var collector = new RestoreCollectorLogger(innerLogger.Object)
             {
-                WarningPropertiesCollection = new WarningPropertiesCollection(
+                ProjectWarningPropertiesCollection = new WarningPropertiesCollection(
                     new WarningProperties(warnAsErrorSet, noWarnSet, allWarningsAsErrors),
                     null,
                     null)
@@ -898,7 +904,7 @@ namespace NuGet.Commands.Test
             var innerLogger = new Mock<ILogger>();
             var collector = new RestoreCollectorLogger(innerLogger.Object)
             {
-                WarningPropertiesCollection = new WarningPropertiesCollection(
+                ProjectWarningPropertiesCollection = new WarningPropertiesCollection(
                     new WarningProperties(warnAsErrorSet, noWarnSet, allWarningsAsErrors),
                     null,
                     null)
@@ -930,7 +936,7 @@ namespace NuGet.Commands.Test
             var innerLogger = new Mock<ILogger>();
             var collector = new RestoreCollectorLogger(innerLogger.Object)
             {
-                WarningPropertiesCollection = new WarningPropertiesCollection(
+                ProjectWarningPropertiesCollection = new WarningPropertiesCollection(
                     new WarningProperties(warnAsErrorSet, noWarnSet, allWarningsAsErrors),
                     null,
                     null)
@@ -970,7 +976,7 @@ namespace NuGet.Commands.Test
             var innerLogger = new Mock<ILogger>();
             var collector = new RestoreCollectorLogger(innerLogger.Object)
             {
-                WarningPropertiesCollection = new WarningPropertiesCollection(
+                ProjectWarningPropertiesCollection = new WarningPropertiesCollection(
                     new WarningProperties(warnAsErrorSet, noWarnSet, allWarningsAsErrors),
                     packageSpecificWarningProperties,
                     null)
@@ -1012,7 +1018,7 @@ namespace NuGet.Commands.Test
             var innerLogger = new Mock<ILogger>();
             var collector = new RestoreCollectorLogger(innerLogger.Object)
             {
-                WarningPropertiesCollection = new WarningPropertiesCollection(
+                ProjectWarningPropertiesCollection = new WarningPropertiesCollection(
                     new WarningProperties(warnAsErrorSet, noWarnSet, allWarningsAsErrors),
                     packageSpecificWarningProperties,
                     null)
