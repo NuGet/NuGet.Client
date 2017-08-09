@@ -377,7 +377,10 @@
   </Target>
   <!--The IsCIBuild property is passed on the VSTS CI-->
   <Target Name="GetLocalizedDlls" AfterTargets="GetVsixSourceItems" Condition="'$(IsCIBuild)' =='true'">
-    <MSBuild Projects="@(SolutionProjectsWithoutVSIX)" Targets="GetLocalizedFilesForVsix" Properties="IsVsixBuild=true;&#xD;&#xA;                BuildProjectReferences=false;">
+    <MSBuild
+      Projects="@(SolutionProjectsWithoutVSIX)"
+      Targets="GetLocalizedFilesForVsix"
+      Properties="IsVsixBuild=true;BuildProjectReferences=false;">
       <Output TaskParameter="TargetOutputs" ItemName="LocalizedFilesForVsix" />
     </MSBuild>
     <ItemGroup>
