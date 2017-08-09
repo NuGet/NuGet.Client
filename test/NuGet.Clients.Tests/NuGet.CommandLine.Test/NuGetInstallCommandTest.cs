@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -1078,6 +1078,82 @@ namespace NuGet.CommandLine.Test
                 Assert.Contains("Unable to resolve dependency 'non_existing'", r.Item3);
             }
         }
+
+        [Fact]
+        public void InstallCommand_DependencyResolution()
+        {
+            var nugetexe = Util.GetNuGetExePath();
+
+            // Test variations
+            // dependencyVersion, requested version, expected version
+            string[,] variations =
+            {
+                {null,           null,  "1.1.0" },
+                {"Lowest",       "1.2", "1.2.0" },
+                {"Highest",      null,  "2.0.0" },
+                {"HighestMinor", "1.1", "1.2.0" },
+                {"HighestPatch", "1.1", "1.1.1" }
+            };
+
+            for (int i = 0; i < variations.GetLength(0); i++)
+            {
+                using (var source = TestDirectory.Create())
+                using (var outputDirectory = TestDirectory.Create())
+                {
+                    // Arrange
+                    Util.CreateTestPackage("depPackage", "1.1.0", source);
+                    Util.CreateTestPackage("depPackage", "1.1.1", source);
+                    Util.CreateTestPackage("depPackage", "1.2.0", source);
+                    Util.CreateTestPackage("depPackage", "2.0.0", source);
+
+                    var packageFileName = PackageCreater.CreatePackage(
+                        "testPackage", "1.1.0", source,
+                        (builder) =>
+                        {
+                            if (variations[i, 1] == null)
+                            {
+                                var dependencySet = new PackageDependencySet(null,
+                                    new[] { new PackageDependency("depPackage") });
+                                builder.DependencySets.Add(dependencySet);
+                            }
+                            else
+                            {
+                                var dependencySet = new PackageDependencySet(null,
+                                    new[] { new PackageDependency("depPackage",
+                                        VersionUtility.ParseVersionSpec(variations[i, 1])) });
+                                builder.DependencySets.Add(dependencySet);
+                            }
+                        });
+
+                    // Act
+                    string cmd;
+                    if (variations[i, 0] == null)
+                    {
+                        cmd = String.Format(
+                            CultureInfo.InvariantCulture,
+                            "install testPackage -OutputDirectory {0} -Source {1}", outputDirectory, source);
+                    }
+                    else
+                    {
+                        cmd = String.Format(
+                            CultureInfo.InvariantCulture,
+                            "install testPackage -OutputDirectory {0} -Source {1} -DependencyVersion {2}", outputDirectory, source, variations[i, 0]);
+                    }
+                    var r = CommandRunner.Run(
+                        nugetexe,
+                        Directory.GetCurrentDirectory(),
+                        cmd,
+                        waitForExit: true);
+
+                    // Assert
+                    Assert.Equal(0, r.Item1);
+                    // verify nuget grabs the earliest by default
+                    string depPackageFile = outputDirectory + @"\depPackage." + variations[i, 2] + @"\depPackage." + variations[i, 2] + ".nupkg";
+                    Assert.True(File.Exists(depPackageFile));
+                }
+            }
+        }
+
 
         // Tests that when credential is saved in the config file, it will be passed
         // correctly to both the index.json endpoint and registration endpoint, even

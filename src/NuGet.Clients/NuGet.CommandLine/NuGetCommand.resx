@@ -5339,4 +5339,7 @@ nuget locals global-packages -list</value>
   <data name="ForceRestoreCommand" xml:space="preserve">
     <value>Forces all dependencies to be resolved even if the last restore was successful. This is equivalent to deleting project.assets.json. (Does not apply to packages.config)</value>
   </data>
+  <data name="InstallCommandDependencyVersion" xml:space="preserve">
+    <value>Overrides the default dependency resolution behavior.</value>
+  </data>
 </root>

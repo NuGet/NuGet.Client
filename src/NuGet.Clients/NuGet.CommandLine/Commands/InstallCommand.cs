@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -32,6 +32,9 @@ namespace NuGet.CommandLine
 
         [Option(typeof(NuGetCommand), "InstallCommandVersionDescription")]
         public string Version { get; set; }
+
+        [Option(typeof(NuGetCommand), "InstallCommandDependencyVersion")]
+        public string DependencyVersion { get; set; }
 
         [Option(typeof(NuGetCommand), "InstallCommandExcludeVersionDescription", AltName = "x")]
         public bool ExcludeVersion { get; set; }
@@ -203,6 +206,38 @@ namespace NuGet.CommandLine
             return new CommandLineSourceRepositoryProvider(SourceProvider);
         }
 
+        private DependencyBehavior TryGetDependencyBehavior(string behaviorStr)
+        {
+            DependencyBehavior dependencyBehavior;
+
+            if (!Enum.TryParse<DependencyBehavior>(behaviorStr, /* ignoreCase */ true, out dependencyBehavior))
+            {
+                throw new CommandLineException(string.Format(CultureInfo.CurrentCulture, LocalizedResourceManager.GetString("InstallCommandUnknownDependencyVersion"), behaviorStr));
+            }
+
+            return dependencyBehavior;
+        }
+
+        private DependencyBehavior GetDependencyBehavior()
+        {
+            // If dependencyVersion is not set by either the config or commandline, default dependency behavior is 'Lowest'.
+            DependencyBehavior dependencyBehavior = DependencyBehavior.Lowest;
+
+            string settingsDependencyVersion = SettingsUtility.GetConfigValue(Settings, "dependencyVersion");
+
+            // Check to see if commandline flag is set. Else check for dependencyVersion in .config.
+            if (!string.IsNullOrEmpty(DependencyVersion))
+            {
+                dependencyBehavior = TryGetDependencyBehavior(DependencyVersion);
+            }
+            else if (!string.IsNullOrEmpty(settingsDependencyVersion))
+            {
+                dependencyBehavior = TryGetDependencyBehavior(settingsDependencyVersion);
+            }
+
+            return dependencyBehavior;
+        }
+
         private async Task InstallPackage(
             string packageId,
             NuGetVersion version,
@@ -228,8 +263,10 @@ namespace NuGet.CommandLine
 
             var allowPrerelease = Prerelease || (version != null && version.IsPrerelease);
 
+            var dependencyBehavior = GetDependencyBehavior();
+
             var resolutionContext = new ResolutionContext(
-                DependencyBehavior.Lowest,
+                dependencyBehavior,
                 includePrelease: allowPrerelease,
                 includeUnlisted: true,
                 versionConstraints: VersionConstraints.None);
