@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -3629,7 +3629,7 @@ namespace Proj2
     }
 }");
                 var msbuildPath = Util.GetMsbuildPathOnWindows();
-                if (RuntimeEnvironmentHelper.IsMono && Util.IsRunningOnMac())
+                if (RuntimeEnvironmentHelper.IsMono && RuntimeEnvironmentHelper.IsMacOSX)
                 {
                     msbuildPath = @"/Library/Frameworks/Mono.framework/Versions/Current/lib/mono/msbuild/15.0/bin/";
                 }
@@ -3758,7 +3758,7 @@ namespace Proj2
     }
 }");
                 var msbuildPath = Util.GetMsbuildPathOnWindows();
-                if (RuntimeEnvironmentHelper.IsMono && Util.IsRunningOnMac())
+                if (RuntimeEnvironmentHelper.IsMono && RuntimeEnvironmentHelper.IsMacOSX)
                 {
                     msbuildPath = @"/Library/Frameworks/Mono.framework/Versions/Current/lib/mono/msbuild/15.0/bin/";
                 }
