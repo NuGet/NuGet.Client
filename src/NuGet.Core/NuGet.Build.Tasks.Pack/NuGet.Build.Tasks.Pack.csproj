@@ -16,6 +16,7 @@
 
   <ItemGroup>
     <Compile Include="..\NuGet.Build.Tasks\Common\MSBuildLogger.cs" />
+    <Compile Include="..\NuGet.Build.Tasks\GetProjectTargetFrameworksTask.cs" />
     <Content Include="Pack.targets">
        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -51,21 +52,15 @@
     </EmbeddedResource>
   </ItemGroup>
 
-  <Target Name="PublishAndMergePackNupkg"  AfterTargets="AfterBuild" Condition="'$(TargetFramework)' != '' AND '$(IsXPlat)' == 'false' AND '$(BuildingInsideVisualStudio)' != 'true'">
-    <MSBuild
-      Projects="$(MSBuildProjectFullPath)"
-      Targets="Publish;ILMergeNuGetPack"/>
+  <Target Name="PublishAndMergePackNupkg" AfterTargets="AfterBuild" Condition="'$(TargetFramework)' != '' AND '$(IsXPlat)' == 'false' AND '$(BuildingInsideVisualStudio)' != 'true'">
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="Publish;ILMergeNuGetPack" />
   </Target>
 
   <Target Name="ILMergeNuGetPackResourcesPerCulture" DependsOnTargets="Publish">
     <ItemGroup>
-      <_PackResourceDlls Include="$(OutputPath)**\$(AssemblyName).resources.dll"/>
+      <_PackResourceDlls Include="$(OutputPath)**\$(AssemblyName).resources.dll" />
     </ItemGroup>
-    <MSBuild
-      Projects="$(MSBuildProjectFullPath)"
-      Targets="ILMergeNuGetPackResources"
-      Properties="CurrentCulture=%(_PackResourceDlls.RecursiveDir);
-                  BuildProjectReferences=false">
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="ILMergeNuGetPackResources" Properties="CurrentCulture=%(_PackResourceDlls.RecursiveDir);&#xD;&#xA;                  BuildProjectReferences=false">
     </MSBuild>
   </Target>
 
@@ -73,7 +68,7 @@
     <PropertyGroup>
       <ILMergeResultDir>$(OutputPath)ilmerge</ILMergeResultDir>
     </PropertyGroup>
-    <MakeDir Directories="$(ILMergeResultDir)"/>
+    <MakeDir Directories="$(ILMergeResultDir)" />
     <ItemGroup>
       <BuildArtifacts Include="$(OutputPath)*.dll" Exclude="$(OutputPath)*Pack.dll" />
     </ItemGroup>
@@ -89,7 +84,7 @@
     <PropertyGroup>
       <ILMergeResultDir>$(OutputPath)ilmerge\$(CurrentCulture)</ILMergeResultDir>
     </PropertyGroup>
-    <MakeDir Directories="$(ILMergeResultDir)"/>
+    <MakeDir Directories="$(ILMergeResultDir)" />
     <ItemGroup>
       <ResourceArtifacts Include="$(OutputPath)$(CurrentCulture)NuGet*.resources.dll" Exclude="$(OutputPath)$(CurrentCulture)*Pack.resources.dll" />
     </ItemGroup>

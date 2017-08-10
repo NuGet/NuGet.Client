@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.Build.Framework;
@@ -12,7 +12,7 @@ namespace NuGet.Build.Tasks
     /// Determine the project's targetframework(s) based
     /// on the available properties.
     /// </summary>
-    public class GetRestoreProjectFrameworks : Task
+    public class GetProjectTargetFrameworksTask : Task
     {
         /// <summary>
         /// Full path to the msbuild project.
