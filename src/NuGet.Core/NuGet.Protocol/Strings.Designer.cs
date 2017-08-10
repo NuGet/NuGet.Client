@@ -395,6 +395,15 @@ namespace NuGet.Protocol {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The local source &apos;{0}&apos; doesn&apos;t exist..
+        /// </summary>
+        internal static string Log_LocalSourceNotExist {
+            get {
+                return ResourceManager.GetString("Log_LocalSourceNotExist", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Retrying &apos;{0}&apos; for source &apos;{1}&apos;..
         /// </summary>
         internal static string Log_RetryingFindPackagesById {

@@ -402,8 +402,7 @@ namespace NuGet.Protocol
                 // Fail if the root directory does not exist at all.
                 var message = string.Format(
                     CultureInfo.CurrentCulture,
-                    Strings.Log_FailedToRetrievePackage,
-                    id,
+                    Strings.Log_LocalSourceNotExist,
                     _source);
 
                 throw new FatalProtocolException(message);
