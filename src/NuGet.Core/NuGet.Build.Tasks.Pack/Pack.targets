@@ -1,4 +1,4 @@
-﻿<!--
+<!--
 ***********************************************************************************************
 NuGet.targets
 
@@ -10,20 +10,21 @@ Copyright (c) .NET Foundation. All rights reserved.
 ***********************************************************************************************
 -->
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <!-- Load NuGet.Build.Tasks.Pack.dll, this can be overridden to use a different version with $(NugetTaskAssemblyFile) -->
-  <PropertyGroup Condition="$(NugetTaskAssemblyFile) == ''">
-    <NugetTaskAssemblyFile Condition="'$(MSBuildRuntimeType)' == 'Core'">..\CoreCLR\NuGet.Build.Tasks.Pack.dll</NugetTaskAssemblyFile>
-    <NugetTaskAssemblyFile Condition="'$(MSBuildRuntimeType)' != 'Core'">..\Desktop\NuGet.Build.Tasks.Pack.dll</NugetTaskAssemblyFile>
+  <!-- Load NuGet.Build.Tasks.Pack.dll, this can be overridden to use a different version with $(NuGetPackTaskAssemblyFile) -->
+  <PropertyGroup Condition="$(NuGetPackTaskAssemblyFile) == ''">
+    <NuGetPackTaskAssemblyFile Condition="'$(MSBuildRuntimeType)' == 'Core'">..\CoreCLR\NuGet.Build.Tasks.Pack.dll</NuGetPackTaskAssemblyFile>
+    <NuGetPackTaskAssemblyFile Condition="'$(MSBuildRuntimeType)' != 'Core'">..\Desktop\NuGet.Build.Tasks.Pack.dll</NuGetPackTaskAssemblyFile>
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
   </PropertyGroup>
-  <UsingTask TaskName="NuGet.Build.Tasks.Pack.PackTask" AssemblyFile="$(NugetTaskAssemblyFile)" />
-  <UsingTask TaskName="NuGet.Build.Tasks.Pack.GetPackOutputItemsTask" AssemblyFile="$(NugetTaskAssemblyFile)" />
+  <UsingTask TaskName="NuGet.Build.Tasks.Pack.PackTask" AssemblyFile="$(NuGetPackTaskAssemblyFile)" />
+  <UsingTask TaskName="NuGet.Build.Tasks.Pack.GetPackOutputItemsTask" AssemblyFile="$(NuGetPackTaskAssemblyFile)" />
+  <UsingTask TaskName="NuGet.Build.Tasks.GetProjectTargetFrameworksTask" AssemblyFile="$(NuGetPackTaskAssemblyFile)" />
 
   <PropertyGroup>
     <PackageId Condition=" '$(PackageId)' == '' ">$(AssemblyName)</PackageId>
     <PackageVersion Condition=" '$(PackageVersion)' == '' ">$(Version)</PackageVersion>
     <IncludeContentInPack Condition="'$(IncludeContentInPack)'==''">true</IncludeContentInPack>
-    <GenerateNuspecDependsOn>_LoadPackInputItems; _WalkEachTargetPerFramework; _GetPackageFiles; $(GenerateNuspecDependsOn)</GenerateNuspecDependsOn>
+    <GenerateNuspecDependsOn>_LoadPackInputItems; _GetTargetFrameworksOutput; _WalkEachTargetPerFramework; _GetPackageFiles; $(GenerateNuspecDependsOn)</GenerateNuspecDependsOn>
     <Description Condition="'$(Description)'==''">Package Description</Description>
     <IsPackable Condition="'$(IsPackable)'=='' AND '$(IsTestProject)'=='true'">false</IsPackable>
     <IsPackable Condition="'$(IsPackable)'==''">true</IsPackable>
@@ -45,8 +46,6 @@ Copyright (c) .NET Foundation. All rights reserved.
   </PropertyGroup>
   <ItemGroup>
     <ProjectCapability Include="Pack"/>
-    <_TargetFrameworks Condition="'$(TargetFramework)' == ''" Include="$(TargetFrameworks.Split(';'))"/>
-    <_TargetFrameworks Condition="'$(TargetFramework)' != ''" Include="$(TargetFramework)"/>
   </ItemGroup>
   <ItemDefinitionGroup>
     <BuildOutputInPackage>
@@ -80,6 +79,37 @@ Copyright (c) .NET Foundation. All rights reserved.
         TaskParameter="OutputPackItems"
         ItemName="_OutputPackItems" />
     </GetPackOutputItemsTask>
+  </Target>
+
+  <!--
+    ============================================================
+    _GetTargetFrameworksOutput
+    Read target frameworks from the project.
+    ============================================================
+  -->
+  <Target Name="_GetTargetFrameworksOutput"
+    Returns="@(_TargetFrameworks)">
+
+    <PropertyGroup>
+      <_ProjectFrameworks></_ProjectFrameworks>
+    </PropertyGroup>
+
+      <GetProjectTargetFrameworksTask
+      ProjectPath="$(MSBuildProjectFullPath)"
+      TargetFrameworks="$(TargetFrameworks)"
+      TargetFramework="$(TargetFramework)"
+      TargetFrameworkMoniker="$(TargetFrameworkMoniker)"
+      TargetPlatformIdentifier="$(TargetPlatformIdentifier)"
+      TargetPlatformVersion="$(TargetPlatformVersion)"
+      TargetPlatformMinVersion="$(TargetPlatformMinVersion)">
+      <Output
+        TaskParameter="ProjectTargetFrameworks"
+        PropertyName="_ProjectFrameworks" />
+    </GetProjectTargetFrameworksTask>
+
+    <ItemGroup Condition=" '$(_ProjectFrameworks)' != '' ">
+      <_TargetFrameworks Include="$(_ProjectFrameworks.Split(';'))" />
+    </ItemGroup>
   </Target>
 
   <!--
