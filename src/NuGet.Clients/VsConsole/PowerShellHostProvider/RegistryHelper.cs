@@ -1,8 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using Microsoft.Win32;
+using System;
 
 namespace NuGetConsole.Host.PowerShellProvider
 {
@@ -24,11 +24,9 @@ namespace NuGetConsole.Host.PowerShellProvider
                 return true;
             }
 
-            // PS 3.0 and 4.0 is set under "...\PowerShell\3" key
+            // PS 3.0 and higher is set under "...\PowerShell\3" key
             keyValue = GetSubKeyValue(@"SOFTWARE\Microsoft\PowerShell\3\PowerShellEngine", "PowerShellVersion");
-            if ("3.0".Equals(keyValue, StringComparison.OrdinalIgnoreCase)
-                ||
-                "4.0".Equals(keyValue, StringComparison.OrdinalIgnoreCase))
+            if (Version.TryParse(keyValue, out Version result) && result.Major >= 3)
             {
                 return true;
             }
