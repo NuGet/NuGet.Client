@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -213,18 +213,21 @@ namespace NuGet.Commands
         private static void AddContentFiles(RestoreTargetGraph targetGraph, LockFileTargetLibrary lockFileLib, NuGetFramework framework, ContentItemCollection contentItems, NuspecReader nuspec)
         {
             // content v2 items
-            var contentFileGroups = contentItems.FindItemGroups(targetGraph.Conventions.Patterns.ContentFiles);
+            var contentFileGroups = contentItems.FindItemGroups(targetGraph.Conventions.Patterns.ContentFiles).ToList();
 
-            // Multiple groups can match the same framework, find all of them
-            var contentFileGroupsForFramework = ContentFileUtils.GetContentGroupsForFramework(
-                lockFileLib,
-                framework,
-                contentFileGroups);
+            if (contentFileGroups.Count > 0)
+            {
+                // Multiple groups can match the same framework, find all of them
+                var contentFileGroupsForFramework = ContentFileUtils.GetContentGroupsForFramework(
+                    lockFileLib,
+                    framework,
+                    contentFileGroups);
 
-            lockFileLib.ContentFiles = ContentFileUtils.GetContentFileGroup(
-                framework,
-                nuspec,
-                contentFileGroupsForFramework);
+                lockFileLib.ContentFiles = ContentFileUtils.GetContentFileGroup(
+                    framework,
+                    nuspec,
+                    contentFileGroupsForFramework);
+            }
         }
 
         /// <summary>
@@ -303,15 +306,18 @@ namespace NuGet.Commands
         /// </summary>
         private static void ApplyReferenceFilter(LockFileTargetLibrary lockFileLib, NuGetFramework framework, NuspecReader nuspec)
         {
-            var referenceSet = nuspec.GetReferenceGroups().GetNearest(framework);
-            if (referenceSet != null)
+            if (lockFileLib.CompileTimeAssemblies.Count > 0 || lockFileLib.RuntimeAssemblies.Count > 0)
             {
-                var referenceFilter = new HashSet<string>(referenceSet.Items, StringComparer.OrdinalIgnoreCase);
+                var referenceSet = nuspec.GetReferenceGroups().GetNearest(framework);
+                if (referenceSet != null)
+                {
+                    var referenceFilter = new HashSet<string>(referenceSet.Items, StringComparer.OrdinalIgnoreCase);
 
-                // Remove anything that starts with "lib/" and is NOT specified in the reference filter.
-                // runtimes/* is unaffected (it doesn't start with lib/)
-                lockFileLib.RuntimeAssemblies = lockFileLib.RuntimeAssemblies.Where(p => !p.Path.StartsWith("lib/") || referenceFilter.Contains(Path.GetFileName(p.Path))).ToList();
-                lockFileLib.CompileTimeAssemblies = lockFileLib.CompileTimeAssemblies.Where(p => !p.Path.StartsWith("lib/") || referenceFilter.Contains(Path.GetFileName(p.Path))).ToList();
+                    // Remove anything that starts with "lib/" and is NOT specified in the reference filter.
+                    // runtimes/* is unaffected (it doesn't start with lib/)
+                    lockFileLib.RuntimeAssemblies = lockFileLib.RuntimeAssemblies.Where(p => !p.Path.StartsWith("lib/") || referenceFilter.Contains(Path.GetFileName(p.Path))).ToList();
+                    lockFileLib.CompileTimeAssemblies = lockFileLib.CompileTimeAssemblies.Where(p => !p.Path.StartsWith("lib/") || referenceFilter.Contains(Path.GetFileName(p.Path))).ToList();
+                }
             }
         }
 
