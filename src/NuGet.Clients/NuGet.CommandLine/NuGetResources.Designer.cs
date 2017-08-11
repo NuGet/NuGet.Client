@@ -4813,6 +4813,15 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Installing package &apos;{0}&apos; to &apos;{1}&apos;..
+        /// </summary>
+        public static string InstallPackageMessage {
+            get {
+                return ResourceManager.GetString("InstallPackageMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to {0}: invalid arguments..
         /// </summary>
         public static string InvalidArguments {
@@ -14875,6 +14884,15 @@ namespace NuGet.CommandLine {
         public static string UnknownOptionError_trk {
             get {
                 return ResourceManager.GetString("UnknownOptionError_trk", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &apos;{0}&apos; is not a valid target framework..
+        /// </summary>
+        public static string UnsupportedFramework {
+            get {
+                return ResourceManager.GetString("UnsupportedFramework", resourceCulture);
             }
         }
         

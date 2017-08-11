@@ -81,12 +81,12 @@ namespace NuGet.CommandLine.Test.Caching
         [Theory]
         [InlineData(typeof(InstallPackagesConfigCommand), CachingType.Default, ServerType.V2, true, true)]
         [InlineData(typeof(InstallPackagesConfigCommand), CachingType.Default, ServerType.V3, true, true)]
-        [InlineData(typeof(InstallPackagesConfigCommand), CachingType.NoCache, ServerType.V2, true, false)] // Should either fail or install?
-        [InlineData(typeof(InstallPackagesConfigCommand), CachingType.NoCache, ServerType.V3, true, false)] // Should either fail or install?
+        [InlineData(typeof(InstallPackagesConfigCommand), CachingType.NoCache, ServerType.V2, false, false)]
+        [InlineData(typeof(InstallPackagesConfigCommand), CachingType.NoCache, ServerType.V3, false, false)]
         [InlineData(typeof(InstallPackagesConfigCommand), CachingType.DirectDownload, ServerType.V2, true, true)]
         [InlineData(typeof(InstallPackagesConfigCommand), CachingType.DirectDownload, ServerType.V3, true, true)]
-        [InlineData(typeof(InstallPackagesConfigCommand), CachingType.NoCache | CachingType.DirectDownload, ServerType.V2, true, false)] // Should either fail or install?
-        [InlineData(typeof(InstallPackagesConfigCommand), CachingType.NoCache | CachingType.DirectDownload, ServerType.V3, true, false)] // Should either fail or install?
+        [InlineData(typeof(InstallPackagesConfigCommand), CachingType.NoCache | CachingType.DirectDownload, ServerType.V2, false, false)]
+        [InlineData(typeof(InstallPackagesConfigCommand), CachingType.NoCache | CachingType.DirectDownload, ServerType.V3, false, false)]
         [InlineData(typeof(InstallSpecificVersionCommand), CachingType.Default, ServerType.V2, true, true)]
         [InlineData(typeof(InstallSpecificVersionCommand), CachingType.Default, ServerType.V3, true, true)]
         [InlineData(typeof(InstallSpecificVersionCommand), CachingType.NoCache, ServerType.V2, false, false)]
