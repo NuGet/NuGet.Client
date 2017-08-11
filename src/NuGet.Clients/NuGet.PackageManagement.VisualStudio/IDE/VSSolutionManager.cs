@@ -240,22 +240,11 @@ namespace NuGet.PackageManagement.VisualStudio
             // for VS14, always return true since nominations don't apply there.
             return true;
 #else
-            var netCoreProjects = GetNuGetProjects().OfType<NetCorePackageReferenceProject>().ToList();
-
-            foreach (var project in netCoreProjects)
-            {
-                // check if this .Net core project is nominated or not.
-                DependencyGraphSpec projectRestoreInfo;
-                if (!_projectSystemCache.TryGetProjectRestoreInfo(project.MSBuildProjectPath, out projectRestoreInfo) ||
-                    projectRestoreInfo == null)
-                {
-                    // there are projects still to be nominated.
-                    return false;
-                }
-            }
-
-            // return true if all the net core projects have been nominated.
-            return true;
+            // return true if all .Net core projects are nominated, else false.
+            DependencyGraphSpec projectRestoreInfo;
+            return GetNuGetProjects().OfType<NetCorePackageReferenceProject>().
+                All(project => _projectSystemCache.TryGetProjectRestoreInfo(project.MSBuildProjectPath, out projectRestoreInfo) &&
+                    projectRestoreInfo != null);
 #endif
         }
 
