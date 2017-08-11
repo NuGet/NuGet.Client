@@ -157,6 +157,7 @@ if ($BuildRTM -eq 'true')
 {
     # Set the $(NupkgOutputDir) build variable in VSTS build
     Write-Host "##vso[task.setvariable variable=NupkgOutputDir;]ReleaseNupkgs"
+    Write-Host "##vso[task.setvariable variable=VsixPublishDir;]VS15-RTM"
     $numberOfTries = 0
     do{
         Write-Host "Waiting for buildinfo.json to be generated..."
