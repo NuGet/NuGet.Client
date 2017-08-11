@@ -461,6 +461,9 @@ The "ms" should be localized to the abbreviation for milliseconds.</comment>
 {2} is a package ID
 {3} is a package version</comment>
   </data>
+  <data name="Log_RetryFetchV2Feed" xml:space="preserve">
+    <value>The V2 feed request for '{0}' failed, trying again.</value>
+  </data>
   <data name="Plugin_Fault" xml:space="preserve">
     <value>Terminating plugin '{0}' due to an unrecoverable fault:  {1}</value>
     <comment>{0} is the plugin name

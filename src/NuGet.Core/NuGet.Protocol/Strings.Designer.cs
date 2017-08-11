@@ -20,7 +20,7 @@ namespace NuGet.Protocol {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "15.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "4.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class Strings {
@@ -391,6 +391,15 @@ namespace NuGet.Protocol {
         internal static string Log_InvalidNupkgFromUrl {
             get {
                 return ResourceManager.GetString("Log_InvalidNupkgFromUrl", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The V2 feed request for &apos;{0}&apos; failed, trying again..
+        /// </summary>
+        internal static string Log_RetryFetchV2Feed {
+            get {
+                return ResourceManager.GetString("Log_RetryFetchV2Feed", resourceCulture);
             }
         }
         
