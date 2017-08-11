@@ -3602,6 +3602,15 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Target framework used for selecting dependencies. Defaults to &apos;Any&apos; if not specified..
+        /// </summary>
+        internal static string InstallCommandFrameworkDescription {
+            get {
+                return ResourceManager.GetString("InstallCommandFrameworkDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to 禁止使用计算机缓存作为第一个程序包源。.
         /// </summary>
         internal static string InstallCommandNoCache_chs {

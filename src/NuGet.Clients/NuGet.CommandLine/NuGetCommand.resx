@@ -5342,4 +5342,7 @@ nuget locals global-packages -list</value>
   <data name="InstallCommandDependencyVersion" xml:space="preserve">
     <value>Overrides the default dependency resolution behavior.</value>
   </data>
+  <data name="InstallCommandFrameworkDescription" xml:space="preserve">
+    <value>Target framework used for selecting dependencies. Defaults to 'Any' if not specified.</value>
+  </data>
 </root>
