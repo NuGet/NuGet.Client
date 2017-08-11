@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -1796,6 +1796,68 @@ namespace ClassLibrary
                         var frameworkSpecificGroup = frameworkItems.Where(t => t.TargetFramework.Equals(nugetFramework)).First();
                         Assert.True(frameworkSpecificGroup.Items.Contains(referenceAssembly) == pack);
                     }                    
+                }
+            }
+        }
+
+        [PlatformTheory(Platform.Windows)]
+        [InlineData("Content",                                      "",                                     "Content")]
+        [InlineData("Content",                                      "Page",                                 "Page")]
+        [InlineData("EmbeddedResource",                             "",                                     "EmbeddedResource")]
+        [InlineData("EmbeddedResource",                             "ApplicationDefinition",                "ApplicationDefinition")]
+        public void PackCommand_PackProject_OutputsBuildActionForContentFiles(string itemType, string buildAction, string expectedBuildAction )
+        {
+            // Arrange
+            using (var testDirectory = TestDirectory.Create())
+            {
+                var projectName = "ClassLibrary1";
+                var workingDirectory = Path.Combine(testDirectory, projectName);
+
+                // Create the subdirectory structure for testing possible source paths for the content file
+                var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
+
+                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib");
+
+                File.WriteAllBytes(Path.Combine(workingDirectory, "abc.png"), new byte[0]);
+
+                using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
+                {
+                    var xml = XDocument.Load(stream);
+                    
+                    var attributes = new Dictionary<string, string>();
+                    attributes["Pack"] = "true";
+                    var properties = new Dictionary<string, string>();
+                    properties["BuildAction"] = buildAction;
+
+                    ProjectFileUtils.AddItem(
+                        xml,
+                        itemType,
+                        "abc.png",
+                        NuGetFramework.AnyFramework,
+                        properties,
+                        attributes);
+
+                    ProjectFileUtils.WriteXmlToFile(xml, stream);
+                }
+
+                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
+                var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
+                var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
+                // Act
+                msbuildFixture.PackProject(workingDirectory, projectName, $"-o {workingDirectory}");
+
+                // Assert
+                Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the expected place");
+                Assert.True(File.Exists(nuspecPath), "The intermediate nuspec file is not in the expected place");
+
+                using (var nupkgReader = new PackageArchiveReader(nupkgPath))
+                {
+                    var nuspecReader = nupkgReader.NuspecReader;
+                    var contentFiles = nuspecReader.GetContentFiles().ToArray();
+
+                    Assert.True(contentFiles.Count() == 1);
+                    var contentFile = contentFiles[0];
+                    Assert.Equal(expectedBuildAction, contentFile.BuildAction);
                 }
             }
         }
