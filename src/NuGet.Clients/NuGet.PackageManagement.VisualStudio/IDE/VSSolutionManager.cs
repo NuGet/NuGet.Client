@@ -240,7 +240,7 @@ namespace NuGet.PackageManagement.VisualStudio
         {
 #if VS14
             // for VS14, always return true since nominations don't apply there.
-            return true;
+            return await Task.FromResult(true);
 #else
             var netCoreProjects = (await GetNuGetProjectsAsync()).OfType<NetCorePackageReferenceProject>().ToList();
 

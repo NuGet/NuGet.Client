@@ -12,7 +12,6 @@ using NuGet.PackageManagement;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
 using NuGet.Test.Utility;
-using ThreadHelper = Microsoft.VisualStudio.Shell.ThreadHelper;
 
 namespace Test.Utility
 {
@@ -45,8 +44,9 @@ namespace Test.Utility
 
         public MSBuildNuGetProject AddNewMSBuildProject(string projectName = null, NuGetFramework projectTargetFramework = null, string packagesConfigName = null)
         {
-            var existingProject = ThreadHelper.JoinableTaskFactory.Run(async () => await GetNuGetProjectAsync(projectName));
-            if (existingProject != null)
+            var existingProject = Task.Run(async () => await GetNuGetProjectAsync(projectName));
+            existingProject.Wait();
+            if (existingProject.IsCompleted && existingProject.Result != null)
             {
                 throw new ArgumentException("Project with " + projectName + " already exists");
             }
@@ -66,8 +66,9 @@ namespace Test.Utility
 
         public NuGetProject AddBuildIntegratedProject(string projectName = null, NuGetFramework projectTargetFramework = null)
         {
-            var existingProject = ThreadHelper.JoinableTaskFactory.Run(async () => await GetNuGetProjectAsync(projectName));
-            if (existingProject != null)
+            var existingProject = Task.Run(async () => await GetNuGetProjectAsync(projectName));
+            existingProject.Wait();
+            if (existingProject.IsCompleted && existingProject.Result != null)
             {
                 throw new ArgumentException("Project with " + projectName + " already exists");
             }
