@@ -26,7 +26,8 @@ namespace NuGetConsole.Host.PowerShellProvider
 
             // PS 3.0 and higher is set under "...\PowerShell\3" key
             keyValue = GetSubKeyValue(@"SOFTWARE\Microsoft\PowerShell\3\PowerShellEngine", "PowerShellVersion");
-            if (Version.TryParse(keyValue, out Version result) && result.Major >= 3)
+            Version result; 
+            if (Version.TryParse(keyValue, out result) && result.Major >= 3)
             {
                 return true;
             }
