@@ -2,19 +2,20 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Concurrent;
 using System.ComponentModel.Composition;
 using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Threading;
 using NuGet.Common;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.VisualStudio;
-using Task = System.Threading.Tasks.Task;
 using MSBuildVerbosityLevel = NuGet.SolutionRestoreManager.VerbosityLevel;
-using Microsoft;
+using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.SolutionRestoreManager
 {
@@ -27,6 +28,9 @@ namespace NuGet.SolutionRestoreManager
     {
         private readonly IServiceProvider _serviceProvider;
         private readonly IOutputConsoleProvider _outputConsoleProvider;
+
+        // Queue of (bool reportProgress, bool showAsOutputMessage, ILogMessage logMessage)
+        private readonly ConcurrentQueue<Tuple<bool, bool, ILogMessage>> _loggedMessages = new ConcurrentQueue<Tuple<bool, bool, ILogMessage>>();
 
         private Lazy<ErrorListTableDataSource> _errorListDataSource;
         private RestoreOperationSource _operationSource;
@@ -130,7 +134,7 @@ namespace NuGet.SolutionRestoreManager
         /// <summary>
         /// Same as LogAsync but uses Do instead of DoAsync.
         /// </summary>
-        public override void Log(ILogMessage logMessage)
+        public sealed override void Log(ILogMessage logMessage)
         {
             HandleErrorsAndWarnings(logMessage);
 
@@ -145,10 +149,20 @@ namespace NuGet.SolutionRestoreManager
                 // Avoid moving to the UI thread unless there is work to do
                 if (reportProgress || showAsOutputMessage)
                 {
+                    // Make sure the message is queued in order of calls to LogAsync, but don't wait for the UI thread
+                    // to actually show it.
+                    _loggedMessages.Enqueue(Tuple.Create(reportProgress, showAsOutputMessage, logMessage));
+
                     // Run on the UI thread
-                    Do((_, progress) =>
+                    var ignored = DoAsync((_, progress) =>
                     {
-                        LogToVS(reportProgress, showAsOutputMessage, logMessage, progress);
+                        // This might be a different message than the one enqueued above, but overall the printing order
+                        // will match the order of calls to LogAsync.
+                        Tuple<bool, bool, ILogMessage> message;
+                        if (_loggedMessages.TryDequeue(out message))
+                        {
+                            LogToVS(reportProgress: message.Item1, showAsOutputMessage: message.Item2, logMessage: message.Item3, progress: progress);
+                        }
                     });
                 }
             }
@@ -159,29 +173,9 @@ namespace NuGet.SolutionRestoreManager
         /// if the message needs to be logged before moving to the
         /// UI thread. 
         /// </summary>
-        public override Task LogAsync(ILogMessage logMessage)
+        public sealed override Task LogAsync(ILogMessage logMessage)
         {
-            HandleErrorsAndWarnings(logMessage);
-
-            if (DisplayMessage(logMessage.Level))
-            {
-                var verbosityLevel = GetMSBuildLevel(logMessage.Level);
-                var reportProgress = ShouldReportProgress(logMessage);
-
-                // Write to the output window if the verbosity level is high enough.
-                var showAsOutputMessage = ShouldShowMessageAsOutput(verbosityLevel);
-
-                // Avoid moving to the UI thread unless there is work to do
-                if (reportProgress || showAsOutputMessage)
-                {
-                    // Run on the UI thread
-                    return DoAsync((_, progress) =>
-                    {
-                        LogToVS(reportProgress, showAsOutputMessage, logMessage, progress);
-                    });
-                }
-            }
-
+            Log(logMessage);
             return Task.FromResult(0);
         }
 
