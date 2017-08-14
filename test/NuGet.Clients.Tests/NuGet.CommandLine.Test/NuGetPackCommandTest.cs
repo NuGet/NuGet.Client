@@ -4568,14 +4568,7 @@ stuff \n <<".Replace("\r\n", "\n");
                 Assert.Equal(1, r.Item1);
 
                 // Assert
-                if (RuntimeEnvironmentHelper.IsMono && !RuntimeEnvironmentHelper.IsWindows)
-                {
-                    Assert.Contains("Failed to build 'proj1.csproj'.", r.Item3);
-                }
-                else
-                {
-                    Assert.Contains("Unable to find 'doesNotExist.1.1.0.nupkg'.", r.Item3);
-                }
+                Assert.Contains("Unable to find 'doesNotExist.1.1.0.nupkg'.", r.Item3);
             }
         }
 
