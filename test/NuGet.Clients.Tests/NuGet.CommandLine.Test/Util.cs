@@ -17,6 +17,7 @@ using NuGet.Test.Utility;
 using NuGet.Versioning;
 using Xunit;
 using System.Reflection;
+using NuGet.Common;
 
 namespace NuGet.CommandLine.Test
 {
@@ -1145,15 +1146,33 @@ EndProject");
 </packages>";
         }
 
-        public static string GetMsbuildPathOnWindows()
+        public static string GetMsbuildPath()
         {
-            var msbuildPath = @"C:\Program Files (x86)\MSBuild\14.0\Bin";
-            if (!Directory.Exists(msbuildPath))
+            if (RuntimeEnvironmentHelper.IsMono)
             {
-                msbuildPath = @"C:\Program Files\MSBuild\14.0\Bin";
+                var msbuildPath = @"/Library/Frameworks/Mono.framework/Versions/Current/lib/mono/msbuild/15.0/bin/";
+                if (!Directory.Exists(msbuildPath))
+                {
+                    msbuildPath = @"/usr/lib/mono/msbuild/15.0/bin";
+                }
+                if (!Directory.Exists(msbuildPath))
+                {
+                    msbuildPath = @"/usr/local/lib/mono/msbuild/15.0/bin";
+                }
+                return msbuildPath;
+            }
+            else
+            {
+
+                var msbuildPath = @"C:\Program Files (x86)\MSBuild\14.0\Bin";
+                if (!Directory.Exists(msbuildPath))
+                {
+                    msbuildPath = @"C:\Program Files\MSBuild\14.0\Bin";
+                }
+                return msbuildPath;
             }
 
-            return msbuildPath;
+
         }
 
         public static string GetHintPath(string path)

@@ -480,11 +480,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
             var nugetexe = Util.GetNuGetExePath();
 
 
-            var msbuildPath = Util.GetMsbuildPathOnWindows();
-            if (RuntimeEnvironmentHelper.IsMono && Util.IsRunningOnMac())
-            {
-                msbuildPath = @"/Library/Frameworks/Mono.framework/Versions/Current/lib/mono/msbuild/15.0/bin/";
-            }
+            var msbuildPath = Util.GetMsbuildPath();
 
             using (var workingPath = TestDirectory.Create())
             {
@@ -538,11 +534,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
             var nugetexe = Util.GetNuGetExePath();
 
 
-            var msbuildPath = Util.GetMsbuildPathOnWindows();
-            if (RuntimeEnvironmentHelper.IsMono && Util.IsRunningOnMac())
-            {
-                msbuildPath = @"/Library/Frameworks/Mono.framework/Versions/Current/lib/mono/msbuild/15.0/bin/";
-            }
+            var msbuildPath = Util.GetMsbuildPath();
 
             using (var workingPath = TestDirectory.Create())
             {
