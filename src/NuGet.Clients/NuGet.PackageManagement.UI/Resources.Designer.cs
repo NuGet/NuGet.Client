@@ -1406,15 +1406,6 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Review Changes.
-        /// </summary>
-        public static string Text_ReviewChanges {
-            get {
-                return ResourceManager.GetString("Text_ReviewChanges", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Search ({0}).
         /// </summary>
         public static string Text_SearchBoxText {
@@ -1685,11 +1676,11 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Preview.
+        ///   Looks up a localized string similar to Preview Changes.
         /// </summary>
-        public static string WindowTitle_Preview {
+        public static string WindowTitle_PreviewChanges {
             get {
-                return ResourceManager.GetString("WindowTitle_Preview", resourceCulture);
+                return ResourceManager.GetString("WindowTitle_PreviewChanges", resourceCulture);
             }
         }
         
