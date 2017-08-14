@@ -904,13 +904,15 @@ namespace NuGet.CommandLine
             if (RuntimeEnvironmentHelper.IsMono)
             {
                 // Try to find msbuild or xbuild in $Path.
-                string[] pathDirs = Environment.GetEnvironmentVariable("PATH")?.Split(new[] { Path.PathSeparator }, StringSplitOptions.RemoveEmptyEntries);
+                string[] pathDirs = Environment.GetEnvironmentVariable("PATH")?.Split(new[] {Path.PathSeparator},
+                    StringSplitOptions.RemoveEmptyEntries);
 
                 if (pathDirs?.Length > 0)
                 {
-                    foreach (var exeName in new[] { "msbuild", "xbuild" })
+                    foreach (var exeName in new[] {"msbuild", "xbuild"})
                     {
-                        var exePath = pathDirs.Select(dir => Path.Combine(dir, exeName)).FirstOrDefault(File.Exists);
+                        var exePath = pathDirs.Select(dir => Path.Combine(dir, exeName))
+                            .FirstOrDefault(File.Exists);
                         if (exePath != null)
                         {
                             return exePath;
@@ -918,18 +920,7 @@ namespace NuGet.CommandLine
                     }
                 }
 
-                // Try to find msbuild.exe from hard code path.
-                var path = new[] { CommandLineConstants.MsBuildPathOnMac15, CommandLineConstants.MsBuildPathOnMac14 }.
-                    Select(p => Path.Combine(p, "msbuild.exe")).FirstOrDefault(File.Exists);
-
-                if (path != null)
-                {
-                    return path;
-                }
-                else
-                {
-                    return Path.Combine(msbuildDirectory, "xbuild.exe");
-                }
+                return Path.Combine(msbuildDirectory, "xbuild.exe");
             }
             else
             {
