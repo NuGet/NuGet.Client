@@ -19,7 +19,7 @@ namespace NuGet.CommandLine {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "15.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "4.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     public class NuGetResources {
@@ -15775,6 +15775,24 @@ namespace NuGet.CommandLine {
         public static string UpdateCommandUpdatingNuGet_trk {
             get {
                 return ResourceManager.GetString("UpdateCommandUpdatingNuGet_trk", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Package &apos;{0}&apos; would be updated from &apos;{1}&apos; to &apos;{2}&apos;.
+        /// </summary>
+        public static string UpdateWhatIf {
+            get {
+                return ResourceManager.GetString("UpdateWhatIf", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Package &apos;{0}&apos;, version &apos;{1}&apos; would be installed for the first time.
+        /// </summary>
+        public static string UpdateWhatIfNew {
+            get {
+                return ResourceManager.GetString("UpdateWhatIfNew", resourceCulture);
             }
         }
         

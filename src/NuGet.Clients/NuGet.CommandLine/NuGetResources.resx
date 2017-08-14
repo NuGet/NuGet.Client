@@ -6133,4 +6133,10 @@ Oluşturma sırasında NuGet'in paketleri indirmesini önlemek için, Visual Stu
   <data name="InstallPackageMessage" xml:space="preserve">
     <value>Installing package '{0}' to '{1}'.</value>
   </data>
+  <data name="UpdateWhatIf" xml:space="preserve">
+    <value>Package '{0}' would be updated from '{1}' to '{2}'</value>
+  </data>
+  <data name="UpdateWhatIfNew" xml:space="preserve">
+    <value>Package '{0}', version '{1}' would be installed for the first time</value>
+  </data>
 </root>

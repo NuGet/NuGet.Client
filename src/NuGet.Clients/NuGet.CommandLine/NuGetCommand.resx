@@ -5345,4 +5345,7 @@ nuget locals global-packages -list</value>
   <data name="InstallCommandFrameworkDescription" xml:space="preserve">
     <value>Target framework used for selecting dependencies. Defaults to 'Any' if not specified.</value>
   </data>
+  <data name="WhatIf" xml:space="preserve">
+    <value>Shows which packages would be updated, but makes no changes</value>
+  </data>
 </root>
