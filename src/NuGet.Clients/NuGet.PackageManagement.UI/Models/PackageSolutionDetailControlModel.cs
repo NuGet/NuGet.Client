@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -278,7 +278,7 @@ namespace NuGet.PackageManagement.UI
                 }
             }
 
-            _nugetProjects = _solutionManager.GetNuGetProjects();
+            _nugetProjects = NuGetUIThreadHelper.JoinableTaskFactory.Run(async () => await _solutionManager.GetNuGetProjectsAsync());
             Projects = _nugetProjects.Select(
                 nugetProject => new PackageInstallationInfo(nugetProject))
                 .ToList();

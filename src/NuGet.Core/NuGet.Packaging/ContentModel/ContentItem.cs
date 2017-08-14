@@ -7,12 +7,25 @@ namespace NuGet.ContentModel
 {
     public class ContentItem
     {
+        private Dictionary<string, object> _properties;
         public string Path { get; set; }
-        public IDictionary<string, object> Properties { get; } = new Dictionary<string, object>();
+
+        public Dictionary<string, object> Properties
+        {
+            get => _properties ?? CreateDictionary();
+            internal set => _properties = value;
+        }
 
         public override string ToString()
         {
             return Path;
+        }
+
+        private Dictionary<string, object> CreateDictionary()
+        {
+            var properties = new Dictionary<string, object>();
+            _properties = properties;
+            return properties;
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -260,11 +260,9 @@ namespace NuGet.Commands.Test
         [Fact]
         public async Task DotnetCliTool_BasicToolRestore_DifferentVersionRanges()
         {
-
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
             {
-//                Debugger.Launch();
                 var logger = new TestLogger();
                 var dgFile = new DependencyGraphSpec();
 
@@ -319,6 +317,21 @@ namespace NuGet.Commands.Test
                     Assert.True(File.Exists(path), $"{path} does not exist!");
                 }
             }
+        }
+
+        [Theory]
+        [InlineData("tool","netcoreapp1.0","1.0.0", "tool-netcoreapp1.0-[1.0.0, )")]
+        [InlineData("Tool", "netcoreapp1.0", "1.0.0", "tool-netcoreapp1.0-[1.0.0, )")]
+        [InlineData("tOOl", "NetCoreapp1.0", "1.0.0", "tool-netcoreapp1.0-[1.0.0, )")]
+        public void DotnetCliTool_TestGetUniqueName(string name, string framework, string version, string expected)
+        {
+            Assert.Equal(expected, ToolRestoreUtility.GetUniqueName(name, framework, VersionRange.Parse(version)));
+        }
+
+        [Fact] 
+        public void DotnetCliTool_TestGetUniqueName_VersionRangeAll()
+        {
+            Assert.Equal("tool-netcoreapp1.0-(, )", ToolRestoreUtility.GetUniqueName("tool", "netcoreapp1.0", VersionRange.All));
         }
     }
 }

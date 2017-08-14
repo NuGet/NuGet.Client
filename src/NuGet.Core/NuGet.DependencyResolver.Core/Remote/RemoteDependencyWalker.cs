@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -114,6 +114,13 @@ namespace NuGet.DependencyResolver
                 {
                     var result = predicate(dependency.LibraryRange);
 
+                    // Check for a cycle, this is needed for A (project) -> A (package)
+                    // since the predicate will not be called for leaf nodes.
+                    if (StringComparer.OrdinalIgnoreCase.Equals(dependency.Name, libraryRange.Name))
+                    {
+                        result = DependencyResult.Cycle;
+                    }
+
                     if (result == DependencyResult.Acceptable)
                     {
                         // Dependency edge from the current node to the dependency
@@ -220,7 +227,7 @@ namespace NuGet.DependencyResolver
                     }
 
                     nearMinVersion = GetReleaseLabelFreeVersion(nearVersion);
-                    nearRelease = nearVersion.Float.MinVersion.Release;
+                    nearRelease = nearVersion.Float.OriginalReleasePrefix;
                 }
                 else
                 {
@@ -237,7 +244,7 @@ namespace NuGet.DependencyResolver
                     }
 
                     farMinVersion = GetReleaseLabelFreeVersion(farVersion);
-                    farRelease = farVersion.Float.MinVersion.Release;
+                    farRelease = farVersion.Float.OriginalReleasePrefix;
                 }
                 else
                 {
@@ -251,8 +258,6 @@ namespace NuGet.DependencyResolver
                     return result > 0;
                 }
 
-                nearRelease = nearRelease?.Trim('-');
-                farRelease = farRelease?.Trim('-');
                 if (string.IsNullOrEmpty(nearRelease))
                 {
                     // near is 1.0.0-*

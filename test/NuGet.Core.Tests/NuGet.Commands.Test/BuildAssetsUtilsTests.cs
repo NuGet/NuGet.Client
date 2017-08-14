@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -49,6 +49,62 @@ namespace NuGet.Commands.Test
 
             // Assert
             Assert.Equal(path, props["ProjectAssetsFile"]);
+        }
+
+        [Fact]
+        public void BuildAssetsUtils_GenerateProjectRelativeAssetsFilePath()
+        {
+            using (var workingDir = TestDirectory.Create())
+            {
+                // Arrange
+                var filePath = Path.Combine(workingDir, "obj", "test.props");
+                var assetsPath = Path.Combine(workingDir, "obj", "project.assets.json");
+
+                var doc = BuildAssetsUtils.GenerateEmptyImportsFile();
+                var file = new MSBuildOutputFile(filePath, doc);
+
+                // Act
+                BuildAssetsUtils.AddNuGetPropertiesToFirstImport(
+                    new[] { file },
+                    Enumerable.Empty<string>(),
+                    string.Empty,
+                    ProjectStyle.PackageReference,
+                    assetsPath,
+                    success: true);
+
+                var props = TargetsUtility.GetMSBuildProperties(doc);
+
+                // Assert
+                Assert.Equal("project.assets.json", props["ProjectAssetsFile"]);
+            }
+        }
+
+        [Fact]
+        public void BuildAssetsUtils_GenerateProjectRelativeAssetsFilePathInOtherDir()
+        {
+            using (var workingDir = TestDirectory.Create())
+            {
+                // Arrange
+                var filePath = Path.Combine(workingDir, "obj", "test.props");
+                var assetsPath = Path.Combine(workingDir, "nuget", "project.assets.json");
+
+                var doc = BuildAssetsUtils.GenerateEmptyImportsFile();
+                var file = new MSBuildOutputFile(filePath, doc);
+
+                // Act
+                BuildAssetsUtils.AddNuGetPropertiesToFirstImport(
+                    new[] { file },
+                    Enumerable.Empty<string>(),
+                    string.Empty,
+                    ProjectStyle.PackageReference,
+                    assetsPath,
+                    success: true);
+
+                var props = TargetsUtility.GetMSBuildProperties(doc);
+
+                // Assert
+                Assert.Equal("../nuget/project.assets.json".Replace('/', Path.DirectorySeparatorChar), props["ProjectAssetsFile"]);
+            }
         }
 
         [Fact]

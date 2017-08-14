@@ -13,7 +13,7 @@ namespace NuGet.ContentModel
     /// </summary>
     public class ContentPropertyDefinition
     {
-        private static readonly char[] SlashChars = new char[] { '/', '\\' };
+        private static readonly Func<object, object, bool> EqualsTest = (left, right) => Equals(left, right);
 
         public ContentPropertyDefinition(string name)
             : this(name, null, null, null, null, false)
@@ -92,9 +92,9 @@ namespace NuGet.ContentModel
         {
             Name = name;
             Parser = parser;
-            CompatibilityTest = compatibilityTest ?? Equals;
+            CompatibilityTest = compatibilityTest ?? EqualsTest;
             CompareTest = compareTest;
-            FileExtensions = (fileExtensions ?? Enumerable.Empty<string>()).ToList();
+            FileExtensions = fileExtensions?.ToList();
             FileExtensionAllowSubFolders = allowSubfolders;
         }
 
@@ -114,11 +114,9 @@ namespace NuGet.ContentModel
                 return false;
             }
 
-            if (FileExtensions != null
-                && FileExtensions.Count > 0)
+            if (FileExtensions?.Count > 0)
             {
-                if (FileExtensionAllowSubFolders == true
-                    || name.IndexOfAny(SlashChars) == -1)
+                if (FileExtensionAllowSubFolders || !ContainsSlash(name))
                 {
                     foreach (var fileExtension in FileExtensions)
                     {
@@ -142,6 +140,21 @@ namespace NuGet.ContentModel
 
             value = null;
             return false;
+        }
+
+        private static bool ContainsSlash(string name)
+        {
+            var containsSlash = false;
+            foreach (var ch in name)
+            {
+                if (ch == '/' || ch == '\\')
+                {
+                    containsSlash = true;
+                    break;
+                }
+            }
+
+            return containsSlash;
         }
 
         public Func<object, object, bool> CompatibilityTest { get; }

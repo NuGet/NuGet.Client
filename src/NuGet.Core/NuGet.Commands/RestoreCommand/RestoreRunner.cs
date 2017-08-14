@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -10,6 +10,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
+using NuGet.Configuration;
 using NuGet.ProjectModel;
 
 namespace NuGet.Commands
@@ -299,7 +300,7 @@ namespace NuGet.Commands
             return new RestoreSummary(
                 result,
                 summaryRequest.InputPath,
-                summaryRequest.Settings,
+                summaryRequest.ConfigFiles,
                 summaryRequest.Sources,
                 messages);
         }

@@ -45,6 +45,7 @@ namespace NuGet.Protocol.Tests
             Assert.Equal(package.Description, package.Summary);
             Assert.Equal("EntityFramework", package.Title);
             Assert.Equal(string.Join(", ", "Microsoft", "EF", "Database", "Data", "O/RM", "ADO.NET"), package.Tags);
+            Assert.True(package.PrefixReserved);
         }
 
         [Fact]

@@ -103,8 +103,8 @@ namespace NuGet.RuntimeModel
             yield return runtime;
 
             // Try to expand the runtime based on the graph
-            var deduper = new HashSet<string>();
-            var expansions = new List<string>();
+            var deduper = Cache<string>.RentHashSet();
+            var expansions = Cache<string>.RentList();
             deduper.Add(runtime);
             expansions.Add(runtime);
             for (var i = 0; i < expansions.Count; i++)
@@ -114,8 +114,11 @@ namespace NuGet.RuntimeModel
                 if (Runtimes.TryGetValue(expansions[i], out desc))
                 {
                     // Add the inherited runtimes to the list
-                    foreach (var inheritedRuntime in desc.InheritedRuntimes)
+                    var inheritedRuntimes = desc.InheritedRuntimes;
+                    var count = inheritedRuntimes.Count;
+                    for (var r = 0; r < count; r++)
                     {
+                        var inheritedRuntime = inheritedRuntimes[r];
                         if (deduper.Add(inheritedRuntime))
                         {
                             yield return inheritedRuntime;
@@ -124,6 +127,9 @@ namespace NuGet.RuntimeModel
                     }
                 }
             }
+
+            Cache<string>.ReleaseHashSet(deduper);
+            Cache<string>.ReleaseList(expansions);
         }
 
         /// <summary>
@@ -190,6 +196,54 @@ namespace NuGet.RuntimeModel
             hashCode.AddDictionary(Supports);
 
             return hashCode.CombinedHash;
+        }
+
+        private static class Cache<T>
+        {
+            [ThreadStatic] private static HashSet<T> _hashSet;
+            [ThreadStatic] private static List<T> _list;
+
+            public static HashSet<T> RentHashSet()
+            {
+                var hashSet = _hashSet;
+                if (hashSet != null)
+                {
+                    _hashSet = null;
+                    return hashSet;
+                }
+
+                return new HashSet<T>();
+            }
+
+            public static void ReleaseHashSet(HashSet<T> hashSet)
+            {
+                if (_hashSet == null)
+                {
+                    hashSet.Clear();
+                    _hashSet = hashSet;
+                }
+            }
+
+            public static List<T> RentList()
+            {
+                var list = _list;
+                if (list != null)
+                {
+                    _list = null;
+                    return list;
+                }
+
+                return new List<T>();
+            }
+
+            public static void ReleaseList(List<T> list)
+            {
+                if (_list == null)
+                {
+                    list.Clear();
+                    _list = list;
+                }
+            }
         }
     }
 }

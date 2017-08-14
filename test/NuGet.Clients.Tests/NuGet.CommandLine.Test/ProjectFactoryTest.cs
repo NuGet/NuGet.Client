@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -71,7 +71,6 @@ namespace NuGet.CommandLine
 
                 // Act
                 var msbuildPath = Util.GetMsbuildPath();
-
                 var factory = new ProjectFactory(msbuildPath, projectPath, null) { Build = false };
                 var packageBuilder = factory.CreateBuilder(basePath, null, "", true);
                 var actual = Preprocessor.Process(inputSpec.AsStream(), factory, false);

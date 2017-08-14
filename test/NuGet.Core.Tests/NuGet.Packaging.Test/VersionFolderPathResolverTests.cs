@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.IO;
@@ -192,8 +192,60 @@ namespace NuGet.Packaging.Test
             Assert.Equal(expectedFileName, actualFileName);
         }
 
+        [Fact]
+        public void GetInstallPath_ReturnsOverridenValue()
+        {
+            var context = new TestContext(useExtendedResolver: true);
+
+            var actualFileName = context.Target.GetInstallPath(context.Id, context.Version);
+
+            Assert.Equal(string.Empty, actualFileName);
+        }
+
+        [Fact]
+        public void GetPackageFileName_ReturnsOverridenValue()
+        {
+            var context = new TestContext(useExtendedResolver: true);
+
+            var actualFileName = context.Target.GetPackageFileName(context.Id, context.Version);
+
+            Assert.Equal(string.Empty, actualFileName);
+        }
+
+        [Fact]
+        public void GetVersionListDirectory_ReturnsOverridenValue()
+        {
+            var context = new TestContext(useExtendedResolver: true);
+
+            var actualFileName = context.Target.GetVersionListDirectory(context.Id);
+
+            Assert.Equal(string.Empty, actualFileName);
+        }
+
+        [Fact]
+        public void GetManifestFileName_ReturnsOverridenValue()
+        {
+            var context = new TestContext(useExtendedResolver: true);
+
+            var actualFileName = context.Target.GetManifestFileName(context.Id, context.Version);
+
+            Assert.Equal(string.Empty, actualFileName);
+        }
+
+        [Fact]
+        public void GetPackageDirectory_ReturnsOverridenValue()
+        {
+
+            var context = new TestContext(useExtendedResolver: true);
+
+            var actualFileName = context.Target.GetPackageDirectory(context.Id, context.Version);
+
+            Assert.Equal(string.Empty, actualFileName);
+        }
+
         private class TestContext
         {
+            private bool _useExtendedResolver;
             public TestContext()
             {
                 // data
@@ -203,14 +255,56 @@ namespace NuGet.Packaging.Test
                 IsLowercase = true;
             }
 
+            public TestContext(bool useExtendedResolver) : base()
+            {
+                _useExtendedResolver = useExtendedResolver;
+            }
+
             public string Id { get; private set; }
             public string PackagesPath { get; set; }
             public NuGetVersion Version { get; set; }
             public bool IsLowercase { get; set; }
             public VersionFolderPathResolver Target
             {
-                get { return new VersionFolderPathResolver(PackagesPath, IsLowercase); }
+                get
+                {
+                    return _useExtendedResolver ? 
+                        new VersionFolderPathResolverExtended(PackagesPath) :
+                        new VersionFolderPathResolver(PackagesPath, IsLowercase);
+                }
             }
+        }
+    }
+
+    internal class VersionFolderPathResolverExtended : VersionFolderPathResolver
+    {
+        public VersionFolderPathResolverExtended(string rootPath) : base(rootPath)
+        {
+
+        }
+        public override string GetInstallPath(string packageId, NuGetVersion version)
+        {
+            return string.Empty;
+        }
+
+        public override string GetPackageFileName(string packageId, NuGetVersion version)
+        {
+            return string.Empty;
+        }
+
+        public override string GetVersionListDirectory(string packageId)
+        {
+            return string.Empty;
+        }
+
+        public override string GetManifestFileName(string packageId, NuGetVersion version)
+        {
+            return string.Empty;
+        }
+
+        public override string GetPackageDirectory(string packageId, NuGetVersion version)
+        {
+            return string.Empty;
         }
     }
 }

@@ -98,6 +98,9 @@ namespace NuGet.Protocol
         [JsonProperty(PropertyName = JsonProperties.Versions)]
         public VersionInfo[] ParsedVersions { get; private set; }
 
+        [JsonProperty(PropertyName = JsonProperties.PrefixReserved)]
+        public bool PrefixReserved { get; private set; }
+
         public Task<IEnumerable<VersionInfo>> GetVersionsAsync() => Task.FromResult<IEnumerable<VersionInfo>>(ParsedVersions);
 
         // The V3 source currently does not return a listed property

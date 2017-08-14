@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Xml.Linq;
+using NuGet.Commands;
 using NuGet.Frameworks;
 
 namespace NuGet.Test.Utility
@@ -15,12 +16,18 @@ namespace NuGet.Test.Utility
     {
         public static void AddProperties(XDocument doc, Dictionary<string, string> properties)
         {
+            AddProperties(doc, properties, condition: null);
+        }
+
+        public static void AddProperties(XDocument doc, Dictionary<string, string> properties, string condition)
+        {
             var ns = doc.Root.GetDefaultNamespace();
 
             var propertyGroup = new XElement(XName.Get("PropertyGroup", ns.NamespaceName));
             foreach (var pair in properties)
             {
                 var subItem = new XElement(XName.Get(pair.Key, ns.NamespaceName), pair.Value);
+                AddCondition(condition, subItem);
                 propertyGroup.Add(subItem);
             }
 
@@ -28,10 +35,34 @@ namespace NuGet.Test.Utility
             lastPropGroup.AddAfterSelf(propertyGroup);
         }
 
+        private static void AddCondition(string condition, XElement subItem)
+        {
+            if (MSBuildStringUtility.TrimAndGetNullForEmpty(condition) != null)
+            {
+                subItem.Add(new XAttribute(XName.Get("Condition"), condition));
+            }
+        }
+
         public static void AddProperty(XDocument doc, string propertyName, string propertyValue)
         {
+            AddProperty(doc, propertyName, propertyValue, condition: null);
+        }
+
+        public static void AddProperty(XDocument doc, string propertyName, string propertyValue, string condition)
+        {
             var lastPropGroup = doc.Root.Elements().Last(e => e.Name.LocalName == "PropertyGroup");
-            lastPropGroup.Add(new XElement(XName.Get(propertyName), propertyValue));
+            var element = new XElement(XName.Get(propertyName), propertyValue);
+
+            AddCondition(condition, element);
+
+            lastPropGroup.Add(element);
+        }
+
+        public static bool HasCondition(XElement element, string condition)
+        {
+            var elementCondition = MSBuildStringUtility.TrimAndGetNullForEmpty(element.Attribute(XName.Get("Condition"))?.Value);
+
+            return StringComparer.OrdinalIgnoreCase.Equals(MSBuildStringUtility.TrimAndGetNullForEmpty(condition), elementCondition);
         }
 
         public static void AddItem(XDocument doc,

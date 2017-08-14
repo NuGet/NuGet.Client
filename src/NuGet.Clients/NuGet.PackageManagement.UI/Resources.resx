@@ -243,8 +243,8 @@
   <data name="Label_Solution" xml:space="preserve">
     <value>Solution '{0}'</value>
   </data>
-  <data name="WindowTitle_Preview" xml:space="preserve">
-    <value>Preview</value>
+  <data name="WindowTitle_PreviewChanges" xml:space="preserve">
+    <value>Preview Changes</value>
   </data>
   <data name="Label_Browse" xml:space="preserve">
     <value>Browse</value>
@@ -332,9 +332,6 @@
   </data>
   <data name="Checkbox_ShowPreviewWindow" xml:space="preserve">
     <value>Show preview window</value>
-  </data>
-  <data name="Text_ReviewChanges" xml:space="preserve">
-    <value>Review Changes</value>
   </data>
   <data name="Text_Changes" xml:space="preserve">
     <value>Visual Studio is about to make changes to this solution. Click OK to proceed with the changes listed below.</value>
@@ -680,5 +677,8 @@ Please see https://aka.ms/troubleshoot_nuget_cache for more help.</value>
   </data>
   <data name="CheckBox_DefaultAction_Uncheck" xml:space="preserve">
     <value>Uncheck</value>
+  </data>
+  <data name="Tooltip_PrefixReserved" xml:space="preserve">
+    <value>The identity of this package has been verified by nuget.org</value>
   </data>
 </root>

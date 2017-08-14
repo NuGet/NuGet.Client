@@ -88,6 +88,9 @@ namespace NuGet.Protocol
 
         public Uri ProjectUrl { get; private set; }
 
+        // Prefix Reservation should never be shown on a V2 Feed
+        public bool PrefixReserved => false;
+
         public DateTimeOffset? Created { get; private set; }
 
         public DateTimeOffset? LastEdited { get; private set; }

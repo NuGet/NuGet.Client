@@ -1,0 +1,55 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.props" />
+
+  <PropertyGroup>
+    <TargetFramework>netstandard1.3</TargetFramework>
+    <Shipping>true</Shipping>
+    <PackProject>true</PackProject>
+    <PackProject Condition="!Exists('$(LocalizationRootDirectory)') OR '$(BuildRTM)' == 'true'">false</PackProject>
+    <Description>NuGet localization package.</Description>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <NetStandardImplicitPackageVersion Condition=" '$(TargetFramework)' == 'netstandard1.3' ">$(NetStandardPackageVersion)</NetStandardImplicitPackageVersion>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <NuspecFile>NuGet.Localization.nuspec</NuspecFile>
+    <NuspecProperties>Version=$(Version);configuration=$(Configuration);LocalizationFilesDirectory=$(LocalizationFilesDirectory)</NuspecProperties>
+  </PropertyGroup>
+
+  <!--
+    ============================================================
+    Get localized files from all projects and move them to a common location.
+    It is conditioned on the existence of the NuGet.Build.Localization repository which will 
+    only be on the CI Machines as an empty repository is checked out locally.
+    ============================================================
+  -->
+
+  <Target Name="MoveLocalizedFilesToLocalizedArtifacts" Condition="'$(BuildRTM)' == 'false' AND Exists($(LocalizationRootDirectory)) " BeforeTargets="GenerateNuspec">
+    <MakeDir  
+            Directories="$(LocalizationFilesDirectory)"/>
+    <ItemGroup>
+      <LocalizationProjects Include="@(SolutionProjectsWithoutVSIX)" Exclude="$(NuGetCoreSrcDirectory)NuGet.Build.Tasks.Pack\NuGet.Build.Tasks.Pack.csproj"/>
+    </ItemGroup>
+    <Message Text="Localization Projects: @(LocalizationProjects, '%0a')" Importance="High" />
+    <MSBuild Projects="@(LocalizationProjects)"
+             Properties="BuildProjectReferences=false;
+                         Configuration=$(Configuration);
+                         AppendTargetFrameworkToOutputPath=false"
+             Targets="GetNetCoreLocalizedFilesInProjectOutputPath">
+      
+      <Output TaskParameter="TargetOutputs" 
+              ItemName="_LocalizedFilesForLocalizationPackage" />
+    </MSBuild>
+
+    <ItemGroup>
+      <_LocalizedFilePaths Include="@(_LocalizedFilesForLocalizationPackage)">
+        <TargetPath>$(LocalizationFilesDirectory)\%(_LocalizedFilesForLocalizationPackage.RelativeTargetPath)</TargetPath>
+      </_LocalizedFilePaths>
+    </ItemGroup>
+
+    <Copy SourceFiles="@(_LocalizedFilePaths->'%(Identity)')" DestinationFiles="@(_LocalizedFilePaths->'%(TargetPath)')" />
+  </Target>
+  
+  <Import Project="$(BuildCommonDirectory)common.targets" />
+
+</Project>

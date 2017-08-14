@@ -31,7 +31,7 @@ namespace NuGet.PackageManagement.VisualStudio
         private const string BinDir = "bin";
         private const string NuGetImportStamp = "NuGetPackageImportStamp";
 
-        private readonly AsyncLazy<NuGetFramework> _targetFramework;
+        private NuGetFramework _targetFramework;
 
         private IVsProjectBuildSystem _buildSystem;
 
@@ -138,7 +138,18 @@ namespace NuGet.PackageManagement.VisualStudio
             }
         }
 
-        public NuGetFramework TargetFramework => NuGetUIThreadHelper.JoinableTaskFactory.Run(_targetFramework.GetValueAsync);
+        public NuGetFramework TargetFramework
+        {
+            get
+            {
+                if (_targetFramework == null)
+                {
+                    _targetFramework = NuGetUIThreadHelper.JoinableTaskFactory.Run(VsProjectAdapter.GetTargetFrameworkAsync);
+                }
+
+                return _targetFramework;
+            }
+        }
 
         public VsMSBuildProjectSystem(
             IVsProjectAdapter vsProjectAdapter,
@@ -149,10 +160,11 @@ namespace NuGet.PackageManagement.VisualStudio
 
             VsProjectAdapter = vsProjectAdapter;
             NuGetProjectContext = nuGetProjectContext;
+        }
 
-            _targetFramework = new AsyncLazy<NuGetFramework>(
-                VsProjectAdapter.GetTargetFrameworkAsync,
-                NuGetUIThreadHelper.JoinableTaskFactory);
+        public async Task InitializeProperties()
+        {
+            _targetFramework = await VsProjectAdapter.GetTargetFrameworkAsync();
         }
 
         public virtual void AddFile(string path, Stream stream)
@@ -572,13 +584,13 @@ namespace NuGet.PackageManagement.VisualStudio
             }
         }
 
-        private readonly bool BindingRedirectsRelatedInitialized = false;
+        private readonly bool _bindingRedirectsRelatedInitialized = false;
         private VSSolutionManager VSSolutionManager { get; set; }
         private IVsFrameworkMultiTargeting VSFrameworkMultiTargeting { get; set; }
 
         private void InitForBindingRedirects()
         {
-            if (!BindingRedirectsRelatedInitialized)
+            if (!_bindingRedirectsRelatedInitialized)
             {
                 var solutionManager = ServiceLocator.GetInstanceSafe<ISolutionManager>();
                 VSSolutionManager = (solutionManager != null) ? (solutionManager as VSSolutionManager) : null;

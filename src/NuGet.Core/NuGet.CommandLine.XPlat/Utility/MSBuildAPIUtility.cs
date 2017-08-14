@@ -329,7 +329,7 @@ namespace NuGet.CommandLine.XPlat
             {
                 // There is ProjectRootElement.TryOpen but it does not work as expected
                 // I.e. it returns null for some valid projects
-                return ProjectRootElement.Open(filename);
+                return ProjectRootElement.Open(filename, ProjectCollection.GlobalProjectCollection, preserveFormatting: true);
             }
             catch (Microsoft.Build.Exceptions.InvalidProjectFileException)
             {

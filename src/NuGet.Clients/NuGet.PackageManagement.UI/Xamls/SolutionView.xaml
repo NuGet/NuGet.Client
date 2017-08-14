@@ -147,6 +147,7 @@
         </Setter>
       </Style>
       <Style x:Key="InstalledTextBoxStyle" TargetType="{x:Type TextBox}" BasedOn="{StaticResource {x:Type TextBox}}">
+        <Setter Property="Foreground" Value="{DynamicResource {x:Static local:Brushes.UIText}}"/>
         <Setter Property="Template">
           <Setter.Value>
             <ControlTemplate TargetType="{x:Type TextBox}">

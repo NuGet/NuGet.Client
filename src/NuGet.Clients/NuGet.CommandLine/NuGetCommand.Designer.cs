@@ -19,7 +19,7 @@ namespace NuGet.CommandLine {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "4.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "15.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class NuGetCommand {
@@ -3224,6 +3224,15 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Overrides the default dependency resolution behavior..
+        /// </summary>
+        internal static string InstallCommandDependencyVersion {
+            get {
+                return ResourceManager.GetString("InstallCommandDependencyVersion", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Installs a package using the specified sources. If no sources are specified, all sources defined in the NuGet configuration file are used. If the configuration file specifies no sources, uses the default NuGet feed..
         /// </summary>
         internal static string InstallCommandDescription {
@@ -3589,6 +3598,15 @@ namespace NuGet.CommandLine {
         internal static string InstallCommandExcludeVersionDescription_trk {
             get {
                 return ResourceManager.GetString("InstallCommandExcludeVersionDescription_trk", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Target framework used for selecting dependencies. Defaults to &apos;Any&apos; if not specified..
+        /// </summary>
+        internal static string InstallCommandFrameworkDescription {
+            get {
+                return ResourceManager.GetString("InstallCommandFrameworkDescription", resourceCulture);
             }
         }
         
@@ -10666,7 +10684,7 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to [&lt;solution&gt; | &lt;packages.config file&gt; | &lt;project.json&gt; | &lt;Microsoft Build project&gt;] [options].
+        ///   Looks up a localized string similar to [&lt;solution&gt; | &lt;packages.config file&gt; | &lt;Microsoft Build project&gt;] [options].
         /// </summary>
         internal static string RestoreCommandUsageSummary {
             get {
@@ -13189,7 +13207,7 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Pakete auf die aktuellsten verfügbaren Versionen aktualisieren. Dieser Befehl aktualisiert auch sie Datei &quot;NuGet.exe&quot; selbst..
+        ///   Looks up a localized string similar to Pakete auf die aktuellsten verfügbaren Versionen aktualisieren. Dieser Befehl aktualisiert auch die Datei &quot;NuGet.exe&quot; selbst..
         /// </summary>
         internal static string UpdateCommandDescription_deu {
             get {

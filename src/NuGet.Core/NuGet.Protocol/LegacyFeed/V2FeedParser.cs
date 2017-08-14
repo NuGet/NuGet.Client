@@ -114,11 +114,6 @@ namespace NuGet.Protocol
                 throw new ArgumentNullException(nameof(log));
             }
 
-            if (token == null)
-            {
-                throw new ArgumentNullException(nameof(token));
-            }
-
             var uri = _queryBuilder.BuildGetPackageUri(package);
 
             // Try to find the package directly
@@ -162,11 +157,6 @@ namespace NuGet.Protocol
             if (log == null)
             {
                 throw new ArgumentNullException(nameof(log));
-            }
-
-            if (token == null)
-            {
-                throw new ArgumentNullException(nameof(token));
             }
 
             var uri = _queryBuilder.BuildFindPackagesByIdUri(id);

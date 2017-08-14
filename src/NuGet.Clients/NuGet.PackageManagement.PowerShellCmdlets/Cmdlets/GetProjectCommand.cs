@@ -1,9 +1,11 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Management.Automation;
+using System.Threading.Tasks;
+using NuGet.VisualStudio;
 
 namespace NuGet.PackageManagement.PowerShellCmdlets
 {
@@ -34,7 +36,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         private void Preprocess()
         {
             CheckSolutionState();
-            GetNuGetProject();
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(async () => await GetNuGetProjectAsync());
         }
 
         protected override void ProcessRecordCore()
@@ -44,7 +46,8 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             if (All.IsPresent)
             {
                 VsSolutionManager.EnsureSolutionIsLoaded();
-                var projects = VsSolutionManager.GetAllVsProjectAdapters().Select(p => p.Project);
+                var projects = NuGetUIThreadHelper.JoinableTaskFactory.Run(
+                    async() => (await VsSolutionManager.GetAllVsProjectAdaptersAsync()).Select(p => p.Project));
 
                 WriteObject(projects, enumerateCollection: true);
             }
@@ -53,7 +56,8 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 // No name specified; return default project (if not null)
                 if (Name == null)
                 {
-                    var defaultProject = GetDefaultProject();
+                    var defaultProject = NuGetUIThreadHelper.JoinableTaskFactory.Run(
+                        async () => await GetDefaultProjectAsync());
                     if (defaultProject != null)
                     {
                         WriteObject(defaultProject.Project);
@@ -62,7 +66,8 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 else
                 {
                     // get all projects matching name(s) - handles wildcards
-                    WriteObject(GetProjectsByName(Name).Select(p => p.Project), enumerateCollection: true);
+                    NuGetUIThreadHelper.JoinableTaskFactory.Run(
+                        async () => WriteObject((await GetProjectsByNameAsync(Name)).Select(p => p.Project), enumerateCollection: true));
                 }
             }
         }

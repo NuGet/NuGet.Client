@@ -381,6 +381,30 @@ namespace NuGet.Commands
             }
         }
 
+        /// <summary>
+        /// Remove duplicates and excluded values a set of sources or fallback folders.
+        /// </summary>
+        /// <remarks>Compares with Ordinal, excludes must be exact matches.</remarks>
+        public static IEnumerable<string> AggregateSources(IEnumerable<string> values, IEnumerable<string> excludeValues)
+        {
+            if (values == null)
+            {
+                throw new ArgumentNullException(nameof(values));
+            }
+
+            if (excludeValues == null)
+            {
+                throw new ArgumentNullException(nameof(excludeValues));
+            }
+
+            var result = new SortedSet<string>(values, StringComparer.Ordinal);
+
+            // Remove excludes
+            result.ExceptWith(excludeValues);
+
+            return result;
+        }
+
         private static RuntimeGraph GetRuntimeGraph(IMSBuildItem specItem)
         {
             var runtimes = MSBuildStringUtility.Split(specItem.GetProperty("RuntimeIdentifiers"))

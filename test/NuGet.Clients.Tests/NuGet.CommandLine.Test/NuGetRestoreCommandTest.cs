@@ -482,6 +482,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 
             var msbuildPath = Util.GetMsbuildPath();
 
+
             using (var workingPath = TestDirectory.Create())
             {
                 var repositoryPath = Util.CreateBasicTwoProjectSolution(workingPath, "packages.config", "packages.config");

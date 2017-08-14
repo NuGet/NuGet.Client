@@ -6,7 +6,6 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
@@ -30,6 +29,28 @@ namespace NuGet.Protocol
 
         private readonly string _source;
         private readonly VersionFolderPathResolver _resolver;
+        private LocalNuspecCache _nuspecCache;
+        private readonly Lazy<bool> _rootExists;
+
+        /// <summary>
+        /// Nuspec files read from disk.
+        /// This is exposed to allow sharing the cache with other components
+        /// that are reading the same files.
+        /// </summary>
+        public LocalNuspecCache NuspecCache
+        {
+            get
+            {
+                if (_nuspecCache == null)
+                {
+                    _nuspecCache = new LocalNuspecCache();
+                }
+
+                return _nuspecCache;
+            }
+
+            set => _nuspecCache = value;
+        }
 
         /// <summary>
         /// Initializes a new <see cref="LocalV3FindPackageByIdResource" /> class.
@@ -48,6 +69,7 @@ namespace NuGet.Protocol
 
             _source = rootDirInfo.FullName;
             _resolver = new VersionFolderPathResolver(_source);
+            _rootExists = new Lazy<bool>(() => Directory.Exists(_source));
         }
 
         /// <summary>
@@ -89,7 +111,7 @@ namespace NuGet.Protocol
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            return Task.FromResult(GetVersions(id, cacheContext, logger).AsEnumerable());
+            return Task.FromResult<IEnumerable<NuGetVersion>>(GetVersions(id, cacheContext, logger));
         }
 
         /// <summary>
@@ -282,34 +304,43 @@ namespace NuGet.Protocol
         private T ProcessNuspecReader<T>(string id, NuGetVersion version, Func<NuspecReader, T> process)
         {
             var nuspecPath = _resolver.GetManifestFilePath(id, version);
-            using (var stream = File.OpenRead(nuspecPath))
+            var expandedPath = _resolver.GetInstallPath(id, version);
+
+            NuspecReader nuspecReader;
+            try
             {
-                NuspecReader nuspecReader;
-                try
-                {
-                    nuspecReader = new NuspecReader(stream);
-                }
-                catch (XmlException ex)
-                {
-                    var message = string.Format(CultureInfo.CurrentCulture, Strings.Protocol_PackageMetadataError, id + "." + version, _source);
-                    var inner = new PackagingException(message, ex);
-
-                    throw new FatalProtocolException(message, inner);
-                }
-                catch (PackagingException ex)
-                {
-                    var message = string.Format(CultureInfo.CurrentCulture, Strings.Protocol_PackageMetadataError, id + "." + version, _source);
-
-                    throw new FatalProtocolException(message, ex);
-                }
-
-                return process(nuspecReader);
+                // Read the nuspec
+                nuspecReader = NuspecCache.GetOrAdd(nuspecPath, expandedPath).Value;
             }
+            catch (XmlException ex)
+            {
+                var message = string.Format(CultureInfo.CurrentCulture, Strings.Protocol_PackageMetadataError, id + "." + version, _source);
+                var inner = new PackagingException(message, ex);
+
+                throw new FatalProtocolException(message, inner);
+            }
+            catch (PackagingException ex)
+            {
+                var message = string.Format(CultureInfo.CurrentCulture, Strings.Protocol_PackageMetadataError, id + "." + version, _source);
+
+                throw new FatalProtocolException(message, ex);
+            }
+
+            // Process nuspec
+            return process(nuspecReader);
         }
 
         private NuGetVersion GetVersion(string id, NuGetVersion version, SourceCacheContext cacheContext, ILogger logger)
         {
-            return GetVersions(id, cacheContext, logger).FirstOrDefault(v => v == version);
+            foreach (var currentVersion in GetVersions(id, cacheContext, logger))
+            {
+                if (version == currentVersion)
+                {
+                    return currentVersion;
+                }
+            }
+
+            return null;
         }
 
         private List<NuGetVersion> GetVersions(string id, SourceCacheContext cacheContext, ILogger logger)
@@ -334,17 +365,6 @@ namespace NuGet.Protocol
         {
             var versions = new List<NuGetVersion>();
             var idDir = new DirectoryInfo(_resolver.GetVersionListPath(id));
-
-            if (!Directory.Exists(_source))
-            {
-                var message = string.Format(
-                    CultureInfo.CurrentCulture,
-                    Strings.Log_FailedToRetrievePackage,
-                    id,
-                    _source);
-
-                throw new FatalProtocolException(message);
-            }
 
             if (idDir.Exists)
             {
@@ -376,6 +396,16 @@ namespace NuGet.Protocol
 
                     versions.Add(version);
                 }
+            }
+            else if (!_rootExists.Value)
+            {
+                // Fail if the root directory does not exist at all.
+                var message = string.Format(
+                    CultureInfo.CurrentCulture,
+                    Strings.Log_LocalSourceNotExist,
+                    _source);
+
+                throw new FatalProtocolException(message);
             }
 
             return versions;

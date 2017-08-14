@@ -43,6 +43,30 @@ if (-not $NuGetRoot) {
 
 $WorkingDirectory = New-TempDir
 
+Function New-TestPackage {
+    param(
+        [Parameter(Mandatory=$True, ValueFromPipeline=$True, Position=0)]
+        [System.IO.FileInfo[]]$Nuspecs
+    )
+    end {
+        $GenerateTestPackages = Join-Path $WorkingDirectory GenerateTestPackages.exe -Resolve
+        $PwdBefore = $PWD
+
+        Set-Location $WorkingDirectory
+
+        try {
+            $Input | ForEach-Object {
+                & $GenerateTestPackages $_.FullName
+            }
+        }
+        finally {
+            if ($PWD -ne $PwdBefore) {
+                Set-Location $PwdBefore
+            }
+        }
+    }
+}
+
 $opts = '/s', '/z', '/r:3', '/w:30', '/np', '/nfl'
 
 if ($VerbosePreference) {
@@ -56,7 +80,9 @@ try {
     $TestSource = Join-Path $NuGetRoot test\EndToEnd -Resolve
     Write-Verbose "Copying all test files from '$TestSource' to '$WorkingDirectory'"
     & robocopy $TestSource $WorkingDirectory $opts
-    if($lastexitcode -gt 1) { exit 1 }
+    if ($lastexitcode -gt 1) {
+        exit 1
+    }
 
     $TestExtension = Join-Path $NuGetRoot "artifacts\API.Test\${ToolsetVersion}.0\bin\${Configuration}\net46\API.Test.dll" -Resolve
     Write-Verbose "Copying test extension from '$TestExtension' to '$WorkingDirectory'"
@@ -71,11 +97,17 @@ try {
 
     $ScriptsSource = Join-Path $NuGetRoot Scripts\e2etests -Resolve
     Write-Verbose "Copying test scripts from '$ScriptsSource' to '$ScriptsDirectory'"
-    & robocopy $ScriptsSource $ScriptsDirectory "*.ps1" $opts
-    if($lastexitcode -gt 1) { exit 1 }
+    & robocopy $ScriptsSource $ScriptsDirectory '*.ps1' $opts
+    if ($lastexitcode -gt 1) {
+        exit 1
+    }
+
+    Write-Verbose "Generating shared test packages"
+    Get-ChildItem $WorkingDirectory\Packages\_Shared\ -Filter *.nuspec -Recurse | New-TestPackage
+    Remove-Item $WorkingDirectory\Packages\_Shared\ -r -Force
 
     if (-not (Test-Path $OutputDirectory)) {
-        md $OutputDirectory | Out-Null
+        mkdir $OutputDirectory | Out-Null
     }
 
     $TestPackage = Join-Path $OutputDirectory EndToEnd.zip
@@ -86,6 +118,6 @@ try {
     Write-Output "Created end-to-end test package for toolset '${ToolsetVersion}.0' at '$TestPackage'"
 }
 finally {
-    rm $workingDirectory -r -Force -WhatIf:$false
+    Remove-Item $workingDirectory -r -Force -WhatIf:$false
     exit 0
 }

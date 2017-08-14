@@ -27,7 +27,7 @@ namespace NuGet.Configuration
         /// NuGet config names with casing ordered by precedence.
         /// </summary>
         public static readonly string[] OrderedSettingsFileNames =
-            (RuntimeEnvironmentHelper.IsWindows || RuntimeEnvironmentHelper.IsMacOSX) ?
+            PathUtility.IsFileSystemCaseInsensitive ?
             new[] { DefaultSettingsFileName } :
             new[]
             {

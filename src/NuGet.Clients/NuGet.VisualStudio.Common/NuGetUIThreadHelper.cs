@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -57,7 +57,13 @@ namespace NuGet.VisualStudio
                     var projectService = projectServiceAccessor.GetProjectService();
                     return projectService.Services.ThreadingPolicy.JoinableTaskFactory;
 #endif
-                });
+                },
+                // This option helps avoiding deadlocks caused by CPS trying to create ProjectServiceHost
+                // PublicationOnly mode lets parallel threads execute value factory method without
+                // being blocked on each other.
+                // It is correct behavior in this case as the value factory provides the same value
+                // each time it is called and Lazy is used just for caching the value for perf reasons.
+                LazyThreadSafetyMode.PublicationOnly);
             }
         }
 

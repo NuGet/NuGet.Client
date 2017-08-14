@@ -2426,6 +2426,67 @@ namespace NuGet.CommandLine.Test
                 Assert.False(File.Exists(path), r.Item2);
             }
         }
+        [Fact]
+        public async Task RestoreNetCore_ToolRestoreWithNoVersion()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                    "a",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("net45"));
+
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+
+                var packageZ = new SimpleTestPackageContext()
+                {
+                    Id = "z",
+                    Version = "1.0.0"
+                };
+
+                var packageY = new SimpleTestPackageContext()
+                {
+                    Id = "y",
+                    Version = "1.0.0"
+                };
+
+                packageZ.Dependencies.Add(packageY);
+
+                projectA.AddPackageToAllFrameworks(packageX);
+
+                projectA.DotnetCLIToolReferences.Add(new SimpleTestPackageContext()
+                {
+                    Id = "z",
+                    Version = ""
+                });
+
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX,
+                    packageZ,
+                    packageY);
+
+                var path = Path.Combine(pathContext.UserPackagesFolder, ".tools", "z", "1.0.0", "netcoreapp1.0", "project.assets.json");
+
+                // Act
+                var r = Util.RestoreSolution(pathContext);
+
+                // Assert
+                Assert.Contains("WARNING: NU1604", r.AllOutput);
+            }
+        }
 
         [Fact]
         public async Task RestoreNetCore_VerifyBuildCrossTargeting_VerifyImportOrder()
@@ -4778,6 +4839,295 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
+        public async Task RestoreNetCore_VerifyAdditionalSourcesConditionalOnFramework()
+        {
+            // Arrange
+            using (var extraSourceA = TestDirectory.Create())
+            using (var extraSourceB = TestDirectory.Create())
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var netcoreapp1 = NuGetFramework.Parse("netcoreapp1.0");
+                var netcoreapp2 = NuGetFramework.Parse("netcoreapp2.0");
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                    "a",
+                    pathContext.SolutionRoot,
+                    netcoreapp1,
+                    netcoreapp2);
+
+                // Add conditional sources
+                projectA.Frameworks[0].Properties.Add("RestoreAdditionalProjectSources", extraSourceA.Path);
+                projectA.Frameworks[1].Properties.Add("RestoreAdditionalProjectSources", extraSourceB.Path);
+
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+
+                var packageY = new SimpleTestPackageContext()
+                {
+                    Id = "y",
+                    Version = "1.0.0"
+                };
+
+                projectA.AddPackageToAllFrameworks(packageX);
+                projectA.AddPackageToAllFrameworks(packageY);
+
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+
+                // X is only in the source
+                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                    extraSourceA,
+                    PackageSaveMode.Defaultv3,
+                    packageX);
+
+                // Y is only in the extra source
+                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                    extraSourceB,
+                    PackageSaveMode.Defaultv3,
+                    packageY);
+
+                // Act
+                var r = Util.RestoreSolution(pathContext);
+
+                // Assert
+                projectA.AssetsFile.Libraries.Select(e => e.Name).OrderBy(e => e).ShouldBeEquivalentTo(new[] { "x", "y" });
+            }
+        }
+
+        [Fact]
+        public async Task RestoreNetCore_VerifyAdditionalFallbackFolderConditionalOnFramework()
+        {
+            // Arrange
+            using (var extraSourceA = TestDirectory.Create())
+            using (var extraSourceB = TestDirectory.Create())
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var netcoreapp1 = NuGetFramework.Parse("netcoreapp1.0");
+                var netcoreapp2 = NuGetFramework.Parse("netcoreapp2.0");
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                    "a",
+                    pathContext.SolutionRoot,
+                    netcoreapp1,
+                    netcoreapp2);
+
+                // Add conditional sources
+                projectA.Frameworks[0].Properties.Add("RestoreAdditionalProjectFallbackFolders", extraSourceA.Path);
+                projectA.Frameworks[1].Properties.Add("RestoreAdditionalProjectFallbackFolders", extraSourceB.Path);
+
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+
+                var packageY = new SimpleTestPackageContext()
+                {
+                    Id = "y",
+                    Version = "1.0.0"
+                };
+
+                projectA.AddPackageToAllFrameworks(packageX);
+                projectA.AddPackageToAllFrameworks(packageY);
+
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+
+                // X is only in the source
+                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                    extraSourceA,
+                    PackageSaveMode.Defaultv3,
+                    packageX);
+
+                // Y is only in the extra source
+                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                    extraSourceB,
+                    PackageSaveMode.Defaultv3,
+                    packageY);
+
+                // Act
+                var r = Util.RestoreSolution(pathContext);
+
+                // Assert
+                projectA.AssetsFile.Libraries.Select(e => e.Name).OrderBy(e => e).ShouldBeEquivalentTo(new[] { "x", "y" });
+
+                // Verify fallback folder added
+                projectA.AssetsFile.PackageFolders.Select(e => e.Path).Should().Contain(extraSourceA);
+            }
+        }
+
+        [Fact]
+        public async Task RestoreNetCore_VerifyAdditionalFallbackFolderExclude()
+        {
+            // Arrange
+            using (var extraSourceA = TestDirectory.Create())
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var netcoreapp1 = NuGetFramework.Parse("netcoreapp1.0");
+                var netcoreapp2 = NuGetFramework.Parse("netcoreapp2.0");
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                    "a",
+                    pathContext.SolutionRoot,
+                    netcoreapp1,
+                    netcoreapp2);
+
+                // Add and remove a fallback source, also add it as a source
+                projectA.Frameworks[0].Properties.Add("RestoreAdditionalProjectFallbackFolders", extraSourceA.Path);
+                projectA.Frameworks[1].Properties.Add("RestoreAdditionalProjectFallbackFoldersExcludes", extraSourceA.Path);
+                projectA.Frameworks[1].Properties.Add("RestoreAdditionalProjectSources", extraSourceA.Path);
+
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+
+                var packageY = new SimpleTestPackageContext()
+                {
+                    Id = "y",
+                    Version = "1.0.0"
+                };
+
+                projectA.AddPackageToAllFrameworks(packageX);
+                projectA.AddPackageToAllFrameworks(packageY);
+
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+
+                // X is only in the source
+                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                    extraSourceA,
+                    PackageSaveMode.Defaultv3,
+                    packageX);
+
+                // Y is only in the extra source
+                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                    extraSourceA,
+                    PackageSaveMode.Defaultv3,
+                    packageY);
+
+                // Act
+                var r = Util.RestoreSolution(pathContext);
+
+                // Assert
+                projectA.AssetsFile.Libraries.Select(e => e.Name).OrderBy(e => e).ShouldBeEquivalentTo(new[] { "x", "y" });
+
+                // Verify the fallback folder was not added
+                projectA.AssetsFile.PackageFolders.Select(e => e.Path).Should().NotContain(extraSourceA);
+            }
+        }
+
+        [Fact]
+        public async Task RestoreNetCore_VerifyAdditionalSourcesAppliedWithSingleFramework()
+        {
+            // Arrange
+            using (var extraSource = TestDirectory.Create())
+            using (var extraFallback = TestDirectory.Create())
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var netcoreapp2 = NuGetFramework.Parse("netcoreapp1.0");
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                    "a",
+                    pathContext.SolutionRoot,
+                    netcoreapp2);
+
+                projectA.Properties.Add("RestoreAdditionalProjectSources", extraSource.Path);
+                projectA.Properties.Add("RestoreAdditionalProjectFallbackFoldersExcludes", extraFallback.Path);
+
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+
+                projectA.AddPackageToAllFrameworks(packageX);
+
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+
+                // X is only in the source
+                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                    extraSource.Path,
+                    PackageSaveMode.Defaultv3,
+                    packageX);
+
+                // Act
+                var r = Util.RestoreSolution(pathContext);
+
+                // Assert
+                projectA.AssetsFile.Libraries.Select(e => e.Name).OrderBy(e => e).ShouldBeEquivalentTo(new[] { "x" });
+
+                // Verify the fallback folder was not added
+                projectA.AssetsFile.PackageFolders.Select(e => e.Path).Should().NotContain(extraFallback.Path);
+            }
+        }
+
+        [Fact]
+        public async Task RestoreNetCore_VerifyAdditionalFallbackFolderAppliedWithSingleFramework()
+        {
+            // Arrange
+            using (var extraSource = TestDirectory.Create())
+            using (var extraFallback = TestDirectory.Create())
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var netcoreapp2 = NuGetFramework.Parse("netcoreapp2.0");
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                    "a",
+                    pathContext.SolutionRoot,
+                    netcoreapp2);
+
+                projectA.Properties.Add("RestoreAdditionalProjectFallbackFolders", extraFallback.Path);
+
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+
+                projectA.AddPackageToAllFrameworks(packageX);
+
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+
+                // X is only in the source
+                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                    extraFallback.Path,
+                    PackageSaveMode.Defaultv3,
+                    packageX);
+
+                // Act
+                var r = Util.RestoreSolution(pathContext);
+
+                // Assert
+                projectA.AssetsFile.Libraries.Select(e => e.Name).OrderBy(e => e).ShouldBeEquivalentTo(new[] { "x" });
+
+                // Verify the fallback folder was added
+                projectA.AssetsFile.PackageFolders.Select(e => e.Path).Should().Contain(extraFallback.Path);
+            }
+        }
+
+        [Fact]
         public async Task RestoreNetCore_VerifyPackagesFolderPathResolvedAgainstWorkingDir()
         {
             // Arrange
@@ -5097,6 +5447,79 @@ namespace NuGet.CommandLine.Test
                 // Assert
                 r.Success.Should().BeTrue();
                 Directory.GetDirectories(pathContext.UserPackagesFolder).Should().BeEmpty();
+            }
+        }
+
+        [Fact]
+        public async Task RestoreNetCore_VerifyDisabledSourcesAreNotUsed()
+        {
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                    "a",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("net45"));
+
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+
+                projectA.AddPackageToAllFrameworks(packageX);
+
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX);
+
+                // create a config file, no disabled sources
+                var projectDir = Path.GetDirectoryName(projectA.ProjectPath);
+
+                var configPath = Path.Combine(pathContext.SolutionRoot, "NuGet.Config");
+
+                var doc = new XDocument();
+                var configuration = new XElement(XName.Get("configuration"));
+                doc.Add(configuration);
+
+                var packageSources = new XElement(XName.Get("packageSources"));
+                configuration.Add(packageSources);
+
+                packageSources.Add(new XElement(XName.Get("clear")));
+
+                var localSource = new XElement(XName.Get("add"));
+                localSource.Add(new XAttribute(XName.Get("key"), "localSource"));
+                localSource.Add(new XAttribute(XName.Get("value"), pathContext.PackageSource));
+                packageSources.Add(localSource);
+
+                var brokenSource = new XElement(XName.Get("add"));
+                brokenSource.Add(new XAttribute(XName.Get("key"), "brokenLocalSource"));
+                brokenSource.Add(new XAttribute(XName.Get("value"), pathContext.PackageSource + "brokenLocalSource"));
+                packageSources.Add(brokenSource);
+
+                // Disable that config
+                var disabledPackageSources = new XElement(XName.Get("disabledPackageSources"));
+                var disabledBrokenSource = new XElement(XName.Get("add"));
+                disabledBrokenSource.Add(new XAttribute(XName.Get("key"), "brokenLocalSource"));
+                disabledBrokenSource.Add(new XAttribute(XName.Get("value"), "true"));
+                disabledPackageSources.Add(disabledBrokenSource);
+
+                configuration.Add(disabledPackageSources);
+                File.WriteAllText(configPath, doc.ToString());
+
+                // Act 
+                var r2 = Util.RestoreSolution(pathContext);
+
+                // Assert
+                r2.Success.Should().BeTrue();
+                r2.AllOutput.Should().NotContain("brokenLocalSource");
+
             }
         }
     }

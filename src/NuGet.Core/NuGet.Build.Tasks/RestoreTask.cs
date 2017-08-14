@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -23,7 +23,12 @@ namespace NuGet.Build.Tasks
     /// </summary>
     public class RestoreTask : Microsoft.Build.Utilities.Task, ICancelableTask, IDisposable
     {
-        private const string HttpUserAgent = "NuGet MSBuild Task";
+#if IS_DESKTOP
+        private const string HttpUserAgent = "NuGet Desktop MSBuild Task";
+#else
+        private const string HttpUserAgent = "NuGet .NET Core MSBuild Task";
+#endif
+
         private readonly CancellationTokenSource _cts = new CancellationTokenSource();
 
         /// <summary>

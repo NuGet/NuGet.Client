@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -121,16 +121,21 @@ namespace NuGet.Common
             }
             else
             {
-                if (RuntimeEnvironmentHelper.IsWindows)
-                {
-                    // Windows has both '/' and '\' as valid directory separators.
-                    return (path[path.Length - 1] == Path.DirectorySeparatorChar ||
-                            path[path.Length - 1] == Path.AltDirectorySeparatorChar);
-                }
-                else
-                {
-                    return path[path.Length - 1] == Path.DirectorySeparatorChar;
-                }
+                return IsDirectorySeparatorChar(path[path.Length - 1]);
+            }
+        }
+
+        public static bool IsDirectorySeparatorChar(char ch)
+        {
+            if (RuntimeEnvironmentHelper.IsWindows)
+            {
+                // Windows has both '/' and '\' as valid directory separators.
+                return (ch == Path.DirectorySeparatorChar ||
+                        ch == Path.AltDirectorySeparatorChar);
+            }
+            else
+            {
+                return ch == Path.DirectorySeparatorChar;
             }
         }
         

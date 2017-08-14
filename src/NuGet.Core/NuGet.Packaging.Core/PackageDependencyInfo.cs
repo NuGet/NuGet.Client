@@ -18,6 +18,7 @@ namespace NuGet.Packaging.Core
     /// </remarks>
     public class PackageDependencyInfo : PackageIdentity, IEquatable<PackageDependencyInfo>
     {
+        private readonly static PackageDependency[] EmptyDependencies = new PackageDependency[0];
         private PackageDependency[] _dependencies;
 
         public PackageDependencyInfo(string id, NuGetVersion version)
@@ -39,7 +40,7 @@ namespace NuGet.Packaging.Core
         public PackageDependencyInfo(string id, NuGetVersion version, IEnumerable<PackageDependency> dependencies)
             : base(id, version)
         {
-            _dependencies = dependencies == null ? new PackageDependency[0] : dependencies.ToArray();
+            _dependencies = dependencies?.ToArray() ?? EmptyDependencies;
         }
 
         /// <summary>

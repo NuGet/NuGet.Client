@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -38,7 +38,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 throw new ArgumentNullException(nameof(solutionManager));
             }
 
-            IVsSolution2 vsSolution2 = serviceProvider.GetService(typeof(SVsSolution)) as IVsSolution2;
+            var vsSolution2 = serviceProvider.GetService(typeof(SVsSolution)) as IVsSolution2;
             if (vsSolution2 != null)
             {
                 _vsSolution2 = vsSolution2;
@@ -63,17 +63,17 @@ namespace NuGet.PackageManagement.VisualStudio
 
                 Debug.Assert(pHierarchy != null);
 
-                Project upgradedProject = VsHierarchyUtility.GetProjectFromHierarchy(pHierarchy);
-                var upgradedNuGetProject = EnvDTEProjectUtility.GetNuGetProject(upgradedProject, _solutionManager);
+                var upgradedProject = VsHierarchyUtility.GetProjectFromHierarchy(pHierarchy);
+                var upgradedNuGetProject = await EnvDTEProjectUtility.GetNuGetProjectAsync(upgradedProject, _solutionManager);
 
                 if (ProjectRetargetingUtility.IsProjectRetargetable(upgradedNuGetProject))
                 {
-                    IList<PackageIdentity> packagesToBeReinstalled = await ProjectRetargetingUtility.GetPackagesToBeReinstalled(upgradedNuGetProject);
+                    var packagesToBeReinstalled = await ProjectRetargetingUtility.GetPackagesToBeReinstalled(upgradedNuGetProject);
 
                     if (packagesToBeReinstalled.Any())
                     {
                         pLogger.LogMessage((int)__VSUL_ERRORLEVEL.VSUL_ERROR, upgradedProject.Name, upgradedProject.Name,
-                            String.Format(CultureInfo.CurrentCulture, Strings.ProjectUpgradeAndRetargetErrorMessage, String.Join(", ", packagesToBeReinstalled.Select(p => p.Id))));
+                            string.Format(CultureInfo.CurrentCulture, Strings.ProjectUpgradeAndRetargetErrorMessage, string.Join(", ", packagesToBeReinstalled.Select(p => p.Id))));
                     }
                 }
             });

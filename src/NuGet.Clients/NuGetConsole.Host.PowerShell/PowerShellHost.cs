@@ -31,6 +31,8 @@ namespace NuGetConsole.Host.PowerShell.Implementation
     internal abstract class PowerShellHost : IHost, IPathExpansion, IDisposable
     {
         private static readonly string AggregateSourceName = Resources.AggregateSourceName;
+        private static readonly TimeSpan ExecuteInitScriptsRetryDelay = TimeSpan.FromMilliseconds(400);
+        private static readonly int MaxTasks = 16;
 
         private readonly AsyncSemaphore _initScriptsLock = new AsyncSemaphore(1);
         private readonly string _name;
@@ -48,6 +50,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         private const string PackageManagementContextKey = "PackageManagementContext";
         private const string DTEKey = "DTE";
         private const string CancellationTokenKey = "CancellationTokenKey";
+        private const int ExecuteInitScriptsRetriesLimit = 50;
         private string _activePackageSource;
         private string[] _packageSources;
         private readonly DTE _dte;
@@ -74,24 +77,14 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         private string _currentSolutionDirectory;
 
         /// <summary>
-        /// An initial restore event used to compare against future (real) restore events. This value endures on
-        /// <see cref="_latestRestore"/> and <see cref="_currentRestore"/> as long as no restore occurs. Note that the
-        /// hash mentioned here cannot collide with a real hash.
-        /// </summary>
-        private static readonly SolutionRestoredEventArgs InitialRestore = new SolutionRestoredEventArgs(
-            isSuccess: true,
-            solutionSpecHash: "initial");
-
-        /// <summary>
         /// This field tracks information about the latest restore.
         /// </summary>
-        private SolutionRestoredEventArgs _latestRestore = InitialRestore;
+        private SolutionRestoredEventArgs _latestRestore;
 
         /// <summary>
         /// This field tracks information about the most recent restore that had scripts executed for it.
         /// </summary>
-        private SolutionRestoredEventArgs _currentRestore = InitialRestore;
-
+        private SolutionRestoredEventArgs _currentRestore;
 
         protected PowerShellHost(string name, IRestoreEvents restoreEvents, IRunspaceManager runspaceManager)
         {
@@ -217,12 +210,16 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             {
                 Assumes.Present(_solutionManager);
 
-                if (_solutionManager.DefaultNuGetProject == null)
+                return NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
                 {
-                    return null;
-                }
+                    var defaultProject = await _solutionManager.GetDefaultNuGetProjectAsync();
+                    if (defaultProject == null)
+                    {
+                        return null;
+                    }
 
-                return GetDisplayName(_solutionManager.DefaultNuGetProject);
+                    return await GetDisplayNameAsync(defaultProject);
+                });
             }
         }
 
@@ -300,19 +297,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                             if (console is IWpfConsole)
                             {
                                 // Hook up solution events
-                                _solutionManager.SolutionOpened += (o, e) =>
-                                    {
-                                        _scriptExecutor.Reset();
-
-                                    // Solution opened event is raised on the UI thread
-                                    // Go off the UI thread before calling likely expensive call of ExecuteInitScriptsAsync
-                                    // Also, it uses semaphores, do not call it from the UI thread
-                                    Task.Run(delegate
-                                            {
-                                                UpdateWorkingDirectory();
-                                                return ExecuteInitScriptsAsync();
-                                            });
-                                    };
+                                _solutionManager.SolutionOpened += (_, __) => HandleSolutionOpened();
                                 _solutionManager.SolutionClosed += (o, e) => UpdateWorkingDirectory();
                             }
                             _solutionManager.NuGetProjectAdded += (o, e) => UpdateWorkingDirectoryAndAvailableProjects();
@@ -342,6 +327,33 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                         }
                     }
                 });
+        }
+
+        private void HandleSolutionOpened()
+        {
+            _scriptExecutor.Reset();
+
+            // Solution opened event is raised on the UI thread
+            // Go off the UI thread before calling likely expensive call of ExecuteInitScriptsAsync
+            // Also, it uses semaphores, do not call it from the UI thread
+            Task.Run(async () =>
+            {
+                UpdateWorkingDirectory();
+
+                var retries = 0;
+
+                while (retries < ExecuteInitScriptsRetriesLimit)
+                {
+                    if (await _solutionManager.IsAllProjectsNominatedAsync())
+                    {
+                        await ExecuteInitScriptsAsync();
+                        break;
+                    }
+
+                    await Task.Delay(ExecuteInitScriptsRetryDelay);
+                    retries++;
+                }
+            });
         }
 
         private void UpdateWorkingDirectoryAndAvailableProjects()
@@ -612,10 +624,13 @@ namespace NuGetConsole.Host.PowerShell.Implementation
 
         private bool ShouldNoOpDueToRestore(SolutionRestoredEventArgs latestRestore)
         {
-            return latestRestore != null &&
-                   _currentRestore != null &&
-                   latestRestore.SolutionSpecHash == _currentRestore.SolutionSpecHash &&
-                   latestRestore.IsSuccess == _currentRestore.IsSuccess;
+            return
+                _currentRestore != null &&
+                latestRestore != null &&
+                (
+                    latestRestore.RestoreStatus == NuGetOperationStatus.NoOp ||
+                    object.ReferenceEquals(_currentRestore, latestRestore)
+                );
         }
 
         private bool ShouldNoOpDueToSolutionDirectory(string latestSolutionDirectory)
@@ -670,31 +685,64 @@ namespace NuGetConsole.Host.PowerShell.Implementation
 
             return NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
                 {
-                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                    var displayNames = new List<string>();
+                    var displayNameTasks = new List<Task<string>>();
 
-                    var allProjects = _solutionManager.GetNuGetProjects();
-                    _projectSafeNames = allProjects.Select(_solutionManager.GetNuGetProjectSafeName).ToArray();
-                    var displayNames = allProjects.Select(GetDisplayName).ToArray();
-                    Array.Sort(displayNames, _projectSafeNames, StringComparer.CurrentCultureIgnoreCase);
+                    // start a single task to get all project's safe name
+                    var safeNamesTask = Task.Run(async () => await _solutionManager.GetAllNuGetProjectSafeNameAsync());
+
+                    var allProjects = await _solutionManager.GetNuGetProjectsAsync();
+
+                    foreach (var project in allProjects)
+                    {
+                        // Throttle and wait for a task to finish if we have hit the limit
+                        if (displayNameTasks.Count == MaxTasks)
+                        {
+                            var displayName = await CompleteTaskAsync(displayNameTasks);
+                            displayNames.Add(displayName);
+                        }
+
+                        var displayNameTask = Task.Run(async () => await GetDisplayNameAsync(project));
+                        displayNameTasks.Add(displayNameTask);
+                    }
+
+                    // wait until all the tasks to retrieve display names are completed
+                    while (displayNameTasks.Count > 0)
+                    {
+                        var displayName = await CompleteTaskAsync(displayNameTasks);
+                        displayNames.Add(displayName);
+                    }
+
+                    _projectSafeNames = (await safeNamesTask).ToArray();
+                    Array.Sort(displayNames.ToArray(), _projectSafeNames, StringComparer.CurrentCultureIgnoreCase);
                     return _projectSafeNames;
                 });
         }
 
-        private string GetDisplayName(NuGetProject nuGetProject)
+        private async Task<string> GetDisplayNameAsync(NuGetProject nuGetProject)
         {
-            var vsProjectAdapter = _solutionManager.GetVsProjectAdapter(nuGetProject);
+            var vsProjectAdapter = await _solutionManager.GetVsProjectAdapterAsync(nuGetProject);
 
             var name = vsProjectAdapter.CustomUniqueName;
-            if (IsWebSite(vsProjectAdapter))
+            if (await IsWebSiteAsync(vsProjectAdapter))
             {
                 name = PathHelper.SmartTruncate(name, 40);
             }
             return name;
         }
 
-        private static bool IsWebSite(IVsProjectAdapter project)
+        private async Task<bool> IsWebSiteAsync(IVsProjectAdapter project)
         {
-            return project.ProjectTypeGuids.Contains(VsProjectTypes.WebSiteProjectTypeGuid);
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+            return (await project.GetProjectTypeGuidsAsync()).Contains(VsProjectTypes.WebSiteProjectTypeGuid);
+        }
+
+        private async Task<string> CompleteTaskAsync(List<Task<string>> nameTasks)
+        {
+            var doneTask = await Task.WhenAny(nameTasks);
+            nameTasks.Remove(doneTask);
+            return await doneTask;
         }
 
         #region ITabExpansion

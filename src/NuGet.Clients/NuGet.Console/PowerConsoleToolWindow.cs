@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -142,6 +142,12 @@ namespace NuGetConsole.Implementation
             var windowFrame = (IVsWindowFrame)Frame;
             Guid cmdUi = VSConstants.GUID_TextEditorFactory;
             windowFrame.SetGuidProperty((int)__VSFPROPID.VSFPROPID_InheritKeyBindings, ref cmdUi);
+
+            // refresh PMC UI to update default project name after solution load completed.
+            SolutionManager.SolutionOpened += (o, e) =>
+            {
+                VsUIShell.UpdateCommandUI(0);
+            };
 
             // pause for a tiny moment to let the tool window open before initializing the host
             var timer = new DispatcherTimer();

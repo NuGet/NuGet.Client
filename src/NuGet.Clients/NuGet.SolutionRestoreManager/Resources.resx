@@ -140,6 +140,9 @@
 
 Missing packages: {0}</value>
   </data>
+  <data name="PackageRefNotRestoredBecauseOfNoConsent" xml:space="preserve">
+    <value>NuGet restore is currently disabled. To enable it, open the Visual Studio Options dialog, click on the Package Manager node and check 'Allow NuGet to download missing packages during build.' You can also enable it by setting the environment variable 'EnableNuGetPackageRestore' to 'true'.</value>
+  </data>
   <data name="PackageRestoreCanceled" xml:space="preserve">
     <value>NuGet package restore canceled.</value>
   </data>

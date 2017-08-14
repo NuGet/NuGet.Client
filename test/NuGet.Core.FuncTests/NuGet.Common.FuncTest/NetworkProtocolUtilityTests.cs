@@ -6,7 +6,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace NuGet.Common.Test
+namespace NuGet.Common.FuncTest
 {
     public class NetworkProtocolUtilityTests
     {

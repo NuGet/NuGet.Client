@@ -45,11 +45,6 @@ namespace NuGet.PackageManagement.VisualStudio
                 throw new ArgumentNullException(nameof(uri));
             }
 
-            if (cancellationToken == null)
-            {
-                throw new ArgumentNullException(nameof(cancellationToken));
-            }
-
             // TODO: Extend the IVS API surface area to pass down the credential request type.
             var credentials = await _provider.GetCredentialsAsync(
                 uri,

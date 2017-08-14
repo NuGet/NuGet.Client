@@ -64,8 +64,6 @@ namespace NuGet.VisualStudio
 
         ProjectNames ProjectNames { get; }
 
-        string[] ProjectTypeGuids { get; }
-
         /// <summary>
         /// Additional fallback folders DTE property
         /// </summary>
@@ -109,6 +107,8 @@ namespace NuGet.VisualStudio
         /// Comma or Semicolon separated list of NU* diagnostic codes e.g. NU1000,NU1001
         /// </summary>
         string WarningsAsErrors { get; }
+
+        Task<string[]> GetProjectTypeGuidsAsync();
 
         Task<FrameworkName> GetDotNetFrameworkNameAsync();
 
