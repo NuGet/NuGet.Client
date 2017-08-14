@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -90,7 +90,7 @@ namespace Dotnet.Integration.Test
             Assert.True(result.Item3 == "", $"Restore failed with following message in error stream :\n {result.Item3}");
         }
 
-        internal void PackProject(string workingDirectory, string projectName, string args)
+        internal CommandRunnerResult PackProject(string workingDirectory, string projectName, string args)
         {
             var envVar = new Dictionary<string, string>();
             envVar.Add("MSBuildSDKsPath", MsBuildSdksPath);
@@ -101,6 +101,7 @@ namespace Dotnet.Integration.Test
                 environmentVariables: envVar);
             Assert.True(result.Item1 == 0, $"Pack failed with following log information :\n {result.Item3}");
             Assert.True(result.Item3 == "", $"Pack failed with following message in error stream :\n {result.Item3}");
+            return result;
         }
 
         internal void BuildProject(string workingDirectory, string projectName, string args)

@@ -1861,5 +1861,46 @@ namespace ClassLibrary
                 }
             }
         }
+
+        [PlatformTheory(Platform.Windows)]
+        [InlineData("TargetFramework", "netstandard1.4")]
+        [InlineData("TargetFrameworks", "netstandard1.4;net46")]
+        public void PackCommand_PackTargetHook_ExecutesBeforePack(string tfmProperty,
+    string tfmValue)
+        {
+            using (var testDirectory = TestDirectory.Create())
+            {
+                var projectName = "ClassLibrary1";
+                var workingDirectory = Path.Combine(testDirectory, projectName);
+                Directory.CreateDirectory(workingDirectory);
+                var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
+                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib");
+
+                using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
+                {
+                    var xml = XDocument.Load(stream);
+                    var target =
+                        $@"<Target Name=""RunBeforePack"">
+    <Message Text= ""Hello World"" Importance=""High""/>
+    </Target>";
+                    ProjectFileUtils.SetTargetFrameworkForProject(xml, tfmProperty, tfmValue);
+                    ProjectFileUtils.AddProperty(xml, "BeforePack", "RunBeforePack");
+                    ProjectFileUtils.AddCustomXmlToProjectRoot(xml, target);
+                    ProjectFileUtils.WriteXmlToFile(xml, stream);
+                }
+
+                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
+                var result = msbuildFixture.PackProject(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}");
+                var indexOfHelloWorld = result.AllOutput.IndexOf("Hello World");
+                var indexOfPackSuccessful = result.AllOutput.IndexOf("Successfully created package");
+                var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
+                var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
+
+                Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the expected place");
+                Assert.True(File.Exists(nuspecPath), "The intermediate nuspec file is not in the expected place");
+                Assert.True(indexOfHelloWorld < indexOfPackSuccessful, "The custom target RunBeforePack did not run before pack target.");
+                
+            }
+        }
     }
 }
