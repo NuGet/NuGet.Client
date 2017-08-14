@@ -22,6 +22,7 @@
       "tags": [ "Microsoft", "EF", "Database", "Data", "O/RM", "ADO.NET" ],
       "authors": [ "Microsoft" ],
       "totalDownloads": 28390569,
+      "verified":  true,
       "versions": [
         {
           "version": "4.1.10311",
@@ -110,6 +111,7 @@
       "tags": [ "Microsoft", "EF", "Database", "Data", "O/RM", "ADO.NET" ],
       "authors": [ "Microsoft" ],
       "totalDownloads": 28390569,
+      "verified":  true,
       "versions": [
         {
           "version": "4.1.10311",

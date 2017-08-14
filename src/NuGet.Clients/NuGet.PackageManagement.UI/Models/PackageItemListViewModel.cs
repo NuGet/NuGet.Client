@@ -241,6 +241,19 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
+        private bool _prefixReserved;
+        public bool PrefixReserved
+        {
+            get { return _prefixReserved; }
+            set
+            {
+                if (_prefixReserved != value)
+                {
+                    _prefixReserved = value;
+                    OnPropertyChanged(nameof(PrefixReserved));
+                }
+            }
+        }
 
         public Uri IconUrl { get; set; }
 

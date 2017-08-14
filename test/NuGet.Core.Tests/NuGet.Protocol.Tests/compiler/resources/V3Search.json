@@ -22,6 +22,7 @@
       "tags": [ "Microsoft", "EF", "Database", "Data", "O/RM", "ADO.NET" ],
       "authors": [ "Microsoft" ],
       "totalDownloads": 11903487,
+      "verified": true,
       "versions": [
         {
           "version": "4.1.10311",
@@ -110,6 +111,7 @@
       "tags": [ "json" ],
       "authors": [ "James Newton-King" ],
       "totalDownloads": 21493865,
+      "verified": false,
       "versions": [
         {
           "version": "3.5.8",
@@ -328,6 +330,7 @@
       "tags": [ "css", "js", "less", "mobile-first", "responsive", "front-end", "framework", "web" ],
       "authors": [ "Twitter,  Inc." ],
       "totalDownloads": 4240158,
+      "verified": false,
       "versions": [
         {
           "version": "1.0.0",
@@ -425,6 +428,7 @@
       "tags": [ "jQuery" ],
       "authors": [ "jQuery Foundation, Inc." ],
       "totalDownloads": 14742964,
+      "verified": false,
       "versions": [
         {
           "version": "1.4.1",
@@ -673,6 +677,7 @@
       "tags": [ "Microsoft", "AspNet", "Mvc", "AspNetMvc" ],
       "authors": [ "Microsoft" ],
       "totalDownloads": 11530978,
+      "verified": false,
       "versions": [
         {
           "version": "3.0.20105.1",
@@ -767,9 +772,10 @@
       "title": "WebGrease",
       "licenseUrl": "http://www.microsoft.com/web/webpi/eula/aspnetcomponent_rtw_ENU.htm",
       "projectUrl": "http://webgrease.codeplex.com/",
-      "tags": [ ],
+      "tags": [],
       "authors": [ "webgrease@microsoft.com" ],
       "totalDownloads": 6194894,
+      "verified": false,
       "versions": [
         {
           "version": "1.0.0",
@@ -818,6 +824,7 @@
       "tags": [ "BCL", "HTTP", "HttpClient", "REST", "Microsoft", "System", "Networking" ],
       "authors": [ "Microsoft" ],
       "totalDownloads": 6394693,
+      "verified": false,
       "versions": [
         {
           "version": "2.0.20505",
@@ -891,6 +898,7 @@
       "tags": [ "Microsoft", "AspNet", "WebApi", "AspNetWebApi" ],
       "authors": [ "Microsoft" ],
       "totalDownloads": 6843593,
+      "verified": false,
       "versions": [
         {
           "version": "4.0.20505",
@@ -962,6 +970,7 @@
       "tags": [ "Identity", "Membership" ],
       "authors": [ "Microsoft" ],
       "totalDownloads": 2460055,
+      "verified": false,
       "versions": [
         {
           "version": "1.0.0",
@@ -1009,6 +1018,7 @@
       "tags": [ "Microsoft", "OWIN", "Katana" ],
       "authors": [ "Microsoft" ],
       "totalDownloads": 3912966,
+      "verified": false,
       "versions": [
         {
           "version": "1.0.0",
@@ -1067,6 +1077,7 @@
       "tags": [ "jQuery", "jQueryUI", "plugins" ],
       "authors": [ "jQuery UI Team" ],
       "totalDownloads": 4912578,
+      "verified": false,
       "versions": [
         {
           "version": "1.8.9",
@@ -1233,6 +1244,7 @@
       "tags": [ "Identity", "Membership" ],
       "authors": [ "Microsoft" ],
       "totalDownloads": 2514706,
+      "verified": false,
       "versions": [
         {
           "version": "1.0.0",
@@ -1281,6 +1293,7 @@
       "tags": [ "nunit", "test", "testing", "tdd", "framework", "fluent", "assert", "theory", "plugin", "addin" ],
       "authors": [ "Charlie Poole" ],
       "totalDownloads": 3311744,
+      "verified": false,
       "versions": [
         {
           "version": "2.5.7.10213",
@@ -1358,6 +1371,7 @@
       "tags": [ "angular", "angularjs", "SPA" ],
       "authors": [ "Fitzchak Yitzchaki, Dov Landau" ],
       "totalDownloads": 943301,
+      "verified": false,
       "versions": [
         {
           "version": "1.0.0",
@@ -1756,6 +1770,7 @@
       "tags": [ "Microsoft", "AspNet", "WebPages", "AspNetWebPages" ],
       "authors": [ "Microsoft" ],
       "totalDownloads": 10593227,
+      "verified": false,
       "versions": [
         {
           "version": "1.0.20105.408",
@@ -1833,6 +1848,7 @@
       "tags": [ "moq", "tdd", "mocking", "mocks", "unittesting", "agile", "unittest" ],
       "authors": [ "Daniel Cazzulino,  kzu" ],
       "totalDownloads": 4471416,
+      "verified": false,
       "versions": [
         {
           "version": "3.1.416.3",
@@ -1986,6 +2002,7 @@
       "tags": [ "Microsoft", "AspNet", "WebApi", "AspNetWebApi", "HttpClient" ],
       "authors": [ "Microsoft" ],
       "totalDownloads": 8464455,
+      "verified": false,
       "versions": [
         {
           "version": "4.0.20505",
@@ -2053,6 +2070,7 @@
       "tags": [ "Microsoft", "OWIN", "Katana" ],
       "authors": [ "Microsoft" ],
       "totalDownloads": 4650446,
+      "verified": false,
       "versions": [
         {
           "version": "2.0.0",
@@ -2098,9 +2116,10 @@
       "iconUrl": "https://s3.amazonaws.com/automapper/icon.png",
       "licenseUrl": "https://github.com/AutoMapper/AutoMapper/blob/master/LICENSE.txt",
       "projectUrl": "http://automapper.org/",
-      "tags": [ ],
+      "tags": [],
       "authors": [ "Jimmy Bogard" ],
       "totalDownloads": 2814427,
+      "verified": false,
       "versions": [
         {
           "version": "1.1.0.118",
@@ -2241,9 +2260,10 @@
       "iconUrl": "http://www.antlr.org/images/antlr-link.gif",
       "licenseUrl": "http://www.antlr3.org/license.html",
       "projectUrl": "https://github.com/antlr/antlrcs",
-      "tags": [ ],
+      "tags": [],
       "authors": [ "Sam Harwell, Terence Parr" ],
       "totalDownloads": 4277567,
+      "verified": false,
       "versions": [
         {
           "version": "3.1.1",
