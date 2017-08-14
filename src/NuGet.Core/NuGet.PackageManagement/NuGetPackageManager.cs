@@ -2381,14 +2381,15 @@ namespace NuGet.PackageManagement
                 }
                 else if (action.NuGetProjectActionType == NuGetProjectActionType.Install)
                 {
-                    // TODO NK - Does this impact tools? It shouldn't
                     // This only needs to work this way for project.json
-                    // TODO NK - Verify correctness of this, add tests for Project.Json install and legacy and NET Core package ref install
-                    if(updatedPackageSpec.RestoreMetadata.ProjectStyle == ProjectStyle.ProjectJson) { 
-                        PackageSpecOperations.AddOrUpdateDependency(updatedPackageSpec, action.PackageIdentity);
-                    } else if(updatedPackageSpec.RestoreMetadata.ProjectStyle == ProjectStyle.PackageReference)
+                    // TODO NK [Last] - Does this impact tools? It shouldn't, Verify correctness of this, add tests for Project.Json install and legacy and NET Core package ref install
+                    if (updatedPackageSpec.RestoreMetadata.ProjectStyle == ProjectStyle.ProjectJson)
                     {
-                        PackageSpecOperations.AddOrUpdateDependency(updatedPackageSpec, action.PackageIdentity, updatedPackageSpec.TargetFrameworks.Select(e => e.FrameworkName));   
+                        PackageSpecOperations.AddOrUpdateDependency(updatedPackageSpec, action.PackageIdentity);
+                    }
+                    else if (updatedPackageSpec.RestoreMetadata.ProjectStyle == ProjectStyle.PackageReference)
+                    {
+                        PackageSpecOperations.AddOrUpdateDependency(updatedPackageSpec, action.PackageIdentity, updatedPackageSpec.TargetFrameworks.Select(e => e.FrameworkName));
                     }
                 }
             }

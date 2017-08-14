@@ -310,7 +310,6 @@ namespace NuGet.ProjectModel
 
             if (packageSpec != null)
             {
-                // TODO NK
                 // Add dependencies section
                 dependencies.AddRange(packageSpec.Dependencies);
 

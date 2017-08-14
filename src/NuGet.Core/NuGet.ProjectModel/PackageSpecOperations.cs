@@ -13,7 +13,6 @@ namespace NuGet.ProjectModel
 {
     public static class PackageSpecOperations
     {
-        // TODO NK - This will be removed once Ankit merges his fix.
         public static void AddOrUpdateDependency(PackageSpec spec, PackageDependency dependency)
         {
             var existing = GetExistingDependencies(spec, dependency.Id);

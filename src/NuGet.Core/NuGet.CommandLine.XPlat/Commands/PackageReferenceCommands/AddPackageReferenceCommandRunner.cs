@@ -90,7 +90,7 @@ namespace NuGet.CommandLine.XPlat
             else
             {
                 // If the user has not specified a framework, then just add it to all frameworks
-                // PERF TODO NK  - Potential optimization, don't generate another iterator.
+                // PERF TODO NK [Last] - Potential optimization, don't generate another iterator.
                 PackageSpecOperations.AddOrUpdateDependency(updatedPackageSpec, packageReferenceArgs.PackageDependency, updatedPackageSpec.TargetFrameworks.Select(e => e.FrameworkName));
             }
 
