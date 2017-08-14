@@ -32,7 +32,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <BuildOutputTargetFolder Condition="'$(BuildOutputTargetFolder)' == '' AND '$(IsTool)' == 'true'">tools</BuildOutputTargetFolder>
     <BuildOutputTargetFolder Condition="'$(BuildOutputTargetFolder)' == ''">lib</BuildOutputTargetFolder>
     <ContentTargetFolders Condition="'$(ContentTargetFolders)' == ''">content;contentFiles</ContentTargetFolders>
-    <PackDependsOn>GenerateNuspec; $(PackDependsOn)</PackDependsOn>
+    <PackDependsOn>$(BeforePack); _IntermediatePack; GenerateNuspec; $(PackDependsOn)</PackDependsOn>
     <IsInnerBuild Condition="'$(TargetFramework)' != '' AND '$(TargetFrameworks)' != ''">true</IsInnerBuild>
     <NoBuild Condition="'$(GeneratePackageOnBuild)' == 'true'">true</NoBuild>
     <AddPriFileDependsOn Condition="'$(MicrosoftPortableCurrentVersionPropsHasBeenImported)' == 'true'">DeterminePortableBuildCapabilities</AddPriFileDependsOn>
@@ -183,7 +183,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     Main entry point for packing packages
     ============================================================
   -->
-  <Target Name="Pack" DependsOnTargets="_IntermediatePack;$(PackDependsOn)">
+  <Target Name="Pack" DependsOnTargets="$(PackDependsOn)">
   </Target>
   <Target Name="_IntermediatePack">
     <PropertyGroup>
