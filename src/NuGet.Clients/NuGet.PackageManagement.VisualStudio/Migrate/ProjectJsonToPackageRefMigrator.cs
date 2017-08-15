@@ -69,6 +69,7 @@ namespace NuGet.PackageManagement.VisualStudio
                         Strings.Error_MultipleFrameworks,
                         project.MSBuildProjectPath));
             }
+            // TODO NK - Check this
             // In the migrator we need to change whether it's top level or per tfm
             var dependencies = new List<LibraryDependency>();
             foreach (var targetFramework in packageSpec.TargetFrameworks)

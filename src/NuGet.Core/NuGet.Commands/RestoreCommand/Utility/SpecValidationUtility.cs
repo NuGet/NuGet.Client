@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -355,7 +355,7 @@ namespace NuGet.Commands
                 throw RestoreSpecException.Create(message, files);
             }
         }
-
+        // TODO NK - There are multiple versions of this. Some are extensions methods
         private static IEnumerable<LibraryDependency> GetAllDependencies(PackageSpec spec)
         {
             return spec.Dependencies
