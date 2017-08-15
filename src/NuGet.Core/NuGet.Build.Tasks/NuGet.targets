@@ -437,12 +437,8 @@ Copyright (c) .NET Foundation. All rights reserved.
     DependsOnTargets="_GetRestoreProjectStyle;_GetRestoreTargetFrameworksOutput"
     Returns="@(_RestoreTargetFrameworkItems)">
 
-    <PropertyGroup>
-      <_RestoreTargetFrameworkItemsHasValues Condition=" '$(TargetFramework)' != '' OR '$(TargetFrameworks)' != '' ">true</_RestoreTargetFrameworkItemsHasValues>
-    </PropertyGroup>
-
-    <!-- Only return values for NETCore PackageReference projects -->
-    <ItemGroup Condition=" '$(RestoreProjectStyle)' == 'PackageReference' AND ( '$(_RestoreTargetFrameworkItemsHasValues)' == 'true' OR '$(RestoreProjectStyle)' == 'PackageReference' ) ">
+    <!-- Only return values for PackageReference projects -->
+    <ItemGroup Condition=" '$(RestoreProjectStyle)' == 'PackageReference' AND '$(RestoreProjectStyle)' == 'PackageReference' ">
       <_RestoreTargetFrameworkItems Include="@(_RestoreTargetFrameworksOutputFiltered)" />
     </ItemGroup>
   </Target>
