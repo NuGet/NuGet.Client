@@ -69,6 +69,7 @@ namespace NuGet.PackageManagement.VisualStudio
                         Strings.Error_MultipleFrameworks,
                         project.MSBuildProjectPath));
             }
+
             var dependencies = new List<LibraryDependency>();
             foreach (var targetFramework in packageSpec.TargetFrameworks)
             {
@@ -116,7 +117,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 buildProject.RemoveItem(projectJsonItem);
             }
         }
-        
+
 
         private static async Task CreateBackupAsync(
             BuildIntegratedNuGetProject project,
