@@ -503,8 +503,10 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
                 var actualRestoreSpec = packageSpecs.Single();
                 SpecValidationUtility.ValidateProjectSpec(actualRestoreSpec);
+                //No top level dependencies
+                Assert.Equal(0, actualRestoreSpec.Dependencies.Count);
 
-                var actualDependency = actualRestoreSpec.Dependencies.Single();
+                var actualDependency = actualRestoreSpec.TargetFrameworks.SingleOrDefault().Dependencies.Single();
                 Assert.NotNull(actualDependency);
                 Assert.Equal("packageA", actualDependency.LibraryRange.Name);
                 Assert.Equal(VersionRange.Parse("1.*"), actualDependency.LibraryRange.VersionRange);
