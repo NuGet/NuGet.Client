@@ -2381,8 +2381,6 @@ namespace NuGet.PackageManagement
                 }
                 else if (action.NuGetProjectActionType == NuGetProjectActionType.Install)
                 {
-                    // This only needs to work this way for project.json
-                    // TODO NK [Last] - Does this impact tools? It shouldn't, Verify correctness of this, add tests for Project.Json install and legacy and NET Core package ref install
                     if (updatedPackageSpec.RestoreMetadata.ProjectStyle == ProjectStyle.ProjectJson)
                     {
                         PackageSpecOperations.AddOrUpdateDependency(updatedPackageSpec, action.PackageIdentity);
