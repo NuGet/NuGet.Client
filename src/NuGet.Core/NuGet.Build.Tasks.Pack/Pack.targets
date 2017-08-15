@@ -256,7 +256,8 @@ Copyright (c) .NET Foundation. All rights reserved.
       Condition="'$(IncludeBuildOutput)' == 'true'"
       Projects="$(MSBuildProjectFullPath)"
       Targets="_GetBuildOutputFilesWithTfm"
-      Properties="TargetFramework=%(_TargetFrameworks.Identity);">
+      Properties="TargetFramework=%(_TargetFrameworks.Identity);
+                  ExcludeRestorePackageImports=true;">
 
       <Output
           TaskParameter="TargetOutputs"
@@ -267,7 +268,8 @@ Copyright (c) .NET Foundation. All rights reserved.
       Condition="'$(TargetsForTfmSpecificContentInPackage)' != ''"
       Projects="$(MSBuildProjectFullPath)"
       Targets="_GetTfmSpecificContentForPackage"
-      Properties="TargetFramework=%(_TargetFrameworks.Identity);">
+      Properties="TargetFramework=%(_TargetFrameworks.Identity);
+                  ExcludeRestorePackageImports=true;">
 
       <Output
           TaskParameter="TargetOutputs"
@@ -278,7 +280,8 @@ Copyright (c) .NET Foundation. All rights reserved.
       Condition="'$(IncludeSymbols)' == 'true' OR '$(IncludeSource)' == 'true'"
       Projects="$(MSBuildProjectFullPath)"
       Targets="_GetDebugSymbolsWithTfm"
-      Properties="TargetFramework=%(_TargetFrameworks.Identity);">
+      Properties="TargetFramework=%(_TargetFrameworks.Identity);
+                  ExcludeRestorePackageImports=true;">
 
       <Output
           TaskParameter="TargetOutputs"
@@ -290,7 +293,8 @@ Copyright (c) .NET Foundation. All rights reserved.
       Projects="$(MSBuildProjectFullPath)"
       Targets="SourceFilesProjectOutputGroup"
       Properties="TargetFramework=%(_TargetFrameworks.Identity);
-                  BuildProjectReferences=false;">
+                  BuildProjectReferences=false;
+                  ExcludeRestorePackageImports=true;">
 
       <Output
           TaskParameter="TargetOutputs"
@@ -301,7 +305,8 @@ Copyright (c) .NET Foundation. All rights reserved.
       Projects="$(MSBuildProjectFullPath)"
       Targets="_GetFrameworkAssemblyReferences"
       Properties="TargetFramework=%(_TargetFrameworks.Identity);
-                  BuildProjectReferences=false;">
+                  BuildProjectReferences=false;
+                  ExcludeRestorePackageImports=true;">
 
       <Output
           TaskParameter="TargetOutputs"
