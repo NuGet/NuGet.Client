@@ -442,7 +442,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     </PropertyGroup>
 
     <!-- Only return values for NETCore PackageReference projects -->
-    <ItemGroup Condition=" '$(RestoreProjectStyle)' == 'PackageReference' AND '$(_RestoreTargetFrameworkItemsHasValues)' == 'true' ">
+    <ItemGroup Condition=" '$(RestoreProjectStyle)' == 'PackageReference' AND ( '$(_RestoreTargetFrameworkItemsHasValues)' == 'true' OR '$(RestoreProjectStyle)' == 'PackageReference' ) ">
       <_RestoreTargetFrameworkItems Include="@(_RestoreTargetFrameworksOutputFiltered)" />
     </ItemGroup>
   </Target>
