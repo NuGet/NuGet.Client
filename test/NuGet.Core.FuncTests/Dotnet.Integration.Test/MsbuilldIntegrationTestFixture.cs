@@ -90,13 +90,13 @@ namespace Dotnet.Integration.Test
             Assert.True(result.Item3 == "", $"Restore failed with following message in error stream :\n {result.Item3}");
         }
 
-        internal CommandRunnerResult PackProject(string workingDirectory, string projectName, string args)
+        internal CommandRunnerResult PackProject(string workingDirectory, string projectName, string args, string nuspecOutputPath="obj")
         {
             var envVar = new Dictionary<string, string>();
             envVar.Add("MSBuildSDKsPath", MsBuildSdksPath);
             var result = CommandRunner.Run(TestDotnetCli,
                 workingDirectory,
-                $"pack {projectName}.csproj {args} ",
+                $"pack {projectName}.csproj {args} /p:NuspecOutputPath={nuspecOutputPath}",
                 waitForExit: true,
                 environmentVariables: envVar);
             Assert.True(result.Item1 == 0, $"Pack failed with following log information :\n {result.Item3}");
