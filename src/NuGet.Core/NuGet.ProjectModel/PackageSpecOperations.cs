@@ -16,7 +16,7 @@ namespace NuGet.ProjectModel
         
         public static void AddOrUpdateDependency(PackageSpec spec, PackageIdentity identity)
         {
-            var dependency = new PackageDependency(identity.Id, new VersionRange(identity.Version)));
+            var dependency = new PackageDependency(identity.Id, new VersionRange(identity.Version));
 
             var existing = GetExistingDependencies(spec, dependency.Id);
 
