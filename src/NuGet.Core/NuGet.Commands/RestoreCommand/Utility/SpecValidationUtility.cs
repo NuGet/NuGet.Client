@@ -355,7 +355,7 @@ namespace NuGet.Commands
                 throw RestoreSpecException.Create(message, files);
             }
         }
-        // TODO NK - There are multiple versions of this. Some are extensions methods
+
         private static IEnumerable<LibraryDependency> GetAllDependencies(PackageSpec spec)
         {
             return spec.Dependencies
