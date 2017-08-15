@@ -37,6 +37,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <IsInnerBuild Condition="'$(TargetFramework)' != '' AND '$(TargetFrameworks)' != ''">true</IsInnerBuild>
     <NoBuild Condition="'$(GeneratePackageOnBuild)' == 'true'">true</NoBuild>
     <AddPriFileDependsOn Condition="'$(MicrosoftPortableCurrentVersionPropsHasBeenImported)' == 'true'">DeterminePortableBuildCapabilities</AddPriFileDependsOn>
+    <NuspecOutputPath Condition="'$(NuspecOutputPath)' == ''">$(BaseIntermediateOutputPath)$Configuration\</NuspecOutputPath>
     <ImportNuGetBuildTasksPackTargetsFromSdk Condition="'$(ImportNuGetBuildTasksPackTargetsFromSdk)' == ''">false</ImportNuGetBuildTasksPackTargetsFromSdk>
   </PropertyGroup>
   <PropertyGroup Condition="'$(NoBuild)' == 'true' ">
@@ -64,7 +65,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       <Output TaskParameter="AbsolutePaths" PropertyName="PackageOutputAbsolutePath" />
     </ConvertToAbsolutePath>
 
-    <ConvertToAbsolutePath Paths="$(BaseIntermediateOutputPath)">
+    <ConvertToAbsolutePath Paths="$(NuspecOutputPath)">
       <Output TaskParameter="AbsolutePaths" PropertyName="NuspecOutputAbsolutePath" />
     </ConvertToAbsolutePath>
 
@@ -144,6 +145,9 @@ Copyright (c) .NET Foundation. All rights reserved.
       <RestoreOutputPath Condition=" '$(RestoreOutputPath)' == '' " >$(BaseIntermediateOutputPath)</RestoreOutputPath>
     </PropertyGroup>
 
+    <ConvertToAbsolutePath Paths="$(NuspecOutputPath)">
+      <Output TaskParameter="AbsolutePaths" PropertyName="NuspecOutputAbsolutePath" />
+    </ConvertToAbsolutePath>
     <ConvertToAbsolutePath Paths="$(RestoreOutputPath)">
       <Output TaskParameter="AbsolutePaths" PropertyName="RestoreOutputAbsolutePath" />
     </ConvertToAbsolutePath>
@@ -228,7 +232,7 @@ Copyright (c) .NET Foundation. All rights reserved.
               Serviceable="$(Serviceable)"
               FrameworkAssemblyReferences="@(_FrameworkAssemblyReferences)"
               ContinuePackingAfterGeneratingNuspec="$(ContinuePackingAfterGeneratingNuspec)"
-              NuspecOutputPath="$(BaseIntermediateOutputPath)"
+              NuspecOutputPath="$(NuspecOutputAbsolutePath)"
               IncludeBuildOutput="$(IncludeBuildOutput)"
               BuildOutputFolder="$(BuildOutputTargetFolder)"
               ContentTargetFolders="$(ContentTargetFolders)"
