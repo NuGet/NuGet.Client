@@ -66,42 +66,6 @@ namespace NuGet.ProjectModel
             JsonRuntimeFormat.WriteRuntimeGraph(writer, packageSpec.RuntimeGraph);
         }
 
-        public static void GetHashRelevantObjects(PackageSpec packageSpec, IObjectWriter writer)
-        {
-            if (packageSpec == null)
-            {
-                throw new ArgumentNullException(nameof(packageSpec));
-            }
-
-            if (writer == null)
-            {
-                throw new ArgumentNullException(nameof(writer));
-            }
-
-            SetValue(writer, "title", packageSpec.Title);
-
-            if (!packageSpec.IsDefaultVersion)
-            {
-                SetValue(writer, "version", packageSpec.Version?.ToFullString());
-            }
-
-            SetArrayValue(writer, "contentFiles", packageSpec.ContentFiles);
-            SetDictionaryValue(writer, "packInclude", packageSpec.PackInclude);
-            SetPackOptions(writer, packageSpec);
-            SetRestoreSettings(writer, packageSpec);
-            SetMSBuildMetadata(writer, packageSpec);
-            SetDictionaryValues(writer, "scripts", packageSpec.Scripts);
-
-            if (packageSpec.Dependencies.Any())
-            {
-                SetDependencies(writer, packageSpec.Dependencies);
-            }
-
-            SetFrameworks(writer, packageSpec.TargetFrameworks);
-
-            JsonRuntimeFormat.WriteRuntimeGraph(writer, packageSpec.RuntimeGraph);
-        }
-
         /// <summary>
         /// Writes a PackageSpec to a file.
         /// </summary>

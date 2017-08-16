@@ -14,8 +14,9 @@ namespace NuGet.ProjectModel
 {
     public class DependencyGraphSpec
     {
-        private readonly SortedSet<string> _restore = new SortedSet<string>(StringComparer.Ordinal);
-        private readonly SortedDictionary<string, PackageSpec> _projects = new SortedDictionary<string, PackageSpec>(StringComparer.Ordinal);
+        // TODO NK - Changing this to public just to make it easier to create this hash
+        public readonly SortedSet<string> _restore = new SortedSet<string>(StringComparer.Ordinal);
+        public readonly SortedDictionary<string, PackageSpec> _projects = new SortedDictionary<string, PackageSpec>(StringComparer.Ordinal);
 
         public DependencyGraphSpec(JObject json)
         {
@@ -284,50 +285,9 @@ namespace NuGet.ProjectModel
             return json;
         }
 
-        public string GetSmartHash()
-        {
-            using (var hashFunc = new Sha512HashFunction())
-            using (var writer = new HashObjectWriter(hashFunc))
-            {
-                AddRelevantObjects(writer);
-
-                return writer.GetHash();
-            }
-        }
-
-        private void AddRelevantObjects(RuntimeModel.IObjectWriter writer)
-        {
-            writer.WriteNameValue("format", 1);
-
-            // Preserve default sort order
-            foreach (var restoreName in _restore)
-            {
-                writer.WriteObjectStart(restoreName);
-                writer.WriteObjectEnd();
-            }
-
-            // Preserve default sort order
-            foreach (var pair in _projects)
-            {
-                var project = pair.Value;
-
-                writer.WriteObjectStart(project.RestoreMetadata.ProjectUniqueName);
-                PackageSpecWriter.GetHashRelevantObjects(project, writer);
-                writer.WriteObjectEnd();
-            }
-
-            writer.WriteObjectEnd();
-        }
-
         public string GetHash()
         {
-            using (var hashFunc = new Sha512HashFunction())
-            using (var writer = new HashObjectWriter(hashFunc))
-            {
-                Write(writer);
-
-                return writer.GetHash();
-            }
+            return DependencyGraphSpecHashUtility.GetSmartHash(this);
         }
 
         private void Write(RuntimeModel.IObjectWriter writer)
