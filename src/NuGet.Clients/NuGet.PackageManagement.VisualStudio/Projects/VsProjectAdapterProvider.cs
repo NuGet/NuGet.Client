@@ -94,7 +94,14 @@ namespace NuGet.PackageManagement.VisualStudio
             var fullProjectPath = VsHierarchyUtility.GetProjectPath(project);
 
             var uniqueName = string.Empty;
-            _vsSolution.Value.GetUniqueNameOfProject(project, out uniqueName);
+
+            // Adding a check for the result of GetUniqueNameOfProject call
+            // If the method does not return success then we reset the unique name to empty
+            // This prevents problems if the method alters the out string in case of errors
+            if (VSConstants.S_OK != _vsSolution.Value.GetUniqueNameOfProject(project, out uniqueName))
+            {
+                uniqueName = string.Empty;
+            }
 
             var projectNames = new ProjectNames(
                 fullName: fullProjectPath,
