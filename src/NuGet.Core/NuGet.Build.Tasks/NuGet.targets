@@ -438,7 +438,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     Returns="@(_RestoreTargetFrameworkItems)">
 
     <!-- Only return values for PackageReference projects -->
-    <ItemGroup Condition=" '$(RestoreProjectStyle)' == 'PackageReference' AND '$(RestoreProjectStyle)' == 'PackageReference' ">
+    <ItemGroup Condition=" '$(RestoreProjectStyle)' == 'PackageReference' ">
       <_RestoreTargetFrameworkItems Include="@(_RestoreTargetFrameworksOutputFiltered)" />
     </ItemGroup>
   </Target>
