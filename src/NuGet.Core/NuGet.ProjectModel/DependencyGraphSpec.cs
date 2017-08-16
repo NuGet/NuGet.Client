@@ -14,9 +14,10 @@ namespace NuGet.ProjectModel
 {
     public class DependencyGraphSpec
     {
-        // TODO NK - Changing this to public just to make it easier to create this hash
-        public readonly SortedSet<string> _restore = new SortedSet<string>(StringComparer.Ordinal);
-        public readonly SortedDictionary<string, PackageSpec> _projects = new SortedDictionary<string, PackageSpec>(StringComparer.Ordinal);
+        private readonly SortedSet<string> _restore = new SortedSet<string>(StringComparer.Ordinal);
+        private readonly SortedDictionary<string, PackageSpec> _projects = new SortedDictionary<string, PackageSpec>(StringComparer.Ordinal);
+
+        private static readonly int _version = 0;
 
         public DependencyGraphSpec(JObject json)
         {
@@ -239,7 +240,7 @@ namespace NuGet.ProjectModel
         {
             var writer = new RuntimeModel.JsonObjectWriter();
 
-            Write(writer);
+            Write(writer, PackageSpecWriter.Write);
 
             return writer.GetJson();
         }
@@ -287,12 +288,18 @@ namespace NuGet.ProjectModel
 
         public string GetHash()
         {
-            return DependencyGraphSpecHashUtility.GetSmartHash(this);
+            using (var hashFunc = new Sha512HashFunction())
+            using (var writer = new HashObjectWriter(hashFunc))
+            {
+                Write(writer, PackageSpecWriter.WriteRestoreInfo);
+
+                return writer.GetHash();
+            }
         }
 
-        private void Write(RuntimeModel.IObjectWriter writer)
+        private void Write(RuntimeModel.IObjectWriter writer, Action<PackageSpec, RuntimeModel.IObjectWriter> writeAction)
         {
-            writer.WriteNameValue("format", 1);
+            writer.WriteNameValue("format", _version);
 
             writer.WriteObjectStart("restore");
 
@@ -313,7 +320,7 @@ namespace NuGet.ProjectModel
                 var project = pair.Value;
 
                 writer.WriteObjectStart(project.RestoreMetadata.ProjectUniqueName);
-                PackageSpecWriter.Write(project, writer);
+                writeAction.Invoke(project, writer);
                 writer.WriteObjectEnd();
             }
 

@@ -67,6 +67,51 @@ namespace NuGet.ProjectModel
         }
 
         /// <summary>
+        /// Writes a PackageSpec to an <c>NuGet.Common.IObjectWriter</c> instance. 
+        /// </summary>
+        /// <param name="packageSpec">A <c>PackageSpec</c> instance.</param>
+        /// <param name="writer">An <c>NuGet.Common.IObjectWriter</c> instance.</param>
+        public static void WriteRestoreInfo(PackageSpec packageSpec, IObjectWriter writer)
+        {
+            if (packageSpec == null)
+            {
+                throw new ArgumentNullException(nameof(packageSpec));
+            }
+
+            if (writer == null)
+            {
+                throw new ArgumentNullException(nameof(writer));
+            }
+
+            SetValue(writer, "title", packageSpec.Title);
+
+            if (!packageSpec.IsDefaultVersion)
+            {
+                SetValue(writer, "version", packageSpec.Version?.ToFullString());
+            }
+
+//            SetValue(writer, "description", packageSpec.Description);
+//            SetArrayValue(writer, "authors", packageSpec.Authors);
+//            SetValue(writer, "copyright", packageSpec.Copyright);
+//            SetValue(writer, "language", packageSpec.Language);
+            SetArrayValue(writer, "contentFiles", packageSpec.ContentFiles); // TODO NK - Maybe this should be sorted!
+//            SetDictionaryValue(writer, "packInclude", packageSpec.PackInclude);
+//            SetPackOptions(writer, packageSpec);
+            SetRestoreSettings(writer, packageSpec); // GOOD
+            SetMSBuildMetadata(writer, packageSpec);
+            SetDictionaryValues(writer, "scripts", packageSpec.Scripts); // GOOD
+
+            if (packageSpec.Dependencies.Any())
+            {
+                SetDependencies(writer, packageSpec.Dependencies); // Looks good
+            }
+
+            SetFrameworks(writer, packageSpec.TargetFrameworks); // GOOD
+
+            JsonRuntimeFormat.WriteRuntimeGraph(writer, packageSpec.RuntimeGraph); // GOOD
+        }
+
+        /// <summary>
         /// Writes a PackageSpec to a file.
         /// </summary>
         /// <param name="packageSpec">A <c>PackageSpec</c> instance.</param>
@@ -113,17 +158,27 @@ namespace NuGet.ProjectModel
             writer.WriteObjectEnd();
         }
 
-        private static void SetMSBuildMetadata(IObjectWriter writer, PackageSpec packageSpec)
+        private static bool IsMetadataValid(ProjectRestoreMetadata msbuildMetadata)
         {
-            var msbuildMetadata = packageSpec.RestoreMetadata;
             if (msbuildMetadata == null)
             {
-                return;
+                return false;
             }
 
             if (msbuildMetadata.ProjectUniqueName == null && msbuildMetadata.ProjectName == null
                 && msbuildMetadata.ProjectPath == null && msbuildMetadata.ProjectJsonPath == null
                 && msbuildMetadata.PackagesPath == null && msbuildMetadata.OutputPath == null)
+            {
+                return false;
+            }
+
+            return true;
+        }
+        private static void SetMSBuildMetadata(IObjectWriter writer, PackageSpec packageSpec)
+        {
+            var msbuildMetadata = packageSpec.RestoreMetadata;
+
+            if (!IsMetadataValid(msbuildMetadata))
             {
                 return;
             }
@@ -143,21 +198,9 @@ namespace NuGet.ProjectModel
             }
 
             SetValueIfTrue(writer, "crossTargeting", msbuildMetadata.CrossTargeting);
-
-            SetValueIfTrue(
-                    writer,
-                    "legacyPackagesDirectory",
-                    msbuildMetadata.LegacyPackagesDirectory);
-
-            SetValueIfTrue(
-                    writer,
-                    "validateRuntimeAssets",
-                    msbuildMetadata.ValidateRuntimeAssets);
-
-            SetValueIfTrue(
-                    writer,
-                    "skipContentFileWrite",
-                    msbuildMetadata.SkipContentFileWrite);
+            SetValueIfTrue(writer, "legacyPackagesDirectory", msbuildMetadata.LegacyPackagesDirectory);
+            SetValueIfTrue(writer, "validateRuntimeAssets", msbuildMetadata.ValidateRuntimeAssets);
+            SetValueIfTrue(writer, "skipContentFileWrite", msbuildMetadata.SkipContentFileWrite);
 
             SetArrayValue(writer, "fallbackFolders", msbuildMetadata.FallbackFolders);
             SetArrayValue(writer, "configFilePaths", msbuildMetadata.ConfigFilePaths);
