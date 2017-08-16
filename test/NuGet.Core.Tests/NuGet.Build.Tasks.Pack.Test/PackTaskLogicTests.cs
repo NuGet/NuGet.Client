@@ -494,8 +494,9 @@ namespace NuGet.Build.Tasks.Pack.Test
                 var tc = new TestContext(testDir);
                 var outputPath = Path.Combine(testDir, "bin", "Debug", "uap10");
                 var dllPath = Path.Combine(outputPath, "a.dll");
-                var xmlPath = Path.Combine(outputPath, "layoutFolder", "a.xml");
-                var xamlPath = Path.Combine(outputPath, "layoutFolder", "a.xaml");
+                var layoutFolder = Path.Combine(outputPath, "layoutFolder");
+                var xmlPath = Path.Combine(layoutFolder, "a.xml");
+                var xamlPath = Path.Combine(layoutFolder, "a.xaml");
 
 
                 tc.Request.BuildOutputInPackage = new[] { new MSBuildItem(dllPath, new Dictionary<string, string>
@@ -516,6 +517,7 @@ namespace NuGet.Build.Tasks.Pack.Test
                 };
 
                 Directory.CreateDirectory(outputPath);
+                Directory.CreateDirectory(layoutFolder);
 
                 tc.Request.BuildOutputInPackage.ToList().ForEach(p => File.WriteAllBytes(p.Identity, new byte[0]));
 
