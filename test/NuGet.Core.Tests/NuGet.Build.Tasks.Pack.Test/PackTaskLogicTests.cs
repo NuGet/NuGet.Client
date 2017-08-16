@@ -507,11 +507,13 @@ namespace NuGet.Build.Tasks.Pack.Test
                     new MSBuildItem(xmlPath, new Dictionary<string, string>
                     {
                         {"FinalOutputPath", xmlPath },
+                        {"TargetPath", Path.Combine("layoutFolder", "a.xml") },
                         {"TargetFramework", "uap10" }
                     }),
                      new MSBuildItem(xamlPath, new Dictionary<string, string>
                     {
                         {"FinalOutputPath", xamlPath },
+                        {"TargetPath", Path.Combine("layoutFolder", "a.xaml") },
                         {"TargetFramework", "uap10" }
                     })
                 };
