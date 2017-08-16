@@ -1161,6 +1161,15 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Persisting no-op dg to &apos;{0}&apos;..
+        /// </summary>
+        internal static string PersistNoOpDGFile {
+            get {
+                return ResourceManager.GetString("PersistNoOpDGFile", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Invalid input combination. Property &apos;{0}&apos; is not allowed..
         /// </summary>
         internal static string PropertyNotAllowed {

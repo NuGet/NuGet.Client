@@ -261,7 +261,7 @@ namespace NuGet.Commands
                 log.LogMinimal(
                     string.Format(
                         CultureInfo.CurrentCulture,
-                        Strings.PersistDGFile,
+                        Strings.PersistNoOpDGFile,
                         path));
 
                 spec.SaveHashingDGSpec(path);
