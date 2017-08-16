@@ -515,6 +515,8 @@ namespace NuGet.Build.Tasks.Pack.Test
                     })
                 };
 
+                Directory.CreateDirectory(outputPath);
+
                 tc.Request.BuildOutputInPackage.ToList().ForEach(p => File.WriteAllBytes(p.Identity, new byte[0]));
 
                 // Act
