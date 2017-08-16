@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -112,7 +112,7 @@ namespace NuGet.Commands
                     platformIdentifier = FrameworkConstants.FrameworkIdentifiers.Windows;
                 }
 
-                frameworks.Add($"{platformIdentifier}, Version={platformVersion}");
+                frameworks.Add(NuGetFramework.Parse($"{platformIdentifier}, Version={platformVersion}").ToString());
 
                 return frameworks;
             }
@@ -120,6 +120,7 @@ namespace NuGet.Commands
             if (!string.IsNullOrEmpty(platformVersion)
                 && StringComparer.OrdinalIgnoreCase.Equals(platformIdentifier, "UAP"))
             {
+                // here we can change what we get
                 // Use the platform id and versions, this is done for UAP projects
                 frameworks.Add($"{platformIdentifier}, Version={platformVersion}");
 

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -49,6 +49,42 @@ namespace NuGet.ProjectModel
             SetArrayValue(writer, "authors", packageSpec.Authors);
             SetValue(writer, "copyright", packageSpec.Copyright);
             SetValue(writer, "language", packageSpec.Language);
+            SetArrayValue(writer, "contentFiles", packageSpec.ContentFiles);
+            SetDictionaryValue(writer, "packInclude", packageSpec.PackInclude);
+            SetPackOptions(writer, packageSpec);
+            SetRestoreSettings(writer, packageSpec);
+            SetMSBuildMetadata(writer, packageSpec);
+            SetDictionaryValues(writer, "scripts", packageSpec.Scripts);
+
+            if (packageSpec.Dependencies.Any())
+            {
+                SetDependencies(writer, packageSpec.Dependencies);
+            }
+
+            SetFrameworks(writer, packageSpec.TargetFrameworks);
+
+            JsonRuntimeFormat.WriteRuntimeGraph(writer, packageSpec.RuntimeGraph);
+        }
+
+        public static void GetHashRelevantObjects(PackageSpec packageSpec, IObjectWriter writer)
+        {
+            if (packageSpec == null)
+            {
+                throw new ArgumentNullException(nameof(packageSpec));
+            }
+
+            if (writer == null)
+            {
+                throw new ArgumentNullException(nameof(writer));
+            }
+
+            SetValue(writer, "title", packageSpec.Title);
+
+            if (!packageSpec.IsDefaultVersion)
+            {
+                SetValue(writer, "version", packageSpec.Version?.ToFullString());
+            }
+
             SetArrayValue(writer, "contentFiles", packageSpec.ContentFiles);
             SetDictionaryValue(writer, "packInclude", packageSpec.PackInclude);
             SetPackOptions(writer, packageSpec);
