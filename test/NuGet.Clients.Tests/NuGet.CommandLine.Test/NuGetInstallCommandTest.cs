@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -10,6 +10,7 @@ using System.Net;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using FluentAssertions;
+using NuGet.Common;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Test.Utility;
@@ -1223,81 +1224,76 @@ namespace NuGet.CommandLine.Test
             }
         }
 
-        [Fact]
-        public void InstallCommand_DependencyResolution()
+        [Theory]
+        [InlineData(null, null, "1.1.0")]
+        [InlineData("Lowest", "1.2", "1.2.0")]
+        [InlineData("Highest", null, "2.0.0")]
+        [InlineData("HighestMinor", "1.1", "1.2.0")]
+        [InlineData("HighestPatch", "1.1", "1.1.1")]
+        public void InstallCommand_DependencyResolution(string dependencyType, string requestedVersion, string expectedVersion)
         {
             var nugetexe = Util.GetNuGetExePath();
-
-            // Test variations
-            // dependencyVersion, requested version, expected version
-            string[,] variations =
+            using (var source = TestDirectory.Create())
+            using (var outputDirectory = TestDirectory.Create())
             {
-                {null,           null,  "1.1.0" },
-                {"Lowest",       "1.2", "1.2.0" },
-                {"Highest",      null,  "2.0.0" },
-                {"HighestMinor", "1.1", "1.2.0" },
-                {"HighestPatch", "1.1", "1.1.1" }
-            };
+                // Arrange
+                Util.CreateTestPackage("depPackage", "1.1.0", source);
+                Util.CreateTestPackage("depPackage", "1.1.1", source);
+                Util.CreateTestPackage("depPackage", "1.2.0", source);
+                Util.CreateTestPackage("depPackage", "2.0.0", source);
 
-            for (var i = 0; i < variations.GetLength(0); i++)
-            {
-                using (var pathContext = new SimpleTestPathContext())
-                {
-                    var workingPath = pathContext.WorkingDirectory;
-                    var source = pathContext.PackageSource;
-                    var outputDirectory = pathContext.SolutionRoot;
-
-                    // Arrange
-                    Util.CreateTestPackage("depPackage", "1.1.0", source);
-                    Util.CreateTestPackage("depPackage", "1.1.1", source);
-                    Util.CreateTestPackage("depPackage", "1.2.0", source);
-                    Util.CreateTestPackage("depPackage", "2.0.0", source);
-
-                    var packageFileName = PackageCreater.CreatePackage(
-                        "testPackage", "1.1.0", source,
-                        (builder) =>
+                var packageFileName = PackageCreater.CreatePackage(
+                    "testPackage", "1.1.0", source,
+                    (builder) =>
+                    {
+                        if (requestedVersion == null)
                         {
-                            if (variations[i, 1] == null)
-                            {
-                                var dependencySet = new PackageDependencySet(null,
-                                    new[] { new PackageDependency("depPackage") });
-                                builder.DependencySets.Add(dependencySet);
-                            }
-                            else
-                            {
-                                var dependencySet = new PackageDependencySet(null,
-                                    new[] { new PackageDependency("depPackage",
-                                        VersionUtility.ParseVersionSpec(variations[i, 1])) });
-                                builder.DependencySets.Add(dependencySet);
-                            }
-                        });
+                            var dependencySet = new PackageDependencySet(null,
+                                new[] { new PackageDependency("depPackage") });
+                            builder.DependencySets.Add(dependencySet);
+                        }
+                        else
+                        {
+                            var dependencySet = new PackageDependencySet(null,
+                                new[] { new PackageDependency("depPackage",
+                                    VersionUtility.ParseVersionSpec(requestedVersion)) });
+                            builder.DependencySets.Add(dependencySet);
+                        }
+                    });
 
-                    // Act
-                    string cmd;
-                    if (variations[i, 0] == null)
-                    {
-                        cmd = string.Format(
-                            CultureInfo.InvariantCulture,
-                            "install testPackage -OutputDirectory {0} -Source {1}", outputDirectory, source);
-                    }
-                    else
-                    {
-                        cmd = string.Format(
-                            CultureInfo.InvariantCulture,
-                            "install testPackage -OutputDirectory {0} -Source {1} -DependencyVersion {2}", outputDirectory, source, variations[i, 0]);
-                    }
-                    var r = CommandRunner.Run(
-                        nugetexe,
-                        Directory.GetCurrentDirectory(),
-                        cmd,
-                        waitForExit: true);
+                var pathSeparator = @"\";
+                // verify nuget grabs the earliest by default
+                var depPackageFile = outputDirectory + $@"{pathSeparator}depPackage." + expectedVersion + $@"{pathSeparator}depPackage." + expectedVersion + ".nupkg";
 
-                    // Assert
-                    Assert.Equal(0, r.Item1);
-                    // verify nuget grabs the earliest by default
-                    var depPackageFile = outputDirectory + @"\depPackage." + variations[i, 2] + @"\depPackage." + variations[i, 2] + ".nupkg";
-                    Assert.True(File.Exists(depPackageFile));
+                // change the path separator for mono
+                if (RuntimeEnvironmentHelper.IsMono)
+                {
+                    depPackageFile = NuGet.Common.PathUtility.GetPathWithForwardSlashes(depPackageFile);
                 }
+
+                // Act
+                string cmd;
+                if (dependencyType == null)
+                {
+                    cmd = string.Format(
+                        CultureInfo.InvariantCulture,
+                        "install testPackage -OutputDirectory {0} -Source {1}", outputDirectory, source);
+                }
+                else
+                {
+                    cmd = string.Format(
+                        CultureInfo.InvariantCulture,
+                        "install testPackage -OutputDirectory {0} -Source {1} -DependencyVersion {2}", outputDirectory, source, dependencyType);
+                }
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    Directory.GetCurrentDirectory(),
+                    cmd,
+                    waitForExit: true);
+
+                // Assert
+                Assert.Equal(0, r.ExitCode);
+                Assert.True(File.Exists(depPackageFile), $"File '{depPackageFile}' not found.");
             }
         }
 
