@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -32,7 +32,8 @@ namespace NuGet.Commands
             ".xml",
             ".json",
             ".winmd",
-            ".pri"
+            ".pri",
+            ".xaml"
         };
 
         // List of extensions to allow in the output path if IncludeSymbols is set
