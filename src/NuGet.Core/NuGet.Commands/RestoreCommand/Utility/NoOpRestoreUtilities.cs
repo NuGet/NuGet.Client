@@ -254,8 +254,7 @@ namespace NuGet.Commands
                     path = Path.Combine(
                         NuGetEnvironment.GetFolderPath(NuGetFolderPath.Temp),
                         "nuget-dg",
-                        "noop-dg",
-                        $"{spec.Projects.FirstOrDefault().RestoreMetadata.ProjectName}-{DateTime.Now}.dg");
+                        $"{spec.Projects.FirstOrDefault().RestoreMetadata.ProjectName}-{DateTime.Now.ToString("yyyyMMddHHmmss")}.dg");
                     DirectoryUtility.CreateSharedDirectory(Path.GetDirectoryName(path));
                 }
 

@@ -17,7 +17,7 @@ namespace NuGet.ProjectModel
         private readonly SortedSet<string> _restore = new SortedSet<string>(StringComparer.Ordinal);
         private readonly SortedDictionary<string, PackageSpec> _projects = new SortedDictionary<string, PackageSpec>(StringComparer.Ordinal);
 
-        private static readonly int _version = 0;
+        private static readonly int _version = 1;
 
         public DependencyGraphSpec(JObject json)
         {
