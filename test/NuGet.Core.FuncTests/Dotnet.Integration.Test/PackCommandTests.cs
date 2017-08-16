@@ -1004,6 +1004,7 @@ namespace Dotnet.Integration.Test
                     var xml = XDocument.Load(stream);
                     ProjectFileUtils.SetTargetFrameworkForProject(xml, "TargetFramework", "netstandard1.4");
                     ProjectFileUtils.AddProperty(xml, "GeneratePackageOnBuild", "true");
+                    ProjectFileUtils.AddProperty(xml, "NuspecOutputPath", "obj\\Debug");
 
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
@@ -1012,7 +1013,7 @@ namespace Dotnet.Integration.Test
                 msbuildFixture.BuildProject(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}");
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
-                var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
+                var nuspecPath = Path.Combine(workingDirectory, "obj", "Debug", $"{projectName}.1.0.0.nuspec");
 
                 Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the expected place");
                 Assert.True(File.Exists(nuspecPath), "The intermediate nuspec file is not in the expected place");
@@ -1068,7 +1069,7 @@ namespace Dotnet.Integration.Test
                     var xml = XDocument.Load(stream);
                     ProjectFileUtils.SetTargetFrameworkForProject(xml, "TargetFrameworks", frameworks);
                     ProjectFileUtils.AddProperty(xml, "GeneratePackageOnBuild", "true");
-
+                    ProjectFileUtils.AddProperty(xml, "NuspecOutputPath", "obj\\Debug");
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
@@ -1076,7 +1077,7 @@ namespace Dotnet.Integration.Test
                 msbuildFixture.BuildProject(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}");
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
-                var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
+                var nuspecPath = Path.Combine(workingDirectory, "obj", "Debug", $"{projectName}.1.0.0.nuspec");
 
                 Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the expected place");
                 Assert.True(File.Exists(nuspecPath), "The intermediate nuspec file is not in the expected place");
@@ -1212,6 +1213,7 @@ namespace Dotnet.Integration.Test
                 {
                     var xml = XDocument.Load(stream);
                     ProjectFileUtils.AddProperty(xml, "GeneratePackageOnBuild", "true");
+                    ProjectFileUtils.AddProperty(xml, "NuspecOutputPath", "obj");
 
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
@@ -1250,6 +1252,7 @@ namespace Dotnet.Integration.Test
                 {
                     var xml = XDocument.Load(stream);
                     ProjectFileUtils.AddProperty(xml, "GeneratePackageOnBuild", "true");
+                    ProjectFileUtils.AddProperty(xml, "NuspecOutputPath", "obj");
 
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
