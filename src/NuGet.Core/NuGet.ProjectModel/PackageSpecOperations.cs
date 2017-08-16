@@ -13,11 +13,8 @@ namespace NuGet.ProjectModel
 {
     public static class PackageSpecOperations
     {
-        
-        public static void AddOrUpdateDependency(PackageSpec spec, PackageIdentity identity)
-        {
-            var dependency = new PackageDependency(identity.Id, new VersionRange(identity.Version));
-
+        public static void AddOrUpdateDependency(PackageSpec spec, PackageDependency dependency)
+        {  
             var existing = GetExistingDependencies(spec, dependency.Id);
 
             var range = dependency.VersionRange;
@@ -31,6 +28,11 @@ namespace NuGet.ProjectModel
             {
                 AddDependency(spec.Dependencies, dependency.Id, range);
             }
+        } 
+
+        public static void AddOrUpdateDependency(PackageSpec spec, PackageIdentity identity)
+        {
+            AddOrUpdateDependency(spec, new PackageDependency(identity.Id, new VersionRange(identity.Version)));
         }
 
         public static bool HasPackage(PackageSpec spec, string packageId)
