@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -14,7 +14,7 @@ namespace NuGet.ProjectModel
     public static class PackageSpecOperations
     {
         public static void AddOrUpdateDependency(PackageSpec spec, PackageDependency dependency)
-        {  
+        {
             var existing = GetExistingDependencies(spec, dependency.Id);
 
             var range = dependency.VersionRange;
@@ -28,7 +28,7 @@ namespace NuGet.ProjectModel
             {
                 AddDependency(spec.Dependencies, dependency.Id, range);
             }
-        } 
+        }
 
         public static void AddOrUpdateDependency(PackageSpec spec, PackageIdentity identity)
         {
