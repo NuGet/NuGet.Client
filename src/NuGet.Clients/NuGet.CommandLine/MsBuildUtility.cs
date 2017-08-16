@@ -257,6 +257,7 @@ namespace NuGet.CommandLine
             AddPropertyIfHasValue(args, "RestoreSolutionDirectory", solutionDirectory);
             AddPropertyIfHasValue(args, "RestoreConfigFile", restoreConfigFile);
             AddPropertyIfHasValue(args, "RestorePackagesPath", packagesDirectory);
+            AddPropertyIfHasValue(args, "SolutionDir", solutionDirectory);
 
             // Add additional args to msbuild if needed
             var msbuildAdditionalArgs = Environment.GetEnvironmentVariable("NUGET_RESTORE_MSBUILD_ARGS");
