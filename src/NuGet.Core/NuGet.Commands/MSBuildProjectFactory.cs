@@ -47,7 +47,8 @@ namespace NuGet.Commands
             ".json",
             ".pri",
             ".pdb",
-            ".mdb"
+            ".mdb",
+            ".xaml"
         };
 
         private MSBuildPackTargetArgs PackTargetArgs { get; set; }
