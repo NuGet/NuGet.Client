@@ -67,11 +67,11 @@ namespace NuGet.ProjectModel
         }
 
         /// <summary>
-        /// Writes a PackageSpec to an <c>NuGet.Common.IObjectWriter</c> instance. 
+        /// Writes a PackageSpec restore info that's important for hashing/no-op to an <c>NuGet.Common.IObjectWriter</c> instance. 
         /// </summary>
         /// <param name="packageSpec">A <c>PackageSpec</c> instance.</param>
         /// <param name="writer">An <c>NuGet.Common.IObjectWriter</c> instance.</param>
-        public static void WriteRestoreInfo(PackageSpec packageSpec, IObjectWriter writer)
+        public static void WriteHashingRestoreInfo(PackageSpec packageSpec, IObjectWriter writer)
         {
             if (packageSpec == null)
             {
@@ -98,7 +98,7 @@ namespace NuGet.ProjectModel
 //            SetDictionaryValue(writer, "packInclude", packageSpec.PackInclude);
 //            SetPackOptions(writer, packageSpec);
             SetRestoreSettings(writer, packageSpec); // GOOD
-            SetMSBuildMetadata(writer, packageSpec);
+            SetConvertedMSBuildMetadata(writer, packageSpec);
             SetDictionaryValues(writer, "scripts", packageSpec.Scripts); // GOOD
 
             if (packageSpec.Dependencies.Any())
@@ -174,6 +174,44 @@ namespace NuGet.ProjectModel
 
             return true;
         }
+
+        private static void SetConvertedMSBuildMetadata(IObjectWriter writer, PackageSpec packageSpec)
+        {
+            var msbuildMetadata = packageSpec.RestoreMetadata;
+
+            if (!IsMetadataValid(msbuildMetadata))
+            {
+                return;
+            }
+
+            writer.WriteObjectStart(JsonPackageSpecReader.RestoreOptions);
+
+            SetValue(writer, "projectUniqueName", msbuildMetadata.ProjectUniqueName);
+            SetValue(writer, "projectName", msbuildMetadata.ProjectName);
+            SetValue(writer, "projectPath", msbuildMetadata.ProjectPath);
+            SetValue(writer, "projectJsonPath", msbuildMetadata.ProjectJsonPath);
+            SetValue(writer, "packagesPath", msbuildMetadata.PackagesPath);
+            SetValue(writer, "outputPath", msbuildMetadata.OutputPath);
+
+            if (msbuildMetadata.ProjectStyle != ProjectStyle.Unknown)
+            {
+                SetValue(writer, "projectStyle", msbuildMetadata.ProjectStyle.ToString());
+            }
+
+            WriteMetadataBooleans(writer, msbuildMetadata);
+
+            SetArrayValue(writer, "fallbackFolders", msbuildMetadata.FallbackFolders);
+            SetArrayValue(writer, "configFilePaths", msbuildMetadata.ConfigFilePaths);
+            SetArrayValue(writer, "originalTargetFrameworks", msbuildMetadata.OriginalTargetFrameworks.Select(e => NuGetFramework.Parse(e).GetShortFolderName()));
+
+            WriteMetadataSources(writer, msbuildMetadata);
+            WriteMetadataFiles(writer, msbuildMetadata);
+            WriteMetadataTargetFrameworks(writer, msbuildMetadata);
+            SetWarningProperties(writer, msbuildMetadata);
+
+            writer.WriteObjectEnd();
+        }
+
         private static void SetMSBuildMetadata(IObjectWriter writer, PackageSpec packageSpec)
         {
             var msbuildMetadata = packageSpec.RestoreMetadata;
@@ -197,41 +235,30 @@ namespace NuGet.ProjectModel
                 SetValue(writer, "projectStyle", msbuildMetadata.ProjectStyle.ToString());
             }
 
-            SetValueIfTrue(writer, "crossTargeting", msbuildMetadata.CrossTargeting);
-            SetValueIfTrue(writer, "legacyPackagesDirectory", msbuildMetadata.LegacyPackagesDirectory);
-            SetValueIfTrue(writer, "validateRuntimeAssets", msbuildMetadata.ValidateRuntimeAssets);
-            SetValueIfTrue(writer, "skipContentFileWrite", msbuildMetadata.SkipContentFileWrite);
+            WriteMetadataBooleans(writer, msbuildMetadata);
 
             SetArrayValue(writer, "fallbackFolders", msbuildMetadata.FallbackFolders);
             SetArrayValue(writer, "configFilePaths", msbuildMetadata.ConfigFilePaths);
             SetArrayValue(writer, "originalTargetFrameworks", msbuildMetadata.OriginalTargetFrameworks);
 
-            if (msbuildMetadata.Sources?.Count > 0)
-            {
-                writer.WriteObjectStart("sources");
+            WriteMetadataSources(writer, msbuildMetadata);
+            WriteMetadataFiles(writer, msbuildMetadata);
+            WriteMetadataTargetFrameworks(writer, msbuildMetadata);
+            SetWarningProperties(writer, msbuildMetadata);
 
-                foreach (var source in msbuildMetadata.Sources.OrderBy(e => e.Source, StringComparer.Ordinal))
-                {
-                    // "source": {}
-                    writer.WriteObjectStart(source.Source);
-                    writer.WriteObjectEnd();
-                }
+            writer.WriteObjectEnd();
+        }
 
-                writer.WriteObjectEnd();
-            }
+        private static void WriteMetadataBooleans(IObjectWriter writer, ProjectRestoreMetadata msbuildMetadata)
+        {
+            SetValueIfTrue(writer, "crossTargeting", msbuildMetadata.CrossTargeting);
+            SetValueIfTrue(writer, "legacyPackagesDirectory", msbuildMetadata.LegacyPackagesDirectory);
+            SetValueIfTrue(writer, "validateRuntimeAssets", msbuildMetadata.ValidateRuntimeAssets);
+            SetValueIfTrue(writer, "skipContentFileWrite", msbuildMetadata.SkipContentFileWrite);
+        }
 
-            if (msbuildMetadata.Files?.Count > 0)
-            {
-                writer.WriteObjectStart("files");
-
-                foreach (var file in msbuildMetadata.Files)
-                {
-                    SetValue(writer, file.PackagePath, file.AbsolutePath);
-                }
-
-                writer.WriteObjectEnd();
-            }
-
+        private static void WriteMetadataTargetFrameworks(IObjectWriter writer, ProjectRestoreMetadata msbuildMetadata)
+        {
             if (msbuildMetadata.TargetFrameworks?.Count > 0)
             {
                 writer.WriteObjectStart("frameworks");
@@ -281,10 +308,37 @@ namespace NuGet.ProjectModel
 
                 writer.WriteObjectEnd();
             }
+        }
 
-            SetWarningProperties(writer, msbuildMetadata);
+        private static void WriteMetadataFiles(IObjectWriter writer, ProjectRestoreMetadata msbuildMetadata)
+        {
+            if (msbuildMetadata.Files?.Count > 0)
+            {
+                writer.WriteObjectStart("files");
 
-            writer.WriteObjectEnd();
+                foreach (var file in msbuildMetadata.Files)
+                {
+                    SetValue(writer, file.PackagePath, file.AbsolutePath);
+                }
+
+                writer.WriteObjectEnd();
+            }
+        }
+
+        private static void WriteMetadataSources(IObjectWriter writer, ProjectRestoreMetadata msbuildMetadata)
+        {
+            if (msbuildMetadata.Sources?.Count > 0)
+            {
+                writer.WriteObjectStart("sources");
+
+                foreach (var source in msbuildMetadata.Sources.OrderBy(e => e.Source, StringComparer.Ordinal))
+                {
+                    writer.WriteObjectStart(source.Source);
+                    writer.WriteObjectEnd();
+                }
+
+                writer.WriteObjectEnd();
+            }
         }
 
         private static void SetWarningProperties(IObjectWriter writer, ProjectRestoreMetadata msbuildMetadata)

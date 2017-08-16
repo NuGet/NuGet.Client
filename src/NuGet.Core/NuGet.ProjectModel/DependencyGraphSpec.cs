@@ -291,11 +291,26 @@ namespace NuGet.ProjectModel
             using (var hashFunc = new Sha512HashFunction())
             using (var writer = new HashObjectWriter(hashFunc))
             {
-                Write(writer, PackageSpecWriter.WriteRestoreInfo);
-
+                Write(writer, PackageSpecWriter.WriteHashingRestoreInfo);
                 return writer.GetHash();
             }
         }
+
+        public void SaveHashingDGSpec(string path)
+        {
+            var writer = new RuntimeModel.JsonObjectWriter();
+
+            Write(writer, PackageSpecWriter.WriteHashingRestoreInfo);
+
+            var json =  writer.GetJson();
+
+            using (var fileStream = new FileStream(path, FileMode.Create))
+            using (var textWriter = new StreamWriter(fileStream))
+            {
+                textWriter.Write(json);
+            }
+        }
+
 
         private void Write(RuntimeModel.IObjectWriter writer, Action<PackageSpec, RuntimeModel.IObjectWriter> writeAction)
         {

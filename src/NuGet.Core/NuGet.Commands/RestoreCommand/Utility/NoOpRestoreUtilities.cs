@@ -226,10 +226,66 @@ namespace NuGet.Commands
                 {
                     projectSpec.RestoreSettings = null;
                 }
+                PersistHashedDGFileIfDebugging(dgSpec, request.Log);
                 return dgSpec.GetHash();
             }
 
             return request.DependencyGraphSpec.GetHash();
+        }
+
+
+        /// <summary>
+        /// Write the dg file to a temp location if NUGET_PERSIST_NOOP_DG.
+        /// </summary>
+        /// <remarks>This is a noop if NUGET_PERSIST_NOOP_DG is not set to true.</remarks>
+        private static void PersistHashedDGFileIfDebugging(DependencyGraphSpec spec, ILogger log)
+        {
+            if (_isPersistDGSet.Value)
+            {
+                string path;
+                var envPath = Environment.GetEnvironmentVariable("NUGET_PERSIST_NOOP_DG_PATH");
+                if (!string.IsNullOrEmpty(envPath))
+                {
+                    path = envPath;
+                    Directory.CreateDirectory(Path.GetDirectoryName(path));
+                }
+                else
+                {
+                    path = Path.Combine(
+                        NuGetEnvironment.GetFolderPath(NuGetFolderPath.Temp),
+                        "nuget-dg",
+                        "noop-dg",
+                        $"{spec.Projects.FirstOrDefault().RestoreMetadata.ProjectName}-{DateTime.Now}.dg");
+                    DirectoryUtility.CreateSharedDirectory(Path.GetDirectoryName(path));
+                }
+
+                log.LogMinimal(
+                    string.Format(
+                        CultureInfo.CurrentCulture,
+                        Strings.PersistDGFile,
+                        path));
+
+                spec.SaveHashingDGSpec(path);
+            }
+        }
+
+        private static readonly Lazy<bool> _isPersistDGSet = new Lazy<bool>(() => IsPersistDGSet());
+
+        /// <summary>
+        /// True if NUGET_PERSIST_NOOP_DG is set to true.
+        /// </summary>
+        private static bool IsPersistDGSet()
+        {
+            var settingValue = Environment.GetEnvironmentVariable("NUGET_PERSIST_NOOP_DG");
+
+            bool val;
+            if (!string.IsNullOrEmpty(settingValue)
+                && bool.TryParse(settingValue, out val))
+            {
+                return val;
+            }
+
+            return false;
         }
 
         /// <summary>
