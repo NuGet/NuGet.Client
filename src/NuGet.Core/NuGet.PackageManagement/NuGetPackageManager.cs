@@ -2381,13 +2381,13 @@ namespace NuGet.PackageManagement
                 }
                 else if (action.NuGetProjectActionType == NuGetProjectActionType.Install)
                 {
-                    if (updatedPackageSpec.RestoreMetadata.ProjectStyle == ProjectStyle.ProjectJson)
-                    {
-                        PackageSpecOperations.AddOrUpdateDependency(updatedPackageSpec, action.PackageIdentity);
-                    }
-                    else if (updatedPackageSpec.RestoreMetadata.ProjectStyle == ProjectStyle.PackageReference)
+                    if (updatedPackageSpec.RestoreMetadata.ProjectStyle == ProjectStyle.PackageReference)
                     {
                         PackageSpecOperations.AddOrUpdateDependency(updatedPackageSpec, action.PackageIdentity, updatedPackageSpec.TargetFrameworks.Select(e => e.FrameworkName));
+                    }
+                    else
+                    {
+                        PackageSpecOperations.AddOrUpdateDependency(updatedPackageSpec, action.PackageIdentity);
                     }
                 }
             }
