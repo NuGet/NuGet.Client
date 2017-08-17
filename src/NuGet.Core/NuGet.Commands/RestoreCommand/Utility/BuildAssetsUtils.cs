@@ -142,12 +142,7 @@ namespace NuGet.Commands
 
             if (firstImport != null)
             {
-                // Write the assets file path relative to the props file.
-                // This allows the project to be moved and avoid a large number of project errors
-                // until restore can run again.
-                var relativeAssetsPath = PathUtility.GetRelativePath(firstImport.Path, assetsFilePath);
-
-                AddNuGetProperties(firstImport.Content, packageFolders, repositoryRoot, projectStyle, relativeAssetsPath, success);
+                AddNuGetProperties(firstImport.Content, packageFolders, repositoryRoot, projectStyle, assetsFilePath, success);
             }
         }
 
