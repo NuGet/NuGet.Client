@@ -67,11 +67,11 @@ namespace NuGet.ProjectModel
         }
 
         /// <summary>
-        /// Writes a PackageSpec restore info that's important for hashing/no-op to an <c>NuGet.Common.IObjectWriter</c> instance. 
+        /// Writes a PackageSpec with only the restore info that's important for hashing/no-op to an <c>NuGet.Common.IObjectWriter</c> instance. 
         /// </summary>
         /// <param name="packageSpec">A <c>PackageSpec</c> instance.</param>
         /// <param name="writer">An <c>NuGet.Common.IObjectWriter</c> instance.</param>
-        public static void WriteHashingRestoreInfo(PackageSpec packageSpec, IObjectWriter writer)
+        public static void WriteHashingPackageSpec(PackageSpec packageSpec, IObjectWriter writer)
         {
             if (packageSpec == null)
             {
@@ -89,26 +89,20 @@ namespace NuGet.ProjectModel
             {
                 SetValue(writer, "version", packageSpec.Version?.ToFullString());
             }
-
-//            SetValue(writer, "description", packageSpec.Description);
-//            SetArrayValue(writer, "authors", packageSpec.Authors);
-//            SetValue(writer, "copyright", packageSpec.Copyright);
-//            SetValue(writer, "language", packageSpec.Language);
-            SetArrayValue(writer, "contentFiles", packageSpec.ContentFiles); // TODO NK - Maybe this should be sorted!
-//            SetDictionaryValue(writer, "packInclude", packageSpec.PackInclude);
-//            SetPackOptions(writer, packageSpec);
-            SetRestoreSettings(writer, packageSpec); // GOOD
-            SetConvertedMSBuildMetadata(writer, packageSpec);
-            SetDictionaryValues(writer, "scripts", packageSpec.Scripts); // GOOD
+            // We don't need details like Description, Authors, Copyright, Language
+            // We do not need pack related thing, PackInclude & packOptions
+            SetArrayValue(writer, "contentFiles", packageSpec.ContentFiles);
+            SetRestoreSettings(writer, packageSpec);
+            SetHashingMSBuildMetadata(writer, packageSpec);
+            SetDictionaryValues(writer, "scripts", packageSpec.Scripts);
 
             if (packageSpec.Dependencies.Any())
             {
-                SetDependencies(writer, packageSpec.Dependencies); // Looks good
+                SetHashingDependencies(writer, packageSpec.Dependencies);
             }
 
-            SetFrameworks(writer, packageSpec.TargetFrameworks); // GOOD
-
-            JsonRuntimeFormat.WriteRuntimeGraph(writer, packageSpec.RuntimeGraph); // GOOD
+            SetHashingFrameworks(writer, packageSpec.TargetFrameworks);
+            JsonRuntimeFormat.WriteRuntimeGraph(writer, packageSpec.RuntimeGraph);
         }
 
         /// <summary>
@@ -175,7 +169,10 @@ namespace NuGet.ProjectModel
             return true;
         }
 
-        private static void SetConvertedMSBuildMetadata(IObjectWriter writer, PackageSpec packageSpec)
+        /// <summary>
+        /// This method sets the msbuild metadata that's important for restore. Ensures that frameworks regardless of which way they're stores in the metadata(full name or short tfm name) are written out the same.
+        /// </summary>
+        private static void SetHashingMSBuildMetadata(IObjectWriter writer, PackageSpec packageSpec)
         {
             var msbuildMetadata = packageSpec.RestoreMetadata;
 
@@ -431,6 +428,97 @@ namespace NuGet.ProjectModel
             SetDependencies(writer, "frameworkAssemblies", libraryDependencies.Where(dependency => dependency.LibraryRange.TypeConstraint == LibraryDependencyTarget.Reference));
         }
 
+        private static void SetHashingDependencies(IObjectWriter writer, IList<LibraryDependency> libraryDependencies)
+        {
+            SetHashingDependencies(writer, "dependencies", libraryDependencies.Where(dependency => dependency.LibraryRange.TypeConstraint != LibraryDependencyTarget.Reference));
+            SetHashingDependencies(writer, "frameworkAssemblies", libraryDependencies.Where(dependency => dependency.LibraryRange.TypeConstraint == LibraryDependencyTarget.Reference));
+        }
+
+        /// <summary>
+        /// This method sorts the libraries based on the name
+        /// This method also writes out the normalized versions to avoid cases where original string is set because it was gotten through project system vs being installed from PM UI
+        /// </summary>
+        private static void SetHashingDependencies(IObjectWriter writer, string name, IEnumerable<LibraryDependency> libraryDependencies)
+        {
+            if (!libraryDependencies.Any())
+            {
+                return;
+            }
+
+            writer.WriteObjectStart(name);
+
+            foreach (var dependency in libraryDependencies.OrderBy(e => e.Name, StringComparer.Ordinal))
+            {
+                var expandedMode = dependency.IncludeType != LibraryIncludeFlags.All
+                    || dependency.SuppressParent != LibraryIncludeFlagUtils.DefaultSuppressParent
+                    || dependency.Type != LibraryDependencyType.Default
+                    || dependency.AutoReferenced
+                    || (dependency.LibraryRange.TypeConstraint != LibraryDependencyTarget.Reference
+                        && dependency.LibraryRange.TypeConstraint != (LibraryDependencyTarget.All & ~LibraryDependencyTarget.Reference));
+
+                var versionRange = dependency.LibraryRange.VersionRange ?? VersionRange.All;
+                var versionString = versionRange.ToNormalizedString();
+
+                if (expandedMode)
+                {
+                    writer.WriteObjectStart(dependency.Name);
+
+                    if (dependency.IncludeType != LibraryIncludeFlags.All)
+                    {
+                        SetValue(writer, "include", dependency.IncludeType.ToString());
+                    }
+
+                    if (dependency.SuppressParent != LibraryIncludeFlagUtils.DefaultSuppressParent)
+                    {
+                        SetValue(writer, "suppressParent", dependency.SuppressParent.ToString());
+                    }
+
+                    if (dependency.Type != LibraryDependencyType.Default)
+                    {
+                        SetValue(writer, "type", dependency.Type.ToString());
+                    }
+
+                    if (dependency.LibraryRange.TypeConstraint != LibraryDependencyTarget.Reference
+                        && dependency.LibraryRange.TypeConstraint != (LibraryDependencyTarget.All & ~LibraryDependencyTarget.Reference))
+                    {
+                        SetValue(writer, "target", dependency.LibraryRange.TypeConstraint.ToString());
+                    }
+
+                    if (VersionRange.All.Equals(versionRange)
+                        && !dependency.LibraryRange.TypeConstraintAllows(LibraryDependencyTarget.Package)
+                        && !dependency.LibraryRange.TypeConstraintAllows(LibraryDependencyTarget.Reference)
+                        && !dependency.LibraryRange.TypeConstraintAllows(LibraryDependencyTarget.ExternalProject))
+                    {
+                        // Allow this specific case to skip the version property
+                    }
+                    else
+                    {
+                        SetValue(writer, "version", versionString);
+                    }
+
+                    SetValueIfTrue(writer, "autoReferenced", dependency.AutoReferenced);
+
+                    if (dependency.NoWarn.Count > 0)
+                    {
+                        SetArrayValue(writer, "noWarn", dependency
+                            .NoWarn
+                            .OrderBy(c => c)
+                            .Distinct()
+                            .Select(code => code.GetName())
+                            .Where(s => !string.IsNullOrEmpty(s)));
+                    }
+
+                    writer.WriteObjectEnd();
+                }
+                else
+                {
+                    writer.WriteNameValue(dependency.Name, versionString);
+                }
+            }
+
+            writer.WriteObjectEnd();
+        }
+
         private static void SetDependencies(IObjectWriter writer, string name, IEnumerable<LibraryDependency> libraryDependencies)
         {
             if (!libraryDependencies.Any())
@@ -538,6 +626,28 @@ namespace NuGet.ProjectModel
                     writer.WriteObjectStart(framework.FrameworkName.GetShortFolderName());
 
                     SetDependencies(writer, framework.Dependencies);
+                    SetImports(writer, framework.Imports);
+                    SetValueIfTrue(writer, "assetTargetFallback", framework.AssetTargetFallback);
+                    SetValueIfTrue(writer, "warn", framework.Warn);
+
+                    writer.WriteObjectEnd();
+                }
+
+                writer.WriteObjectEnd();
+            }
+        }
+
+        private static void SetHashingFrameworks(IObjectWriter writer, IList<TargetFrameworkInformation> frameworks)
+        {
+            if (frameworks.Any())
+            {
+                writer.WriteObjectStart("frameworks");
+
+                foreach (var framework in frameworks)
+                {
+                    writer.WriteObjectStart(framework.FrameworkName.GetShortFolderName());
+
+                    SetHashingDependencies(writer, framework.Dependencies);
                     SetImports(writer, framework.Imports);
                     SetValueIfTrue(writer, "assetTargetFallback", framework.AssetTargetFallback);
                     SetValueIfTrue(writer, "warn", framework.Warn);

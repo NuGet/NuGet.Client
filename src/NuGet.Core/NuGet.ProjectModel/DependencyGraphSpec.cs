@@ -291,7 +291,7 @@ namespace NuGet.ProjectModel
             using (var hashFunc = new Sha512HashFunction())
             using (var writer = new HashObjectWriter(hashFunc))
             {
-                Write(writer, PackageSpecWriter.WriteHashingRestoreInfo);
+                Write(writer, PackageSpecWriter.WriteHashingPackageSpec);
                 return writer.GetHash();
             }
         }
@@ -300,7 +300,7 @@ namespace NuGet.ProjectModel
         {
             var writer = new RuntimeModel.JsonObjectWriter();
 
-            Write(writer, PackageSpecWriter.WriteHashingRestoreInfo);
+            Write(writer, PackageSpecWriter.WriteHashingPackageSpec);
 
             var json =  writer.GetJson();
 

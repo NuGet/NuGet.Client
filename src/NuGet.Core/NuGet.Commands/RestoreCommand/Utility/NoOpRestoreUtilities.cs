@@ -230,6 +230,7 @@ namespace NuGet.Commands
                 return dgSpec.GetHash();
             }
 
+            PersistHashedDGFileIfDebugging(request.DependencyGraphSpec, request.Log);
             return request.DependencyGraphSpec.GetHash();
         }
 
