@@ -77,7 +77,7 @@ namespace Dotnet.Integration.Test
             }
 
             Assert.True(result.Item1 == 0, $"Creating project failed with following log information :\n {result.Item3}");
-            Assert.True(result.Item3 == "", $"Creating project failed with following message in error stream :\n {result.Item3}");
+            Assert.True(string.IsNullOrWhiteSpace(result.Item3), $"Creating project failed with following message in error stream :\n {result.Item3}");
         }
 
         internal void RestoreProject(string workingDirectory, string projectName, string args)
