@@ -174,7 +174,9 @@ namespace NuGet.Commands
                 ProjectSpec != null &&
                 ProjectSpec.RestoreMetadata != null)
             {
-                TransitiveWarningPropertiesCollection = TransitiveNoWarnUtils.CreateTransitiveWarningPropertiesCollection(
+                var transitiveNoWarnUtils = new TransitiveNoWarnUtils();
+
+                TransitiveWarningPropertiesCollection = transitiveNoWarnUtils.CreateTransitiveWarningPropertiesCollection(
                     RestoreTargetGraphs,
                     ProjectSpec);
             }
