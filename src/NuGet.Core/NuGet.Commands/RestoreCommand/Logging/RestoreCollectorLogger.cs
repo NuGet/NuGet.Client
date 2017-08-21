@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -79,11 +79,8 @@ namespace NuGet.Commands
              
         public void Log(IRestoreLogMessage message)
         {
-            PopulateTransitiveWarningPropertiesCollection(message);
-
-            // This will be true only when the Message is a Warning and should be suppressed.
-            if ((ProjectWarningPropertiesCollection == null || !ProjectWarningPropertiesCollection.ApplyWarningProperties(message)) && 
-                (TransitiveWarningPropertiesCollection == null || !TransitiveWarningPropertiesCollection.ApplyWarningProperties(message)))
+            // This will be true if the message is not or warning or it is not suppressed.
+            if (!IsWarningSuppressed(message))
             {
                 if (string.IsNullOrEmpty(message.FilePath))
                 {
@@ -104,11 +101,8 @@ namespace NuGet.Commands
 
         public Task LogAsync(IRestoreLogMessage message)
         {
-            PopulateTransitiveWarningPropertiesCollection(message);
-
-            // This will be true only when the Message is a Warning and should be suppressed.
-            if ((ProjectWarningPropertiesCollection == null || !ProjectWarningPropertiesCollection.ApplyWarningProperties(message)) &&
-                (TransitiveWarningPropertiesCollection == null || !TransitiveWarningPropertiesCollection.ApplyWarningProperties(message)))
+            // This will be true if the message is not or warning or it is not suppressed.
+            if (!IsWarningSuppressed(message))
             {
                 if (string.IsNullOrEmpty(message.FilePath))
                 {
@@ -156,7 +150,20 @@ namespace NuGet.Commands
             }   
         }
 
-        private void PopulateTransitiveWarningPropertiesCollection(ILogMessage message)
+        /// <summary>
+        /// This method checks if at least one of the warning properties collections is not null and it suppresses the warning.
+        /// </summary>
+        /// <param name="message">IRestoreLogMessage to be logged.</param>
+        /// <returns>bool indicating if the message should be suppressed.</returns>
+        private bool IsWarningSuppressed(IRestoreLogMessage message)
+        {
+            TryPopulateTransitiveWarningPropertiesCollection(message);
+
+            return (ProjectWarningPropertiesCollection != null && ProjectWarningPropertiesCollection.ApplyWarningProperties(message)) ||
+                (TransitiveWarningPropertiesCollection != null && TransitiveWarningPropertiesCollection.ApplyWarningProperties(message));
+        }
+
+        private void TryPopulateTransitiveWarningPropertiesCollection(ILogMessage message)
         {
             // Populate TransitiveWarningPropertiesCollection only if it is null and we have RestoreTargetGraphs.
             // This will happen at most once and only if we have the project spec with restore metadata.

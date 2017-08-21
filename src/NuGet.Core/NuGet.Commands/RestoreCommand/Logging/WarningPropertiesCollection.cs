@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -169,7 +169,7 @@ namespace NuGet.Commands
 
             return ProjectWideWarningProperties.Equals(other.ProjectWideWarningProperties) &&
                 PackageSpecificWarningProperties.Equals(other.PackageSpecificWarningProperties) &&
-                ProjectFrameworks.OrderedEquals(other.ProjectFrameworks, (s) => s.Framework);
+                EqualityUtility.OrderedEquals(ProjectFrameworks, other.ProjectFrameworks, (fx) => fx, sequenceComparer: new NuGetFrameworkFullComparer());
         }
     }
 }

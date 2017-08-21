@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -38,7 +38,7 @@ namespace NuGet.Commands
             {
                 foreach (var framework in packageSpec.TargetFrameworks)
                 {
-                    warningProperties.AddRange(dependency.NoWarn, dependency.Name, framework.FrameworkName);
+                    warningProperties.AddRangeOfCodes(dependency.NoWarn, dependency.Name, framework.FrameworkName);
                 }
             }
 
@@ -46,7 +46,7 @@ namespace NuGet.Commands
             {
                 foreach (var dependency in framework.Dependencies)
                 {
-                    warningProperties.AddRange(dependency.NoWarn, dependency.Name, framework.FrameworkName);
+                    warningProperties.AddRangeOfCodes(dependency.NoWarn, dependency.Name, framework.FrameworkName);
                 }
             }
 
@@ -67,17 +67,16 @@ namespace NuGet.Commands
 
             foreach (var dependency in packageSpec.Dependencies)
             {
-                warningProperties.AddRange(dependency.NoWarn, dependency.Name, framework);
+                warningProperties.AddRangeOfCodes(dependency.NoWarn, dependency.Name, framework);
             }
 
             var targetFrameworkInformation = packageSpec
                 .TargetFrameworks
-                .Where(tfi => tfi.FrameworkName == framework)
-                .First();
+                .First(tfi => tfi.FrameworkName == framework);
             
             foreach (var dependency in targetFrameworkInformation.Dependencies)
             {
-                warningProperties.AddRange(dependency.NoWarn, dependency.Name, framework);
+                warningProperties.AddRangeOfCodes(dependency.NoWarn, dependency.Name, framework);
             }
 
             return warningProperties;
@@ -117,7 +116,7 @@ namespace NuGet.Commands
         /// <param name="codes">IEnumerable of NuGetLogCode for which no warning should be thrown.</param>
         /// <param name="libraryId">Library for which no warning should be thrown.</param>
         /// <param name="framework">Target graph for which no warning should be thrown.</param>
-        public void AddRange(IEnumerable<NuGetLogCode> codes, string libraryId, NuGetFramework framework)
+        public void AddRangeOfCodes(IEnumerable<NuGetLogCode> codes, string libraryId, NuGetFramework framework)
         {
             foreach (var code in codes)
             {
@@ -131,7 +130,7 @@ namespace NuGet.Commands
         /// <param name="code">NuGetLogCode for which no warning should be thrown.</param>
         /// <param name="libraryId">Library for which no warning should be thrown.</param>
         /// <param name="frameworks">IEnumerable of Target graph for which no warning should be thrown.</param>
-        public void AddRange(NuGetLogCode code, string libraryId, IEnumerable<NuGetFramework> frameworks)
+        public void AddRangeOfFrameworks(NuGetLogCode code, string libraryId, IEnumerable<NuGetFramework> frameworks)
         {
             foreach (var framework in frameworks)
             {
@@ -181,9 +180,9 @@ namespace NuGet.Commands
                 return true;
             }
 
-            return Properties.Keys.OrderedEquals(other.Properties.Keys, (code) => code) &&
-                Properties.Keys.All(c => Properties[c].Keys.OrderedEquals(other.Properties[c].Keys, (id) => id)) &&
-                Properties.Keys.All(c => Properties[c].Keys.All(id => Properties[c][id].SetEquals(other.Properties[c][id])));
+            return EqualityUtility.OrderedEquals(Properties.Keys, other.Properties.Keys, (code) => code) &&       
+                Properties.Keys.All(c => EqualityUtility.OrderedEquals(Properties[c].Keys, other.Properties[c].Keys, (id) => id)) &&
+                Properties.Keys.All(c => Properties[c].Keys.All(id => EqualityUtility.OrderedEquals(Properties[c][id], other.Properties[c][id], (fx) => fx)));
         }
     }
 }

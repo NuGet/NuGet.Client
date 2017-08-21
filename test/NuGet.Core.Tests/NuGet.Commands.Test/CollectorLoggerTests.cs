@@ -625,7 +625,7 @@ namespace NuGet.Commands.Test
             var warnAsErrorSet = new HashSet<NuGetLogCode> { };
             var allWarningsAsErrors = false;
             var packageSpecificWarningProperties = new PackageSpecificWarningProperties();
-            packageSpecificWarningProperties.AddRange(new List<NuGetLogCode> { NuGetLogCode.NU1500, NuGetLogCode.NU1601, NuGetLogCode.NU1605}, libraryId, targetFramework);
+            packageSpecificWarningProperties.AddRangeOfCodes(new List<NuGetLogCode> { NuGetLogCode.NU1500, NuGetLogCode.NU1601, NuGetLogCode.NU1605}, libraryId, targetFramework);
 
             var innerLogger = new Mock<ILogger>();
             var collector = new RestoreCollectorLogger(innerLogger.Object)
@@ -665,7 +665,7 @@ namespace NuGet.Commands.Test
             var warnAsErrorSet = new HashSet<NuGetLogCode> { };
             var allWarningsAsErrors = false;
             var packageSpecificWarningProperties = new PackageSpecificWarningProperties();
-            packageSpecificWarningProperties.AddRange(new List<NuGetLogCode> { NuGetLogCode.NU1500 }, libraryId, targetFramework);
+            packageSpecificWarningProperties.AddRangeOfCodes(new List<NuGetLogCode> { NuGetLogCode.NU1500 }, libraryId, targetFramework);
 
             var innerLogger = new Mock<ILogger>();
             var collector = new RestoreCollectorLogger(innerLogger.Object)

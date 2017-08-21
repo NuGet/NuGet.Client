@@ -202,7 +202,7 @@ namespace NuGet.Commands
             // At the end of the graph traversal add the remaining package no warn lists into the result
             foreach(var packageId in packageNoWarn.Keys)
             {
-                resultWarningProperties.AddRange(packageNoWarn[packageId], packageId, parentTargetFramework);
+                resultWarningProperties.AddRangeOfCodes(packageNoWarn[packageId], packageId, parentTargetFramework);
             }
 
             return resultWarningProperties;
@@ -361,7 +361,7 @@ namespace NuGet.Commands
                     {
                         foreach (var libraryId in first.Properties[code].Keys)
                         {
-                            result.AddRange(code, libraryId, first.Properties[code][libraryId]);
+                            result.AddRangeOfFrameworks(code, libraryId, first.Properties[code][libraryId]);
                         }
                     }
                 }
@@ -372,7 +372,7 @@ namespace NuGet.Commands
                     {
                         foreach (var libraryId in second.Properties[code].Keys)
                         {
-                            result.AddRange(code, libraryId, second.Properties[code][libraryId]);
+                            result.AddRangeOfFrameworks(code, libraryId, second.Properties[code][libraryId]);
                         }
                     }
                 }

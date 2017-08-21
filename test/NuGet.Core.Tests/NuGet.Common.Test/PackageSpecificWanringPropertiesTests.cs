@@ -54,7 +54,7 @@ namespace NuGet.Common.Test
             var libraryId = "test_libraryId";
             var targetFramework = NuGetFramework.Parse("net45");
             var properties = new PackageSpecificWarningProperties();
-            properties.AddRange(codes, libraryId, targetFramework);
+            properties.AddRangeOfCodes(codes, libraryId, targetFramework);
 
             // Assert
             foreach (var code in codes)
