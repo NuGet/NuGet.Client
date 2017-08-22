@@ -14,7 +14,7 @@ using NuGet.DependencyResolver;
 
 namespace NuGet.Commands
 {
-    internal class TransitiveNoWarnUtils
+    public class TransitiveNoWarnUtils
     {
         // static should be fine across multiple calls as this solely depends on the csproj file of the project.
         private readonly ConcurrentDictionary<string, ConcurrentDictionary<NuGetFramework, WarningPropertiesCollection>> _warningPropertiesPerFrameworkCache =
@@ -26,7 +26,7 @@ namespace NuGet.Commands
         /// <param name="targetGraphs">Parent project restore target graphs.</param>
         /// <param name="parentProjectSpec">PackageSpec of the parent project.</param>
         /// <returns>WarningPropertiesCollection with the project frameworks and the transitive package specific no warn properties.</returns>
-        internal WarningPropertiesCollection CreateTransitiveWarningPropertiesCollection(
+        public WarningPropertiesCollection CreateTransitiveWarningPropertiesCollection(
             IEnumerable<RestoreTargetGraph> targetGraphs,
             PackageSpec parentProjectSpec)
         {
@@ -211,6 +211,23 @@ namespace NuGet.Commands
             return resultWarningProperties;
         }
 
+        private WarningPropertiesCollection GetNodeWarningProperties(PackageSpec nodeProjectSpec, NuGetFramework framework)
+        {
+            var key = nodeProjectSpec.RestoreMetadata.ProjectPath;
+
+            if (!_warningPropertiesPerFrameworkCache.ContainsKey(key))
+            {
+                _warningPropertiesPerFrameworkCache[key] =
+                    new ConcurrentDictionary<NuGetFramework, WarningPropertiesCollection>(new NuGetFrameworkFullComparer());
+            }
+
+            return _warningPropertiesPerFrameworkCache[key].GetOrAdd(framework,
+                (s) => new WarningPropertiesCollection(
+                    nodeProjectSpec.RestoreMetadata?.ProjectWideWarningProperties,
+                    PackageSpecificWarningProperties.CreatePackageSpecificWarningProperties(nodeProjectSpec, framework),
+                    nodeProjectSpec.TargetFrameworks.Select(f => f.FrameworkName).AsList().AsReadOnly()));
+        }
+
         private static void AddDependenciesToQueue(IEnumerable<LibraryDependency> dependencies, 
             Queue<DependencyNode> queue, 
             HashSet<DependencyNode> seen,
@@ -237,7 +254,7 @@ namespace NuGet.Commands
             return (PackageSpec) localMatch.LocalLibrary.Items[KnownLibraryProperties.PackageSpec];
         }
 
-        private static ISet<NuGetLogCode> ExtractPathNoWarnProperties(WarningPropertiesCollection pathWarningProperties, string id)
+        public static ISet<NuGetLogCode> ExtractPathNoWarnProperties(WarningPropertiesCollection pathWarningProperties, string id)
         {
             var result = new HashSet<NuGetLogCode>();
             if (pathWarningProperties?.ProjectWideWarningProperties?.NoWarn?.Count > 0)
@@ -259,23 +276,6 @@ namespace NuGet.Commands
             }
 
             return result;
-        }
-
-        private WarningPropertiesCollection GetNodeWarningProperties(PackageSpec nodeProjectSpec, NuGetFramework framework)
-        {
-            var key = nodeProjectSpec.RestoreMetadata.ProjectPath;
-
-            if (!_warningPropertiesPerFrameworkCache.ContainsKey(key))
-            {
-                _warningPropertiesPerFrameworkCache[key] =
-                    new ConcurrentDictionary<NuGetFramework, WarningPropertiesCollection>(new NuGetFrameworkFullComparer());
-            }
-
-            return _warningPropertiesPerFrameworkCache[key].GetOrAdd(framework,
-                (s) => new WarningPropertiesCollection(
-                    nodeProjectSpec.RestoreMetadata?.ProjectWideWarningProperties,
-                    PackageSpecificWarningProperties.CreatePackageSpecificWarningProperties(nodeProjectSpec, framework),
-                    nodeProjectSpec.TargetFrameworks.Select(f => f.FrameworkName).AsList().AsReadOnly()));
         }
 
         private static WarningPropertiesCollection MergeWarningPropertiesCollection(
@@ -344,7 +344,7 @@ namespace NuGet.Commands
             return result;
         }
 
-        private static PackageSpecificWarningProperties MergePackageSpecificWarningProperties(
+        public static PackageSpecificWarningProperties MergePackageSpecificWarningProperties(
             PackageSpecificWarningProperties first,
             PackageSpecificWarningProperties second)
         {
@@ -391,7 +391,7 @@ namespace NuGet.Commands
         /// <param name="merged">Out Merged Object.</param>
         /// <returns>Returns true if atleast one of the objects was Null. 
         /// If none of them is null then the returns false, indicating that the merge failed.</returns>
-        private static bool TryMergeNullObjects(object first, object second, out object merged)
+        public static bool TryMergeNullObjects(object first, object second, out object merged)
         {
             merged = null;
             var result = false;
