@@ -149,7 +149,7 @@ namespace NuGet.Commands.Test
         {
             // Arrange
             object mergedObject;
-            object first = new object();
+            var first = new object();
             object second = null;
 
             // Act
@@ -166,7 +166,7 @@ namespace NuGet.Commands.Test
             // Arrange
             object mergedObject;
             object first = null;
-            object second = new object();
+            var second = new object();
 
             // Act
             var success = TransitiveNoWarnUtils.TryMergeNullObjects(first, second, out mergedObject);
@@ -181,8 +181,8 @@ namespace NuGet.Commands.Test
         {
             // Arrange
             object mergedObject;
-            object first = new object();
-            object second = new object();
+            var first = new object();
+            var second = new object();
 
             // Act
             var success = TransitiveNoWarnUtils.TryMergeNullObjects(first, second, out mergedObject);
@@ -211,7 +211,7 @@ namespace NuGet.Commands.Test
         public void MergePackageSpecificWarningProperties_ReturnsFirstIfNotNull()
         {
             // Arrange
-            PackageSpecificWarningProperties first = new PackageSpecificWarningProperties();
+            var first = new PackageSpecificWarningProperties();
             PackageSpecificWarningProperties second = null;
 
             // Act
@@ -220,6 +220,21 @@ namespace NuGet.Commands.Test
             // Assert
             merged.Should().NotBeNull();
             merged.Should().Be(first);
+        }
+
+        [Fact]
+        public void MergePackageSpecificWarningProperties_ReturnsSecondIfNotNull()
+        {
+            // Arrange
+            PackageSpecificWarningProperties first = null;
+            var second = new PackageSpecificWarningProperties();
+
+            // Act
+            var merged = TransitiveNoWarnUtils.MergePackageSpecificWarningProperties(first, second);
+
+            // Assert
+            merged.Should().NotBeNull();
+            merged.Should().Be(second);
         }
 
         [Fact]
@@ -300,6 +315,111 @@ namespace NuGet.Commands.Test
             merged.Should().NotBeNull();
             merged.Properties.Should().NotBeNull();
             merged.ShouldBeEquivalentTo(expectedResult);
+        }
+
+        // Tests for TransitiveNoWarnUtils.MergeProjectWideWarningProperties
+        [Fact]
+        public void MergeProjectWideWarningProperties_ReturnsNullIfBothAreNull()
+        {
+            // Arrange
+            WarningProperties first = null;
+            WarningProperties second = null;
+
+            // Act
+            var merged = TransitiveNoWarnUtils.MergeProjectWideWarningProperties(first, second);
+
+            // Assert
+            merged.Should().BeNull();
+        }
+
+        [Fact]
+        public void MergeProjectWideWarningProperties_ReturnsFirstIfNotNull()
+        {
+            // Arrange
+            var first = new WarningProperties();
+            WarningProperties second = null;
+
+            // Act
+            var merged = TransitiveNoWarnUtils.MergeProjectWideWarningProperties(first, second);
+
+            // Assert
+            merged.Should().NotBeNull();
+            merged.Should().Be(first);
+        }
+
+        [Fact]
+        public void MergeProjectWideWarningProperties_ReturnsSecondIfNotNull()
+        {
+            // Arrange
+            WarningProperties first = null;
+            var second = new WarningProperties();
+
+            // Act
+            var merged = TransitiveNoWarnUtils.MergeProjectWideWarningProperties(first, second);
+
+            // Assert
+            merged.Should().NotBeNull();
+            merged.Should().Be(second);
+        }
+
+        [Fact]
+        public void MergeProjectWideWarningProperties_MergesEmptyCollections()
+        {
+            // Arrange
+            var first = new WarningProperties();
+            var second = new WarningProperties();
+
+            // Act
+            var merged = TransitiveNoWarnUtils.MergeProjectWideWarningProperties(first, second);
+
+            // Assert
+            merged.Should().NotBeNull();
+            merged.AllWarningsAsErrors.Should().BeFalse();
+            merged.WarningsAsErrors.Should().BeEmpty();
+            merged.NoWarn.Should().BeEmpty();
+        }
+
+        [Theory]
+        [InlineData("NU1603, NU1605", "NU1701", true, "", "", false, "NU1603, NU1605", "NU1701", true)]
+        [InlineData( "", "", false, "NU1603, NU1605", "NU1701", true, "NU1603, NU1605", "NU1701", true)]
+        [InlineData("NU1603, NU1701", "", false, "NU1603, NU1701", "", false, "NU1603, NU1701", "", false)]
+        [InlineData("", "NU1603, NU1701", false, "", "NU1603, NU1701", false, "", "NU1603, NU1701", false)]
+        [InlineData("NU1601", "NU1602, NU1603", false, "NU1604", "NU1605, NU1701", false, "NU1601, NU1604", "NU1602, NU1603, NU1605, NU1701", false)]
+        [InlineData("NU1601", "NU1602, NU1603", true, "NU1604", "NU1605, NU1701", false, "NU1601, NU1604", "NU1602, NU1603, NU1605, NU1701", true)]
+        [InlineData("", "", false, "", "", false, "", "", false)]
+        [InlineData("", "", true, "", "", false, "", "", true)]
+        [InlineData("", "", false, "", "", true, "", "", true)]
+        [InlineData("", "", true, "", "", true, "", "", true)]
+        public void MergeProjectWideWarningProperties_MergesNonEmptyCollections(
+            string firstNoWarn, string firstWarningsAsErrors, bool firstAllWarningsAsErrors,
+            string secondNoWarn, string secondWarningsAsErrors, bool secondAllWarningsAsErrors,
+            string expectedNoWarn, string expectedWarningsAsErrors, bool expectedAllWarningsAsErrors)
+        {
+            // Arrange
+            var first = new WarningProperties(
+                new HashSet<NuGetLogCode>(MSBuildRestoreUtility.GetNuGetLogCodes(firstWarningsAsErrors)),
+                new HashSet<NuGetLogCode>(MSBuildRestoreUtility.GetNuGetLogCodes(firstNoWarn)),
+                firstAllWarningsAsErrors);
+
+            var second = new WarningProperties(
+                new HashSet<NuGetLogCode>(MSBuildRestoreUtility.GetNuGetLogCodes(secondWarningsAsErrors)),
+                new HashSet<NuGetLogCode>(MSBuildRestoreUtility.GetNuGetLogCodes(secondNoWarn)),
+                secondAllWarningsAsErrors);
+
+            var expected = new WarningProperties(
+                new HashSet<NuGetLogCode>(MSBuildRestoreUtility.GetNuGetLogCodes(expectedWarningsAsErrors)),
+                new HashSet<NuGetLogCode>(MSBuildRestoreUtility.GetNuGetLogCodes(expectedNoWarn)),
+                expectedAllWarningsAsErrors);
+
+            // Act
+            var merged = TransitiveNoWarnUtils.MergeProjectWideWarningProperties(first, second);
+
+            // Assert
+            merged.Should().NotBeNull();
+            merged.AllWarningsAsErrors.ShouldBeEquivalentTo(expected.AllWarningsAsErrors);
+            merged.WarningsAsErrors.ShouldBeEquivalentTo(expected.WarningsAsErrors);
+            merged.NoWarn.ShouldBeEquivalentTo(expected.NoWarn);
+            merged.ShouldBeEquivalentTo(expected);
         }
     }
 }

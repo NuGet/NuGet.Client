@@ -278,7 +278,16 @@ namespace NuGet.Commands
             return result;
         }
 
-        private static WarningPropertiesCollection MergeWarningPropertiesCollection(
+        /// <summary>
+        /// Merge 2 WarningPropertiesCollection objects.
+        /// This method will combine the warning properties from both the collections.
+        /// </summary>
+        /// <param name="first">First Object to be merged.</param>
+        /// <param name="second">Second Object to be merged.</param>
+        /// <returns>Returns a WarningPropertiesCollection with the combined warning properties.
+        /// Returns the reference to one of the inputs if the other input is Null.
+        /// Returns a Null if both the input properties are Null. </returns>
+        public static WarningPropertiesCollection MergeWarningPropertiesCollection(
             WarningPropertiesCollection first, 
             WarningPropertiesCollection second)
         {
@@ -311,7 +320,16 @@ namespace NuGet.Commands
             return result;
         }
 
-        private static WarningProperties MergeProjectWideWarningProperties(
+        /// <summary>
+        /// Merge 2 WarningProperties objects.
+        /// This method will combine the warning properties from both the collections.
+        /// </summary>
+        /// <param name="first">First Object to be merged.</param>
+        /// <param name="second">Second Object to be merged.</param>
+        /// <returns>Returns a WarningProperties with the combined warning properties.
+        /// Returns the reference to one of the inputs if the other input is Null.
+        /// Returns a Null if both the input properties are Null. </returns>
+        public static WarningProperties MergeProjectWideWarningProperties(
             WarningProperties first, 
             WarningProperties second)
         {
@@ -344,6 +362,15 @@ namespace NuGet.Commands
             return result;
         }
 
+        /// <summary>
+        /// Merge 2 PackageSpecificWarningProperties objects.
+        /// This method will combine the warning properties from both the collections.
+        /// </summary>
+        /// <param name="first">First Object to be merged.</param>
+        /// <param name="second">Second Object to be merged.</param>
+        /// <returns>Returns a PackageSpecificWarningProperties with the combined warning properties.
+        /// Will return the reference to one of the inputs if the other input is Null.
+        /// Returns a Null if both the input properties are Null. </returns>
         public static PackageSpecificWarningProperties MergePackageSpecificWarningProperties(
             PackageSpecificWarningProperties first,
             PackageSpecificWarningProperties second)
@@ -387,7 +414,7 @@ namespace NuGet.Commands
         /// Try to merge 2 objects if one or both of them are null.
         /// </summary>
         /// <param name="first">First Object to be merged.</param>
-        /// <param name="second">First Object to be merged.</param>
+        /// <param name="second">Second Object to be merged.</param>
         /// <param name="merged">Out Merged Object.</param>
         /// <returns>Returns true if atleast one of the objects was Null. 
         /// If none of them is null then the returns false, indicating that the merge failed.</returns>
@@ -502,7 +529,7 @@ namespace NuGet.Commands
         }
 
         /// <summary>
-        /// A simple node class to hold the outgoing dependency edge for a quick look up
+        /// A simple node class to hold the outgoing dependency edge for a quick look up.
         /// </summary>
         private class LookUpNode
         {
