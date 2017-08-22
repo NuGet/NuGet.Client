@@ -146,6 +146,26 @@ function New-NetStandardClassLibrary
     }
 }
 
+function New-NetCoreConsoleAppWithCustomRestorePackagesPath
+{
+    param(
+        [string]$ProjectName,
+        [string]$SolutionFolder
+    )
+
+    if ((Get-VSVersion) -ge '15.0')
+    {
+        $project = New-Project NetCoreConsoleAppWithCustomRestorePackagesPath $ProjectName $SolutionFolder
+        Wait-OnNetCoreRestoreCompletion $project
+        return $project
+    }
+    else
+    {
+        throw "SKIP: $($_)"
+    }
+}
+
+
 function New-CpsApp
 {
     param(
