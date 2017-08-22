@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -64,10 +64,8 @@ namespace NuGet.PackageManagement.VisualStudio
                 {
                     var reference3 = childReference as Reference3;
 
-                    // Set missing reference if
-                    // 1. reference is null OR
-                    // 2. reference is not resolved which means project is not loaded or assembly not found.
-                    if (reference3 == null || !reference3.Resolved)
+                    // Set missing reference if reference is null 
+                    if (reference3 == null)
                     {
                         // Skip missing references and show a warning
                         hasMissingReferences = true;
