@@ -600,4 +600,7 @@ For more information, visit http://docs.nuget.org/docs/reference/command-line-re
   <data name="Error_EmptySourceFileProjectDirectory" xml:space="preserve">
     <value>The project directory for the source file '{0}' could not be found.</value>
   </data>
+  <data name="Warning_VersionAboveUpperBound" xml:space="preserve">
+    <value>Detected package version outside of dependency constraint: {0} requires {1} but version {2} was resolved.</value>
+  </data>
 </root>

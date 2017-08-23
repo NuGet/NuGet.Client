@@ -169,6 +169,11 @@ namespace NuGet.Common
         NU1607 = 1607,
 
         /// <summary>
+        /// Version is higher than upper bound.
+        /// </summary>
+        NU1608 = 1608,
+
+        /// <summary>
         /// Fallback framework used.
         /// </summary>
         NU1701 = 1701,
