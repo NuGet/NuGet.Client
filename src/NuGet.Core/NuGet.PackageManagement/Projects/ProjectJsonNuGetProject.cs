@@ -182,14 +182,28 @@ namespace NuGet.ProjectManagement.Projects
                 // Reload the target framework from csproj and update the target framework in packageSpec for restore
                 await UpdateInternalTargetFrameworkAsync();
 
-                if (TryGetInternalFramework(out var internalTargetFramework))
+                if (TryGetInternalFramework(out var targetFramework))
                 {
-                    // Ensure the project json has only one target framework
-                    if (packageSpec.TargetFrameworks != null && packageSpec.TargetFrameworks.Count == 1)
+                    var nuGetFramework = targetFramework as NuGetFramework;
+                    if (IsUAPFramework(nuGetFramework))
                     {
-                        var replaceTargetFramework = new TargetFrameworkInformation();
-                        replaceTargetFramework.FrameworkName = internalTargetFramework as NuGetFramework;
-                        packageSpec.TargetFrameworks[0] = replaceTargetFramework;
+                        // Ensure the project json has only one target framework
+                        if (packageSpec.TargetFrameworks != null && packageSpec.TargetFrameworks.Count == 1)
+                        {
+                            var tfi = packageSpec.TargetFrameworks.First();
+                            if (tfi.Imports.Count > 0)
+                            {
+                                if (tfi.AssetTargetFallback)
+                                {
+                                    nuGetFramework = new AssetTargetFallbackFramework(nuGetFramework, tfi.Imports.AsList());
+                                }
+                                else
+                                {
+                                    nuGetFramework = new FallbackFramework(nuGetFramework, tfi.Imports.AsList());
+                                }
+                            }
+                            tfi.FrameworkName = nuGetFramework;
+                        }
                     }
                 }
 
