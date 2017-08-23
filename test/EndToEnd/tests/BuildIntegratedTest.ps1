@@ -589,3 +589,22 @@ function Test-BuildIntegratedLegacyRebuildDoesNotDeleteCacheFile {
     #Assert
     Assert-ProjectCacheFileExists $project
 }
+
+function Test-BuildIntegratedGetIncompatibleError {
+    [SkipTestForVS14()]
+
+    $projectR = New-Project Net45BuildIntegratedClassLibrary
+    $projectT = New-Project PackageReferenceClassLibrary
+
+    $projectR | Add-ProjectReference -ProjectTo $projectT
+    $projectR | Install-Package NuGet.Versioning -Version 1.0.7
+
+    Clean-Solution
+
+    $projectT = $projectT | Select-Object UniqueName, ProjectName, FullName
+
+    # Act (Restore)
+    Build-Solution
+
+    Assert-ProjectJsonLockFileErrorCode $projectR NU1201
+}
