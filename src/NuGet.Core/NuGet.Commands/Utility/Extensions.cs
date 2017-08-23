@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -32,14 +32,6 @@ namespace NuGet.Commands
             return new HashSet<LibraryDependency>(
                 project.Dependencies.Concat(project.GetTargetFramework(framework).Dependencies)
                                     .Where(e => e.LibraryRange.TypeConstraintAllows(LibraryDependencyTarget.Package)));
-        }
-
-        /// <summary>
-        /// Search on Key.Name for the given package/project id.
-        /// </summary>
-        public static GraphItem<RemoteResolveResult> GetItemById(this IEnumerable<GraphItem<RemoteResolveResult>> items, string id)
-        {
-            return items.FirstOrDefault(e => e.Key.Name.Equals(id, StringComparison.OrdinalIgnoreCase));
         }
 
         /// <summary>
