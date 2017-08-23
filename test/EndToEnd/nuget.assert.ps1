@@ -131,7 +131,7 @@ function Assert-ProjectJsonLockFileErrorCode {
 
     $found = $false
 
-    foreach ($log in $lockFile.logs) {
+    foreach ($log in $lockFile.LogMessages) {
         
         if ($log.Code.ToUpperInvariant().Equals($errorCode.ToUpperInvariant()))
         {

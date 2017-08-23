@@ -597,7 +597,6 @@ function Test-BuildIntegratedGetIncompatibleError {
     $projectT = New-Project PackageReferenceClassLibrary
 
     $projectR | Add-ProjectReference -ProjectTo $projectT
-    $projectR | Install-Package NuGet.Versioning -Version 1.0.7
 
     Clean-Solution
 
