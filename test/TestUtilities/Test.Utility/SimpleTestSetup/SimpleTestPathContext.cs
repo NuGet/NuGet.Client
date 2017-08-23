@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -33,6 +33,29 @@ namespace NuGet.Test.Utility
         public SimpleTestPathContext()
         {
             WorkingDirectory = TestDirectory.Create();
+
+            SolutionRoot = Path.Combine(WorkingDirectory.Path, "solution");
+            UserPackagesFolder = Path.Combine(WorkingDirectory.Path, "globalPackages");
+            PackagesV2 = Path.Combine(SolutionRoot, "packages");
+            NuGetConfig = Path.Combine(WorkingDirectory, "NuGet.Config");
+            PackageSource = Path.Combine(WorkingDirectory.Path, "source");
+            FallbackFolder = Path.Combine(WorkingDirectory.Path, "fallback");
+            HttpCacheFolder = Path.Combine(WorkingDirectory.Path, "v3-cache");
+
+            Directory.CreateDirectory(SolutionRoot);
+            Directory.CreateDirectory(UserPackagesFolder);
+            Directory.CreateDirectory(PackageSource);
+            Directory.CreateDirectory(FallbackFolder);
+
+            CreateNuGetConfig();
+
+            // Record who wrote this out incase a test isn't cleaning up
+            File.WriteAllText(Path.Combine(WorkingDirectory, "testStack.txt"), Environment.StackTrace);
+        }
+
+        public SimpleTestPathContext(string testDirectory)
+        {
+            WorkingDirectory = TestDirectory.Create(testDirectory);
 
             SolutionRoot = Path.Combine(WorkingDirectory.Path, "solution");
             UserPackagesFolder = Path.Combine(WorkingDirectory.Path, "globalPackages");
