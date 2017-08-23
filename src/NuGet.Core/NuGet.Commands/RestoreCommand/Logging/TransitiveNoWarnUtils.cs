@@ -117,19 +117,10 @@ namespace NuGet.Commands
             var parentDependencies = dependencyMapping[parentProjectName];
 
             // Seed the queue with the parent project's direct dependencies
-            foreach (var dependency in dependencyMapping[parentProjectName].Dependencies)
-            {
-                var queueNode = new DependencyNode(
-                    dependency.Name,
-                    IsProject(dependency.LibraryRange.TypeConstraint),
-                    parentWarningPropertiesCollection);
-
-                if (!seen.Contains(queueNode))
-                {
-                    // Add the metadata from the parent project here.
-                    queue.Enqueue(queueNode);
-                }
-            }
+            AddDependenciesToQueue(parentDependencies.Dependencies,
+                queue,
+                seen,
+                parentWarningPropertiesCollection);
 
             // Add the parent project to the seen set to prevent adding it back to the queue
             seen.Add(new DependencyNode(id: parentProjectName,
@@ -465,7 +456,7 @@ namespace NuGet.Commands
         /// <summary>
         /// A simple node class to hold the outgoing dependency edge during the graph walk.
         /// </summary>
-        private class DependencyNode : IEquatable<DependencyNode>
+        public class DependencyNode : IEquatable<DependencyNode>
         {
             // ID of the Node 
             public string Id { get; }
@@ -481,12 +472,6 @@ namespace NuGet.Commands
             {
                 Id = id ?? throw new ArgumentNullException(nameof(id));
                 WarningPropertiesCollection = warningPropertiesCollection ?? throw new ArgumentNullException(nameof(warningPropertiesCollection));
-                IsProject = isProject;
-            }
-
-            public DependencyNode(string id, bool isProject)
-            {
-                Id = id ?? throw new ArgumentNullException(nameof(id));
                 IsProject = isProject;
             }
 

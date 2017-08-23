@@ -24,7 +24,7 @@ namespace NuGet.Commands
         /// Contains the target frameworks for the project.
         /// These are used for no warn filtering in case of a log message without a target graph.
         /// </summary>
-        public IReadOnlyList<NuGetFramework> ProjectFrameworks { get; } = new ReadOnlyCollection<NuGetFramework>(new List<NuGetFramework>());
+        public IReadOnlyList<NuGetFramework> ProjectFrameworks { get; }
 
         /// <summary>
         /// Contains Project wide properties for Warnings.
@@ -43,7 +43,7 @@ namespace NuGet.Commands
         {
             ProjectWideWarningProperties = projectWideWarningProperties;
             PackageSpecificWarningProperties = packageSpecificWarningProperties;
-            ProjectFrameworks = projectFrameworks;
+            ProjectFrameworks = projectFrameworks ?? new ReadOnlyCollection<NuGetFramework>(new List<NuGetFramework>());
         }
 
         /// <summary>
@@ -70,8 +70,7 @@ namespace NuGet.Commands
                     if (messageTargetFrameworks.Count == 0)
                     {
                         // Suppress the warning if the code + libraryId combination is suppressed for all project frameworks.
-                        if (ProjectFrameworks != null &&
-                            ProjectFrameworks.Count > 0 &&
+                        if (ProjectFrameworks.Count > 0 &&
                             ProjectFrameworks.All(e => PackageSpecificWarningProperties.Contains(message.Code, message.LibraryId, e)))
                         {
                             return true;
@@ -167,9 +166,9 @@ namespace NuGet.Commands
                 return true;
             }
 
-            return ProjectWideWarningProperties.Equals(other.ProjectWideWarningProperties) &&
-                PackageSpecificWarningProperties.Equals(other.PackageSpecificWarningProperties) &&
-                EqualityUtility.OrderedEquals(ProjectFrameworks, other.ProjectFrameworks, (fx) => fx, sequenceComparer: new NuGetFrameworkFullComparer());
+            return EqualityUtility.EqualsWithNullCheck(ProjectWideWarningProperties, other.ProjectWideWarningProperties) &&
+                EqualityUtility.EqualsWithNullCheck(PackageSpecificWarningProperties, other.PackageSpecificWarningProperties) &&
+                EqualityUtility.OrderedEquals(ProjectFrameworks, other.ProjectFrameworks, (fx) => fx.Framework, orderComparer: StringComparer.OrdinalIgnoreCase, sequenceComparer: new NuGetFrameworkFullComparer());
         }
     }
 }

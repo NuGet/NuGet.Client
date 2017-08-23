@@ -68,8 +68,8 @@ namespace NuGet.ProjectModel
             }
 
             return AllWarningsAsErrors == other.AllWarningsAsErrors &&
-                WarningsAsErrors.SetEquals(other.WarningsAsErrors) &&
-                NoWarn.SetEquals(other.NoWarn);
+                EqualityUtility.SetEqualWithNullCheck(WarningsAsErrors, other.WarningsAsErrors) &&
+                EqualityUtility.SetEqualWithNullCheck(NoWarn, other.NoWarn);
         }
     }
 }

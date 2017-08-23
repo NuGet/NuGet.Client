@@ -157,10 +157,17 @@ namespace NuGet.Commands
         /// <returns>bool indicating if the message should be suppressed.</returns>
         private bool IsWarningSuppressed(IRestoreLogMessage message)
         {
-            TryPopulateTransitiveWarningPropertiesCollection(message);
-
-            return (ProjectWarningPropertiesCollection != null && ProjectWarningPropertiesCollection.ApplyWarningProperties(message)) ||
-                (TransitiveWarningPropertiesCollection != null && TransitiveWarningPropertiesCollection.ApplyWarningProperties(message));
+            
+            if (ProjectWarningPropertiesCollection != null && ProjectWarningPropertiesCollection.ApplyWarningProperties(message))
+            {
+                return true;
+            }
+            else
+            {
+                // Initialize transitive warning properties only if the project does not suppress the warning.
+                TryPopulateTransitiveWarningPropertiesCollection(message);
+                return TransitiveWarningPropertiesCollection != null && TransitiveWarningPropertiesCollection.ApplyWarningProperties(message);
+            }
         }
 
         private void TryPopulateTransitiveWarningPropertiesCollection(ILogMessage message)
