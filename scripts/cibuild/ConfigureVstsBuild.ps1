@@ -122,7 +122,7 @@ $NuGetClientRoot = $env:BUILD_REPOSITORY_LOCALPATH
 $Submodules = Join-Path $NuGetClientRoot submodules -Resolve
 
 $NuGetLocalization = Join-Path $Submodules NuGet.Build.Localization -Resolve
-$NuGetLocalizationRepoBranch = 'release-4.3.0-rtm'
+$NuGetLocalizationRepoBranch = 'release-4.3.1'
 $updateOpts = 'pull', 'origin', $NuGetLocalizationRepoBranch
 
 Write-Host "git update NuGet.Build.Localization at $NuGetLocalization"
