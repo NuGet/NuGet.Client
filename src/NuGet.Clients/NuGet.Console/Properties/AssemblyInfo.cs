@@ -19,6 +19,7 @@ using System.Runtime.InteropServices;
 #pragma warning restore 1700
 
 #else 
+[assembly: InternalsVisibleTo("NuGet.Console.TestContract")]
 
 [assembly: InternalsVisibleTo("NuGet.PowerShellHost.Test")]
 #pragma warning disable 1700

@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.legacy.props" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
@@ -95,12 +95,14 @@
     <Compile Include="Options\PackageSourcesOptionsControl.Designer.cs">
       <DependentUpon>PackageSourcesOptionsControl.cs</DependentUpon>
     </Compile>
+    <Compile Include="PackageManagerWindowPane.cs" />
     <Compile Include="Resources\Domain.cs" />
     <Compile Include="Resources\Resources.xaml.cs">
       <DependentUpon>Resources.xaml</DependentUpon>
     </Compile>
     <Compile Include="UserInterfaceService\IUserSettingsManager.cs" />
     <Compile Include="Constants.cs" />
+    <Compile Include="Utility\VsUtility.cs" />
     <Compile Include="Xamls\DeprecatedFrameworkWindow.xaml.cs">
       <DependentUpon>DeprecatedFrameworkWindow.xaml</DependentUpon>
     </Compile>
@@ -278,7 +280,7 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Xamls\PrefixReservedIndicator.xaml">
-	  <Generator>MSBuild:Compile</Generator>
+      <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
     <Page Include="Xamls\PackagesErrorBar.xaml">

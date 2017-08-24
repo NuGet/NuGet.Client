@@ -1,24 +1,24 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.PackageManagement.UI;
 
-namespace NuGetVSExtension
+namespace NuGet.PackageManagement.UI
 {
-    internal class VsUtility
+    public static class VsUtility
     {
         [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD010", Justification = "NuGet/Home#4833 Baseline")]
         public static IEnumerable<IVsWindowFrame> GetDocumentWindows(IVsUIShell uiShell)
         {
             IEnumWindowFrames documentWindowEnumerator;
-            int hr = uiShell.GetDocumentWindowEnum(out documentWindowEnumerator);
+            var hr = uiShell.GetDocumentWindowEnum(out documentWindowEnumerator);
             if (documentWindowEnumerator == null)
             {
                 yield break;
             }
 
-            IVsWindowFrame[] windowFrames = new IVsWindowFrame[1];
+            var windowFrames = new IVsWindowFrame[1];
             uint frameCount;
             while (documentWindowEnumerator.Next(1, windowFrames, out frameCount) == VSConstants.S_OK &&
                    frameCount == 1)
@@ -32,7 +32,7 @@ namespace NuGetVSExtension
         public static PackageManagerControl GetPackageManagerControl(IVsWindowFrame windowFrame)
         {
             object property;
-            int hr = windowFrame.GetProperty(
+            var hr = windowFrame.GetProperty(
                 (int)__VSFPROPID.VSFPROPID_DocView,
                 out property);
 

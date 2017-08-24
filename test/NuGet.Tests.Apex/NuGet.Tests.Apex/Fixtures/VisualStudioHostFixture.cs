@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+using System;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.Test.Apex;
 using Microsoft.Test.Apex.Interop;
-using Microsoft.Test.Apex.Services;
 using Microsoft.Test.Apex.VisualStudio;
 
 namespace NuGet.Tests.Apex
@@ -27,6 +21,7 @@ namespace NuGet.Tests.Apex
             {
                 _messageFilterSingleton = new RetryMessageFilter();
                 _visualStudioHost = Operations.CreateAndStartHost<VisualStudioHost>(VisualStudioHostConfiguration);
+                var compose = VisualStudioHostConfiguration.CompositionAssemblies;
             }
         }
 
@@ -34,7 +29,6 @@ namespace NuGet.Tests.Apex
         {
             if (_visualStudioHost != null && _visualStudioHost.IsRunning)
             {
-                var screenshotService = VisualStudio.Get<IScreenshotService>();
                 try
                 {
                     if (_messageFilterSingleton != null)

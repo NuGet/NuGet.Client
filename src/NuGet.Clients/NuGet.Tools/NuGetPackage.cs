@@ -424,6 +424,7 @@ namespace NuGetVSExtension
             var vsWindowSearchHostfactory = await GetServiceAsync(typeof(SVsWindowSearchHostFactory)) as IVsWindowSearchHostFactory;
             var vsShell = await GetServiceAsync(typeof(SVsShell)) as IVsShell4;
             var control = new PackageManagerControl(model, Settings.Value, vsWindowSearchHostfactory, vsShell, OutputConsoleLogger);
+
             var windowPane = new PackageManagerWindowPane(control);
             var guidEditorType = GuidList.guidNuGetEditorType;
             var guidCommandUI = Guid.Empty;
