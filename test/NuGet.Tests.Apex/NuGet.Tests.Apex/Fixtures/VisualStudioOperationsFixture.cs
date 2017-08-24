@@ -1,5 +1,6 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -16,6 +17,7 @@ namespace NuGet.Tests.Apex
         private readonly IOperations _operations;
         private readonly IAssertionVerifier _verifier;
         private readonly ITestLogger _testLogger;
+        private IList<string> _nugetTestContracts = new List<string> {"NuGet.PackageManagement.UI.TestContract.dll", "NuGet.Console.TestContract.dll"};
 
         public VisualStudioOperationsFixture()
         {
@@ -27,6 +29,7 @@ namespace NuGet.Tests.Apex
             _operations = Microsoft.Test.Apex.Operations.Current;
             _verifier = _operations.Get<IAssertionVerifier>();
             _verifier.AssertionDelegate = FailAction;
+            _verifier.AssertOnFirstFailure = true;
             _testLogger = _operations.Get<ITestLogger>();
         }
 
@@ -37,7 +40,24 @@ namespace NuGet.Tests.Apex
                 if (_visualStudioHostConfiguration == null)
                 {
                     _visualStudioHostConfiguration = new VisualStudioHostConfiguration();
+                    var codeBase = Assembly.GetExecutingAssembly().CodeBase;
+                    var uri = new UriBuilder(codeBase);
+                    var path = Uri.UnescapeDataString(uri.Path);
+
+                    var assemblyFolder = Path.GetDirectoryName(path);
+
+                    foreach(var testAssembly in _nugetTestContracts)
+                    {
+                        var assemblyPath = Path.Combine(assemblyFolder, testAssembly);
+
+                        if (File.Exists((assemblyPath)))
+                        {
+                            _visualStudioHostConfiguration.AddCompositionAssembly(assemblyPath);
+                        }
+                    }
                     _visualStudioHostConfiguration.AddCompositionAssembly(Assembly.GetExecutingAssembly().Location);
+
+                    _visualStudioHostConfiguration.InProcessHostConstraints = new List<ITypeConstraint>() { new NuGetTypeConstraint() };
                 }
                 return _visualStudioHostConfiguration;
             }

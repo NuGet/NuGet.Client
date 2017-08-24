@@ -14,6 +14,7 @@ using System.Windows.Markup;
 #else
 [assembly: InternalsVisibleTo("NuGet.PackageManagement.UI.Test")]
 [assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")]
+[assembly: InternalsVisibleTo("NuGet.PackageManagement.UI.TestContract")]
 #endif
 
 [assembly: AssemblyTitle("NuGet.PackageManagement.UI")]
