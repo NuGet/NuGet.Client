@@ -179,7 +179,7 @@ namespace NuGet.Commands
                         var mergedProjectWideNoWarn = MergeProjectWideNoWarn(nodeProjectWideNoWarn, pathProjectWideNoWarn);
 
                         // Merge the node's package specific no warn to the one in the path.
-                        var mergedPackageSpecificNoWarn = MergePackageSpecificNoWarnIntoPath(pathPackageSpecificNoWarn, nodePackageSpecificNoWarn);
+                        var mergedPackageSpecificNoWarn = MergePackageSpecificNoWarn(pathPackageSpecificNoWarn, nodePackageSpecificNoWarn);
 
                         AddDependenciesToQueue(dependencyMapping[nodeId].Dependencies, 
                             queue, 
@@ -334,32 +334,6 @@ namespace NuGet.Commands
         }
 
         /// <summary>
-        /// Merge 2 WarningProperties objects.
-        /// This method will combine the warning properties from both the collections.
-        /// </summary>
-        /// <param name="path">First Object to be merged.</param>
-        /// <param name="node">Second Object to be merged.</param>
-        /// <returns>Returns a WarningProperties with the combined warning properties.
-        /// Returns the reference to one of the inputs if the other input is Null.
-        /// Returns a Null if both the input properties are Null. </returns>
-        public static ISet<NuGetLogCode> MergeProjectWideNoWarnIntoPath(
-            ISet<NuGetLogCode> path,
-            ISet<NuGetLogCode> node)
-        {
-            if (TryMergeNullObjects(path, node, out object merged))
-            {
-                path = merged as ISet<NuGetLogCode>;
-            }
-            else
-            {
-                // Merge NoWarn Sets.
-                path.UnionWith(node);
-            }
-
-            return path;
-        }
-
-        /// <summary>
         /// Merge 2 PackageSpecific NoWarns.
         /// This method will combine the warning properties from both the collections.
         /// </summary>
@@ -409,40 +383,6 @@ namespace NuGet.Commands
             }
 
             return result;
-        }
-
-        /// <summary>
-        /// Merge 2 PackageSpecific NoWarns.
-        /// This method will combine the warning properties from both the collections.
-        /// </summary>
-        /// <param name="path">First Object to be merged.</param>
-        /// <param name="node">Second Object to be merged.</param>
-        /// <returns>Returns a PackageSpecificWarningProperties with the combined warning properties.
-        /// Will return the reference to one of the inputs if the other input is Null.
-        /// Returns a Null if both the input properties are Null. </returns>
-        public static IDictionary<NuGetLogCode, ISet<string>> MergePackageSpecificNoWarnIntoPath(
-            IDictionary<NuGetLogCode, ISet<string>> path,
-            IDictionary<NuGetLogCode, ISet<string>> node)
-        {
-
-            if (TryMergeNullObjects(path, node, out object merged))
-            {
-                path = merged as IDictionary<NuGetLogCode, ISet<string>>;
-            }
-            else
-            {
-                foreach (var code in node.Keys)
-                {
-                    if (!path.ContainsKey(code))
-                    {
-                        path.Add(code, new HashSet<string>(StringComparer.OrdinalIgnoreCase));
-                    }
-
-                    path[code].UnionWith(node[code]);
-                }
-            }
-
-            return path;
         }
 
         /// <summary>
