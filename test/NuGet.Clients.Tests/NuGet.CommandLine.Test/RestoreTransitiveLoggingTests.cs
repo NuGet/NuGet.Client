@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using FluentAssertions;
@@ -1173,6 +1174,86 @@ namespace NuGet.CommandLine.Test
                 // Assert
                 r.Success.Should().BeTrue();
                 r.AllOutput.Should().Contain("NU1603");
+            }
+        }
+
+
+        // Densely connected solutions containing 5, 10, 20 and 50 projects
+
+        [Theory]       
+        [InlineData(5)]
+        [InlineData(10)]
+        [InlineData(20)]
+        [InlineData(50)]
+        public void GivenDenseSolutionWithMultiplePathsVerifyNoWarn(int projectCount)
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var projects = new List<SimpleTestProjectContext>();
+
+                var framework = NuGetFramework.Parse("net461");
+
+                // Referenced but not created
+                var packageXWithNoWarn = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0",
+                    NoWarn = "NU1603"
+                };
+
+                // Created in the source
+                var packageX11 = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.1"
+                };
+
+                SimpleTestPackageUtility.CreatePackages(pathContext.PackageSource, packageX11);
+
+                for (var i = 0; i < projectCount; i++)
+                {
+                    var project = SimpleTestProjectContext.CreateNETCore(
+                        "project_" + i,
+                        pathContext.SolutionRoot,
+                        framework);              
+
+                    projects.Add(project);
+                }
+
+                for (var i = 1; i < projects.Count(); i++)
+                {
+                    var project = projects[i];
+                    project.AddPackageToAllFrameworks(packageXWithNoWarn);
+                }
+
+                for (var i = 0; i < projects.Count() - 1; i++)
+                {
+                    var projectA = projects[i];
+                    for (var j = i+1; j < projects.Count(); j++)
+                    {
+                        var projectB = projects[j];
+                        projectA.AddProjectToAllFrameworks(projectB);
+                    }
+                }
+
+                foreach (var project in projects)
+                {
+                    project.Save();
+                    solution.Projects.Add(project);
+                }
+
+                solution.Create(pathContext.SolutionRoot);
+
+                // Act
+                var r = Util.RestoreSolution(pathContext, expectedExitCode: 0);
+
+                // Assert
+                r.Success.Should().BeTrue();
+                r.AllOutput.Should().NotContain("NU1603");
             }
         }
 
