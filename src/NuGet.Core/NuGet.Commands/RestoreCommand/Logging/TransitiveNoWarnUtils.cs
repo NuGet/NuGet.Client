@@ -31,6 +31,7 @@ namespace NuGet.Commands
             IEnumerable<RestoreTargetGraph> targetGraphs,
             PackageSpec parentProjectSpec)
         {
+            //Debugger.Launch();
             var transitivePackageSpecificProperties = new PackageSpecificWarningProperties();
             var projectFrameworks = new List<NuGetFramework>();
             var parentWarningProperties = new WarningPropertiesCollection(
@@ -144,7 +145,6 @@ namespace NuGet.Commands
             // Seed the queue with the parent project's direct dependencies
             AddDependenciesToQueue(parentDependencies.Dependencies,
                 queue,
-                seen,
                 parentProjectWideNoWarn,
                 parentPackageSpecificNoWarnForFramework);
 
@@ -160,7 +160,9 @@ namespace NuGet.Commands
                 var node = queue.Dequeue();
                 if (!seen.Contains(node))
                 {
-                    
+                    // Add the node to the seen set
+                    seen.Add(node);
+
                     var nodeId = node.Id;
                     var nodeIsProject = node.IsProject;
                     var nodeDependencies = dependencyMapping[nodeId].Dependencies;
@@ -177,11 +179,10 @@ namespace NuGet.Commands
                         var mergedProjectWideNoWarn = MergeProjectWideNoWarn(nodeProjectWideNoWarn, pathProjectWideNoWarn);
 
                         // Merge the node's package specific no warn to the one in the path.
-                        var mergedPackageSpecificNoWarn = MergePackageSpecificNoWarn(nodePackageSpecificNoWarn, pathPackageSpecificNoWarn);
+                        var mergedPackageSpecificNoWarn = MergePackageSpecificNoWarnIntoPath(pathPackageSpecificNoWarn, nodePackageSpecificNoWarn);
 
                         AddDependenciesToQueue(dependencyMapping[nodeId].Dependencies, 
                             queue, 
-                            seen, 
                             mergedProjectWideNoWarn,
                             mergedPackageSpecificNoWarn);
 
@@ -219,7 +220,6 @@ namespace NuGet.Commands
 
                         AddDependenciesToQueue(dependencyMapping[nodeId].Dependencies,
                             queue,
-                            seen,
                             pathProjectWideNoWarn,
                             pathPackageSpecificNoWarn);
                     }
@@ -254,7 +254,6 @@ namespace NuGet.Commands
 
         private static void AddDependenciesToQueue(IEnumerable<LibraryDependency> dependencies, 
             Queue<DependencyNode> queue, 
-            HashSet<DependencyNode> seen,
             ISet<NuGetLogCode> projectWideNoWarn,
             IDictionary<NuGetLogCode, ISet<string>> packageSpecificNoWarn)
         {
@@ -267,11 +266,8 @@ namespace NuGet.Commands
                     projectWideNoWarn,
                     packageSpecificNoWarn);
 
-                if (!seen.Contains(queueNode))
-                {
                     // Add the metadata from the parent project here.
                     queue.Enqueue(queueNode);
-                }
             }
         }
 
@@ -338,6 +334,32 @@ namespace NuGet.Commands
         }
 
         /// <summary>
+        /// Merge 2 WarningProperties objects.
+        /// This method will combine the warning properties from both the collections.
+        /// </summary>
+        /// <param name="path">First Object to be merged.</param>
+        /// <param name="node">Second Object to be merged.</param>
+        /// <returns>Returns a WarningProperties with the combined warning properties.
+        /// Returns the reference to one of the inputs if the other input is Null.
+        /// Returns a Null if both the input properties are Null. </returns>
+        public static ISet<NuGetLogCode> MergeProjectWideNoWarnIntoPath(
+            ISet<NuGetLogCode> path,
+            ISet<NuGetLogCode> node)
+        {
+            if (TryMergeNullObjects(path, node, out object merged))
+            {
+                path = merged as ISet<NuGetLogCode>;
+            }
+            else
+            {
+                // Merge NoWarn Sets.
+                path.UnionWith(node);
+            }
+
+            return path;
+        }
+
+        /// <summary>
         /// Merge 2 PackageSpecific NoWarns.
         /// This method will combine the warning properties from both the collections.
         /// </summary>
@@ -387,6 +409,40 @@ namespace NuGet.Commands
             }
 
             return result;
+        }
+
+        /// <summary>
+        /// Merge 2 PackageSpecific NoWarns.
+        /// This method will combine the warning properties from both the collections.
+        /// </summary>
+        /// <param name="path">First Object to be merged.</param>
+        /// <param name="node">Second Object to be merged.</param>
+        /// <returns>Returns a PackageSpecificWarningProperties with the combined warning properties.
+        /// Will return the reference to one of the inputs if the other input is Null.
+        /// Returns a Null if both the input properties are Null. </returns>
+        public static IDictionary<NuGetLogCode, ISet<string>> MergePackageSpecificNoWarnIntoPath(
+            IDictionary<NuGetLogCode, ISet<string>> path,
+            IDictionary<NuGetLogCode, ISet<string>> node)
+        {
+
+            if (TryMergeNullObjects(path, node, out object merged))
+            {
+                path = merged as IDictionary<NuGetLogCode, ISet<string>>;
+            }
+            else
+            {
+                foreach (var code in node.Keys)
+                {
+                    if (!path.ContainsKey(code))
+                    {
+                        path.Add(code, new HashSet<string>(StringComparer.OrdinalIgnoreCase));
+                    }
+
+                    path[code].UnionWith(node[code]);
+                }
+            }
+
+            return path;
         }
 
         /// <summary>
@@ -581,8 +637,7 @@ namespace NuGet.Commands
                 return IsProject == other.IsProject &&
                     string.Equals(Id, other.Id, StringComparison.OrdinalIgnoreCase) &&
                     EqualityUtility.SetEqualWithNullCheck(ProjectWideNoWarn, other.ProjectWideNoWarn) &&
-                    EqualityUtility.OrderedEquals(PackageSpecificNoWarn.Keys, other.PackageSpecificNoWarn.Keys, code => code) &&
-                    PackageSpecificNoWarn.Keys.All(c => EqualityUtility.SetEqualWithNullCheck(PackageSpecificNoWarn[c], other.PackageSpecificNoWarn[c], StringComparer.OrdinalIgnoreCase));
+                    EqualityUtility.DictionaryEquals(PackageSpecificNoWarn, other.PackageSpecificNoWarn, (s, o) => EqualityUtility.SetEqualWithNullCheck(s, o, StringComparer.OrdinalIgnoreCase));
             }
 
             public override string ToString()
