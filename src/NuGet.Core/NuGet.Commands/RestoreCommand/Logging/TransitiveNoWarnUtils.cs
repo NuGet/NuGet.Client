@@ -133,7 +133,9 @@ namespace NuGet.Commands
                 var node = queue.Dequeue();
                 if (!seen.Contains(node))
                 {
-                    
+                    // Add the node to seen set
+                    seen.Add(node);
+
                     var nodeId = node.Id;
                     var nodeIsProject = node.IsProject;
                     var nodeDependencies = dependencyMapping[nodeId].Dependencies;
@@ -232,11 +234,8 @@ namespace NuGet.Commands
                     IsProject(dependency.LibraryRange.TypeConstraint),
                     pathWarningPropertiesCollection);
 
-                if (!seen.Contains(queueNode))
-                {
                     // Add the metadata from the parent project here.
                     queue.Enqueue(queueNode);
-                }
             }
         }
 
