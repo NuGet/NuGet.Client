@@ -18,7 +18,6 @@ namespace NuGet.CommandLine.Test
         // Tests ProjA -> ProjB[PkgX NoWarn NU1603] -> PkgX[NU1603]
         public void GivenAProjectReferenceNoWarnsVerifyNoWarning()
         {
-
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
             {

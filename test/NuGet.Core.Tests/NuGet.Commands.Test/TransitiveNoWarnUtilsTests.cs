@@ -201,7 +201,7 @@ namespace NuGet.Commands.Test
             PackageSpecificWarningProperties second = null;
 
             // Act
-            var merged = TransitiveNoWarnUtils.MergePackageSpecificWarningProperties(first, second);
+            var merged = TransitiveNoWarnUtils.MergePackageSpecificNoWarn(first, second);
 
             // Assert
             merged.Should().BeNull();
@@ -215,7 +215,7 @@ namespace NuGet.Commands.Test
             PackageSpecificWarningProperties second = null;
 
             // Act
-            var merged = TransitiveNoWarnUtils.MergePackageSpecificWarningProperties(first, second);
+            var merged = TransitiveNoWarnUtils.MergePackageSpecificNoWarn(first, second);
 
             // Assert
             merged.Should().NotBeNull();
@@ -230,7 +230,7 @@ namespace NuGet.Commands.Test
             var second = new PackageSpecificWarningProperties();
 
             // Act
-            var merged = TransitiveNoWarnUtils.MergePackageSpecificWarningProperties(first, second);
+            var merged = TransitiveNoWarnUtils.MergePackageSpecificNoWarn(first, second);
 
             // Assert
             merged.Should().NotBeNull();
@@ -245,7 +245,7 @@ namespace NuGet.Commands.Test
             var second = new PackageSpecificWarningProperties();
 
             // Act
-            var merged = TransitiveNoWarnUtils.MergePackageSpecificWarningProperties(first, second);
+            var merged = TransitiveNoWarnUtils.MergePackageSpecificNoWarn(first, second);
 
             // Assert
             merged.Should().NotBeNull();
@@ -313,7 +313,7 @@ namespace NuGet.Commands.Test
 
 
             // Act
-            var merged = TransitiveNoWarnUtils.MergePackageSpecificWarningProperties(first, second);
+            var merged = TransitiveNoWarnUtils.MergePackageSpecificNoWarn(first, second);
 
             // Assert
             merged.Should().NotBeNull();
@@ -330,7 +330,7 @@ namespace NuGet.Commands.Test
             WarningProperties second = null;
 
             // Act
-            var merged = TransitiveNoWarnUtils.MergeProjectWideWarningProperties(first, second);
+            var merged = TransitiveNoWarnUtils.MergeProjectWideNoWarn(first, second);
 
             // Assert
             merged.Should().BeNull();
@@ -344,7 +344,7 @@ namespace NuGet.Commands.Test
             WarningProperties second = null;
 
             // Act
-            var merged = TransitiveNoWarnUtils.MergeProjectWideWarningProperties(first, second);
+            var merged = TransitiveNoWarnUtils.MergeProjectWideNoWarn(first, second);
 
             // Assert
             merged.Should().NotBeNull();
@@ -359,7 +359,7 @@ namespace NuGet.Commands.Test
             var second = new WarningProperties();
 
             // Act
-            var merged = TransitiveNoWarnUtils.MergeProjectWideWarningProperties(first, second);
+            var merged = TransitiveNoWarnUtils.MergeProjectWideNoWarn(first, second);
 
             // Assert
             merged.Should().NotBeNull();
@@ -374,7 +374,7 @@ namespace NuGet.Commands.Test
             var second = new WarningProperties();
 
             // Act
-            var merged = TransitiveNoWarnUtils.MergeProjectWideWarningProperties(first, second);
+            var merged = TransitiveNoWarnUtils.MergeProjectWideNoWarn(first, second);
 
             // Assert
             merged.Should().NotBeNull();
@@ -416,7 +416,7 @@ namespace NuGet.Commands.Test
                 expectedAllWarningsAsErrors);
 
             // Act
-            var merged = TransitiveNoWarnUtils.MergeProjectWideWarningProperties(first, second);
+            var merged = TransitiveNoWarnUtils.MergeProjectWideNoWarn(first, second);
 
             // Assert
             merged.Should().NotBeNull();
