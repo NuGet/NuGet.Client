@@ -384,12 +384,12 @@ namespace NuGet.Commands.Test
         }
 
         [Theory]
-        [InlineData("NU1603, NU1605", "NU1701", true, "", "", false, "NU1603, NU1605", "NU1701", true)]
-        [InlineData( "", "", false, "NU1603, NU1605", "NU1701", true, "NU1603, NU1605", "NU1701", true)]
+        [InlineData("NU1603, NU1605", "NU1701", true, "", "", false, "NU1603, NU1605", "", true)]
+        [InlineData( "", "", false, "NU1603, NU1605", "NU1701", true, "NU1603, NU1605", "", true)]
         [InlineData("NU1603, NU1701", "", false, "NU1603, NU1701", "", false, "NU1603, NU1701", "", false)]
-        [InlineData("", "NU1603, NU1701", false, "", "NU1603, NU1701", false, "", "NU1603, NU1701", false)]
-        [InlineData("NU1601", "NU1602, NU1603", false, "NU1604", "NU1605, NU1701", false, "NU1601, NU1604", "NU1602, NU1603, NU1605, NU1701", false)]
-        [InlineData("NU1601", "NU1602, NU1603", true, "NU1604", "NU1605, NU1701", false, "NU1601, NU1604", "NU1602, NU1603, NU1605, NU1701", true)]
+        [InlineData("", "NU1603, NU1701", false, "", "NU1603, NU1701", false, "", "", false)]
+        [InlineData("NU1601", "NU1602, NU1603", false, "NU1604", "NU1605, NU1701", false, "NU1601, NU1604", "", false)]
+        [InlineData("NU1601", "NU1602, NU1603", true, "NU1604", "NU1605, NU1701", false, "NU1601, NU1604", "", true)]
         [InlineData("", "", false, "", "", false, "", "", false)]
         [InlineData("", "", true, "", "", false, "", "", true)]
         [InlineData("", "", false, "", "", true, "", "", true)]
@@ -421,7 +421,7 @@ namespace NuGet.Commands.Test
             // Assert
             merged.Should().NotBeNull();
             merged.AllWarningsAsErrors.ShouldBeEquivalentTo(expected.AllWarningsAsErrors);
-            merged.WarningsAsErrors.ShouldBeEquivalentTo(expected.WarningsAsErrors);
+            merged.WarningsAsErrors.Should().BeEmpty();
             merged.NoWarn.ShouldBeEquivalentTo(expected.NoWarn);
             merged.ShouldBeEquivalentTo(expected);
         }
