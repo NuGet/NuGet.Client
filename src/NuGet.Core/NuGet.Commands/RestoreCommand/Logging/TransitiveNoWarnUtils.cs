@@ -332,9 +332,8 @@ namespace NuGet.Commands
             else
             {
                 // Merge WarningsAsErrors Sets.
+                // No need to merge warnings as errors as they are not used transitively.
                 var mergedWarningsAsErrors = new HashSet<NuGetLogCode>();
-                mergedWarningsAsErrors.UnionWith(first.WarningsAsErrors);
-                mergedWarningsAsErrors.UnionWith(second.WarningsAsErrors);
 
                 // Merge NoWarn Sets.
                 var mergedNoWarn = new HashSet<NuGetLogCode>();
@@ -344,7 +343,8 @@ namespace NuGet.Commands
                 // Merge AllWarningsAsErrors. If one project treats all warnigs as errors then the chain will too.
                 var mergedAllWarningsAsErrors = first.AllWarningsAsErrors || second.AllWarningsAsErrors;
 
-                result = new WarningProperties(mergedWarningsAsErrors, 
+                result = new WarningProperties(
+                    mergedWarningsAsErrors, 
                     mergedNoWarn, 
                     mergedAllWarningsAsErrors);
             }
