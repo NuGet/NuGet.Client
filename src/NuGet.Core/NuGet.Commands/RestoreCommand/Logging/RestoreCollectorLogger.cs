@@ -17,18 +17,68 @@ namespace NuGet.Commands
         private readonly ILogger _innerLogger;
         private readonly ConcurrentQueue<IRestoreLogMessage> _errors;
         private readonly bool _hideWarningsAndErrors;
+        private IEnumerable<RestoreTargetGraph> _restoreTargetGraphs;
+        private PackageSpec _projectSpec;
+        private WarningPropertiesCollection _transitiveWarningPropertiesCollection;
+
+        public string ProjectPath => _projectSpec?.RestoreMetadata?.ProjectPath;
 
         public IEnumerable<IRestoreLogMessage> Errors => _errors.ToArray();
 
         public WarningPropertiesCollection ProjectWarningPropertiesCollection { get; set; }
 
-        public WarningPropertiesCollection TransitiveWarningPropertiesCollection { get; set; }
-        
-        public IEnumerable<RestoreTargetGraph> RestoreTargetGraphs { get; set; }
+        public WarningPropertiesCollection TransitiveWarningPropertiesCollection
+        {
+            get
+            {
+                if (_transitiveWarningPropertiesCollection == null)
+                {
+                    // Populate TransitiveWarningPropertiesCollection only if it is null and we have RestoreTargetGraphs.
+                    // This will happen at most once and only if we have the project spec with restore metadata.
+                    if (_restoreTargetGraphs != null &&
+                        _restoreTargetGraphs.Any() &&
+                        _projectSpec != null &&
+                        _projectSpec.RestoreMetadata != null)
+                    {
+                        var transitiveNoWarnUtils = new TransitiveNoWarnUtils();
 
-        public PackageSpec ProjectSpec { get; set; }
+                        TransitiveWarningPropertiesCollection = transitiveNoWarnUtils.CreateTransitiveWarningPropertiesCollection(
+                            _restoreTargetGraphs,
+                            _projectSpec);
+                    }
+                }
 
-        public string ProjectPath => ProjectSpec?.RestoreMetadata?.ProjectPath;
+                return _transitiveWarningPropertiesCollection;
+            }
+
+            set => _transitiveWarningPropertiesCollection = value;
+        }
+
+        /// <summary>
+        /// Stores a reference to PackageSpec for the project from the restore request.
+        /// This are used to generate the warning properties for the project.
+        /// </summary>
+        /// <param name="projectSpec">PackageSpec to be stored for reference.</param>
+        public void ApplyRestoreInputs(PackageSpec projectSpec)
+        {
+            _projectSpec = projectSpec;
+
+            ProjectWarningPropertiesCollection = new WarningPropertiesCollection(
+                projectSpec.RestoreMetadata?.ProjectWideWarningProperties,
+                PackageSpecificWarningProperties.CreatePackageSpecificWarningProperties(projectSpec),
+                projectSpec.TargetFrameworks.Select(f => f.FrameworkName).AsList().AsReadOnly()
+                );
+        }
+
+        /// <summary>
+        /// Stores a reference to RestoreTargetGraphs from the restore output.
+        /// These graphs are used to generate the transitive warning properties.
+        /// </summary>
+        /// <param name="restoreTargetGraphs">RestoreTargetGraphs to be stored for reference.</param>
+        public void ApplyRestoreOutput(IEnumerable<RestoreTargetGraph> restoreTargetGraphs)
+        {
+            _restoreTargetGraphs = restoreTargetGraphs;
+        }
 
         /// <summary>
         /// Initializes an instance of the <see cref="RestoreCollectorLogger"/>, while still
@@ -164,28 +214,8 @@ namespace NuGet.Commands
             }
             else
             {
-                // Initialize transitive warning properties only if the project does not suppress the warning.
-                TryPopulateTransitiveWarningPropertiesCollection(message);
+                // Use transitive warning properties only if the project does not suppress the warning.
                 return TransitiveWarningPropertiesCollection != null && TransitiveWarningPropertiesCollection.ApplyWarningProperties(message);
-            }
-        }
-
-        private void TryPopulateTransitiveWarningPropertiesCollection(ILogMessage message)
-        {
-            // Populate TransitiveWarningPropertiesCollection only if it is null and we have RestoreTargetGraphs.
-            // This will happen at most once and only if we have the project spec with restore metadata.
-            if (message.Level == LogLevel.Warning &&
-                TransitiveWarningPropertiesCollection == null &&
-                RestoreTargetGraphs != null &&
-                RestoreTargetGraphs.Any() &&
-                ProjectSpec != null &&
-                ProjectSpec.RestoreMetadata != null)
-            {
-                var transitiveNoWarnUtils = new TransitiveNoWarnUtils();
-
-                TransitiveWarningPropertiesCollection = transitiveNoWarnUtils.CreateTransitiveWarningPropertiesCollection(
-                    RestoreTargetGraphs,
-                    ProjectSpec);
             }
         }
 

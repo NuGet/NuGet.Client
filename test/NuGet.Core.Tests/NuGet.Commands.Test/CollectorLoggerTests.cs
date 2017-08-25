@@ -114,7 +114,7 @@ namespace NuGet.Commands.Test
             var innerLogger = new Mock<ILogger>();
             var collector = new RestoreCollectorLogger(innerLogger.Object, LogLevel.Debug, hideWarningsAndErrors: false)
             {
-                ProjectSpec = new PackageSpec()
+                _projectSpec = new PackageSpec()
                 {
                     RestoreMetadata = new ProjectRestoreMetadata()
                     {

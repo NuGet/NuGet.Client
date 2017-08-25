@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -121,7 +121,7 @@ namespace NuGet.Commands
 
             // Update the logger with the restore target graphs
             // This allows lazy initialization for the Transitive Warning Properties
-            _logger.RestoreTargetGraphs = graphs;
+            _logger.ApplyRestoreOutput(graphs);
 
             // Warn for all dependencies that do not have exact matches or
             // versions that have been bumped up unexpectedly.
