@@ -130,7 +130,6 @@ namespace NuGet.PackageManagement.UI.Test
         private class TestPackageFeed : IPackageFeed
         {
             public bool IsMultiSource => false;
-            public bool IsOnlyLoadingFromNuGetOrg => false;
 
             public Task<SearchResult<IPackageSearchMetadata>> ContinueSearchAsync(ContinuationToken continuationToken, CancellationToken cancellationToken)
             {

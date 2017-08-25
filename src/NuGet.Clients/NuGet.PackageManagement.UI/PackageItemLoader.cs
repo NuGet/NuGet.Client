@@ -35,7 +35,6 @@ namespace NuGet.PackageManagement.UI
         public IItemLoaderState State => _state;
 
         public bool IsMultiSource => _packageFeed.IsMultiSource;
-        public bool IsOnlyLoadingFromNuGetOrg => _packageFeed.IsOnlyLoadingFromNuGetOrg;
 
         private class PackageFeedSearchState : IItemLoaderState
         {
@@ -316,7 +315,7 @@ namespace NuGet.PackageManagement.UI
                         Summary = metadata.Summary,
                         Versions = AsyncLazy.New(() => metadata.GetVersionsAsync()),
                         AllowedVersions = allowedVersions,
-                        PrefixReserved = metadata.PrefixReserved && IsOnlyLoadingFromNuGetOrg
+                        PrefixReserved = metadata.PrefixReserved && !IsMultiSource
                     };
                     listItem.UpdatePackageStatus(_installedPackages);
 
