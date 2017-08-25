@@ -13,7 +13,7 @@ RESULTCODE=0
 # Download the CLI install script to cli
 echo "Installing dotnet CLI"
 mkdir -p cli
-curl -o cli/dotnet-install.sh https://raw.githubusercontent.com/dotnet/cli/d2bbe1faa294012cec60b640e6522e0674224d3f/scripts/obtain/dotnet-install.sh
+curl -o cli/dotnet-install.sh https://raw.githubusercontent.com/dotnet/cli/8c5e955252f93f54e239e5f1c978700b97fc21c1/scripts/obtain/dotnet-install.sh
 
 # Download the CLI install script to cli test
 # echo "Installing dotnet CLI test"
