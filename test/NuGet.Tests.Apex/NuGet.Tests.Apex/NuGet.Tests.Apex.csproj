@@ -7,11 +7,7 @@
     <NETCoreWPFProject>true</NETCoreWPFProject>
     <TestProject>true</TestProject>
   </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <PlatformTarget>x86</PlatformTarget>
-    <RuntimeIdentifier>x86</RuntimeIdentifier>
-  </PropertyGroup>
+  
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.Composition" />
