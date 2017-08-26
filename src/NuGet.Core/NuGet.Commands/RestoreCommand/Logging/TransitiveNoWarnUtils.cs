@@ -447,50 +447,6 @@ namespace NuGet.Commands
         }
 
         /// <summary>
-        /// Merge second into the result. Returns the result so that null can be passed
-        /// for result initially.
-        /// </summary>
-        private static Dictionary<string, HashSet<NuGetLogCode>> UnionWith(
-            Dictionary<string, HashSet<NuGetLogCode>> first,
-            Dictionary<string, HashSet<NuGetLogCode>> second)
-        {
-            if (TryMergeNullObjects(first, second, out var merged))
-            {
-                return merged;
-            }
-
-            if (first.Count == 0)
-            {
-                return second;
-            }
-
-            if (second.Count == 0)
-            {
-                return first;
-            }
-
-            merged = new Dictionary<string, HashSet<NuGetLogCode>>(StringComparer.OrdinalIgnoreCase);
-
-            foreach (var pair in second)
-            {
-                var id = pair.Key;
-                var codes = pair.Value;
-
-                if (codes.Count > 0)
-                {
-                    if (!first.TryGetValue(id, out var resultCodes))
-                    {
-                        resultCodes = new HashSet<NuGetLogCode>();
-                        first[id] = resultCodes;
-                    }
-                    resultCodes.UnionWith(codes);
-                }
-            }
-
-            return first;
-        }
-
-        /// <summary>
         /// Merge 2 PackageSpecificWarningProperties objects.
         /// This method will combine the warning properties from both the collections.
         /// </summary>
