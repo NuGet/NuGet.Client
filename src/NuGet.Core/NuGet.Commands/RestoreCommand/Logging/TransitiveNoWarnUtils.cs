@@ -179,7 +179,7 @@ namespace NuGet.Commands
                     if (nodeIsProject)
                     {
                         // Merge the node's project wide no warn to the one in the path.
-                        var mergedProjectWideNoWarn = MergeProjectWideNoWarn(pathProjectWideNoWarn, nodeProjectWideNoWarn);
+                        var mergedProjectWideNoWarn = MergeCodes(pathProjectWideNoWarn, nodeProjectWideNoWarn);
 
                         // Merge the node's package specific no warn to the one in the path.
                         var mergedPackageSpecificNoWarn = MergePackageSpecificNoWarn(pathPackageSpecificNoWarn, nodePackageSpecificNoWarn);
@@ -363,7 +363,7 @@ namespace NuGet.Commands
         /// <returns>Returns a WarningProperties with the combined warning properties.
         /// Returns the reference to one of the inputs if the other input is Null.
         /// Returns a Null if both the input properties are Null. </returns>
-        public static HashSet<NuGetLogCode> MergeProjectWideNoWarn(
+        public static HashSet<NuGetLogCode> MergeCodes(
             HashSet<NuGetLogCode> first,
             HashSet<NuGetLogCode> second)
         {
@@ -375,6 +375,21 @@ namespace NuGet.Commands
             }
             else
             {
+                if (first.Count == 0)
+                {
+                    return second;
+                }
+
+                if (second.Count == 0)
+                {
+                    return first;
+                }
+
+                if (first.SetEqualWithNullCheck(second))
+                {
+                    return first;
+                }
+
                 // Merge NoWarn Sets.
                 result = new HashSet<NuGetLogCode>(first.Concat(second));
             }
@@ -395,11 +410,9 @@ namespace NuGet.Commands
             Dictionary<string, HashSet<NuGetLogCode>> first,
             Dictionary<string, HashSet<NuGetLogCode>> second)
         {
-            Dictionary<string, HashSet<NuGetLogCode>> result = null;
-
             if (TryMergeNullObjects(first, second, out var merged))
             {
-                result = merged;
+                return merged;
             }
 
             if (first.Count == 0)
@@ -412,30 +425,25 @@ namespace NuGet.Commands
                 return first;
             }
 
-            var keys = first.Keys.Concat(second.Keys);
+            merged = new Dictionary<string, HashSet<NuGetLogCode>>(StringComparer.OrdinalIgnoreCase);
 
-            foreach (var key in keys)
+            foreach (var pair in first.Concat(second))
             {
-                // Check if the key has already been merged.
-                if (!merged.ContainsKey(key))
+                var id = pair.Key;
+
+                if (!merged.TryGetValue(id, out var codes))
                 {
-                    var codes = new HashSet<NuGetLogCode>();
-
-                    if (first.TryGetValue(key, out var firstCodes))
-                    {
-                        codes.UnionWith(firstCodes);
-                    }
-
-                    if (second.TryGetValue(key, out var secondCodes))
-                    {
-                        codes.UnionWith(secondCodes);
-                    }
-
-                    merged.Add(key, codes);
+                    // Did not exist, use the existing code set
+                    merged.Add(id, pair.Value);
+                }
+                else
+                {
+                    // Create a new set with the merged codes
+                    merged[id] = MergeCodes(codes, pair.Value);
                 }
             }
 
-            return result;
+            return merged;
         }
 
         /// <summary>

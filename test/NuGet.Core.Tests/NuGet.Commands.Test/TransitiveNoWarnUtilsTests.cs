@@ -317,7 +317,7 @@ namespace NuGet.Commands.Test
             HashSet<NuGetLogCode> second = null;
 
             // Act
-            var merged = TransitiveNoWarnUtils.MergeProjectWideNoWarn(first, second);
+            var merged = TransitiveNoWarnUtils.MergeCodes(first, second);
 
             // Assert
             merged.Should().BeNull();
@@ -331,7 +331,7 @@ namespace NuGet.Commands.Test
             HashSet<NuGetLogCode> second = null;
 
             // Act
-            var merged = TransitiveNoWarnUtils.MergeProjectWideNoWarn(first, second);
+            var merged = TransitiveNoWarnUtils.MergeCodes(first, second);
 
             // Assert
             merged.Should().NotBeNull();
@@ -346,7 +346,7 @@ namespace NuGet.Commands.Test
             var second = new HashSet<NuGetLogCode>();
 
             // Act
-            var merged = TransitiveNoWarnUtils.MergeProjectWideNoWarn(first, second);
+            var merged = TransitiveNoWarnUtils.MergeCodes(first, second);
 
             // Assert
             merged.Should().NotBeNull();
@@ -361,7 +361,7 @@ namespace NuGet.Commands.Test
             var second = new HashSet<NuGetLogCode>();
 
             // Act
-            var merged = TransitiveNoWarnUtils.MergeProjectWideNoWarn(first, second);
+            var merged = TransitiveNoWarnUtils.MergeCodes(first, second);
 
             // Assert
             merged.Should().NotBeNull();
@@ -389,7 +389,7 @@ namespace NuGet.Commands.Test
             var expected = new HashSet<NuGetLogCode>(MSBuildRestoreUtility.GetNuGetLogCodes(expectedNoWarn));
 
             // Act
-            var merged = TransitiveNoWarnUtils.MergeProjectWideNoWarn(first, second);
+            var merged = TransitiveNoWarnUtils.MergeCodes(first, second);
 
             // Assert
             merged.Should().NotBeNull();
