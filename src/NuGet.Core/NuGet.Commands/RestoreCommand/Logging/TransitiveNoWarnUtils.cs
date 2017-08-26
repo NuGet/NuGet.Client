@@ -285,7 +285,7 @@ namespace NuGet.Commands
             // Add the node for tracking, if a subset of this node
             // has already been walked then skip it, it will not provide
             // any new warning possibilities.
-            if (!visitedNodes.Add(node))
+            if (visitedNodes.Add(node))
             {
                 var nodeProps = node.NodeWarningProperties;
 
@@ -293,15 +293,22 @@ namespace NuGet.Commands
                 {
                     foreach (var existingNode in visitedNodes)
                     {
-                        if (nodeProps.IsSubSetOf(existingNode.NodeWarningProperties))
+                        // Check for a subset, ignore the already added node.
+                        if (!ReferenceEquals(existingNode, node)
+                            && nodeProps.IsSubSetOf(existingNode.NodeWarningProperties))
                         {
                             return false;
                         }
                     }
                 }
-            }
 
-            return true;
+                return true;
+            }
+            else
+            {
+                // Exact match existed already
+                return false;
+            }
         }
 
         private static void AddDependenciesToQueue(IEnumerable<LibraryDependency> dependencies, 
@@ -813,7 +820,7 @@ namespace NuGet.Commands
 
                     if (otherPackage.Count <= package.Count)
                     {
-                        // To be subset this set of package specific warnings must contain
+                        // To be a subset this set of package specific warnings must contain
                         // every id and code found in other. A single miss will fail the check.
                         foreach (var pair in otherPackage)
                         {
