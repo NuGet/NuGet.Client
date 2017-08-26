@@ -180,9 +180,10 @@ namespace NuGet.Commands
                 return true;
             }
 
-            return EqualityUtility.SequenceEqualWithNullCheck(Properties.Keys.OrderBy(c => c), other.Properties.Keys.OrderBy(c => c)) &&
-                Properties.Keys.All(c => EqualityUtility.OrderedEquals(Properties[c].Keys, other.Properties[c].Keys, (id) => id, StringComparer.OrdinalIgnoreCase, StringComparer.OrdinalIgnoreCase)) &&
-                Properties.Keys.All(c => Properties[c].Keys.All(id => EqualityUtility.SetEqualWithNullCheck(Properties[c][id], other.Properties[c][id], new NuGetFrameworkFullComparer())));
+            return EqualityUtility.DictionaryEquals(
+                Properties,
+                other.Properties,
+                (sv1, ov1) => EqualityUtility.DictionaryEquals(sv1, ov1, (sv2, ov2) => EqualityUtility.SetEqualWithNullCheck(sv2, ov2)));
         }
     }
 }
