@@ -83,7 +83,7 @@ namespace NuGet.Commands
         {
             var dependencyMapping = new Dictionary<string, LookUpNode>(StringComparer.OrdinalIgnoreCase);
             var queue = new Queue<DependencyNode>();
-            var seen = new HashSet<DependencyNode>();
+            var seen = new Dictionary<string, HashSet<DependencyNode>>(StringComparer.OrdinalIgnoreCase);
             var resultWarningProperties = new PackageSpecificWarningProperties();
             var packageNoWarn = new Dictionary<string, HashSet<NuGetLogCode>>(StringComparer.OrdinalIgnoreCase);
 
@@ -147,7 +147,7 @@ namespace NuGet.Commands
                 parentPackageSpecificNoWarn);
 
             // Add the parent project to the seen set to prevent adding it back to the queue
-            seen.Add(new DependencyNode(id: parentProjectName,
+            AddToSeen(seen, new DependencyNode(id: parentProjectName,
                 isProject: true,
                 projectWideNoWarn: parentProjectWideNoWarn,
                 packageSpecificNoWarn: parentPackageSpecificNoWarn));
@@ -156,7 +156,11 @@ namespace NuGet.Commands
             while (queue.Count > 0)
             {
                 var node = queue.Dequeue();
-                if (seen.Add(node) && dependencyMapping.TryGetValue(node.Id, out var nodeLookUp))
+
+                // Check if the node has already been visited, or if the node is a NoWarn superset of
+                // an existing node. If this is a superset it will not provide any new paths where a
+                // warning should be shown.
+                if (AddToSeen(seen, node) && dependencyMapping.TryGetValue(node.Id, out var nodeLookUp))
                 {
                     var nodeId = node.Id;
                     var nodeIsProject = node.IsProject;
@@ -260,6 +264,44 @@ namespace NuGet.Commands
             }
 
             return collection;
+        }
+
+        /// <summary>
+        /// Add to the seen list for tracking.
+        /// </summary>
+        /// <returns>True if the node should be walked</returns>
+        private static bool AddToSeen(Dictionary<string, HashSet<DependencyNode>> seen, DependencyNode node)
+        {
+            var id = node.Id;
+
+            if (!seen.TryGetValue(id, out var visitedNodes))
+            {
+                // New id
+                visitedNodes = new HashSet<DependencyNode>() { node };
+                seen.Add(id, visitedNodes);
+                return true;
+            }
+
+            // Add the node for tracking, if a subset of this node
+            // has already been walked then skip it, it will not provide
+            // any new warning possibilities.
+            if (!visitedNodes.Add(node))
+            {
+                var nodeProps = node.NodeWarningProperties;
+
+                if (nodeProps != null)
+                {
+                    foreach (var existingNode in visitedNodes)
+                    {
+                        if (nodeProps.IsSubSetOf(existingNode.NodeWarningProperties))
+                        {
+                            return false;
+                        }
+                    }
+                }
+            }
+
+            return true;
         }
 
         private static void AddDependenciesToQueue(IEnumerable<LibraryDependency> dependencies, 
@@ -727,6 +769,79 @@ namespace NuGet.Commands
 
                 return EqualityUtility.SetEqualWithNullCheck(ProjectWide, other.ProjectWide) &&
                     EqualityUtility.DictionaryEquals(PackageSpecific, other.PackageSpecific, (s, o) => EqualityUtility.SetEqualWithNullCheck(s, o));
+            }
+
+            /// <summary>
+            /// True if the given set is a subset of this set, or equal to it.
+            /// </summary>
+            /// <remarks>Null is considered an empty set, and will return true.</remarks>
+            public bool IsSubSetOf(NodeWarningProperties other)
+            {
+                if (other == null)
+                {
+                    return true;
+                }
+
+                if (ReferenceEquals(this, other))
+                {
+                    return true;
+                }
+
+                if (IsSubSetOfWithNullCheck(ProjectWide, other.ProjectWide))
+                {
+                    var package = PackageSpecific;
+                    var otherPackage = other.PackageSpecific;
+
+                    if (otherPackage == null || otherPackage.Count == 0)
+                    {
+                        return true;
+                    }
+
+                    if (package == null || package.Count == 0)
+                    {
+                        return false;
+                    }
+
+                    if (otherPackage.Count <= package.Count)
+                    {
+                        // To be subset this set of package specific warnings must contain
+                        // every id and code found in other. A single miss will fail the check.
+                        foreach (var pair in otherPackage)
+                        {
+                            if (!package.TryGetValue(pair.Key, out var codes)
+                                || !codes.IsSubsetOf(pair.Value))
+                            {
+                                return false;
+                            }
+                        }
+                    }
+
+                    return true;
+                }
+
+                return false;
+            }
+
+            private static bool IsSubSetOfWithNullCheck(HashSet<NuGetLogCode> parent, HashSet<NuGetLogCode> other)
+            {
+                // Null is empty and always a subset.
+                if (other == null || other.Count == 0)
+                {
+                    return true;
+                }
+
+                //  A null or empty parent cannot be a superset.
+                if (parent == null || parent.Count == 0)
+                {
+                    return false;
+                }
+
+                if (other.Count <= parent.Count)
+                {
+                    return parent.IsSubsetOf(other);
+                }
+
+                return false;
             }
         }
     }

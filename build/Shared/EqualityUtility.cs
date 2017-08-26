@@ -74,6 +74,12 @@ namespace NuGet.Shared
                 return identityEquals;
             }
 
+            // Verify they could be equal by count
+            if (self.Count != other.Count)
+            {
+                return false;
+            }
+
             if (comparer == null)
             {
                 comparer = EqualityComparer<T>.Default;
@@ -97,6 +103,12 @@ namespace NuGet.Shared
             if (TryIdentityEquals(self, other, out identityEquals))
             {
                 return identityEquals;
+            }
+
+            // Verify they could be equal by count
+            if (self.Count != other.Count)
+            {
+                return false;
             }
 
             if (!self.Keys.OrderedEquals(
