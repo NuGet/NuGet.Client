@@ -401,40 +401,85 @@ namespace NuGet.Commands
             {
                 result = merged;
             }
-            else
+
+            if (first.Count == 0)
             {
-                result = new Dictionary<string, HashSet<NuGetLogCode>>(StringComparer.OrdinalIgnoreCase);
+                return second;
+            }
 
-                result.UnionWith(first);
-                result.UnionWith(second);
+            if (second.Count == 0)
+            {
+                return first;
+            }
 
+            var keys = first.Keys.Concat(second.Keys);
+
+            foreach (var key in keys)
+            {
+                // Check if the key has already been merged.
+                if (!merged.ContainsKey(key))
+                {
+                    var codes = new HashSet<NuGetLogCode>();
+
+                    if (first.TryGetValue(key, out var firstCodes))
+                    {
+                        codes.UnionWith(firstCodes);
+                    }
+
+                    if (second.TryGetValue(key, out var secondCodes))
+                    {
+                        codes.UnionWith(secondCodes);
+                    }
+
+                    merged.Add(key, codes);
+                }
             }
 
             return result;
         }
 
-        private static void UnionWith(
-            this Dictionary<string, HashSet<NuGetLogCode>> result,
-            Dictionary<string, HashSet<NuGetLogCode>> other)
+        /// <summary>
+        /// Merge second into the result. Returns the result so that null can be passed
+        /// for result initially.
+        /// </summary>
+        private static Dictionary<string, HashSet<NuGetLogCode>> UnionWith(
+            Dictionary<string, HashSet<NuGetLogCode>> first,
+            Dictionary<string, HashSet<NuGetLogCode>> second)
         {
-            if (other.Count > 0)
+            if (TryMergeNullObjects(first, second, out var merged))
             {
-                foreach (var pair in other)
-                {
-                    var id = pair.Key;
-                    var codes = pair.Value;
+                return merged;
+            }
 
-                    if (codes.Count > 0)
+            if (first.Count == 0)
+            {
+                return second;
+            }
+
+            if (second.Count == 0)
+            {
+                return first;
+            }
+
+            merged = new Dictionary<string, HashSet<NuGetLogCode>>(StringComparer.OrdinalIgnoreCase);
+
+            foreach (var pair in second)
+            {
+                var id = pair.Key;
+                var codes = pair.Value;
+
+                if (codes.Count > 0)
+                {
+                    if (!first.TryGetValue(id, out var resultCodes))
                     {
-                        if (!result.TryGetValue(id, out var resultCodes))
-                        {
-                            resultCodes = new HashSet<NuGetLogCode>();
-                            result[id] = resultCodes;
-                        }
-                        resultCodes.UnionWith(codes);
+                        resultCodes = new HashSet<NuGetLogCode>();
+                        first[id] = resultCodes;
                     }
+                    resultCodes.UnionWith(codes);
                 }
             }
+
+            return first;
         }
 
         /// <summary>
