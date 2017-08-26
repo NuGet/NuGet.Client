@@ -83,7 +83,7 @@ namespace NuGet.Commands
         {
             var dependencyMapping = new Dictionary<string, LookUpNode>(StringComparer.OrdinalIgnoreCase);
             var queue = new Queue<DependencyNode>();
-            var seen = new Dictionary<string, HashSet<DependencyNode>>(StringComparer.OrdinalIgnoreCase);
+            var seen = new Dictionary<string, NodeWarningProperties>(StringComparer.OrdinalIgnoreCase);
             var resultWarningProperties = new PackageSpecificWarningProperties();
             var packageNoWarn = new Dictionary<string, HashSet<NuGetLogCode>>(StringComparer.OrdinalIgnoreCase);
 
@@ -270,45 +270,29 @@ namespace NuGet.Commands
         /// Add to the seen list for tracking.
         /// </summary>
         /// <returns>True if the node should be walked</returns>
-        private static bool AddToSeen(Dictionary<string, HashSet<DependencyNode>> seen, DependencyNode node)
+        private static bool AddToSeen(Dictionary<string, NodeWarningProperties> seen, DependencyNode node)
         {
             var id = node.Id;
 
-            if (!seen.TryGetValue(id, out var visitedNodes))
+            if (!seen.TryGetValue(id, out var visitedProps))
             {
                 // New id
-                visitedNodes = new HashSet<DependencyNode>() { node };
-                seen.Add(id, visitedNodes);
+                seen.Add(id, node.NodeWarningProperties);
                 return true;
             }
 
-            // Add the node for tracking, if a subset of this node
-            // has already been walked then skip it, it will not provide
-            // any new warning possibilities.
-            if (visitedNodes.Add(node))
-            {
-                var nodeProps = node.NodeWarningProperties;
+            var nodeProps = node.NodeWarningProperties;
 
-                if (nodeProps != null)
-                {
-                    foreach (var existingNode in visitedNodes)
-                    {
-                        // Check for a subset, ignore the already added node.
-                        if (!ReferenceEquals(existingNode, node)
-                            && nodeProps.IsSubSetOf(existingNode.NodeWarningProperties))
-                        {
-                            return false;
-                        }
-                    }
-                }
-
-                return true;
-            }
-            else
+            if (!nodeProps.IsSubSetOf(visitedProps))
             {
-                // Exact match existed already
-                return false;
+                // Find the intersection of properties between these nodes,
+                // these are the only properties that we need to look for in
+                // future passes.
+                seen[id] = nodeProps.GetIntersect(visitedProps);
             }
+
+            // This has already been walked
+            return false;
         }
 
         private static void AddDependenciesToQueue(IEnumerable<LibraryDependency> dependencies, 
@@ -786,6 +770,45 @@ namespace NuGet.Commands
                 return EqualityUtility.SetEqualWithNullCheck(ProjectWide, other.ProjectWide) &&
                     EqualityUtility.DictionaryEquals(PackageSpecific, other.PackageSpecific, (s, o) => EqualityUtility.SetEqualWithNullCheck(s, o));
             }
+            
+            public NodeWarningProperties GetIntersect(NodeWarningProperties other)
+            {
+                if (other == null || ReferenceEquals(this, other))
+                {
+                    return new NodeWarningProperties(ProjectWide, PackageSpecific);
+                }
+
+                var thisPackages = PackageSpecific;
+                var otherPackages = other.PackageSpecific;
+                var projectWide = Intersect(ProjectWide, other.ProjectWide);
+                Dictionary<string, HashSet<NuGetLogCode>> packages = null;
+
+                if (thisPackages != null && otherPackages == null)
+                {
+                    packages = thisPackages;
+                }
+                else if (thisPackages == null && otherPackages != null)
+                {
+                    packages = otherPackages;
+                }
+                else if (thisPackages != null && otherPackages != null)
+                {
+                    packages = new Dictionary<string, HashSet<NuGetLogCode>>(StringComparer.OrdinalIgnoreCase);
+
+                    var allKeys = thisPackages.Keys.Concat(otherPackages.Keys)
+                        .Distinct(StringComparer.OrdinalIgnoreCase);
+
+                    foreach (var key in allKeys)
+                    {
+                        thisPackages.TryGetValue(key, out var thisCodes);
+                        otherPackages.TryGetValue(key, out var otherCodes);
+
+                        packages.Add(key, Intersect(thisCodes, otherCodes));
+                    }
+                }
+
+                return new NodeWarningProperties(projectWide, packages);
+            }
 
             /// <summary>
             /// True if the given set is a subset of this set, or equal to it.
@@ -858,6 +881,29 @@ namespace NuGet.Commands
                 }
 
                 return false;
+            }
+
+            private static HashSet<NuGetLogCode> Intersect(HashSet<NuGetLogCode> first, HashSet<NuGetLogCode> second)
+            {
+                if (ReferenceEquals(first, second))
+                {
+                    return first;
+                }
+
+                if (first == null)
+                {
+                    return second;
+                }
+
+                if (second == null)
+                {
+                    return first;
+                }
+
+                var result = new HashSet<NuGetLogCode>(first);
+                result.IntersectWith(second);
+
+                return result;
             }
         }
     }
