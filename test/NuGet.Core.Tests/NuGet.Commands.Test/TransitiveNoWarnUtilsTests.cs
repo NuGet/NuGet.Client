@@ -32,27 +32,19 @@ namespace NuGet.Commands.Test
         public void ExtractPathNoWarnProperties_CorrectlyReadsProjectWideNoWarns()
         {
             // Arrange
-            var noWarnSet = new HashSet<NuGetLogCode> { NuGetLogCode.NU1601, NuGetLogCode.NU1603 };
-            var warningsAsErrorSet = new HashSet<NuGetLogCode> { };
-
-            var projectWideWarningProperties = new WarningProperties(
-                warningsAsErrors: warningsAsErrorSet,
-                noWarn: noWarnSet,
-                allWarningsAsErrors: false
-                );
-
-            var warningPropertiesCollection = new WarningPropertiesCollection(
-               projectWideWarningProperties: projectWideWarningProperties,
-               packageSpecificWarningProperties: null,
-               projectFrameworks: null
-                );
+            var projectWideNoWarn = new HashSet<NuGetLogCode> { NuGetLogCode.NU1601, NuGetLogCode.NU1603 };
+            var pathWarningProperties = new TransitiveNoWarnUtils.NodeWarningProperties(
+                projectWideNoWarn,
+                null);
 
             // Act
-            var extractedNoWarnSet = TransitiveNoWarnUtils.ExtractPathNoWarnProperties(warningPropertiesCollection, "test_id");
+            var extractedNoWarnSet = TransitiveNoWarnUtils.ExtractPathNoWarnProperties(
+                pathWarningProperties,
+                "test_id");
 
             // Assert
             extractedNoWarnSet.Should().NotBeNullOrEmpty();
-            extractedNoWarnSet.Should().BeEquivalentTo(noWarnSet);
+            extractedNoWarnSet.Should().BeEquivalentTo(projectWideNoWarn);
         }
 
         [Fact]
@@ -62,28 +54,18 @@ namespace NuGet.Commands.Test
             var packageId = "test_package";
             var framework = NuGetFramework.Parse("net461");
             var expectedNoWarnSet = new HashSet<NuGetLogCode> { NuGetLogCode.NU1603, NuGetLogCode.NU1605 };
-            var noWarnSet = new HashSet<NuGetLogCode> { };
-            var warningsAsErrorSet = new HashSet<NuGetLogCode> { };
 
-            var projectWideWarningProperties = new WarningProperties(
-                warningsAsErrors: warningsAsErrorSet,
-                noWarn: noWarnSet,
-                allWarningsAsErrors: false
-                );
-
-            var packageSpecificWarningProperties = new PackageSpecificWarningProperties();
-            packageSpecificWarningProperties.Add(NuGetLogCode.NU1603, packageId, framework);
-            packageSpecificWarningProperties.Add(NuGetLogCode.NU1605, packageId, framework);
-            packageSpecificWarningProperties.Add(NuGetLogCode.NU1701, "other_package", framework);
-
-            var warningPropertiesCollection = new WarningPropertiesCollection(
-               projectWideWarningProperties: projectWideWarningProperties,
-               packageSpecificWarningProperties: packageSpecificWarningProperties,
-               projectFrameworks: null
-                );
+            var pathWarningProperties = new TransitiveNoWarnUtils.NodeWarningProperties(
+                null,
+                new Dictionary<string, HashSet<NuGetLogCode>>
+                {
+                    {packageId, expectedNoWarnSet}
+                });
 
             // Act
-            var extractedNoWarnSet = TransitiveNoWarnUtils.ExtractPathNoWarnProperties(warningPropertiesCollection, packageId);
+            var extractedNoWarnSet = TransitiveNoWarnUtils.ExtractPathNoWarnProperties(
+                pathWarningProperties,
+                packageId);
 
             // Assert
             extractedNoWarnSet.Should().NotBeNullOrEmpty();
@@ -96,30 +78,23 @@ namespace NuGet.Commands.Test
         {
             // Arrange
             var packageId = "test_package";
-            var framework = NuGetFramework.Parse("net461");
-            var expectedNoWarnSet = new HashSet<NuGetLogCode> { NuGetLogCode.NU1601 , NuGetLogCode.NU1603, NuGetLogCode.NU1605 };
-            var noWarnSet = new HashSet<NuGetLogCode> { NuGetLogCode.NU1601, NuGetLogCode.NU1605 };
-            var warningsAsErrorSet = new HashSet<NuGetLogCode> { };
+            var expectedNoWarnSet = new HashSet<NuGetLogCode> { NuGetLogCode.NU1601 , NuGetLogCode.NU1603, NuGetLogCode.NU1605, NuGetLogCode.NU1607 };
+            var projectWideNoWarnSet = new HashSet<NuGetLogCode> { NuGetLogCode.NU1601, NuGetLogCode.NU1605 };
+            var packageSpecificNoWarnSet = new HashSet<NuGetLogCode> { NuGetLogCode.NU1603, NuGetLogCode.NU1607 };
+            var otherPackageSpecificNoWarnSet = new HashSet<NuGetLogCode> { NuGetLogCode.NU1603, NuGetLogCode.NU1701 };
 
-            var projectWideWarningProperties = new WarningProperties(
-                warningsAsErrors: warningsAsErrorSet,
-                noWarn: noWarnSet,
-                allWarningsAsErrors: false
-                );
-
-            var packageSpecificWarningProperties = new PackageSpecificWarningProperties();
-            packageSpecificWarningProperties.Add(NuGetLogCode.NU1603, packageId, framework);
-            packageSpecificWarningProperties.Add(NuGetLogCode.NU1605, packageId, framework);
-            packageSpecificWarningProperties.Add(NuGetLogCode.NU1701, "other_package", framework);
-
-            var warningPropertiesCollection = new WarningPropertiesCollection(
-               projectWideWarningProperties: projectWideWarningProperties,
-               packageSpecificWarningProperties: packageSpecificWarningProperties,
-               projectFrameworks: null
-                );
+            var pathWarningProperties = new TransitiveNoWarnUtils.NodeWarningProperties(
+                projectWideNoWarnSet,
+                new Dictionary<string, HashSet<NuGetLogCode>>
+                {
+                    {packageId, packageSpecificNoWarnSet},
+                    {"other_package", otherPackageSpecificNoWarnSet}
+                });
 
             // Act
-            var extractedNoWarnSet = TransitiveNoWarnUtils.ExtractPathNoWarnProperties(warningPropertiesCollection, packageId);
+            var extractedNoWarnSet = TransitiveNoWarnUtils.ExtractPathNoWarnProperties(
+                pathWarningProperties,
+                packageId);
 
             // Assert
             extractedNoWarnSet.Should().NotBeNullOrEmpty();
@@ -197,8 +172,8 @@ namespace NuGet.Commands.Test
         public void MergePackageSpecificWarningProperties_ReturnsNullIfBothAreNull()
         {
             // Arrange
-            PackageSpecificWarningProperties first = null;
-            PackageSpecificWarningProperties second = null;
+            Dictionary<string, HashSet<NuGetLogCode>> first = null;
+            Dictionary<string, HashSet<NuGetLogCode>> second = null;
 
             // Act
             var merged = TransitiveNoWarnUtils.MergePackageSpecificNoWarn(first, second);
@@ -211,45 +186,45 @@ namespace NuGet.Commands.Test
         public void MergePackageSpecificWarningProperties_ReturnsFirstIfNotNull()
         {
             // Arrange
-            var first = new PackageSpecificWarningProperties();
-            PackageSpecificWarningProperties second = null;
+            var first = new Dictionary<string, HashSet<NuGetLogCode>>();
+            Dictionary<string, HashSet<NuGetLogCode>> second = null;
 
             // Act
             var merged = TransitiveNoWarnUtils.MergePackageSpecificNoWarn(first, second);
 
             // Assert
             merged.Should().NotBeNull();
-            merged.Should().Be(first);
+            merged.Should().BeSameAs(first);
         }
 
         [Fact]
         public void MergePackageSpecificWarningProperties_ReturnsSecondIfNotNull()
         {
             // Arrange
-            PackageSpecificWarningProperties first = null;
-            var second = new PackageSpecificWarningProperties();
+            Dictionary<string, HashSet<NuGetLogCode>> first = null;
+            var second = new Dictionary<string, HashSet<NuGetLogCode>>();
 
             // Act
             var merged = TransitiveNoWarnUtils.MergePackageSpecificNoWarn(first, second);
 
             // Assert
             merged.Should().NotBeNull();
-            merged.Should().Be(second);
+            merged.Should().BeSameAs(second);
         }
 
         [Fact]
         public void MergePackageSpecificWarningProperties_MergesEmptyCollections()
         {
             // Arrange
-            var first = new PackageSpecificWarningProperties();
-            var second = new PackageSpecificWarningProperties();
+            var first = new Dictionary<string, HashSet<NuGetLogCode>>();
+            var second = new Dictionary<string, HashSet<NuGetLogCode>>();
 
             // Act
             var merged = TransitiveNoWarnUtils.MergePackageSpecificNoWarn(first, second);
 
             // Assert
             merged.Should().NotBeNull();
-            merged.Properties.Should().BeNull();
+            merged.Should().BeEmpty();
         }
 
         [Fact]
@@ -312,13 +287,25 @@ namespace NuGet.Commands.Test
                 new List<NuGetFramework> { net461 });
 
 
+            var expectedNoWarnForNet461 = TransitiveNoWarnUtils.ExtractPackageSpecificNoWarnForFramework(expectedResult, net461);
+            var expectedNoWarnForNetcoreapp = TransitiveNoWarnUtils.ExtractPackageSpecificNoWarnForFramework(expectedResult, netcoreapp);
+
+            var firstNoWarnForNet461 = TransitiveNoWarnUtils.ExtractPackageSpecificNoWarnForFramework(first, net461);
+            var firstNoWarnForNetcoreapp = TransitiveNoWarnUtils.ExtractPackageSpecificNoWarnForFramework(first, netcoreapp);
+
+            var secondNoWarnForNet461 = TransitiveNoWarnUtils.ExtractPackageSpecificNoWarnForFramework(second, net461);
+            var secondNoWarnForNetcoreapp = TransitiveNoWarnUtils.ExtractPackageSpecificNoWarnForFramework(second, netcoreapp);
+
             // Act
-            var merged = TransitiveNoWarnUtils.MergePackageSpecificNoWarn(first, second);
+            var mergedNoWarnForNet461 = TransitiveNoWarnUtils.MergePackageSpecificNoWarn(firstNoWarnForNet461, secondNoWarnForNet461);
+            var mergedNoWarnForNetcoreapp = TransitiveNoWarnUtils.MergePackageSpecificNoWarn(firstNoWarnForNetcoreapp, secondNoWarnForNetcoreapp);
 
             // Assert
-            merged.Should().NotBeNull();
-            merged.Properties.Should().NotBeNull();
-            merged.ShouldBeEquivalentTo(expectedResult);
+            mergedNoWarnForNet461.Should().NotBeNull();
+            mergedNoWarnForNet461.ShouldBeEquivalentTo(expectedNoWarnForNet461);
+
+            mergedNoWarnForNetcoreapp.Should().NotBeNull();
+            mergedNoWarnForNetcoreapp.ShouldBeEquivalentTo(expectedNoWarnForNetcoreapp);
         }
 
         // Tests for TransitiveNoWarnUtils.MergeProjectWideWarningProperties
@@ -326,8 +313,8 @@ namespace NuGet.Commands.Test
         public void MergeProjectWideWarningProperties_ReturnsNullIfBothAreNull()
         {
             // Arrange
-            WarningProperties first = null;
-            WarningProperties second = null;
+            HashSet<NuGetLogCode> first = null;
+            HashSet<NuGetLogCode> second = null;
 
             // Act
             var merged = TransitiveNoWarnUtils.MergeProjectWideNoWarn(first, second);
@@ -340,218 +327,268 @@ namespace NuGet.Commands.Test
         public void MergeProjectWideWarningProperties_ReturnsFirstIfNotNull()
         {
             // Arrange
-            var first = new WarningProperties();
-            WarningProperties second = null;
+            var first = new HashSet<NuGetLogCode>();
+            HashSet<NuGetLogCode> second = null;
 
             // Act
             var merged = TransitiveNoWarnUtils.MergeProjectWideNoWarn(first, second);
 
             // Assert
             merged.Should().NotBeNull();
-            merged.Should().Be(first);
+            merged.Should().BeSameAs(first);
         }
 
         [Fact]
         public void MergeProjectWideWarningProperties_ReturnsSecondIfNotNull()
         {
             // Arrange
-            WarningProperties first = null;
-            var second = new WarningProperties();
+            HashSet<NuGetLogCode> first = null;
+            var second = new HashSet<NuGetLogCode>();
 
             // Act
             var merged = TransitiveNoWarnUtils.MergeProjectWideNoWarn(first, second);
 
             // Assert
             merged.Should().NotBeNull();
-            merged.Should().Be(second);
+            merged.Should().BeSameAs(second);
         }
 
         [Fact]
         public void MergeProjectWideWarningProperties_MergesEmptyCollections()
         {
             // Arrange
-            var first = new WarningProperties();
-            var second = new WarningProperties();
+            var first = new HashSet<NuGetLogCode>();
+            var second = new HashSet<NuGetLogCode>();
 
             // Act
             var merged = TransitiveNoWarnUtils.MergeProjectWideNoWarn(first, second);
 
             // Assert
             merged.Should().NotBeNull();
-            merged.AllWarningsAsErrors.Should().BeFalse();
-            merged.WarningsAsErrors.Should().BeEmpty();
-            merged.NoWarn.Should().BeEmpty();
+            merged.Should().BeEmpty();
         }
 
         [Theory]
-        [InlineData("NU1603, NU1605", "NU1701", true, "", "", false, "NU1603, NU1605", "NU1701", true)]
-        [InlineData( "", "", false, "NU1603, NU1605", "NU1701", true, "NU1603, NU1605", "NU1701", true)]
-        [InlineData("NU1603, NU1701", "", false, "NU1603, NU1701", "", false, "NU1603, NU1701", "", false)]
-        [InlineData("", "NU1603, NU1701", false, "", "NU1603, NU1701", false, "", "NU1603, NU1701", false)]
-        [InlineData("NU1601", "NU1602, NU1603", false, "NU1604", "NU1605, NU1701", false, "NU1601, NU1604", "NU1602, NU1603, NU1605, NU1701", false)]
-        [InlineData("NU1601", "NU1602, NU1603", true, "NU1604", "NU1605, NU1701", false, "NU1601, NU1604", "NU1602, NU1603, NU1605, NU1701", true)]
-        [InlineData("", "", false, "", "", false, "", "", false)]
-        [InlineData("", "", true, "", "", false, "", "", true)]
-        [InlineData("", "", false, "", "", true, "", "", true)]
-        [InlineData("", "", true, "", "", true, "", "", true)]
+        [InlineData("", "", "")]
+        [InlineData("NU1603, NU1605", "", "NU1603, NU1605")]
+        [InlineData("", "NU1603, NU1605", "NU1603, NU1605")]
+        [InlineData("NU1603, NU1605", "NU1603", "NU1603, NU1605")]
+        [InlineData("NU1603, NU1605", "NU1701", "NU1603, NU1605, NU1701")]
+        [InlineData("NU1603, NU1605", "NU1603, NU1607, NU1701", "NU1603, NU1605, NU1607, NU1701")]
+        [InlineData("NU1605, NU1603", "NU1607, NU1701, NU1603", "NU1603, NU1605, NU1607, NU1701")]
         public void MergeProjectWideWarningProperties_MergesNonEmptyCollections(
-            string firstNoWarn, string firstWarningsAsErrors, bool firstAllWarningsAsErrors,
-            string secondNoWarn, string secondWarningsAsErrors, bool secondAllWarningsAsErrors,
-            string expectedNoWarn, string expectedWarningsAsErrors, bool expectedAllWarningsAsErrors)
+            string firstNoWarn,
+            string secondNoWarn,
+            string expectedNoWarn)
         {
             // Arrange
-            var first = new WarningProperties(
-                new HashSet<NuGetLogCode>(MSBuildRestoreUtility.GetNuGetLogCodes(firstWarningsAsErrors)),
-                new HashSet<NuGetLogCode>(MSBuildRestoreUtility.GetNuGetLogCodes(firstNoWarn)),
-                firstAllWarningsAsErrors);
+            var first = new HashSet<NuGetLogCode>(MSBuildRestoreUtility.GetNuGetLogCodes(firstNoWarn));
 
-            var second = new WarningProperties(
-                new HashSet<NuGetLogCode>(MSBuildRestoreUtility.GetNuGetLogCodes(secondWarningsAsErrors)),
-                new HashSet<NuGetLogCode>(MSBuildRestoreUtility.GetNuGetLogCodes(secondNoWarn)),
-                secondAllWarningsAsErrors);
+            var second = new HashSet<NuGetLogCode>(MSBuildRestoreUtility.GetNuGetLogCodes(secondNoWarn));
 
-            var expected = new WarningProperties(
-                new HashSet<NuGetLogCode>(MSBuildRestoreUtility.GetNuGetLogCodes(expectedWarningsAsErrors)),
-                new HashSet<NuGetLogCode>(MSBuildRestoreUtility.GetNuGetLogCodes(expectedNoWarn)),
-                expectedAllWarningsAsErrors);
+            var expected = new HashSet<NuGetLogCode>(MSBuildRestoreUtility.GetNuGetLogCodes(expectedNoWarn));
 
             // Act
             var merged = TransitiveNoWarnUtils.MergeProjectWideNoWarn(first, second);
 
             // Assert
             merged.Should().NotBeNull();
-            merged.AllWarningsAsErrors.ShouldBeEquivalentTo(expected.AllWarningsAsErrors);
-            merged.WarningsAsErrors.ShouldBeEquivalentTo(expected.WarningsAsErrors);
-            merged.NoWarn.ShouldBeEquivalentTo(expected.NoWarn);
             merged.ShouldBeEquivalentTo(expected);
         }
 
-        // Tests for TransitiveNoWarnUtils.MergeWarningPropertiesCollection
+
+        // Tests for TransitiveNoWarnUtils.ExtractPackageSpecificNoWarnPerFramework
         [Fact]
-        public void MergeWarningPropertiesCollection_ReturnsNullIfBothAreNull()
+        public void ExtractPackageSpecificNoWarnForFrameworks_NullInput()
         {
             // Arrange
-            WarningPropertiesCollection first = null;
-            WarningPropertiesCollection second = null;
+            PackageSpecificWarningProperties input = null;
 
             // Act
-            var merged = TransitiveNoWarnUtils.MergeWarningPropertiesCollection(first, second);
+            var result = TransitiveNoWarnUtils.ExtractPackageSpecificNoWarnPerFramework(input);
 
             // Assert
-            merged.Should().BeNull();
+            result.Should().BeNull();
         }
 
         [Fact]
-        public void MergeWarningPropertiesCollection_ReturnsFirstIfNotNull()
+        public void ExtractPackageSpecificNoWarnForFrameworks_InputWithNullProperties()
         {
             // Arrange
-            var first = new WarningPropertiesCollection(
-                    projectWideWarningProperties: null,
-                    packageSpecificWarningProperties: null,
-                    projectFrameworks: null
-                );
-            WarningPropertiesCollection second = null;
+            var input = new PackageSpecificWarningProperties();
 
             // Act
-            var merged = TransitiveNoWarnUtils.MergeWarningPropertiesCollection(first, second);
+            var result = TransitiveNoWarnUtils.ExtractPackageSpecificNoWarnPerFramework(input);
 
             // Assert
-            merged.Should().NotBeNull();
-            merged.Should().Be(first);
+            result.Should().BeNull();
         }
 
         [Fact]
-        public void MergeWarningPropertiesCollection_ReturnsSecondIfNotNull()
+        public void ExtractPackageSpecificNoWarnForFrameworks_InputWithProperties()
         {
             // Arrange
-            WarningPropertiesCollection first = null;
-            var second = new WarningPropertiesCollection(
-                    projectWideWarningProperties: null,
-                    packageSpecificWarningProperties: null,
-                    projectFrameworks: null
-                );
+            var packageId1 = "test_id1";
+            var packageId2 = "test_id2";
+            var net461 = NuGetFramework.Parse("net461");
+            var netcoreapp = NuGetFramework.Parse("netcoreapp2.0");
+            var input = new PackageSpecificWarningProperties();
+            input.AddRangeOfCodes(
+                new List<NuGetLogCode> { NuGetLogCode.NU1601, NuGetLogCode.NU1605 },
+                packageId1,
+                net461);
+            input.AddRangeOfFrameworks(
+                NuGetLogCode.NU1701,
+                packageId2,
+                new List<NuGetFramework> { net461, netcoreapp });
+            input.AddRangeOfFrameworks(
+                NuGetLogCode.NU1701,
+                packageId1,
+                new List<NuGetFramework> { net461, netcoreapp });
+            input.AddRangeOfFrameworks(
+                NuGetLogCode.NU1701,
+                packageId2,
+                new List<NuGetFramework> { net461, netcoreapp });
+            input.AddRangeOfFrameworks(
+                NuGetLogCode.NU1604,
+                packageId1,
+                new List<NuGetFramework> { net461 });
+
+            var expected = new Dictionary<NuGetFramework, Dictionary<string, HashSet<NuGetLogCode>>>
+            {
+                [net461] = new Dictionary<string, HashSet<NuGetLogCode>>(StringComparer.OrdinalIgnoreCase)
+                {
+                    [packageId1.ToUpper()] = new HashSet<NuGetLogCode>
+                    {
+                        NuGetLogCode.NU1601,
+                        NuGetLogCode.NU1604,
+                        NuGetLogCode.NU1605,
+                        NuGetLogCode.NU1701,
+                    },
+                    [packageId2.ToUpper()] = new HashSet<NuGetLogCode>
+                    {
+                        NuGetLogCode.NU1701
+                    }
+                },
+                [netcoreapp] = new Dictionary<string, HashSet<NuGetLogCode>>(StringComparer.OrdinalIgnoreCase)
+                {
+                    [packageId1.ToLower()] = new HashSet<NuGetLogCode>
+                    {
+                        NuGetLogCode.NU1701,
+                    },
+                    [packageId2.ToLower()] = new HashSet<NuGetLogCode>
+                    {
+                        NuGetLogCode.NU1701
+                    }
+                }
+            };
 
             // Act
-            var merged = TransitiveNoWarnUtils.MergeWarningPropertiesCollection(first, second);
+            var result = TransitiveNoWarnUtils.ExtractPackageSpecificNoWarnPerFramework(input);
 
             // Assert
-            merged.Should().NotBeNull();
-            merged.Should().Be(second);
+            result.Should().NotBeNull();
+            result.ShouldBeEquivalentTo(expected);
+        }
+
+        // Tests for TransitiveNoWarnUtils.ExtractPackageSpecificNoWarnForFramework
+        [Fact]
+        public void ExtractPackageSpecificNoWarnForFramework_NullInput()
+        {
+            // Arrange
+            PackageSpecificWarningProperties input = null;
+            NuGetFramework framework = null;
+
+            // Act
+            var result = TransitiveNoWarnUtils.ExtractPackageSpecificNoWarnForFramework(input, framework);
+
+            // Assert
+            result.Should().BeNull();
         }
 
         [Fact]
-        public void MergeWarningPropertiesCollection_MergesEmptyCollections()
+        public void ExtractPackageSpecificNoWarnForFramework_InputWithNullProperties()
         {
             // Arrange
-            var first = new WarningPropertiesCollection(
-                    projectWideWarningProperties: null,
-                    packageSpecificWarningProperties: null,
-                    projectFrameworks: null
-                );
-            var second = new WarningPropertiesCollection(
-                    projectWideWarningProperties: null,
-                    packageSpecificWarningProperties: null,
-                    projectFrameworks: null
-                );
+            var input = new PackageSpecificWarningProperties();
+            NuGetFramework framework = null;
 
             // Act
-            var merged = TransitiveNoWarnUtils.MergeWarningPropertiesCollection(first, second);
+            var result = TransitiveNoWarnUtils.ExtractPackageSpecificNoWarnForFramework(input, framework);
 
             // Assert
-            merged.Should().NotBeNull();
-            merged.ProjectWideWarningProperties.Should().BeNull();
-            merged.PackageSpecificWarningProperties.Should().BeNull();
-            merged.ProjectFrameworks.Should().BeEmpty();
+            result.Should().BeNull();
         }
 
         [Fact]
-        public void MergeWarningPropertiesCollection_MergesNonEmptyCollections1()
+        public void ExtractPackageSpecificNoWarnForFramework_InputWithProperties()
         {
             // Arrange
-            var first = new WarningPropertiesCollection(
-                    projectWideWarningProperties: null,
-                    packageSpecificWarningProperties: null,
-                    projectFrameworks: new List<NuGetFramework> { NuGetFramework.Parse("net461"), NuGetFramework.Parse("netcoreapp1.0") }.AsReadOnly()
-                );
-            var second = new WarningPropertiesCollection(
-                    projectWideWarningProperties: null,
-                    packageSpecificWarningProperties: null,
-                    projectFrameworks: new List<NuGetFramework> { NuGetFramework.Parse("net45"), NuGetFramework.Parse("netcoreapp1.1") }.AsReadOnly()
-                );
+
+            var packageId1 = "test_id1";
+            var packageId2 = "test_id2";
+            var net461 = NuGetFramework.Parse("net461");
+            var netcoreapp = NuGetFramework.Parse("netcoreapp2.0");
+            var input = new PackageSpecificWarningProperties();
+            input.AddRangeOfCodes(
+                new List<NuGetLogCode> { NuGetLogCode.NU1601, NuGetLogCode.NU1605 },
+                packageId1,
+                net461);
+            input.AddRangeOfFrameworks(
+                NuGetLogCode.NU1701,
+                packageId2,
+                new List<NuGetFramework> { net461, netcoreapp });
+            input.AddRangeOfFrameworks(
+                NuGetLogCode.NU1701,
+                packageId1,
+                new List<NuGetFramework> { net461, netcoreapp });
+            input.AddRangeOfFrameworks(
+                NuGetLogCode.NU1701,
+                packageId2,
+                new List<NuGetFramework> { net461, netcoreapp });
+            input.AddRangeOfFrameworks(
+                NuGetLogCode.NU1604,
+                packageId1,
+                new List<NuGetFramework> { net461 });
+
+            var expected = new Dictionary<NuGetFramework, Dictionary<string, HashSet<NuGetLogCode>>>
+            {
+                [net461] = new Dictionary<string, HashSet<NuGetLogCode>>(StringComparer.OrdinalIgnoreCase)
+                {
+                    [packageId1.ToUpper()] = new HashSet<NuGetLogCode>
+                    {
+                        NuGetLogCode.NU1601,
+                        NuGetLogCode.NU1604,
+                        NuGetLogCode.NU1605,
+                        NuGetLogCode.NU1701,
+                    },
+                    [packageId2.ToUpper()] = new HashSet<NuGetLogCode>
+                    {
+                        NuGetLogCode.NU1701
+                    }
+                },
+                [netcoreapp] = new Dictionary<string, HashSet<NuGetLogCode>>(StringComparer.OrdinalIgnoreCase)
+                {
+                    [packageId1.ToLower()] = new HashSet<NuGetLogCode>
+                    {
+                        NuGetLogCode.NU1701,
+                    },
+                    [packageId2.ToLower()] = new HashSet<NuGetLogCode>
+                    {
+                        NuGetLogCode.NU1701
+                    }
+                }
+            };
 
             // Act
-            var merged = TransitiveNoWarnUtils.MergeWarningPropertiesCollection(first, second);
+            var resultNet461 = TransitiveNoWarnUtils.ExtractPackageSpecificNoWarnForFramework(input, net461);
+            var resultNetcoreapp = TransitiveNoWarnUtils.ExtractPackageSpecificNoWarnForFramework(input, netcoreapp);
 
             // Assert
-            merged.Should().NotBeNull();
-            merged.ProjectWideWarningProperties.Should().BeNull();
-            merged.PackageSpecificWarningProperties.Should().BeNull();
-            merged.ProjectFrameworks.Should().BeEmpty();
-        }
-
-        [Fact]
-        public void MergeWarningPropertiesCollection_MergesNonEmptyCollections2()
-        {
-            // Arrange
-            var first = new WarningPropertiesCollection(
-                    projectWideWarningProperties: null,
-                    packageSpecificWarningProperties: null,
-                    projectFrameworks: new List<NuGetFramework> { NuGetFramework.Parse("net461"), NuGetFramework.Parse("netcoreapp1.0") }.AsReadOnly()
-                );
-            var second = new WarningPropertiesCollection(
-                    projectWideWarningProperties: null,
-                    packageSpecificWarningProperties: null,
-                    projectFrameworks: new List<NuGetFramework> { NuGetFramework.Parse("net45"), NuGetFramework.Parse("netcoreapp1.1") }.AsReadOnly()
-                );
-
-            // Act
-            var merged = TransitiveNoWarnUtils.MergeWarningPropertiesCollection(first, second);
-
-            // Assert
-            merged.Should().NotBeNull();
-            merged.ProjectWideWarningProperties.Should().BeNull();
-            merged.PackageSpecificWarningProperties.Should().BeNull();
-            merged.ProjectFrameworks.Should().BeEmpty();
+            resultNet461.Should().NotBeNull();
+            resultNet461.ShouldBeEquivalentTo(expected[net461]);
+            resultNetcoreapp.Should().NotBeNull();
+            resultNetcoreapp.ShouldBeEquivalentTo(expected[netcoreapp]);
         }
 
         // Tests for TransitiveNoWarnUtils.DependencyNode equality
@@ -580,7 +617,7 @@ namespace NuGet.Commands.Test
             var first = new TransitiveNoWarnUtils.DependencyNode(
                 id: "test",
                 isProject: true,
-                warningPropertiesCollection: new WarningPropertiesCollection(null, null, null));
+                nodeWarningProperties: new TransitiveNoWarnUtils.NodeWarningProperties(null, null));
 
             TransitiveNoWarnUtils.DependencyNode second = null;
 
@@ -602,7 +639,7 @@ namespace NuGet.Commands.Test
             var first = new TransitiveNoWarnUtils.DependencyNode(
                 id: "test",
                 isProject: true,
-                warningPropertiesCollection: new WarningPropertiesCollection(null, null, null));
+                nodeWarningProperties: new TransitiveNoWarnUtils.NodeWarningProperties(null, null));
 
             // Act
             var seen = new HashSet<TransitiveNoWarnUtils.DependencyNode>
@@ -618,26 +655,23 @@ namespace NuGet.Commands.Test
         public void DependencyNodeEqualitySucceeds_NodesHaveSameInternalObjects()
         {
             // Arrange
-            var projectWideWarningProperties = new WarningProperties();
-            var packageSpecificWarningProperties = new PackageSpecificWarningProperties();
-            var projectFrameworks = new List<NuGetFramework>();
+            var projectWideNoWarn = new HashSet<NuGetLogCode>();
+            var packageSpecificNoWarn= new Dictionary<string, HashSet<NuGetLogCode>>();
 
             var first = new TransitiveNoWarnUtils.DependencyNode(
                 id: "test",
                 isProject: true,
-                warningPropertiesCollection: new WarningPropertiesCollection(
-                   projectWideWarningProperties,
-                   packageSpecificWarningProperties,
-                   projectFrameworks
+                nodeWarningProperties: new TransitiveNoWarnUtils.NodeWarningProperties(
+                   projectWideNoWarn,
+                   packageSpecificNoWarn
                 ));
 
             var second = new TransitiveNoWarnUtils.DependencyNode(
                 id: "test",
                 isProject: true,
-                warningPropertiesCollection: new WarningPropertiesCollection(
-                   projectWideWarningProperties,
-                   packageSpecificWarningProperties,
-                   projectFrameworks
+                nodeWarningProperties: new TransitiveNoWarnUtils.NodeWarningProperties(
+                   projectWideNoWarn,
+                   packageSpecificNoWarn
                 ));
 
             // Act
@@ -651,14 +685,8 @@ namespace NuGet.Commands.Test
             seen.Count.Should().Be(1);
         }
 
-        [Theory]
-        [InlineData("NU1605, NU1701", "NU1602, NU1603", false, "NU1701, NU1605", "NU1603, NU1602", false)]
-        [InlineData("NU1605, NU1701", "NU1602, NU1603", true, "NU1701, NU1605", "NU1603, NU1602", true)]
-        [InlineData("", "", false, "", "", false)]
-        [InlineData("", "", true, "", "", true)]
-        public void DependencyNodeEqualitySucceeds_NodesHaveEquivalentWarningProperties(
-            string firstNoWarn, string firstWarningsAsErrors, bool firstAllWarningsAsErrors,
-            string secondNoWarn, string secondWarningsAsErrors, bool secondAllWarningsAsErrors)
+        [Fact]
+        public void DependencyNodeEqualitySucceeds_NodesHaveEquivalentWarningProperties()
         {
             // Arrange
             var packageId1 = "test_id1";
@@ -666,62 +694,36 @@ namespace NuGet.Commands.Test
             var net461 = NuGetFramework.Parse("net461");
             var netcoreapp = NuGetFramework.Parse("netcoreapp2.0");
 
-            // First
-            var firstProjectWideWarningProperties = new WarningProperties(
-                new HashSet<NuGetLogCode>(MSBuildRestoreUtility.GetNuGetLogCodes(firstWarningsAsErrors)),
-                new HashSet<NuGetLogCode>(MSBuildRestoreUtility.GetNuGetLogCodes(firstNoWarn)),
-                firstAllWarningsAsErrors);
 
-            var firstPackageSpecificWarningProperties = new PackageSpecificWarningProperties();
-            firstPackageSpecificWarningProperties.AddRangeOfCodes(
-                new List<NuGetLogCode> { NuGetLogCode.NU1601, NuGetLogCode.NU1605 },
-                packageId1,
-                net461);
-            firstPackageSpecificWarningProperties.AddRangeOfFrameworks(
-                NuGetLogCode.NU1701,
-                packageId2,
-                new List<NuGetFramework> { net461, netcoreapp });
-            firstPackageSpecificWarningProperties.AddRangeOfFrameworks(
-                NuGetLogCode.NU1701,
-                packageId1,
-                new List<NuGetFramework> { net461 });
+            // Arrange
+            var firstProjectWideNoWarn = new HashSet<NuGetLogCode> { NuGetLogCode.NU1601, NuGetLogCode.NU1603 };
+            var firstPackageSpecificNoWarn = new Dictionary<string, HashSet<NuGetLogCode>>
+            {
+                    {packageId1, new HashSet<NuGetLogCode> { NuGetLogCode.NU1601, NuGetLogCode.NU1606 }},
+                    {packageId2, new HashSet<NuGetLogCode> { NuGetLogCode.NU1601, NuGetLogCode.NU1701 }}
+            };
 
-            var firstProjectFrameworks = new List<NuGetFramework> { net461, netcoreapp };
-
-            // Second
-            var secondProjectWideWarningProperties = new WarningProperties(
-                new HashSet<NuGetLogCode>(MSBuildRestoreUtility.GetNuGetLogCodes(secondWarningsAsErrors)),
-                new HashSet<NuGetLogCode>(MSBuildRestoreUtility.GetNuGetLogCodes(secondNoWarn)),
-                secondAllWarningsAsErrors);
-
-            var secondPackageSpecificWarningProperties = new PackageSpecificWarningProperties();
-            secondPackageSpecificWarningProperties.AddRangeOfFrameworks(
-                NuGetLogCode.NU1701,
-                packageId1,
-                new List<NuGetFramework> { net461 });
-            secondPackageSpecificWarningProperties.AddRangeOfCodes(
-                new List<NuGetLogCode> { NuGetLogCode.NU1701, NuGetLogCode.NU1605, NuGetLogCode.NU1601 },
-                packageId1,
-                net461);
-
-            var secondProjectFrameworks = new List<NuGetFramework> { netcoreapp, net461 };
+            var secondProjectWideNoWarn = new HashSet<NuGetLogCode> { NuGetLogCode.NU1601, NuGetLogCode.NU1603 };
+            var secondPackageSpecificNoWarn = new Dictionary<string, HashSet<NuGetLogCode>>
+            {
+                    {packageId1, new HashSet<NuGetLogCode> { NuGetLogCode.NU1601, NuGetLogCode.NU1606 }},
+                    {packageId2, new HashSet<NuGetLogCode> { NuGetLogCode.NU1601, NuGetLogCode.NU1701 }}
+            };
 
             var first = new TransitiveNoWarnUtils.DependencyNode(
                 id: "test",
                 isProject: true,
-                warningPropertiesCollection: new WarningPropertiesCollection(
-                   firstProjectWideWarningProperties,
-                   firstPackageSpecificWarningProperties,
-                   firstProjectFrameworks
+                nodeWarningProperties: new TransitiveNoWarnUtils.NodeWarningProperties(
+                   firstProjectWideNoWarn,
+                   firstPackageSpecificNoWarn
                 ));
 
             var second = new TransitiveNoWarnUtils.DependencyNode(
                 id: "test",
                 isProject: true,
-                warningPropertiesCollection: new WarningPropertiesCollection(
-                   firstProjectWideWarningProperties,
-                   firstPackageSpecificWarningProperties,
-                   firstProjectFrameworks
+                nodeWarningProperties: new TransitiveNoWarnUtils.NodeWarningProperties(
+                   secondProjectWideNoWarn,
+                   secondPackageSpecificNoWarn
                 ));
 
             // Act
@@ -739,35 +741,31 @@ namespace NuGet.Commands.Test
         public void DependencyNodeEqualityFails_NodesHaveDifferentMetaData()
         {
             // Arrange
-            var projectWideWarningProperties = new WarningProperties();
-            var packageSpecificWarningProperties = new PackageSpecificWarningProperties();
-            var projectFrameworks = new List<NuGetFramework>();
+            var projectWideNoWarn = new HashSet<NuGetLogCode> { NuGetLogCode.NU1601, NuGetLogCode.NU1603 };
+            var packageSpecificNoWarn = new Dictionary<string, HashSet<NuGetLogCode>>();
 
             var first = new TransitiveNoWarnUtils.DependencyNode(
                 id: "test",
                 isProject: true,
-                warningPropertiesCollection: new WarningPropertiesCollection(
-                   projectWideWarningProperties,
-                   packageSpecificWarningProperties,
-                   projectFrameworks
+                nodeWarningProperties: new TransitiveNoWarnUtils.NodeWarningProperties(
+                   projectWideNoWarn,
+                   packageSpecificNoWarn
                 ));
 
             var second = new TransitiveNoWarnUtils.DependencyNode(
                 id: "test",
                 isProject: false,
-                warningPropertiesCollection: new WarningPropertiesCollection(
-                   projectWideWarningProperties,
-                   packageSpecificWarningProperties,
-                   projectFrameworks
+                nodeWarningProperties: new TransitiveNoWarnUtils.NodeWarningProperties(
+                   projectWideNoWarn,
+                   packageSpecificNoWarn
                 ));
 
             var third = new TransitiveNoWarnUtils.DependencyNode(
                 id: "test_other",
                 isProject: true,
-                warningPropertiesCollection: new WarningPropertiesCollection(
-                   projectWideWarningProperties,
-                   packageSpecificWarningProperties,
-                   projectFrameworks
+                nodeWarningProperties: new TransitiveNoWarnUtils.NodeWarningProperties(
+                   projectWideNoWarn,
+                   packageSpecificNoWarn
                 ));
 
             // Act
@@ -783,101 +781,48 @@ namespace NuGet.Commands.Test
         }
 
         [Theory]
-        [InlineData("NU1605, NU1701", "", false, "", "", false)]
-        [InlineData("NU1605, NU1701", "", false, "NU1701, NU1603", "", false)]
-        [InlineData("", "NU1602, NU1603", true, "", "", true)]
-        [InlineData("", "NU1602, NU1603", true, "", "NU1605, NU1602", true)]
-        [InlineData("NU1605, NU1701", "NU1602, NU1603", true, "NU1701, NU1605", "NU1603, NU1602", false)]
-        [InlineData("NU1605, NU1701", "NU1602, NU1603", false, "NU1701, NU1605", "NU1603, NU1602", true)]
-        [InlineData("", "", true, "", "", false)]
-        [InlineData("", "", false, "", "", true)]
+        [InlineData("NU1605, NU1701", "")]
+        [InlineData("", "NU1605, NU1701")]
+        [InlineData("NU1605, NU1701", "NU1604")]
+        [InlineData("NU1604, NU1701", "NU1604")]
+        [InlineData("NU1701", "NU1604, NU1701")]
         public void DependencyNodeEqualityFails_NodesHaveDifferentProjectWideWarningProperties(
-            string firstNoWarn, string firstWarningsAsErrors, bool firstAllWarningsAsErrors,
-            string secondNoWarn, string secondWarningsAsErrors, bool secondAllWarningsAsErrors)
-        {
-            // Arrange
-            var packageSpecificWarningProperties = new PackageSpecificWarningProperties();
-            var projectFrameworks = new List<NuGetFramework>();
-
-            var firstProjectWideWarningProperties = new WarningProperties(
-                new HashSet<NuGetLogCode>(MSBuildRestoreUtility.GetNuGetLogCodes(firstWarningsAsErrors)),
-                new HashSet<NuGetLogCode>(MSBuildRestoreUtility.GetNuGetLogCodes(firstNoWarn)),
-                firstAllWarningsAsErrors);
-
-            var secondProjectWideWarningProperties = new WarningProperties(
-                new HashSet<NuGetLogCode>(MSBuildRestoreUtility.GetNuGetLogCodes(secondWarningsAsErrors)),
-                new HashSet<NuGetLogCode>(MSBuildRestoreUtility.GetNuGetLogCodes(secondNoWarn)),
-                secondAllWarningsAsErrors);
-
-            var first = new TransitiveNoWarnUtils.DependencyNode(
-                id: "test",
-                isProject: true,
-                warningPropertiesCollection: new WarningPropertiesCollection(
-                   firstProjectWideWarningProperties,
-                   packageSpecificWarningProperties,
-                   projectFrameworks
-                ));
-
-            var second = new TransitiveNoWarnUtils.DependencyNode(
-                id: "test",
-                isProject: true,
-                warningPropertiesCollection: new WarningPropertiesCollection(
-                   secondProjectWideWarningProperties,
-                   packageSpecificWarningProperties,
-                   projectFrameworks
-                ));
-
-            // Act
-            var seen = new HashSet<TransitiveNoWarnUtils.DependencyNode>
-            {
-                first,
-                second
-            };
-
-            // Assert
-            seen.Count.Should().Be(2);
-        }
-
-        [Fact]
-        public void DependencyNodeEqualityFails_NodesHaveDifferentFrameworksInPackageSpecificNoWarn()
+            string firstNoWarn,
+            string secondNoWarn)
         {
             // Arrange
             var packageId1 = "test_id1";
-            var net461 = NuGetFramework.Parse("net461");
-            var netcoreapp = NuGetFramework.Parse("netcoreapp2.0");
+            var packageId2 = "test_id2";
 
-            var projectWideWarningProperties = new WarningProperties();
-            var packageSpecificWarningProperties = new PackageSpecificWarningProperties();
-            var projectFrameworks = new List<NuGetFramework> { net461, netcoreapp };
+            // Arrange
+            var firstProjectWideNoWarn = new HashSet<NuGetLogCode>(MSBuildRestoreUtility.GetNuGetLogCodes(firstNoWarn));
+            var firstPackageSpecificNoWarn = new Dictionary<string, HashSet<NuGetLogCode>>
+            {
+                    {packageId1, new HashSet<NuGetLogCode> { NuGetLogCode.NU1601, NuGetLogCode.NU1606 }},
+                    {packageId2, new HashSet<NuGetLogCode> { NuGetLogCode.NU1601, NuGetLogCode.NU1701 }}
+            };
 
-            var firstPackageSpecificWarningProperties = new PackageSpecificWarningProperties();
-            firstPackageSpecificWarningProperties.AddRangeOfCodes(
-                new List<NuGetLogCode> { NuGetLogCode.NU1601 },
-                packageId1,
-                net461);
-
-            var secondPackageSpecificWarningProperties = new PackageSpecificWarningProperties();
-            secondPackageSpecificWarningProperties.AddRangeOfCodes(
-                new List<NuGetLogCode> { NuGetLogCode.NU1601 },
-                packageId1,
-                netcoreapp);
+            var secondProjectWideNoWarn = new HashSet<NuGetLogCode>(MSBuildRestoreUtility.GetNuGetLogCodes(secondNoWarn));
+            var secondPackageSpecificNoWarn = new Dictionary<string, HashSet<NuGetLogCode>>
+            {
+                    {packageId1, new HashSet<NuGetLogCode> { NuGetLogCode.NU1601, NuGetLogCode.NU1606 }},
+                    {packageId2, new HashSet<NuGetLogCode> { NuGetLogCode.NU1601, NuGetLogCode.NU1701 }}
+            };
 
             var first = new TransitiveNoWarnUtils.DependencyNode(
                 id: "test",
                 isProject: true,
-                warningPropertiesCollection: new WarningPropertiesCollection(
-                   projectWideWarningProperties,
-                   firstPackageSpecificWarningProperties,
-                   projectFrameworks
+                nodeWarningProperties: new TransitiveNoWarnUtils.NodeWarningProperties(
+                   firstProjectWideNoWarn,
+                   firstPackageSpecificNoWarn
                 ));
 
             var second = new TransitiveNoWarnUtils.DependencyNode(
                 id: "test",
                 isProject: true,
-                warningPropertiesCollection: new WarningPropertiesCollection(
-                   projectWideWarningProperties,
-                   secondPackageSpecificWarningProperties,
-                   projectFrameworks
+                nodeWarningProperties: new TransitiveNoWarnUtils.NodeWarningProperties(
+                   secondProjectWideNoWarn,
+                   secondPackageSpecificNoWarn
                 ));
 
             // Act
@@ -896,40 +841,37 @@ namespace NuGet.Commands.Test
         {
             // Arrange
             var packageId1 = "test_id1";
-            var net461 = NuGetFramework.Parse("net461");
+            var packageId2 = "test_id2";
 
-            var projectWideWarningProperties = new WarningProperties();
-            var packageSpecificWarningProperties = new PackageSpecificWarningProperties();
-            var projectFrameworks = new List<NuGetFramework> { net461 };
+            // Arrange
+            var firstProjectWideNoWarn = new HashSet<NuGetLogCode> { NuGetLogCode.NU1601, NuGetLogCode.NU1606 };
+            var firstPackageSpecificNoWarn = new Dictionary<string, HashSet<NuGetLogCode>>
+            {
+                    {packageId1, new HashSet<NuGetLogCode> { NuGetLogCode.NU1601, NuGetLogCode.NU1606 }},
+                    {packageId2, new HashSet<NuGetLogCode> { NuGetLogCode.NU1601, NuGetLogCode.NU1701 }}
+            };
 
-            var firstPackageSpecificWarningProperties = new PackageSpecificWarningProperties();
-            firstPackageSpecificWarningProperties.AddRangeOfCodes(
-                new List<NuGetLogCode> { NuGetLogCode.NU1601 },
-                packageId1,
-                net461);
-
-            var secondPackageSpecificWarningProperties = new PackageSpecificWarningProperties();
-            secondPackageSpecificWarningProperties.AddRangeOfCodes(
-                new List<NuGetLogCode> { NuGetLogCode.NU1602 },
-                packageId1,
-                net461);
+            var secondProjectWideNoWarn = new HashSet<NuGetLogCode> { NuGetLogCode.NU1601, NuGetLogCode.NU1606 };
+            var secondPackageSpecificNoWarn = new Dictionary<string, HashSet<NuGetLogCode>>
+            {
+                    {packageId1, new HashSet<NuGetLogCode> { NuGetLogCode.NU1601, NuGetLogCode.NU1701 }},
+                    {packageId2, new HashSet<NuGetLogCode> { NuGetLogCode.NU1601, NuGetLogCode.NU1701 }}
+            };
 
             var first = new TransitiveNoWarnUtils.DependencyNode(
                 id: "test",
                 isProject: true,
-                warningPropertiesCollection: new WarningPropertiesCollection(
-                   projectWideWarningProperties,
-                   firstPackageSpecificWarningProperties,
-                   projectFrameworks
+                nodeWarningProperties: new TransitiveNoWarnUtils.NodeWarningProperties(
+                   firstProjectWideNoWarn,
+                   firstPackageSpecificNoWarn
                 ));
 
             var second = new TransitiveNoWarnUtils.DependencyNode(
                 id: "test",
                 isProject: true,
-                warningPropertiesCollection: new WarningPropertiesCollection(
-                   projectWideWarningProperties,
-                   secondPackageSpecificWarningProperties,
-                   projectFrameworks
+                nodeWarningProperties: new TransitiveNoWarnUtils.NodeWarningProperties(
+                   secondProjectWideNoWarn,
+                   secondPackageSpecificNoWarn
                 ));
 
             // Act
@@ -949,95 +891,34 @@ namespace NuGet.Commands.Test
             // Arrange
             var packageId1 = "test_id1";
             var packageId2 = "test_id2";
-            var net461 = NuGetFramework.Parse("net461");
 
-            var projectWideWarningProperties = new WarningProperties();
-            var packageSpecificWarningProperties = new PackageSpecificWarningProperties();
-            var projectFrameworks = new List<NuGetFramework> { net461 };
-
-            var firstPackageSpecificWarningProperties = new PackageSpecificWarningProperties();
-            firstPackageSpecificWarningProperties.AddRangeOfCodes(
-                new List<NuGetLogCode> { NuGetLogCode.NU1601 },
-                packageId1,
-                net461);
-
-            var secondPackageSpecificWarningProperties = new PackageSpecificWarningProperties();
-            secondPackageSpecificWarningProperties.AddRangeOfCodes(
-                new List<NuGetLogCode> { NuGetLogCode.NU1601 },
-                packageId2,
-                net461);
-
-            var first = new TransitiveNoWarnUtils.DependencyNode(
-                id: "test",
-                isProject: true,
-                warningPropertiesCollection: new WarningPropertiesCollection(
-                   projectWideWarningProperties,
-                   firstPackageSpecificWarningProperties,
-                   projectFrameworks
-                ));
-
-            var second = new TransitiveNoWarnUtils.DependencyNode(
-                id: "test",
-                isProject: true,
-                warningPropertiesCollection: new WarningPropertiesCollection(
-                   projectWideWarningProperties,
-                   secondPackageSpecificWarningProperties,
-                   projectFrameworks
-                ));
-
-            // Act
-            var seen = new HashSet<TransitiveNoWarnUtils.DependencyNode>
+            // Arrange
+            var firstProjectWideNoWarn = new HashSet<NuGetLogCode> { NuGetLogCode.NU1601, NuGetLogCode.NU1606 };
+            var firstPackageSpecificNoWarn = new Dictionary<string, HashSet<NuGetLogCode>>
             {
-                first,
-                second
+                    {packageId1, new HashSet<NuGetLogCode> { NuGetLogCode.NU1601, NuGetLogCode.NU1701 }}
             };
 
-            // Assert
-            seen.Count.Should().Be(2);
-        }
-
-        [Fact]
-        public void DependencyNodeEqualityFails_NodesHaveDifferentProjectFrameworks()
-        {
-            // Arrange
-            var packageId1 = "test_id1";
-            var net461 = NuGetFramework.Parse("net461");
-            var net45 = NuGetFramework.Parse("net45");
-            var netcoreapp = NuGetFramework.Parse("netcoreapp1.0");
-
-            var projectWideWarningProperties = new WarningProperties();
-            var packageSpecificWarningProperties = new PackageSpecificWarningProperties();
-            var firstProjectFrameworks = new List<NuGetFramework> { net461, netcoreapp };
-            var secondProjectFrameworks = new List<NuGetFramework> { netcoreapp, net45, net461 };
-
-            var firstPackageSpecificWarningProperties = new PackageSpecificWarningProperties();
-            firstPackageSpecificWarningProperties.AddRangeOfCodes(
-                new List<NuGetLogCode> { NuGetLogCode.NU1601 },
-                packageId1,
-                net461);
-
-            var secondPackageSpecificWarningProperties = new PackageSpecificWarningProperties();
-            secondPackageSpecificWarningProperties.AddRangeOfCodes(
-                new List<NuGetLogCode> { NuGetLogCode.NU1601 },
-                packageId1,
-                net461);
+            var secondProjectWideNoWarn = new HashSet<NuGetLogCode> { NuGetLogCode.NU1601, NuGetLogCode.NU1606 };
+            var secondPackageSpecificNoWarn = new Dictionary<string, HashSet<NuGetLogCode>>
+            {
+                    {packageId2, new HashSet<NuGetLogCode> { NuGetLogCode.NU1601, NuGetLogCode.NU1701 }}
+            };
 
             var first = new TransitiveNoWarnUtils.DependencyNode(
                 id: "test",
                 isProject: true,
-                warningPropertiesCollection: new WarningPropertiesCollection(
-                   projectWideWarningProperties,
-                   firstPackageSpecificWarningProperties,
-                   firstProjectFrameworks
+                nodeWarningProperties: new TransitiveNoWarnUtils.NodeWarningProperties(
+                   firstProjectWideNoWarn,
+                   firstPackageSpecificNoWarn
                 ));
 
             var second = new TransitiveNoWarnUtils.DependencyNode(
                 id: "test",
                 isProject: true,
-                warningPropertiesCollection: new WarningPropertiesCollection(
-                   projectWideWarningProperties,
-                   secondPackageSpecificWarningProperties,
-                   secondProjectFrameworks
+                nodeWarningProperties: new TransitiveNoWarnUtils.NodeWarningProperties(
+                   secondProjectWideNoWarn,
+                   secondPackageSpecificNoWarn
                 ));
 
             // Act

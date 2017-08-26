@@ -34,7 +34,7 @@ namespace NuGet.Commands
                     PackageSpecificWarningProperties.CreatePackageSpecificWarningProperties(parentProjectSpec),
                     parentProjectSpec.TargetFrameworks.Select(f => f.FrameworkName).AsList().AsReadOnly());
 
-            var parentPackageSpecifcNoWarn = ExtractPackageSpecificNoWarnForFrameworks(
+            var parentPackageSpecifcNoWarn = ExtractPackageSpecificNoWarnPerFramework(
                 parentWarningProperties.PackageSpecificWarningProperties);
 
             var warningPropertiesCache = new Dictionary<string, Dictionary<NuGetFramework, WarningPropertiesCollection>>(
@@ -113,7 +113,7 @@ namespace NuGet.Commands
 
                         nodeProjectWideNoWarn = nodeWarningProperties.ProjectWideWarningProperties.NoWarn.AsHashSet();
 
-                        var nodePackageSpecificWarningProperties = ExtractPackageSpecificNoWarnForFrameworks(
+                        var nodePackageSpecificWarningProperties = ExtractPackageSpecificNoWarnForFramework(
                             nodeWarningProperties.PackageSpecificWarningProperties,
                             nearestFramework);
 
@@ -189,7 +189,7 @@ namespace NuGet.Commands
                     else if (parentPackageDependencies.Contains(nodeId))
                     {                 
                         // Evaluate the current path for package properties
-                        var packageNoWarnFromPath = ExtractPathNoWarnProperties(pathProjectWideNoWarn, pathPackageSpecificNoWarn, nodeId);
+                        var packageNoWarnFromPath = ExtractPathNoWarnProperties(pathWarningProperties, nodeId);
                         if (packageNoWarn.TryGetValue(nodeId, out var noWarnCodes))
                         {
                             // We have seen atleast one path which contained a NoWarn for the package
@@ -219,8 +219,8 @@ namespace NuGet.Commands
 
                         AddDependenciesToQueue(nodeDependencies,
                             queue,
-                            pathProjectWideNoWarn,
-                            pathPackageSpecificNoWarn);
+                            pathWarningProperties.ProjectWide,
+                            pathWarningProperties.PackageSpecific);
                     }
                 }
             }
@@ -286,19 +286,24 @@ namespace NuGet.Commands
             return (PackageSpec) localMatch.LocalLibrary.Items[KnownLibraryProperties.PackageSpec];
         }
 
-        private static HashSet<NuGetLogCode> ExtractPathNoWarnProperties(
-            HashSet<NuGetLogCode> pathProjectWideNoWarn,
-            Dictionary<string, HashSet<NuGetLogCode>> pathPackageSpecificNoWarn,
+        /// <summary>
+        /// Extracts the no warn  codes for a libraryId from the warning properties at the node in the graph.
+        /// </summary>
+        /// <param name="nodeWarningProperties">warning properties at the node in the graph.</param>
+        /// <param name="libraryId">libraryId for which the no warn codes have to be extracted.</param>
+        /// <returns>HashSet of NuGetLogCodes containing the no warn codes for the libraryId.</returns>
+        public static HashSet<NuGetLogCode> ExtractPathNoWarnProperties(
+            NodeWarningProperties nodeWarningProperties,
             string libraryId)
         {
             var result = new HashSet<NuGetLogCode>();
-            if (pathProjectWideNoWarn?.Count > 0)
+            if (nodeWarningProperties?.ProjectWide?.Count > 0)
             {
-                result.UnionWith(pathProjectWideNoWarn);
+                result.UnionWith(nodeWarningProperties.ProjectWide);
             }
 
-            if (pathPackageSpecificNoWarn?.Count > 0 &&
-                pathPackageSpecificNoWarn.TryGetValue(libraryId, out var codes) &&
+            if (nodeWarningProperties?.PackageSpecific?.Count > 0 &&
+                nodeWarningProperties.PackageSpecific.TryGetValue(libraryId, out var codes) &&
                 codes?.Count > 0)
             {
                 result.UnionWith(codes);
@@ -507,12 +512,12 @@ namespace NuGet.Commands
         /// </summary>
         /// <param name="packageSpecificWarningProperties">PackageSpecificWarningProperties to be converted.</param>
         /// <returns>New dictionary containing the data of a PackageSpecificWarningProperties collection on framework.</returns>
-        public static Dictionary<NuGetFramework, Dictionary<string, HashSet<NuGetLogCode>>> ExtractPackageSpecificNoWarnForFrameworks(
+        public static Dictionary<NuGetFramework, Dictionary<string, HashSet<NuGetLogCode>>> ExtractPackageSpecificNoWarnPerFramework(
             PackageSpecificWarningProperties packageSpecificWarningProperties)
         {
             Dictionary<NuGetFramework, Dictionary<string, HashSet<NuGetLogCode>>> result = null;
 
-            if (packageSpecificWarningProperties.Properties != null)
+            if (packageSpecificWarningProperties?.Properties != null)
             {
                 result = new Dictionary<NuGetFramework, Dictionary<string, HashSet<NuGetLogCode>>>(new NuGetFrameworkFullComparer());
 
@@ -554,13 +559,13 @@ namespace NuGet.Commands
         /// </summary>
         /// <param name="packageSpecificWarningProperties">PackageSpecificWarningProperties to be converted.</param>
         /// <returns>New dictionary containing the data of a PackageSpecificWarningProperties collection on framework.</returns>
-        public static Dictionary<string, HashSet<NuGetLogCode>> ExtractPackageSpecificNoWarnForFrameworks(
+        public static Dictionary<string, HashSet<NuGetLogCode>> ExtractPackageSpecificNoWarnForFramework(
             PackageSpecificWarningProperties packageSpecificWarningProperties,
             NuGetFramework framework)
         {
             Dictionary<string, HashSet<NuGetLogCode>> result = null;
 
-            if (packageSpecificWarningProperties.Properties != null)
+            if (packageSpecificWarningProperties?.Properties != null && framework != null)
             {
                 result = new Dictionary<string, HashSet<NuGetLogCode>>(StringComparer.OrdinalIgnoreCase);
 
