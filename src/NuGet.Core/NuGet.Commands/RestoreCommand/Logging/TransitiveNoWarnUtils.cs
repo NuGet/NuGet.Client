@@ -11,7 +11,6 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using NuGet.DependencyResolver;
-using System.Diagnostics;
 
 namespace NuGet.Commands
 {
@@ -28,7 +27,6 @@ namespace NuGet.Commands
             IEnumerable<RestoreTargetGraph> targetGraphs,
             PackageSpec parentProjectSpec)
         {
-            //Debugger.Launch();
             var transitivePackageSpecificProperties = new PackageSpecificWarningProperties();
             var projectFrameworks = new List<NuGetFramework>();
             var parentWarningProperties = new WarningPropertiesCollection(
@@ -39,7 +37,8 @@ namespace NuGet.Commands
             var parentPackageSpecifcNoWarn = ExtractPackageSpecificNoWarnForFrameworks(
                 parentWarningProperties.PackageSpecificWarningProperties);
 
-            var warningPropertiesCache = new Dictionary<string, Dictionary<NuGetFramework, WarningPropertiesCollection>>(StringComparer.OrdinalIgnoreCase);
+            var warningPropertiesCache = new Dictionary<string, Dictionary<NuGetFramework, WarningPropertiesCollection>>(
+                StringComparer.OrdinalIgnoreCase);
 
             foreach (var targetGraph in targetGraphs)
             {
@@ -104,9 +103,7 @@ namespace NuGet.Commands
                 if (IsProject(dependencyGraphItem.Key.Type))
                 {
                     var localMatch = (LocalMatch)dependencyGraphItem.Data.Match;
-
                     var nodeProjectSpec = GetNodePackageSpec(localMatch);
-
                     var nearestFramework = nodeProjectSpec.GetTargetFramework(parentTargetFramework).FrameworkName;
 
                     if (nearestFramework != null)
@@ -519,17 +516,23 @@ namespace NuGet.Commands
             {
                 result = new Dictionary<NuGetFramework, Dictionary<string, HashSet<NuGetLogCode>>>(new NuGetFrameworkFullComparer());
 
-                foreach (var code in packageSpecificWarningProperties.Properties.Keys)
+                foreach (var codePair in packageSpecificWarningProperties.Properties)
                 {
-                    foreach (var libraryId in packageSpecificWarningProperties.Properties[code].Keys)
+                    var code = codePair.Key;
+                    var libraryCollection = codePair.Value;
+
+                    foreach (var libraryPair in libraryCollection)
                     {
-                        foreach (var framework in packageSpecificWarningProperties.Properties[code][libraryId])
+                        var libraryId = libraryPair.Key;
+                        var frameworks = libraryPair.Value;
+
+                        foreach (var framework in frameworks)
                         {
                             if (!result.TryGetValue(framework, out var frameworkCollection))
                             {
                                 frameworkCollection = new Dictionary<string, HashSet<NuGetLogCode>>(StringComparer.OrdinalIgnoreCase);
 
-                                result.Add(framework, frameworkCollection);
+                                result[framework] = frameworkCollection;
                             }
 
                             if (!frameworkCollection.TryGetValue(libraryId, out var codes))
@@ -561,17 +564,23 @@ namespace NuGet.Commands
             {
                 result = new Dictionary<string, HashSet<NuGetLogCode>>(StringComparer.OrdinalIgnoreCase);
 
-                foreach (var code in packageSpecificWarningProperties.Properties.Keys)
+                foreach (var codePair in packageSpecificWarningProperties.Properties)
                 {
-                    foreach (var libraryId in packageSpecificWarningProperties.Properties[code].Keys)
+                    var code = codePair.Key;
+                    var libraryCollection = codePair.Value;
+
+                    foreach (var libraryPair in libraryCollection)
                     {
-                        if (packageSpecificWarningProperties.Properties[code][libraryId].Contains(framework))
+                        var libraryId = libraryPair.Key;
+                        var frameworks = libraryPair.Value;
+
+                        if (frameworks.Contains(framework))
                         {
                             if (!result.TryGetValue(libraryId, out var codes))
                             {
                                 codes = new HashSet<NuGetLogCode>();
+                                result[libraryId] = codes;
                             }
-
                             codes.Add(code);
                         }
                     }
@@ -649,7 +658,7 @@ namespace NuGet.Commands
         }
 
         /// <summary>
-        /// A simple node class to hold the outgoing dependency edge for a quick look up.
+        /// A simple node class to hold the outgoing dependency edges for a quick look up.
         /// </summary>
         private class LookUpNode
         {
@@ -661,6 +670,10 @@ namespace NuGet.Commands
 
         }
 
+
+        /// <summary>
+        /// A class to hold minimal version of project wide nowarn and package specific no warn for a project.
+        /// </summary>
         public class NodeWarningProperties : IEquatable<NodeWarningProperties>
         {
             // ProjectWide NoWarn properties
