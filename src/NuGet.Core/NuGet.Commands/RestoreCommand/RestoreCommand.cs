@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -53,15 +53,9 @@ namespace NuGet.Commands
             var collectorLoggerHideWarningsAndErrors = request.Project.RestoreSettings.HideWarningsAndErrors
                 || request.HideWarningsAndErrors;
 
-            var collectorLogger = new RestoreCollectorLogger(_request.Log, collectorLoggerHideWarningsAndErrors)
-            {
-                ProjectSpec = _request.Project,
-                ProjectWarningPropertiesCollection = new WarningPropertiesCollection(
-                    request.Project.RestoreMetadata?.ProjectWideWarningProperties,
-                    PackageSpecificWarningProperties.CreatePackageSpecificWarningProperties(request.Project),
-                    request.Project.TargetFrameworks.Select(f => f.FrameworkName).AsList().AsReadOnly()
-                )
-            };
+            var collectorLogger = new RestoreCollectorLogger(_request.Log, collectorLoggerHideWarningsAndErrors);
+
+            collectorLogger.ApplyRestoreInputs(_request.Project);
 
             _logger = collectorLogger;
         }
