@@ -382,7 +382,7 @@ namespace NuGet.Commands
                     return first;
                 }
 
-                if (first.SetEqualWithNullCheck(second))
+                if (first.SetEqualsWithNullCheck(second))
                 {
                     return first;
                 }
@@ -773,8 +773,8 @@ namespace NuGet.Commands
                     return true;
                 }
 
-                return EqualityUtility.SetEqualWithNullCheck(ProjectWide, other.ProjectWide) &&
-                    EqualityUtility.DictionaryEquals(PackageSpecific, other.PackageSpecific, (s, o) => EqualityUtility.SetEqualWithNullCheck(s, o));
+                return EqualityUtility.SetEqualsWithNullCheck(ProjectWide, other.ProjectWide) &&
+                    EqualityUtility.DictionaryEquals(PackageSpecific, other.PackageSpecific, (s, o) => EqualityUtility.SetEqualsWithNullCheck(s, o));
             }
             
             public NodeWarningProperties GetIntersect(NodeWarningProperties other)

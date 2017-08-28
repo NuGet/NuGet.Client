@@ -70,9 +70,7 @@ namespace NuGet.Commands
                 warningProperties.AddRangeOfCodes(dependency.NoWarn, dependency.Name, framework);
             }
 
-            var targetFrameworkInformation = packageSpec
-                .TargetFrameworks
-                .First(tfi => tfi.FrameworkName == framework);
+            var targetFrameworkInformation = packageSpec.GetTargetFramework(framework);
             
             foreach (var dependency in targetFrameworkInformation.Dependencies)
             {
@@ -155,12 +153,8 @@ namespace NuGet.Commands
 
         public override int GetHashCode()
         {
-            var hashCode = new HashCodeCombiner();
-
-            // Add a constant hash for all objects
-            hashCode.AddObject(1);
-
-            return hashCode.CombinedHash;
+            // return a constant hash for all objects since the contents of Properties are mutable
+            return 1;
         }
 
         public override bool Equals(object obj)
@@ -183,7 +177,7 @@ namespace NuGet.Commands
             return EqualityUtility.DictionaryEquals(
                 Properties,
                 other.Properties,
-                (sv1, ov1) => EqualityUtility.DictionaryEquals(sv1, ov1, (sv2, ov2) => EqualityUtility.SetEqualWithNullCheck(sv2, ov2)));
+                (sv1, ov1) => EqualityUtility.DictionaryEquals(sv1, ov1, (sv2, ov2) => EqualityUtility.SetEqualsWithNullCheck(sv2, ov2)));
         }
     }
 }

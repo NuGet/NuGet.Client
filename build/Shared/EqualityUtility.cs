@@ -63,7 +63,7 @@ namespace NuGet.Shared
         /// Compares two sets for equality, allowing either sequence to be null.
         /// If one is null, both have to be null for equality.
         /// </summary>
-        internal static bool SetEqualWithNullCheck<T>(
+        internal static bool SetEqualsWithNullCheck<T>(
             this ISet<T> self,
             ISet<T> other,
             IEqualityComparer<T> comparer = null)
@@ -85,7 +85,7 @@ namespace NuGet.Shared
                 comparer = EqualityComparer<T>.Default;
             }
 
-            ISet<T> set = new HashSet<T>(self, comparer);
+            var set = new HashSet<T>(self, comparer);
 
             return set.SetEquals(other);
         }
