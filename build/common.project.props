@@ -243,7 +243,8 @@
   <!-- All projects in the repository -->
   <ItemGroup Condition=" '$(IsXPlat)' != 'true' ">
     <SolutionProjects Include="$(RepositoryRootDirectory)test\*\*\*.csproj"
-                      Exclude="$(RepositoryRootDirectory)test\EndToEnd\*\*.csproj"
+                      Exclude="$(RepositoryRootDirectory)test\EndToEnd\*\*.csproj;
+                               $(RepositoryRootDirectory)test\NuGet.Tests.Apex\*\*.csproj"
                       Condition=" '$(ExcludeTestProjects)' != 'true' " />
 
     <SolutionProjects Include="$(RepositoryRootDirectory)src\*\*\*.csproj" />
