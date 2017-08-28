@@ -2,10 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using FluentAssertions;
 using NuGet.Frameworks;
+using NuGet.Packaging.Core;
 using NuGet.Test.Utility;
 using Test.Utility;
 using Xunit;
@@ -53,6 +55,346 @@ namespace NuGet.CommandLine.Test
 
                 // B -> X
                 projectB.AddPackageToAllFrameworks(packageX);
+                projectB.Save();
+
+                // A -> B
+                projectA.AddProjectToAllFrameworks(projectB);
+                projectA.Save();
+
+                solution.Projects.Add(projectA);
+                solution.Projects.Add(projectB);
+                solution.Create(pathContext.SolutionRoot);
+
+                // Act
+                var r = Util.RestoreSolution(pathContext, expectedExitCode: 0);
+
+                // Assert
+                r.Success.Should().BeTrue();
+                r.AllOutput.Should().NotContain("NU1603");
+            }
+        }
+
+        [Fact]
+        // Tests ProjA[net461] -> ProjB[netstandard2.0][PkgX NoWarn NU1603] -> PkgX[NU1603]
+        public void GivenAProjectReferenceWithFallBackFrameworkNoWarnsVerifyNoWarning()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                    "a",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("net461"));
+
+                var projectB = SimpleTestProjectContext.CreateNETCore(
+                    "b",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("netstandard2.0"));
+
+                // Referenced but not created
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0",
+                    NoWarn = "NU1603"
+                };
+
+                // Created in the source
+                var packageX11 = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.1"
+                };
+
+                SimpleTestPackageUtility.CreatePackages(pathContext.PackageSource, packageX11);
+
+                // B -> X
+                projectB.AddPackageToAllFrameworks(packageX);
+                projectB.Save();
+
+                // A -> B
+                projectA.AddProjectToAllFrameworks(projectB);
+                projectA.Save();
+
+                solution.Projects.Add(projectA);
+                solution.Projects.Add(projectB);
+                solution.Create(pathContext.SolutionRoot);
+
+                // Act
+                var r = Util.RestoreSolution(pathContext, expectedExitCode: 0);
+
+                // Assert
+                r.Success.Should().BeTrue();
+                r.AllOutput.Should().NotContain("NU1603");
+            }
+        }
+
+        [Fact]
+        // Tests ProjA[net461] -> ProjB[netstandard2.0][PkgX NoWarn NU1603] -> PkgX[NU1603]
+        public void GivenAProjectReferenceWithIncompatibleFrameworkNoWarnsVerifyNoWarning()
+        {
+            // Arrange         
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                    "a",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("net461"));
+
+                var projectB = SimpleTestProjectContext.CreateNETCore(
+                    "b",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("netstandard2.0"));
+
+                // Referenced but not created
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0",
+                    NoWarn = "NU1603"
+                };
+
+                // Created in the source
+                var packageX11 = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.1"
+                };
+
+                SimpleTestPackageUtility.CreatePackages(pathContext.PackageSource, packageX11);
+
+                // B -> X
+                projectB.AddPackageToAllFrameworks(packageX);
+                projectB.Save();
+
+                // A -> B
+                projectA.AddProjectToAllFrameworks(projectB);
+                projectA.Save();
+
+                solution.Projects.Add(projectA);
+                solution.Projects.Add(projectB);
+                solution.Create(pathContext.SolutionRoot);
+
+                // Act
+                var r = Util.RestoreSolution(pathContext, expectedExitCode: 0);
+
+                // Assert
+                r.Success.Should().BeTrue();
+                r.AllOutput.Should().NotContain("NU1603");
+            }
+        }
+
+        [Fact]
+        // Tests ProjA[net461] -> ProjB[netstandard2.0][ProjectWide NoWarn NU1603] -> PkgX[NU1603]
+        //                                                                         -> ToolY[NU1603]
+        public void GivenAProjectReferenceWithToolAndProjectWideNoWarnsVerifyNoWarning()
+        {
+            // Arrange         
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                    "a",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("net461"));
+
+                var projectB = SimpleTestProjectContext.CreateNETCore(
+                    "b",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("netstandard2.0"));
+
+                // Referenced but not created
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0",
+                };
+
+                // Created in the source
+                var packageX101 = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.1"
+                };
+
+                // Referenced but not created
+                var toolY = new SimpleTestPackageContext()
+                {
+                    Id = "y",
+                    Version = "1.0.1",
+                    PackageType = PackageType.DotnetCliTool
+                };
+
+                // Created in the source
+                var toolY101 = new SimpleTestPackageContext()
+                {
+                    Id = "y",
+                    Version = "1.0.1",
+                    PackageType = PackageType.DotnetCliTool
+                };
+
+                SimpleTestPackageUtility.CreatePackages(pathContext.PackageSource, packageX101);
+                SimpleTestPackageUtility.CreatePackages(pathContext.PackageSource, toolY101);
+
+                // B -> X
+                projectB.AddPackageToAllFrameworks(packageX);
+                projectB.AddPackageToAllFrameworks(toolY);
+                projectB.Properties.Add("NoWarn", "NU1603");
+                projectB.Save();
+
+                // A -> B
+                projectA.AddProjectToAllFrameworks(projectB);
+                projectA.Save();
+
+                solution.Projects.Add(projectA);
+                solution.Projects.Add(projectB);
+                solution.Create(pathContext.SolutionRoot);
+
+                // Act
+                var r = Util.RestoreSolution(pathContext, expectedExitCode: 0);
+
+                // Assert
+                r.Success.Should().BeTrue();
+                r.AllOutput.Should().NotContain("NU1603");
+            }
+        }
+
+        [Fact]
+        // Tests ProjA[net461] -> ProjB[netstandard2.0][PkgX, ToolY NoWarn NU1603] -> PkgX[NU1603]
+        //                                                                         -> ToolY[NU1603]
+        public void GivenAProjectReferenceWithToolAndPackageSpecificNoWarnsVerifyNoWarning()
+        {
+            // Arrange         
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                    "a",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("net461"));
+
+                var projectB = SimpleTestProjectContext.CreateNETCore(
+                    "b",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("netstandard2.0"));
+
+                // Referenced but not created
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0",
+                    NoWarn = "NU1603"
+                };
+
+                // Created in the source
+                var packageX101 = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.1"
+                };
+
+                // Referenced but not created
+                var toolY = new SimpleTestPackageContext()
+                {
+                    Id = "y",
+                    Version = "1.0.1",
+                    PackageType = PackageType.DotnetCliTool,
+                    NoWarn = "NU1603"
+                };
+
+                // Created in the source
+                var toolY101 = new SimpleTestPackageContext()
+                {
+                    Id = "y",
+                    Version = "1.0.1",
+                    PackageType = PackageType.DotnetCliTool
+                };
+
+                SimpleTestPackageUtility.CreatePackages(pathContext.PackageSource, packageX101);
+                SimpleTestPackageUtility.CreatePackages(pathContext.PackageSource, toolY101);
+
+                // B -> X
+                projectB.AddPackageToAllFrameworks(packageX);
+                projectB.AddPackageToAllFrameworks(toolY);
+                projectB.Properties.Add("NoWarn", "NU1603");
+                projectB.Save();
+
+                // A -> B
+                projectA.AddProjectToAllFrameworks(projectB);
+                projectA.Save();
+
+                solution.Projects.Add(projectA);
+                solution.Projects.Add(projectB);
+                solution.Create(pathContext.SolutionRoot);
+
+                // Act
+                var r = Util.RestoreSolution(pathContext, expectedExitCode: 0);
+
+                // Assert
+                r.Success.Should().BeTrue();
+                r.AllOutput.Should().NotContain("NU1603");
+            }
+        }
+
+        [Fact]
+        // Tests ProjA[net461] -> ProjB[netstandard2.0][ProjectWide NoWarn NU1603] -> ToolY -> PkgX[NU1603]
+        public void GivenAProjectReferenceWithToolBringingTransitivePackageNoWarnsVerifyNoWarning()
+        {
+            // Arrange         
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                    "a",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("net461"));
+
+                var projectB = SimpleTestProjectContext.CreateNETCore(
+                    "b",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("netstandard2.0"));
+
+                // Referenced but not created
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0",
+                };
+
+                // Created in the source
+                var packageX101 = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.1"
+                };
+
+                // Created in the source
+                var toolY = new SimpleTestPackageContext()
+                {
+                    Id = "y",
+                    Version = "1.0.1",
+                    PackageType = PackageType.DotnetCliTool,
+                    Dependencies = new List<SimpleTestPackageContext> { packageX }
+                };
+
+                SimpleTestPackageUtility.CreatePackages(pathContext.PackageSource, packageX101);
+                SimpleTestPackageUtility.CreatePackages(pathContext.PackageSource, toolY);
+
+                // B -> X
+                projectB.AddPackageToAllFrameworks(toolY);
+                projectB.Properties.Add("NoWarn", "NU1603");
                 projectB.Save();
 
                 // A -> B
@@ -1172,6 +1514,91 @@ namespace NuGet.CommandLine.Test
                 // Assert
                 r.Success.Should().BeTrue();
                 r.AllOutput.Should().Contain("NU1603");
+            }
+        }
+
+        // Densely connected solutions containing 5, 10, 20 and 50 projects
+
+        [Theory]
+        [InlineData(5)]
+        [InlineData(10)]
+        [InlineData(20)]
+        [InlineData(50)]
+        public void GivenDenseSolutionWithMultiplePathsVerifyNoWarn(int count)
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var projects = new List<SimpleTestProjectContext>();
+                var referencedPackages = new List<SimpleTestPackageContext>();
+                var createdPackages = new List<SimpleTestPackageContext>();
+
+                for (var i = 0; i < count; i++)
+                {
+                    // Referenced but not created
+                    var packagewithNoWarn = new SimpleTestPackageContext()
+                    {
+                        Id = "package_" + i,
+                        Version = "1.0.0",
+                        NoWarn = "NU1603"
+                    };
+
+                    // Created in the source
+                    var package = new SimpleTestPackageContext()
+                    {
+                        Id = "package_" + i,
+                        Version = "1.0.1"
+                    };
+
+                    SimpleTestPackageUtility.CreatePackages(pathContext.PackageSource, package);
+
+                    referencedPackages.Add(packagewithNoWarn);
+                    createdPackages.Add(package);
+                }
+
+                for (var i = 0; i < count; i++)
+                {
+                    var project = SimpleTestProjectContext.CreateNETCore(
+                        "project_" + i,
+                        pathContext.SolutionRoot,
+                        NuGetFramework.Parse("net461"));
+
+                    projects.Add(project);
+                }
+
+                for (var i = 1; i < projects.Count(); i++)
+                {
+                    var project = projects[i];
+                    project.AddPackageToAllFrameworks(referencedPackages[i]);
+                }
+
+                for (var i = 0; i < projects.Count() - 1; i++)
+                {
+                    var projectA = projects[i];
+                    for (var j = i + 1; j < projects.Count(); j++)
+                    {
+                        var projectB = projects[j];
+                        projectA.AddProjectToAllFrameworks(projectB);
+                    }
+                }
+
+                foreach (var project in projects)
+                {
+                    project.Save();
+                    solution.Projects.Add(project);
+                }
+
+                solution.Create(pathContext.SolutionRoot);
+
+                // Act
+                var r = Util.RestoreSolution(pathContext, expectedExitCode: 0);
+
+                // Assert
+                r.Success.Should().BeTrue();
+                r.AllOutput.Should().NotContain("NU1603");
             }
         }
 
