@@ -76,8 +76,8 @@ namespace Dotnet.Integration.Test
                 timeOutInMilliseconds: 300000);
             }
 
-            Assert.True(result.Item1 == 0, $"Creating project failed with following log information :\n {result.Item3}");
-            Assert.True(string.IsNullOrWhiteSpace(result.Item3), $"Creating project failed with following message in error stream :\n {result.Item3}");
+            Assert.True(result.Item1 == 0, $"Creating project failed with following log information :\n {result.AllOutput}");
+            Assert.True(string.IsNullOrWhiteSpace(result.Item3), $"Creating project failed with following message in error stream :\n {result.AllOutput}");
         }
 
         internal void RestoreProject(string workingDirectory, string projectName, string args)
@@ -86,8 +86,8 @@ namespace Dotnet.Integration.Test
                 workingDirectory,
                 $"restore {projectName}.csproj {args}",
                 waitForExit: true);
-            Assert.True(result.Item1 == 0, $"Restore failed with following log information :\n {result.Item3}");
-            Assert.True(result.Item3 == "", $"Restore failed with following message in error stream :\n {result.Item3}");
+            Assert.True(result.Item1 == 0, $"Restore failed with following log information :\n {result.AllOutput}");
+            Assert.True(result.Item3 == "", $"Restore failed with following message in error stream :\n {result.AllOutput}");
         }
 
         internal CommandRunnerResult PackProject(string workingDirectory, string projectName, string args, string nuspecOutputPath="obj")
@@ -99,8 +99,8 @@ namespace Dotnet.Integration.Test
                 $"pack {projectName}.csproj {args} /p:NuspecOutputPath={nuspecOutputPath}",
                 waitForExit: true,
                 environmentVariables: envVar);
-            Assert.True(result.Item1 == 0, $"Pack failed with following log information :\n {result.Item3}");
-            Assert.True(result.Item3 == "", $"Pack failed with following message in error stream :\n {result.Item3}");
+            Assert.True(result.Item1 == 0, $"Pack failed with following log information :\n {result.AllOutput}");
+            Assert.True(result.Item3 == "", $"Pack failed with following message in error stream :\n {result.AllOutput}");
             return result;
         }
 
@@ -110,8 +110,8 @@ namespace Dotnet.Integration.Test
                 workingDirectory,
                 $"msbuild {projectName}.csproj {args} /p:AppendRuntimeIdentifierToOutputPath=false",
                 waitForExit: true);
-            Assert.True(result.Item1 == 0, $"Build failed with following log information :\n {result.Item3}");
-            Assert.True(result.Item3 == "", $"Build failed with following message in error stream :\n {result.Item3}");
+            Assert.True(result.Item1 == 0, $"Build failed with following log information :\n {result.AllOutput}");
+            Assert.True(result.Item3 == "", $"Build failed with following message in error stream :\n {result.AllOutput}");
         }
 
         private string CopyLatestCliForPack()
