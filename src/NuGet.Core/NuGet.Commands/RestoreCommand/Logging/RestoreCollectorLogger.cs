@@ -205,8 +205,11 @@ namespace NuGet.Commands
         /// <returns>bool indicating if the message should be suppressed.</returns>
         private bool IsWarningSuppressed(IRestoreLogMessage message)
         {
-
-            if (ProjectWarningPropertiesCollection != null && ProjectWarningPropertiesCollection.ApplyWarningProperties(message))
+            if (message.Level != LogLevel.Warning)
+            {
+                return false;
+            }
+            else if (ProjectWarningPropertiesCollection != null && ProjectWarningPropertiesCollection.ApplyWarningProperties(message))
             {
                 return true;
             }
