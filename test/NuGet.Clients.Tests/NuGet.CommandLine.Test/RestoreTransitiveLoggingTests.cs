@@ -133,7 +133,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        // Tests ProjA[net461] -> ProjB[netstandard2.0][PkgX NoWarn NU1603] -> PkgX[NU1603]
+        // Tests ProjA[net45] -> ProjB[net461][PkgX NoWarn NU1603] -> PkgX[NU1603]
         public void GivenAProjectReferenceWithIncompatibleFrameworkNoWarnsVerifyNoWarning()
         {
             // Arrange         
@@ -145,12 +145,12 @@ namespace NuGet.CommandLine.Test
                 var projectA = SimpleTestProjectContext.CreateNETCore(
                     "a",
                     pathContext.SolutionRoot,
-                    NuGetFramework.Parse("net461"));
+                    NuGetFramework.Parse("net45"));
 
                 var projectB = SimpleTestProjectContext.CreateNETCore(
                     "b",
                     pathContext.SolutionRoot,
-                    NuGetFramework.Parse("netstandard2.0"));
+                    NuGetFramework.Parse("net461"));
 
                 // Referenced but not created
                 var packageX = new SimpleTestPackageContext()
@@ -182,11 +182,11 @@ namespace NuGet.CommandLine.Test
                 solution.Create(pathContext.SolutionRoot);
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, expectedExitCode: 0);
+                var r = Util.RestoreSolution(pathContext, expectedExitCode: 1);
 
                 // Assert
-                r.Success.Should().BeTrue();
-                r.AllOutput.Should().NotContain("NU1603");
+                r.Success.Should().BeFalse();
+                r.AllOutput.Should().Contain("NU1201");
             }
         }
 
@@ -1523,7 +1523,6 @@ namespace NuGet.CommandLine.Test
         [InlineData(5)]
         [InlineData(10)]
         [InlineData(20)]
-        [InlineData(50)]
         public void GivenDenseSolutionWithMultiplePathsVerifyNoWarn(int count)
         {
             // Arrange
