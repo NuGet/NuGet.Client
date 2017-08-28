@@ -1,16 +1,16 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using NuGet.Common;
+using NuGet.DependencyResolver;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.ProjectModel;
 using NuGet.Shared;
-using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
-using NuGet.DependencyResolver;
+
 
 namespace NuGet.Commands
 {
@@ -44,11 +44,17 @@ namespace NuGet.Commands
             {
                 if (string.IsNullOrEmpty(targetGraph.RuntimeIdentifier))
                 {
+                    if (parentPackageSpecifcNoWarn == null ||
+                        !parentPackageSpecifcNoWarn.TryGetValue(targetGraph.Framework, out var parentPackageSpecificNoWarnForFramework))
+                    {
+                        parentPackageSpecificNoWarnForFramework = null;
+                    }
+
                     var transitiveNoWarnFromTargetGraph = ExtractTransitiveNoWarnProperties(
                         targetGraph,
                         parentProjectSpec.RestoreMetadata.ProjectName,
                         parentWarningProperties.ProjectWideWarningProperties.NoWarn.AsHashSet(),
-                        parentPackageSpecifcNoWarn?[targetGraph.Framework],
+                        parentPackageSpecificNoWarnForFramework,
                         warningPropertiesCache);
 
                     projectFrameworks.Add(targetGraph.Framework);
