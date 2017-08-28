@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -16,7 +16,7 @@ namespace NuGet.Commands
     /// <summary>
     /// Class to hold ProjectWide and PackageSpecific WarningProperties.
     /// </summary>
-    public class WarningPropertiesCollection
+    public class WarningPropertiesCollection : IEquatable<WarningPropertiesCollection>
     {
         private readonly ConcurrentDictionary<string, NuGetFramework> _getFrameworkCache = new ConcurrentDictionary<string, NuGetFramework>();
 
@@ -24,18 +24,27 @@ namespace NuGet.Commands
         /// Contains the target frameworks for the project.
         /// These are used for no warn filtering in case of a log message without a target graph.
         /// </summary>
-        public IReadOnlyList<NuGetFramework> ProjectFrameworks { get; set; } = new ReadOnlyCollection<NuGetFramework>(new List<NuGetFramework>());
+        public IReadOnlyList<NuGetFramework> ProjectFrameworks { get; }
 
         /// <summary>
         /// Contains Project wide properties for Warnings.
         /// </summary>
-        public WarningProperties ProjectWideWarningProperties { get; set; }
+        public WarningProperties ProjectWideWarningProperties { get; }
 
         /// <summary>
         /// Contains Package specific properties for Warnings.
         /// NuGetLogCode -> LibraryId -> Set of Frameworks.
         /// </summary>
-        public PackageSpecificWarningProperties PackageSpecificWarningProperties { get; set; }
+        public PackageSpecificWarningProperties PackageSpecificWarningProperties { get; }
+
+        public WarningPropertiesCollection(WarningProperties projectWideWarningProperties,
+            PackageSpecificWarningProperties packageSpecificWarningProperties,
+            IReadOnlyList<NuGetFramework> projectFrameworks)
+        {
+            ProjectWideWarningProperties = projectWideWarningProperties;
+            PackageSpecificWarningProperties = packageSpecificWarningProperties;
+            ProjectFrameworks = projectFrameworks ?? new ReadOnlyCollection<NuGetFramework>(new List<NuGetFramework>());
+        }
 
         /// <summary>
         /// Attempts to suppress a warning log message or upgrade it to error log message.
@@ -127,6 +136,39 @@ namespace NuGet.Commands
             var parts = targetGraph.Split('/');
 
             return NuGetFramework.Parse(parts[0]);
+        }
+
+        public override int GetHashCode()
+        {
+            var hashCode = new HashCodeCombiner();
+
+            hashCode.AddObject(ProjectWideWarningProperties);
+            hashCode.AddObject(PackageSpecificWarningProperties);
+            hashCode.AddSequence(ProjectFrameworks);
+
+            return hashCode.CombinedHash;
+        }
+
+        public override bool Equals(object obj)
+        {
+            return Equals(obj as WarningPropertiesCollection);
+        }
+
+        public bool Equals(WarningPropertiesCollection other)
+        {
+            if (other == null)
+            {
+                return false;
+            }
+
+            if (ReferenceEquals(this, other))
+            {
+                return true;
+            }
+
+            return EqualityUtility.EqualsWithNullCheck(ProjectWideWarningProperties, other.ProjectWideWarningProperties) &&
+                EqualityUtility.EqualsWithNullCheck(PackageSpecificWarningProperties, other.PackageSpecificWarningProperties) &&
+                EqualityUtility.OrderedEquals(ProjectFrameworks, other.ProjectFrameworks, (fx) => fx.Framework, orderComparer: StringComparer.OrdinalIgnoreCase, sequenceComparer: new NuGetFrameworkFullComparer());
         }
     }
 }

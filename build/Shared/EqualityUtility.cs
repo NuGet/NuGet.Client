@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -57,6 +57,31 @@ namespace NuGet.Shared
             }
 
             return self.SequenceEqual(other, comparer);
+        }
+
+        /// <summary>
+        /// Compares two sets for equality, allowing either sequence to be null.
+        /// If one is null, both have to be null for equality.
+        /// </summary>
+        internal static bool SetEqualWithNullCheck<T>(
+            this ISet<T> self,
+            ISet<T> other,
+            IEqualityComparer<T> comparer = null)
+        {
+            bool identityEquals;
+            if (TryIdentityEquals(self, other, out identityEquals))
+            {
+                return identityEquals;
+            }
+
+            if (comparer == null)
+            {
+                comparer = EqualityComparer<T>.Default;
+            }
+
+            ISet<T> set = new HashSet<T>(self, comparer);
+
+            return set.SetEquals(other);
         }
 
         internal static bool DictionaryEquals<TKey, TValue>(

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -16,20 +16,23 @@ namespace NuGet.ProjectModel
         /// <summary>
         /// List of Warning Codes that should be treated as Errors.
         /// </summary>
-        public ISet<NuGetLogCode> WarningsAsErrors { get; } = new HashSet<NuGetLogCode>();
+        public ISet<NuGetLogCode> WarningsAsErrors { get; }
 
         /// <summary>
         /// List of Warning Codes that should be ignored.
         /// </summary>
-        public ISet<NuGetLogCode> NoWarn { get; } = new HashSet<NuGetLogCode>();
+        public ISet<NuGetLogCode> NoWarn { get; }
 
         /// <summary>
         /// Indicates if all warnings should be ignored.
         /// </summary>
-        public bool AllWarningsAsErrors { get; set; } = false;
+        public bool AllWarningsAsErrors { get; set; }
 
         public WarningProperties()
         {
+            WarningsAsErrors = new HashSet<NuGetLogCode>();
+            NoWarn = new HashSet<NuGetLogCode>();
+            AllWarningsAsErrors = false;
         }
 
         public WarningProperties(ISet<NuGetLogCode> warningsAsErrors, ISet<NuGetLogCode> noWarn, bool allWarningsAsErrors)
@@ -44,7 +47,6 @@ namespace NuGet.ProjectModel
         {
             var hashCode = new HashCodeCombiner();
 
-            hashCode.AddObject(AllWarningsAsErrors);
             hashCode.AddSequence(WarningsAsErrors);
             hashCode.AddSequence(NoWarn);
 
@@ -69,8 +71,8 @@ namespace NuGet.ProjectModel
             }
 
             return AllWarningsAsErrors == other.AllWarningsAsErrors &&
-                WarningsAsErrors.SetEquals(other.WarningsAsErrors) &&
-                NoWarn.SetEquals(other.NoWarn);
+                EqualityUtility.SetEqualWithNullCheck(WarningsAsErrors, other.WarningsAsErrors) &&
+                EqualityUtility.SetEqualWithNullCheck(NoWarn, other.NoWarn);
         }
     }
 }

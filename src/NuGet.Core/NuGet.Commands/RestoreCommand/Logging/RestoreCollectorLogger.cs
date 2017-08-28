@@ -1,11 +1,14 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using NuGet.Common;
+using NuGet.ProjectModel;
+using NuGet.Shared;
 
 namespace NuGet.Commands
 {
@@ -14,12 +17,68 @@ namespace NuGet.Commands
         private readonly ILogger _innerLogger;
         private readonly ConcurrentQueue<IRestoreLogMessage> _errors;
         private readonly bool _hideWarningsAndErrors;
+        private IEnumerable<RestoreTargetGraph> _restoreTargetGraphs;
+        private PackageSpec _projectSpec;
+        private WarningPropertiesCollection _transitiveWarningPropertiesCollection;
+
+        public string ProjectPath => _projectSpec?.RestoreMetadata?.ProjectPath;
 
         public IEnumerable<IRestoreLogMessage> Errors => _errors.ToArray();
 
-        public WarningPropertiesCollection WarningPropertiesCollection { get; set; }
-        
-        public string ProjectPath { get; set; }
+        public WarningPropertiesCollection ProjectWarningPropertiesCollection { get; set; }
+
+        public WarningPropertiesCollection TransitiveWarningPropertiesCollection
+        {
+            get
+            {
+                if (_transitiveWarningPropertiesCollection == null)
+                {
+                    // Populate TransitiveWarningPropertiesCollection only if it is null and we have RestoreTargetGraphs.
+                    // This will happen at most once and only if we have the project spec with restore metadata.
+                    if (_restoreTargetGraphs != null &&
+                        _restoreTargetGraphs.Any() &&
+                        _projectSpec != null &&
+                        _projectSpec.RestoreMetadata != null)
+                    {
+                        var transitiveNoWarnUtils = new TransitiveNoWarnUtils();
+
+                        TransitiveWarningPropertiesCollection = transitiveNoWarnUtils.CreateTransitiveWarningPropertiesCollection(
+                            _restoreTargetGraphs,
+                            _projectSpec);
+                    }
+                }
+
+                return _transitiveWarningPropertiesCollection;
+            }
+
+            set => _transitiveWarningPropertiesCollection = value;
+        }
+
+        /// <summary>
+        /// Stores a reference to PackageSpec for the project from the restore request.
+        /// This are used to generate the warning properties for the project.
+        /// </summary>
+        /// <param name="projectSpec">PackageSpec to be stored for reference.</param>
+        public void ApplyRestoreInputs(PackageSpec projectSpec)
+        {
+            _projectSpec = projectSpec;
+
+            ProjectWarningPropertiesCollection = new WarningPropertiesCollection(
+                projectSpec.RestoreMetadata?.ProjectWideWarningProperties,
+                PackageSpecificWarningProperties.CreatePackageSpecificWarningProperties(projectSpec),
+                projectSpec.TargetFrameworks.Select(f => f.FrameworkName).AsList().AsReadOnly()
+                );
+        }
+
+        /// <summary>
+        /// Stores a reference to RestoreTargetGraphs from the restore output.
+        /// These graphs are used to generate the transitive warning properties.
+        /// </summary>
+        /// <param name="restoreTargetGraphs">RestoreTargetGraphs to be stored for reference.</param>
+        public void ApplyRestoreOutput(IEnumerable<RestoreTargetGraph> restoreTargetGraphs)
+        {
+            _restoreTargetGraphs = restoreTargetGraphs;
+        }
 
         /// <summary>
         /// Initializes an instance of the <see cref="RestoreCollectorLogger"/>, while still
@@ -67,11 +126,11 @@ namespace NuGet.Commands
             : this(innerLogger, LogLevel.Debug, hideWarningsAndErrors: false)
         {
         }
-
+             
         public void Log(IRestoreLogMessage message)
         {
-            // This will be true only when the Message is a Warning and should be suppressed.
-            if (WarningPropertiesCollection == null || !WarningPropertiesCollection.ApplyWarningProperties(message))
+            // This will be true if the message is not or warning or it is not suppressed.
+            if (!IsWarningSuppressed(message))
             {
                 if (string.IsNullOrEmpty(message.FilePath))
                 {
@@ -92,9 +151,8 @@ namespace NuGet.Commands
 
         public Task LogAsync(IRestoreLogMessage message)
         {
-
-            // This will be true only when the Message is a Warning and should be suppressed.
-            if (WarningPropertiesCollection == null || !WarningPropertiesCollection.ApplyWarningProperties(message))
+            // This will be true if the message is not or warning or it is not suppressed.
+            if (!IsWarningSuppressed(message))
             {
                 if (string.IsNullOrEmpty(message.FilePath))
                 {
@@ -140,6 +198,25 @@ namespace NuGet.Commands
             {
                 return (message.Level >= VerbosityLevel);
             }   
+        }
+
+        /// <summary>
+        /// This method checks if at least one of the warning properties collections is not null and it suppresses the warning.
+        /// </summary>
+        /// <param name="message">IRestoreLogMessage to be logged.</param>
+        /// <returns>bool indicating if the message should be suppressed.</returns>
+        private bool IsWarningSuppressed(IRestoreLogMessage message)
+        {
+            
+            if (ProjectWarningPropertiesCollection != null && ProjectWarningPropertiesCollection.ApplyWarningProperties(message))
+            {
+                return true;
+            }
+            else
+            {
+                // Use transitive warning properties only if the project does not suppress the warning.
+                return TransitiveWarningPropertiesCollection != null && TransitiveWarningPropertiesCollection.ApplyWarningProperties(message);
+            }
         }
 
         private static IRestoreLogMessage ToRestoreLogMessage(ILogMessage message)
