@@ -59,19 +59,15 @@ namespace Dotnet.Integration.Test
 
                     var dependencyGroups = nuspecReader.GetDependencyGroups().ToList();
                     Assert.Equal(1, dependencyGroups.Count);
-                    Assert.Equal(FrameworkConstants.CommonFrameworks.NetStandard14, dependencyGroups[0].TargetFramework);
+                    Assert.Equal(FrameworkConstants.CommonFrameworks.NetStandard20, dependencyGroups[0].TargetFramework);
                     var packages = dependencyGroups[0].Packages.ToList();
-                    Assert.Equal(1, packages.Count);
-                    Assert.Equal("NETStandard.Library", packages[0].Id);
-                    Assert.Equal(new VersionRange(new NuGetVersion("1.6.1")), packages[0].VersionRange);
-                    Assert.Equal(new List<string> {"Analyzers", "Build"}, packages[0].Exclude);
-                    Assert.Empty(packages[0].Include);
+                    Assert.Equal(0, packages.Count);
 
                     // Validate the assets.
                     var libItems = nupkgReader.GetLibItems().ToList();
                     Assert.Equal(1, libItems.Count);
-                    Assert.Equal(FrameworkConstants.CommonFrameworks.NetStandard14, libItems[0].TargetFramework);
-                    Assert.Equal(new[] {"lib/netstandard1.4/ClassLibrary1.dll"}, libItems[0].Items);
+                    Assert.Equal(FrameworkConstants.CommonFrameworks.NetStandard20, libItems[0].TargetFramework);
+                    Assert.Equal(new[] {"lib/netstandard2.0/ClassLibrary1.dll"}, libItems[0].Items);
                 }
 
             }
@@ -114,21 +110,21 @@ namespace Dotnet.Integration.Test
                     // Validate the assets.
                     var libItems = nupkgReader.GetLibItems().ToList();
                     Assert.Equal(1, libItems.Count);
-                    Assert.Equal(FrameworkConstants.CommonFrameworks.NetCoreApp11, libItems[0].TargetFramework);
+                    Assert.Equal(FrameworkConstants.CommonFrameworks.NetCoreApp20, libItems[0].TargetFramework);
                     if (includeSymbols)
                     {
                         Assert.Equal(new[]
                         {
-                            "lib/netcoreapp1.1/ConsoleApp1.dll",
-                            "lib/netcoreapp1.1/ConsoleApp1.pdb",
-                            "lib/netcoreapp1.1/ConsoleApp1.runtimeconfig.json"
+                            "lib/netcoreapp2.0/ConsoleApp1.dll",
+                            "lib/netcoreapp2.0/ConsoleApp1.pdb",
+                            "lib/netcoreapp2.0/ConsoleApp1.runtimeconfig.json"
                         }, libItems[0].Items);
                     }
                     else
                     {
                         Assert.Equal(
                             new[]
-                            {"lib/netcoreapp1.1/ConsoleApp1.dll", "lib/netcoreapp1.1/ConsoleApp1.runtimeconfig.json"},
+                            {"lib/netcoreapp2.0/ConsoleApp1.dll", "lib/netcoreapp2.0/ConsoleApp1.runtimeconfig.json"},
                             libItems[0].Items);
                     }
                 }
@@ -227,7 +223,7 @@ namespace Dotnet.Integration.Test
                         new[]
                         {"lib/netcoreapp1.0/ClassLibrary1.dll", "lib/netcoreapp1.0/ClassLibrary1.runtimeconfig.json"},
                         libItems[0].Items);
-                    Assert.Equal(new[] {"lib/net45/ClassLibrary1.exe", "lib/net45/ClassLibrary1.runtimeconfig.json"},
+                    Assert.Equal(new[] {"lib/net45/ClassLibrary1.exe"},
                         libItems[1].Items);
                 }
             }
@@ -347,7 +343,6 @@ namespace Dotnet.Integration.Test
                 using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
                 {
                     var xml = XDocument.Load(stream);
-                    ProjectFileUtils.SetTargetFrameworkForProject(xml, "TargetFramework", "netstandard1.4");
 
                     var attributes = new Dictionary<string, string>();
 
@@ -387,13 +382,12 @@ namespace Dotnet.Integration.Test
                     Assert.Equal(1,
                         dependencyGroups.Count);
 
-                    Assert.Equal(FrameworkConstants.CommonFrameworks.NetStandard14,
+                    Assert.Equal(FrameworkConstants.CommonFrameworks.NetCoreApp20,
                         dependencyGroups[0].TargetFramework);
                     var packagesA = dependencyGroups[0].Packages.ToList();
                     Assert.Equal(2,
                         packagesA.Count);
-                    Assert.Equal("NETStandard.Library", packagesA[1].Id);
-                    Assert.Equal(new VersionRange(new NuGetVersion("1.6.1")), packagesA[1].VersionRange);
+                    Assert.Equal("Microsoft.NETCore.App", packagesA[1].Id);
                     Assert.Equal(new List<string> {"Analyzers", "Build"}, packagesA[1].Exclude);
                     Assert.Empty(packagesA[1].Include);
 
@@ -405,10 +399,10 @@ namespace Dotnet.Integration.Test
                     // Validate the assets.
                     var libItems = nupkgReader.GetLibItems().ToList();
                     Assert.Equal(1, libItems.Count);
-                    Assert.Equal(FrameworkConstants.CommonFrameworks.NetStandard14, libItems[0].TargetFramework);
+                    Assert.Equal(FrameworkConstants.CommonFrameworks.NetCoreApp20, libItems[0].TargetFramework);
                     Assert.Equal(
                         new[]
-                        {"lib/netstandard1.4/ClassLibrary1.dll", "lib/netstandard1.4/ClassLibrary1.runtimeconfig.json"},
+                        {"lib/netcoreapp2.0/ClassLibrary1.dll", "lib/netcoreapp2.0/ClassLibrary1.runtimeconfig.json"},
                         libItems[0].Items);
                 }
             }
@@ -1124,6 +1118,25 @@ namespace Dotnet.Integration.Test
                 // Act
                 msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib");
                 msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
+
+                using (var stream = new FileStream(Path.Combine(workingDirectory, $"{projectName}.csproj"), FileMode.Open, FileAccess.ReadWrite))
+                {
+                    var xml = XDocument.Load(stream);
+
+                    var attributes = new Dictionary<string, string>();
+                    
+                    attributes["Version"] = "9.0.1";
+                    ProjectFileUtils.AddItem(
+                        xml,
+                        "PackageReference",
+                        "Newtonsoft.Json",
+                        string.Empty,
+                        new Dictionary<string, string>(),
+                        attributes);
+
+                    ProjectFileUtils.WriteXmlToFile(xml, stream);
+                }
+
                 msbuildFixture.PackProject(workingDirectory, projectName,
                     $"-o {workingDirectory} /p:IncludeBuildOutput=false");
 
@@ -1146,13 +1159,10 @@ namespace Dotnet.Integration.Test
 
                     var dependencyGroups = nuspecReader.GetDependencyGroups().ToList();
                     Assert.Equal(1, dependencyGroups.Count);
-                    Assert.Equal(FrameworkConstants.CommonFrameworks.NetStandard14, dependencyGroups[0].TargetFramework);
+                    Assert.Equal(FrameworkConstants.CommonFrameworks.NetStandard20, dependencyGroups[0].TargetFramework);
                     var packages = dependencyGroups[0].Packages.ToList();
                     Assert.Equal(1, packages.Count);
-                    Assert.Equal("NETStandard.Library", packages[0].Id);
-                    Assert.Equal(new VersionRange(new NuGetVersion("1.6.1")), packages[0].VersionRange);
-                    Assert.Equal(new List<string> {"Analyzers", "Build"}, packages[0].Exclude);
-                    Assert.Empty(packages[0].Include);
+                    Assert.Equal("Newtonsoft.Json", packages[0].Id);
 
                     // Validate the assets.
                     var libItems = nupkgReader.GetLibItems().ToList();
@@ -1189,8 +1199,8 @@ namespace Dotnet.Integration.Test
                     Assert.Equal(0, libItems.Count);
                     libItems = nupkgReader.GetItems(buildOutputTargetFolder).ToList();
                     Assert.Equal(1, libItems.Count);
-                    Assert.Equal(FrameworkConstants.CommonFrameworks.NetStandard14, libItems[0].TargetFramework);
-                    Assert.Equal(new[] {$"{buildOutputTargetFolder}/netstandard1.4/ClassLibrary1.dll"},
+                    Assert.Equal(FrameworkConstants.CommonFrameworks.NetStandard20, libItems[0].TargetFramework);
+                    Assert.Equal(new[] {$"{buildOutputTargetFolder}/netstandard2.0/ClassLibrary1.dll"},
                         libItems[0].Items);
                 }
             }
@@ -1796,8 +1806,16 @@ namespace ClassLibrary
                     foreach(var framework in expectedFrameworks)
                     {
                         var nugetFramework = NuGetFramework.Parse(framework);
-                        var frameworkSpecificGroup = frameworkItems.Where(t => t.TargetFramework.Equals(nugetFramework)).First();
-                        Assert.True(frameworkSpecificGroup.Items.Contains(referenceAssembly) == pack);
+                        var frameworkSpecificGroup = frameworkItems.Where(t => t.TargetFramework.Equals(nugetFramework)).FirstOrDefault();
+                        if(pack)
+                        {
+                            Assert.True(frameworkSpecificGroup?.Items.Contains(referenceAssembly));
+                        }
+                        else
+                        {
+                            Assert.Null(frameworkSpecificGroup);
+                        }
+                        
                     }                    
                 }
             }
