@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using NuGet.Common;
@@ -273,6 +273,7 @@ namespace NuGet.Commands
         private static bool AddToSeen(Dictionary<string, NodeWarningProperties> seen, DependencyNode node)
         {
             var id = node.Id;
+            var nodeProps = node.NodeWarningProperties;
 
             if (!seen.TryGetValue(id, out var visitedProps))
             {
@@ -280,15 +281,13 @@ namespace NuGet.Commands
                 seen.Add(id, node.NodeWarningProperties);
                 return true;
             }
-
-            var nodeProps = node.NodeWarningProperties;
-
             if (!nodeProps.IsSubSetOf(visitedProps))
             {
                 // Find the intersection of properties between these nodes,
                 // these are the only properties that we need to look for in
                 // future passes.
                 seen[id] = nodeProps.GetIntersect(visitedProps);
+                return true;
             }
 
             // This has already been walked
