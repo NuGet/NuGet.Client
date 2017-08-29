@@ -22,32 +22,6 @@ namespace NuGet.Commands
         private static readonly string ReferenceFolder = PackagingConstants.Folders.Lib;
         private static readonly string ToolsFolder = PackagingConstants.Folders.Tools;
         private static readonly string SourcesFolder = PackagingConstants.Folders.Source;
-        
-        // List of extensions to allow in the output path
-        private static readonly HashSet<string> _allowedOutputExtensions
-            = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-        {
-            ".dll",
-            ".exe",
-            ".xml",
-            ".json",
-            ".winmd",
-            ".pri"
-        };
-
-        // List of extensions to allow in the output path if IncludeSymbols is set
-        private static readonly HashSet<string> _allowedOutputExtensionsForSymbols
-            = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-        {
-            ".dll",
-            ".exe",
-            ".xml",
-            ".winmd",
-            ".json",
-            ".pri",
-            ".pdb",
-            ".mdb"
-        };
 
         private MSBuildPackTargetArgs PackTargetArgs { get; set; }
         private PackArgs PackArgs { get; set; }
@@ -142,13 +116,9 @@ namespace NuGet.Commands
         {
             if (PackTargetArgs.IncludeBuildOutput)
             {
-                if (IncludeSymbols)
-                {
-                    // Include pdbs for symbol packages
-                    AddOutputLibFiles(PackTargetArgs.TargetPathsToSymbols, _allowedOutputExtensionsForSymbols);
-                }
+                AddOutputLibFiles(PackTargetArgs.TargetPathsToSymbols, IncludeSymbols ? PackTargetArgs.AllowedOutputExtensionsInSymbolsPackageBuildOutputFolder : PackTargetArgs.AllowedOutputExtensionsInPackageBuildOutputFolder);
 
-                AddOutputLibFiles(PackTargetArgs.TargetPathsToAssemblies, _allowedOutputExtensions);
+                AddOutputLibFiles(PackTargetArgs.TargetPathsToAssemblies, PackTargetArgs.AllowedOutputExtensionsInPackageBuildOutputFolder);
             }
         }
 

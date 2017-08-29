@@ -55,6 +55,8 @@ namespace NuGet.Build.Tasks.Pack
         public string[] ContentTargetFolders { get; set; }
         public string[] NuspecProperties { get; set; }
         public string NuspecBasePath { get; set; }
+        public string[] AllowedOutputExtensionsInPackageBuildOutputFolder { get; set; }
+        public string[] AllowedOutputExtensionsInSymbolsPackageBuildOutputFolder { get; set; }
 
         public ILogger Logger => new MSBuildLogger(Log);
 
@@ -119,6 +121,8 @@ namespace NuGet.Build.Tasks.Pack
         {
             return new PackTaskRequest
             {
+                AllowedOutputExtensionsInPackageBuildOutputFolder = MSBuildStringUtility.TrimAndExcludeNullOrEmpty(AllowedOutputExtensionsInPackageBuildOutputFolder),
+                AllowedOutputExtensionsInSymbolsPackageBuildOutputFolder = MSBuildStringUtility.TrimAndExcludeNullOrEmpty(AllowedOutputExtensionsInSymbolsPackageBuildOutputFolder),
                 AssemblyName = MSBuildStringUtility.TrimAndGetNullForEmpty(AssemblyName),
                 Authors = MSBuildStringUtility.TrimAndExcludeNullOrEmpty(Authors),
                 BuildOutputInPackage = MSBuildUtility.WrapMSBuildItem(BuildOutputInPackage),
