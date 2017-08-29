@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-
+env
 while true ; do
 	case "$1" in
 		-c|--clear-cache) CLEAR_CACHE=1 ; shift ;;
