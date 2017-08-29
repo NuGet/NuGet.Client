@@ -1,6 +1,7 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -47,14 +48,14 @@ namespace NuGet.ProjectModel.Test
             // Act
             var dg = DependencyGraphSpec.Load(json);
 
-            var xClosure = dg.GetClosure("A55205E7-4D08-4672-8011-0925467CC45F").ToList();
-            var yClosure = dg.GetClosure("78A6AD3F-9FA5-47F6-A54E-84B46A48CB2F").ToList();
-            var zClosure = dg.GetClosure("44B29B8D-8413-42D2-8DF4-72225659619B").ToList();
+            var xClosure = dg.GetClosure("A55205E7-4D08-4672-8011-0925467CC45F").OrderBy(e => e.RestoreMetadata.ProjectUniqueName, StringComparer.Ordinal).ToList();
+            var yClosure = dg.GetClosure("78A6AD3F-9FA5-47F6-A54E-84B46A48CB2F").OrderBy(e => e.RestoreMetadata.ProjectUniqueName, StringComparer.Ordinal).ToList();
+            var zClosure = dg.GetClosure("44B29B8D-8413-42D2-8DF4-72225659619B").OrderBy(e => e.RestoreMetadata.ProjectUniqueName, StringComparer.Ordinal).ToList();
 
             // Assert
             Assert.Equal(3, xClosure.Count);
-            Assert.Equal("78A6AD3F-9FA5-47F6-A54E-84B46A48CB2F", xClosure[0].RestoreMetadata.ProjectUniqueName);
-            Assert.Equal("44B29B8D-8413-42D2-8DF4-72225659619B", xClosure[1].RestoreMetadata.ProjectUniqueName);
+            Assert.Equal("44B29B8D-8413-42D2-8DF4-72225659619B", xClosure[0].RestoreMetadata.ProjectUniqueName);
+            Assert.Equal("78A6AD3F-9FA5-47F6-A54E-84B46A48CB2F", xClosure[1].RestoreMetadata.ProjectUniqueName);
             Assert.Equal("A55205E7-4D08-4672-8011-0925467CC45F", xClosure[2].RestoreMetadata.ProjectUniqueName);
 
             Assert.Equal(1, yClosure.Count);
