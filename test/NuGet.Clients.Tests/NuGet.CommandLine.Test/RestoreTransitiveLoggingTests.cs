@@ -75,6 +75,546 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
+        // Tests ProjA[WarnAsError NU1603] -> ProjB[PkgX NoWarn NU1603] -> PkgX[NU1603]
+        public void GivenAProjectReferenceNoWarnsAndDirectWarnAsErrorVerifyNoWarning()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                    "a",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("netcoreapp2.0"));
+
+                var projectB = SimpleTestProjectContext.CreateNETCore(
+                    "b",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("netcoreapp2.0"));
+
+                // Referenced but not created
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0",
+                    NoWarn = "NU1603"
+                };
+
+                // Created in the source
+                var packageX11 = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.1"
+                };
+
+                SimpleTestPackageUtility.CreatePackages(pathContext.PackageSource, packageX11);
+
+                // B -> X
+                projectB.AddPackageToAllFrameworks(packageX);
+                projectB.Save();
+
+                // A -> B
+                projectA.AddProjectToAllFrameworks(projectB);
+                projectA.Properties.Add("WarningsAsErrors", "NU1603; NU1701");
+                projectA.Save();
+
+                solution.Projects.Add(projectA);
+                solution.Projects.Add(projectB);
+                solution.Create(pathContext.SolutionRoot);
+
+                // Act
+                var r = Util.RestoreSolution(pathContext, expectedExitCode: 0);
+
+                // Assert
+                r.Success.Should().BeTrue();
+                r.AllOutput.Should().NotContain("NU1603");
+            }
+        }
+
+        [Fact]
+        // Tests ProjA[TreatWarningsAsError true] -> ProjB[PkgX NoWarn NU1603] -> PkgX[NU1603]
+        public void GivenAProjectReferenceNoWarnsAndDirectTreatWarningsAsErrorVerifyNoWarning()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                    "a",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("netcoreapp2.0"));
+
+                var projectB = SimpleTestProjectContext.CreateNETCore(
+                    "b",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("netcoreapp2.0"));
+
+                // Referenced but not created
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0",
+                    NoWarn = "NU1603"
+                };
+
+                // Created in the source
+                var packageX11 = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.1"
+                };
+
+                SimpleTestPackageUtility.CreatePackages(pathContext.PackageSource, packageX11);
+
+                // B -> X
+                projectB.AddPackageToAllFrameworks(packageX);
+                projectB.Save();
+
+                // A -> B
+                projectA.AddProjectToAllFrameworks(projectB);
+                projectA.Properties.Add("TreatWarningsAsErrors", "true");
+                projectA.Save();
+
+                solution.Projects.Add(projectA);
+                solution.Projects.Add(projectB);
+                solution.Create(pathContext.SolutionRoot);
+
+                // Act
+                var r = Util.RestoreSolution(pathContext, expectedExitCode: 0);
+
+                // Assert
+                r.Success.Should().BeTrue();
+                r.AllOutput.Should().NotContain("NU1603");
+            }
+        }
+
+        [Fact]
+        // Tests ProjA[WarnAsError NU1603] -> ProjB -> PkgX[NU1603]
+        public void GivenAProjectReferenceDoesNotNoWarnAndDirectWarnAsErrorVerifyError()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                    "a",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("netcoreapp2.0"));
+
+                var projectB = SimpleTestProjectContext.CreateNETCore(
+                    "b",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("netcoreapp2.0"));
+
+                // Referenced but not created
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+
+                // Created in the source
+                var packageX11 = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.1"
+                };
+
+                SimpleTestPackageUtility.CreatePackages(pathContext.PackageSource, packageX11);
+
+                // B -> X
+                projectB.AddPackageToAllFrameworks(packageX);
+                projectB.Save();
+
+                // A -> B
+                projectA.AddProjectToAllFrameworks(projectB);
+                projectA.Properties.Add("WarningsAsErrors", "NU1603; NU1701");
+                projectA.Save();
+
+                solution.Projects.Add(projectA);
+                solution.Projects.Add(projectB);
+                solution.Create(pathContext.SolutionRoot);
+
+                // Act
+                var r = Util.RestoreSolution(pathContext, expectedExitCode: 1);
+
+                // Assert
+                r.Success.Should().BeFalse();
+                r.AllOutput.Should().Contain("NU1603");
+            }
+        }
+
+        [Fact]
+        // Tests ProjA[TreatWarningsAsError true] -> ProjB[PkgX NoWarn NU1603] -> PkgX[NU1603]
+        //                                                                     -> PkgY[NU1603]
+        public void GivenAProjectReferenceDoesNotNoWarnForAllReferencesAndDirectTreatWarningsAsErrorVerifyError()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                    "a",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("netcoreapp2.0"));
+
+                var projectB = SimpleTestProjectContext.CreateNETCore(
+                    "b",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("netcoreapp2.0"));
+
+                // Referenced but not created
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0",
+                    NoWarn = "NU1603"
+                };
+
+                // Created in the source
+                var packageX11 = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.1"
+                };
+
+                // Referenced but not created
+                var packageY = new SimpleTestPackageContext()
+                {
+                    Id = "y",
+                    Version = "1.0.0"
+                };
+
+                // Created in the source
+                var packageY11 = new SimpleTestPackageContext()
+                {
+                    Id = "y",
+                    Version = "1.0.1"
+                };
+
+                SimpleTestPackageUtility.CreatePackages(pathContext.PackageSource, packageX11);
+                SimpleTestPackageUtility.CreatePackages(pathContext.PackageSource, packageY11);
+
+                // B -> X
+                projectB.AddPackageToAllFrameworks(packageX);
+                projectB.AddPackageToAllFrameworks(packageY);
+                projectB.Save();
+
+                // A -> B
+                projectA.AddProjectToAllFrameworks(projectB);
+                projectA.Properties.Add("TreatWarningsAsErrors", "true");
+                projectA.Save();
+
+                solution.Projects.Add(projectA);
+                solution.Projects.Add(projectB);
+                solution.Create(pathContext.SolutionRoot);
+
+                // Act
+                var r = Util.RestoreSolution(pathContext, expectedExitCode: 1);
+
+                // Assert
+                r.Success.Should().BeFalse();
+                r.AllOutput.Should().Contain("NU1603");
+            }
+        }
+
+        [Fact]
+        // Tests ProjA[TreatWarningsAsError true] -> ProjB[ProjectWide NoWarn NU1603] -> PkgX[NU1603]
+        //                                                                            -> PkgY[NU1603]
+        public void GivenAProjectReferenceNoWarnsForAllReferencesAndDirectTreatWarningsAsErrorVerifyNoWarning()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                    "a",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("netcoreapp2.0"));
+
+                var projectB = SimpleTestProjectContext.CreateNETCore(
+                    "b",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("netcoreapp2.0"));
+
+                // Referenced but not created
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0",
+                    NoWarn = "NU1603"
+                };
+
+                // Created in the source
+                var packageX11 = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.1"
+                };
+
+                // Referenced but not created
+                var packageY = new SimpleTestPackageContext()
+                {
+                    Id = "y",
+                    Version = "1.0.0"
+                };
+
+                // Created in the source
+                var packageY11 = new SimpleTestPackageContext()
+                {
+                    Id = "y",
+                    Version = "1.0.1"
+                };
+
+                SimpleTestPackageUtility.CreatePackages(pathContext.PackageSource, packageX11);
+                SimpleTestPackageUtility.CreatePackages(pathContext.PackageSource, packageY11);
+
+                // B -> X
+                projectB.AddPackageToAllFrameworks(packageX);
+                projectB.AddPackageToAllFrameworks(packageY);
+                projectB.Properties.Add("NoWarn", "NU1603");
+                projectB.Save();
+
+                // A -> B
+                projectA.AddProjectToAllFrameworks(projectB);
+                projectA.Properties.Add("TreatWarningsAsErrors", "true");
+                projectA.Save();
+
+                solution.Projects.Add(projectA);
+                solution.Projects.Add(projectB);
+                solution.Create(pathContext.SolutionRoot);
+
+                // Act
+                var r = Util.RestoreSolution(pathContext, expectedExitCode: 0);
+
+                // Assert
+                r.Success.Should().BeTrue();
+                r.AllOutput.Should().NotContain("NU1603");
+            }
+        }
+
+        [Fact]
+        // Tests ProjA[TreatWarningsAsError true] -> ProjB -> PkgX[NU1603]
+        public void GivenAProjectReferenceDoesNotNoWarnAndDirectTreatWarningsAsErrorVerifyError()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                    "a",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("netcoreapp2.0"));
+
+                var projectB = SimpleTestProjectContext.CreateNETCore(
+                    "b",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("netcoreapp2.0"));
+
+                // Referenced but not created
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+
+                // Created in the source
+                var packageX11 = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.1"
+                };
+
+                SimpleTestPackageUtility.CreatePackages(pathContext.PackageSource, packageX11);
+
+                // B -> X
+                projectB.AddPackageToAllFrameworks(packageX);
+                projectB.Save();
+
+                // A -> B
+                projectA.AddProjectToAllFrameworks(projectB);
+                projectA.Properties.Add("TreatWarningsAsErrors", "true");
+                projectA.Save();
+
+                solution.Projects.Add(projectA);
+                solution.Projects.Add(projectB);
+                solution.Create(pathContext.SolutionRoot);
+
+                // Act
+                var r = Util.RestoreSolution(pathContext, expectedExitCode: 1);
+
+                // Assert
+                r.Success.Should().BeFalse();
+                r.AllOutput.Should().Contain("NU1603");
+            }
+        }
+
+        [Fact]
+        // Tests ProjA -> ProjB[PkgX NoWarn NU1603] -> PkgX[NU1603]
+        //             -> PkgY[NU1603]
+        public void GivenAProjectReferenceNoWarnsVerifyWarningForDirectReference()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                    "a",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("netcoreapp2.0"));
+
+                var projectB = SimpleTestProjectContext.CreateNETCore(
+                    "b",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("netcoreapp2.0"));
+
+                // Referenced but not created
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0",
+                    NoWarn = "NU1603"
+                };
+
+                // Created in the source
+                var packageX11 = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.1"
+                };
+
+                // Referenced but not created
+                var packageY = new SimpleTestPackageContext()
+                {
+                    Id = "y",
+                    Version = "1.0.0"
+                };
+
+                // Created in the source
+                var packageY11 = new SimpleTestPackageContext()
+                {
+                    Id = "y",
+                    Version = "1.0.1"
+                };
+
+                SimpleTestPackageUtility.CreatePackages(pathContext.PackageSource, packageX11);
+                SimpleTestPackageUtility.CreatePackages(pathContext.PackageSource, packageY11);
+
+                // B -> X
+                projectB.AddPackageToAllFrameworks(packageX);
+                projectB.Save();
+
+                // A -> B
+                // A -> Y
+                projectA.AddProjectToAllFrameworks(projectB);
+                projectA.AddPackageToAllFrameworks(packageY);
+                projectA.Save();
+
+                solution.Projects.Add(projectA);
+                solution.Projects.Add(projectB);
+                solution.Create(pathContext.SolutionRoot);
+
+                // Act
+                var r = Util.RestoreSolution(pathContext, expectedExitCode: 0);
+
+                // Assert
+                r.Success.Should().BeTrue();
+                GetSubstringCount(r.AllOutput, "NU1603", ignoreCase: false).Should().Be(1);
+            }
+        }
+
+        [Fact]
+        // Tests ProjA[PkgY NoWarn NU1603] -> ProjB[PkgX NoWarn NU1603] -> PkgX[NU1603]
+        //                                 -> PkgY[NU1603]
+        public void GivenAProjectReferenceNoWarnsAndDirectReferenceNoWarnsVerifyNoWarning()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                    "a",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("netcoreapp2.0"));
+
+                var projectB = SimpleTestProjectContext.CreateNETCore(
+                    "b",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("netcoreapp2.0"));
+
+                // Referenced but not created
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0",
+                    NoWarn = "NU1603"
+                };
+
+                // Created in the source
+                var packageX11 = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.1"
+                };
+
+                // Referenced but not created
+                var packageY = new SimpleTestPackageContext()
+                {
+                    Id = "y",
+                    Version = "1.0.0",
+                    NoWarn = "NU1603"
+                };
+
+                // Created in the source
+                var packageY11 = new SimpleTestPackageContext()
+                {
+                    Id = "y",
+                    Version = "1.0.1"
+                };
+
+                SimpleTestPackageUtility.CreatePackages(pathContext.PackageSource, packageX11);
+                SimpleTestPackageUtility.CreatePackages(pathContext.PackageSource, packageY11);
+
+                // B -> X
+                projectB.AddPackageToAllFrameworks(packageX);
+                projectB.Save();
+
+                // A -> B
+                // A -> Y
+                projectA.AddProjectToAllFrameworks(projectB);
+                projectA.AddPackageToAllFrameworks(packageY);
+                projectA.Save();
+
+                solution.Projects.Add(projectA);
+                solution.Projects.Add(projectB);
+                solution.Create(pathContext.SolutionRoot);
+
+                // Act
+                var r = Util.RestoreSolution(pathContext, expectedExitCode: 0);
+
+                // Assert
+                r.Success.Should().BeTrue();
+                r.AllOutput.Should().NotContain("NU1603");
+            }
+        }
+
+        [Fact]
         // Tests ProjA[net461] -> ProjB[netstandard2.0][PkgX NoWarn NU1603] -> PkgX[NU1603]
         public void GivenAProjectReferenceWithFallBackFrameworkNoWarnsVerifyNoWarning()
         {

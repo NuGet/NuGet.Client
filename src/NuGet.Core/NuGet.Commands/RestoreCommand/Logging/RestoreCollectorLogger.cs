@@ -130,6 +130,8 @@ namespace NuGet.Commands
             // This will be true if the message is not or warning or it is not suppressed.
             if (!IsWarningSuppressed(message))
             {
+                UpgradeWarningIfNeeded(message);
+
                 if (string.IsNullOrEmpty(message.FilePath))
                 {
                     message.FilePath = message.ProjectPath ?? ProjectPath;
@@ -152,6 +154,8 @@ namespace NuGet.Commands
             // This will be true if the message is not or warning or it is not suppressed.
             if (!IsWarningSuppressed(message))
             {
+                UpgradeWarningIfNeeded(message);
+
                 if (string.IsNullOrEmpty(message.FilePath))
                 {
                     message.FilePath = message.ProjectPath ?? ProjectPath;
@@ -205,18 +209,37 @@ namespace NuGet.Commands
         /// <returns>bool indicating if the message should be suppressed.</returns>
         private bool IsWarningSuppressed(IRestoreLogMessage message)
         {
-
-            if (ProjectWarningPropertiesCollection != null && ProjectWarningPropertiesCollection.ApplyWarningProperties(message))
+            if (message.Level == LogLevel.Warning)
             {
-                return true;
-            }
-            else if (message.Level == LogLevel.Warning)
-            {
-                // Use transitive warning properties only if the project does not suppress the warning or upgrade it to an error
-                return TransitiveWarningPropertiesCollection != null && TransitiveWarningPropertiesCollection.ApplyWarningProperties(message);
+                // If the ProjectWarningPropertiesCollection is present then test if the warning is suppressed in
+                // project wide no warn or package specific no warn
+                if (ProjectWarningPropertiesCollection != null && ProjectWarningPropertiesCollection.ApplyNoWarnProperties(message))
+                {
+                    return true;
+                }
+                else
+                {
+                    // Use transitive warning properties only if the project does not suppress the warning
+                    // In transitive warning properties look at only the package specific ones as all properties are per package reference.
+                    return TransitiveWarningPropertiesCollection != null && TransitiveWarningPropertiesCollection.ApplyNoWarnProperties(message);
+                }
             }
 
             return false;
+        }
+
+        /// <summary>
+        /// This method upgrades the warning to an error if the project wide warning properties have set the code in WarningsAsErrors or
+        /// set TreatWarningsAsErrors to true
+        /// </summary>
+        /// <param name="message">IRestoreLogMessage to be logged as an error or warning.</param>
+        /// <returns>bool indicating if the message should be suppressed.</returns>
+        private void UpgradeWarningIfNeeded(IRestoreLogMessage message)
+        {
+            if (ProjectWarningPropertiesCollection != null)
+            {
+                ProjectWarningPropertiesCollection.ApplyWarningAsErrorProperties(message);
+            }
         }
 
         private static IRestoreLogMessage ToRestoreLogMessage(ILogMessage message)
