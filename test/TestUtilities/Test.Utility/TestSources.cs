@@ -26,7 +26,7 @@ namespace NuGet.Test.Utility
             // equal to the root of the repository where the config files are copied as part of
             // a build step before the tests are run. If the environment variable is not set, the behavior
             // is the same as on TeamCity - this will ensure both CI's will be happy.
-            var fullPath = Environment.GetEnvironmentVariable("NuGet_FuncTests_Config");
+            var fullPath = Environment.GetEnvironmentVariable("NUGET_FUNCTESTS_CONFIG");
             return string.IsNullOrEmpty(fullPath) ? NuGetEnvironment.GetFolderPath(NuGetFolderPath.UserSettingsDirectory) : fullPath;
         }
     }
