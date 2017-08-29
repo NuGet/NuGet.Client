@@ -127,10 +127,11 @@ namespace NuGet.Commands
 
         public void Log(IRestoreLogMessage message)
         {
-            // This will be true if the message is not or warning or it is not suppressed.
+            // check if the message is a warning and it is suppressed 
             if (!IsWarningSuppressed(message))
             {
-                UpgradeWarningIfNeeded(message);
+                // if the message is not suppressed then check if it needs to be upgraded to an error
+                UpgradeWarningToErrorIfNeeded(message);
 
                 if (string.IsNullOrEmpty(message.FilePath))
                 {
@@ -151,10 +152,11 @@ namespace NuGet.Commands
 
         public Task LogAsync(IRestoreLogMessage message)
         {
-            // This will be true if the message is not or warning or it is not suppressed.
+            // check if the message is a warning and it is suppressed 
             if (!IsWarningSuppressed(message))
             {
-                UpgradeWarningIfNeeded(message);
+                // if the message is not suppressed then check if it needs to be upgraded to an error
+                UpgradeWarningToErrorIfNeeded(message);
 
                 if (string.IsNullOrEmpty(message.FilePath))
                 {
@@ -213,7 +215,7 @@ namespace NuGet.Commands
             {
                 // If the ProjectWarningPropertiesCollection is present then test if the warning is suppressed in
                 // project wide no warn or package specific no warn
-                if (ProjectWarningPropertiesCollection != null && ProjectWarningPropertiesCollection.ApplyNoWarnProperties(message))
+                if (ProjectWarningPropertiesCollection?.ApplyNoWarnProperties(message) == true)
                 {
                     return true;
                 }
@@ -221,7 +223,7 @@ namespace NuGet.Commands
                 {
                     // Use transitive warning properties only if the project does not suppress the warning
                     // In transitive warning properties look at only the package specific ones as all properties are per package reference.
-                    return TransitiveWarningPropertiesCollection != null && TransitiveWarningPropertiesCollection.ApplyNoWarnProperties(message);
+                    return TransitiveWarningPropertiesCollection?.ApplyNoWarnProperties(message) == true;
                 }
             }
 
@@ -234,12 +236,9 @@ namespace NuGet.Commands
         /// </summary>
         /// <param name="message">IRestoreLogMessage to be logged as an error or warning.</param>
         /// <returns>bool indicating if the message should be suppressed.</returns>
-        private void UpgradeWarningIfNeeded(IRestoreLogMessage message)
+        private void UpgradeWarningToErrorIfNeeded(IRestoreLogMessage message)
         {
-            if (ProjectWarningPropertiesCollection != null)
-            {
-                ProjectWarningPropertiesCollection.ApplyWarningAsErrorProperties(message);
-            }
+            ProjectWarningPropertiesCollection?.ApplyWarningAsErrorProperties(message);
         }
 
         private static IRestoreLogMessage ToRestoreLogMessage(ILogMessage message)
