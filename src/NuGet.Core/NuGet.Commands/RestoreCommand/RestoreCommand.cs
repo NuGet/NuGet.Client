@@ -53,16 +53,9 @@ namespace NuGet.Commands
             var collectorLoggerHideWarningsAndErrors = request.Project.RestoreSettings.HideWarningsAndErrors
                 || request.HideWarningsAndErrors;
 
-            var collectorLogger = new RestoreCollectorLogger(_request.Log, collectorLoggerHideWarningsAndErrors)
-            {
-                ProjectPath = _request.Project.RestoreMetadata?.ProjectPath,
-                WarningPropertiesCollection = new WarningPropertiesCollection()
-                {
-                    ProjectWideWarningProperties = request.Project.RestoreMetadata?.ProjectWideWarningProperties,
-                    PackageSpecificWarningProperties = PackageSpecificWarningProperties.CreatePackageSpecificWarningProperties(request.Project),
-                    ProjectFrameworks = request.Project.TargetFrameworks.Select(f => f.FrameworkName).AsList().AsReadOnly()
-                }
-            };
+            var collectorLogger = new RestoreCollectorLogger(_request.Log, collectorLoggerHideWarningsAndErrors);
+
+            collectorLogger.ApplyRestoreInputs(_request.Project);
 
             _logger = collectorLogger;
         }
@@ -568,7 +561,7 @@ namespace NuGet.Commands
 
             var projectRestoreCommand = new ProjectRestoreCommand(projectRestoreRequest);
 
-            var result = await projectRestoreCommand.TryRestore(
+            var result = await projectRestoreCommand.TryRestoreAsync(
                 projectRange,
                 projectFrameworkRuntimePairs,
                 allInstalledPackages,
@@ -615,7 +608,7 @@ namespace NuGet.Commands
             // Walk additional runtime graphs for supports checks
             if (_success && _request.CompatibilityProfiles.Any())
             {
-                var compatibilityResult = await projectRestoreCommand.TryRestore(
+                var compatibilityResult = await projectRestoreCommand.TryRestoreAsync(
                     projectRange,
                     _request.CompatibilityProfiles,
                     allInstalledPackages,

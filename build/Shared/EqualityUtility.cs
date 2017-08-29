@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -59,6 +59,37 @@ namespace NuGet.Shared
             return self.SequenceEqual(other, comparer);
         }
 
+        /// <summary>
+        /// Compares two sets for equality, allowing either sequence to be null.
+        /// If one is null, both have to be null for equality.
+        /// </summary>
+        internal static bool SetEqualsWithNullCheck<T>(
+            this ISet<T> self,
+            ISet<T> other,
+            IEqualityComparer<T> comparer = null)
+        {
+            bool identityEquals;
+            if (TryIdentityEquals(self, other, out identityEquals))
+            {
+                return identityEquals;
+            }
+
+            // Verify they could be equal by count
+            if (self.Count != other.Count)
+            {
+                return false;
+            }
+
+            if (comparer == null)
+            {
+                comparer = EqualityComparer<T>.Default;
+            }
+
+            var set = new HashSet<T>(self, comparer);
+
+            return set.SetEquals(other);
+        }
+
         internal static bool DictionaryEquals<TKey, TValue>(
             IDictionary<TKey, TValue> self,
             IDictionary<TKey, TValue> other,
@@ -72,6 +103,12 @@ namespace NuGet.Shared
             if (TryIdentityEquals(self, other, out identityEquals))
             {
                 return identityEquals;
+            }
+
+            // Verify they could be equal by count
+            if (self.Count != other.Count)
+            {
+                return false;
             }
 
             if (!self.Keys.OrderedEquals(

@@ -21,7 +21,7 @@ namespace NuGet.Commands
             LockFile existingLockFile,
             Dictionary<NuGetFramework, RuntimeGraph> runtimeGraphCache,
             ConcurrentDictionary<PackageIdentity, RuntimeGraph> runtimeGraphCacheByPackage,
-            ILogger log)
+            RestoreCollectorLogger log)
         {
             CacheContext = request.CacheContext;
             Log = log;
@@ -36,7 +36,7 @@ namespace NuGet.Commands
         }
 
         public SourceCacheContext CacheContext { get; }
-        public ILogger Log { get; }
+        public RestoreCollectorLogger Log { get; }
         public string PackagesDirectory { get; }
         public int MaxDegreeOfConcurrency { get; }
         public LockFile ExistingLockFile { get; }
