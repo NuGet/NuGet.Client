@@ -76,7 +76,15 @@ namespace NuGet.PackageManagement.VisualStudio
                         ? new Version(platformMinVersionString)
                         : null;
 
-                    if (platformMinVersion != null && jsonTargetFramework.Version != platformMinVersion)
+                    var targetFrameworkMonikerString = await _vsProjectAdapter
+                        .BuildProperties
+                        .GetPropertyValueAsync(ProjectBuildProperties.TargetFrameworkMoniker);
+
+                    var targetFrameworkMoniker = !string.IsNullOrWhiteSpace(targetFrameworkMonikerString)
+                        ? NuGetFramework.Parse(targetFrameworkMonikerString)
+                        : null;
+
+                    if (platformMinVersion != null && jsonTargetFramework.Version != platformMinVersion && FrameworkConstants.CommonFrameworks.NetCore50 == targetFrameworkMoniker)
                     {
                         // Found the TPMinV in csproj and it is different from project json's framework version,
                         // store this as a new target framework to be replaced in project.json
