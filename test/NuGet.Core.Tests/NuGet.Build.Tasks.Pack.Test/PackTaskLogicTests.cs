@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -481,6 +481,59 @@ namespace NuGet.Build.Tasks.Pack.Test
                     Assert.Equal(contentFileItems.Count, 1);
                     Assert.Contains("content/abc.txt", contentItems, StringComparer.Ordinal);
                     Assert.Contains("contentFiles/any/net45/abc.txt", contentFileItems, StringComparer.Ordinal);
+                }
+            }
+        }
+
+        [Fact]
+        public void PackTaskLogic_SupportsLayoutFilesForUWP()
+        {
+            // Arrange
+            using (var testDir = TestDirectory.Create())
+            {
+                var tc = new TestContext(testDir);
+                var outputPath = Path.Combine(testDir, "bin", "Debug", "uap10");
+                var dllPath = Path.Combine(outputPath, "a.dll");
+                var layoutFolder = Path.Combine(outputPath, "layoutFolder");
+                var xmlPath = Path.Combine(layoutFolder, "a.xml");
+                var xamlPath = Path.Combine(layoutFolder, "a.xaml");
+
+
+                tc.Request.BuildOutputInPackage = new[] { new MSBuildItem(dllPath, new Dictionary<string, string>
+                    {
+                        {"FinalOutputPath", dllPath },
+                        {"TargetFramework", "uap10" }
+                    }),
+                    new MSBuildItem(xmlPath, new Dictionary<string, string>
+                    {
+                        {"FinalOutputPath", xmlPath },
+                        {"TargetPath", Path.Combine("layoutFolder", "a.xml") },
+                        {"TargetFramework", "uap10" }
+                    }),
+                     new MSBuildItem(xamlPath, new Dictionary<string, string>
+                    {
+                        {"FinalOutputPath", xamlPath },
+                        {"TargetPath", Path.Combine("layoutFolder", "a.xaml") },
+                        {"TargetFramework", "uap10" }
+                    })
+                };
+
+                Directory.CreateDirectory(outputPath);
+                Directory.CreateDirectory(layoutFolder);
+
+                tc.Request.BuildOutputInPackage.ToList().ForEach(p => File.WriteAllBytes(p.Identity, new byte[0]));
+
+                // Act
+                tc.BuildPackage();
+
+                // Assert
+                using (var nupkgReader = new PackageArchiveReader(tc.NupkgPath))
+                {
+                    var libItems = nupkgReader.GetFiles("lib").ToList();
+
+                    Assert.Contains("lib/uap10/a.dll", libItems, StringComparer.Ordinal);
+                    Assert.Contains("lib/uap10/layoutFolder/a.xml", libItems, StringComparer.Ordinal);
+                    Assert.Contains("lib/uap10/layoutFolder/a.xaml", libItems, StringComparer.Ordinal);
                 }
             }
         }
