@@ -1,37 +1,48 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using NuGet.ContentModel.Infrastructure;
+using NuGet.Shared;
 
 namespace NuGet.ContentModel
 {
     public class ContentItemCollection
     {
-        private IEnumerable<Asset> _assets;
+        private List<Asset> _assets;
+
+        /// <summary>
+        /// True if lib/contract exists
+        /// </summary>
+        public bool HasContract { get; private set; }
 
         public void Load(IEnumerable<string> paths)
         {
-            _assets = paths.Select(path => new Asset { Path = path }).SelectMany(ContractBecomesRef).ToList();
-        }
+            // Read already loaded assets
+            _assets = new List<Asset>();
 
-        public void Load(string packageDirectory)
-        {
-            _assets = AssetManager.GetPackageAssets(packageDirectory).SelectMany(ContractBecomesRef).ToList();
-        }
-
-        private IEnumerable<Asset> ContractBecomesRef(Asset asset)
-        {
-            yield return asset;
-            if (asset.Path.StartsWith("lib/contract"))
+            foreach (var path in paths)
             {
-                yield return new Asset
+                // Skip files in the root of the directory
+                if (IsValidAsset(path))
+                {
+                    _assets.Add(new Asset()
                     {
-                        Path = "ref/any" + asset.Path.Substring("lib/contract".Length),
-                        Link = asset.Link ?? asset.Path
-                    };
+                        Path = path
+                    });
+
+                    if (path.StartsWith("lib/contract", StringComparison.Ordinal))
+                    {
+                        HasContract = true;
+
+                        _assets.Add(new Asset
+                        {
+                            Path = "ref/any" + path.Substring("lib/contract".Length)
+                        });
+                    }
+                }
             }
         }
 
@@ -42,38 +53,47 @@ namespace NuGet.ContentModel
 
         public IEnumerable<ContentItemGroup> FindItemGroups(PatternSet definition)
         {
-            var groupPatterns = definition.GroupPatterns
-                .Select(pattern => new PatternExpression(pattern))
-                .ToList();
-
-            var groupAssets = new List<Tuple<ContentItem, Asset>>();
-            foreach (var asset in _assets)
+            if (_assets.Count > 0)
             {
-                foreach (var groupPattern in groupPatterns)
+                var groupPatterns = definition.GroupExpressions;
+
+                List<Tuple<ContentItem, Asset>> groupAssets = null;
+                foreach (var asset in _assets)
                 {
-                    var item = groupPattern.Match(asset.Path, definition.PropertyDefinitions);
-                    if (item != null)
+                    foreach (var groupPattern in groupPatterns)
                     {
-                        groupAssets.Add(Tuple.Create(item, asset));
+                        var item = groupPattern.Match(asset.Path, definition.PropertyDefinitions);
+                        if (item != null)
+                        {
+                            if (groupAssets == null)
+                            {
+                                groupAssets = new List<Tuple<ContentItem, Asset>>(1);
+                            }
+
+                            groupAssets.Add(Tuple.Create(item, asset));
+                        }
                     }
                 }
-            }
 
-            foreach (var grouping in groupAssets.GroupBy(key => key.Item1, new GroupComparer()))
-            {
-                var group = new ContentItemGroup();
-
-                foreach (var property in grouping.Key.Properties)
+                if (groupAssets?.Count > 0)
                 {
-                    group.Properties.Add(property.Key, property.Value);
-                }
+                    foreach (var grouping in groupAssets.GroupBy(key => key.Item1, GroupComparer.DefaultComparer))
+                    {
+                        var group = new ContentItemGroup();
 
-                foreach (var item in FindItemsImplementation(definition, grouping.Select(match => match.Item2)))
-                {
-                    group.Items.Add(item);
-                }
+                        foreach (var property in grouping.Key.Properties)
+                        {
+                            group.Properties.Add(property.Key, property.Value);
+                        }
 
-                yield return group;
+                        foreach (var item in FindItemsImplementation(definition, grouping.Select(match => match.Item2)))
+                        {
+                            group.Items.Add(item);
+                        }
+
+                        yield return group;
+                    }
+                }
             }
         }
 
@@ -180,15 +200,15 @@ namespace NuGet.ContentModel
 
         private IEnumerable<ContentItem> FindItemsImplementation(PatternSet definition, IEnumerable<Asset> assets)
         {
-            var pathPatterns = definition.PathPatterns
-                .Select(pattern => new PatternExpression(pattern))
-                .ToList();
+            var pathPatterns = definition.PathExpressions;
 
             foreach (var asset in assets)
             {
+                var path = asset.Path;
+
                 foreach (var pathPattern in pathPatterns)
                 {
-                    var contentItem = pathPattern.Match(asset.Path, definition.PropertyDefinitions);
+                    var contentItem = pathPattern.Match(path, definition.PropertyDefinitions);
                     if (contentItem != null)
                     {
                         yield return contentItem;
@@ -198,8 +218,27 @@ namespace NuGet.ContentModel
             }
         }
 
+        /// <summary>
+        /// False if the path would not match any patterns.
+        /// </summary>
+        private static bool IsValidAsset(string path)
+        {
+            // Verify that the file is not in the root. All patterns are for sub directories.
+            for (var i = 1; i < path.Length; i++)
+            {
+                if (path[i] == '/')
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
         private class GroupComparer : IEqualityComparer<ContentItem>
         {
+            public static readonly GroupComparer DefaultComparer = new GroupComparer();
+
             public int GetHashCode(ContentItem obj)
             {
                 var hashCode = 0;
@@ -213,6 +252,16 @@ namespace NuGet.ContentModel
 
             public bool Equals(ContentItem x, ContentItem y)
             {
+                if (ReferenceEquals(x, y))
+                {
+                    return true;
+                }
+
+                if (x.Properties.Count != y.Properties.Count)
+                {
+                    return false;
+                }
+
                 foreach (var xProperty in x.Properties)
                 {
                     object yValue;

@@ -37,32 +37,28 @@ namespace NuGet.Commands
                 targetGraph,
                 dependencyType: dependencyType,
                 targetFrameworkOverride: null,
-                dependencies: null);
+                dependencies: null,
+                cache: new LockFileBuilderCache());
         }
 
         public static LockFileTargetLibrary CreateLockFileTargetLibrary(
-            LockFileLibrary library,
-            LocalPackageInfo package,
-            RestoreTargetGraph targetGraph,
-            LibraryIncludeFlags dependencyType,
-            NuGetFramework targetFrameworkOverride,
-            IEnumerable<LibraryDependency> dependencies)
+                LockFileLibrary library,
+                LocalPackageInfo package,
+                RestoreTargetGraph targetGraph,
+                LibraryIncludeFlags dependencyType,
+                NuGetFramework targetFrameworkOverride,
+                IEnumerable<LibraryDependency> dependencies,
+                LockFileBuilderCache cache)
         {
             LockFileTargetLibrary lockFileLib = null;
-
-            var framework = targetFrameworkOverride ?? targetGraph.Framework;
             var runtimeIdentifier = targetGraph.RuntimeIdentifier;
+            var framework = targetFrameworkOverride ?? targetGraph.Framework;
 
-            // Read files from package
-            var files = GetPackageFiles(library, package);
-            var contentItems = new ContentItemCollection();
-            contentItems.Load(files);
+            var orderedCriteriaSets = cache.GetSelectionCriteria(targetGraph, framework);
+            var contentItems = cache.GetContentItems(library, package);
 
             // This will throw an appropriate error if the nuspec is missing
             var nuspec = package.Nuspec;
-
-            // Create fallback criteria, this will always be one or more.
-            var orderedCriteriaSets = CreateOrderedCriteriaSets(targetGraph, framework);
 
             for (var i = 0; i < orderedCriteriaSets.Count; i++)
             {
@@ -76,7 +72,7 @@ namespace NuGet.Commands
                 };
 
                 // Populate assets
-                AddAssets(library, package, targetGraph, dependencyType, lockFileLib, framework, runtimeIdentifier, files, contentItems, nuspec, orderedCriteriaSets[i]);
+                AddAssets(library, package, targetGraph, dependencyType, lockFileLib, framework, runtimeIdentifier, contentItems, nuspec, orderedCriteriaSets[i]);
 
                 // Check if compatile assets were found.
                 // If no compatible assets were found and this is the last check
@@ -98,14 +94,14 @@ namespace NuGet.Commands
             return lockFileLib;
         }
 
-        private static List<IReadOnlyList<SelectionCriteria>> CreateOrderedCriteriaSets(RestoreTargetGraph targetGraph, NuGetFramework framework)
+        internal static List<List<SelectionCriteria>> CreateOrderedCriteriaSets(RestoreTargetGraph targetGraph, NuGetFramework framework)
         {
             // Create an ordered list of selection criteria. Each will be applied, if the result is empty
             // fallback frameworks from "imports" will be tried.
             // These are only used for framework/RID combinations where content model handles everything.
             // AssetTargetFallback frameworks will provide multiple criteria since all assets need to be
             // evaluated before selecting the TFM to use.
-            var orderedCriteriaSets = new List<IReadOnlyList<SelectionCriteria>>(1);
+            var orderedCriteriaSets = new List<List<SelectionCriteria>>(1);
 
             var assetTargetFallback = framework as AssetTargetFallbackFramework;
 
@@ -137,7 +133,6 @@ namespace NuGet.Commands
             LockFileTargetLibrary lockFileLib,
             NuGetFramework framework,
             string runtimeIdentifier,
-            IList<string> files,
             ContentItemCollection contentItems,
             NuspecReader nuspec,
             IReadOnlyList<SelectionCriteria> orderedCriteria)
@@ -204,7 +199,7 @@ namespace NuGet.Commands
             AddRuntimeTargets(targetGraph, dependencyType, lockFileLib, framework, runtimeIdentifier, contentItems);
 
             // COMPAT: Support lib/contract so older packages can be consumed
-            ApplyLibContract(package, lockFileLib, framework, files);
+            ApplyLibContract(package, lockFileLib, framework, contentItems);
 
             // Apply filters from the <references> node in the nuspec
             ApplyReferenceFilter(lockFileLib, framework, nuspec);
@@ -308,15 +303,20 @@ namespace NuGet.Commands
         {
             if (lockFileLib.CompileTimeAssemblies.Count > 0 || lockFileLib.RuntimeAssemblies.Count > 0)
             {
-                var referenceSet = nuspec.GetReferenceGroups().GetNearest(framework);
-                if (referenceSet != null)
-                {
-                    var referenceFilter = new HashSet<string>(referenceSet.Items, StringComparer.OrdinalIgnoreCase);
+                var groups = nuspec.GetReferenceGroups().ToList();
 
-                    // Remove anything that starts with "lib/" and is NOT specified in the reference filter.
-                    // runtimes/* is unaffected (it doesn't start with lib/)
-                    lockFileLib.RuntimeAssemblies = lockFileLib.RuntimeAssemblies.Where(p => !p.Path.StartsWith("lib/") || referenceFilter.Contains(Path.GetFileName(p.Path))).ToList();
-                    lockFileLib.CompileTimeAssemblies = lockFileLib.CompileTimeAssemblies.Where(p => !p.Path.StartsWith("lib/") || referenceFilter.Contains(Path.GetFileName(p.Path))).ToList();
+                if (groups.Count > 0)
+                {
+                    var referenceSet = groups.GetNearest(framework);
+                    if (referenceSet != null)
+                    {
+                        var referenceFilter = new HashSet<string>(referenceSet.Items, StringComparer.OrdinalIgnoreCase);
+
+                        // Remove anything that starts with "lib/" and is NOT specified in the reference filter.
+                        // runtimes/* is unaffected (it doesn't start with lib/)
+                        lockFileLib.RuntimeAssemblies = lockFileLib.RuntimeAssemblies.Where(p => !p.Path.StartsWith("lib/") || referenceFilter.Contains(Path.GetFileName(p.Path))).ToList();
+                        lockFileLib.CompileTimeAssemblies = lockFileLib.CompileTimeAssemblies.Where(p => !p.Path.StartsWith("lib/") || referenceFilter.Contains(Path.GetFileName(p.Path))).ToList();
+                    }
                 }
             }
         }
@@ -324,13 +324,13 @@ namespace NuGet.Commands
         /// <summary>
         /// COMPAT: Support lib/contract so older packages can be consumed
         /// </summary>
-        private static void ApplyLibContract(LocalPackageInfo package, LockFileTargetLibrary lockFileLib, NuGetFramework framework, IList<string> files)
+        private static void ApplyLibContract(LocalPackageInfo package, LockFileTargetLibrary lockFileLib, NuGetFramework framework, ContentItemCollection contentItems)
         {
-            if (lockFileLib.RuntimeAssemblies.Count > 0 && !framework.IsDesktop())
+            if (contentItems.HasContract && lockFileLib.RuntimeAssemblies.Count > 0 && !framework.IsDesktop())
             {
                 var contractPath = "lib/contract/" + package.Id + ".dll";
 
-                if (files.Any(path => path == contractPath))
+                if (package.Files.Any(path => path == contractPath))
                 {
                     lockFileLib.CompileTimeAssemblies.Clear();
                     lockFileLib.CompileTimeAssemblies.Add(new LockFileItem(contractPath));
@@ -369,44 +369,6 @@ namespace NuGet.Commands
                     .Select(ld => new PackageDependency(ld.Name, ld.LibraryRange.VersionRange))
                     .ToList();
             }
-        }
-
-        private static IList<string> GetPackageFiles(LockFileLibrary library, LocalPackageInfo package)
-        {
-            IList<string> files;
-            // If the previous LockFileLibrary was given, use that to find the file list. Otherwise read the nupkg.
-            if (library == null)
-            {
-                using (var packageReader = new PackageFolderReader(package.ExpandedPath))
-                {
-                    if (Path.DirectorySeparatorChar != LockFile.DirectorySeparatorChar)
-                    {
-                        files = packageReader
-                            .GetFiles()
-                            .Select(p => p.Replace(Path.DirectorySeparatorChar, LockFile.DirectorySeparatorChar))
-                            .ToList();
-                    }
-                    else
-                    {
-                        files = packageReader
-                            .GetFiles()
-                            .ToList();
-                    }
-                }
-            }
-            else
-            {
-                if (Path.DirectorySeparatorChar != LockFile.DirectorySeparatorChar)
-                {
-                    files = library.Files.Select(p => p.Replace(Path.DirectorySeparatorChar, LockFile.DirectorySeparatorChar)).ToList();
-                }
-                else
-                {
-                    files = library.Files;
-                }
-            }
-
-            return files;
         }
 
         /// <summary>
@@ -662,7 +624,7 @@ namespace NuGet.Commands
         /// <summary>
         /// Creates an ordered list of selection criteria to use. This supports fallback frameworks.
         /// </summary>
-        private static IReadOnlyList<SelectionCriteria> CreateCriteria(
+        private static List<SelectionCriteria> CreateCriteria(
             RestoreTargetGraph targetGraph,
             NuGetFramework framework)
         {
