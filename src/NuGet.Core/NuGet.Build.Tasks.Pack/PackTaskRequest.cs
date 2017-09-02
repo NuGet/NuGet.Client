@@ -9,6 +9,8 @@ namespace NuGet.Build.Tasks.Pack
 {
     public class PackTaskRequest : IPackTaskRequest<IMSBuildItem>
     {
+        public string[] AllowedOutputExtensionsInPackageBuildOutputFolder { get; set; }
+        public string[] AllowedOutputExtensionsInSymbolsPackageBuildOutputFolder { get; set; }
         public string AssemblyName { get; set; }
         public string[] Authors { get; set; }
         public IMSBuildItem[] BuildOutputInPackage { get; set; }

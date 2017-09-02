@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -264,6 +264,8 @@ namespace NuGet.Build.Tasks.Pack.Test
                 AssemblyName = "AssemblyName",
                 FrameworkAssemblyReferences = new ITaskItem[0],
                 Authors = new string[0],
+                AllowedOutputExtensionsInPackageBuildOutputFolder = new string[0],
+                AllowedOutputExtensionsInSymbolsPackageBuildOutputFolder = new string[0],
                 BuildOutputFolder = "BuildOutputFolder",
                 ContentTargetFolders = new string[] { "ContentTargetFolders" } ,
                 ContinuePackingAfterGeneratingNuspec = true,

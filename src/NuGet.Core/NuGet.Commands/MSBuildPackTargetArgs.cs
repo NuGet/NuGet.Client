@@ -11,6 +11,8 @@ namespace NuGet.Commands
     {
         public IEnumerable<OutputLibFile> TargetPathsToSymbols { get; set; } 
         public IEnumerable<OutputLibFile> TargetPathsToAssemblies { get; set; }
+        public HashSet<string> AllowedOutputExtensionsInPackageBuildOutputFolder { get; set; }
+        public HashSet<string> AllowedOutputExtensionsInSymbolsPackageBuildOutputFolder { get; set; }
         public string AssemblyName { get; set; }
         public string NuspecOutputPath { get; set; }
         public Dictionary<string, IEnumerable<ContentMetadata>> ContentFiles { get; set; }

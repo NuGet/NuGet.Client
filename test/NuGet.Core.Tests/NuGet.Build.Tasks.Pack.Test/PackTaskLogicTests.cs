@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -353,6 +353,51 @@ namespace NuGet.Build.Tasks.Pack.Test
         }
 
         [Fact]
+        public void PackTaskLogic_BuildOutputWithCustomExtension_IncludedInNupkgIfSpecified()
+        {
+            // Arrange
+            using (var testDir = TestDirectory.Create())
+            {
+                var tc = new TestContext(testDir);
+
+                var metadata = new Dictionary<string, string>()
+                {
+                    { "BuildAction", "None" },
+                    { "Identity", Path.Combine(testDir.Path, "abc.abc") },
+                    { "TargetFramework", "net45" }
+                };
+
+                var msbuildItem = tc.AddContentToProject("", "abc.abc", "hello world", metadata);
+
+                var metadata2 = new Dictionary<string, string>()
+                {
+                    { "BuildAction", "None" },
+                    { "Identity", Path.Combine(testDir.Path, "abc.abd") },
+                    { "TargetFramework", "net45" }
+                };
+
+                var msbuildItem2 = tc.AddContentToProject("", "abc.abd", "hello world", metadata);
+
+                tc.Request.BuildOutputInPackage = new MSBuildItem[] { msbuildItem, msbuildItem2 };
+                tc.Request.ContentTargetFolders = new string[] { "content", "contentFiles" };
+                tc.Request.AllowedOutputExtensionsInPackageBuildOutputFolder = new string[] { ".abc" };
+                // Act
+                tc.BuildPackage();
+
+                // Assert
+                Assert.True(File.Exists(tc.NuspecPath), "The intermediate .nuspec file is not in the expected place.");
+                Assert.True(File.Exists(tc.NupkgPath), "The output .nupkg file is not in the expected place.");
+                using (var nupkgReader = new PackageArchiveReader(tc.NupkgPath))
+                {
+                    var libItems = nupkgReader.GetLibItems().ToList();
+                    Assert.Equal(1, libItems.Count);
+                    Assert.Equal(FrameworkConstants.CommonFrameworks.Net45, libItems[0].TargetFramework);
+                    Assert.Equal(new[] { "lib/net45/abc.abc" }, libItems[0].Items);
+                }
+            }
+        }
+
+        [Fact]
         public void PackTaskLogic_SupportsContentFiles_WithPackagePath()
         {
             // Arrange
@@ -510,6 +555,8 @@ namespace NuGet.Build.Tasks.Pack.Test
                     PackageId = "SomePackage",
                     PackageVersion = "3.0.0-beta",
                     Authors = new[] { "NuGet Team", "Unit test" },
+                    AllowedOutputExtensionsInPackageBuildOutputFolder = new[] { ".dll", ".exe", ".winmd", ".json", ".pri", ".xml" },
+                    AllowedOutputExtensionsInSymbolsPackageBuildOutputFolder = new[] { ".dll", ".exe", ".winmd", ".json", ".pri", ".xml", ".pdb", ".mdb" },
                     Description = "A test package.",
                     PackItem = new MSBuildItem("project.csproj", new Dictionary<string, string>
                     {

@@ -33,6 +33,8 @@ namespace NuGet.Build.Tasks.Pack
                 NoPackageAnalysis = request.NoPackageAnalysis,
                 PackTargetArgs = new MSBuildPackTargetArgs
                 {
+                    AllowedOutputExtensionsInPackageBuildOutputFolder = InitOutputExtensions(request.AllowedOutputExtensionsInPackageBuildOutputFolder),
+                    AllowedOutputExtensionsInSymbolsPackageBuildOutputFolder = InitOutputExtensions(request.AllowedOutputExtensionsInSymbolsPackageBuildOutputFolder),
                     TargetPathsToAssemblies = InitLibFiles(request.BuildOutputInPackage),
                     TargetPathsToSymbols = InitLibFiles(request.TargetPathsToSymbols),
                     AssemblyName = request.AssemblyName,
@@ -719,6 +721,11 @@ namespace NuGet.Build.Tasks.Pack
             }
 
             return dictionary;
+        }
+
+        private HashSet<string> InitOutputExtensions(IEnumerable<string> outputExtensions)
+        {
+            return new HashSet<string>(outputExtensions.Distinct(StringComparer.OrdinalIgnoreCase));
         }
     }
 }
