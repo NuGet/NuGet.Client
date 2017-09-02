@@ -117,6 +117,31 @@ function Assert-ProjectJsonLockFilePackage {
     Assert-True $found "Package $Id $Version was not found in the lock file for $($Project.Name)"    
 }
 
+function Assert-ProjectJsonLockFileErrorCode {
+    param(
+        [parameter(Mandatory = $true)]
+        $Project,
+        [parameter(Mandatory = $true)]
+        [string]$errorCode
+    )
+
+    $lockFile = Get-ProjectJsonLockFile $Project
+
+    Assert-NotNull $lockFile
+
+    $found = $false
+
+    foreach ($log in $lockFile.LogMessages) {
+        
+        if ($log.Code.ToUpperInvariant().Equals($errorCode.ToUpperInvariant()))
+        {
+            $found = $true;
+        }
+    }
+
+     Assert-True $found "Error Code $errorCode was not found in the lock file for $($Project.Name)"
+}
+
 function Assert-ProjectCacheFileExists {
     param(
         [parameter(Mandatory = $true)]
