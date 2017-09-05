@@ -458,7 +458,6 @@ For more information, visit http://docs.nuget.org/docs/reference/command-line-re
     <comment>{0} - Operation Name
 {1} - project file path</comment>
   </data>
-<<<<<<< HEAD
   <data name="Error_MultipleMatchingSpecs" xml:space="preserve">
     <value>Multiple matching package specs found when attempting to add package '{0}' to project '{1}'. Number of matching package specs found are  '{2}'.</value>
     <comment>{0} - Package ID
