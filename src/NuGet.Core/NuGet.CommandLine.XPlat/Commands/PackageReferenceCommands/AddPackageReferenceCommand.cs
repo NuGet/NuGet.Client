@@ -51,7 +51,7 @@ namespace NuGet.CommandLine.XPlat
                 var frameworks = addpkg.Option(
                     "-f|--framework",
                     Strings.AddPkg_FrameworksDescription,
-                    CommandOptionType.SingleValue);
+                    CommandOptionType.MultipleValue);
 
                 var noRestore = addpkg.Option(
                     "-n|--no-restore",
@@ -61,7 +61,7 @@ namespace NuGet.CommandLine.XPlat
                 var sources = addpkg.Option(
                     "-s|--source",
                     Strings.AddPkg_SourcesDescription,
-                    CommandOptionType.SingleValue);
+                    CommandOptionType.MultipleValue);
 
                 var packageDirectory = addpkg.Option(
                     "--package-directory",
@@ -83,8 +83,8 @@ namespace NuGet.CommandLine.XPlat
                     var packageDependency = new PackageDependency(id.Values[0], VersionRange.Parse(packageVersion));
                     var packageRefArgs = new PackageReferenceArgs(projectPath.Value(), packageDependency, logger)
                     {
-                        Frameworks = MSBuildStringUtility.Split(frameworks.Value()),
-                        Sources = MSBuildStringUtility.Split(sources.Value()),
+                        Frameworks = frameworks.Values.ToArray(),
+                        Sources = sources.Values.ToArray(),
                         PackageDirectory = packageDirectory.Value(),
                         NoRestore = noRestore.HasValue(),
                         NoVersion = noVersion,
