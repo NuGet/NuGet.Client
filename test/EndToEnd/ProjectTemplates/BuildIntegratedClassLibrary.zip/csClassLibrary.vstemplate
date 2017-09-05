@@ -6,7 +6,7 @@
     <Icon Package="{CAE03EC1-301F-11d3-BF4B-00C349EFBC}" ID="4547" />
     <TemplateID>Microsoft.CSharp.ClassLibrary</TemplateID>
     <ProjectType>CSharp</ProjectType>
-    <RequiredFrameworkVersion>4.5</RequiredFrameworkVersion>
+    <RequiredFrameworkVersion>4.6</RequiredFrameworkVersion>
     <SortOrder>20</SortOrder>
     <NumberOfParentCategoriesToRollUp>1</NumberOfParentCategoriesToRollUp>
     <CreateNewFolder>true</CreateNewFolder>
