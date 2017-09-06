@@ -346,7 +346,7 @@ function Test-BuildIntegratedTransitiveProjectJsonRestores {
 
     # Arrange
     $project1 = New-Project BuildIntegratedClassLibrary
-    $project2 = New-ClassLibrary46
+    $project2 = New-ClassLibraryNET46
     $project3 = New-Project BuildIntegratedClassLibrary
 
     Add-ProjectReference $project2 $project1
@@ -465,7 +465,7 @@ function Test-BuildIntegratedParentProjectIsRestoredAfterInstallWithClassLibInTr
 
     # Arrange
     $project1 = New-Project BuildIntegratedClassLibrary
-    $project2 = New-ClassLibrary46 ClassLib2
+    $project2 = New-ClassLibraryNET46 ClassLib2
     $project3 = New-Project BuildIntegratedClassLibrary
 
     Add-ProjectReference $project1 $project2
