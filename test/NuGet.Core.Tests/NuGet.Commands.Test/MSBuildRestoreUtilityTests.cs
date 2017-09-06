@@ -19,6 +19,478 @@ namespace NuGet.Commands.Test
 {
     public class MSBuildRestoreUtilityTests
     {
+        [PlatformFact(Platform.Windows)]
+        public void MSBuildRestoreUtility_GivenDifferentProjectPathCasingsVerifyResult()
+        {
+            using (var workingDir = TestDirectory.Create())
+            {
+                // Arrange
+                var project1Root = Path.Combine(workingDir, "a");
+                var project2Root = Path.Combine(workingDir, "b");
+
+                var project1Path = Path.Combine(project1Root, "a-abcdefghijklmno.csproj");
+                var project2Path = Path.Combine(project2Root, "b-abcdefghijklmno.csproj");
+
+                var project1UniqueName = Path.Combine(project1Root, "a-abcdefghijklmno.csproj");
+                var project2UniqueName = Path.Combine(project2Root, "b-abcdefghijklmno.csproj");
+
+                var project1UniqueNameCasings = new[]
+                {
+                    Path.Combine(project1Root, "a-Abcdefghijklmno.csproj"),
+                    Path.Combine(project1Root, "a-ABcdefghijklmno.csproj"),
+                    Path.Combine(project1Root, "a-ABCdefghijklmno.csproj"),
+                    Path.Combine(project1Root, "a-ABCDefghijklmno.csproj"),
+                    Path.Combine(project1Root, "a-ABCDEfghijklmno.csproj"),
+                };
+
+                var project2UniqueNameCasings = new[]
+                {
+                    Path.Combine(project1Root, "b-Abcdefghijklmno.csproj"),
+                    Path.Combine(project1Root, "b-ABcdefghijklmno.csproj"),
+                    Path.Combine(project1Root, "b-ABCdefghijklmno.csproj"),
+                    Path.Combine(project1Root, "b-ABCDefghijklmno.csproj"),
+                    Path.Combine(project1Root, "b-ABCDEfghijklmno.csproj"),
+                };
+
+                var outputPath1 = Path.Combine(project1Root, "obj");
+                var outputPath2 = Path.Combine(project2Root, "obj");
+
+                // Exact unique name matches
+                var itemsWithSameCasings = new List<IDictionary<string, string>>();
+
+                // Unique names differ on casings
+                var itemsWithDifferentCasings = new List<IDictionary<string, string>>();
+
+                var projectAItem = new Dictionary<string, string>()
+                {
+                    { "Type", "ProjectSpec" },
+                    { "ProjectName", "a" },
+                    { "ProjectStyle", "PackageReference" },
+                    { "OutputPath", outputPath1 },
+                    { "ProjectUniqueName", project1UniqueName },
+                    { "ProjectPath", project1Path },
+                    { "TargetFrameworks", "net46;netstandard1.6" },
+                    { "CrossTargeting", "true" },
+                };
+
+                itemsWithSameCasings.Add(projectAItem);
+                itemsWithDifferentCasings.Add(WithUniqueName(projectAItem, project1UniqueNameCasings[0]));
+
+                var projectBItem = new Dictionary<string, string>()
+                {
+                    { "Type", "ProjectSpec" },
+                    { "ProjectName", "b" },
+                    { "ProjectStyle", "PackageReference" },
+                    { "OutputPath", outputPath2 },
+                    { "ProjectUniqueName", project2UniqueName },
+                    { "ProjectPath", project2Path },
+                    { "TargetFrameworks", "net45;netstandard1.0" },
+                    { "CrossTargeting", "true" },
+                };
+
+                itemsWithSameCasings.Add(projectBItem);
+                itemsWithDifferentCasings.Add(WithUniqueName(projectBItem, project2UniqueNameCasings[0]));
+
+                // A -> B
+                var projectReference = new Dictionary<string, string>()
+                {
+                    { "Type", "ProjectReference" },
+                    { "ProjectUniqueName", project1UniqueName },
+                    { "ProjectReferenceUniqueName", project2UniqueName },
+                    { "ProjectPath", project2Path },
+                    { "TargetFrameworks", "netstandard1.6" },
+                    { "CrossTargeting", "true" },
+                };
+
+                itemsWithSameCasings.Add(projectReference);
+
+                var projectReferenceDifferentCasings = WithUniqueName(projectReference, project1UniqueNameCasings[1]);
+                projectReferenceDifferentCasings["ProjectReferenceUniqueName"] = project2UniqueNameCasings[1];
+                projectReferenceDifferentCasings["ProjectPath"] = project2UniqueNameCasings[2];
+
+                itemsWithDifferentCasings.Add(projectReferenceDifferentCasings);
+
+                // Package references
+                // A net46 -> X
+                var packageXReference = new Dictionary<string, string>()
+                {
+                    { "Type", "Dependency" },
+                    { "ProjectUniqueName", project1UniqueName },
+                    { "Id", "x" },
+                    { "VersionRange", "1.0.0-beta.*" },
+                    { "TargetFrameworks", "net46" },
+                    { "CrossTargeting", "true" },
+                };
+
+                itemsWithSameCasings.Add(packageXReference);
+                itemsWithDifferentCasings.Add(WithUniqueName(packageXReference, project1UniqueNameCasings[2]));
+
+                // A netstandard1.6 -> Z
+                var packageZReference = new Dictionary<string, string>()
+                {
+                    { "Type", "Dependency" },
+                    { "ProjectUniqueName", project1UniqueName },
+                    { "Id", "z" },
+                    { "VersionRange", "2.0.0" },
+                    { "TargetFrameworks", "netstandard1.6" },
+                    { "CrossTargeting", "true" },
+                };
+
+                itemsWithSameCasings.Add(packageZReference);
+                itemsWithDifferentCasings.Add(WithUniqueName(packageZReference, project1UniqueNameCasings[3]));
+
+                // Framework assembly
+                var frameworkAssembly = new Dictionary<string, string>()
+                {
+                    { "Type", "FrameworkAssembly" },
+                    { "ProjectUniqueName", project1UniqueName },
+                    { "Id", "System.IO" },
+                    { "TargetFrameworks", "net46" },
+                    { "CrossTargeting", "true" },
+                };
+
+                itemsWithSameCasings.Add(frameworkAssembly);
+                itemsWithDifferentCasings.Add(WithUniqueName(frameworkAssembly, project1UniqueNameCasings[4]));
+
+                // B ALL -> Y
+                var packageYReference = new Dictionary<string, string>()
+                {
+                    { "Type", "Dependency" },
+                    { "ProjectUniqueName", project2UniqueName },
+                    { "Id", "y" },
+                    { "VersionRange", "[1.0.0]" },
+                    { "TargetFrameworks", "netstandard1.0;net45" },
+                    { "CrossTargeting", "true" },
+                };
+
+                itemsWithSameCasings.Add(packageYReference);
+                itemsWithDifferentCasings.Add(WithUniqueName(packageYReference, project2UniqueNameCasings[3]));
+
+                var wrappedItemsWithSameCasings = itemsWithSameCasings.Select(CreateItems).ToList();
+                var wrappedItemsWithDifferentCasings = itemsWithDifferentCasings.Select(CreateItems).ToList();
+
+                // Act
+                var dgSpecWithSameCasings = MSBuildRestoreUtility.GetDependencySpec(wrappedItemsWithSameCasings);
+                var project1SpecWithSameCasings = dgSpecWithSameCasings.Projects.Single(e => e.Name == "a");
+                var project2SpecWithSameCasings = dgSpecWithSameCasings.Projects.Single(e => e.Name == "b");
+
+                var dgSpecWithDifferentCasings = MSBuildRestoreUtility.GetDependencySpec(wrappedItemsWithDifferentCasings);
+                var project1SpecWithDifferentCasings = dgSpecWithDifferentCasings.Projects.Single(e => e.Name == "a");
+                var project2SpecWithDifferentCasings = dgSpecWithDifferentCasings.Projects.Single(e => e.Name == "b");
+
+                // Assert
+                // Verify package dependencies and framework references are the same
+                project1SpecWithSameCasings.TargetFrameworks.ShouldBeEquivalentTo(project1SpecWithDifferentCasings.TargetFrameworks);
+                project2SpecWithSameCasings.TargetFrameworks.ShouldBeEquivalentTo(project2SpecWithDifferentCasings.TargetFrameworks);
+
+                // Verify project references are the same
+                var projectReferencesSame = project1SpecWithSameCasings.RestoreMetadata.TargetFrameworks[0].ProjectReferences.Select(e => e.ProjectPath.ToLowerInvariant());
+                var projectReferencesDiff = project1SpecWithDifferentCasings.RestoreMetadata.TargetFrameworks[0].ProjectReferences.Select(e => e.ProjectPath.ToLowerInvariant());
+
+                projectReferencesSame.ShouldBeEquivalentTo(projectReferencesDiff);
+            }
+        }
+
+        [PlatformFact(Platform.Linux)]
+        public void MSBuildRestoreUtility_GivenDifferentProjectPathCasingsVerifyPackageReferencesAreCorrect()
+        {
+            using (var workingDir = TestDirectory.Create())
+            {
+                // Arrange
+                var project1Root = Path.Combine(workingDir, "a");
+                var project2Root = Path.Combine(workingDir, "A");
+
+                // Same path, different case on Linux
+                var project1Path = Path.Combine(project1Root, "a.csproj");
+                var project2Path = Path.Combine(project2Root, "A.csproj");
+
+                var project1UniqueName = project1Path;
+                var project2UniqueName = project2Path;
+
+                var outputPath1 = Path.Combine(project1Root, "obj");
+                var outputPath2 = Path.Combine(project2Root, "obj");
+
+                // Exact unique name matches
+                var items = new List<IDictionary<string, string>>();
+
+                var projectAItem = new Dictionary<string, string>()
+                {
+                    { "Type", "ProjectSpec" },
+                    { "ProjectName", "a1" },
+                    { "ProjectStyle", "PackageReference" },
+                    { "OutputPath", outputPath1 },
+                    { "ProjectUniqueName", project1UniqueName },
+                    { "ProjectPath", project1Path },
+                    { "TargetFrameworks", "net46;netstandard1.6" },
+                    { "CrossTargeting", "true" },
+                };
+                items.Add(projectAItem);
+
+                var projectA2Item = new Dictionary<string, string>()
+                {
+                    { "Type", "ProjectSpec" },
+                    { "ProjectName", "a2" },
+                    { "ProjectStyle", "PackageReference" },
+                    { "OutputPath", outputPath2 },
+                    { "ProjectUniqueName", project2UniqueName },
+                    { "ProjectPath", project2Path },
+                    { "TargetFrameworks", "net46;netstandard1.6" },
+                    { "CrossTargeting", "true" },
+                };
+                items.Add(projectA2Item);
+
+                // Package references
+                // A net46 -> X
+                var packageXReference = new Dictionary<string, string>()
+                {
+                    { "Type", "Dependency" },
+                    { "ProjectUniqueName", project1UniqueName },
+                    { "Id", "x" },
+                    { "VersionRange", "1.0.0-beta.*" },
+                    { "TargetFrameworks", "net46" },
+                    { "CrossTargeting", "true" },
+                };
+                items.Add(packageXReference);
+
+                // A net46 -> Z
+                var packageZReference = new Dictionary<string, string>()
+                {
+                    { "Type", "Dependency" },
+                    { "ProjectUniqueName", project2UniqueName },
+                    { "Id", "z" },
+                    { "VersionRange", "2.0.0" },
+                    { "TargetFrameworks", "net46" },
+                    { "CrossTargeting", "true" },
+                };
+                items.Add(packageZReference);
+
+                var wrappedItems = items.Select(CreateItems).ToList();
+
+                // Act
+                var dgSpec = MSBuildRestoreUtility.GetDependencySpec(wrappedItems);
+                var project1Spec = dgSpec.Projects.Single(e => e.Name == "a1");
+                var project2Spec = dgSpec.Projects.Single(e => e.Name == "a2");
+
+                // Assert
+                project1Spec.GetTargetFramework(NuGetFramework.Parse("net46")).Dependencies.Select(e => e.Name).Single().Should().Be("x");
+                project2Spec.GetTargetFramework(NuGetFramework.Parse("net46")).Dependencies.Select(e => e.Name).Single().Should().Be("z");
+            }
+        }
+
+        [PlatformFact(Platform.Windows)]
+        public void MSBuildRestoreUtility_NormalizeProjectReferencesVerifyResult()
+        {
+            using (var workingDir = TestDirectory.Create())
+            {
+                // Arrange
+                var project1Root = Path.Combine(workingDir, "a");
+                var project2Root = Path.Combine(workingDir, "b");
+
+                // Same path, different case on Linux
+                var project1Path = Path.Combine(project1Root, "a.csproj");
+                var project2Path = Path.Combine(project2Root, "b.csproj");
+                var project2PathAlt = Path.Combine(project2Root, "B.csproj");
+
+                var project1UniqueName = project1Path;
+                var project2UniqueName = project2Path;
+                var project2UniqueNameAlt = project2PathAlt;
+
+                var outputPath1 = Path.Combine(project1Root, "obj");
+                var outputPath2 = Path.Combine(project2Root, "obj");
+
+                // Exact unique name matches
+                var items = new List<IDictionary<string, string>>();
+
+                var projectAItem = new Dictionary<string, string>()
+                {
+                    { "Type", "ProjectSpec" },
+                    { "ProjectName", "a" },
+                    { "ProjectStyle", "PackageReference" },
+                    { "OutputPath", outputPath1 },
+                    { "ProjectUniqueName", project1UniqueName },
+                    { "ProjectPath", project1Path },
+                    { "TargetFrameworks", "net46" },
+                    { "CrossTargeting", "true" },
+                };
+                items.Add(projectAItem);
+
+                var projectBItem = new Dictionary<string, string>()
+                {
+                    { "Type", "ProjectSpec" },
+                    { "ProjectName", "b" },
+                    { "ProjectStyle", "PackageReference" },
+                    { "OutputPath", outputPath2 },
+                    { "ProjectUniqueName", project2UniqueName },
+                    { "ProjectPath", project2Path },
+                    { "TargetFrameworks", "net46" },
+                    { "CrossTargeting", "true" },
+                };
+                items.Add(projectBItem);
+
+                // A -> B
+                items.Add(new Dictionary<string, string>()
+                {
+                    { "Type", "ProjectReference" },
+                    { "ProjectUniqueName", project1UniqueName },
+                    { "ProjectReferenceUniqueName", project2UniqueNameAlt },
+                    { "ProjectPath", project2PathAlt },
+                    { "TargetFrameworks", "net46" },
+                });
+
+                var wrappedItems = items.Select(CreateItems).ToList();
+
+                // Act
+                var dgSpec = MSBuildRestoreUtility.GetDependencySpec(wrappedItems);
+                var projectReferences = dgSpec.GetProjectSpec(project1UniqueName).RestoreMetadata.TargetFrameworks[0].ProjectReferences;
+
+                // Assert
+                projectReferences[0].ProjectUniqueName.Should().Be(project2UniqueName, "this should be normalized");
+                projectReferences[0].ProjectPath.Should().Be(project2Path, "this should be normalized");
+            }
+        }
+
+        [PlatformFact(Platform.Windows)]
+        public void MSBuildRestoreUtility_RemoveMissingProjectsVerifyCaseDoesNotMatter()
+        {
+            using (var workingDir = TestDirectory.Create())
+            {
+                // Arrange
+                var project1Root = Path.Combine(workingDir, "a");
+                var project2Root = Path.Combine(workingDir, "b");
+
+                // Same path, different case on Linux
+                var project1Path = Path.Combine(project1Root, "a.csproj");
+                var project2Path = Path.Combine(project2Root, "b.csproj");
+                var project2PathAlt = Path.Combine(project2Root, "B.csproj");
+
+                var project1UniqueName = project1Path;
+                var project2UniqueName = project2Path;
+                var project2UniqueNameAlt = project2PathAlt;
+
+                var outputPath1 = Path.Combine(project1Root, "obj");
+                var outputPath2 = Path.Combine(project2Root, "obj");
+
+                // Exact unique name matches
+                var items = new List<IDictionary<string, string>>();
+
+                var projectAItem = new Dictionary<string, string>()
+                {
+                    { "Type", "ProjectSpec" },
+                    { "ProjectName", "a" },
+                    { "ProjectStyle", "PackageReference" },
+                    { "OutputPath", outputPath1 },
+                    { "ProjectUniqueName", project1UniqueName },
+                    { "ProjectPath", project1Path },
+                    { "TargetFrameworks", "net46" },
+                    { "CrossTargeting", "true" },
+                };
+                items.Add(projectAItem);
+
+                var projectBItem = new Dictionary<string, string>()
+                {
+                    { "Type", "ProjectSpec" },
+                    { "ProjectName", "b" },
+                    { "ProjectStyle", "PackageReference" },
+                    { "OutputPath", outputPath2 },
+                    { "ProjectUniqueName", project2UniqueName },
+                    { "ProjectPath", project2Path },
+                    { "TargetFrameworks", "net46" },
+                    { "CrossTargeting", "true" },
+                };
+                items.Add(projectBItem);
+
+                // A -> B
+                items.Add(new Dictionary<string, string>()
+                {
+                    { "Type", "ProjectReference" },
+                    { "ProjectUniqueName", project1UniqueName },
+                    { "ProjectReferenceUniqueName", project2UniqueNameAlt },
+                    { "ProjectPath", project2PathAlt },
+                    { "TargetFrameworks", "net46" },
+                });
+
+                var wrappedItems = items.Select(CreateItems).ToList();
+
+                // Act
+                var dgSpec = MSBuildRestoreUtility.GetDependencySpec(wrappedItems);
+                var projectReferences = dgSpec.GetProjectSpec(project1UniqueName).RestoreMetadata.TargetFrameworks[0].ProjectReferences;
+
+                // Assert
+                projectReferences.Count.Should().Be(1);
+            }
+        }
+
+        [PlatformFact(Platform.Linux)]
+        public void MSBuildRestoreUtility_RemoveMissingProjectsVerifyCaseDoesMatter()
+        {
+            using (var workingDir = TestDirectory.Create())
+            {
+                // Arrange
+                var project1Root = Path.Combine(workingDir, "a");
+                var project2Root = Path.Combine(workingDir, "b");
+
+                // Same path, different case on Linux
+                var project1Path = Path.Combine(project1Root, "a.csproj");
+                var project2Path = Path.Combine(project2Root, "b.csproj");
+                var project2PathAlt = Path.Combine(project2Root, "B.csproj");
+
+                var project1UniqueName = project1Path;
+                var project2UniqueName = project2Path;
+                var project2UniqueNameAlt = project2PathAlt;
+
+                var outputPath1 = Path.Combine(project1Root, "obj");
+                var outputPath2 = Path.Combine(project2Root, "obj");
+
+                // Exact unique name matches
+                var items = new List<IDictionary<string, string>>();
+
+                var projectAItem = new Dictionary<string, string>()
+                {
+                    { "Type", "ProjectSpec" },
+                    { "ProjectName", "a" },
+                    { "ProjectStyle", "PackageReference" },
+                    { "OutputPath", outputPath1 },
+                    { "ProjectUniqueName", project1UniqueName },
+                    { "ProjectPath", project1Path },
+                    { "TargetFrameworks", "net46" },
+                    { "CrossTargeting", "true" },
+                };
+                items.Add(projectAItem);
+
+                var projectBItem = new Dictionary<string, string>()
+                {
+                    { "Type", "ProjectSpec" },
+                    { "ProjectName", "b" },
+                    { "ProjectStyle", "PackageReference" },
+                    { "OutputPath", outputPath2 },
+                    { "ProjectUniqueName", project2UniqueName },
+                    { "ProjectPath", project2Path },
+                    { "TargetFrameworks", "net46" },
+                    { "CrossTargeting", "true" },
+                };
+                items.Add(projectBItem);
+
+                // A -> B
+                items.Add(new Dictionary<string, string>()
+                {
+                    { "Type", "ProjectReference" },
+                    { "ProjectUniqueName", project1UniqueName },
+                    { "ProjectReferenceUniqueName", project2UniqueNameAlt },
+                    { "ProjectPath", project2PathAlt },
+                    { "TargetFrameworks", "net46" },
+                });
+
+                var wrappedItems = items.Select(CreateItems).ToList();
+
+                // Act
+                var dgSpec = MSBuildRestoreUtility.GetDependencySpec(wrappedItems);
+                var projectReferences = dgSpec.GetProjectSpec(project1UniqueName).RestoreMetadata.TargetFrameworks[0].ProjectReferences;
+
+                // Assert
+                projectReferences.Should().BeEmpty();
+            }
+        }
+
         [Theory]
         [InlineData("a", "", "a")]
         [InlineData("a|b", "", "a|b")]
@@ -1993,6 +2465,13 @@ namespace NuGet.Commands.Test
         private IMSBuildItem CreateItems(IDictionary<string, string> properties)
         {
             return new MSBuildItem(Guid.NewGuid().ToString(), properties);
+        }
+
+        private Dictionary<string, string> WithUniqueName(Dictionary<string, string> item, string uniqueName)
+        {
+            var newItem = new Dictionary<string, string>(item, StringComparer.OrdinalIgnoreCase);
+            newItem["ProjectUniqueName"] = uniqueName;
+            return newItem;
         }
     }
 }
