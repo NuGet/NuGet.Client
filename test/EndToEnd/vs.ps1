@@ -303,6 +303,15 @@ function New-ClassLibrary {
     New-Project ClassLibrary $ProjectName $SolutionFolderName
 }
 
+function New-ClassLibraryNET46 {
+    param(
+        [string]$ProjectName,
+        [string]$SolutionFolderName
+    )
+
+    New-Project ClassLibrary46 $ProjectName $SolutionFolderName
+}
+
 function New-LightSwitchApplication
 {
     param(
