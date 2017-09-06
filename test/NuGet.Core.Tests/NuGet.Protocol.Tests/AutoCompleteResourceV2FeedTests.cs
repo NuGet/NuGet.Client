@@ -19,11 +19,11 @@ namespace NuGet.Protocol.Tests
         public async Task AutoCompleteResourceV2Feed_IdStartsWith()
         {
             // Arrange
-            var serviceAddress = TestUtility.CreateServiceAddress();
+            var serviceAddress = ProtocolUtility.CreateServiceAddress();
 
             var responses = new Dictionary<string, string>();
             responses.Add(serviceAddress + "package-ids?partialId=Azure&includePrerelease=False&semVerLevel=2.0.0",
-                 TestUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.AzureAutoComplete.json", GetType()));
+                 ProtocolUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.AzureAutoComplete.json", GetType()));
             responses.Add(serviceAddress, string.Empty);
 
             var repo = StaticHttpHandler.CreateSource(serviceAddress, Repository.Provider.GetCoreV3(), responses);
@@ -41,11 +41,11 @@ namespace NuGet.Protocol.Tests
         public async Task AutoCompleteResourceV2Feed_VersionStartsWith()
         {
             // Arrange
-            var serviceAddress = TestUtility.CreateServiceAddress();
+            var serviceAddress = ProtocolUtility.CreateServiceAddress();
 
             var responses = new Dictionary<string, string>();
             responses.Add(serviceAddress + "package-versions/xunit?includePrerelease=False&semVerLevel=2.0.0",
-                 TestUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.XunitVersionAutoComplete.json", GetType()));
+                 ProtocolUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.XunitVersionAutoComplete.json", GetType()));
             responses.Add(serviceAddress, string.Empty);
 
             var repo = StaticHttpHandler.CreateSource(serviceAddress, Repository.Provider.GetCoreV3(), responses);
@@ -63,7 +63,7 @@ namespace NuGet.Protocol.Tests
         public async Task AutoCompleteResourceV2Feed_VersionStartsWithInvalidId()
         {
             // Arrange
-            var serviceAddress = TestUtility.CreateServiceAddress();
+            var serviceAddress = ProtocolUtility.CreateServiceAddress();
 
             var responses = new Dictionary<string, string>();
             responses.Add(serviceAddress + "package-versions/azure?includePrerelease=False&semVerLevel=2.0.0", "[]");

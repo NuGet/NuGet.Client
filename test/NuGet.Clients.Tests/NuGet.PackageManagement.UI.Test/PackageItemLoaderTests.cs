@@ -59,6 +59,12 @@ namespace NuGet.PackageManagement.UI.Test
                 }
             } 
 
+            // All items should not have a prefix reserved because the feed is multisource
+            foreach (var item in loaded)
+            {
+                Assert.False(item.PrefixReserved);
+            }
+
             Assert.NotEmpty(loaded);
         }
 
